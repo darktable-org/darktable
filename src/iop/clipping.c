@@ -434,7 +434,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
   const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
   const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
-  float ma, mb, md, me, mg, mh;
+  float ma = 0, mb = 0, md = 0, me = 0, mg = 0, mh = 0;
   if(d->k_apply == 1)
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
@@ -589,7 +589,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
       float *_out = out + (size_t)j * roi_out->width;
       for(int i = 0; i < roi_out->width; i++, _out++)
       {
-        float pi[2], po[2];
+        float pi[2] = { 0.0f }, po[2] = { 0.0f };
 
         pi[0] = roi_out->x - roi_out->scale * d->enlarge_x + roi_out->scale * d->cix + i + 0.5f;
         pi[1] = roi_out->y - roi_out->scale * d->enlarge_y + roi_out->scale * d->ciy + j + 0.5f;
@@ -635,7 +635,7 @@ static int _iop_clipping_set_max_clip(struct dt_iop_module_t *self)
   if(!piece) return 0;
 
   float wp = piece->buf_out.width, hp = piece->buf_out.height;
-  float points[8] = { 0.0, 0.0, wp, hp, p->cx * wp, p->cy * hp, fabsf(p->cw) * wp, fabsf(p->ch) * hp };
+  float points[8] = { 0.0f, 0.0f, wp, hp, p->cx * wp, p->cy * hp, fabsf(p->cw) * wp, fabsf(p->ch) * hp };
   if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 4))
     return 0;
 
@@ -671,7 +671,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   float rt[] = { cosf(d->angle), sinf(d->angle), -sinf(d->angle), cosf(d->angle) };
   if(d->angle == 0.0f)
   {
-    rt[0] = rt[3] = 1.0;
+    rt[0] = rt[3] = 1.0f;
     rt[1] = rt[2] = 0.0f;
   }
 
@@ -2155,28 +2155,28 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->cx = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cx, 2);
   dt_bauhaus_widget_set_label(g->cx, NULL, _("left"));
-  dt_bauhaus_slider_set_format(g->cx, "%0.f %%");
+  dt_bauhaus_slider_set_format(g->cx, "%0.0f %%");
   g_signal_connect(G_OBJECT(g->cx), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
   gtk_box_pack_start(GTK_BOX(page2), g->cx, FALSE, FALSE, 0);
 
   g->cw = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cw, 2);
   dt_bauhaus_widget_set_label(g->cw, NULL, _("right"));
-  dt_bauhaus_slider_set_format(g->cw, "%0.f %%");
+  dt_bauhaus_slider_set_format(g->cw, "%0.0f %%");
   g_signal_connect(G_OBJECT(g->cw), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
   gtk_box_pack_start(GTK_BOX(page2), g->cw, FALSE, FALSE, 0);
 
   g->cy = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cy, 2);
   dt_bauhaus_widget_set_label(g->cy, NULL, _("top"));
-  dt_bauhaus_slider_set_format(g->cy, "%0.f %%");
+  dt_bauhaus_slider_set_format(g->cy, "%0.0f %%");
   g_signal_connect(G_OBJECT(g->cy), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
   gtk_box_pack_start(GTK_BOX(page2), g->cy, FALSE, FALSE, 0);
 
   g->ch = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->ch, 2);
   dt_bauhaus_widget_set_label(g->ch, NULL, _("bottom"));
-  dt_bauhaus_slider_set_format(g->ch, "%0.f %%");
+  dt_bauhaus_slider_set_format(g->ch, "%0.0f %%");
   g_signal_connect(G_OBJECT(g->ch), "value-changed", G_CALLBACK(cxywh_callback), self);
   gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
   gtk_box_pack_start(GTK_BOX(page2), g->ch, FALSE, FALSE, 2);
@@ -2411,22 +2411,22 @@ static void gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, f
   cairo_fill(cr);
 }
 // draw symmetry signs
-static void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
+static void gui_draw_sym(cairo_t *cr, float x, float y, float scale, gboolean active)
 {
   PangoLayout *layout;
   PangoRectangle ink;
   PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
+  pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE * scale);
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
   pango_layout_set_text(layout, "ꝏ", -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   dt_draw_set_color_overlay(cr, 0.5, 0.7);
   gui_draw_rounded_rectangle(
-      cr, ink.width + DT_PIXEL_APPLY_DPI(4), ink.height + DT_PIXEL_APPLY_DPI(8),
-      x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(2), y - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(4));
-  cairo_move_to(cr, x - ink.width / 2.0f, y - 3.0 * ink.height / 4.0f - DT_PIXEL_APPLY_DPI(4));
+      cr, ink.width + DT_PIXEL_APPLY_DPI(4) * scale, ink.height + DT_PIXEL_APPLY_DPI(8) * scale,
+      x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(2) * scale, y - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(4) * scale);    /* *** */
+  cairo_move_to(cr, x - ink.width / 2.0f, y - 3.0 * ink.height / 4.0f - DT_PIXEL_APPLY_DPI(4) * scale);    /* *** */
   if(active)
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, .9);
   else
@@ -2459,6 +2459,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float zoom_x = dt_control_get_dev_zoom_x();
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
+  const float pr_d = dev->preview_downsampling;
   const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
   cairo_translate(cr, width / 2.0, height / 2.0f);
@@ -2811,13 +2812,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       }
       cairo_arc(cr, pts[6], pts[7], DT_PIXEL_APPLY_DPI(5.0) / zoom_scale, 0, 2.0 * M_PI);
       cairo_stroke(cr);
-
       // draw the apply "button"
       PangoLayout *layout;
       PangoRectangle ink;
       PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
       pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-      pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
+      pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE * pr_d);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
       cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
@@ -2826,10 +2826,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       int c[2] = { (MIN(pts[4], pts[2]) + MAX(pts[0], pts[6])) / 2.0f,
                    (MIN(pts[5], pts[7]) + MAX(pts[1], pts[3])) / 2.0f };
       cairo_set_source_rgba(cr, .5, .5, .5, .9);
-      gui_draw_rounded_rectangle(cr, ink.width + DT_PIXEL_APPLY_DPI(8),
-                                 ink.height + DT_PIXEL_APPLY_DPI(12),
-                                 c[0] - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(4),
-                                 c[1] - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(6));
+      gui_draw_rounded_rectangle(cr, ink.width + DT_PIXEL_APPLY_DPI(8) * pr_d,
+                                 ink.height + DT_PIXEL_APPLY_DPI(12) * pr_d,
+                                 c[0] - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(4) * pr_d,
+                                 c[1] - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(6) * pr_d);
       cairo_move_to(cr, c[0] - ink.width / 2.0f, c[1] - 3.0 * ink.height / 4.0f);
       dt_draw_set_color_overlay(cr, 0.2, 0.9);
       pango_cairo_show_layout(cr, layout);
@@ -2841,14 +2841,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       if(p->k_type == 1 || p->k_type == 3)
       {
         if(p->k_sym == 1 || p->k_sym == 3) sym = TRUE;
-        gui_draw_sym(cr, (pts[0] + pts[6]) / 2.0f, (pts[1] + pts[7]) / 2.0f, sym);
-        gui_draw_sym(cr, (pts[2] + pts[4]) / 2.0f, (pts[3] + pts[5]) / 2.0f, sym);
+        gui_draw_sym(cr, (pts[0] + pts[6]) / 2.0f, (pts[1] + pts[7]) / 2.0f, pr_d, sym);
+        gui_draw_sym(cr, (pts[2] + pts[4]) / 2.0f, (pts[3] + pts[5]) / 2.0f, pr_d, sym);
       }
       if(p->k_type == 2 || p->k_type == 3)
       {
         sym = (p->k_sym >= 2);
-        gui_draw_sym(cr, (pts[0] + pts[2]) / 2.0f, (pts[1] + pts[3]) / 2.0f, sym);
-        gui_draw_sym(cr, (pts[6] + pts[4]) / 2.0f, (pts[7] + pts[5]) / 2.0f, sym);
+        gui_draw_sym(cr, (pts[0] + pts[2]) / 2.0f, (pts[1] + pts[3]) / 2.0f, pr_d, sym);
+        gui_draw_sym(cr, (pts[6] + pts[4]) / 2.0f, (pts[7] + pts[5]) / 2.0f, pr_d, sym);
       }
     }
   }
