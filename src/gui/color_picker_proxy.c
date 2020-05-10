@@ -346,12 +346,12 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
 {
   dt_iop_color_picker_t *color_picker = (dt_iop_color_picker_t *)g_malloc(sizeof(dt_iop_color_picker_t));
 
-  if (GTK_IS_BOX(w))
+  if(w == NULL || GTK_IS_BOX(w))
   {
     GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
     dt_iop_init_single_picker(color_picker, module, button, kind, module->color_picker_apply);
     g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(dt_iop_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
-    gtk_box_pack_start(GTK_BOX(w), button, TRUE, TRUE, 0);
+    if (w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
 
     return button;
   }
