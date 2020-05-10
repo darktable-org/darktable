@@ -374,14 +374,14 @@ static void init_tab_general(GtkWidget *stack)
     else
     {
       //load default text with some pointers
-      gtk_text_buffer_set_text(buffer, "/* ERROR Loading user.css */", -1);
+      gtk_text_buffer_set_text(buffer, _("/* ERROR Loading user.css */"), -1);
     }
     g_free(usercsscontent);
   }
   else
   {
     //load default text
-    gtk_text_buffer_set_text(buffer, "/* Enter CSS theme tweaks here */", -1);
+    gtk_text_buffer_set_text(buffer, _("/* Enter CSS theme tweaks here */"), -1);
   }
 
 }
