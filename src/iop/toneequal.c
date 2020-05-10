@@ -1850,6 +1850,7 @@ static void contrast_boost_callback(GtkWidget *slider, gpointer user_data)
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
+  dt_bauhaus_widget_set_quad_active(slider, FALSE);
 }
 
 static void exposure_boost_callback(GtkWidget *slider, gpointer user_data)
@@ -1864,6 +1865,7 @@ static void exposure_boost_callback(GtkWidget *slider, gpointer user_data)
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
+  dt_bauhaus_widget_set_quad_active(slider, FALSE);
 }
 
 static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
@@ -1885,7 +1887,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
   if(p->exposure_boost != 0.0f)
   {
-    // Reset the contrast boost and do nothing
+    // Reset the exposure boost and do nothing
     p->exposure_boost = 0.0f;
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
@@ -1894,6 +1896,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_bauhaus_widget_set_quad_active(quad, FALSE);
     return;
   }
 
@@ -1957,6 +1960,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_bauhaus_widget_set_quad_active(quad, FALSE);
     return;
   }
 
