@@ -685,18 +685,21 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton), TRUE, TRUE, 0);
 
-  c->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
+  c->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->blackpick), "picker-black");
 
-  c->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
+  c->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(c->greypick, _("pick medium gray point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->greypick), "picker-grey");
 
-  c->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, box);
+  c->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
 
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(c->blackpick), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(c->greypick ), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(c->whitepick), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_manual), box, TRUE, TRUE, 0);
 
   gtk_widget_show_all(vbox_manual);

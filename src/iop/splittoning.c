@@ -59,7 +59,6 @@ typedef struct dt_iop_splittoning_gui_data_t
   GtkWidget *shadow_colorpick, *highlight_colorpick;
   GtkWidget *shadow_hue_gslider, *shadow_sat_gslider;
   GtkWidget *highlight_hue_gslider, *highlight_sat_gslider;
-  dt_iop_color_picker_t color_picker;
 } dt_iop_splittoning_gui_data_t;
 
 typedef struct dt_iop_splittoning_data_t
@@ -76,14 +75,6 @@ typedef struct dt_iop_splittoning_global_data_t
 {
   int kernel_splittoning;
 } dt_iop_splittoning_global_data_t;
-
-typedef enum dt_iop_splittoning_picker_t
-{
-  DT_SPLITTONING_NONE = 0,
-  DT_SPLITTONING_HIGHLIGHTS,
-  DT_SPLITTONING_SHADOWS
-} dt_iop_splittoning_picker_data_t;
-
 
 const char *name()
 {
@@ -448,26 +439,7 @@ static void colorpick_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
-{
-  dt_iop_splittoning_gui_data_t *g =  (dt_iop_splittoning_gui_data_t *)self->gui_data;
-
-  const int current_picker = g->color_picker.current_picker;
-
-  g->color_picker.current_picker = DT_SPLITTONING_NONE;
-
-  if(button == g->shadow_hue_gslider)
-    g->color_picker.current_picker = DT_SPLITTONING_SHADOWS;
-  else if(button == g->highlight_hue_gslider)
-    g->color_picker.current_picker = DT_SPLITTONING_HIGHLIGHTS;
-
-  if (current_picker == g->color_picker.current_picker)
-    return DT_COLOR_PICKER_ALREADY_SELECTED;
-  else
-    return g->color_picker.current_picker;
-}
-
-static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
@@ -479,7 +451,7 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpi
   float H = .0f, S = .0f, L = .0f;
   rgb2hsl(self->picked_color, &H, &S, &L);
 
-  if(g->color_picker.current_picker == DT_SPLITTONING_HIGHLIGHTS)
+  if(self->picker->colorpick == g->highlight_hue_gslider)
   {
     p_hue = &p->highlight_hue;
     p_saturation = &p->highlight_saturation;
@@ -518,13 +490,6 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpi
   gtk_widget_queue_draw(GTK_WIDGET(g->balance_scale));
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _iop_color_picker_update(dt_iop_module_t *self)
-{
-  dt_iop_splittoning_gui_data_t *g =  (dt_iop_splittoning_gui_data_t *)self->gui_data;
-  dt_bauhaus_widget_set_quad_active(g->shadow_hue_gslider, g->color_picker.current_picker == DT_SPLITTONING_SHADOWS);
-  dt_bauhaus_widget_set_quad_active(g->highlight_hue_gslider, g->color_picker.current_picker == DT_SPLITTONING_HIGHLIGHTS);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -603,8 +568,6 @@ static inline int gui_init_tab(
     GtkWidget **pphue,
     GtkWidget **ppsaturation)
 {
-  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
-
   GtkGrid *grid = GTK_GRID(self->widget);
   gtk_grid_attach(grid, dt_ui_section_label_new(name), 0, line++, 2, 1);
 
@@ -627,9 +590,7 @@ static inline int gui_init_tab(
   dt_bauhaus_slider_set_stop(hue, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 1.0f, 1.0f, 0.0f, 0.0f);
   gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
-  dt_bauhaus_widget_set_quad_paint(hue, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(hue, TRUE);
-  g_signal_connect(G_OBJECT(hue), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  dt_color_picker_new(self, DT_COLOR_PICKER_POINT, hue);
   g_signal_connect(G_OBJECT(hue), "value-changed", G_CALLBACK(hue_callback), self);
 
   // saturation slider
@@ -696,13 +657,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, g->compress_scale, 0, line++, 2, 1);
   gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve midtones"));
   g_signal_connect(G_OBJECT(g->compress_scale), "value-changed", G_CALLBACK(compress_callback), self);
-
-  dt_iop_init_picker(&g->color_picker,
-              self,
-              DT_COLOR_PICKER_POINT,
-              _iop_color_picker_get_set,
-              _iop_color_picker_apply,
-              _iop_color_picker_update);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
