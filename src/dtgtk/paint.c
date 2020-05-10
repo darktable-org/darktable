@@ -1659,7 +1659,7 @@ void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 
   cairo_set_line_width(cr, 0.3);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-  switch(flags >> 13)
+  switch(flags >> (int)log2(CPF_SPECIAL_FLAG))
   {
     case 1: // Top left
       cairo_move_to(cr, 0.9, 0.1);
@@ -1682,12 +1682,14 @@ void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gi
       cairo_move_to(cr, 0.1, 0.1);
       cairo_line_to(cr, 0.1, 0.9);
       break;
+
     case 16: // center
       cairo_move_to(cr, 0.1, 0.5);
       cairo_line_to(cr, 0.9, 0.5);
       cairo_move_to(cr, 0.5, 0.1);
       cairo_line_to(cr, 0.5, 0.9);
       break;
+
     case 32: // right
       cairo_move_to(cr, 0.9, 0.1);
       cairo_line_to(cr, 0.9, 0.9);
