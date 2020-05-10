@@ -20,6 +20,48 @@ Contributing
 Building
 --------
 
+### Requirements
+
+Supported platforms:
+* Linux,
+* Windows 8, 10,
+* MacOS.
+
+Compatible compilers:
+* Clang: 8, 9, 10
+* GCC: 8, 9, 10
+* Mingw64: 6, 7
+
+Hardware (minimal / **recommended**):
+* RAM: 4 GB / **8 GB**
+* CPU: Intel Pentium 4 (64 bits, SIMD) / **Intel Core i5 4×2.4 GHz (64 bits, SIMD)** 
+* GPU: none / **1024 cores, 4 GB, OpenCL 1.2 compatible**
+* free disk space: 250 MB / **1 GB**
+
+### Dependencies
+
+Required dependencies minimal version:
+* CMake 3.10
+* Gtk 3.22
+* Glib 2.40
+* Sqlite 3.15 (but 3.24 strongly recommended)
+
+Optional dependencies minimal version:
+* OpenMP 4.5
+* LLVM 3.9
+* OpenCL 1.2
+* Lua 5.3
+* libavif 0.6.0
+* WebP 0.3.0
+
+Optional dependencies with no version requirement:
+* Gphoto2
+* Lensfun
+* OpenEXR
+* OpenJPEG
+* Colord
+* G'Mic
+
 
 ### Get the source
 
@@ -40,7 +82,7 @@ git clone https://github.com/darktable-org/darktable.git
 cd darktable
 ```
 
-#### Latest stable version : 3.0.2
+#### Latest release : 3.0.2 (stable)
 
 darktable project releases one major version every year, for Christmas, tagged with even numbers, (like 2.2, 2.4, 2.6, 3.0). 
 Minor revisions are tagged with a third digit (like 3.0.1, 3.0.2) and mostly provide bug fixes and minor new features.
@@ -62,13 +104,29 @@ git submodule init
 git submodule update
 ```
 
-### Compile : the easy way
+### Compile
+
+#### Easy way
+
+darktable provides a shell script that automaticaly takes care of the building for classic cases in a single command. 
+
 
 ```bash
 ./build.sh --prefix /opt/darktable --build-type Release --install --sudo
 ```
 
-### Compile : the manual way
+This builds the software for your own architecture only, with:
+
+* `-O3` optimization level, 
+* SSE/AVX support if detected, 
+* OpenMP support (multi-threading and vectorization) if detected,
+* OpenCL support (GPU offloading) if detected,
+* Lua scripting support if detected.
+
+#### Manual way
+
+You can alternatively use the manual building to pass on custom arguments. 
+
 
 ```bash
 mkdir build/
