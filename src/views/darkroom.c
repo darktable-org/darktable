@@ -581,7 +581,7 @@ void expose(
       cairo_set_source_rgb(cri, .0, .0, .0);
       for(int blackwhite = 2; blackwhite; blackwhite--)
       {
-        double w = 5. / zoom_scale - d; 
+        double w = 5. / zoom_scale - d;
 
         cairo_rectangle(cri, x + d, y + d, (box[2] - box[0]) * wd - 2. * d, (box[3] - box[1]) * ht - 2. * d);
 
@@ -664,35 +664,17 @@ void reset(dt_view_t *self)
 
 int try_enter(dt_view_t *self)
 {
-  int selected = dt_control_get_mouse_over_id();
+  int imgid = dt_view_get_image_to_act_on();
 
-  if(selected < 0)
-  {
-    // try last selected
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) selected = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-
-    // Leave as selected only the image being edited
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, selected);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
-
-  if(selected < 0)
+  if(imgid < 0)
   {
     // fail :(
-    dt_control_log(_("no image selected!"));
+    dt_control_log(_("no image to open !"));
     return 1;
   }
 
   // this loads the image from db if needed:
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, selected, 'r');
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   // get image and check if it has been deleted from disk first!
 
   char imgfilename[PATH_MAX] = { 0 };
@@ -701,13 +683,12 @@ int try_enter(dt_view_t *self)
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
-    // dt_image_remove(selected);
     dt_image_cache_read_release(darktable.image_cache, img);
     return 1;
   }
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
-  darktable.develop->image_storage.id = selected;
+  darktable.develop->image_storage.id = imgid;
   return 0;
 }
 
@@ -3167,14 +3148,14 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           opposite_y = dev->gui_module->color_picker_box[1];
         else
           onCornerPrevBox = FALSE;
-          
+
         if(onCornerPrevBox)
         {
           dev->gui_module->color_picker_point[0] = opposite_x;
           dev->gui_module->color_picker_point[1] = opposite_y;
         }
         else
-        {        
+        {
           dev->gui_module->color_picker_box[0] = fmaxf(0.0, zoom_x - delta_x);
           dev->gui_module->color_picker_box[1] = fmaxf(0.0, zoom_y - delta_y);
           dev->gui_module->color_picker_box[2] = fminf(1.0, zoom_x + delta_x);
