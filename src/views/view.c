@@ -836,8 +836,11 @@ GList *dt_view_get_images_to_act_on(gboolean only_visible)
       if(inside_sel)
       {
         // collumn 1
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
-                                    &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                                    "WHERE m.imgid=s.imgid "
+                                    "ORDER BY m.rowid",
+                                    -1, &stmt, NULL);
         while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
         {
           _images_to_act_on_insert_in_list(&l, sqlite3_column_int(stmt, 0), only_visible);
@@ -874,8 +877,11 @@ GList *dt_view_get_images_to_act_on(gboolean only_visible)
     {
       // collumn 4
       sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
-                                  &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                                  "WHERE m.imgid=s.imgid "
+                                  "ORDER BY m.rowid",
+                                  -1, &stmt, NULL);
       while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
         _images_to_act_on_insert_in_list(&l, sqlite3_column_int(stmt, 0), only_visible);
