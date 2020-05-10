@@ -358,7 +358,7 @@ static cmsCIEXYZ spectrum_to_XYZ(double TempK, spd I)
   }
 
   // normalize so that each component is in [0.0, 1.0] range
-  const double _max = MAX(MAX(Source.X, Source.Y), Source.Z);
+  const double _max = fmax(fmax(Source.X, Source.Y), Source.Z);
   Source.X /= _max;
   Source.Y /= _max;
   Source.Z /= _max;
@@ -885,8 +885,8 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
         max_tune[ch] = neutral[ch] * wb_preset[preset->max_ft_pos].channel[ch];
       }
 
-      const float maxsRGBmin_tune = MAX(MAX(min_tune[0], min_tune[1]), min_tune[2]);
-      const float maxsRGBmax_tune = MAX(MAX(max_tune[0], max_tune[1]), max_tune[2]);
+      const float maxsRGBmin_tune = fmaxf(fmaxf(min_tune[0], min_tune[1]), min_tune[2]);
+      const float maxsRGBmax_tune = fmaxf(fmaxf(max_tune[0], max_tune[1]), max_tune[2]);
 
       for(int ch=0; ch<3; ch++) {
         min_tune[ch] = min_tune[ch] / maxsRGBmin_tune;
@@ -1056,18 +1056,18 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       dt_XYZ_to_sRGB(XYZ_temp, sRGB_temp);
       dt_XYZ_to_sRGB(XYZ_tint, sRGB_tint);
 
-      const float maxsRGB_temp = MAX(MAX(sRGB_temp[0], sRGB_temp[1]), sRGB_temp[2]);
-      const float maxsRGB_tint = MAX(MAX(sRGB_tint[0], sRGB_tint[1]), sRGB_tint[2]);
+      const float maxsRGB_temp = fmaxf(fmaxf(sRGB_temp[0], sRGB_temp[1]), sRGB_temp[2]);
+      const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]), sRGB_tint[2]);
 
-      if(maxsRGB_temp > 0.99999999) {
+      if(maxsRGB_temp > 1.f) {
         for(int ch=0; ch<3; ch++){
-          sRGB_temp[ch] = sRGB_temp[ch] > 0? sRGB_temp[ch] / maxsRGB_temp : 0.0;
+          sRGB_temp[ch] = fmaxf(sRGB_temp[ch] / maxsRGB_temp, 0.f);
         }
       }
 
-      if(maxsRGB_tint > 0.99999999) {
+      if(maxsRGB_tint > 1.f) {
         for(int ch=0; ch<3; ch++){
-          sRGB_tint[ch] = sRGB_tint[ch] > 0? sRGB_tint[ch] / maxsRGB_tint : 0.0;
+          sRGB_tint[ch] = fmaxf(sRGB_tint[ch] / maxsRGB_tint, 0.f);
         }
       }
 
@@ -1093,17 +1093,17 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
 
       float sRGB_K[3] = { dayligh_white[0]*coeffs_K[0], dayligh_white[1]*coeffs_K[1], dayligh_white[2]*coeffs_K[2] };
       float sRGB_tint[3] = {cur_white[0]*coeffs_tint[0], cur_white[1]*coeffs_tint[1], cur_white[2]*coeffs_tint[2]};
-      const float maxsRGB_K = MAX(MAX(sRGB_K[0], sRGB_K[1]), sRGB_K[2]);
-      const float maxsRGB_tint = MAX(MAX(sRGB_tint[0], sRGB_tint[1]),sRGB_tint[2]);
+      const float maxsRGB_K = fmaxf(fmaxf(sRGB_K[0], sRGB_K[1]), sRGB_K[2]);
+      const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]),sRGB_tint[2]);
 
-      if(maxsRGB_K > 0.99999999) {
+      if(maxsRGB_K > 1.f) {
         for(int ch=0; ch<3; ch++){
-          sRGB_K[ch] = sRGB_K[ch] > 0? sRGB_K[ch] / maxsRGB_K : 0.0;
+          sRGB_K[ch] = fmaxf(sRGB_K[ch] / maxsRGB_K, 0.f);
         }
       }
-      if(maxsRGB_tint > 0.99999999) {
+      if(maxsRGB_tint > 1.f) {
         for(int ch=0; ch<3; ch++){
-          sRGB_tint[ch] = sRGB_tint[ch] > 0? sRGB_tint[ch] / maxsRGB_tint : 0.0;
+          sRGB_tint[ch] = fmaxf(sRGB_tint[ch] / maxsRGB_tint, 0.f);
         }
       }
       dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB_K[0], sRGB_K[1], sRGB_K[2]);
@@ -1789,9 +1789,6 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_bauhaus_combobox_set(g->presets, 2);
-
   // capture gui color picked event.
   if(self->picked_color_max[0] < self->picked_color_min[0]) return;
   const float *grayrgb = self->picked_color;
@@ -1813,6 +1810,15 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   color_rgb_sliders(self);
   color_temptint_sliders(self);
+
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  const int32_t old_reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot), FALSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_user), FALSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65), FALSE);
+  dt_bauhaus_combobox_set(g->presets, 2);
+  darktable.gui->reset = old_reset;
 }
 
 static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
