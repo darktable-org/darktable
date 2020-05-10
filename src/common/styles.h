@@ -64,7 +64,7 @@ gboolean dt_styles_create_from_image(const char *name, const char *description,
                                      const int32_t imgid, GList *items, gboolean copy_iop_order);
 
 /** creates styles from selection */
-void dt_styles_create_from_selection(void);
+void dt_styles_create_from_list(GList *list);
 
 /** creates a new style from specified style, items are the style number of items to include in style */
 void dt_styles_create_from_style(const char *name, const char *newname, const char *description,
@@ -75,7 +75,7 @@ void dt_styles_update(const char *name, const char *newname, const char *descrip
                       const int32_t imgid, GList *update, gboolean copy_iop_order);
 
 /** applies the style to selection of images */
-void dt_styles_apply_to_selection(const char *name, gboolean duplicate);
+void dt_styles_apply_to_list(const char *name, GList *list, gboolean duplicate);
 
 /** applies the item style to dev->history */
 void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, GList **modules_used, const gboolean append);
