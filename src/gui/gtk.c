@@ -2621,9 +2621,13 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
+  if(!dt_conf_key_exists("use_system_font"))
+    dt_conf_set_bool("use_system_font", TRUE);
+
   //set font size
-  if(dt_conf_get_float("font_size") != 0.0f)
-  {
+  if(dt_conf_get_bool("use_system_font"))
+    gtk_settings_reset_property(gtk_settings_get_default(), "gtk-font-name");
+  else {
     gchar *font_name = dt_util_dstrcat(NULL, _("Sans %f"), dt_conf_get_float("font_size"));
     g_object_set(gtk_settings_get_default(), "gtk-font-name", font_name, NULL);
     g_free(font_name);
