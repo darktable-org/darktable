@@ -1826,16 +1826,16 @@ gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const int imgid,
 static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
-  dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE, TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
 static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
-  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), FALSE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
