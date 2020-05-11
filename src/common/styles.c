@@ -98,7 +98,9 @@ void dt_style_item_free(gpointer data)
 static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                guint keyval, GdkModifierType modifier, gpointer data)
 {
-  dt_styles_apply_to_selection(data, 0);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  dt_styles_apply_to_list(data, imgs, FALSE);
+  g_list_free(imgs);
   return TRUE;
 }
 
@@ -562,7 +564,7 @@ gboolean dt_styles_create_from_image(const char *name, const char *description,
   return FALSE;
 }
 
-void dt_styles_apply_to_selection(const char *name, gboolean duplicate)
+void dt_styles_apply_to_list(const char *name, GList *list, gboolean duplicate)
 {
   gboolean selected = FALSE;
 
@@ -575,38 +577,34 @@ void dt_styles_apply_to_selection(const char *name, gboolean duplicate)
   const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
 
   /* for each selected image apply style */
-  sqlite3_stmt *stmt;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images",
-                              -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *l = g_list_first(list);
+  while(l)
   {
-    const int imgid = sqlite3_column_int(stmt, 0);
+    const int imgid = GPOINTER_TO_INT(l->data);
     if(mode == DT_STYLE_HISTORY_OVERWRITE)
       dt_history_delete_on_image_ext(imgid, FALSE);
     dt_styles_apply_to_image(name, duplicate, imgid);
     selected = TRUE;
+    l = g_list_next(l);
   }
-  sqlite3_finalize(stmt);
   dt_undo_end_group(darktable.undo);
 
   if(!selected) dt_control_log(_("no image selected!"));
 }
 
-void dt_styles_create_from_selection()
+void dt_styles_create_from_list(GList *list)
 {
   gboolean selected = FALSE;
-  /* for each selected create style */
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images",
-                              -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  /* for each image create style */
+  GList *l = g_list_first(list);
+  while(l)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    const int imgid = GPOINTER_TO_INT(l->data);
     dt_gui_styles_dialog_new(imgid);
     selected = TRUE;
+    l = g_list_next(l);
   }
-  sqlite3_finalize(stmt);
 
   if(!selected) dt_control_log(_("no image selected!"));
 }
@@ -855,7 +853,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
       dt_image_reset_aspect_ratio(newimgid, TRUE);
 
     /* redraw center view to update visible mipmaps */
-    dt_control_queue_redraw_center();
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, newimgid);
   }
 }
 

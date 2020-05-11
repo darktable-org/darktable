@@ -453,7 +453,7 @@ gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on();
+    imgs = dt_view_get_images_to_act_on(TRUE);
   else
   {
     if(dt_is_tag_attached(tagid, imgid)) return FALSE;
@@ -567,7 +567,7 @@ void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, 
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on();
+    imgs = dt_view_get_images_to_act_on(TRUE);
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
 
@@ -633,7 +633,7 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
   }
   else
   {
-    GList *imgs = dt_view_get_images_to_act_on();
+    GList *imgs = dt_view_get_images_to_act_on(TRUE);
     while(imgs)
     {
       images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
