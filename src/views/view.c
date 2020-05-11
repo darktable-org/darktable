@@ -25,6 +25,7 @@
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/module.h"
+#include "common/selection.h"
 #include "common/undo.h"
 #include "common/usermanual_url.h"
 #include "control/conf.h"
@@ -749,44 +750,54 @@ static inline void dt_view_draw_audio(cairo_t *cr, const float x, const float y,
   cairo_stroke(cr);
 }
 
-int32_t dt_view_get_image_to_act_on()
+static int _images_to_act_on_find_custom(gconstpointer a, gconstpointer b)
 {
-  // this works as follows:
-  // - if mouse hovers over an image, that's the one, except:
-  // - if images are selected and the mouse hovers over the selection,
-  //   in which case it affects the whole selection.
-  // - if the mouse is outside the center view (or no image hovered over otherwise)
-  //   it only affects the selection.
-  const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-
-  const gboolean full_preview_mode
-      = darktable.view_manager->proxy.lighttable.get_preview_state(darktable.view_manager->proxy.lighttable.view);
-
-  const int layout = darktable.view_manager->proxy.lighttable.get_layout(
-      darktable.view_manager->proxy.lighttable.module);
-
-  if(full_preview_mode || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  return (GPOINTER_TO_INT(a) != GPOINTER_TO_INT(b));
+}
+static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboolean only_visible)
+{
+  if(only_visible)
   {
-    return mouse_over_id;
+    if(!g_list_find_custom(*list, GINT_TO_POINTER(imgid), _images_to_act_on_find_custom))
+      *list = g_list_append(*list, GINT_TO_POINTER(imgid));
+    return;
   }
-  else
+
+  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  if(image)
   {
-    /* clear and reset statement */
-    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
-    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+    const int img_group_id = image->group_id;
+    dt_image_cache_read_release(darktable.image_cache, image);
 
-    /* setup statement and iterate over rows */
-    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, mouse_over_id);
-
-    if(mouse_over_id <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
-      return -1;
+    if(!darktable.gui || !darktable.gui->grouping || darktable.gui->expanded_group_id == img_group_id
+       || !dt_selection_get_collection(darktable.selection))
+    {
+      if(!g_list_find_custom(*list, GINT_TO_POINTER(imgid), _images_to_act_on_find_custom))
+        *list = g_list_append(*list, GINT_TO_POINTER(imgid));
+    }
     else
-      return mouse_over_id;
+    {
+      sqlite3_stmt *stmt;
+      gchar *query = dt_util_dstrcat(
+          NULL,
+          "SELECT id "
+          "FROM main.images "
+          "WHERE group_id = %d AND id IN (%s)",
+          img_group_id, dt_collection_get_query_no_group(dt_selection_get_collection(darktable.selection)));
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        if(!g_list_find_custom(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)), _images_to_act_on_find_custom))
+          *list = g_list_append(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+      }
+      sqlite3_finalize(stmt);
+      g_free(query);
+    }
   }
 }
+
 // get the list of images to act on during global changes (libs, accels)
-// TODO : grouped images
-GList *dt_view_get_images_to_act_on()
+GList *dt_view_get_images_to_act_on(gboolean only_visible)
 {
   /** Here's how it works
    *
@@ -798,6 +809,8 @@ GList *dt_view_get_images_to_act_on()
    *                       | S | O | O | S | A |
    *  S = selection ; O = mouseover ; A = active images
    *  the mouse can be outside thumbtable in case of filmstrip + mouse in center widget
+   *
+   *  if only_visible is FALSE, then it will add also not visible images because of grouping
    **/
 
   GList *l = NULL;
@@ -823,24 +836,27 @@ GList *dt_view_get_images_to_act_on()
       if(inside_sel)
       {
         // collumn 1
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
-                                    &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                                    "WHERE m.imgid=s.imgid "
+                                    "ORDER BY m.rowid",
+                                    -1, &stmt, NULL);
         while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
         {
-          l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+          _images_to_act_on_insert_in_list(&l, sqlite3_column_int(stmt, 0), only_visible);
         }
         if(stmt) sqlite3_finalize(stmt);
       }
       else
       {
         // collumn 2
-        l = g_list_append(l, GINT_TO_POINTER(mouseover));
+        _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
       }
     }
     else
     {
       // collumn 3
-      l = g_list_append(l, GINT_TO_POINTER(mouseover));
+      _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
     }
   }
   else
@@ -853,7 +869,7 @@ GList *dt_view_get_images_to_act_on()
       while(ll)
       {
         const int id = GPOINTER_TO_INT(ll->data);
-        l = g_list_append(l, GINT_TO_POINTER(id));
+        _images_to_act_on_insert_in_list(&l, id, only_visible);
         ll = g_slist_next(ll);
       }
     }
@@ -861,11 +877,14 @@ GList *dt_view_get_images_to_act_on()
     {
       // collumn 4
       sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
-                                  &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                                  "WHERE m.imgid=s.imgid "
+                                  "ORDER BY m.rowid",
+                                  -1, &stmt, NULL);
       while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
-        l = g_list_append(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+        _images_to_act_on_insert_in_list(&l, sqlite3_column_int(stmt, 0), only_visible);
       }
       if(stmt) sqlite3_finalize(stmt);
     }
@@ -875,7 +894,7 @@ GList *dt_view_get_images_to_act_on()
 }
 
 // get the main image to act on during global changes (libs, accels)
-int dt_view_get_image_to_act_on2()
+int dt_view_get_image_to_act_on()
 {
   /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
    *

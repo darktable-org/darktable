@@ -425,12 +425,11 @@ void enter(dt_view_t *self)
   }
 
   // if one selected start with it, otherwise start at the current lighttable offset
-  GList *selected = dt_collection_get_selected(darktable.collection, 1);
+  const int imgid = dt_view_get_image_to_act_on();
   gint selrank = -1;
 
-  if(selected)
+  if(imgid > 0)
   {
-    const gint selid = GPOINTER_TO_INT(selected->data);
     GList *imgids = dt_collection_get_all(darktable.collection, -1);
 
     GList *l = imgids;
@@ -438,15 +437,13 @@ void enter(dt_view_t *self)
     while(l)
     {
       const gint id = GPOINTER_TO_INT(l->data);
-      if(id == selid) break;
+      if(id == imgid) break;
       selrank++;
       l = g_list_next(l);
     }
 
     g_list_free(imgids);
   }
-
-  g_list_free(selected);
 
   d->buf[S_CURRENT].rank = selrank == -1 ? dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui)) : selrank;
   d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 1;
