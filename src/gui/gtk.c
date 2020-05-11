@@ -1682,6 +1682,8 @@ static void init_main_table(GtkWidget *container)
   darktable.gui->ui->log_msg = gtk_label_new("");
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_ui_log_button_press_event),
                    darktable.gui->ui->log_msg);
+  gtk_widget_set_events(eb, GDK_BUTTON_PRESS_MASK | darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(eb), "scroll-event", G_CALLBACK(scrolled), NULL);
   gtk_label_set_ellipsize(GTK_LABEL(darktable.gui->ui->log_msg), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_name(darktable.gui->ui->log_msg, "log-msg");
   gtk_container_add(GTK_CONTAINER(eb), darktable.gui->ui->log_msg);
