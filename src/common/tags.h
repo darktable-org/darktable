@@ -189,8 +189,8 @@ uint32_t dt_selected_images_count();
 /** get number of images affected with that tag */
 uint32_t dt_tag_images_count(gint tagid);
 
-/** retrieves the subtag of requested level for the requested category */
-char *dt_tag_get_subtag(const gint imgid, const char *category, const int level);
+/** retrieves the subtags of requested level for the requested category */
+char *dt_tag_get_subtags(const gint imgid, const char *category, const int level);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

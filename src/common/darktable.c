@@ -981,6 +981,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // set up memory.darktable_iop_names table
   dt_iop_set_darktable_iop_table();
 
+  // set up the list of exiv2 metadata
+  dt_exif_set_exiv2_taglist();
+
   if(init_gui)
   {
 #ifdef HAVE_GPHOTO2

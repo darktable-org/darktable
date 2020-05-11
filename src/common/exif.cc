@@ -76,6 +76,9 @@ extern "C" {
 
 #define DT_XMP_EXIF_VERSION 4
 
+// persistent list of exiv2 tags. set up in dt_init()
+static GList *exiv2_taglist = NULL;
+
 static const char *_get_exiv2_type(const int type)
 {
   switch(type)
@@ -154,11 +157,12 @@ static void _get_xmp_tags(const char *prefix, GList **taglist)
   }
 }
 
-GList *dt_exif_get_exiv2_taglist()
+void dt_exif_set_exiv2_taglist()
 {
+  if(exiv2_taglist) return;
+
   Exiv2::XmpParser::initialize();
   ::atexit(Exiv2::XmpParser::terminate);
-  GList *taglist = NULL;
 
   try
   {
@@ -178,7 +182,7 @@ GList *dt_exif_get_exiv2_taglist()
           while(tagInfo->tag_ != 0xFFFF)
           {
             char *tag = dt_util_dstrcat(NULL, "Exif.%s.%s,%s", groupList->groupName_, tagInfo->name_, _get_exiv2_type(tagInfo->typeId_));
-            taglist = g_list_prepend(taglist, tag);
+            exiv2_taglist = g_list_prepend(exiv2_taglist, tag);
             tagInfo++;
           }
         }
@@ -190,7 +194,7 @@ GList *dt_exif_get_exiv2_taglist()
     while(iptcEnvelopeList->number_ != 0xFFFF)
     {
       char *tag = dt_util_dstrcat(NULL, "Iptc.Envelope.%s,%s", iptcEnvelopeList->name_, _get_exiv2_type(iptcEnvelopeList->type_));
-      taglist = g_list_prepend(taglist, tag);
+      exiv2_taglist = g_list_prepend(exiv2_taglist, tag);
       iptcEnvelopeList++;
     }
 
@@ -198,49 +202,73 @@ GList *dt_exif_get_exiv2_taglist()
     while(iptcApplication2List->number_ != 0xFFFF)
     {
       char *tag = dt_util_dstrcat(NULL, "Iptc.Application2.%s,%s", iptcApplication2List->name_, _get_exiv2_type(iptcApplication2List->type_));
-      taglist = g_list_prepend(taglist, tag);
+      exiv2_taglist = g_list_prepend(exiv2_taglist, tag);
       iptcApplication2List++;
     }
 
-    _get_xmp_tags("dc", &taglist);
-    _get_xmp_tags("xmp", &taglist);
-    _get_xmp_tags("xmpRights", &taglist);
-    _get_xmp_tags("xmpMM", &taglist);
-    _get_xmp_tags("xmpBJ", &taglist);
-    _get_xmp_tags("xmpTPg", &taglist);
-    _get_xmp_tags("xmpDM", &taglist);
-    _get_xmp_tags("pdf", &taglist);
-    _get_xmp_tags("photoshop", &taglist);
-    _get_xmp_tags("crs", &taglist);
-    _get_xmp_tags("tiff", &taglist);
-    _get_xmp_tags("exif", &taglist);
-    _get_xmp_tags("exifEX", &taglist);
-    _get_xmp_tags("aux", &taglist);
-    _get_xmp_tags("iptc", &taglist);
-    _get_xmp_tags("iptcExt", &taglist);
-    _get_xmp_tags("plus", &taglist);
-    _get_xmp_tags("mwg-rs", &taglist);
-    _get_xmp_tags("mwg-kw", &taglist);
-    _get_xmp_tags("dwc", &taglist);
-    _get_xmp_tags("dcterms", &taglist);
-    _get_xmp_tags("digiKam", &taglist);
-    _get_xmp_tags("kipi", &taglist);
-    _get_xmp_tags("GPano", &taglist);
-    _get_xmp_tags("lr", &taglist);
-    _get_xmp_tags("MP", &taglist);
-    _get_xmp_tags("MPRI", &taglist);
-    _get_xmp_tags("MPReg", &taglist);
-    _get_xmp_tags("acdsee", &taglist);
-    _get_xmp_tags("mediapro", &taglist);
-    _get_xmp_tags("expressionmedia", &taglist);
-    _get_xmp_tags("MicrosoftPhoto", &taglist);
+    _get_xmp_tags("dc", &exiv2_taglist);
+    _get_xmp_tags("xmp", &exiv2_taglist);
+    _get_xmp_tags("xmpRights", &exiv2_taglist);
+    _get_xmp_tags("xmpMM", &exiv2_taglist);
+    _get_xmp_tags("xmpBJ", &exiv2_taglist);
+    _get_xmp_tags("xmpTPg", &exiv2_taglist);
+    _get_xmp_tags("xmpDM", &exiv2_taglist);
+    _get_xmp_tags("pdf", &exiv2_taglist);
+    _get_xmp_tags("photoshop", &exiv2_taglist);
+    _get_xmp_tags("crs", &exiv2_taglist);
+    _get_xmp_tags("tiff", &exiv2_taglist);
+    _get_xmp_tags("exif", &exiv2_taglist);
+    _get_xmp_tags("exifEX", &exiv2_taglist);
+    _get_xmp_tags("aux", &exiv2_taglist);
+    _get_xmp_tags("iptc", &exiv2_taglist);
+    _get_xmp_tags("iptcExt", &exiv2_taglist);
+    _get_xmp_tags("plus", &exiv2_taglist);
+    _get_xmp_tags("mwg-rs", &exiv2_taglist);
+    _get_xmp_tags("mwg-kw", &exiv2_taglist);
+    _get_xmp_tags("dwc", &exiv2_taglist);
+    _get_xmp_tags("dcterms", &exiv2_taglist);
+    _get_xmp_tags("digiKam", &exiv2_taglist);
+    _get_xmp_tags("kipi", &exiv2_taglist);
+    _get_xmp_tags("GPano", &exiv2_taglist);
+    _get_xmp_tags("lr", &exiv2_taglist);
+    _get_xmp_tags("MP", &exiv2_taglist);
+    _get_xmp_tags("MPRI", &exiv2_taglist);
+    _get_xmp_tags("MPReg", &exiv2_taglist);
+    _get_xmp_tags("acdsee", &exiv2_taglist);
+    _get_xmp_tags("mediapro", &exiv2_taglist);
+    _get_xmp_tags("expressionmedia", &exiv2_taglist);
+    _get_xmp_tags("MicrosoftPhoto", &exiv2_taglist);
   }
   catch (Exiv2::AnyError& e)
   {
     std::string s(e.what());
     std::cerr << "[exiv2 taglist] " << s << std::endl;
   }
-  return taglist;
+}
+
+const GList * const dt_exif_get_exiv2_taglist()
+{
+  if(!exiv2_taglist)
+    dt_exif_set_exiv2_taglist();
+  return exiv2_taglist;
+}
+
+static const char *_exif_get_exiv2_tag_type(const char *tagname)
+{
+  if(!tagname) return NULL;
+  GList *tag = exiv2_taglist;
+  while(tag)
+  {
+    char *t = (char *)tag->data;
+    if(g_str_has_prefix(t, tagname) && t[strlen(tagname)] == ',')
+    if(t)
+    {
+      t += strlen(tagname) + 1;
+      return t;
+    }
+    tag = g_list_next(tag);
+  }
+  return NULL;
 }
 
 // exiv2's readMetadata is not thread safe in 0.26. so we lock it. since readMetadata might throw an exception we
@@ -3851,6 +3879,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
         {
           if(!(m->flags & DT_META_EXIF) && (formula[0] == '=') && g_str_has_prefix(tagname, "Exif."))
           {
+            // remove this specific exif
             Exiv2::ExifData::const_iterator pos;
             if(dt_exif_read_exif_tag(exifOldData, &pos, tagname))
             {
@@ -3863,7 +3892,23 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
             if(result && result[0])
             {
               if(g_str_has_prefix(tagname, "Xmp."))
+              {
+                const char *type = _exif_get_exiv2_tag_type(tagname);
+                // if xmpBag or xmpSeq, split the list when necessary
+                // else provide the string as is (can be a list of strings)
+                if(!g_strcmp0(type, "XmpBag") || !g_strcmp0(type, "XmpSeq"))
+                {
+                  char *tuple = g_strrstr(result, ",");
+                  while(tuple)
+                  {
+                    tuple[0] = '\0';
+                    tuple++;
+                    xmpData[tagname] = tuple;
+                    tuple = g_strrstr(result, ",");
+                  }
+                }
                 xmpData[tagname] = result;
+              }
               else if(g_str_has_prefix(tagname, "Iptc."))
                 iptcData[tagname] = result;
               else if(g_str_has_prefix(tagname, "Exif."))

@@ -477,7 +477,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
           end[0] = '|';
           end[1] = '\0';
           (*variable) += strlen(category) + 1;
-          char *tag = dt_tag_get_subtag(params->imgid, category, (int)level);
+          char *tag = dt_tag_get_subtags(params->imgid, category, (int)level);
           if (tag)
           {
             result = g_strdup(tag);
