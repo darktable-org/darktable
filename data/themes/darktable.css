@@ -1965,7 +1965,7 @@ radiobutton radio
 }
 
 /* Messages shown on bottom middle of the UI. For example "loading image..." or "working on..." ones */
-#log-msg
+#log-msg, #toast-msg
 {
   color: @log_fg_color;
   font-size: 1em;
@@ -1973,4 +1973,9 @@ radiobutton radio
   background-color: @log_bg_color;
   padding: 8px 20px 4px 20px;
   border-radius: 14px;
+}
+
+#toast-msg
+{
+   background-color: rgba(25,25,25,0.6);
 }

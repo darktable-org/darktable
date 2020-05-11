@@ -185,7 +185,11 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget, GdkEventBut
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
   d->imgid = 0;
-  if(d->busy) dt_control_log_busy_leave();
+  if(d->busy) 
+  {
+    dt_control_log_busy_leave();
+    dt_control_toast_busy_leave();
+  }
   d->busy = FALSE;
   dt_control_queue_redraw_center();
 }
@@ -261,12 +265,20 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
   if(res)
   {
-    if(!d->busy) dt_control_log_busy_enter();
+    if(!d->busy)
+    {
+      dt_control_log_busy_enter();
+      dt_control_toast_busy_enter();
+    }
     d->busy = TRUE;
   }
   else
   {
-    if(d->busy) dt_control_log_busy_leave();
+    if(d->busy) 
+    {
+      dt_control_log_busy_leave();
+      dt_control_toast_busy_leave();
+    }
     d->busy = FALSE;
   }
 }

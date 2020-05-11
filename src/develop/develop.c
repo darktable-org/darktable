@@ -304,6 +304,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   }
 
   dt_control_log_busy_enter();
+  dt_control_toast_busy_enter();
   dev->preview_pipe->input_timestamp = dev->timestamp;
   dev->preview_status = DT_DEV_PIXELPIPE_RUNNING;
 
@@ -314,6 +315,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   if(!buf.buf)
   {
     dt_control_log_busy_leave();
+    dt_control_toast_busy_leave();
     dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
     return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again
@@ -342,6 +344,7 @@ restart:
   if(dev->gui_leaving)
   {
     dt_control_log_busy_leave();
+    dt_control_toast_busy_leave();
     dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
     dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -359,6 +362,7 @@ restart:
     if(dev->preview_loading || dev->preview_input_changed)
     {
       dt_control_log_busy_leave();
+      dt_control_toast_busy_leave();
       dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -375,6 +379,7 @@ restart:
 
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
+  dt_control_toast_busy_leave();
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
@@ -403,6 +408,7 @@ void dt_dev_process_preview2_job(dt_develop_t *dev)
   }
 
   dt_control_log_busy_enter();
+  dt_control_toast_busy_enter();
   dev->preview2_pipe->input_timestamp = dev->timestamp;
   dev->preview2_status = DT_DEV_PIXELPIPE_RUNNING;
 
@@ -413,6 +419,7 @@ void dt_dev_process_preview2_job(dt_develop_t *dev)
   if(!buf.buf)
   {
     dt_control_log_busy_leave();
+    dt_control_toast_busy_leave();
     dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_pthread_mutex_unlock(&dev->preview2_pipe_mutex);
     return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again
@@ -441,6 +448,7 @@ restart:
   if(dev->gui_leaving)
   {
     dt_control_log_busy_leave();
+    dt_control_toast_busy_leave();
     dev->preview2_status = DT_DEV_PIXELPIPE_INVALID;
     dt_pthread_mutex_unlock(&dev->preview2_pipe_mutex);
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -487,6 +495,7 @@ restart:
     if(dev->preview2_loading || dev->preview2_input_changed)
     {
       dt_control_log_busy_leave();
+      dt_control_toast_busy_leave();
       dev->preview2_status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&dev->preview2_pipe_mutex);
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -506,6 +515,7 @@ restart:
   dt_dev_average_delay_update(&start, &dev->preview2_average_delay);
 
   dt_control_log_busy_leave();
+  dt_control_toast_busy_leave();
   dt_pthread_mutex_unlock(&dev->preview2_pipe_mutex);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
@@ -523,6 +533,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   }
 
   dt_control_log_busy_enter();
+  dt_control_toast_busy_enter();
   // let gui know to draw preview instead of us, if it's there:
   dev->image_status = DT_DEV_PIXELPIPE_RUNNING;
 
@@ -537,6 +548,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   if(!buf.buf)
   {
     dt_control_log_busy_leave();
+    dt_control_toast_busy_leave();
     dev->image_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_pthread_mutex_unlock(&dev->pipe_mutex);
     return;
@@ -576,6 +588,7 @@ restart:
   {
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     dt_control_log_busy_leave();
+    dt_control_toast_busy_leave();
     dev->image_status = DT_DEV_PIXELPIPE_INVALID;
     dt_pthread_mutex_unlock(&dev->pipe_mutex);
     return;
@@ -621,6 +634,7 @@ restart:
     {
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       dt_control_log_busy_leave();
+      dt_control_toast_busy_leave();
       dev->image_status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&dev->pipe_mutex);
       return;
@@ -646,6 +660,7 @@ restart:
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
+  dt_control_toast_busy_leave();
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
 
   if(dev->gui_attached && !dev->gui_leaving)
