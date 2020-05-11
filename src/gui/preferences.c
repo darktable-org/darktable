@@ -210,7 +210,7 @@ static void use_sys_font_callback(GtkWidget *widget, gpointer user_data)
     gtk_widget_set_state_flags(GTK_WIDGET(user_data), GTK_STATE_FLAG_INSENSITIVE, TRUE);
   else
     gtk_widget_set_state_flags(GTK_WIDGET(user_data), GTK_STATE_FLAG_NORMAL, TRUE);
-    
+
   dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
   dt_bauhaus_load_theme();
 }
@@ -438,7 +438,7 @@ static void init_tab_general(GtkWidget *stack)
   else
   {
     //load default text
-    gtk_text_buffer_set_text(buffer, _("/* Enter CSS theme tweaks here */"), -1);
+    gtk_text_buffer_set_text(buffer, _("/* Enter CSS theme tweaks here */\n\n"), -1);
   }
 
 }
