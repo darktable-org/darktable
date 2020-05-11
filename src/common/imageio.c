@@ -34,6 +34,7 @@
 #endif
 #include "common/image_compression.h"
 #include "common/imageio_gm.h"
+#include "common/imageio_im.h"
 #include "common/imageio_jpeg.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_png.h"
@@ -55,6 +56,12 @@
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #include <magick/blob.h>
+#elif defined HAVE_IMAGEMAGICK
+#ifdef HAVE_IMAGEMAGICK7
+#include <MagickWand/MagickWand.h>
+#else
+#include <wand/MagickWand.h>
+#endif
 #endif
 
 #include <assert.h>
@@ -155,10 +162,54 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     if(image_info) DestroyImageInfo(image_info);
     DestroyExceptionInfo(&exception);
     if(res) goto error;
+#elif defined HAVE_IMAGEMAGICK
+    MagickWand *image = NULL;
+	MagickBooleanType mret;
+
+    image = NewMagickWand();
+	mret = MagickReadImageBlob(image, buf, bufsize);
+    if (mret != MagickTrue)
+    {
+      fprintf(stderr, "[dt_imageio_large_thumbnail IM] thumbnail not found?\n");
+      goto error_im;
+    }
+
+    *width = MagickGetImageWidth(image);
+    *height = MagickGetImageHeight(image);
+    switch (MagickGetImageColorspace(image)) {
+    case sRGBColorspace:
+      *color_space = DT_COLORSPACE_SRGB;
+      break;
+    default:
+      fprintf(stderr,
+          "[dt_imageio_large_thumbnail IM] could not map colorspace, using sRGB");
+      *color_space = DT_COLORSPACE_SRGB;
+      break;
+    }
+
+    *buffer = malloc((*width) * (*height) * 4 * sizeof(uint8_t));
+    if (*buffer == NULL) goto error_im;
+
+    mret = MagickExportImagePixels(image, 0, 0, *width, *height, "RGBP", CharPixel, *buffer);
+    if (mret != MagickTrue) {
+      free(*buffer);
+      *buffer = NULL;
+      fprintf(stderr,
+          "[dt_imageio_large_thumbnail IM] error while reading thumbnail\n");
+      goto error_im;
+    }
+
+    res = 0;
+
+error_im:
+    DestroyMagickWand(image);
+    if (res != 0) goto error;
 #else
-    fprintf(stderr, "[dt_imageio_large_thumbnail] error: The thumbnail image is not in JPEG format, but DT "
-                    "was built without GraphicsMagick. Please rebuild DT with GraphicsMagick support "
-                    "enabled.\n");
+    fprintf(stderr,
+      "[dt_imageio_large_thumbnail] error: The thumbnail image is not in "
+      "JPEG format, and DT was built without neither GraphicsMagick or "
+      "ImageMagick. Please rebuild DT with GraphicsMagick or ImageMagick "
+      "support enabled.\n");
 #endif
   }
 
@@ -941,6 +992,17 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_GM;
+    return ret;
+  }
+#elif HAVE_IMAGEMAGICK
+  dt_imageio_retval_t ret = dt_imageio_open_im(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->buf_dsc.filters = 0u;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_IM;
     return ret;
   }
 #endif
