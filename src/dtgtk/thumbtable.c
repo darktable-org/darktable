@@ -1237,13 +1237,15 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     }
 
     // get the new rowid of the new offset image
+    const int nrow = _thumb_get_rowid(newid);
+    const gboolean offset_changed = (nrow != table->offset);
     table->offset_imgid = newid;
-    table->offset = _thumb_get_rowid(newid);
-    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+    table->offset = nrow;
+    if(offset_changed) dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
 
     dt_thumbtable_full_redraw(table, TRUE);
 
-    dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
+    if(offset_changed) dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
 
     dt_control_queue_redraw_center();
   }
