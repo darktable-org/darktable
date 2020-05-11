@@ -65,6 +65,22 @@ making a backup is strongly advised.
 
 - A new histogram display called RGB Parade has been added.
 
+- The metadata feature has been turned generic internally and has got new
+  features. The user can now select the information he wants to see in the
+  metadata editor. This selection is automatically mirrored in collection
+  and image information modules.
+
+  Along with a new "notes" field, all the fields are multiline
+  <kbd>Ctrl+Enter</kbd>, sizable <kbd>Ctrl+Scroll</kbd> and can be set
+  as private (not exported). Metadata collection filters have an entry
+  "not defined". At import time it is possible to avoid to import
+  some metadata.
+
+- Image change detection has been made more reliable. This affects lighttable
+  thumbnails change symbol and history collection filter.
+  In darkroom navigation, this avoids to recalculate an image and save the xmp
+  file when there is no change.
+
 ## New Features And Changes
 
 - Add darkroom loading screen.
@@ -72,7 +88,7 @@ making a backup is strongly advised.
 - Make modules labels a bit smaller for better UI consistency.
 
 - Add small rectangle around the angle display when using the
-  straightening tool for better lisibility.
+  straightening tool for better readability.
 
 - Ensure the different views layout are recorded. Many views (and mode
   like lighttable's culling or darkroom's color assessment), can have
@@ -100,7 +116,7 @@ making a backup is strongly advised.
 - Define many new accels for most of the sliders to allow more control
   using the keyboard.
 
-- Add support for curved gradients. The grandient mask can now be
+- Add support for curved gradients. The gradient mask can now be
   curved to revert fish-eye kind distortion and so become a straight
   line on the horizon for example.
 
@@ -112,6 +128,8 @@ making a backup is strongly advised.
 - Better visibility for the zoomed image part in the navigation widget.
 
 - Revert to smooth mode (was default in 2.6) in color zone module.
+
+- Collect module has two new filters: module and module order.
 
 - It is now possible to resize the collect module windows with
   <kbd>Ctrl+Scroll</kbd>.
@@ -177,10 +195,19 @@ making a backup is strongly advised.
   having created them. This is achieved by dragging one of the 4
   little square handles at the corner.
 
-- New variable $(LENS) has been defined.
+- Tagging improvements. Entry tag(s) creation works now without image selected.
+  It is allowed to create a tag on virtual node, to insert a pipe <kbd>|</kbd>
+  character in create tag (menu). The tree display shows the newly created tags.
+
+- New variables $(LENS), $(EXIF_EXPOSURE_BIAS), $(VERSION_NAME) and
+  $(VERSION_IF_MULTI) have been defined. $(CATEGORYn(category)) works now when
+  multiple values on the same image (for example people) and accepts
+  9 levels instead of 3 (for n).
 
 - Four new timestamps are now supported to store the import,
   last export, last change and last print times.
+
+- Multiple images drag & drop works now on map view.
 
 ## Bug fixes
 
@@ -220,6 +247,8 @@ making a backup is strongly advised.
 
 - Fix importing of duplicates on Windows.
 
+- Fix exporting private tags issue with different settings along the path.
+
 - Better visibility of tone curve grid on Grey theme.
 
 - Better accuracy for the keystone OSD lines.
@@ -237,7 +266,9 @@ making a backup is strongly advised.
 
 - Fix watermark blurring when using rotation.
 
-- Fix using apostrophe in meta-data.
+- Fix watermark crash when no text selected.
+
+- Fix using quote and double quote in meta-data.
 
 - Fix time-line display reporting 61 minutes per hour.
 
