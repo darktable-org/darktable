@@ -33,6 +33,7 @@
 //    Must match with dt_metadata_t in metadata.h.
 //    Exif.cc: add the new metadata into dt_xmp_keys[]
 //    libs/metadata.c increment version and change legacy_param() accordingly
+// CAUTION : key, subkey (last term of key) & name must be unique
 
 static const struct
 {
@@ -115,6 +116,30 @@ const char *dt_metadata_get_key(const uint32_t keyid)
     return dt_metadata_def[keyid].key;
   else
     return NULL;
+}
+
+const char *dt_metadata_get_subkey(const uint32_t keyid)
+{
+  if(keyid < DT_METADATA_NUMBER)
+  {
+    char *t = g_strrstr(dt_metadata_def[keyid].key, ".");
+    if(t) return t + 1;
+  }
+  return NULL;
+}
+
+const char *dt_metadata_get_key_by_subkey(const char *subkey)
+{
+  if(subkey)
+  {
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      char *t = g_strrstr(dt_metadata_def[i].key, ".");
+      if(t && !g_strcmp0(t + 1, subkey))
+        return dt_metadata_def[i].key;
+    }
+  }
+  return NULL;
 }
 
 const int dt_metadata_get_type(const uint32_t keyid)
