@@ -31,11 +31,7 @@
 #include <strings.h>
 #include <assert.h>
 
-#ifdef HAVE_IMAGEMAGICK7
 #include <MagickWand/MagickWand.h>
-#else
-#include <wand/MagickWand.h>
-#endif
 
 
 /* we only support images with certain filename extensions via ImageMagick,
