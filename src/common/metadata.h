@@ -90,7 +90,7 @@ void dt_metadata_set_import(int id, const char *key, const char *value); // exif
 
 /** Set metadata (named keys) for a specific image, or all selected for id == -1. */
 /** list is a set of key, value */
-void dt_metadata_set_list(int id, GList *key_value, const gboolean undo_on, const gboolean group_on); // libs/metadata.c
+void dt_metadata_set_list(GList *imgs, GList *key_value, const gboolean undo_on); // libs/metadata.c
 
 /** Set metadata (id keys) for a list of images.
     list is a set of keyid, value
@@ -106,7 +106,7 @@ GList *dt_metadata_get(int id, const char *key, uint32_t *count); // exif.cc, va
 GList *dt_metadata_get_list_id(int id); // libs/image.c
 
 /** Remove metadata from specific images, or all selected for id == -1. */
-void dt_metadata_clear(int id, const gboolean undo_on, const gboolean group_on); // libs/metadata.c
+void dt_metadata_clear(GList *imgs, const gboolean undo_on); // libs/metadata.c
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
