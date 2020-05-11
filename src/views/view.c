@@ -466,6 +466,8 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   // update log visibility
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
 
+  // update toast visibility
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
   return 0;
 }
 
