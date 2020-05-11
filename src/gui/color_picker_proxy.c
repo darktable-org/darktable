@@ -348,9 +348,10 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
 
   if(w == NULL || GTK_IS_BOX(w))
   {
-    GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
+    GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     dt_iop_init_single_picker(color_picker, module, button, kind, module->color_picker_apply);
-    g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(dt_iop_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
+    g_signal_connect_data(G_OBJECT(button), "button-press-event", 
+                          G_CALLBACK(dt_iop_color_picker_callback_button_press), color_picker, (GClosureNotify)g_free, 0);
     if (w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
 
     return button;
@@ -360,7 +361,8 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
     dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     dt_bauhaus_widget_set_quad_toggle(w, TRUE);
     dt_iop_init_single_picker(color_picker, module, w, kind, module->color_picker_apply);
-    g_signal_connect_data(G_OBJECT(w), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
+    g_signal_connect_data(G_OBJECT(w), "quad-pressed", 
+                          G_CALLBACK(dt_iop_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
 
     return w;
   }
