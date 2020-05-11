@@ -3132,7 +3132,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 
       if(darktable.lib->proxy.colorpicker.size)
       {
-        bool onCornerPrevBox = TRUE;
+        gboolean on_corner_prev_box = TRUE;
         float opposite_x, opposite_y;
 
         if(fabsf(zoom_x - dev->gui_module->color_picker_box[0]) < .005f)
@@ -3140,16 +3140,16 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         else if(fabsf(zoom_x - dev->gui_module->color_picker_box[2]) < .005f)
           opposite_x = dev->gui_module->color_picker_box[0];
         else
-          onCornerPrevBox = FALSE;
+          on_corner_prev_box = FALSE;
 
         if(fabsf(zoom_y - dev->gui_module->color_picker_box[1]) < .005f)
           opposite_y = dev->gui_module->color_picker_box[3];
         else if(fabsf(zoom_y - dev->gui_module->color_picker_box[3]) < .005f)
           opposite_y = dev->gui_module->color_picker_box[1];
         else
-          onCornerPrevBox = FALSE;
+          on_corner_prev_box = FALSE;
 
-        if(onCornerPrevBox)
+        if(on_corner_prev_box)
         {
           dev->gui_module->color_picker_point[0] = opposite_x;
           dev->gui_module->color_picker_point[1] = opposite_y;
