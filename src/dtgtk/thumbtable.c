@@ -2045,6 +2045,7 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int vi
 static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
+  if(!table->list || g_list_length(table->list) == 0) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
   const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
@@ -2069,6 +2070,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, con
 static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
+  if(!table->list || g_list_length(table->list) == 0) return FALSE;
 
   int minrowid = 0;
   int maxrowid = 0;
