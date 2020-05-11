@@ -2268,6 +2268,11 @@ dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_vi
     return DT_LIGHTTABLE_ZOOM_FIXED;
 }
 
+void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module) vm->proxy.lighttable.culling_init_mode(vm->proxy.lighttable.view);
+}
+
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
