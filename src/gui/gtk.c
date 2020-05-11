@@ -2621,6 +2621,23 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
+  if(!dt_conf_key_exists("use_system_font"))
+    dt_conf_set_bool("use_system_font", TRUE);
+
+  //set font size
+  if(dt_conf_get_bool("use_system_font"))
+    gtk_settings_reset_property(gtk_settings_get_default(), "gtk-font-name");
+  else 
+  {
+    //font name can only use period as decimal separator
+    //but printf format strings use comma for some locales, so replace comma with period
+    gchar *font_size = dt_util_dstrcat(NULL, _("%.1f"), dt_conf_get_float("font_size"));
+    gchar *font_name = dt_util_dstrcat(NULL, _("Sans %s"), dt_util_str_replace(font_size, ",", ".")); 
+    g_object_set(gtk_settings_get_default(), "gtk-font-name", font_name, NULL);
+    g_free(font_size);
+    g_free(font_name);
+  }
+
   char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 }, usercsspath[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));

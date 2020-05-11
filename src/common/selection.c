@@ -33,6 +33,11 @@ typedef struct dt_selection_t
   uint32_t last_single_id;
 } dt_selection_t;
 
+const dt_collection_t *dt_selection_get_collection(struct dt_selection_t *selection)
+{
+  return selection->collection;
+}
+
 /* updates the internal collection of an selection */
 static void _selection_update_collection(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
                                          int next, gpointer user_data);

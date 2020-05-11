@@ -158,7 +158,7 @@ static void _update(dt_lib_module_t *self, gboolean early_bark_out)
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
   char *images = NULL;
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
   while(imgs)
   {
     images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
@@ -212,8 +212,10 @@ static gboolean _draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 
 static void _clear_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_metadata_clear(-1, TRUE, TRUE);
-  dt_image_synch_xmp(-1);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  dt_metadata_clear(imgs, TRUE);
+  dt_image_synch_xmps(imgs);
+  g_list_free(imgs);
   _update(self, FALSE);
 }
 
@@ -227,7 +229,6 @@ static void _write_metadata(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  const int32_t mouse_over_id = d->imgsel;
   d->editing = FALSE;
 
   gchar *metadata[DT_METADATA_NUMBER];
@@ -240,7 +241,8 @@ static void _write_metadata(dt_lib_module_t *self)
       _append_kv(&key_value, dt_metadata_get_key(keyid), metadata[i]);
   }
 
-  dt_metadata_set_list(mouse_over_id, key_value, TRUE, TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  dt_metadata_set_list(imgs, key_value, TRUE);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -251,7 +253,8 @@ static void _write_metadata(dt_lib_module_t *self)
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
-  dt_image_synch_xmp(mouse_over_id);
+  dt_image_synch_xmps(imgs);
+  g_list_free(imgs);
   _update(self, FALSE);
 }
 
@@ -366,13 +369,7 @@ static void _update_layout(dt_lib_module_t *self)
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   /* lets trigger an expose for a redraw of widget */
-  if(d->editing)
-  {
-    _write_metadata(self);
-    gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
-  }
   _update(self, FALSE);
 }
 
@@ -919,11 +916,13 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     if(metadata[i][0] != '\0') _append_kv(&key_value, dt_metadata_get_key(i), metadata[i]);
   }
 
-  dt_metadata_set_list(-1, key_value, TRUE, TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  dt_metadata_set_list(imgs, key_value, TRUE);
 
   g_list_free(key_value);
 
-  dt_image_synch_xmp(-1);
+  dt_image_synch_xmps(imgs);
+  g_list_free(imgs);
   _update(self, FALSE);
   return 0;
 }

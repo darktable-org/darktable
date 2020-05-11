@@ -196,6 +196,25 @@ static void usercss_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
+static void font_size_changed_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_float("font_size", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+  dt_bauhaus_load_theme();
+}
+
+static void use_sys_font_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_bool("use_system_font", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+  if(dt_conf_get_bool("use_system_font"))
+    gtk_widget_set_state_flags(GTK_WIDGET(user_data), GTK_STATE_FLAG_INSENSITIVE, TRUE);
+  else
+    gtk_widget_set_state_flags(GTK_WIDGET(user_data), GTK_STATE_FLAG_NORMAL, TRUE);
+
+  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+  dt_bauhaus_load_theme();
+}
+
 static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
 {
   //get file locations
@@ -323,6 +342,44 @@ static void init_tab_general(GtkWidget *stack)
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
+  //Font size check and spin buttons
+  GtkWidget *usesysfont = gtk_check_button_new();
+  GtkWidget *fontsize = gtk_spin_button_new_with_range(5.0f, 30.0f, 0.2f);
+
+  //checkbox to use system font size
+  if(dt_conf_get_bool("use_system_font"))
+    gtk_widget_set_state_flags(fontsize, GTK_STATE_FLAG_INSENSITIVE, TRUE);
+  else
+    gtk_widget_set_state_flags(fontsize, GTK_STATE_FLAG_NORMAL, TRUE);
+
+  label = gtk_label_new(_("use system font size"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), usesysfont, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(usesysfont, _("use system font size"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(usesysfont), dt_conf_get_bool("use_system_font"));
+  g_signal_connect(G_OBJECT(usesysfont), "toggled", G_CALLBACK(use_sys_font_callback), (gpointer)fontsize);
+
+
+  //font size selector
+  if(dt_conf_get_float("font_size") < 5.0f || dt_conf_get_float("font_size") > 20.0f)
+    dt_conf_set_float("font_size", 12.0f);
+
+  label = gtk_label_new(_("font size in points"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), fontsize, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(fontsize, _("font size in points"));
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(fontsize), dt_conf_get_float("font_size"));
+  g_signal_connect(G_OBJECT(fontsize), "value_changed", G_CALLBACK(font_size_changed_callback), 0);
+
+
   //checkbox to allow user to modify theme with user.css
   label = gtk_label_new(_("modify selected theme with CSS tweaks below"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -381,7 +438,7 @@ static void init_tab_general(GtkWidget *stack)
   else
   {
     //load default text
-    gtk_text_buffer_set_text(buffer, _("/* Enter CSS theme tweaks here */"), -1);
+    gtk_text_buffer_set_text(buffer, _("/* Enter CSS theme tweaks here */\n\n"), -1);
   }
 
 }
