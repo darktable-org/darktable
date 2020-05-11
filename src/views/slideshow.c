@@ -430,19 +430,15 @@ void enter(dt_view_t *self)
 
   if(imgid > 0)
   {
-    GList *imgids = dt_collection_get_all(darktable.collection, -1);
-
-    GList *l = imgids;
-    selrank = 0;
-    while(l)
+    sqlite3_stmt *stmt;
+    gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const gint id = GPOINTER_TO_INT(l->data);
-      if(id == imgid) break;
-      selrank++;
-      l = g_list_next(l);
+      selrank = sqlite3_column_int(stmt, 0) - 1;
     }
-
-    g_list_free(imgids);
+    g_free(query);
+    sqlite3_finalize(stmt);
   }
 
   d->buf[S_CURRENT].rank = selrank == -1 ? dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui)) : selrank;
