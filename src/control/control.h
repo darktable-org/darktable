@@ -57,8 +57,11 @@ int dt_control_key_released(guint key, guint state);
 int dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
+void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_log_busy_enter();
+void dt_control_toast_busy_enter();
 void dt_control_log_busy_leave();
+void dt_control_toast_busy_leave();
 // disable the possibility to change the cursor shape with dt_control_change_cursor
 void dt_control_forbid_change_cursor();
 // enable the possibility to change the cursor shape with dt_control_change_cursor
@@ -96,6 +99,11 @@ void dt_control_navigation_redraw();
  */
 void dt_control_log_redraw();
 
+/** \brief request redraw of the toast widget.
+    This redraws the message label.
+ */
+void dt_control_toast_redraw();
+
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(const char *mode);
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
@@ -127,6 +135,9 @@ typedef struct dt_control_accels_t
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
 #define DT_CTL_LOG_TIMEOUT 5000
+#define DT_CTL_TOAST_SIZE 10
+#define DT_CTL_TOAST_MSG_SIZE 200
+#define DT_CTL_TOAST_TIMEOUT 1500
 /**
  * this manages everything time-consuming.
  * distributes the jobs on all processors,
@@ -174,6 +185,13 @@ typedef struct dt_control_t
   guint log_message_timeout_id;
   int log_busy;
   dt_pthread_mutex_t log_mutex;
+
+  // toast log
+  int toast_pos, toast_ack;
+  char toast_message[DT_CTL_TOAST_SIZE][DT_CTL_TOAST_MSG_SIZE];
+  guint toast_message_timeout_id;
+  int toast_busy;
+  dt_pthread_mutex_t toast_mutex;
 
   // gui settings
   dt_pthread_mutex_t global_mutex, image_mutex;

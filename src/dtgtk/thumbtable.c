@@ -1795,6 +1795,8 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
       {
         gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                                     gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
+        gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                                    gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
       }
     }
     else

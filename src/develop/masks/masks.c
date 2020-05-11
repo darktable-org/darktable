@@ -1727,6 +1727,8 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
 
       opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
+      const int opacitypercent = opacity * 100;
+      dt_toast_log(_("opacity: %d%%"), opacitypercent);
     }
 
     _set_hinter_message(gui, form);
@@ -2409,6 +2411,8 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
     {
       const float opacity = CLAMP(fpt->opacity + amount, 0.05f, 1.0f);
       fpt->opacity = opacity;
+      const int opacitypercent = opacity * 100;
+      dt_toast_log(_("opacity: %d%%"), opacitypercent);
       dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
       dt_masks_update_image(darktable.develop);
       break;
