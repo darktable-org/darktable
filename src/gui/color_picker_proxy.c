@@ -21,6 +21,7 @@
 #include "libs/lib.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "develop/blend.h"
 
 typedef enum _internal__status
 {
@@ -342,6 +343,14 @@ void dt_iop_color_picker_cleanup(void)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_iop_color_picker_signal_callback), NULL);
 }
 
+void dt_iop_color_picker_both_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+{
+  if(!self->blend_data || !blend_color_picker_apply(self, piece))
+  {
+    if(self->color_picker_apply) self->color_picker_apply(self, piece);
+  }
+}
+
 GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w)
 {
   dt_iop_color_picker_t *color_picker = (dt_iop_color_picker_t *)g_malloc(sizeof(dt_iop_color_picker_t));
@@ -349,7 +358,7 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
   if(w == NULL || GTK_IS_BOX(w))
   {
     GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-    dt_iop_init_single_picker(color_picker, module, button, kind, module->color_picker_apply);
+    dt_iop_init_single_picker(color_picker, module, button, kind, dt_iop_color_picker_both_apply);
     g_signal_connect_data(G_OBJECT(button), "button-press-event", 
                           G_CALLBACK(dt_iop_color_picker_callback_button_press), color_picker, (GClosureNotify)g_free, 0);
     if (w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
@@ -360,7 +369,7 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
   {
     dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     dt_bauhaus_widget_set_quad_toggle(w, TRUE);
-    dt_iop_init_single_picker(color_picker, module, w, kind, module->color_picker_apply);
+    dt_iop_init_single_picker(color_picker, module, w, kind, dt_iop_color_picker_both_apply);
     g_signal_connect_data(G_OBJECT(w), "quad-pressed", 
                           G_CALLBACK(dt_iop_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
 

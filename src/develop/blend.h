@@ -403,8 +403,6 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *lower_polarity;
   GtkWidget *colorpicker;
   GtkWidget *colorpicker_set_values;
-  dt_iop_color_picker_t color_picker;
-  int picker_set_upper_lower;
   GtkWidget *showmask;
   GtkWidget *suppress;
   void (*scale_print[8])(float value, char *string, int n);
@@ -479,6 +477,8 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module);
 void dt_iop_gui_update_masks(dt_iop_module_t *module);
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module);
 void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module);
+
+gboolean blend_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece);
 
 /** routine to translate from mode id to sequence in option list */
 int dt_iop_gui_blending_mode_seq(dt_iop_gui_blend_data_t *bd, int mode);
