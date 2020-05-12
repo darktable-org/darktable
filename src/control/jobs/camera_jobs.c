@@ -295,12 +295,12 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   const gchar *file;
   struct dt_camera_shared_t *shared;
   shared = (dt_camera_shared_t *)data;
-  const gboolean current = dt_conf_get_bool("session/use_filename");
+  const gboolean use_filename = dt_conf_get_bool("session/use_filename");
 
   dt_import_session_set_filename(shared->session, filename);
   if(exif_time)
     dt_import_session_set_exif_time(shared->session, *exif_time);
-  file = dt_import_session_filename(shared->session, current);
+  file = dt_import_session_filename(shared->session, use_filename);
 
   if(file == NULL) return NULL;
 
