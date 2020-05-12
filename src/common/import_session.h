@@ -59,7 +59,8 @@ const char *dt_import_session_name(struct dt_import_session_t *self);
  */
 const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean current);
 /** \brief get import session path
-    \param[in] current If TRUE the current filename will be returned without evaluating a new filename.
+    \param[in] current If TRUE the filename passed by dt_import_session_set_filename will be returned
+    without evaluating a new filename.
 */
 const char *dt_import_session_path(struct dt_import_session_t *self, gboolean current);
 

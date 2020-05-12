@@ -230,18 +230,20 @@ const char *dt_import_session_name(struct dt_import_session_t *self)
   return self->vp->jobcode;
 }
 
-
+/* This returns a unique filename using session path **and** the filename.
+   If current is true we will use the original filename otherwise use the pattern.
+*/
 const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean current)
 {
   const char *path;
   char *fname, *previous_fname;
   char *pattern;
-
-  if(current && self->current_filename != NULL) return self->current_filename;
+  gchar *result_fname;
 
   /* expand next filename */
   g_free((void *)self->current_filename);
   self->current_filename = NULL;
+
   pattern = _import_session_filename_pattern();
   if(pattern == NULL)
   {
@@ -251,7 +253,12 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 
   /* verify that expanded path and filename yields a unique file */
   path = dt_import_session_path(self, TRUE);
-  gchar *result_fname = dt_variables_expand(self->vp, pattern, TRUE);
+
+  if(current)
+    result_fname = g_strdup(self->vp->filename);
+  else
+    result_fname = dt_variables_expand(self->vp, pattern, TRUE);
+
   previous_fname = fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
   if(g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE)
   {
