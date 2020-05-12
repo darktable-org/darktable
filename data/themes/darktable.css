@@ -121,8 +121,8 @@
 @define-color tooltip_bg_color @grey_05;
 @define-color tooltip_fg_color @grey_70;
 @define-color really_dark_bg_color @grey_05;
-@define-color log_bg_color @grey_25;
-@define-color log_fg_color @grey_65;
+@define-color log_bg_color @grey_05;
+@define-color log_fg_color @grey_85;
 
 /* Views */
 @define-color darkroom_bg_color @grey_45;
@@ -255,10 +255,11 @@ box *
 }
 
 /* Default gtk buttons */
-button
+button,
+#add-color-button
 {
   border-radius: 2px;
-  padding: 1px;
+  padding: 2px;
   border: 1px solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
@@ -273,12 +274,12 @@ entry,
 textview
 {
   border-radius: 2px;
-  border: 0.5pt solid @border_color;
+  border: 0.5px solid @border_color;
   color: @field_fg;
   background-color: @field_bg;
   min-height: 0;
   min-width: 0;
-  padding-left: 3pt;
+  padding: 2px;
 }
 
 entry
@@ -298,7 +299,7 @@ checkbutton check,
 {
   background-color: @bauhaus_bg;
   color: @bauhaus_fg;
-  border: 1pt solid @border_color;
+  border: 1px solid @border_color;
 }
 
 /* Button to open/close the dropdown section, especially header ones */
@@ -318,7 +319,7 @@ separator
 {
   color: @border_color;
   border-style: solid;
-  border-width: 1px;
+  border-left-width: 1px;
   border-color: transparent;
   background-color: transparent;
 }
@@ -483,7 +484,6 @@ overshoot.right
 #lib-plugin-ui button
 {
   margin: 2px;
-  padding: 2px;
 }
 
 /* Buttons in modules header, near the module name */
@@ -507,7 +507,6 @@ overshoot.right
 /* Entries options in lighttable */
 #left #lib-plugin-ui entry /* this will avoid having too much height on entry items in filter collections modules */
 {
-  padding: 0px;
   margin: 8px 0px;
 }
 
@@ -536,7 +535,7 @@ overshoot.right
   background-color: @bg_color;
   color: @plugin_label_color;
   border:0;
-  padding: 0 2pt 2pt 0.5em;
+  padding: 0 2px 2px 0.5em;
   font-weight: normal;
   font-family: sans-serif;
   font-size: 1.1em;
@@ -545,10 +544,10 @@ overshoot.right
 /* Labels of controls sections in modules */
 #section_label
 {
-  margin: 0 0 6pt 0;
-  padding: 0 0 3pt 0;
+  margin: 0 0 8px 0;
+  padding: 0 0 5px 0;
   color: @section_label;
-  border-bottom: 0.5pt solid  @section_label;
+  border-bottom: 0.5px solid  @section_label;
   font-weight: 500;
   font-family: sans-serif;
 }
@@ -556,7 +555,7 @@ overshoot.right
 #iop-plugin-ui #section_label,
 #lib-plugin-ui #section_label
 {
-  margin: 12pt 0 6pt 0;
+  margin: 12px 0 6px 0;
 }
 
 /* Special modules: image infos, navigation and search ones */
@@ -586,48 +585,68 @@ overshoot.right
   ------------------*/
 
 /* Set default settings */
-dialog,
-filechooserdialog
+dialog
 {
   background-color: @plugin_bg_color;
   color: @plugin_fg_color;
 }
 
-dialog *,
-filechooserdialog *
+dialog decoration  /* allow to resize dialog windows */
 {
   margin: 1px;
+}
+
+dialog .dialog-vbox
+{
+  margin: 6px;
+}
+
+dialog filechooser
+{
+  margin-left: -6px; /* remove left margin only on dialog filechooser box */
+}
+
+dialog .dialog-vbox scrolledwindow
+{
+  margin: 4px 0;
   padding: 0;
 }
 
-/* Set title headerbar */
-dialog button,
-filechooserdialog button
+/* Set title headerbar and main buttons */
+dialog button
 {
   padding: 2px;
-  margin: 2px;
+  margin: 1px 2px;
 }
 
-dialog headerbar,
-filechooserdialog headerbar
+dialog headerbar
 {
   background-color: @border_color;
   margin: 0;
   padding: 0.2em 0.6em;
 }
 
-dialog headerbar button,
-filechooserdialog headerbar button
+dialog headerbar button
 {
   padding: 1px 5px;
 }
 
 /* Set specific content */
-dialog scrolledwindow,
-filechooserdialog scrolledwindow
+dialog scrolledwindow
 {
   padding: 0 1px 0 8px;
   margin: 0;
+}
+
+frame#import_metadata
+{
+  margin: 6px 6px 0px 6px;
+  padding: 0px 4px;
+}
+
+frame#import_metadata title *
+{
+  font-weight: bold;
 }
 
 frame#import_metadata label
@@ -648,22 +667,30 @@ frame#import_metadata checkbutton
   padding: 0px;
 }
 
-.dialog-vbox treeview check
+/* Set import from camera or card dialog window */
+dialog .dialog-vbox notebook stack /* set top margin ; between tabs and text below */
 {
-  border-radius: 2px;
-  border: 1px solid @border_color;
-  background-color: shade(@bg_color, 0.7);
+  margin-top: 4px;
+} 
+ 
+dialog .dialog-vbox notebook stack box box > label  /* set code project name on first tab */
+{
+  font-size: 0.90em;
+  font-weight: bold;
+  padding-top: 5px;
 }
 
-/* Filechooser sidebar options */
-filechooser sidebar-icon
+dialog .dialog-vbox notebook stack box box checkbutton,  /* fix margins on last line on second tab */
+dialog .dialog-vbox notebook stack box box entry
 {
-  padding: 0px 5px 0px 10px;
+  margin: 2px 0;
 }
 
-filechooser sidebar-row
+dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on last line on second tab */
 {
-  padding-top: 3px;
+  padding: 2px 6px 2px 0;
+  font-size: 1em;                 /*reset to default font size and weight to avoid apply settings set few lines above */
+  font-weight: normal;
 }
 
 /*----------------------------------------
@@ -677,7 +704,7 @@ combobox button
   border: 1px solid transparent;
   padding: 1px;
   background-color: transparent;
-  border-radius: 2pt;
+  border-radius: 4px;
   color: @bauhaus_fg;
   outline-style: none;
   min-height: 1em;
@@ -708,7 +735,7 @@ dialog combobox window
   background-color: @tooltip_bg_color;
   color: @tooltip_fg_color;
   outline-style:none;
-  border-radius: 2pt;
+  border-radius: 4px;
   border: 0;
   outline-style: none;
   min-height: 0.4em;
@@ -799,7 +826,7 @@ notebook tab label /* disabled tabs */
 
 notebook header /* add space between notebook tabs and options below */
 {
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 /*--------------------------------------------------------
@@ -836,16 +863,16 @@ scrollbar slider,
 dialog scrollbar slider
 {
   background-color: @scroll_bar_inactive;
-  border: 2pt solid transparent;
+  border: 2px solid transparent;
   margin: 0;
-  min-width: 4pt;
-  min-height: 4pt;
+  min-width: 6px;
+  min-height: 6px;
 }
 
 scale contents trough
 {
   background-color: @scroll_bar_bg;
-  border-radius: 2pt;
+  border-radius: 2px;
   min-width: 0.5em;
   min-height: 0.5em;
 }
@@ -864,7 +891,7 @@ scale contents trough highlight
 
 scale contents trough slider
 {
-  border: 0.5pt solid @border_color;
+  border: 0.5px solid @border_color;
   font-size: 1em;
   min-height: 0.5em;
   min-width: 0.5em;
@@ -880,10 +907,10 @@ dialog scrollbar
 {
   border-color: @scroll_bar_bg;
   background: @scroll_bar_bg;
-  border-radius: 4pt;
-  min-height: 4pt;
-  min-width: 4pt;
-  margin: 1pt;
+  border-radius: 5px;
+  min-height: 6px;
+  min-width: 6px;
+  margin: 1px;
 }
 
 /*--------------------------
@@ -917,65 +944,18 @@ dialog scrollbar
   min-height : 1.8em;
 }
 
-/*-------------------------------------
-  - Preferences dialog window options -
-  -------------------------------------*/
+/*---------------------------------------------------------------
+  - Preferences dialog window options (and filechooser sidebar) -
+  ---------------------------------------------------------------*/
 
 #preferences_notebook *
 {
   margin: 0px; /* reset default dialog margin to all items. And needed to have an hover and selected effect on all width of categories in sidebar */
 }
 
-#preferences_notebook decoration  /* allow to resize dialog window */
+#preferences_notebook decoration  /* allow to resize preferences dialog window */
 {
   margin: 1px;
-}
-
-/* Set sidebar settings */
-#preferences_box .sidebar scrolledwindow
-{
-  padding: 0px; /* needed to have an hover and selected effect on all width of categories in sidebar */
-  font-size: 1.1em;
-  background-color: @bg_color;
-}
-
-#preferences_box .sidebar row
-{
-  padding: 5px;
-}
-
-#preferences_box .sidebar row:selected,
-#preferences_box .sidebar row:selected:hover label
-{
-  color: @fg_color;
-  background-color: @plugin_bg_color;
-}
-
-#preferences_box .sidebar row,
-#preferences_box .sidebar row:selected
-{
-  border-left: 2px solid @bg_color; /* be sure border is set but not visible if category on sidebar not selected but keep same size and type for selected category ; color needs to be same as sidebar scrolledwindow background-color few lines above */
-}
-
-#preferences_box .sidebar :hover  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
-{
-  border-left-color: @button_hover_bg;
-  background-color: @button_hover_bg;
-}
-
-#preferences_box .sidebar row:selected
-{
-  border-left-color: @field_hover_bg;   /* make the border left visible with choosed color if category on sidebar is selected */
-}
-
-#preferences_box .sidebar label
-{
-  padding: 2px 12px;
-}
-
-#preferences_box separator  /* reset border size to avoid having space between row in sidebar */
-{
-  border: 0px;
 }
 
 /* Set preferences margins in main part */
@@ -1066,6 +1046,85 @@ dialog scrollbar
   margin-left: 5px;
 }
 
+/*---------------------------------------------------------------
+  - Set sidebars settings on preferences window and filechooser -
+  ---------------------------------------------------------------*/
+
+/* Set default sidebars settings */
+filechooser .sidebar,
+#preferences_box .sidebar scrolledwindow
+{
+  padding: 0px; /* needed to have an hover and selected effect on all width of categories in sidebar */
+  font-size: 1.1em;
+  background-color: @bg_color;
+}
+
+#preferences_box .sidebar row
+{
+  padding: 5px;
+}
+
+/* Set lines states */
+filechooser .sidebar-icon,
+filechooser .sidebar-label
+{
+  padding: 4px 6px 4px 10px;
+}
+
+filechooser .sidebar-button
+{
+  margin-right: 4px;
+}
+
+filechooser row
+{
+  margin-top: -4px; /* be sure to not have empty space on top of row for hover and selected effects */
+}
+
+filechooser .sidebar row:selected,
+filechooser .sidebar row:selected:hover .sidebar-label,
+#preferences_box .sidebar row:selected,
+#preferences_box .sidebar row:selected:hover label
+{
+  color: @fg_color;
+  background-color: @plugin_bg_color;
+}
+
+#preferences_box .sidebar row,
+#preferences_box .sidebar row:selected
+{
+  border-left: 2px solid @plugin_bg_color; /* be sure border is set but not visible if category on sidebar not selected but keep same size and type for selected category ; color needs to be same as sidebar scrolledwindow background-color few lines above */
+}
+
+filechooser row:selected .sidebar-icon,  /* set icon instead of border for filechooser dialog window */
+filechooser row:hover .sidebar-icon
+{
+  color: @button_hover_fg;
+  background-color: @field_hover_bg;
+}
+
+#preferences_box .sidebar row:selected
+{
+  border-left-color: @field_hover_bg;   /* make the border left visible with choosed color if category on sidebar is selected */
+}
+
+filechooser row:hover,
+#preferences_box .sidebar :hover  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
+{
+  border-left-color: @button_hover_bg;
+  background-color: @button_hover_bg;
+}
+
+#preferences_box .sidebar label
+{
+  padding: 2px 12px;
+}
+
+#preferences_box separator  /* reset border size to avoid having space between row in sidebar */
+{
+  border: 0px;
+}
+
 /*--------------------------------
   - Tree view (lists and tables) -
   --------------------------------*/
@@ -1153,10 +1212,10 @@ cell:selected
   background-color: shade(@selected_bg_color, 1.2);
 }
 
-/* Widget for parametric blending options in modules */
+/* Be sure to align correctly widget for parametric blending options in modules */
 #blending-box #section_label
 {
-  margin: 0 0 6pt 0;
+  margin: 0 0 8px 0;
 }
 
 /* Set mask button shown color */
@@ -1207,15 +1266,23 @@ cell:selected
     min-height: 1.2em;
 }
 
-/* Messages shown on bottom middle of the UI. For example "loading image..." or "working on..." ones */
-#log-msg
+/* Set messages shown on bottom middle of the UI. For example "loading image..." or "working on..." */
+#log-msg,
+#toast-msg
 {
   color: @log_fg_color;
   font-size: 1em;
   font-weight: bold;
   background-color: @log_bg_color;
   padding: 8px 20px 4px 20px;
-  border-radius: 14px;
+}
+
+ /* then set infos shown on top of the image on darkroom, like for example opacity in drawn masks */
+#toast-msg
+{
+  padding: 2px 14px 4px 14px;
+  border-radius: 0 0 8px 8px;
+  background-color: rgba(75,75,75,0.7);
 }
 
 /* Set some specific fonts */
@@ -1238,7 +1305,7 @@ cell:selected
 
 #live-sample
 {
-    padding: 1pt;
+    padding: 2px;
     min-height: 1em;
     min-width: 3em;
 }
@@ -1272,8 +1339,8 @@ cell:selected
 button:selected,
 button:active,
 menuitem:selected,
-combobox window *:selected,
 menuitem:active,
+combobox window *:selected,
 combobox window *:active,
 #recent-collection-button:selected,
 #history-button:selected,
@@ -1320,6 +1387,7 @@ combobox window *:active,
 /* Hover states, some needed background only */
 * button:hover,
 button:hover,
+#add-color-button:hover,
 menuitem:hover,
 menuitem:hover arrow,
 combobox window *:hover,
@@ -1351,8 +1419,9 @@ button:hover label,
 button:checked cellview,
 button:checked image,
 button:checked label,
-dialog row:hover *,
+dialog row:hover label,
 menuitem:hover *,
+menuitem:hover menuitem:hover *,
 notebook tab:hover label,
 #recent-collection-button:hover,
 #history-button:hover *,
@@ -1366,6 +1435,12 @@ notebook tab:hover label,
 #view_dropdown .combo:hover *
 {
   color: @button_hover_fg;
+}
+
+/* Set submenus */
+menuitem:hover menuitem *
+{
+    color: @fg_color;
 }
 
 /* Last history needed states */
@@ -1407,7 +1482,9 @@ button:disabled,
 
 /* Treeviews and filechoosers states */
 treeview:not(#lutname) *:hover,
-filechooser *:hover
+filechooser .sidebar :hover .sidebar-button,  /* set here specific button hover like eject button in filechooser sidebar */
+#import_metadata title:hover,
+#import_metadata title:hover *
 {
     background-color: @field_hover_bg;
     color: @field_hover_fg;
@@ -1527,6 +1604,7 @@ scale contents trough slider:hover
 {
   background-color: @scroll_bar_active;
 }
+
 
 /*** --- Thumbtable css part ---
 
@@ -1828,7 +1906,6 @@ radiobutton radio
 }
 
 /* Set star icon hover effect */
-#thumb_main:hover #thumb_star:hover,
 .dt_overlays_hover #thumb_main:hover #thumb_star:hover,
 .dt_overlays_hover_extended #thumb_main:hover #thumb_star:hover,
 .dt_overlays_always #thumb_main:hover #thumb_star:hover,

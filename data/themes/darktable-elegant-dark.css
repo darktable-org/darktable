@@ -72,8 +72,8 @@
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_20;
-@define-color log_bg_color @grey_40;
-@define-color log_fg_color @grey_80;
+@define-color log_bg_color @grey_15;
+@define-color log_fg_color @grey_90;
 
 /* Views */
 @define-color darkroom_bg_color @grey_60;
@@ -99,3 +99,8 @@
 @define-color graph_grid @grey_20;
 @define-color inset_histogram alpha(@grey_80, 0.50);
 
+/* Adjust color of top shown infos on darkroom */
+#toast-msg
+{
+  background-color: rgba(90,90,90,0.7);
+}

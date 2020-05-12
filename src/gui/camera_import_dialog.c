@@ -343,9 +343,6 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   // SETTINGS PAGE
   data->settings.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  // general settings
-  gtk_box_pack_start(GTK_BOX(data->settings.page), gtk_label_new(_("general")), FALSE, FALSE, 0);
-
   // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
   data->settings.general.ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));
   gtk_widget_set_tooltip_text(data->settings.general.ignore_jpeg,
