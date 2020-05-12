@@ -779,6 +779,10 @@ void dt_culling_init(dt_culling_t *table, int offset)
   table->navigate_inside_selection = FALSE;
   table->selection_sync = FALSE;
 
+  const gboolean culling_dynamic
+      = (table->mode == DT_CULLING_MODE_CULLING
+         && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC);
+
   // get first id
   sqlite3_stmt *stmt;
   int first_id = -1;
@@ -788,7 +792,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
   else
     first_id = dt_control_get_mouse_over_id();
 
-  if(first_id < 1)
+  if(first_id < 1 || culling_dynamic)
   {
     // search the first selected image
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -813,8 +817,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
   }
 
   // special culling dynamic mode
-  if(table->mode == DT_CULLING_MODE_CULLING
-     && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
+  if(culling_dynamic)
   {
     table->navigate_inside_selection = TRUE;
     table->offset = _thumb_get_rowid(first_id);

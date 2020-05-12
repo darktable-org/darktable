@@ -1237,13 +1237,15 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     }
 
     // get the new rowid of the new offset image
+    const int nrow = _thumb_get_rowid(newid);
+    const gboolean offset_changed = (nrow != table->offset);
     table->offset_imgid = newid;
-    table->offset = _thumb_get_rowid(newid);
-    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+    table->offset = nrow;
+    if(offset_changed) dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
 
     dt_thumbtable_full_redraw(table, TRUE);
 
-    dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
+    if(offset_changed) dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
 
     dt_control_queue_redraw_center();
   }
@@ -2043,6 +2045,7 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int vi
 static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
+  if(!table->list || g_list_length(table->list) == 0) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
   const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
@@ -2067,6 +2070,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, con
 static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
+  if(!table->list || g_list_length(table->list) == 0) return FALSE;
 
   int minrowid = 0;
   int maxrowid = 0;
