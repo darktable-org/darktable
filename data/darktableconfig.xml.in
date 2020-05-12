@@ -849,7 +849,7 @@
   <dtconfig prefs="import" section="session">
     <name>session/use_filename</name>
     <type>bool</type>
-    <default>true</default>
+    <default>false</default>
     <shortdescription>keep original filename</shortdescription>
     <longdescription>keep original filename instead of a pattern while importing from camera or card</longdescription>
   </dtconfig>
