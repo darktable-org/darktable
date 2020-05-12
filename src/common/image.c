@@ -28,6 +28,7 @@
 #include "common/imageio.h"
 #include "common/imageio_rawspeed.h"
 #include "common/mipmap_cache.h"
+#include "common/ratings.h"
 #include "common/tags.h"
 #include "common/undo.h"
 #include "common/history.h"
@@ -336,6 +337,37 @@ void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
   else
     snprintf(line, line_len, "%.1f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
              (int)img->exif_focal_length, (int)img->exif_iso);
+}
+
+int dt_image_get_xmp_rating_from_flags(const int flags)
+{
+  return (flags & DT_IMAGE_REJECTED)
+    ? -1                              // rejected image = -1
+    : (flags & DT_VIEW_RATINGS_MASK); // others = 0 .. 5
+}
+
+int dt_image_get_xmp_rating(const dt_image_t *img)
+{
+  return dt_image_get_xmp_rating_from_flags(img->flags);
+}
+
+void dt_image_set_xmp_rating(dt_image_t *img, const int rating)
+{
+  // clean flags stars and rejected
+  img->flags &= ~(DT_IMAGE_REJECTED | DT_VIEW_RATINGS_MASK);
+
+  if(rating == 0)
+    {
+      img->flags |= (DT_VIEW_RATINGS_MASK & dt_conf_get_int("ui_last/import_initial_rating"));
+    }
+  else if(rating == -1)
+    {
+      img->flags |= DT_IMAGE_REJECTED;
+    }
+  else
+    {
+      img->flags |= (DT_VIEW_RATINGS_MASK & rating);
+    }
 }
 
 void dt_image_get_location(int imgid, dt_image_geoloc_t *geoloc)
