@@ -73,6 +73,7 @@ typedef struct dt_iop_temperature_gui_data_t
 {
   GtkWidget *scale_k, *scale_tint, *coeff_widgets, *scale_r, *scale_g, *scale_b, *scale_g2;
   GtkWidget *presets;
+  GtkWidget *colorpicker;
   GtkWidget *finetune;
   GtkWidget *box_enabled;
   GtkWidget *label_disabled;
@@ -82,7 +83,6 @@ typedef struct dt_iop_temperature_gui_data_t
   double daylight_wb[4];
   double mod_coeff[4];
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
-  dt_iop_color_picker_t color_picker;
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
@@ -1262,7 +1262,8 @@ static void apply_preset(dt_iop_module_t *self)
 
       //reset previously stored color picker information
       for(int k = 0; k < 4; k++) old[k] = 0.0f;
-      dt_iop_color_picker_callback(g->presets, &g->color_picker);
+      g_signal_emit_by_name(G_OBJECT(g->colorpicker), "quad-pressed");
+
       break;
     case 3: // directly changing one of the coeff sliders also changes the mod_coeff so it can be read here
       for(int k = 0; k < 4; k++) p->coeffs[k] = g->mod_coeff[k];
@@ -1466,6 +1467,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->presets, NULL, _("preset"));
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->presets, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance preset from camera"));
+  // create hidden color picker to be able to send its signal when spot selected
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
+  gtk_stack_add_named(GTK_STACK(g->stack), g->colorpicker, "hidden");
 
   g->finetune = dt_bauhaus_slider_new_with_range(self, -9.0, 9.0, 1.0, 0.0, 0);
   dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
@@ -1485,13 +1489,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->stack), g->label_disabled, "disabled");
 
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "disabled" : "enabled");
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->presets),
-                     DT_COLOR_PICKER_AREA,
-                     color_picker_apply);
-
+  
   self->gui_update(self);
 
   g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(tint_callback), self);
