@@ -209,7 +209,7 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "EXIF_APERTURE", N_("$(EXIF_APERTURE) - EXIF aperture") },
           { "EXIF_FOCAL_LENGTH", N_("$(EXIF_FOCAL_LENGTH) - EXIF focal length") },
           { "EXIF_FOCUS_DISTANCE", N_("$(EXIF_FOCUS_DISTANCE) - EXIF focal distance") },
-          { "LONGITUDE", N_("$(LONGITUDE) - ongitude") },
+          { "LONGITUDE", N_("$(LONGITUDE) - longitude") },
           { "LATITUDE", N_("$(LATITUDE) - latitude") },
           { "ELEVATION", N_("$(ELEVATION) - elevation") },
           { "STARS", N_("$(STARS) - star rating") },
