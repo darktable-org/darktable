@@ -500,6 +500,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   const float ht = darktable.develop->preview_pipe->backbuf_height;
   const int width = roi->width;
   const int height = roi->height;
+  const dt_image_t *const image = &(darktable.develop->image_storage);
 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
   // position
@@ -522,10 +523,11 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   // transform back to current module coordinates
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
                                     module->iop_order, ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_FORW_INCL
-                                     : DT_DEV_TRANSFORM_DIR_FORW_EXCL),
-                                    fbox, 2);
+                                     : DT_DEV_TRANSFORM_DIR_FORW_EXCL),fbox, 2);
 
-  for(int idx = 0; idx < 4; idx++) fbox[idx] *= darktable.develop->preview_downsampling;
+  if (!dt_image_is_rawprepare_supported(image))
+      for(int idx = 0; idx < 4; idx++) fbox[idx] *= darktable.develop->preview_downsampling;
+  
   fbox[0] -= roi->x;
   fbox[1] -= roi->y;
   fbox[2] -= roi->x;
