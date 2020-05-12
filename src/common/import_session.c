@@ -233,7 +233,7 @@ const char *dt_import_session_name(struct dt_import_session_t *self)
 /* This returns a unique filename using session path **and** the filename.
    If current is true we will use the original filename otherwise use the pattern.
 */
-const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean current)
+const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean use_filename)
 {
   const char *path;
   char *fname, *previous_fname;
@@ -254,7 +254,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   /* verify that expanded path and filename yields a unique file */
   path = dt_import_session_path(self, TRUE);
 
-  if(current)
+  if(use_filename)
     result_fname = g_strdup(self->vp->filename);
   else
     result_fname = dt_variables_expand(self->vp, pattern, TRUE);
