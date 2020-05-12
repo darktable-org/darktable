@@ -444,11 +444,8 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
 
     if(FIND_XMP_TAG("Xmp.xmp.Rating"))
     {
-      int stars = pos->toLong();
-      if(use_default_rating && stars == 0) stars = dt_conf_get_int("ui_last/import_initial_rating");
-
-      stars = (stars == -1) ? 6 : stars;
-      img->flags = (img->flags & ~0x7) | (0x7 & stars);
+      const int stars = pos->toLong();
+      dt_image_set_xmp_rating(img, stars);
     }
 
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
@@ -1073,29 +1070,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     if(FIND_EXIF_TAG("Exif.Image.Rating"))
     {
-      int stars = pos->toLong();
-      if(stars == 0)
-      {
-        stars = dt_conf_get_int("ui_last/import_initial_rating");
-      }
-      else
-      {
-        stars = (stars == -1) ? 6 : stars;
-      }
-      img->flags = (img->flags & ~0x7) | (0x7 & stars);
+      const int stars = pos->toLong();
+      dt_image_set_xmp_rating(img, stars);
     }
     else if(FIND_EXIF_TAG("Exif.Image.RatingPercent"))
     {
-      int stars = pos->toLong() * 5. / 100;
-      if(stars == 0)
-      {
-        stars = dt_conf_get_int("ui_last/import_initial_rating");
-      }
-      else
-      {
-        stars = (stars == -1) ? 6 : stars;
-      }
-      img->flags = (img->flags & ~0x7) | (0x7 & stars);
+      const int stars = pos->toLong() * 5. / 100;
+      dt_image_set_xmp_rating(img, stars);
     }
 
     // read embedded color matrix as used in DNGs
@@ -1779,7 +1760,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);
       if(res != NULL)
       {
-        int rating = GPOINTER_TO_INT(res->data) + 1;
+        const int rating = GPOINTER_TO_INT(res->data) + 1;
         exifData["Exif.Image.Rating"] = rating;
         exifData["Exif.Image.RatingPercent"] = int(rating / 5. * 100.);
         g_list_free(res);
@@ -3494,9 +3475,7 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
   if(pos != xmpData.end()) xmpData.erase(pos);
-  xmpData["Xmp.xmp.Rating"] = (stars & DT_IMAGE_REJECTED)
-                              ? -1                              // rejected image = -1
-                              : (stars & DT_VIEW_RATINGS_MASK); // others = 0 .. 5
+  xmpData["Xmp.xmp.Rating"] = dt_image_get_xmp_rating_from_flags(stars);
 
   // The original file name
   if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
@@ -3620,7 +3599,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
   // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
   if(pos != xmpData.end()) xmpData.erase(pos);
-  xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
+  xmpData["Xmp.xmp.Rating"] = dt_image_get_xmp_rating_from_flags(stars);
 
   // The original file name
   if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
