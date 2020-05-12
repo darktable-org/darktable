@@ -263,13 +263,12 @@ static void _middle_grey_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-/*
-static void _color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self)
+
+static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 {
-  _turn_select_region_off(self->module);
-  dt_iop_color_picker_callback(button, self);
+  _turn_select_region_off(self);
 }
-*/
+
 static void _brightness_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -807,6 +806,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_middle_grey, TRUE, TRUE, 0);
 
   dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->sl_middle_grey);
+  g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 
   g->sl_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->brightness, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->sl_brightness, -4.0, 4.0);

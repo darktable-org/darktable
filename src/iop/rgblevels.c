@@ -767,13 +767,11 @@ static void _tab_switch_callback(GtkNotebook *notebook, GtkWidget *page, guint p
   gtk_widget_queue_draw(self->widget);
 }
 
-/*
-static void _color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self)
+static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 {
-  _turn_select_region_off(self->module);
-  dt_iop_color_picker_callback(button, self);
+  _turn_select_region_off(self);
 }
-*/
+
 void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
@@ -820,7 +818,7 @@ void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
         p->levels[channel][1] = mean_picked_color;
       }
     }
-    else if(self->picker->colorpick == c->greypick)
+    else if(self->picker->colorpick == c->whitepick)
     {
       if(mean_picked_color < p->levels[channel][1])
       {
@@ -1047,14 +1045,17 @@ void gui_init(dt_iop_module_t *self)
   c->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->blackpick), "picker-black");
+  g_signal_connect(G_OBJECT(c->blackpick), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   c->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(c->greypick, _("pick medium gray point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->greypick), "picker-grey");
+  g_signal_connect(G_OBJECT(c->greypick), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   c->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
   gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
+  g_signal_connect(G_OBJECT(c->whitepick), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   GtkWidget *pick_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->blackpick), TRUE, TRUE, 0);
