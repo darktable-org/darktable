@@ -44,6 +44,7 @@ typedef struct dt_print_t
 {
   int32_t image_id;
   dt_print_info_t *pinfo;
+  gboolean busy;
 }
 dt_print_t;
 
@@ -238,6 +239,8 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   {
     // if the image is missing, we reload it again
     g_timeout_add(250, _expose_again, NULL);
+    if(!prt->busy) dt_control_log_busy_enter();
+    prt->busy = TRUE;
   }
   else
   {
@@ -245,6 +248,8 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
     cairo_set_source_surface(cr, surf, 0, 0);
     cairo_paint(cr);
     cairo_surface_destroy(surf);
+    if(prt->busy) dt_control_log_busy_leave();
+    prt->busy = FALSE;
   }
 }
 
