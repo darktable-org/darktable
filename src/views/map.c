@@ -909,7 +909,6 @@ void leave(dt_view_t *self)
 
   gtk_widget_hide(GTK_WIDGET(lib->map));
   gtk_container_remove(GTK_CONTAINER(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
-  gtk_widget_show_all(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
 
   /* reset proxy */
   darktable.view_manager->proxy.map.view = NULL;
