@@ -466,6 +466,8 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   // update log visibility
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
 
+  // update toast visibility
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
   return 0;
 }
 
@@ -968,7 +970,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
   else
     y = 9.0f * r1;
 
-  const int rejected = img && (img->flags & DT_IMAGE_REJECTED) == DT_IMAGE_REJECTED;
+  const gboolean rejected = img && (img->flags & DT_IMAGE_REJECTED) == DT_IMAGE_REJECTED;
 
   // Search which star is hovered by cursor
   int star = -1;
