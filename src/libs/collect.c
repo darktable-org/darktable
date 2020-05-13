@@ -2594,6 +2594,15 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+static int is_time_property(int property)
+{
+  return (property == DT_COLLECTION_PROP_TIME
+      || property == DT_COLLECTION_PROP_IMPORT_TIMESTAMP
+      || property == DT_COLLECTION_PROP_CHANGE_TIMESTAMP
+      || property == DT_COLLECTION_PROP_EXPORT_TIMESTAMP
+      || property == DT_COLLECTION_PROP_PRINT_TIMESTAMP);
+}
+
 #ifdef USE_LUA
 static int new_rule_cb(lua_State*L)
 {
@@ -2602,6 +2611,7 @@ static int new_rule_cb(lua_State*L)
   luaA_push(L,dt_lib_collect_params_rule_t,&rule);
   return 1;
 }
+
 static int filter_cb(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
@@ -2699,15 +2709,6 @@ static int data_member(lua_State *L)
 
   lua_pushstring(L,rule->string);
   return 1;
-}
-
-static int is_time_property(int property)
-{
-  return (property == DT_COLLECTION_PROP_TIME
-      || property == DT_COLLECTION_PROP_IMPORT_TIMESTAMP
-      || property == DT_COLLECTION_PROP_CHANGE_TIMESTAMP
-      || property == DT_COLLECTION_PROP_EXPORT_TIMESTAMP
-      || property == DT_COLLECTION_PROP_PRINT_TIMESTAMP);
 }
 
 void init(struct dt_lib_module_t *self)
