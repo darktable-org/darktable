@@ -64,6 +64,7 @@ static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
   vp->jobcode = "infos";
   vp->imgid = thumb->imgid;
   vp->sequence = 0;
+  vp->escape_markup = TRUE;
 
   if(thumb->info_line) g_free(thumb->info_line);
   thumb->info_line = dt_variables_expand(vp, pattern, TRUE);
@@ -465,7 +466,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   }
   else
   {
-    // we compute the info line (we reuse the function used in export to disk)
+    // we compute the tooltip (we reuse the function used in export to disk)
     char input_dir[1024] = { 0 };
     gboolean from_cache = TRUE;
     dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
@@ -477,6 +478,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
     vp->jobcode = "infos";
     vp->imgid = thumb->imgid;
     vp->sequence = 0;
+    vp->escape_markup = TRUE;
 
     gchar *msg = dt_variables_expand(vp, pattern, TRUE);
 
