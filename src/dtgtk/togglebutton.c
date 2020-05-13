@@ -151,7 +151,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
 
     float borderx, bordery;
     int icon_width, icon_height;
-    if(flags & CPF_DO_NOT_USE_BORDER)
+    if(FALSE)
     {
       borderx = (width - cwidth) / 2.0;
       bordery = (height - cheight) / 2.0;
