@@ -197,17 +197,17 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   }
   else if(lib->image_id >= 0) // First of all draw image if available
   {
-    cairo_translate(cr, MARGIN, MARGIN);
-    dt_view_image_expose_t params = { 0 };
-    params.image_over = &(lib->image_over);
-    params.imgid = lib->image_id;
-    params.cr = cr;
-    params.width = width - (MARGIN * 2.0f);
-    params.height = height - (MARGIN * 2.0f);
-    params.px = pointerx;
-    params.py = pointery;
-    params.zoom = 1;
-    dt_view_image_expose(&params);
+    cairo_surface_t *surf;
+    const int res
+        = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf);
+    if(!res)
+    {
+      cairo_translate(cr, (width - cairo_image_surface_get_width(surf)) / 2,
+                      (height - cairo_image_surface_get_height(surf)) / 2);
+      cairo_set_source_surface(cr, surf, 0, 0);
+      cairo_paint(cr);
+      cairo_surface_destroy(surf);
+    }
   }
 }
 
