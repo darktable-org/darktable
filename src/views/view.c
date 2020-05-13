@@ -710,48 +710,6 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsiz
 
 }
 
-static inline void dt_view_draw_altered(cairo_t *cr, const float x, const float y, const float r)
-{
-  cairo_new_sub_path(cr);
-  cairo_arc(cr, x, y, r, 0, 2.0f * M_PI);
-  const float dx = r * cosf(M_PI / 8.0f), dy = r * sinf(M_PI / 8.0f);
-  cairo_move_to(cr, x - dx, y - dy);
-  cairo_curve_to(cr, x, y - 2 * dy, x, y + 2 * dy, x + dx, y + dy);
-  cairo_move_to(cr, x - .20 * dx, y + .8 * dy);
-  cairo_line_to(cr, x - .80 * dx, y + .8 * dy);
-  cairo_move_to(cr, x + .20 * dx, y - .8 * dy);
-  cairo_line_to(cr, x + .80 * dx, y - .8 * dy);
-  cairo_move_to(cr, x + .50 * dx, y - .8 * dy - 0.3 * dx);
-  cairo_line_to(cr, x + .50 * dx, y - .8 * dy + 0.3 * dx);
-  cairo_stroke(cr);
-}
-
-static inline void dt_view_draw_audio(cairo_t *cr, const float x, const float y, const float r)
-{
-  const float d = 2.0 * r;
-
-  cairo_save(cr);
-
-  cairo_translate(cr, x - (d / 2.0), y - (d / 2.0));
-  cairo_scale(cr, d, d);
-
-  cairo_rectangle(cr, 0.05, 0.4, 0.2, 0.2);
-  cairo_move_to(cr, 0.25, 0.6);
-  cairo_line_to(cr, 0.45, 0.77);
-  cairo_line_to(cr, 0.45, 0.23);
-  cairo_line_to(cr, 0.25, 0.4);
-
-  cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.2, 0.5, 0.45, -(35.0 / 180.0) * M_PI, (35.0 / 180.0) * M_PI);
-  cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.2, 0.5, 0.6, -(35.0 / 180.0) * M_PI, (35.0 / 180.0) * M_PI);
-  cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.2, 0.5, 0.75, -(35.0 / 180.0) * M_PI, (35.0 / 180.0) * M_PI);
-
-  cairo_restore(cr);
-  cairo_stroke(cr);
-}
-
 static int _images_to_act_on_find_custom(gconstpointer a, gconstpointer b)
 {
   return (GPOINTER_TO_INT(a) != GPOINTER_TO_INT(b));
