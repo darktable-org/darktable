@@ -746,8 +746,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
             ? FALSE
             : high_quality;
 
-  const int width = format_params->max_width;
-  const int height = format_params->max_height;
+  const int width = format_params->max_width > 0 ? format_params->max_width + 1 : 0;
+  const int height = format_params->max_height > 0 ? format_params->max_height + 1 : 0;
 
   const float max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
 
@@ -762,11 +762,15 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, origin, 1))
   {
-    processed_width = scale * pipe.processed_width + 0.5f;
-    processed_height = scale * pipe.processed_height + 0.5f;
+    processed_width = scale * pipe.processed_width + 0.8f;
+    processed_height = scale * pipe.processed_height + 0.8f;
 
-    if(ceilf(processed_width / scale) + origin[0] > pipe.iwidth) processed_width--;
-    if(ceilf(processed_height / scale) + origin[1] > pipe.iheight) processed_height--;
+    if((ceilf(processed_width / scale) + origin[0] > pipe.iwidth) ||
+       (ceilf(processed_height / scale) + origin[1] > pipe.iheight)) 
+    {
+      processed_width--;
+      processed_height--;
+    }
   }
   else
   {
