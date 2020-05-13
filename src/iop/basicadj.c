@@ -74,8 +74,6 @@ typedef struct dt_iop_basicadj_gui_data_t
   GtkWidget *sl_saturation;
   GtkWidget *sl_vibrance;
   GtkWidget *sl_clip;
-
-  dt_iop_color_picker_t color_picker;
 } dt_iop_basicadj_gui_data_t;
 
 typedef struct dt_iop_basicadj_data_t
@@ -266,10 +264,9 @@ static void _middle_grey_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self)
+static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 {
-  _turn_select_region_off(self->module);
-  dt_iop_color_picker_callback(button, self);
+  _turn_select_region_off(self);
 }
 
 static void _brightness_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -594,7 +591,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   if(self->dt->gui->reset) return;
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
@@ -808,11 +805,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "value-changed", G_CALLBACK(_middle_grey_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_middle_grey, TRUE, TRUE, 0);
 
-  dt_bauhaus_widget_set_quad_paint(g->sl_middle_grey, dtgtk_cairo_paint_colorpicker,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->sl_middle_grey, TRUE);
-  g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback),
-                   &g->color_picker);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->sl_middle_grey);
+  g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 
   g->sl_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->brightness, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->sl_brightness, -4.0, 4.0);
@@ -865,9 +859,6 @@ void gui_init(struct dt_iop_module_t *self)
   // and profile change
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_signal_profile_user_changed), self);
-
-  dt_iop_init_single_picker(&g->color_picker, self, GTK_WIDGET(g->sl_middle_grey), DT_COLOR_PICKER_AREA,
-                            _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
