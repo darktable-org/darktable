@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-13 13:12-0500\n"
+"POT-Creation-Date: 2020-05-13 13:26-0500\n"
 "PO-Revision-Date: 2020-05-13 13:21-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
@@ -16434,13 +16434,13 @@ msgstr "vista previa completa"
 
 #. undo/redo
 #: ../src/views/darkroom.c:3623 ../src/views/lighttable.c:707
-#: ../src/views/map.c:920
+#: ../src/views/map.c:919
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
 #: ../src/views/darkroom.c:3624 ../src/views/lighttable.c:708
-#: ../src/views/map.c:921
+#: ../src/views/map.c:920
 msgctxt "accel"
 msgid "redo"
 msgstr "rehacer"
@@ -16706,15 +16706,15 @@ msgstr "ajustar perfil de pantalla"
 msgid "map"
 msgstr "mapa"
 
-#: ../src/views/map.c:1378
+#: ../src/views/map.c:1377
 msgid "[on image] open in darkroom"
 msgstr "[en la imagen] abrir en el cuarto oscuro"
 
-#: ../src/views/map.c:1383
+#: ../src/views/map.c:1382
 msgid "[on map] zoom map"
 msgstr "[en el mapa] mapa de zoom"
 
-#: ../src/views/map.c:1388
+#: ../src/views/map.c:1387
 msgid "move image location"
 msgstr "cambiar la ubicación de la imagen"
 
