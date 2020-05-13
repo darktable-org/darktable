@@ -59,8 +59,6 @@
 @define-color button_fg @grey_90;
 @define-color button_checked_bg @grey_75;
 @define-color button_checked_fg @grey_100;
-@define-color button_hover_bg @grey_70;
-@define-color button_hover_fg @grey_35;
 
 /* text fields */
 @define-color field_bg @grey_45;
@@ -74,8 +72,7 @@
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_35;
-@define-color menu_bg_color @grey_35;
-@define-color log_bg_color @grey_55;
+@define-color log_bg_color @grey_25;
 @define-color log_fg_color @grey_95;
 
 /* Views */
@@ -88,9 +85,9 @@
 
 /* Lighttable and film-strip */
 @define-color thumbnail_bg_color @grey_70;
-@define-color thumbnail_infos_color @grey_45;
+@define-color thumbnail_infos_color @grey_50;
 @define-color thumbnail_selected_bg_color @grey_85;
-@define-color thumbnail_hover_fg_color @grey_55;
+@define-color thumbnail_localcopy_color @grey_90;
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_40;
@@ -100,19 +97,13 @@
 @define-color graph_grid @grey_30;
 @define-color inset_histogram alpha(@grey_95, 0.50);
 
-menu,
-menuitem arrow
-{
-  background-color: @menu_bg_color;
-}
-
 /* Adjust middle grey picker on levels and rgb levels modules to make it visible */
 #picker-grey
 {
-  color: @grey_65;
+  color: @grey_70;
 }
 
-/* deactivated switch buttons, make them less visible */
+/* Deactivated switch buttons, make them less visible */
 #history-switch:disabled
 {
     color: shade(@plugin_label_color, .9);
@@ -123,11 +114,8 @@ menuitem arrow
   color: shade(@plugin_fg_color, 0.8);
 }
 
-.dt_overlays_always #thumb_main:selected #thumb_star:active,
-.dt_overlays_always_extended #thumb_main:selected #thumb_star:active,
-.dt_overlays_mixed #thumb_main:selected #thumb_star:active
+/* Adjust color of top shown infos on darkroom */
+#toast-msg
 {
-  color: @bauhaus_fg_hover;
-  background-color: @thumbnail_hover_fg_color;
+  background-color: rgba(110,110,110,0.7);
 }
-
