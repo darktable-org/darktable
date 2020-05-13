@@ -120,7 +120,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   {
     /* draw default boxed button */
     gtk_render_background(context, cr, 0, 0, width, height);
-    if(!(flags & CPF_DO_NOT_USE_BORDER))
+    if(!(FALSE))
       gtk_render_frame(context, cr, 0, 0, width, height);
   }
 
