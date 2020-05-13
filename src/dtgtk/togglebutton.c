@@ -89,7 +89,11 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
 
   /* begin cairo drawing */
   GtkAllocation allocation;
+  GtkBorder padding;
+
   gtk_widget_get_allocation(widget, &allocation);
+  gtk_style_context_get_padding(context, state, &padding);
+
   int width = allocation.width;
   int height = allocation.height;
 
@@ -139,15 +143,34 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   if(DTGTK_TOGGLEBUTTON(widget)->icon)
   {
     /* set inner border and icon size */
-    float f_border = ((flags & CPF_DO_NOT_USE_BORDER) ? 4.0 : 6.0);
-    int border = round(f_border);
-    int icon_width = round(text ? height - (f_border * 2) : width - (f_border * 2));
-    int icon_height = round(height - (f_border * 2));
+    /* set icon size and corresponding border */
+    GtkAllocation clip_area;
+    gtk_widget_get_clip(widget, &clip_area); // get the clip area, the icon drawing cannot exceed that
+    int cwidth = clip_area.width;
+    int cheight = clip_area.height;
+
+    float borderx, bordery;
+    int icon_width, icon_height;
+    if(flags & CPF_DO_NOT_USE_BORDER)
+    {
+      borderx = (width - cwidth) / 2.0;
+      bordery = (height - cheight) / 2.0;
+      icon_width = cwidth;
+      icon_height = cheight;
+    }
+    else
+    {
+      borderx = round(fmaxf((width - cwidth) / 2.0, padding.left));
+      bordery = round(fmaxf((height - cheight) / 2.0, padding.top));
+      icon_width = round(width - 2.0 * borderx);
+      icon_height = round(height - 2.0 * bordery);
+    }
 
     void *icon_data = DTGTK_TOGGLEBUTTON(widget)->icon_data;
 
     if(icon_width > 0 && icon_height > 0)
-        DTGTK_TOGGLEBUTTON(widget)->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
+      DTGTK_TOGGLEBUTTON(widget)->icon(cr, round(borderx), round(bordery), icon_width, icon_height, flags, icon_data);
+
   }
 
 
