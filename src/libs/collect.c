@@ -722,7 +722,7 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   }
   else
   {
-    int temp = _combo_get_active_collection(dr->combo);
+    const int temp = _combo_get_active_collection(dr->combo);
     if(DT_COLLECTION_PROP_DAY == temp || is_time_property(temp))
     {
       if(g_str_has_suffix(needle, ":")) needle[strlen(needle) - 1] = '\0';
@@ -822,10 +822,9 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   }
   else if (property == DT_COLLECTION_PROP_FILENAME)
   {
-    GList *list, *l;
-    list = dt_util_str_to_glist(",", needle);
+    GList *list = dt_util_str_to_glist(",", needle);
 
-    for (l = list; l != NULL; l = l->next)
+    for (GList *l = list; l != NULL; l = l->next)
     {
       if(g_str_has_prefix((char *)l->data, "%"))
       {
@@ -1097,7 +1096,7 @@ static gint neg_sort_folder_tag(gconstpointer a, gconstpointer b)
 // behind their parent
 static char *tag_collate_key(char *tag)
 {
-  size_t len = strlen(tag);
+  const size_t len = strlen(tag);
   char *result = g_malloc(len + 2);
   if(g_str_has_prefix(tag, "darktable|"))
     *result = '\1';
@@ -1138,7 +1137,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   dt_lib_collect_t *d = get_collect(dr);
   const int property = _combo_get_active_collection(dr->combo);
   char *format_separator = "";
- 
+
   switch(property)
   {
     case DT_COLLECTION_PROP_FOLDERS:
@@ -1263,6 +1262,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       }
       else
         collate_key = tag_collate_key(name_folded);
+
       g_free(name_folded);
       name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
       tuple->name = name;
@@ -1319,7 +1319,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         {
           // find the number of common parts at the beginning of tokens and last_tokens
           GtkTreeIter parent = last_parent;
-          int tokens_length = string_array_length(tokens);
+          const int tokens_length = string_array_length(tokens);
           int common_length = 0;
           if(last_tokens)
           {
@@ -1503,8 +1503,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
-          char *exif_model = (char *)sqlite3_column_text(stmt, 1);
+          const char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
+          const char *exif_model = (char *)sqlite3_column_text(stmt, 1);
           const int count = sqlite3_column_int(stmt, 2);
 
           gchar *value =  dt_collection_get_makermodel(exif_maker, exif_model);
@@ -1759,7 +1759,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         {
           folder = dt_image_film_roll_name(folder);
         }
-        gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
+        const gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
         const int count = sqlite3_column_int(stmt, 2);
 
         // replace invalid utf8 characters if any
@@ -2594,7 +2594,6 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-
 #ifdef USE_LUA
 static int new_rule_cb(lua_State*L)
 {
@@ -2611,19 +2610,21 @@ static int filter_cb(lua_State *L)
   dt_lib_collect_params_t *p = get_params(self,&size);
   // put it in stack so memory is not lost if a lua exception is raised
 
-
-
-  if(lua_gettop(L) > 0) {
+  if(lua_gettop(L) > 0)
+  {
     luaL_checktype(L,1,LUA_TTABLE);
     dt_lib_collect_params_t *new_p = get_params(self,&size);
     new_p->rules = 0;
-    do {
+
+    do
+    {
       lua_pushinteger(L,new_p->rules + 1);
       lua_gettable(L,1);
       if(lua_isnil(L,-1)) break;
       luaA_to(L,dt_lib_collect_params_rule_t,&new_p->rule[new_p->rules],-1);
       new_p->rules++;
-    }while(new_p->rules < MAX_RULES);
+    } while(new_p->rules < MAX_RULES);
+
     if(new_p->rules == MAX_RULES) {
       lua_pushinteger(L,new_p->rules + 1);
       lua_gettable(L,1);
@@ -2635,8 +2636,10 @@ static int filter_cb(lua_State *L)
     free(new_p);
 
   }
+
   lua_newtable(L);
-  for(int i = 0; i < p->rules; i++) {
+  for(int i = 0; i < p->rules; i++)
+  {
     luaA_push(L,dt_lib_collect_params_rule_t,&p->rule[i]);
     luaL_ref(L,-2);
   }
@@ -2647,12 +2650,15 @@ static int filter_cb(lua_State *L)
 static int mode_member(lua_State *L)
 {
   dt_lib_collect_params_rule_t *rule = luaL_checkudata(L,1,"dt_lib_collect_params_rule_t");
-  if(lua_gettop(L) > 2) {
+
+  if(lua_gettop(L) > 2)
+  {
     dt_lib_collect_mode_t value;
     luaA_to(L,dt_lib_collect_mode_t,&value,3);
     rule->mode = value;
     return 0;
   }
+
   const dt_lib_collect_mode_t tmp = rule->mode; // temp buffer because of bitfield in the original struct
   luaA_push(L,dt_lib_collect_mode_t,&tmp);
   return 1;
@@ -2662,12 +2668,14 @@ static int item_member(lua_State *L)
 {
   dt_lib_collect_params_rule_t *rule = luaL_checkudata(L,1,"dt_lib_collect_params_rule_t");
 
-  if(lua_gettop(L) > 2) {
+  if(lua_gettop(L) > 2)
+  {
     dt_collection_properties_t value;
     luaA_to(L,dt_collection_properties_t,&value,3);
     rule->item = value;
     return 0;
   }
+
   const dt_collection_properties_t tmp = rule->item; // temp buffer because of bitfield in the original struct
   luaA_push(L,dt_collection_properties_t,&tmp);
   return 1;
@@ -2677,7 +2685,8 @@ static int data_member(lua_State *L)
 {
   dt_lib_collect_params_rule_t *rule = luaL_checkudata(L,1,"dt_lib_collect_params_rule_t");
 
-  if(lua_gettop(L) > 2) {
+  if(lua_gettop(L) > 2)
+  {
     size_t tgt_size;
     const char*data = luaL_checklstring(L,3,&tgt_size);
     if(tgt_size > PARAM_STRING_SIZE)
@@ -2687,6 +2696,7 @@ static int data_member(lua_State *L)
     g_strlcpy(rule->string, data, sizeof(rule->string));
     return 0;
   }
+
   lua_pushstring(L,rule->string);
   return 1;
 }
@@ -2697,7 +2707,7 @@ static int is_time_property(int property)
       || property == DT_COLLECTION_PROP_IMPORT_TIMESTAMP
       || property == DT_COLLECTION_PROP_CHANGE_TIMESTAMP
       || property == DT_COLLECTION_PROP_EXPORT_TIMESTAMP
-      || property == DT_COLLECTION_PROP_PRINT_TIMESTAMP) ;
+      || property == DT_COLLECTION_PROP_PRINT_TIMESTAMP);
 }
 
 void init(struct dt_lib_module_t *self)
@@ -2741,6 +2751,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_PRINT_TIMESTAMP);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_HISTORY);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_COLORLABEL);
+
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
@@ -2749,10 +2760,12 @@ void init(struct dt_lib_module_t *self)
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
       const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
       g_free(setting);
+
       if(!hidden)
         luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_METADATA + i);
     }
   }
+
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LENS);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FOCAL_LENGTH);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ISO);
