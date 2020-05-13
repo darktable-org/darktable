@@ -3270,7 +3270,6 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
     if(w->type == DT_BAUHAUS_SLIDER)
     {
-      gtk_widget_grab_focus(self->dynamic_accel_current->widget);
       float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
       float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
 
