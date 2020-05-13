@@ -181,7 +181,6 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
 
   /* scale and transform*/
   gint s = w < h ? w : h;
-  s *= 1.8; // for some reason, this one needs expansion
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
   cairo_set_line_width(cr, 0.1);
