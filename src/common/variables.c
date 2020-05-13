@@ -518,6 +518,12 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   }
   if(!result) result = g_strdup("");
 
+  if(params->escape_markup)
+  {
+    gchar *e_res = g_markup_escape_text(result, -1);
+    g_free(result);
+    return e_res;
+  }
   return result;
 }
 
