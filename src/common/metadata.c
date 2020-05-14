@@ -33,6 +33,7 @@
 //    Must match with dt_metadata_t in metadata.h.
 //    Exif.cc: add the new metadata into dt_xmp_keys[]
 //    libs/metadata.c increment version and change legacy_param() accordingly
+// CAUTION : key, subkey (last term of key) & name must be unique
 
 static const struct
 {
@@ -115,6 +116,30 @@ const char *dt_metadata_get_key(const uint32_t keyid)
     return dt_metadata_def[keyid].key;
   else
     return NULL;
+}
+
+const char *dt_metadata_get_subkey(const uint32_t keyid)
+{
+  if(keyid < DT_METADATA_NUMBER)
+  {
+    char *t = g_strrstr(dt_metadata_def[keyid].key, ".");
+    if(t) return t + 1;
+  }
+  return NULL;
+}
+
+const char *dt_metadata_get_key_by_subkey(const char *subkey)
+{
+  if(subkey)
+  {
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      char *t = g_strrstr(dt_metadata_def[i].key, ".");
+      if(t && !g_strcmp0(t + 1, subkey))
+        return dt_metadata_def[i].key;
+    }
+  }
+  return NULL;
 }
 
 const int dt_metadata_get_type(const uint32_t keyid)
@@ -523,7 +548,7 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
   {
     GList *imgs = NULL;
     if(imgid == -1)
-      imgs = dt_view_get_images_to_act_on();
+      imgs = dt_view_get_images_to_act_on(TRUE);
     else
       imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if(imgs)
@@ -589,7 +614,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
   }
 }
 
-void dt_metadata_set_list(const int imgid, GList *key_value, const gboolean undo_on, const gboolean group_on)
+void dt_metadata_set_list(GList *imgs, GList *key_value, const gboolean undo_on)
 {
   GList *metadata = NULL;
   GList *kv = key_value;
@@ -616,34 +641,25 @@ void dt_metadata_set_list(const int imgid, GList *key_value, const gboolean undo
     }
   }
 
-  if(metadata)
+  if(metadata && imgs)
   {
-    GList *imgs = NULL;
-    if(imgid == -1)
-      imgs = dt_view_get_images_to_act_on();
-    else
-      imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-    if(imgs)
+    GList *undo = NULL;
+    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
+
+    _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_ADD);
+
+    if(undo_on)
     {
-      GList *undo = NULL;
-      if(group_on) dt_grouping_add_grouped_images(&imgs);
-      if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
-
-      _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_ADD);
-
-      g_list_free(imgs);
-      if(undo_on)
-      {
-        dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
-        dt_undo_end_group(darktable.undo);
-      }
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
+      dt_undo_end_group(darktable.undo);
     }
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+
     g_list_free_full(metadata, g_free);
   }
 }
 
-void dt_metadata_clear(const int imgid, const gboolean undo_on, const gboolean group_on)
+void dt_metadata_clear(GList *imgs, const gboolean undo_on)
 {
   // do not clear internal or hidden metadata
   GList *metadata = NULL;
@@ -665,27 +681,18 @@ void dt_metadata_clear(const int imgid, const gboolean undo_on, const gboolean g
 
   if(metadata)
   {
-    GList *imgs = NULL;
-    if(imgid == -1)
-      imgs = dt_view_get_images_to_act_on();
-    else
-      imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-    if(imgs)
+    GList *undo = NULL;
+    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
+
+    _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_REMOVE);
+
+    if(undo_on)
     {
-      GList *undo = NULL;
-      if(group_on) dt_grouping_add_grouped_images(&imgs);
-      if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
-
-      _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_REMOVE);
-
-      g_list_free(imgs);
-      if(undo_on)
-      {
-        dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
-        dt_undo_end_group(darktable.undo);
-      }
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
+      dt_undo_end_group(darktable.undo);
     }
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+
     g_list_free_full(metadata, g_free);
   }
 }

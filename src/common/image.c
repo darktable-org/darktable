@@ -28,6 +28,7 @@
 #include "common/imageio.h"
 #include "common/imageio_rawspeed.h"
 #include "common/mipmap_cache.h"
+#include "common/ratings.h"
 #include "common/tags.h"
 #include "common/undo.h"
 #include "common/history.h"
@@ -338,6 +339,37 @@ void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
              (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
+int dt_image_get_xmp_rating_from_flags(const int flags)
+{
+  return (flags & DT_IMAGE_REJECTED)
+    ? -1                              // rejected image = -1
+    : (flags & DT_VIEW_RATINGS_MASK); // others = 0 .. 5
+}
+
+int dt_image_get_xmp_rating(const dt_image_t *img)
+{
+  return dt_image_get_xmp_rating_from_flags(img->flags);
+}
+
+void dt_image_set_xmp_rating(dt_image_t *img, const int rating)
+{
+  // clean flags stars and rejected
+  img->flags &= ~(DT_IMAGE_REJECTED | DT_VIEW_RATINGS_MASK);
+
+  if(rating == 0)
+    {
+      img->flags |= (DT_VIEW_RATINGS_MASK & dt_conf_get_int("ui_last/import_initial_rating"));
+    }
+  else if(rating == -1)
+    {
+      img->flags |= DT_IMAGE_REJECTED;
+    }
+  else
+    {
+      img->flags |= (DT_VIEW_RATINGS_MASK & rating);
+    }
+}
+
 void dt_image_get_location(int imgid, dt_image_geoloc_t *geoloc)
 {
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -441,7 +473,7 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on();
+    imgs = dt_view_get_images_to_act_on(TRUE);
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   dt_image_set_locations(imgs, geoloc, undo_on, group_on);
@@ -2104,7 +2136,7 @@ void dt_image_synch_xmp(const int selected)
   }
   else
   {
-    GList *imgs = dt_view_get_images_to_act_on();
+    GList *imgs = dt_view_get_images_to_act_on(FALSE);
     dt_image_synch_xmps(imgs);
     g_list_free(imgs);
   }

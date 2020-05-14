@@ -2898,7 +2898,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
-  static int old_grab = -1;
   _iop_clipping_set_max_clip(self);
   _grab_region_t grab = get_grab(pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
 
@@ -3127,34 +3126,31 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   else if(grab && g->k_show != 1)
   {
     // hover over active borders, no button pressed
-    if(old_grab != grab)
-    {
-      // change mouse pointer
-      if(grab == GRAB_LEFT)
-        dt_control_change_cursor(GDK_LEFT_SIDE);
-      else if(grab == GRAB_TOP)
-        dt_control_change_cursor(GDK_TOP_SIDE);
-      else if(grab == GRAB_RIGHT)
-        dt_control_change_cursor(GDK_RIGHT_SIDE);
-      else if(grab == GRAB_BOTTOM)
-        dt_control_change_cursor(GDK_BOTTOM_SIDE);
-      else if(grab == GRAB_TOP_LEFT)
-        dt_control_change_cursor(GDK_TOP_LEFT_CORNER);
-      else if(grab == GRAB_TOP_RIGHT)
-        dt_control_change_cursor(GDK_TOP_RIGHT_CORNER);
-      else if(grab == GRAB_BOTTOM_RIGHT)
-        dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
-      else if(grab == GRAB_BOTTOM_LEFT)
-        dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
-      else if(grab == GRAB_NONE)
-        dt_control_change_cursor(GDK_LEFT_PTR);
-    }
+    // change mouse pointer
+    if(grab == GRAB_LEFT)
+      dt_control_change_cursor(GDK_LEFT_SIDE);
+    else if(grab == GRAB_TOP)
+      dt_control_change_cursor(GDK_TOP_SIDE);
+    else if(grab == GRAB_RIGHT)
+      dt_control_change_cursor(GDK_RIGHT_SIDE);
+    else if(grab == GRAB_BOTTOM)
+      dt_control_change_cursor(GDK_BOTTOM_SIDE);
+    else if(grab == GRAB_TOP_LEFT)
+      dt_control_change_cursor(GDK_TOP_LEFT_CORNER);
+    else if(grab == GRAB_TOP_RIGHT)
+      dt_control_change_cursor(GDK_TOP_RIGHT_CORNER);
+    else if(grab == GRAB_BOTTOM_RIGHT)
+      dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
+    else if(grab == GRAB_BOTTOM_LEFT)
+      dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
+    else if(grab == GRAB_NONE)
+      dt_control_change_cursor(GDK_LEFT_PTR);
     dt_control_queue_redraw_center();
   }
   else
   {
     // somewhere besides borders. maybe rotate?
-    if(old_grab != grab) dt_control_change_cursor(GDK_FLEUR);
+    dt_control_change_cursor(GDK_FLEUR);
     g->straightening = g->cropping = 0;
     // or maybe keystone
     const float ext = DT_PIXEL_APPLY_DPI(0.005f) / zoom_scale;
@@ -3193,7 +3189,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     }
     dt_control_queue_redraw_center();
   }
-  old_grab = grab;
   return 0;
 }
 

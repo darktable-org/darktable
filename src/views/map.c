@@ -815,7 +815,7 @@ static gboolean _display_selected(gpointer user_data)
   dt_view_t *self = (dt_view_t *)user_data;
   gboolean done = FALSE;
 
-  GList *selected_images = dt_collection_get_selected(darktable.collection, -1);
+  GList *selected_images = dt_view_get_images_to_act_on(TRUE);
   if(selected_images)
   {
     done = _view_map_center_on_image_list(self, selected_images);
@@ -852,6 +852,8 @@ void enter(dt_view_t *self)
   // ensure the log msg widget stay on top
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                               gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
+  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                              gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
 
   gtk_widget_show_all(GTK_WIDGET(lib->map));
 
@@ -878,12 +880,10 @@ void enter(dt_view_t *self)
                             G_CALLBACK(_view_map_filmstrip_activate_callback), self);
 
   /* scroll filmstrip to the first selected image */
-  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
-  if(selected_images)
+  int imgid = dt_view_get_image_to_act_on();
+  if(imgid > 0)
   {
-    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), GPOINTER_TO_INT(selected_images->data),
-                                   TRUE);
-    g_list_free(selected_images);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
   }
 
   g_timeout_add(250, _display_selected, self);
@@ -909,7 +909,6 @@ void leave(dt_view_t *self)
 
   gtk_widget_hide(GTK_WIDGET(lib->map));
   gtk_container_remove(GTK_CONTAINER(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
-  gtk_widget_show_all(gtk_widget_get_parent(dt_ui_center(darktable.gui->ui)));
 
   /* reset proxy */
   darktable.view_manager->proxy.map.view = NULL;

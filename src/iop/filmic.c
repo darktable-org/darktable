@@ -82,15 +82,6 @@ DT_MODULE_INTROSPECTION(3, dt_iop_filmic_params_t)
  *
  * */
 
-typedef enum dt_iop_filmic_pickcolor_type_t
-{
-  DT_PICKPROFLOG_NONE = 0,
-  DT_PICKPROFLOG_GREY_POINT = 1,
-  DT_PICKPROFLOG_BLACK_POINT = 2,
-  DT_PICKPROFLOG_WHITE_POINT = 3,
-  DT_PICKPROFLOG_AUTOTUNE = 4
-} dt_iop_filmic_pickcolor_type_t;
-
 typedef struct dt_iop_filmic_params_t
 {
   float grey_point_source;
@@ -130,7 +121,6 @@ typedef struct dt_iop_filmic_gui_data_t
   GtkWidget *preserve_color;
   GtkWidget *extra_expander;
   GtkWidget *extra_toggle;
-  dt_iop_color_picker_t color_picker;
   GtkDrawingArea *area;
   float table[256];      // precomputed look-up table
   float table_temp[256]; // precomputed look-up for the optimized interpolation
@@ -888,59 +878,19 @@ static void apply_autotune(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
+void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_filmic_gui_data_t *g =  (dt_iop_filmic_gui_data_t *)self->gui_data;
-
-  const int current_picker = g->color_picker.current_picker;
-
-  g->color_picker.current_picker = DT_PICKPROFLOG_NONE;
-
-  if(button == g->grey_point_source)
-    g->color_picker.current_picker = DT_PICKPROFLOG_GREY_POINT;
-  else if(button == g->black_point_source)
-    g->color_picker.current_picker = DT_PICKPROFLOG_BLACK_POINT;
-  else if(button == g->white_point_source)
-    g->color_picker.current_picker = DT_PICKPROFLOG_WHITE_POINT;
-  else if(button == g->auto_button)
-    g->color_picker.current_picker = DT_PICKPROFLOG_AUTOTUNE;
-
-  if (current_picker == g->color_picker.current_picker)
-    return DT_COLOR_PICKER_ALREADY_SELECTED;
+  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  if     (self->picker->colorpick == g->grey_point_source)
+    apply_auto_grey(self);
+  else if(self->picker->colorpick == g->black_point_source)
+    apply_auto_black(self);
+  else if(self->picker->colorpick == g->white_point_source)
+    apply_auto_white_point_source(self);
+  else if(self->picker->colorpick == g->auto_button)
+    apply_autotune(self);
   else
-    return g->color_picker.current_picker;
-}
-
-static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  switch(g->color_picker.current_picker)
-  {
-     case DT_PICKPROFLOG_GREY_POINT:
-       apply_auto_grey(self);
-       break;
-     case DT_PICKPROFLOG_BLACK_POINT:
-       apply_auto_black(self);
-       break;
-     case DT_PICKPROFLOG_WHITE_POINT:
-       apply_auto_white_point_source(self);
-       break;
-     case DT_PICKPROFLOG_AUTOTUNE:
-       apply_autotune(self);
-       break;
-     default:
-       break;
-  }
-}
-
-static void _iop_color_picker_update(dt_iop_module_t *self)
-{
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  const int which_colorpicker = g->color_picker.current_picker;
-  dt_bauhaus_widget_set_quad_active(g->grey_point_source, which_colorpicker == DT_PICKPROFLOG_GREY_POINT);
-  dt_bauhaus_widget_set_quad_active(g->black_point_source, which_colorpicker == DT_PICKPROFLOG_BLACK_POINT);
-  dt_bauhaus_widget_set_quad_active(g->white_point_source, which_colorpicker == DT_PICKPROFLOG_WHITE_POINT);
-  dt_bauhaus_widget_set_quad_active(g->auto_button, which_colorpicker == DT_PICKPROFLOG_AUTOTUNE);
+    fprintf(stderr, "[filmic] unknown color picker\n");
 }
 
 static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
@@ -1692,9 +1642,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the subject.\n"
                                                       "except in back-lighting situations, this should be around 18%."));
   g_signal_connect(G_OBJECT(g->grey_point_source), "value-changed", G_CALLBACK(grey_point_source_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->grey_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->grey_point_source, TRUE);
-  g_signal_connect(G_OBJECT(g->grey_point_source), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->grey_point_source);
 
   // White slider
   g->white_point_source = dt_bauhaus_slider_new_with_range(self, 2.0, 8.0, 0.1, p->white_point_source, 2);
@@ -1706,9 +1654,7 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "adjust so highlights clipping is avoided"));
   g_signal_connect(G_OBJECT(g->white_point_source), "value-changed", G_CALLBACK(white_point_source_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->white_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->white_point_source, TRUE);
-  g_signal_connect(G_OBJECT(g->white_point_source), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->white_point_source);
 
   // Black slider
   g->black_point_source = dt_bauhaus_slider_new_with_range(self, -14.0, -3.0, 0.1, p->black_point_source, 2);
@@ -1720,9 +1666,7 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "increase to get more contrast.\ndecrease to recover more details in low-lights."));
   g_signal_connect(G_OBJECT(g->black_point_source), "value-changed", G_CALLBACK(black_point_source_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->black_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->black_point_source, TRUE);
-  g_signal_connect(G_OBJECT(g->black_point_source), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->black_point_source);
 
   // Security factor
   g->security_factor = dt_bauhaus_slider_new_with_range(self, -50., 50., 1.0, p->security_factor, 2);
@@ -1736,10 +1680,7 @@ void gui_init(dt_iop_module_t *self)
   // Auto tune slider
   g->auto_button = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
-  dt_bauhaus_widget_set_quad_paint(g->auto_button, dtgtk_cairo_paint_colorpicker,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->auto_button, TRUE);
-  g_signal_connect(G_OBJECT(g->auto_button), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->auto_button);
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some guessing.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
                                                 "works better for landscapes and evenly-lit pictures\nbut fails for high-keys and low-keys." ));
@@ -1872,13 +1813,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->output_power, _("power or gamma of the transfer function\nof the display or color space.\n"
                                                  "you should never touch that unless you know what you are doing."));
   g_signal_connect(G_OBJECT(g->output_power), "value-changed", G_CALLBACK(output_power_callback), self);
-
-  dt_iop_init_picker(&g->color_picker,
-              self,
-              DT_COLOR_PICKER_AREA,
-              _iop_color_picker_get_set,
-              _iop_color_picker_apply,
-              _iop_color_picker_update);
 }
 
 

@@ -217,6 +217,11 @@ typedef enum dt_signal_t
   */
   DT_SIGNAL_CONTROL_LOG_REDRAW,
 
+  /** \brief This signal is raised when dt_control_toast_redraw() is called.
+    no param, no returned value
+  */
+  DT_SIGNAL_CONTROL_TOAST_REDRAW,
+
   /** \brief This signal is raised when new color picker data are available in the pixelpipe.
     1 module
     2 piece

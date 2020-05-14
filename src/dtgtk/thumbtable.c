@@ -751,7 +751,7 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   if(!thumb)
   {
     // otherwise we use the classic retrieving method
-    const int id = dt_view_get_image_to_act_on2();
+    const int id = dt_view_get_image_to_act_on();
     thumb = _thumbtable_get_thumb(table, id);
     if(thumb)
     {
@@ -1237,13 +1237,15 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     }
 
     // get the new rowid of the new offset image
+    const int nrow = _thumb_get_rowid(newid);
+    const gboolean offset_changed = (nrow != table->offset);
     table->offset_imgid = newid;
-    table->offset = _thumb_get_rowid(newid);
-    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+    table->offset = nrow;
+    if(offset_changed) dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
 
     dt_thumbtable_full_redraw(table, TRUE);
 
-    dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
+    if(offset_changed) dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
 
     dt_control_queue_redraw_center();
   }
@@ -1336,7 +1338,7 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
-  table->drag_list = dt_view_get_images_to_act_on();
+  table->drag_list = dt_view_get_images_to_act_on(FALSE);
 
   // if we are dragging a single image -> use the thumbnail of that image
   // otherwise use the generic d&d icon
@@ -1793,6 +1795,8 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
       {
         gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                                     gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
+        gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                                    gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
       }
     }
     else
@@ -1826,33 +1830,33 @@ gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const int imgid,
 static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on();
-  dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE, TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
 static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on();
-  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), FALSE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
 static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
-  return dt_history_copy(dt_view_get_image_to_act_on2());
+  return dt_history_copy(dt_view_get_image_to_act_on());
 }
 static gboolean _accel_copy_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                   GdkModifierType modifier, gpointer data)
 {
-  return dt_history_copy_parts(dt_view_get_image_to_act_on2());
+  return dt_history_copy_parts(dt_view_get_image_to_act_on());
 }
 static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
   const gboolean ret = dt_history_paste_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return ret;
@@ -1860,7 +1864,7 @@ static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable,
 static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                    GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
   const gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return ret;
@@ -1868,7 +1872,7 @@ static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *accelera
 static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                     GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
   const gboolean ret = dt_history_delete_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return ret;
@@ -1876,7 +1880,7 @@ static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceler
 static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                  GdkModifierType modifier, gpointer data)
 {
-  const int sourceid = dt_view_get_image_to_act_on2();
+  const int sourceid = dt_view_get_image_to_act_on();
   const int newimgid = dt_image_duplicate(sourceid);
   if(newimgid <= 0) return FALSE;
 
@@ -2043,6 +2047,7 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int vi
 static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
+  if(!table->list || g_list_length(table->list) == 0) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
   const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
@@ -2067,6 +2072,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, con
 static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
+  if(!table->list || g_list_length(table->list) == 0) return FALSE;
 
   int minrowid = 0;
   int maxrowid = 0;

@@ -453,7 +453,7 @@ gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on();
+    imgs = dt_view_get_images_to_act_on(TRUE);
   else
   {
     if(dt_is_tag_attached(tagid, imgid)) return FALSE;
@@ -567,7 +567,7 @@ void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, 
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on();
+    imgs = dt_view_get_images_to_act_on(TRUE);
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
 
@@ -633,7 +633,7 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
   }
   else
   {
-    GList *imgs = dt_view_get_images_to_act_on();
+    GList *imgs = dt_view_get_images_to_act_on(TRUE);
     while(imgs)
     {
       images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
@@ -1643,11 +1643,11 @@ ssize_t dt_tag_export(const char *filename)
   return count;
 }
 
-char *dt_tag_get_subtag(const gint imgid, const char *category, const int level)
+char *dt_tag_get_subtags(const gint imgid, const char *category, const int level)
 {
   if (!category) return NULL;
   const guint rootnb = dt_util_string_count_char(category, '|');
-  char *result = NULL;
+  char *tags = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
           "SELECT DISTINCT T.name FROM main.tagged_images AS I "
@@ -1664,13 +1664,14 @@ char *dt_tag_get_subtag(const gint imgid, const char *category, const int level)
     if (tagnb >= rootnb + level)
     {
       gchar **pch = g_strsplit(tag, "|", -1);
-      result = g_strdup(pch[rootnb + level]);
+      char *subtag = pch[rootnb + level];
+      tags = dt_util_dstrcat(tags, "%s,", subtag);
       g_strfreev(pch);
-      break;
     }
   }
+  if(tags) tags[strlen(tags) - 1] = '\0'; // remove the last comma
   sqlite3_finalize(stmt);
-  return result;
+  return tags;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

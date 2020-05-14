@@ -181,6 +181,12 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
   }
 }
 
+static void _culling_reinit(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  dt_culling_init(lib->culling, lib->culling->offset);
+}
+
 static gboolean _preview_get_state(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -194,6 +200,7 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.get_preview_state = _preview_get_state;
   darktable.view_manager->proxy.lighttable.view = self;
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
+  darktable.view_manager->proxy.lighttable.culling_init_mode = _culling_reinit;
 
   // ensure the memory table is up to date
   dt_collection_memory_update();
@@ -1184,6 +1191,8 @@ void gui_init(dt_view_t *self)
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->preview->widget);
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                               gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
+  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                              gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
   // create display profile button
   GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT,
                                                      NULL);

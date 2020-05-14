@@ -140,6 +140,7 @@ typedef enum dt_image_loader_t
   LOADER_RAWSPEED = 9,
   LOADER_PNM = 10,
   LOADER_AVIF = 11,
+  LOADER_IM = 12,
 } dt_image_loader_t;
 
 typedef struct dt_image_geoloc_t
@@ -252,6 +253,11 @@ void dt_image_path_append_version_no_db(int version, char *pathname, size_t path
 void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
+/* set rating to img flags */
+void dt_image_set_xmp_rating(dt_image_t *img, const int rating);
+/* get rating from img flags */
+int dt_image_get_xmp_rating(const dt_image_t *img);
+int dt_image_get_xmp_rating_from_flags(const int flags);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    copyright (c) 2012--2016 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,25 +15,23 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef DT_IMAGEIO_IM_H
+#define DT_IMAGEIO_IM_H
 
-#pragma once
+#include "common/image.h"
+#include "common/mipmap_cache.h"
 
-#include "common/darktable.h"
-#include <gtk/gtk.h>
+#ifdef HAVE_IMAGEMAGICK
+dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
+#else
+inline dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename,
+                                              dt_mipmap_buffer_t *buf)
+{
+  return DT_IMAGEIO_FILE_NOT_FOUND;
+}
+#endif
 
-#define DT_VIEW_RATINGS_MASK 0x7
-// first three bits of dt_view_image_over_t
-
-/** get rating tfor the specified image */
-const int dt_ratings_get(const int imgid);
-
-/** apply rating to the specified image */
-void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean toggle_on,
-                               const gboolean undo_on, const gboolean group_on);
-
-/** apply rating to all images in the list */
-void dt_ratings_apply_on_list(const GList *list, const int rating, const gboolean undo_on);
-
+#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

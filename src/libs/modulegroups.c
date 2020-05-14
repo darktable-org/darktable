@@ -358,6 +358,21 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   if (DT_IOP_ORDER_INFO)
     fprintf(stderr,"\n^^^^^ modulegroups");
 
+  /* only show module group as selected if not currently searching */
+  if(visibility != DT_MODULEGROUP_SEARCH_IOP_TEXT_VISIBLE && d->current != DT_MODULEGROUP_NONE)
+  {
+    const int cb = _lib_modulegroups_get(self);
+    /* toggle button visibility without executing callback */
+    g_signal_handlers_block_matched(d->buttons[cb], G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
+
+    if(text_entered && text_entered[0] != '\0')
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[cb]), FALSE);
+    else
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[cb]), TRUE);
+
+    g_signal_handlers_unblock_matched(d->buttons[cb], G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
+  }
+
   GList *modules = darktable.develop->iop;
   if(modules)
   {
@@ -499,6 +514,9 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
+                                  ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
+                                  : NULL;
 
   /* block all button callbacks */
   for(int k = 0; k < DT_MODULEGROUP_SIZE; k++)
@@ -519,7 +537,8 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[k]), FALSE);
   }
 
-  if(d->current == gid)
+  /* only deselect button if not currently searching else re-enable module */
+  if(d->current == gid && !(text_entered && text_entered[0] != '\0'))
     d->current = DT_MODULEGROUP_NONE;
   else
   {

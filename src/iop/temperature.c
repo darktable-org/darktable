@@ -73,17 +73,16 @@ typedef struct dt_iop_temperature_gui_data_t
 {
   GtkWidget *scale_k, *scale_tint, *coeff_widgets, *scale_r, *scale_g, *scale_b, *scale_g2;
   GtkWidget *presets;
+  GtkWidget *colorpicker;
   GtkWidget *finetune;
   GtkWidget *box_enabled;
   GtkWidget *label_disabled;
   GtkWidget *stack;
-  GtkWidget *colorpicker;
   int preset_cnt;
   int preset_num[50];
   double daylight_wb[4];
   double mod_coeff[4];
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
-  dt_iop_color_picker_t color_picker;
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
@@ -768,7 +767,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "enabled");
 
   dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_hide(g->colorpicker);
 
   double TempK, tint;
   mul2temp(self, p->coeffs, &TempK, &tint);
@@ -1264,7 +1262,8 @@ static void apply_preset(dt_iop_module_t *self)
 
       //reset previously stored color picker information
       for(int k = 0; k < 4; k++) old[k] = 0.0f;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), TRUE);
+      g_signal_emit_by_name(G_OBJECT(g->colorpicker), "quad-pressed");
+
       break;
     case 3: // directly changing one of the coeff sliders also changes the mod_coeff so it can be read here
       for(int k = 0; k < 4; k++) p->coeffs[k] = g->mod_coeff[k];
@@ -1341,7 +1340,7 @@ static void finetune_changed(GtkWidget *widget, gpointer user_data)
   apply_preset((dt_iop_module_t *)user_data);
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   if(self->dt->gui->reset) return;
 
@@ -1468,6 +1467,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->presets, NULL, _("preset"));
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->presets, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance preset from camera"));
+  // create hidden color picker to be able to send its signal when spot selected
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
+  gtk_stack_add_named(GTK_STACK(g->stack), g->colorpicker, "hidden");
 
   g->finetune = dt_bauhaus_slider_new_with_range(self, -9.0, 9.0, 1.0, 0.0, 0);
   dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
@@ -1487,19 +1489,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->stack), g->label_disabled, "disabled");
 
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "disabled" : "enabled");
-
-  g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-  gtk_widget_show_all(g->colorpicker);
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->colorpicker),
-                     DT_COLOR_PICKER_AREA,
-                     _iop_color_picker_apply);
-
+  
   self->gui_update(self);
 
   g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(tint_callback), self);

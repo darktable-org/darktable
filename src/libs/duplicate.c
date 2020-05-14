@@ -46,12 +46,9 @@ typedef struct dt_lib_duplicate_t
   int cur_final_height;
   gboolean allow_zoom;
 
-  int32_t buf_width;
-  int32_t buf_height;
-  cairo_surface_t *surface;
-  uint8_t *rgbbuf;
-  int buf_mip;
-  int buf_timestamp;
+  cairo_surface_t *preview_surf;
+  float preview_zoom;
+  int preview_id;
 
   GList *thumbs;
 } dt_lib_duplicate_t;
@@ -185,11 +182,25 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget, GdkEventBut
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
   d->imgid = 0;
-  if(d->busy) dt_control_log_busy_leave();
+  if(d->busy) 
+  {
+    dt_control_log_busy_leave();
+    dt_control_toast_busy_leave();
+  }
   d->busy = FALSE;
   dt_control_queue_redraw_center();
 }
 
+void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
+{
+  // we leave the view. Let's destroy preview surf if any
+  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  if(d->preview_surf)
+  {
+    cairo_surface_destroy(d->preview_surf);
+    d->preview_surf = NULL;
+  }
+}
 void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
@@ -234,39 +245,51 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     nz = cur_scale / min_scale;
   }
 
-  const float zx = zoom_x * nz * (float)(nimgw + 1.0f);
-  const float zy = zoom_y * nz * (float)(nimgh + 1.0f);
+  const float dx = nw * 0.5 - nimgw * nz * (0.5 + zoom_x);
+  const float dy = nh * 0.5 - nimgh * nz * (0.5 + zoom_y);
 
-  // we erase everything
-  dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
-  cairo_paint(cri);
+  // if needed, we load the surface
+  int res = 0;
+  if(d->preview_id != d->imgid || d->preview_zoom != nz || !d->preview_surf)
+  {
+    res = dt_view_image_get_surface(d->imgid, nimgw * nz, nimgh * nz, &d->preview_surf);
+    if(!res)
+    {
+      d->preview_id = d->imgid;
+      d->preview_zoom = nz;
+    }
+  }
 
-  //we draw the cached image
-  dt_view_image_over_t image_over = DT_VIEW_DESERT;
-  dt_view_image_expose_t params = { 0 };
-  params.image_over = &image_over;
-  params.imgid = d->imgid;
-  params.cr = cri;
-  params.width = width;
-  params.height = height;
-  params.zoom = 1;
-  params.full_preview = TRUE;
-  params.no_deco = TRUE;
-  params.full_zoom = nz;
-  params.full_x = -zx + 1.0f;
-  params.full_y = -zy + 1.0f;
-
-
-  const int res = dt_view_image_expose(&params);
+  // if ready, we draw the surface
+  if(d->preview_surf)
+  {
+    // draw background
+    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cri);
+    // let margins
+    cairo_translate(cri, tb, tb);
+    cairo_rectangle(cri, 0, 0, nw, nh);
+    cairo_clip(cri);
+    cairo_set_source_surface(cri, d->preview_surf, dx, dy);
+    cairo_paint(cri);
+  }
 
   if(res)
   {
-    if(!d->busy) dt_control_log_busy_enter();
+    if(!d->busy)
+    {
+      dt_control_log_busy_enter();
+      dt_control_toast_busy_enter();
+    }
     d->busy = TRUE;
   }
   else
   {
-    if(d->busy) dt_control_log_busy_leave();
+    if(d->busy) 
+    {
+      dt_control_log_busy_leave();
+      dt_control_toast_busy_leave();
+    }
     d->busy = FALSE;
   }
 }
@@ -286,6 +309,12 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
   d->imgid = 0;
+  // we drop the preview if any
+  if(d->preview_surf)
+  {
+    cairo_surface_destroy(d->preview_surf);
+    d->preview_surf = NULL;
+  }
   // we drop all the thumbs
   g_list_free_full(d->thumbs, _thumb_remove);
   d->thumbs = NULL;
@@ -419,12 +448,8 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->imgid = 0;
-  d->buf_height = 0;
-  d->buf_width = 0;
-  d->rgbbuf = NULL;
-  d->surface = NULL;
-  d->buf_timestamp = 0;
-  d->buf_mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, 100, 100);
+  d->preview_surf = NULL;
+  d->preview_zoom = 1.0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(self->widget, "duplicate-ui");

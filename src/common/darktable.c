@@ -86,6 +86,8 @@
 
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
+#elif defined HAVE_IMAGEMAGICK
+#include <MagickWand/MagickWand.h>
 #endif
 
 #include "dbus.h"
@@ -548,6 +550,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  GraphicsMagick support disabled\n"
 #endif
 
+#ifdef HAVE_IMAGEMAGICK
+               "  ImageMagick support enabled\n"
+#else
+               "  ImageMagick support disabled\n"
+#endif
+
 #ifdef HAVE_OPENEXR
                "  OpenEXR support enabled\n"
 #else
@@ -915,6 +923,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // *SIGH*
   dt_set_signal_handlers();
+#elif defined HAVE_IMAGEMAGICK
+  /* ImageMagick init */
+  MagickWandGenesis();
 #endif
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
@@ -980,6 +991,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // set up memory.darktable_iop_names table
   dt_iop_set_darktable_iop_table();
+
+  // set up the list of exiv2 metadata
+  dt_exif_set_exiv2_taglist();
 
   if(init_gui)
   {
@@ -1159,6 +1173,8 @@ void dt_cleanup()
 
 #ifdef HAVE_GRAPHICSMAGICK
   DestroyMagick();
+#elif defined HAVE_IMAGEMAGICK
+  MagickWandTerminus();
 #endif
 
   dt_guides_cleanup(darktable.guides);

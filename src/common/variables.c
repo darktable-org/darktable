@@ -477,7 +477,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
           end[0] = '|';
           end[1] = '\0';
           (*variable) += strlen(category) + 1;
-          char *tag = dt_tag_get_subtag(params->imgid, category, (int)level);
+          char *tag = dt_tag_get_subtags(params->imgid, category, (int)level);
           if (tag)
           {
             result = g_strdup(tag);
@@ -518,6 +518,12 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   }
   if(!result) result = g_strdup("");
 
+  if(params->escape_markup)
+  {
+    gchar *e_res = g_markup_escape_text(result, -1);
+    g_free(result);
+    return e_res;
+  }
   return result;
 }
 
