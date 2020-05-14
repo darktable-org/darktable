@@ -596,16 +596,16 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  if     (self->picker->colorpick == g->grey_point)
+  if     (picker == g->grey_point)
     apply_auto_grey(self);
-  else if(self->picker->colorpick == g->shadows_range)
+  else if(picker == g->shadows_range)
     apply_auto_black(self);
-  else if(self->picker->colorpick == g->dynamic_range)
+  else if(picker == g->dynamic_range)
     apply_auto_dynamic_range(self);
-  else if(self->picker->colorpick == g->auto_button)
+  else if(picker == g->auto_button)
     apply_autotune(self);
   else
     fprintf(stderr, "[profile_gamma] unknown color picker\n");

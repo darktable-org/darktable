@@ -1369,26 +1369,26 @@ static void apply_autoluma(dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  if     (self->picker->colorpick == g->hue_lift)
+  if     (picker == g->hue_lift)
     apply_lift_neutralize(self);
-  else if(self->picker->colorpick == g->hue_gamma)
+  else if(picker == g->hue_gamma)
     apply_gamma_neutralize(self);
-  else if(self->picker->colorpick == g->hue_gain)
+  else if(picker == g->hue_gain)
     apply_gain_neutralize(self);
-  else if(self->picker->colorpick == g->lift_factor)
+  else if(picker == g->lift_factor)
     apply_lift_auto(self);
-  else if(self->picker->colorpick == g->gamma_factor)
+  else if(picker == g->gamma_factor)
     apply_gamma_auto(self);
-  else if(self->picker->colorpick == g->gain_factor)
+  else if(picker == g->gain_factor)
     apply_gain_auto(self);
-  else if(self->picker->colorpick == g->grey)
+  else if(picker == g->grey)
     apply_autogrey(self);
-  else if(self->picker->colorpick == g->auto_luma)
+  else if(picker == g->auto_luma)
     apply_autoluma(self);
-  else if(self->picker->colorpick == g->auto_color)
+  else if(picker == g->auto_color)
     apply_autocolor(self);
   else
     fprintf(stderr, "[colorbalance] unknown color picker\n");
