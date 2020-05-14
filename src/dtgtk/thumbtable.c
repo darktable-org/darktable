@@ -1176,6 +1176,20 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
      *                        | S | S | S | S | N |
      * S = same imgid as offset ; N = next imgid as offset
      **/
+
+    // in filmstrip mode, let's first ensure the offset is the right one. Otherwise we move to it
+    int old_offset = -1;
+    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && g_slist_length(darktable.view_manager->active_images) > 0)
+    {
+      const int tmpoff = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
+      if(tmpoff != table->offset_imgid)
+      {
+        old_offset = table->offset_imgid;
+        table->offset = _thumb_get_rowid(tmpoff);
+        table->offset_imgid = tmpoff;
+        dt_thumbtable_full_redraw(table, TRUE);
+      }
+    }
     int newid = table->offset_imgid;
     if(newid <= 0 && table->offset > 0) newid = _thumb_get_imgid(table->offset);
 
@@ -1246,6 +1260,23 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     dt_thumbtable_full_redraw(table, TRUE);
 
     if(offset_changed) dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
+    else
+    {
+      // if we are in culling or preview mode, ensure to refresh active images
+      dt_view_lighttable_culling_preview_refresh(darktable.view_manager);
+    }
+
+    // if needed, we restore back the position of the filmstrip
+    if(old_offset > 0 && old_offset != table->offset)
+    {
+      const int tmpoff = _thumb_get_rowid(old_offset);
+      if(tmpoff > 0)
+      {
+        table->offset = tmpoff;
+        table->offset_imgid = old_offset;
+        dt_thumbtable_full_redraw(table, TRUE);
+      }
+    }
 
     dt_control_queue_redraw_center();
   }

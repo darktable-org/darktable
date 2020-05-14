@@ -187,6 +187,22 @@ static void _culling_reinit(dt_view_t *self)
   dt_culling_init(lib->culling, lib->culling->offset);
 }
 
+static void _culling_preview_refresh(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  // full_preview change
+  if(lib->preview_state)
+  {
+    dt_culling_full_redraw(lib->preview, TRUE);
+  }
+
+  // culling change (note that full_preview can be combined with culling)
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    dt_culling_full_redraw(lib->culling, TRUE);
+  }
+}
+
 static gboolean _preview_get_state(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -201,6 +217,7 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.view = self;
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
   darktable.view_manager->proxy.lighttable.culling_init_mode = _culling_reinit;
+  darktable.view_manager->proxy.lighttable.culling_preview_refresh = _culling_preview_refresh;
 
   // ensure the memory table is up to date
   dt_collection_memory_update();
