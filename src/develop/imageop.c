@@ -389,7 +389,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
     module->picked_color_max[k] = module->picked_output_color_max[k] = -666.0f;
   }
   module->picker = NULL;
-  module->blend_picker = NULL;
   module->histogram_cst = iop_cs_NONE;
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
@@ -1516,7 +1515,6 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   free(module->default_blendop_params);
   module->default_blendop_params = NULL;
   module->picker = NULL;
-  module->blend_picker = NULL;
   free(module->histogram);
   module->histogram = NULL;
   g_hash_table_destroy(module->raster_mask.source.users);

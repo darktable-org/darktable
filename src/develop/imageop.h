@@ -120,9 +120,8 @@ typedef void dt_iop_global_data_t;
 /** color picker request */
 typedef enum dt_dev_request_colorpick_flags_t
 {
-  DT_REQUEST_COLORPICK_OFF = 0,         // off
-  DT_REQUEST_COLORPICK_MODULE = 1 << 0, // requested by module (should take precedence)
-  DT_REQUEST_COLORPICK_BLEND = 1 << 1   // requested by parametric blending gui
+  DT_REQUEST_COLORPICK_OFF = 0,   // off
+  DT_REQUEST_COLORPICK_MODULE = 1 // requested by module (should take precedence)
 } dt_dev_request_colorpick_flags_t;
 
 /** colorspace enums, must be in synch with dt_iop_colorspace_type_t in color_conversion.cl */
@@ -302,9 +301,8 @@ typedef struct dt_iop_module_t
   int request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
-  /** color picker proxys */
+  /** color picker proxy */
   struct dt_iop_color_picker_t *picker;
-  struct dt_iop_color_picker_t *blend_picker;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** single point to pick if in point mode */
