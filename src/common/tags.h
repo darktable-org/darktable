@@ -84,7 +84,7 @@ gboolean dt_tag_exists(const char *name, guint *tagid);
 
 /** attach a tag on images list. tagid id of tag to attach. img the list of image
  * id to attach tag to */
-gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on);
+gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolean undo_on);
 /** attach a tag on images. tagid id of tag to attach. imgid the image
  * id to attach tag to, if < 0 images to act on are used. */
 gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
@@ -99,15 +99,15 @@ gboolean dt_is_tag_attached(const guint tagid, const gint imgid);
  * if clear_on TRUE the image tags are cleared before attaching the new ones*/
 void dt_tag_set_tags(const GList *tags, const GList *img,
                      const gboolean ignore_dt_tags, const gboolean clear_on,
-                     const gboolean undo_on, const gboolean group_on);
+                     const gboolean undo_on);
 
 /** attach a list of tags on list of images. \param[in] tags a comma separated string of tags. \param[in]
  * img the list of images to attach tag to. \note If tag not exists it's created.*/
-void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboolean undo_on, const gboolean group_on);
+void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboolean undo_on);
 
 /** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] img the list of image id to detach
  * tag from */
-void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on);
+void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean undo_on);
 /** detach tag from images. \param[in] tagid if of tag to dettach. \param[in] imgid the image id to detach
  * tag from, if < 0 images to act on are used. */
 void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);

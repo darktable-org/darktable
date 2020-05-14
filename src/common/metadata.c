@@ -539,7 +539,7 @@ static void _metadata_execute(const GList *imgs, const GList *metadata, GList **
   }
 }
 
-void dt_metadata_set(const int imgid, const char *key, const char *value, const gboolean undo_on, const gboolean group_on)
+void dt_metadata_set(const int imgid, const char *key, const char *value, const gboolean undo_on)
 {
   if(!key || !imgid) return;
 
@@ -554,7 +554,6 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
     if(imgs)
     {
       GList *undo = NULL;
-      if(group_on) dt_grouping_add_grouped_images(&imgs);
       if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
 
       const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
@@ -698,13 +697,12 @@ void dt_metadata_clear(GList *imgs, const gboolean undo_on)
 }
 
 void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboolean clear_on,
-                             const gboolean undo_on, const gboolean group_on)
+                             const gboolean undo_on)
 {
   GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
 
     _metadata_execute(imgs, metadata, &undo, undo_on, clear_on ? DT_MA_SET : DT_MA_ADD);

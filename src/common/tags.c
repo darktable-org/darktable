@@ -420,7 +420,7 @@ static void _tag_execute(const GList *tags, const GList *imgs,
   }
 }
 
-gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on)
+gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolean undo_on)
 {
   if(!img) return FALSE;
   GList *undo = NULL;
@@ -430,7 +430,6 @@ gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolea
   if(imgs)
   {
     tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
 
     _tag_execute(tags, imgs, &undo, undo_on, DT_TA_ATTACH);
@@ -459,8 +458,8 @@ gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_
     if(dt_is_tag_attached(tagid, imgid)) return FALSE;
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   }
-
-  const gboolean res = dt_tag_attach_images(tagid, imgs, undo_on, group_on);
+  if(group_on) dt_grouping_add_grouped_images(&imgs);
+  const gboolean res = dt_tag_attach_images(tagid, imgs, undo_on);
   g_list_free(imgs);
   return res;
 }
@@ -472,13 +471,12 @@ void dt_tag_attach_from_gui(const guint tagid, const gint imgid, const gboolean 
 }
 
 void dt_tag_set_tags(const GList *tags, const GList *img, const gboolean ignore_dt_tags,
-                     const gboolean clear_on, const gboolean undo_on, const gboolean group_on)
+                     const gboolean clear_on, const gboolean undo_on)
 {
   GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
 
     _tag_execute(tags, imgs, &undo, undo_on,
@@ -494,7 +492,7 @@ void dt_tag_set_tags(const GList *tags, const GList *img, const gboolean ignore_
   }
 }
 
-void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboolean undo_on, const gboolean group_on)
+void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboolean undo_on)
 {
   // tags may not exist yet
   // undo only undoes the tags attachments. it doesn't remove created tags.
@@ -521,7 +519,6 @@ void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboole
     if(imgs)
     {
       GList *undo = NULL;
-      if(group_on) dt_grouping_add_grouped_images(&imgs);
       if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
 
       _tag_execute(tagl, imgs, &undo, undo_on, DT_TA_ATTACH);
@@ -540,7 +537,7 @@ void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboole
   g_strfreev(tokens);
 }
 
-void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on)
+void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean undo_on)
 {
   GList *imgs = g_list_copy((GList *)img);
   if(imgs)
@@ -548,7 +545,6 @@ void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean un
     GList *tags = NULL;
     tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
     GList *undo = NULL;
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
 
     _tag_execute(tags, imgs, &undo, undo_on, DT_TA_DETACH);
@@ -570,8 +566,9 @@ void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, 
     imgs = dt_view_get_images_to_act_on(TRUE);
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  if(group_on) dt_grouping_add_grouped_images(&imgs);
 
-  dt_tag_detach_images(tagid, imgs, undo_on, group_on);
+  dt_tag_detach_images(tagid, imgs, undo_on);
   g_list_free(imgs);
 }
 

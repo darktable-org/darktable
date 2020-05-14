@@ -1234,7 +1234,7 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
       osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
       osm_gps_map_point_free(pt);
       const dt_image_geoloc_t geoloc = { longitude, latitude, NAN };
-      dt_image_set_locations(imgs, &geoloc, TRUE, TRUE);
+      dt_image_set_locations(imgs, &geoloc, TRUE);
       g_list_free(imgs);
       success = TRUE;
     }
@@ -1312,7 +1312,7 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
       }
       //  image(s) dropped into the filmstrip, let's remove it (them) in this case
       const dt_image_geoloc_t geoloc = { NAN, NAN, NAN };
-      dt_image_set_locations(imgs, &geoloc, TRUE, TRUE);
+      dt_image_set_locations(imgs, &geoloc, TRUE);
       g_list_free(imgs);
       success = TRUE;
     }
