@@ -44,6 +44,7 @@ typedef struct dt_print_t
 {
   int32_t image_id;
   dt_print_info_t *pinfo;
+  gboolean busy;
 }
 dt_print_t;
 
@@ -138,6 +139,12 @@ void cleanup(dt_view_t *self)
   free(prt);
 }
 
+static gboolean _expose_again(gpointer user_data)
+{
+  dt_control_queue_redraw_center();
+  return FALSE;
+}
+
 static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_print_t *prt = (dt_print_t *)self->data;
@@ -226,7 +233,24 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   cairo_rectangle (cr, ax, ay, awidth, aheight);
   cairo_fill (cr);
 
-  dt_view_image_only_expose(prt->image_id, cr, iwidth, iheight, ix, iy);
+  cairo_surface_t *surf = NULL;
+  const int res = dt_view_image_get_surface(prt->image_id, iwidth, iheight, &surf);
+  if(res)
+  {
+    // if the image is missing, we reload it again
+    g_timeout_add(250, _expose_again, NULL);
+    if(!prt->busy) dt_control_log_busy_enter();
+    prt->busy = TRUE;
+  }
+  else
+  {
+    cairo_translate(cr, ix, iy);
+    cairo_set_source_surface(cr, surf, 0, 0);
+    cairo_paint(cr);
+    cairo_surface_destroy(surf);
+    if(prt->busy) dt_control_log_busy_leave();
+    prt->busy = FALSE;
+  }
 }
 
 void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)

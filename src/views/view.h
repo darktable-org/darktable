@@ -192,59 +192,10 @@ GList *dt_view_get_images_to_act_on(gboolean only_visible);
 // get the main image to act on during global changes (libs, accels)
 int dt_view_get_image_to_act_on();
 
-/** guess the image_over flag assuming that all possible controls are displayed */
-dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
-
-typedef struct dt_view_image_expose_t
-{
-  dt_view_image_over_t *image_over;
-  uint32_t imgid;
-  cairo_t *cr;
-  float width;
-  float height;
-  int32_t zoom;
-  int32_t px;
-  int32_t py;
-  gboolean full_preview;
-  gboolean filmstrip;
-  gboolean image_only;
-  gboolean no_deco;
-  gboolean mouse_over;
-  float full_zoom;
-  float full_zoom100;
-  float *full_w1;
-  float *full_h1;
-  float full_x;
-  float full_y;
-  float *full_maxdx;
-  float *full_maxdy;
-
-  cairo_surface_t **full_surface;
-  uint8_t **full_rgbbuf;
-  int *full_surface_mip;
-  int *full_surface_id;
-  int *full_surface_wd;
-  int *full_surface_ht;
-  int *full_surface_w_lock;
-} dt_view_image_expose_t;
 /** returns an uppercase string of file extension **plus** some flag information **/
 char* dt_view_extend_modes_str(const char * name, const int is_hdr, const int is_bw);
-/** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
-int dt_view_image_expose(dt_view_image_expose_t *vals);
 /** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
 int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface);
-
-/* expose only the image imgid at position (offsetx,offsety) into the cairo surface occupying width/height pixels.
-   this routine does not output any meta-data as the version above.
- */
-void
-dt_view_image_only_expose(
-  uint32_t imgid,
-  cairo_t *cr,
-  int32_t width,
-  int32_t height,
-  int32_t offsetx,
-  int32_t offsety);
 
 
 /** Set the selection bit to a given value for the specified image */
