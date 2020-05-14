@@ -2314,7 +2314,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   if(!in)
   {
-    dt_iop_color_picker_reset(self, TRUE);
     _reset_display_selection(self);
   }
 }

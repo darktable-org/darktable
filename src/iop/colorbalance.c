@@ -1396,11 +1396,6 @@ void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   _check_tuner_picker_labels(self);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
-{
-  if(!in) dt_iop_color_picker_reset(self, TRUE);
-}
-
 void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_colorbalance_params_t));

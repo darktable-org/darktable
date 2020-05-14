@@ -894,7 +894,7 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  if(!in) _turn_selregion_picker_off(self);
+  if(!in) _turn_select_region_off(self);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
