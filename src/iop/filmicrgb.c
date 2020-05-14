@@ -962,12 +962,6 @@ static void preserve_color_callback(GtkWidget *combo, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
-{
-  if(!in) dt_iop_color_picker_reset(self, TRUE);
-}
-
-
 inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p, struct dt_iop_filmic_rgb_spline_t *const spline)
 {
   const float white_source = p->white_point_source;
