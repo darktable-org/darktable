@@ -1060,13 +1060,16 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
   dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
-static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
+static gboolean dt_iop_gui_off_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(!darktable.gui->reset)
   {
-    if(gtk_toggle_button_get_active(togglebutton))
+    if(e->state & GDK_CONTROL_MASK)
+      dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
+    else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
     {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), FALSE);
       module->enabled = 1;
 
       if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
@@ -1077,6 +1080,7 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
     }
     else
     {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), TRUE);
       module->enabled = 0;
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
@@ -1089,8 +1093,10 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
   g_free(module_label);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(togglebutton), tooltip);
-  gtk_widget_queue_draw(GTK_WIDGET(togglebutton));
+  gtk_widget_set_tooltip_text(w, tooltip);
+  gtk_widget_queue_draw(w);
+  
+  return TRUE;
 }
 
 gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module)
@@ -1441,6 +1447,7 @@ static void dt_iop_init_module_so(void *m)
       // Adding the optional show accelerator to the table (blank)
       dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
       dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "focus module"), 0, 0);
 
       dt_accel_register_iop(module, FALSE, NC_("accel", "reset module parameters"), 0, 0);
       dt_accel_register_iop(module, FALSE, NC_("accel", "show preset menu"), 0, 0);
@@ -2021,7 +2028,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), tooltip);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[IOP_MODULE_SWITCH]), module->enabled);
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "button-press-event", G_CALLBACK(dt_iop_gui_off_callback), module);
   module->off = DTGTK_TOGGLEBUTTON(hw[IOP_MODULE_SWITCH]);
   gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), !module->hide_enable_button);
 
@@ -2153,6 +2160,15 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
   return TRUE;
 }
 
+static gboolean request_module_focus_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data)
+
+{
+  dt_iop_module_t * module = (dt_iop_module_t *)data;
+  dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
+  return TRUE;
+}
+
 static gboolean enable_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer data)
 
@@ -2182,6 +2198,10 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   // Connecting the (optional) module show accelerator
   closure = g_cclosure_new(G_CALLBACK(show_module_callback), module, NULL);
   dt_accel_connect_iop(module, "show module", closure);
+
+  // Connecting the (optional) module gui focus accelerator
+  closure = g_cclosure_new(G_CALLBACK(request_module_focus_callback), module, NULL);
+  dt_accel_connect_iop(module, "focus module", closure);
 
   // Connecting the (optional) module switch accelerator
   closure = g_cclosure_new(G_CALLBACK(enable_module_callback), module, NULL);
