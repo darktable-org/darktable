@@ -1728,6 +1728,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(darktable.develop->gui_module->gui_focus)
       darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
 
+    dt_iop_color_picker_reset(darktable.develop->gui_module, TRUE);
+
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_FLAG_NORMAL,
                                TRUE);
 

@@ -1344,12 +1344,6 @@ void gui_cleanup(dt_iop_module_t *self)
 }
 
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
-{
-  if(!in) dt_iop_color_picker_reset(self, TRUE);
-}
-
-
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);

@@ -1100,11 +1100,6 @@ static void preserve_color_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
-{
-  if(!in) dt_iop_color_picker_reset(self, TRUE);
-}
-
 void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_temp, int res,
   dt_iop_filmic_data_t *d, dt_iop_filmic_nodes_t *nodes_data)
 {

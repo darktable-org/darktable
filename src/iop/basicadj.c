@@ -723,7 +723,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  if(!in) _turn_selregion_picker_off(self);
+  if(!in) _turn_select_region_off(self);
 }
 
 void change_image(struct dt_iop_module_t *self)
