@@ -2042,7 +2042,7 @@ static void switch_cursors(struct dt_iop_module_t *self)
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
 
   // if we are editing masks or using colour-pickers, do not display controls
-  if(!sanity_check(self) || in_mask_editing(self) || (self->blend_picker && self->blend_picker->module->request_color_pick))
+  if(!sanity_check(self) || in_mask_editing(self) || (self->picker && self->request_color_pick != DT_REQUEST_COLORPICK_OFF))
   {
     // display default cursor
     GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");

@@ -611,9 +611,6 @@ void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
   darktable.gui->reset = reset;
 
-  // avoid recursion
-  self->picker->skip_apply = TRUE;
-
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
