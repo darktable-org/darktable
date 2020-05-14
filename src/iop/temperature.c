@@ -1685,8 +1685,8 @@ static void apply_preset(dt_iop_module_t *self)
     case 2: // from image area wb, expose callback will set p->coeffs.
       //reset previously stored color picker information
       for(int k = 0; k < 4; k++) old[k] = 0.0f;
-      g_signal_emit_by_name(G_OBJECT(g->colorpicker), "quad-pressed");
-
+      gboolean ret_val;
+      g_signal_emit_by_name(G_OBJECT(g->colorpicker), "button-press-event", NULL, &ret_val);
       break;
     case 3: // directly changing one of the coeff sliders also changes the mod_coeff so it can be read here
       for(int k = 0; k < 4; k++) p->coeffs[k] = g->mod_coeff[k];
@@ -1985,7 +1985,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, g->scale_tint, 0, 2, 1, 1);
   gtk_widget_set_hexpand(g->scale_tint, TRUE);
 
-  g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  // create color picker to be able to send its signal when spot selected
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   g->btn_asshot = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g->btn_user = dtgtk_togglebutton_new(dtgtk_cairo_paint_star, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g->btn_d65 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
@@ -1999,16 +2000,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
   gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance preset to D65"));
 
-  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  //g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   g_signal_connect(G_OBJECT(g->btn_asshot), "toggled", G_CALLBACK(btn_asshot_toggled),  (gpointer)self);
   g_signal_connect(G_OBJECT(g->btn_user), "toggled", G_CALLBACK(btn_user_toggled),  (gpointer)self);
   g_signal_connect(G_OBJECT(g->btn_d65), "toggled", G_CALLBACK(btn_d65_toggled),  (gpointer)self);
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->colorpicker),
-                     DT_COLOR_PICKER_AREA,
-                     _iop_color_picker_apply);
 
   gtk_box_pack_start(GTK_BOX(g->box_enabled), gridw, TRUE, TRUE, 0);
 
@@ -2052,9 +2047,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->presets, NULL, _("setting")); // relabel to setting to remove confusion between module presets and white balance settings
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->presets, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance preset from camera"));
-  // create hidden color picker to be able to send its signal when spot selected
-  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
-  gtk_stack_add_named(GTK_STACK(g->stack), g->colorpicker, "hidden");
 
   g->finetune = dt_bauhaus_slider_new_with_range_and_feedback(self, -9.0, 9.0, 1.0, 0.0, 0, feedback);
   dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
