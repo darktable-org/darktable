@@ -1203,6 +1203,11 @@ void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm)
   if(vm->proxy.lighttable.module) vm->proxy.lighttable.culling_init_mode(vm->proxy.lighttable.view);
 }
 
+void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module) vm->proxy.lighttable.culling_preview_refresh(vm->proxy.lighttable.view);
+}
+
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
