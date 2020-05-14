@@ -79,6 +79,12 @@ const dt_metadata_t dt_metadata_get_keyid(const char* key);
 /** return the key of the metadata keyid */
 const char *dt_metadata_get_key(const uint32_t keyid);
 
+/** return the metadata subeky of the metadata keyid */
+const char *dt_metadata_get_subkey(const uint32_t keyid);
+
+/** return the key of the metadata subkey */
+const char *dt_metadata_get_key_by_subkey(const char *subkey);
+
 /** return the type of the metadata keyid */
 const int dt_metadata_get_type(const uint32_t keyid);
 
