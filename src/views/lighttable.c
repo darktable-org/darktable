@@ -133,7 +133,21 @@ static void _lighttable_check_layout(dt_view_t *self)
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
 
     if(!lib->already_started)
-      dt_culling_init(lib->culling, lib->thumbtable_offset);
+    {
+      int id = lib->thumbtable_offset;
+      sqlite3_stmt *stmt;
+      gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d",
+                                     dt_conf_get_int("plugins/lighttable/culling_last_id"));
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        id = sqlite3_column_int(stmt, 0);
+      }
+      g_free(query);
+      sqlite3_finalize(stmt);
+
+      dt_culling_init(lib->culling, id);
+    }
     else
       dt_culling_init(lib->culling, -1);
 
