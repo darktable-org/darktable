@@ -227,12 +227,12 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     if(colors_flag)
     {
       const int colors = (action == DT_MA_CLEAR) ? 0 : dt_colorlabels_get_labels(imageid);
-      dt_colorlabels_set_labels(imgs, colors, action != DT_MA_MERGE, TRUE, FALSE);
+      dt_colorlabels_set_labels(imgs, colors, action != DT_MA_MERGE, TRUE);
     }
     if(dtmetadata_flag)
     {
       GList *metadata = (action == DT_MA_CLEAR) ? NULL : dt_metadata_get_list_id(imageid);
-      dt_metadata_set_list_id(imgs, metadata, action != DT_MA_MERGE, TRUE, FALSE);
+      dt_metadata_set_list_id(imgs, metadata, action != DT_MA_MERGE, TRUE);
       g_list_free_full(metadata, g_free);
     }
     if(geotag_flag)
@@ -242,14 +242,14 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
         geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
       else
         dt_image_get_location(imageid, geoloc);
-      dt_image_set_locations(imgs, geoloc, TRUE, FALSE);
+      dt_image_set_locations(imgs, geoloc, TRUE);
       g_free(geoloc);
     }
     if(dttag_flag)
     {
       // affect only user tags (not dt tags)
       GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid, TRUE);
-      dt_tag_set_tags(tags, imgs, TRUE, action != DT_MA_MERGE, TRUE, FALSE);
+      dt_tag_set_tags(tags, imgs, TRUE, action != DT_MA_MERGE, TRUE);
       g_list_free(tags);
     }
 

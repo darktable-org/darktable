@@ -447,13 +447,12 @@ void _image_set_location(GList *imgs, const dt_image_geoloc_t *geoloc, GList **u
   }
 }
 
-void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, const gboolean undo_on, const gboolean group_on)
+void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, const gboolean undo_on)
 {
   GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
 
     _image_set_location(imgs, geoloc, &undo, undo_on);
@@ -476,7 +475,8 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
     imgs = dt_view_get_images_to_act_on(TRUE);
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-  dt_image_set_locations(imgs, geoloc, undo_on, group_on);
+  if(group_on) dt_grouping_add_grouped_images(&imgs);
+  dt_image_set_locations(imgs, geoloc, undo_on);
   g_list_free(imgs);
 }
 

@@ -89,7 +89,7 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey);
 const int dt_metadata_get_type(const uint32_t keyid);
 
 /** Set metadata for a specific image, or all selected for id == -1. */
-void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on, const gboolean group_on); // duplicate.c, lua/image.c
+void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on); // duplicate.c, lua/image.c
 
 /** Set imported metadata for a specific image */
 void dt_metadata_set_import(int id, const char *key, const char *value); // exif.cc, ligthroom.c
@@ -102,7 +102,7 @@ void dt_metadata_set_list(GList *imgs, GList *key_value, const gboolean undo_on)
     list is a set of keyid, value
     if clear_on TRUE the image metadata are cleared before attaching the new ones*/
 void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboolean clear_on,
-                             const gboolean undo_on, const gboolean group_on);
+                             const gboolean undo_on);
 /** Get metadata (named keys) for a specific image, or all selected for id == -1.
     For keys which return a string, the caller has to make sure that it
     is freed after usage. */

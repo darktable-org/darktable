@@ -284,7 +284,7 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
                            const gboolean undo_on, const gboolean group_on);
 /** set images location lon/lat/ele */
 void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc,
-                           const gboolean undo_on, const gboolean group_on);
+                           const gboolean undo_on);
 /** get image location lon/lat/ele */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */

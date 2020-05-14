@@ -81,7 +81,7 @@ static gboolean _lib_duplicate_caption_out_callback(GtkWidget *widget, GdkEvent 
   const int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
 
   // we write the content of the textbox to the caption field
-  dt_metadata_set(imgid, "Xmp.darktable.version_name", gtk_entry_get_text(GTK_ENTRY(widget)), FALSE, FALSE);
+  dt_metadata_set(imgid, "Xmp.darktable.version_name", gtk_entry_get_text(GTK_ENTRY(widget)), FALSE);
   dt_image_synch_xmp(imgid);
 
   return FALSE;
@@ -182,7 +182,7 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget, GdkEventBut
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
   d->imgid = 0;
-  if(d->busy) 
+  if(d->busy)
   {
     dt_control_log_busy_leave();
     dt_control_toast_busy_leave();
@@ -285,7 +285,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   }
   else
   {
-    if(d->busy) 
+    if(d->busy)
     {
       dt_control_log_busy_leave();
       dt_control_toast_busy_leave();

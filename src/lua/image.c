@@ -252,7 +252,7 @@ static int metadata_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, key, luaL_checkstring(L, 3), FALSE, FALSE);
+    dt_metadata_set(my_image->id, key, luaL_checkstring(L, 3), FALSE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
