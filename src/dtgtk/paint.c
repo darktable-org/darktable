@@ -112,7 +112,6 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
   s *= 1.25; // fine tuning of size
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
-  cairo_translate(cr, 0.05, 0); // fine tuning of position
 
   /* initialize rotation and flip matrices */
   cairo_matrix_t hflip_matrix;
@@ -132,10 +131,10 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
   else if(flags & CPF_DIRECTION_LEFT) // Flip x transformation
     cairo_transform(cr, &hflip_matrix);
 
-  cairo_move_to(cr, 0.1, 0.5);
-  cairo_line_to(cr, 0.1, 0.125);
-  cairo_line_to(cr, 0.5, 0.5);
-  cairo_line_to(cr, 0.1, 0.875);
+  cairo_move_to(cr, 0.15, 0.5);
+  cairo_line_to(cr, 0.15, 0.125);
+  cairo_line_to(cr, 0.55, 0.5);
+  cairo_line_to(cr, 0.15, 0.875);
   cairo_fill(cr);
   cairo_identity_matrix(cr);
 
