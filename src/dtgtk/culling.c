@@ -785,6 +785,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
 
   // get first id
   sqlite3_stmt *stmt;
+  gchar *query = NULL;
   int first_id = -1;
 
   if(offset > 0)
@@ -816,15 +817,6 @@ void dt_culling_init(dt_culling_t *table, int offset)
     return;
   }
 
-  // special culling dynamic mode
-  if(culling_dynamic)
-  {
-    table->navigate_inside_selection = TRUE;
-    table->offset = _thumb_get_rowid(first_id);
-    table->offset_imgid = first_id;
-    return;
-  }
-
   // selection count
   int sel_count = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -834,13 +826,27 @@ void dt_culling_init(dt_culling_t *table, int offset)
                               -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
+
+  // special culling dynamic mode
+  if(culling_dynamic)
+  {
+    if(sel_count == 0)
+    {
+      dt_control_log(_("no image selected !"));
+    }
+    table->navigate_inside_selection = TRUE;
+    table->offset = _thumb_get_rowid(first_id);
+    table->offset_imgid = first_id;
+    return;
+  }
+
   // is first_id inside selection ?
   gboolean inside = FALSE;
-  gchar *query = dt_util_dstrcat(NULL,
-                                 "SELECT col.imgid "
-                                 "FROM memory.collected_images AS col, main.selected_images AS sel "
-                                 "WHERE col.imgid=sel.imgid AND col.imgid=%d",
-                                 first_id);
+  query = dt_util_dstrcat(NULL,
+                          "SELECT col.imgid "
+                          "FROM memory.collected_images AS col, main.selected_images AS sel "
+                          "WHERE col.imgid=sel.imgid AND col.imgid=%d",
+                          first_id);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW) inside = TRUE;
   sqlite3_finalize(stmt);
