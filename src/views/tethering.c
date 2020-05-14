@@ -80,6 +80,7 @@ typedef struct dt_capture_t
   /** Cursor position for dragging the zoomed live view */
   double live_view_zoom_cursor_x, live_view_zoom_cursor_y;
 
+  gboolean busy;
 } dt_capture_t;
 
 /* signal handler for filmstrip image switching */
@@ -152,6 +153,12 @@ void configure(dt_view_t *self, int wd, int ht)
 #define MARGIN DT_PIXEL_APPLY_DPI(20)
 #define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) /* see libs/camera.c */
 
+static gboolean _expose_again(gpointer user_data)
+{
+  dt_control_queue_redraw_center();
+  return FALSE;
+}
+
 static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                                   int32_t pointery)
 {
@@ -197,17 +204,26 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   }
   else if(lib->image_id >= 0) // First of all draw image if available
   {
-    cairo_translate(cr, MARGIN, MARGIN);
-    dt_view_image_expose_t params = { 0 };
-    params.image_over = &(lib->image_over);
-    params.imgid = lib->image_id;
-    params.cr = cr;
-    params.width = width - (MARGIN * 2.0f);
-    params.height = height - (MARGIN * 2.0f);
-    params.px = pointerx;
-    params.py = pointery;
-    params.zoom = 1;
-    dt_view_image_expose(&params);
+    cairo_surface_t *surf = NULL;
+    const int res
+        = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf);
+    if(res)
+    {
+      // if the image is missing, we reload it again
+      g_timeout_add(250, _expose_again, NULL);
+      if(!lib->busy) dt_control_log_busy_enter();
+      lib->busy = TRUE;
+    }
+    else
+    {
+      cairo_translate(cr, (width - cairo_image_surface_get_width(surf)) / 2,
+                      (height - cairo_image_surface_get_height(surf)) / 2);
+      cairo_set_source_surface(cr, surf, 0, 0);
+      cairo_paint(cr);
+      cairo_surface_destroy(surf);
+      if(lib->busy) dt_control_log_busy_leave();
+      lib->busy = FALSE;
+    }
   }
 }
 
