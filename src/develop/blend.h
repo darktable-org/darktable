@@ -478,7 +478,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module);
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module);
 void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module);
 
-gboolean blend_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece);
+gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece);
 
 /** routine to translate from mode id to sequence in option list */
 int dt_iop_gui_blending_mode_seq(dt_iop_gui_blend_data_t *bd, int mode);

@@ -1116,10 +1116,10 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 }
 
-gboolean blend_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece)
+gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
-  if(module->picker->colorpick == data->colorpicker_set_values)
+  if(picker == data->colorpicker_set_values)
   {
     if(darktable.gui->reset) return TRUE;
 
@@ -1223,7 +1223,7 @@ gboolean blend_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixelpi
 
     return TRUE;
   }
-  else if(module->picker->colorpick == data->colorpicker)
+  else if(picker == data->colorpicker)
   {
     if(darktable.gui->reset) return TRUE;
 
