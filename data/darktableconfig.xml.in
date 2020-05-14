@@ -2344,7 +2344,7 @@
     <shortdescription>Geotagging search URL</shortdescription>
     <longdescription>this can be changed when the default OpenStreetMap search URL is broken</longdescription>
   </dtconfig>
-  <dtconfig prefs="gui" section="darkroom">
+  <dtconfig prefs="darkroom" section="interface">
     <name>plugins/darkroom/temperature/colored_sliders</name>
     <type>
       <enum>
