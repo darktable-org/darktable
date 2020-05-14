@@ -878,16 +878,16 @@ static void apply_autotune(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  if     (self->picker->colorpick == g->grey_point_source)
+  if     (picker == g->grey_point_source)
     apply_auto_grey(self);
-  else if(self->picker->colorpick == g->black_point_source)
+  else if(picker == g->black_point_source)
     apply_auto_black(self);
-  else if(self->picker->colorpick == g->white_point_source)
+  else if(picker == g->white_point_source)
     apply_auto_white_point_source(self);
-  else if(self->picker->colorpick == g->auto_button)
+  else if(picker == g->auto_button)
     apply_autotune(self);
   else
     fprintf(stderr, "[filmic] unknown color picker\n");
