@@ -1185,6 +1185,7 @@ void dt_thumbnail_update_infos(dt_thumbnail_t *thumb)
   if(!thumb) return;
   _image_get_infos(thumb);
   _thumb_update_icons(thumb);
+  gtk_widget_queue_draw(thumb->w_main);
 }
 
 static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
