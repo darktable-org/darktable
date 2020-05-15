@@ -87,15 +87,21 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   else
     flags &= ~CPF_PRELIGHT;
 
-  /* begin cairo drawing */
+  /* get widget total allocation */
   GtkAllocation allocation;
-  GtkBorder padding;
-
   gtk_widget_get_allocation(widget, &allocation);
+
+  /* get the css geometry properties */
+  GtkBorder margin, border, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_border(context, state, &border);
   gtk_style_context_get_padding(context, state, &padding);
 
-  int width = allocation.width;
-  int height = allocation.height;
+  /* for button frame and background, remove css margin from allocation */
+  int startx = margin.left;
+  int starty = margin.top;
+  int width = allocation.width - margin.left - margin.right;
+  int height = allocation.height - margin.top - margin.bottom;
 
   /* draw standard button background if not transparent nor flat styled */
   if((flags & CPF_STYLE_FLAT))
@@ -106,7 +112,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
       // PRELIGHT, but not on ACTIVE
       if(!(flags & CPF_BG_TRANSPARENT) || (flags & CPF_PRELIGHT))
       {
-        cairo_rectangle(cr, 0, 0, width, height);
+        cairo_rectangle(cr, startx, starty, width, height);
         gdk_cairo_set_source_rgba(cr, &bg_color);
         cairo_fill(cr);
       }
@@ -119,9 +125,8 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   else if(!(flags & CPF_BG_TRANSPARENT))
   {
     /* draw default boxed button */
-    gtk_render_background(context, cr, 0, 0, width, height);
-    if(!(FALSE))
-      gtk_render_frame(context, cr, 0, 0, width, height);
+    gtk_render_background(context, cr, startx, starty, width, height);
+    gtk_render_frame(context, cr, startx, starty, width, height);
   }
 
   gdk_cairo_set_source_rgba(cr, &fg_color);
@@ -129,21 +134,16 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_TOGGLEBUTTON(widget)->icon)
   {
-    /* set icon size and corresponding borders */
-    GtkAllocation clip_area;
-    gtk_widget_get_clip(widget, &clip_area); // get the clip area, the icon drawing cannot exceed that
-
-    int lborder = MAX(clip_area.x - allocation.x, padding.left); // avoid clipping
-    int rborder = MAX(allocation.x + width - clip_area.x - clip_area.width, padding.right);
-    int tborder = MAX(clip_area.y - allocation.y, padding.top);
-    int bborder = MAX(allocation.y + height - clip_area.y - clip_area.height, padding.bottom);
-    int icon_width = width - lborder - rborder;
-    int icon_height = height - tborder - bborder;
+    /* for icon, remove css border and padding too */
+    startx += border.left + padding.left;
+    starty += border.top + padding.top;
+    width -= border.left + border.right + padding.left + padding.right;
+    height -= border.top + border.bottom + padding.top + padding.bottom;
 
     void *icon_data = DTGTK_TOGGLEBUTTON(widget)->icon_data;
 
-    if(icon_width > 0 && icon_height > 0)
-      DTGTK_TOGGLEBUTTON(widget)->icon(cr, lborder, tborder, icon_width, icon_height, flags, icon_data);
+    if(width > 0 && height > 0)
+      DTGTK_TOGGLEBUTTON(widget)->icon(cr, startx, starty, width, height, flags, icon_data);
   }
 
   return FALSE;
