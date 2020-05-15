@@ -121,7 +121,6 @@
 @define-color tooltip_bg_color @grey_05;
 @define-color tooltip_fg_color @grey_70;
 @define-color really_dark_bg_color @grey_05;
-@define-color log_bg_color @grey_05;
 @define-color log_fg_color @grey_85;
 
 /* Views */
@@ -1273,8 +1272,9 @@ cell:selected
   color: @log_fg_color;
   font-size: 1em;
   font-weight: bold;
-  background-color: @log_bg_color;
-  padding: 8px 20px 4px 20px;
+  background-color: rgba(75,75,75,0.6);
+  padding: 8px 20px;
+  border-radius: 8px;
 }
 
  /* then set infos shown on top of the image on darkroom, like for example opacity in drawn masks */
@@ -1282,7 +1282,6 @@ cell:selected
 {
   padding: 2px 14px 4px 14px;
   border-radius: 0 0 8px 8px;
-  background-color: rgba(75,75,75,0.7);
 }
 
 /* Set some specific fonts */
