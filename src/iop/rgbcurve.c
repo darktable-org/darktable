@@ -1479,7 +1479,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_name(g->colorpicker, "keep-active");
   g->colorpicker_set_values = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker_set_values),
-                               dtgtk_cairo_paint_colorpicker_set_values, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+                               dtgtk_cairo_paint_colorpicker_set_values, 
+                               CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_size_request(g->colorpicker_set_values, DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
   gtk_widget_set_tooltip_text(g->colorpicker_set_values, _("create a curve based on an area from the image\n"
                                                            "drag to create a flat curve\n"
