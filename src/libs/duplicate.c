@@ -369,7 +369,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(tb));
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
-    bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 
@@ -463,11 +463,11 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *bt = gtk_label_new(_("existing duplicates"));
   gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
-  bt = dtgtk_button_new(dtgtk_cairo_paint_plus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  bt = dtgtk_button_new(dtgtk_cairo_paint_plus, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(bt), "tooltip-text", _("create a 'virgin' duplicate of the image without any development"), (char *)NULL);
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_lib_duplicate_new_clicked_callback), self);
   gtk_box_pack_end(GTK_BOX(hb), bt, FALSE, FALSE, 0);
-  bt = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  bt = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(bt), "tooltip-text", _("create a duplicate of the image with same history stack"), (char *)NULL);
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
   gtk_box_pack_end(GTK_BOX(hb), bt, FALSE, FALSE, 0);
