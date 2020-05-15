@@ -287,11 +287,12 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   }
   else // let's pretend that we are at PI/2
   {
-    if(v <0) v = -MPI2;
-    else v = MPI2;
+    const float diff_y = pts[3] - pts[1];
+    if(diff_y <= 0.0f) v = -MPI2;
+    else               v = MPI2;
   }
 
-  *rotation = -v * 180.0 / M_PI;
+  *rotation = -v * 180.0f / M_PI;
 
   // and now we go for the offset (more easy)
   sinv = sinf(v);
@@ -316,31 +317,48 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   float wp = piece->buf_out.width, hp = piece->buf_out.height;
 
   // if sinv=0 then this is just the offset
-  if(sinv == 0)
+
+  if(sinv == 0.0f) // horizontal
   {
-    if(v == 0)
+    if(rotation == 0.0f)
     {
-      pts[0] = wp * 0.1;
-      pts[2] = wp * 0.9;
-      pts[1] = pts[3] = hp * offset / 100.0;
+      pts[0] = wp * 0.1f;
+      pts[2] = wp * 0.9f;
+      pts[1] = pts[3] = hp * offset / 100.0f;
     }
     else
     {
-      pts[2] = wp * 0.1;
-      pts[0] = wp * 0.9;
-      pts[1] = pts[3] = hp * (1.0 - offset / 100.0);
+      pts[2] = wp * 0.1f;
+      pts[0] = wp * 0.9f;
+      pts[1] = pts[3] = hp * (1.0f - offset / 100.0f);
+    }
+  }
+  else if(fabsf(sinv) == 1) // vertical
+  {
+    if(rotation == 90)
+    {
+      pts[0] = pts[2] = wp * offset / 100.0f;
+      pts[3] = hp * 0.1f;
+      pts[1] = hp * 0.9f;
+    }
+    else
+    {
+      pts[0] = pts[2] = wp * (1.0 - offset / 100.0f);
+      pts[1] = hp * 0.1f;
+      pts[3] = hp * 0.9f;
     }
   }
   else
   {
     // otherwise we determine the extremities
     const float cosv = cos(v);
-    float xx1 = (sinv - cosv + 1.0 - offset / 50.0) * wp * 0.5 / sinv;
-    float xx2 = (sinv + cosv + 1.0 - offset / 50.0) * wp * 0.5 / sinv;
-    float yy1 = 0;
+    float xx1 = (sinv - cosv + 1.0f - offset / 50.0f) * wp * 0.5f / sinv;
+    float xx2 = (sinv + cosv + 1.0f - offset / 50.0f) * wp * 0.5f / sinv;
+    float yy1 = 0.0f;
     float yy2 = hp;
     const float a = hp / (xx2 - xx1);
     const float b = -xx1 * a;
+
     // now ensure that the line isn't outside image borders
     if(xx2 > wp)
     {
@@ -369,12 +387,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
     yy2 -= (yy2 - yy1) * 0.1;
     yy1 += (yy2 - yy1) * 0.1;
 
-    // now we have to decide which point is where, depending of the angle
-    /*xx1 /= wd;
-    xx2 /= wd;
-    yy1 /= ht;
-    yy2 /= ht;*/
-    if(v < M_PI * 0.5 && v > -M_PI * 0.5)
+    if(rotation < 90.0f && rotation > -90.0f)
     {
       // we want xa < xb
       if(xx1 < xx2)
