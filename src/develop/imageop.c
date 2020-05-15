@@ -1062,14 +1062,12 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
 static gboolean dt_iop_gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  if(!darktable.gui->reset)
+  if(!darktable.gui->reset && e->state & GDK_CONTROL_MASK)
   {
-    if(e->state & GDK_CONTROL_MASK)
-      dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
-    else
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)));
+    dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
+    return TRUE;
   }
-  return TRUE;
+  return FALSE;
 }
   
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
