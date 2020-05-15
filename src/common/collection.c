@@ -678,11 +678,11 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
         switch(local_order)
         {
-          case DT_COLLECTION_SORT_DATETIME: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
           case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
           case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
           case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-          case DT_COLLECTION_SORT_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
           default: colname = "";
         }
       second_order = dt_util_dstrcat(NULL, "%s %s", colname, (collection->params.descending ? "DESC" : ""));
@@ -690,7 +690,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
       }
 
     case DT_COLLECTION_SORT_RATING:
-      second_order = dt_util_dstrcat(NULL, "flags & 7 %s", (collection->params.descending ? "" : "DESC"));
+      second_order = dt_util_dstrcat(NULL, "CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END %s", (collection->params.descending ? "" : "DESC"));
       break;
 
     case DT_COLLECTION_SORT_FILENAME:
@@ -766,7 +766,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         }
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "ORDER BY flags & 7, %s, filename DESC, version DESC", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
@@ -833,11 +833,11 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
         switch(local_order)
         {
-          case DT_COLLECTION_SORT_DATETIME: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
           case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
           case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
           case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-          case DT_COLLECTION_SORT_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
           default: colname = "";
         }
         sq = dt_util_dstrcat(sq, "ORDER BY %s, %s, filename, version", colname, second_order);
@@ -845,7 +845,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         }
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "ORDER BY flags & 7 DESC, %s, filename, version", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END DESC, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:

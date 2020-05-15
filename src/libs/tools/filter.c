@@ -59,6 +59,28 @@ static void _lib_filter_update_query(dt_lib_module_t *self);
 /* make sure that the comparator button matches what is shown in the filter dropdown */
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self);
 
+typedef struct dt_sort_items
+{
+  int id;
+  char *label;
+} dt_sort_items;
+
+const dt_sort_items items[] =
+{
+  { DT_COLLECTION_SORT_FILENAME,     "filename" },
+  { DT_COLLECTION_SORT_DATETIME,     "time" },
+  { DT_COLLECTION_SORT_RATING,       "rating" },
+  { DT_COLLECTION_SORT_ID,           "id" },
+  { DT_COLLECTION_SORT_COLOR,        "color label" },
+  { DT_COLLECTION_SORT_GROUP,        "group" },
+  { DT_COLLECTION_SORT_PATH,         "full path" },
+  { DT_COLLECTION_SORT_CUSTOM_ORDER, "custom sort" },
+  { DT_COLLECTION_SORT_TITLE,        "title" },
+  { DT_COLLECTION_SORT_DESCRIPTION,  "description" },
+  { DT_COLLECTION_SORT_ASPECT_RATIO, "aspect ratio" },
+  { DT_COLLECTION_SORT_SHUFFLE,      "shuffle" }
+};
+#define NB_ITEMS (sizeof(items) / sizeof(dt_sort_items))
 
 const char *name(dt_lib_module_t *self)
 {
@@ -144,20 +166,13 @@ void gui_init(dt_lib_module_t *self)
   /* sort combobox */
   d->sort = widget = gtk_combo_box_text_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("filename"));     // DT_COLLECTION_SORT_FILENAME
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("time"));         // DT_COLLECTION_SORT_DATETIME
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("rating"));       // DT_COLLECTION_SORT_RATING
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("id"));           // DT_COLLECTION_SORT_ID
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("color label"));  // DT_COLLECTION_SORT_COLOR
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("group"));        // DT_COLLECTION_SORT_GROUP
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("full path"));    // DT_COLLECTION_SORT_PATH
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("custom sort"));  // DT_COLLECTION_SORT_CUSTOM_ORDER
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("title"));        // DT_COLLECTION_SORT_TITLE
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("description"));  // DT_COLLECTION_SORT_DESCRIPTION
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("aspect ratio")); // DT_COLLECTION_SORT_ASPECT_RATIO
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("shuffle"));      // DT_COLLECTION_SORT_SHUFFLE
+
+  /* populate combobox */
+  for (int idx = 0 ; idx < NB_ITEMS ; idx++)
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _(items[idx].label));
 
   /* select the last selected value */
+
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_collection_get_sort_field(darktable.collection));
 
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(_lib_filter_sort_combobox_changed), (gpointer)self);
@@ -283,7 +298,7 @@ static void _lib_filter_comparator_changed(GtkComboBox *widget, gpointer user_da
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
   /* update the ui last settings */
-  dt_collection_set_sort(darktable.collection, gtk_combo_box_get_active(widget), -1);
+  dt_collection_set_sort(darktable.collection, items[gtk_combo_box_get_active(widget)].id, -1);
 
   /* update the query and view */
   _lib_filter_update_query(user_data);
