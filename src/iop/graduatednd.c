@@ -50,7 +50,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 typedef struct dt_iop_graduatednd_params_t
 {
   float density;     // The density of filter 0-8 EV
-  float hardness; // Default 0% = soft and 100% = hard
+  float hardness;    // Default 0% = soft and 100% = hard
   float rotation;    // 2*PI -180 - +180
   float offset;      // Default 50%, centered, can be offsetted...
   float hue;         // the hue
@@ -193,20 +193,20 @@ static float dist_seg(float xa, float ya, float xb, float yb, float xc, float yc
 {
   if(xa == xb && ya == yb) return (xc - xa) * (xc - xa) + (yc - ya) * (yc - ya);
 
-  float sx = xb - xa;
-  float sy = yb - ya;
+  const float sx = xb - xa;
+  const float sy = yb - ya;
 
-  float ux = xc - xa;
-  float uy = yc - ya;
+  const float ux = xc - xa;
+  const float uy = yc - ya;
 
-  float dp = sx * ux + sy * uy;
+  const float dp = sx * ux + sy * uy;
   if(dp < 0) return (xc - xa) * (xc - xa) + (yc - ya) * (yc - ya);
 
-  float sn2 = sx * sx + sy * sy;
+  const float sn2 = sx * sx + sy * sy;
   if(dp > sn2) return (xc - xb) * (xc - xb) + (yc - yb) * (yc - yb);
 
-  float ah2 = dp * dp / sn2;
-  float un2 = ux * ux + uy * uy;
+  const float ah2 = dp * dp / sn2;
+  const float un2 = ux * ux + uy * uy;
   return un2 - ah2;
 }
 
@@ -296,8 +296,9 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   // and now we go for the offset (more easy)
   sinv = sinf(v);
   cosv = cosf(v);
-  float ofs = -2.0 * sinv * pts[0] + sinv - cosv + 1.0 + 2.0 * cosv * pts[1];
-  *offset = ofs * 50.0;
+  const float ofs = (-2.0f * sinv * pts[0]) + sinv - cosv + 1.0f + (2.0f * cosv * pts[1]);
+
+  *offset = ofs * 50.0f;
 
   return 1;
 }
@@ -338,8 +339,8 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
     float xx2 = (sinv + cosv + 1.0 - offset / 50.0) * wp * 0.5 / sinv;
     float yy1 = 0;
     float yy2 = hp;
-    float a = hp / (xx2 - xx1);
-    float b = -xx1 * a;
+    const float a = hp / (xx2 - xx1);
+    const float b = -xx1 * a;
     // now ensure that the line isn't outside image borders
     if(xx2 > wp)
     {
@@ -428,7 +429,7 @@ static inline void update_saturation_slider_end_color(GtkWidget *slider, float h
   dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
 }
 
-void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
@@ -468,13 +469,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
-  float wd = dev->preview_pipe->backbuf_width;
-  float ht = dev->preview_pipe->backbuf_height;
-  float zoom_y = dt_control_get_dev_zoom_y();
-  float zoom_x = dt_control_get_dev_zoom_x();
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const float wd = dev->preview_pipe->backbuf_width;
+  const float ht = dev->preview_pipe->backbuf_height;
+  const float zoom_y = dt_control_get_dev_zoom_y();
+  const float zoom_x = dt_control_get_dev_zoom_x();
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
   cairo_translate(cr, width / 2.0, height / 2.0f);
   cairo_scale(cr, zoom_scale, zoom_scale);
@@ -487,7 +488,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     g->define = 1;
   }
 
-  float xa = g->xa * wd, xb = g->xb * wd, ya = g->ya * ht, yb = g->yb * ht;
+  const float xa = g->xa * wd, xb = g->xb * wd, ya = g->ya * ht, yb = g->yb * ht;
   // the lines
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   if(g->selected == 3 || g->dragging == 3)
@@ -511,7 +512,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // the extremities
   float x1, y1, x2, y2;
-  float l = sqrt((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
+  const float l = sqrt((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
   const float ext = wd * 0.01f / zoom_scale;
   x1 = xa + (xb - xa) * ext / l;
   y1 = ya + (yb - ya) * ext / l;
@@ -627,6 +628,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   if(which == 3)
   {
+    // creating a line with right click
     g->dragging = 2;
     g->xa = pzx;
     g->ya = pzy;
@@ -653,17 +655,12 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   if(g->dragging > 0)
   {
-    // dt_iop_graduatednd_params_t *p   = (dt_iop_graduatednd_params_t *)self->params;
-    // float wd = self->dev->preview_pipe->backbuf_width;
-    // float ht = self->dev->preview_pipe->backbuf_height;
     float pzx, pzy;
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
     pzx += 0.5f;
     pzy += 0.5f;
 
     float r = 0.0, o = 0.0;
-    // float pts[4];
-    // dt_dev_distort_backtransform(self->dev,pts,2);
     set_grad_from_points(self, g->xa, g->ya, g->xb, g->yb, &r, &o);
 
     // if this is a "line dragging, we reset extremities, to be sure they are not outside the image
@@ -673,13 +670,13 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
        * whole line dragging should not change rotation, so we should reuse
        * old rotation to avoid rounding issues
        */
+
       r = p->rotation;
       set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, r, o);
     }
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->scale3, r);
-    // dt_bauhaus_slider_set(g->scale4,o);
     darktable.gui->reset = reset;
     p->rotation = r;
     p->offset = o;
@@ -764,7 +761,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      size_t k = (size_t)roi_out->width * y * ch;
+      const size_t k = (size_t)roi_out->width * y * ch;
       const float *in = (float *)ivoid + k;
       float *out = (float *)ovoid + k;
 
@@ -780,10 +777,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         // use exp2f approximation to calculate e^(ln2*x/8)
         // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
         const float t = 0.693147181f /* ln2 */ * (data->density * CLIP(0.5f + length) / 8.0f);
-        float d1 = t * t * 0.5f;
-        float d2 = d1 * t * 0.333333333f;
-        float d3 = d2 * t * 0.25f;
-        float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
+        const float d1 = t * t * 0.5f;
+        const float d2 = d1 * t * 0.333333333f;
+        const float d3 = d2 * t * 0.25f;
+        const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
         // printf("%d %d  %f\n",y,x,d);
         float density = d;
         density = density * density;
@@ -791,7 +788,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         density = density * density;
 #else
         // use fair exp2f
-        float density = exp2f(data->density * CLIP(0.5f + length));
+        const float density = exp2f(data->density * CLIP(0.5f + length));
 #endif
 
         for(int l = 0; l < 3; l++)
@@ -813,7 +810,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      size_t k = (size_t)roi_out->width * y * ch;
+      const size_t k = (size_t)roi_out->width * y * ch;
       const float *in = (float *)ivoid + k;
       float *out = (float *)ovoid + k;
 
@@ -829,16 +826,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         // use exp2f approximation to calculate e^(ln2*x/8)
         // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
         const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP(0.5f - length) / 8.0f);
-        float d1 = t * t * 0.5f;
-        float d2 = d1 * t * 0.333333333f;
-        float d3 = d2 * t * 0.25f;
-        float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
+        const float d1 = t * t * 0.5f;
+        const float d2 = d1 * t * 0.333333333f;
+        const float d3 = d2 * t * 0.25f;
+        const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
         float density = d;
         density = density * density;
         density = density * density;
         density = density * density;
 #else
-        float density = exp2f(-data->density * CLIP(0.5f - length));
+        const float density = exp2f(-data->density * CLIP(0.5f - length));
 #endif
 
         for(int l = 0; l < 3; l++)
@@ -895,7 +892,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      size_t k = (size_t)roi_out->width * y * ch;
+      const size_t k = (size_t)roi_out->width * y * ch;
       const float *in = (float *)ivoid + k;
       float *out = (float *)ovoid + k;
 
@@ -903,8 +900,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                      * filter_hardness;
       const float length_inc = sinv * hw_inv * filter_hardness;
 
-      __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
-      __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
+      const __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
+      const __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
 
       for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
       {
@@ -914,10 +911,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         // use exp2f approximation to calculate e^(ln2*x/8)
         // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
         const float t = 0.693147181f /* ln2 */ * (data->density * CLIP(0.5f + length) / 8.0f);
-        float d1 = t * t * 0.5f;
-        float d2 = d1 * t * 0.333333333f;
-        float d3 = d2 * t * 0.25f;
-        float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
+        const float d1 = t * t * 0.5f;
+        const float d2 = d1 * t * 0.333333333f;
+        const float d3 = d2 * t * 0.25f;
+        const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
         // printf("%d %d  %f\n",y,x,d);
         __m128 density = _mm_set1_ps(d);
         density = _mm_mul_ps(density, density);
@@ -925,7 +922,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         density = _mm_mul_ps(density, density);
 #else
         // use fair exp2f
-        __m128 density = _mm_set1_ps(exp2f(data->density * CLIP(0.5f + length)));
+        const __m128 density = _mm_set1_ps(exp2f(data->density * CLIP(0.5f + length)));
 #endif
 
         /* max(0,in / (c + (1-c)*density)) */
@@ -946,16 +943,16 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      size_t k = (size_t)roi_out->width * y * ch;
+      const size_t k = (size_t)roi_out->width * y * ch;
       const float *in = (float *)ivoid + k;
       float *out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + (iy + y) * hh_inv) - 1.0f + offset)
-                     * filter_hardness;
+                      * filter_hardness;
       const float length_inc = sinv * hw_inv * filter_hardness;
 
-      __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
-      __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
+      const __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
+      const __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
 
       for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
       {
@@ -965,16 +962,16 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         // use exp2f approximation to calculate e^(ln2*x/8)
         // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
         const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP(0.5f - length) / 8.0f);
-        float d1 = t * t * 0.5f;
-        float d2 = d1 * t * 0.333333333f;
-        float d3 = d2 * t * 0.25f;
-        float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
+        const float d1 = t * t * 0.5f;
+        const float d2 = d1 * t * 0.333333333f;
+        const float d3 = d2 * t * 0.25f;
+        const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
         __m128 density = _mm_set1_ps(d);
         density = _mm_mul_ps(density, density);
         density = _mm_mul_ps(density, density);
         density = _mm_mul_ps(density, density);
 #else
-        __m128 density = _mm_set1_ps(exp2f(-data->density * CLIP(0.5f - length)));
+        const __m128 density = _mm_set1_ps(exp2f(-data->density * CLIP(0.5f - length)));
 #endif
 
         /* max(0,in * (c + (1-c)*density)) */
@@ -1100,8 +1097,6 @@ static void rotation_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  // float wd = self->dev->preview_pipe->backbuf_width;
-  // float ht = self->dev->preview_pipe->backbuf_height;
   p->rotation = dt_bauhaus_slider_get(slider);
   set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, p->rotation, p->offset);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1153,10 +1148,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);
 
-  // float wd = self->dev->preview_pipe->backbuf_width;
-  // float ht = self->dev->preview_pipe->backbuf_height;
   g->define = 0;
-  // set_points_from_grad(self,&g->xa,&g->ya,&g->xb,&g->yb,p->rotation,p->offset);
   update_saturation_slider_end_color(g->gslider2, p->hue);
 }
 

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-13 13:26-0500\n"
-"PO-Revision-Date: 2020-05-13 13:21-0500\n"
+"POT-Creation-Date: 2020-05-14 19:55-0500\n"
+"PO-Revision-Date: 2020-05-14 20:31-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2418,37 +2418,37 @@ msgid "m"
 msgstr "m"
 
 #. clang-format off
-#: ../src/common/metadata.c:45 ../src/gui/camera_import_dialog.c:447
+#: ../src/common/metadata.c:46 ../src/gui/camera_import_dialog.c:447
 msgid "creator"
 msgstr "autor"
 
-#: ../src/common/metadata.c:46 ../src/gui/camera_import_dialog.c:452
+#: ../src/common/metadata.c:47 ../src/gui/camera_import_dialog.c:452
 msgid "publisher"
 msgstr "editor"
 
 #. title
 #. DT_COLLECTION_SORT_CUSTOM_ORDER
-#: ../src/common/metadata.c:47 ../src/imageio/format/pdf.c:584
+#: ../src/common/metadata.c:48 ../src/imageio/format/pdf.c:584
 #: ../src/imageio/storage/gallery.c:185 ../src/imageio/storage/latex.c:185
 #: ../src/imageio/storage/piwigo.c:857 ../src/libs/tools/filter.c:155
 msgid "title"
 msgstr "título"
 
 #. DT_COLLECTION_SORT_TITLE
-#: ../src/common/metadata.c:48 ../src/gui/styles_dialog.c:372
+#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:372
 #: ../src/libs/tools/filter.c:156
 msgid "description"
 msgstr "descripción"
 
-#: ../src/common/metadata.c:49 ../src/gui/camera_import_dialog.c:457
+#: ../src/common/metadata.c:50 ../src/gui/camera_import_dialog.c:457
 msgid "rights"
 msgstr "derechos"
 
-#: ../src/common/metadata.c:50
+#: ../src/common/metadata.c:51
 msgid "notes"
 msgstr "notas"
 
-#: ../src/common/metadata.c:51
+#: ../src/common/metadata.c:52
 msgid "version name"
 msgstr "número de versión"
 
@@ -2697,7 +2697,7 @@ msgid "exporting %d / %d to %s"
 msgstr "Exportando %d / %d a %s"
 
 #: ../src/control/jobs/control_jobs.c:1289 ../src/views/darkroom.c:685
-#: ../src/views/print.c:289
+#: ../src/views/print.c:313
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "La imagen `%s' no esta disponible actualmente"
@@ -3488,17 +3488,17 @@ msgstr "borrar"
 msgid "rename"
 msgstr "renombrar"
 
-#: ../src/develop/imageop.c:1089 ../src/develop/imageop.c:2019
+#: ../src/develop/imageop.c:1093 ../src/develop/imageop.c:2026
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está activado"
 
-#: ../src/develop/imageop.c:1089 ../src/develop/imageop.c:2019
+#: ../src/develop/imageop.c:1093 ../src/develop/imageop.c:2026
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desactivado"
 
-#: ../src/develop/imageop.c:1417 ../src/gui/accelerators.c:938
+#: ../src/develop/imageop.c:1423 ../src/gui/accelerators.c:938
 #: ../src/gui/accelerators.c:1022 ../src/gui/accelerators.c:1237
 #: ../src/gui/accelerators.c:1262 ../src/gui/camera_import_dialog.c:442
 #: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
@@ -3507,33 +3507,38 @@ msgstr "%s está desactivado"
 msgid "preset"
 msgstr "predefinido"
 
-#: ../src/develop/imageop.c:1437
+#: ../src/develop/imageop.c:1443
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusión"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1442 ../src/libs/lib.c:621
+#: ../src/develop/imageop.c:1448 ../src/libs/lib.c:621
 msgctxt "accel"
 msgid "show module"
 msgstr "mostrar módulo"
 
-#: ../src/develop/imageop.c:1443
+#: ../src/develop/imageop.c:1449
 msgctxt "accel"
 msgid "enable module"
 msgstr "activar módulo"
 
-#: ../src/develop/imageop.c:1445 ../src/libs/lib.c:613
+#: ../src/develop/imageop.c:1450
+msgctxt "accel"
+msgid "focus module"
+msgstr "módulo de enfoque"
+
+#: ../src/develop/imageop.c:1452 ../src/libs/lib.c:613
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "reiniciar parámetros"
 
-#: ../src/develop/imageop.c:1446 ../src/libs/lib.c:617
+#: ../src/develop/imageop.c:1453 ../src/libs/lib.c:617
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "mostrar menú de preajustes"
 
-#: ../src/develop/imageop.c:1982
+#: ../src/develop/imageop.c:1989
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -3541,17 +3546,17 @@ msgstr ""
 "Gestión de acciones para el módulo\n"
 "Pulse el botón central para crear un módulo nuevo"
 
-#: ../src/develop/imageop.c:1993 ../src/libs/lib.c:1036
+#: ../src/develop/imageop.c:2000 ../src/libs/lib.c:1036
 msgid "reset parameters"
 msgstr "reiniciar parámetros"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2001 ../src/gui/preferences.c:685
+#: ../src/develop/imageop.c:2008 ../src/gui/preferences.c:685
 #: ../src/libs/lib.c:1045
 msgid "presets"
 msgstr "Preajustes"
 
-#: ../src/develop/imageop.c:2003
+#: ../src/develop/imageop.c:2010
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -3852,135 +3857,135 @@ msgstr ""
 msgid "double-click to reset"
 msgstr "Pulsación doble para reiniciar"
 
-#: ../src/dtgtk/thumbnail.c:416
+#: ../src/dtgtk/thumbnail.c:417
 msgid "fit"
 msgstr "adaptar"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:1932
+#: ../src/dtgtk/thumbtable.c:1963
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vistas/miniaturas/sin estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1933
+#: ../src/dtgtk/thumbtable.c:1964
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vistas/miniaturas/1 estrella"
 
-#: ../src/dtgtk/thumbtable.c:1934
+#: ../src/dtgtk/thumbtable.c:1965
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vistas/miniaturas/2 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1935
+#: ../src/dtgtk/thumbtable.c:1966
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vistas/miniaturas/3 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1936
+#: ../src/dtgtk/thumbtable.c:1967
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vistas/miniaturas/4 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1937
+#: ../src/dtgtk/thumbtable.c:1968
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vistas/miniaturas/5 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:1938
+#: ../src/dtgtk/thumbtable.c:1969
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vistas/miniaturas/rechazar"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:1941
+#: ../src/dtgtk/thumbtable.c:1972
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vistas/miniaturas/copiar historial"
 
-#: ../src/dtgtk/thumbtable.c:1942
+#: ../src/dtgtk/thumbtable.c:1973
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vistas/miniaturas/copiar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:1944
+#: ../src/dtgtk/thumbtable.c:1975
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vistas/miniaturas/pegar historial"
 
-#: ../src/dtgtk/thumbtable.c:1945
+#: ../src/dtgtk/thumbtable.c:1976
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vistas/miniaturas/pegar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:1947
+#: ../src/dtgtk/thumbtable.c:1978
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vistas/miniaturas/descartar historial de acciones"
 
-#: ../src/dtgtk/thumbtable.c:1949
+#: ../src/dtgtk/thumbtable.c:1980
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vistas/miniaturas/duplicar imagen"
 
-#: ../src/dtgtk/thumbtable.c:1950
+#: ../src/dtgtk/thumbtable.c:1981
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vistas/miniaturas/duplicar imagen virgen"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:1954
+#: ../src/dtgtk/thumbtable.c:1985
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vistas/miniaturas/color rojo"
 
-#: ../src/dtgtk/thumbtable.c:1955
+#: ../src/dtgtk/thumbtable.c:1986
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vistas/miniaturas/color amarillo"
 
-#: ../src/dtgtk/thumbtable.c:1956
+#: ../src/dtgtk/thumbtable.c:1987
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vistas/miniaturas/color verde"
 
-#: ../src/dtgtk/thumbtable.c:1957
+#: ../src/dtgtk/thumbtable.c:1988
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vistas/miniaturas/color azul"
 
-#: ../src/dtgtk/thumbtable.c:1958
+#: ../src/dtgtk/thumbtable.c:1989
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vistas/miniaturas/color púrpura"
 
-#: ../src/dtgtk/thumbtable.c:1959
+#: ../src/dtgtk/thumbtable.c:1990
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "vistas/miniaturas/remover marcas de color"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:1962
+#: ../src/dtgtk/thumbtable.c:1993
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vistas/miniaturas/seleccionar todas"
 
-#: ../src/dtgtk/thumbtable.c:1963
+#: ../src/dtgtk/thumbtable.c:1994
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vistas/miniaturas/deseleccionar"
 
-#: ../src/dtgtk/thumbtable.c:1965
+#: ../src/dtgtk/thumbtable.c:1996
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vistas/miniaturas/invertir selección"
 
-#: ../src/dtgtk/thumbtable.c:1966
+#: ../src/dtgtk/thumbtable.c:1997
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vistas/miniaturas/seleccionar carrete"
 
-#: ../src/dtgtk/thumbtable.c:1967
+#: ../src/dtgtk/thumbtable.c:1998
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vistas/miniaturas/seleccionar no editadas"
@@ -8150,21 +8155,21 @@ msgstr "salida"
 #: ../src/iop/colorout.c:882 ../src/libs/export.c:679
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
 #: ../src/views/darkroom.c:2231 ../src/views/darkroom.c:2239
-#: ../src/views/lighttable.c:1224 ../src/views/lighttable.c:1232
+#: ../src/views/lighttable.c:1255 ../src/views/lighttable.c:1263
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:883 ../src/libs/export.c:680
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2232 ../src/views/darkroom.c:2240
-#: ../src/views/lighttable.c:1225 ../src/views/lighttable.c:1233
+#: ../src/views/lighttable.c:1256 ../src/views/lighttable.c:1264
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
 #: ../src/iop/colorout.c:884 ../src/libs/export.c:681
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2233 ../src/views/darkroom.c:2241
-#: ../src/views/lighttable.c:1226 ../src/views/lighttable.c:1234
+#: ../src/views/lighttable.c:1257 ../src/views/lighttable.c:1265
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturación"
@@ -8172,7 +8177,7 @@ msgstr "saturación"
 #: ../src/iop/colorout.c:885 ../src/libs/export.c:682
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2234 ../src/views/darkroom.c:2242
-#: ../src/views/lighttable.c:1227 ../src/views/lighttable.c:1235
+#: ../src/views/lighttable.c:1258 ../src/views/lighttable.c:1266
 msgid "absolute colorimetric"
 msgstr "colorimétrico absoluto"
 
@@ -13398,19 +13403,19 @@ msgctxt "accel"
 msgid "write sidecar files"
 msgstr "escribir archivo xmp"
 
-#: ../src/libs/duplicate.c:61
+#: ../src/libs/duplicate.c:58
 msgid "duplicate manager"
 msgstr "administrador de duplicado"
 
-#: ../src/libs/duplicate.c:451
+#: ../src/libs/duplicate.c:464
 msgid "existing duplicates"
 msgstr "duplicados existentes"
 
-#: ../src/libs/duplicate.c:454
+#: ../src/libs/duplicate.c:467
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Crear un duplicado 'virgen' de la imagen (sin ningún revelado)"
 
-#: ../src/libs/duplicate.c:458
+#: ../src/libs/duplicate.c:471
 msgid "create a duplicate of the image with same history stack"
 msgstr "Crear un duplicado de la imagen con la misma  historia"
 
@@ -13534,7 +13539,7 @@ msgstr "Editar los detalles de exportación de los metadatos"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1361 ../src/libs/styles.c:72
-#: ../src/views/darkroom.c:3580
+#: ../src/views/darkroom.c:3579
 msgctxt "accel"
 msgid "export"
 msgstr "exportar"
@@ -16028,14 +16033,14 @@ msgid "zoom max"
 msgstr "zoom máximo"
 
 #. zoom in/out
-#: ../src/libs/tools/lighttable.c:215 ../src/views/darkroom.c:3576
-#: ../src/views/lighttable.c:715
+#: ../src/libs/tools/lighttable.c:215 ../src/views/darkroom.c:3575
+#: ../src/views/lighttable.c:746
 msgctxt "accel"
 msgid "zoom in"
 msgstr "acercar"
 
-#: ../src/libs/tools/lighttable.c:216 ../src/views/darkroom.c:3577
-#: ../src/views/lighttable.c:716
+#: ../src/libs/tools/lighttable.c:216 ../src/views/darkroom.c:3576
+#: ../src/views/lighttable.c:747
 msgctxt "accel"
 msgid "zoom out"
 msgstr "alejar"
@@ -16117,7 +16122,7 @@ msgid "soft proof"
 msgstr "prueba de impresión"
 
 #. fail :(
-#: ../src/views/darkroom.c:672 ../src/views/print.c:276
+#: ../src/views/darkroom.c:672 ../src/views/print.c:300
 msgid "no image to open !"
 msgstr "No hay ninguna imagen que abrir"
 
@@ -16268,19 +16273,19 @@ msgstr ""
 "Activa la revisión de gama\n"
 "Pulse botón derecho las para opciones del perfil"
 
-#: ../src/views/darkroom.c:2229 ../src/views/lighttable.c:1222
+#: ../src/views/darkroom.c:2229 ../src/views/lighttable.c:1253
 msgid "display intent"
 msgstr "salida en pantalla"
 
-#: ../src/views/darkroom.c:2237 ../src/views/lighttable.c:1230
+#: ../src/views/darkroom.c:2237 ../src/views/lighttable.c:1261
 msgid "preview display intent"
 msgstr "vista previa de salida en pantalla"
 
-#: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1238
+#: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1269
 msgid "display profile"
 msgstr "perfil (pantalla)"
 
-#: ../src/views/darkroom.c:2258 ../src/views/lighttable.c:1242
+#: ../src/views/darkroom.c:2258 ../src/views/lighttable.c:1273
 msgid "preview display profile"
 msgstr "vista previa del perfil (pantalla)"
 
@@ -16288,12 +16293,12 @@ msgstr "vista previa del perfil (pantalla)"
 msgid "histogram profile"
 msgstr "perfil del histograma"
 
-#: ../src/views/darkroom.c:2313 ../src/views/lighttable.c:1272
+#: ../src/views/darkroom.c:2313 ../src/views/lighttable.c:1303
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "mostrar perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2316 ../src/views/lighttable.c:1275
+#: ../src/views/darkroom.c:2316 ../src/views/lighttable.c:1306
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "vista previa: mostrar perfiles ICC en %s o %s"
@@ -16325,164 +16330,164 @@ msgid "set overlay color"
 msgstr "Establecer el color de la superposición"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3571
+#: ../src/views/darkroom.c:3570
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "ampliar imagen"
 
-#: ../src/views/darkroom.c:3572
+#: ../src/views/darkroom.c:3571
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "ampliar imagen hasta rellenar"
 
-#: ../src/views/darkroom.c:3573
+#: ../src/views/darkroom.c:3572
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "ampliar imagen a ventana"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3583
+#: ../src/views/darkroom.c:3582
 msgctxt "accel"
 msgid "image forward"
 msgstr "imagen siguiente"
 
-#: ../src/views/darkroom.c:3584
+#: ../src/views/darkroom.c:3583
 msgctxt "accel"
 msgid "image back"
 msgstr "imagen anterior"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3587
+#: ../src/views/darkroom.c:3586
 msgctxt "accel"
 msgid "color assessment"
 msgstr "evaluación del color"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3590
+#: ../src/views/darkroom.c:3589
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "imagen virgen sobreexpuesta"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3593
+#: ../src/views/darkroom.c:3592
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sobreexpuesto"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3596
+#: ../src/views/darkroom.c:3595
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "ciclo de superposición de colores"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3599
+#: ../src/views/darkroom.c:3598
 msgctxt "accel"
 msgid "softproof"
 msgstr "prueba en pantalla"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3602
+#: ../src/views/darkroom.c:3601
 msgctxt "accel"
 msgid "gamut check"
 msgstr "revisión de gama"
 
 #. toggle visability of drawn masks for current gui module
-#: ../src/views/darkroom.c:3605
+#: ../src/views/darkroom.c:3604
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "mostrar máscaras trazadas"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3608
+#: ../src/views/darkroom.c:3607
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "aumentar tamaño del pincel"
 
-#: ../src/views/darkroom.c:3609
+#: ../src/views/darkroom.c:3608
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "reducir tamaño del pincel"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3612
+#: ../src/views/darkroom.c:3611
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "incrementar dureza del pincel"
 
-#: ../src/views/darkroom.c:3613
+#: ../src/views/darkroom.c:3612
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "reducir dureza del pincel"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3616
+#: ../src/views/darkroom.c:3615
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "incrementar opacidad del pincel"
 
-#: ../src/views/darkroom.c:3617
+#: ../src/views/darkroom.c:3616
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "reducir opacidad del pincel"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3620
+#: ../src/views/darkroom.c:3619
 msgctxt "accel"
 msgid "full preview"
 msgstr "vista previa completa"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3623 ../src/views/lighttable.c:707
+#: ../src/views/darkroom.c:3622 ../src/views/lighttable.c:738
 #: ../src/views/map.c:919
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
-#: ../src/views/darkroom.c:3624 ../src/views/lighttable.c:708
+#: ../src/views/darkroom.c:3623 ../src/views/lighttable.c:739
 #: ../src/views/map.c:920
 msgctxt "accel"
 msgid "redo"
 msgstr "rehacer"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3627
+#: ../src/views/darkroom.c:3626
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "habilitar ampliación y desplazamiento mientras se editan las máscaras"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3630
+#: ../src/views/darkroom.c:3629
 msgctxt "accel"
 msgid "search modules"
 msgstr "buscar módulos"
 
-#: ../src/views/darkroom.c:3748
+#: ../src/views/darkroom.c:3747
 msgid "switch to lighttable"
 msgstr "cambiar a mesa de luz"
 
-#: ../src/views/darkroom.c:3753 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:3752 ../src/views/lighttable.c:916
 msgid "zoom in the image"
 msgstr "ampliar la imagen"
 
-#: ../src/views/darkroom.c:3759
+#: ../src/views/darkroom.c:3758
 msgid "unbounded zoom in the image"
 msgstr "ampliar y reducir la vista de la imagen"
 
-#: ../src/views/darkroom.c:3764
+#: ../src/views/darkroom.c:3763
 msgid "zoom to 100% 200% and back"
 msgstr "ampliar a 100% y a 200% cíclicamente"
 
-#: ../src/views/darkroom.c:3770
+#: ../src/views/darkroom.c:3769
 msgid "[modules] expand module without closing others"
 msgstr "[módulos] desplegar el módulo sin cerrar los otros"
 
-#: ../src/views/darkroom.c:3776
+#: ../src/views/darkroom.c:3775
 msgid "[modules] change module position in pipe"
 msgstr "[módulos] reordenar módulos"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4490 ../src/views/darkroom.c:4508
+#: ../src/views/darkroom.c:4489 ../src/views/darkroom.c:4507
 msgid "darktable - darkroom preview"
 msgstr "darktable: vista previa del cuarto oscuro"
 
@@ -16490,215 +16495,215 @@ msgstr "darktable: vista previa del cuarto oscuro"
 msgid "good knight"
 msgstr "buen caballero"
 
-#: ../src/views/lighttable.c:239 ../src/views/slideshow.c:376
+#: ../src/views/lighttable.c:270 ../src/views/slideshow.c:376
 msgid "there are no images in this collection"
 msgstr "sin imágenes en la colección presente"
 
-#: ../src/views/lighttable.c:243
+#: ../src/views/lighttable.c:274
 msgid "if you have not imported any images yet"
 msgstr "si aún no se ha importado alguna imagen"
 
-#: ../src/views/lighttable.c:247
+#: ../src/views/lighttable.c:278
 msgid "you can do so in the import module"
 msgstr "puede hacerse con el módulo importar"
 
-#: ../src/views/lighttable.c:255
+#: ../src/views/lighttable.c:286
 msgid "try to relax the filter settings in the top panel"
 msgstr "pruebe con condiciones de filtro más flexibles, en el panel superior"
 
-#: ../src/views/lighttable.c:264
+#: ../src/views/lighttable.c:295
 msgid "or add images in the collection module in the left panel"
 msgstr "o agregue imágenes con el módulo de recolección en el panel izquierdo"
 
 #. movement keys
-#: ../src/views/lighttable.c:675
+#: ../src/views/lighttable.c:706
 msgctxt "accel"
 msgid "move page up"
 msgstr "retroceder una página"
 
-#: ../src/views/lighttable.c:676
+#: ../src/views/lighttable.c:707
 msgctxt "accel"
 msgid "move page down"
 msgstr "avanzar una página"
 
-#: ../src/views/lighttable.c:677
+#: ../src/views/lighttable.c:708
 msgctxt "accel"
 msgid "move up"
 msgstr "subir"
 
-#: ../src/views/lighttable.c:678
+#: ../src/views/lighttable.c:709
 msgctxt "accel"
 msgid "move down"
 msgstr "bajar"
 
-#: ../src/views/lighttable.c:679
+#: ../src/views/lighttable.c:710
 msgctxt "accel"
 msgid "move left"
 msgstr "ir a la izquierda"
 
-#: ../src/views/lighttable.c:680
+#: ../src/views/lighttable.c:711
 msgctxt "accel"
 msgid "move right"
 msgstr "ir a la derecha"
 
-#: ../src/views/lighttable.c:681
+#: ../src/views/lighttable.c:712
 msgctxt "accel"
 msgid "move start"
 msgstr "ir al inicio"
 
-#: ../src/views/lighttable.c:682
+#: ../src/views/lighttable.c:713
 msgctxt "accel"
 msgid "move end"
 msgstr "ir al final"
 
 #. movement keys with selection
-#: ../src/views/lighttable.c:685
+#: ../src/views/lighttable.c:716
 msgctxt "accel"
 msgid "move page up and select"
 msgstr "retroceder la página y seleccionar"
 
-#: ../src/views/lighttable.c:686
+#: ../src/views/lighttable.c:717
 msgctxt "accel"
 msgid "move page down and select"
 msgstr "avanzar la página y seleccionar"
 
-#: ../src/views/lighttable.c:687
+#: ../src/views/lighttable.c:718
 msgctxt "accel"
 msgid "move up and select"
 msgstr "subir y seleccionar"
 
-#: ../src/views/lighttable.c:688
+#: ../src/views/lighttable.c:719
 msgctxt "accel"
 msgid "move down and select"
 msgstr "bajar y seleccionar"
 
-#: ../src/views/lighttable.c:689
+#: ../src/views/lighttable.c:720
 msgctxt "accel"
 msgid "move left and select"
 msgstr "ir a la izquierda y seleccionar"
 
-#: ../src/views/lighttable.c:690
+#: ../src/views/lighttable.c:721
 msgctxt "accel"
 msgid "move right and select"
 msgstr "ir a la derecha y seleccionar"
 
-#: ../src/views/lighttable.c:691
+#: ../src/views/lighttable.c:722
 msgctxt "accel"
 msgid "move start and select"
 msgstr "ir al inicio y seleccionar"
 
-#: ../src/views/lighttable.c:692
+#: ../src/views/lighttable.c:723
 msgctxt "accel"
 msgid "move end and select"
 msgstr "ir al final y seleccionar"
 
-#: ../src/views/lighttable.c:694
+#: ../src/views/lighttable.c:725
 msgctxt "accel"
 msgid "align images to grid"
 msgstr "alinear imágenes a la cuadrícula"
 
-#: ../src/views/lighttable.c:695
+#: ../src/views/lighttable.c:726
 msgctxt "accel"
 msgid "reset first image offset"
 msgstr "reajustar el primer desplazamiento de la primera imagen"
 
-#: ../src/views/lighttable.c:696
+#: ../src/views/lighttable.c:727
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "selección de imagen activa"
 
-#: ../src/views/lighttable.c:697
+#: ../src/views/lighttable.c:728
 msgctxt "accel"
 msgid "select single image"
 msgstr "selección de imagen única"
 
 #. Preview key
-#: ../src/views/lighttable.c:700
+#: ../src/views/lighttable.c:731
 msgctxt "accel"
 msgid "preview"
 msgstr "vista previa rápida"
 
-#: ../src/views/lighttable.c:701
+#: ../src/views/lighttable.c:732
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "vista previa rápida con detección de enfoque"
 
-#: ../src/views/lighttable.c:702
+#: ../src/views/lighttable.c:733
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "vista previa fija"
 
-#: ../src/views/lighttable.c:703
+#: ../src/views/lighttable.c:734
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "vista previa fija con detección de enfoque"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:711
+#: ../src/views/lighttable.c:742
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "vista previa al 100%"
 
-#: ../src/views/lighttable.c:712
+#: ../src/views/lighttable.c:743
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "vista previa del ajuste del zoom"
 
-#: ../src/views/lighttable.c:872
+#: ../src/views/lighttable.c:903
 msgid "open image in darkroom"
 msgstr "abrir imagen en el cuarto oscuro"
 
-#: ../src/views/lighttable.c:879
+#: ../src/views/lighttable.c:910
 msgid "switch to next/previous image"
 msgstr "cambiar a la imagen siguiente/anterior"
 
-#: ../src/views/lighttable.c:891 ../src/views/lighttable.c:949
+#: ../src/views/lighttable.c:922 ../src/views/lighttable.c:980
 #, no-c-format
 msgid "zoom to 100% and back"
 msgstr "ampliar a 100% y a 200% cíclicamente"
 
-#: ../src/views/lighttable.c:898 ../src/views/lighttable.c:920
+#: ../src/views/lighttable.c:929 ../src/views/lighttable.c:951
 msgid "scroll the collection"
 msgstr "navegar por la colección"
 
-#: ../src/views/lighttable.c:904
+#: ../src/views/lighttable.c:935
 msgid "change number of images per row"
 msgstr "cambiar el número de imágenes por fila"
 
-#: ../src/views/lighttable.c:912
+#: ../src/views/lighttable.c:943
 msgid "change image order"
 msgstr "cambiar el orden de las imágenes"
 
-#: ../src/views/lighttable.c:926
+#: ../src/views/lighttable.c:957
 msgid "zoom all the images"
 msgstr "ampliar a la vez todas las imágenes"
 
-#: ../src/views/lighttable.c:931
+#: ../src/views/lighttable.c:962
 msgid "pan inside all the images"
 msgstr "desplazar a la vez todas las imágenes"
 
-#: ../src/views/lighttable.c:937
+#: ../src/views/lighttable.c:968
 msgid "zoom current image"
 msgstr "ampliar la imagen designada"
 
-#: ../src/views/lighttable.c:943
+#: ../src/views/lighttable.c:974
 msgid "pan inside current image"
 msgstr "desplazarse por la imagen designada"
 
-#: ../src/views/lighttable.c:956
+#: ../src/views/lighttable.c:987
 #, no-c-format
 msgid "zoom current image to 100% and back"
 msgstr "ampliar a 100% y a 200% cíclicamente"
 
-#: ../src/views/lighttable.c:963
+#: ../src/views/lighttable.c:994
 msgid "zoom the main view"
 msgstr "ampliar la vista principal"
 
-#: ../src/views/lighttable.c:968
+#: ../src/views/lighttable.c:999
 msgid "pan inside the main view"
 msgstr "desplazarse por el área de la vista principal"
 
-#: ../src/views/lighttable.c:1199
+#: ../src/views/lighttable.c:1230
 msgid "set display profile"
 msgstr "ajustar perfil de pantalla"
 
@@ -16718,7 +16723,7 @@ msgstr "[en el mapa] mapa de zoom"
 msgid "move image location"
 msgstr "cambiar la ubicación de la imagen"
 
-#: ../src/views/print.c:52
+#: ../src/views/print.c:53
 msgctxt "view"
 msgid "print"
 msgstr "imprimir"
@@ -16758,78 +16763,78 @@ msgstr "pasar a la siguiente imagen"
 msgid "go to previous image"
 msgstr "retroceder a la imagen anterior"
 
-#: ../src/views/tethering.c:94
+#: ../src/views/tethering.c:97
 msgid "tethering"
 msgstr "captura"
 
-#: ../src/views/tethering.c:137
+#: ../src/views/tethering.c:152
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "Nueva sesión iniciada '%s'"
 
-#: ../src/views/tethering.c:246
+#: ../src/views/tethering.c:276
 msgid "no camera with tethering support available for use..."
 msgstr "No hay ninguna cámara con soporte de captura disponible para su uso..."
 
-#: ../src/views/view.c:2373
+#: ../src/views/view.c:1306
 msgid "Left click"
 msgstr "Clic"
 
-#: ../src/views/view.c:2376
+#: ../src/views/view.c:1309
 msgid "Right click"
 msgstr "Clic Secundario"
 
-#: ../src/views/view.c:2379
+#: ../src/views/view.c:1312
 msgid "Middle click"
 msgstr "Clic Medio"
 
-#: ../src/views/view.c:2382
+#: ../src/views/view.c:1315
 msgid "Scroll"
 msgstr "Desplazamiento"
 
-#: ../src/views/view.c:2385
+#: ../src/views/view.c:1318
 msgid "Left double-click"
 msgstr "Pulsación Doble"
 
-#: ../src/views/view.c:2388
+#: ../src/views/view.c:1321
 msgid "Right double-click"
 msgstr "Doble Clic Secundario"
 
-#: ../src/views/view.c:2391
+#: ../src/views/view.c:1324
 msgid "Drag and drop"
 msgstr "Arrastrar y Soltar"
 
-#: ../src/views/view.c:2394
+#: ../src/views/view.c:1327
 msgid "Left click+Drag"
 msgstr "Clic+Arrastre"
 
-#: ../src/views/view.c:2397
+#: ../src/views/view.c:1330
 msgid "Right click+Drag"
 msgstr "Clic Secundario + Arrastre"
 
-#: ../src/views/view.c:2418
+#: ../src/views/view.c:1351
 msgid "darktable - accels window"
 msgstr "darktable: ventana de atajos"
 
-#: ../src/views/view.c:2474
+#: ../src/views/view.c:1407
 msgid "switch to a classic window which will stay open after key release."
 msgstr ""
 "Cambiar a la ventana clásica que permanecerá abierta después de soltar la "
 "tecla."
 
-#: ../src/views/view.c:2590
+#: ../src/views/view.c:1523
 msgid "+Scroll"
 msgstr "+Desplazamiento"
 
-#: ../src/views/view.c:2605
+#: ../src/views/view.c:1538
 msgid "mouse actions"
 msgstr "acciones con el ratón"
 
-#: ../src/views/view.c:2643
+#: ../src/views/view.c:1576
 msgid "Accel"
 msgstr "Atajos del teclado"
 
-#: ../src/views/view.c:2645
+#: ../src/views/view.c:1578
 msgid "Action"
 msgstr "Acción"
 

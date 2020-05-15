@@ -1299,7 +1299,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
         {
           setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", name);
           str = dt_conf_get_string(setting);
-          if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, dt_metadata_get_key(i), str, FALSE, FALSE);
+          if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, dt_metadata_get_key(i), str, FALSE);
           g_free(str);
           g_free(setting);
         }
@@ -1311,7 +1311,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
     {
       GList *imgs = NULL;
       imgs = g_list_append(imgs, GINT_TO_POINTER(img->id));
-      dt_tag_attach_string_list(str, imgs, FALSE, FALSE);
+      dt_tag_attach_string_list(str, imgs, FALSE);
       g_list_free(imgs);
     }
     g_free(str);

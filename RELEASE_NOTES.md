@@ -278,6 +278,17 @@ making a backup is strongly advised.
 
 ## Lua
 
+- API changed to 6.0.0 
+
+- facebook, flickr, and picasa removed from types.dt_imageio_storage_module_t.
+
+- piwigo added to type.dt_imageio_storage_module_t.
+
+- notes and version_name metadata fields added to types.dt_lua_image_t data type.
+
+- Added 4 new properties to dt_collection_properties_t, 
+  DT_COLLECTION_PROP_IMPORT_TIMESTAMP, DT_COLLECTION_PROP_CHANGE_TIMESTAMP,
+  DT_COLLECTION_PROP_EXPORT_TIMESTAMP, DT_COLLECTION_PROP_PRINT_TIMESTAMP
 
 ## Changed Dependencies
 
