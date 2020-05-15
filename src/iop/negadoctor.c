@@ -840,24 +840,24 @@ static void apply_auto_exposure(dt_iop_module_t *self)
 }
 
 
-void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   if(self->dt->gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
 
-  if     (self->picker->colorpick == g->Dmin_sampler)
+  if     (picker == g->Dmin_sampler)
     apply_auto_Dmin(self);
-  else if(self->picker->colorpick == g->WB_high_sampler)
+  else if(picker == g->WB_high_sampler)
     apply_auto_WB_high(self);
-  else if(self->picker->colorpick == g->offset)
+  else if(picker == g->offset)
     apply_auto_offset(self);
-  else if(self->picker->colorpick == g->D_max)
+  else if(picker == g->D_max)
     apply_auto_Dmax(self);
-  else if(self->picker->colorpick == g->WB_low_sampler)
+  else if(picker == g->WB_low_sampler)
     apply_auto_WB_low(self);
-  else if(self->picker->colorpick == g->exposure)
+  else if(picker == g->exposure)
     apply_auto_exposure(self);
-  else if(self->picker->colorpick == g->black)
+  else if(picker == g->black)
     apply_auto_black(self);
   else
     fprintf(stderr, "[negadoctor] unknown color picker\n");
@@ -1341,12 +1341,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   free(self->gui_data);
   self->gui_data = NULL;
-}
-
-
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
-{
-  if(!in) dt_iop_color_picker_reset(self, TRUE);
 }
 
 

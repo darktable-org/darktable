@@ -450,7 +450,7 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
   return TRUE;
 }
 
-void color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 

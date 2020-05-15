@@ -389,7 +389,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
     module->picked_color_max[k] = module->picked_output_color_max[k] = -666.0f;
   }
   module->picker = NULL;
-  module->blend_picker = NULL;
   module->histogram_cst = iop_cs_NONE;
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
@@ -1530,7 +1529,6 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   free(module->default_blendop_params);
   module->default_blendop_params = NULL;
   module->picker = NULL;
-  module->blend_picker = NULL;
   free(module->histogram);
   module->histogram = NULL;
   g_hash_table_destroy(module->raster_mask.source.users);
@@ -1743,6 +1741,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   {
     if(darktable.develop->gui_module->gui_focus)
       darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
+
+    dt_iop_color_picker_reset(darktable.develop->gui_module, TRUE);
 
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_FLAG_NORMAL,
                                TRUE);

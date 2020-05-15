@@ -727,7 +727,7 @@ static float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
   return p->black;
 }
 
-void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   if(self->dt->gui->reset) return;
 

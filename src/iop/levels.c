@@ -246,7 +246,7 @@ static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
   }
 }
 
-void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
@@ -269,7 +269,7 @@ void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
     c->last_picked_color = mean_picked_color;
 
-    if(self->picker->colorpick == c->blackpick)
+    if(picker == c->blackpick)
     {
       if(mean_picked_color > p->levels[1])
       {
@@ -280,7 +280,7 @@ void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
         p->levels[0] = mean_picked_color;
       }
     }
-    else if(self->picker->colorpick == c->greypick)
+    else if(picker == c->greypick)
     {
       if(mean_picked_color < p->levels[0] || mean_picked_color > p->levels[2])
       {
@@ -291,7 +291,7 @@ void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
         p->levels[1] = mean_picked_color;
       }
     }
-    else if(self->picker->colorpick == c->whitepick)
+    else if(picker == c->whitepick)
     {
       if(mean_picked_color < p->levels[1])
       {

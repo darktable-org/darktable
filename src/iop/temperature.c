@@ -1340,7 +1340,7 @@ static void finetune_changed(GtkWidget *widget, gpointer user_data)
   apply_preset((dt_iop_module_t *)user_data);
 }
 
-void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   if(self->dt->gui->reset) return;
 

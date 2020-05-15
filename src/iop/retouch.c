@@ -1856,7 +1856,7 @@ static gboolean rt_levelsbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module
   return TRUE;
 }
 
-void color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
