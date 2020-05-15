@@ -72,7 +72,6 @@
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_35;
-@define-color log_bg_color @grey_25;
 @define-color log_fg_color @grey_95;
 
 /* Views */
@@ -115,7 +114,8 @@
 }
 
 /* Adjust color of top shown infos on darkroom */
+#log-msg,
 #toast-msg
 {
-  background-color: rgba(110,110,110,0.7);
+  background-color: rgba(110,110,110,0.6);
 }
