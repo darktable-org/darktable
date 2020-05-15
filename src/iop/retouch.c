@@ -2653,7 +2653,7 @@ void gui_init(dt_iop_module_t *self)
                (char *)NULL);
 
   g->bt_edit_masks
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_edit_masks), "button-press-event", G_CALLBACK(rt_edit_masks_callback), self);
   g_object_set(G_OBJECT(g->bt_edit_masks), "tooltip-text", _("show and edit shapes on the current scale"),
                (char *)NULL);
@@ -2661,27 +2661,27 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_edit_masks, FALSE, FALSE, 0);
 
   g->bt_brush
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_brush), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
   g_object_set(G_OBJECT(g->bt_brush), "tooltip-text", _("add brush"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_brush, FALSE, FALSE, 0);
 
-  g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
   g_object_set(G_OBJECT(g->bt_path), "tooltip-text", _("add path"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_path, FALSE, FALSE, 0);
 
   g->bt_ellipse
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
   g_object_set(G_OBJECT(g->bt_ellipse), "tooltip-text", _("add ellipse"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_ellipse, FALSE, FALSE, 0);
 
   g->bt_circle
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
   g_object_set(G_OBJECT(g->bt_circle), "tooltip-text", _("add circle"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
@@ -2694,28 +2694,28 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox_algo), label2, FALSE, TRUE, 0);
 
   g->bt_fill
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_fill, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_fill, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_fill), "tooltip-text", _("activates fill tool"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_fill), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_fill), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), FALSE);
 
   g->bt_blur
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_blur, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_blur, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_blur), "tooltip-text", _("activates blur tool"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_blur), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_blur), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), FALSE);
 
   g->bt_heal
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_heal, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_heal, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_heal), "tooltip-text", _("activates healing tool"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_heal), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_heal), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_heal), FALSE);
 
   g->bt_clone
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_clone, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_clone, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_clone), "tooltip-text", _("activates cloning tool"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_clone), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_clone), bs, bs);
@@ -2782,20 +2782,20 @@ void gui_init(dt_iop_module_t *self)
 
   // display & suppress masks
   g->bt_showmask
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_showmask), "tooltip-text", _("display masks"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_showmask), "toggled", G_CALLBACK(rt_showmask_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_showmask), FALSE);
 
   g->bt_suppress
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_suppress), "tooltip-text", _("temporarily switch off shapes"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_suppress), "toggled", G_CALLBACK(rt_suppress_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_suppress), FALSE);
 
   // display final image/current scale
   g->bt_display_wavelet_scale = dtgtk_togglebutton_new(_retouch_cairo_paint_display_wavelet_scale,
-                                                       CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+                                                       CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_display_wavelet_scale), "tooltip-text", _("display wavelet scale"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_display_wavelet_scale), "toggled", G_CALLBACK(rt_display_wavelet_scale_callback),
                    self);
@@ -2803,13 +2803,13 @@ void gui_init(dt_iop_module_t *self)
 
   // copy/paste shapes
   g->bt_copy_scale
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_cut_forms, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(_retouch_cairo_paint_cut_forms, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_copy_scale), "tooltip-text", _("cut shapes from current scale"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_copy_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), FALSE);
 
   g->bt_paste_scale
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_paste_forms, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(_retouch_cairo_paint_paste_forms, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_paste_scale), "tooltip-text", _("paste cut shapes to current scale"),
                (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_paste_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
@@ -2859,7 +2859,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(g->preview_levels_bar, -1, DT_PIXEL_APPLY_DPI(5));
 
   g->bt_auto_levels
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_auto_levels, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(_retouch_cairo_paint_auto_levels, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_auto_levels), "tooltip-text", _("auto levels"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_auto_levels), "toggled", G_CALLBACK(rt_auto_levels_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_auto_levels), bs, bs);
