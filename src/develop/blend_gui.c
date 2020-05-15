@@ -450,12 +450,6 @@ static void _blendop_blendif_contrast_callback(GtkWidget *slider, dt_iop_gui_ble
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
-static void _blendop_blendif_reset_picker_set_values(dt_iop_gui_blend_data_t *data)
-{
-  if(data->module->picker->colorpick == data->colorpicker_set_values)
-    dt_iop_color_picker_reset(data->module, TRUE);
-}
-
 static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider, dt_iop_gui_blend_data_t *data)
 {
   if(darktable.gui->reset) return;
@@ -478,7 +472,7 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
 
-  _blendop_blendif_reset_picker_set_values(data);
+  dt_iop_color_picker_reset(data->module, TRUE);
 
   dt_pthread_mutex_lock(&data->lock);
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
@@ -660,7 +654,7 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy, dt_iop_mo
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  dt_iop_color_picker_set_cst(module->picker, _blendop_blendif_get_picker_colorspace(data));
+  dt_iop_color_picker_set_cst(module, _blendop_blendif_get_picker_colorspace(data));
 
   float *raw_mean, *raw_min, *raw_max;
   GtkDarktableGradientSlider *widget;
@@ -688,8 +682,9 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy, dt_iop_mo
       label = data->upper_picker_label;
     }
 
-    if((module->picker->colorpick == data->colorpicker || module->picker->colorpick == data->colorpicker_set_values) 
-      && (module->request_color_pick != DT_REQUEST_COLORPICK_OFF) && (raw_min[0] != INFINITY))
+    if((gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))) && 
+       (raw_min[0] != INFINITY))
     {
       float picker_mean[8], picker_min[8], picker_max[8];
       float cooked[8];
@@ -829,10 +824,12 @@ static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, 
 
   data->tab = page_num;
 
-  if((data->module->picker->colorpick == data->colorpicker || data->module->picker->colorpick == data->colorpicker_set_values) &&
-    (cst_old != _blendop_blendif_get_picker_colorspace(data) || data->module->picker->colorpick == data->colorpicker_set_values))
+  if(cst_old != _blendop_blendif_get_picker_colorspace(data) &&
+     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))))
+      
   {
-    dt_iop_color_picker_set_cst(data->module->picker, _blendop_blendif_get_picker_colorspace(data));
+    dt_iop_color_picker_set_cst(data->module, _blendop_blendif_get_picker_colorspace(data));
     dt_dev_reprocess_all(data->module->dev);
     dt_control_queue_redraw();
   }
@@ -1119,10 +1116,10 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 }
 
-gboolean blend_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece)
+gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
-  if(module->picker->colorpick == data->colorpicker_set_values)
+  if(picker == data->colorpicker_set_values)
   {
     if(darktable.gui->reset) return TRUE;
 
@@ -1226,7 +1223,7 @@ gboolean blend_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixelpi
 
     return TRUE;
   }
-  else if(module->picker->colorpick == data->colorpicker)
+  else if(picker == data->colorpicker)
   {
     if(darktable.gui->reset) return TRUE;
 
@@ -1651,6 +1648,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->colorpicker = dt_color_picker_new(module, DT_COLOR_PICKER_POINT_AREA, header);
     gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
+    gtk_widget_set_name(bd->colorpicker, "keep-active");
 
     bd->colorpicker_set_values = dt_color_picker_new(module, DT_COLOR_PICKER_AREA, header);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->colorpicker_set_values),

@@ -601,7 +601,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("15:10 postcard black"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
-void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
@@ -627,14 +627,14 @@ void color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
                         .blue = self->picked_color[2],
                         .alpha = 1.0 };
 
-  if(self->picker->colorpick == g->frame_picker)
+  if(picker == g->frame_picker)
   {
     p->frame_color[0] = self->picked_color[0];
     p->frame_color[1] = self->picked_color[1];
     p->frame_color[2] = self->picked_color[2];
     gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->frame_colorpick), &c);
   }
-  else if(self->picker->colorpick == g->border_picker)
+  else if(picker == g->border_picker)
   {
     p->color[0] = self->picked_color[0];
     p->color[1] = self->picked_color[1];
