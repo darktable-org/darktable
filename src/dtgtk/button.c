@@ -81,8 +81,7 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   {
     /* draw default boxed button */
     gtk_render_background(context, cr, 0, 0, width, height);
-    if(!(FALSE))
-      gtk_render_frame(context, cr, 0, 0, width, height);
+    gtk_render_frame(context, cr, 0, 0, width, height);
   }
 
   gdk_cairo_set_source_rgba(cr, &fg_color);
@@ -90,31 +89,20 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_BUTTON(widget)->icon)
   {
-    /* set icon size and corresponding border */
+    /* set icon size and corresponding borders */
     GtkAllocation clip_area;
     gtk_widget_get_clip(widget, &clip_area); // get the clip area, the icon drawing cannot exceed that
-    int cwidth = clip_area.width;
-    int cheight = clip_area.height;
 
-    float borderx, bordery;
-    int icon_width, icon_height;
-    if(FALSE)
-    {
-      borderx = (width - cwidth) / 2.0;
-      bordery = (height - cheight) / 2.0;
-      icon_width = cwidth;
-      icon_height = cheight;
-    }
-    else
-    {
-      borderx = round(fmaxf((width - cwidth) / 2.0, padding.left));
-      bordery = round(fmaxf((height - cheight) / 2.0, padding.top));
-      icon_width = round(width - 2.0 * borderx);
-      icon_height = round(height - 2.0 * bordery);
-    }
+    int lborder = MAX(clip_area.x - allocation.x, padding.left); // avoid clipping
+    int rborder = MAX(allocation.x + width - clip_area.x - clip_area.width, padding.right);
+    int tborder = MAX(clip_area.y - allocation.y, padding.top);
+    int bborder = MAX(allocation.y + height - clip_area.y - clip_area.height, padding.bottom);
+    int icon_width = width - lborder - rborder;
+    int icon_height = height - tborder - bborder;
+
     void *icon_data = DTGTK_BUTTON(widget)->icon_data;
     if(icon_width > 0 && icon_height > 0)
-      DTGTK_BUTTON(widget)->icon(cr, round(borderx), round(bordery), icon_width, icon_height, flags, icon_data);
+      DTGTK_BUTTON(widget)->icon(cr, lborder, tborder, icon_width, icon_height, flags, icon_data);
   }
 
   return FALSE;
