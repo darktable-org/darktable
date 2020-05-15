@@ -1729,6 +1729,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
       dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
       const int opacitypercent = opacity * 100;
       dt_toast_log(_("opacity: %d%%"), opacitypercent);
+      ret = 1;
     }
 
     _set_hinter_message(gui, form);
