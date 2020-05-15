@@ -67,18 +67,18 @@ typedef struct dt_sort_items
 
 const dt_sort_items items[] =
 {
-  { DT_COLLECTION_SORT_FILENAME, "filename" },
-  { DT_COLLECTION_SORT_DATETIME, "time" },
-  { DT_COLLECTION_SORT_RATING, "rating" },
-  { DT_COLLECTION_SORT_ID, "id" },
-  { DT_COLLECTION_SORT_COLOR, "color label" },
-  { DT_COLLECTION_SORT_GROUP, "group" },
-  { DT_COLLECTION_SORT_PATH, "full path" },
+  { DT_COLLECTION_SORT_FILENAME,     "filename" },
+  { DT_COLLECTION_SORT_DATETIME,     "time" },
+  { DT_COLLECTION_SORT_RATING,       "rating" },
+  { DT_COLLECTION_SORT_ID,           "id" },
+  { DT_COLLECTION_SORT_COLOR,        "color label" },
+  { DT_COLLECTION_SORT_GROUP,        "group" },
+  { DT_COLLECTION_SORT_PATH,         "full path" },
   { DT_COLLECTION_SORT_CUSTOM_ORDER, "custom sort" },
-  { DT_COLLECTION_SORT_TITLE, "title" },
-  { DT_COLLECTION_SORT_DESCRIPTION, "description" },
+  { DT_COLLECTION_SORT_TITLE,        "title" },
+  { DT_COLLECTION_SORT_DESCRIPTION,  "description" },
   { DT_COLLECTION_SORT_ASPECT_RATIO, "aspect ratio" },
-  { DT_COLLECTION_SORT_SHUFFLE, "shuffle" }
+  { DT_COLLECTION_SORT_SHUFFLE,      "shuffle" }
 };
 #define NB_ITEMS (sizeof(items) / sizeof(dt_sort_items))
 
@@ -167,7 +167,7 @@ void gui_init(dt_lib_module_t *self)
   d->sort = widget = gtk_combo_box_text_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 
-  /* populate compobox */
+  /* populate combobox */
   for (int idx = 0 ; idx < NB_ITEMS ; idx++)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _(items[idx].label));
 
