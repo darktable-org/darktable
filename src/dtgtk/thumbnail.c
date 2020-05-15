@@ -74,6 +74,67 @@ static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
   g_free(pattern);
 }
 
+static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
+{
+  if(!thumb->w_group) return;
+  if(!thumb->is_grouped)
+  {
+    gtk_widget_set_has_tooltip(thumb->w_group, FALSE);
+    return;
+  }
+
+  dt_image_t *img = NULL;
+  gchar *tt = NULL;
+  int nb = 0;
+
+  // the group leader
+  if(thumb->imgid == thumb->groupid)
+    tt = dt_util_dstrcat(tt, "\n<b>%s (%s)</b>", _("current"), _("leader"));
+  else
+  {
+    img = dt_image_cache_get(darktable.image_cache, thumb->groupid, 'r');
+    if(img)
+    {
+      tt = dt_util_dstrcat(tt, "\n<b>%s (%s)</b>", img->filename, _("leader"));
+      dt_image_cache_read_release(darktable.image_cache, img);
+    }
+  }
+
+  // and the other images
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE group_id = ?1", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    nb++;
+    const int id = sqlite3_column_int(stmt, 0);
+    if(id != thumb->groupid)
+    {
+      if(id == thumb->imgid)
+        tt = dt_util_dstrcat(tt, "\n%s", _("current"));
+      else
+      {
+        img = dt_image_cache_get(darktable.image_cache, id, 'r');
+        if(img)
+        {
+          tt = dt_util_dstrcat(tt, "\n%s", img->filename);
+          dt_image_cache_read_release(darktable.image_cache, img);
+        }
+      }
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  // and the number of grouped images
+  gchar *ttf = dt_util_dstrcat(NULL, "%d %s\n%s", nb, _("grouped images"), tt);
+  g_free(tt);
+
+  // let's apply the tooltip
+  gtk_widget_set_tooltip_markup(thumb->w_group, ttf);
+  g_free(ttf);
+}
+
 static void _image_get_infos(dt_thumbnail_t *thumb)
 {
   if(thumb->imgid <= 0) return;
@@ -130,6 +191,9 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, thumb->imgid);
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, thumb->imgid);
   thumb->is_grouped = (sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW);
+
+  // grouping tooltip
+  _image_update_group_tooltip(thumb);
 }
 
 static gboolean _thumb_expose_again(gpointer user_data)
@@ -1089,6 +1153,9 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
       g_free(tooltip);
     }
   }
+
+  // grouping tooltip
+  _image_update_group_tooltip(thumb);
 
   // ensure all icons are up to date
   _thumb_update_icons(thumb);
