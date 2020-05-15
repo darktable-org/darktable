@@ -690,7 +690,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
       }
 
     case DT_COLLECTION_SORT_RATING:
-      second_order = dt_util_dstrcat(NULL, "flags & 7 %s", (collection->params.descending ? "" : "DESC"));
+      second_order = dt_util_dstrcat(NULL, "CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END %s", (collection->params.descending ? "" : "DESC"));
       break;
 
     case DT_COLLECTION_SORT_FILENAME:
@@ -766,7 +766,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         }
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "ORDER BY flags & 7, %s, filename DESC, version DESC", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
@@ -845,7 +845,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         }
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "ORDER BY flags & 7 DESC, %s, filename, version", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END DESC, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
