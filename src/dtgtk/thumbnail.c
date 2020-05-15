@@ -83,7 +83,6 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
     return;
   }
 
-  dt_image_t *img = NULL;
   gchar *tt = NULL;
   int nb = 0;
 
@@ -92,7 +91,7 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
     tt = dt_util_dstrcat(tt, "\n<b>%s (%s)</b>", _("current"), _("leader"));
   else
   {
-    img = dt_image_cache_get(darktable.image_cache, thumb->groupid, 'r');
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->groupid, 'r');
     if(img)
     {
       tt = dt_util_dstrcat(tt, "\n<b>%s (%s)</b>", img->filename, _("leader"));
@@ -102,25 +101,24 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
 
   // and the other images
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE group_id = ?1", -1,
-                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id, version, filename FROM main.images WHERE group_id = ?1", -1, &stmt,
+                              NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     nb++;
     const int id = sqlite3_column_int(stmt, 0);
+    const int v = sqlite3_column_int(stmt, 1);
+
     if(id != thumb->groupid)
     {
       if(id == thumb->imgid)
         tt = dt_util_dstrcat(tt, "\n%s", _("current"));
       else
       {
-        img = dt_image_cache_get(darktable.image_cache, id, 'r');
-        if(img)
-        {
-          tt = dt_util_dstrcat(tt, "\n%s", img->filename);
-          dt_image_cache_read_release(darktable.image_cache, img);
-        }
+        tt = dt_util_dstrcat(tt, "\n%s", sqlite3_column_text(stmt, 2));
+        if(v > 0) tt = dt_util_dstrcat(tt, " v%d", v);
       }
     }
   }
