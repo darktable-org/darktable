@@ -274,7 +274,7 @@ void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   if(flags & CPF_FOCUS)
   {
     cairo_set_line_width(cr, 0.05);
-    cairo_arc(cr, 0.5, 0.5, 0.60, 0, 2 * M_PI);
+    cairo_arc(cr, 0.5, 0.5, 0.60, (-50 * 3.145 / 180), (230 * 3.145 / 180));
     cairo_stroke(cr);
   }
   cairo_set_line_width(cr, 0.1);
