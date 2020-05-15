@@ -2272,8 +2272,14 @@ static gboolean dt_bauhaus_slider_postponed_value_change(gpointer data)
   }
 
   if(!d->is_dragging) d->timeout_handle = 0;
+  else
+  {
+    int delay = CLAMP(darktable.develop->average_delay * 3 / 2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
+                      DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
+    d->timeout_handle = g_timeout_add(delay, dt_bauhaus_slider_postponed_value_change, data);
+  }
 
-  return d->is_dragging;
+  return FALSE;
 }
 
 static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
