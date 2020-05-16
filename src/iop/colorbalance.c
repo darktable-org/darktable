@@ -908,12 +908,11 @@ static inline void set_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *B, flo
     p[CHANNEL_GREEN] = rgb[1] * 2.0f;
     p[CHANNEL_BLUE] = rgb[2] * 2.0f;
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_slider_set_soft(R, p[CHANNEL_RED] - 1.0f);
     dt_bauhaus_slider_set_soft(G, p[CHANNEL_GREEN] - 1.0f);
     dt_bauhaus_slider_set_soft(B, p[CHANNEL_BLUE] - 1.0f);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
 }
 
@@ -993,10 +992,9 @@ static void apply_autogrey(dt_iop_module_t *self)
 
   p->grey = XYZ[1] * 100.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->grey, p->grey);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1030,13 +1028,12 @@ static void apply_lift_neutralize(dt_iop_module_t *self)
   p->lift[CHANNEL_GREEN] = RGB[1] + 1.0f;
   p->lift[CHANNEL_BLUE] = RGB[2] + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->lift_r, RGB[0]);
   dt_bauhaus_slider_set_soft(g->lift_g, RGB[1]);
   dt_bauhaus_slider_set_soft(g->lift_b, RGB[2]);
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1070,13 +1067,12 @@ static void apply_gamma_neutralize(dt_iop_module_t *self)
   p->gamma[CHANNEL_GREEN] = CLAMP(2.0 - RGB[1], 0.0001f, 2.0f);
   p->gamma[CHANNEL_BLUE] = CLAMP(2.0 - RGB[2], 0.0001f, 2.0f);
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->gamma_r, -RGB[0] + 1.0f);
   dt_bauhaus_slider_set_soft(g->gamma_g, -RGB[1] + 1.0f);
   dt_bauhaus_slider_set_soft(g->gamma_b, -RGB[2] + 1.0f);
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1110,13 +1106,12 @@ static void apply_gain_neutralize(dt_iop_module_t *self)
   p->gain[CHANNEL_GREEN] = RGB[1];
   p->gain[CHANNEL_BLUE] = RGB[2];
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->gain_r, RGB[0] - 1.0f);
   dt_bauhaus_slider_set_soft(g->gain_g, RGB[1] - 1.0f);
   dt_bauhaus_slider_set_soft(g->gain_b, RGB[2] - 1.0f);
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1138,10 +1133,9 @@ static void apply_lift_auto(dt_iop_module_t *self)
 
   p->lift[CHANNEL_FACTOR] = -p->gain[CHANNEL_FACTOR] * XYZ[1] + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->lift_factor, (p->lift[CHANNEL_FACTOR] - 1.0f) * 100.0f);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1164,10 +1158,9 @@ static void apply_gamma_auto(dt_iop_module_t *self)
   p->gamma[CHANNEL_FACTOR]
       = 2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->gamma_factor, (p->gamma[CHANNEL_FACTOR] - 1.0f) * 100.0f);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1189,10 +1182,9 @@ static void apply_gain_auto(dt_iop_module_t *self)
 
   p->gain[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR] / (XYZ[1]);
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->gain_factor, (p->gain[CHANNEL_FACTOR] - 1.0f) * 100.0f);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1294,8 +1286,7 @@ static void apply_autocolor(dt_iop_module_t *self)
   p->gain[CHANNEL_GREEN] = RGB_gain[1];
   p->gain[CHANNEL_BLUE] = RGB_gain[2];
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->lift_r, RGB_lift[0]);
   dt_bauhaus_slider_set_soft(g->lift_g, RGB_lift[1]);
   dt_bauhaus_slider_set_soft(g->lift_b, RGB_lift[2]);
@@ -1311,7 +1302,7 @@ static void apply_autocolor(dt_iop_module_t *self)
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1359,12 +1350,11 @@ static void apply_autoluma(dt_iop_module_t *self)
     p->gamma[CHANNEL_FACTOR] = CLAMP(2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * g->luma_patches[GAMMA] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f)), 0.0f, 2.0f);
   }
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->lift_factor, (p->lift[CHANNEL_FACTOR] - 1.0f) * 100.0f);
   dt_bauhaus_slider_set_soft(g->gamma_factor, (p->gamma[CHANNEL_FACTOR] - 1.0f) * 100.0f);
   dt_bauhaus_slider_set_soft(g->gain_factor, (p->gain[CHANNEL_FACTOR] - 1.0f) * 100.0f);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1981,10 +1971,9 @@ static void lift_red_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   p->lift[CHANNEL_RED] = dt_bauhaus_slider_get(slider) + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1998,10 +1987,9 @@ static void lift_green_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   p->lift[CHANNEL_GREEN] = dt_bauhaus_slider_get(slider) + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2015,10 +2003,9 @@ static void lift_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   p->lift[CHANNEL_BLUE] = dt_bauhaus_slider_get(slider) + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2043,10 +2030,9 @@ static void gamma_red_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   p->gamma[CHANNEL_RED] = dt_bauhaus_slider_get(slider) + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void gamma_green_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -2059,10 +2045,9 @@ static void gamma_green_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   p->gamma[CHANNEL_GREEN] = dt_bauhaus_slider_get(slider) + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2076,10 +2061,9 @@ static void gamma_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   p->gamma[CHANNEL_BLUE] = dt_bauhaus_slider_get(slider) + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2103,10 +2087,9 @@ static void gain_red_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   p->gain[CHANNEL_RED] = dt_bauhaus_slider_get(slider) + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2120,10 +2103,9 @@ static void gain_green_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   p->gain[CHANNEL_GREEN] = dt_bauhaus_slider_get(slider) + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void gain_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -2136,10 +2118,9 @@ static void gain_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
 
   p->gain[CHANNEL_BLUE] = dt_bauhaus_slider_get(slider) + 1.0f;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
