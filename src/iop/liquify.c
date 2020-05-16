@@ -1812,7 +1812,7 @@ static void update_warp_count (const dt_iop_liquify_gui_data_t *g)
         warp++;
     }
   char str[10];
-  snprintf (str, sizeof (str), "%d|%d", warp, node);
+  snprintf (str, sizeof (str), "%d | %d", warp, node);
   gtk_label_set_text (g->label, str);
 }
 
