@@ -355,11 +355,12 @@
     <default>false</default>
     <shortdescription>ask before removing empty folders</shortdescription>
     <longdescription>always ask the user before removing any empty folder. this can happen after moving or deleting images.</longdescription>
+  </dtconfig>
   <dtconfig prefs="security">
     <name>allow_delete_last_duplicate</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>allow all files to be deleted from duplicate module</shortdescription>
+    <shortdescription>allow all files to be deleted via duplicate module</shortdescription>
     <longdescription>leaves delete button on last file in duplicate module, removes if false</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable">
