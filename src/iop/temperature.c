@@ -1038,46 +1038,15 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
     1.0/cur_coeffs[2],
   };
 
-  // reflect actual black body colors for the temperature slider (or not)
-  for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
+  if(blackbody_is_confusing)
   {
-    const float stop = i / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
-    const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
-    const double tint = DT_IOP_LOWEST_TINT + i * tint_step;
-
-    if(!blackbody_is_confusing)
+    // show effect of adjustment on temp/tint sliders
+    for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
     {
-      // it isn't!
-      const cmsCIEXYZ cmsXYZ_temp = temperature_tint_to_XYZ(K,cur_tint);
-      const cmsCIEXYZ cmsXYZ_tint = temperature_tint_to_XYZ(cur_temp, tint);
-      float sRGB_temp[3], XYZ_temp[3] = {cmsXYZ_temp.X, cmsXYZ_temp.Y, cmsXYZ_temp.Z};
-      float sRGB_tint[3], XYZ_tint[3] = {cmsXYZ_tint.X, cmsXYZ_tint.Y, cmsXYZ_tint.Z};
-
-      dt_XYZ_to_sRGB(XYZ_temp, sRGB_temp);
-      dt_XYZ_to_sRGB(XYZ_tint, sRGB_tint);
-
-      const float maxsRGB_temp = fmaxf(fmaxf(sRGB_temp[0], sRGB_temp[1]), sRGB_temp[2]);
-      const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]), sRGB_tint[2]);
-
-      if(maxsRGB_temp > 1.f) {
-        for(int ch=0; ch<3; ch++){
-          sRGB_temp[ch] = fmaxf(sRGB_temp[ch] / maxsRGB_temp, 0.f);
-        }
-      }
-
-      if(maxsRGB_tint > 1.f) {
-        for(int ch=0; ch<3; ch++){
-          sRGB_tint[ch] = fmaxf(sRGB_tint[ch] / maxsRGB_tint, 0.f);
-        }
-      }
-
-      dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB_temp[0], sRGB_temp[1], sRGB_temp[2]);
-      dt_bauhaus_slider_set_stop(g->scale_tint, stop, sRGB_tint[0], sRGB_tint[1], sRGB_tint[2]);
-    }
-    else
-    {
-      // i think lightroom-ish look is ok-ish
-      //dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB[2], sRGB[1], sRGB[0]);
+      const float stop = i / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
+      const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
+      const double tint = DT_IOP_LOWEST_TINT + i * tint_step;
+      
       double coeffs_K[4];
       double coeffs_tint[4];
       temp2mul(self, K, cur_tint, coeffs_K);
@@ -1107,6 +1076,42 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
         }
       }
       dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB_K[0], sRGB_K[1], sRGB_K[2]);
+      dt_bauhaus_slider_set_stop(g->scale_tint, stop, sRGB_tint[0], sRGB_tint[1], sRGB_tint[2]);
+    }
+  }
+  else 
+  {
+    // reflect actual black body colors for the temperature slider
+    for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
+    {
+      const float stop = i / (DT_BAUHAUS_SLIDER_MAX_STOPS - 1.0);
+      const double K = DT_IOP_LOWEST_TEMPERATURE + i * temp_step;
+      const double tint = DT_IOP_LOWEST_TINT + i * tint_step;
+
+      const cmsCIEXYZ cmsXYZ_temp = temperature_tint_to_XYZ(K,cur_tint);
+      const cmsCIEXYZ cmsXYZ_tint = temperature_tint_to_XYZ(cur_temp, tint);
+      float sRGB_temp[3], XYZ_temp[3] = {cmsXYZ_temp.X, cmsXYZ_temp.Y, cmsXYZ_temp.Z};
+      float sRGB_tint[3], XYZ_tint[3] = {cmsXYZ_tint.X, cmsXYZ_tint.Y, cmsXYZ_tint.Z};
+
+      dt_XYZ_to_sRGB(XYZ_temp, sRGB_temp);
+      dt_XYZ_to_sRGB(XYZ_tint, sRGB_tint);
+
+      const float maxsRGB_temp = fmaxf(fmaxf(sRGB_temp[0], sRGB_temp[1]), sRGB_temp[2]);
+      const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]), sRGB_tint[2]);
+
+      if(maxsRGB_temp > 1.f) {
+        for(int ch=0; ch<3; ch++){
+          sRGB_temp[ch] = fmaxf(sRGB_temp[ch] / maxsRGB_temp, 0.f);
+        }
+      }
+
+      if(maxsRGB_tint > 1.f) {
+        for(int ch=0; ch<3; ch++){
+          sRGB_tint[ch] = fmaxf(sRGB_tint[ch] / maxsRGB_tint, 0.f);
+        }
+      }
+
+      dt_bauhaus_slider_set_stop(g->scale_k, stop, sRGB_temp[0], sRGB_temp[1], sRGB_temp[2]);
       dt_bauhaus_slider_set_stop(g->scale_tint, stop, sRGB_tint[0], sRGB_tint[1], sRGB_tint[2]);
     }
   }
