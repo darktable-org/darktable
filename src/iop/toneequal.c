@@ -562,10 +562,9 @@ static int sanity_check(dt_iop_module_t *self)
       // Repaint the on/off icon
       if(self->off)
       {
-        const int reset = darktable.gui->reset;
-        darktable.gui->reset = 1;
+        ++darktable.gui->reset;
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), self->enabled);
-        darktable.gui->reset = reset;
+        --darktable.gui->reset;
       }
     }
     return 0;
@@ -1889,10 +1888,9 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   {
     // Reset the exposure boost and do nothing
     p->exposure_boost = 0.0f;
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1920,10 +1918,9 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   p->exposure_boost += target - g->histogram_average;
 
   // Update the GUI stuff
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1953,10 +1950,9 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   {
     // Reset the contrast boost and do nothing
     p->contrast_boost = 0.0f;
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1985,10 +1981,9 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   p->contrast_boost = (3.0f - origin);
 
   // Update the GUI stuff
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -2303,10 +2298,9 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   if(commit)
   {
     // Update GUI with new params
-    const int reset = self->dt->gui->reset;
-    self->dt->gui->reset = 1;
+    ++darktable.gui->reset;
     update_exposure_sliders(g, p);
-    self->dt->gui->reset = reset;
+    --darktable.gui->reset;
 
     dt_dev_add_history_item(darktable.develop, self, FALSE);
   }
@@ -2986,10 +2980,9 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
     p->speculars = d->speculars;
 
     // update UI sliders
-    const int reset = self->dt->gui->reset;
-    self->dt->gui->reset = 1;
+    ++darktable.gui->reset;
     update_exposure_sliders(g, p);
-    self->dt->gui->reset = reset;
+    --darktable.gui->reset;
 
     // Redraw graph
     gtk_widget_queue_draw(self->widget);
@@ -3045,10 +3038,9 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   else if(g->area_dragging && !height_valid)
   {
     // cursor left area : force commit to avoid glitches
-    const int reset = self->dt->gui->reset;
-    self->dt->gui->reset = 1;
+    ++darktable.gui->reset;
     update_exposure_sliders(g, p);
-    self->dt->gui->reset = reset;
+    --darktable.gui->reset;
 
     dt_dev_add_history_item(darktable.develop, self, FALSE);
 
@@ -3102,10 +3094,9 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
     if(g->area_dragging)
     {
       // Update GUI with new params
-      const int reset = self->dt->gui->reset;
-      self->dt->gui->reset = 1;
+      ++darktable.gui->reset;
       update_exposure_sliders(g, p);
-      self->dt->gui->reset = reset;
+      --darktable.gui->reset;
 
       dt_dev_add_history_item(darktable.develop, self, FALSE);
 
@@ -3154,12 +3145,11 @@ static void _develop_ui_pipe_started_callback(gpointer instance, gpointer user_d
     dt_pthread_mutex_unlock(&g->lock);
   }
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_pthread_mutex_lock(&g->lock);
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
   dt_pthread_mutex_unlock(&g->lock);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 

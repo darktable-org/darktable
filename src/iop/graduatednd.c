@@ -447,12 +447,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   p->hue        = H;
   p->saturation = S;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);
   update_saturation_slider_end_color(g->gslider2, p->hue);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -674,10 +673,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
       r = p->rotation;
       set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, r, o);
     }
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_slider_set(g->scale3, r);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     p->rotation = r;
     p->offset = o;
     g->dragging = 0;

@@ -2206,10 +2206,9 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
   if(sel == 0) return;
   if(sel == 1)
   {
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_combobox_set(bd->masks_combo, 0);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     return;
   }
   if(sel > 0)
