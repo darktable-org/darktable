@@ -130,11 +130,11 @@ static inline void CCT_to_xy_daylight(const float t, float *x, float *y)
   float y_temp = 0.f;
 
   if(t >= 4000.f && t <= 7000.0f)
-    x_temp = -4.6070e9f / (t * t * t) + 2.9678e6f / (t * t) + 0.09911e3f / t + 0.244063f;
+    x_temp = ((-4.6070e9f / t + 2.9678e6f) / t + 0.09911e3f) / t + 0.244063f;
   else if(t > 7000.f && t <= 25000.f)
-    x_temp = -2.0064e9f / (t * t * t) + 1.9018e6f / (t * t) + 0.24748e3f / t + 0.237040f;
+    x_temp = ((-2.0064e9f / t + 1.9018e6f) / t + 0.24748e3f) / t + 0.237040f;
 
-  y_temp = -3.f * x_temp * x_temp + 2.87f * x_temp - 0.275f;
+  y_temp = (-3.f * x_temp + 2.87f) * x_temp - 0.275f;
 
   *x = x_temp;
   *y = y_temp;
@@ -151,16 +151,16 @@ static inline void CCT_to_xy_blackbody(const float t, float *x, float *y)
   float y_temp = 0.f;
 
   if(t >= 1667.f && t <= 4000.f)
-    x_temp = -0.2661239e9f / (t * t * t) - 0.2343589e6f / (t * t)  + 0.8776956e3f / t + 0.179910f;
+    x_temp = ((-0.2661239e9f / t - 0.2343589e6f) / t  + 0.8776956e3f) / t + 0.179910f;
   else if(t > 4000.f && t <= 25000.f)
-    x_temp = -3.0258469e9f / (t * t * t) + 2.1070379e6f / (t * t)  + 0.2226347e3f / t + 0.240390f;
+    x_temp = ((-3.0258469e9f / t + 2.1070379e6f) / t  + 0.2226347e3f) / t + 0.240390f;
 
   if(t >= 1667.f && t <= 2222.f)
-    y_temp = -1.1063814f * x_temp * x_temp * x_temp - 1.34811020f * x_temp * x_temp + 2.18555832f * x_temp - 0.20219683f;
+    y_temp = ((-1.1063814f * x_temp - 1.34811020f) * x_temp + 2.18555832f) * x_temp - 0.20219683f;
   else if(t > 2222.f && t <= 4000.f)
-    y_temp = -0.9549476f * x_temp * x_temp * x_temp - 1.37418593f * x_temp * x_temp + 2.09137015f * x_temp - 0.16748867f;
+    y_temp = ((-0.9549476f * x_temp - 1.37418593f) * x_temp + 2.09137015f) * x_temp - 0.16748867f;
   else if(t > 4000.f && t <= 25000.f)
-    y_temp =  3.0817580f * x_temp * x_temp * x_temp - 5.87338670f * x_temp * x_temp + 3.75112997f * x_temp - 0.37001483f;
+    y_temp = (( 3.0817580f * x_temp - 5.87338670f) * x_temp + 3.75112997f) * x_temp - 0.37001483f;
 
   *x = x_temp;
   *y = y_temp;
@@ -343,11 +343,11 @@ static inline float planckian_normal(const float x, const float t)
   // Get the direction of the normal vector to the planckian locus at current temperature
   // This is derivated from CCT_to_xy_blackbody equations
   if(t >= 1667.f && t <= 2222.f)
-      n = -3.3191442f * x * x - 2.69622040f * x + 2.18555832f;
+      n = (-3.3191442f * x - 2.69622040f) * x + 2.18555832f;
   else if(t > 2222.f && t <= 4000.f)
-      n = -2.8648428f * x * x - 2.74837186f * x + 2.09137015f;
+      n = (-2.8648428f * x - 2.74837186f) * x + 2.09137015f;
   else if(t > 4000.f && t < 25000.f)
-      n =  9.2452740f * x * x - 11.7467734f * x + 3.75112997f;
+      n = (9.2452740f * x  - 11.7467734f) * x + 3.75112997f;
   return n;
 }
 
@@ -381,6 +381,18 @@ static inline float get_tint_from_tinted_xy(const float x, const float y, const 
 }
 
 
+/*
+ * The following defines a custom OpenMP reduction so the reverse-lookup can be fully parallelized without sharing.
+ *
+ * Reference : https://stackoverflow.com/questions/61821090/parallelization-of-a-reverse-lookup-with-openmp
+ *
+ * The principle is that each thread has its own private radius and temperature, and find its own local minium radius.
+ * Then, at the end of the parallel loops, we fetch all the local minima from each thread, compare them and return
+ * the global minimum.
+ *
+ * This avoids sharing temperature and radius between threads and waiting for thread locks.
+ */
+
 
 static inline float CCT_reverse_lookup(const float x, const float y)
 {
@@ -393,13 +405,30 @@ static inline float CCT_reverse_lookup(const float x, const float y)
   static const float T_range = T_max - T_min;
   static const size_t LUT_samples = 1<<16;
 
-  // just init radius with something big.
-  float radius = 2.f;  // x and y are in [0; 1], so the algebraic max possible radius is sqrt(2)
-  float temperature = 0.f;
+  typedef struct pair
+  {
+    float radius;
+    float temperature;
+  } pair;
+
+  struct pair pair_min(struct pair r, struct pair n)
+  {
+    // r is the current min value, n in the value to compare against it
+    if(n.radius < r.radius) return n;
+    else return r;
+  }
+
+  // Define a new reduction operation
+  #ifdef _OPENMP
+  #pragma omp declare reduction(pairmin:struct pair:omp_out=pair_min(omp_out,omp_in))    \
+    initializer(omp_priv = { FLT_MAX, 0.0f })
+  #endif
+
+  struct pair min_radius = { FLT_MAX, 0.0f };
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(x, y) shared(radius, temperature)\
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(x, y, T_min, T_range, LUT_samples) reduction(pairmin:min_radius)\
   schedule(simd:static)
 #endif
   for(size_t i = 0; i < LUT_samples; i++)
@@ -415,14 +444,11 @@ static inline float CCT_reverse_lookup(const float x, const float y)
     CCT_to_xy_blackbody(T, &x_bb, &y_bb);
 
     // Compute distance between current planckian chromaticity and input
-    const float radius_tmp = hypotf((x_bb - x), (y_bb - y));
+    const pair radius_tmp = { hypotf((x_bb - x), (y_bb - y)), T };
 
     // If we found a smaller radius, save it
-    const int match = (radius_tmp < radius);
-    radius = (match) ? radius_tmp : radius;
-    temperature = (match) ? T : temperature;
-
+    min_radius = pair_min(min_radius, radius_tmp);
   }
 
-  return temperature;
+  return min_radius.temperature;
 }
