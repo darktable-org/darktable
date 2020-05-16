@@ -22,13 +22,16 @@ How to add a new test (using default driver)
 
 3. Do a dev using whatever module
 
-4. Copy the resulting .xmp <nnnn>-<meaningful name>
+4. Copy the resulting .xmp into <nnnn>-<meaningful name>
+
+   And rename it <meaningful name>.xmp
 
 5. Do a first run of the test to get the expected output
 
    ./run <dir>
 
-   And rename output.jpg to expected.jpg
+   And rename output.jpg to expected.jpg and double check that
+   expected.jpg is correct and really the expected output.
 
 6. Test that all is ok by running:
 
@@ -40,9 +43,7 @@ How to add a new test (using default driver)
    $ ./run.sh 0001-exposure
    Test ./0001-exposure
       image mire1.cr2
-      Max  dE         0
-      Mean dE         0
-      Count above max 0
+      Max  dE         0.0000
    OK
 
 7. If all goes well commit the .xmp and expected.jpg files
