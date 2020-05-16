@@ -25,6 +25,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -204,19 +205,6 @@ static void _picker_button_toggled(GtkToggleButton *button, gpointer p)
   dt_lib_colorpicker_t *data = ((dt_lib_module_t *)p)->data;
   gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button), gtk_toggle_button_get_active(button));
   if(darktable.gui->reset) return;
-  dt_iop_module_t *module = dt_iop_get_colorout_module();
-  if(module)
-  {
-    dt_iop_request_focus(module);
-    module->request_color_pick = gtk_toggle_button_get_active(button) ? DT_REQUEST_COLORPICK_MODULE
-                                                                      : DT_REQUEST_COLORPICK_OFF;
-    dt_dev_invalidate_from_gui(darktable.develop);
-  }
-  else
-  {
-    dt_iop_request_focus(NULL);
-  }
-  dt_control_queue_redraw();
 }
 
 static void _statistic_changed(GtkComboBox *widget, gpointer p)
@@ -582,10 +570,8 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(data->size_selector), "changed", G_CALLBACK(_size_changed), (gpointer)self);
 
-  data->picker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_BOX, NULL);
+  data->picker_button = dt_color_picker_new(NULL, DT_COLOR_PICKER_AREA, picker_subrow);
   gtk_widget_set_name(GTK_WIDGET(data->picker_button), "control-button");
-  gtk_box_pack_start(GTK_BOX(picker_subrow), data->picker_button, FALSE, FALSE, 0);
-
   g_signal_connect(G_OBJECT(data->picker_button), "toggled", G_CALLBACK(_picker_button_toggled), self);
 
   gtk_box_pack_start(GTK_BOX(output_options), picker_subrow, TRUE, TRUE, 0);
