@@ -182,7 +182,7 @@ void dt_check_opendir(const char* text, const char* directory)
 
   DIR* dir = opendir(directory);
   if (dir) {
-    printf("%s: %s\n", text, directory);
+    dt_print(DT_DEBUG_DEV, "%s: %s\n", text, directory);
     closedir(dir);
   } else if ( errno == EACCES ) {
     printf("Permission denied.\n");
@@ -206,7 +206,7 @@ void dt_check_opendir(const char* text, const char* directory)
     printf("Insufficient memory to complete the operation.\n");
     exit(EXIT_FAILURE);
   }  else if ( errno == ENOTDIR ) {
-    printf(" name is not a directory.\n");
+    printf("Name is not a directory.\n");
     exit(EXIT_FAILURE);
   } else {
     printf("opendir() failed for some other reason.\n");
