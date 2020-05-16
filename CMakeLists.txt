@@ -48,7 +48,7 @@ include(FeatureSummary)
 # These defaults need to be included AFTER the project() call.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "..." FORCE)
-    message("No CMAKE_INSTALL_PREFIX was set. Building in such a way that it can run from the build tree.")
+    message("No CMAKE_INSTALL_PREFIX was set. Building in such a way that dt can be run from the build tree.")
 endif()
 
 set(DARKTABLE_LIBDIR    "${CMAKE_INSTALL_PREFIX}/lib/darktable")
