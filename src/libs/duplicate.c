@@ -161,8 +161,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
       dt_dev_invalidate(darktable.develop);
 
       d->imgid = imgid;
-      int fw, fh;
-      fw = fh = 0;
+      int fw = 0, fh = 0;
       dt_image_get_final_size(imgid, &fw, &fh);
       if(d->cur_final_width <= 0)
         dt_image_get_final_size(dev->image_storage.id, &d->cur_final_width, &d->cur_final_height);
@@ -362,8 +361,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
   gtk_widget_show(d->duplicate_box);
 
-  // we have a single image, do not allow it to be removed so hide last bt
-  if(count==1)
+  // we have a single image, do not allow it to be removed so hide last bt unless authorised
+  if(count==1 && !dt_conf_get_bool("allow_delete_last_duplicate"))
   {
     gtk_widget_set_sensitive(bt, FALSE);
     gtk_widget_set_visible(bt, FALSE);
