@@ -461,7 +461,7 @@ int _dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, con
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) && 
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
       !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
       module->distort_transform(module, piece, points, points_count);
@@ -651,7 +651,7 @@ static void _distort_paths (const struct dt_iop_module_t *module,
     else
       dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, params->transf_direction, buffer, len);
   }
-  
+
   // record back the transformed points
 
   b = buffer;
@@ -1465,7 +1465,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
   const int height = MIN(roi_in->height, roi_out->height);
   const int width = MIN(roi_in->width, roi_out->width);
-  
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, height, in, out, roi_in, roi_out, width) \
@@ -1635,7 +1635,7 @@ int process_cl (struct dt_iop_module_t *module,
 
   const int height = MIN(roi_in->height, roi_out->height);
   const int width = MIN(roi_in->width, roi_out->width);
-  
+
   // 1. copy the whole image (we'll change only a small part of it)
 
   {
@@ -1812,7 +1812,7 @@ static void update_warp_count (const dt_iop_liquify_gui_data_t *g)
         warp++;
     }
   char str[10];
-  snprintf (str, sizeof (str), "%d|%d", warp, node);
+  snprintf (str, sizeof (str), "%d | %d", warp, node);
   gtk_label_set_text (g->label, str);
 }
 
