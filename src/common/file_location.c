@@ -168,7 +168,7 @@ void dt_loc_init_plugindir(const char* application_directory, const char *plugin
   gchar complete_path[PATH_MAX] = { 0 };
   g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
   free(path);
-  darktable.plugindir = dt_make_filename_absolute(complete_path);
+  darktable.plugindir = g_realpath(complete_path);
   dt_check_opendir("darktable.plugindir", darktable.plugindir);
 #endif
 }
@@ -231,27 +231,9 @@ void dt_loc_init_localedir(const char* application_directory, const char *locale
   gchar complete_path[PATH_MAX] = { 0 };
   g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
   free(path);
-  darktable.localedir = dt_make_filename_absolute(complete_path);
+  darktable.localedir = g_realpath(complete_path);
   dt_check_opendir("darktable.localedir", darktable.localedir);
 #endif
-}
-
-char* dt_make_filename_absolute(char* path)
-{
-  // printf("dt_make_filename_absolute: path: %s\n", path);
-
-  // // g_realpath
-  // char actualpath [PATH_MAX+1];
-  // char *ptr;
-  // ptr = realpath(path, actualpath);
-  // path = actualpath;
-  // printf("absolute_path: %s\n", actualpath);
-  // printf("ptr: %s\n", ptr);
-
-  char* grealpath;
-  grealpath = g_realpath(path);
-  // printf("g_realpath: %s\n", grealpath);
-  return grealpath;
 }
 
 void dt_loc_init_datadir(const char* application_directory, const char *datadir)
@@ -270,7 +252,7 @@ void dt_loc_init_datadir(const char* application_directory, const char *datadir)
   gchar complete_path[PATH_MAX] = { 0 };
   g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
   free(path);
-  darktable.datadir = dt_make_filename_absolute(complete_path);
+  darktable.datadir = g_realpath(complete_path);
   dt_check_opendir("darktable.datadir", darktable.datadir);
 #endif
 }
