@@ -1172,16 +1172,11 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
 {
   if(module->off)
   {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
     if(module->hide_enable_button)
-    {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), FALSE);
       gtk_widget_set_sensitive(GTK_WIDGET(module->off), FALSE);
-    }
     else
-    {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
       gtk_widget_set_sensitive(GTK_WIDGET(module->off), TRUE);
-    }
   }
 }
 
