@@ -479,13 +479,12 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   *p_hue        = H;
   *p_saturation = S;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(hue, H);
   dt_bauhaus_slider_set(sat, S);
   update_colorpicker_color(colorpicker, H, S);
   update_saturation_slider_end_color(sat, H);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   gtk_widget_queue_draw(GTK_WIDGET(g->balance_scale));
 

@@ -561,8 +561,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   dt_iop_gui_set_expanded(next, TRUE, FALSE);
   gtk_widget_grab_focus(next->expander);
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
@@ -646,7 +645,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   /* redraw */
   dt_control_queue_redraw_center();
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 dt_iop_module_t *dt_iop_gui_get_previous_visible_module(dt_iop_module_t *module)
@@ -815,8 +814,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   /* initialize gui if iop have one defined */
   if(!dt_iop_is_hidden(module))
   {
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     module->gui_init(module);
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
     if(copy_params)
@@ -848,7 +846,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
                           expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
     dt_iop_gui_set_expanded(module, TRUE, FALSE);
     dt_iop_gui_update_blending(module);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
 
   if(dt_conf_get_bool("darkroom/ui/single_module"))
@@ -1650,8 +1648,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
 {
   if(module->gui_data)
   {
-    int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     if(!dt_iop_is_hidden(module))
     {
       if(module->params) module->gui_update(module);
@@ -1660,16 +1657,15 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       _iop_gui_update_label(module);
       dt_iop_gui_set_enable_button(module);
     }
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
 }
 
 void dt_iop_gui_reset(dt_iop_module_t *module)
 {
-  int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   if(module->gui_reset && !dt_iop_is_hidden(module)) module->gui_reset(module);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)

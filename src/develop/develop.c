@@ -877,10 +877,9 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
       {
         if(module->off)
         {
-          const int reset = darktable.gui->reset;
-          darktable.gui->reset = 1;
+          ++darktable.gui->reset;
           dt_iop_gui_set_enable_button(module);
-          darktable.gui->reset = reset;
+          --darktable.gui->reset;
         }
       }
     }
@@ -927,10 +926,9 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
       {
         if(module->off)
         {
-          const int reset = darktable.gui->reset;
-          darktable.gui->reset = 1;
+          ++darktable.gui->reset;
           dt_iop_gui_set_enable_button(module);
-          darktable.gui->reset = reset;
+          --darktable.gui->reset;
         }
       }
     }
@@ -1230,8 +1228,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   GList *dev_iop = g_list_copy(dev->iop);
 
   dt_dev_pop_history_items_ext(dev, cnt);
@@ -1288,7 +1285,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
     dev->preview2_pipe->cache_obsolete = 1;
   }
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
 

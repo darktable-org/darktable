@@ -1158,15 +1158,14 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   double TempK, tint;
   mul2temp(self, p->coeffs, &TempK, &tint);
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->scale_k, TempK);
   dt_bauhaus_slider_set(g->scale_tint, tint);
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
   dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
   dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 static void temp_changed(dt_iop_module_t *self)
@@ -1189,13 +1188,12 @@ static void temp_changed(dt_iop_module_t *self)
   coeffs[1] = 1.0;
   for(int c = 0; c < 4; c++) p->coeffs[c] = g->mod_coeff[c] = coeffs[c];
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
   dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
   dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 

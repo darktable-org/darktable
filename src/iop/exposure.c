@@ -540,10 +540,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   // switch off auto exposure when we lose focus (switching images etc)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 void init(dt_iop_module_t *module)
@@ -649,10 +648,9 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -666,10 +664,9 @@ static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const flo
 
     p->deflicker_target_level = exposure;
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -708,10 +705,9 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
   }
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->black, p->black);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -805,10 +801,9 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   {
     gchar *str = g_strdup_printf(_("%.2f EV"), g->deflicker_computed_exposure);
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     gtk_label_set_text(g->deflicker_used_EC, str);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     g_free(str);
   }

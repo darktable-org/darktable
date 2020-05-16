@@ -140,11 +140,10 @@ static void _update_picker_output(dt_lib_module_t *self)
   dt_iop_module_t *module = dt_iop_get_colorout_module();
   if(module)
   {
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button),
                                  module->request_color_pick != DT_REQUEST_COLORPICK_OFF);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     int input_color = dt_conf_get_int("ui_last/colorpicker_model");
 
