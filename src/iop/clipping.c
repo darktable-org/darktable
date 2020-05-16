@@ -1760,8 +1760,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   }
 
   // Update combobox label
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   if(act == -1)
   {
@@ -1774,7 +1773,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
     // we got a default ratio
     dt_bauhaus_combobox_set(g->aspect_presets, act);
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 static void angle_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -1791,8 +1790,7 @@ static void cxywh_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   p->cx = dt_bauhaus_slider_get(g->cx) / 100;
   dt_bauhaus_slider_set_soft_max(g->cw, 100 - p->cx * 100);
@@ -1803,7 +1801,7 @@ static void cxywh_callback(GtkWidget *slider, dt_iop_module_t *self)
   p->ch = (100 - dt_bauhaus_slider_get(g->ch)) / 100;
   dt_bauhaus_slider_set_soft_max(g->cy, p->ch * 100);
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   g->clip_x = p->cx;
   g->clip_w = fabsf(p->cw) - p->cx;
@@ -3132,15 +3130,14 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
           p->cw = copysignf(points[2] / (float)piece->buf_out.width, p->cw);
           p->ch = copysignf(points[3] / (float)piece->buf_out.height, p->ch);
 
-          const int reset = darktable.gui->reset;
-          darktable.gui->reset = 1;
+          ++darktable.gui->reset;
 
           dt_bauhaus_slider_set(g->cx, p->cx*100);
           dt_bauhaus_slider_set(g->cy, p->cy*100);
           dt_bauhaus_slider_set(g->cw, 100-p->cw*100);
           dt_bauhaus_slider_set(g->ch, 100-p->ch*100);
 
-          darktable.gui->reset = reset;
+          --darktable.gui->reset;
         }
       }
     }

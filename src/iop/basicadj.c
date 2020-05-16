@@ -399,12 +399,11 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 
     dt_pthread_mutex_unlock(&g->lock);
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
 
     gui_update(self);
 
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   else
   {
@@ -433,12 +432,11 @@ static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type
 
       if(g)
       {
-        const int reset = darktable.gui->reset;
-        darktable.gui->reset = 1;
+        ++darktable.gui->reset;
 
         dt_bauhaus_slider_set_default(g->sl_middle_grey, def_middle_grey);
 
-        darktable.gui->reset = reset;
+        --darktable.gui->reset;
       }
     }
   }
@@ -606,10 +604,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
                                                                        work_profile->nonlinearlut) * 100.f)
                                   : dt_camera_rgb_luminance(self->picked_color);
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }

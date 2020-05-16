@@ -110,15 +110,14 @@ static void _iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean upda
 {
   if(picker)
   {
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
 
     if(DTGTK_IS_TOGGLEBUTTON(picker->colorpick))
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(picker->colorpick), FALSE);
     else
       dt_bauhaus_widget_set_quad_active(picker->colorpick, FALSE);
 
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
 }
 
@@ -169,15 +168,14 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
     _iop_color_picker_reset(module->picker, TRUE);
     module->picker = self;
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
 
     if(DTGTK_IS_TOGGLEBUTTON(self->colorpick))
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->colorpick), TRUE);
     else
       dt_bauhaus_widget_set_quad_active(self->colorpick, TRUE);
 
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     module->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
 

@@ -3898,28 +3898,25 @@ static gboolean denoiseprofile_draw_variance(GtkWidget *widget, cairo_t *crf, gp
   if(!isnan(c->variance_R))
   {
     gchar *str = g_strdup_printf("%.2f", c->variance_R);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     gtk_label_set_text(c->label_var_R, str);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     g_free(str);
   }
   if(!isnan(c->variance_G))
   {
     gchar *str = g_strdup_printf("%.2f", c->variance_G);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     gtk_label_set_text(c->label_var_G, str);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     g_free(str);
   }
   if(!isnan(c->variance_B))
   {
     gchar *str = g_strdup_printf("%.2f", c->variance_B);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     gtk_label_set_text(c->label_var_B, str);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     g_free(str);
   }
   return FALSE;

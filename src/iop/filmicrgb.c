@@ -648,13 +648,12 @@ static void apply_auto_grey(dt_iop_module_t *self)
   p->white_point_source = p->white_point_source + grey_var;
   p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   gtk_widget_queue_draw(self->widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -677,11 +676,10 @@ static void apply_auto_black(dt_iop_module_t *self)
   p->black_point_source = fmaxf(EVmin, -16.0f);
   p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
@@ -705,11 +703,10 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   p->white_point_source = EVmax;
   p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
@@ -740,13 +737,12 @@ static void apply_autotune(dt_iop_module_t *self)
   p->white_point_source = EVmax;
   p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   gtk_widget_queue_draw(self->widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -780,12 +776,11 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   p->white_point_source = p->white_point_source + grey_var;
   p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -803,10 +798,9 @@ static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
   p->white_point_source = dt_bauhaus_slider_get(slider);
   p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_iop_color_picker_reset(self, TRUE);
   gtk_widget_queue_draw(self->widget);
@@ -823,10 +817,9 @@ static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
   p->black_point_source = dt_bauhaus_slider_get(slider);
   p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_iop_color_picker_reset(self, TRUE);
   gtk_widget_queue_draw(self->widget);
@@ -854,12 +847,11 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   p->black_point_source = EVmin;
   p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_iop_color_picker_reset(self, TRUE);
   gtk_widget_queue_draw(self->widget);
