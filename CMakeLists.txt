@@ -44,12 +44,12 @@ include(DefineOptions.cmake)
 include(GNUInstallDirs)
 include(FeatureSummary)
 
-#if(NOT CMAKE_INSTALL_PREFIX)
-#message("CMAKE_INSTALL_PREFIX NOT set")
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
-    #else()
-    #message("CMAKE_INSTALL_PREFIX was set to ${CMAKE_INSTALL_PREFIX}")
-    #endif()
+# CMake sets this variable to a TRUE value when the CMAKE_INSTALL_PREFIX has just been initialized to its default value, typically on the first run of CMake within a new build tree. This can be used by project code to change the default without overriding a user-provided value
+# These defaults need to be included AFTER the project() call.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "..." FORCE)
+    message("No CMAKE_INSTALL_PREFIX was set. Building in such a way that it can run from the build tree.")
+endif()
 
 if(NOT DESTDIR)
     message("DESTDIR NOT set")
