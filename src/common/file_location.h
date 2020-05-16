@@ -21,9 +21,6 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
-/** TODO: Sort, comment */
-void dt_check_opendir(const char* text, const char* directory);
-
 /** returns the users home directory */
 gchar *dt_loc_get_home_dir(const gchar *user);
 
@@ -41,6 +38,8 @@ void dt_loc_init_user_config_dir(const char *configdir);
 void dt_loc_init_user_cache_dir(const char *cachedir);
 /** get specific dir */
 gchar *dt_loc_init_generic(const char *value, const char *default_value);
+/** check if directory open worked. Provide error message in case it did not */
+void dt_check_opendir(const char* text, const char* directory);
 
 /* temporary backward_compatibility*/
 void dt_loc_get_datadir(char *datadir, size_t bufsize);
