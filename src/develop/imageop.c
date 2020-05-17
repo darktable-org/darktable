@@ -1069,7 +1069,7 @@ static gboolean dt_iop_gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpo
   }
   return FALSE;
 }
-  
+
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -1760,6 +1760,11 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     /* and finally remove hinter messages */
     dt_control_hinter_message(darktable.control, "");
+
+    // we also remove the focus css class
+    GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
+    GtkStyleContext *context = gtk_widget_get_style_context(iop_w);
+    gtk_style_context_remove_class(context, "dt_module_focus");
   }
 
   darktable.develop->gui_module = module;
@@ -1782,6 +1787,11 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     /* redraw the expander */
     gtk_widget_queue_draw(module->expander);
+
+    // we also add the focus css class
+    GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
+    GtkStyleContext *context = gtk_widget_get_style_context(iop_w);
+    gtk_style_context_add_class(context, "dt_module_focus");
   }
 
   /* update sticky accels window */
