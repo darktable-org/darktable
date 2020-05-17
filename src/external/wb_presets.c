@@ -2267,6 +2267,16 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-T20", WhiteFluorescent   , 0, { 1.9072847682119205, 1, 2.5794701986754967, 0 } },
   { "Fujifilm", "X-T20", Underwater         , 0, { 1.880794701986755, 1, 1.8741721854304636, 0 } },
 
+  /* Fujifilm X-T30 Firmware Version v1.20 */
+  { "Fujifilm", "X-T30", Daylight           , 0, { 1.827815, 1, 1.741722, 0 } },
+  // The manual calls it "Shade", but exiftool shows it as "Cloudy".
+  { "Fujifilm", "X-T30", Shade              , 0, { 1.986755, 1, 1.493377, 0 } },
+  { "Fujifilm", "X-T30", Incandescent       , 0, { 1.231788, 1, 2.639073, 0 } },
+  { "Fujifilm", "X-T30", DayWhiteFluorescent, 0, { 1.990066, 1, 1.887417, 0 } },
+  { "Fujifilm", "X-T30", DaylightFluorescent, 0, { 2.34106, 1, 1.523179, 0 } },
+  { "Fujifilm", "X-T30", WhiteFluorescent   , 0, { 1.907285, 1, 2.374172, 0 } },
+  { "Fujifilm", "X-T30", Underwater         , 0, { 1.827815, 1, 1.741722, 0 } },
+
   /* Fujifilm X-Pro1 Firmware Version v3.30 */
   // The manual calls it "Fine".
   { "Fujifilm", "X-Pro1", Daylight, 0,		{ 1.860927, 1, 1.708609, 0 } },
