@@ -170,12 +170,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       float h, s, l, hmix, smix, lmix, rmix, gmix, bmix, graymix;
       // Calculate the HSL mix
-      hmix = CLIP(in[0] * data->red[CHANNEL_HUE]) + (in[1] * data->green[CHANNEL_HUE])
-             + (in[2] * data->blue[CHANNEL_HUE]);
-      smix = CLIP(in[0] * data->red[CHANNEL_SATURATION]) + (in[1] * data->green[CHANNEL_SATURATION])
-             + (in[2] * data->blue[CHANNEL_SATURATION]);
-      lmix = CLIP(in[0] * data->red[CHANNEL_LIGHTNESS]) + (in[1] * data->green[CHANNEL_LIGHTNESS])
-             + (in[2] * data->blue[CHANNEL_LIGHTNESS]);
+      hmix = CLIP((in[0] * data->red[CHANNEL_HUE]) + (in[1] * data->green[CHANNEL_HUE])
+             + (in[2] * data->blue[CHANNEL_HUE]));
+      smix = CLIP((in[0] * data->red[CHANNEL_SATURATION]) + (in[1] * data->green[CHANNEL_SATURATION])
+             + (in[2] * data->blue[CHANNEL_SATURATION]));
+      lmix = CLIP((in[0] * data->red[CHANNEL_LIGHTNESS]) + (in[1] * data->green[CHANNEL_LIGHTNESS])
+             + (in[2] * data->blue[CHANNEL_LIGHTNESS]));
 
       // If HSL mix is used apply to out[]
       if(hmix != 0.0 || smix != 0.0 || lmix != 0.0)
@@ -187,7 +187,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         l = (lmix != 0.0) ? lmix : l;
         hsl2rgb(out, h, s, l);
       }
-      else // no HSL copt in[] to out[]
+      else // no HSL copy in[] to out[]
         for(int c = 0; c < 3; c++) out[c] = in[c];
 
       // Calculate graymix and RGB mix
