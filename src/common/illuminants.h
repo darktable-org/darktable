@@ -392,7 +392,24 @@ static inline float get_tint_from_tinted_xy(const float x, const float y, const 
  *
  * This avoids sharing temperature and radius between threads and waiting for thread locks.
  */
+typedef struct pair
+{
+  float radius;
+  float temperature;
+} pair;
 
+struct pair pair_min(struct pair r, struct pair n)
+{
+  // r is the current min value, n in the value to compare against it
+  if(n.radius < r.radius) return n;
+  else return r;
+}
+
+// Define a new reduction operation
+#ifdef _OPENMP
+#pragma omp declare reduction(pairmin:struct pair:omp_out=pair_min(omp_out,omp_in))    \
+  initializer(omp_priv = { FLT_MAX, 0.0f })
+#endif
 
 static inline float CCT_reverse_lookup(const float x, const float y)
 {
@@ -404,25 +421,6 @@ static inline float CCT_reverse_lookup(const float x, const float y)
   static const float T_max = 25000.f;
   static const float T_range = T_max - T_min;
   static const size_t LUT_samples = 1<<16;
-
-  typedef struct pair
-  {
-    float radius;
-    float temperature;
-  } pair;
-
-  struct pair pair_min(struct pair r, struct pair n)
-  {
-    // r is the current min value, n in the value to compare against it
-    if(n.radius < r.radius) return n;
-    else return r;
-  }
-
-  // Define a new reduction operation
-  #ifdef _OPENMP
-  #pragma omp declare reduction(pairmin:struct pair:omp_out=pair_min(omp_out,omp_in))    \
-    initializer(omp_priv = { FLT_MAX, 0.0f })
-  #endif
 
   struct pair min_radius = { FLT_MAX, 0.0f };
 
