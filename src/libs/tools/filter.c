@@ -82,6 +82,16 @@ const dt_sort_items items[] =
 };
 #define NB_ITEMS (sizeof(items) / sizeof(dt_sort_items))
 
+static int _filter_get_items(const dt_collection_sort_t sort)
+{
+  for(int i = 0; i < NB_ITEMS; i++)
+  {
+    if(sort == items[i].id)
+    return i;
+  }
+  return 0;
+}
+
 const char *name(dt_lib_module_t *self)
 {
   return _("filter");
@@ -173,7 +183,8 @@ void gui_init(dt_lib_module_t *self)
 
   /* select the last selected value */
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_collection_get_sort_field(darktable.collection));
+  const dt_collection_filter_t sort = dt_collection_get_sort_field(darktable.collection);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget),_filter_get_items(sort));
 
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(_lib_filter_sort_combobox_changed), (gpointer)self);
 
@@ -212,7 +223,7 @@ void gui_cleanup(dt_lib_module_t *self)
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  const int filter = gtk_combo_box_get_active(GTK_COMBO_BOX(d->filter));
+  const int filter = items[gtk_combo_box_get_active(GTK_COMBO_BOX(d->filter))].id;
 
   // 0 all
   // 1 unstarred only
@@ -235,7 +246,7 @@ static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
 static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
   /* update last settings */
-  const int i = gtk_combo_box_get_active(widget);
+  const int i = items[gtk_combo_box_get_active(widget)].id;
 
   uint32_t flags = dt_collection_get_filter_flags(darktable.collection)
     & ~(COLLECTION_FILTER_REJECTED | COLLECTION_FILTER_ALTERED | COLLECTION_FILTER_UNALTERED);
@@ -323,7 +334,7 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
     const int initial_rating = dt_conf_get_int("ui_last/import_initial_rating");
 
     /* current selection in filter dropdown */
-    const int current_filter = gtk_combo_box_get_active(GTK_COMBO_BOX(dropdowns->filter));
+    const int current_filter = items[gtk_combo_box_get_active(GTK_COMBO_BOX(dropdowns->filter))].id;
 
     /* convert filter dropdown to rating: 2-6 is 1-5 stars, for anything else, assume 0 stars */
     const int current_filter_rating = (current_filter >= 2 && current_filter <= 6) ? current_filter - 1 : 0;
@@ -336,7 +347,7 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
                                                                               : new_filter_rating;
 
     /* Reset to new filter dropdown item */
-    gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), new_filter);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), _filter_get_items(new_filter));
   }
   else
   {
@@ -357,7 +368,8 @@ static int sort_cb(lua_State *L)
     dt_collection_sort_t value;
     luaA_to(L,dt_collection_sort_t,&value,1);
     dt_collection_set_sort(darktable.collection, (uint32_t)value, 0);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), dt_collection_get_sort_field(darktable.collection));
+    const dt_collection_filter_t sort = dt_collection_get_sort_field(darktable.collection);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), _filter_get_items(sort));
     _lib_filter_update_query(self);
   }
   luaA_push(L, dt_collection_sort_t, &tmp);
@@ -375,7 +387,8 @@ static int sort_order_cb(lua_State *L)
     luaA_to(L,dt_collection_sort_order_t,&value,1);
     dt_collection_sort_t sort_value = dt_collection_get_sort_field(darktable.collection);
     dt_collection_set_sort(darktable.collection, sort_value, value);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), dt_collection_get_sort_field(darktable.collection));
+    const dt_collection_filter_t sort = dt_collection_get_sort_field(darktable.collection);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), _filter_get_items(sort));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),
                                dt_collection_get_sort_descending(darktable.collection));
     _lib_filter_update_query(self);
