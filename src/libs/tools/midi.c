@@ -502,7 +502,7 @@ static void callback_slider_changed(GtkWidget *w, gpointer data)
     dt_control_hinter_message
             (darktable.control, (""));
 
-    dt_control_log(_("slowly move midi controller down to connect"));
+    dt_toast_log(_("slowly move midi controller down to connect"));
   }
   else
   {
@@ -647,9 +647,9 @@ void aggregate_and_set_slider(MidiDevice *midi,
 
               if (midi->syncing)
               {
-                dt_control_log((">%s/%s<"), 
-                                  DT_BAUHAUS_WIDGET(w)->module->name(),
-                                  DT_BAUHAUS_WIDGET(w)->label);
+                dt_toast_log((">%s/%s<"), 
+                              DT_BAUHAUS_WIDGET(w)->module->name(),
+                              DT_BAUHAUS_WIDGET(w)->label);
 
                 midi->syncing = FALSE;
               }
@@ -661,9 +661,9 @@ void aggregate_and_set_slider(MidiDevice *midi,
                 gchar *left_text  = g_strnfill(MAX(1, move)-1,'<');
                 gchar *right_text = g_strnfill(MAX(1, -move)-1,'>');
                 
-                dt_control_log(("%s %s/%s %s"), 
-                                left_text, DT_BAUHAUS_WIDGET(w)->module->name(),
-                                DT_BAUHAUS_WIDGET(w)->label, right_text);
+                dt_toast_log(("%s %s / %s %s"), 
+                              left_text, DT_BAUHAUS_WIDGET(w)->module->name(),
+                              DT_BAUHAUS_WIDGET(w)->label, right_text);
                 
                 g_free(left_text);
                 g_free(right_text);
@@ -689,7 +689,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
                 midi->stored_knob->acceleration /= 2;
               }
 
-              dt_control_log(_("knob acceleration %.2f"), midi->stored_knob->acceleration);
+              dt_toast_log(_("knob acceleration %.2f"), midi->stored_knob->acceleration);
 
               midi_config_save(midi);
 
@@ -701,6 +701,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
             else
             {
               dt_bauhaus_slider_set(w, v + s * midi->stored_knob->acceleration * move);
+              dt_accel_widget_toast(w);
             }
           }
         }
@@ -742,9 +743,9 @@ void aggregate_and_set_slider(MidiDevice *midi,
               al = g_slist_next(al);
             }
 
-            dt_control_log(_("mapped to %s/%s"), 
-                              DT_BAUHAUS_WIDGET(mapping_widget)->module->name(),
-                              DT_BAUHAUS_WIDGET(mapping_widget)->label);
+            dt_toast_log(_("mapped to %s/%s"), 
+                           DT_BAUHAUS_WIDGET(mapping_widget)->module->name(),
+                           DT_BAUHAUS_WIDGET(mapping_widget)->label);
 
             dt_midi_knob_t *new_knob = NULL;
 
@@ -828,8 +829,8 @@ void aggregate_and_set_slider(MidiDevice *midi,
 
         if (midi->stored_knob == NULL)
         {
-          dt_control_log(_("knob %d on channel %d not mapped in group %d"), 
-                           key, channel, midi->group);
+          dt_toast_log(_("knob %d on channel %d not mapped in group %d"), 
+                         key, channel, midi->group);
         }
         else if (midi->stored_knob->encoding == MIDI_ABSOLUTE)
         {
@@ -1763,7 +1764,7 @@ static gboolean callback_configure_midi(GtkAccelGroup *accel_group,
 
     midi_open_devices(data);
 
-    dt_control_log(_("Reopened all midi devices"));
+    dt_toast_log(_("Reopened all midi devices"));
   }
 
   return TRUE;
