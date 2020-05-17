@@ -1593,14 +1593,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
   if(_compute_sizes(table, force))
   {
     // we update the scrollbars
-    gboolean bars = (gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar)
-                     || gtk_widget_get_visible(darktable.gui->scrollbars.hscrollbar));
-    if(bars != _thumbtable_update_scrollbars(table) && table->mode != DT_THUMBTABLE_MODE_FILMSTRIP)
-    {
-      // scrollabrs visibility changed, no need to go further, as this function will
-      // be triggered another time by widget resizing
-      return;
-    }
+    _thumbtable_update_scrollbars(table);
 
     const double start = dt_get_wtime();
     table->dragging = FALSE;
