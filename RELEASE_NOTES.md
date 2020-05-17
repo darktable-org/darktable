@@ -290,6 +290,9 @@ making a backup is strongly advised.
   DT_COLLECTION_PROP_IMPORT_TIMESTAMP, DT_COLLECTION_PROP_CHANGE_TIMESTAMP,
   DT_COLLECTION_PROP_EXPORT_TIMESTAMP, DT_COLLECTION_PROP_PRINT_TIMESTAMP
 
+- added darktable.gui.panel_get_size and darktable.gui.panel_set_size functions 
+  to set the width of the  left or right panels and the height of the bottom panel.
+
 ## Changed Dependencies
 
 
