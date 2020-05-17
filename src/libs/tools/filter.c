@@ -223,7 +223,7 @@ void gui_cleanup(dt_lib_module_t *self)
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  const int filter = items[gtk_combo_box_get_active(GTK_COMBO_BOX(d->filter))].id;
+  const int filter = gtk_combo_box_get_active(GTK_COMBO_BOX(d->filter));
 
   // 0 all
   // 1 unstarred only
@@ -246,7 +246,7 @@ static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
 static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
   /* update last settings */
-  const int i = items[gtk_combo_box_get_active(widget)].id;
+  const int i = gtk_combo_box_get_active(widget);
 
   uint32_t flags = dt_collection_get_filter_flags(darktable.collection)
     & ~(COLLECTION_FILTER_REJECTED | COLLECTION_FILTER_ALTERED | COLLECTION_FILTER_UNALTERED);
@@ -334,7 +334,7 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
     const int initial_rating = dt_conf_get_int("ui_last/import_initial_rating");
 
     /* current selection in filter dropdown */
-    const int current_filter = items[gtk_combo_box_get_active(GTK_COMBO_BOX(dropdowns->filter))].id;
+    const int current_filter = gtk_combo_box_get_active(GTK_COMBO_BOX(dropdowns->filter));
 
     /* convert filter dropdown to rating: 2-6 is 1-5 stars, for anything else, assume 0 stars */
     const int current_filter_rating = (current_filter >= 2 && current_filter <= 6) ? current_filter - 1 : 0;
@@ -347,7 +347,7 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
                                                                               : new_filter_rating;
 
     /* Reset to new filter dropdown item */
-    gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), _filter_get_items(new_filter));
+    gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), new_filter);
   }
   else
   {
