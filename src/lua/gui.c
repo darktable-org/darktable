@@ -164,6 +164,56 @@ static int panel_show_all_cb(lua_State *L)
   return 0;
 }
 
+static int panel_get_size_cb(lua_State *L)
+{
+  dt_ui_panel_t p;
+  int size;
+
+  if(lua_gettop(L) > 0)
+  {
+    luaA_to(L, dt_ui_panel_t, &p, 1);
+    if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+    {
+      size = dt_ui_panel_get_size(darktable.gui->ui, p);
+      lua_pushnumber(L, size);
+      return 1;
+    }
+    else
+    {
+      return luaL_error(L, "size not supported for specified panel");
+    }
+  }
+  else
+  {
+    return luaL_error(L, "no panel specified");
+  }
+}
+
+static int panel_set_size_cb(lua_State *L)
+{
+  dt_ui_panel_t p;
+  int size;
+
+  if(lua_gettop(L) > 1)
+  {
+    luaA_to(L, dt_ui_panel_t, &p, 1);
+    luaA_to(L, int, &size, 2);
+    if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+    {
+      dt_ui_panel_set_size(darktable.gui->ui, p, size);
+      return 0;
+    }
+    else
+    {
+      return luaL_error(L, "changing size not supported for specified panel");
+    }
+  }
+  else
+  {
+    return luaL_error(L, "no panel specified");
+  }
+}
+
 typedef dt_progress_t *dt_lua_backgroundjob_t;
 
 static int job_canceled(lua_State *L)
@@ -317,6 +367,12 @@ int dt_lua_init_gui(lua_State *L)
     lua_pushcfunction(L, panel_show_all_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_show_all");
+    lua_pushcfunction(L, panel_get_size_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "panel_get_size");
+    lua_pushcfunction(L, panel_set_size_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "panel_set_size");
     lua_pushcfunction(L, lua_create_job);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "create_job");
