@@ -63,6 +63,8 @@
  */
 
 #define DT_UI_PANEL_MODULE_SPACING 0
+#define DT_UI_PANEL_SIDE_DEFAULT_SIZE 350
+#define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE 120
 
 typedef enum dt_gui_view_switch_t
 {
@@ -1842,7 +1844,7 @@ static void _ui_init_panel_size(GtkWidget *widget)
   if(strcmp(gtk_widget_get_name(widget), "right") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_RIGHT, "_size");
-    s = 350; // default panel size
+    s = DT_UI_PANEL_SIDE_DEFAULT_SIZE; // default panel size
     if(key && dt_conf_key_exists(key))
       s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
     if(key) gtk_widget_set_size_request(widget, s, -1);
@@ -1850,7 +1852,7 @@ static void _ui_init_panel_size(GtkWidget *widget)
   else if(strcmp(gtk_widget_get_name(widget), "left") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_LEFT, "_size");
-    s = 350; // default panel size
+    s = DT_UI_PANEL_SIDE_DEFAULT_SIZE; // default panel size
     if(key && dt_conf_key_exists(key))
       s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
     if(key) gtk_widget_set_size_request(widget, s, -1);
@@ -1858,7 +1860,7 @@ static void _ui_init_panel_size(GtkWidget *widget)
   else if(strcmp(gtk_widget_get_name(widget), "bottom") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_BOTTOM, "_size");
-    s = 120; // default panel size
+    s = DT_UI_PANEL_BOTTOM_DEFAULT_SIZE; // default panel size
     if(key && dt_conf_key_exists(key))
       s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_height"), dt_conf_get_int("max_panel_height"));
     if(key) gtk_widget_set_size_request(widget, -1, s);
@@ -2038,6 +2040,46 @@ gboolean dt_ui_panel_visible(dt_ui_t *ui, const dt_ui_panel_t p)
 {
   g_return_val_if_fail(GTK_IS_WIDGET(ui->panels[p]), FALSE);
   return gtk_widget_get_visible(ui->panels[p]);
+}
+
+int dt_ui_panel_get_size(dt_ui_t *ui, const dt_ui_panel_t p)
+{
+  gchar *key = NULL;
+  int size;
+
+  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+  {
+    key = _panels_get_panel_path(p, "_size");
+    if(key && dt_conf_key_exists(key))
+    {
+      size = dt_conf_get_int(key);
+      g_free(key);
+    }
+    else // size hasn't been adjusted, so return default sizes
+    {
+      if(p == DT_UI_PANEL_BOTTOM)
+        size = DT_UI_PANEL_BOTTOM_DEFAULT_SIZE;
+      else
+        size = DT_UI_PANEL_SIDE_DEFAULT_SIZE;
+    }
+    return size;
+  }
+  return -1;
+}
+
+void dt_ui_panel_set_size(dt_ui_t *ui, const dt_ui_panel_t p, int s)
+{
+  gchar *key = NULL;
+  int width;
+
+  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+  {
+    width = CLAMP(s, dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
+    gtk_widget_set_size_request(ui->panels[p], width, -1);
+    key = _panels_get_panel_path(p, "_size");
+    dt_conf_set_int(key, width);
+    g_free(key);
+  }
 }
 
 GtkWidget *dt_ui_center(dt_ui_t *ui)

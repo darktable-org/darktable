@@ -834,6 +834,54 @@
 
 </section>
 
+<section status="final" id="darktable_gui_panel_get_size">
+<title>darktable.gui.panel_get_size</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_get_size</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_get_size_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+)int</synopsis>
+<para>Gets the size in pixels of the specified panel.  This only works for the left, right, and bottom panels.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_get_size_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to get the size of.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_panel_set_size">
+<title>darktable.gui.panel_set_size</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_set_size</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_set_size_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+	<emphasis><link linkend="darktable_gui_panel_set_size_size">size</link></emphasis> : int
+)</synopsis>
+<para>Sets the size in pixels of the specified panel.  This only works for the left, right, and bottom panels.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_set_size_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to set the size of.</para>
+
+</listitem></varlistentry>
+<varlistentry id="darktable_gui_panel_set_size_size"><term>size</term><listitem>
+<synopsis>int></synopsis>
+<para>The size to set the panel to.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 <section status="final" id="darktable_gui_create_job">
 <title>darktable.gui.create_job</title>
 <indexterm>

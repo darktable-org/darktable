@@ -314,6 +314,10 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
 void dt_ui_notify_user();
 /** \brief get visible state of panel */
 gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
+/**  \brief get width of right, left, or bottom panel */
+int dt_ui_panel_get_size(struct dt_ui_t *ui, const dt_ui_panel_t p);
+/**  \brief set width of right, left, or bottom panel */
+void dt_ui_panel_set_size(struct dt_ui_t *ui, const dt_ui_panel_t p, int s);
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_center_base(struct dt_ui_t *ui);
