@@ -48,13 +48,13 @@ set(DARKTABLE_LIBDIR    "${CMAKE_BINARY_DIR}/lib/darktable")
 set(DARKTABLE_BINDIR    "${CMAKE_BINARY_DIR}/bin")
 set(DARKTABLE_DATADIR   "${CMAKE_BINARY_DIR}/share/darktable") # darktablerc, themes, icons, ... Cannot use ${CMAKE_BINDIR}/data because not everything resides there. Like icons (pixmaps)
 set(DARKTABLE_SHAREDIR  "${DARKTABLE_DATADIR}")
-set(DARKTABLE_LOCALEDIR "${DARKTABLE_DATADIR}/locale")
+set(DARKTABLE_LOCALEDIR "${CMAKE_BINARY_DIR}/share/locale")
 
 set(DARKTABLE_RELATIVE_BINDIR    "./${CMAKE_INSTALL_BINDIR}")
 set(DARKTABLE_RELATIVE_LIBDIR    "../${CMAKE_INSTALL_LIBDIR}/darktable")
 set(DARKTABLE_RELATIVE_DATADIR   "../${CMAKE_INSTALL_DATAROOTDIR}/darktable")
 set(DARKTABLE_RELATIVE_SHAREDIR  "${DARKTABLE_RELATIVE_DATADIR}")
-set(DARKTABLE_RELATIVE_LOCALEDIR "${DARKTABLE_RELATIVE_DATADIR}/locale")
+set(DARKTABLE_RELATIVE_LOCALEDIR "../share/locale")
 
 # https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
 if(${FORCE_COLORED_OUTPUT})
