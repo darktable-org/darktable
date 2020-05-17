@@ -746,9 +746,14 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
             ? FALSE
             : high_quality;
 
-  const int width = format_params->max_width > 0 ? format_params->max_width + 1 : 0;
-  const int height = format_params->max_height > 0 ? format_params->max_height + 1 : 0;
 
+  int width = format_params->max_width > 0 ? format_params->max_width : 0;
+  int height = format_params->max_height > 0 ? format_params->max_height : 0;
+  if((!thumbnail_export) && (width>0))
+    width++;
+  if((!thumbnail_export) && (height>0))
+    height++;
+  
   const float max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
 
   const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, max_scale) : max_scale;
