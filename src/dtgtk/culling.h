@@ -55,14 +55,6 @@ typedef struct dt_culling_t
   int view_width, view_height; // last main widget size
   GdkRectangle thumbs_area;    // coordinate of all the currently loaded thumbs area
 
-  gboolean mouse_inside; // is the mouse pointer inside thumbatable widget ?
-
-  GSList *accel_closures; // list of associated accels
-
-  // when performing a drag, we store the list of items to drag here
-  // as this can change during the drag and drop (esp. because of the image_over_id)
-  GList *drag_list;
-
   gboolean navigate_inside_selection; // do we navigate inside selection or inside full collection
   gboolean selection_sync;            // should the selection follow current culling images
 
