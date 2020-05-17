@@ -44,16 +44,9 @@ include(DefineOptions.cmake)
 include(GNUInstallDirs)
 include(FeatureSummary)
 
-# CMake sets this variable to a TRUE value when the CMAKE_INSTALL_PREFIX has just been initialized to its default value, typically on the first run of CMake within a new build tree. This can be used by project code to change the default without overriding a user-provided value
-# These defaults need to be included AFTER the project() call.
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "..." FORCE)
-    message("No CMAKE_INSTALL_PREFIX was set. Building in such a way that dt can be run from the build tree.")
-endif()
-
-set(DARKTABLE_LIBDIR    "${CMAKE_INSTALL_PREFIX}/lib/darktable")
-set(DARKTABLE_BINDIR    "${CMAKE_INSTALL_PREFIX}/bin")
-set(DARKTABLE_DATADIR   "${CMAKE_INSTALL_PREFIX}/share/darktable") # darktablerc, themes, icons, ... Cannot use ${CMAKE_BINDIR}/data because not everything resides there. Like icons (pixmaps)
+set(DARKTABLE_LIBDIR    "${CMAKE_BINARY_DIR}/lib/darktable")
+set(DARKTABLE_BINDIR    "${CMAKE_BINARY_DIR}/bin")
+set(DARKTABLE_DATADIR   "${CMAKE_BINARY_DIR}/share/darktable") # darktablerc, themes, icons, ... Cannot use ${CMAKE_BINDIR}/data because not everything resides there. Like icons (pixmaps)
 set(DARKTABLE_SHAREDIR  "${DARKTABLE_DATADIR}")
 set(DARKTABLE_LOCALEDIR "${DARKTABLE_DATADIR}/locale")
 
