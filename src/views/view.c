@@ -935,7 +935,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
   const int img_height = buf_ht * scale;
   *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
 
-  // we transfer cahed image on a cairo_surface (with colorspace transform if needed)
+  // we transfer cached image on a cairo_surface (with colorspace transform if needed)
   cairo_surface_t *tmp_surface = NULL;
   uint8_t *rgbbuf = (uint8_t *)calloc(buf_wd * buf_ht * 4, sizeof(uint8_t));
   if(rgbbuf)
@@ -1020,10 +1020,15 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
 
     cairo_paint(cr);
-
+/* from focus_peaking.h
+   static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
+                                   uint8_t *const restrict image,
+                                   const int buf_width, const int buf_height)
+   The current implementation assumes the data at image is organized as a rectangle without a stride,
+   So we pass the raw data to be processed, this is more data but correct. 
+*/
     if(darktable.gui->show_focus_peaking)
-      dt_focuspeaking(cr, img_width, img_height, cairo_image_surface_get_data(*surface),
-                      cairo_image_surface_get_width(*surface), cairo_image_surface_get_height(*surface));
+      dt_focuspeaking(cr, img_width, img_height, rgbbuf, buf_wd, buf_ht);
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
