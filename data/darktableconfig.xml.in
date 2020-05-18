@@ -1536,13 +1536,13 @@
     <name>preview_downsampling</name>
     <type>
       <enum>
-        <option>1.0 (none)</option>
-        <option>0.5</option>
-        <option>0.333</option>
-        <option>0.25</option>
+        <option>original</option>
+        <option>to 1/2</option>
+        <option>to 1/3</option>
+        <option>to 1/4</option>
       </enum>
     </type>
-    <default>1.0 (none)</default>
+    <default>original</default>
     <shortdescription>reduce resolution of preview image</shortdescription>
     <longdescription>decrease to speed up preview rendering, may hinder accurate masking</longdescription>
   </dtconfig>
