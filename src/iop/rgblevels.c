@@ -169,12 +169,11 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
 
     dt_pthread_mutex_unlock(&g->lock);
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
 
     gui_update(self);
 
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   else
   {

@@ -1318,10 +1318,9 @@ static void reset_mix(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   c->drag_params = *(dt_iop_atrous_params_t *)self->params;
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(c->mix, 1.0f);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 void gui_update(struct dt_iop_module_t *self)

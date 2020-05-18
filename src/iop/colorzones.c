@@ -717,10 +717,9 @@ static void _reset_display_selection(dt_iop_module_t *self)
     }
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->bt_showmask)))
     {
-      const int reset = darktable.gui->reset;
-      darktable.gui->reset = 1;
+      ++darktable.gui->reset;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->bt_showmask), FALSE);
-      darktable.gui->reset = reset;
+      --darktable.gui->reset;
     }
   }
 }
@@ -2103,12 +2102,11 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook, GtkWidget *page
 
   c->channel = (dt_iop_colorzones_channel_t)page_num;
 
-  const int reset = self->dt->gui->reset;
-  self->dt->gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_bauhaus_combobox_set(c->interpolator, p->curve_type[c->channel]);
 
-  self->dt->gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_iop_color_picker_reset(self, TRUE);
   if(c->display_mask) dt_dev_reprocess_center(self->dev);
@@ -2201,10 +2199,9 @@ static void _display_mask_callback(GtkToggleButton *togglebutton, dt_iop_module_
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     gtk_toggle_button_set_active(togglebutton, FALSE);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     return;
   }
 
