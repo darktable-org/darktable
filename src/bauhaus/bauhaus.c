@@ -805,8 +805,7 @@ void dt_bauhaus_slider_set_default(GtkWidget *widget, float def)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  float val = d->callback(widget, def, DT_BAUHAUS_SET);
-  d->defpos = (val - d->min) / (d->max - d->min);
+  d->defpos = def;
 }
 
 void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float soft_max)
@@ -951,9 +950,9 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->max = d->soft_max = d->hard_max = max;
   d->step = step;
   // normalize default:
-  d->defpos = (defval - min) / (max - min);
-  d->pos = d->defpos;
-  d->oldpos = d->defpos;
+  d->defpos = defval;
+  d->pos = (defval - min) / (max - min);
+  d->oldpos = d->pos;
   d->scale = 5.0f * step / (max - min);
   d->digits = digits;
   snprintf(d->format, sizeof(d->format), "%%.0%df", digits);
@@ -2207,7 +2206,7 @@ void dt_bauhaus_slider_reset(GtkWidget *widget)
   d->max = d->soft_max;
   d->scale = 5.0f * d->step / (d->max - d->min);
 
-  dt_bauhaus_slider_set_normalized(w, d->defpos);
+  dt_bauhaus_slider_set_soft(widget, d->defpos);
 
   return;
 }
