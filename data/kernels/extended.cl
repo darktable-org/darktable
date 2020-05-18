@@ -156,9 +156,9 @@ channelmixer (read_only image2d_t in, write_only image2d_t out, const int width,
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  float hmix = clamp(pixel.x * red[CHANNEL_HUE], 0.0f, 1.0f) + pixel.y * green[CHANNEL_HUE] + pixel.z * blue[CHANNEL_HUE];
-  float smix = clamp(pixel.x * red[CHANNEL_SATURATION], 0.0f, 1.0f) + pixel.y * green[CHANNEL_SATURATION] + pixel.z * blue[CHANNEL_SATURATION];
-  float lmix = clamp(pixel.x * red[CHANNEL_LIGHTNESS], 0.0f, 1.0f) + pixel.y * green[CHANNEL_LIGHTNESS] + pixel.z * blue[CHANNEL_LIGHTNESS];
+  float hmix = clamp(pixel.x * red[CHANNEL_HUE] + pixel.y * green[CHANNEL_HUE] + pixel.z * blue[CHANNEL_HUE], 0.0f, 1.0f);
+  float smix = clamp(pixel.x * red[CHANNEL_SATURATION] + pixel.y * green[CHANNEL_SATURATION] + pixel.z * blue[CHANNEL_SATURATION], 0.0f, 1.0f);
+  float lmix = clamp(pixel.x * red[CHANNEL_LIGHTNESS] + pixel.y * green[CHANNEL_LIGHTNESS] + pixel.z * blue[CHANNEL_LIGHTNESS], 0.0f, 1.0f);
 
   if( hmix != 0.0f || smix != 0.0f || lmix != 0.0f )
   {
