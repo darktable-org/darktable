@@ -94,13 +94,13 @@ GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const ch
 
   if (f && f->header.type == DT_INTROSPECTION_TYPE_FLOAT)
   {
-    float min = f->Float.Min;
-    float max = f->Float.Max;
-    float defval = *(float*)self->so->get_p(p, param);
+    const float min = f->Float.Min;
+    const float max = f->Float.Max;
+    const float defval = *(float*)self->so->get_p(p, param);
     int digits = 2;
-    float step;
+    float step = 0;
 
-    float top = fmaxf(fabsf(min),fabsf(max));
+    const float top = fmaxf(fabsf(min),fabsf(max));
     if (top>=100)
     {
       step = 1.f;
@@ -108,8 +108,8 @@ GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const ch
     else
     {
       step = top / 100;
-      float log10step = log10f(step);
-      float fdigits = floorf(log10step+.1);
+      const float log10step = log10f(step);
+      const float fdigits = floorf(log10step+.1);
       step = powf(10.f,fdigits);
       if (log10step - fdigits > .5)
         step *= 5;
@@ -168,7 +168,7 @@ GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const 
   dt_introspection_field_t *f = self->so->get_f(param);
 
   GtkWidget *combobox = NULL;
-  gchar *str;
+  gchar *str = NULL;
 
   if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM || f->header.type == DT_INTROSPECTION_TYPE_INT))
   {
@@ -180,6 +180,7 @@ GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const 
     }
     else
     {
+// this should preferably be done in the introspection generator      
       str = dt_util_str_replace(f->header.field_name, "_", " ");
     
       dt_bauhaus_widget_set_label(combobox, NULL, gettext(str));
@@ -196,6 +197,7 @@ GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const 
     {
      for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values; iter->name; iter++)
       {
+//        This is dependent on perl code generating introspection definitions that @houz is finishing        
 //        dt_bauhaus_combobox_add(combobox, gettext(iter->description));
       }
     }
