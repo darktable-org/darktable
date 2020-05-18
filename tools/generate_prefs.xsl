@@ -466,7 +466,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   </xsl:template>
 
   <xsl:template match="dtconfig[type='int']" mode="tab">
-    <xsl:text>    gint min = 0;&#xA;    gint max = G_MAXINT;&#xA;</xsl:text>
+    <xsl:text>    gint min = G_MININT;&#xA;    gint max = G_MAXINT;&#xA;</xsl:text>
     <xsl:apply-templates select="type" mode="range"/>
     <xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>    double tmp;
@@ -485,7 +485,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   </xsl:template>
 
   <xsl:template match="dtconfig[type='int64']" mode="tab">
-    <xsl:text>    gint64 min = 0;&#xA;    gint64 max = G_MAXINT64;&#xA;</xsl:text>
+    <xsl:text>    gint64 min = G_MININT64;&#xA;    gint64 max = G_MAXINT64;&#xA;</xsl:text>
     <xsl:apply-templates select="type" mode="range"/>
     <xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>    min *= factor; max *= factor;
@@ -586,7 +586,9 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
     <xsl:text>    max = </xsl:text><xsl:value-of select="@max"/><xsl:text>;&#xA;</xsl:text>
   </xsl:template>
 
-  <xsl:template match="type" mode="range"  priority="1"/>
+  <xsl:template match="type" mode="range"  priority="1">
+    <xsl:text>    min = 0;&#xA;</xsl:text>
+  </xsl:template>
 
 <!-- Also look for the factor used in the GUI. -->
   <xsl:template match="type[@factor]" mode="factor" priority="3">
