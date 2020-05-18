@@ -70,17 +70,30 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   }
 
   /* begin cairo drawing */
+  /* get widget total allocation */
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width;
   int height = allocation.height;
+
+  /* get the css geometry properties */
+  GtkBorder margin, border, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_border(context, state, &border);
+  gtk_style_context_get_padding(context, state, &padding);
+
+  /* for button frame and background, remove css margin from allocation */
+  int startx = margin.left;
+  int starty = margin.top;
+  int cwidth = width - margin.left - margin.right;
+  int cheight = height - margin.top - margin.bottom;
 
   /* draw standard button background if not transparent */
   if(flags & CPF_STYLE_FLAT)
   {
     if(flags & CPF_PRELIGHT)
     {
-      gtk_render_background(context, cr, 0, 0, width, height);
+      gtk_render_background(context, cr, startx, starty, cwidth, cheight);
     }
     else if (!(flags & CPF_ACTIVE))
     {
@@ -90,9 +103,8 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   else if(!(flags & CPF_BG_TRANSPARENT))
   {
     /* draw default boxed button */
-    gtk_render_background(context, cr, 0, 0, width, height);
-    if(!(flags & CPF_DO_NOT_USE_BORDER))
-      gtk_render_frame(context, cr, 0, 0, width, height);
+    gtk_render_background(context, cr, startx, starty, cwidth, cheight);
+    gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
   }
 
   gdk_cairo_set_source_rgba(cr, &fg_color);
@@ -100,15 +112,24 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_BUTTON(widget)->icon)
   {
-    /* set inner border and icon size */
-    float f_border = ((flags & CPF_DO_NOT_USE_BORDER) ? 4.0 : 6.0);
-    int border = round(f_border);
-    int icon_width = round(text ? height - (f_border * 2) : width - (f_border * 2));
-    int icon_height = round(height - (f_border * 2));
+    /* calculate icon allocation */
+    startx += border.left + padding.left;
+    starty += border.top + padding.top;
+    cwidth -= border.left + border.right + padding.left + padding.right;
+    cheight -= border.top + border.bottom + padding.top + padding.bottom;
+
+    /* we have to leave some breathing room to the cairo icon paint function to actually   */
+    /* draw slightly outside the bounding box, for optical alignment and balancing of icons*/
+    int overbook_x = round (0.125 * cwidth);
+    int overbook_y = round (0.125 * cheight);
+    startx += overbook_x;
+    starty += overbook_y;
+    cwidth -= 2 * overbook_x;
+    cheight -= 2 * overbook_y;
 
     void *icon_data = DTGTK_BUTTON(widget)->icon_data;
-    if(icon_width > 0 && icon_height > 0)
-      DTGTK_BUTTON(widget)->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
+    if(cwidth > 0 && cheight > 0)
+      DTGTK_BUTTON(widget)->icon(cr, startx, starty, cwidth, cheight, flags, icon_data);
   }
 
   /* draw label */
