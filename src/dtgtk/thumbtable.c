@@ -865,10 +865,14 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
 static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  // if the leaving cause is the hide of the widget, no mouseover change
-  if(!gtk_widget_is_visible(widget)) return FALSE;
-
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  // if the leaving cause is the hide of the widget, no mouseover change
+  if(!gtk_widget_is_visible(widget))
+  {
+    table->mouse_inside = FALSE;
+    return FALSE;
+  }
+
   // if we leave thumbtable in favour of an inferior (a thumbnail) it's not a real leave !
   if(event->detail == GDK_NOTIFY_INFERIOR) return FALSE;
 
@@ -1593,14 +1597,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
   if(_compute_sizes(table, force))
   {
     // we update the scrollbars
-    gboolean bars = (gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar)
-                     || gtk_widget_get_visible(darktable.gui->scrollbars.hscrollbar));
-    if(bars != _thumbtable_update_scrollbars(table) && table->mode != DT_THUMBTABLE_MODE_FILMSTRIP)
-    {
-      // scrollabrs visibility changed, no need to go further, as this function will
-      // be triggered another time by widget resizing
-      return;
-    }
+    _thumbtable_update_scrollbars(table);
 
     const double start = dt_get_wtime();
     table->dragging = FALSE;

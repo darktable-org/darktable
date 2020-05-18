@@ -18,15 +18,10 @@
 /** a class to manage a collection of zoomable thumbnails for culling or full preview.  */
 #include "dtgtk/culling.h"
 #include "common/collection.h"
-#include "common/colorlabels.h"
 #include "common/debug.h"
-#include "common/history.h"
-#include "common/ratings.h"
 #include "common/selection.h"
 #include "control/control.h"
 #include "dtgtk/thumbtable.h"
-#include "gui/accelerators.h"
-#include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "views/view.h"
 
@@ -451,11 +446,9 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
   // if the leaving cause is the hide of the widget, no mouseover change
   if(!gtk_widget_is_visible(widget)) return FALSE;
 
-  dt_culling_t *table = (dt_culling_t *)user_data;
   // if we leave thumbtable in favour of an inferior (a thumbnail) it's not a real leave !
   if(event->detail == GDK_NOTIFY_INFERIOR) return FALSE;
 
-  table->mouse_inside = FALSE;
   dt_control_set_mouse_over_id(-1);
   return TRUE;
 }
