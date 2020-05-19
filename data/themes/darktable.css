@@ -86,6 +86,7 @@
 @define-color plugin_fg_color @grey_70;
 @define-color section_label @grey_60;
 @define-color plugin_label_color @grey_60;
+@define-color plugin_focus_color @grey_85;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg @grey_15;
@@ -540,6 +541,11 @@ overshoot.right
   font-weight: normal;
   font-family: sans-serif;
   font-size: 1.1em;
+}
+
+.dt_module_focus #iop-panel-label /* set focus mode */
+{
+  color: @plugin_focus_color;
 }
 
 /* Labels of controls sections in modules */

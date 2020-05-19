@@ -41,6 +41,7 @@
 @define-color plugin_fg_color @grey_90;
 @define-color section_label @grey_80;
 @define-color plugin_label_color @grey_80;
+@define-color plugin_focus_color @grey_90;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_fg @grey_90;
