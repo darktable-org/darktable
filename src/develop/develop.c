@@ -106,7 +106,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
   g_free(histogram_type);
   gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
-  dev->preview_downsampling = (g_strcmp0(preview_downsample, "none") == 0) ? 1.0f : 
+  dev->preview_downsampling = (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f : 
       (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f : 
       (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f : 0.25f;
   g_free(preview_downsample);
