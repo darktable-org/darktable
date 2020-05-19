@@ -453,14 +453,28 @@ static void _tree_tagname_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer
                      DT_LIB_TAGGING_COL_FLAGS, &flags,
                      DT_LIB_TAGGING_COL_PATH, &path, -1);
   const gboolean hide = dictionary_view ? (d->tree_flag ? TRUE : d->hide_path_flag) : d->hide_path_flag;
-  const gboolean istag = !(flags & DT_TF_CATEGORY) && tagid;
+
+  const char *markups[] = {
+      "%s",                     // normal tag
+      "<i>%s</i>",              // category
+      "<b>%s</b>",              // album
+      "<i><b>%s</b></i>",       // category & album
+      "%s (%d)",                // normal tag with count
+      "<i>%s</i> (%d)",         // category with count
+      "<b>%s</b> (%d)",         // album with count
+      "<i><b>%s</b></i> (%d)"}; // category & album with count
+
+  const gboolean iscategory = (flags & DT_TF_CATEGORY) || !tagid;
+  const gboolean isalbum = flags & DT_TF_ALBUM;
+  const int i = iscategory ? isalbum ? 3 : 1 : isalbum ? 2 : 0;
+
   if ((dictionary_view && !count) || (!dictionary_view && count <= 1))
   {
-    coltext = g_markup_printf_escaped(istag ? "%s" : "<i>%s</i>", hide ? name : path);
+    coltext = g_markup_printf_escaped(markups[i], hide ? name : path);
   }
   else
   {
-    coltext = g_markup_printf_escaped(istag ? "%s (%d)" : "<i>%s</i> (%d)", hide ? name : path, count);
+    coltext = g_markup_printf_escaped(markups[i+4], hide ? name : path, count);
   }
   g_object_set(renderer, "markup", coltext, NULL);
   g_free(coltext);
@@ -1443,6 +1457,7 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
   GtkWidget *category;
   GtkWidget *private;
   GtkWidget *parent;
+  GtkWidget *album;
   GtkTextBuffer *buffer = NULL;
   GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), vbox2, FALSE, TRUE, 0);
@@ -1456,6 +1471,9 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
   category = gtk_check_button_new_with_label(_("category"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(category), FALSE);
   gtk_box_pack_end(GTK_BOX(vbox2), category, FALSE, TRUE, 0);
+  album = gtk_check_button_new_with_label(_("album"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(album), FALSE);
+  gtk_box_pack_end(GTK_BOX(vbox2), album, FALSE, TRUE, 0);
   private = gtk_check_button_new_with_label(_("private"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private), FALSE);
   gtk_box_pack_end(GTK_BOX(vbox2), private, FALSE, TRUE, 0);
@@ -1505,6 +1523,7 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
     if (dt_tag_new(new_tagname, &new_tagid))
     {
       const gint new_flags = ((gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(category)) ? DT_TF_CATEGORY : 0) |
+                      (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(album)) ? DT_TF_ALBUM : 0) |
                       (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private)) ? DT_TF_PRIVATE : 0));
       if (new_tagid) dt_tag_set_flags(new_tagid, new_flags);
       GtkTextIter start, end;
@@ -1585,6 +1604,7 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
 
   gint flags = 0;
   GtkWidget *category;
+  GtkWidget *album;
   GtkWidget *private;
   GtkTextBuffer *buffer = NULL;
   if (tagid)
@@ -1595,6 +1615,9 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
     category = gtk_check_button_new_with_label(_("category"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(category), flags & DT_TF_CATEGORY);
     gtk_box_pack_end(GTK_BOX(vbox2), category, FALSE, TRUE, 0);
+    album = gtk_check_button_new_with_label(_("album"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(album), flags & DT_TF_ALBUM);
+    gtk_box_pack_end(GTK_BOX(vbox2), album, FALSE, TRUE, 0);
     private = gtk_check_button_new_with_label(_("private"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private), flags & DT_TF_PRIVATE);
     gtk_box_pack_end(GTK_BOX(vbox2), private, FALSE, TRUE, 0);
@@ -1708,10 +1731,11 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
     if (tagid)
     {
       gint new_flags = ((gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(category)) ? DT_TF_CATEGORY : 0) |
-                      (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private)) ? DT_TF_PRIVATE : 0));
+                       (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(album)) ? DT_TF_ALBUM : 0) |
+                       (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private)) ? DT_TF_PRIVATE : 0));
       GtkTextIter start, end;
       gtk_text_buffer_get_start_iter(buffer, &start);
-      gtk_text_buffer_get_end_iter(buffer, &end);
+      gtk_text_buffer_get_end_iter(buffer,  &end);
       gchar *new_synonyms_list = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
       // refresh iter
       gtk_tree_selection_get_selected(selection, &model, &iter);
@@ -1719,8 +1743,9 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
       GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
       gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model),
                                                        &store_iter, &iter);
-      if (new_flags != flags)
+      if (new_flags != (flags & (DT_TF_CATEGORY | DT_TF_PRIVATE | DT_TF_ALBUM)))
       {
+        new_flags = (flags & ~(DT_TF_CATEGORY | DT_TF_PRIVATE | DT_TF_ALBUM)) | new_flags;
         dt_tag_set_flags(tagid, new_flags);
         if (!d->tree_flag)
           gtk_list_store_set(GTK_LIST_STORE(store), &store_iter, DT_LIB_TAGGING_COL_FLAGS, new_flags, -1);
@@ -1737,6 +1762,7 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
       }
       g_free(new_synonyms_list);
     }
+    _raise_signal_tag_changed(self);
   }
   _init_treeview(self, 0);
   gtk_widget_destroy(dialog);
