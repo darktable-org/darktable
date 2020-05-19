@@ -2779,7 +2779,6 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   pzy += 0.5f;
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
-  const float pr_d = darktable.develop->preview_downsampling;
   float pts[2] = { pzx * wd, pzy * ht };
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
                                     module->iop_order,DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 1);
@@ -2788,7 +2787,7 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   const float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   const float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
-  *scale = pr_d * darktable.develop->preview_pipe->iscale / pr_d * get_zoom_scale(module->dev);
+  *scale = darktable.develop->preview_pipe->iscale * get_zoom_scale(module->dev);
   *pt = (nx * darktable.develop->pipe->iwidth) +  (ny * darktable.develop->pipe->iheight) * I;
 }
 
