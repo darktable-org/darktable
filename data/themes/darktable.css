@@ -88,11 +88,12 @@
 @define-color plugin_label_color @grey_60;
 
 /* Modules controls (sliders and comboboxes) */
+@define-color bauhaus_bg @grey_15;
 @define-color bauhaus_fg @grey_70;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
-@define-color bauhaus_bg @grey_15;
+@define-color bauhaus_bg_hover @grey_55;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
 @define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);
@@ -294,7 +295,8 @@ entry selection
 /* Checkbox */
 checkbutton check,
 #lib-plugin-ui checkbutton check,
-#iop-plugin-ui checkbutton check
+#iop-plugin-ui checkbutton check,
+treeview check
 {
   background-color: @bauhaus_bg;
   color: @bauhaus_fg;
@@ -1128,7 +1130,6 @@ filechooser row:hover,
   - Tree view (lists and tables) -
   --------------------------------*/
 /*** Set treeview header on all windows, including preferences and accels window ***/
-
 treeview,
 filechooser widget treeview
 {
@@ -1380,7 +1381,7 @@ combobox window *:active,
 #history-button-always-enabled:checked *,
 #history-button-default-enabled:checked *
 {
-    color: @button_checked_fg;
+  color: @button_checked_fg;
 }
 
 /* Hover states, some needed background only */
@@ -1466,8 +1467,8 @@ button:disabled,
 /* Deactivated switch buttons, make them less visible */
 #history-switch:disabled
 {
-    color: shade(@plugin_label_color, .7);
-    background-color: transparent;
+  color: shade(@plugin_label_color, .7);
+  background-color: transparent;
 }
 
 /* Deprecated/always-on switch are visible */
@@ -1476,38 +1477,56 @@ button:disabled,
 #history-switch-enabled:disabled,
 #history-switch-default-enabled:disabled
 {
-    color: @plugin_label_color;
+  color: @plugin_label_color;
 }
 
 /* Treeviews and filechoosers states */
-treeview:not(#lutname) *:hover,
+treeview check /* set specific background color about check buttons in treeviews like copy/paste dialog window */
+{
+  background-color: @button_bg;
+}
+
+treeview:not(#lutname) *:hover:not(check),
 filechooser .sidebar :hover .sidebar-button,  /* set here specific button hover like eject button in filechooser sidebar */
 #import_metadata title:hover,
 #import_metadata title:hover *
 {
-    background-color: @field_hover_bg;
-    color: @field_hover_fg;
+  background-color: @field_hover_bg;
+  color: @field_hover_fg;
 }
 
 treeview *:active,
 filechooser *:active
 {
-    background-color: @field_active_bg;
-    color: @field_active_fg;
+  background-color: @field_active_bg;
+  color: @field_active_fg;
 }
 
-treeview *:selected,
-treeview *:checked,
+treeview *:selected:not(check),
+treeview *:checked:not(check),
 filechooser *:selected,
 filechooser *:checked
 {
-    background-color: @field_selected_bg;
-    color: @field_selected_fg;
+  background-color: @field_selected_bg;
+  color: @field_selected_fg;
+}
+
+treeview check:selected
+{
+  background-color: @button_bg;
+  border-color: @plugin_bg_color;
+}
+
+treeview check:hover
+{
+  background-color: @bauhaus_bg_hover;
+  color: @field_hover_fg;
+  border-color: @selected_bg_color;
 }
 
 filechooser checkbutton:checked
 {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 /* Views links states in header */
