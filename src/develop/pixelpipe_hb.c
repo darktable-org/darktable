@@ -154,9 +154,9 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size)) return 0;
   pipe->cache_obsolete = 0;
   pipe->backbuf = NULL;
-  pipe->backbuf_scale = 0.f;
-  pipe->backbuf_zoom_x = 0.f;
-  pipe->backbuf_zoom_y = 0.f;
+  pipe->backbuf_scale = 0.0f;
+  pipe->backbuf_zoom_x = 0.0f;
+  pipe->backbuf_zoom_y = 0.0f;
 
   pipe->output_backbuf = NULL;
   pipe->output_backbuf_width = 0;
@@ -450,7 +450,7 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
                                  float *buffer, size_t bufsize)
 {
   float *tmpbuf = NULL;
-  float *pixel;
+  float *pixel = NULL;
 
   // if buffer is supplied and if size fits let's use it
   if(buffer && bufsize >= (size_t)roi->width * roi->height * 4 * sizeof(float))
@@ -500,12 +500,15 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   const float ht = darktable.develop->preview_pipe->backbuf_height;
   const int width = roi->width;
   const int height = roi->height;
+  const dt_image_t image = darktable.develop->image_storage;
+  const int op_after_demosaic = dt_ioppr_is_iop_before(darktable.develop->preview_pipe->iop_order_list, 
+                                                       module->op, "demosaic", 0);
 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
   // position
   if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return 1;
 
-  float fbox[4];
+  float fbox[4] = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
   if(darktable.lib->proxy.colorpicker.size)
@@ -520,11 +523,12 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   }
 
   // transform back to current module coordinates
-  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
-                                    module->iop_order, ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_FORW_INCL
-                                     : DT_DEV_TRANSFORM_DIR_FORW_EXCL),
-                                    fbox, 2);
+  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->iop_order, 
+                               ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_FORW_INCL
+                               : DT_DEV_TRANSFORM_DIR_FORW_EXCL),fbox, 2);
 
+  if (op_after_demosaic || !dt_image_is_rawprepare_supported(&image))
+    for(int idx = 0; idx < 4; idx++) fbox[idx] *= darktable.develop->preview_downsampling;
   fbox[0] -= roi->x;
   fbox[1] -= roi->y;
   fbox[2] -= roi->x;
@@ -573,13 +577,7 @@ static void pixelpipe_picker(dt_iop_module_t *module, dt_iop_buffer_dsc_t *dsc, 
     return;
   }
 
-  float min[4], max[4], avg[4];
-  for(int k = 0; k < 4; k++)
-  {
-    min[k] = INFINITY;
-    max[k] = -INFINITY;
-    avg[k] = 0.0f;
-  }
+  float min[4] = { INFINITY }, max[4] = { -INFINITY }, avg[4] = { 0.0f };
 
   dt_color_picker_helper(dsc, pixel, roi, box, avg, min, max, image_cst,
                          dt_iop_color_picker_get_active_cst(module));
@@ -629,7 +627,7 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
   region[1] = box[3] - box[1];
   region[2] = 1;
 
-  float *pixel;
+  float *pixel = NULL;
   float *tmpbuf = NULL;
 
   const size_t size = region[0] * region[1];
@@ -656,13 +654,7 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
   box[2] = region[0];
   box[3] = region[1];
 
-  float min[4], max[4], avg[4];
-  for(int k = 0; k < 4; k++)
-  {
-    min[k] = INFINITY;
-    max[k] = -INFINITY;
-    avg[k] = 0.0f;
-  }
+  float min[4] = { INFINITY }, max[4] = { -INFINITY }, avg[4] = { 0.0f };
 
   dt_color_picker_helper(dsc, pixel, &roi_copy, box, avg, min, max, image_cst,
                          dt_iop_color_picker_get_active_cst(module));
@@ -686,15 +678,15 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
                                        float *pick_color_rgb_mean, float *pick_color_lab_min,
                                        float *pick_color_lab_max, float *pick_color_lab_mean)
 {
-  float picked_color_rgb_min[3];
-  float picked_color_rgb_max[3];
-  float picked_color_rgb_mean[3];
+  float picked_color_rgb_min[3] = { 0.0f };
+  float picked_color_rgb_max[3] = { 0.0f };
+  float picked_color_rgb_mean[3] = { 0.0f };
 
   for(int k = 0; k < 3; k++) picked_color_rgb_min[k] = FLT_MAX;
   for(int k = 0; k < 3; k++) picked_color_rgb_max[k] = FLT_MIN;
 
-  int box[4];
-  int point[2];
+  int box[4] = { 0 };
+  int point[2] = { 0 };
 
   for(int k = 0; k < 4; k += 2)
     box[k] = MIN(roi_in->width - 1, MAX(0, pick_box[k] * roi_in->width));
@@ -703,8 +695,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   point[0] = MIN(roi_in->width - 1, MAX(0, pick_point[0] * roi_in->width));
   point[1] = MIN(roi_in->height - 1, MAX(0, pick_point[1] * roi_in->height));
 
-  float rgb[3];
-  for(int k = 0; k < 3; k++) rgb[k] = 0.0f;
+  float rgb[3] = { 0.0f };
 
   const float w = 1.0 / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
 
@@ -735,7 +726,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   if(xform_rgb2rgb)
   {
     // Preparing the data for transformation
-    float rgb_ddata[9];
+    float rgb_ddata[9] = { 0.0f };
     for(int i = 0; i < 3; i++)
     {
       rgb_ddata[i] = picked_color_rgb_mean[i];
@@ -743,7 +734,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
       rgb_ddata[i + 6] = picked_color_rgb_max[i];
     }
 
-    float rgb_odata[9];
+    float rgb_odata[9] = { 0.0f };
     cmsDoTransform(xform_rgb2rgb, rgb_ddata, rgb_odata, 3);
 
     for(int i = 0; i < 3; i++)
@@ -767,7 +758,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   if(xform_rgb2lab)
   {
     // Preparing the data for transformation
-    float rgb_data[9];
+    float rgb_data[9] = { 0.0f };
     for(int i = 0; i < 3; i++)
     {
       rgb_data[i] = picked_color_rgb_mean[i];
@@ -775,7 +766,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
       rgb_data[i + 6] = picked_color_rgb_max[i];
     }
 
-    float Lab_data[9];
+    float Lab_data[9] = { 0.0f };
     cmsDoTransform(xform_rgb2lab, rgb_data, Lab_data, 3);
 
     for(int i = 0; i < 3; i++)
@@ -2556,8 +2547,8 @@ post_process_collect_info:
         const int imgsize = roi_out->height * roi_out->width * 4;
         for(int i = 0; i < imgsize; i += 4)
         {
-          for(int c = 0; c < 3; c++) input_tmp[i + c] = ((float)pixel[i + (2 - c)]) * (1.f / 255.f);
-          input_tmp[i + 3] = 0.f;
+          for(int c = 0; c < 3; c++) input_tmp[i + c] = ((float)pixel[i + (2 - c)]) * (1.0f / 255.0f);
+          input_tmp[i + 3] = 0.0f;
         }
 
         _pixelpipe_final_histogram(dev, (const float *const)input_tmp, roi_out);

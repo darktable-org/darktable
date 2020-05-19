@@ -64,7 +64,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
   {
     if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
-      float masks_border;
+      float masks_border = 0.0f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         masks_border = dt_conf_get_float("plugins/darkroom/spots/circle_border");
@@ -83,7 +83,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
     }
     else if(state == 0)
     {
-      float masks_size;
+      float masks_size = 0.0f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         masks_size = dt_conf_get_float("plugins/darkroom/spots/circle_size");
@@ -512,15 +512,16 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   // in creation mode
   if(gui->creation)
   {
-    float wd = darktable.develop->preview_pipe->iwidth;
-    float ht = darktable.develop->preview_pipe->iheight;
-
+    const float pr_d = darktable.develop->preview_downsampling;
+    float iwd = darktable.develop->preview_pipe->iwidth;
+    float iht = darktable.develop->preview_pipe->iheight;                                           
+    const float min_iwd_iht = pr_d * MIN(iwd,iht);                                                           
     if(gui->guipoints_count == 0)
     {
       dt_masks_form_t *form = darktable.develop->form_visible;
       if(!form) return;
 
-      float radius1, radius2;
+      float radius1 = 0.0f, radius2 = 0.0f;
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
         radius1 = dt_conf_get_sanitize_set("plugins/darkroom/spots/circle_size", 0.001f, 0.5f);
@@ -532,11 +533,11 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
         radius2 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 0.5f);
       }
       radius2 += radius1;
-      radius1 *= MIN(wd, ht);
-      radius2 *= MIN(wd, ht);
+      radius1 *= min_iwd_iht;
+      radius2 *= min_iwd_iht;
 
-      float xpos, ypos;
-      if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
+      float xpos = 0.0f, ypos = 0.0f;
+      if((gui->posx == -1.0f && gui->posy == -1.0f) || gui->mouse_leaved_center)
       {
         const float zoom_x = dt_control_get_dev_zoom_x();
         const float zoom_y = dt_control_get_dev_zoom_y();
@@ -579,7 +580,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       // draw a cross where the source will be created
       if(form->type & DT_MASKS_CLONE)
       {
-        float x = 0.f, y = 0.f;
+        float x = 0.0f, y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_CIRCLE, xpos, ypos, xpos, ypos, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
@@ -591,7 +592,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   }
 
   if(!gpt) return;
-  float dx = 0, dy = 0, dxs = 0, dys = 0;
+  float dx = 0.0f, dy = 0.0f, dxs = 0.0f, dys = 0.0f;
   if((gui->group_selected == index) && gui->form_dragging)
   {
     dx = gui->posx + gui->dx - gpt->points[0];
@@ -797,7 +798,7 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
   }
 
   // now we search min and max
-  float xmin, xmax, ymin, ymax;
+  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
   for(int i = 1; i < l + 1; i++)
@@ -848,7 +849,7 @@ static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   }
 
   // now we search min and max
-  float xmin, xmax, ymin, ymax;
+  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
   for(int i = 1; i < l + 1; i++)
