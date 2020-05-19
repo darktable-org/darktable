@@ -79,12 +79,15 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_SHUFFLE
 } dt_collection_sort_t;
 
+#define DT_COLLECTION_ORDER_FLAG 0x8000
+
 /* NOTE: any reordeing in this module require a legacy_preset entry in src/libs/collect.c */
 typedef enum dt_collection_properties_t
 {
   DT_COLLECTION_PROP_FILMROLL = 0,
   DT_COLLECTION_PROP_FOLDERS,
   DT_COLLECTION_PROP_FILENAME,
+  DT_COLLECTION_PROP_ALBUM,
 
   DT_COLLECTION_PROP_CAMERA,
   DT_COLLECTION_PROP_LENS,
@@ -162,6 +165,7 @@ typedef struct dt_collection_t
   gchar *query, *query_no_group;
   gchar **where_ext;
   unsigned int count, count_no_group;
+  unsigned int album_id;
   dt_collection_params_t params;
   dt_collection_params_t store;
 } dt_collection_t;
@@ -203,7 +207,9 @@ uint32_t dt_collection_get_query_flags(const dt_collection_t *collection);
 void dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t flags);
 
 /** set the film_id of collection */
-void dt_collection_set_film_id(const dt_collection_t *collection, uint32_t film_id);
+void dt_collection_set_film_id(const dt_collection_t *collection, const uint32_t film_id);
+/** set the album_id of collection */
+void dt_collection_set_album_id(dt_collection_t *collection, const uint32_t album_id);
 /** set the star level for filter */
 void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating);
 /** get the star level for filter. The value returned starts on 0 **/
@@ -257,8 +263,9 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2, char **op);
 void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2, char **op);
 
-int64_t dt_collection_get_image_position(const int32_t image_id);
-void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position);
+int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t album_id);
+void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position,
+                                         const int32_t album_id);
 
 /* move images with drag and drop */
 void dt_collection_move_before(const int32_t image_id, GList * selected_images);
