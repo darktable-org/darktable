@@ -929,6 +929,10 @@ void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t color, float opacity
 
 void dt_gui_gtk_quit()
 {
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkStyleContext *context = gtk_widget_get_style_context(win);
+  gtk_style_context_add_class(context, "dt_gui_quit");
+
   // Write out windows dimension
   dt_gui_gtk_write_config();
 
