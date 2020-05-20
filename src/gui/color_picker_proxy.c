@@ -188,12 +188,14 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
       float box[4];
       _iop_get_area(self, box);
       dt_lib_colorpicker_set_box_area(darktable.lib, box);
+      self->pick_pos[0] = NAN; // trigger difference on first apply
     }
     else
     {
       float pos[2];
       _iop_get_point(self, pos);
       dt_lib_colorpicker_set_point(darktable.lib, pos[0], pos[1]);
+      self->pick_box[0] = NAN; // trigger difference on first apply
     }
 
     module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
