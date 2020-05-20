@@ -81,7 +81,7 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
     collection->clone = 1;
     collection->count = clone->count;
     collection->count_no_group = clone->count_no_group;
-    collection->album_id = clone->album_id;
+    collection->tagid = clone->tagid;
   }
   else /* else we just initialize using the reset */
     dt_collection_reset(collection);
@@ -180,19 +180,19 @@ void dt_collection_memory_update()
 
 static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, char **selq_pre)
 {
-  const uint32_t album_id = collection->album_id;
-  char album[16] = { 0 };
-  snprintf(album, sizeof(album), "%d", album_id);
+  const uint32_t tagid = collection->tagid;
+  char tag[16] = { 0 };
+  snprintf(tag, sizeof(tag), "%d", tagid);
 
   *selq_pre = dt_util_dstrcat(*selq_pre,
                               "SELECT DISTINCT mi.id FROM (SELECT"
                               "  id, group_id, film_id, filename, datetime_taken, "
                               "  flags, version, %s position, aspect_ratio"
                               "  FROM main.images AS mi %s%s WHERE ",
-                              album_id ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-                              album_id ? "  LEFT JOIN main.tagged_images AS ti"
-                                         "  ON ti.imgid = mi.id AND ti.tagid = " : "",
-                              album_id ? album : "");
+                              tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
+                              tagid ? " LEFT JOIN main.tagged_images AS ti"
+                                      " ON ti.imgid = mi.id AND ti.tagid = " : "",
+                              tagid ? tag : "");
 }
 
 int dt_collection_update(const dt_collection_t *collection)
@@ -393,33 +393,33 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   else if(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT)
   {
-    const uint32_t album_id = collection->album_id;
-    char album[16] = { 0 };
-    snprintf(album, sizeof(album), "%d", album_id);
+    const uint32_t tagid = collection->tagid;
+    char tag[16] = { 0 };
+    snprintf(tag, sizeof(tag), "%d", tagid);
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
                                "  id, group_id, film_id, filename, datetime_taken, "
                                "  flags, version, %s position, aspect_ratio"
                                "  FROM main.images AS mi %s%s ) AS mi ",
-                               album_id ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-                               album_id ? "  LEFT JOIN main.tagged_images AS ti"
-                                          "  ON ti.imgid = mi.id AND ti.tagid = " : "",
-                               album_id ? album : "");
+                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
+                               tagid ? " LEFT JOIN main.tagged_images AS ti"
+                                       " ON ti.imgid = mi.id AND ti.tagid = " : "",
+                               tagid ? tag : "");
   }
   else
   {
-    const uint32_t album_id = collection->album_id;
-    char album[16] = { 0 };
-    snprintf(album, sizeof(album), "%d", album_id);
+    const uint32_t tagid = collection->tagid;
+    char tag[16] = { 0 };
+    snprintf(tag, sizeof(tag), "%d", tagid);
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
                                "  id, group_id, film_id, filename, datetime_taken, "
                                "  flags, version, %s position, aspect_ratio"
                                "  FROM main.images AS mi %s%s ) AS mi WHERE ",
-                               album_id ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
-                               album_id ? "  LEFT JOIN main.tagged_images AS ti"
-                                          "  ON ti.imgid = mi.id AND ti.tagid = " : "",
-                               album_id ? album : "");
+                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
+                               tagid ? " LEFT JOIN main.tagged_images AS ti"
+                                       " ON ti.imgid = mi.id AND ti.tagid = " : "",
+                               tagid ? tag : "");
   }
 
 
@@ -566,9 +566,9 @@ void dt_collection_set_film_id(const dt_collection_t *collection, const uint32_t
   params->film_id = film_id;
 }
 
-void dt_collection_set_album_id(dt_collection_t *collection, const uint32_t album_id)
+void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid)
 {
-  collection->album_id = album_id;
+  collection->tagid = tagid;
 }
 
 void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating)
@@ -664,7 +664,6 @@ const char *dt_collection_name(dt_collection_properties_t prop)
   {
     case DT_COLLECTION_PROP_FILMROLL:         return _("film roll");
     case DT_COLLECTION_PROP_FOLDERS:          return _("folders");
-    case DT_COLLECTION_PROP_ALBUM:            return _("album");
     case DT_COLLECTION_PROP_CAMERA:           return _("camera");
     case DT_COLLECTION_PROP_TAG:              return _("tag");
     case DT_COLLECTION_PROP_DAY:              return _("date taken");
@@ -1558,14 +1557,6 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                               escaped_text);
       break;
 
-    case DT_COLLECTION_PROP_ALBUM: // album
-      query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
-                                     "data.tags AS b ON a.tagid = b.id"
-                                     " AND (b.flags & 4) = 4 " // DT_TF_ALBUM
-                                     "WHERE name LIKE '%s'))",
-                              escaped_text);
-      break;
-
     case DT_COLLECTION_PROP_LENS: // lens
       query = dt_util_dstrcat(query, "(lens LIKE '%%%s%%')", escaped_text);
       break;
@@ -2120,7 +2111,7 @@ static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t
   }
 }
 
-int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t album_id)
+int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t tagid)
 {
   int64_t image_position = -1;
 
@@ -2130,12 +2121,12 @@ int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t a
     gchar *image_pos_query = NULL;
     image_pos_query = dt_util_dstrcat(
           image_pos_query,
-          album_id ? "SELECT position FROM main.tagged_images WHERE imgid = ?1 AND tagid = ?2"
-                   : "SELECT position FROM main.images WHERE id = ?1");
+          tagid ? "SELECT position FROM main.tagged_images WHERE imgid = ?1 AND tagid = ?2"
+                : "SELECT position FROM main.images WHERE id = ?1");
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), image_pos_query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image_id);
-    if(album_id) DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, album_id);
+    if(tagid) DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, tagid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       image_position = sqlite3_column_int64(stmt, 0);
@@ -2150,12 +2141,12 @@ int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t a
 
 void dt_collection_shift_image_positions(const unsigned int length,
                                          const int64_t image_position,
-                                         const int32_t album_id)
+                                         const int32_t tagid)
 {
   sqlite3_stmt *stmt = NULL;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              album_id
+                              tagid
                               ?
                               "UPDATE main.tagged_images"
                               " SET position = position + ?1"
@@ -2169,7 +2160,7 @@ void dt_collection_shift_image_positions(const unsigned int length,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, length);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, image_position);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, (image_position & 0xFFFFFFFF00000000) + (1ll << 32));
-  if(album_id) DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, album_id);
+  if(tagid) DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, tagid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
@@ -2209,12 +2200,12 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     return;
   }
 
-  const uint32_t album_id = darktable.collection->album_id;
+  const uint32_t tagid = darktable.collection->tagid;
   // getting the position of the target image
-  const int64_t target_image_pos = dt_collection_get_image_position(image_id, album_id);
+  const int64_t target_image_pos = dt_collection_get_image_position(image_id, tagid);
   if (target_image_pos >= 0)
   {
-    dt_collection_shift_image_positions(selected_images_length, target_image_pos, album_id);
+    dt_collection_shift_image_positions(selected_images_length, target_image_pos, tagid);
 
     sqlite3_stmt *stmt = NULL;
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
@@ -2223,7 +2214,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     int64_t new_image_pos = target_image_pos;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                album_id
+                                tagid
                                 ?
                                 "UPDATE main.tagged_images"
                                 " SET position = ?1"
@@ -2242,7 +2233,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
 
       DT_DEBUG_SQLITE3_BIND_INT64(stmt, 1, new_image_pos);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, moved_image_id);
-      if(album_id) DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, album_id);
+      if(tagid) DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, tagid);
       sqlite3_step(stmt);
       sqlite3_reset(stmt);
       new_image_pos++;
@@ -2259,7 +2250,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     int64_t max_position = -1;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                album_id
+                                tagid
                                 ?
                                 "SELECT MAX(position) FROM main.tagged_images"
                                 :
@@ -2279,7 +2270,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
 
     // move images to last position in custom image order table
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                album_id
+                                tagid
                                 ?
                                 "UPDATE main.tagged_images"
                                 " SET position = ?1"
@@ -2298,7 +2289,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
       const int moved_image_id = GPOINTER_TO_INT(selected_images_iter->data);
       DT_DEBUG_SQLITE3_BIND_INT64(update_stmt, 1, max_position << 32);
       DT_DEBUG_SQLITE3_BIND_INT(update_stmt, 2, moved_image_id);
-      if(album_id) DT_DEBUG_SQLITE3_BIND_INT(update_stmt, 3, album_id);
+      if(tagid) DT_DEBUG_SQLITE3_BIND_INT(update_stmt, 3, tagid);
       sqlite3_step(update_stmt);
       sqlite3_reset(update_stmt);
     }

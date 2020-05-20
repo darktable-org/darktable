@@ -36,7 +36,7 @@
 #include "osx/osx.h"
 #endif
 
-DT_MODULE(4)
+DT_MODULE(3)
 
 #define MAX_RULES 10
 
@@ -222,65 +222,6 @@ void *legacy_params(struct dt_lib_module_t *self,
 
     *new_size = old_params_size;
     *new_version = 3;
-
-    return (void *)new;
-  }
-  else if(old_version == 3)
-  {
-    /* from v3 to v4 we have added the album filter + fix of the previous upgrade 1 metadata missing */
-    dt_lib_collect_params_t *old = (dt_lib_collect_params_t *)old_params;
-    dt_lib_collect_params_t *new = (dt_lib_collect_params_t *)malloc(old_params_size);
-
-    const int table[DT_COLLECTION_PROP_LAST] =
-      {
-      DT_COLLECTION_PROP_FILMROLL,
-      DT_COLLECTION_PROP_FOLDERS,
-      DT_COLLECTION_PROP_FILENAME,
-      DT_COLLECTION_PROP_CAMERA,
-      DT_COLLECTION_PROP_LENS,
-      DT_COLLECTION_PROP_APERTURE,
-      DT_COLLECTION_PROP_EXPOSURE,
-      DT_COLLECTION_PROP_FOCAL_LENGTH,
-      DT_COLLECTION_PROP_ISO,
-      DT_COLLECTION_PROP_DAY,
-      DT_COLLECTION_PROP_TIME,
-      DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
-      DT_COLLECTION_PROP_CHANGE_TIMESTAMP,
-      DT_COLLECTION_PROP_EXPORT_TIMESTAMP,
-      DT_COLLECTION_PROP_PRINT_TIMESTAMP,
-
-      DT_COLLECTION_PROP_GEOTAGGING,
-      DT_COLLECTION_PROP_ASPECT_RATIO,
-      DT_COLLECTION_PROP_TAG,
-      DT_COLLECTION_PROP_COLORLABEL,
-
-      // spaces for the metadata, see metadata.h
-      DT_COLLECTION_PROP_COLORLABEL + 1,
-      DT_COLLECTION_PROP_COLORLABEL + 2,
-      DT_COLLECTION_PROP_COLORLABEL + 3,
-      DT_COLLECTION_PROP_COLORLABEL + 4,
-      DT_COLLECTION_PROP_COLORLABEL + 5,
-      DT_COLLECTION_PROP_COLORLABEL + 6,
-      DT_COLLECTION_PROP_COLORLABEL + 7,
-
-      DT_COLLECTION_PROP_GROUPING,
-      DT_COLLECTION_PROP_LOCAL_COPY,
-      DT_COLLECTION_PROP_HISTORY,
-      DT_COLLECTION_PROP_MODULE,
-      DT_COLLECTION_PROP_ORDER
-      };
-
-    new->rules = old->rules;
-
-    for(int r = 0; r < old->rules; r++)
-    {
-      new->rule[r].item = table[old->rule[r].item];
-      new->rule[r].mode = old->rule[r].mode;
-      memcpy(new->rule[r].string, old->rule[r].string, PARAM_STRING_SIZE);
-    }
-
-    *new_size = old_params_size;
-    *new_version = 4;
 
     return (void *)new;
   }
@@ -615,7 +556,6 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
         || is_time_property(d->view_rule)
         || d->view_rule == DT_COLLECTION_PROP_FOLDERS
         || d->view_rule == DT_COLLECTION_PROP_TAG
-        || d->view_rule == DT_COLLECTION_PROP_ALBUM
        )
        && !(event->state & GDK_SHIFT_MASK)
       )
@@ -770,8 +710,7 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   if(g_str_has_prefix(needle, "%")) startwildcard = TRUE;
   if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
   if(g_str_has_suffix(haystack, "%")) haystack[strlen(haystack) - 1] = '\0';
-  if(_combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_TAG
-     || _combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_ALBUM)
+  if(_combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_TAG)
   {
     if(g_str_has_suffix(needle, "|")) needle[strlen(needle) - 1] = '\0';
     if(g_str_has_suffix(haystack, "|")) haystack[strlen(haystack) - 1] = '\0';
@@ -1205,7 +1144,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       format_separator = "%s" G_DIR_SEPARATOR_S;
       break;
     case DT_COLLECTION_PROP_TAG:
-    case DT_COLLECTION_PROP_ALBUM:
       format_separator = "%s|";
       break;
     case DT_COLLECTION_PROP_DAY:
@@ -1260,18 +1198,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 "   ON tagid = tag_id"
                                 " WHERE %s"
                                 " GROUP BY name,tag_id", where_ext);
-        break;
-      case DT_COLLECTION_PROP_ALBUM:
-        query = g_strdup_printf("SELECT name, tag_id, COUNT(*) AS count"
-                                " FROM main.images AS mi"
-                                " JOIN main.tagged_images"
-                                "   ON id = imgid "
-                                " JOIN (SELECT name, id AS tag_id FROM data.tags"
-                                "   WHERE (flags & %d) = %d)"
-                                "   ON tagid = tag_id"
-                                " WHERE %s"
-                                " GROUP BY name,tag_id",
-                                DT_TF_ALBUM, DT_TF_ALBUM, where_ext);
         break;
       case DT_COLLECTION_PROP_DAY:
         query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
@@ -1386,7 +1312,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           tokens = g_strsplit(name, ":", -1);
         else if(is_time_property(property))
           tokens = g_strsplit_set(name, ": ", 4);
-        else  // tags or album
+        else
           tokens = g_strsplit(name, "|", -1);
 
         if(tokens != NULL)
@@ -1937,7 +1863,6 @@ static void update_view(dt_lib_collect_rule_t *dr)
 
   if(property == DT_COLLECTION_PROP_FOLDERS
      || property == DT_COLLECTION_PROP_TAG
-     || property == DT_COLLECTION_PROP_ALBUM
      || property == DT_COLLECTION_PROP_DAY
      || is_time_property(property)
     )
@@ -2041,7 +1966,6 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 
   if(property == DT_COLLECTION_PROP_FOLDERS
      || property == DT_COLLECTION_PROP_TAG
-     || property == DT_COLLECTION_PROP_ALBUM
      || property == DT_COLLECTION_PROP_DAY
      || is_time_property(property)
     )
@@ -2078,19 +2002,19 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   {
     const int prev_property = dt_conf_get_int("plugins/lighttable/collect/item0");
 
-    if(prev_property != DT_COLLECTION_PROP_ALBUM && property == DT_COLLECTION_PROP_ALBUM)
+    if(prev_property != DT_COLLECTION_PROP_TAG && property == DT_COLLECTION_PROP_TAG)
     {
       // save global order
       const uint32_t sort = dt_collection_get_sort_field(darktable.collection);
       const gboolean descending = dt_collection_get_sort_descending(darktable.collection);
       dt_conf_set_int("plugins/lighttable/collect/order", sort | (descending ? DT_COLLECTION_ORDER_FLAG : 0));
     }
-    else if(prev_property == DT_COLLECTION_PROP_ALBUM && property != DT_COLLECTION_PROP_ALBUM)
+    else if(prev_property == DT_COLLECTION_PROP_TAG && property != DT_COLLECTION_PROP_TAG)
     {
       // restore global order
       order = dt_conf_get_int("plugins/lighttable/collect/order");
       order_request = TRUE;
-      dt_collection_set_album_id((dt_collection_t *)darktable.collection, 0);
+      dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
     }
   }
 
@@ -2153,50 +2077,49 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       g_free(text2);
       text = n_text;
     }
-    else if(item == DT_COLLECTION_PROP_TAG && gtk_tree_model_iter_has_child(model, &iter))
+    else if(item == DT_COLLECTION_PROP_TAG)
     {
-      /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
-      if(event->state & GDK_CONTROL_MASK)
+      if(gtk_tree_model_iter_has_child(model, &iter))
       {
-        gchar *n_text = g_strconcat(text, "|%", NULL);
-        g_free(text);
-        text = n_text;
-      }
-      /* if a tag has children, shift-clicking on a parent node should display all images in and under this
-       * hierarchy. */
-      else if(event->state & GDK_SHIFT_MASK)
-      {
-        gchar *n_text = g_strconcat(text, "%", NULL);
-        g_free(text);
-        text = n_text;
-      }
-    }
-    else if(item == DT_COLLECTION_PROP_ALBUM && active == 0)
-    {
-      uint32_t sort = DT_COLLECTION_SORT_NONE;
-      gboolean descending = FALSE;
-      const uint32_t album_id = dt_tag_get_album_id_by_name(text);
-      if(album_id)
-      {
-        if(dt_tag_get_album_order_by_id(album_id, &sort, &descending))
+        /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
+        if(event->state & GDK_CONTROL_MASK)
         {
-          order = sort | (descending  ? DT_COLLECTION_ORDER_FLAG : 0);
-          order_request = TRUE;
+          gchar *n_text = g_strconcat(text, "|%", NULL);
+          g_free(text);
+          text = n_text;
         }
-        else
+        /* if a tag has children, shift-clicking on a parent node should display all images in and under this
+         * hierarchy. */
+        else if(event->state & GDK_SHIFT_MASK)
         {
-          // the album order is not set yet
-          // restore global order
-          order = dt_conf_get_int("plugins/lighttable/collect/order");
+          gchar *n_text = g_strconcat(text, "%", NULL);
+          g_free(text);
+          text = n_text;
+        }
+      }
+      else if(active == 0) // first filter is tag and the row is a leave
+      {
+        uint32_t sort = DT_COLLECTION_SORT_NONE;
+        gboolean descending = FALSE;
+        const uint32_t tagid = dt_tag_get_tag_id_by_name(text);
+        if(tagid)
+        {
           order_request = TRUE;
-          dt_collection_set_album_id((dt_collection_t *)darktable.collection, 0);
-          // set the default album order
-          dt_tag_set_album_order_by_id(album_id, order & ~DT_COLLECTION_ORDER_FLAG,
+          if(dt_tag_get_tag_order_by_id(tagid, &sort, &descending))
+          {
+            order = sort | (descending  ? DT_COLLECTION_ORDER_FLAG : 0);
+          }
+          else
+          {
+            // the tag order is not set yet - default order (filename)
+            order = DT_COLLECTION_SORT_FILENAME;
+            dt_tag_set_tag_order_by_id(tagid, order & ~DT_COLLECTION_ORDER_FLAG,
                                        order & DT_COLLECTION_ORDER_FLAG);
+          }
+          dt_collection_set_tag_id((dt_collection_t *)darktable.collection, tagid);
         }
-        dt_collection_set_album_id((dt_collection_t *)darktable.collection, album_id);
+        else dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
       }
-      else dt_collection_set_album_id((dt_collection_t *)darktable.collection, 0);
     }
   }
 
@@ -2207,7 +2130,6 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   g_free(text);
 
   if(item == DT_COLLECTION_PROP_TAG
-     || item == DT_COLLECTION_PROP_ALBUM
      || item == DT_COLLECTION_PROP_FOLDERS
      || item == DT_COLLECTION_PROP_DAY
      || is_time_property(item)
@@ -2244,7 +2166,6 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 
   if(property != DT_COLLECTION_PROP_FOLDERS
       && property != DT_COLLECTION_PROP_TAG
-      && property != DT_COLLECTION_PROP_ALBUM
       && property != DT_COLLECTION_PROP_DAY
       && !is_time_property(property)
     )
@@ -2390,8 +2311,7 @@ static void tag_changed(gpointer instance, gpointer self)
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
 
   // update tree
-  const int property = _combo_get_active_collection(GTK_COMBO_BOX(d->rule[d->active_rule].combo));
-  if( property == DT_COLLECTION_PROP_TAG || property == DT_COLLECTION_PROP_ALBUM)
+  if(_combo_get_active_collection(GTK_COMBO_BOX(d->rule[d->active_rule].combo)) == DT_COLLECTION_PROP_TAG)
   {
     d->view_rule = -1;
     d->rule[d->active_rule].typing = FALSE;
@@ -2678,10 +2598,10 @@ void gui_init(dt_lib_module_t *self)
 
   _lib_collect_gui_update(self);
 
-  if(_combo_get_active_collection(GTK_COMBO_BOX(d->rule[0].combo)) == DT_COLLECTION_PROP_ALBUM)
+  if(_combo_get_active_collection(GTK_COMBO_BOX(d->rule[0].combo)) == DT_COLLECTION_PROP_TAG)
   {
-    gchar *album = dt_conf_get_string("plugins/lighttable/collect/string0");
-    dt_collection_set_album_id((dt_collection_t *)darktable.collection, dt_tag_get_album_id_by_name(album));
+    gchar *tag = dt_conf_get_string("plugins/lighttable/collect/string0");
+    dt_collection_set_tag_id((dt_collection_t *)darktable.collection, dt_tag_get_tag_id_by_name(tag));
   }
 
   // force redraw collection images because of late update of the table memory.darktable_iop_names
@@ -2883,7 +2803,6 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FOLDERS);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_CAMERA);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_TAG);
-  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ALBUM);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_DAY);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_TIME);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
