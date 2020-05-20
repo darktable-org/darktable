@@ -65,8 +65,7 @@ static gchar *_get_tb_added_tag_string_values(const int img, GList *before, GLis
     {
       tag_list = dt_util_dstrcat(tag_list,
                                  "(%d,%d,"
-                                 // 4294967295 << 32 = 0xFFFFFFFF00000000
-                                 "  (SELECT (IFNULL(MAX(position),0) & (4294967295 << 32)) + (1 << 32)"
+                                 "  (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000) + (1 << 32)"
                                  "    FROM main.tagged_images)"
                                  "),",
                                  GPOINTER_TO_INT(img),
@@ -1677,8 +1676,8 @@ char *dt_tag_get_subtags(const gint imgid, const char *category, const int level
   return tags;
 }
 
-const gboolean dt_tag_get_album_order_by_id(const uint32_t album_id, uint32_t *sort,
-                                            gboolean *descending)
+const gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
+                                          gboolean *descending)
 {
   gboolean res = FALSE;
   if(!sort  || !descending) return res;
@@ -1687,11 +1686,11 @@ const gboolean dt_tag_get_album_order_by_id(const uint32_t album_id, uint32_t *s
           "SELECT T.flags FROM data.tags AS T "
           "WHERE T.id = ?1",
           -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, album_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const uint32_t flags = sqlite3_column_int(stmt, 0);
-    if((flags & (DT_TF_ALBUM | DT_TF_ORDER_SET)) == (DT_TF_ALBUM | DT_TF_ORDER_SET))
+    if((flags & (DT_TF_ORDER_SET)) == (DT_TF_ORDER_SET))
     {
       // the 16 upper bits of flags hold the order
       *sort = (flags & ~DT_TF_DESCENDING) >> 16;
@@ -1703,10 +1702,10 @@ const gboolean dt_tag_get_album_order_by_id(const uint32_t album_id, uint32_t *s
   return res;
 }
 
-const uint32_t dt_tag_get_album_id_by_name(const char * const name)
+const uint32_t dt_tag_get_tag_id_by_name(const char * const name)
 {
-  uint32_t albumid = 0;
-  if(!name) return albumid;
+  uint32_t tagid = 0;
+  if(!name) return tagid;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
           "SELECT T.id, T.flags FROM data.tags AS T "
@@ -1715,20 +1714,14 @@ const uint32_t dt_tag_get_album_id_by_name(const char * const name)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const uint32_t tagid = sqlite3_column_int(stmt, 0);
-    const uint32_t flags = sqlite3_column_int(stmt, 1);
-    if((flags & (DT_TF_ALBUM)) == (DT_TF_ALBUM))
-    {
-      albumid = tagid;
-    }
+    tagid = sqlite3_column_int(stmt, 0);
   }
   sqlite3_finalize(stmt);
-  return albumid;
+  return tagid;
 }
 
-
-void dt_tag_set_album_order_by_id(const uint32_t album_id, const uint32_t sort,
-                                  const gboolean descending)
+void dt_tag_set_tag_order_by_id(const uint32_t tagid, const uint32_t sort,
+                                const gboolean descending)
 {
   // use the upper 16 bits of flags to store the order
   const uint32_t flags = sort << 16 | (descending ? DT_TF_DESCENDING : 0)
@@ -1736,14 +1729,12 @@ void dt_tag_set_album_order_by_id(const uint32_t album_id, const uint32_t sort,
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE data.tags"
-                              " SET flags = (flags & ?3) | ?2 "
-                              // only is the tag is an album
-                              "WHERE id = ?1 AND (flags & ?4) = ?4",
+                              " SET flags = (IFNULL(flags, 0) & ?3) | ?2 "
+                              "WHERE id = ?1",
                               -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, album_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, flags);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_TF_ALL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, DT_TF_ALBUM);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }

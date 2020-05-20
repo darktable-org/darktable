@@ -87,7 +87,6 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_FILMROLL = 0,
   DT_COLLECTION_PROP_FOLDERS,
   DT_COLLECTION_PROP_FILENAME,
-  DT_COLLECTION_PROP_ALBUM,
 
   DT_COLLECTION_PROP_CAMERA,
   DT_COLLECTION_PROP_LENS,
@@ -114,7 +113,7 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_HISTORY,
   DT_COLLECTION_PROP_MODULE,
   DT_COLLECTION_PROP_ORDER,
- 
+
   DT_COLLECTION_PROP_LAST
 } dt_collection_properties_t;
 
@@ -165,7 +164,7 @@ typedef struct dt_collection_t
   gchar *query, *query_no_group;
   gchar **where_ext;
   unsigned int count, count_no_group;
-  unsigned int album_id;
+  unsigned int tagid;
   dt_collection_params_t params;
   dt_collection_params_t store;
 } dt_collection_t;
@@ -208,8 +207,8 @@ void dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t f
 
 /** set the film_id of collection */
 void dt_collection_set_film_id(const dt_collection_t *collection, const uint32_t film_id);
-/** set the album_id of collection */
-void dt_collection_set_album_id(dt_collection_t *collection, const uint32_t album_id);
+/** set the tagid of collection */
+void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid);
 /** set the star level for filter */
 void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating);
 /** get the star level for filter. The value returned starts on 0 **/
@@ -263,9 +262,9 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2, char **op);
 void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2, char **op);
 
-int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t album_id);
+int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t tagid);
 void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position,
-                                         const int32_t album_id);
+                                         const int32_t tagid);
 
 /* move images with drag and drop */
 void dt_collection_move_before(const int32_t image_id, GList * selected_images);

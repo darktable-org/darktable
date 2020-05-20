@@ -38,13 +38,11 @@ typedef enum dt_tag_flags_t
   DT_TF_NONE        = 0,
   DT_TF_CATEGORY    = 1 << 0, // this tag (or path) is not a keyword to be exported
   DT_TF_PRIVATE     = 1 << 1, // this tag is private. Will be exported only on demand
-  DT_TF_ALBUM       = 1 << 2, // this tag is an album. It holds its own sort by type
-                              // CAUTION hardcoded in collect and collection queries
-  DT_TF_ORDER_SET   = 1 << 3, // set if the album has got an order
+  DT_TF_ORDER_SET   = 1 << 2, // set if the tag has got an images order
   DT_TF_DESCENDING  = 1 << 31,
 } dt_tag_flags_t;
 
-#define DT_TF_ALL (DT_TF_CATEGORY | DT_TF_PRIVATE | DT_TF_ALBUM | DT_TF_ORDER_SET)
+#define DT_TF_ALL (DT_TF_CATEGORY | DT_TF_PRIVATE | DT_TF_ORDER_SET)
 
 typedef enum dt_tag_selection_t
 {
@@ -198,19 +196,16 @@ uint32_t dt_tag_images_count(gint tagid);
 /** retrieves the subtags of requested level for the requested category */
 char *dt_tag_get_subtags(const gint imgid, const char *category, const int level);
 
-/** return the images order associated to that album */
-const gboolean dt_tag_get_album_order_by_id(const uint32_t album_id, uint32_t *sort,
-                                              gboolean *descending);
+/** return the images order associated to that tag */
+const gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
+                                          gboolean *descending);
 
-/** save the images order on the album */
-void dt_tag_set_album_order_by_id(const uint32_t album_id, const uint32_t sort,
-                                  const gboolean descending);
+/** save the images order on the tag */
+void dt_tag_set_tag_order_by_id(const uint32_t tagid, const uint32_t sort,
+                                const gboolean descending);
 
-/** return the albumid of that album - return 0 if not found*/
-const uint32_t dt_tag_get_album_id_by_name(const char * const name);
-
-/** set images positions for tag set as album */
-void dt_tag_set_album_positions(const uint32_t tagid, const GList * const tagged_images);
+/** return the tagid of that tag - return 0 if not found*/
+const uint32_t dt_tag_get_tag_id_by_name(const char * const name);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
