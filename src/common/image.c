@@ -867,8 +867,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO main.tagged_images (imgid, tagid, position)"
                                 "  SELECT ?1, tagid, "
-                                // 4294967295 << 32 = 0xFFFFFFFF00000000
-                                "        (SELECT (IFNULL(MAX(position),0) & (4294967295 << 32))"
+                                "        (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
                                 "         FROM main.tagged_images)"
                                 "         + (ROW_NUMBER() OVER (ORDER BY imgid) << 32)"
                                 " FROM main.tagged_images AS ti"
@@ -1218,8 +1217,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
     (dt_database_get(darktable.db),
      "INSERT INTO main.images (id, film_id, filename, license, sha1sum, flags, version, "
      "                         max_version, history_end, position, import_timestamp)"
-     // 4294967295 << 32 = 0xFFFFFFFF00000000
-     " SELECT NULL, ?1, ?2, '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32), ?4 "
+     " SELECT NULL, ?1, ?2, '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)  + (1 << 32), ?4 "
      " FROM images",
      -1, &stmt, NULL);
 
@@ -1820,8 +1818,7 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "INSERT INTO main.tagged_images (imgid, tagid, position)"
                                     " SELECT ?1, tagid, "
-                                    // 4294967295 << 32 = 0xFFFFFFFF00000000
-                                    "        (SELECT (IFNULL(MAX(position),0) & (4294967295 << 32))"
+                                    "        (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
                                     "         FROM main.tagged_images)"
                                     "         + (ROW_NUMBER() OVER (ORDER BY imgid) << 32)"
                                     " FROM main.tagged_images AS ti"

@@ -1626,7 +1626,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("UPDATE main.tagged_images SET position = (tagid + imgid) << 32",
              "[init] can't populate position on tagged_images\n");
 
-    // remove caption and description field from images table
+    // remove caption and description fields from images table
 
     TRY_EXEC("CREATE TABLE main.i (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER, "
              "width INTEGER, height INTEGER, filename VARCHAR, maker VARCHAR, model VARCHAR, "
