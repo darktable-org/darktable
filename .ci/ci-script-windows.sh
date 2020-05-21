@@ -92,4 +92,6 @@ execute 'Installing known good lensfun' pacman -U --needed --noconfirm mingw-w64
 execute 'Copying python 3.6 lensfun libraries to 3.8' cp -R /mingw64/lib/python3.6/site-packages/lensfun* /mingw64/lib/python3.8/site-packages
 execute 'Updating lensfun databse' lensfun-update-data
 
+execute 'Installing additional OpenMP library for clang' pacman -S --needed --noconfirm mingw-w64-x86_64-openmp
+
 execute 'Building darktable' build_darktable
