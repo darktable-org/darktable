@@ -70,19 +70,19 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   }
 
   /* begin cairo drawing */
-  /* get widget total allocation */
+  /* get button total allocation */
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width;
   int height = allocation.height;
 
-  /* get the css geometry properties */
+  /* get the css geometry properties of the button */
   GtkBorder margin, border, padding;
   gtk_style_context_get_margin(context, state, &margin);
   gtk_style_context_get_border(context, state, &border);
   gtk_style_context_get_padding(context, state, &padding);
 
-  /* for button frame and background, remove css margin from allocation */
+  /* for button frame and background, we remove css margin from allocation */
   int startx = margin.left;
   int starty = margin.top;
   int cwidth = width - margin.left - margin.right;
@@ -112,20 +112,26 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_BUTTON(widget)->icon)
   {
-    /* calculate icon allocation */
+    /* calculate the button content allocation */
     startx += border.left + padding.left;
     starty += border.top + padding.top;
     cwidth -= border.left + border.right + padding.left + padding.right;
     cheight -= border.top + border.bottom + padding.top + padding.bottom;
 
-    /* we have to leave some breathing room to the cairo icon paint function to actually   */
-    /* draw slightly outside the bounding box, for optical alignment and balancing of icons*/
-    int overbook_x = round (0.125 * cwidth);
-    int overbook_y = round (0.125 * cheight);
-    startx += overbook_x;
-    starty += overbook_y;
-    cwidth -= 2 * overbook_x;
-    cheight -= 2 * overbook_y;
+    /* we have to leave some breathing room to the cairo icon paint function to possibly    */
+    /* draw slightly outside the bounding box, for optical alignment and balancing of icons */
+    /* we do this by putting a drawing area widget inside the button and using the CSS      */
+    /* margin property in px of the drawing area as extra room in percent (DPI safe)        */
+    /* we do this because Gtk+ does not support CSS size in percent                         */
+    /* this extra margin can be also (slightly) negative                                    */
+    GtkStyleContext *ccontext = gtk_widget_get_style_context(DTGTK_BUTTON(widget)->canvas);
+    GtkBorder cmargin;
+    gtk_style_context_get_margin(ccontext, state, &cmargin);
+
+    startx += round(cmargin.left * cwidth / 100.0f);
+    starty += round(cmargin.top * cheight / 100.0f);
+    cwidth = round((float)cwidth * (1.0 - (cmargin.left + cmargin.right) / 100.0f));
+    cheight = round((float)cheight * (1.0 - (cmargin.top + cmargin.bottom) / 100.0f));
 
     void *icon_data = DTGTK_BUTTON(widget)->icon_data;
     if(cwidth > 0 && cheight > 0)
@@ -154,7 +160,10 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
+  button->canvas = gtk_drawing_area_new();
+  gtk_container_add(GTK_CONTAINER(button), button->canvas);
   gtk_widget_set_name(GTK_WIDGET(button), "dt-button");
+  gtk_widget_set_name(GTK_WIDGET(button->canvas), "button-canvas");
   return (GtkWidget *)button;
 }
 

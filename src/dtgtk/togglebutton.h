@@ -35,6 +35,7 @@ typedef struct _GtkDarktableToggleButton
   gint icon_flags;
   void *icon_data;
   GdkRGBA bg, fg;
+  GtkWidget *canvas;
 } GtkDarktableToggleButton;
 
 typedef struct _GtkDarktableToggleButtonClass
