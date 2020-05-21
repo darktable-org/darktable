@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-13 22:44+0200\n"
-"PO-Revision-Date: 2020-05-20 00:41+0200\n"
+"PO-Revision-Date: 2020-05-21 17:13+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -7092,7 +7092,7 @@ msgstr "Stärke des Effekts"
 
 #: ../src/iop/clipping.c:301
 msgid "crop and rotate"
-msgstr "Zuschneiden und drehen"
+msgstr "zuschneiden und drehen"
 
 #: ../src/iop/clipping.c:1615
 msgid "invalid ratio format. it should be \"number:number\""
@@ -16197,7 +16197,7 @@ msgstr "Rahmenfarbe wählen"
 #: ../src/views/darkroom.c:3571
 msgctxt "accel"
 msgid "zoom close-up"
-msgstr "Nahansicht"
+msgstr "Zoom auf 100%"
 
 #: ../src/views/darkroom.c:3572
 msgctxt "accel"
@@ -16213,38 +16213,36 @@ msgstr "Ansicht einpassen"
 #: ../src/views/darkroom.c:3583
 msgctxt "accel"
 msgid "image forward"
-msgstr "Nächstes Bild"
+msgstr "nächstes Bild"
 
 #: ../src/views/darkroom.c:3584
 msgctxt "accel"
 msgid "image back"
-msgstr "Vorheriges Bild"
+msgstr "vorheriges Bild"
 
 #. toggle ISO 12646 color assessment condition
 #: ../src/views/darkroom.c:3587
-#, fuzzy
 msgctxt "accel"
 msgid "color assessment"
-msgstr "Farbzusammenstellung"
+msgstr "Farbbeurteilung"
 
 #. toggle raw overexposure indication
 #: ../src/views/darkroom.c:3590
 msgctxt "accel"
 msgid "raw overexposed"
-msgstr "Raw-Überbelichtet"
+msgstr "Über-/Unterbelichtung der Raw-Werte"
 
 #. toggle overexposure indication
 #: ../src/views/darkroom.c:3593
 msgctxt "accel"
 msgid "overexposed"
-msgstr "Überbelichtet"
+msgstr "Über-/Unterbelichtung"
 
 #. cycle overlay colors
 #: ../src/views/darkroom.c:3596
-#, fuzzy
 msgctxt "accel"
 msgid "cycle overlay colors"
-msgstr "Rahmenfarbe wählen"
+msgstr "Überlagerungsfarbe zyklisch ändern"
 
 #. toggle softproofing
 #: ../src/views/darkroom.c:3599
@@ -16319,7 +16317,7 @@ msgstr "wiederherstellen"
 #: ../src/views/darkroom.c:3627
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
-msgstr "erlauben das Schwenken und Zoomen während der Bearbeitung von Masken"
+msgstr "erlaube das Verschieben und Zoomen während der Bearbeitung von Masken"
 
 #. set focus to the search modules text box
 #: ../src/views/darkroom.c:3630
@@ -16329,15 +16327,15 @@ msgstr "suche Modul"
 
 #: ../src/views/darkroom.c:3748
 msgid "switch to lighttable"
-msgstr "Zum Leuchttisch wechseln"
+msgstr "zum Leuchttisch wechseln"
 
 #: ../src/views/darkroom.c:3753 ../src/views/lighttable.c:885
 msgid "zoom in the image"
-msgstr "Zoomen im Bild"
+msgstr "im Bild zoomen"
 
 #: ../src/views/darkroom.c:3759
 msgid "unbounded zoom in the image"
-msgstr "unbegrenztes Zoomen im Bild"
+msgstr "im Bild unbegrenzt Zoomen"
 
 #: ../src/views/darkroom.c:3764
 msgid "zoom to 100% 200% and back"
@@ -16345,11 +16343,11 @@ msgstr "Zoom auf 100%, 200% und zurück"
 
 #: ../src/views/darkroom.c:3770
 msgid "[modules] expand module without closing others"
-msgstr "[modules] Module ausklappen, ohne andere zu schließen"
+msgstr "Modul ausklappen, ohne andere zu schließen"
 
 #: ../src/views/darkroom.c:3776
 msgid "[modules] change module position in pipe"
-msgstr "Modulposition ändern"
+msgstr "Modul an eine andere Position im Bearbeitungsstapel verschieben"
 
 #. workaround for GTK Quartz backend bug
 #: ../src/views/darkroom.c:4490 ../src/views/darkroom.c:4508
@@ -16581,11 +16579,11 @@ msgstr "Karte"
 
 #: ../src/views/map.c:1378
 msgid "[on image] open in darkroom"
-msgstr "[on image] In der Dunkelkammer öffnen"
+msgstr "in der Dunkelkammer öffnen"
 
 #: ../src/views/map.c:1383
 msgid "[on map] zoom map"
-msgstr "[on map] Karte skalieren"
+msgstr "Karte skalieren"
 
 #: ../src/views/map.c:1388
 msgid "move image location"
@@ -16623,11 +16621,11 @@ msgstr "Start und Stop"
 
 #: ../src/views/slideshow.c:635
 msgid "go to next image"
-msgstr "Zum nächsten Bild gehen"
+msgstr "zum nächsten Bild gehen"
 
 #: ../src/views/slideshow.c:640
 msgid "go to previous image"
-msgstr "Zum vorherigen Bild gehen"
+msgstr "zum vorherigen Bild gehen"
 
 #: ../src/views/tethering.c:94
 msgid "tethering"
@@ -16668,7 +16666,7 @@ msgstr "Doppelklick rechts"
 
 #: ../src/views/view.c:2391
 msgid "Drag and drop"
-msgstr "Drag and Drop"
+msgstr "ziehen und loslassen"
 
 #: ../src/views/view.c:2394
 msgid "Left click+Drag"
