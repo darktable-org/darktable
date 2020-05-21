@@ -108,6 +108,7 @@ typedef struct
   dt_thumbnail_selection_mode_t sel_mode; // do we allow to change selection with mouse ?
   gboolean single_click;                  // do we activate on single or double click ?
   gboolean disable_mouseover;             // do we allow to change mouseoverid by mouse move
+  gboolean disable_actions;               // do we allow to change rating/etc...
 
   dt_thumbnail_overlay_t over;  // type of overlays
   int overlay_timeout_duration; // for hover_block overlay, we hide the it after a delay
