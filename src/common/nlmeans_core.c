@@ -61,9 +61,25 @@ typedef struct patch_t patch_t;
 #endif
 
 
+typedef union floatint_t
+{
+  float f;
+  uint32_t i;
+} floatint_t;
+
 static inline float gh(const float f, const float sharpness)
 {
+#if 0
   return exp2f(-f * sharpness);
+#else
+  // fast integer-hack version of the above
+  const int i1 = 0x3f800000; // 2^0
+  const int i2 = 0x3f000000; // 2^-1
+  const int k0 = i1 + (int)((f*sharpness) * (i2 - i1));
+  floatint_t k;
+  k.i = k0 >= 0x800000 ? k0 : 0;
+  return k.f;
+#endif
 }
 
 static inline int sign(int a)
