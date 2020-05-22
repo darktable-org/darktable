@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/nlmeans_core.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -33,6 +34,8 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
+
+#define USE_NEW_IMPL 1
 
 #define NUM_BUCKETS 4
 
@@ -131,6 +134,7 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 
 
+#if !USE_NEW_IMPL
 typedef union floatint_t
 {
   float f;
@@ -157,6 +161,7 @@ static float gh(const float f, const float sharpness)
   // const float spread = 100.f;
   // return 1.0f/(1.0f + fabsf(f)*spread);
 }
+#endif /* !USE_NEW_IMPL */
 
 #ifdef HAVE_OPENCL
 static int bucket_next(unsigned int *state, unsigned int max)
@@ -369,11 +374,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // get our data struct:
   const dt_iop_nlmeans_params_t *const d = (dt_iop_nlmeans_params_t *)piece->data;
 
-  const int ch = piece->colors;
+  assert(piece->colors == 4);
 
   // adjust to zoom size:
-  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
-  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
+  const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
 
   // adjust to Lab, make L more important
@@ -382,6 +388,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float max_L = 120.0f, max_C = 512.0f;
   float nL = 1.0f / max_L, nC = 1.0f / max_C;
   const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
+
+#if USE_NEW_IMPL //use new code?
+  const dt_nlmeans_param_t params = { .sharpness = sharpness,
+                                      .luma = d->luma,
+                                      .chroma = d->chroma,
+                                      .scattering = 0,
+                                      .scale = scale,
+                                      .patch_radius = P,
+                                      .search_radius = K,
+                                      .decimate = 1,
+                                      .norm = norm2 };
+  nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+#else // use old code
+
+  const int ch = piece->colors;
 
   float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
   // we want to sum up weights in col[3], so need to init to 0:
@@ -505,6 +528,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_free_align(Sa);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+#endif /* new vs old code */
 }
 
 #if defined(__SSE__)
@@ -517,8 +541,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
 
   // adjust to zoom size:
-  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
-  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
+  const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
 
   // adjust to Lab, make L more important
@@ -527,6 +552,23 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   float max_L = 120.0f, max_C = 512.0f;
   float nL = 1.0f / max_L, nC = 1.0f / max_C;
   const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
+
+#if USE_NEW_IMPL // use new code?
+  const dt_nlmeans_param_t params = { .sharpness = sharpness,
+                                      .luma = d->luma,
+                                      .chroma = d->chroma,
+                                      .scattering = 0,
+                                      .scale = scale,
+                                      .patch_radius = P,
+                                      .search_radius = K,
+                                      .decimate = 1,
+                                      .norm = norm2 };
+  nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
+  // (SSE version not implemented yet, redirect to scalar code)
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  return;
+#else // use old code
 
   float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
   // we want to sum up weights in col[3], so need to init to 0:
@@ -700,6 +742,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   dt_free_align(Sa);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+#endif /* new vs old code */
 }
 #endif
 
