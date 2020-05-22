@@ -35,7 +35,10 @@
 #include <xmmintrin.h>
 #endif
 
+<<<<<<< HEAD
 // which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
+=======
+>>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
 #define USE_NEW_IMPL 1
 
 #define NUM_BUCKETS 4
@@ -391,18 +394,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
 
 #if USE_NEW_IMPL //use new code?
+<<<<<<< HEAD
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
   int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
   
+=======
+>>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
   const dt_nlmeans_param_t params = { .sharpness = sharpness,
                                       .luma = d->luma,
                                       .chroma = d->chroma,
                                       .scattering = 0,
                                       .scale = scale,
+<<<<<<< HEAD
                                       .center_weight = -1,
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = decimate,
+=======
+                                      .patch_radius = P,
+                                      .search_radius = K,
+                                      .decimate = 1,
+>>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
                                       .norm = norm2 };
   nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -559,20 +571,32 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
 
 #if USE_NEW_IMPL // use new code?
+<<<<<<< HEAD
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
   int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
   
+=======
+>>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
   const dt_nlmeans_param_t params = { .sharpness = sharpness,
                                       .luma = d->luma,
                                       .chroma = d->chroma,
                                       .scattering = 0,
                                       .scale = scale,
+<<<<<<< HEAD
                                       .center_weight = -1,
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = decimate,
                                       .norm = norm2 };
   nlmeans_denoise_sse2(ivoid,ovoid,roi_in,roi_out,&params);
+=======
+                                      .patch_radius = P,
+                                      .search_radius = K,
+                                      .decimate = 1,
+                                      .norm = norm2 };
+  nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
+  // (SSE version not implemented yet, redirect to scalar code)
+>>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   return;
