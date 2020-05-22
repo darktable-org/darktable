@@ -1095,6 +1095,61 @@
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+
+<section status="final" id="darktable_gui_views_lighttable_is_image_visible">
+<title>darktable.gui.views.lighttable.is_image_visible</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>is_image_visible</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_views_lighttable_is_image_visible_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Check if the image is visible in lighttable view.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_views_lighttable_is_image_visible_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to be checked.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>boolean</synopsis>
+<para>True if the image is displayed. False if the image is partially displayed or not displayed.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_views_lighttable_set_image_visible">
+<title>darktable.gui.views.lighttable.set_image_visible</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>set_image_visible</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_views_lighttable_set_image_visible_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Set the image visible in lighttable view.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_views_lighttable_set_image_visible_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to set visible.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>int</synopsis>
+<para>An error is returned if no image is specified.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_views_tethering">

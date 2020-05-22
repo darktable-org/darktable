@@ -293,6 +293,12 @@ making a backup is strongly advised.
 - added darktable.gui.panel_get_size and darktable.gui.panel_set_size functions 
   to set the width of the  left or right panels and the height of the bottom panel.
 
+- Added function darktable.gui.views.lighttable.is_image_visible to check if an image 
+  is visible in lighttable view.
+
+- Added function darktable.gui.views.lighttable.set_image_visible to force an 
+  image to be visible in lighttable view.
+  
 ## Changed Dependencies
 
 
