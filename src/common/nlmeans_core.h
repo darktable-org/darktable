@@ -26,7 +26,10 @@ struct dt_nlmeans_param_t
   float chroma;		// blend amount, a/b channels (set to 1.00 for RBG)
   float scattering;	// scattering factor for patches (default 0 = densest possible)
   float scale;		// image scaling, affects scattering
+<<<<<<< HEAD
   float center_weight;  // weighting of central pixel in patch (<0 for no special handling; used by denoise[non-local])
+=======
+>>>>>>> New more-scaleable implementation of non-local means
   int patch_radius;	// radius of patches which are compared, 1..4
   int search_radius;	// radius around a pixel in which to compare patches (default = 7)
   int decimate;         // set to 1 to search only half the patches in the neighborhood (default = 0)
@@ -37,7 +40,10 @@ typedef struct dt_nlmeans_param_t dt_nlmeans_param_t;
 void nlmeans_denoise(const float *const inbuf, float *const outbuf,
                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                      const dt_nlmeans_param_t *const params);
+<<<<<<< HEAD
 
 void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                           const dt_nlmeans_param_t *const params);
+=======
+>>>>>>> New more-scaleable implementation of non-local means

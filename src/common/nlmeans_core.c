@@ -18,12 +18,20 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+<<<<<<< HEAD
+=======
+//#include "bauhaus/bauhaus.h"
+>>>>>>> New more-scaleable implementation of non-local means
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "iop/iop_api.h"
+<<<<<<< HEAD
+=======
+//#include <gtk/gtk.h>
+>>>>>>> New more-scaleable implementation of non-local means
 #include "common/nlmeans_core.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -33,6 +41,7 @@
 #endif
 
 // to avoid accumulation of rounding errors, we should do a full recomputation of the patch differences
+<<<<<<< HEAD
 //   every so many rows of the image.  We'll also use that interval as the target maximum chunk size for
 //   parallelization
 // lower values reduce the accumulation of rounding errors at the cost of slightly more computation, but
@@ -41,6 +50,11 @@
 //  single-threaded performance and highly-threaded performance; 12 was found to be best on a 32-core
 //  third-gen Threadripper.
 #define SLICE_HEIGHT 20
+=======
+//   every so many rows of the image.  We'll also use that interval as the maximum chunk size for
+//   parallelization
+#define SLICE_HEIGHT 100
+>>>>>>> New more-scaleable implementation of non-local means
 
 // a structure to collect together the items which define the location of a patch relative to the pixel
 //  being denoised
@@ -64,6 +78,7 @@ typedef struct patch_t patch_t;
 #endif
 
 
+<<<<<<< HEAD
 typedef union floatint_t
 {
   float f;
@@ -83,6 +98,11 @@ static inline float gh(const float f)
   k.i = k0 >= 0x800000 ? k0 : 0;
   return k.f;
 #endif
+=======
+static inline float gh(const float f, const float sharpness)
+{
+  return exp2f(-f * sharpness);
+>>>>>>> New more-scaleable implementation of non-local means
 }
 
 static inline int sign(int a)
@@ -110,6 +130,10 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
   const float scale = params->scale;
   const float scattering = params->scattering;
   int decimate = params->decimate;
+<<<<<<< HEAD
+=======
+  decimate=0;//!!!
+>>>>>>> New more-scaleable implementation of non-local means
   // determine how many patches we have
   int n_patches = (2 * search_radius + 1) * (2 * search_radius + 1);
   if (decimate)
@@ -141,6 +165,7 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
   return patches;
 }
 
+<<<<<<< HEAD
 static float compute_center_pixel_norm(const float center_weight, const int radius)
 {
   // scale the central pixel's contribution by the size of the patch so that the center-weight
@@ -149,6 +174,8 @@ static float compute_center_pixel_norm(const float center_weight, const int radi
   return center_weight * width * width;
 }
 
+=======
+>>>>>>> New more-scaleable implementation of non-local means
 // compute the channel-normed squared difference between two pixels
 static inline float pixel_difference(const float* const pix1, const float* pix2, const float norm[4])
 {
@@ -158,6 +185,7 @@ static inline float pixel_difference(const float* const pix1, const float* pix2,
   return (dif1 * dif1 * norm[0]) + (dif2 * dif2 * norm[1]) + (dif3 * dif3 * norm[2]);
 }
 
+<<<<<<< HEAD
 #if defined(__SSE__)
 // compute the channel-normed squared difference between two pixels; don't do horizontal sum until later
 static inline __m128 channel_difference_sse2(const float* const pix1, const float* pix2, const float norm[4])
@@ -183,6 +211,8 @@ static inline float pixel_difference_sse2(const float* const pix1, const float* 
 }
 #endif /* __SSE__ */
 
+=======
+>>>>>>> New more-scaleable implementation of non-local means
 static void init_column_sums(float *const col_sums, const patch_t *const patch, const float *const in,
                              const int row, const int height, const int width, const int stride,
                              const int radius, const float *const norm)
@@ -215,6 +245,7 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
   return;
 }
 
+<<<<<<< HEAD
 #if defined(__SSE__)
 static void init_column_sums_sse2(float *const col_sums, const patch_t *const patch, const float *const in,
                                   const int row, const int height, const int width, const int stride,
@@ -268,6 +299,8 @@ static int compute_slice_size(const int height)
   return diff_high <= diff_low ?  chunk_size_high : chunk_size_low;
 }
 
+=======
+>>>>>>> New more-scaleable implementation of non-local means
 void nlmeans_denoise(const float *const inbuf, float *const outbuf,
                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                      const dt_nlmeans_param_t *const params)
@@ -276,12 +309,16 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const float weight[4] = { params->luma, params->chroma, params->chroma, 1.0f };
   const float invert[4] = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
+<<<<<<< HEAD
   const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
   const float center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
   
+=======
+
+>>>>>>> New more-scaleable implementation of non-local means
   // define the patches to be compared when denoising a pixel
   const size_t stride = 4 * roi_in->width;
   int num_patches;
@@ -294,6 +331,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
   // zero out the overrun areas
   memset(scratch_buf,'\0',numthreads*padded_scratch_size*sizeof(float));
+<<<<<<< HEAD
   const int chunk_size = compute_slice_size(roi_out->height);
   const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
 #ifdef _OPENMP
@@ -302,14 +340,28 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
       schedule(static)
 #endif
   for (int chk = 0 ; chk < num_chunks; chk++)
+=======
+  const int chunk_size = (roi_out->height + numthreads - 1) / numthreads;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(patches, num_patches, scratch_buf) \
+      schedule(static)
+#endif
+  for (int thr = 0 ; thr < numthreads; thr++)
+>>>>>>> New more-scaleable implementation of non-local means
   {
     // locate our scratch space within the big buffer allocated above
     size_t tnum = dt_get_thread_num();
     const int radius = params->patch_radius;
     float *const col_sums = scratch_buf + tnum * padded_scratch_size + radius + 1;
     // determine which horizontal slice of the image to process
+<<<<<<< HEAD
     const int chunk_start = chk * chunk_size;
     const int chunk_end = MIN((chk+1)*chunk_size,roi_out->height);
+=======
+    const int chunk_start = thr * chunk_size;
+    const int chunk_end = MIN((thr+1)*chunk_size,roi_out->height);
+>>>>>>> New more-scaleable implementation of non-local means
     // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
     memset(outbuf+chunk_start*roi_out->width*4, '\0', roi_out->width * (chunk_end-chunk_start) * 4 * sizeof(float));
     // cycle through all of the patches over our slice of the image
@@ -317,6 +369,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
     {
       // retrieve info about the current patch
       const patch_t *patch = &patches[p];
+<<<<<<< HEAD
       // skip any rows where the patch center would be above top of RoI or below bottom of RoI
       const int height = roi_out->height;
       const int row_min = MAX(chunk_start,MAX(0,-patch->rows));
@@ -325,6 +378,14 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
       // center pixel is inside
       const int row_top = MAX(row_min,MAX(radius,radius-patch->rows));
       const int row_bot = MIN(row_max,height-MAX(radius+1,radius+patch->rows+1));
+=======
+      const float sharpness = params->sharpness;
+      const int offset = patch->offset;
+      // skip any rows where the patch center would be above top of RoI or below bottom of RoI
+      const int height = roi_out->height;
+      int row_min = MAX(chunk_start,MAX(0,-patch->rows));
+      int row_max = MIN(chunk_end,height - MAX(0,patch->rows));
+>>>>>>> New more-scaleable implementation of non-local means
       // skip any columns where the patch center would be to the left or the right of the RoI
       const int scol = patch->cols;
       const int col_min = MAX(0,-scol);
@@ -339,6 +400,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
         // now proceed down the current row of the image
         const float *in = inbuf + stride * row + 4 * col_min;
         float *out = outbuf + 4 * ((size_t)roi_out->width * row + col_min);
+<<<<<<< HEAD
         const int offset = patch->offset;
         const float sharpness = params->sharpness;
         if (params->center_weight < 0)
@@ -611,6 +673,69 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
           const __m128 outpx = _mm_load_ps(out);
           const __m128 scale = _mm_set1_ps(out[3]);
           _mm_stream_ps(out, (inpx * invert) + (outpx / scale * weight)) ;
+=======
+        for (int col = col_min; col < col_max; col++, in+=4, out+=4)
+        {
+          distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
+          float wt = gh(distortion, sharpness);
+          const float pixel[4] = { in[offset],  in[offset+1], in[offset+2], 1.0f };
+          SIMD_FOR (size_t c = 0; c < 4; c++)
+          {
+            out[c] += pixel[c] * wt;
+          }
+        }
+        const int row1 = row+1;
+        if (row1 < row_max)
+        {
+          const int srow = row1 + patch->rows;
+          const float *pixel = inbuf + row1*stride + 4*col_min;
+          const float *shifted = pixel + patch->offset;
+          // incrementally update the column sums
+          const float *shifted_top = shifted - (radius+1) * stride ;
+          const float *shifted_bot = shifted + radius * stride ;
+          if (srow <= radius || row1 <= radius)
+          {
+            // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
+            pixel += radius * stride;
+            for (int col = col_min; col < col_max; col++, pixel+=4, shifted_bot+=4)
+            {
+              col_sums[col] += pixel_difference(pixel,shifted_bot,params->norm);
+            }
+          }
+          else if (srow + radius >= height || row1 + radius >= height)
+          {
+            // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
+            pixel -= (radius+1) * stride;
+            for (int col = col_min; col < col_max; col++, pixel+=4, shifted_top+=4)
+            {
+              col_sums[col] -= pixel_difference(pixel,shifted_top,params->norm);
+            }
+          }
+          else
+          {
+            const float *pixel_top = pixel - (radius+1) * stride;
+            const float *pixel_bot = pixel + radius * stride;
+            // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
+            for (int col = col_min; col < col_max; col++, pixel_top+=4, pixel_bot+=4, shifted_top+=4, shifted_bot+=4)
+            {
+              col_sums[col] += (pixel_difference(pixel_bot,shifted_bot,params->norm)
+                                - pixel_difference(pixel_top,shifted_top,params->norm));
+            }
+          }
+        }
+      }
+    }
+    // normalize and apply chroma/luma blending
+    for (int row = chunk_start; row < chunk_end; row++)
+    {
+      const float *in = inbuf + row * stride;
+      float *out = outbuf + row * 4 * roi_out->width;
+      for (int col = 0; col < roi_out->width; col++, in+=4, out+=4)
+      {
+        SIMD_FOR(size_t c = 0; c < 4; c++)
+        {
+          out[c] = (in[c] * invert[c]) + (out[c] / out[3] * weight[c]);
+>>>>>>> New more-scaleable implementation of non-local means
         }
       }
     }
@@ -621,4 +746,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   dt_free_align(scratch_buf);
   return;
 }
+<<<<<<< HEAD
 #endif /* __SSE__ */
+=======
+>>>>>>> New more-scaleable implementation of non-local means
