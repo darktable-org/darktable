@@ -1719,8 +1719,9 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
       GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
       gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model),
                                                        &store_iter, &iter);
-      if (new_flags != flags)
+      if (new_flags != (flags & (DT_TF_CATEGORY | DT_TF_PRIVATE)))
       {
+        new_flags = (flags & ~(DT_TF_CATEGORY | DT_TF_PRIVATE)) | new_flags;
         dt_tag_set_flags(tagid, new_flags);
         if (!d->tree_flag)
           gtk_list_store_set(GTK_LIST_STORE(store), &store_iter, DT_LIB_TAGGING_COL_FLAGS, new_flags, -1);
