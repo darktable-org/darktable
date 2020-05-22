@@ -187,7 +187,10 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, 
   *selq_pre = dt_util_dstrcat(*selq_pre,
                               "SELECT DISTINCT mi.id FROM (SELECT"
                               "  id, group_id, film_id, filename, datetime_taken, "
-                              "  flags, version, %s position, aspect_ratio"
+                              "  flags, version, %s position, aspect_ratio,"
+                              "  maker, model, lens, aperture, exposure, focal_length,"
+                              "  iso, import_timestamp, change_timestamp,"
+                              "  export_timestamp, print_timestamp"
                               "  FROM main.images AS mi %s%s WHERE ",
                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                               tagid ? " LEFT JOIN main.tagged_images AS ti"
@@ -399,7 +402,10 @@ int dt_collection_update(const dt_collection_t *collection)
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
                                "  id, group_id, film_id, filename, datetime_taken, "
-                               "  flags, version, %s position, aspect_ratio"
+                               "  flags, version, %s position, aspect_ratio,"
+                               "  maker, model, lens, aperture, exposure, focal_length,"
+                               "  iso, import_timestamp, change_timestamp,"
+                               "  export_timestamp, print_timestamp"
                                "  FROM main.images AS mi %s%s ) AS mi ",
                                tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                                tagid ? " LEFT JOIN main.tagged_images AS ti"
@@ -414,7 +420,10 @@ int dt_collection_update(const dt_collection_t *collection)
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
                                "  id, group_id, film_id, filename, datetime_taken, "
-                               "  flags, version, %s position, aspect_ratio"
+                               "  flags, version, %s position, aspect_ratio,"
+                               "  maker, model, lens, aperture, exposure, focal_length,"
+                               "  iso, import_timestamp, change_timestamp,"
+                               "  export_timestamp, print_timestamp"
                                "  FROM main.images AS mi %s%s ) AS mi WHERE ",
                                tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                                tagid ? " LEFT JOIN main.tagged_images AS ti"
