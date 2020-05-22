@@ -778,10 +778,10 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
 {
   sqlite3_stmt *stmt;
   int32_t newid = -1;
-  const int64_t image_position = dt_collection_get_image_position(imgid);
+  const int64_t image_position = dt_collection_get_image_position(imgid, 0);
   const int64_t new_image_position = (image_position < 0) ? max_image_position() : image_position + 1;
 
-  dt_collection_shift_image_positions(1, new_image_position);
+  dt_collection_shift_image_positions(1, new_image_position, 0);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT a.id"
@@ -808,14 +808,14 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
      "   aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
      "   output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
      "   raw_auto_bright_threshold, raw_black, raw_maximum,"
-     "   caption, description, license, sha1sum, orientation, histogram, lightmap,"
+     "   license, sha1sum, orientation, histogram, lightmap,"
      "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end,"
      "   position, aspect_ratio, exposure_bias, import_timestamp)"
      " SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens,"
      "       exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
      "       flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
      "       raw_auto_bright_threshold, raw_black, raw_maximum,"
-     "       caption, description, license, sha1sum, orientation, histogram, lightmap,"
+     "       license, sha1sum, orientation, histogram, lightmap,"
      "       longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
      "       aspect_ratio, exposure_bias, import_timestamp"
      " FROM main.images WHERE id = ?2",
@@ -865,8 +865,13 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.tagged_images (imgid, tagid)"
-                                "  SELECT ?1, tagid FROM main.tagged_images WHERE imgid = ?2",
+                                "INSERT INTO main.tagged_images (imgid, tagid, position)"
+                                "  SELECT ?1, tagid, "
+                                "        (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
+                                "         FROM main.tagged_images)"
+                                "         + (ROW_NUMBER() OVER (ORDER BY imgid) << 32)"
+                                " FROM main.tagged_images AS ti"
+                                " WHERE imgid = ?2",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
@@ -1210,9 +1215,9 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   //insert a v0 record (which may be updated later if no v0 xmp exists)
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
-     "INSERT INTO main.images (id, film_id, filename, caption, description, license, sha1sum, flags, version, "
+     "INSERT INTO main.images (id, film_id, filename, license, sha1sum, flags, version, "
      "                         max_version, history_end, position, import_timestamp)"
-     " SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32), ?4 "
+     " SELECT NULL, ?1, ?2, '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)  + (1 << 32), ?4 "
      " FROM images",
      -1, &stmt, NULL);
 
@@ -1747,14 +1752,14 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
          "   aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
          "   output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
          "   raw_auto_bright_threshold, raw_black, raw_maximum,"
-         "   caption, description, license, sha1sum, orientation, histogram, lightmap,"
+         "   license, sha1sum, orientation, histogram, lightmap,"
          "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
          "   position, aspect_ratio, exposure_bias)"
          " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename, maker, model, lens,"
          "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
          "        flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
          "        raw_auto_bright_threshold, raw_black, raw_maximum,"
-         "        caption, description, license, sha1sum, orientation, histogram, lightmap,"
+         "        license, sha1sum, orientation, histogram, lightmap,"
          "        longitude, latitude, altitude, color_matrix, colorspace, -1, -1,"
          "        ?3, aspect_ratio, exposure_bias"
          " FROM main.images"
@@ -1811,9 +1816,12 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "INSERT INTO main.tagged_images (imgid, tagid)"
-                                    " SELECT ?1, tagid"
-                                    " FROM main.tagged_images"
+                                    "INSERT INTO main.tagged_images (imgid, tagid, position)"
+                                    " SELECT ?1, tagid, "
+                                    "        (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
+                                    "         FROM main.tagged_images)"
+                                    "         + (ROW_NUMBER() OVER (ORDER BY imgid) << 32)"
+                                    " FROM main.tagged_images AS ti"
                                     " WHERE imgid = ?2",
                                     -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
