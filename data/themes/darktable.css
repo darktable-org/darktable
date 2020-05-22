@@ -1340,6 +1340,7 @@ cell:selected
 
 /* Main states */
 button:active,
+button:checked,
 button:selected,
 menuitem:active,
 menuitem:selected,
