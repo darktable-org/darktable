@@ -60,7 +60,7 @@
 
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(6, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -74,7 +74,7 @@ typedef enum dt_iop_color_normalize_t
   DT_NORMALIZE_CUSTOM
 } dt_iop_color_normalize_t;
 
-typedef struct dt_iop_colorin_params_t
+typedef struct dt_iop_colorin_params_v6_t
 {
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOP_COLOR_ICC_LEN];
@@ -84,11 +84,26 @@ typedef struct dt_iop_colorin_params_t
   // working color profile
   dt_colorspaces_color_profile_type_t type_work;
   char filename_work[DT_IOP_COLOR_ICC_LEN];
+} dt_iop_colorin_params_v6_t;
+
+typedef struct dt_iop_colorin_params_t
+{
+  dt_colorspaces_color_profile_type_t type;
+  char filename[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+  int normalize;
+  float color_regularization;
+  float luminance_regularization;
+  int blue_mapping;
+  // working color profile
+  dt_colorspaces_color_profile_type_t type_work;
+  char filename_work[DT_IOP_COLOR_ICC_LEN];
 } dt_iop_colorin_params_t;
 
 typedef struct dt_iop_colorin_gui_data_t
 {
   GtkWidget *profile_combobox, *clipping_combobox, *work_combobox;
+  GtkWidget *color_regularization, *luminance_regularization;
   GList *image_profiles;
   int n_image_profiles;
 } dt_iop_colorin_gui_data_t;
@@ -112,6 +127,9 @@ typedef struct dt_iop_colorin_data_t
   float nmatrix[9];
   float lmatrix[9];
   float unbounded_coeffs[3][3]; // approximation for extrapolation of shaper curves
+  int custom_regularization;
+  float color_regularization;
+  float luminance_regularization;
   int blue_mapping;
   int nonlinearlut;
   dt_colorspaces_color_profile_type_t type;
@@ -188,7 +206,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } dt_iop_colorin_params_v1_t;
 
     const dt_iop_colorin_params_v1_t *old = (dt_iop_colorin_params_v1_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v6_t *new = (dt_iop_colorin_params_v6_t *)new_params;
     memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
@@ -240,7 +258,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } dt_iop_colorin_params_v2_t;
 
     const dt_iop_colorin_params_v2_t *old = (dt_iop_colorin_params_v2_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v6_t *new = (dt_iop_colorin_params_v6_t *)new_params;
     memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
@@ -293,7 +311,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } dt_iop_colorin_params_v3_t;
 
     const dt_iop_colorin_params_v3_t *old = (dt_iop_colorin_params_v3_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v6_t *new = (dt_iop_colorin_params_v6_t *)new_params;
     memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
@@ -348,7 +366,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } dt_iop_colorin_params_v4_t;
 
     const dt_iop_colorin_params_v4_t *old = (dt_iop_colorin_params_v4_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v6_t *new = (dt_iop_colorin_params_v6_t *)new_params;
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
@@ -376,7 +394,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     } dt_iop_colorin_params_v5_t;
 
     const dt_iop_colorin_params_v5_t *old = (dt_iop_colorin_params_v5_t *)old_params;
-    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    dt_iop_colorin_params_v6_t *new = (dt_iop_colorin_params_v6_t *)new_params;
     memset(new, 0, sizeof(*new));
 
     new->type = old->type;
@@ -387,6 +405,32 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->type_work = old->type_work;
     g_strlcpy(new->filename_work, old->filename_work, sizeof(new->filename_work));
 
+    return 0;
+  }
+  if(old_version <= 6 && new_version == 7)
+  {
+    dt_iop_colorin_params_v6_t v6;
+    if(old_version < 6)
+    {
+      // update to v6
+      if(legacy_params(self, old_params, old_version, &v6, 6))
+        return 1;
+    }
+    else
+    {
+      memcpy(&v6, old_params, sizeof(v6));
+    }
+
+    dt_iop_colorin_params_t *v7 = new_params;
+    v7->type = v6.type;
+    g_strlcpy(v7->filename, v6.filename, sizeof(v7->filename));
+    v7->intent = v6.intent;
+    v7->normalize = v6.normalize;
+    v7->blue_mapping = v6.blue_mapping;
+    v7->type_work = v6.type_work;
+    g_strlcpy(v7->filename_work, v6.filename_work, sizeof(v7->filename_work));
+    v7->color_regularization = 0.01f;
+    v7->luminance_regularization = 0.0f;
     return 0;
   }
   return 1;
@@ -526,6 +570,19 @@ static void normalize_changed(GtkWidget *widget, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void color_regularization_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  p->color_regularization = dt_bauhaus_slider_get(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void luminance_regularization_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  p->luminance_regularization = dt_bauhaus_slider_get(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 static float lerp_lut(const float *const lut, const float v)
 {
@@ -1487,6 +1544,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->input = NULL;
   d->clear_input = 0;
   d->nrgb = NULL;
+  d->custom_regularization = 0;
 
   d->blue_mapping = p->blue_mapping;
 
@@ -1505,10 +1563,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->nrgb = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_IN)->profile;
       break;
     case DT_NORMALIZE_CUSTOM:
+      d->custom_regularization = 1;
+      break;
     case DT_NORMALIZE_OFF:
     default:
       d->nrgb = NULL;
   }
+
+  d->color_regularization = p->color_regularization;
+  d->luminance_regularization = p->luminance_regularization;
 
   if(d->xform_cam_Lab)
   {
@@ -1798,6 +1861,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
+  dt_bauhaus_slider_set(g->color_regularization, p->color_regularization);
+  dt_bauhaus_slider_set(g->luminance_regularization, p->luminance_regularization);
 
   update_profile_list(self);
 
@@ -1859,6 +1924,8 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .filename = "",
                                                            .intent = DT_INTENT_PERCEPTUAL,
                                                            .normalize = DT_NORMALIZE_OFF,
+                                                           .color_regularization = 0.01f,
+                                                           .luminance_regularization = 0.0f,
                                                            .blue_mapping = 0,
                                                            .type_work = DT_COLORSPACE_LIN_REC2020,
                                                            .filename_work = "" };
@@ -2164,6 +2231,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->clipping_combobox, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(g->clipping_combobox), "value-changed", G_CALLBACK(normalize_changed), (gpointer)self);
+
+  g->color_regularization = dt_bauhaus_slider_new_with_range(self, 0.01f, 1.0f, .05f, 0.01f, 2);
+  dt_bauhaus_widget_set_label(g->color_regularization, NULL, _("color regularization"));
+  gtk_widget_set_tooltip_text(g->color_regularization, _("amount of color regularization for far-from-gamut pixel\n increase to desaturate"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->color_regularization, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->color_regularization), "value-changed", G_CALLBACK(color_regularization_callback), (gpointer)self);
+
+  g->luminance_regularization = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, .05, 0.0f, 2);
+  dt_bauhaus_widget_set_label(g->luminance_regularization, NULL, _("luminance regularization"));
+  gtk_widget_set_tooltip_text(g->luminance_regularization, _("amount of luminance regularization for far-from-gamut pixel\n increase to brighten these pixels until gradients are smooth"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->luminance_regularization, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->luminance_regularization), "value-changed", G_CALLBACK(luminance_regularization_callback), (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
