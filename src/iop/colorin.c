@@ -70,7 +70,8 @@ typedef enum dt_iop_color_normalize_t
   DT_NORMALIZE_SRGB,
   DT_NORMALIZE_ADOBE_RGB,
   DT_NORMALIZE_LINEAR_REC709_RGB,
-  DT_NORMALIZE_LINEAR_REC2020_RGB
+  DT_NORMALIZE_LINEAR_REC2020_RGB,
+  DT_NORMALIZE_CUSTOM
 } dt_iop_color_normalize_t;
 
 typedef struct dt_iop_colorin_params_t
@@ -1503,6 +1504,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     case DT_NORMALIZE_LINEAR_REC2020_RGB:
       d->nrgb = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_IN)->profile;
       break;
+    case DT_NORMALIZE_CUSTOM:
     case DT_NORMALIZE_OFF:
     default:
       d->nrgb = NULL;
@@ -2155,6 +2157,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->clipping_combobox, _("Adobe RGB (compatible)"));
   dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec709 RGB"));
   dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec2020 RGB"));
+  dt_bauhaus_combobox_add(g->clipping_combobox, _("custom"));
 
   gtk_widget_set_tooltip_text(g->clipping_combobox, _("confine Lab values to gamut of RGB color space"));
 
