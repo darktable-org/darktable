@@ -662,17 +662,17 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   const int chunk_size = compute_slice_size(roi_out->height);
   const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
 #ifdef _OPENMP
-#ifdef __clang__
-  #define CLANG_SHARED()  shared(chunk_size, num_chunks, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert)
+#if defined(__clang__) || __GNUC__ > 8
+  #define SHARED()  shared(chunk_size, num_chunks, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert)
 #else
   // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
-  #define CLANG_SHARED()
+  #define SHARED()
 #endif
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
       dt_omp_firstprivate(patches, num_patches, scratch_buf) \
-      CLANG_SHARED()                                         \
+      SHARED()                                         \
       schedule(static)
-#undef CLANG_SHARED
+#undef SHARED
 #endif
   for (int chk = 0 ; chk < num_chunks; chk++)
   {
@@ -959,17 +959,17 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   const int chunk_size = compute_slice_size(roi_out->height);
   const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
 #ifdef _OPENMP
-#ifdef __clang__
-  #define CLANG_SHARED()  shared(chunk_size, num_chunks, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert)
+#if defined(__clang__) || __GNUC__ > 8
+  #define SHARED()  shared(chunk_size, num_chunks, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert)
 #else
   // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
-  #define CLANG_SHARED()
+  #define SHARED()
 #endif
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
       dt_omp_firstprivate(patches, num_patches, scratch_buf)           \
-      CLANG_SHARED()                                                   \
+      SHARED()                                                   \
       schedule(static)
-#undef CLANG_SHARED
+#undef SHARED
 #endif
   for (int chk = 0 ; chk < num_chunks; chk++)
   {
