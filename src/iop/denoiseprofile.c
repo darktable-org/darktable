@@ -1890,7 +1890,7 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
     bb[i] = d->b[1] * wb[i];
   }
   aa[3] = 1.0f;
-  bb[4] = 1.0f;
+  bb[3] = 1.0f;
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   if(d->use_new_vst)
   {
