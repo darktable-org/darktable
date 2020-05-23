@@ -1661,6 +1661,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       if(tl)
       {
         dt_thumbnail_t *thumb = (dt_thumbnail_t *)tl->data;
+        GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_main);
+        gtk_style_context_remove_class(context, "dt_last_active");
         thumb->rowid = nrow; // this may have changed
         // we set new position/size if needed
         if(thumb->x != posx || thumb->y != posy)

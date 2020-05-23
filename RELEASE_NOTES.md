@@ -293,6 +293,9 @@ making a backup is strongly advised.
 - added darktable.gui.panel_get_size and darktable.gui.panel_set_size functions 
   to set the width of the  left or right panels and the height of the bottom panel.
 
+- fixed is_password field of entry widget to work according to the API manual, so 
+  now when it is set to true the field is hidden.
+
 ## Changed Dependencies
 
 
