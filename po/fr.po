@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-22 19:30+0200\n"
-"PO-Revision-Date: 2020-05-22 19:31+0200\n"
+"POT-Creation-Date: 2020-05-23 19:31+0200\n"
+"PO-Revision-Date: 2020-05-23 19:31+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1132,8 +1132,7 @@ msgstr ""
 
 #. tags
 #: ../build/src/preferences_gen.h:3691 ../src/develop/lightroom.c:1508
-#: ../src/gui/camera_import_dialog.c:462 ../src/libs/export_metadata.c:310
-#: ../src/libs/image.c:467 ../src/libs/import.c:591
+#: ../src/libs/export_metadata.c:310 ../src/libs/image.c:467
 #: ../src/libs/metadata_view.c:148
 msgid "tags"
 msgstr "mots-clés"
@@ -1223,7 +1222,7 @@ msgstr ""
 "enregistrées par certains appareils photo"
 
 #: ../build/src/preferences_gen.h:3870 ../build/src/preferences_gen.h:3873
-#: ../src/libs/import.c:98
+#: ../src/libs/import.c:90
 msgid "import"
 msgstr "importer"
 
@@ -1359,7 +1358,7 @@ msgstr "Imprimer vos images"
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:354
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:475
-#: ../src/libs/import.c:790 ../src/libs/import.c:897 ../src/libs/lib.c:227
+#: ../src/libs/import.c:552 ../src/libs/import.c:658 ../src/libs/lib.c:227
 #: ../src/libs/styles.c:305 ../src/libs/styles.c:328 ../src/libs/tagging.c:2165
 #: ../src/libs/tagging.c:2206
 msgid "_cancel"
@@ -1464,67 +1463,67 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:627
+#: ../src/common/collection.c:636
 msgid "too much time to update aspect ratio for the collection"
 msgstr "trop de temps pour mettre à jour l'aspect pour la collection"
 
-#: ../src/common/collection.c:665
+#: ../src/common/collection.c:674
 msgid "film roll"
 msgstr "pellicule"
 
-#: ../src/common/collection.c:666
+#: ../src/common/collection.c:675
 msgid "folders"
 msgstr "dossiers"
 
-#: ../src/common/collection.c:667
+#: ../src/common/collection.c:676
 msgid "camera"
 msgstr "boîtier"
 
-#: ../src/common/collection.c:668 ../src/libs/export_metadata.c:184
+#: ../src/common/collection.c:677 ../src/libs/export_metadata.c:184
 msgid "tag"
 msgstr "mot-clé"
 
-#: ../src/common/collection.c:669
+#: ../src/common/collection.c:678
 msgid "date taken"
 msgstr "date de prise"
 
-#: ../src/common/collection.c:670
+#: ../src/common/collection.c:679
 msgid "date-time taken"
 msgstr "date/heure de prise"
 
-#: ../src/common/collection.c:671 ../src/libs/metadata_view.c:109
+#: ../src/common/collection.c:680 ../src/libs/metadata_view.c:109
 msgid "import timestamp"
 msgstr "date importation"
 
-#: ../src/common/collection.c:672 ../src/libs/metadata_view.c:110
+#: ../src/common/collection.c:681 ../src/libs/metadata_view.c:110
 msgid "change timestamp"
 msgstr "date changement"
 
-#: ../src/common/collection.c:673 ../src/libs/metadata_view.c:111
+#: ../src/common/collection.c:682 ../src/libs/metadata_view.c:111
 msgid "export timestamp"
 msgstr "date exportation"
 
-#: ../src/common/collection.c:674 ../src/libs/metadata_view.c:112
+#: ../src/common/collection.c:683 ../src/libs/metadata_view.c:112
 msgid "print timestamp"
 msgstr "date impression"
 
-#: ../src/common/collection.c:675 ../src/libs/history.c:74
+#: ../src/common/collection.c:684 ../src/libs/history.c:74
 msgid "history"
 msgstr "historique"
 
-#: ../src/common/collection.c:676 ../src/develop/lightroom.c:1539
+#: ../src/common/collection.c:685 ../src/develop/lightroom.c:1539
 #: ../src/libs/tools/filter.c:91
 msgid "color label"
 msgstr "label couleur"
 
-#: ../src/common/collection.c:677 ../src/gui/preferences.c:715
+#: ../src/common/collection.c:686 ../src/gui/preferences.c:715
 #: ../src/gui/preferences.c:1710 ../src/gui/presets.c:445
 #: ../src/libs/metadata_view.c:120
 msgid "lens"
 msgstr "objectif"
 
 #. focal length
-#: ../src/common/collection.c:678 ../src/gui/preferences.c:731
+#: ../src/common/collection.c:687 ../src/gui/preferences.c:731
 #: ../src/gui/preferences.c:1759 ../src/gui/presets.c:494
 #: ../src/iop/ashift.c:4882 ../src/libs/camera.c:578
 #: ../src/libs/metadata_view.c:124
@@ -1532,14 +1531,14 @@ msgid "focal length"
 msgstr "focale"
 
 #. iso
-#: ../src/common/collection.c:679 ../src/gui/preferences.c:719
+#: ../src/common/collection.c:688 ../src/gui/preferences.c:719
 #: ../src/gui/preferences.c:1716 ../src/gui/presets.c:451
 #: ../src/libs/camera.c:586 ../src/libs/metadata_view.c:126
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:680 ../src/gui/preferences.c:727
+#: ../src/common/collection.c:689 ../src/gui/preferences.c:727
 #: ../src/gui/preferences.c:1744 ../src/gui/presets.c:479
 #: ../src/libs/camera.c:573 ../src/libs/camera.c:575
 #: ../src/libs/metadata_view.c:121
@@ -1547,7 +1546,7 @@ msgid "aperture"
 msgstr "ouverture"
 
 #. exposure
-#: ../src/common/collection.c:681 ../src/gui/preferences.c:723
+#: ../src/common/collection.c:690 ../src/gui/preferences.c:723
 #: ../src/gui/preferences.c:1729 ../src/gui/presets.c:464
 #: ../src/iop/basicadj.c:762 ../src/iop/exposure.c:105
 #: ../src/iop/exposure.c:881 ../src/iop/relight.c:335
@@ -1555,39 +1554,39 @@ msgstr "ouverture"
 msgid "exposure"
 msgstr "exposition"
 
-#: ../src/common/collection.c:682 ../src/iop/borders.c:992
+#: ../src/common/collection.c:691 ../src/iop/borders.c:992
 #: ../src/libs/tools/filter.c:97
 msgid "aspect ratio"
 msgstr "aspect"
 
-#: ../src/common/collection.c:683 ../src/libs/metadata_view.c:105
+#: ../src/common/collection.c:692 ../src/libs/metadata_view.c:105
 #: ../src/libs/tools/filter.c:87
 msgid "filename"
 msgstr "nom de fichier"
 
-#: ../src/common/collection.c:684 ../src/develop/lightroom.c:1530
+#: ../src/common/collection.c:693 ../src/develop/lightroom.c:1530
 #: ../src/libs/geotagging.c:63
 msgid "geotagging"
 msgstr "géolocalisation"
 
-#: ../src/common/collection.c:685
+#: ../src/common/collection.c:694
 msgid "grouping"
 msgstr "groupe"
 
-#: ../src/common/collection.c:686 ../src/libs/metadata_view.c:108
+#: ../src/common/collection.c:695 ../src/libs/metadata_view.c:108
 #: ../src/libs/metadata_view.c:349
 msgid "local copy"
 msgstr "copie locale"
 
-#: ../src/common/collection.c:687 ../src/gui/preferences.c:695
+#: ../src/common/collection.c:696 ../src/gui/preferences.c:695
 msgid "module"
 msgstr "module"
 
-#: ../src/common/collection.c:688
+#: ../src/common/collection.c:697
 msgid "module order"
 msgstr "ordre des modules"
 
-#: ../src/common/collection.c:1460 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:1469 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:369 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:469 ../src/iop/colorbalance.c:2431
 #: ../src/iop/temperature.c:1384 ../src/libs/collect.c:1593
@@ -1595,13 +1594,13 @@ msgstr "ordre des modules"
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:1462 ../src/develop/lightroom.c:830
+#: ../src/common/collection.c:1471 ../src/develop/lightroom.c:830
 #: ../src/iop/temperature.c:1375 ../src/libs/collect.c:1593
 #: ../src/views/darkroom.c:2383
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:1464 ../src/develop/lightroom.c:832
+#: ../src/common/collection.c:1473 ../src/develop/lightroom.c:832
 #: ../src/iop/bilateral.cc:370 ../src/iop/channelmixer.c:459
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:2438
 #: ../src/iop/temperature.c:1372 ../src/iop/temperature.c:1385
@@ -1609,53 +1608,53 @@ msgstr "jaune"
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:1466 ../src/develop/lightroom.c:834
+#: ../src/common/collection.c:1475 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:371 ../src/iop/channelmixer.c:460
 #: ../src/iop/channelmixer.c:481 ../src/iop/colorbalance.c:2445
 #: ../src/iop/temperature.c:1386 ../src/libs/collect.c:1593
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:1468 ../src/libs/collect.c:1593
+#: ../src/common/collection.c:1477 ../src/libs/collect.c:1593
 msgid "purple"
 msgstr "violet"
 
-#: ../src/common/collection.c:1482 ../src/common/collection.c:1490
+#: ../src/common/collection.c:1491 ../src/common/collection.c:1499
 #: ../src/libs/collect.c:1540
 msgid "basic"
 msgstr "basique"
 
-#: ../src/common/collection.c:1484 ../src/libs/collect.c:1540
+#: ../src/common/collection.c:1493 ../src/libs/collect.c:1540
 msgid "auto applied"
 msgstr "appliqué automatiquement"
 
-#: ../src/common/collection.c:1486 ../src/libs/collect.c:1540
+#: ../src/common/collection.c:1495 ../src/libs/collect.c:1540
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:1499 ../src/libs/collect.c:1553
+#: ../src/common/collection.c:1508 ../src/libs/collect.c:1553
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1505 ../src/libs/collect.c:1565
+#: ../src/common/collection.c:1514 ../src/libs/collect.c:1565
 msgid "not copied locally"
 msgstr "non copiée localement"
 
 #. grouping
-#: ../src/common/collection.c:1747 ../src/libs/collect.c:1667
+#: ../src/common/collection.c:1756 ../src/libs/collect.c:1667
 msgid "group leaders"
 msgstr "tête de groupe"
 
-#: ../src/common/collection.c:1779 ../src/libs/collect.c:1728
+#: ../src/common/collection.c:1788 ../src/libs/collect.c:1728
 msgid "not defined"
 msgstr "non défini"
 
-#: ../src/common/collection.c:2026
+#: ../src/common/collection.c:2035
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "%d image sur %d (#%d) sélectionnée dans la collection courante"
 
-#: ../src/common/collection.c:2032
+#: ../src/common/collection.c:2041
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1843,7 +1842,7 @@ msgstr "erreur de chargement du dossier « %s »"
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:288 ../src/libs/import.c:856
+#: ../src/common/darktable.c:288 ../src/libs/import.c:618
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
@@ -2425,11 +2424,11 @@ msgid "m"
 msgstr "m"
 
 #. clang-format off
-#: ../src/common/metadata.c:46 ../src/gui/camera_import_dialog.c:447
+#: ../src/common/metadata.c:46
 msgid "creator"
 msgstr "auteur"
 
-#: ../src/common/metadata.c:47 ../src/gui/camera_import_dialog.c:452
+#: ../src/common/metadata.c:47
 msgid "publisher"
 msgstr "diffuseur"
 
@@ -2445,7 +2444,7 @@ msgstr "titre"
 msgid "description"
 msgstr "description"
 
-#: ../src/common/metadata.c:50 ../src/gui/camera_import_dialog.c:457
+#: ../src/common/metadata.c:50
 msgid "rights"
 msgstr "droits"
 
@@ -2536,7 +2535,7 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "importation de %d image depuis l'appareil photo"
 msgstr[1] "importation de %d images depuis l'appareil photo"
 
-#: ../src/control/jobs/camera_jobs.c:390 ../src/gui/camera_import_dialog.c:287
+#: ../src/control/jobs/camera_jobs.c:390 ../src/gui/camera_import_dialog.c:218
 msgid "import images from camera"
 msgstr "importer des images depuis le boîtier"
 
@@ -2885,7 +2884,7 @@ msgstr[1] "importation de %d images"
 msgid "importing image %s"
 msgstr "importation de l'image %s"
 
-#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:790
+#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:552
 msgid "import image"
 msgstr "importer une image"
 
@@ -3512,10 +3511,10 @@ msgstr "%s est désactivé"
 
 #: ../src/develop/imageop.c:1420 ../src/gui/accelerators.c:938
 #: ../src/gui/accelerators.c:1022 ../src/gui/accelerators.c:1237
-#: ../src/gui/accelerators.c:1262 ../src/gui/camera_import_dialog.c:442
-#: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
-#: ../src/iop/temperature.c:1465 ../src/libs/import.c:536 ../src/libs/lib.c:319
-#: ../src/libs/lib.c:347 ../src/libs/lib.c:1201
+#: ../src/gui/accelerators.c:1262 ../src/gui/presets.c:190
+#: ../src/gui/presets.c:303 ../src/gui/presets.c:644
+#: ../src/iop/temperature.c:1465 ../src/libs/lib.c:319 ../src/libs/lib.c:347
+#: ../src/libs/lib.c:1201
 msgid "preset"
 msgstr "pré-réglage"
 
@@ -4333,15 +4332,15 @@ msgstr "%s"
 msgid "deleting preset for obsolete module"
 msgstr "suppression du pré-réglages pour le module obsolète"
 
-#: ../src/gui/camera_import_dialog.c:262
+#: ../src/gui/camera_import_dialog.c:193
 msgid "store value as default"
 msgstr "enregistrer la valeur en tant que défaut"
 
-#: ../src/gui/camera_import_dialog.c:267
+#: ../src/gui/camera_import_dialog.c:198
 msgid "reset value to default"
 msgstr "réinitialiser à la valeur par défaut"
 
-#: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:269
+#: ../src/gui/camera_import_dialog.c:219 ../src/libs/export_metadata.c:269
 #: ../src/libs/geotagging.c:421 ../src/libs/metadata.c:426
 #: ../src/libs/tagging.c:1258 ../src/libs/tagging.c:1348
 #: ../src/libs/tagging.c:1429 ../src/libs/tagging.c:1554
@@ -4349,35 +4348,35 @@ msgstr "réinitialiser à la valeur par défaut"
 msgid "cancel"
 msgstr "annuler"
 
-#: ../src/gui/camera_import_dialog.c:288
+#: ../src/gui/camera_import_dialog.c:219
 msgctxt "camera import"
 msgid "import"
 msgstr "importation"
 
 #. Top info
-#: ../src/gui/camera_import_dialog.c:304
+#: ../src/gui/camera_import_dialog.c:235
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr ""
 "merci de patienter pendant la récupération des miniatures de votre boîtier..."
 
-#: ../src/gui/camera_import_dialog.c:311 ../src/libs/session.c:100
+#: ../src/gui/camera_import_dialog.c:242 ../src/libs/session.c:100
 msgid "jobcode"
 msgstr "code projet"
 
-#: ../src/gui/camera_import_dialog.c:325
+#: ../src/gui/camera_import_dialog.c:256
 msgid "thumbnail"
 msgstr "aperçu"
 
-#: ../src/gui/camera_import_dialog.c:329
+#: ../src/gui/camera_import_dialog.c:260
 msgid "storage file"
 msgstr "fichier de stockage"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:347 ../src/libs/import.c:455
+#: ../src/gui/camera_import_dialog.c:278 ../src/libs/import.c:386
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:349 ../src/libs/import.c:456
+#: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:387
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -4385,26 +4384,11 @@ msgstr ""
 "les fichiers possédant une extension .jpg ou .jpeg ne sont pas importés. "
 "cela peut être utile lorsqu'un dossier possède des fichiers raw+JPEG."
 
-#. default metadata
-#: ../src/gui/camera_import_dialog.c:358 ../src/libs/import.c:466
-msgid "apply metadata on import"
-msgstr "appliquer des métadonnées lors de l'importation"
-
-#: ../src/gui/camera_import_dialog.c:359 ../src/libs/import.c:467
-msgid "apply some metadata to all newly imported images."
-msgstr ""
-"appliquer des métadonnées\n"
-"à toutes les images nouvellement importées."
-
-#: ../src/gui/camera_import_dialog.c:393 ../src/libs/import.c:598
-msgid "comma separated list of tags"
-msgstr "liste de mots-clés séparés par une virgule"
-
-#: ../src/gui/camera_import_dialog.c:486
+#: ../src/gui/camera_import_dialog.c:297
 msgid "override today's date"
 msgstr "surcharger la date actuelle"
 
-#: ../src/gui/camera_import_dialog.c:489
+#: ../src/gui/camera_import_dialog.c:300
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
@@ -4416,15 +4400,15 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
-#: ../src/gui/camera_import_dialog.c:505 ../src/libs/image.c:344
+#: ../src/gui/camera_import_dialog.c:316 ../src/libs/image.c:344
 msgid "images"
 msgstr "images"
 
-#: ../src/gui/camera_import_dialog.c:506
+#: ../src/gui/camera_import_dialog.c:317
 msgid "settings"
 msgstr "paramètres"
 
-#: ../src/gui/camera_import_dialog.c:700
+#: ../src/gui/camera_import_dialog.c:511
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
@@ -4432,7 +4416,7 @@ msgstr ""
 "sélectionner les images de la liste ci-dessous que vous souhaitez importer "
 "dans une nouvelle pellicule"
 
-#: ../src/gui/camera_import_dialog.c:751
+#: ../src/gui/camera_import_dialog.c:565
 msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
@@ -5068,8 +5052,8 @@ msgstr "sélectionne le fichier à importer"
 
 #: ../src/gui/preferences.c:1463 ../src/gui/preferences.c:1545
 #: ../src/libs/collect.c:355 ../src/libs/copy_history.c:78
-#: ../src/libs/geotagging.c:476 ../src/libs/import.c:791
-#: ../src/libs/import.c:898 ../src/libs/styles.c:329
+#: ../src/libs/geotagging.c:476 ../src/libs/import.c:553
+#: ../src/libs/import.c:659 ../src/libs/styles.c:329
 msgid "_open"
 msgstr "_ouvrir"
 
@@ -10811,7 +10795,7 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "hald cluts (png) ou 3D lut (cube ou 3dl)"
 
 #: ../src/iop/lut3d.c:1638 ../src/libs/copy_history.c:92
-#: ../src/libs/geotagging.c:497 ../src/libs/import.c:821
+#: ../src/libs/geotagging.c:497 ../src/libs/import.c:583
 #: ../src/libs/styles.c:346
 msgid "all files"
 msgstr "tous les fichiers"
@@ -10964,7 +10948,7 @@ msgid "color"
 msgstr "couleur"
 
 #: ../src/iop/negadoctor.c:1055
-msgid "toogle on or off the color controls"
+msgid "toggle on or off the color controls"
 msgstr "activer/désactiver les contrôles des couleurs"
 
 #: ../src/iop/negadoctor.c:1062
@@ -14214,116 +14198,101 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "dégrouper"
 
-#: ../src/libs/import.c:120
+#: ../src/libs/import.c:112
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:121
+#: ../src/libs/import.c:113
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
-#: ../src/libs/import.c:122
+#: ../src/libs/import.c:114
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
-#: ../src/libs/import.c:123
+#: ../src/libs/import.c:115
 msgctxt "accel"
 msgid "import image"
 msgstr "importer une image"
 
-#: ../src/libs/import.c:124
+#: ../src/libs/import.c:116
 msgctxt "accel"
 msgid "import folder"
 msgstr "importer un dossier"
 
-#: ../src/libs/import.c:217
+#: ../src/libs/import.c:209
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "appareil « %s » connecté sur le port « %s »."
 
-#: ../src/libs/import.c:227
+#: ../src/libs/import.c:219
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
-#: ../src/libs/import.c:233
+#: ../src/libs/import.c:225
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:257
+#: ../src/libs/import.c:249
 msgid "no supported devices found"
 msgstr "aucun appareil supporté n'a été détecté"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:433
+#: ../src/libs/import.c:362
 msgid "import options"
 msgstr "options d'importation"
 
 #. recursive opening.
-#: ../src/libs/import.c:448
+#: ../src/libs/import.c:379
 msgid "import folders recursively"
 msgstr "importer les dossiers récursivement"
 
-#: ../src/libs/import.c:450
+#: ../src/libs/import.c:381
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr ""
 "importe les dossiers de manière récursive. chaque dossier est placé dans une "
 "nouvelle pellicule."
 
-#: ../src/libs/import.c:539
-msgid "metadata to be applied per default"
-msgstr "métadonnées à appliquer par défaut"
-
-#: ../src/libs/import.c:548
-msgid "to be imported"
-msgstr "à importer"
-
-#: ../src/libs/import.c:550
-msgid ""
-"selected metadata are imported from image and override the default value"
-msgstr ""
-"les métadonnées sélectionnées sont importées depuis l'image et remplacent "
-"celles par défaut"
-
-#: ../src/libs/import.c:816
+#: ../src/libs/import.c:578
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/libs/import.c:872
+#: ../src/libs/import.c:634
 msgid "file has unknown format!"
 msgstr "le fichier possède un format inconnu !"
 
-#: ../src/libs/import.c:897
+#: ../src/libs/import.c:658
 msgid "import folder"
 msgstr "importer un dossier"
 
 #. add import single image buttons
-#: ../src/libs/import.c:1013
+#: ../src/libs/import.c:773
 msgid "image..."
 msgstr "image..."
 
-#: ../src/libs/import.c:1017
+#: ../src/libs/import.c:777
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
-#: ../src/libs/import.c:1024
+#: ../src/libs/import.c:784
 msgid "folder..."
 msgstr "dossier..."
 
-#: ../src/libs/import.c:1028
+#: ../src/libs/import.c:788
 msgid "select a folder to import as film roll"
 msgstr "sélectionner un dossier à importer"
 
 #. add the rescan button
-#: ../src/libs/import.c:1037
+#: ../src/libs/import.c:797
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:1041
+#: ../src/libs/import.c:801
 msgid "scan for newly attached devices"
 msgstr "recherche des appareils branchés récemment"
 
@@ -16932,6 +16901,29 @@ msgstr "raccourci"
 #: ../src/views/view.c:1583
 msgid "Action"
 msgstr "action"
+
+#~ msgid "apply metadata on import"
+#~ msgstr "appliquer des métadonnées lors de l'importation"
+
+#~ msgid "apply some metadata to all newly imported images."
+#~ msgstr ""
+#~ "appliquer des métadonnées\n"
+#~ "à toutes les images nouvellement importées."
+
+#~ msgid "comma separated list of tags"
+#~ msgstr "liste de mots-clés séparés par une virgule"
+
+#~ msgid "metadata to be applied per default"
+#~ msgstr "métadonnées à appliquer par défaut"
+
+#~ msgid "to be imported"
+#~ msgstr "à importer"
+
+#~ msgid ""
+#~ "selected metadata are imported from image and override the default value"
+#~ msgstr ""
+#~ "les métadonnées sélectionnées sont importées depuis l'image et remplacent "
+#~ "celles par défaut"
 
 #~ msgid "date"
 #~ msgstr "date"
