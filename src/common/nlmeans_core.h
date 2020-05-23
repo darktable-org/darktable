@@ -41,9 +41,15 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                      const dt_nlmeans_param_t *const params);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> add SSE implementation of nlmeans_denoise
 
 void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                           const dt_nlmeans_param_t *const params);
+<<<<<<< HEAD
 =======
 >>>>>>> New more-scaleable implementation of non-local means
+=======
+>>>>>>> add SSE implementation of nlmeans_denoise

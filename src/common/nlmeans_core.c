@@ -216,6 +216,9 @@ static inline float pixel_difference(const float* const pix1, const float* pix2,
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> add SSE implementation of nlmeans_denoise
 #if defined(__SSE__)
 // compute the channel-normed squared difference between two pixels; don't do horizontal sum until later
 static inline __m128 channel_difference_sse2(const float* const pix1, const float* pix2, const float norm[4])
@@ -241,8 +244,12 @@ static inline float pixel_difference_sse2(const float* const pix1, const float* 
 }
 #endif /* __SSE__ */
 
+<<<<<<< HEAD
 =======
 >>>>>>> New more-scaleable implementation of non-local means
+=======
+
+>>>>>>> add SSE implementation of nlmeans_denoise
 static void init_column_sums(float *const col_sums, const patch_t *const patch, const float *const in,
                              const int row, const int height, const int width, const int stride,
                              const int radius, const float *const norm)
@@ -277,6 +284,9 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> add SSE implementation of nlmeans_denoise
 #if defined(__SSE__)
 static void init_column_sums_sse2(float *const col_sums, const patch_t *const patch, const float *const in,
                                   const int row, const int height, const int width, const int stride,
@@ -311,8 +321,11 @@ static void init_column_sums_sse2(float *const col_sums, const patch_t *const pa
 }
 #endif /* __SSE__ */
 
+<<<<<<< HEAD
 =======
 >>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
+=======
+>>>>>>> add SSE implementation of nlmeans_denoise
 // determine the height of the horizontal slice each thread will process
 static int compute_slice_size(const int height)
 {
@@ -821,6 +834,145 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   return;
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 #endif /* __SSE__ */
 =======
 >>>>>>> New more-scaleable implementation of non-local means
+=======
+
+#if defined(__SSE__)
+void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
+                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                          const dt_nlmeans_param_t *const params)
+{
+  // define the factors for applying blending between the original image and the denoised version
+  // if running in RGB space, 'luma' should equal 'chroma'
+  const __m128 weight = { params->luma, params->chroma, params->chroma, 1.0f };
+  const __m128 invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
+
+  // define the patches to be compared when denoising a pixel
+  const size_t stride = 4 * roi_in->width;
+  int num_patches;
+  int max_shift;
+  struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
+  // allocate scratch space, including an overrun area on each end so we don't need a boundary check on every access
+  const int scratch_size = (roi_out->width + 2*params->patch_radius + 1) ;
+  const int padded_scratch_size = ((scratch_size+15)/16)*16; // round up to a full cache line
+  const int numthreads = dt_get_num_threads() ;
+  float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
+  // zero out the overrun areas
+  memset(scratch_buf,'\0',numthreads*padded_scratch_size*sizeof(float));
+  const int chunk_size = compute_slice_size(roi_out->height);
+  const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
+      dt_omp_firstprivate(patches, num_patches, scratch_buf) \
+      schedule(static)
+#endif
+  for (int chk = 0 ; chk < num_chunks; chk++)
+  {
+    // locate our scratch space within the big buffer allocated above
+    size_t tnum = dt_get_thread_num();
+    const int radius = params->patch_radius;
+    float *const col_sums = scratch_buf + tnum * padded_scratch_size + radius + 1;
+    // determine which horizontal slice of the image to process
+    const int chunk_start = chk * chunk_size;
+    const int chunk_end = MIN((chk+1)*chunk_size,roi_out->height);
+    // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
+    memset(outbuf+chunk_start*roi_out->width*4, '\0', roi_out->width * (chunk_end-chunk_start) * 4 * sizeof(float));
+    // cycle through all of the patches over our slice of the image
+    for (int p = 0; p < num_patches; p++)
+    {
+      // retrieve info about the current patch
+      const patch_t *patch = &patches[p];
+      // skip any rows where the patch center would be above top of RoI or below bottom of RoI
+      const int height = roi_out->height;
+      const int row_min = MAX(chunk_start,MAX(0,-patch->rows));
+      const int row_max = MIN(chunk_end,height - MAX(0,patch->rows));
+      // figure out which rows at top and bottom result in patches extending outside the RoI, even though the
+      // center pixel is inside
+      const int row_top = MAX(row_min,MAX(radius,radius-patch->rows));
+      const int row_bot = MIN(row_max,height-MAX(radius+1,radius+patch->rows+1));
+      // skip any columns where the patch center would be to the left or the right of the RoI
+      const int scol = patch->cols;
+      const int col_min = MAX(0,-scol);
+      const int col_max = roi_out->width - MAX(0,scol);
+      init_column_sums_sse2(col_sums,patch,inbuf+stride*row_min,row_min,height,roi_out->width,stride,radius,
+                            params->norm);
+      for (int row = row_min; row < row_max; row++)
+      {
+        // add up the initial columns of the sliding window of total patch distortion
+        float distortion = 0.0;
+        for (int i = col_min - radius; i < col_min+radius; i++)
+          distortion += col_sums[i];
+        // now proceed down the current row of the image
+        const float *in = inbuf + stride * row + 4 * col_min;
+        float *out = outbuf + 4 * ((size_t)roi_out->width * row + col_min);
+        const int offset = patch->offset;
+        const float sharpness = params->sharpness;
+        for (int col = col_min; col < col_max; col++, in+=4, out+=4)
+        {
+          distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
+          const __m128 wt = _mm_set1_ps(gh(distortion, sharpness));
+          __m128 pixel = _mm_load_ps(in+offset);
+          pixel[3] = 1.0f;
+          const __m128 outpx = _mm_load_ps(out);
+          _mm_store_ps(out, outpx + (pixel * wt));
+        }
+        if (row < row_top)
+        {
+          // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
+          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
+          for (int col = col_min; col < col_max; col++, pixel_bot+=4)
+          {
+            col_sums[col] += pixel_difference_sse2(pixel_bot,pixel_bot+offset,params->norm);
+          }
+        }
+        else if (row >= row_bot)
+        {
+          if (row + 1 < row_max) // don't bother updating if last iteration
+          {
+            // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
+            const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
+            for (int col = col_min; col < col_max; col++, pixel_top+=4)
+            {
+              col_sums[col] -= pixel_difference_sse2(pixel_top,pixel_top+offset,params->norm);
+            }
+          }
+        }
+        else
+        {
+          const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
+          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
+          // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
+          for (int col = col_min; col < col_max; col++, pixel_top+=4, pixel_bot+=4)
+          {
+            __m128 dif = (channel_difference_sse2(pixel_bot,pixel_bot+offset,params->norm)
+                          - channel_difference_sse2(pixel_top,pixel_top+offset,params->norm));
+            col_sums[col] += (dif[0] + dif[1] + dif[2]);
+          }
+        }
+      }
+    }
+    // normalize and apply chroma/luma blending
+    for (int row = chunk_start; row < chunk_end; row++)
+    {
+      const float *in = inbuf + row * stride;
+      float *out = outbuf + row * 4 * roi_out->width;
+      for (int col = 0; col < roi_out->width; col++, in+=4, out+=4)
+      {
+        __m128 inpx = _mm_load_ps(in);
+        __m128 outpx = _mm_load_ps(out);
+        __m128 scale = _mm_set1_ps(out[3]);
+        _mm_stream_ps(out, (inpx * invert) + (outpx / scale * weight)) ;
+      }
+    }
+  }
+
+  // clean up: free the work space
+  dt_free_align(patches);
+  dt_free_align(scratch_buf);
+  return;
+}
+#endif /* __SSE__ */
+>>>>>>> add SSE implementation of nlmeans_denoise
