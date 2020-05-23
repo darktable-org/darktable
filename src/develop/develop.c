@@ -70,7 +70,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dt_image_init(&dev->image_storage);
   dev->image_status = dev->preview_status = dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-  dev->image_loading = dev->preview_loading = dev->preview2_loading = dev->history_updating = 0;
+  dev->image_loading = dev->preview_loading = dev->preview2_loading = dev->history_updating = dev->image_invalid = 0;
   dev->image_force_reload = 0;
   dev->preview_input_changed = dev->preview2_input_changed = 0;
 
@@ -541,7 +541,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_control_toast_busy_enter();
   // let gui know to draw preview instead of us, if it's there:
   dev->image_status = DT_DEV_PIXELPIPE_RUNNING;
-
+  
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_times(&start);
@@ -556,6 +556,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dt_control_toast_busy_leave();
     dev->image_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_pthread_mutex_unlock(&dev->pipe_mutex);
+    dev->image_invalid++;
     return;
   }
 
@@ -661,7 +662,7 @@ restart:
 
   dev->image_status = DT_DEV_PIXELPIPE_VALID;
   dev->image_loading = 0;
-
+  dev->image_invalid = 0;
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
