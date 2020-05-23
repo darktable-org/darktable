@@ -1052,7 +1052,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->film_stock, _("color"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->film_stock), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->film_stock), "value-changed", G_CALLBACK(film_stock_callback), self);
-  gtk_widget_set_tooltip_text(g->film_stock, _("toogle on or off the color controls"));
+  gtk_widget_set_tooltip_text(g->film_stock, _("toggle on or off the color controls"));
 
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
   GtkWidget *page1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
@@ -1338,4 +1338,3 @@ void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
 }
-
