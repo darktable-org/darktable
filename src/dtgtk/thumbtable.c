@@ -44,7 +44,7 @@ static void _list_remove_thumb(gpointer user_data)
 }
 
 // get the class name associated with the overlays mode
-gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
+static gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
 {
   switch(over)
   {
