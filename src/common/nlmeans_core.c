@@ -201,7 +201,6 @@ static int compute_slice_size(const int height)
   const int chunk_size_high = (height + high - 1) / high;
   const int diff_low = chunk_size_low - base_chunk_size;
   const int diff_high = base_chunk_size - chunk_size_high;
-  fprintf(stderr,"ht=%d, base=%d, #chk=%d, lo=%d, hi=%d, szlo=%d, szhi=%d, diflo=%d, difhi=%d\n",height,base_chunk_size,num_chunks,low,high,chunk_size_low,chunk_size_high,diff_low,diff_high);
   return diff_high <= diff_low ?  chunk_size_high : chunk_size_low;
 }
 
@@ -228,7 +227,6 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   memset(scratch_buf,'\0',numthreads*padded_scratch_size*sizeof(float));
   const int chunk_size = compute_slice_size(roi_out->height);
   const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
-  fprintf(stderr,"ch_size=%d, n_chks=%d, #thr=%d\n",chunk_size,num_chunks,numthreads);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
       dt_omp_firstprivate(patches, num_patches, scratch_buf) \
