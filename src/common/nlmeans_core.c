@@ -337,10 +337,14 @@ static int compute_slice_size(const int height)
   //   number of threads
   const int num_chunks = (height + base_chunk_size - 1) / base_chunk_size;
 <<<<<<< HEAD
+<<<<<<< HEAD
   const int low = MAX(1,numthreads * (num_chunks / numthreads));
 =======
   const int low = numthreads * (num_chunks / numthreads);
 >>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
+=======
+  const int low = MAX(1,numthreads * (num_chunks / numthreads));
+>>>>>>> fix division-by-zero on thumbnail processing
   const int high = numthreads * ((num_chunks + numthreads - 1) / numthreads);
   const int chunk_size_low = (height + low - 1) / low;
   const int chunk_size_high = (height + high - 1) / high;
