@@ -174,9 +174,12 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
   const float scattering = params->scattering;
   int decimate = params->decimate;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   decimate=0;//!!!
 >>>>>>> New more-scaleable implementation of non-local means
+=======
+>>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
   // determine how many patches we have
   int n_patches = (2 * search_radius + 1) * (2 * search_radius + 1);
   if (decimate)

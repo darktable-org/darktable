@@ -395,11 +395,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #if USE_NEW_IMPL //use new code?
 <<<<<<< HEAD
+<<<<<<< HEAD
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
   int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
   
 =======
 >>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
+=======
+  // faster but less accurate processing by skipping half the patches on previews and thumbnails
+  int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+  
+>>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
   const dt_nlmeans_param_t params = { .sharpness = sharpness,
                                       .luma = d->luma,
                                       .chroma = d->chroma,
@@ -411,6 +417,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = decimate,
+<<<<<<< HEAD
 =======
 =======
                                       .center_weight = -1,
@@ -419,6 +426,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                       .search_radius = K,
                                       .decimate = 1,
 >>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
+=======
+>>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
                                       .norm = norm2 };
   nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -576,11 +585,17 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 #if USE_NEW_IMPL // use new code?
 <<<<<<< HEAD
+<<<<<<< HEAD
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
   int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
   
 =======
 >>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
+=======
+  // faster but less accurate processing by skipping half the patches on previews and thumbnails
+  int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+  
+>>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
   const dt_nlmeans_param_t params = { .sharpness = sharpness,
                                       .luma = d->luma,
                                       .chroma = d->chroma,
@@ -592,6 +607,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = decimate,
+<<<<<<< HEAD
                                       .norm = norm2 };
   nlmeans_denoise_sse2(ivoid,ovoid,roi_in,roi_out,&params);
 =======
@@ -601,6 +617,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = 1,
+=======
+>>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
                                       .norm = norm2 };
 <<<<<<< HEAD
   nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
