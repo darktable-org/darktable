@@ -2779,7 +2779,7 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   pzy += 0.5f;
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
-  const float pr_d = darktable.develop->preview_downsampling;
+  
   float pts[2] = { pzx * wd, pzy * ht };
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe,
                                     module->iop_order,DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 1);
@@ -2788,8 +2788,8 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   const float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   const float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
-  *scale = pr_d * darktable.develop->preview_pipe->iscale / pr_d * get_zoom_scale(module->dev);
-  *pt = (nx * darktable.develop->pipe->iwidth) +  (ny * darktable.develop->pipe->iheight) * I;
+  *scale = darktable.develop->preview_pipe->iscale * get_zoom_scale(module->dev);
+  *pt = (nx * darktable.develop->pipe->iwidth) + (ny * darktable.develop->pipe->iheight) * I;
 }
 
 int mouse_moved (struct dt_iop_module_t *module,
@@ -2956,6 +2956,29 @@ done:
   return handled;
 }
 
+static float dt_conf_get_sanitize_float(const char *name, float min, float max, float default_value) /* **** */
+{
+  const float value = dt_conf_get_float(name);
+  float new_value = CLAMP(value, min, max);
+  if (new_value != value) new_value = default_value;
+
+  dt_conf_set_float(name, new_value);
+  return new_value;
+}
+
+static void get_stamp_params(dt_iop_module_t *module, float *radius, float *r_strength, float *phi)
+{
+  const dt_dev_pixelpipe_t *devpipe = darktable.develop->preview_pipe;
+  const float iwd_min = MIN(devpipe->iwidth, devpipe->iheight);
+  const float wdht_min = MIN(darktable.develop->width, darktable.develop->height);
+  const float iscale = devpipe->iscale;
+  const float zoom = get_zoom_scale(module->dev);
+  const float im_scale = 65.0f * iwd_min * iwd_min * zoom * iscale / (wdht_min * wdht_min) * maxval;
+  
+  *radius = dt_conf_get_sanitize_float(CONF_RADIUS, 0.8f * im_scale, im_scale * 1.25f, im_scale);
+  *r_strength = dt_conf_get_sanitize_float(CONF_STRENGTH, 1.2f * *radius, 2.0f * *radius, 1.5f * *radius);
+  *phi = dt_conf_get_sanitize_float(CONF_ANGLE, 0.0f, 2.0f * M_PI, 1.75f * M_PI);
+}
 /*
   add support for changing the radius and the strength vector for the temp node
  */
@@ -2974,9 +2997,9 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
     if (state == 0)
     {
       //  change size
-      float radius = dt_conf_get_float(CONF_RADIUS);
-      const float phi = carg(strength_v);
-      float r = cabs(strength_v);
+      float radius = 0.0f, r = 0.0f, phi = 0.0f;
+      get_stamp_params(module, &radius, &r, &phi);
+      
       float factor = 1.0f;
 
       if(up && cabs(warp->radius - warp->point) > 10.0f)
