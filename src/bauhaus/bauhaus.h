@@ -66,7 +66,7 @@ typedef struct dt_bauhaus_slider_data_t
   float pos;      // normalized slider value
   float oldpos;   // slider value before entering finetune mode (normalized)
   float step;     // step width (not normalized)
-  float defpos;   // default value (normalized)
+  float defpos;   // default value (not normalized)
   float min, max; // min and max range
   float soft_min, soft_max;
   float hard_min, hard_max;
@@ -80,6 +80,8 @@ typedef struct dt_bauhaus_slider_data_t
   int fill_feedback; // fill the slider with brighter part up to the handle?
 
   char format[24]; // numeric value is printed with this string
+  float factor;    // multiplication factor before printing
+  float offset;    // addition before printing
 
   int is_dragging;      // indicates is mouse is dragging slider
   int is_changed;       // indicates new data
@@ -264,6 +266,7 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget, dt_iop_mod
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 void dt_bauhaus_slider_set_soft(GtkWidget *w, float pos);
 float dt_bauhaus_slider_get(GtkWidget *w);
+char *dt_bauhaus_slider_get_text(GtkWidget *w);
 
 void dt_bauhaus_slider_set_soft_min(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_soft_min(GtkWidget* w);
@@ -282,6 +285,8 @@ float dt_bauhaus_slider_get_step(GtkWidget *w);
 
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
+void dt_bauhaus_slider_set_factor(GtkWidget *w, float factor);
+void dt_bauhaus_slider_set_offset(GtkWidget *w, float offset);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
 void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);

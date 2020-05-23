@@ -956,6 +956,8 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->scale = 5.0f * step / (max - min);
   d->digits = digits;
   snprintf(d->format, sizeof(d->format), "%%.0%df", digits);
+  d->factor = 1.0f;
+  d->offset = 0.0f;
 
   d->grad_cnt = 0;
 
@@ -1636,12 +1638,11 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // draw numerical value:
       cairo_save(cr);
-      char text[256];
-      const float f = d->min + (d->oldpos + mouse_off) * (d->max - d->min);
-      const float fc = d->callback(widget, f, DT_BAUHAUS_GET);
-      snprintf(text, sizeof(text), d->format, fc);
+
+      char *text = dt_bauhaus_slider_get_text(current);
       set_color(cr, *fg_color);
       show_pango_text(w, context, cr, text, wd - darktable.bauhaus->quad_width - INNER_PADDING, 0, 0, TRUE);
+      g_free(text);
 
       cairo_restore(cr);
     }
@@ -1825,12 +1826,12 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         cairo_restore(cr);
 
         // TODO: merge that text with combo
-        char text[256];
-        const float f = d->min + d->pos * (d->max - d->min);
-        const float fc = d->callback(widget, f, DT_BAUHAUS_GET);
-        snprintf(text, sizeof(text), d->format, fc);
+
+        char *text = dt_bauhaus_slider_get_text(widget);
+        set_color(cr, *fg_color);
         set_color(cr, *text_color);
         show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0, 0, TRUE);
+      g_free(text);
       }
       // label on top of marker:
       set_color(cr, *text_color);
@@ -2139,6 +2140,12 @@ float dt_bauhaus_slider_get(GtkWidget *widget)
   return d->callback(widget, rawval, DT_BAUHAUS_GET);
 }
 
+char *dt_bauhaus_slider_get_text(GtkWidget *w)
+{
+  dt_bauhaus_slider_data_t *d = &DT_BAUHAUS_WIDGET(w)->data.slider;
+  return g_strdup_printf(d->format, dt_bauhaus_slider_get(w) * d->factor + d->offset);
+}
+
 void dt_bauhaus_slider_set(GtkWidget *widget, float pos)
 {
   // this is the public interface function, translate by bounds and call set_normalized
@@ -2219,12 +2226,38 @@ void dt_bauhaus_slider_set_format(GtkWidget *widget, const char *format)
   g_strlcpy(d->format, format, sizeof(d->format));
 }
 
+void dt_bauhaus_slider_set_factor(GtkWidget *widget, float factor)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  d->factor = factor;
+}
+
+void dt_bauhaus_slider_set_offset(GtkWidget *widget, float offset)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  d->offset = offset;
+}
+
 void dt_bauhaus_slider_set_callback(GtkWidget *widget, float (*callback)(GtkWidget *self, float value, dt_bauhaus_callback_t dir))
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  d->callback = (callback == NULL ? _default_linear_callback : callback);
+  if(callback == NULL) callback = _default_linear_callback;
+
+  d->defpos   = callback(widget, d->callback(widget, d->defpos  , DT_BAUHAUS_GET), DT_BAUHAUS_SET);
+  d->min      = callback(widget, d->callback(widget, d->min,      DT_BAUHAUS_GET), DT_BAUHAUS_SET);
+  d->max      = callback(widget, d->callback(widget, d->max,      DT_BAUHAUS_GET), DT_BAUHAUS_SET);
+  d->soft_min = callback(widget, d->callback(widget, d->soft_min, DT_BAUHAUS_GET), DT_BAUHAUS_SET);
+  d->soft_max = callback(widget, d->callback(widget, d->soft_max, DT_BAUHAUS_GET), DT_BAUHAUS_SET);
+  d->hard_min = callback(widget, d->callback(widget, d->hard_min, DT_BAUHAUS_GET), DT_BAUHAUS_SET);
+  d->hard_max = callback(widget, d->callback(widget, d->hard_max, DT_BAUHAUS_GET), DT_BAUHAUS_SET);
+
+  d->callback = callback; 
 }
 
 void dt_bauhaus_slider_set_soft(GtkWidget *widget, float pos)
@@ -2246,8 +2279,10 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   float rpos = CLAMP(pos, 0.0f, 1.0f);
   rpos = d->min + (d->max - d->min) * rpos;
+  rpos = d->callback(GTK_WIDGET(w), rpos, DT_BAUHAUS_GET);
   const float base = powf(10.0f, d->digits);
   rpos = roundf(base * rpos) / base;
+  rpos = d->callback(GTK_WIDGET(w), rpos, DT_BAUHAUS_SET);
   d->pos = (rpos - d->min) / (d->max - d->min);
   gtk_widget_queue_draw(GTK_WIDGET(w));
   d->is_changed = 1;
