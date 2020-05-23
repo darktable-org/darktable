@@ -2017,8 +2017,11 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO data.tags (id, name) VALUES (NULL, ?1)",
                               -1, &stmt_ins_tags, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO main.tagged_images (tagid, imgid) VALUES (?1, ?2)", -1,
-                              &stmt_ins_tagged, NULL);
+                              "INSERT INTO main.tagged_images (tagid, imgid, position)"
+                              "  VALUES (?1, ?2,"
+                              "    (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000) + (1 << 32)"
+                              "      FROM main.tagged_images))",
+                               -1, &stmt_ins_tagged, NULL);
   for(int i = 0; i < cnt; i++)
   {
     char tagbuf[1024];
