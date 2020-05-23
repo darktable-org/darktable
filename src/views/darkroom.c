@@ -422,7 +422,7 @@ void expose(
     float fontsize;
     gchar *load_txt;
 
-    if(dev->image_invalid)
+    if(dev->image_invalid_cnt)
     {
       fontsize = DT_PIXEL_APPLY_DPI(20);
       load_txt = dt_util_dstrcat(NULL, "%s `%s' %s\n\n%s\n%s",
@@ -431,9 +431,9 @@ void expose(
           ", switch to lighttable now.",
           "Please check image (use exiv2 or exiftool) for corrupted data. If the image",
           "seems to be intact concider to open an issue at https://github.com/darktable-org/darktable." );
-      if(dev->image_invalid > 400)
+      if(dev->image_invalid_cnt > 400)
       {
-        dev->image_invalid = 0;
+        dev->image_invalid_cnt = 0;
         dt_view_manager_switch(darktable.view_manager, "lighttable");
       }
     }
