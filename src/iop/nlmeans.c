@@ -36,9 +36,13 @@
 #endif
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
 =======
 >>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
+=======
+// which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
+>>>>>>> enable use of the new non-local means code by the denoise(profiled) iop
 #define USE_NEW_IMPL 1
 
 #define NUM_BUCKETS 4
