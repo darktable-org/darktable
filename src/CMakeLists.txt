@@ -124,6 +124,7 @@ FILE(GLOB SOURCE_FILES
   "gui/presets.c"
   "gui/styles_dialog.c"
   "gui/color_picker_proxy.c"
+  "gui/import_metadata.c"
   "libs/lib.c"
   "views/view.c"
   )
