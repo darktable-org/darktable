@@ -106,9 +106,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
   g_free(histogram_type);
   gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
-  dev->preview_downsampling = (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f : 
-      (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f : 
-      (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f : 0.25f;
+  dev->preview_downsampling =
+    (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
+    : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
+    : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
+    : 0.25f;
   g_free(preview_downsample);
   dev->forms = NULL;
   dev->form_visible = NULL;
@@ -723,7 +725,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       break;
   }
   if (preview) zoom_scale /= dev->preview_downsampling;
-  
+
   return zoom_scale;
 }
 
@@ -2453,11 +2455,11 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
     modules = g_list_next(modules);
     pieces = g_list_next(pieces);
   }
-  if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL 
+  if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
                         || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
                         || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
     for(size_t idx=0; idx < 2 * points_count; idx++) points[idx] *= dev->preview_downsampling;
-    
+
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return 1;
 }
@@ -2467,9 +2469,9 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
   dt_pthread_mutex_lock(&dev->history_mutex);
   if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
-    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL)) 
+    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
       for(size_t idx=0; idx < 2 * points_count; idx++) points[idx] /= dev->preview_downsampling;
-  
+
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)

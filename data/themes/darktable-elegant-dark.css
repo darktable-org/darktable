@@ -38,7 +38,7 @@
 @define-color plugin_bg_color @grey_35;
 @define-color plugin_fg_color @grey_85;
 @define-color section_label @grey_75;
-@define-color plugin_label_color @grey_75;
+@define-color plugin_label_color @grey_70;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_fg @grey_80;
@@ -46,6 +46,7 @@
 @define-color bauhaus_indicator_border @grey_35;
 @define-color bauhaus_fill @grey_55;
 @define-color bauhaus_bg @grey_30;
+@define-color bauhaus_bg_hover @grey_65;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_85;
 @define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);

@@ -1026,10 +1026,16 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
     new_offset = sqlite3_column_int(stmt, 0);
     new_id = sqlite3_column_int(stmt, 1);
   }
+  else
+  {
+    // if we are here, that means that the current is not anymore in the list
+    // in this case, let's use the current offset image
+    new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
+  }
   g_free(query);
   sqlite3_finalize(stmt);
 
-  if(new_id < 0) return;
+  if(new_id < 0 || new_id == imgid) return;
 
   // if id seems valid, we change the image and move filmstrip
   dt_dev_change_image(dev, new_id);

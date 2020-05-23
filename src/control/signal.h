@@ -91,6 +91,9 @@ typedef enum dt_signal_t
   /** \brief This signal is raised when a style is added/deleted/changed  */
   DT_SIGNAL_STYLE_CHANGED,
 
+  /** \brief This signal is raised to request image order change */
+  DT_SIGNAL_IMAGES_ORDER_CHANGE,
+
   /** \brief This signal is raised when a filmroll is deleted/changed but not imported
       \note when a filmroll is imported, use DT_SIGNALS_FILMOLLS_IMPORTED, as the gui
        has to behave differently

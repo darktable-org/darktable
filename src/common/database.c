@@ -44,7 +44,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 29
+#define CURRENT_DATABASE_VERSION_LIBRARY 30
 #define CURRENT_DATABASE_VERSION_DATA     6
 
 typedef struct dt_database_t
@@ -1611,6 +1611,65 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 29;
   }
+  else if(version == 29)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // add position in tagged_images table
+    TRY_EXEC("ALTER TABLE main.tagged_images ADD COLUMN position INTEGER",
+             "[init] can't add `position' column to tagged_images table in database\n");
+
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.tagged_images_imgid_index ON tagged_images (imgid)",
+             "[init] can't create image index on tagged_images\n");
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.tagged_images_position_index ON tagged_images (position)",
+             "[init] can't create position index on tagged_images\n");
+    TRY_EXEC("UPDATE main.tagged_images SET position = (tagid + imgid) << 32",
+             "[init] can't populate position on tagged_images\n");
+
+    // remove caption and description fields from images table
+
+    TRY_EXEC("CREATE TABLE main.i (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER, "
+             "width INTEGER, height INTEGER, filename VARCHAR, maker VARCHAR, model VARCHAR, "
+             "lens VARCHAR, exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
+             "focus_distance REAL, datetime_taken CHAR(20), flags INTEGER, "
+             "output_width INTEGER, output_height INTEGER, crop REAL, "
+             "raw_parameters INTEGER, raw_denoise_threshold REAL, "
+             "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
+             "license VARCHAR, sha1sum CHAR(40), "
+             "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
+             "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
+             "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
+             "aspect_ratio REAL, exposure_bias REAL, "
+             "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
+             "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1)",
+             "[init] can't create table i\n");
+
+    TRY_EXEC("INSERT INTO main.i SELECT id, group_id, film_id, width, height, filename, maker, model,"
+             " lens, exposure, aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
+             " output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
+             " raw_auto_bright_threshold, raw_black, raw_maximum, license, sha1sum,"
+             " orientation, histogram, lightmap, longitude, latitude, altitude, color_matrix, colorspace, version,"
+             " max_version, write_timestamp, history_end, position, aspect_ratio, exposure_bias,"
+             " import_timestamp, change_timestamp, export_timestamp, print_timestamp "
+             "FROM main.images",
+             "[init] can't populate table i\n");
+    TRY_EXEC("DROP TABLE main.images",
+             "[init] can't drop table images\n");
+    TRY_EXEC("ALTER TABLE main.i RENAME TO images",
+             "[init] can't rename i to images\n");
+
+    TRY_EXEC("CREATE INDEX main.images_group_id_index ON images (group_id)",
+          "[init] can't create group_id index on images table\n");
+    TRY_EXEC("CREATE INDEX main.images_film_id_index ON images (film_id)",
+          "[init] can't create film_id index on images table\n");
+    TRY_EXEC("CREATE INDEX main.images_filename_index ON images (filename)",
+          "[init] can't create filename index on images table\n");
+    TRY_EXEC("CREATE INDEX main.image_position_index ON images (position)",
+          "[init] can't create position index on images table\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 30;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1874,11 +1933,11 @@ static void _create_library_schema(dt_database_t *db)
       "output_width INTEGER, output_height INTEGER, crop REAL, "
       "raw_parameters INTEGER, raw_denoise_threshold REAL, "
       "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
-      "caption VARCHAR, description VARCHAR, license VARCHAR, sha1sum CHAR(40), "
+      "license VARCHAR, sha1sum CHAR(40), "
       "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
       "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
-      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, aspect_ratio REAL, "
-      "exposure_bias REAL, "
+      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
+      "aspect_ratio REAL, exposure_bias REAL, "
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
       "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1)",
       NULL, NULL, NULL);
@@ -1908,9 +1967,11 @@ static void _create_library_schema(dt_database_t *db)
       NULL, NULL, NULL);
 
   ////////////////////////////// tagged_images
-  sqlite3_exec(db->handle, "CREATE TABLE main.tagged_images (imgid INTEGER, tagid INTEGER, "
+  sqlite3_exec(db->handle, "CREATE TABLE main.tagged_images (imgid INTEGER, tagid INTEGER, position INTEGER, "
                            "PRIMARY KEY (imgid, tagid))", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_imgid_index ON selected_images (imgid)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_position_index ON selected_images (position)", NULL, NULL, NULL);
   ////////////////////////////// color_labels
   sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
