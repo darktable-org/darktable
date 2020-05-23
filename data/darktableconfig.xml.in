@@ -686,6 +686,20 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/overlays/culling/0</name>
+    <type>int</type>
+    <default>6</default>
+    <shortdescription>overlays for culling = block</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/overlays/culling/1</name>
+    <type>int</type>
+    <default>6</default>
+    <shortdescription>overlays for full preview = block</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/timeline/last_zoom</name>
     <type>int</type>
     <default>0</default>
