@@ -66,6 +66,8 @@ typedef struct dt_culling_t
   gboolean mouse_inside; // is the mouse inside culling center view ?
 
   gboolean focus; // do we show focus rectangles on images ?
+
+  dt_thumbnail_overlay_t overlays; // overlays type
 } dt_culling_t;
 
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
