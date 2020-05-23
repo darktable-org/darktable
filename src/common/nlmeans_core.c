@@ -35,9 +35,14 @@
 #endif
 
 // to avoid accumulation of rounding errors, we should do a full recomputation of the patch differences
-//   every so many rows of the image.  We'll also use that interval as the maximum chunk size for
+//   every so many rows of the image.  We'll also use that interval as the target maximum chunk size for
 //   parallelization
-#define SLICE_HEIGHT 100
+// lower values reduce the accumulation of rounding errors at the cost of slightly more computation, but
+//  also improve cache sharing between threads (on the boundaries of slices), resulting in better scaling
+//  because memory bandwidth is less of a limitation.  The value of 20 is a good tradeoff between
+//  single-threaded performance and highly-threaded performance; 12 was found to be best on a 32-core
+//  third-gen Threadripper.
+#define SLICE_HEIGHT 20
 
 // a structure to collect together the items which define the location of a patch relative to the pixel
 //  being denoised
@@ -180,6 +185,26 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
   return;
 }
 
+// determine the height of the horizontal slice each thread will process
+static int compute_slice_size(const int height)
+{
+  // dt_get_num_threads() always returns the number of processors, even if the user has requested a different
+  //   number of threads, so go directly to the source
+  const int numthreads = darktable.num_openmp_threads;
+  const int base_chunk_size = MIN(SLICE_HEIGHT, (height + numthreads - 1) / numthreads);
+  // tweak the basic size a bit so that the number of chunks ends up an exact multiple of the
+  //   number of threads
+  const int num_chunks = (height + base_chunk_size - 1) / base_chunk_size;
+  const int low = numthreads * (num_chunks / numthreads);
+  const int high = numthreads * ((num_chunks + numthreads - 1) / numthreads);
+  const int chunk_size_low = (height + low - 1) / low;
+  const int chunk_size_high = (height + high - 1) / high;
+  const int diff_low = chunk_size_low - base_chunk_size;
+  const int diff_high = base_chunk_size - chunk_size_high;
+  fprintf(stderr,"ht=%d, base=%d, #chk=%d, lo=%d, hi=%d, szlo=%d, szhi=%d, diflo=%d, difhi=%d\n",height,base_chunk_size,num_chunks,low,high,chunk_size_low,chunk_size_high,diff_low,diff_high);
+  return diff_high <= diff_low ?  chunk_size_high : chunk_size_low;
+}
+
 void nlmeans_denoise(const float *const inbuf, float *const outbuf,
                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                      const dt_nlmeans_param_t *const params)
@@ -201,21 +226,23 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
   // zero out the overrun areas
   memset(scratch_buf,'\0',numthreads*padded_scratch_size*sizeof(float));
-  const int chunk_size = (roi_out->height + numthreads - 1) / numthreads;
+  const int chunk_size = compute_slice_size(roi_out->height);
+  const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
+  fprintf(stderr,"ch_size=%d, n_chks=%d, #thr=%d\n",chunk_size,num_chunks,numthreads);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+#pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
       dt_omp_firstprivate(patches, num_patches, scratch_buf) \
       schedule(static)
 #endif
-  for (int thr = 0 ; thr < numthreads; thr++)
+  for (int chk = 0 ; chk < num_chunks; chk++)
   {
     // locate our scratch space within the big buffer allocated above
     size_t tnum = dt_get_thread_num();
     const int radius = params->patch_radius;
     float *const col_sums = scratch_buf + tnum * padded_scratch_size + radius + 1;
     // determine which horizontal slice of the image to process
-    const int chunk_start = thr * chunk_size;
-    const int chunk_end = MIN((thr+1)*chunk_size,roi_out->height);
+    const int chunk_start = chk * chunk_size;
+    const int chunk_end = MIN((chk+1)*chunk_size,roi_out->height);
     // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
     memset(outbuf+chunk_start*roi_out->width*4, '\0', roi_out->width * (chunk_end-chunk_start) * 4 * sizeof(float));
     // cycle through all of the patches over our slice of the image
@@ -223,12 +250,14 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
     {
       // retrieve info about the current patch
       const patch_t *patch = &patches[p];
-      const float sharpness = params->sharpness;
-      const int offset = patch->offset;
       // skip any rows where the patch center would be above top of RoI or below bottom of RoI
       const int height = roi_out->height;
-      int row_min = MAX(chunk_start,MAX(0,-patch->rows));
-      int row_max = MIN(chunk_end,height - MAX(0,patch->rows));
+      const int row_min = MAX(chunk_start,MAX(0,-patch->rows));
+      const int row_max = MIN(chunk_end,height - MAX(0,patch->rows));
+      // figure out which rows at top and bottom result in patches extending outside the RoI, even though the
+      // center pixel is inside
+      const int row_top = MAX(row_min,MAX(radius,radius-patch->rows));
+      const int row_bot = MIN(row_max,height-MAX(radius+1,radius+patch->rows+1));
       // skip any columns where the patch center would be to the left or the right of the RoI
       const int scol = patch->cols;
       const int col_min = MAX(0,-scol);
@@ -243,6 +272,8 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
         // now proceed down the current row of the image
         const float *in = inbuf + stride * row + 4 * col_min;
         float *out = outbuf + 4 * ((size_t)roi_out->width * row + col_min);
+        const int offset = patch->offset;
+        const float sharpness = params->sharpness;
         for (int col = col_min; col < col_max; col++, in+=4, out+=4)
         {
           distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
@@ -253,43 +284,36 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
             out[c] += pixel[c] * wt;
           }
         }
-        const int row1 = row+1;
-        if (row1 < row_max)
+        if (row < row_top)
         {
-          const int srow = row1 + patch->rows;
-          const float *pixel = inbuf + row1*stride + 4*col_min;
-          const float *shifted = pixel + patch->offset;
-          // incrementally update the column sums
-          const float *shifted_top = shifted - (radius+1) * stride ;
-          const float *shifted_bot = shifted + radius * stride ;
-          if (srow <= radius || row1 <= radius)
+          // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
+          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
+          for (int col = col_min; col < col_max; col++, pixel_bot+=4)
           {
-            // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
-            pixel += radius * stride;
-            for (int col = col_min; col < col_max; col++, pixel+=4, shifted_bot+=4)
-            {
-              col_sums[col] += pixel_difference(pixel,shifted_bot,params->norm);
-            }
+            col_sums[col] += pixel_difference(pixel_bot,pixel_bot+offset,params->norm);
           }
-          else if (srow + radius >= height || row1 + radius >= height)
+        }
+        else if (row >= row_bot)
+        {
+          if (row + 1 < row_max) // don't bother updating if last iteration
           {
             // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
-            pixel -= (radius+1) * stride;
-            for (int col = col_min; col < col_max; col++, pixel+=4, shifted_top+=4)
+            const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
+            for (int col = col_min; col < col_max; col++, pixel_top+=4)
             {
-              col_sums[col] -= pixel_difference(pixel,shifted_top,params->norm);
+              col_sums[col] -= pixel_difference(pixel_top,pixel_top+offset,params->norm);
             }
           }
-          else
+        }
+        else
+        {
+          const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
+          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
+          // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
+          for (int col = col_min; col < col_max; col++, pixel_top+=4, pixel_bot+=4)
           {
-            const float *pixel_top = pixel - (radius+1) * stride;
-            const float *pixel_bot = pixel + radius * stride;
-            // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
-            for (int col = col_min; col < col_max; col++, pixel_top+=4, pixel_bot+=4, shifted_top+=4, shifted_bot+=4)
-            {
-              col_sums[col] += (pixel_difference(pixel_bot,shifted_bot,params->norm)
-                                - pixel_difference(pixel_top,shifted_top,params->norm));
-            }
+            col_sums[col] += (pixel_difference(pixel_bot,pixel_bot+offset,params->norm)
+                              - pixel_difference(pixel_top,pixel_top+offset,params->norm));
           }
         }
       }
