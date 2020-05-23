@@ -60,9 +60,10 @@ typedef struct dt_culling_t
 
   gboolean select_desactivate;
 
-  gboolean panning; // are we moving zoomed images ?
-  int pan_x;        // last position during panning
-  int pan_y;        //
+  gboolean panning;      // are we moving zoomed images ?
+  int pan_x;             // last position during panning
+  int pan_y;             //
+  gboolean mouse_inside; // is the mouse inside culling center view ?
 
   gboolean focus; // do we show focus rectangles on images ?
 } dt_culling_t;
