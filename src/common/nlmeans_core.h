@@ -27,9 +27,13 @@ struct dt_nlmeans_param_t
   float scattering;	// scattering factor for patches (default 0 = densest possible)
   float scale;		// image scaling, affects scattering
 <<<<<<< HEAD
+<<<<<<< HEAD
   float center_weight;  // weighting of central pixel in patch (<0 for no special handling; used by denoise[non-local])
 =======
 >>>>>>> New more-scaleable implementation of non-local means
+=======
+  float center_weight;  // weighting of central pixel in patch (<0 for no special handling; used by denoise[non-local])
+>>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
   int patch_radius;	// radius of patches which are compared, 1..4
   int search_radius;	// radius around a pixel in which to compare patches (default = 7)
   int decimate;         // set to 1 to search only half the patches in the neighborhood (default = 0)

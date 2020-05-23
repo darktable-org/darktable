@@ -406,11 +406,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                       .scattering = 0,
                                       .scale = scale,
 <<<<<<< HEAD
+<<<<<<< HEAD
                                       .center_weight = -1,
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = decimate,
 =======
+=======
+                                      .center_weight = -1,
+>>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = 1,
@@ -583,6 +587,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       .scattering = 0,
                                       .scale = scale,
 <<<<<<< HEAD
+<<<<<<< HEAD
                                       .center_weight = -1,
                                       .patch_radius = P,
                                       .search_radius = K,
@@ -590,6 +595,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       .norm = norm2 };
   nlmeans_denoise_sse2(ivoid,ovoid,roi_in,roi_out,&params);
 =======
+=======
+                                      .center_weight = -1,
+>>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = 1,
