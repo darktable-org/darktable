@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-13 22:44+0200\n"
-"PO-Revision-Date: 2020-05-21 17:13+0200\n"
+"PO-Revision-Date: 2020-05-23 17:43+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.3\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -3704,135 +3704,130 @@ msgstr "Bild einpassen"
 #: ../src/dtgtk/thumbtable.c:1932
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
-msgstr "Bewertung „0 Sterne”"
+msgstr "Ansichten/Miniaturvorschau/Bewertung „0 Sterne”"
 
 #: ../src/dtgtk/thumbtable.c:1933
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
-msgstr "Bewertung „1 Stern”"
+msgstr "Ansichten/Miniaturvorschau/Bewertung „1 Stern”"
 
 #: ../src/dtgtk/thumbtable.c:1934
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
-msgstr "Bewertung „2 Sterne”"
+msgstr "Ansichten/Miniaturvorschau/Bewertung „2 Sterne”"
 
 #: ../src/dtgtk/thumbtable.c:1935
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
-msgstr "Bewertung „3 Sterne”"
+msgstr "Ansichten/Miniaturvorschau/Bewertung „3 Sterne”"
 
 #: ../src/dtgtk/thumbtable.c:1936
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
-msgstr "Bewertung „4 Sterne”"
+msgstr "Ansichten/Miniaturvorschau/Bewertung „4 Sterne”"
 
 #: ../src/dtgtk/thumbtable.c:1937
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
-msgstr "Bewertung „5 Sterne”"
+msgstr "Ansichten/Miniaturvorschau/Bewertung „5 Sterne”"
 
 #: ../src/dtgtk/thumbtable.c:1938
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
-msgstr "Bewertung „verwerfen”"
+msgstr "Ansichten/Miniaturvorschau/Bewertung „verwerfen”"
 
 #. setup history key accelerators
 #: ../src/dtgtk/thumbtable.c:1941
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
-msgstr "kopiere Verlaufsstapel"
+msgstr "Ansichten/Miniaturvorschau/kopiere Verlaufsstapel"
 
 #: ../src/dtgtk/thumbtable.c:1942
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
-msgstr "Teil des Verlaufsstapels kopieren"
+msgstr "Ansichten/Miniaturvorschau/Teil des Verlaufsstapels kopieren"
 
 #: ../src/dtgtk/thumbtable.c:1944
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
-msgstr "Verlaufsstapel einfügen"
+msgstr "Ansichten/Miniaturvorschau/Verlaufsstapel einfügen"
 
 #: ../src/dtgtk/thumbtable.c:1945
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
-msgstr "Teil des Verlaufsstapels einfügen"
+msgstr "Ansichten/Miniaturvorschau/Teil des Verlaufsstapels einfügen"
 
 #: ../src/dtgtk/thumbtable.c:1947
-#, fuzzy
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
-msgstr "Verlauf verwerfen"
+msgstr "Ansichten/Miniaturvorschau/Verlaufsstapel verwerfen"
 
 #: ../src/dtgtk/thumbtable.c:1949
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
-msgstr "Bild duplizieren"
+msgstr "Ansichten/Miniaturvorschau/Bild duplizieren"
 
 #: ../src/dtgtk/thumbtable.c:1950
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
-msgstr "„jungfräuliches” Duplikat erstellen"
+msgstr "Ansichten/Miniaturvorschau/„jungfräuliches” Duplikat erstellen"
 
 #. setup color label accelerators
 #: ../src/dtgtk/thumbtable.c:1954
 msgctxt "accel"
 msgid "views/thumbtable/color red"
-msgstr "Farbmarkierung rot"
+msgstr "Ansichten/Miniaturvorschau/Farbmarkierung rot"
 
 #: ../src/dtgtk/thumbtable.c:1955
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
-msgstr "Farbmarkierung gelb"
+msgstr "Ansichten/Miniaturvorschau/Farbmarkierung gelb"
 
 #: ../src/dtgtk/thumbtable.c:1956
 msgctxt "accel"
 msgid "views/thumbtable/color green"
-msgstr "Farbmarkierung grün"
+msgstr "Ansichten/Miniaturvorschau/Farbmarkierung grün"
 
 #: ../src/dtgtk/thumbtable.c:1957
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
-msgstr "Farbmarkierung blau"
+msgstr "Ansichten/Miniaturvorschau/Farbmarkierung blau"
 
 #: ../src/dtgtk/thumbtable.c:1958
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
-msgstr "Farbmarkierung violett"
+msgstr "Ansichten/Miniaturvorschau/Farbmarkierung violett"
 
 #: ../src/dtgtk/thumbtable.c:1959
-#, fuzzy
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
-msgstr "Farbmarkierungen entfernen"
+msgstr "Ansichten/Miniaturvorschau/Farbmarkierungen entfernen"
 
 #. setup selection accelerators
 #: ../src/dtgtk/thumbtable.c:1962
 msgctxt "accel"
 msgid "views/thumbtable/select all"
-msgstr "alle Bilder auswählen"
+msgstr "Ansichten/Miniaturvorschau/alle Bilder auswählen"
 
 #: ../src/dtgtk/thumbtable.c:1963
 msgctxt "accel"
 msgid "views/thumbtable/select none"
-msgstr "alle Bilder abwählen"
+msgstr "Ansichten/Miniaturvorschau/alle Bilder abwählen"
 
 #: ../src/dtgtk/thumbtable.c:1965
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
-msgstr "Bildauswahl invertieren"
+msgstr "Ansichten/Miniaturvorschau/Bildauswahl invertieren"
 
 #: ../src/dtgtk/thumbtable.c:1966
-#, fuzzy
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
-msgstr "Filmrolle auswählen"
+msgstr "Ansichten/Miniaturvorschau/Filmrolle auswählen"
 
-# eigentlich: "unbearbeitete auswählen", was aber zu lang für den Knopf ist.
 #: ../src/dtgtk/thumbtable.c:1967
-#, fuzzy
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
-msgstr "unbearbeitete"
+msgstr "Ansichten/Miniaturvorschau/unbearbeitete auswählen"
 
 #. Column 1 - "make" of the camera.
 #. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
