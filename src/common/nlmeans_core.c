@@ -110,7 +110,6 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
   const float scale = params->scale;
   const float scattering = params->scattering;
   int decimate = params->decimate;
-  decimate=0;//!!!
   // determine how many patches we have
   int n_patches = (2 * search_radius + 1) * (2 * search_radius + 1);
   if (decimate)

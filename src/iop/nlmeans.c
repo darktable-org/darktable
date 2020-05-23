@@ -390,6 +390,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
 
 #if USE_NEW_IMPL //use new code?
+  // faster but less accurate processing by skipping half the patches on previews and thumbnails
+  int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+  
   const dt_nlmeans_param_t params = { .sharpness = sharpness,
                                       .luma = d->luma,
                                       .chroma = d->chroma,
@@ -398,7 +401,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                       .center_weight = -1,
                                       .patch_radius = P,
                                       .search_radius = K,
-                                      .decimate = 1,
+                                      .decimate = decimate,
                                       .norm = norm2 };
   nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -555,6 +558,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
 
 #if USE_NEW_IMPL // use new code?
+  // faster but less accurate processing by skipping half the patches on previews and thumbnails
+  int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+  
   const dt_nlmeans_param_t params = { .sharpness = sharpness,
                                       .luma = d->luma,
                                       .chroma = d->chroma,
@@ -563,7 +569,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       .center_weight = -1,
                                       .patch_radius = P,
                                       .search_radius = K,
-                                      .decimate = 1,
+                                      .decimate = decimate,
                                       .norm = norm2 };
   nlmeans_denoise_sse2(ivoid,ovoid,roi_in,roi_out,&params);
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
