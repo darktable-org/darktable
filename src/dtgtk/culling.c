@@ -1563,7 +1563,7 @@ void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current)
 // change the type of overlays that should be shown
 void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t over)
 {
-  if(over == table->overlays) return;
+  if(!table || over == table->overlays) return;
   gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", table->mode);
   dt_conf_set_int(txt, over);
   g_free(txt);
