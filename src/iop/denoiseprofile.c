@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/exif.h"
+#include "common/nlmeans_core.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -39,6 +40,9 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
+
+// which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
+#define USE_NEW_IMPL 1
 
 #define REDUCESIZE 64
 #define NUM_BUCKETS 4
@@ -956,6 +960,43 @@ static inline void backtransform_Y0U0V0(float *const buf, const int wd, const in
   }
 }
 
+// =====================================================================================
+// begin common functions
+// =====================================================================================
+
+// called by: process_wavelets, nlmeans_precondition, nlmeans_precondition_cl, process_variance,
+//     process_wavelets_cl
+static void compute_wb_factors(float wb[3],const dt_iop_denoiseprofile_data_t *const d,
+                               const dt_dev_pixelpipe_iop_t *const piece, const float weights[3])
+{
+  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
+                         + piece->pipe->dsc.temperature.coeffs[2])
+                        / 3.0f;
+  // we init wb by the mean of the coeffs, which corresponds to the mean
+  // amplification that is done in addition to the "ISO" related amplification
+  wb[0] = wb[1] = wb[2] = wb_mean;
+  if(d->fix_anscombe_and_nlmeans_norm)
+  {
+    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
+    {
+      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
+    }
+    else if(wb_mean == 0.0f)
+    {
+      // temperature coeffs are equal to 0 if we open a JPG image.
+      // in this case consider them equal to 1.
+      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
+    }
+    // else, wb_adaptive_anscombe is false and our wb array is
+    // filled with the wb_mean
+  }
+  else
+  {
+    for(int i = 0; i < 3; i++) wb[i] = weights[i] * piece->pipe->dsc.processed_maximum[i];
+  }
+  return;
+}
+
 
 // =====================================================================================
 // begin wavelet code:
@@ -1549,33 +1590,10 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     buf[k] = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
   tmp = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
 
-  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
-                         + piece->pipe->dsc.temperature.coeffs[2])
-                        / 3.0f;
-  // we init wb by the mean of the coeffs, which corresponds to the mean
-  // amplification that is done in addition to the "ISO" related amplification
-  float wb[3] = { wb_mean, wb_mean, wb_mean };
-  if(d->fix_anscombe_and_nlmeans_norm)
-  {
-    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
-    {
-      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
-    }
-    else if(wb_mean == 0.0f)
-    {
-      // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case consider them equal to 1.
-      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
-    }
-    // else, wb_adaptive_anscombe is false and our wb array is
-    // filled with the wb_mean
-  }
-  else
-  {
-    wb[0] = 2.0f * piece->pipe->dsc.processed_maximum[0];
-    wb[1] = piece->pipe->dsc.processed_maximum[1];
-    wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
-  }
+  float wb[3];
+  const float wb_weights[3] = { 2.0f, 1.0f, 2.0f };
+  compute_wb_factors(wb,d,piece,wb_weights);
+
   // adaptive p depending on white balance
   const float p[3] = { MAX(d->shadows + 0.1 * logf(in_scale / wb[0]), 0.0f) ,
                        MAX(d->shadows + 0.1 * logf(in_scale / wb[1]), 0.0f),
@@ -1769,22 +1787,9 @@ static int sign(int a)
   return (a > 0) - (a < 0);
 }
 
-static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                            const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                            const dt_iop_roi_t *const roi_out)
+// called by: process_nlmeans, process_nlmeans_sse, process_nlmeans_cl
+static float nlmeans_norm(const int P, const dt_iop_denoiseprofile_data_t *const d)
 {
-  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  // get our data struct:
-  const dt_iop_denoiseprofile_data_t *const d = piece->data;
-
-  const int ch = piece->colors;
-
-  // TODO: fixed K to use adaptive size trading variance and bias!
-  // adjust to zoom size:
-  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
-  const int P = ceilf(d->radius * scale); // pixel filter size
-  int K = d->nbhood; // nbhood
-  float scattering = d->scattering;
   // Each patch has a width of 2P+1 and a height of 2P+1
   // thus, divide by (2P+1)^2.
   // The 0.045 was derived from the old formula, to keep the
@@ -1796,6 +1801,16 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
     // use old formula
     norm = .015f / (2 * P + 1);
   }
+  return norm;
+}
+
+// adjust the user-specified scattering factor and search radius to account for the type of pixelpipe
+// called by: process_nlmeans, process_nlmeans_sse, process_nlmeans_cl
+static float nlmeans_scattering(int *nbhood, const dt_iop_denoiseprofile_data_t *const d,
+                                const dt_dev_pixelpipe_iop_t *const piece, const float scale)
+{
+  int K = *nbhood;
+  float scattering = d->scattering;
 
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
   {
@@ -1811,50 +1826,33 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
     K = MAX(MIN(4, K), K * scale);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
+  *nbhood = K;
+  return scattering;
+}
 
+// called by process_nlmeans, process_nlmeans_sse
+// must keep synchronized with nlmeans_precondition_cl below
+static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
+                                  const dt_dev_pixelpipe_iop_t *const piece, float wb[3],
+                                  const void *const ivoid, const dt_iop_roi_t *const roi_in,
+                                  float scale, float *in, float aa[3], float bb[3], float p[3])
+{
+  const float wb_weights[3] = { 1.0f, 1.0f, 1.0f };
+  compute_wb_factors(wb,d,piece,wb_weights);
 
-  // P == 0 : this will degenerate to a (fast) bilateral filter.
-
-  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
-  // we want to sum up weights in col[3], so need to init to 0:
-  memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
-  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
-
-  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
-                         + piece->pipe->dsc.temperature.coeffs[2])
-                        / 3.0f;
-  // we init wb by the mean of the coeffs, which corresponds to the mean
-  // amplification that is done in addition to the "ISO" related amplification
-  float wb[3] = { wb_mean, wb_mean, wb_mean };
-  if(d->fix_anscombe_and_nlmeans_norm)
-  {
-    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
-    {
-      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
-    }
-    else if(wb_mean == 0.0f)
-    {
-      // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case consider them equal to 1.
-      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
-    }
-    // else, wb_adaptive_anscombe is false and our wb array is
-    // filled with the wb_mean
-  }
-  else
-  {
-    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
-  }
   // adaptive p depending on white balance
-  const float p[3] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f) ,
-                       MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
-                       MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f)};
-
+  p[0] = MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f);
+  p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
+  p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
+  
   // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
-  const float central_pixel_weight = d->central_pixel_weight * scale;
-  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
-  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+  for(int i = 0; i < 3; i++)
+  {
+    wb[i] *= d->strength * scale;
+    // only use green channel + wb for now:
+    aa[i] = d->a[1] * wb[i];
+    bb[i] = d->b[1] * wb[i];
+  }
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   if(!d->use_new_vst)
   {
@@ -1864,6 +1862,94 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   {
     precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], wb);
   }
+  return compensate_p;
+}
+
+// called by process_nlmeans_cl
+// must keep synchronized with nlmeans_precondition_cl above
+static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d,
+                                     const dt_dev_pixelpipe_iop_t *const piece, float wb[3],
+                                     float scale, float aa[4], float bb[4], float p[4])
+{
+  const float wb_weights[3] = { 1.0f, 1.0f, 1.0f };
+  compute_wb_factors(wb,d,piece,wb_weights);
+  wb[3] = 0.0;
+
+  // adaptive p depending on white balance
+  p[0] = MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f);
+  p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
+  p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
+  p[3] = 1.0f;
+  
+  // update the coeffs with strength and scale
+  for(int i = 0; i < 3; i++)
+  {
+    wb[i] *= d->strength * scale;
+    // only use green channel + wb for now:
+    aa[i] = d->a[1] * wb[i];
+    bb[i] = d->b[1] * wb[i];
+  }
+  aa[3] = 1.0f;
+  bb[4] = 1.0f;
+  const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
+  if(d->use_new_vst)
+  {
+    for(int c = 0; c < 3; c++)
+    {
+      aa[c] = d->a[1] * compensate_p;
+      bb[c] = d->b[1];
+    }
+  }
+  return compensate_p;
+}
+
+static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                            const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
+                            const dt_iop_roi_t *const roi_out)
+{
+  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
+  // get our data struct:
+  const dt_iop_denoiseprofile_data_t *const d = piece->data;
+  assert(piece->colors == 4);
+
+  // TODO: fixed K to use adaptive size trading variance and bias!
+  // adjust to zoom size:
+  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  int K = d->nbhood; // nbhood
+  const float scattering = nlmeans_scattering(&K,d,piece,scale);
+  const float norm  = nlmeans_norm(P,d);
+  const float central_pixel_weight = d->central_pixel_weight * scale;
+
+  // P == 0 : this will degenerate to a (fast) bilateral filter.
+
+  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
+
+  float wb[3];
+  float p[3];
+  float aa[3];
+  float bb[3];
+  const float compensate_p = nlmeans_precondition(d,piece,wb,ivoid,roi_in,scale,in,aa,bb,p);
+
+  // we want to sum up weights in col[3], so need to init to 0:
+  memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
+
+#if USE_NEW_IMPL
+  fprintf(stderr,"using new scalar\n");
+  float norm2[4] = { norm, norm, norm, norm };
+  const dt_nlmeans_param_t params = { .sharpness = 0, //not relevant
+                                      .luma = 1.0,    //no blending
+                                      .chroma = 1.0,
+                                      .scattering = scattering,
+                                      .scale = scale,
+                                      .center_weight = central_pixel_weight,
+                                      .patch_radius = P,
+                                      .search_radius = K,
+                                      .decimate = 0,
+                                      .norm = norm2 };
+  nlmeans_denoise(in,ovoid,roi_in,roi_out,&params);
+#else
+  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
   // for each shift vector
   for(int kj_index = -K; kj_index <= K; kj_index++)
   {
@@ -1983,6 +2069,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   float *const out = ((float *const)ovoid);
 
 // normalize
+  const int ch = piece->colors;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, out, roi_out) \
@@ -1999,6 +2086,8 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 
   // free shared tmp memory:
   dt_free_align(Sa);
+#endif /* USE_NEW_IMPL */
+
   dt_free_align(in);
   if(!d->use_new_vst)
   {
@@ -2025,86 +2114,39 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
   int K = d->nbhood; // nbhood
-  float scattering = d->scattering;
-  // Each patch has a width of 2P+1 and a height of 2P+1
-  // thus, divide by (2P+1)^2.
-  // The 0.045 was derived from the old formula, to keep the
-  // norm identical when P=1, as the norm for P=1 seemed
-  // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
-  float norm = .045f / ((2 * P + 1) * (2 * P + 1));
-  if(!d->fix_anscombe_and_nlmeans_norm)
-  {
-    // use old formula
-    norm = .015f / (2 * P + 1);
-  }
-
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
-  {
-    // much faster slightly more inaccurate preview
-    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
-    K = MIN(3, K);
-    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
-  }
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
-  {
-    // much faster slightly more inaccurate preview
-    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
-    K = MAX(MIN(4, K), K * scale);
-    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
-  }
+  const float scattering = nlmeans_scattering(&K,d,piece,scale);
+  const float norm = nlmeans_norm(P,d);
+  const float central_pixel_weight = d->central_pixel_weight * scale;
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
-  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
-  // we want to sum up weights in col[3], so need to init to 0:
-  memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
   float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
-  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
-                         + piece->pipe->dsc.temperature.coeffs[2])
-                        / 3.0f;
-  // we init wb by the mean of the coeffs, which corresponds to the mean
-  // amplification that is done in addition to the "ISO" related amplification
-  float wb[3] = { wb_mean, wb_mean, wb_mean };
-  if(d->fix_anscombe_and_nlmeans_norm)
-  {
-    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
-    {
-      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
-    }
-    else if(wb_mean == 0.0f)
-    {
-      // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case consider them equal to 1.
-      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
-    }
-    // else, wb_adaptive_anscombe is false and our wb array is
-    // filled with the wb_mean
-  }
-  else
-  {
-    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
-  }
-  // adaptive p depending on white balance
-  const float p[3] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f) ,
-                       MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
-                       MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f)};
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
-  const float central_pixel_weight = d->central_pixel_weight * scale;
+  float wb[3];
+  float p[3];
+  float aa[3];
+  float bb[3];
+  const float compensate_p = nlmeans_precondition(d,piece,wb,ivoid,roi_in,scale,in,aa,bb,p);
 
-  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
-  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
-  const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
-  if(!d->use_new_vst)
-  {
-    precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
-  }
-  else
-  {
-    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], wb);
-  }
+  // we want to sum up weights in col[3], so need to init to 0:
+  memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
 
+#if USE_NEW_IMPL
+  fprintf(stderr,"using new sse\n");
+  float norm2[4] = { norm, norm, norm, norm };
+  const dt_nlmeans_param_t params = { .sharpness = 0, //not relevant
+                                      .luma = 1.0,    //no blending
+                                      .chroma = 1.0,
+                                      .scattering = scattering,
+                                      .scale = scale,
+                                      .center_weight = central_pixel_weight,
+                                      .patch_radius = P,
+                                      .search_radius = K,
+                                      .decimate = 0,
+                                      .norm = norm2 };
+  nlmeans_denoise(in,ovoid,roi_in,roi_out,&params);
+#else
+  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
   // for each shift vector
   for(int kj_index = -K; kj_index <= K; kj_index++)
   {
@@ -2288,6 +2330,8 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   }
   // free shared tmp memory:
   dt_free_align(Sa);
+#endif /* USE_NEW_IMPL */
+  
   dt_free_align(in);
   if(!d->use_new_vst)
   {
@@ -2378,31 +2422,10 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
-  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
-                         + piece->pipe->dsc.temperature.coeffs[2])
-                        / 3.0f;
-  // we init wb by the mean of the coeffs, which corresponds to the mean
-  // amplification that is done in addition to the "ISO" related amplification
-  float wb[3] = { wb_mean, wb_mean, wb_mean };
-  if(d->fix_anscombe_and_nlmeans_norm)
-  {
-    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
-    {
-      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
-    }
-    else if(wb_mean == 0.0f)
-    {
-      // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case consider them equal to 1.
-      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
-    }
-    // else, wb_adaptive_anscombe is false and our wb array is
-    // filled with the wb_mean
-  }
-  else
-  {
-    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
-  }
+  float wb[3];
+  const float wb_weights[3] = { 1.0f, 1.0f, 1.0f };
+  compute_wb_factors(wb,d,piece,wb_weights);
+
   // adaptive p depending on white balance
   const float p[3] = { MAX(d->shadows - 0.1 * logf(wb[0]), 0.0f),
                        MAX(d->shadows - 0.1 * logf(wb[1]), 0.0f),
@@ -2473,82 +2496,18 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
   int K = d->nbhood; // nbhood
-  float scattering = d->scattering;
-
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
-  {
-    // much faster slightly more inaccurate preview
-    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
-    K = MIN(3, K);
-    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
-  }
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
-  {
-    // much faster slightly more inaccurate preview
-    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
-    K = MAX(MIN(4, K), K * scale);
-    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
-  }
-
-  // Each patch has a width of 2P+1 and a height of 2P+1
-  // thus, divide by (2P+1)^2.
-  // The 0.045 was derived from the old formula, to keep the
-  // norm identical when P=1, as the norm for P=1 seemed
-  // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
-  float norm = .045f / ((2 * P + 1) * (2 * P + 1));
-  if(!d->fix_anscombe_and_nlmeans_norm)
-  {
-    // use old formula
-    norm = .015f / (2 * P + 1);
-  }
-
-  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
-                         + piece->pipe->dsc.temperature.coeffs[2])
-                        / 3.0f;
-  // we init wb by the mean of the coeffs, which corresponds to the mean
-  // amplification that is done in addition to the "ISO" related amplification
-  float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
-  if(d->fix_anscombe_and_nlmeans_norm)
-  {
-    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
-    {
-      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
-    }
-    else if(wb_mean == 0.0f)
-    {
-      // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case consider them equal to 1.
-      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
-    }
-    // else, wb_adaptive_anscombe is false and our wb array is
-    // filled with the wb_mean
-  }
-  else
-  {
-    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
-  }
-  // adaptive p depending on white balance
-  const float p[4] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f),
-                       MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
-                       MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f), 1.0f};
-
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
+  const float scattering = nlmeans_scattering(&K,d,piece,scale);
+  const float norm = nlmeans_norm(P,d);
   const float central_pixel_weight = d->central_pixel_weight * scale;
 
-  float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
-  float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
+  float wb[4];
+  float p[4];
+  float aa[4];
+  float bb[4];
+  (void)nlmeans_precondition_cl(d,piece,wb,scale,aa,bb,p);
+
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
-  const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
-  if(d->use_new_vst)
-  {
-    for(int c = 0; c < 3; c++)
-    {
-      aa[c] = d->a[1] * compensate_p;
-      bb[c] = d->b[1];
-    }
-  }
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
   if(dev_tmp == NULL) goto error;
@@ -2857,33 +2816,11 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     if(dev_detail[k] == NULL) goto error;
   }
 
-  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
-                         + piece->pipe->dsc.temperature.coeffs[2])
-                        / 3.0f;
-  // we init wb by the mean of the coeffs, which corresponds to the mean
-  // amplification that is done in addition to the "ISO" related amplification
-  float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
-  if(d->fix_anscombe_and_nlmeans_norm)
-  {
-    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
-    {
-      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
-    }
-    else if(wb_mean == 0.0f)
-    {
-      // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case consider them equal to 1.
-      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
-    }
-    // else, wb_adaptive_anscombe is false and our wb array is
-    // filled with the wb_mean
-  }
-  else
-  {
-    wb[0] = 2.0f * piece->pipe->dsc.processed_maximum[0];
-    wb[1] = piece->pipe->dsc.processed_maximum[1];
-    wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
-  }
+  float wb[4];
+  const float wb_weights[3] = { 2.0f, 1.0f, 2.0f };
+  compute_wb_factors(wb,d,piece,wb_weights);
+  wb[3] = 0.0f;
+  
   // adaptive p depending on white balance
   const float p[4] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f),
                        MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),

@@ -35,6 +35,7 @@
 #include <xmmintrin.h>
 #endif
 
+// which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
 #define USE_NEW_IMPL 1
 
 #define NUM_BUCKETS 4
