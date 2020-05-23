@@ -563,8 +563,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       .search_radius = K,
                                       .decimate = 1,
                                       .norm = norm2 };
-  nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
-  // (SSE version not implemented yet, redirect to scalar code)
+  nlmeans_denoise_sse2(ivoid,ovoid,roi_in,roi_out,&params);
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   return;
