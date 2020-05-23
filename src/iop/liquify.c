@@ -2973,7 +2973,7 @@ static void get_stamp_params(dt_iop_module_t *module, float *radius, float *r_st
   const float wdht_min = MIN(darktable.develop->width, darktable.develop->height);
   const float iscale = devpipe->iscale;
   const float zoom = get_zoom_scale(module->dev);
-  const float im_scale = 65.0f * iwd_min * iwd_min * zoom * iscale / (wdht_min * wdht_min) * maxval;
+  const float im_scale = 65.0f * iwd_min * iwd_min * zoom * iscale / (wdht_min * wdht_min);
   
   *radius = dt_conf_get_sanitize_float(CONF_RADIUS, 0.8f * im_scale, im_scale * 1.25f, im_scale);
   *r_strength = dt_conf_get_sanitize_float(CONF_STRENGTH, 1.2f * *radius, 2.0f * *radius, 1.5f * *radius);
