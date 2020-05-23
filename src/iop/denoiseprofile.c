@@ -1782,10 +1782,12 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #undef MAX_MAX_SCALE
 }
 
+#if defined(HAVE_OPENCL) || !USE_NEW_IMPL
 static int sign(int a)
 {
   return (a > 0) - (a < 0);
 }
+#endif
 
 // called by: process_nlmeans, process_nlmeans_sse, process_nlmeans_cl
 static float nlmeans_norm(const int P, const dt_iop_denoiseprofile_data_t *const d)
@@ -1901,6 +1903,23 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
     }
   }
   return compensate_p;
+}
+
+// called by process_nlmeans, process_nlmeans_sse
+static void nlmeans_backtransform(const dt_iop_denoiseprofile_data_t *const d, float *ovoid,
+                                  const dt_iop_roi_t *const roi_in, const float scale,
+                                  const float compensate_p, const float wb[3], const float aa[3],
+                                  const float bb[3], const float p[3])
+{
+  if(!d->use_new_vst)
+  {
+    backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+  }
+  else
+  {
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(scale), wb);
+  }
+  return;
 }
 
 static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -2089,14 +2108,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 #endif /* USE_NEW_IMPL */
 
   dt_free_align(in);
-  if(!d->use_new_vst)
-  {
-    backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
-  }
-  else
-  {
-    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(scale), wb);
-  }
+  nlmeans_backtransform(d,ovoid,roi_in,scale,compensate_p,wb,aa,bb,p);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -2333,14 +2345,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 #endif /* USE_NEW_IMPL */
   
   dt_free_align(in);
-  if(!d->use_new_vst)
-  {
-    backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
-  }
-  else
-  {
-    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(scale), wb);
-  }
+  nlmeans_backtransform(d,ovoid,roi_in,scale,compensate_p,wb,aa,bb,p);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
