@@ -871,14 +871,153 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
   }
 }
 
+static void process_cmatrix_fastpath_regularized(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                            const void *const ivoid, void *const ovoid,
+                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
+  const int ch = piece->colors;
+  const float color_regularization = d->color_regularization;
+  const float luminance_regularization = d->luminance_regularization;
+
+  // compute correction to apply to luminance to get a similar overall luminance
+  // when we change the luminance_regularization parameter
+  float correction_norm_luma = 1.0f;
+  float sum_pos_coefs = 0.0f;
+  float sum_neg_coefs = 0.0f;
+  // only use green channel
+  for(int c = 3; c < 6; c++)
+  {
+    float coef = d->cmatrix[c];
+    if(coef >= 0.0f)
+    {
+      sum_pos_coefs += coef;
+    }
+    else
+    {
+      sum_neg_coefs += coef;
+    }
+  }
+  float sum_coefs = sum_pos_coefs + sum_neg_coefs;
+  float sum_coefs_clamped = sum_pos_coefs - MIN((1.0f - luminance_regularization) * sum_pos_coefs, -sum_neg_coefs);
+  correction_norm_luma = sum_coefs / sum_coefs_clamped;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out, color_regularization, luminance_regularization, correction_norm_luma) \
+  schedule(static)
+#endif
+  for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  {
+    float *in = (float *)ivoid + (size_t)ch * k;
+    float *out = (float *)ovoid + (size_t)ch * k;
+
+    float _xyz_positive[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float _xyz_negative[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    for(int c = 0; c < 3; c++)
+    {
+      for(int i = 0; i < 3; i++)
+      {
+        float coef = d->cmatrix[3 * c + i];
+        if(coef >= 0.0f)
+        {
+          _xyz_positive[c] += coef * MAX(in[i], 0.0f);
+        }
+        else
+        {
+          _xyz_negative[c] += coef * MAX(in[i], 0.0f);
+        }
+      }
+    }
+    // constitute 2 outputs: one good in terms of color, the other one good in
+    // terms of luminance
+    float _xyz_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float _xyz_luminance[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    // start with color:
+    // we compute a desaturation based on our threshold
+    // we use MAX(R,G,B) as a norm for this purpose
+    for(int c = 0; c < 3; c++)
+    {
+      _xyz_color[c] = _xyz_positive[c] + _xyz_negative[c];
+    }
+    int max_rgb_c = 0;
+    float max_rgb = _xyz_color[0];
+    float rgb_g = _xyz_color[1];
+    if(rgb_g > max_rgb)
+    {
+      max_rgb_c = 1;
+      max_rgb = rgb_g;
+    }
+    float rgb_b = _xyz_color[2];
+    if(rgb_b > max_rgb)
+    {
+      max_rgb_c = 2;
+      max_rgb = rgb_b;
+    }
+    max_rgb = MAX(max_rgb, 1e-6);
+    int max_rgb_c_1 = (max_rgb_c + 1) % 3;
+    int max_rgb_c_2 = (max_rgb_c + 2) % 3;
+    // compute saturation compensation for max_rgb_c_1 and max_rgb_c_2
+    float sat;
+    float sat1 = 0.0f;
+    float sat2 = 0.0f;
+    // we don't want negative part to represent more than (1.0f - color_regularization)
+    // times the positive part.
+    // if that's not the case, we compute the saturation compensation necessary
+    // to have this condition respected.
+    float regularized_c_1 = _xyz_positive[max_rgb_c_1] * (1.0f - color_regularization) + _xyz_negative[max_rgb_c_1];
+    if(regularized_c_1 < 0.0f)
+    {
+      float curr = _xyz_color[max_rgb_c_1];
+      sat1 = (_xyz_positive[max_rgb_c_1] * color_regularization - curr) / (max_rgb - MAX(curr, 0.0f));
+    }
+    float regularized_c_2 = _xyz_positive[max_rgb_c_2] * (1.0f - color_regularization) + _xyz_negative[max_rgb_c_2];
+    if(regularized_c_2 < 0.0f)
+    {
+      float curr = _xyz_color[max_rgb_c_2];
+      sat2 = (_xyz_positive[max_rgb_c_2] * color_regularization - curr) / (max_rgb - MAX(curr, 0.0f));
+    }
+    sat = MAX(sat1, sat2);
+    sat = MIN(sat, 1.0f);
+    // desaturate max_rgb_c_1 and max_rgb_c_2
+    _xyz_color[max_rgb_c_1] = max_rgb * sat + _xyz_color[max_rgb_c_1] * (1.0f - sat);
+    _xyz_color[max_rgb_c_2] = max_rgb * sat + _xyz_color[max_rgb_c_2] * (1.0f - sat);
+
+    for(int c = 0; c < 3; c++)
+    {
+      float regularized_l = _xyz_positive[c] * (1.0f - luminance_regularization) + _xyz_negative[c];
+      regularized_l = MAX(regularized_l, 0.0f);
+      _xyz_luminance[c] = regularized_l + _xyz_positive[c] * luminance_regularization;
+    }
+    float luma_xyz_color = MAX(dt_camera_rgb_luminance(_xyz_color), 1e-6);
+    float luma_xyz_luminance = dt_camera_rgb_luminance(_xyz_luminance);
+    luma_xyz_luminance *= correction_norm_luma;
+    float _xyz[4];
+    for(int c = 0; c < 3; c++)
+    {
+      // keep the luminance of _xyz_luminance, and the colors of _xyz_color
+      _xyz[c] = luma_xyz_luminance * _xyz_color[c] / luma_xyz_color;
+    }
+    dt_XYZ_to_Lab(_xyz, out);
+  }
+}
+
+
 static void process_cmatrix_fastpath(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                      const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                                      const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int clipping = (d->nrgb != NULL);
+  const int regularized = (d->custom_regularization == 1);
 
-  if(!clipping)
+  if(regularized)
+  {
+    process_cmatrix_fastpath_regularized(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else if(!clipping)
   {
     process_cmatrix_fastpath_simple(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
