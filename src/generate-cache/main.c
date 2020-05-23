@@ -173,12 +173,12 @@ int main(int argc, char *arg[])
     else if((!strcmp(arg[k], "-m") || !strcmp(arg[k], "--max-mip")) && argc > k + 1)
     {
       k++;
-      max_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), 0), 8);
+      max_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), DT_MIPMAP_0), DT_MIPMAP_8);
     }
     else if(!strcmp(arg[k], "--min-mip") && argc > k + 1)
     {
       k++;
-      min_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), 0), 8);
+      min_mip = (dt_mipmap_size_t)MIN(MAX(atoi(arg[k]), DT_MIPMAP_0), DT_MIPMAP_8);
     }
     else if(!strcmp(arg[k], "--min-imgid") && argc > k + 1)
     {
