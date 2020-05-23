@@ -18,14 +18,12 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-//#include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "iop/iop_api.h"
-//#include <gtk/gtk.h>
 #include "common/nlmeans_core.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -72,15 +70,15 @@ typedef union floatint_t
   uint32_t i;
 } floatint_t;
 
-static inline float gh(const float f, const float sharpness)
+static inline float gh(const float f)
 {
 #if 0
-  return exp2f(-f * sharpness);
+  return exp2f(-f);
 #else
   // fast integer-hack version of the above
   const int i1 = 0x3f800000; // 2^0
   const int i2 = 0x3f000000; // 2^-1
-  const int k0 = i1 + (int)((f*sharpness) * (i2 - i1));
+  const int k0 = i1 + (int)(f * (i2 - i1));
   floatint_t k;
   k.i = k0 >= 0x800000 ? k0 : 0;
   return k.f;
@@ -144,6 +142,14 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
   return patches;
 }
 
+static float compute_center_pixel_norm(const float center_weight, const int radius)
+{
+  // scale the central pixel's contribution by the size of the patch so that the center-weight
+  //   setting can be independent of patch size
+  const int width = 2 * radius + 1;
+  return center_weight * width * width;
+}
+
 // compute the channel-normed squared difference between two pixels
 static inline float pixel_difference(const float* const pix1, const float* pix2, const float norm[4])
 {
@@ -177,7 +183,6 @@ static inline float pixel_difference_sse2(const float* const pix1, const float* 
   return ssd[0] + ssd[1] + ssd[2];
 }
 #endif /* __SSE__ */
-
 
 static void init_column_sums(float *const col_sums, const patch_t *const patch, const float *const in,
                              const int row, const int height, const int width, const int stride,
@@ -272,7 +277,12 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const float weight[4] = { params->luma, params->chroma, params->chroma, 1.0f };
   const float invert[4] = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
+  const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
+  // define the normalization to convert central pixel differences into central pixel weights
+  const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
+  const float center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
+  
   // define the patches to be compared when denoising a pixel
   const size_t stride = 4 * roi_in->width;
   int num_patches;
@@ -332,14 +342,35 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
         float *out = outbuf + 4 * ((size_t)roi_out->width * row + col_min);
         const int offset = patch->offset;
         const float sharpness = params->sharpness;
-        for (int col = col_min; col < col_max; col++, in+=4, out+=4)
+        if (params->center_weight < 0)
         {
-          distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-          float wt = gh(distortion, sharpness);
-          const float pixel[4] = { in[offset],  in[offset+1], in[offset+2], 1.0f };
-          SIMD_FOR (size_t c = 0; c < 4; c++)
+          // computation as used by denoise(non-local) iop
+          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
           {
-            out[c] += pixel[c] * wt;
+            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
+            const float wt = gh(distortion * sharpness);
+            const float pixel[4] = { in[offset],  in[offset+1], in[offset+2], 1.0f };
+            SIMD_FOR (size_t c = 0; c < 4; c++)
+            {
+              out[c] += pixel[c] * wt;
+            }
+          }
+        }
+        else
+        {
+          // computation as used by denoiseprofiled iop with non-local means
+          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
+          {
+            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
+//TODO
+            const float dissimilarity = (distortion + pixel_difference(in,in+offset,center_norm)
+                                         / (1.0f + params->center_weight));
+            const float wt = gh(fmaxf(0.0f, dissimilarity * params->norm[0] - 2.0f));
+            const float pixel[4] = { in[offset],  in[offset+1], in[offset+2], 1.0f };
+            SIMD_FOR (size_t c = 0; c < 4; c++)
+            {
+              out[c] += pixel[c] * wt;
+            }
           }
         }
         if (row < row_top)
@@ -376,16 +407,34 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
         }
       }
     }
-    // normalize and apply chroma/luma blending
-    for (int row = chunk_start; row < chunk_end; row++)
+    if (skip_blend)
     {
-      const float *in = inbuf + row * stride;
-      float *out = outbuf + row * 4 * roi_out->width;
-      for (int col = 0; col < roi_out->width; col++, in+=4, out+=4)
+      // normalize the pixels
+      for (int row = chunk_start; row < chunk_end; row++)
       {
-        SIMD_FOR(size_t c = 0; c < 4; c++)
+        float *out = outbuf + row * 4 * roi_out->width;
+        for (int col = 0; col < roi_out->width; col++, out+=4)
         {
-          out[c] = (in[c] * invert[c]) + (out[c] / out[3] * weight[c]);
+          SIMD_FOR(size_t c = 0; c < 4; c++)
+          {
+            out[c] /= out[3];
+          }
+        }
+      }
+    }
+    else
+    {
+      // normalize and apply chroma/luma blending
+      for (int row = chunk_start; row < chunk_end; row++)
+      {
+        const float *in = inbuf + row * stride;
+        float *out = outbuf + row * 4 * roi_out->width;
+        for (int col = 0; col < roi_out->width; col++, in+=4, out+=4)
+        {
+          SIMD_FOR(size_t c = 0; c < 4; c++)
+          {
+            out[c] = (in[c] * invert[c]) + (out[c] / out[3] * weight[c]);
+          }
         }
       }
     }
@@ -406,7 +455,12 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const __m128 weight = { params->luma, params->chroma, params->chroma, 1.0f };
   const __m128 invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
+  const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
+  // define the normalization to convert central pixel differences into central pixel weights
+  const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
+  const float center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
+  
   // define the patches to be compared when denoising a pixel
   const size_t stride = 4 * roi_in->width;
   int num_patches;
@@ -467,14 +521,34 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
         float *out = outbuf + 4 * ((size_t)roi_out->width * row + col_min);
         const int offset = patch->offset;
         const float sharpness = params->sharpness;
-        for (int col = col_min; col < col_max; col++, in+=4, out+=4)
+        if (params->center_weight < 0)
         {
-          distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-          const __m128 wt = _mm_set1_ps(gh(distortion, sharpness));
-          __m128 pixel = _mm_load_ps(in+offset);
-          pixel[3] = 1.0f;
-          const __m128 outpx = _mm_load_ps(out);
-          _mm_store_ps(out, outpx + (pixel * wt));
+          // computation as used by denoise(non-local) iop
+          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
+          {
+            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
+            const __m128 wt = _mm_set1_ps(gh(distortion * sharpness));
+            __m128 pixel = _mm_load_ps(in+offset);
+            pixel[3] = 1.0f;
+            const __m128 outpx = _mm_load_ps(out);
+            _mm_store_ps(out, outpx + (pixel * wt));
+          }
+        }
+        else
+        {
+          // computation as used by denoiseprofiled iop with non-local means
+          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
+          {
+            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
+//TODO
+            const float dissimilarity = (distortion + pixel_difference_sse2(in,in+offset,center_norm)
+                                         / (1.0f + params->center_weight));
+            const __m128 wt = _mm_set1_ps(gh(fmaxf(0.0f, dissimilarity * params->norm[0] - 2.0f)));
+            __m128 pixel = _mm_load_ps(in+offset);
+            pixel[3] = 1.0f;
+            const __m128 outpx = _mm_load_ps(out);
+            _mm_store_ps(out, outpx + (pixel * wt));
+          }
         }
         if (row < row_top)
         {
@@ -511,17 +585,34 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
         }
       }
     }
-    // normalize and apply chroma/luma blending
-    for (int row = chunk_start; row < chunk_end; row++)
+    if (skip_blend)
     {
-      const float *in = inbuf + row * stride;
-      float *out = outbuf + row * 4 * roi_out->width;
-      for (int col = 0; col < roi_out->width; col++, in+=4, out+=4)
+      // normalize the pixels
+      for (int row = chunk_start; row < chunk_end; row++)
       {
-        __m128 inpx = _mm_load_ps(in);
-        __m128 outpx = _mm_load_ps(out);
-        __m128 scale = _mm_set1_ps(out[3]);
-        _mm_stream_ps(out, (inpx * invert) + (outpx / scale * weight)) ;
+        float *out = outbuf + row * 4 * roi_out->width;
+        for (int col = 0; col < roi_out->width; col++, out+=4)
+        {
+          const __m128 outpx = _mm_load_ps(out);
+          const __m128 scale = _mm_set1_ps(out[3]);
+          _mm_stream_ps(out, outpx / scale) ;
+        }
+      }
+    }
+    else
+    {
+      // normalize and apply chroma/luma blending
+      for (int row = chunk_start; row < chunk_end; row++)
+      {
+        const float *in = inbuf + row * stride;
+        float *out = outbuf + row * 4 * roi_out->width;
+        for (int col = 0; col < roi_out->width; col++, in+=4, out+=4)
+        {
+          const __m128 inpx = _mm_load_ps(in);
+          const __m128 outpx = _mm_load_ps(out);
+          const __m128 scale = _mm_set1_ps(out[3]);
+          _mm_stream_ps(out, (inpx * invert) + (outpx / scale * weight)) ;
+        }
       }
     }
   }

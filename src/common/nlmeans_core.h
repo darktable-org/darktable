@@ -26,6 +26,7 @@ struct dt_nlmeans_param_t
   float chroma;		// blend amount, a/b channels (set to 1.00 for RBG)
   float scattering;	// scattering factor for patches (default 0 = densest possible)
   float scale;		// image scaling, affects scattering
+  float center_weight;  // weighting of central pixel in patch (<0 for no special handling; used by denoise[non-local])
   int patch_radius;	// radius of patches which are compared, 1..4
   int search_radius;	// radius around a pixel in which to compare patches (default = 7)
   int decimate;         // set to 1 to search only half the patches in the neighborhood (default = 0)
