@@ -54,11 +54,11 @@ typedef enum dt_bauhaus_type_t
   // TODO: all the fancy color sliders..
 } dt_bauhaus_type_t;
 
-typedef enum dt_bauhaus_callback_t
+typedef enum dt_bauhaus_curve_t
 {
   DT_BAUHAUS_SET = 1,
   DT_BAUHAUS_GET = 2
-} dt_bauhaus_callback_t;
+} dt_bauhaus_curve_t;
 
 // data portion for a slider
 typedef struct dt_bauhaus_slider_data_t
@@ -66,7 +66,7 @@ typedef struct dt_bauhaus_slider_data_t
   float pos;      // normalized slider value
   float oldpos;   // slider value before entering finetune mode (normalized)
   float step;     // step width (not normalized)
-  float defpos;   // default value (normalized)
+  float defpos;   // default value (not normalized)
   float min, max; // min and max range
   float soft_min, soft_max;
   float hard_min, hard_max;
@@ -80,11 +80,13 @@ typedef struct dt_bauhaus_slider_data_t
   int fill_feedback; // fill the slider with brighter part up to the handle?
 
   char format[24]; // numeric value is printed with this string
+  float factor;    // multiplication factor before printing
+  float offset;    // addition before printing
 
   int is_dragging;      // indicates is mouse is dragging slider
   int is_changed;       // indicates new data
   guint timeout_handle; // used to store id of timeout routine
-  float (*callback)(GtkWidget*, float, dt_bauhaus_callback_t); // callback function
+  float (*curve)(GtkWidget*, float, dt_bauhaus_curve_t); // callback function
 } dt_bauhaus_slider_data_t;
 
 typedef enum dt_bauhaus_combobox_alignment_t
@@ -263,7 +265,10 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget, dt_iop_mod
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 void dt_bauhaus_slider_set_soft(GtkWidget *w, float pos);
+void dt_bauhaus_slider_set_val(GtkWidget *w, float val);
 float dt_bauhaus_slider_get(GtkWidget *w);
+float dt_bauhaus_slider_get_val(GtkWidget *w);
+char *dt_bauhaus_slider_get_text(GtkWidget *w);
 
 void dt_bauhaus_slider_set_soft_min(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_soft_min(GtkWidget* w);
@@ -282,12 +287,14 @@ float dt_bauhaus_slider_get_step(GtkWidget *w);
 
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
+void dt_bauhaus_slider_set_factor(GtkWidget *w, float factor);
+void dt_bauhaus_slider_set_offset(GtkWidget *w, float offset);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
 void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float soft_max);
 void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max);
-void dt_bauhaus_slider_set_callback(GtkWidget *widget, float (*callback)(GtkWidget *self, float value, dt_bauhaus_callback_t dir));
+void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(GtkWidget *self, float value, dt_bauhaus_curve_t dir));
 
 // combobox:
 void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* widget,dt_iop_module_t *self);

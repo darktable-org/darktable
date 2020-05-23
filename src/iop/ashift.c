@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
@@ -222,15 +223,15 @@ typedef enum dt_iop_ashift_enhance_t
 
 typedef enum dt_iop_ashift_mode_t
 {
-  ASHIFT_MODE_GENERIC = 0,
-  ASHIFT_MODE_SPECIFIC = 1
+  ASHIFT_MODE_GENERIC = 0, // $DESCRIPTION: "generic"
+  ASHIFT_MODE_SPECIFIC = 1 // $DESCRIPTION: "specific"
 } dt_iop_ashift_mode_t;
 
 typedef enum dt_iop_ashift_crop_t
 {
-  ASHIFT_CROP_OFF = 0,
-  ASHIFT_CROP_LARGEST = 1,
-  ASHIFT_CROP_ASPECT = 2
+  ASHIFT_CROP_OFF = 0,    // $DESCRIPTION: "off"
+  ASHIFT_CROP_LARGEST = 1,// $DESCRIPTION: "largest area"
+  ASHIFT_CROP_ASPECT = 2  // $DESCRIPTION: "original format"
 } dt_iop_ashift_crop_t;
 
 typedef enum dt_iop_ashift_bounding_t
@@ -288,21 +289,21 @@ typedef struct dt_iop_ashift_params3_t
 
 typedef struct dt_iop_ashift_params_t
 {
-  float rotation;
-  float lensshift_v;
-  float lensshift_h;
-  float shear;
-  float f_length;
-  float crop_factor;
-  float orthocorr;
-  float aspect;
-  dt_iop_ashift_mode_t mode;
+  float rotation;    // $MIN: -ROTATION_RANGE_SOFT $MAX: ROTATION_RANGE_SOFT $DEFAULT: 0.0
+  float lensshift_v; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (vertical)"
+  float lensshift_h; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (horizontal)"
+  float shear;       // $MIN: -SHEAR_RANGE_SOFT $MAX: SHEAR_RANGE_SOFT $DEFAULT: 0.0
+  float f_length;    // $MIN: 1.0 $MAX: 2000.0 $DEFAULT: 28.0 $DESCRIPTION: "focal length"
+  float crop_factor; // $MIN: 0.5 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "crop factor"
+  float orthocorr;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "lens dependence"
+  float aspect;      // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "aspect adjust"
+  dt_iop_ashift_mode_t mode;     // $DESCRIPTION: "lens model"
   int toggle;
-  dt_iop_ashift_crop_t cropmode;
-  float cl;
-  float cr;
-  float ct;
-  float cb;
+  dt_iop_ashift_crop_t cropmode; // $DESCRIPTION: "automatic cropping"
+  float cl;          // $DEFAULT: 0.0
+  float cr;          // $DEFAULT: 1.0
+  float ct;          // $DEFAULT: 0.0
+  float cb;          // $DEFAULT: 1.0
 } dt_iop_ashift_params_t;
 
 typedef struct dt_iop_ashift_line_t
@@ -372,6 +373,7 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *guide_lines;
   GtkWidget *cropmode;
   GtkWidget *mode;
+  GtkWidget *specifics;
   GtkWidget *f_length;
   GtkWidget *crop_factor;
   GtkWidget *orthocorr;
@@ -4068,155 +4070,40 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   return FALSE;
 }
 
-static void rotation_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->rotation = dt_bauhaus_slider_get(slider);
-#ifdef ASHIFT_DEBUG
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  model_probe(self, p, g->lastfit);
-#endif
-  do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
 
-static void lensshift_v_callback(GtkWidget *slider, gpointer user_data)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->lensshift_v = dt_bauhaus_slider_get(slider);
-#ifdef ASHIFT_DEBUG
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  model_probe(self, p, g->lastfit);
-#endif
-  do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
 
-static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->lensshift_h = dt_bauhaus_slider_get(slider);
-#ifdef ASHIFT_DEBUG
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  model_probe(self, p, g->lastfit);
-#endif
-  do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
+  if(w == g->cropmode)
+  {
+    if(g->lines != NULL && !g->lines_suppressed)
+    {
+      g->lines_suppressed = 1;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
+    }
+  }
+  else if(w == g->mode)
+  {
+    gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
+  }
 
-static void shear_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->shear = dt_bauhaus_slider_get(slider);
 #ifdef ASHIFT_DEBUG
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
   do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   g->show_guides = dt_bauhaus_combobox_get(widget);
   dt_iop_request_focus(self);
   dt_dev_reprocess_all(self->dev);
-}
-
-static void cropmode_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  p->cropmode = dt_bauhaus_combobox_get(widget);
-  if(g->lines != NULL && !g->lines_suppressed)
-  {
-    g->lines_suppressed = 1;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
-  }
-  do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void mode_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  p->mode = dt_bauhaus_combobox_get(widget);
-
-  switch(p->mode)
-  {
-    case ASHIFT_MODE_GENERIC:
-      gtk_widget_hide(g->f_length);
-      gtk_widget_hide(g->crop_factor);
-      gtk_widget_hide(g->orthocorr);
-      gtk_widget_hide(g->aspect);
-      break;
-    case ASHIFT_MODE_SPECIFIC:
-    default:
-      gtk_widget_show(g->f_length);
-      gtk_widget_show(g->crop_factor);
-      gtk_widget_show(g->orthocorr);
-      gtk_widget_show(g->aspect);
-      break;
-  }
-
-  do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void f_length_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->f_length = dt_bauhaus_slider_get(slider);
-  do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void crop_factor_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->crop_factor = dt_bauhaus_slider_get(slider);
-  do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void orthocorr_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->orthocorr = dt_bauhaus_slider_get(slider);
-  do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void aspect_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  p->aspect = dt_bauhaus_slider_get(slider);
-  do_crop(self, p);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -4562,36 +4449,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
-  switch(p->mode)
-  {
-    case ASHIFT_MODE_GENERIC:
-      gtk_widget_hide(g->f_length);
-      gtk_widget_hide(g->crop_factor);
-      gtk_widget_hide(g->orthocorr);
-      gtk_widget_hide(g->aspect);
-      break;
-    case ASHIFT_MODE_SPECIFIC:
-    default:
-      gtk_widget_show(g->f_length);
-      gtk_widget_show(g->crop_factor);
-      gtk_widget_show(g->orthocorr);
-      gtk_widget_show(g->aspect);
-      break;
-  }
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_ashift_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_ashift_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_ashift_params_t);
-  module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH,
-                                1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0, ASHIFT_CROP_OFF,
-                                0.0f, 1.0f, 0.0f, 1.0f };
-  memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
+  gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -4620,10 +4478,9 @@ void reload_defaults(dt_iop_module_t *module)
   }
 
   // init defaults:
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, f_length, crop_factor, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
-                                                         ASHIFT_CROP_OFF, 0.0f, 1.0f, 0.0f, 1.0f };
-  memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
+  ((dt_iop_ashift_params_t *)module->default_params)->f_length = f_length;
+  ((dt_iop_ashift_params_t *)module->default_params)->crop_factor = crop_factor;
+  memcpy(module->params, module->default_params, sizeof(dt_iop_ashift_params_t));
 
   // reset gui elements
   if(module->gui_data)
@@ -4639,8 +4496,8 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
     dt_bauhaus_widget_set_label(g->lensshift_h, NULL, string_h);
 
-    dt_bauhaus_slider_set_default(g->f_length, tmp.f_length);
-    dt_bauhaus_slider_set_default(g->crop_factor, tmp.crop_factor);
+    dt_bauhaus_slider_set_default(g->f_length, f_length);
+    dt_bauhaus_slider_set_default(g->crop_factor, crop_factor);
 
     dt_pthread_mutex_lock(&g->lock);
     free(g->buf);
@@ -4757,36 +4614,30 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     dt_dev_reprocess_all(self->dev);
 }
 
-static float log10_callback(GtkWidget *self, float inval, dt_bauhaus_callback_t dir)
+static float log10_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
 {
   float outval;
-  switch(dir)
+  if(dir == DT_BAUHAUS_SET)
   {
-    case DT_BAUHAUS_SET:
-      outval = log10(fmax(inval, 1e-15f));
-      break;
-    case DT_BAUHAUS_GET:
-      outval = exp(M_LN10 * inval);
-      break;
-    default:
-      outval = inval;
+    outval = log10f(inval * 999.0f + 1.0f) / 3.0f;
+  }
+  else
+  {
+    outval = (expf(M_LN10 * inval * 3.0f) - 1.0f) / 999.0f;
   }
   return outval;
 }
 
-static float log2_callback(GtkWidget *self, float inval, dt_bauhaus_callback_t dir)
+static float log2_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
 {
   float outval;
-  switch(dir)
+  if(dir == DT_BAUHAUS_SET)
   {
-    case DT_BAUHAUS_SET:
-      outval = log(fmax(inval, 1e-15f)) / M_LN2;
-      break;
-    case DT_BAUHAUS_GET:
-      outval = exp(M_LN2 * inval);
-      break;
-    default:
-      outval = inval;
+      outval = log2f(inval * 1.5f + 0.5f) / 2.0f + 0.5f;
+  }
+  else
+  {
+    outval = (exp2f(inval * 2.0 - 1.0) - 0.5f) / 1.5f;
   }
   return outval;
 }
@@ -4843,26 +4694,20 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->rotation = dt_bauhaus_slider_new_with_range(self, -ROTATION_RANGE, ROTATION_RANGE, 0.01*ROTATION_RANGE, p->rotation, 2);
-  dt_bauhaus_widget_set_label(g->rotation, NULL, _("rotation"));
+  g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
-  dt_bauhaus_slider_enable_soft_boundaries(g->rotation, -ROTATION_RANGE_SOFT, ROTATION_RANGE_SOFT);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->rotation, TRUE, TRUE, 0);
+  dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 
-  g->lensshift_v = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01*LENSSHIFT_RANGE, p->lensshift_v, 3);
-  dt_bauhaus_widget_set_label(g->lensshift_v, NULL, _("lens shift (vertical)"));
-  dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_v, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_v, TRUE, TRUE, 0);
+  g->lensshift_v = dt_bauhaus_slider_from_params(self, "lensshift_v");
+  dt_bauhaus_slider_set_soft_range(g->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+  dt_bauhaus_slider_set_digits(g->lensshift_v, 3);
 
-  g->lensshift_h = dt_bauhaus_slider_new_with_range(self, -LENSSHIFT_RANGE, LENSSHIFT_RANGE, 0.01*LENSSHIFT_RANGE, p->lensshift_h, 3);
-  dt_bauhaus_widget_set_label(g->lensshift_h, NULL, _("lens shift (horizontal)"));
-  dt_bauhaus_slider_enable_soft_boundaries(g->lensshift_h, -LENSSHIFT_RANGE_SOFT, LENSSHIFT_RANGE_SOFT);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->lensshift_h, TRUE, TRUE, 0);
+  g->lensshift_h = dt_bauhaus_slider_from_params(self, "lensshift_h");
+  dt_bauhaus_slider_set_soft_range(g->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
+  dt_bauhaus_slider_set_digits(g->lensshift_h, 3);
 
-  g->shear = dt_bauhaus_slider_new_with_range(self, -SHEAR_RANGE, SHEAR_RANGE, 0.01*SHEAR_RANGE, p->shear, 3);
-  dt_bauhaus_widget_set_label(g->shear, NULL, _("shear"));
-  dt_bauhaus_slider_enable_soft_boundaries(g->shear, -SHEAR_RANGE_SOFT, SHEAR_RANGE_SOFT);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->shear, TRUE, TRUE, 0);
+  g->shear = dt_bauhaus_slider_from_params(self, "shear");
+  dt_bauhaus_slider_set_soft_range(g->shear, -SHEAR_RANGE, SHEAR_RANGE);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
@@ -4870,114 +4715,74 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->guide_lines, _("on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
-  g->cropmode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cropmode, NULL, _("automatic cropping"));
-  dt_bauhaus_combobox_add(g->cropmode, _("off"));
-  dt_bauhaus_combobox_add(g->cropmode, _("largest area"));
-  dt_bauhaus_combobox_add(g->cropmode, _("original format"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cropmode, TRUE, TRUE, 0);
+  g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
 
-  g->mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->mode, NULL, _("lens model"));
-  dt_bauhaus_combobox_add(g->mode, _("generic"));
-  dt_bauhaus_combobox_add(g->mode, _("specific"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
 
-  g->f_length = dt_bauhaus_slider_new_with_range(self, 1.0f, 3.0f, 0.01f, 1.0f, 2);
-  dt_bauhaus_widget_set_label(g->f_length, NULL, _("focal length"));
-  dt_bauhaus_slider_set_callback(g->f_length, log10_callback);
+  GtkWidget *saved_widget = self->widget;
+  self->widget = g->specifics = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->f_length = dt_bauhaus_slider_from_params(self, "f_length");
+  dt_bauhaus_slider_set_soft_range(g->f_length, 10.0f, 1000.0f);
+  dt_bauhaus_slider_set_curve(g->f_length, log10_curve);
   dt_bauhaus_slider_set_format(g->f_length, "%.0fmm");
-  dt_bauhaus_slider_set_default(g->f_length, DEFAULT_F_LENGTH);
-  dt_bauhaus_slider_set(g->f_length, DEFAULT_F_LENGTH);
-  dt_bauhaus_slider_enable_soft_boundaries(g->f_length, 1.0f, 2000.0f);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->f_length, TRUE, TRUE, 0);
+  dt_bauhaus_slider_set_step(g->f_length, 1.0);
 
-  g->crop_factor = dt_bauhaus_slider_new_with_range(self, 1.0f, 2.0f, 0.01f, p->crop_factor, 2);
-  dt_bauhaus_widget_set_label(g->crop_factor, NULL, _("crop factor"));
-  dt_bauhaus_slider_enable_soft_boundaries(g->crop_factor, 0.5f, 10.0f);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->crop_factor, TRUE, TRUE, 0);
+  g->crop_factor = dt_bauhaus_slider_from_params(self, "crop_factor"); 
+  dt_bauhaus_slider_set_soft_range(g->crop_factor, 1.0f, 2.0f);
 
-  g->orthocorr = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1.0f, p->orthocorr, 2);
-  dt_bauhaus_widget_set_label(g->orthocorr, NULL, _("lens dependence"));
+  g->orthocorr = dt_bauhaus_slider_from_params(self, "orthocorr");
   dt_bauhaus_slider_set_format(g->orthocorr, "%.0f%%");
-#if 0
   // this parameter could serve to finetune between generic model (0%) and specific model (100%).
   // however, users can more easily get the same effect with the aspect adjust parameter so we keep
   // this one hidden.
-  gtk_box_pack_start(GTK_BOX(self->widget), g->orthocorr, TRUE, TRUE, 0);
-#endif
+  gtk_widget_set_no_show_all(g->orthocorr, TRUE);
+  gtk_widget_set_visible(g->orthocorr, FALSE);
 
-  g->aspect = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.01f, 0.0f, 2);
-  dt_bauhaus_widget_set_label(g->aspect, NULL, _("aspect adjust"));
-  dt_bauhaus_slider_set_callback(g->aspect, log2_callback);
-  dt_bauhaus_slider_set_default(g->aspect, 1.0f);
-  dt_bauhaus_slider_set(g->aspect, 1.0f);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
+  g->aspect = dt_bauhaus_slider_from_params(self, "aspect");
+  dt_bauhaus_slider_set_curve(g->aspect, log2_curve);
 
-  GtkWidget *grid = gtk_grid_new();
-  gtk_grid_set_row_spacing(GTK_GRID(grid), 2 * DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
+  self->widget = saved_widget;
+  gtk_box_pack_start(GTK_BOX(self->widget), g->specifics, TRUE, TRUE, 0);
+  gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
+
+  GtkGrid *grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_row_spacing(grid, 2 * DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
   GtkWidget *label1 = gtk_label_new(_("automatic fit"));
   gtk_widget_set_halign(label1, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label1, 0, 0, 1, 1);
+  gtk_grid_attach(grid, label1, 0, 0, 1, 1);
 
   g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
-  gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_v, label1, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(grid, g->fit_v, 1, 0, 1, 1);
 
   g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
-  gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_h, g->fit_v, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(grid, g->fit_h, 2, 0, 1, 1);
 
   g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
-  gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_both, g->fit_h, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(grid, g->fit_both, 3, 0, 1, 1);
 
   GtkWidget *label2 = gtk_label_new(_("get structure"));
   gtk_widget_set_halign(label2, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label2, 0, 1, 1, 1);
+  gtk_grid_attach(grid, label2, 0, 1, 1, 1);
 
   g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
-  gtk_grid_attach_next_to(GTK_GRID(grid), g->structure, label2, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(grid, g->structure, 1, 1, 1, 1);
 
   g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->clean), TRUE);
-  gtk_grid_attach_next_to(GTK_GRID(grid), g->clean, g->structure, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(grid, g->clean, 2, 1, 1, 1);
 
   g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->eye), TRUE);
-  gtk_grid_attach_next_to(GTK_GRID(grid), g->eye, g->clean, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(grid, g->eye, 3, 1, 1, 1);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), grid, TRUE, TRUE, 0);
-
-  gtk_widget_show_all(g->f_length);
-  gtk_widget_set_no_show_all(g->f_length, TRUE);
-  gtk_widget_show_all(g->crop_factor);
-  gtk_widget_set_no_show_all(g->crop_factor, TRUE);
-  gtk_widget_show_all(g->orthocorr);
-  gtk_widget_set_no_show_all(g->orthocorr, TRUE);
-  gtk_widget_show_all(g->aspect);
-  gtk_widget_set_no_show_all(g->aspect, TRUE);
-
-
-  switch(p->mode)
-  {
-    case ASHIFT_MODE_GENERIC:
-      gtk_widget_hide(g->f_length);
-      gtk_widget_hide(g->crop_factor);
-      gtk_widget_hide(g->orthocorr);
-      gtk_widget_hide(g->aspect);
-      break;
-    case ASHIFT_MODE_SPECIFIC:
-    default:
-      gtk_widget_show(g->f_length);
-      gtk_widget_show(g->crop_factor);
-      gtk_widget_show(g->orthocorr);
-      gtk_widget_show(g->aspect);
-      break;
-  }
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
 
   gtk_widget_set_tooltip_text(g->rotation, _("rotate image"));
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
@@ -5014,17 +4819,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
-  g_signal_connect(G_OBJECT(g->rotation), "value-changed", G_CALLBACK(rotation_callback), self);
-  g_signal_connect(G_OBJECT(g->lensshift_v), "value-changed", G_CALLBACK(lensshift_v_callback), self);
-  g_signal_connect(G_OBJECT(g->lensshift_h), "value-changed", G_CALLBACK(lensshift_h_callback), self);
-  g_signal_connect(G_OBJECT(g->shear), "value-changed", G_CALLBACK(shear_callback), self);
   g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guide_lines_callback), self);
-  g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
-  g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
-  g_signal_connect(G_OBJECT(g->f_length), "value-changed", G_CALLBACK(f_length_callback), self);
-  g_signal_connect(G_OBJECT(g->crop_factor), "value-changed", G_CALLBACK(crop_factor_callback), self);
-  g_signal_connect(G_OBJECT(g->orthocorr), "value-changed", G_CALLBACK(orthocorr_callback), self);
-  g_signal_connect(G_OBJECT(g->aspect), "value-changed", G_CALLBACK(aspect_callback), self);
   g_signal_connect(G_OBJECT(g->fit_v), "button-press-event", G_CALLBACK(fit_v_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->fit_h), "button-press-event", G_CALLBACK(fit_h_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->fit_both), "button-press-event", G_CALLBACK(fit_both_button_clicked), (gpointer)self);
@@ -5036,7 +4831,6 @@ void gui_init(struct dt_iop_module_t *self)
   /* add signal handler for preview pipe finish to redraw the overlay */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(process_after_preview_callback), self);
-
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
