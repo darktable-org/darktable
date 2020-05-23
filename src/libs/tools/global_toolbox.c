@@ -160,7 +160,31 @@ static void _overlays_show_popup(dt_lib_module_t *self)
   gboolean show = FALSE;
 
   // thumbnails part
-  if(gtk_widget_is_visible(dt_ui_thumbtable(darktable.gui->ui)->widget))
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  gboolean thumbs_state;
+  if(g_strcmp0(cv->module_name, "slideshow") == 0)
+  {
+    thumbs_state = FALSE;
+  }
+  else if(g_strcmp0(cv->module_name, "lighttable") == 0)
+  {
+    if(dt_view_lighttable_preview_state(darktable.view_manager)
+       || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
+    {
+      thumbs_state = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+    }
+    else
+    {
+      thumbs_state = TRUE;
+    }
+  }
+  else
+  {
+    thumbs_state = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM);
+  }
+
+
+  if(thumbs_state)
   {
     // we write the label with the size categorie
     gchar *txt = dt_util_dstrcat(NULL, "%s %d", _("thumbnails overlays for size"),
@@ -195,7 +219,6 @@ static void _overlays_show_popup(dt_lib_module_t *self)
   }
 
   // and we do the same for culling/preview if needed
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(g_strcmp0(cv->module_name, "lighttable") == 0
      && (dt_view_lighttable_preview_state(darktable.view_manager)
          || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING))
@@ -239,6 +262,8 @@ static void _overlays_show_popup(dt_lib_module_t *self)
 
 
   if(show) gtk_widget_show(d->over_popup);
+  else
+    dt_control_log(_("overlays not available here..."));
 }
 
 static void _main_icons_register_size(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
