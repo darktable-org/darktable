@@ -334,6 +334,7 @@ static int compute_slice_size(const int height)
   const int diff_low = chunk_size_low - base_chunk_size;
   const int diff_high = base_chunk_size - chunk_size_high;
 <<<<<<< HEAD
+<<<<<<< HEAD
   return diff_high <= diff_low ?  chunk_size_high : chunk_size_low;
 }
 
@@ -341,6 +342,8 @@ static int compute_slice_size(const int height)
 >>>>>>> New more-scaleable implementation of non-local means
 =======
   fprintf(stderr,"ht=%d, base=%d, #chk=%d, lo=%d, hi=%d, szlo=%d, szhi=%d, diflo=%d, difhi=%d\n",height,base_chunk_size,num_chunks,low,high,chunk_size_low,chunk_size_high,diff_low,diff_high);
+=======
+>>>>>>> remove debugging printf
   return diff_high <= diff_low ?  chunk_size_high : chunk_size_low;
 }
 
@@ -390,8 +393,11 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
 =======
   const int chunk_size = compute_slice_size(roi_out->height);
   const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
+<<<<<<< HEAD
   fprintf(stderr,"ch_size=%d, n_chks=%d, #thr=%d\n",chunk_size,num_chunks,numthreads);
 >>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
+=======
+>>>>>>> remove debugging printf
 #ifdef _OPENMP
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
       dt_omp_firstprivate(patches, num_patches, scratch_buf) \
