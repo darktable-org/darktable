@@ -70,10 +70,9 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dt_image_init(&dev->image_storage);
   dev->image_status = dev->preview_status = dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-  dev->image_loading = dev->preview_loading = dev->preview2_loading = dev->history_updating = dev->image_invalid = 0;
-  dev->image_force_reload = 0;
-  dev->preview_input_changed = dev->preview2_input_changed = 0;
-
+  dev->history_updating = dev->image_force_reload = dev->image_loading = dev->preview_loading = FALSE; 
+  dev->preview2_loading = dev->preview_input_changed = dev->preview2_input_changed = FALSE;
+  dev->image_invalid_cnt = 0;
   dev->pipe = dev->preview_pipe = dev->preview2_pipe = NULL;
   dt_pthread_mutex_init(&dev->pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview_pipe_mutex, NULL);
@@ -334,14 +333,14 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
     dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
-    dev->preview_loading = 0;
+    dev->preview_loading = FALSE;
   }
 
   // if raw loaded, get new mipf
   if(dev->preview_input_changed)
   {
     dt_dev_pixelpipe_flush_caches(dev->preview_pipe);
-    dev->preview_input_changed = 0;
+    dev->preview_input_changed = FALSE;
   }
 
 // always process the whole downsampled mipf buffer, to allow for fast scrolling and mip4 write-through.
@@ -438,7 +437,7 @@ void dt_dev_process_preview2_job(dt_develop_t *dev)
     dt_dev_pixelpipe_cleanup_nodes(dev->preview2_pipe);
     dt_dev_pixelpipe_create_nodes(dev->preview2_pipe, dev);
     dt_dev_pixelpipe_flush_caches(dev->preview2_pipe);
-    dev->preview2_loading = 0;
+    dev->preview2_loading = FALSE;
   }
 
   // if raw loaded, get new mipf
@@ -556,7 +555,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dt_control_toast_busy_leave();
     dev->image_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_pthread_mutex_unlock(&dev->pipe_mutex);
-    dev->image_invalid++;
+    dev->image_invalid_cnt++;
     return;
   }
 
@@ -568,13 +567,13 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
     if(dev->image_force_reload) dt_dev_pixelpipe_flush_caches(dev->pipe);
-    dev->image_force_reload = 0;
+    dev->image_force_reload = FALSE;
     if(dev->gui_attached)
     {
       // during load, a mipf update could have been issued.
-      dev->preview_input_changed = 1;
+      dev->preview_input_changed = TRUE;
       dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-      dev->preview2_input_changed = 1;
+      dev->preview2_input_changed = TRUE;
       dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
       dev->gui_synch = 1; // notify gui thread we want to synch (call gui_update in the modules)
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
@@ -661,8 +660,8 @@ restart:
   dev->pipe->backbuf_zoom_y = zoom_y;
 
   dev->image_status = DT_DEV_PIXELPIPE_VALID;
-  dev->image_loading = 0;
-  dev->image_invalid = 0;
+  dev->image_loading = FALSE;
+  dev->image_invalid_cnt = 0;
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
@@ -692,7 +691,7 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
 void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
 {
   _dt_dev_load_raw(dev, imgid);
-  dev->image_force_reload = dev->image_loading = dev->preview_loading = dev->preview2_loading = 1;
+  dev->image_force_reload = dev->image_loading = dev->preview_loading = dev->preview2_loading = TRUE;
 
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
@@ -741,10 +740,8 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
     dev->pipe->processed_width = 0;
     dev->pipe->processed_height = 0;
   }
-  dev->image_loading = 1;
-  dev->preview_loading = 1;
-  dev->preview2_loading = 1;
-  dev->first_load = 1;
+  dev->image_loading = dev->first_load = dev->preview_loading = dev->preview2_loading = TRUE;
+
   dev->image_status = dev->preview_status = dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
 
   // we need a global lock as the dev->iop set must not be changed until read history is terminated
@@ -754,7 +751,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_read_history(dev);
   dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
 
-  dev->first_load = 0;
+  dev->first_load = FALSE;
 
   // Loading an image means we do some developing and so remove the darktable|problem|history-compress tag
   dt_history_set_compress_problem(imgid, FALSE);
@@ -1241,7 +1238,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 
   dt_dev_pop_history_items_ext(dev, cnt);
 
-  darktable.develop->history_updating = 1;
+  darktable.develop->history_updating = TRUE;
 
   // update all gui modules
   GList *modules = dev->iop;
@@ -1252,7 +1249,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
     modules = g_list_next(modules);
   }
 
-  darktable.develop->history_updating = 0;
+  darktable.develop->history_updating = FALSE;
 
   // check if the order of modules has changed
   int dev_iop_changed = (g_list_length(dev_iop) != g_list_length(dev->iop));
@@ -2129,7 +2126,7 @@ gboolean dt_dev_modulegroups_available(dt_develop_t *dev)
 
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
 {
-  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->first_load == 0)
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->first_load == FALSE)
     dev->proxy.modulegroups.set(dev->proxy.modulegroups.module, group);
 }
 
@@ -2150,7 +2147,7 @@ gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t io
 
 void dt_dev_modulegroups_switch(dt_develop_t *dev, dt_iop_module_t *module)
 {
-  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.switch_group && dev->first_load == 0)
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.switch_group && dev->first_load == FALSE)
     dev->proxy.modulegroups.switch_group(dev->proxy.modulegroups.module, module);
 }
 
