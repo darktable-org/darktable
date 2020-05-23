@@ -2763,36 +2763,25 @@ void dt_gui_load_theme(const char *theme)
   gtk_style_context_add_provider_for_screen
     (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
 
-  if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), path, &error))
+  g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
+
+  if(dt_conf_get_bool("themes/usercss") && g_file_test(usercsspath, G_FILE_TEST_EXISTS))
+  {
+    gchar *combinedcsscontent = g_strjoin(NULL, "@import url(\"", path, 
+                                           "\"); @import url(\"", usercsspath, "\");", NULL);
+
+    if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), combinedcsscontent, -1, &error))
+    {
+      fprintf(stderr, "%s: error parsing combined CSS: %s\n", G_STRFUNC, error->message);
+      g_clear_error(&error);
+    }
+
+    g_free(combinedcsscontent);
+  }
+  else if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), path, &error))
   {
     fprintf(stderr, "%s: error parsing %s: %s\n", G_STRFUNC, path, error->message);
     g_clear_error(&error);
-  }
-
-  if(dt_conf_get_bool("themes/usercss"))
-  {
-    g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
-
-    if(g_file_test(usercsspath, G_FILE_TEST_EXISTS))
-    {
-      //need to append currently loaded theme with user tweaks
-      const gchar *themecsscontent = gtk_css_provider_to_string(GTK_CSS_PROVIDER(themes_style_provider));
-
-      if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), usercsspath, &error))
-      {
-        fprintf(stderr, "%s: error parsing %s: %s\n", G_STRFUNC, usercsspath, error->message);
-        g_clear_error(&error);
-      }
-
-      const gchar *usercsscontent = gtk_css_provider_to_string(GTK_CSS_PROVIDER(themes_style_provider));
-      const gchar *combinedcsscontent = g_strjoin(" ", themecsscontent, usercsscontent, NULL);
-
-      if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), combinedcsscontent, -1, &error))
-      {
-        fprintf(stderr, "%s: error parsing combined CSS: %s\n", G_STRFUNC, error->message);
-        g_clear_error(&error);
-      }
-    }
   }
 
   g_object_unref(themes_style_provider);
