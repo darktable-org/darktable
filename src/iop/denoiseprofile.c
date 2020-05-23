@@ -1867,8 +1867,9 @@ static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
   return compensate_p;
 }
 
+#ifdef HAVE_OPENCL
 // called by process_nlmeans_cl
-// must keep synchronized with nlmeans_precondition_cl above
+// must keep synchronized with nlmeans_precondition above
 static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d,
                                      const dt_dev_pixelpipe_iop_t *const piece, float wb[3],
                                      float scale, float aa[4], float bb[4], float p[4])
@@ -1904,6 +1905,7 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
   }
   return compensate_p;
 }
+#endif /* HAVE_OPENCL */
 
 // called by process_nlmeans, process_nlmeans_sse
 static void nlmeans_backtransform(const dt_iop_denoiseprofile_data_t *const d, float *ovoid,
