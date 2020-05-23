@@ -110,7 +110,7 @@ static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
 // change the type of overlays that should be shown
 void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over)
 {
-  if(over == table->overlays) return;
+  if(!table || over == table->overlays) return;
   gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/%d/%d", table->mode, table->prefs_size);
   dt_conf_set_int(txt, over);
   g_free(txt);
