@@ -107,10 +107,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
       // PRELIGHT, but not on ACTIVE
       if(!(flags & CPF_BG_TRANSPARENT) || (flags & CPF_PRELIGHT))
       {
-        cairo_rectangle(cr, startx, starty, cwidth, cheight);
-        gdk_cairo_set_source_rgba(cr, &bg_color);
-        cairo_fill(cr);
-        gtk_render_background(context, cr, 0, 0, width, height);
+        gtk_render_background(context, cr, startx, starty, cwidth, cheight);
       }
     }
     else if(!(flags & CPF_ACTIVE) || (flags & CPF_IGNORE_FG_STATE))
