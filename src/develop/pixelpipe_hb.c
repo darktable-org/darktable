@@ -577,7 +577,13 @@ static void pixelpipe_picker(dt_iop_module_t *module, dt_iop_buffer_dsc_t *dsc, 
     return;
   }
 
-  float min[4] = { INFINITY }, max[4] = { -INFINITY }, avg[4] = { 0.0f };
+  float min[4], max[4], avg[4];
+  for(int k = 0; k < 4; k++)
+  {
+    min[k] = INFINITY;
+    max[k] = -INFINITY;
+    avg[k] = 0.0f;
+  }
 
   dt_color_picker_helper(dsc, pixel, roi, box, avg, min, max, image_cst,
                          dt_iop_color_picker_get_active_cst(module));
@@ -654,7 +660,13 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
   box[2] = region[0];
   box[3] = region[1];
 
-  float min[4] = { INFINITY }, max[4] = { -INFINITY }, avg[4] = { 0.0f };
+  float min[4], max[4], avg[4];
+  for(int k = 0; k < 4; k++)
+  {
+    min[k] = INFINITY;
+    max[k] = -INFINITY;
+    avg[k] = 0.0f;
+  }
 
   dt_color_picker_helper(dsc, pixel, &roi_copy, box, avg, min, max, image_cst,
                          dt_iop_color_picker_get_active_cst(module));

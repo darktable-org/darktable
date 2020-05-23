@@ -399,6 +399,8 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
                   get_imgid(entry->key), filename);
           goto read_error;
         }
+        dt_print(DT_DEBUG_CACHE, "[mipmap_cache] grab mip %d for image %" PRIu32 " from disk cache\n", mip,
+                 get_imgid(entry->key));
         dsc->width = jpg.width;
         dsc->height = jpg.height;
         dsc->iscale = 1.0f;
@@ -1191,6 +1193,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
         if(!dt_imageio_jpeg_read(&jpg, tmp))
         {
           // scale to fit
+          dt_print(DT_DEBUG_CACHE, "[mipmap_cache] generate mip %d for image %d from jpeg\n", size, imgid);
           dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
           res = 0;
         }
@@ -1216,6 +1219,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
         else
         {
           // scale to fit
+          dt_print(DT_DEBUG_CACHE, "[mipmap_cache] generate mip %d for image %d from embedded jpeg\n", size, imgid);
           dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, orientation, width, height);
         }
         dt_free_align(tmp);
@@ -1232,7 +1236,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
       dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
       if(tmp.buf == NULL)
         continue;
-      dt_print(DT_DEBUG_CACHE, "[_init_8] generate mip %d for %s from level %d\n", size, filename, k);
+      dt_print(DT_DEBUG_CACHE, "[mipmap_cache] generate mip %d for image %d from level %d\n", size, imgid, k);
       *color_space = tmp.color_space;
       // downsample
       dt_iop_flip_and_zoom_8(tmp.buf, tmp.width, tmp.height, buf, wd, ht, ORIENTATION_NONE, width, height);
@@ -1261,6 +1265,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
                                        NULL, 1, 1, NULL);
     if(!res)
     {
+      dt_print(DT_DEBUG_CACHE, "[mipmap_cache] generate mip %d for image %d from scratch\n", size, imgid);
       // might be smaller, or have a different aspect than what we got as input.
       *width = dat.head.width;
       *height = dat.head.height;
