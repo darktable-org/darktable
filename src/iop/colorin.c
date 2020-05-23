@@ -1112,8 +1112,13 @@ static void process_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
+  const int regularized = (d->custom_regularization == 1);
 
-  if(!blue_mapping && d->nonlinearlut == 0)
+  if(regularized)
+  {
+    process_cmatrix_fastpath_regularized(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else if(!blue_mapping && d->nonlinearlut == 0)
   {
     process_cmatrix_fastpath(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
@@ -1415,8 +1420,14 @@ static void process_sse2_cmatrix_fastpath(struct dt_iop_module_t *self, dt_dev_p
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int clipping = (d->nrgb != NULL);
+  const int regularized = (d->custom_regularization == 1);
 
-  if(!clipping)
+  if(regularized)
+  {
+    //TODO provide sse2 version
+    process_cmatrix_fastpath_regularized(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else if(!clipping)
   {
     process_sse2_cmatrix_fastpath_simple(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
@@ -1504,8 +1515,14 @@ static void process_sse2_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
+  const int regularized = (d->custom_regularization == 1);
 
-  if(!blue_mapping && d->nonlinearlut == 0)
+  if(regularized)
+  {
+    //TODO provide sse2 version
+    process_cmatrix_fastpath_regularized(self, piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else if(!blue_mapping && d->nonlinearlut == 0)
   {
     process_sse2_cmatrix_fastpath(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
