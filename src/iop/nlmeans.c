@@ -594,9 +594,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       .search_radius = K,
                                       .decimate = 1,
                                       .norm = norm2 };
+<<<<<<< HEAD
   nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
   // (SSE version not implemented yet, redirect to scalar code)
 >>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
+=======
+  nlmeans_denoise_sse2(ivoid,ovoid,roi_in,roi_out,&params);
+>>>>>>> switch process_sse2() to use SSE version of nlmeans_denoise
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   return;
