@@ -566,7 +566,11 @@ static void normalize_changed(GtkWidget *widget, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   p->normalize = dt_bauhaus_combobox_get(widget);
+  gboolean custom = (p->normalize == DT_NORMALIZE_CUSTOM);
+  gtk_widget_set_visible(g->color_regularization, custom);
+  gtk_widget_set_visible(g->luminance_regularization, custom);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2019,6 +2023,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
   dt_bauhaus_slider_set(g->color_regularization, p->color_regularization);
   dt_bauhaus_slider_set(g->luminance_regularization, p->luminance_regularization);
+  gboolean custom = (p->normalize == DT_NORMALIZE_CUSTOM);
+  gtk_widget_set_visible(g->color_regularization, custom);
+  gtk_widget_set_visible(g->luminance_regularization, custom);
 
   update_profile_list(self);
 
@@ -2393,12 +2400,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->color_regularization, _("amount of color regularization for far-from-gamut pixel\n increase to desaturate"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->color_regularization, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->color_regularization), "value-changed", G_CALLBACK(color_regularization_callback), (gpointer)self);
+  gtk_widget_set_visible(g->color_regularization, FALSE);
 
   g->luminance_regularization = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, .05, 0.7f, 2);
   dt_bauhaus_widget_set_label(g->luminance_regularization, NULL, _("luminance regularization"));
   gtk_widget_set_tooltip_text(g->luminance_regularization, _("amount of luminance regularization for far-from-gamut pixel\n increase to brighten these pixels until gradients are smooth"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->luminance_regularization, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->luminance_regularization), "value-changed", G_CALLBACK(luminance_regularization_callback), (gpointer)self);
+  gtk_widget_set_visible(g->luminance_regularization, FALSE);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
