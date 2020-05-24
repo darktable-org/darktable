@@ -419,12 +419,34 @@ void expose(
     PangoRectangle ink;
     PangoLayout *layout;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    const float fontsize = DT_PIXEL_APPLY_DPI(14);
+    float fontsize;
+    gchar *load_txt;
+
+    if(dev->image_invalid_cnt)
+    {
+      fontsize = DT_PIXEL_APPLY_DPI(20);
+      load_txt = dt_util_dstrcat(NULL, "%s `%s' %s\n\n%s\n%s",
+          "darktable could not load image",
+          dev->image_storage.filename,
+          ", switch to lighttable now.",
+          "Please check image (use exiv2 or exiftool) for corrupted data. If the image",
+          "seems to be intact concider to open an issue at https://github.com/darktable-org/darktable." );
+      if(dev->image_invalid_cnt > 400)
+      {
+        dev->image_invalid_cnt = 0;
+        dt_view_manager_switch(darktable.view_manager, "lighttable");
+      }
+    }
+    else
+    {
+      fontsize = DT_PIXEL_APPLY_DPI(14);
+      load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
+    }
+
     pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
-    gchar *load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
     pango_layout_set_text(layout, load_txt, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(10), wd = ink.width * .5f;
