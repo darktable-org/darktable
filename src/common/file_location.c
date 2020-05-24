@@ -184,31 +184,49 @@ void dt_check_opendir(const char* text, const char* directory)
   if (dir) {
     dt_print(DT_DEBUG_DEV, "%s: %s\n", text, directory);
     closedir(dir);
-  } else if ( errno == EACCES ) {
+  } 
+  else if ( errno == EACCES ) 
+  {
     printf("Permission denied.\n");
     exit(EXIT_FAILURE);
-  } else if ( errno == ENOENT ) {
+  } 
+  else if ( errno == ENOENT ) 
+  {
     printf("%s %s does not exist.\n", text, directory);
     exit(EXIT_FAILURE);
-  } else if ( errno == EBADF ) {
+  } 
+  else if ( errno == EBADF ) 
+  {
     printf("fd is not a valid file descriptor opened for reading.\n");
     exit(EXIT_FAILURE);
-  } else if ( errno == EMFILE ) {
+  } 
+  else if ( errno == EMFILE ) 
+  {
     printf("The per-process limit on the number of open file descriptors has been reached.\n");
     exit(EXIT_FAILURE);
-  } else if ( errno == ENFILE ) {
+  } 
+  else if ( errno == ENFILE ) 
+  {
     printf("The system-wide limit on the total number of open files has been reached.\n");
     exit(EXIT_FAILURE);
-  } else if ( errno == ENOENT ) {
+  } 
+  else if ( errno == ENOENT ) 
+  {
     printf("Directory does not exist, or name is an empty string.\n");
     exit(EXIT_FAILURE);
-  }  else if ( errno == ENOMEM ) {
+  }  
+  else if ( errno == ENOMEM ) 
+  {
     printf("Insufficient memory to complete the operation.\n");
     exit(EXIT_FAILURE);
-  }  else if ( errno == ENOTDIR ) {
+  }  
+  else if ( errno == ENOTDIR ) 
+  {
     printf("Name is not a directory.\n");
     exit(EXIT_FAILURE);
-  } else {
+  } 
+  else 
+  {
     printf("opendir() failed for some other reason.\n");
     exit(EXIT_FAILURE);
   }
