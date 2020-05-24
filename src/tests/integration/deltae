@@ -15,6 +15,10 @@ import numpy
 import os
 import sys
 
+if "delta_E" not in dir(colour):
+    print("  Unable to compute delta-E, please upgrade python3-colour")
+    exit(0)
+
 expected = sys.argv[1]
 output = sys.argv[2]
 
