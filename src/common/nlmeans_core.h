@@ -48,7 +48,9 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                           const dt_nlmeans_param_t *const params);
 
+#ifdef HAVE_OPENCL
 int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
                        cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in);
 int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int devid,
                               cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in);
+#endif /* HAVE_OPENCL */
