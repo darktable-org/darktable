@@ -120,8 +120,8 @@ static int usage(const char *argv0)
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
-  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder\n");
-  printf("      imageio\n");
+  printf("      lua,masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder,\n");
+  printf("      imageio}\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
