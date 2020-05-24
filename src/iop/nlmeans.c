@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/nlmeans_core.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -34,6 +35,11 @@
 #include <xmmintrin.h>
 #endif
 
+// which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
+#define USE_NEW_IMPL_CL 0
+
+// number of intermediate buffers used by OpenCL code path.  Needs to match value in src/common/nlmeans_core.c
+//   to correctly compute tiling
 #define NUM_BUCKETS 4
 
 // this is the version of the modules parameters,
@@ -130,35 +136,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "chroma", GTK_WIDGET(g->chroma));
 }
 
-
-typedef union floatint_t
-{
-  float f;
-  uint32_t i;
-} floatint_t;
-
-static inline float fast_mexp2f(const float x)
-{
-  const float i1 = (float)0x3f800000u; // 2^0
-  const float i2 = (float)0x3f000000u; // 2^-1
-  const float k0 = i1 + x * (i2 - i1);
-  floatint_t k;
-  k.i = k0 >= (float)0x800000u ? k0 : 0;
-  return k.f;
-}
-
-static float gh(const float f, const float sharpness)
-{
-  const float f2 = f * sharpness;
-  return fast_mexp2f(f2);
-  // return 0.0001f + dt_fast_expf(-fabsf(f)*800.0f);
-  // return 1.0f/(1.0f + f*f);
-  // make spread bigger: less smoothing
-  // const float spread = 100.f;
-  // return 1.0f/(1.0f + fabsf(f)*spread);
-}
-
-#ifdef HAVE_OPENCL
+#if defined(HAVE_OPENCL) && !USE_NEW_IMPL_CL
 static int bucket_next(unsigned int *state, unsigned int max)
 {
   unsigned int current = *state;
@@ -174,35 +152,92 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
   dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->global_data;
-
-
-  const int devid = piece->pipe->devid;
+#if USE_NEW_IMPL_CL
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  cl_mem dev_U2 = NULL;
-  cl_mem dev_U4 = NULL;
-  cl_mem dev_U4_t = NULL;
-  cl_mem dev_U4_tt = NULL;
+  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);         // nbhood
+  const float sharpness = 3000.0f / (1.0f + d->strength);
 
-  unsigned int state = 0;
-  cl_mem buckets[NUM_BUCKETS] = { NULL };
+  // adjust to Lab, make L more important
+  const float max_L = 120.0f, max_C = 512.0f;
+  const float nL = 1.0f / max_L, nC = 1.0f / max_C;
+  const float norm2[4] = { nL, nC }; //luma and chroma scaling factors
+  
+  // allocate a buffer to receive the denoised image
+  const int devid = piece->pipe->devid;
+  cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
+  if(dev_U2 == NULL)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't allocate GPU buffer\n");
+    return FALSE;
+  }
+
+  const dt_nlmeans_param_t params =
+  {
+    .scattering = 0,
+    .scale = scale,
+    .luma = d->luma,
+    .chroma = d->chroma,
+    .center_weight = -1,
+    .sharpness = sharpness,
+    .patch_radius = P,
+    .search_radius = K,
+    .decimate = 0,
+    .norm = norm2,
+    .pipetype = piece->pipe->type,
+    .kernel_init = gd->kernel_nlmeans_init,
+    .kernel_dist = gd->kernel_nlmeans_dist,
+    .kernel_horiz = gd->kernel_nlmeans_horiz,
+    .kernel_vert = gd->kernel_nlmeans_vert,
+    .kernel_accu = gd->kernel_nlmeans_accu
+  };
+  cl_int err = nlmeans_denoise_cl(&params, devid, dev_in, dev_U2, roi_in);
+  if (err == CL_SUCCESS)
+  {
+    // normalize and blend
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 2, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 5, 4 * sizeof(float), (void *)&weight);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_finish, sizes);
+  }
+  // clean up and check whether all kernels ran successfully
+  dt_opencl_release_mem_object(dev_U2);
+  if (err == CL_SUCCESS)
+    return TRUE;
+  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+
+#else // old code
+  const int width = roi_in->width;
+  const int height = roi_in->height;
 
   cl_int err = -999;
 
-  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
-  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
+  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
 
-  float max_L = 120.0f, max_C = 512.0f;
-  float nL = 1.0f / max_L, nC = 1.0f / max_C;
-  float nL2 = nL * nL, nC2 = nC * nC;
-  // float weight[4] = { powf(d->luma, 0.6), powf(d->chroma, 0.6), powf(d->chroma, 0.6), 1.0f };
-  float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
+  // adjust to Lab, make L more important
+  const float max_L = 120.0f, max_C = 512.0f;
+  const float nL = 1.0f / max_L, nC = 1.0f / max_C;
+  const float nL2 = nL * nL, nC2 = nC * nC;
+  const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
 
-  dev_U2 = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
+  const int devid = piece->pipe->devid;
+  cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
   if(dev_U2 == NULL) goto error;
 
+  cl_mem buckets[NUM_BUCKETS] = { NULL };
+  unsigned int state = 0;
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
     buckets[k] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
@@ -232,9 +267,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     vblocksize = 1;
 
 
-  const size_t bwidth = ROUNDUP(width, hblocksize);
-  const size_t bheight = ROUNDUP(height, vblocksize);
-
   size_t sizesl[3];
   size_t local[3];
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -246,13 +278,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
 
+  const size_t bwidth = ROUNDUP(width, hblocksize);
+  const size_t bheight = ROUNDUP(height, vblocksize);
 
   for(int j = -K; j <= 0; j++)
     for(int i = -K; i <= K; i++)
     {
       int q[2] = { i, j };
 
-      dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
+      cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 0, sizeof(cl_mem), (void *)&dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 2, sizeof(int), (void *)&width);
@@ -269,7 +303,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[0] = hblocksize;
       local[1] = 1;
       local[2] = 1;
-      dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
+      cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 2, sizeof(int), (void *)&width);
@@ -287,7 +321,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[0] = 1;
       local[1] = vblocksize;
       local[2] = 1;
-      dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
+      cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 2, sizeof(int), (void *)&width);
@@ -316,6 +350,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_iop_nap(darktable.opencl->micro_nap);
     }
 
+  // normalize and blend
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 2, sizeof(cl_mem), (void *)&dev_out);
@@ -341,6 +376,7 @@ error:
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
   return FALSE;
+#endif /* USE_NEW_IMPL_CL */
 }
 #endif
 
@@ -362,149 +398,52 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static void process_cpu(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                        void *const ovoid, const dt_iop_roi_t *const roi_in,
+                        const dt_iop_roi_t *const roi_out,
+                        void (*denoiser)(const float *const inbuf, float *const outbuf,
+                                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                         const dt_nlmeans_param_t *const params))
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   const dt_iop_nlmeans_params_t *const d = (dt_iop_nlmeans_params_t *)piece->data;
-
-  const int ch = piece->colors;
+  assert(piece->colors == 4);
 
   // adjust to zoom size:
-  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
-  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
+  const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
 
   // adjust to Lab, make L more important
-  // float max_L = 100.0f, max_C = 256.0f;
-  // float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
   float max_L = 120.0f, max_C = 512.0f;
   float nL = 1.0f / max_L, nC = 1.0f / max_C;
   const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
 
-  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
-  // we want to sum up weights in col[3], so need to init to 0:
-  memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
+  // faster but less accurate processing by skipping half the patches on previews and thumbnails
+  int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+  
+  const dt_nlmeans_param_t params = { .scattering = 0,
+                                      .scale = scale,
+                                      .luma = d->luma,
+                                      .chroma = d->chroma,
+                                      .center_weight = -1,
+                                      .sharpness = sharpness,
+                                      .patch_radius = P,
+                                      .search_radius = K,
+                                      .decimate = decimate,
+                                      .norm = norm2 };
+  denoiser(ivoid,ovoid,roi_in,roi_out,&params);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
 
-  // for each shift vector
-  for(int kj = -K; kj <= K; kj++)
-  {
-    for(int ki = -K; ki <= K; ki++)
-    {
-      int inited_slide = 0;
-// don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
-// we will add up errors)
-// do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
-// memory
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(ivoid, norm2, ovoid, P, roi_in, roi_out, sharpness) \
-      firstprivate(inited_slide) \
-      shared(kj, ki, Sa) \
-      schedule(static)
-#endif
-      for(int j = 0; j < roi_out->height; j++)
-      {
-        if(j + kj < 0 || j + kj >= roi_out->height) continue;
-        float *S = Sa + (size_t)dt_get_thread_num() * roi_out->width;
-        const float *ins = ((float *)ivoid) + 4 * ((size_t)roi_in->width * (j + kj) + ki);
-        float *out = ((float *)ovoid) + 4 * (size_t)roi_out->width * j;
-
-        const int Pm = MIN(MIN(P, j + kj), j);
-        const int PM = MIN(MIN(P, roi_out->height - 1 - j - kj), roi_out->height - 1 - j);
-        // first line of every thread
-        // TODO: also every once in a while to assert numerical precision!
-        if(!inited_slide)
-        {
-          // sum up a line
-          memset(S, 0x0, sizeof(float) * roi_out->width);
-          for(int jj = -Pm; jj <= PM; jj++)
-          {
-            int i = MAX(0, -ki);
-            float *s = S + i;
-            const float *inp = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j + jj);
-            const float *inps = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j + jj + kj) + ki);
-            const int last = roi_out->width + MIN(0, -ki);
-            for(; i < last; i++, inp += 4, inps += 4, s++)
-            {
-              for(int k = 0; k < 3; k++) s[0] += (inp[k] - inps[k]) * (inp[k] - inps[k]) * norm2[k];
-            }
-          }
-          // only reuse this if we had a full stripe
-          if(Pm == P && PM == P) inited_slide = 1;
-        }
-
-        // sliding window for this line:
-        float *s = S;
-        float slide = 0.0f;
-        // sum up the first -P..P
-        for(int i = 0; i < 2 * P + 1; i++) slide += s[i];
-        for(int i = 0; i < roi_out->width; i++, s++, ins += 4, out += 4)
-        {
-          if(i - P > 0 && i + P < roi_out->width) slide += s[P] - s[-P - 1];
-          if(i + ki >= 0 && i + ki < roi_out->width)
-          {
-            const float iv[4] = { ins[0], ins[1], ins[2], 1.0f };
-#if defined(_OPENMP) && defined(OPENMP_SIMD_)
-#pragma omp SIMD()
-#endif
-            for(size_t c = 0; c < 4; c++)
-            {
-              out[c] += iv[c] * gh(slide, sharpness);
-            }
-          }
-        }
-        if(inited_slide && j + P + 1 + MAX(0, kj) < roi_out->height)
-        {
-          // sliding window in j direction:
-          int i = MAX(0, -ki);
-          s = S + i;
-          const float *inp = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j + P + 1);
-          const float *inps = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j + P + 1 + kj) + ki);
-          const float *inm = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j - P);
-          const float *inms = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j - P + kj) + ki);
-          const int last = roi_out->width + MIN(0, -ki);
-          for(; i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
-          {
-            float stmp = s[0];
-            for(int k = 0; k < 3; k++)
-              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]))
-                      * norm2[k];
-            s[0] = stmp;
-          }
-        }
-        else
-          inited_slide = 0;
-      }
-    }
-  }
-
-  // normalize and apply chroma/luma blending
-  const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
-  const float invert[4] = { 1.0f - d->luma, 1.0f - d->chroma, 1.0f - d->chroma, 0.0f };
-
-  const float *const in = ((const float *const)ivoid);
-  float *const out = ((float *const)ovoid);
-
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(ch, in, invert, out, roi_out, weight) \
-  schedule(static) \
-  collapse(2)
-#endif
-  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
-  {
-    for(size_t c = 0; c < 4; c++)
-    {
-      out[k + c] = (in[k + c] * invert[c]) + (out[k + c] * (weight[c] / out[k + 3]));
-    }
-  }
-
-  // free shared tmp memory:
-  dt_free_align(Sa);
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  process_cpu(piece,ivoid,ovoid,roi_in,roi_out,nlmeans_denoise);
+  return;
 }
 
 #if defined(__SSE__)
@@ -512,194 +451,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  // get our data struct:
-  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
-
-  // adjust to zoom size:
-  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
-  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
-  const float sharpness = 3000.0f / (1.0f + d->strength);
-
-  // adjust to Lab, make L more important
-  // float max_L = 100.0f, max_C = 256.0f;
-  // float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
-  float max_L = 120.0f, max_C = 512.0f;
-  float nL = 1.0f / max_L, nC = 1.0f / max_C;
-  const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
-
-  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
-  // we want to sum up weights in col[3], so need to init to 0:
-  memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
-
-  // for each shift vector
-  for(int kj = -K; kj <= K; kj++)
-  {
-    for(int ki = -K; ki <= K; ki++)
-    {
-      int inited_slide = 0;
-// don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
-// we will add up errors)
-// do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
-// memory
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, norm2, ovoid, P, roi_in, roi_out, sharpness) \
-  firstprivate(inited_slide) \
-  shared(kj, ki, Sa) \
-  schedule(static)
-#endif
-      for(int j = 0; j < roi_out->height; j++)
-      {
-        if(j + kj < 0 || j + kj >= roi_out->height) continue;
-        float *S = Sa + (size_t)dt_get_thread_num() * roi_out->width;
-        const float *ins = ((float *)ivoid) + 4 * ((size_t)roi_in->width * (j + kj) + ki);
-        float *out = ((float *)ovoid) + 4 * (size_t)roi_out->width * j;
-
-        const int Pm = MIN(MIN(P, j + kj), j);
-        const int PM = MIN(MIN(P, roi_out->height - 1 - j - kj), roi_out->height - 1 - j);
-        // first line of every thread
-        // TODO: also every once in a while to assert numerical precision!
-        if(!inited_slide)
-        {
-          // sum up a line
-          memset(S, 0x0, sizeof(float) * roi_out->width);
-          for(int jj = -Pm; jj <= PM; jj++)
-          {
-            int i = MAX(0, -ki);
-            float *s = S + i;
-            const float *inp = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j + jj);
-            const float *inps = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j + jj + kj) + ki);
-            const int last = roi_out->width + MIN(0, -ki);
-            for(; i < last; i++, inp += 4, inps += 4, s++)
-            {
-              for(int k = 0; k < 3; k++) s[0] += (inp[k] - inps[k]) * (inp[k] - inps[k]) * norm2[k];
-            }
-          }
-          // only reuse this if we had a full stripe
-          if(Pm == P && PM == P) inited_slide = 1;
-        }
-
-        // sliding window for this line:
-        float *s = S;
-        float slide = 0.0f;
-        // sum up the first -P..P
-        for(int i = 0; i < 2 * P + 1; i++) slide += s[i];
-        for(int i = 0; i < roi_out->width; i++)
-        {
-          if(i - P > 0 && i + P < roi_out->width) slide += s[P] - s[-P - 1];
-          if(i + ki >= 0 && i + ki < roi_out->width)
-          {
-            const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
-            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(gh(slide, sharpness)));
-          }
-          s++;
-          ins += 4;
-          out += 4;
-        }
-        if(inited_slide && j + P + 1 + MAX(0, kj) < roi_out->height)
-        {
-          // sliding window in j direction:
-          int i = MAX(0, -ki);
-          s = S + i;
-          const float *inp = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j + P + 1);
-          const float *inps = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j + P + 1 + kj) + ki);
-          const float *inm = ((float *)ivoid) + 4 * i + 4 * (size_t)roi_in->width * (j - P);
-          const float *inms = ((float *)ivoid) + 4 * i + 4 * ((size_t)roi_in->width * (j - P + kj) + ki);
-          const int last = roi_out->width + MIN(0, -ki);
-          for(; ((intptr_t)s & 0xf) != 0 && i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
-          {
-            float stmp = s[0];
-            for(int k = 0; k < 3; k++)
-              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]))
-                      * norm2[k];
-            s[0] = stmp;
-          }
-          /* Process most of the line 4 pixels at a time */
-          for(; i < last - 4; i += 4, inp += 16, inps += 16, inm += 16, inms += 16, s += 4)
-          {
-            __m128 sv = _mm_load_ps(s);
-            const __m128 inp1 = _mm_load_ps(inp) - _mm_load_ps(inps);
-            const __m128 inp2 = _mm_load_ps(inp + 4) - _mm_load_ps(inps + 4);
-            const __m128 inp3 = _mm_load_ps(inp + 8) - _mm_load_ps(inps + 8);
-            const __m128 inp4 = _mm_load_ps(inp + 12) - _mm_load_ps(inps + 12);
-
-            const __m128 inp12lo = _mm_unpacklo_ps(inp1, inp2);
-            const __m128 inp34lo = _mm_unpacklo_ps(inp3, inp4);
-            const __m128 inp12hi = _mm_unpackhi_ps(inp1, inp2);
-            const __m128 inp34hi = _mm_unpackhi_ps(inp3, inp4);
-
-            const __m128 inpv0 = _mm_movelh_ps(inp12lo, inp34lo);
-            sv += inpv0 * inpv0 * _mm_set1_ps(norm2[0]);
-
-            const __m128 inpv1 = _mm_movehl_ps(inp34lo, inp12lo);
-            sv += inpv1 * inpv1 * _mm_set1_ps(norm2[1]);
-
-            const __m128 inpv2 = _mm_movelh_ps(inp12hi, inp34hi);
-            sv += inpv2 * inpv2 * _mm_set1_ps(norm2[2]);
-
-            const __m128 inm1 = _mm_load_ps(inm) - _mm_load_ps(inms);
-            const __m128 inm2 = _mm_load_ps(inm + 4) - _mm_load_ps(inms + 4);
-            const __m128 inm3 = _mm_load_ps(inm + 8) - _mm_load_ps(inms + 8);
-            const __m128 inm4 = _mm_load_ps(inm + 12) - _mm_load_ps(inms + 12);
-
-            const __m128 inm12lo = _mm_unpacklo_ps(inm1, inm2);
-            const __m128 inm34lo = _mm_unpacklo_ps(inm3, inm4);
-            const __m128 inm12hi = _mm_unpackhi_ps(inm1, inm2);
-            const __m128 inm34hi = _mm_unpackhi_ps(inm3, inm4);
-
-            const __m128 inmv0 = _mm_movelh_ps(inm12lo, inm34lo);
-            sv -= inmv0 * inmv0 * _mm_set1_ps(norm2[0]);
-
-            const __m128 inmv1 = _mm_movehl_ps(inm34lo, inm12lo);
-            sv -= inmv1 * inmv1 * _mm_set1_ps(norm2[1]);
-
-            const __m128 inmv2 = _mm_movelh_ps(inm12hi, inm34hi);
-            sv -= inmv2 * inmv2 * _mm_set1_ps(norm2[2]);
-
-            _mm_store_ps(s, sv);
-          }
-          for(; i < last; i++, inp += 4, inps += 4, inm += 4, inms += 4, s++)
-          {
-            float stmp = s[0];
-            for(int k = 0; k < 3; k++)
-              stmp += ((inp[k] - inps[k]) * (inp[k] - inps[k]) - (inm[k] - inms[k]) * (inm[k] - inms[k]))
-                      * norm2[k];
-            s[0] = stmp;
-          }
-        }
-        else
-          inited_slide = 0;
-      }
-    }
-  }
-  // normalize and apply chroma/luma blending
-  // bias a bit towards higher values for low input values:
-  // const __m128 weight = _mm_set_ps(1.0f, powf(d->chroma, 0.6), powf(d->chroma, 0.6), powf(d->luma, 0.6));
-  const __m128 weight = _mm_set_ps(1.0f, d->chroma, d->chroma, d->luma);
-  const __m128 invert = _mm_sub_ps(_mm_set1_ps(1.0f), weight);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(invert, ivoid, ovoid, roi_out, weight) \
-  shared(d) \
-  schedule(static)
-#endif
-  for(int j = 0; j < roi_out->height; j++)
-  {
-    float *out = ((float *)ovoid) + 4 * (size_t)roi_out->width * j;
-    float *in = ((float *)ivoid) + 4 * (size_t)roi_out->width * j;
-    for(int i = 0; i < roi_out->width; i++)
-    {
-      _mm_store_ps(out, _mm_add_ps(_mm_mul_ps(_mm_load_ps(in), invert),
-                                   _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
-      out += 4;
-      in += 4;
-    }
-  }
-  // free shared tmp memory:
-  dt_free_align(Sa);
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  process_cpu(piece,ivoid,ovoid,roi_in,roi_out,nlmeans_denoise_sse2);
+  return;
 }
 #endif
 
