@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-23 04:35-0500\n"
-"PO-Revision-Date: 2020-05-23 04:39-0500\n"
+"POT-Creation-Date: 2020-05-23 14:38-0500\n"
+"PO-Revision-Date: 2020-05-23 16:50-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -10970,7 +10970,7 @@ msgid "color"
 msgstr "color"
 
 #: ../src/iop/negadoctor.c:1055
-msgid "toogle on or off the color controls"
+msgid "toggle on or off the color controls"
 msgstr "activar o desactivar los controles de color"
 
 #: ../src/iop/negadoctor.c:1062
