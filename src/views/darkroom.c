@@ -1031,6 +1031,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
     // if we are here, that means that the current is not anymore in the list
     // in this case, let's use the current offset image
     new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
+    new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
   }
   g_free(query);
   sqlite3_finalize(stmt);
