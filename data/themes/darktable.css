@@ -86,13 +86,15 @@
 @define-color plugin_fg_color @grey_70;
 @define-color section_label @grey_60;
 @define-color plugin_label_color @grey_60;
+@define-color plugin_focus_color @grey_85;
 
 /* Modules controls (sliders and comboboxes) */
+@define-color bauhaus_bg @grey_15;
 @define-color bauhaus_fg @grey_70;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
-@define-color bauhaus_bg @grey_15;
+@define-color bauhaus_bg_hover @grey_55;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
 @define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);
@@ -268,6 +270,12 @@ button,
   min-width: 1em;
 }
 
+/* default extra margin for icons optical alignment */
+#button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
 /* Default text fields and text boxes */
 entry,
 textview
@@ -294,7 +302,8 @@ entry selection
 /* Checkbox */
 checkbutton check,
 #lib-plugin-ui checkbutton check,
-#iop-plugin-ui checkbutton check
+#iop-plugin-ui checkbutton check,
+treeview check
 {
   background-color: @bauhaus_bg;
   color: @bauhaus_fg;
@@ -305,12 +314,9 @@ checkbutton check,
 #control-button,
 #control-button:checked
 {
-    background-color: transparent;
-    min-height: 1em;
-    min-width: 1em;
-    padding: 0.2em;
-    margin: 0;
-    border: 0;
+  background-color: transparent;
+  margin: 0;
+  border: 0;
 }
 
 /* Separator */
@@ -388,20 +394,25 @@ overshoot.right
 }
 
 /* Set toolbars buttons in lighttable and darkroom */
+/* note that some button used to have different hardcoded paddings */
+/* overlay color changer */
+/* quick favorites */
+/* quick styles */
+/* display2 */
+/* they now look unbalanced */
+/* TODO: adjust icons individually */
 #header-toolbar #dt-toggle-button,
 #header-toolbar #dt-button,
 #footer-toolbar #dt-toggle-button,
 #footer-toolbar #dt-button
 {
-  padding: 0.9em;
-  min-height: 0.9em; /* align toolbox button height on comboboxe's one */
-  min-width: 0.9em;
+  padding: 0.07em;
+  min-height: 2.56em; /* align toolbox button height on comboboxe's one */
+  min-width: 2.56em;
   border: 0;
   font-size: .7em;
 }
 
-#dt-button button,
-#dt-toggle-button button,
 #dt-icon
 {
   border-radius: 2px;
@@ -435,27 +446,39 @@ overshoot.right
   padding: 0.75em;
 }
 
-/* Adjust size of button arrow to open/close dropdown on panels */
-#iop-plugin-ui #control-button,
-#lib-plugin-ui #control-button
+/* icon buttons in modules main body */
+#iop-plugin-ui-main #dt-button,
+#iop-plugin-ui-main #dt-toggle-button,
+#lib-plugin-ui-main #dt-button,
+#lib-plugin-ui-main #dt-toggle-button
 {
-    background-color: transparent;
-    min-height: 1em;
-    min-width: 1em;
-    padding: 0.6em;
-    margin: 0;
-    border: 0;
+  min-height: 1.3em;
+  min-width: 1.3em;
+  padding: 0;
 }
 
-/* Especially for display arrow option on module filmic and if necessary for any other in darkroom right panel */
-#right #iop-plugin-ui #control-button
+/* adjust icon extra room for buttons in modules main body */
+#iop-plugin-ui-main #dt-button #button-canvas,
+#iop-plugin-ui-main #dt-toggle-button #button-canvas,
+#lib-plugin-ui-main #dt-button #button-canvas,
+#lib-plugin-ui-main #dt-toggle-button #button-canvas
 {
-    background-color: transparent;
-    min-height: 0.9em;
-    min-width: 0.9em;
-    padding: 0.2em;
-    margin: 0;
-    border: 0;
+  margin: 8px; /* not real pixels, this is used as a percent extra space */
+}
+
+/* size of control-buttons */
+/* filter in collect images */
+/* filter in header toolbar */
+/* arrow in filmic */
+/* TODO: move this part to special items? */
+#iop-plugin-ui-main #control-button,
+#lib-plugin-ui-main #control-button,
+#header-toolbar #control-button
+{
+  min-height: 1em;
+  min-width: 0.81em;
+  padding: 0.15em;
+  margin: 0.15em;
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -474,8 +497,8 @@ overshoot.right
 
 #history-number
 {
-   padding-right: 4px;
-   font-family: monospace;
+  padding-right: 4px;
+  font-family: monospace;
 }
 
 /* Precise default buttons margins on side panels */
@@ -486,16 +509,27 @@ overshoot.right
 }
 
 /* Buttons in modules header, near the module name */
-#module-preset-button * button,
-#module-reset-button * button,
-#module-enable-button * button,
-#module-instance-button * button,
-#module-enable-button * button,
-#module-collapse-button * button
+/* the previous css selector didn't work  */
+#module-preset-button,
+#module-reset-button,
+#module-enable-button,
+#module-instance-button,
+#module-enable-button
 {
-  background-color: transparent;
-  min-height: 1em;
-  min-width: 1em;
+  /* background-color: transparent; this doesn't work */
+  min-height: 1.15em;
+  min-width: 1.15em;
+  padding: 0.06em;
+}
+
+/* this need to be tweaked separately, because it used a different */
+/* hardcoded padding. TODO: scale icon instead */
+#module-collapse-button
+{
+  /* background-color: transparent; this doesn't work */
+  min-height: 0.81em;
+  min-width: 0.81em;
+  padding: 0.23em;
 }
 
 #module-always-enabled-button /* button on always activated module */
@@ -538,6 +572,11 @@ overshoot.right
   font-weight: normal;
   font-family: sans-serif;
   font-size: 1.1em;
+}
+
+.dt_module_focus #iop-panel-label /* set focus mode */
+{
+  color: @plugin_focus_color;
 }
 
 /* Labels of controls sections in modules */
@@ -801,13 +840,12 @@ notebook tabs,
   padding: 0.1em;
 }
 
-#blending-tabs *
+#blending-tabs button
 {
   font-size: 0.8em;
-  min-height: 1.5em;
-  min-width: 1.5em;
-  padding: 0.2em;
-  margin: 0;
+  min-height: 1.75em;
+  min-width: 1.75em;
+  padding: 0;
 }
 
 notebook tab
@@ -1128,7 +1166,6 @@ filechooser row:hover,
   - Tree view (lists and tables) -
   --------------------------------*/
 /*** Set treeview header on all windows, including preferences and accels window ***/
-
 treeview,
 filechooser widget treeview
 {
@@ -1193,18 +1230,6 @@ checkbutton:not(#import_metadata) check
   margin: 5px 8px 5px 0;
 }
 
-/* Arrow size of dropdown button arrow on filter collection */
-#left #lib-plugin-ui #dt-button
-{
-  padding: 0px;
-}
-
-/* Arrow size of some buttons on darkroom modules */
-#iop-plugin-ui #dt-button
-{
-  padding: 2px;
-}
-
 /* Set selected cell */
 cell:selected
 {
@@ -1220,38 +1245,37 @@ cell:selected
 /* Set mask button shown color */
 #show_mask_button
 {
-    color: #ffff00;
+  color: #ffff00;
 }
 
 /* Set specific padding for export module spinbutton */
 #export-max-size spinbutton
 {
-    padding: 0px 5px;
+  padding: 0px 5px;
 }
 
 /* Set below spacing between history items in darkroom */
+/* the label buttons */
 #left #history-button,
 #left #history-button-enabled,
-#left #history-switch,
-#left #history-switch-enabled,
-#left #history-button-enabled,
-#left #history-switch-deprecated,
 #left #history-button-always-enabled,
-#left #history-switch-always-enabled,
-#left #history-button-default-enabled,
-#left #history-switch-default-enabled
+#left #history-button-default-enabled
 {
   padding: 1px 2px 2px 2px;
   margin: 0px 1px 1px 1px;
 }
 
-  /* then set font size */
-#left #history-switch-always-enabled,
-#left #history-switch-default-enabled,
+/* then the switches */
 #left #history-switch,
-#left #history-switch-enabled
+#left #history-switch-enabled,
+#left #history-switch-always-enabled,
+#left #history-switch-default-enabled
 {
   font-size: 0.6em;
+  min-width: 1.4em;
+  min-height: 1.33em;
+  padding: 0;
+  margin: 1px 2px 2px 2px; /* align switches with create style icon */
 }
 
 #left #history-switch-deprecated
@@ -1295,18 +1319,30 @@ cell:selected
   - Set color pickers -
   ---------------------*/
 
+/* the main color picker button */
+#color-picker-button
+{
+  min-height: 2em;
+  min-width: 1.7em;
+}
+
+#color-picker-button #button-canvas
+{
+  margin: 5px; /* not real pixels, this is used as a percent extra space */
+}
+
 /* Module in darkroom left panel */
 #color-picker-area
 {
-    min-height: 9em;
-    min-width: 9em;
+  min-height: 9em;
+  min-width: 9em;
 }
 
 #live-sample
 {
-    padding: 2px;
-    min-height: 1em;
-    min-width: 3em;
+  padding: 2px;
+  min-height: 1em;
+  min-width: 3em;
 }
 
 /* Color picker visibility for levels and rgb levels modules.
@@ -1332,21 +1368,13 @@ cell:selected
 /*** All states options are designed below, active, hover, selected, disabled and check states ***/
 
 /* Main states */
-* button:selected,
-* button:active,
-* button:checked,
-button:selected,
 button:active,
-menuitem:selected,
+button:checked,
+button:selected,
 menuitem:active,
-combobox window *:selected,
+menuitem:selected,
 combobox window *:active,
-#recent-collection-button:selected,
-#history-button:selected,
-#history-button-enabled:selected,
-#history-button-always-enabled:selected,
-#history-button-default-enabled:selected,
-#recent-collection-button:active,
+combobox window *:selected,
 #history-button:active,
 #history-button-enabled:active,
 #history-button-always-enabled:active,
@@ -1356,21 +1384,20 @@ combobox window *:active,
 #history-button-enabled:checked,
 #history-button-always-enabled:checked,
 #history-button-default-enabled:checked,
+#history-button:selected,
+#history-button-enabled:selected,
+#history-button-always-enabled:selected,
+#history-button-default-enabled:selected,
 #iop-plugin-ui button:active,
 #lib-plugin-ui button:active,
-#iop-plugin-ui #control-button:active,
-#lib-plugin-ui #control-button:active,
-#right #iop-plugin-ui #control-button:active
+#recent-collection-button:active,
+#recent-collection-button:selected
 {
   background-color: @button_checked_bg;
   color: @button_checked_fg;
 }
 
 /* History currently selected button */
-#history-button:selected *,
-#history-button-enabled:selected *,
-#history-button-always-enabled:selected *,
-#history-button-default-enabled:selected *,
 #history-button:active *,
 #history-button-enabled:active *,
 #history-button-always-enabled:active *,
@@ -1378,19 +1405,23 @@ combobox window *:active,
 #history-button:checked *,
 #history-button-enabled:checked *,
 #history-button-always-enabled:checked *,
-#history-button-default-enabled:checked *
+#history-button-default-enabled:checked *,
+#history-button:selected *,
+#history-button-enabled:selected *,
+#history-button-always-enabled:selected *,
+#history-button-default-enabled:selected *
 {
-    color: @button_checked_fg;
+  color: @button_checked_fg;
 }
 
 /* Hover states, some needed background only */
-* button:hover,
 button:hover,
 #add-color-button:hover,
 menuitem:hover,
 menuitem:hover arrow,
 combobox window *:hover,
-#recent-collection-button:hover,
+radiobutton:hover label,
+#control-button:hover,
 #history-button:hover,
 #history-button-enabled:hover,
 #history-button-always-enabled:hover,
@@ -1399,9 +1430,7 @@ combobox window *:hover,
 #lib-plugin-ui button:hover,
 #iop-plugin-ui #control-button:hover,
 #lib-plugin-ui #control-button:hover,
-#right #iop-plugin-ui #control-button:hover,
-#control-button:hover,
-radiobutton:hover label,
+#recent-collection-button:hover,
 #view_label:hover,
 #view_dropdown menuitem:hover,
 #view_dropdown:hover
@@ -1410,7 +1439,6 @@ radiobutton:hover label,
 }
 
  /* and same for color as other needs only color setting */
-* button:hover,
 button:hover,
 button:hover cellview,
 button:hover image,
@@ -1422,13 +1450,12 @@ dialog row:hover label,
 menuitem:hover *,
 menuitem:hover menuitem:hover *,
 notebook tab:hover label,
-#recent-collection-button:hover,
+#control-button:hover,
 #history-button:hover *,
 #history-button-enabled:hover *,
 #history-button-always-enabled:hover *,
 #history-button-default-enabled:hover *,
-#right #iop-plugin-ui #control-button:hover,
-#control-button:hover,
+#recent-collection-button:hover,
 #view_label:hover,
 #view_dropdown menuitem:hover,
 #view_dropdown .combo:hover *
@@ -1466,8 +1493,8 @@ button:disabled,
 /* Deactivated switch buttons, make them less visible */
 #history-switch:disabled
 {
-    color: shade(@plugin_label_color, .7);
-    background-color: transparent;
+  color: shade(@plugin_label_color, .7);
+  background-color: transparent;
 }
 
 /* Deprecated/always-on switch are visible */
@@ -1476,38 +1503,56 @@ button:disabled,
 #history-switch-enabled:disabled,
 #history-switch-default-enabled:disabled
 {
-    color: @plugin_label_color;
+  color: @plugin_label_color;
 }
 
 /* Treeviews and filechoosers states */
-treeview:not(#lutname) *:hover,
+treeview check /* set specific background color about check buttons in treeviews like copy/paste dialog window */
+{
+  background-color: @button_bg;
+}
+
+treeview:not(#lutname) *:hover:not(check),
 filechooser .sidebar :hover .sidebar-button,  /* set here specific button hover like eject button in filechooser sidebar */
 #import_metadata title:hover,
 #import_metadata title:hover *
 {
-    background-color: @field_hover_bg;
-    color: @field_hover_fg;
+  background-color: @field_hover_bg;
+  color: @field_hover_fg;
 }
 
 treeview *:active,
 filechooser *:active
 {
-    background-color: @field_active_bg;
-    color: @field_active_fg;
+  background-color: @field_active_bg;
+  color: @field_active_fg;
 }
 
-treeview *:selected,
-treeview *:checked,
+treeview *:selected:not(check),
+treeview *:checked:not(check),
 filechooser *:selected,
 filechooser *:checked
 {
-    background-color: @field_selected_bg;
-    color: @field_selected_fg;
+  background-color: @field_selected_bg;
+  color: @field_selected_fg;
+}
+
+treeview check:selected
+{
+  background-color: @button_bg;
+  border-color: @plugin_bg_color;
+}
+
+treeview check:hover
+{
+  background-color: @bauhaus_bg_hover;
+  color: @field_hover_fg;
+  border-color: @selected_bg_color;
 }
 
 filechooser checkbutton:checked
 {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 /* Views links states in header */
