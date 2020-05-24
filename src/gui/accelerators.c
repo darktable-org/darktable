@@ -630,10 +630,8 @@ void dt_accel_widget_toast(GtkWidget *widget)
       case DT_BAUHAUS_SLIDER:
       {
         dt_bauhaus_slider_data_t *d = &w->data.slider;
-        const float f = d->min + d->pos * (d->max - d->min);
-        const float fc = d->callback(GTK_WIDGET(w), f, DT_BAUHAUS_GET);
         show = !d->is_dragging;
-        text = g_strdup_printf(d->format, fc);
+        text = dt_bauhaus_slider_get_text(widget);
         break;
       }
       case DT_BAUHAUS_COMBOBOX:
