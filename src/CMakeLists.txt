@@ -59,6 +59,7 @@ FILE(GLOB SOURCE_FILES
   "common/mipmap_cache.c"
   "common/module.c"
   "common/noiseprofiles.c"
+  "common/nlmeans_core.c"
   "common/pdf.c"
   "common/presets.c"
   "common/styles.c"
