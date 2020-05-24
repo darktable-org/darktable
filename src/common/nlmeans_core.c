@@ -18,26 +18,12 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-//#include "bauhaus/bauhaus.h"
->>>>>>> New more-scaleable implementation of non-local means
-=======
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "iop/iop_api.h"
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-//#include <gtk/gtk.h>
->>>>>>> New more-scaleable implementation of non-local means
-=======
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
 #include "common/nlmeans_core.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -47,8 +33,6 @@
 #endif
 
 // to avoid accumulation of rounding errors, we should do a full recomputation of the patch differences
-<<<<<<< HEAD
-<<<<<<< HEAD
 //   every so many rows of the image.  We'll also use that interval as the target maximum chunk size for
 //   parallelization
 // lower values reduce the accumulation of rounding errors at the cost of slightly more computation, but
@@ -57,21 +41,8 @@
 //  single-threaded performance and highly-threaded performance; 12 was found to be best on a 32-core
 //  third-gen Threadripper.
 #define SLICE_HEIGHT 20
-=======
-//   every so many rows of the image.  We'll also use that interval as the maximum chunk size for
-//   parallelization
-#define SLICE_HEIGHT 100
->>>>>>> New more-scaleable implementation of non-local means
-=======
-//   every so many rows of the image.  We'll also use that interval as the target maximum chunk size for
-//   parallelization
-// lower values reduce the accumulation of rounding errors at the cost of slightly more computation, but
-//  also improve cache sharing between threads (on the boundaries of slices), resulting in better scaling
-//  because memory bandwidth is less of a limitation.  The value of 20 is a good tradeoff between
-//  single-threaded performance and highly-threaded performance; 12 was found to be best on a 32-core
-//  third-gen Threadripper.
-#define SLICE_HEIGHT 20
->>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
+
+#define NUM_BUCKETS 4
 
 // a structure to collect together the items which define the location of a patch relative to the pixel
 //  being denoised
@@ -95,18 +66,12 @@ typedef struct patch_t patch_t;
 #endif
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> replace exp2f() by much faster integer-hack version
 typedef union floatint_t
 {
   float f;
   uint32_t i;
 } floatint_t;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 static inline float gh(const float f)
 {
 #if 0
@@ -120,32 +85,6 @@ static inline float gh(const float f)
   k.i = k0 >= 0x800000 ? k0 : 0;
   return k.f;
 #endif
-=======
-=======
->>>>>>> replace exp2f() by much faster integer-hack version
-static inline float gh(const float f, const float sharpness)
-{
-#if 0
-  return exp2f(-f * sharpness);
-<<<<<<< HEAD
->>>>>>> New more-scaleable implementation of non-local means
-=======
-=======
-static inline float gh(const float f)
-{
-#if 0
-  return exp2f(-f);
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
-#else
-  // fast integer-hack version of the above
-  const int i1 = 0x3f800000; // 2^0
-  const int i2 = 0x3f000000; // 2^-1
-  const int k0 = i1 + (int)(f * (i2 - i1));
-  floatint_t k;
-  k.i = k0 >= 0x800000 ? k0 : 0;
-  return k.f;
-#endif
->>>>>>> replace exp2f() by much faster integer-hack version
 }
 
 static inline int sign(int a)
@@ -173,13 +112,6 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
   const float scale = params->scale;
   const float scattering = params->scattering;
   int decimate = params->decimate;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  decimate=0;//!!!
->>>>>>> New more-scaleable implementation of non-local means
-=======
->>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
   // determine how many patches we have
   int n_patches = (2 * search_radius + 1) * (2 * search_radius + 1);
   if (decimate)
@@ -211,10 +143,6 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
   return patches;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
 static float compute_center_pixel_norm(const float center_weight, const int radius)
 {
   // scale the central pixel's contribution by the size of the patch so that the center-weight
@@ -223,11 +151,6 @@ static float compute_center_pixel_norm(const float center_weight, const int radi
   return center_weight * width * width;
 }
 
-<<<<<<< HEAD
-=======
->>>>>>> New more-scaleable implementation of non-local means
-=======
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
 // compute the channel-normed squared difference between two pixels
 static inline float pixel_difference(const float* const pix1, const float* pix2, const float norm[4])
 {
@@ -237,10 +160,6 @@ static inline float pixel_difference(const float* const pix1, const float* pix2,
   return (dif1 * dif1 * norm[0]) + (dif2 * dif2 * norm[1]) + (dif3 * dif3 * norm[2]);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> add SSE implementation of nlmeans_denoise
 #if defined(__SSE__)
 // compute the channel-normed squared difference between two pixels; don't do horizontal sum until later
 static inline __m128 channel_difference_sse2(const float* const pix1, const float* pix2, const float norm[4])
@@ -266,15 +185,6 @@ static inline float pixel_difference_sse2(const float* const pix1, const float* 
 }
 #endif /* __SSE__ */
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> New more-scaleable implementation of non-local means
-=======
-
->>>>>>> add SSE implementation of nlmeans_denoise
-=======
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
 static void init_column_sums(float *const col_sums, const patch_t *const patch, const float *const in,
                              const int row, const int height, const int width, const int stride,
                              const int radius, const float *const norm)
@@ -307,11 +217,6 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
   return;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> add SSE implementation of nlmeans_denoise
 #if defined(__SSE__)
 static void init_column_sums_sse2(float *const col_sums, const patch_t *const patch, const float *const in,
                                   const int row, const int height, const int width, const int stride,
@@ -346,11 +251,6 @@ static void init_column_sums_sse2(float *const col_sums, const patch_t *const pa
 }
 #endif /* __SSE__ */
 
-<<<<<<< HEAD
-=======
->>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
-=======
->>>>>>> add SSE implementation of nlmeans_denoise
 // determine the height of the horizontal slice each thread will process
 static int compute_slice_size(const int height)
 {
@@ -361,35 +261,15 @@ static int compute_slice_size(const int height)
   // tweak the basic size a bit so that the number of chunks ends up an exact multiple of the
   //   number of threads
   const int num_chunks = (height + base_chunk_size - 1) / base_chunk_size;
-<<<<<<< HEAD
-<<<<<<< HEAD
   const int low = MAX(1,numthreads * (num_chunks / numthreads));
-=======
-  const int low = numthreads * (num_chunks / numthreads);
->>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
-=======
-  const int low = MAX(1,numthreads * (num_chunks / numthreads));
->>>>>>> fix division-by-zero on thumbnail processing
   const int high = numthreads * ((num_chunks + numthreads - 1) / numthreads);
   const int chunk_size_low = (height + low - 1) / low;
   const int chunk_size_high = (height + high - 1) / high;
   const int diff_low = chunk_size_low - base_chunk_size;
   const int diff_high = base_chunk_size - chunk_size_high;
-<<<<<<< HEAD
-<<<<<<< HEAD
   return diff_high <= diff_low ?  chunk_size_high : chunk_size_low;
 }
 
-=======
->>>>>>> New more-scaleable implementation of non-local means
-=======
-  fprintf(stderr,"ht=%d, base=%d, #chk=%d, lo=%d, hi=%d, szlo=%d, szhi=%d, diflo=%d, difhi=%d\n",height,base_chunk_size,num_chunks,low,high,chunk_size_low,chunk_size_high,diff_low,diff_high);
-=======
->>>>>>> remove debugging printf
-  return diff_high <= diff_low ?  chunk_size_high : chunk_size_low;
-}
-
->>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
 void nlmeans_denoise(const float *const inbuf, float *const outbuf,
                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                      const dt_nlmeans_param_t *const params)
@@ -398,249 +278,6 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const float weight[4] = { params->luma, params->chroma, params->chroma, 1.0f };
   const float invert[4] = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
-  const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
-
-  // define the normalization to convert central pixel differences into central pixel weights
-  const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
-  const float center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
-  
-<<<<<<< HEAD
-=======
-
->>>>>>> New more-scaleable implementation of non-local means
-=======
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
-  // define the patches to be compared when denoising a pixel
-  const size_t stride = 4 * roi_in->width;
-  int num_patches;
-  int max_shift;
-  struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
-  // allocate scratch space, including an overrun area on each end so we don't need a boundary check on every access
-  const int scratch_size = (roi_out->width + 2*params->patch_radius + 1) ;
-  const int padded_scratch_size = ((scratch_size+15)/16)*16; // round up to a full cache line
-  const int numthreads = dt_get_num_threads() ;
-  float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
-  // zero out the overrun areas
-  memset(scratch_buf,'\0',numthreads*padded_scratch_size*sizeof(float));
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const int chunk_size = compute_slice_size(roi_out->height);
-  const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
-      dt_omp_firstprivate(patches, num_patches, scratch_buf) \
-      schedule(static)
-#endif
-  for (int chk = 0 ; chk < num_chunks; chk++)
-=======
-  const int chunk_size = (roi_out->height + numthreads - 1) / numthreads;
-=======
-  const int chunk_size = compute_slice_size(roi_out->height);
-  const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
-<<<<<<< HEAD
-  fprintf(stderr,"ch_size=%d, n_chks=%d, #thr=%d\n",chunk_size,num_chunks,numthreads);
->>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
-=======
->>>>>>> remove debugging printf
-#ifdef _OPENMP
-#pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
-      dt_omp_firstprivate(patches, num_patches, scratch_buf) \
-      schedule(static)
-#endif
-<<<<<<< HEAD
-  for (int thr = 0 ; thr < numthreads; thr++)
->>>>>>> New more-scaleable implementation of non-local means
-=======
-  for (int chk = 0 ; chk < num_chunks; chk++)
->>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
-  {
-    // locate our scratch space within the big buffer allocated above
-    size_t tnum = dt_get_thread_num();
-    const int radius = params->patch_radius;
-    float *const col_sums = scratch_buf + tnum * padded_scratch_size + radius + 1;
-    // determine which horizontal slice of the image to process
-<<<<<<< HEAD
-<<<<<<< HEAD
-    const int chunk_start = chk * chunk_size;
-    const int chunk_end = MIN((chk+1)*chunk_size,roi_out->height);
-=======
-    const int chunk_start = thr * chunk_size;
-    const int chunk_end = MIN((thr+1)*chunk_size,roi_out->height);
->>>>>>> New more-scaleable implementation of non-local means
-=======
-    const int chunk_start = chk * chunk_size;
-    const int chunk_end = MIN((chk+1)*chunk_size,roi_out->height);
->>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
-    // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
-    memset(outbuf+chunk_start*roi_out->width*4, '\0', roi_out->width * (chunk_end-chunk_start) * 4 * sizeof(float));
-    // cycle through all of the patches over our slice of the image
-    for (int p = 0; p < num_patches; p++)
-    {
-      // retrieve info about the current patch
-      const patch_t *patch = &patches[p];
-<<<<<<< HEAD
-<<<<<<< HEAD
-      // skip any rows where the patch center would be above top of RoI or below bottom of RoI
-      const int height = roi_out->height;
-      const int row_min = MAX(chunk_start,MAX(0,-patch->rows));
-      const int row_max = MIN(chunk_end,height - MAX(0,patch->rows));
-      // figure out which rows at top and bottom result in patches extending outside the RoI, even though the
-      // center pixel is inside
-      const int row_top = MAX(row_min,MAX(radius,radius-patch->rows));
-      const int row_bot = MIN(row_max,height-MAX(radius+1,radius+patch->rows+1));
-=======
-      const float sharpness = params->sharpness;
-      const int offset = patch->offset;
-      // skip any rows where the patch center would be above top of RoI or below bottom of RoI
-      const int height = roi_out->height;
-      int row_min = MAX(chunk_start,MAX(0,-patch->rows));
-      int row_max = MIN(chunk_end,height - MAX(0,patch->rows));
->>>>>>> New more-scaleable implementation of non-local means
-=======
-      // skip any rows where the patch center would be above top of RoI or below bottom of RoI
-      const int height = roi_out->height;
-      const int row_min = MAX(chunk_start,MAX(0,-patch->rows));
-      const int row_max = MIN(chunk_end,height - MAX(0,patch->rows));
-      // figure out which rows at top and bottom result in patches extending outside the RoI, even though the
-      // center pixel is inside
-      const int row_top = MAX(row_min,MAX(radius,radius-patch->rows));
-      const int row_bot = MIN(row_max,height-MAX(radius+1,radius+patch->rows+1));
->>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
-      // skip any columns where the patch center would be to the left or the right of the RoI
-      const int scol = patch->cols;
-      const int col_min = MAX(0,-scol);
-      const int col_max = roi_out->width - MAX(0,scol);
-      init_column_sums(col_sums,patch,inbuf+stride*row_min,row_min,height,roi_out->width,stride,radius,params->norm);
-      for (int row = row_min; row < row_max; row++)
-      {
-        // add up the initial columns of the sliding window of total patch distortion
-        float distortion = 0.0;
-        for (int i = col_min - radius; i < col_min+radius; i++)
-          distortion += col_sums[i];
-        // now proceed down the current row of the image
-        const float *in = inbuf + stride * row + 4 * col_min;
-        float *out = outbuf + 4 * ((size_t)roi_out->width * row + col_min);
-<<<<<<< HEAD
-<<<<<<< HEAD
-        const int offset = patch->offset;
-        const float sharpness = params->sharpness;
-        if (params->center_weight < 0)
-        {
-          // computation as used by denoise(non-local) iop
-          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
-          {
-            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-            const float wt = gh(distortion * sharpness);
-            const float pixel[4] = { in[offset],  in[offset+1], in[offset+2], 1.0f };
-            SIMD_FOR (size_t c = 0; c < 4; c++)
-            {
-              out[c] += pixel[c] * wt;
-            }
-          }
-        }
-        else
-        {
-          // computation as used by denoiseprofiled iop with non-local means
-          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
-          {
-            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-//TODO
-            const float dissimilarity = (distortion + pixel_difference(in,in+offset,center_norm)
-                                         / (1.0f + params->center_weight));
-            const float wt = gh(fmaxf(0.0f, dissimilarity * params->norm[0] - 2.0f));
-            const float pixel[4] = { in[offset],  in[offset+1], in[offset+2], 1.0f };
-            SIMD_FOR (size_t c = 0; c < 4; c++)
-            {
-              out[c] += pixel[c] * wt;
-            }
-          }
-        }
-        if (row < row_top)
-        {
-          // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
-          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
-          for (int col = col_min; col < col_max; col++, pixel_bot+=4)
-          {
-            col_sums[col] += pixel_difference(pixel_bot,pixel_bot+offset,params->norm);
-          }
-        }
-        else if (row >= row_bot)
-        {
-          if (row + 1 < row_max) // don't bother updating if last iteration
-          {
-            // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
-            const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
-            for (int col = col_min; col < col_max; col++, pixel_top+=4)
-            {
-              col_sums[col] -= pixel_difference(pixel_top,pixel_top+offset,params->norm);
-            }
-          }
-        }
-        else
-        {
-          const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
-          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
-          // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
-          for (int col = col_min; col < col_max; col++, pixel_top+=4, pixel_bot+=4)
-          {
-            col_sums[col] += (pixel_difference(pixel_bot,pixel_bot+offset,params->norm)
-                              - pixel_difference(pixel_top,pixel_top+offset,params->norm));
-          }
-        }
-      }
-    }
-    if (skip_blend)
-    {
-      // normalize the pixels
-      for (int row = chunk_start; row < chunk_end; row++)
-      {
-        float *out = outbuf + row * 4 * roi_out->width;
-        for (int col = 0; col < roi_out->width; col++, out+=4)
-        {
-          SIMD_FOR(size_t c = 0; c < 4; c++)
-          {
-            out[c] /= out[3];
-          }
-        }
-      }
-    }
-    else
-    {
-      // normalize and apply chroma/luma blending
-      for (int row = chunk_start; row < chunk_end; row++)
-      {
-        const float *in = inbuf + row * stride;
-        float *out = outbuf + row * 4 * roi_out->width;
-        for (int col = 0; col < roi_out->width; col++, in+=4, out+=4)
-        {
-          SIMD_FOR(size_t c = 0; c < 4; c++)
-          {
-            out[c] = (in[c] * invert[c]) + (out[c] / out[3] * weight[c]);
-          }
-        }
-      }
-    }
-  }
-
-  // clean up: free the work space
-  dt_free_align(patches);
-  dt_free_align(scratch_buf);
-  return;
-}
-
-#if defined(__SSE__)
-void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
-                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                          const dt_nlmeans_param_t *const params)
-{
-  // define the factors for applying blending between the original image and the denoised version
-  // if running in RGB space, 'luma' should equal 'chroma'
-  const __m128 weight = { params->luma, params->chroma, params->chroma, 1.0f };
-  const __m128 invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
   const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
   // define the normalization to convert central pixel differences into central pixel weights
@@ -702,8 +339,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
       const int scol = patch->cols;
       const int col_min = MAX(0,-scol);
       const int col_max = roi_out->width - MAX(0,scol);
-      init_column_sums_sse2(col_sums,patch,inbuf+stride*row_min,row_min,height,roi_out->width,stride,radius,
-                            params->norm);
+      init_column_sums(col_sums,patch,inbuf+stride*row_min,row_min,height,roi_out->width,stride,radius,params->norm);
       for (int row = row_min; row < row_max; row++)
       {
         // add up the initial columns of the sliding window of total patch distortion
@@ -716,105 +352,6 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
         const int offset = patch->offset;
         const float sharpness = params->sharpness;
         if (params->center_weight < 0)
-<<<<<<< HEAD
-        {
-          // computation as used by denoise(non-local) iop
-          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
-          {
-            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-            const __m128 wt = _mm_set1_ps(gh(distortion * sharpness));
-            __m128 pixel = _mm_load_ps(in+offset);
-            pixel[3] = 1.0f;
-            const __m128 outpx = _mm_load_ps(out);
-            _mm_store_ps(out, outpx + (pixel * wt));
-          }
-        }
-        else
-        {
-          // computation as used by denoiseprofiled iop with non-local means
-          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
-          {
-            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-//TODO
-            const float dissimilarity = (distortion + pixel_difference_sse2(in,in+offset,center_norm)
-                                         / (1.0f + params->center_weight));
-            const __m128 wt = _mm_set1_ps(gh(fmaxf(0.0f, dissimilarity * params->norm[0] - 2.0f)));
-            __m128 pixel = _mm_load_ps(in+offset);
-            pixel[3] = 1.0f;
-            const __m128 outpx = _mm_load_ps(out);
-            _mm_store_ps(out, outpx + (pixel * wt));
-          }
-        }
-        if (row < row_top)
-        {
-          // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
-          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
-          for (int col = col_min; col < col_max; col++, pixel_bot+=4)
-          {
-            col_sums[col] += pixel_difference_sse2(pixel_bot,pixel_bot+offset,params->norm);
-          }
-        }
-        else if (row >= row_bot)
-        {
-          if (row + 1 < row_max) // don't bother updating if last iteration
-          {
-            // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
-            const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
-            for (int col = col_min; col < col_max; col++, pixel_top+=4)
-            {
-              col_sums[col] -= pixel_difference_sse2(pixel_top,pixel_top+offset,params->norm);
-            }
-          }
-        }
-        else
-        {
-          const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
-          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
-          // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
-          for (int col = col_min; col < col_max; col++, pixel_top+=4, pixel_bot+=4)
-          {
-            __m128 dif = (channel_difference_sse2(pixel_bot,pixel_bot+offset,params->norm)
-                          - channel_difference_sse2(pixel_top,pixel_top+offset,params->norm));
-            col_sums[col] += (dif[0] + dif[1] + dif[2]);
-          }
-        }
-      }
-    }
-    if (skip_blend)
-    {
-      // normalize the pixels
-      for (int row = chunk_start; row < chunk_end; row++)
-      {
-        float *out = outbuf + row * 4 * roi_out->width;
-        for (int col = 0; col < roi_out->width; col++, out+=4)
-        {
-          const __m128 outpx = _mm_load_ps(out);
-          const __m128 scale = _mm_set1_ps(out[3]);
-          _mm_stream_ps(out, outpx / scale) ;
-        }
-      }
-    }
-    else
-    {
-      // normalize and apply chroma/luma blending
-      for (int row = chunk_start; row < chunk_end; row++)
-      {
-        const float *in = inbuf + row * stride;
-        float *out = outbuf + row * 4 * roi_out->width;
-        for (int col = 0; col < roi_out->width; col++, in+=4, out+=4)
-        {
-          const __m128 inpx = _mm_load_ps(in);
-          const __m128 outpx = _mm_load_ps(out);
-          const __m128 scale = _mm_set1_ps(out[3]);
-          _mm_stream_ps(out, (inpx * invert) + (outpx / scale * weight)) ;
-=======
-=======
-        const int offset = patch->offset;
-        const float sharpness = params->sharpness;
->>>>>>> fine-tune slice sizes - trading off a bit of single-threaded speed for better scalability
-        for (int col = col_min; col < col_max; col++, in+=4, out+=4)
-=======
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
         {
           // computation as used by denoise(non-local) iop
           for (int col = col_min; col < col_max; col++, in+=4, out+=4)
@@ -887,10 +424,6 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
         float *out = outbuf + row * 4 * roi_out->width;
         for (int col = 0; col < roi_out->width; col++, out+=4)
         {
-<<<<<<< HEAD
-          out[c] = (in[c] * invert[c]) + (out[c] / out[3] * weight[c]);
->>>>>>> New more-scaleable implementation of non-local means
-=======
           SIMD_FOR(size_t c = 0; c < 4; c++)
           {
             out[c] /= out[3];
@@ -911,7 +444,6 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
           {
             out[c] = (in[c] * invert[c]) + (out[c] / out[3] * weight[c]);
           }
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
         }
       }
     }
@@ -922,12 +454,6 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   dt_free_align(scratch_buf);
   return;
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-#endif /* __SSE__ */
-=======
->>>>>>> New more-scaleable implementation of non-local means
-=======
 
 #if defined(__SSE__)
 void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
@@ -1114,4 +640,318 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   return;
 }
 #endif /* __SSE__ */
->>>>>>> add SSE implementation of nlmeans_denoise
+
+/**************************************************************/
+/**************************************************************/
+/*      Everything from here to end of file is WIP!!          */
+/**************************************************************/
+/**************************************************************/
+
+#ifdef HAVE_OPENCL
+static int bucket_next(unsigned int *state, unsigned int max)
+{
+  unsigned int current = *state;
+  unsigned int next = (current >= max - 1 ? 0 : current + 1);
+
+  *state = next;
+
+  return next;
+}
+
+// copied from iop/nlmeans.c, should be put in a shared header file
+typedef struct dt_iop_nlmeans_global_data_t
+{
+  int kernel_nlmeans_init;
+  int kernel_nlmeans_dist;
+  int kernel_nlmeans_horiz;
+  int kernel_nlmeans_vert;
+  int kernel_nlmeans_accu;
+  int kernel_nlmeans_finish;
+} dt_iop_nlmeans_global_data_t;
+
+// copied from iop/denoiseprofile.c, should be put in a shared header file
+typedef struct dt_iop_denoiseprofile_global_data_t
+{
+  int kernel_denoiseprofile_precondition;
+  int kernel_denoiseprofile_precondition_v2;
+  int kernel_denoiseprofile_precondition_Y0U0V0;
+  int kernel_denoiseprofile_init;
+  int kernel_denoiseprofile_dist;
+  int kernel_denoiseprofile_horiz;
+  int kernel_denoiseprofile_vert;
+  int kernel_denoiseprofile_accu;
+  int kernel_denoiseprofile_finish;
+  int kernel_denoiseprofile_finish_v2;
+  int kernel_denoiseprofile_backtransform;
+  int kernel_denoiseprofile_backtransform_v2;
+  int kernel_denoiseprofile_backtransform_Y0U0V0;
+  int kernel_denoiseprofile_decompose;
+  int kernel_denoiseprofile_synthesize;
+  int kernel_denoiseprofile_reduce_first;
+  int kernel_denoiseprofile_reduce_second;
+} dt_iop_denoiseprofile_global_data_t;
+#endif /* HAVE_OPENCL */
+
+#ifdef HAVE_OPENCL
+static void get_blocksizes(int *h, int *v, const int radius, const int devid,
+                           const int horiz_kernel, const int vert_kernel)
+{
+  dt_opencl_local_buffer_t hlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 2 * radius, .xfactor = 1, .yoffset = 0, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1 << 16, .sizey = 1 };
+
+  *h = dt_opencl_local_buffer_opt(devid, horiz_kernel, &hlocopt) ? hlocopt.sizex : 1;
+
+  dt_opencl_local_buffer_t vlocopt
+    = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * radius, .yfactor = 1,
+                                  .cellsize = sizeof(float), .overhead = 0,
+                                  .sizex = 1, .sizey = 1 << 16 };
+
+  *v = dt_opencl_local_buffer_opt(devid, vert_kernel, &vlocopt) ? vlocopt.sizey : 1;
+  return;
+}
+#endif /* HAVE_OPENCL */
+
+#ifdef HAVE_OPENCL
+int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
+                       cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in)
+{
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int P = params->patch_radius;
+  const float nL2 = params->norm[0] * params->norm[0];
+  const float nC2 = params->norm[1] * params->norm[1];
+
+  // define the patches to be compared when denoising a pixel
+  const size_t stride = 4 * roi_in->width;
+  int num_patches;
+  int max_shift;
+  struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
+
+  cl_int err = -999;
+  cl_mem buckets[NUM_BUCKETS] = { NULL };
+  unsigned int state = 0;
+  for(int k = 0; k < NUM_BUCKETS; k++)
+  {
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
+    if(buckets[k] == NULL) goto error;
+  }
+
+  int hblocksize;
+  int vblocksize;
+  get_blocksizes(&hblocksize, &vblocksize, P, devid, params->kernel_horiz, params->kernel_vert);
+  
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  dt_opencl_set_kernel_arg(devid, params->kernel_init, 0, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, params->kernel_init, 1, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, params->kernel_init, 2, sizeof(int), (void *)&height);
+  err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_init, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  const size_t bwidth = ROUNDUP(width, hblocksize);
+  const size_t bheight = ROUNDUP(height, vblocksize);
+
+  for (int p = 0; p < num_patches; p++)
+  {
+    const patch_t *patch = &patches[p];
+    int q[2] = { patch->rows, patch->cols };
+    size_t sizesl[3];
+    size_t local[3];
+
+    cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 4, 2 * sizeof(int), (void *)&q);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 5, sizeof(float), (void *)&nL2);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 6, sizeof(float), (void *)&nC2);
+    err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_dist, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    sizesl[0] = bwidth;
+    sizesl[1] = ROUNDUPHT(height);
+    sizesl[2] = 1;
+    local[0] = hblocksize;
+    local[1] = 1;
+    local[2] = 1;
+    cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 4, 2 * sizeof(int), (void *)&q);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 5, sizeof(int), (void *)&P);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 6, (hblocksize + 2 * P) * sizeof(float), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_horiz, sizesl, local);
+    if(err != CL_SUCCESS) goto error;
+
+    sizesl[0] = ROUNDUPWD(width);
+    sizesl[1] = bheight;
+    sizesl[2] = 1;
+    local[0] = 1;
+    local[1] = vblocksize;
+    local[2] = 1;
+    const float sharpness = params->sharpness;
+    cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 4, 2 * sizeof(int), (void *)&q);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 5, sizeof(int), (void *)&P);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 6, sizeof(float), (void *)&sharpness);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 7, (vblocksize + 2 * P) * sizeof(float), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_vert, sizesl, local);
+    if(err != CL_SUCCESS) goto error;
+
+
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 2, sizeof(cl_mem), (void *)&dev_U4_tt);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 5, 2 * sizeof(int), (void *)&q);
+    err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_accu, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    if(!darktable.opencl->async_pixelpipe || params->pipetype == DT_DEV_PIXELPIPE_EXPORT)
+      dt_opencl_finish(devid);
+
+    // indirectly give gpu some air to breathe (and to do display related stuff)
+    dt_iop_nap(darktable.opencl->micro_nap);
+  }
+
+  // clean up and return status
+  err = CL_SUCCESS;
+error:
+  dt_free_align(patches);
+  for(int k = 0; k < NUM_BUCKETS; k++)
+  {
+    dt_opencl_release_mem_object(buckets[k]);
+  }
+  return err;
+}
+#endif /* HAVE_OPENCL */
+
+#ifdef HAVE_OPENCL
+int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int devid,
+                              cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in)
+{
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int P = params->patch_radius;
+  const float norm = params->norm[0];
+
+  // define the patches to be compared when denoising a pixel
+  const size_t stride = 4 * roi_in->width;
+  int num_patches;
+  int max_shift;
+  struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
+
+  cl_int err = -999;
+  cl_mem buckets[NUM_BUCKETS] = { NULL };
+  unsigned int state = 0;
+  for(int k = 0; k < NUM_BUCKETS; k++)
+  {
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
+    if(buckets[k] == NULL) goto error;
+  }
+
+  int hblocksize;
+  int vblocksize;
+  get_blocksizes(&hblocksize, &vblocksize, P, devid, params->kernel_horiz, params->kernel_vert);
+
+  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  dt_opencl_set_kernel_arg(devid, params->kernel_init, 0, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, params->kernel_init, 1, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, params->kernel_init, 2, sizeof(int), (void *)&height);
+  err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_init, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  const size_t bwidth = ROUNDUP(width, hblocksize);
+  const size_t bheight = ROUNDUP(height, vblocksize);
+
+  for(int p = 0; p < num_patches; p++)
+  {
+    const patch_t *patch = &patches[p];
+    int q[2] = { patch->rows, patch->cols };
+    size_t sizesl[3];
+    size_t local[3];
+
+    cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 4, 2 * sizeof(int), (void *)&q);
+    err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_dist, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    sizesl[0] = bwidth;
+    sizesl[1] = ROUNDUPHT(height);
+    sizesl[2] = 1;
+    local[0] = hblocksize;
+    local[1] = 1;
+    local[2] = 1;
+    cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 4, 2 * sizeof(int), (void *)&q);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 5, sizeof(int), (void *)&P);
+    dt_opencl_set_kernel_arg(devid, params->kernel_horiz, 6, (hblocksize + 2 * P) * sizeof(float), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_horiz, sizesl, local);
+    if(err != CL_SUCCESS) goto error;
+
+    sizesl[0] = ROUNDUPWD(width);
+    sizesl[1] = bheight;
+    sizesl[2] = 1;
+    local[0] = 1;
+    local[1] = vblocksize;
+    local[2] = 1;
+    const float central_pixel_weight = params->center_weight;
+    cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 4, 2 * sizeof(int), (void *)&q);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 5, sizeof(int), (void *)&P);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 6, sizeof(float), (void *)&norm);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 7, (vblocksize + 2 * P) * sizeof(float), NULL);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 8, sizeof(float), (void *)&central_pixel_weight);
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 9, sizeof(cl_mem), ((void *)&dev_U4));
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_vert, sizesl, local);
+    if(err != CL_SUCCESS) goto error;
+
+
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 2, sizeof(cl_mem), (void *)&dev_U4_tt);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, params->kernel_accu, 5, 2 * sizeof(int), (void *)&q);
+    err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_accu, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    if(!darktable.opencl->async_pixelpipe || params->pipetype == DT_DEV_PIXELPIPE_EXPORT)
+      dt_opencl_finish(devid);
+
+    // indirectly give gpu some air to breathe (and to do display related stuff)
+    dt_iop_nap(darktable.opencl->micro_nap);
+  }
+
+  // clean up and return status
+  err = CL_SUCCESS;
+error:
+  dt_free_align(patches);
+  for(int k = 0; k < NUM_BUCKETS; k++)
+  {
+    dt_opencl_release_mem_object(buckets[k]);
+  }
+  return err;
+}
+#endif /* HAVE_OPENCL */

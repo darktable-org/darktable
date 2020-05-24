@@ -35,15 +35,9 @@
 #include <xmmintrin.h>
 #endif
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 // which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
-=======
->>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
-=======
-// which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
->>>>>>> enable use of the new non-local means code by the denoise(profiled) iop
 #define USE_NEW_IMPL 1
+#define USE_NEW_IMPL_CL 1
 
 #define NUM_BUCKETS 4
 
@@ -171,7 +165,7 @@ static float gh(const float f, const float sharpness)
 }
 #endif /* !USE_NEW_IMPL */
 
-#ifdef HAVE_OPENCL
+#if defined(HAVE_OPENCL) && !USE_NEW_IMPL_CL
 static int bucket_next(unsigned int *state, unsigned int max)
 {
   unsigned int current = *state;
@@ -187,35 +181,90 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
   dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->global_data;
-
-
-  const int devid = piece->pipe->devid;
+#if USE_NEW_IMPL_CL
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  cl_mem dev_U2 = NULL;
-  cl_mem dev_U4 = NULL;
-  cl_mem dev_U4_t = NULL;
-  cl_mem dev_U4_tt = NULL;
+  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);         // nbhood
+  const float sharpness = 3000.0f / (1.0f + d->strength);
 
-  unsigned int state = 0;
-  cl_mem buckets[NUM_BUCKETS] = { NULL };
+  const float max_L = 120.0f, max_C = 512.0f;
+  const float nL = 1.0f / max_L, nC = 1.0f / max_C;
+  const float norm2[4] = { nL, nC }; //luma and chroma scaling factors
+  
+  // allocate a buffer to receive the denoised image
+  const int devid = piece->pipe->devid;
+  cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
+  if(dev_U2 == NULL)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't allocate GPU buffer\n");
+    return FALSE;
+  }
+
+  const dt_nlmeans_param_t params =
+  {
+    .scattering = 0,
+    .scale = scale,
+    .luma = d->luma,
+    .chroma = d->chroma,
+    .center_weight = -1,
+    .sharpness = sharpness,
+    .patch_radius = P,
+    .search_radius = K,
+    .decimate = 0,
+    .norm = norm2,
+    .pipetype = piece->pipe->type,
+    .kernel_init = gd->kernel_nlmeans_init,
+    .kernel_dist = gd->kernel_nlmeans_dist,
+    .kernel_horiz = gd->kernel_nlmeans_horiz,
+    .kernel_vert = gd->kernel_nlmeans_vert,
+    .kernel_accu = gd->kernel_nlmeans_accu
+  };
+  cl_int err = nlmeans_denoise_cl(&params, devid, dev_in, dev_U2, roi_in);
+  if (err == CL_SUCCESS)
+  {
+    // normalize and blend
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 2, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 5, 4 * sizeof(float), (void *)&weight);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_finish, sizes);
+  }
+  // clean up and check whether all kernels ran successfully
+  dt_opencl_release_mem_object(dev_U2);
+  if (err == CL_SUCCESS)
+    return TRUE;
+  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+
+#else // old code
+  const int width = roi_in->width;
+  const int height = roi_in->height;
 
   cl_int err = -999;
 
-  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
-  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f));         // nbhood
+  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
+  const int P = ceilf(d->radius * scale); // pixel filter size
+  const int K = ceilf(7 * scale);         // nbhood
   const float sharpness = 3000.0f / (1.0f + d->strength);
 
-  float max_L = 120.0f, max_C = 512.0f;
-  float nL = 1.0f / max_L, nC = 1.0f / max_C;
-  float nL2 = nL * nL, nC2 = nC * nC;
-  // float weight[4] = { powf(d->luma, 0.6), powf(d->chroma, 0.6), powf(d->chroma, 0.6), 1.0f };
-  float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
+  const float max_L = 120.0f, max_C = 512.0f;
+  const float nL = 1.0f / max_L, nC = 1.0f / max_C;
+  const float nL2 = nL * nL, nC2 = nC * nC;
+  const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
 
-  dev_U2 = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
+  const int devid = piece->pipe->devid;
+  cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
   if(dev_U2 == NULL) goto error;
 
+  cl_mem buckets[NUM_BUCKETS] = { NULL };
+  unsigned int state = 0;
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
     buckets[k] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
@@ -245,9 +294,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     vblocksize = 1;
 
 
-  const size_t bwidth = ROUNDUP(width, hblocksize);
-  const size_t bheight = ROUNDUP(height, vblocksize);
-
   size_t sizesl[3];
   size_t local[3];
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -259,13 +305,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
 
+  const size_t bwidth = ROUNDUP(width, hblocksize);
+  const size_t bheight = ROUNDUP(height, vblocksize);
 
   for(int j = -K; j <= 0; j++)
     for(int i = -K; i <= K; i++)
     {
       int q[2] = { i, j };
 
-      dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
+      cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 0, sizeof(cl_mem), (void *)&dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_dist, 2, sizeof(int), (void *)&width);
@@ -282,7 +330,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[0] = hblocksize;
       local[1] = 1;
       local[2] = 1;
-      dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
+      cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_horiz, 2, sizeof(int), (void *)&width);
@@ -300,7 +348,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[0] = 1;
       local[1] = vblocksize;
       local[2] = 1;
-      dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
+      cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
       dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_vert, 2, sizeof(int), (void *)&width);
@@ -329,6 +377,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_iop_nap(darktable.opencl->micro_nap);
     }
 
+  // normalize and blend
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 2, sizeof(cl_mem), (void *)&dev_out);
@@ -354,6 +403,7 @@ error:
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
   return FALSE;
+#endif /* USE_NEW_IMPL_CL */
 }
 #endif
 
@@ -398,40 +448,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
 
 #if USE_NEW_IMPL //use new code?
-<<<<<<< HEAD
-<<<<<<< HEAD
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
   int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
   
-=======
->>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
-=======
-  // faster but less accurate processing by skipping half the patches on previews and thumbnails
-  int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
-  
->>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
   const dt_nlmeans_param_t params = { .sharpness = sharpness,
                                       .luma = d->luma,
                                       .chroma = d->chroma,
                                       .scattering = 0,
                                       .scale = scale,
-<<<<<<< HEAD
-<<<<<<< HEAD
                                       .center_weight = -1,
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = decimate,
-<<<<<<< HEAD
-=======
-=======
-                                      .center_weight = -1,
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
-                                      .patch_radius = P,
-                                      .search_radius = K,
-                                      .decimate = 1,
->>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
-=======
->>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
                                       .norm = norm2 };
   nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -588,49 +616,20 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float norm2[4] = { nL * nL, nC * nC, nC * nC, 1.0f };
 
 #if USE_NEW_IMPL // use new code?
-<<<<<<< HEAD
-<<<<<<< HEAD
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
   int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
   
-=======
->>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
-=======
-  // faster but less accurate processing by skipping half the patches on previews and thumbnails
-  int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
-  
->>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
   const dt_nlmeans_param_t params = { .sharpness = sharpness,
                                       .luma = d->luma,
                                       .chroma = d->chroma,
                                       .scattering = 0,
                                       .scale = scale,
-<<<<<<< HEAD
-<<<<<<< HEAD
                                       .center_weight = -1,
                                       .patch_radius = P,
                                       .search_radius = K,
                                       .decimate = decimate,
-<<<<<<< HEAD
                                       .norm = norm2 };
   nlmeans_denoise_sse2(ivoid,ovoid,roi_in,roi_out,&params);
-=======
-=======
-                                      .center_weight = -1,
->>>>>>> add support for central pixel weighting, as used by denoiseprofile iop
-                                      .patch_radius = P,
-                                      .search_radius = K,
-                                      .decimate = 1,
-=======
->>>>>>> enable even faster processing on previews and thumbnails by only evaluating half as many patches
-                                      .norm = norm2 };
-<<<<<<< HEAD
-  nlmeans_denoise(ivoid,ovoid,roi_in,roi_out,&params);
-  // (SSE version not implemented yet, redirect to scalar code)
->>>>>>> Hook up new non-local means code to IOP.  Only scalar version is available right now.
-=======
-  nlmeans_denoise_sse2(ivoid,ovoid,roi_in,roi_out,&params);
->>>>>>> switch process_sse2() to use SSE version of nlmeans_denoise
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   return;
