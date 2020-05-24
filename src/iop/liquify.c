@@ -2313,7 +2313,7 @@ static float find_nearest_on_curve_t (const float complex p0,
                                       const float complex x,
                                       const int n)
 {
-  float min_t = 0, min_dist = cabs (x - p0);
+  float min_t = 0.0f, min_dist = cabs (x - p0);
 
   for (int i = 0; i < n; i++)
   {
@@ -2695,7 +2695,8 @@ void gui_post_expose (struct dt_iop_module_t *module,
   const float bb_width = develop->preview_pipe->backbuf_width;
   const float bb_height = develop->preview_pipe->backbuf_height;
   const float iscale = develop->preview_pipe->iscale;
-  const float scale = MAX (bb_width, bb_height);
+  const float pr_d = develop->preview_downsampling;
+  const float scale = pr_d * MAX (bb_width, bb_height);
   if (bb_width < 1.0 || bb_height < 1.0)
     return;
 
@@ -2786,7 +2787,7 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   const float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   const float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
-  *scale = darktable.develop->preview_pipe->iscale / get_zoom_scale(module->dev);
+  *scale = darktable.develop->preview_pipe->iscale * get_zoom_scale(module->dev);
   *pt = (nx * darktable.develop->pipe->iwidth) +  (ny * darktable.develop->pipe->iheight) * I;
 }
 

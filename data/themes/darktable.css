@@ -413,6 +413,11 @@ overshoot.right
   font-size: .7em;
 }
 
+<<<<<<< HEAD
+=======
+button#dt-button,
+button#dt-toggle-button,
+>>>>>>> branch 'buttons_new_5' of https://github.com/Mark-64/darktable.git
 #dt-icon
 {
   border-radius: 2px;

@@ -307,6 +307,19 @@ void dtgtk_cairo_paint_switch_on(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   cairo_identity_matrix(cr);
 }
 
+void dtgtk_cairo_paint_switch_off(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  const gint s = w < h ? w : h;
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+  cairo_set_line_width(cr, 0.1);
+
+  cairo_arc(cr, 0.5, 0.5, 0.50, 0, 2 * M_PI);
+  cairo_stroke(cr);
+
+  cairo_identity_matrix(cr);
+}
+
 void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   const gint s = w < h ? w : h;
