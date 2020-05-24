@@ -429,8 +429,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     v7->blue_mapping = v6.blue_mapping;
     v7->type_work = v6.type_work;
     g_strlcpy(v7->filename_work, v6.filename_work, sizeof(v7->filename_work));
-    v7->color_regularization = 0.01f;
-    v7->luminance_regularization = 0.0f;
+    v7->color_regularization = 0.7f;
+    v7->luminance_regularization = 0.7f;
     return 0;
   }
   return 1;
@@ -2080,8 +2080,8 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .filename = "",
                                                            .intent = DT_INTENT_PERCEPTUAL,
                                                            .normalize = DT_NORMALIZE_OFF,
-                                                           .color_regularization = 0.01f,
-                                                           .luminance_regularization = 0.0f,
+                                                           .color_regularization = 0.7f,
+                                                           .luminance_regularization = 0.7f,
                                                            .blue_mapping = 0,
                                                            .type_work = DT_COLORSPACE_LIN_REC2020,
                                                            .filename_work = "" };
@@ -2388,13 +2388,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->clipping_combobox), "value-changed", G_CALLBACK(normalize_changed), (gpointer)self);
 
-  g->color_regularization = dt_bauhaus_slider_new_with_range(self, 0.01f, 1.0f, .05f, 0.01f, 2);
+  g->color_regularization = dt_bauhaus_slider_new_with_range(self, 0.01f, 1.0f, .05f, 0.7f, 2);
   dt_bauhaus_widget_set_label(g->color_regularization, NULL, _("color regularization"));
   gtk_widget_set_tooltip_text(g->color_regularization, _("amount of color regularization for far-from-gamut pixel\n increase to desaturate"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->color_regularization, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->color_regularization), "value-changed", G_CALLBACK(color_regularization_callback), (gpointer)self);
 
-  g->luminance_regularization = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, .05, 0.0f, 2);
+  g->luminance_regularization = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, .05, 0.7f, 2);
   dt_bauhaus_widget_set_label(g->luminance_regularization, NULL, _("luminance regularization"));
   gtk_widget_set_tooltip_text(g->luminance_regularization, _("amount of luminance regularization for far-from-gamut pixel\n increase to brighten these pixels until gradients are smooth"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->luminance_regularization, TRUE, TRUE, 0);
