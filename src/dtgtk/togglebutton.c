@@ -195,7 +195,7 @@ GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflags
   button->canvas = gtk_drawing_area_new();
   gtk_container_add(GTK_CONTAINER(button), button->canvas);
   gtk_widget_set_name(GTK_WIDGET(button), "dt-toggle-button");
-  gtk_widget_set_name(GTK_WIDGET(button->canvas), "toggle-button-canvas");
+  gtk_widget_set_name(GTK_WIDGET(button->canvas), "button-canvas");
   return (GtkWidget *)button;
 }
 
