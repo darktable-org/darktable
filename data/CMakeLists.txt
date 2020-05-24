@@ -1,7 +1,7 @@
-add_subdirectory(pixmaps)
+add_subdirectory(pixmaps ${DARKTABLE_DATADIR}/pixmaps)
 
 if(USE_OPENCL)
-	add_subdirectory(kernels)
+	add_subdirectory(kernels ${DARKTABLE_DATADIR}/kernels)
 endif(USE_OPENCL)
 
 FILE(GLOB THEME_FILES "themes/*.css")
