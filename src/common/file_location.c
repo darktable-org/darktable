@@ -96,7 +96,7 @@ void dt_loc_init_user_config_dir(const char *configdir)
 {
   char *default_config_dir = g_build_filename(g_get_user_config_dir(), "darktable", NULL);
   darktable.configdir = dt_loc_init_generic(configdir, default_config_dir);
-  dt_check_opendir("darktable.configdir", darktable.configdir);
+  dt_check_opendir("darktable.configdir", darktable.configdir, TRUE);
   g_free(default_config_dir);
 }
 
@@ -141,8 +141,7 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
 int dt_loc_init_tmp_dir(const char *tmpdir)
 {
   darktable.tmpdir = dt_loc_init_generic(tmpdir, g_get_tmp_dir());
-  // return 1 instead of error originally
-  dt_check_opendir("darktable.tmpdir", darktable.tmpdir);
+  dt_check_opendir("darktable.tmpdir", darktable.tmpdir, FALSE);
   if(darktable.tmpdir == NULL) return 1;
   return 0;
 }
@@ -151,7 +150,7 @@ void dt_loc_init_user_cache_dir(const char *cachedir)
 {
   char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
   darktable.cachedir = dt_loc_init_generic(cachedir, default_cache_dir);
-  dt_check_opendir("darktable.cachedir", darktable.cachedir);
+  dt_check_opendir("darktable.cachedir", darktable.cachedir, TRUE);
   g_free(default_cache_dir);
 }
 
@@ -169,11 +168,11 @@ void dt_loc_init_plugindir(const char* application_directory, const char *plugin
   g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
   free(path);
   darktable.plugindir = g_realpath(complete_path);
-  dt_check_opendir("darktable.plugindir", darktable.plugindir);
+  dt_check_opendir("darktable.plugindir", darktable.plugindir, TRUE);
 #endif
 }
 
-void dt_check_opendir(const char* text, const char* directory)
+void dt_check_opendir(const char* text, const char* directory, gboolean exit_on_error)
 {
   if (!directory) {
     printf("directory for %s has not been set.\n", text);
@@ -185,50 +184,49 @@ void dt_check_opendir(const char* text, const char* directory)
     dt_print(DT_DEBUG_DEV, "%s: %s\n", text, directory);
     closedir(dir);
   } 
-  else if ( errno == EACCES ) 
-  {
-    printf("Permission denied.\n");
-    exit(EXIT_FAILURE);
-  } 
-  else if ( errno == ENOENT ) 
-  {
-    printf("%s %s does not exist.\n", text, directory);
-    exit(EXIT_FAILURE);
-  } 
-  else if ( errno == EBADF ) 
-  {
-    printf("fd is not a valid file descriptor opened for reading.\n");
-    exit(EXIT_FAILURE);
-  } 
-  else if ( errno == EMFILE ) 
-  {
-    printf("The per-process limit on the number of open file descriptors has been reached.\n");
-    exit(EXIT_FAILURE);
-  } 
-  else if ( errno == ENFILE ) 
-  {
-    printf("The system-wide limit on the total number of open files has been reached.\n");
-    exit(EXIT_FAILURE);
-  } 
-  else if ( errno == ENOENT ) 
-  {
-    printf("Directory does not exist, or name is an empty string.\n");
-    exit(EXIT_FAILURE);
-  }  
-  else if ( errno == ENOMEM ) 
-  {
-    printf("Insufficient memory to complete the operation.\n");
-    exit(EXIT_FAILURE);
-  }  
-  else if ( errno == ENOTDIR ) 
-  {
-    printf("Name is not a directory.\n");
-    exit(EXIT_FAILURE);
-  } 
   else 
   {
-    printf("opendir() failed for some other reason.\n");
-    exit(EXIT_FAILURE);
+    if ( errno == EACCES ) 
+    {
+      printf("Permission denied.\n");
+    } 
+    else if ( errno == ENOENT ) 
+    {
+      printf("%s %s does not exist.\n", text, directory);
+    } 
+    else if ( errno == EBADF ) 
+    {
+      printf("fd is not a valid file descriptor opened for reading.\n");
+    } 
+    else if ( errno == EMFILE ) 
+    {
+      printf("The per-process limit on the number of open file descriptors has been reached.\n");
+    } 
+    else if ( errno == ENFILE ) 
+    {
+      printf("The system-wide limit on the total number of open files has been reached.\n");
+    } 
+    else if ( errno == ENOENT ) 
+    {
+      printf("Directory does not exist, or name is an empty string.\n");
+    }  
+    else if ( errno == ENOMEM ) 
+    {
+      printf("Insufficient memory to complete the operation.\n");
+    }  
+    else if ( errno == ENOTDIR ) 
+    {
+      printf("Name is not a directory.\n");
+    } 
+    else 
+    {
+      printf("opendir() failed for some other reason.\n");
+    }
+
+    if(exit_on_error)
+    {
+      exit(EXIT_FAILURE);
+    }
   }
 }
 
@@ -250,7 +248,7 @@ void dt_loc_init_localedir(const char* application_directory, const char *locale
   g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
   free(path);
   darktable.localedir = g_realpath(complete_path);
-  dt_check_opendir("darktable.localedir", darktable.localedir);
+  dt_check_opendir("darktable.localedir", darktable.localedir, TRUE);
 #endif
 }
 
@@ -271,7 +269,7 @@ void dt_loc_init_datadir(const char* application_directory, const char *datadir)
   g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
   free(path);
   darktable.datadir = g_realpath(complete_path);
-  dt_check_opendir("darktable.datadir", darktable.datadir);
+  dt_check_opendir("darktable.datadir", darktable.datadir, TRUE);
 #endif
 }
 
