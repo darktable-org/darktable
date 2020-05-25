@@ -875,6 +875,39 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
   }
 }
 
+static void rgb_to_uvY(float rgb[3], float uvY[3])
+{
+  float X = 2.7689f * rgb[0]
+          + 1.7517f * rgb[1]
+          + 1.1302f * rgb[2];
+  float Y = 1.0000f * rgb[0]
+          + 4.5907f * rgb[1]
+          + 0.0601f * rgb[2];
+  float Z = 0.0000f * rgb[0]
+          + 0.056508f * rgb[1]
+          + 5.5943f * rgb[2];
+  float uv_denom = X + 15.0f * Y + 3.0f * Z;
+  uvY[0] = 4.0f * X / uv_denom;
+  uvY[1] = 9.0f * Y / uv_denom;
+  uvY[2] = Y;
+}
+
+static void uvY_to_rgb(float uvY[3], float rgb[3])
+{
+  float Y = uvY[2];
+  float X = Y * 9.0f * uvY[0] / (4.0f * uvY[1]);
+  float Z = Y * (12.0f - 3.0f * uvY[0] - 20.0f * uvY[1]) / (4.0f * uvY[1]);
+  rgb[0] = 0.41847f * X
+         - 0.15866f * Y
+         - 0.082835f * Z;
+  rgb[1] = -0.091169f * X
+         + 0.25243f * Y
+         + 0.015708 * Z;
+  rgb[2] = 0.00092090f * X
+         - 0.0025498f * Y
+         + 0.17860f * Z;
+}
+
 static void process_cmatrix_fastpath_regularized(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                             const void *const ivoid, void *const ovoid,
                                             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -937,66 +970,63 @@ static void process_cmatrix_fastpath_regularized(struct dt_iop_module_t *self, d
     // constitute 2 outputs: one good in terms of color, the other one good in
     // terms of luminance
     float _xyz_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float _xyz_color_clipped[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     float _xyz_luminance[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     // start with color:
     // we compute a desaturation based on our threshold
-    // we use MAX(R,G,B) as a norm for this purpose
     for(int c = 0; c < 3; c++)
     {
       _xyz_color[c] = _xyz_positive[c] + _xyz_negative[c];
+      _xyz_color_clipped[c] = MAX(_xyz_color[c], 0.0f);
     }
-    int max_rgb_c = 0;
-    float max_rgb = _xyz_color[0];
-    float rgb_g = _xyz_color[1];
-    if(rgb_g > max_rgb)
-    {
-      max_rgb_c = 1;
-      max_rgb = rgb_g;
-    }
-    float rgb_b = _xyz_color[2];
-    if(rgb_b > max_rgb)
-    {
-      max_rgb_c = 2;
-      max_rgb = rgb_b;
-    }
-    max_rgb = MAX(max_rgb, 1e-6);
-    int max_rgb_c_1 = (max_rgb_c + 1) % 3;
-    int max_rgb_c_2 = (max_rgb_c + 2) % 3;
     // compute saturation compensation for max_rgb_c_1 and max_rgb_c_2
-    float sat;
-    float sat1 = 0.0f;
-    float sat2 = 0.0f;
-    // we don't want negative part to represent more than (1.0f - color_regularization)
-    // times the positive part.
-    // if that's not the case, we compute the saturation compensation necessary
-    // to have this condition respected.
-    float regularized_c_1 = _xyz_positive[max_rgb_c_1] * (1.0f - color_regularization) + _xyz_negative[max_rgb_c_1];
-    if(regularized_c_1 < 0.0f)
+    float regularized_c_0 = _xyz_positive[0] * (1.0f - color_regularization) + _xyz_negative[0];
+    float regularized_c_1 = _xyz_positive[1] * (1.0f - color_regularization) + _xyz_negative[1];
+    float regularized_c_2 = _xyz_positive[2] * (1.0f - color_regularization) + _xyz_negative[2];
+    float sat = MAX(-regularized_c_0, MAX(-regularized_c_1, -regularized_c_2));
+    if(sat > 0.0f)
     {
-      float curr = _xyz_color[max_rgb_c_1];
-      sat1 = (_xyz_positive[max_rgb_c_1] * color_regularization - curr) / (max_rgb - MAX(curr, 0.0f));
+      float uvY[3] = { 0.0f, 0.0f, 0.0f };
+      float uvY_regularized[3] = { 0.0f, 0.0f, 0.0f };
+      rgb_to_uvY(_xyz_color_clipped, uvY);
+
+      // compute desaturated point by adding white light
+      for(int c = 0; c < 3; c++)
+      {
+        _xyz_color_clipped[c] = (_xyz_color[c] + sat) / (1.0f + sat);
+      }
+      rgb_to_uvY(_xyz_color_clipped, uvY_regularized);
+
+      static const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
+
+      // lets call B the D50 point, A the uv point and C the uv regularized point
+      // we want the projection H of C on AB.
+      float AC_squared = (uvY_regularized[0] - uvY[0]) * (uvY_regularized[0] - uvY[0]) + (uvY_regularized[1] - uvY[1]) * (uvY_regularized[1] - uvY[1]);
+      float BC_squared = (D50[0] - uvY_regularized[0]) * (D50[0] - uvY_regularized[0]) + (D50[1] - uvY_regularized[1]) * (D50[1] - uvY_regularized[1]);
+      float AB_squared = (D50[0] - uvY[0]) * (D50[0] - uvY[0]) + (D50[1] - uvY[1]) * (D50[1] - uvY[1]);
+      float AB = sqrt(AB_squared);
+      float HA = (AC_squared - BC_squared + AB_squared) / (2.0f * AB);
+      float h = HA / AB;
+
+      uvY_regularized[0] = uvY[0] * (1 - h) + h * D50[0];
+      uvY_regularized[1] = uvY[1] * (1 - h) + h * D50[1];
+      uvY_regularized[2] = uvY[2];
+
+      uvY_to_rgb(uvY_regularized, _xyz_color);
     }
-    float regularized_c_2 = _xyz_positive[max_rgb_c_2] * (1.0f - color_regularization) + _xyz_negative[max_rgb_c_2];
-    if(regularized_c_2 < 0.0f)
-    {
-      float curr = _xyz_color[max_rgb_c_2];
-      sat2 = (_xyz_positive[max_rgb_c_2] * color_regularization - curr) / (max_rgb - MAX(curr, 0.0f));
-    }
-    sat = MAX(sat1, sat2);
-    sat = MIN(sat, 1.0f);
-    // desaturate max_rgb_c_1 and max_rgb_c_2
-    _xyz_color[max_rgb_c_1] = max_rgb * sat + _xyz_color[max_rgb_c_1] * (1.0f - sat);
-    _xyz_color[max_rgb_c_2] = max_rgb * sat + _xyz_color[max_rgb_c_2] * (1.0f - sat);
 
     for(int c = 0; c < 3; c++)
     {
       float regularized_l = _xyz_positive[c] * (1.0f - luminance_regularization) + _xyz_negative[c];
       regularized_l = MAX(regularized_l, 0.0f);
-      _xyz_luminance[c] = regularized_l + _xyz_positive[c] * luminance_regularization;
+      _xyz_luminance[c] += regularized_l + _xyz_positive[c] * luminance_regularization;
     }
-    float luma_xyz_color = MAX(dt_camera_rgb_luminance(_xyz_color), 1e-6);
-    float luma_xyz_luminance = dt_camera_rgb_luminance(_xyz_luminance);
+    float uvY[3] = { 0.0f, 0.0f, 0.0f };
+    rgb_to_uvY(_xyz_color, uvY);
+    float luma_xyz_color = MAX(uvY[2], 1e-6);
+    rgb_to_uvY(_xyz_luminance, uvY);
+    float luma_xyz_luminance = uvY[2];
     luma_xyz_luminance *= correction_norm_luma;
     float _xyz[4];
     for(int c = 0; c < 3; c++)
