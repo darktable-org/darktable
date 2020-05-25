@@ -105,7 +105,8 @@ typedef enum dt_iop_filmicrgb_methods_type_t
   DT_FILMIC_METHOD_NONE = 0,
   DT_FILMIC_METHOD_MAX_RGB = 1,
   DT_FILMIC_METHOD_LUMINANCE = 2,
-  DT_FILMIC_METHOD_POWER_NORM = 3
+  DT_FILMIC_METHOD_POWER_NORM = 3,
+  DT_FILMIC_METHOD_EUCLIDEAN_NORM = 4
 } dt_iop_filmicrgb_methods_type_t;
 
 
@@ -344,6 +345,15 @@ static inline float clamp_simd(const float x)
 
 
 #ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline float sqf(const float x)
+{
+  return x * x;
+}
+
+
+#ifdef _OPENMP
 #pragma omp declare simd aligned(pixel:16)
 #endif
 static inline float pixel_rgb_norm_power(const float pixel[4])
@@ -392,6 +402,9 @@ static inline float get_pixel_norm(const float pixel[4], const dt_iop_filmicrgb_
 
     case(DT_FILMIC_METHOD_POWER_NORM):
       return pixel_rgb_norm_power(pixel);
+
+    case(DT_FILMIC_METHOD_EUCLIDEAN_NORM):
+      return sqrtf(sqf(pixel[0]) + sqf(pixel[1]) + sqf(pixel[2]));
 
     default:
       return (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(pixel,
@@ -494,14 +507,6 @@ static inline float fminabsf(const float a, const float b)
   const float abs_a = fabsf(a);
   const float abs_b = fabsf(b);
   return (abs_a < abs_b) ? a : b;
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float sqf(const float x)
-{
-  return x*x;
 }
 
 
@@ -2710,6 +2715,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->preserve_color, _("max RGB"));
   dt_bauhaus_combobox_add(g->preserve_color, _("luminance Y"));
   dt_bauhaus_combobox_add(g->preserve_color, _("RGB power norm"));
+  dt_bauhaus_combobox_add(g->preserve_color, _("RGB euclidean norm"));
   gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original color are preserved.\n"
                                                    "may reinforce chromatic aberrations and chroma noise,\n"
                                                    "so ensure they are properly corrected elsewhere.\n"));
