@@ -315,7 +315,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 static void red_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
@@ -329,7 +329,7 @@ static void red_callback(GtkWidget *slider, gpointer user_data)
 static void green_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
@@ -344,7 +344,7 @@ static void green_callback(GtkWidget *slider, gpointer user_data)
 static void blue_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
@@ -358,7 +358,7 @@ static void blue_callback(GtkWidget *slider, gpointer user_data)
 static void output_callback(GtkComboBox *combo, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
 
