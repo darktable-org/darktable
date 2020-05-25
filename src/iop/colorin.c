@@ -875,39 +875,6 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
   }
 }
 
-static void rgb_to_uvY(float rgb[3], float uvY[3])
-{
-  float X = 2.7689f * rgb[0]
-          + 1.7517f * rgb[1]
-          + 1.1302f * rgb[2];
-  float Y = 1.0000f * rgb[0]
-          + 4.5907f * rgb[1]
-          + 0.0601f * rgb[2];
-  float Z = 0.0000f * rgb[0]
-          + 0.056508f * rgb[1]
-          + 5.5943f * rgb[2];
-  float uv_denom = X + 15.0f * Y + 3.0f * Z;
-  uvY[0] = 4.0f * X / uv_denom;
-  uvY[1] = 9.0f * Y / uv_denom;
-  uvY[2] = Y;
-}
-
-static void uvY_to_rgb(float uvY[3], float rgb[3])
-{
-  float Y = uvY[2];
-  float X = Y * 9.0f * uvY[0] / (4.0f * uvY[1]);
-  float Z = Y * (12.0f - 3.0f * uvY[0] - 20.0f * uvY[1]) / (4.0f * uvY[1]);
-  rgb[0] = 0.41847f * X
-         - 0.15866f * Y
-         - 0.082835f * Z;
-  rgb[1] = -0.091169f * X
-         + 0.25243f * Y
-         + 0.015708 * Z;
-  rgb[2] = 0.00092090f * X
-         - 0.0025498f * Y
-         + 0.17860f * Z;
-}
-
 static void process_cmatrix_fastpath_regularized(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                             const void *const ivoid, void *const ovoid,
                                             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -915,33 +882,10 @@ static void process_cmatrix_fastpath_regularized(struct dt_iop_module_t *self, d
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
   const float color_regularization = d->color_regularization;
-  const float luminance_regularization = d->luminance_regularization;
-
-  // compute correction to apply to luminance to get a similar overall luminance
-  // when we change the luminance_regularization parameter
-  float correction_norm_luma = 1.0f;
-  float sum_pos_coefs = 0.0f;
-  float sum_neg_coefs = 0.0f;
-  // only use green channel
-  for(int c = 3; c < 6; c++)
-  {
-    float coef = d->cmatrix[c];
-    if(coef >= 0.0f)
-    {
-      sum_pos_coefs += coef;
-    }
-    else
-    {
-      sum_neg_coefs += coef;
-    }
-  }
-  float sum_coefs = sum_pos_coefs + sum_neg_coefs;
-  float sum_coefs_clamped = sum_pos_coefs - MIN((1.0f - luminance_regularization) * sum_pos_coefs, -sum_neg_coefs);
-  correction_norm_luma = sum_coefs / sum_coefs_clamped;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out, color_regularization, luminance_regularization, correction_norm_luma) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out, color_regularization) \
   schedule(static)
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
@@ -967,19 +911,17 @@ static void process_cmatrix_fastpath_regularized(struct dt_iop_module_t *self, d
         }
       }
     }
-    // constitute 2 outputs: one good in terms of color, the other one good in
-    // terms of luminance
     float _xyz_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    float _xyz_color_clipped[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    float _xyz_luminance[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     // start with color:
     // we compute a desaturation based on our threshold
     for(int c = 0; c < 3; c++)
     {
       _xyz_color[c] = _xyz_positive[c] + _xyz_negative[c];
-      _xyz_color_clipped[c] = MAX(_xyz_color[c], 0.0f);
     }
+    // keep the maxrgb for later
+    float norm_rgb_original = MAX(MAX(MAX(_xyz_color[0], _xyz_color[1]), _xyz_color[2]), 1e-6);
+
     // compute saturation compensation for max_rgb_c_1 and max_rgb_c_2
     float regularized_c_0 = _xyz_positive[0] * (1.0f - color_regularization) + _xyz_negative[0];
     float regularized_c_1 = _xyz_positive[1] * (1.0f - color_regularization) + _xyz_negative[1];
@@ -987,52 +929,17 @@ static void process_cmatrix_fastpath_regularized(struct dt_iop_module_t *self, d
     float sat = MAX(-regularized_c_0, MAX(-regularized_c_1, -regularized_c_2));
     if(sat > 0.0f)
     {
-      float uvY[3] = { 0.0f, 0.0f, 0.0f };
-      float uvY_regularized[3] = { 0.0f, 0.0f, 0.0f };
-      rgb_to_uvY(_xyz_color_clipped, uvY);
-
       // compute desaturated point by adding white light
       for(int c = 0; c < 3; c++)
       {
-        _xyz_color_clipped[c] = (_xyz_color[c] + sat) / (1.0f + sat);
+        _xyz_color[c] = (_xyz_color[c] + sat) / (1.0f + sat);
       }
-      rgb_to_uvY(_xyz_color_clipped, uvY_regularized);
-
-      static const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
-
-      // lets call B the D50 point, A the uv point and C the uv regularized point
-      // we want the projection H of C on AB.
-      float AC_squared = (uvY_regularized[0] - uvY[0]) * (uvY_regularized[0] - uvY[0]) + (uvY_regularized[1] - uvY[1]) * (uvY_regularized[1] - uvY[1]);
-      float BC_squared = (D50[0] - uvY_regularized[0]) * (D50[0] - uvY_regularized[0]) + (D50[1] - uvY_regularized[1]) * (D50[1] - uvY_regularized[1]);
-      float AB_squared = (D50[0] - uvY[0]) * (D50[0] - uvY[0]) + (D50[1] - uvY[1]) * (D50[1] - uvY[1]);
-      float AB = sqrt(AB_squared);
-      float HA = (AC_squared - BC_squared + AB_squared) / (2.0f * AB);
-      float h = HA / AB;
-
-      uvY_regularized[0] = uvY[0] * (1 - h) + h * D50[0];
-      uvY_regularized[1] = uvY[1] * (1 - h) + h * D50[1];
-      uvY_regularized[2] = uvY[2];
-
-      uvY_to_rgb(uvY_regularized, _xyz_color);
     }
-
-    for(int c = 0; c < 3; c++)
-    {
-      float regularized_l = _xyz_positive[c] * (1.0f - luminance_regularization) + _xyz_negative[c];
-      regularized_l = MAX(regularized_l, 0.0f);
-      _xyz_luminance[c] += regularized_l + _xyz_positive[c] * luminance_regularization;
-    }
-    float uvY[3] = { 0.0f, 0.0f, 0.0f };
-    rgb_to_uvY(_xyz_color, uvY);
-    float luma_xyz_color = MAX(uvY[2], 1e-6);
-    rgb_to_uvY(_xyz_luminance, uvY);
-    float luma_xyz_luminance = uvY[2];
-    luma_xyz_luminance *= correction_norm_luma;
+    float norm_color_corrected = MAX(MAX(MAX(_xyz_color[0], _xyz_color[1]), _xyz_color[2]), 1e-6);
     float _xyz[4];
     for(int c = 0; c < 3; c++)
     {
-      // keep the luminance of _xyz_luminance, and the colors of _xyz_color
-      _xyz[c] = luma_xyz_luminance * _xyz_color[c] / luma_xyz_color;
+      _xyz[c] = norm_rgb_original * _xyz_color[c] / norm_color_corrected;
     }
     dt_XYZ_to_Lab(_xyz, out);
   }
