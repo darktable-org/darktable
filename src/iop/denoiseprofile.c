@@ -889,34 +889,34 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
 }
 
 static inline void precondition_Y0U0V0(const float *const in, float *const buf, const int wd, const int ht,
-                                   const float a, const float p[3], const float b, const float toY0U0V0[9])
+                                       const float a, const float p[3], const float b, const float toY0U0V0[9])
 {
+  const float expon[3] = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1 };
+  const float scale[3] = { 2.0f / ((-p[0] + 2) * sqrt(a)),
+                           2.0f / ((-p[1] + 2) * sqrt(a)),
+                           2.0f / ((-p[2] + 2) * sqrt(a)) };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, in, wd, a, p, b, toY0U0V0) \
+  dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0, expon, scale)       \
   schedule(static)
 #endif
-  for(int j = 0; j < ht; j++)
+  for(size_t j = 0; j < (size_t)4 * ht * wd; j += 4)
   {
-    float *buf2 = buf + (size_t)4 * j * wd;
-    const float *in2 = in + (size_t)4 * j * wd;
-    for(int i = 0; i < wd; i++)
+    float *buf2 = buf + j;
+    const float *in2 = in + j;
+    float tmp[3];
+    for(int c = 0; c < 3; c++)
     {
-      float tmp[3];
-      for(int c = 0; c < 3; c++)
+      tmp[c] = powf(MAX(in2[c] + b, 0.0f), expon[c]) * scale[c];
+    }
+    for(int c = 0; c < 3; c++)
+    {
+      float sum = 0.0f;
+      for(int k = 0; k < 3; k++)
       {
-        tmp[c] = 2.0f * powf(MAX(in2[c] + b, 0.0f), -p[c] / 2 + 1) / ((-p[c] + 2) * sqrt(a));
+        sum += toY0U0V0[3 * c + k] * tmp[k];
       }
-      for(int c = 0; c < 3; c++)
-      {
-        buf2[c] = 0.0f;
-        for(int k = 0; k < 3; k++)
-        {
-          buf2[c] += toY0U0V0[3 * c + k] * tmp[k];
-        }
-      }
-      buf2 += 4;
-      in2 += 4;
+      buf2[c] = sum;
     }
   }
 }
@@ -924,38 +924,37 @@ static inline void precondition_Y0U0V0(const float *const in, float *const buf, 
 static inline void backtransform_Y0U0V0(float *const buf, const int wd, const int ht, const float a, const float p[3],
                                     const float b, const float bias, const float wb[3], const float toRGB[9])
 {
+  const float bias_wb[3] = { bias * wb[0], bias * wb[1], bias * wb[2] };
+  const float expon[3] = {  1.0f / (1.0f - p[0] / 2.0f),  1.0f / (1.0f - p[1] / 2.0f),  1.0f / (1.0f - p[2] / 2.0f) };
+  const float scale[3] = { (sqrt(a) * (2.0f - p[0])) / 4.0f,
+                           (sqrt(a) * (2.0f - p[1])) / 4.0f,
+                           (sqrt(a) * (2.0f - p[2])) / 4.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, wd, a, p, b, bias, wb, toRGB) \
+  dt_omp_firstprivate(buf, ht, wd, b, bias_wb, toRGB, expon, scale)  \
   schedule(static)
 #endif
-  for(int j = 0; j < ht; j++)
+  for(size_t j = 0; j < (size_t)4 * ht * wd; j += 4)
   {
-    float *buf2 = buf + (size_t)4 * j * wd;
-    for(int i = 0; i < wd; i++)
+    float *buf2 = buf + j;
+    float rgb[3];
+    for(int c = 0; c < 3; c++)
     {
-      float rgb[3];
-      for(int c = 0; c < 3; c++)
+      rgb[c] = 0.0f;
+      for(int k = 0; k < 3; k++)
       {
-        rgb[c] = 0.0f;
-        for(int k = 0; k < 3; k++)
-        {
-          rgb[c] += toRGB[3 * c + k] * buf2[k];
-        }
+        rgb[c] += toRGB[3 * c + k] * buf2[k];
       }
-      for(int c = 0; c < 3; c++)
-      {
-        const float x = MAX(rgb[c], 0.0f);
-        const float delta = x * x + bias * wb[c];
-        const float denominator = 4.0f / (sqrt(a) * (2.0f - p[c]));
-        const float z1 = (x + sqrt(MAX(delta, 0.0f))) / denominator;
-        buf2[c] = powf(z1, 1.0f / (1.0f - p[c] / 2.0f)) - b;
-      }
-      buf2 += 4;
+    }
+    for(int c = 0; c < 3; c++)
+    {
+      const float x = MAX(rgb[c], 0.0f);
+      const float delta = x * x + bias_wb[c];
+      const float z1 = (x + sqrt(MAX(delta, 0.0f))) * scale[c];
+      buf2[c] = powf(z1, expon[c]) - b;
     }
   }
 }
-
 
 // =====================================================================================
 // begin wavelet code:
