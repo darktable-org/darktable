@@ -151,11 +151,11 @@ static inline void dt_imageio_dng_write_tiff_header(
   } white;
   white.f = whitelevel;
   b = dt_imageio_dng_make_tag(50717, LONG, 1, white.u, b, &cnt); // WhiteLevel in float, actually.
-  b = dt_imageio_dng_make_tag(50778, SHORT, 1, 21 << 16, b, &cnt); // CalibrationIlluminant1
   b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, 480, b, &cnt); // ColorMatrix1 (XYZ->native cam)
 
   // b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, 512, b, &cnt); // AsShotNeutral
   // b = dt_imageio_dng_make_tag(50729, RATIONAL, 2, 512, b, &cnt); // AsShotWhiteXY
+  b = dt_imageio_dng_make_tag(50778, SHORT, 1, 21 << 16, b, &cnt); // CalibrationIlluminant1
   b = dt_imageio_dng_make_tag(0, 0, 0, 0, b, &cnt); /* Next IFD.  */
   buf[11] = cnt - 1; // write number of directory entries of this ifd
 

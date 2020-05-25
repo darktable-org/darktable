@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -43,6 +44,7 @@ typedef struct dt_print_t
 {
   int32_t image_id;
   dt_print_info_t *pinfo;
+  gboolean busy;
 }
 dt_print_t;
 
@@ -65,6 +67,30 @@ static void _film_strip_activated(const int imgid, void *data)
 {
   const dt_view_t *self = (dt_view_t *)data;
   dt_print_t *prt = (dt_print_t *)self->data;
+
+  // if the previous shown image is selected and the selection is unique
+  // then we change the selected image to the new one
+  if(prt->image_id > 0)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                                "WHERE m.imgid=s.imgid",
+                                -1, &stmt, NULL);
+    gboolean follow = FALSE;
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      if(sqlite3_column_int(stmt, 0) == prt->image_id && sqlite3_step(stmt) != SQLITE_ROW)
+      {
+        follow = TRUE;
+      }
+    }
+    sqlite3_finalize(stmt);
+    if(follow)
+    {
+      dt_selection_select_single(darktable.selection, imgid);
+    }
+  }
 
   prt->image_id = imgid;
 
@@ -111,6 +137,12 @@ void cleanup(dt_view_t *self)
 {
   dt_print_t *prt = (dt_print_t *)self->data;
   free(prt);
+}
+
+static gboolean _expose_again(gpointer user_data)
+{
+  dt_control_queue_redraw_center();
+  return FALSE;
 }
 
 static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
@@ -201,7 +233,24 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   cairo_rectangle (cr, ax, ay, awidth, aheight);
   cairo_fill (cr);
 
-  dt_view_image_only_expose(prt->image_id, cr, iwidth, iheight, ix, iy);
+  cairo_surface_t *surf = NULL;
+  const int res = dt_view_image_get_surface(prt->image_id, iwidth, iheight, &surf);
+  if(res)
+  {
+    // if the image is missing, we reload it again
+    g_timeout_add(250, _expose_again, NULL);
+    if(!prt->busy) dt_control_log_busy_enter();
+    prt->busy = TRUE;
+  }
+  else
+  {
+    cairo_translate(cr, ix, iy);
+    cairo_set_source_surface(cr, surf, 0, 0);
+    cairo_paint(cr);
+    cairo_surface_destroy(surf);
+    if(prt->busy) dt_control_log_busy_leave();
+    prt->busy = FALSE;
+  }
 }
 
 void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
@@ -243,34 +292,17 @@ int try_enter(dt_view_t *self)
 
   prt->image_id = -1;
 
-  int selected = dt_control_get_mouse_over_id();
-  if(selected < 0)
-  {
-    // try last selected
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) selected = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
+  int imgid = dt_view_get_image_to_act_on();
 
-    // Leave as selected only the image being edited
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, selected);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
-
-  if(selected < 0)
+  if(imgid < 0)
   {
     // fail :(
-    dt_control_log(_("no image selected!"));
+    dt_control_log(_("no image to open !"));
     return 1;
   }
 
   // this loads the image from db if needed:
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, selected, 'r');
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   // get image and check if it has been deleted from disk first!
 
   char imgfilename[PATH_MAX] = { 0 };
@@ -279,13 +311,12 @@ int try_enter(dt_view_t *self)
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
-    // dt_image_remove(selected);
     dt_image_cache_read_release(darktable.image_cache, img);
     return 1;
   }
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
-  prt->image_id = selected;
+  prt->image_id = imgid;
   return 0;
 }
 
@@ -294,18 +325,13 @@ void enter(dt_view_t *self)
   dt_print_t *prt=(dt_print_t*)self->data;
 
   /* scroll filmstrip to the first selected image */
-  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
-  if(selected_images)
+  if(prt->image_id)
   {
-    const int imgid = GPOINTER_TO_INT(selected_images->data);
-    prt->image_id = imgid;
-
     // change active image
-    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), prt->image_id, TRUE);
     dt_view_active_images_reset(FALSE);
-    dt_view_active_images_add(imgid, TRUE);
+    dt_view_active_images_add(prt->image_id, TRUE);
   }
-  g_list_free(selected_images);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_print_mipmaps_updated_signal_callback),
@@ -316,7 +342,6 @@ void enter(dt_view_t *self)
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
-  darktable.control->mouse_over_id = -1;
   dt_control_set_mouse_over_id(prt->image_id);
 }
 

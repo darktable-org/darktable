@@ -34,6 +34,7 @@
 #endif
 #include "common/image_compression.h"
 #include "common/imageio_gm.h"
+#include "common/imageio_im.h"
 #include "common/imageio_jpeg.h"
 #include "common/imageio_pfm.h"
 #include "common/imageio_png.h"
@@ -55,6 +56,8 @@
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #include <magick/blob.h>
+#elif defined HAVE_IMAGEMAGICK
+#include <MagickWand/MagickWand.h>
 #endif
 
 #include <assert.h>
@@ -155,10 +158,54 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     if(image_info) DestroyImageInfo(image_info);
     DestroyExceptionInfo(&exception);
     if(res) goto error;
+#elif defined HAVE_IMAGEMAGICK
+    MagickWand *image = NULL;
+	MagickBooleanType mret;
+
+    image = NewMagickWand();
+	mret = MagickReadImageBlob(image, buf, bufsize);
+    if (mret != MagickTrue)
+    {
+      fprintf(stderr, "[dt_imageio_large_thumbnail IM] thumbnail not found?\n");
+      goto error_im;
+    }
+
+    *width = MagickGetImageWidth(image);
+    *height = MagickGetImageHeight(image);
+    switch (MagickGetImageColorspace(image)) {
+    case sRGBColorspace:
+      *color_space = DT_COLORSPACE_SRGB;
+      break;
+    default:
+      fprintf(stderr,
+          "[dt_imageio_large_thumbnail IM] could not map colorspace, using sRGB");
+      *color_space = DT_COLORSPACE_SRGB;
+      break;
+    }
+
+    *buffer = malloc((*width) * (*height) * 4 * sizeof(uint8_t));
+    if (*buffer == NULL) goto error_im;
+
+    mret = MagickExportImagePixels(image, 0, 0, *width, *height, "RGBP", CharPixel, *buffer);
+    if (mret != MagickTrue) {
+      free(*buffer);
+      *buffer = NULL;
+      fprintf(stderr,
+          "[dt_imageio_large_thumbnail IM] error while reading thumbnail\n");
+      goto error_im;
+    }
+
+    res = 0;
+
+error_im:
+    DestroyMagickWand(image);
+    if (res != 0) goto error;
 #else
-    fprintf(stderr, "[dt_imageio_large_thumbnail] error: The thumbnail image is not in JPEG format, but DT "
-                    "was built without GraphicsMagick. Please rebuild DT with GraphicsMagick support "
-                    "enabled.\n");
+    fprintf(stderr,
+      "[dt_imageio_large_thumbnail] error: The thumbnail image is not in "
+      "JPEG format, and DT was built without neither GraphicsMagick or "
+      "ImageMagick. Please rebuild DT with GraphicsMagick or ImageMagick "
+      "support enabled.\n");
 #endif
   }
 
@@ -699,9 +746,14 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
             ? FALSE
             : high_quality;
 
-  const int width = format_params->max_width;
-  const int height = format_params->max_height;
 
+  int width = format_params->max_width > 0 ? format_params->max_width : 0;
+  int height = format_params->max_height > 0 ? format_params->max_height : 0;
+  if((!thumbnail_export) && (width>0))
+    width++;
+  if((!thumbnail_export) && (height>0))
+    height++;
+  
   const float max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
 
   const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, max_scale) : max_scale;
@@ -715,11 +767,15 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, origin, 1))
   {
-    processed_width = scale * pipe.processed_width + 0.5f;
-    processed_height = scale * pipe.processed_height + 0.5f;
+    processed_width = scale * pipe.processed_width + 0.8f;
+    processed_height = scale * pipe.processed_height + 0.8f;
 
-    if(ceilf(processed_width / scale) + origin[0] > pipe.iwidth) processed_width--;
-    if(ceilf(processed_height / scale) + origin[1] > pipe.iheight) processed_height--;
+    if((ceilf(processed_width / scale) + origin[0] > pipe.iwidth) ||
+       (ceilf(processed_height / scale) + origin[1] > pipe.iheight)) 
+    {
+      processed_width--;
+      processed_height--;
+    }
   }
   else
   {
@@ -941,6 +997,17 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_GM;
+    return ret;
+  }
+#elif HAVE_IMAGEMAGICK
+  dt_imageio_retval_t ret = dt_imageio_open_im(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->buf_dsc.filters = 0u;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_IM;
     return ret;
   }
 #endif

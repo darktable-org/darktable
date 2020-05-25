@@ -58,10 +58,8 @@ typedef struct dt_iop_monochrome_gui_data_t
 {
   GtkDrawingArea *area;
   GtkWidget *highlights;
-  GtkWidget *colorpicker;
   int dragging;
   cmsHTRANSFORM xform;
-  dt_iop_color_picker_t color_picker;
 } dt_iop_monochrome_gui_data_t;
 
 typedef struct dt_iop_monochrome_global_data_t
@@ -452,7 +450,7 @@ static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer
   return TRUE;
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
@@ -620,29 +618,17 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_monochrome_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-
   g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
   gtk_widget_set_tooltip_text(g->highlights, _("how much to keep highlights"));
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
-  gtk_box_pack_start(GTK_BOX(box), g->highlights, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
-
-  g->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-
-  gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->highlights);
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL,
                                 0); // cmsFLAGS_NOTPRECALC);
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->colorpicker),
-                     DT_COLOR_PICKER_AREA,
-                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

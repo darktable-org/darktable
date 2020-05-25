@@ -45,17 +45,9 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
 
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
-  GdkRGBA bg_color, fg_color;
+  GdkRGBA fg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  if(button->icon_flags & CPF_CUSTOM_BG)
-    bg_color = button->bg;
-  else
-  {
-    GdkRGBA *bc;
-    gtk_style_context_get(context, state, "background-color", &bc, NULL);
-    bg_color = *bc;
-    gdk_rgba_free(bc);
-  }
+
   if(button->icon_flags & CPF_CUSTOM_FG)
     fg_color = button->fg;
   else if(button->icon_flags & CPF_IGNORE_FG_STATE)
@@ -67,15 +59,19 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   int flags = DTGTK_TOGGLEBUTTON(widget)->icon_flags;
 
   /* update active state paint flag */
-  gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if(active)
-  {
     flags |= CPF_ACTIVE;
-  }
   else
-  {
-    flags &= ~(CPF_ACTIVE);
-  }
+    flags &= ~CPF_ACTIVE;
+
+  /* update focus state paint flag */
+  const gboolean hasfocus = ((DTGTK_TOGGLEBUTTON(widget)->icon_data == darktable.develop->gui_module)
+                         && darktable.develop->gui_module);
+  if(hasfocus)
+    flags |= CPF_FOCUS;
+  else
+    flags &= ~CPF_FOCUS;
 
   /* prelight */
   if(state & GTK_STATE_FLAG_PRELIGHT)
@@ -98,9 +94,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
       // PRELIGHT, but not on ACTIVE
       if(!(flags & CPF_BG_TRANSPARENT) || (flags & CPF_PRELIGHT))
       {
-        cairo_rectangle(cr, 0, 0, width, height);
-        gdk_cairo_set_source_rgba(cr, &bg_color);
-        cairo_fill(cr);
+        gtk_render_background(context, cr, 0, 0, width, height);
       }
     }
     else if(!(flags & CPF_ACTIVE) || (flags & CPF_IGNORE_FG_STATE))

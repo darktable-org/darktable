@@ -153,14 +153,7 @@ static void export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   gchar *icc_filename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
 
-  const int imgid = dt_view_get_image_to_act_on();
-  GList *list = NULL;
-
-  if(imgid != -1)
-    list = g_list_append(list, GINT_TO_POINTER(imgid));
-  else
-    list = dt_collection_get_selected(darktable.collection, -1);
-
+  GList *list = dt_view_get_images_to_act_on(TRUE);
   dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks,
                     style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export);
 

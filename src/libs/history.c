@@ -380,8 +380,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
 
       if(darktable.develop->gui_module == mod) dt_iop_request_focus(NULL);
 
-      const int reset = darktable.gui->reset;
-      darktable.gui->reset = 1;
+      ++darktable.gui->reset;
 
       // we remove the plugin effectively
       if(!dt_iop_is_hidden(mod))
@@ -406,7 +405,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
       // don't delete the module, a pipe may still need it
       dev->alliop = g_list_append(dev->alliop, mod);
 
-      darktable.gui->reset = reset;
+      --darktable.gui->reset;
 
       // and reset the list
       modules = g_list_first(iop_list);
