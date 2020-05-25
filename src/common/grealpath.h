@@ -33,35 +33,35 @@ static inline gchar *g_realpath(const char *path)
   {
     if ( errno == EACCES ) 
     {
-      printf("Read or search permission was denied for a component of file_name: %s\n", path);
+      fprintf(stderr, "Read or search permission was denied for a component of file_name: %s\n", path);
     } 
     else if ( errno == EINVAL ) 
     {
-      printf("Either the file_name or resolved_name argument is a null pointer: %s\n", path);
+      fprintf(stderr, "Either the file_name or resolved_name argument is a null pointer: %s\n", path);
     } 
     else if ( errno == EIO ) 
     {
-      printf("An error occurred while reading from the file system: %s\n", path);
+      fprintf(stderr, "An error occurred while reading from the file system: %s\n", path);
     } 
     else if ( errno == ELOOP ) 
     {
-      printf("Too many symbolic links were encountered in resolving path: %s\n", path);
+      fprintf(stderr, "Too many symbolic links were encountered in resolving path: %s\n", path);
     } 
     else if ( errno == ENAMETOOLONG ) 
     {
-      printf("Pathname resolution of a symbolic link produced an intermediate result whose length exceeds {PATH_MAX}. The file_name argument is longer than {PATH_MAX} or a pathname component is longer than {NAME_MAX}: %s\n", path);
+      fprintf(stderr, "Pathname resolution of a symbolic link produced an intermediate result whose length exceeds {PATH_MAX}. The file_name argument is longer than {PATH_MAX} or a pathname component is longer than {NAME_MAX}: %s\n", path);
     } 
     else if ( errno == ENOENT ) 
     {
-      printf("A component of file_name does not name an existing file or file_name points to an empty string: %s\n", path);
+      fprintf(stderr, "A component of file_name does not name an existing file or file_name points to an empty string: %s\n", path);
     } 
     else if ( errno == ENOTDIR ) 
     {
-      printf("A component of the path prefix is not a directory: %s\n", path);
+      fprintf(stderr, "A component of the path prefix is not a directory: %s\n", path);
     } 
     else if ( errno == ENOMEM ) 
     {
-      printf("Insufficient storage space is available.\n");
+      fprintf(stderr, "Insufficient storage space is available.\n");
     }
     exit(EXIT_FAILURE);
   }
