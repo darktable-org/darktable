@@ -81,6 +81,7 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
     collection->clone = 1;
     collection->count = clone->count;
     collection->count_no_group = clone->count_no_group;
+    collection->tagid = clone->tagid;
   }
   else /* else we just initialize using the reset */
     dt_collection_reset(collection);
@@ -177,6 +178,26 @@ void dt_collection_memory_update()
   g_free(ins_query);
 }
 
+static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, char **selq_pre)
+{
+  const uint32_t tagid = collection->tagid;
+  char tag[16] = { 0 };
+  snprintf(tag, sizeof(tag), "%d", tagid);
+
+  *selq_pre = dt_util_dstrcat(*selq_pre,
+                              "SELECT DISTINCT mi.id FROM (SELECT"
+                              "  id, group_id, film_id, filename, datetime_taken, "
+                              "  flags, version, %s position, aspect_ratio,"
+                              "  maker, model, lens, aperture, exposure, focal_length,"
+                              "  iso, import_timestamp, change_timestamp,"
+                              "  export_timestamp, print_timestamp"
+                              "  FROM main.images AS mi %s%s WHERE ",
+                              tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
+                              tagid ? " LEFT JOIN main.tagged_images AS ti"
+                                      " ON ti.imgid = mi.id AND ti.tagid = " : "",
+                              tagid ? tag : "");
+}
+
 int dt_collection_update(const dt_collection_t *collection)
 {
   uint32_t result;
@@ -267,7 +288,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid"
@@ -280,7 +301,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid"
@@ -293,7 +314,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid"
@@ -306,7 +327,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat(selq_post, ") AS mi JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id"
                                                                         " LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d",DT_METADATA_XMP_DC_TITLE);
   }
@@ -317,7 +338,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id"
@@ -330,7 +351,7 @@ int dt_collection_update(const dt_collection_t *collection)
        && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND (m.key = %d OR m.key = %d)",
@@ -341,7 +362,7 @@ int dt_collection_update(const dt_collection_t *collection)
       ||collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR)
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat(selq_post, ") AS mi LEFT OUTER JOIN main.color_labels AS b ON mi.id = b.imgid");
   }
   /* only PATH */
@@ -349,7 +370,7 @@ int dt_collection_update(const dt_collection_t *collection)
           ||collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat
       (selq_post,
        ") AS mi JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id");
@@ -359,7 +380,7 @@ int dt_collection_update(const dt_collection_t *collection)
         ||collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE)
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat(selq_post, ") AS mi LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d ",
                                 DT_METADATA_XMP_DC_TITLE);
   }
@@ -368,16 +389,46 @@ int dt_collection_update(const dt_collection_t *collection)
         ||collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION)
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images AS mi WHERE ");
+    _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     selq_post = dt_util_dstrcat
       (selq_post, ") AS mi LEFT OUTER JOIN main.meta_data AS m ON mi.id = m.id AND m.key = %d ",
        DT_METADATA_XMP_DC_DESCRIPTION);
   }
   else if(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT)
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT images.id FROM main.images AS mi ");
+  {
+    const uint32_t tagid = collection->tagid;
+    char tag[16] = { 0 };
+    snprintf(tag, sizeof(tag), "%d", tagid);
+    selq_pre = dt_util_dstrcat(selq_pre,
+                               "SELECT DISTINCT mi.id FROM (SELECT"
+                               "  id, group_id, film_id, filename, datetime_taken, "
+                               "  flags, version, %s position, aspect_ratio,"
+                               "  maker, model, lens, aperture, exposure, focal_length,"
+                               "  iso, import_timestamp, change_timestamp,"
+                               "  export_timestamp, print_timestamp"
+                               "  FROM main.images AS mi %s%s ) AS mi ",
+                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
+                               tagid ? " LEFT JOIN main.tagged_images AS ti"
+                                       " ON ti.imgid = mi.id AND ti.tagid = " : "",
+                               tagid ? tag : "");
+  }
   else
   {
-    selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM images AS mi WHERE ");
+    const uint32_t tagid = collection->tagid;
+    char tag[16] = { 0 };
+    snprintf(tag, sizeof(tag), "%d", tagid);
+    selq_pre = dt_util_dstrcat(selq_pre,
+                               "SELECT DISTINCT mi.id FROM (SELECT"
+                               "  id, group_id, film_id, filename, datetime_taken, "
+                               "  flags, version, %s position, aspect_ratio,"
+                               "  maker, model, lens, aperture, exposure, focal_length,"
+                               "  iso, import_timestamp, change_timestamp,"
+                               "  export_timestamp, print_timestamp"
+                               "  FROM main.images AS mi %s%s ) AS mi WHERE ",
+                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
+                               tagid ? " LEFT JOIN main.tagged_images AS ti"
+                                       " ON ti.imgid = mi.id AND ti.tagid = " : "",
+                               tagid ? tag : "");
   }
 
 
@@ -518,10 +569,15 @@ void dt_collection_set_extended_where(const dt_collection_t *collection, gchar *
   ((dt_collection_t *)collection)->where_ext = g_strdupv(extended_where);
 }
 
-void dt_collection_set_film_id(const dt_collection_t *collection, uint32_t film_id)
+void dt_collection_set_film_id(const dt_collection_t *collection, const uint32_t film_id)
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
   params->film_id = film_id;
+}
+
+void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid)
+{
+  collection->tagid = tagid;
 }
 
 void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating)
@@ -615,27 +671,31 @@ const char *dt_collection_name(dt_collection_properties_t prop)
   char *col_name = NULL;
   switch(prop)
   {
-    case DT_COLLECTION_PROP_FILMROLL:     return _("film roll");
-    case DT_COLLECTION_PROP_FOLDERS:      return _("folders");
-    case DT_COLLECTION_PROP_CAMERA:       return _("camera");
-    case DT_COLLECTION_PROP_TAG:          return _("tag");
-    case DT_COLLECTION_PROP_DAY:          return _("date");
-    case DT_COLLECTION_PROP_TIME:         return _("time");
-    case DT_COLLECTION_PROP_HISTORY:      return _("history");
-    case DT_COLLECTION_PROP_COLORLABEL:   return _("color label");
-    case DT_COLLECTION_PROP_LENS:         return _("lens");
-    case DT_COLLECTION_PROP_FOCAL_LENGTH: return _("focal length");
-    case DT_COLLECTION_PROP_ISO:          return _("ISO");
-    case DT_COLLECTION_PROP_APERTURE:     return _("aperture");
-    case DT_COLLECTION_PROP_EXPOSURE:     return _("exposure");
-    case DT_COLLECTION_PROP_ASPECT_RATIO: return _("aspect ratio");
-    case DT_COLLECTION_PROP_FILENAME:     return _("filename");
-    case DT_COLLECTION_PROP_GEOTAGGING:   return _("geotagging");
-    case DT_COLLECTION_PROP_GROUPING:     return _("grouping");
-    case DT_COLLECTION_PROP_LOCAL_COPY:   return _("local copy");
-    case DT_COLLECTION_PROP_MODULE:       return _("module");
-    case DT_COLLECTION_PROP_ORDER:        return _("module order");
-    case DT_COLLECTION_PROP_LAST:         return NULL;
+    case DT_COLLECTION_PROP_FILMROLL:         return _("film roll");
+    case DT_COLLECTION_PROP_FOLDERS:          return _("folders");
+    case DT_COLLECTION_PROP_CAMERA:           return _("camera");
+    case DT_COLLECTION_PROP_TAG:              return _("tag");
+    case DT_COLLECTION_PROP_DAY:              return _("date taken");
+    case DT_COLLECTION_PROP_TIME:             return _("date-time taken");
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: return _("import timestamp");
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: return _("change timestamp");
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: return _("export timestamp");
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:  return _("print timestamp");
+    case DT_COLLECTION_PROP_HISTORY:          return _("history");
+    case DT_COLLECTION_PROP_COLORLABEL:       return _("color label");
+    case DT_COLLECTION_PROP_LENS:             return _("lens");
+    case DT_COLLECTION_PROP_FOCAL_LENGTH:     return _("focal length");
+    case DT_COLLECTION_PROP_ISO:              return _("ISO");
+    case DT_COLLECTION_PROP_APERTURE:         return _("aperture");
+    case DT_COLLECTION_PROP_EXPOSURE:         return _("exposure");
+    case DT_COLLECTION_PROP_ASPECT_RATIO:     return _("aspect ratio");
+    case DT_COLLECTION_PROP_FILENAME:         return _("filename");
+    case DT_COLLECTION_PROP_GEOTAGGING:       return _("geotagging");
+    case DT_COLLECTION_PROP_GROUPING:         return _("grouping");
+    case DT_COLLECTION_PROP_LOCAL_COPY:       return _("local copy");
+    case DT_COLLECTION_PROP_MODULE:           return _("module");
+    case DT_COLLECTION_PROP_ORDER:            return _("module order");
+    case DT_COLLECTION_PROP_LAST:             return NULL;
     default:
     {
       if(prop >= DT_COLLECTION_PROP_METADATA
@@ -663,57 +723,75 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
   switch(collection->params.sort_second_order)/*build ORDER BY string for second order*/
   {
-     case DT_COLLECTION_SORT_DATETIME:
-       second_order = dt_util_dstrcat(NULL, "datetime_taken %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_DATETIME:
+    case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+    case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+    case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+    case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+      {
+        const int local_order = collection->params.sort_second_order;
+        char *colname;
 
-     case DT_COLLECTION_SORT_RATING:
-       second_order = dt_util_dstrcat(NULL, "flags & 7 %s", (collection->params.descending ? "" : "DESC"));
-       break;
+        switch(local_order)
+        {
+          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
+          default: colname = "";
+        }
+      second_order = dt_util_dstrcat(NULL, "%s %s", colname, (collection->params.descending ? "DESC" : ""));
+      break;
+      }
 
-     case DT_COLLECTION_SORT_FILENAME:
-       second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_RATING:
+      second_order = dt_util_dstrcat(NULL, "CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END %s", (collection->params.descending ? "" : "DESC"));
+      break;
 
-     case DT_COLLECTION_SORT_ID:
-       second_order = dt_util_dstrcat(NULL, "mi.id %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_FILENAME:
+      second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_COLOR:
-       second_order = dt_util_dstrcat(NULL, "color %s", (collection->params.descending ? "" : "DESC"));
-       break;
+    case DT_COLLECTION_SORT_ID:
+      second_order = dt_util_dstrcat(NULL, "mi.id %s", (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_GROUP:
-       second_order = dt_util_dstrcat(NULL, "group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_COLOR:
+      second_order = dt_util_dstrcat(NULL, "color %s", (collection->params.descending ? "" : "DESC"));
+      break;
 
-     case DT_COLLECTION_SORT_PATH:
-       second_order = dt_util_dstrcat(NULL, "folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_GROUP:
+      second_order = dt_util_dstrcat(NULL, "group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_CUSTOM_ORDER:
-       second_order = dt_util_dstrcat(NULL, "position %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_PATH:
+      second_order = dt_util_dstrcat(NULL, "folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
+      break;
+
+    case DT_COLLECTION_SORT_CUSTOM_ORDER:
+      second_order = dt_util_dstrcat(NULL, "position %s", (collection->params.descending ? "DESC" : ""));
+      break;
 
      case DT_COLLECTION_SORT_TITLE:
      case DT_COLLECTION_SORT_DESCRIPTION:/*same sorting for TITLE and DESCRIPTION -> Fall through*/
-       second_order = dt_util_dstrcat(NULL, "m.value %s, caption %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
+       second_order = dt_util_dstrcat(NULL, "m.value %s", (collection->params.descending ? "DESC" : ""));
        break;
 
-     case DT_COLLECTION_SORT_ASPECT_RATIO:
-       second_order = dt_util_dstrcat(NULL, "aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_ASPECT_RATIO:
+      second_order = dt_util_dstrcat(NULL, "aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
+      break;
 
-     case DT_COLLECTION_SORT_SHUFFLE:
-       /* do not remember shuffle for second order */
-       if(!second_order) second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
-       break;
+    case DT_COLLECTION_SORT_SHUFFLE:
+      /* do not remember shuffle for second order */
+      if(!second_order) second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
+      break;
 
-     case DT_COLLECTION_SORT_NONE:/*fall through for default*/
-     default:
-       // shouldn't happen
-       second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_NONE:/*fall through for default*/
+    default:
+      // shouldn't happen
+      second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
+      break;
   }
 
 
@@ -722,11 +800,29 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     switch(collection->params.sort)
     {
       case DT_COLLECTION_SORT_DATETIME:
-        sq = dt_util_dstrcat(sq, "ORDER BY datetime_taken DESC, %s, filename DESC, version DESC", second_order);
+      case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+      case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+      case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+      case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+        {
+        const int local_order = collection->params.sort;
+        char *colname;
+
+        switch(local_order)
+        {
+          case DT_COLLECTION_SORT_DATETIME: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
+          default: colname = "";
+        }
+        sq = dt_util_dstrcat(sq, "ORDER BY %s DESC, %s, filename DESC, version DESC", colname, second_order);
         break;
+        }
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "ORDER BY flags & 7, %s, filename DESC, version DESC", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
@@ -754,11 +850,11 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         break;
 
       case DT_COLLECTION_SORT_TITLE:
-        sq = dt_util_dstrcat(sq, "ORDER BY m.value DESC, caption DESC, %s, filename DESC, version DESC", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY m.value DESC, filename DESC, version DESC");
         break;
 
       case DT_COLLECTION_SORT_DESCRIPTION:
-        sq = dt_util_dstrcat(sq, "ORDER BY m.value DESC, description DESC, %s, filename DESC, version DESC", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY m.value DESC, filename DESC, version DESC");
         break;
 
       case DT_COLLECTION_SORT_ASPECT_RATIO:
@@ -783,11 +879,29 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     switch(collection->params.sort)
     {
       case DT_COLLECTION_SORT_DATETIME:
-        sq = dt_util_dstrcat(sq, "ORDER BY datetime_taken, %s, filename, version", second_order);
+      case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+      case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+      case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+      case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+        {
+        const int local_order = collection->params.sort;
+        char *colname;
+
+        switch(local_order)
+        {
+          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
+          default: colname = "";
+        }
+        sq = dt_util_dstrcat(sq, "ORDER BY %s, %s, filename, version", colname, second_order);
         break;
+        }
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "ORDER BY flags & 7 DESC, %s, filename, version", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END DESC, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
@@ -815,11 +929,11 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         break;
 
       case DT_COLLECTION_SORT_TITLE:
-        sq = dt_util_dstrcat(sq, "ORDER BY m.value, caption, %s, filename, version", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY m.value, filename, version");
         break;
 
       case DT_COLLECTION_SORT_DESCRIPTION:
-        sq = dt_util_dstrcat(sq, "ORDER BY m.value, description, %s, filename, version", second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY m.value, filename, version");
         break;
 
       case DT_COLLECTION_SORT_ASPECT_RATIO:
@@ -1597,6 +1711,47 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     }
     break;
 
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
+    {
+      const int local_property = property;
+      char *colname;
+      gchar *operator, *number1, *number2;
+
+      dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
+
+      switch(local_property)
+      {
+        case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+        case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+        case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+        case DT_COLLECTION_PROP_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
+      }
+
+      if(strcmp(operator, "[]") == 0)
+      {
+        if(number1 && number2)
+          query = dt_util_dstrcat(query, "((strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') >= '%s')"
+                                           "AND (strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') <= '%s'))",
+                                  colname, number1, colname, number2);
+      }
+      else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
+        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%s')", colname, number1);
+      else if(strcmp(operator, "<>") == 0 && number1)
+        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') NOT LIKE '%s')", colname, number1);
+      else if(number1)
+        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') %s '%s')", colname, operator, number1);
+      else
+        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%%%s%%')", colname, escaped_text);
+
+      g_free(operator);
+      g_free(number1);
+      g_free(number2);
+    }
+    break;
+
     case DT_COLLECTION_PROP_GROUPING: // grouping
       query = dt_util_dstrcat(query, "(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
       break;
@@ -1965,7 +2120,7 @@ static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t
   }
 }
 
-int64_t dt_collection_get_image_position(const int32_t image_id)
+int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t tagid)
 {
   int64_t image_position = -1;
 
@@ -1975,11 +2130,12 @@ int64_t dt_collection_get_image_position(const int32_t image_id)
     gchar *image_pos_query = NULL;
     image_pos_query = dt_util_dstrcat(
           image_pos_query,
-          "SELECT position FROM main.images WHERE id = ?1");
+          tagid ? "SELECT position FROM main.tagged_images WHERE imgid = ?1 AND tagid = ?2"
+                : "SELECT position FROM main.images WHERE id = ?1");
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), image_pos_query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image_id);
-
+    if(tagid) DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, tagid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       image_position = sqlite3_column_int64(stmt, 0);
@@ -1992,18 +2148,28 @@ int64_t dt_collection_get_image_position(const int32_t image_id)
   return image_position;
 }
 
-void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position)
+void dt_collection_shift_image_positions(const unsigned int length,
+                                         const int64_t image_position,
+                                         const int32_t tagid)
 {
   sqlite3_stmt *stmt = NULL;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              tagid
+                              ?
+                              "UPDATE main.tagged_images"
+                              " SET position = position + ?1"
+                              " WHERE position >= ?2 AND position < ?3"
+                              "       AND tagid = ?4"
+                              :
                               "UPDATE main.images"
                               " SET position = position + ?1"
-                              " WHERE position >= ?2 AND position < ?3", -1, &stmt, NULL);
+                              " WHERE position >= ?2 AND position < ?3",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, length);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, image_position);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, (image_position & 0xFFFFFFFF00000000) + (1ll << 32));
-
+  if(tagid) DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, tagid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
@@ -2043,12 +2209,12 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     return;
   }
 
+  const uint32_t tagid = darktable.collection->tagid;
   // getting the position of the target image
-  const int64_t target_image_pos = dt_collection_get_image_position(image_id);
-
+  const int64_t target_image_pos = dt_collection_get_image_position(image_id, tagid);
   if (target_image_pos >= 0)
   {
-    dt_collection_shift_image_positions(selected_images_length, target_image_pos);
+    dt_collection_shift_image_positions(selected_images_length, target_image_pos, tagid);
 
     sqlite3_stmt *stmt = NULL;
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
@@ -2057,9 +2223,16 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     int64_t new_image_pos = target_image_pos;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                tagid
+                                ?
+                                "UPDATE main.tagged_images"
+                                " SET position = ?1"
+                                " WHERE imgid = ?2 AND tagid = ?3"
+                                :
                                 "UPDATE main.images"
                                 " SET position = ?1"
-                                " WHERE id = ?2", -1, &stmt, NULL);
+                                " WHERE id = ?2",
+                                -1, &stmt, NULL);
 
     for (const GList * selected_images_iter = selected_images;
         selected_images_iter != NULL;
@@ -2069,6 +2242,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
 
       DT_DEBUG_SQLITE3_BIND_INT64(stmt, 1, new_image_pos);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, moved_image_id);
+      if(tagid) DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, tagid);
       sqlite3_step(stmt);
       sqlite3_reset(stmt);
       new_image_pos++;
@@ -2085,7 +2259,12 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     int64_t max_position = -1;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT MAX(position) FROM main.images", -1, &stmt, NULL);
+                                tagid
+                                ?
+                                "SELECT MAX(position) FROM main.tagged_images"
+                                :
+                                "SELECT MAX(position) FROM main.images",
+                                -1, &stmt, NULL);
 
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -2100,9 +2279,16 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
 
     // move images to last position in custom image order table
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                tagid
+                                ?
+                                "UPDATE main.tagged_images"
+                                " SET position = ?1"
+                                " WHERE imgid = ?2 AND tagid = ?3"
+                                :
                                 "UPDATE main.images"
                                 " SET position = ?1"
-                                " WHERE id = ?2", -1, &update_stmt, NULL);
+                                " WHERE id = ?2",
+                                -1, &update_stmt, NULL);
 
     for (const GList * selected_images_iter = selected_images;
         selected_images_iter != NULL;
@@ -2112,6 +2298,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
       const int moved_image_id = GPOINTER_TO_INT(selected_images_iter->data);
       DT_DEBUG_SQLITE3_BIND_INT64(update_stmt, 1, max_position << 32);
       DT_DEBUG_SQLITE3_BIND_INT(update_stmt, 2, moved_image_id);
+      if(tagid) DT_DEBUG_SQLITE3_BIND_INT(update_stmt, 3, tagid);
       sqlite3_step(update_stmt);
       sqlite3_reset(update_stmt);
     }

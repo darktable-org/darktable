@@ -84,7 +84,6 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkLabel *deflicker_used_EC;
   float deflicker_computed_exposure;
   dt_pthread_mutex_t lock;
-  dt_iop_color_picker_t color_picker;
 } dt_iop_exposure_gui_data_t;
 
 typedef struct dt_iop_exposure_data_t
@@ -541,10 +540,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   // switch off auto exposure when we lose focus (switching images etc)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 void init(dt_iop_module_t *module)
@@ -650,10 +648,9 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -667,10 +664,9 @@ static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const flo
 
     p->deflicker_target_level = exposure;
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -709,10 +705,9 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
   }
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->black, p->black);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -728,7 +723,7 @@ static float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
   return p->black;
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   if(self->dt->gui->reset) return;
 
@@ -806,10 +801,9 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   {
     gchar *str = g_strdup_printf(_("%.2f EV"), g->deflicker_computed_exposure);
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     gtk_label_set_text(g->deflicker_used_EC, str);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     g_free(str);
   }
@@ -902,8 +896,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->autoexpp, _("percentage of bright values clipped out, toggle color picker to activate"));
   dt_bauhaus_slider_set_format(g->autoexpp, "%.3f%%");
   dt_bauhaus_widget_set_label(g->autoexpp, NULL, _("clipping threshold"));
-  dt_bauhaus_widget_set_quad_paint(g->autoexpp, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->autoexpp, TRUE);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->autoexpp);
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
 
   gtk_widget_show_all(vbox_manual);
@@ -948,18 +941,11 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->black), "value-changed", G_CALLBACK(black_callback), self);
   g_signal_connect(G_OBJECT(g->exposure), "value-changed", G_CALLBACK(exposure_callback), self);
   g_signal_connect(G_OBJECT(g->autoexpp), "value-changed", G_CALLBACK(autoexpp_callback), self);
-  g_signal_connect(G_OBJECT(g->autoexpp), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   g_signal_connect(G_OBJECT(g->deflicker_percentile), "value-changed", G_CALLBACK(deflicker_params_callback),
                    self);
   g_signal_connect(G_OBJECT(g->deflicker_target_level), "value-changed",
                    G_CALLBACK(deflicker_params_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->autoexpp),
-                     DT_COLOR_PICKER_AREA,
-                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

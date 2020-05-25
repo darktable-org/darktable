@@ -39,7 +39,8 @@ typedef enum dtgtk_cairo_paint_flags_t
   CPF_DO_NOT_USE_BORDER = 1 << 10, // do not paint inner border
   CPF_CUSTOM_BG = 1 << 11,
   CPF_CUSTOM_FG = 1 << 12,
-  CPF_SPECIAL_FLAG = 1 << 13       // this needs to be the last one. also update shift in dtgtk_cairo_paint_alignment
+  CPF_FOCUS = 1 << 13, 
+  CPF_SPECIAL_FLAG = 1 << 14       // this needs to be the last one. also update shift in dtgtk_cairo_paint_alignment
 } dtgtk_cairo_paint_flags_t;
 
 
@@ -66,6 +67,8 @@ void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an always-on switch icon */
 void dtgtk_cairo_paint_switch_on(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint an always-off switch icon */
+void dtgtk_cairo_paint_switch_off(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a deprecated switch icon */
 void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a plusminus icon */

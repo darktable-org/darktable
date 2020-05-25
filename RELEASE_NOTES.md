@@ -50,8 +50,36 @@ making a backup is strongly advised.
   It is important to note that this speed improvement is really
   noticeable in the zoomable lighttable view.
 
+  The culling view has also been rewritten from scratch.
+
+- A complete overhaul of the CSS has also been done. This gives darktable
+  a very professional look at this time.
+
+- The preference dialog has been fully reviewed and reorganized to propose
+  a better look and at the same time requiring less scrolling. It is also
+  possible to add some CSS rules directly into the preference dialog to
+  tweak darktable's look.
+
 - The new module negadoctor has been added to help inverting negative
   films.
+
+- A new histogram display called RGB Parade has been added.
+
+- The metadata feature has been turned generic internally and has got new
+  features. The user can now select the information he wants to see in the
+  metadata editor. This selection is automatically mirrored in collection
+  and image information modules.
+
+  Along with a new "notes" field, all the fields are multiline
+  <kbd>Ctrl+Enter</kbd>, sizable <kbd>Ctrl+Scroll</kbd> and can be set
+  as private (not exported). Metadata collection filters have an entry
+  "not defined". At import time it is possible to avoid to import
+  some metadata.
+
+- Image change detection has been made more reliable. This affects lighttable
+  thumbnails change symbol and history collection filter.
+  In darkroom navigation, this avoids to recalculate an image and save the xmp
+  file when there is no change.
 
 ## New Features And Changes
 
@@ -60,7 +88,7 @@ making a backup is strongly advised.
 - Make modules labels a bit smaller for better UI consistency.
 
 - Add small rectangle around the angle display when using the
-  straightening tool for better lisibility.
+  straightening tool for better readability.
 
 - Ensure the different views layout are recorded. Many views (and mode
   like lighttable's culling or darkroom's color assessment), can have
@@ -88,7 +116,7 @@ making a backup is strongly advised.
 - Define many new accels for most of the sliders to allow more control
   using the keyboard.
 
-- Add support for curved gradients. The grandient mask can now be
+- Add support for curved gradients. The gradient mask can now be
   curved to revert fish-eye kind distortion and so become a straight
   line on the horizon for example.
 
@@ -100,6 +128,8 @@ making a backup is strongly advised.
 - Better visibility for the zoomed image part in the navigation widget.
 
 - Revert to smooth mode (was default in 2.6) in color zone module.
+
+- Collect module has two new filters: module and module order.
 
 - It is now possible to resize the collect module windows with
   <kbd>Ctrl+Scroll</kbd>.
@@ -144,6 +174,9 @@ making a backup is strongly advised.
   vertically or horizontally using the <kbd>Shift</kbd> or
   <kbd>Control</kbd> respectively.
 
+- The crop & rotate module now allows format ratios to be entered as
+  a float number.
+
 - When using a snapshot view, a flag to clearly show the position of the
   snapshot has been added.
 
@@ -157,6 +190,24 @@ making a backup is strongly advised.
 - Dynamic accelerators have been added for combo-boxes making it
   possible to select next and previous values directly from the
   keyboard.
+
+- It is now possible to adjust the color picker areas just after
+  having created them. This is achieved by dragging one of the 4
+  little square handles at the corner.
+
+- Tagging improvements. Entry tag(s) creation works now without image selected.
+  It is allowed to create a tag on virtual node, to insert a pipe <kbd>|</kbd>
+  character in create tag (menu). The tree display shows the newly created tags.
+
+- New variables $(LENS), $(EXIF_EXPOSURE_BIAS), $(VERSION_NAME) and
+  $(VERSION_IF_MULTI) have been defined. $(CATEGORYn(category)) works now when
+  multiple values on the same image (for example people) and accepts
+  9 levels instead of 3 (for n).
+
+- Four new timestamps are now supported to store the import,
+  last export, last change and last print times.
+
+- Multiple images drag & drop works now on map view.
 
 ## Bug fixes
 
@@ -196,6 +247,8 @@ making a backup is strongly advised.
 
 - Fix importing of duplicates on Windows.
 
+- Fix exporting private tags issue with different settings along the path.
+
 - Better visibility of tone curve grid on Grey theme.
 
 - Better accuracy for the keystone OSD lines.
@@ -213,7 +266,9 @@ making a backup is strongly advised.
 
 - Fix watermark blurring when using rotation.
 
-- Fix using apostrophe in meta-data.
+- Fix watermark crash when no text selected.
+
+- Fix using quote and double quote in meta-data.
 
 - Fix time-line display reporting 61 minutes per hour.
 
@@ -223,6 +278,23 @@ making a backup is strongly advised.
 
 ## Lua
 
+- API changed to 6.0.0 
+
+- facebook, flickr, and picasa removed from types.dt_imageio_storage_module_t.
+
+- piwigo added to type.dt_imageio_storage_module_t.
+
+- notes and version_name metadata fields added to types.dt_lua_image_t data type.
+
+- Added 4 new properties to dt_collection_properties_t, 
+  DT_COLLECTION_PROP_IMPORT_TIMESTAMP, DT_COLLECTION_PROP_CHANGE_TIMESTAMP,
+  DT_COLLECTION_PROP_EXPORT_TIMESTAMP, DT_COLLECTION_PROP_PRINT_TIMESTAMP
+
+- added darktable.gui.panel_get_size and darktable.gui.panel_set_size functions 
+  to set the width of the  left or right panels and the height of the bottom panel.
+
+- fixed is_password field of entry widget to work according to the API manual, so 
+  now when it is set to true the field is hidden.
 
 ## Changed Dependencies
 

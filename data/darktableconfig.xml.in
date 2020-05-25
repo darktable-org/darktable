@@ -616,6 +616,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/overlay_timeout</name>
+    <type>int</type>
+    <default>3</default>
+    <shortdescription>timeout for overlay hover block in seconds</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/overlays/0/0</name>
     <type>int</type>
     <default>0</default>
@@ -721,14 +728,14 @@
   <dtconfig prefs="lighttable">
     <name>plugins/lighttable/extended_pattern</name>
     <type>longstring</type>
-    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)$(EXIF_EXPOSURE) f/$(EXIF_APERTURE) $(EXIF_FOCAL_LENGTH)mm ISO $(EXIF_ISO)$(SIDECAR_TXT)</default>
+    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH)mm • $(EXIF_ISO) ISO $(SIDECAR_TXT)</default>
     <shortdescription>pattern for the thumbnail extended overlay text</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable">
     <name>plugins/lighttable/thumbnail_tooltip_pattern</name>
     <type>longstring</type>
-    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF_DAY)/$(EXIF_MONTH)/$(EXIF_YEAR) $(EXIF_HOUR):$(EXIF_MINUTE):$(EXIF_SECOND)$(NL)$(EXIF_EXPOSURE) s • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • ISO $(EXIF_ISO)</default>
+    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF_DAY)/$(EXIF_MONTH)/$(EXIF_YEAR) $(EXIF_HOUR):$(EXIF_MINUTE):$(EXIF_SECOND)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
@@ -776,7 +783,7 @@
   <dtconfig prefs="darkroom">
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>longstring</type>
-    <default>$(EXIF_EXPOSURE) s • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • ISO $(EXIF_ISO)</default>
+    <default>$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
     <shortdescription>pattern for the image infos line</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
@@ -837,6 +844,14 @@
     <default>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</default>
     <shortdescription>sub directory naming pattern</shortdescription>
     <longdescription>part of full import path for an import session</longdescription>
+  </dtconfig>
+
+  <dtconfig prefs="import" section="session">
+    <name>session/use_filename</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>keep original filename</shortdescription>
+    <longdescription>keep original filename instead of a pattern while importing from camera or card</longdescription>
   </dtconfig>
 
   <dtconfig prefs="import" section="session">
@@ -1532,6 +1547,20 @@
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
     <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified below, full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than PPG as middle ground.</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom" >
+    <name>preview_downsampling</name>
+    <type>
+      <enum>
+        <option>original</option>
+        <option>to 1/2</option>
+        <option>to 1/3</option>
+        <option>to 1/4</option>
+      </enum>
+    </type>
+    <default>original</default>
+    <shortdescription>reduce resolution of preview image</shortdescription>
+    <longdescription>decrease to speed up preview rendering, may hinder accurate masking</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing">
     <name>plugins/lighttable/export/pixel_interpolator</name>
     <type>
@@ -2091,13 +2120,6 @@
     <default>-1.0</default>
     <shortdescription>overwrite the screen's ppd setting</shortdescription>
     <longdescription>if this value is > 0.0 then it is used as the screen's ppd setting which is used for HiDPI support</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/preview/full_size_preload_count</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription>preload images for full-size preview</shortdescription>
-    <longdescription>number of images to load in advance in the background when showing full-size preview</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/preview/max_in_memory_images</name>

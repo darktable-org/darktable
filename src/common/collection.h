@@ -63,6 +63,10 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_NONE     = -1,
   DT_COLLECTION_SORT_FILENAME = 0,
   DT_COLLECTION_SORT_DATETIME,
+  DT_COLLECTION_SORT_IMPORT_TIMESTAMP,
+  DT_COLLECTION_SORT_CHANGE_TIMESTAMP,
+  DT_COLLECTION_SORT_EXPORT_TIMESTAMP,
+  DT_COLLECTION_SORT_PRINT_TIMESTAMP,
   DT_COLLECTION_SORT_RATING,
   DT_COLLECTION_SORT_ID,
   DT_COLLECTION_SORT_COLOR,
@@ -75,6 +79,9 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_SHUFFLE
 } dt_collection_sort_t;
 
+#define DT_COLLECTION_ORDER_FLAG 0x8000
+
+/* NOTE: any reordeing in this module require a legacy_preset entry in src/libs/collect.c */
 typedef enum dt_collection_properties_t
 {
   DT_COLLECTION_PROP_FILMROLL = 0,
@@ -83,7 +90,6 @@ typedef enum dt_collection_properties_t
 
   DT_COLLECTION_PROP_CAMERA,
   DT_COLLECTION_PROP_LENS,
-
   DT_COLLECTION_PROP_APERTURE,
   DT_COLLECTION_PROP_EXPOSURE,
   DT_COLLECTION_PROP_FOCAL_LENGTH,
@@ -91,9 +97,13 @@ typedef enum dt_collection_properties_t
 
   DT_COLLECTION_PROP_DAY,
   DT_COLLECTION_PROP_TIME,
+  DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
+  DT_COLLECTION_PROP_CHANGE_TIMESTAMP,
+  DT_COLLECTION_PROP_EXPORT_TIMESTAMP,
+  DT_COLLECTION_PROP_PRINT_TIMESTAMP,
+
   DT_COLLECTION_PROP_GEOTAGGING,
   DT_COLLECTION_PROP_ASPECT_RATIO,
-
   DT_COLLECTION_PROP_TAG,
   DT_COLLECTION_PROP_COLORLABEL,
   DT_COLLECTION_PROP_METADATA,
@@ -103,6 +113,7 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_HISTORY,
   DT_COLLECTION_PROP_MODULE,
   DT_COLLECTION_PROP_ORDER,
+
   DT_COLLECTION_PROP_LAST
 } dt_collection_properties_t;
 
@@ -153,6 +164,7 @@ typedef struct dt_collection_t
   gchar *query, *query_no_group;
   gchar **where_ext;
   unsigned int count, count_no_group;
+  unsigned int tagid;
   dt_collection_params_t params;
   dt_collection_params_t store;
 } dt_collection_t;
@@ -194,7 +206,9 @@ uint32_t dt_collection_get_query_flags(const dt_collection_t *collection);
 void dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t flags);
 
 /** set the film_id of collection */
-void dt_collection_set_film_id(const dt_collection_t *collection, uint32_t film_id);
+void dt_collection_set_film_id(const dt_collection_t *collection, const uint32_t film_id);
+/** set the tagid of collection */
+void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid);
 /** set the star level for filter */
 void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating);
 /** get the star level for filter. The value returned starts on 0 **/
@@ -248,8 +262,9 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2, char **op);
 void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2, char **op);
 
-int64_t dt_collection_get_image_position(const int32_t image_id);
-void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position);
+int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t tagid);
+void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position,
+                                         const int32_t tagid);
 
 /* move images with drag and drop */
 void dt_collection_move_before(const int32_t image_id, GList * selected_images);

@@ -51,6 +51,7 @@ typedef struct dt_variables_data_t
   int exif_iso;
   char *camera_maker;
   char *camera_alias;
+  char *exif_lens;
   int version;
   int stars;
   struct tm exif_tm;
@@ -97,6 +98,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->exif_iso = 100;
   params->data->camera_maker = NULL;
   params->data->camera_alias = NULL;
+  params->data->exif_lens = NULL;
   params->data->version = 0;
   params->data->stars = 0;
   params->data->exif_exposure = 0.0f;
@@ -120,6 +122,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->exif_iso = img->exif_iso;
     params->data->camera_maker = g_strdup(img->camera_maker);
     params->data->camera_alias = g_strdup(img->camera_alias);
+    params->data->exif_lens = g_strdup(img->exif_lens);
     params->data->version = img->version;
     params->data->stars = (img->flags & 0x7);
     if(params->data->stars == 6) params->data->stars = -1;
@@ -263,6 +266,8 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(params->data->camera_maker);
   else if(has_prefix(variable, "MODEL"))
     result = g_strdup(params->data->camera_alias);
+  else if(has_prefix(variable, "LENS"))
+    result = g_strdup(params->data->exif_lens);
   else if(has_prefix(variable, "ID"))
     result = g_strdup_printf("%d", params->imgid);
   else if(has_prefix(variable, "VERSION_NAME"))
@@ -472,7 +477,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
           end[0] = '|';
           end[1] = '\0';
           (*variable) += strlen(category) + 1;
-          char *tag = dt_tag_get_subtag(params->imgid, category, (int)level);
+          char *tag = dt_tag_get_subtags(params->imgid, category, (int)level);
           if (tag)
           {
             result = g_strdup(tag);
@@ -513,6 +518,12 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   }
   if(!result) result = g_strdup("");
 
+  if(params->escape_markup)
+  {
+    gchar *e_res = g_markup_escape_text(result, -1);
+    g_free(result);
+    return e_res;
+  }
   return result;
 }
 

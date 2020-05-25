@@ -35,7 +35,9 @@ static void slider_init(lua_State*L)
 {
   lua_slider slider;
   luaA_to(L,lua_slider,&slider,-1);
-  dt_bauhaus_slider_from_widget(DT_BAUHAUS_WIDGET(slider->widget),NULL, 0.0, 1.0, 0.1, 0.5, 3,0);
+  // as the sliders setup calls are asynchronous, we weed to initialize
+  // min to -INF and max to INF, sort of, in order not to cut prematurely soft_min and soft_max
+  dt_bauhaus_slider_from_widget(DT_BAUHAUS_WIDGET(slider->widget),NULL, -1.0E9, 1.0E9, 1.0, 0.0, 3,0);
 }
 
 

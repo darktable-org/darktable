@@ -373,7 +373,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  d->taglist = dt_exif_get_exiv2_taglist();
+  d->taglist = (GList *)dt_exif_get_exiv2_taglist();
   GList *list = dt_util_str_to_glist("\1", metadata_presets);
   int32_t flags = 0;
   if (list)
@@ -462,7 +462,6 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
     g_free(metadata_presets);
     dt_lib_export_metadata_set_conf(newlist);
   }
-  g_list_free_full(d->taglist, g_free);
   gtk_widget_destroy(dialog);
   free(d);
   return newlist;

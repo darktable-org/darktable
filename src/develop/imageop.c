@@ -256,6 +256,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   if(!g_module_symbol(module->module, "gui_init", (gpointer) & (module->gui_init))) module->gui_init = NULL;
   if(!g_module_symbol(module->module, "gui_update", (gpointer) & (module->gui_update)))
     module->gui_update = NULL;
+  if(!g_module_symbol(module->module, "color_picker_apply", (gpointer) & (module->color_picker_apply)))
+    module->color_picker_apply = NULL;
   if(!g_module_symbol(module->module, "gui_cleanup", (gpointer) & (module->gui_cleanup)))
     module->gui_cleanup = default_gui_cleanup;
 
@@ -387,7 +389,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
     module->picked_color_max[k] = module->picked_output_color_max[k] = -666.0f;
   }
   module->picker = NULL;
-  module->blend_picker = NULL;
   module->histogram_cst = iop_cs_NONE;
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
@@ -426,6 +427,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->gui_update = so->gui_update;
   module->gui_reset = so->gui_reset;
   module->gui_init = so->gui_init;
+  module->color_picker_apply = so->color_picker_apply;
   module->gui_cleanup = so->gui_cleanup;
 
   module->gui_post_expose = so->gui_post_expose;
@@ -559,8 +561,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   dt_iop_gui_set_expanded(next, TRUE, FALSE);
   gtk_widget_grab_focus(next->expander);
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
@@ -644,7 +645,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   /* redraw */
   dt_control_queue_redraw_center();
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 dt_iop_module_t *dt_iop_gui_get_previous_visible_module(dt_iop_module_t *module)
@@ -813,8 +814,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   /* initialize gui if iop have one defined */
   if(!dt_iop_is_hidden(module))
   {
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     module->gui_init(module);
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
     if(copy_params)
@@ -846,7 +846,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
                           expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
     dt_iop_gui_set_expanded(module, TRUE, FALSE);
     dt_iop_gui_update_blending(module);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
 
   if(dt_conf_get_bool("darkroom/ui/single_module"))
@@ -1057,6 +1057,17 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
   dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
+static gboolean dt_iop_gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  if(!darktable.gui->reset && e->state & GDK_CONTROL_MASK)
+  {
+    dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -1159,16 +1170,11 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
 {
   if(module->off)
   {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
     if(module->hide_enable_button)
-    {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), FALSE);
       gtk_widget_set_sensitive(GTK_WIDGET(module->off), FALSE);
-    }
     else
-    {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
       gtk_widget_set_sensitive(GTK_WIDGET(module->off), TRUE);
-    }
   }
 }
 
@@ -1438,6 +1444,7 @@ static void dt_iop_init_module_so(void *m)
       // Adding the optional show accelerator to the table (blank)
       dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
       dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "focus module"), 0, 0);
 
       dt_accel_register_iop(module, FALSE, NC_("accel", "reset module parameters"), 0, 0);
       dt_accel_register_iop(module, FALSE, NC_("accel", "show preset menu"), 0, 0);
@@ -1513,7 +1520,6 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   free(module->default_blendop_params);
   module->default_blendop_params = NULL;
   module->picker = NULL;
-  module->blend_picker = NULL;
   free(module->histogram);
   module->histogram = NULL;
   g_hash_table_destroy(module->raster_mask.source.users);
@@ -1637,8 +1643,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
 {
   if(module->gui_data)
   {
-    int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     if(!dt_iop_is_hidden(module))
     {
       if(module->params) module->gui_update(module);
@@ -1647,16 +1652,15 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       _iop_gui_update_label(module);
       dt_iop_gui_set_enable_button(module);
     }
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
 }
 
 void dt_iop_gui_reset(dt_iop_module_t *module)
 {
-  int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   if(module->gui_reset && !dt_iop_is_hidden(module)) module->gui_reset(module);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
@@ -1727,6 +1731,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(darktable.develop->gui_module->gui_focus)
       darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
 
+    dt_iop_color_picker_reset(darktable.develop->gui_module, TRUE);
+
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_FLAG_NORMAL,
                                TRUE);
 
@@ -1740,8 +1746,16 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     /* do stuff needed in the blending gui */
     dt_iop_gui_blending_lose_focus(darktable.develop->gui_module);
 
+    /* redraw the expander */
+    gtk_widget_queue_draw(darktable.develop->gui_module->expander);
+
     /* and finally remove hinter messages */
     dt_control_hinter_message(darktable.control, "");
+
+    // we also remove the focus css class
+    GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
+    GtkStyleContext *context = gtk_widget_get_style_context(iop_w);
+    gtk_style_context_remove_class(context, "dt_module_focus");
   }
 
   darktable.develop->gui_module = module;
@@ -1761,6 +1775,14 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     dt_accel_connect_locals_iop(module);
 
     if(module->gui_focus) module->gui_focus(module, TRUE);
+
+    /* redraw the expander */
+    gtk_widget_queue_draw(module->expander);
+
+    // we also add the focus css class
+    GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
+    GtkStyleContext *context = gtk_widget_get_style_context(iop_w);
+    gtk_style_context_add_class(context, "dt_module_focus");
   }
 
   /* update sticky accels window */
@@ -1996,14 +2018,19 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "module-preset-button");
 
   /* add enabled button */
-  if(module->enabled && module->default_enabled && module->hide_enable_button)
+  if(module->default_enabled && module->hide_enable_button)
   {
-    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, module);
     gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-always-enabled-button");
+  }
+  else if(!module->default_enabled && module->hide_enable_button)
+  {
+    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch_off, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, module);
+    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-always-disabled-button");
   }
   else
   {
-    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, module);
     gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-enable-button");
   }
   gchar *module_label = dt_history_item_get_name(module);
@@ -2013,6 +2040,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), tooltip);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[IOP_MODULE_SWITCH]), module->enabled);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "button-press-event", G_CALLBACK(dt_iop_gui_off_button_press), module);
   module->off = DTGTK_TOGGLEBUTTON(hw[IOP_MODULE_SWITCH]);
   gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), !module->hide_enable_button);
 
@@ -2144,6 +2172,15 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
   return TRUE;
 }
 
+static gboolean request_module_focus_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data)
+
+{
+  dt_iop_module_t * module = (dt_iop_module_t *)data;
+  dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
+  return TRUE;
+}
+
 static gboolean enable_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer data)
 
@@ -2173,6 +2210,10 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   // Connecting the (optional) module show accelerator
   closure = g_cclosure_new(G_CALLBACK(show_module_callback), module, NULL);
   dt_accel_connect_iop(module, "show module", closure);
+
+  // Connecting the (optional) module gui focus accelerator
+  closure = g_cclosure_new(G_CALLBACK(request_module_focus_callback), module, NULL);
+  dt_accel_connect_iop(module, "focus module", closure);
 
   // Connecting the (optional) module switch accelerator
   closure = g_cclosure_new(G_CALLBACK(enable_module_callback), module, NULL);

@@ -33,12 +33,13 @@
 // 2.0.0 was 3.0.0
 // 2.2.0 was 4.0.0 ( removed the ugly yield functions make scripts incompatible)
 // 2.4.0 was 5.0.0 (going to lua 5.3 is a major API bump)
+// 3.2.0 was 6.0.0 (removed facebook, flickr, and picasa from types.dt_imageio_storage_module_t)
 /* incompatible API change */
-#define LUA_API_VERSION_MAJOR 5
+#define LUA_API_VERSION_MAJOR 6
 /* backward compatible API change */
 #define LUA_API_VERSION_MINOR 0
 /* bugfixes that should not change anything to the API */
-#define LUA_API_VERSION_PATCH 2
+#define LUA_API_VERSION_PATCH 0
 /* suffix for unstable version */
 #define LUA_API_VERSION_SUFFIX ""
 
