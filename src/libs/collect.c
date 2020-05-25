@@ -377,19 +377,23 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
     if(new_path)
     {
       gchar *old = NULL;
-      gchar quoted_path[1024] = { 0 };
-      gchar **tbl = g_strsplit(tree_path, "'", 0);
-      gchar **loop_tbl = tbl;
-      do
-      {
-        g_strlcat(quoted_path, *loop_tbl++, 1024);
-        if (*loop_tbl) g_strlcat(quoted_path, "''", 1024);
-      } while (*loop_tbl);
-      g_strfreev(tbl);
-      query = dt_util_dstrcat(query, "SELECT id, folder FROM main.film_rolls WHERE folder LIKE '%s%%'", quoted_path);
+      gchar *q_tree_path = NULL;
+      q_tree_path = dt_util_dstrcat(q_tree_path, "%s%%", tree_path);
+/*!!*/printf("q_tree_path=%s\n", q_tree_path);
+      query = "SELECT id, folder FROM main.film_rolls WHERE folder LIKE '?1'";
+/*!!*/printf("query=%s\n", query);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+/*!!*/printf("after0\n");
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, q_tree_path, -1, SQLITE_STATIC);
+/*!!*/printf("after1\n");
+      g_free(q_tree_path);
+/*!!*/printf("after2\n");
+      q_tree_path = NULL;
+/*!!*/printf("after3\n");
       g_free(query);
+/*!!*/printf("after4\n");
       query = NULL;
+/*!!*/printf("after5\n");
 
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
