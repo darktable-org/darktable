@@ -84,18 +84,35 @@ gchar *dt_loc_get_home_dir(const gchar *user)
 #endif
 }
 
-gchar *dt_loc_init_generic(const char *value, const char *default_value)
+gchar *dt_loc_init_generic(const char *value, const char *application_directory, const char *default_value)
 {
   const gchar *path = value ? value : default_value;
-  gchar *result = dt_util_fix_path(path);
+  gchar *fixed_path = dt_util_fix_path(path);
+  gchar *result = NULL;
+
+  if(application_directory != NULL)
+  {
+    // combine basename (application_directory) and relative path (value)
+    gchar complete_path[PATH_MAX] = { 0 };
+    g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, fixed_path);
+    free(fixed_path);
+    // removes '.', '..', and extra '/' characters 
+    result = g_realpath(complete_path);
+  }
+  else
+  {
+    result = fixed_path;
+  }
+
   if(g_file_test(result, G_FILE_TEST_EXISTS) == FALSE) g_mkdir_with_parents(result, 0700);
+
   return result;
 }
 
 void dt_loc_init_user_config_dir(const char *configdir)
 {
   char *default_config_dir = g_build_filename(g_get_user_config_dir(), "darktable", NULL);
-  darktable.configdir = dt_loc_init_generic(configdir, default_config_dir);
+  darktable.configdir = dt_loc_init_generic(configdir, NULL, default_config_dir);
   dt_check_opendir("darktable.configdir", darktable.configdir, TRUE);
   g_free(default_config_dir);
 }
@@ -140,7 +157,7 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
 
 int dt_loc_init_tmp_dir(const char *tmpdir)
 {
-  darktable.tmpdir = dt_loc_init_generic(tmpdir, g_get_tmp_dir());
+  darktable.tmpdir = dt_loc_init_generic(tmpdir, NULL, g_get_tmp_dir());
   dt_check_opendir("darktable.tmpdir", darktable.tmpdir, FALSE);
   if(darktable.tmpdir == NULL) return 1;
   return 0;
@@ -149,7 +166,7 @@ int dt_loc_init_tmp_dir(const char *tmpdir)
 void dt_loc_init_user_cache_dir(const char *cachedir)
 {
   char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
-  darktable.cachedir = dt_loc_init_generic(cachedir, default_cache_dir);
+  darktable.cachedir = dt_loc_init_generic(cachedir, NULL, default_cache_dir);
   dt_check_opendir("darktable.cachedir", darktable.cachedir, TRUE);
   g_free(default_cache_dir);
 }
@@ -160,14 +177,11 @@ void dt_loc_init_plugindir(const char* application_directory, const char *plugin
   char *suffix = g_build_filename("lib", "darktable", NULL);
   char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
   g_free(suffix);
-  darktable.plugindir = dt_loc_init_generic(plugindir, directory ? directory : DARKTABLE_LIBDIR);
+  darktable.plugindir = dt_loc_init_generic(plugindir, application_directory, directory ? directory : DARKTABLE_LIBDIR);
+  dt_check_opendir("darktable.plugindir", darktable.plugindir, TRUE);
   g_free(directory);
 #else
-  gchar* path = dt_loc_init_generic(plugindir, DARKTABLE_LIBDIR);
-  gchar complete_path[PATH_MAX] = { 0 };
-  g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
-  free(path);
-  darktable.plugindir = g_realpath(complete_path);
+  darktable.plugindir =  dt_loc_init_generic(plugindir, application_directory, DARKTABLE_LIBDIR);
   dt_check_opendir("darktable.plugindir", darktable.plugindir, TRUE);
 #endif
 }
@@ -236,18 +250,14 @@ void dt_loc_init_localedir(const char* application_directory, const char *locale
   char *suffix = g_build_filename("share", "locale", NULL);
   char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
   g_free(suffix);
-  darktable.localedir = dt_loc_init_generic(localedir, directory ? directory : DARKTABLE_LOCALEDIR);
+  darktable.localedir = dt_loc_init_generic(localedir, application_directory, directory ? directory : DARKTABLE_LOCALEDIR);
 #ifdef __APPLE__
   if(directory && !localedir) //bind to bundle path
     bindtextdomain(GETTEXT_PACKAGE, darktable.localedir);
 #endif
   g_free(directory);
 #else
-  gchar* path = dt_loc_init_generic(localedir, DARKTABLE_LOCALEDIR);
-  gchar complete_path[PATH_MAX] = { 0 };
-  g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
-  free(path);
-  darktable.localedir = g_realpath(complete_path);
+  darktable.localedir = dt_loc_init_generic(localedir, application_directory, DARKTABLE_LOCALEDIR);
   dt_check_opendir("darktable.localedir", darktable.localedir, TRUE);
 #endif
 }
@@ -258,17 +268,10 @@ void dt_loc_init_datadir(const char* application_directory, const char *datadir)
   char *suffix = g_build_filename("share", "darktable", NULL);
   char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
   g_free(suffix);
-  darktable.datadir = dt_loc_init_generic(datadir, directory ? directory : DARKTABLE_DATADIR);
+  darktable.datadir = dt_loc_init_generic(datadir, application_directory, directory ? directory : DARKTABLE_DATADIR);
   g_free(directory);
 #else
-
-  gchar* path = dt_loc_init_generic(datadir, DARKTABLE_DATADIR);
-  // printf("path: %s\n", path);
-
-  gchar complete_path[PATH_MAX] = { 0 };
-  g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, path);
-  free(path);
-  darktable.datadir = g_realpath(complete_path);
+  darktable.datadir = dt_loc_init_generic(datadir, application_directory, DARKTABLE_DATADIR);
   dt_check_opendir("darktable.datadir", darktable.datadir, TRUE);
 #endif
 }

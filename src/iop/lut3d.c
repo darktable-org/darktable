@@ -1134,7 +1134,7 @@ void init(dt_iop_module_t *self)
 #ifdef HAVE_GMIC
   // make sure the cache dir exists
   char *cache_dir = g_build_filename(g_get_user_cache_dir(), "gmic", NULL);
-  char *cache_gmic_dir = dt_loc_init_generic(cache_dir, NULL);
+  char *cache_gmic_dir = dt_loc_init_generic(cache_dir, NULL, NULL);
   g_free(cache_dir);
   g_free(cache_gmic_dir);
 #endif // HAVE_GMIC
