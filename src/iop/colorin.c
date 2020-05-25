@@ -40,6 +40,7 @@
 #include "common/imageio_avif.h"
 #endif
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "iop/iop_api.h"
 
 #include "external/adobe_coeff.c"
@@ -66,22 +67,22 @@ static void update_profile_list(dt_iop_module_t *self);
 
 typedef enum dt_iop_color_normalize_t
 {
-  DT_NORMALIZE_OFF,
-  DT_NORMALIZE_SRGB,
-  DT_NORMALIZE_ADOBE_RGB,
-  DT_NORMALIZE_LINEAR_REC709_RGB,
-  DT_NORMALIZE_LINEAR_REC2020_RGB
+  DT_NORMALIZE_OFF,               //$DESCRIPTION: "off"
+  DT_NORMALIZE_SRGB,              //$DESCRIPTION: "sRGB"
+  DT_NORMALIZE_ADOBE_RGB,         //$DESCRIPTION: "Adobe RGB (compatible)"
+  DT_NORMALIZE_LINEAR_REC709_RGB, //$DESCRIPTION: "linear Rec709 RGB"
+  DT_NORMALIZE_LINEAR_REC2020_RGB //$DESCRIPTION: "linear Rec2020 RGB"
 } dt_iop_color_normalize_t;
 
 typedef struct dt_iop_colorin_params_t
 {
-  dt_colorspaces_color_profile_type_t type;
+  dt_colorspaces_color_profile_type_t type; // $DEFAULT: DT_COLORSPACE_ENHANCED_MATRIX
   char filename[DT_IOP_COLOR_ICC_LEN];
-  dt_iop_color_intent_t intent;
-  int normalize;
+  dt_iop_color_intent_t intent;       // $DEFAULT: DT_INTENT_PERCEPTUAL
+  dt_iop_color_normalize_t normalize; // $DEFAULT: DT_NORMALIZE_OFF $DESCRIPTION: "gamut clipping"
   int blue_mapping;
   // working color profile
-  dt_colorspaces_color_profile_type_t type_work;
+  dt_colorspaces_color_profile_type_t type_work; // $DEFAULT: DT_COLORSPACE_LIN_REC2020
   char filename_work[DT_IOP_COLOR_ICC_LEN];
 } dt_iop_colorin_params_t;
 
@@ -415,7 +416,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 static void intent_changed (GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -425,7 +426,7 @@ static void intent_changed (GtkWidget *widget, gpointer user_data)
 static void profile_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
@@ -460,7 +461,7 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
 
   dt_iop_request_focus(self);
 
@@ -513,16 +514,6 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
     // should really never happen.
     fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
-}
-
-
-static void normalize_changed(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
-  p->normalize = dt_bauhaus_combobox_get(widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
@@ -1853,13 +1844,11 @@ void gui_update(struct dt_iop_module_t *self)
 // FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){ .type = DT_COLORSPACE_STANDARD_MATRIX,
-                                                           .filename = "",
-                                                           .intent = DT_INTENT_PERCEPTUAL,
-                                                           .normalize = DT_NORMALIZE_OFF,
-                                                           .blue_mapping = 0,
-                                                           .type_work = DT_COLORSPACE_LIN_REC2020,
-                                                           .filename_work = "" };
+  module->default_enabled = 1;
+  module->hide_enable_button = 1;
+
+  dt_iop_colorin_params_t *d = module->default_params;
+
   dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
   // we might be called from presets update infrastructure => there is no image
@@ -1929,46 +1918,26 @@ void reload_defaults(dt_iop_module_t *module)
     use_eprofile = TRUE; // the image has a profile assigned
 
   if (color_profile != DT_COLORSPACE_NONE)
-    tmp.type = color_profile;
+    d->type = color_profile;
   else if(use_eprofile)
-    tmp.type = DT_COLORSPACE_EMBEDDED_ICC;
+    d->type = DT_COLORSPACE_EMBEDDED_ICC;
   else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
-    tmp.type = DT_COLORSPACE_LIN_REC709;
+    d->type = DT_COLORSPACE_LIN_REC709;
   else if (img->flags & DT_IMAGE_MONOCHROME)
-    tmp.type = DT_COLORSPACE_LIN_REC709;
+    d->type = DT_COLORSPACE_LIN_REC709;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB)
-    tmp.type = DT_COLORSPACE_SRGB;
+    d->type = DT_COLORSPACE_SRGB;
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB)
-    tmp.type = DT_COLORSPACE_ADOBERGB;
+    d->type = DT_COLORSPACE_ADOBERGB;
   else if(dt_image_is_ldr(&module->dev->image_storage))
-    tmp.type = DT_COLORSPACE_SRGB;
+    d->type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
-    tmp.type = DT_COLORSPACE_EMBEDDED_MATRIX;
+    d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
 end:
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
-}
-
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_colorin_data_t));
-  module->params = calloc(1, sizeof(dt_iop_colorin_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorin_params_t));
-  module->params_size = sizeof(dt_iop_colorin_params_t);
-  module->gui_data = NULL;
-  module->hide_enable_button = 1;
-  module->default_enabled = 1;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  memcpy(module->params, module->default_params, sizeof(dt_iop_colorin_params_t));
 }
 
 static void update_profile_list(dt_iop_module_t *self)
@@ -2111,6 +2080,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+
   g->profile_combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->profile_combobox, NULL, _("input profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile_combobox, TRUE, TRUE, 0);
@@ -2147,20 +2117,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->profile_combobox), "value-changed", G_CALLBACK(profile_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(g->work_combobox), "value-changed", G_CALLBACK(workicc_changed), (gpointer)self);
 
-  g->clipping_combobox = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->clipping_combobox, NULL, _("gamut clipping"));
-
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("off"));
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("sRGB"));
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("Adobe RGB (compatible)"));
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec709 RGB"));
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec2020 RGB"));
-
+  g->clipping_combobox = dt_bauhaus_combobox_from_params(self, "normalize");
   gtk_widget_set_tooltip_text(g->clipping_combobox, _("confine Lab values to gamut of RGB color space"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->clipping_combobox, TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(g->clipping_combobox), "value-changed", G_CALLBACK(normalize_changed), (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
