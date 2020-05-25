@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -42,7 +43,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_colorcorrection_params_t)
 
 typedef struct dt_iop_colorcorrection_params_t
 {
-  float hia, hib, loa, lob, saturation;
+  float hia, hib, loa, lob;  // directly manipulated from gui; don't follow normal gui_update etc
+  float saturation;          // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0
 } dt_iop_colorcorrection_params_t;
 
 typedef struct dt_iop_colorcorrection_gui_data_t
@@ -226,28 +228,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_colorcorrection_data_t));
-  module->params = calloc(1, sizeof(dt_iop_colorcorrection_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorcorrection_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_colorcorrection_params_t);
-  module->gui_data = NULL;
-  dt_iop_colorcorrection_params_t tmp = (dt_iop_colorcorrection_params_t){ 0., 0., 0., 0., 1.0 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorcorrection_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcorrection_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
-static void sat_callback(GtkWidget *slider, gpointer user_data);
 static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event,
                                                      gpointer user_data);
@@ -288,16 +268,12 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_colorcorrection_scrolled), self);
   g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_colorcorrection_key_press), self);
 
-  g->slider = dt_bauhaus_slider_new_with_range(self, -3.0f, 3.0f, 0.01f, 1.0f, 2);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->slider, TRUE, TRUE, 0);
+  g->slider = dt_bauhaus_slider_from_params(self, "saturation");
   gtk_widget_set_tooltip_text(g->slider, _("set the global saturation"));
-  dt_bauhaus_widget_set_label(g->slider, NULL, _("saturation"));
 
-  g_signal_connect(G_OBJECT(g->slider), "value-changed", G_CALLBACK(sat_callback), self);
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
-  g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL,
-                                0); // cmsFLAGS_NOTPRECALC);
+  g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -306,16 +282,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   cmsDeleteTransform(g->xform);
   free(self->gui_data);
   self->gui_data = NULL;
-}
-
-static void sat_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  p->saturation = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(self->widget);
 }
 
 static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
