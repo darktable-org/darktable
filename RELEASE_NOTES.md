@@ -296,6 +296,13 @@ making a backup is strongly advised.
 - fixed is_password field of entry widget to work according to the API manual, so 
   now when it is set to true the field is hidden.
 
+- Added function darktable.gui.views.lighttable.is_image_visible to check if an image 
+  is visible in lighttable view.
+
+- Added function darktable.gui.views.lighttable.set_image_visible to force an 
+  image to be visible in lighttable view.
+  
+>>>>>>> 1ae858b9d2efe2a746f00205b699719ffabc54db
 ## Changed Dependencies
 
 
