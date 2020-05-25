@@ -98,6 +98,7 @@ gchar *dt_loc_init_generic(const char *value, const char *application_directory,
     free(fixed_path);
     // removes '.', '..', and extra '/' characters 
     result = g_realpath(complete_path);
+    free(complete_path);
   }
   else
   {
