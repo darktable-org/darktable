@@ -758,7 +758,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
   // get the application directory from the first argument containing the full path to the executable
-  char* application_directory = malloc(PATH_MAX);
+  gchar application_directory[PATH_MAX] = { 0 };
   gchar* lastPathCharacter = g_strrstr(argv[0], "/");
 
   if(!lastPathCharacter)
@@ -776,8 +776,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_loc_init_plugindir(application_directory, moduledir_from_command);
   dt_loc_init_localedir(application_directory, localedir_from_command);
 
-  free(lastPathCharacter);
-  free(application_directory);
+  g_free(lastPathCharacter);
 
   if(dt_loc_init_tmp_dir(tmpdir_from_command))
   {

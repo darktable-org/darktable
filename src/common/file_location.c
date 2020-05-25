@@ -95,10 +95,9 @@ gchar *dt_loc_init_generic(const char *value, const char *application_directory,
     // combine basename (application_directory) and relative path (value)
     gchar complete_path[PATH_MAX] = { 0 };
     g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, fixed_path);
-    free(fixed_path);
+    g_free(fixed_path);
     // removes '.', '..', and extra '/' characters 
     result = g_realpath(complete_path);
-    free(complete_path);
   }
   else
   {
