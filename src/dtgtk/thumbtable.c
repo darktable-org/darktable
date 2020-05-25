@@ -2176,6 +2176,64 @@ gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, const int
   return FALSE;
 }
 
+static gboolean _filemanager_check_rowid_visibility(dt_thumbtable_t *table, const int rowid)
+{
+  if(rowid < 1) return FALSE;
+  if(!table->list || g_list_length(table->list) == 0) return FALSE;
+  // get first and last fully visible thumbnails
+  dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
+  dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
+
+  if(first->rowid <= rowid && last->rowid >= rowid) return TRUE;
+  return FALSE;
+}
+static gboolean _zoomable_check_rowid_visibility(dt_thumbtable_t *table, const int rowid)
+{
+  if(rowid < 1) return FALSE;
+  if(!table->list || g_list_length(table->list) == 0) return FALSE;
+
+  // is the needed rowid inside the list
+  // in this case, is it fully visible ?
+  GList *l = g_list_first(table->list);
+  int i = 0;
+  int y_move = 0;
+  int x_move = 0;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->rowid == rowid)
+    {
+      // vertical movement
+      if(th->y < 0)
+        y_move = -th->y;
+      else if(th->y + table->thumb_size >= table->view_height)
+        y_move = table->view_height - th->y - table->thumb_size;
+      // horizontal movement
+      if(th->x < 0)
+        x_move = -th->x;
+      else if(th->x + table->thumb_size >= table->view_width)
+        x_move = table->view_width - th->x - table->thumb_size;
+      // if the thumb is fully visible, nothing to do !
+      if(x_move == 0 && y_move == 0) return TRUE;
+      break;
+    }
+    l = g_list_next(l);
+    i++;
+  }
+  return FALSE;
+}
+gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, const int imgid)
+{
+  if(imgid < 1) return FALSE;
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+    return _filemanager_check_rowid_visibility(table, _thumb_get_rowid(imgid));
+  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+    return _zoomable_check_rowid_visibility(table, _thumb_get_rowid(imgid));
+
+  return FALSE;
+}
+
 static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, const gboolean select)
 {
   // base point
