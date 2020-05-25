@@ -27,6 +27,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/draw.h"
@@ -63,10 +64,13 @@ typedef struct dt_iop_basecurve_params_t
   dt_iop_basecurve_node_t basecurve[3][MAXNODES];
   int basecurve_nodes[3];
   int basecurve_type[3];
-  int exposure_fusion;    // number of exposure fusion steps
-  float exposure_stops;   // number of stops between fusion images
-  float exposure_bias;    // whether to do exposure-fusion with over or under-exposure
-  int preserve_colors;
+  int exposure_fusion;    /* number of exposure fusion steps
+                             $DEFAULT: 0 $DESCRIPTION: "fusion" */
+  float exposure_stops;   /* number of stops between fusion images
+                             $MIN: 0.01 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure shift" */
+  float exposure_bias;    /* whether to do exposure-fusion with over or under-exposure
+                             $MIN: -1.0 $MAX: 1.0 $DEFAULT: 1.0 */
+  int preserve_colors;    /* $DEFAULT: 1 DT_RGB_NORM_LUMINANCE */
 } dt_iop_basecurve_params_t;
 
 typedef struct dt_iop_basecurve_params5_t
@@ -1428,23 +1432,15 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
   dt_bauhaus_combobox_set(g->fusion, p->exposure_fusion);
-  if(p->exposure_fusion != 0)
-  {
-    gtk_widget_set_visible(g->exposure_step, TRUE);
-    gtk_widget_set_visible(g->exposure_bias, TRUE);
-  }
-  if(p->exposure_fusion == 0)
-  {
-    gtk_widget_set_visible(g->exposure_step, FALSE);
-    gtk_widget_set_visible(g->exposure_bias, FALSE);
-  }
+
+  gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
+  gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
 
   if(g->timeout_handle)
   {
     g_source_remove(g->timeout_handle);
     g->timeout_handle = 0;
   }
-
 
   dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
   dt_bauhaus_slider_set(g->exposure_bias, p->exposure_bias);
@@ -2086,43 +2082,25 @@ static gboolean dt_iop_basecurve_key_press(GtkWidget *widget, GdkEventKey *event
 
 #undef BASECURVE_DEFAULT_STEP
 
-static void fusion_callback(GtkWidget *widget, gpointer user_data)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  int fuse = dt_bauhaus_combobox_get(widget);
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  if(p->exposure_fusion == 0 && fuse != 0)
-  {
-    gtk_widget_set_visible(g->exposure_step, TRUE);
-    gtk_widget_set_visible(g->exposure_bias, TRUE);
-  }
-  if(p->exposure_fusion != 0 && fuse == 0)
-  {
-    gtk_widget_set_visible(g->exposure_step, FALSE);
-    gtk_widget_set_visible(g->exposure_bias, FALSE);
-  }
-  p->exposure_fusion = fuse;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
 
-static void exposure_step_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  float stops = dt_bauhaus_slider_get(widget);
-  p->exposure_stops = stops;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void exposure_bias_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  float bias = dt_bauhaus_slider_get(widget);
-  p->exposure_bias = bias;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(w == g->fusion)
+  {
+    int prev = *(int *)previous;
+    if(p->exposure_fusion != 0 && prev == 0)
+    {
+      gtk_widget_set_visible(g->exposure_step, TRUE);
+      gtk_widget_set_visible(g->exposure_bias, TRUE);
+    }
+    if(p->exposure_fusion == 0 && prev != 0)
+    {
+      gtk_widget_set_visible(g->exposure_step, FALSE);
+      gtk_widget_set_visible(g->exposure_bias, FALSE);
+    }
+  }
 }
 
 static void scale_callback(GtkWidget *widget, gpointer user_data)
@@ -2134,16 +2112,6 @@ static void scale_callback(GtkWidget *widget, gpointer user_data)
   else
     g->loglogscale = 0;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-}
-
-static void preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-
-  p->preserve_colors = dt_bauhaus_combobox_get(widget);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -2178,8 +2146,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
 
-  c->cmb_preserve_colors = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->cmb_preserve_colors, NULL, _("preserve colors"));
+  c->cmb_preserve_colors = dt_bauhaus_combobox_new_from_params_box(self, "preserve_colors");
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("luminance"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("max RGB"));
@@ -2187,38 +2154,29 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("sum RGB"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("norm RGB"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("basic power"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
-  g_signal_connect(G_OBJECT(c->cmb_preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
 
-  c->fusion = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->fusion, NULL, _("fusion"));
+  c->fusion = dt_bauhaus_combobox_new_from_params_box(self, "exposure_fusion");
   dt_bauhaus_combobox_add(c->fusion, _("none"));
   dt_bauhaus_combobox_add(c->fusion, _("two exposures"));
   dt_bauhaus_combobox_add(c->fusion, _("three exposures"));
   gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
                                            "compress high dynamic range. expose for the highlights before use."));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);
 
-  c->exposure_step = dt_bauhaus_slider_new_with_range(self, 0.01f, 4.0f, 0.100f, 1.0f, 3);
+  c->exposure_step = dt_bauhaus_slider_new_from_params_box(self, "exposure_stops");
+//  dt_bauhaus_slider_set_digits(c->exposure_step, 3); 
   gtk_widget_set_tooltip_text(c->exposure_step, _("how many stops to shift the individual exposures apart"));
-  dt_bauhaus_widget_set_label(c->exposure_step, NULL, _("exposure shift"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->exposure_step, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->exposure_step), "value-changed", G_CALLBACK(exposure_step_callback), self);
-  gtk_widget_show_all(c->exposure_step);
+//  gtk_widget_show_all(c->exposure_step);
   gtk_widget_set_no_show_all(c->exposure_step, TRUE);
   gtk_widget_set_visible(c->exposure_step, p->exposure_fusion != 0 ? TRUE : FALSE);
 
   // initially set to 1 (consistency with previous versions), but double-click resets to 0
   // to get a quick way to reach 0 with the mouse.
-  c->exposure_bias = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.100f, 0.0f, 3);
+  c->exposure_bias = dt_bauhaus_slider_new_from_params_box(self, "exposure_bias");
+//  dt_bauhaus_slider_set_digits(c->exposure_bias, 3); 
   gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
-  dt_bauhaus_widget_set_label(c->exposure_bias, NULL, _("exposure bias"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->exposure_bias, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->exposure_bias), "value-changed", G_CALLBACK(exposure_bias_callback), self);
-  gtk_widget_show_all(c->exposure_bias);
+//  gtk_widget_show_all(c->exposure_bias);
   gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
   gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
 
