@@ -93,7 +93,6 @@ typedef struct dt_iop_colorin_params_t
   dt_iop_color_intent_t intent;
   int normalize;
   float color_regularization;
-  float luminance_regularization;
   int blue_mapping;
   // working color profile
   dt_colorspaces_color_profile_type_t type_work;
@@ -103,7 +102,7 @@ typedef struct dt_iop_colorin_params_t
 typedef struct dt_iop_colorin_gui_data_t
 {
   GtkWidget *profile_combobox, *clipping_combobox, *work_combobox;
-  GtkWidget *color_regularization, *luminance_regularization;
+  GtkWidget *color_regularization;
   GList *image_profiles;
   int n_image_profiles;
 } dt_iop_colorin_gui_data_t;
@@ -129,7 +128,6 @@ typedef struct dt_iop_colorin_data_t
   float unbounded_coeffs[3][3]; // approximation for extrapolation of shaper curves
   int custom_regularization;
   float color_regularization;
-  float luminance_regularization;
   int blue_mapping;
   int nonlinearlut;
   dt_colorspaces_color_profile_type_t type;
@@ -430,7 +428,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     v7->type_work = v6.type_work;
     g_strlcpy(v7->filename_work, v6.filename_work, sizeof(v7->filename_work));
     v7->color_regularization = 0.7f;
-    v7->luminance_regularization = 0.7f;
     return 0;
   }
   return 1;
@@ -570,7 +567,6 @@ static void normalize_changed(GtkWidget *widget, gpointer user_data)
   p->normalize = dt_bauhaus_combobox_get(widget);
   gboolean custom = (p->normalize == DT_NORMALIZE_CUSTOM);
   gtk_widget_set_visible(g->color_regularization, custom);
-  gtk_widget_set_visible(g->luminance_regularization, custom);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -578,13 +574,6 @@ static void color_regularization_callback(GtkWidget *widget, dt_iop_module_t *se
 {
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   p->color_regularization = dt_bauhaus_slider_get(widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void luminance_regularization_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
-  p->luminance_regularization = dt_bauhaus_slider_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -912,9 +901,6 @@ static void process_cmatrix_fastpath_regularized(struct dt_iop_module_t *self, d
       }
     }
     float _xyz_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-    // start with color:
-    // we compute a desaturation based on our threshold
     for(int c = 0; c < 3; c++)
     {
       _xyz_color[c] = _xyz_positive[c] + _xyz_negative[c];
@@ -922,7 +908,7 @@ static void process_cmatrix_fastpath_regularized(struct dt_iop_module_t *self, d
     // keep the maxrgb for later
     float norm_rgb_original = MAX(MAX(MAX(_xyz_color[0], _xyz_color[1]), _xyz_color[2]), 1e-6);
 
-    // compute saturation compensation for max_rgb_c_1 and max_rgb_c_2
+    // we compute a desaturation based on our threshold
     float regularized_c_0 = _xyz_positive[0] * (1.0f - color_regularization) + _xyz_negative[0];
     float regularized_c_1 = _xyz_positive[1] * (1.0f - color_regularization) + _xyz_negative[1];
     float regularized_c_2 = _xyz_positive[2] * (1.0f - color_regularization) + _xyz_negative[2];
@@ -1668,7 +1654,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   d->color_regularization = p->color_regularization;
-  d->luminance_regularization = p->luminance_regularization;
 
   if(d->xform_cam_Lab)
   {
@@ -1959,10 +1944,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
   dt_bauhaus_slider_set(g->color_regularization, p->color_regularization);
-  dt_bauhaus_slider_set(g->luminance_regularization, p->luminance_regularization);
   gboolean custom = (p->normalize == DT_NORMALIZE_CUSTOM);
   gtk_widget_set_visible(g->color_regularization, custom);
-  gtk_widget_set_visible(g->luminance_regularization, custom);
 
   update_profile_list(self);
 
@@ -2025,7 +2008,6 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .intent = DT_INTENT_PERCEPTUAL,
                                                            .normalize = DT_NORMALIZE_OFF,
                                                            .color_regularization = 0.7f,
-                                                           .luminance_regularization = 0.7f,
                                                            .blue_mapping = 0,
                                                            .type_work = DT_COLORSPACE_LIN_REC2020,
                                                            .filename_work = "" };
@@ -2338,13 +2320,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->color_regularization, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->color_regularization), "value-changed", G_CALLBACK(color_regularization_callback), (gpointer)self);
   gtk_widget_set_visible(g->color_regularization, FALSE);
-
-  g->luminance_regularization = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, .05, 0.7f, 2);
-  dt_bauhaus_widget_set_label(g->luminance_regularization, NULL, _("luminance regularization"));
-  gtk_widget_set_tooltip_text(g->luminance_regularization, _("amount of luminance regularization for far-from-gamut pixel\n increase to brighten these pixels until gradients are smooth"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->luminance_regularization, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->luminance_regularization), "value-changed", G_CALLBACK(luminance_regularization_callback), (gpointer)self);
-  gtk_widget_set_visible(g->luminance_regularization, FALSE);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
