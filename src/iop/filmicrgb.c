@@ -364,9 +364,6 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
   float numerator = 0.0f;
   float denominator = 0.0f;
 
-#ifdef _OPENMP
-#pragma omp simd aligned(pixel:16) reduction(+:numerator, denominator)
-#endif
   for(int c = 0; c < 3; c++)
   {
     const float value = fabsf(pixel[c]);
@@ -381,7 +378,7 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(pixel:16)
+#pragma omp declare simd aligned(pixel:16) uniform(variant, work_profile)
 #endif
 static inline float get_pixel_norm(const float pixel[4], const dt_iop_filmicrgb_methods_type_t variant,
                                    const dt_iop_order_iccprofile_info_t *const work_profile)
@@ -419,7 +416,7 @@ static inline float get_pixel_norm(const float pixel[4], const dt_iop_filmicrgb_
 
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd uniform(grey, black, dynamic_range)
 #endif
 static inline float log_tonemapping_v1(const float x, const float grey, const float black, const float dynamic_range)
 {
@@ -429,7 +426,7 @@ static inline float log_tonemapping_v1(const float x, const float grey, const fl
 
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd uniform(grey, black, dynamic_range)
 #endif
 static inline float log_tonemapping_v2(const float x, const float grey, const float black, const float dynamic_range)
 {
@@ -438,7 +435,7 @@ static inline float log_tonemapping_v2(const float x, const float grey, const fl
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(M1, M2, M3, M4:16)
+#pragma omp declare simd aligned(M1, M2, M3, M4:16) uniform(M1, M2, M3, M4, M5, latitude_min, latitude_max)
 #endif
 static inline float filmic_spline(const float x,
                                   const float M1[4], const float M2[4], const float M3[4], const float M4[4], const float M5[4],
@@ -451,7 +448,7 @@ static inline float filmic_spline(const float x,
 
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd uniform(sigma_toe, sigma_shoulder)
 #endif
 static inline float filmic_desaturate_v1(const float x, const float sigma_toe, const float sigma_shoulder, const float saturation)
 {
@@ -466,7 +463,7 @@ static inline float filmic_desaturate_v1(const float x, const float sigma_toe, c
 
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd uniform(sigma_toe, sigma_shoulder)
 #endif
 static inline float filmic_desaturate_v2(const float x, const float sigma_toe, const float sigma_shoulder, const float saturation)
 {
@@ -513,6 +510,9 @@ static inline float fminabsf(const float a, const float b)
 #define MAX_NUM_SCALES 12
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, mask:64) uniform(feathering, normalize, width, height, ch)
+#endif
 static inline gint mask_clipped_pixels(const float *const restrict in,
                                        float *const restrict mask,
                                        const float normalize, const float feathering,
@@ -551,9 +551,11 @@ static inline gint mask_clipped_pixels(const float *const restrict in,
 
 // B spline filter
 #define fsize 5
-static const float DT_ALIGNED_ARRAY filter[fsize] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, out:64) uniform(mult, bound_left, bound_right, ch, width, height)
+#endif
 inline static void blur_2D_Bspline_vertical(const float *const restrict in, float *const restrict out,
                                             const size_t width, const size_t height, const size_t ch, const size_t mult,
                                             const int bound_left, const int bound_right)
@@ -562,7 +564,7 @@ inline static void blur_2D_Bspline_vertical(const float *const restrict in, floa
   // Convolve B-spline filter over lines
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, filter, width, height, ch, bound_left, bound_right, mult) \
+    dt_omp_firstprivate(in, out, width, height, ch, bound_left, bound_right, mult) \
     schedule(simd:static) collapse(2)
   #endif
   for(size_t i = 0; i < height; i++)
@@ -578,7 +580,7 @@ inline static void blur_2D_Bspline_vertical(const float *const restrict in, floa
       if(check)
       {
         #ifdef _OPENMP
-        #pragma omp simd aligned(in, filter:64) aligned(accumulator:16) reduction(+:accumulator)
+        #pragma omp simd aligned(in:64) aligned(accumulator:16) reduction(+:accumulator)
         #endif
         for(size_t jj = 0; jj < fsize; ++jj)
           for(size_t c = 0; c < 3; ++c)
@@ -588,6 +590,7 @@ inline static void blur_2D_Bspline_vertical(const float *const restrict in, floa
                       (index_x > bound_right) ? bound_right :
                                                 index_x     ;
 
+            static const float DT_ALIGNED_ARRAY filter[fsize] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
             accumulator[c] += filter[jj] * in[(i * width + index_x) * ch + c];
           }
@@ -595,12 +598,13 @@ inline static void blur_2D_Bspline_vertical(const float *const restrict in, floa
       else // fast-track
       {
         #ifdef _OPENMP
-        #pragma omp simd aligned(in, filter:64) aligned(accumulator:16) reduction(+:accumulator)
+        #pragma omp simd aligned(in:64) aligned(accumulator:16) reduction(+:accumulator)
         #endif
         for(size_t jj = 0; jj < fsize; ++jj)
           for(size_t c = 0; c < 3; ++c)
           {
             const size_t index_x = mult * (jj - (fsize - 1) / 2) + j;
+            static const float DT_ALIGNED_ARRAY filter[fsize] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
             accumulator[c] += filter[jj] * in[(i * width + index_x) * ch + c];
           }
       }
@@ -615,6 +619,9 @@ inline static void blur_2D_Bspline_vertical(const float *const restrict in, floa
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, out:64) uniform(mult, bound_top, bound_bot, ch, width, height)
+#endif
 inline static void blur_2D_Bspline_horizontal(const float *const restrict in, float *const restrict out,
                                               const size_t width, const size_t height, const size_t ch, const size_t mult,
                                               const int bound_top, const int bound_bot)
@@ -623,7 +630,7 @@ inline static void blur_2D_Bspline_horizontal(const float *const restrict in, fl
   // Convolve B-spline filter over columns
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stdout, out, in, width, height, ch, filter, bound_bot, bound_top, mult) \
+    dt_omp_firstprivate(stdout, out, in, width, height, ch, bound_bot, bound_top, mult) \
     schedule(simd:static) collapse(2)
   #endif
   for(size_t i = 0; i < height; i++)
@@ -639,7 +646,7 @@ inline static void blur_2D_Bspline_horizontal(const float *const restrict in, fl
       if(check)
       {
         #ifdef _OPENMP
-        #pragma omp simd aligned(in, filter:64) aligned(accumulator:16) reduction(+:accumulator)
+        #pragma omp simd aligned(in:64) aligned(accumulator:16) reduction(+:accumulator)
         #endif
         for(size_t ii = 0; ii < fsize; ++ii)
           for(size_t c = 0; c < 3; ++c)
@@ -648,6 +655,9 @@ inline static void blur_2D_Bspline_horizontal(const float *const restrict in, fl
             index_y = (index_y < bound_top) ? bound_top :
                       (index_y > bound_bot) ? bound_bot :
                                               index_y   ;
+
+            static const float DT_ALIGNED_ARRAY filter[fsize] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+
             accumulator[c] += filter[ii] * in[(index_y * width + j) * ch + c];
           }
       }
@@ -658,10 +668,13 @@ inline static void blur_2D_Bspline_horizontal(const float *const restrict in, fl
           const size_t index_y = mult * (ii - (fsize - 1) / 2) + i;
 
           #ifdef _OPENMP
-          #pragma omp simd aligned(in, filter:64) aligned(accumulator:16) reduction(+:accumulator)
+          #pragma omp simd aligned(in:64) aligned(accumulator:16) reduction(+:accumulator)
           #endif
           for(size_t c = 0; c < 3; ++c)
+          {
+            static const float DT_ALIGNED_ARRAY filter[fsize] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
             accumulator[c] += filter[ii] * in[(index_y * width + j) * ch + c];
+          }
         }
       }
 
@@ -673,6 +686,10 @@ inline static void blur_2D_Bspline_horizontal(const float *const restrict in, fl
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(LF, HF, texture, mask, reconstructed:64) \
+  uniform(ch, width, height, gamma, gamma_comp, beta, beta_comp, delta, s, scales)
+#endif
 inline static void wavelets_reconstruct_RGB(const float *const restrict HF, const float *const restrict LF,
                                             const float *const restrict texture, const float *const restrict mask,
                                             float *const restrict reconstructed,
@@ -726,6 +743,10 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(LF, HF, texture, mask, reconstructed:64) \
+  uniform(ch, width, height, gamma, gamma_comp, beta, beta_comp, delta, s, scales)
+#endif
 inline static void wavelets_reconstruct_ratios(const float *const restrict HF, const float *const restrict LF,
                                                const float *const restrict texture, const float *const restrict mask,
                                                float *const restrict reconstructed,
@@ -791,6 +812,9 @@ inline static void wavelets_reconstruct_ratios(const float *const restrict HF, c
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, mask, reconstructed:64) uniform(ch, width, height)
+#endif
 static inline void init_reconstruct(const float *const restrict in, const float *const restrict mask, float *const restrict reconstructed,
                                     const size_t width, const size_t height, const size_t ch)
 {
@@ -807,6 +831,10 @@ static inline void init_reconstruct(const float *const restrict in, const float 
   }
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(detail, LF, HF, texture:64) uniform(ch, width, height)
+#endif
 static inline void wavelets_detail_level_RGB(const float *const restrict detail, const float *const restrict LF,
                                              float *const restrict HF, float *const restrict texture,
                                              const size_t width, const size_t height, const size_t ch)
@@ -824,6 +852,9 @@ static inline void wavelets_detail_level_RGB(const float *const restrict detail,
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(detail, LF, HF, texture:64) uniform(ch, width, height)
+#endif
 static inline void wavelets_detail_level_ratios(const float *const restrict detail, const float *const restrict LF,
                                                 float *const restrict HF, float *const restrict texture,
                                                 const size_t width, const size_t height, const size_t ch)
@@ -858,8 +889,12 @@ static int get_scales(const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *
   return CLAMP(scales, 1, MAX_NUM_SCALES);
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, mask, reconstructed:64) uniform(ch, variant, piece, roi_in, roi_out)
+#endif
 static inline gint reconstruct_highlights(const float *const restrict in, const float *const restrict mask,
-                                          float *const restrict reconstructed, const int variant,
+                                          float *const restrict reconstructed, const int variant, const size_t ch,
                                           const dt_iop_filmicrgb_data_t *const data, dt_dev_pixelpipe_iop_t *piece,
                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -869,13 +904,13 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   const int scales = get_scales(roi_in, piece);
 
   // wavelets scales buffers
-  float *const restrict LF_even = dt_alloc_sse_ps(roi_out->width * roi_out->height * 4); // low-frequencies RGB
-  float *const restrict LF_odd = dt_alloc_sse_ps(roi_out->width * roi_out->height * 4); // low-frequencies RGB
-  float *const restrict HF_RGB = dt_alloc_sse_ps(roi_out->width * roi_out->height * 4); // high-frequencies RGB
+  float *const restrict LF_even = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch); // low-frequencies RGB
+  float *const restrict LF_odd = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch); // low-frequencies RGB
+  float *const restrict HF_RGB = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch); // high-frequencies RGB
   float *const restrict HF_grey = dt_alloc_sse_ps(roi_out->width * roi_out->height); // max(high-frequencies RGB) grey
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  float *const restrict temp = dt_alloc_sse_ps(roi_out->width * roi_out->height * 4);
+  float *const restrict temp = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -885,7 +920,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   }
 
   // Init reconstructed with valid parts of image
-  init_reconstruct(in, mask, reconstructed, roi_out->width, roi_out->height, 4);
+  init_reconstruct(in, mask, reconstructed, roi_out->width, roi_out->height, ch);
 
   // structure inpainting vs. texture duplicating weight
   const float gamma = (data->reconstruct_structure_vs_texture);
@@ -934,30 +969,30 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
     const int mult = 1 << s; // fancy-pants C notation for 2^s with integer type, don't be afraid
 
     // Compute wavelets low-frequency scales
-    blur_2D_Bspline_vertical(detail, temp, roi_out->width, roi_out->height, 4, mult,
+    blur_2D_Bspline_vertical(detail, temp, roi_out->width, roi_out->height, ch, mult,
                              bound_left, bound_right);
-    blur_2D_Bspline_horizontal(temp, LF, roi_out->width, roi_out->height, 4, mult,
+    blur_2D_Bspline_horizontal(temp, LF, roi_out->width, roi_out->height, ch, mult,
                                bound_top, bound_bot);
 
     // Compute wavelets high-frequency scales and save the maximum of texture over the RGB channels
     // Note : HF_RGB = detail - LF, HF_grey = max(HF_RGB)
     if(variant == 0)
-      wavelets_detail_level_RGB(detail, LF, HF_RGB, HF_grey, roi_out->width, roi_out->height, 4);
+      wavelets_detail_level_RGB(detail, LF, HF_RGB, HF_grey, roi_out->width, roi_out->height, ch);
     else if(variant == 1)
-      wavelets_detail_level_ratios(detail, LF, HF_RGB, HF_grey, roi_out->width, roi_out->height, 4);
+      wavelets_detail_level_ratios(detail, LF, HF_RGB, HF_grey, roi_out->width, roi_out->height, ch);
 
     // interpolate/blur/inpaint (same thing) the RGB high-frequency to fill holes
-    blur_2D_Bspline_vertical(HF_RGB, temp, roi_out->width, roi_out->height, 4, mult,
+    blur_2D_Bspline_vertical(HF_RGB, temp, roi_out->width, roi_out->height, ch, mult,
                              bound_left, bound_right);
-    blur_2D_Bspline_horizontal(temp, HF_RGB, roi_out->width, roi_out->height, 4, mult,
+    blur_2D_Bspline_horizontal(temp, HF_RGB, roi_out->width, roi_out->height, ch, mult,
                                bound_top, bound_bot);
 
     // Reconstruct clipped parts
     if(variant == 0)
-      wavelets_reconstruct_RGB(HF_RGB, LF, HF_grey, mask, reconstructed, roi_out->width, roi_out->height, 4,
+      wavelets_reconstruct_RGB(HF_RGB, LF, HF_grey, mask, reconstructed, roi_out->width, roi_out->height, ch,
                                gamma, gamma_comp, beta, beta_comp, delta, s, scales);
     else if(variant == 1)
-      wavelets_reconstruct_ratios(HF_RGB, LF, HF_grey, mask, reconstructed, roi_out->width, roi_out->height, 4,
+      wavelets_reconstruct_ratios(HF_RGB, LF, HF_grey, mask, reconstructed, roi_out->width, roi_out->height, ch,
                                gamma, gamma_comp, beta, beta_comp, delta, s, scales);
   }
 
@@ -970,6 +1005,11 @@ error:
   return success;
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, out:64) \
+  uniform(ch, width, height, work_profile, data, spline)
+#endif
 static inline void filmic_split_v1(const float *const restrict in, float *const restrict out,
                                    const dt_iop_order_iccprofile_info_t *const work_profile,
                                    const dt_iop_filmicrgb_data_t *const data, const dt_iop_filmic_rgb_spline_t spline,
@@ -1010,6 +1050,10 @@ static inline void filmic_split_v1(const float *const restrict in, float *const 
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, out:64) \
+  uniform(ch, width, height, work_profile, data, spline)
+#endif
 static inline void filmic_split_v2(const float *const restrict in, float *const restrict out,
                                    const dt_iop_order_iccprofile_info_t *const work_profile,
                                    const dt_iop_filmicrgb_data_t *const data, const dt_iop_filmic_rgb_spline_t spline,
@@ -1050,6 +1094,10 @@ static inline void filmic_split_v2(const float *const restrict in, float *const 
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, out:64) \
+  uniform(ch, width, height, work_profile, data, spline, variant)
+#endif
 static inline void filmic_chroma_v1(const float *const restrict in, float *const restrict out,
                                     const dt_iop_order_iccprofile_info_t *const work_profile,
                                     const dt_iop_filmicrgb_data_t *const data, const dt_iop_filmic_rgb_spline_t spline,
@@ -1107,6 +1155,10 @@ static inline void filmic_chroma_v1(const float *const restrict in, float *const
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, out:64) \
+  uniform(ch, width, height, work_profile, data, spline, variant)
+#endif
 static inline void filmic_chroma_v2(const float *const restrict in, float *const restrict out,
                                     const dt_iop_order_iccprofile_info_t *const work_profile,
                                     const dt_iop_filmicrgb_data_t *const data, const dt_iop_filmic_rgb_spline_t spline,
@@ -1172,6 +1224,11 @@ static inline void filmic_chroma_v2(const float *const restrict in, float *const
   }
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(mask, out:64) \
+  uniform(ch, width, height)
+#endif
 static inline void display_mask(const float *const restrict mask, float *const restrict out,
                                 const size_t width, const size_t height, const size_t ch)
 {
@@ -1185,6 +1242,10 @@ static inline void display_mask(const float *const restrict mask, float *const r
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, norms, ratios:64) \
+  uniform(ch, width, height, work_profile, variant)
+#endif
 static inline void compute_ratios(const float *const restrict in, float *const restrict norms, float *const restrict ratios,
                                   const dt_iop_order_iccprofile_info_t *const work_profile, const int variant,
                                   const size_t width, const size_t height, const size_t ch)
@@ -1204,6 +1265,11 @@ static inline void compute_ratios(const float *const restrict in, float *const r
   }
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(norms, ratios:64) \
+  uniform(ch, width, height)
+#endif
 static inline void restore_ratios(float *const restrict ratios, const float *const restrict norms,
                                   const size_t width, const size_t height, const size_t ch)
 {
@@ -1219,6 +1285,10 @@ static inline void restore_ratios(float *const restrict ratios, const float *con
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(ivoid, ovoid:64) \
+  uniform(self, piece, roi_in, roi_out)
+#endif
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid, void *const restrict ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -1270,9 +1340,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(recover_highlights && mask && reconstructed)
   {
-    const gint success_1 = reconstruct_highlights(in, mask, reconstructed, 0, data, piece, roi_in, roi_out);
+    const gint success_1 = reconstruct_highlights(in, mask, reconstructed, 0, ch, data, piece, roi_in, roi_out);
+    gint success_2 = TRUE;
 
-    if(data->high_quality_reconstruction && success_1)
+    if(data->high_quality_reconstruction > 0 && success_1)
     {
       float *const restrict norms = dt_alloc_sse_ps(roi_out->width * roi_out->height);
       float *const restrict ratios = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
@@ -1280,17 +1351,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       // reconstruct highlights PASS 2 on ratios
       if(norms && ratios)
       {
-        compute_ratios(reconstructed, norms, ratios, work_profile, variant, roi_out->width, roi_out->height, 4);
-        const gint success_2 = reconstruct_highlights(ratios, mask, reconstructed, 1, data, piece, roi_in, roi_out);
-        if(success_2) restore_ratios(reconstructed, norms, roi_out->width, roi_out->height, 4);
+        for(int i = 0; i < data->high_quality_reconstruction; i++)
+        {
+          compute_ratios(reconstructed, norms, ratios, work_profile, DT_FILMIC_METHOD_EUCLIDEAN_NORM, roi_out->width, roi_out->height, ch);
+          success_2 = success_2 && reconstruct_highlights(ratios, mask, reconstructed, 1, ch, data, piece, roi_in, roi_out);
+          restore_ratios(reconstructed, norms, roi_out->width, roi_out->height, ch);
+        }
       }
 
       if(norms) dt_free_align(norms);
       if(ratios) dt_free_align(ratios);
-
     }
 
-    if(success_1) in = reconstructed; // use reconstructed buffer as tonemapping input
+    if(success_1 && success_2) in = reconstructed; // use reconstructed buffer as tonemapping input
   }
 
   if(mask) dt_free_align(mask);
@@ -1903,7 +1976,7 @@ static void high_quality_reconstruction_callback(GtkWidget *widget, dt_iop_modul
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->high_quality_reconstruction = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  p->high_quality_reconstruction = dt_bauhaus_slider_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2219,7 +2292,8 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->highlights, p->highlights);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_hardness), p->auto_hardness);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->custom_grey), p->custom_grey);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->high_quality_reconstruction), p->high_quality_reconstruction);
+
+  dt_bauhaus_slider_set_soft(g->high_quality_reconstruction, p->high_quality_reconstruction);
 
   gtk_widget_set_visible(g->grey_point_source, p->custom_grey);
   gtk_widget_set_visible(g->grey_point_target, p->custom_grey);
@@ -2766,13 +2840,13 @@ void gui_init(dt_iop_module_t *self)
 
 
   // High quality reconstruction
-  g->high_quality_reconstruction = gtk_check_button_new_with_label(_("use high-quality reconstruction"));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->high_quality_reconstruction), p->high_quality_reconstruction);
-  gtk_widget_set_tooltip_text(g->high_quality_reconstruction, _("enable to run an extra pass of chromaticity reconstructione\n."
+  g->high_quality_reconstruction = dt_bauhaus_slider_new_with_range(self, 0, 10, 1, p->high_quality_reconstruction, 0);
+  dt_bauhaus_widget_set_label(g->high_quality_reconstruction, NULL, _("iterations of high-quality reconstruction"));
+  gtk_widget_set_tooltip_text(g->high_quality_reconstruction, _("run an extra passes of chromaticity reconstructione\n."
                                                                 "this will be slower but will yield more neutral highlights.\n"
                                                                 "it also helps with difficult cases of magenta highlights."));
   gtk_box_pack_start(GTK_BOX(page4), g->high_quality_reconstruction , FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(g->high_quality_reconstruction), "toggled", G_CALLBACK(high_quality_reconstruction_callback), self);
+  g_signal_connect(G_OBJECT(g->high_quality_reconstruction), "value-changed", G_CALLBACK(high_quality_reconstruction_callback), self);
 
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }
