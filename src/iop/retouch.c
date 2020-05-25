@@ -158,15 +158,13 @@ typedef struct dt_iop_retouch_gui_data_t
 
   GtkWidget *vbox_fill;
   GtkWidget *hbox_color_pick;
-  GtkWidget *colorpick;          // select a specific color
-  GtkToggleButton *colorpicker; // pick a color from the picture
+  GtkWidget *colorpick;   // select a specific color
+  GtkWidget *colorpicker; // pick a color from the picture
 
   GtkWidget *cmb_fill_mode;
   GtkWidget *sl_fill_brightness;
 
   GtkWidget *sl_mask_opacity; // draw mask opacity
-
-  dt_iop_color_picker_t color_picker;
 } dt_iop_retouch_gui_data_t;
 
 typedef struct dt_iop_retouch_params_t dt_iop_retouch_data_t;
@@ -591,8 +589,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   int selection_changed = 0;
 
@@ -651,7 +648,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
   else
     gtk_widget_hide(GTK_WIDGET(g->sl_mask_opacity));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   if(selection_changed) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -727,7 +724,7 @@ static void rt_reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_showmask), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_suppress), FALSE);
-  gtk_toggle_button_set_active(g->colorpicker, FALSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), FALSE);
 }
 
 static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
@@ -1858,7 +1855,7 @@ static gboolean rt_levelsbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module
   return TRUE;
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
@@ -1894,8 +1891,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 static void rt_copypaste_scale_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   int scale_copied = 0;
   const int active = gtk_toggle_button_get_active(togglebutton);
@@ -1918,7 +1914,7 @@ static void rt_copypaste_scale_callback(GtkToggleButton *togglebutton, dt_iop_mo
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), g->copied_scale >= 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), g->copied_scale < 0);
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   if(scale_copied) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1935,10 +1931,9 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
   {
     dt_control_log(_("cannot display scales when the blending mask is displayed"));
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     gtk_toggle_button_set_active(togglebutton, FALSE);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     return;
   }
 
@@ -2050,10 +2045,9 @@ void gui_post_expose (struct dt_iop_module_t *self,
 
   if(shape_id > 0)
   {
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, shape_id));
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
 }
 
@@ -2088,8 +2082,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event,
 
   if(event->button == 1)
   {
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
 
     dt_iop_color_picker_reset(self, TRUE);
 
@@ -2122,7 +2115,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event,
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
                                  (bd->masks_shown != DT_MASKS_EDIT_OFF) && (darktable.develop->gui_module == self));
 
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     return TRUE;
   }
@@ -2145,8 +2138,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
 {
   if(darktable.gui->reset) return FALSE;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
@@ -2193,7 +2185,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
 
   if(!accept)
   {
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     return FALSE;
   }
 
@@ -2231,7 +2223,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
     dt_control_queue_redraw_center();
   }
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return TRUE;
@@ -2248,10 +2240,9 @@ static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     gtk_toggle_button_set_active(togglebutton, FALSE);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     return;
   }
 
@@ -2318,8 +2309,7 @@ static void rt_fill_mode_callback(GtkComboBox *combo, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
@@ -2337,7 +2327,7 @@ static void rt_fill_mode_callback(GtkComboBox *combo, dt_iop_module_t *self)
 
   rt_show_hide_controls(self, g, p, g);
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2896,32 +2886,25 @@ void gui_init(dt_iop_module_t *self)
       = (GdkRGBA){.red = p->fill_color[0], .green = p->fill_color[1], .blue = p->fill_color[2], .alpha = 1.0 };
 
   g->hbox_color_pick = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *lbl_fill_color = gtk_label_new(_("fill color: "));
+  gtk_box_pack_start(GTK_BOX(g->hbox_color_pick), lbl_fill_color, FALSE, TRUE, 0);
 
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), bs, bs);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select fill color"));
   g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("select fill color"), (char *)NULL);
-
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(rt_colorpick_color_set_callback), self);
+  gtk_box_pack_start(GTK_BOX(g->hbox_color_pick), GTK_WIDGET(g->colorpick), TRUE, TRUE, 0);
 
-  g->colorpicker = GTK_TOGGLE_BUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL));
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, g->hbox_color_pick);
   g_object_set(G_OBJECT(g->colorpicker), "tooltip-text", _("pick fill color from image"), (char *)NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), bs, bs);
-  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-
-  GtkWidget *lbl_fill_color = gtk_label_new(_("fill color: "));
-
+  
   g->sl_fill_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .0005, .0, 4);
   dt_bauhaus_widget_set_label(g->sl_fill_brightness, _("brightness"), _("brightness"));
   g_object_set(g->sl_fill_brightness, "tooltip-text",
                _("adjusts color brightness to fine-tune it. works with erase as well"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_fill_brightness), "value-changed", G_CALLBACK(rt_fill_brightness_callback), self);
 
-  gtk_box_pack_end(GTK_BOX(g->hbox_color_pick), GTK_WIDGET(g->colorpicker), FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(g->hbox_color_pick), GTK_WIDGET(g->colorpick), FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->hbox_color_pick), lbl_fill_color, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox_fill), GTK_WIDGET(g->cmb_fill_mode), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->hbox_color_pick, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->sl_fill_brightness, TRUE, TRUE, 0);
@@ -3001,12 +2984,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_no_show_all(g->vbox_preview_scale, TRUE);
 
   rt_show_hide_controls(self, g, p, g);
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->colorpicker),
-                     DT_COLOR_PICKER_POINT,
-                     _iop_color_picker_apply);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
@@ -3345,8 +3322,7 @@ void init_key_accels(dt_iop_module_so_t *module)
 static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                       GdkModifierType modifier, gpointer data)
 {
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
@@ -3355,7 +3331,7 @@ static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *accel
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_beign_added(module, DT_MASKS_CIRCLE));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   return TRUE;
 }
@@ -3363,8 +3339,7 @@ static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *accel
 static gboolean _add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer data)
 {
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
@@ -3373,7 +3348,7 @@ static gboolean _add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acce
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_beign_added(module, DT_MASKS_ELLIPSE));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   return TRUE;
 }
@@ -3381,8 +3356,7 @@ static gboolean _add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acce
 static gboolean _add_brush_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
@@ -3391,7 +3365,7 @@ static gboolean _add_brush_key_accel(GtkAccelGroup *accel_group, GObject *accele
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_beign_added(module, DT_MASKS_BRUSH));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   return TRUE;
 }
@@ -3399,8 +3373,7 @@ static gboolean _add_brush_key_accel(GtkAccelGroup *accel_group, GObject *accele
 static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                     GdkModifierType modifier, gpointer data)
 {
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
@@ -3409,7 +3382,7 @@ static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceler
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_beign_added(module, DT_MASKS_PATH));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   return TRUE;
 }
@@ -3417,8 +3390,7 @@ static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceler
 static gboolean _continuous_add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                                  GdkModifierType modifier, gpointer data)
 {
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
@@ -3427,7 +3399,7 @@ static gboolean _continuous_add_circle_key_accel(GtkAccelGroup *accel_group, GOb
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_beign_added(module, DT_MASKS_CIRCLE));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   return TRUE;
 }
@@ -3435,8 +3407,7 @@ static gboolean _continuous_add_circle_key_accel(GtkAccelGroup *accel_group, GOb
 static gboolean _continuous_add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                                   GdkModifierType modifier, gpointer data)
 {
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
@@ -3445,7 +3416,7 @@ static gboolean _continuous_add_ellipse_key_accel(GtkAccelGroup *accel_group, GO
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_beign_added(module, DT_MASKS_ELLIPSE));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   return TRUE;
 }
@@ -3453,8 +3424,7 @@ static gboolean _continuous_add_ellipse_key_accel(GtkAccelGroup *accel_group, GO
 static gboolean _continuous_add_brush_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                                 GdkModifierType modifier, gpointer data)
 {
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
@@ -3463,7 +3433,7 @@ static gboolean _continuous_add_brush_key_accel(GtkAccelGroup *accel_group, GObj
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_beign_added(module, DT_MASKS_BRUSH));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   return TRUE;
 }
@@ -3471,8 +3441,7 @@ static gboolean _continuous_add_brush_key_accel(GtkAccelGroup *accel_group, GObj
 static gboolean _continuous_add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                                GdkModifierType modifier, gpointer data)
 {
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
@@ -3481,7 +3450,7 @@ static gboolean _continuous_add_path_key_accel(GtkAccelGroup *accel_group, GObje
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_beign_added(module, DT_MASKS_PATH));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   return TRUE;
 }
@@ -3489,8 +3458,7 @@ static gboolean _continuous_add_path_key_accel(GtkAccelGroup *accel_group, GObje
 static gboolean _show_or_hide_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                                GdkModifierType modifier, gpointer data)
 {
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_iop_module_t *module = (dt_iop_module_t *)data;
   const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
@@ -3537,7 +3505,7 @@ static gboolean _show_or_hide_accel(GtkAccelGroup *accel_group, GObject *acceler
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
                                (bd->masks_shown != DT_MASKS_EDIT_OFF) && (darktable.develop->gui_module == module));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   return TRUE;
 }

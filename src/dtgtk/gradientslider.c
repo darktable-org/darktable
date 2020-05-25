@@ -66,8 +66,15 @@ static gboolean _gradient_slider_postponed_value_change(gpointer data)
   }
 
   if(!DTGTK_GRADIENT_SLIDER(data)->is_dragging) DTGTK_GRADIENT_SLIDER(data)->timeout_handle = 0;
+  else
+  {
+    int delay = CLAMP_RANGE(darktable.develop->average_delay * 3 / 2,
+                            DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN,
+                            DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
+    DTGTK_GRADIENT_SLIDER(data)->timeout_handle = g_timeout_add(delay, _gradient_slider_postponed_value_change, data);
+  }
 
-  return DTGTK_GRADIENT_SLIDER(data)->is_dragging; // This is called by the gtk mainloop and is threadsafe
+  return FALSE; // This is called by the gtk mainloop and is threadsafe
 }
 
 static inline gboolean _test_if_marker_is_upper_or_down(const gint marker, const gboolean up)

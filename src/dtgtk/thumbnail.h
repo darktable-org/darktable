@@ -16,6 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the thumbnail class for the lighttable module.  */
+
+#ifndef THUMBNAIL_H
+#define THUMBNAIL_H
+
 #include <glib.h>
 #include <gtk/gtk.h>
 
@@ -37,7 +41,8 @@ typedef enum dt_thumbnail_overlay_t
   DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED,
   DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL,
   DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED,
-  DT_THUMBNAIL_OVERLAYS_MIXED
+  DT_THUMBNAIL_OVERLAYS_MIXED,
+  DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK
 } dt_thumbnail_overlay_t;
 
 typedef enum dt_thumbnail_selection_mode_t
@@ -52,7 +57,7 @@ typedef struct
   int imgid, rowid;
   int width, height;         // current thumb size (with the background and the border)
   int x, y;                  // current position at screen
-  int img_width, img_height; // current image only size
+  int img_width, img_height; // current image size (can be greater than the image box in case of zoom)
 
   gboolean mouse_over;
   gboolean selected;
@@ -61,7 +66,7 @@ typedef struct
   int rating;
   int colorlabels;
   gchar *filename;
-  gchar info_line[256];
+  gchar *info_line;
   gboolean is_altered;
   gboolean has_audio;
   gboolean is_grouped;
@@ -75,6 +80,7 @@ typedef struct
   GtkWidget *w_back;               // GtkEventBox -- thumbnail background
   GtkWidget *w_ext;                // GtkLabel -- thumbnail extension
 
+  GtkWidget *w_image_box;
   GtkWidget *w_image;        // GtkDrawingArea -- thumbnail image
   GtkBorder *img_margin;     // in percentage of the main widget size
   cairo_surface_t *img_surf; // cached surface at exact dimensions to speed up redraw
@@ -92,6 +98,9 @@ typedef struct
   GtkWidget *w_group;      // GtkDarktableThumbnailBtn -- Grouping icon
   GtkWidget *w_audio;      // GtkDarktableThumbnailBtn -- Audio sidecar icon
 
+  GtkWidget *w_zoom_eb; // GtkEventBox -- container for the zoom level widget
+  GtkWidget *w_zoom;    // GtkLabel -- show the zoom level (if zoomable and hover_block overlay)
+
   gboolean moved; // indicate if the thumb is currently moved (zoomable thumbtable case)
 
   dt_thumbnail_border_t group_borders; // which group borders should be drawn
@@ -99,11 +108,29 @@ typedef struct
   dt_thumbnail_selection_mode_t sel_mode; // do we allow to change selection with mouse ?
   gboolean single_click;                  // do we activate on single or double click ?
   gboolean disable_mouseover;             // do we allow to change mouseoverid by mouse move
+  gboolean disable_actions;               // do we allow to change rating/etc...
 
-  dt_thumbnail_overlay_t over; // type of overlays
+  dt_thumbnail_overlay_t over;  // type of overlays
+  int overlay_timeout_duration; // for hover_block overlay, we hide the it after a delay
+  int overlay_timeout_id;       // id of the g_source timeout fct
+
+  // specific for culling and preview
+  gboolean zoomable;   // can we zoom in/out the thumbnail (used for culling/preview)
+  double aspect_ratio; // aspect ratio of the image
+
+  // difference between the global zoom values and the value to apply to this specific thumbnail
+  float zoom;     // zoom value. 1.0 is "image to fit" (the initial value)
+  int zoomx;      // zoom panning of the image
+  int zoomy;      //
+  int current_zx; // zoom panning currently applied on the image
+  int current_zy; // can differ from zoomx if image is not loaded on first try
+
+  float zoom_100; // max zoom value (image 100%)
+
+  gboolean display_focus; // do we display rectangles to show focused part of the image
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over);
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over, gboolean zoomable);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force);
@@ -121,7 +148,17 @@ void dt_thumbnail_update_infos(dt_thumbnail_t *thumb);
 void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);
 
 // do we need to display simple overlays or extended ?
-void dt_thumbnail_set_extended_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over);
+void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over);
+
+// force reloading image infos
+void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb);
+
+// force image position refresh (only in the case of zoomed image)
+void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb);
+// get the maximal zoom value (to show 1:1 image)
+float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb);
+
+#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

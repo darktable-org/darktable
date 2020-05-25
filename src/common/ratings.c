@@ -119,15 +119,13 @@ static void _ratings_apply(GList *imgs, const int rating, GList **undo, const gb
   }
 }
 
-void dt_ratings_apply_on_list(const GList *img, const int rating,
-                              const gboolean undo_on, const gboolean group_on)
+void dt_ratings_apply_on_list(const GList *img, const int rating, const gboolean undo_on)
 {
   GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
 
     _ratings_apply(imgs, rating, &undo, undo_on);
 
@@ -185,9 +183,6 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
   }
   else
     dt_control_log(_("no images selected to apply rating"));
-  /* redraw view */
-  /* dt_control_queue_redraw_center() */
-  /* needs to be called in the caller function */
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
