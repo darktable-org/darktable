@@ -202,7 +202,7 @@ void dt_check_opendir(const char* text, const char* directory, gboolean exit_on_
   {
     if ( errno == EACCES ) 
     {
-      fprintf(stderr, "Permission denied.\n");
+      fprintf(stderr, "permission denied.\n");
     } 
     else if ( errno == ENOENT ) 
     {
@@ -214,23 +214,23 @@ void dt_check_opendir(const char* text, const char* directory, gboolean exit_on_
     } 
     else if ( errno == EMFILE ) 
     {
-      fprintf(stderr, "The per-process limit on the number of open file descriptors has been reached.\n");
+      fprintf(stderr, "the per-process limit on the number of open file descriptors has been reached.\n");
     } 
     else if ( errno == ENFILE ) 
     {
-      fprintf(stderr, "The system-wide limit on the total number of open files has been reached.\n");
+      fprintf(stderr, "the system-wide limit on the total number of open files has been reached.\n");
     } 
     else if ( errno == ENOENT ) 
     {
-      fprintf(stderr, "Directory does not exist, or name is an empty string.\n");
+      fprintf(stderr, "directory does not exist, or name is an empty string.\n");
     }  
     else if ( errno == ENOMEM ) 
     {
-      fprintf(stderr, "Insufficient memory to complete the operation.\n");
+      fprintf(stderr, "insufficient memory to complete the operation.\n");
     }  
     else if ( errno == ENOTDIR ) 
     {
-      fprintf(stderr, "Name is not a directory.\n");
+      fprintf(stderr, "name is not a directory.\n");
     } 
     else 
     {
