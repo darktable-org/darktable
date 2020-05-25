@@ -40,6 +40,7 @@
 #include "common/imageio_avif.h"
 #endif
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "iop/iop_api.h"
 
 #include "external/adobe_coeff.c"
@@ -66,11 +67,11 @@ static void update_profile_list(dt_iop_module_t *self);
 
 typedef enum dt_iop_color_normalize_t
 {
-  DT_NORMALIZE_OFF,
-  DT_NORMALIZE_SRGB,
-  DT_NORMALIZE_ADOBE_RGB,
-  DT_NORMALIZE_LINEAR_REC709_RGB,
-  DT_NORMALIZE_LINEAR_REC2020_RGB
+  DT_NORMALIZE_OFF,               //$DESCRIPTION: "off"
+  DT_NORMALIZE_SRGB,              //$DESCRIPTION: "sRGB"
+  DT_NORMALIZE_ADOBE_RGB,         //$DESCRIPTION: "Adobe RGB (compatible)"
+  DT_NORMALIZE_LINEAR_REC709_RGB, //$DESCRIPTION: "linear Rec709 RGB"
+  DT_NORMALIZE_LINEAR_REC2020_RGB //$DESCRIPTION: "linear Rec2020 RGB"
 } dt_iop_color_normalize_t;
 
 typedef struct dt_iop_colorin_params_t
@@ -78,7 +79,7 @@ typedef struct dt_iop_colorin_params_t
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
-  int normalize;
+  dt_iop_color_normalize_t normalize; // $DESCRIPTION: "gamut clipping"
   int blue_mapping;
   // working color profile
   dt_colorspaces_color_profile_type_t type_work;
@@ -415,7 +416,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 static void intent_changed (GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -425,7 +426,7 @@ static void intent_changed (GtkWidget *widget, gpointer user_data)
 static void profile_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
@@ -460,7 +461,7 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
 
   dt_iop_request_focus(self);
 
@@ -513,16 +514,6 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
     // should really never happen.
     fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
-}
-
-
-static void normalize_changed(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
-  p->normalize = dt_bauhaus_combobox_get(widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
@@ -2147,20 +2138,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->profile_combobox), "value-changed", G_CALLBACK(profile_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(g->work_combobox), "value-changed", G_CALLBACK(workicc_changed), (gpointer)self);
 
-  g->clipping_combobox = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->clipping_combobox, NULL, _("gamut clipping"));
-
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("off"));
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("sRGB"));
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("Adobe RGB (compatible)"));
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec709 RGB"));
-  dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec2020 RGB"));
-
+  g->clipping_combobox = dt_bauhaus_combobox_new_from_params_box(self, "normalize");
   gtk_widget_set_tooltip_text(g->clipping_combobox, _("confine Lab values to gamut of RGB color space"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->clipping_combobox, TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(g->clipping_combobox), "value-changed", G_CALLBACK(normalize_changed), (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
