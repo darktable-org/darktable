@@ -1301,33 +1301,21 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
 {
   const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
   const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
+  const __m128i maski = _mm_set1_epi32(0x80000000u);
+  const __m128 *mask = (__m128 *)&maski;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(boost, detail, height, in, out, threshold, width) \
+  dt_omp_firstprivate(boost, detail, height, in, out, threshold, width, maski, mask) \
   schedule(static)
 #endif
-  for(int j = 0; j < height; j++)
+  for(size_t j = 0; j < width * height; j++)
   {
-    // TODO: prefetch? _mm_prefetch()
-    const __m128 *pin = (__m128 *)in + (size_t)j * width;
-    __m128 *pdetail = (__m128 *)detail + (size_t)j * width;
-    float *pout = out + (size_t)4 * j * width;
-    for(int i = 0; i < width; i++)
-    {
-#if 1
-      const __m128i maski = _mm_set1_epi32(0x80000000u);
-      const __m128 *mask = (__m128 *)&maski;
-      const __m128 absamt
-          = _mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(_mm_andnot_ps(*mask, *pdetail), threshold));
-      const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, *mask), absamt);
-      _mm_stream_ps(pout, _mm_add_ps(*pin, _mm_mul_ps(boost, amount)));
-#endif
-      // _mm_stream_ps(pout, _mm_add_ps(*pin, *pdetail));
-      pdetail++;
-      pin++;
-      pout += 4;
-    }
+    const __m128 *pin = (__m128 *)in + j;
+    const __m128 *pdetail = (__m128 *)detail + j;
+    const __m128 absamt = _mm_max_ps(_mm_setzero_ps(), _mm_andnot_ps(*mask, *pdetail) - threshold);
+    const __m128 amount = _mm_or_ps(_mm_and_ps(*pdetail, *mask), absamt);
+    _mm_stream_ps(out + 4*j, *pin + boost * amount);
   }
   _mm_sfence();
 }
