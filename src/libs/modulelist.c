@@ -143,7 +143,8 @@ static void text_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *rend
   dt_iop_module_so_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
   g_object_set(renderer, "text", module->name(), (gchar *)0);
-  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, (gchar *)0);
+  //g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, (gchar *)0);
+  //gtk_tree_selection_select_iter (selection, iter);
 }
 
 static GdkPixbuf *load_image(const char *filename)
@@ -208,13 +209,13 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
                (gchar *)0);
 
   text_renderer = gtk_cell_renderer_text_new();
-  g_object_set(text_renderer, "cell-background-rgba", &color, (gchar *)0);
+  //g_object_set(text_renderer, "cell-background-rgba", &color, (gchar *)0);
 
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(view), FALSE);
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), COL_DESCRIPTION);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-  gtk_tree_selection_set_mode(selection, GTK_SELECTION_NONE);
+  gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
 
   GtkTreeViewColumn *col;
   col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
@@ -269,6 +270,11 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, COL_IMAGE, pixbuf, COL_MODULE, module,
                          COL_DESCRIPTION, module->description ? module->description() : module->name(), -1);
+
+      if(module->state != dt_iop_state_HIDDEN)
+        gtk_tree_selection_select_iter (selection, &iter);
+
+
       g_object_unref(pixbuf);
     }
 
@@ -280,6 +286,20 @@ static void _lib_modulelist_style_set(GtkWidget *widget, GtkStyle *previous_styl
 {
   _lib_modulelist_populate_callback(NULL, user_data);
 }
+
+
+static gboolean _update_selection (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(data);
+
+  if(module->state != dt_iop_state_HIDDEN)
+    gtk_tree_selection_select_iter (selection, &iter);
+  else
+    gtk_tree_selection_unselect_iter (selection, &iter);
+
+  return false;
+}
+
 
 static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer user_data)
 {
@@ -300,6 +320,11 @@ static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer
     dt_iop_so_gui_set_state(module, (module->state + 1) % dt_iop_state_LAST);
     if(module->state == dt_iop_state_FAVORITE)
       dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
+
+
+    gtk_tree_model_foreach (model, _update_selection, treeview);
+
+
   }
 }
 
