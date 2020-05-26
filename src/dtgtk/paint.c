@@ -118,8 +118,8 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
   cairo_save(cr);
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
-  cairo_set_line_width(cr, 0.1);
-  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  cairo_set_line_width(cr, 1 / s);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
 
   if(flags & CPF_DIRECTION_UP || flags & CPF_DIRECTION_DOWN)
     cairo_transform(cr, &rotation_matrix);
