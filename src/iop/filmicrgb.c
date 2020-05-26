@@ -97,7 +97,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_filmicrgb_params_t)
                       "split-ivs-in-unroller", "variable-expansion-in-unroller", \
                       "split-loops", "ivopts", "predictive-commoning",\
                       "tree-loop-linear", "loop-block", "loop-strip-mine", \
-                      "finite-math-only", "fp-contract=fast", "fast-math")
+                      "finite-math-only", "fp-contract=fast", "fast-math", "no-math-errno")
 #endif
 
 typedef enum dt_iop_filmicrgb_methods_type_t
@@ -122,6 +122,13 @@ typedef enum dt_iop_filmicrgb_colorscience_type_t
   DT_FILMIC_COLORSCIENCE_V1 = 0,
   DT_FILMIC_COLORSCIENCE_V2 = 1,
 } dt_iop_filmicrgb_colorscience_type_t;
+
+
+typedef enum dt_iop_filmicrgb_reconstruction_type_t
+{
+  DT_FILMIC_RECONSTRUCT_RGB = 0,
+  DT_FILMIC_RECONSTRUCT_RATIOS = 1,
+} dt_iop_filmicrgb_reconstruction_type_t;
 
 
 typedef struct dt_iop_filmic_rgb_spline_t
@@ -894,7 +901,9 @@ static int get_scales(const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *
 #pragma omp declare simd aligned(in, mask, reconstructed:64) uniform(ch, variant, piece, roi_in, roi_out)
 #endif
 static inline gint reconstruct_highlights(const float *const restrict in, const float *const restrict mask,
-                                          float *const restrict reconstructed, const int variant, const size_t ch,
+                                          float *const restrict reconstructed,
+                                          const dt_iop_filmicrgb_reconstruction_type_t variant,
+                                          const size_t ch,
                                           const dt_iop_filmicrgb_data_t *const data, dt_dev_pixelpipe_iop_t *piece,
                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -976,9 +985,9 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
 
     // Compute wavelets high-frequency scales and save the maximum of texture over the RGB channels
     // Note : HF_RGB = detail - LF, HF_grey = max(HF_RGB)
-    if(variant == 0)
+    if(variant == DT_FILMIC_RECONSTRUCT_RGB)
       wavelets_detail_level_RGB(detail, LF, HF_RGB, HF_grey, roi_out->width, roi_out->height, ch);
-    else if(variant == 1)
+    else if(variant == DT_FILMIC_RECONSTRUCT_RATIOS)
       wavelets_detail_level_ratios(detail, LF, HF_RGB, HF_grey, roi_out->width, roi_out->height, ch);
 
     // interpolate/blur/inpaint (same thing) the RGB high-frequency to fill holes
@@ -988,10 +997,10 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
                                bound_top, bound_bot);
 
     // Reconstruct clipped parts
-    if(variant == 0)
+    if(variant == DT_FILMIC_RECONSTRUCT_RGB)
       wavelets_reconstruct_RGB(HF_RGB, LF, HF_grey, mask, reconstructed, roi_out->width, roi_out->height, ch,
                                gamma, gamma_comp, beta, beta_comp, delta, s, scales);
-    else if(variant == 1)
+    else if(variant == DT_FILMIC_RECONSTRUCT_RATIOS)
       wavelets_reconstruct_ratios(HF_RGB, LF, HF_grey, mask, reconstructed, roi_out->width, roi_out->height, ch,
                                gamma, gamma_comp, beta, beta_comp, delta, s, scales);
   }
@@ -1313,10 +1322,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   float *restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
-
-  const int variant = data->preserve_color;
-  const dt_iop_filmic_rgb_spline_t spline = (dt_iop_filmic_rgb_spline_t)data->spline;
-
   float *const restrict mask =  dt_alloc_sse_ps(roi_out->width * roi_out->height);
 
   // build a mask of clipped pixels
@@ -1330,7 +1335,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
     if(g->show_mask)
     {
-      display_mask(mask, out, roi_out->width, roi_out->height, 4);
+      display_mask(mask, out, roi_out->width, roi_out->height, ch);
       dt_free_align(mask);
       return;
     }
@@ -1340,7 +1345,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(recover_highlights && mask && reconstructed)
   {
-    const gint success_1 = reconstruct_highlights(in, mask, reconstructed, 0, ch, data, piece, roi_in, roi_out);
+    const gint success_1 = reconstruct_highlights(in, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, ch, data, piece, roi_in, roi_out);
     gint success_2 = TRUE;
 
     if(data->high_quality_reconstruction > 0 && success_1)
@@ -1354,7 +1359,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         for(int i = 0; i < data->high_quality_reconstruction; i++)
         {
           compute_ratios(reconstructed, norms, ratios, work_profile, DT_FILMIC_METHOD_EUCLIDEAN_NORM, roi_out->width, roi_out->height, ch);
-          success_2 = success_2 && reconstruct_highlights(ratios, mask, reconstructed, 1, ch, data, piece, roi_in, roi_out);
+          success_2 = success_2 && reconstruct_highlights(ratios, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RATIOS, ch, data, piece, roi_in, roi_out);
           restore_ratios(reconstructed, norms, roi_out->width, roi_out->height, ch);
         }
       }
@@ -1368,21 +1373,21 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(mask) dt_free_align(mask);
 
-  if(variant == DT_FILMIC_METHOD_NONE)
+  if(data->preserve_color == DT_FILMIC_METHOD_NONE)
   {
     // no chroma preservation
     if(data->version == DT_FILMIC_COLORSCIENCE_V1)
-      filmic_split_v1(in, out, work_profile, data, spline, roi_out->width, roi_in->height, ch);
+      filmic_split_v1(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height, ch);
     else if(data->version == DT_FILMIC_COLORSCIENCE_V2)
-      filmic_split_v2(in, out, work_profile, data, spline, roi_out->width, roi_in->height, ch);
+      filmic_split_v2(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height, ch);
   }
   else
   {
     // chroma preservation
     if(data->version == DT_FILMIC_COLORSCIENCE_V1)
-      filmic_chroma_v1(in, out, work_profile, data, spline, variant, roi_out->width, roi_out->height, ch);
+      filmic_chroma_v1(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width, roi_out->height, ch);
     else if(data->version == DT_FILMIC_COLORSCIENCE_V2)
-      filmic_chroma_v2(in, out, work_profile, data, spline, variant, roi_out->width, roi_out->height, ch);
+      filmic_chroma_v2(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width, roi_out->height, ch);
   }
 
   if(reconstructed) dt_free_align(reconstructed);
@@ -2221,8 +2226,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->high_quality_reconstruction = p->high_quality_reconstruction;
 
   // TODO: write OpenCL for v2
-  if(p->version == DT_FILMIC_COLORSCIENCE_V2)
-    piece->process_cl_ready = FALSE;
+  piece->process_cl_ready = FALSE;
 
 
   // compute the curves and their LUT
@@ -2323,7 +2327,10 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_filmicrgb_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_filmicrgb_params_t));
-  module->default_enabled = 0;
+
+  // Auto-apply filmic if basecurve is not
+  module->default_enabled = !dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
+
   module->params_size = sizeof(dt_iop_filmicrgb_params_t);
   module->gui_data = NULL;
 
@@ -2331,28 +2338,28 @@ void init(dt_iop_module_t *module)
     = (dt_iop_filmicrgb_params_t){
                                  .grey_point_source   = 18.45,  // source grey
                                  .black_point_source  = -10.55f,// source black
-                                 .white_point_source  = 3.45f,  // source white
-                                 .reconstruct_threshold = 0.0f,
+                                 .white_point_source  = 5.45f,  // source white
+                                 .reconstruct_threshold = -1.0f,
                                  .reconstruct_feather   = 3.0f,
                                  .reconstruct_bloom_vs_details = 100.0f,
-                                 .reconstruct_grey_vs_color    = 0.0f,
-                                 .reconstruct_structure_vs_texture = 50.0f,
+                                 .reconstruct_grey_vs_color    = 100.0f,
+                                 .reconstruct_structure_vs_texture = 0.0f,
                                  .security_factor     = 0.0f,
                                  .grey_point_target   = 18.45f, // target grey
                                  .black_point_target  = 0.0,    // target black
                                  .white_point_target  = 100.0,  // target white
-                                 .output_power        = 5.98f,  // target power (~ gamma)
-                                 .latitude            = 40.0f,  // intent latitude
-                                 .contrast            = 1.30f,  // intent contrast
-                                 .saturation          = 0.0f,   // intent saturation
-                                 .balance             = 12.0f,  // balance shadows/highlights
+                                 .output_power        = 4.0f,   // target power (~ gamma)
+                                 .latitude            = 33.0f,  // intent latitude
+                                 .contrast            = 1.50f,  // intent contrast
+                                 .saturation          = 5.0f,   // intent saturation
+                                 .balance             = 0.0f,  // balance shadows/highlights
                                  .preserve_color      = DT_FILMIC_METHOD_POWER_NORM, // run the saturated variant
                                  .shadows             = DT_FILMIC_CURVE_POLY_4,
                                  .highlights          = DT_FILMIC_CURVE_POLY_4,
                                  .version             = DT_FILMIC_COLORSCIENCE_V2,
-                                 .auto_hardness     = TRUE,
+                                 .auto_hardness       = TRUE,
                                  .custom_grey         = FALSE,
-                                 .high_quality_reconstruction = FALSE
+                                 .high_quality_reconstruction = 1
                               };
   memcpy(module->params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
@@ -2525,7 +2532,7 @@ void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_filmicrgb_gui_data_t));
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
+  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->default_params;
 
   g->show_mask = FALSE;
 
