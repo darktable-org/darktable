@@ -280,9 +280,57 @@ static void dwt_subtract_layer(float *bl, float *bh, const dwt_params_t *const p
   }
 }
 
+#if defined(__SSE__)
+static void dwt_decompose_layer_sse(float *out, float *in, const int lev, const dwt_params_t *const p)
+{
+  const int nthreads = dt_get_num_threads();
+  float *temp = dt_alloc_align(64, nthreads * p->height * p->ch * sizeof(float));
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(p, lev) \
+  shared(in, out, temp) \
+  schedule(static)
+#endif
+  for(int row = 0; row < p->height ; row++)
+  {
+    // horizontal pass, put result in the output buffer, which we'll use as a scratch pad
+    const size_t rowstart = row * p->width * p->ch;
+    dwt_hat_transform_sse(out + rowstart, in + rowstart, 1, p->width, 1 << lev, p);
+  }
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(p, lev) \
+  shared(in, out, temp) \
+  schedule(static)
+#endif
+  for(int col = 0; col < p->width ; col++)
+  {
+    // vertical pass, put result in per-thread temporary column, then copy back to output
+    float *tempcol = temp + dt_get_thread_num() * p->height * p->ch;
+    dwt_hat_transform_sse(tempcol, out + col * p->ch, p->width, p->height, 1 << lev, p);
+    for (int row = 0; row < p->height; row++)
+    {
+      const size_t index = INDEX_WT_IMAGE_SSE(row * p->width + col, p->ch);
+      _mm_store_ps(out+index, _mm_load_ps(tempcol + INDEX_WT_IMAGE_SSE(row, p->ch)));
+    }
+  }
+  dwt_subtract_layer_sse(out, in, p);
+  dt_free_align(temp);
+  return;
+}
+#endif
+
 // split input into 'coarse' and 'details'
 static void dwt_decompose_layer(float *out, float *in, const int lev, const dwt_params_t *const p)
 {
+#if defined(__SSE__)
+  if (p->ch == 4 && p->use_sse)
+  {
+    dwt_decompose_layer_sse(out,in,lev,p);
+    return;
+  }
+#endif
+
   const int nthreads = dt_get_num_threads();
   float *temp = dt_alloc_align(64, nthreads * p->height * p->ch * sizeof(float));
 #ifdef _OPENMP
@@ -312,7 +360,8 @@ static void dwt_decompose_layer(float *out, float *in, const int lev, const dwt_
     {
       for(int c = 0; c < p->ch; c++)
       {
-        out[INDEX_WT_IMAGE(row * p->width + col, p->ch, c)] = tempcol[INDEX_WT_IMAGE(row, p->ch, c)];
+        const size_t index = INDEX_WT_IMAGE(row * p->width + col, p->ch, c);
+        out[index] = tempcol[INDEX_WT_IMAGE(row, p->ch, c)];
       }
     }
   }
