@@ -1591,6 +1591,7 @@ void dtgtk_cairo_paint_preferences(cairo_t *cr, gint x, gint y, gint w, gint h, 
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
 
   float s = (w < h ? w / 2.0 : h / 2.0);
+  s *= 0.95; //optical balance
   cairo_scale(cr, s, s);
 
   cairo_set_line_width(cr, .25);
@@ -1611,7 +1612,7 @@ void dtgtk_cairo_paint_overlays(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   cairo_scale(cr, s, s);
 
   cairo_set_line_width(cr, .1);
-  dt_draw_star(cr, 0.0, 0.12, 1.0, 1.0/2.5);
+  dt_draw_star(cr, 0.0, 0.0, 1.03, 1.03/2.5);
 
   cairo_stroke(cr);
 }
@@ -1620,7 +1621,8 @@ void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 {
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
 
-  const float s = (w < h ? w / 2.0 : h / 2.0);
+  float s = (w < h ? w / 2.0 : h / 2.0);
+  s *= 0.97; //optical balance
   cairo_scale(cr, s, s);
 
   cairo_set_line_width(cr, 0.2);
