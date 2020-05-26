@@ -93,5 +93,7 @@ execute 'Copying python 3.6 lensfun libraries to 3.8' cp -R /mingw64/lib/python3
 execute 'Updating lensfun databse' lensfun-update-data
 
 execute 'Installing additional OpenMP library for clang' pacman -S --needed --noconfirm mingw-w64-x86_64-openmp
+execute 'Library linking fix for MinGW clang issue 6400: extracting library' ar x /mingw64/lib/libomp.a 
+execute 'Library linking fix for MinGW clang issue 6400: copying library' cp libomp.dll.a /mingw64/lib/
 
 execute 'Building darktable' build_darktable
