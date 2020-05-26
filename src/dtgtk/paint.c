@@ -1031,7 +1031,8 @@ void dtgtk_cairo_paint_timer(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 void dtgtk_cairo_paint_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   const float alpha = 0.8f;
-  const gint s = w < h ? w : h;
+  float s = w < h ? w : h;
+  s *= 0.95; // optical balance
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
 
@@ -1940,9 +1941,11 @@ void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint 
 
 void dtgtk_cairo_paint_gamut_check(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  const gint s = w < h ? w : h;
+  float s = w < h ? w : h;
+  s *= 1.15; // optical balance
   cairo_translate(cr, x + (w / 2.) - (s / 2.), y + (h / 2.) - (s / 2.));
   cairo_scale(cr, s, s);
+  cairo_translate(cr, 0, -0.05); // optical alignment
 
   cairo_save(cr);
   cairo_set_line_width(cr, 0.1);
@@ -1980,7 +1983,8 @@ void dtgtk_cairo_paint_gamut_check(cairo_t *cr, gint x, gint y, gint w, gint h, 
 
 void dtgtk_cairo_paint_softproof(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  const gint s = w < h ? w : h;
+  float s = w < h ? w : h;
+  s*=1.1; // optical balance
   cairo_translate(cr, x + (w / 2.) - (s / 2.), y + (h / 2.) - (s / 2.));
   cairo_scale(cr, s, s);
 
