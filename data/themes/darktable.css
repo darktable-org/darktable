@@ -394,13 +394,6 @@ overshoot.right
 }
 
 /* Set toolbars buttons in lighttable and darkroom */
-/* note that some button used to have different hardcoded paddings */
-/* overlay color changer */
-/* quick favorites */
-/* quick styles */
-/* display2 */
-/* they now look unbalanced */
-/* TODO: adjust icons individually */
 #header-toolbar #dt-toggle-button,
 #header-toolbar #dt-button,
 #footer-toolbar #dt-toggle-button,
