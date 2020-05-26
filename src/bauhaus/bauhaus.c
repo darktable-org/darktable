@@ -818,7 +818,7 @@ float dt_bauhaus_slider_get_default(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  return d->callback(widget, d->defpos, DT_BAUHAUS_GET);
+  return d->defpos;
 }
 
 void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max)
