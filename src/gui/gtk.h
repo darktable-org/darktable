@@ -113,6 +113,8 @@ typedef struct dt_gui_gtk_t
 
   double dpi, dpi_factor, ppd;
 
+  int icon_size; // size of top panel icons
+
   // store which gtkrc we loaded:
   char gtkrc[PATH_MAX];
 
