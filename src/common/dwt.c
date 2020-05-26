@@ -147,7 +147,7 @@ static void dwt_hat_transform_sse(float *temp, const float *const base, const in
 #endif
 
 static void dwt_hat_transform(float *temp, const float *const base, const int st, const int size, int sc,
-                              dwt_params_t *const p)
+                              const dwt_params_t *const p)
 {
 #if defined(__SSE__)
   if(p->ch == 4 && p->use_sse)
@@ -233,7 +233,7 @@ static void dwt_get_image_layer(float *const layer, dwt_params_t *const p)
 }
 
 #if defined(__SSE__)
-static void dwt_subtract_layer_sse(float *bl, float *bh, dwt_params_t *const p)
+static void dwt_subtract_layer_sse(float *bl, float *bh, const dwt_params_t *const p)
 {
   const __m128 v4_lpass_mult = _mm_set1_ps((1.f / 16.f));
   const int size = p->width * p->height * 4;
@@ -253,7 +253,7 @@ static void dwt_subtract_layer_sse(float *bl, float *bh, dwt_params_t *const p)
 }
 #endif
 
-static void dwt_subtract_layer(float *bl, float *bh, dwt_params_t *const p)
+static void dwt_subtract_layer(float *bl, float *bh, const dwt_params_t *const p)
 {
 #if defined(__SSE__)
   if(p->ch == 4 && p->use_sse)
@@ -278,6 +278,47 @@ static void dwt_subtract_layer(float *bl, float *bh, dwt_params_t *const p)
     bl[i] = bl[i] * lpass_mult;
     bh[i] -= bl[i];
   }
+}
+
+// split input into 'coarse' and 'details'
+static void dwt_decompose_layer(float *out, float *in, const int lev, const dwt_params_t *const p)
+{
+  const int nthreads = dt_get_num_threads();
+  float *temp = dt_alloc_align(64, nthreads * p->height * p->ch * sizeof(float));
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(p, lev) \
+  shared(in, out, temp) \
+  schedule(static)
+#endif
+  for(int row = 0; row < p->height ; row++)
+  {
+    // horizontal pass, put result in the output buffer, which we'll use as a scratch pad
+    const size_t rowstart = row * p->width * p->ch;
+    dwt_hat_transform(out + rowstart, in + rowstart, 1, p->width, 1 << lev, p);
+  }
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(p, lev) \
+  shared(in, out, temp) \
+  schedule(static)
+#endif
+  for(int col = 0; col < p->width ; col++)
+  {
+    // vertical pass, put result in per-thread temporary column, then copy back to output
+    float *tempcol = temp + dt_get_thread_num() * p->height * p->ch;
+    dwt_hat_transform(tempcol, out + col * p->ch, p->width, p->height, 1 << lev, p);
+    for (int row = 0; row < p->height; row++)
+    {
+      for(int c = 0; c < p->ch; c++)
+      {
+        out[INDEX_WT_IMAGE(row * p->width + col, p->ch, c)] = tempcol[INDEX_WT_IMAGE(row, p->ch, c)];
+      }
+    }
+  }
+  dwt_subtract_layer(out, in, p);
+  dt_free_align(temp);
+  return;
 }
 
 /* actual decomposing algorithm */
@@ -340,23 +381,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   {
     unsigned int lpass = (1 - (lev & 1));
 
-    for(int row = 0; row < p->height; row++)
-    {
-      dwt_hat_transform(temp, buffer[hpass] + (row * p->width * p->ch), 1, p->width, 1 << lev, p);
-      memcpy(&(buffer[lpass][row * p->width * p->ch]), temp, p->width * p->ch * sizeof(float));
-    }
-
-    for(int col = 0; col < p->width; col++)
-    {
-      dwt_hat_transform(temp, buffer[lpass] + col * p->ch, p->width, p->height, 1 << lev, p);
-      for(int row = 0; row < p->height; row++)
-      {
-        for(int c = 0; c < p->ch; c++)
-          buffer[lpass][INDEX_WT_IMAGE(row * p->width + col, p->ch, c)] = temp[INDEX_WT_IMAGE(row, p->ch, c)];
-      }
-    }
-
-    dwt_subtract_layer(buffer[lpass], buffer[hpass], p);
+    dwt_decompose_layer(buffer[lpass], buffer[hpass], lev, p);
 
     // no merge scales or we didn't reach the merge scale from yet
     if(p->merge_from_scale == 0 || p->merge_from_scale > lev + 1)
