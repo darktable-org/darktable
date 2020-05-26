@@ -2281,8 +2281,13 @@ gchar *dt_iop_get_localized_name(const gchar *op)
       } while((iop = g_list_next(iop)) != NULL);
     }
   }
-
-  return (gchar *)g_hash_table_lookup(module_names, op);
+  if(op != NULL)
+  {
+    return (gchar *)g_hash_table_lookup(module_names, op);
+  }
+  else {
+    return _("ERROR");
+  }
 }
 
 void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t state)

@@ -377,9 +377,14 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
     if(new_path)
     {
       gchar *old = NULL;
-      query = dt_util_dstrcat(query, "SELECT id, folder FROM main.film_rolls WHERE folder LIKE '%s%%'", tree_path);
+
+      gchar *q_tree_path = NULL;
+      q_tree_path = dt_util_dstrcat(q_tree_path, "%s%%", tree_path);
+      query = "SELECT id, folder FROM main.film_rolls WHERE folder LIKE ?1";
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      g_free(query);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, q_tree_path, -1, SQLITE_TRANSIENT);
+      g_free(q_tree_path);
+      q_tree_path = NULL;
       query = NULL;
 
       while(sqlite3_step(stmt) == SQLITE_ROW)
