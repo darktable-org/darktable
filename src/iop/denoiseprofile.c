@@ -40,6 +40,9 @@
 #include <xmmintrin.h>
 #endif
 
+//check for regression
+//#define VALIDATE_SUMY2
+
 #define REDUCESIZE 64
 #define NUM_BUCKETS 4
 
@@ -1574,7 +1577,27 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
     const float sigma_band = powf(varf, scale) * sigma;
     // determine thrs as bayesshrink
-
+#ifdef VALIDATE_SUMY2
+    // previous code did a single summation over the entire image, while current code does a line-by-line
+    //  summation (further split among threads).  This code prints out the results of the two approaches.
+    fprintf(stderr,"scale %d, incr sums:  %g %g %g\n",scale,sum_y2[4*scale],sum_y2[4*scale+1],sum_y2[4*scale+2]);
+    float sq[3] = { 0.0f };
+    for(int i = 0; i < npixels; i++)
+      for(int c = 0; c < 3; c++)
+        sq[c] += (buf[scale][4*i+c] * buf[scale][4*i+c]);
+    fprintf(stderr,"scale %d, continuous: %g %g %g\n",scale,sq[0],sq[1],sq[2]); // the result of the old method
+    float sq2[3] = { 0.0f };
+    for(int j = 0; j < height; j++)
+    {
+      float rowsum[3] = { 0.0f };
+      for(int i = 0; i < width; i++)
+        for(int c = 0; c < 3; c++)
+          rowsum[c] += (buf[scale][4*(j*width+i)+c] * buf[scale][4*(j*width+i)+c]);
+      for(int c = 0; c < 3; c++)
+        sq2[c] += rowsum[c];
+    }
+    fprintf(stderr,"scale %d, by rows:    %g %g %g\n",scale,sq2[0],sq2[1],sq2[2]); // approximately the new method
+#endif
     const float sb2 = sigma_band * sigma_band;
     const float var_y[3] = { sum_y2[4*scale] / (npixels - 1.0f),
                              sum_y2[4*scale+1] / (npixels - 1.0f),
