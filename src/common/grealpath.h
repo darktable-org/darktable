@@ -30,39 +30,8 @@ static inline gchar *g_realpath(const char *path)
     return g_strdup(buffer);
   }
   else 
-  {
-    if ( errno == EACCES ) 
-    {
-      fprintf(stderr, "read or search permission was denied for a component of file_name: %s\n", path);
-    } 
-    else if ( errno == EINVAL ) 
-    {
-      fprintf(stderr, "either the file_name or resolved_name argument is a null pointer: %s\n", path);
-    } 
-    else if ( errno == EIO ) 
-    {
-      fprintf(stderr, "an error occurred while reading from the file system: %s\n", path);
-    } 
-    else if ( errno == ELOOP ) 
-    {
-      fprintf(stderr, "too many symbolic links were encountered in resolving path: %s\n", path);
-    } 
-    else if ( errno == ENAMETOOLONG ) 
-    {
-      fprintf(stderr, "pathname resolution of a symbolic link produced an intermediate result whose length exceeds {PATH_MAX}. the file_name argument is longer than {PATH_MAX} or a pathname component is longer than {NAME_MAX}: %s\n", path);
-    } 
-    else if ( errno == ENOENT ) 
-    {
-      fprintf(stderr, "a component of file_name does not name an existing file or file_name points to an empty string: %s\n", path);
-    } 
-    else if ( errno == ENOTDIR ) 
-    {
-      fprintf(stderr, "a component of the path prefix is not a directory: %s\n", path);
-    } 
-    else if ( errno == ENOMEM ) 
-    {
-      fprintf(stderr, "insufficient storage space is available.\n");
-    }
+  {     
+    fprintf(stderr, "path lookup '%s' fails with: '%s'\n", path, strerror(errno));
     exit(EXIT_FAILURE);
   }
 #else

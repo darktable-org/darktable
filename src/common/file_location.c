@@ -200,43 +200,7 @@ void dt_check_opendir(const char* text, const char* directory, gboolean exit_on_
   } 
   else 
   {
-    if ( errno == EACCES ) 
-    {
-      fprintf(stderr, "permission denied.\n");
-    } 
-    else if ( errno == ENOENT ) 
-    {
-      fprintf(stderr, "%s %s does not exist.\n", text, directory);
-    } 
-    else if ( errno == EBADF ) 
-    {
-      fprintf(stderr, "fd is not a valid file descriptor opened for reading.\n");
-    } 
-    else if ( errno == EMFILE ) 
-    {
-      fprintf(stderr, "the per-process limit on the number of open file descriptors has been reached.\n");
-    } 
-    else if ( errno == ENFILE ) 
-    {
-      fprintf(stderr, "the system-wide limit on the total number of open files has been reached.\n");
-    } 
-    else if ( errno == ENOENT ) 
-    {
-      fprintf(stderr, "directory does not exist, or name is an empty string.\n");
-    }  
-    else if ( errno == ENOMEM ) 
-    {
-      fprintf(stderr, "insufficient memory to complete the operation.\n");
-    }  
-    else if ( errno == ENOTDIR ) 
-    {
-      fprintf(stderr, "name is not a directory.\n");
-    } 
-    else 
-    {
-      fprintf(stderr, "opendir() failed for some other reason.\n");
-    }
-
+    fprintf(stderr, "opendir '%s' fails with: '%s'\n", directory, strerror(errno));
     if(exit_on_error)
     {
       exit(EXIT_FAILURE);
