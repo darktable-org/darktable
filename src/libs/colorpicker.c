@@ -570,7 +570,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(data->size_selector), "changed", G_CALLBACK(_size_changed), (gpointer)self);
 
   data->picker_button = dt_color_picker_new(NULL, DT_COLOR_PICKER_AREA, picker_subrow);
-  gtk_widget_set_name(GTK_WIDGET(data->picker_button), "control-button");
+  gtk_widget_set_name(GTK_WIDGET(data->picker_button), "color-picker-button");
   g_signal_connect(G_OBJECT(data->picker_button), "toggled", G_CALLBACK(_picker_button_toggled), self);
 
   gtk_box_pack_start(GTK_BOX(output_options), picker_subrow, TRUE, TRUE, 0);

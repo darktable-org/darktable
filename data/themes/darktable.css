@@ -270,6 +270,12 @@ button,
   min-width: 1em;
 }
 
+/* default extra margin for icons optical alignment */
+#button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
 /* Default text fields and text boxes */
 entry,
 textview
@@ -308,12 +314,9 @@ treeview check
 #control-button,
 #control-button:checked
 {
-    background-color: transparent;
-    min-height: 1em;
-    min-width: 1em;
-    padding: 0.2em;
-    margin: 0;
-    border: 0;
+  background-color: transparent;
+  margin: 0;
+  border: 0;
 }
 
 /* Separator */
@@ -391,20 +394,25 @@ overshoot.right
 }
 
 /* Set toolbars buttons in lighttable and darkroom */
+/* note that some button used to have different hardcoded paddings */
+/* overlay color changer */
+/* quick favorites */
+/* quick styles */
+/* display2 */
+/* they now look unbalanced */
+/* TODO: adjust icons individually */
 #header-toolbar #dt-toggle-button,
 #header-toolbar #dt-button,
 #footer-toolbar #dt-toggle-button,
 #footer-toolbar #dt-button
 {
-  padding: 0.9em;
-  min-height: 0.9em; /* align toolbox button height on comboboxe's one */
-  min-width: 0.9em;
+  padding: 0.07em;
+  min-height: 2.56em; /* align toolbox button height on comboboxe's one */
+  min-width: 2.56em;
   border: 0;
   font-size: .7em;
 }
 
-button#dt-button,
-button#dt-toggle-button,
 #dt-icon
 {
   border-radius: 2px;
@@ -438,27 +446,39 @@ button#dt-toggle-button,
   padding: 0.75em;
 }
 
-/* Adjust size of button arrow to open/close dropdown on panels */
-#iop-plugin-ui #control-button,
-#lib-plugin-ui #control-button
+/* icon buttons in modules main body */
+#iop-plugin-ui-main #dt-button,
+#iop-plugin-ui-main #dt-toggle-button,
+#lib-plugin-ui-main #dt-button,
+#lib-plugin-ui-main #dt-toggle-button
 {
-    background-color: transparent;
-    min-height: 1em;
-    min-width: 1em;
-    padding: 0.6em;
-    margin: 0;
-    border: 0;
+  min-height: 1.3em;
+  min-width: 1.3em;
+  padding: 0;
 }
 
-/* Especially for display arrow option on module filmic and if necessary for any other in darkroom right panel */
-#right #iop-plugin-ui #control-button
+/* adjust icon extra room for buttons in modules main body */
+#iop-plugin-ui-main #dt-button #button-canvas,
+#iop-plugin-ui-main #dt-toggle-button #button-canvas,
+#lib-plugin-ui-main #dt-button #button-canvas,
+#lib-plugin-ui-main #dt-toggle-button #button-canvas
 {
-    background-color: transparent;
-    min-height: 0.9em;
-    min-width: 0.9em;
-    padding: 0.2em;
-    margin: 0;
-    border: 0;
+  margin: 8px; /* not real pixels, this is used as a percent extra space */
+}
+
+/* size of control-buttons */
+/* filter in collect images */
+/* filter in header toolbar */
+/* arrow in filmic */
+/* TODO: move this part to special items? */
+#iop-plugin-ui-main #control-button,
+#lib-plugin-ui-main #control-button,
+#header-toolbar #control-button
+{
+  min-height: 1em;
+  min-width: 0.81em;
+  padding: 0.15em;
+  margin: 0.15em;
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -477,8 +497,8 @@ button#dt-toggle-button,
 
 #history-number
 {
-   padding-right: 4px;
-   font-family: monospace;
+  padding-right: 4px;
+  font-family: monospace;
 }
 
 /* Precise default buttons margins on side panels */
@@ -489,16 +509,26 @@ button#dt-toggle-button,
 }
 
 /* Buttons in modules header, near the module name */
-#module-preset-button * button,
-#module-reset-button * button,
-#module-enable-button * button,
-#module-instance-button * button,
-#module-enable-button * button,
-#module-collapse-button * button
+#module-preset-button,
+#module-reset-button,
+#module-enable-button,
+#module-instance-button,
+#module-enable-button
 {
-  background-color: transparent;
-  min-height: 1em;
-  min-width: 1em;
+  /* background-color: transparent; this doesn't work */
+  min-height: 1.15em;
+  min-width: 1.15em;
+  padding: 0.06em;
+}
+
+/* this need to be tweaked separately, because it used a different */
+/* hardcoded padding. TODO: scale icon instead */
+#module-collapse-button
+{
+  /* background-color: transparent; this doesn't work */
+  min-height: 0.81em;
+  min-width: 0.81em;
+  padding: 0.23em;
 }
 
 #module-always-enabled-button /* button on always activated module */
@@ -809,13 +839,12 @@ notebook tabs,
   padding: 0.1em;
 }
 
-#blending-tabs *
+#blending-tabs button
 {
   font-size: 0.8em;
-  min-height: 1.5em;
-  min-width: 1.5em;
-  padding: 0.2em;
-  margin: 0;
+  min-height: 1.75em;
+  min-width: 1.75em;
+  padding: 0;
 }
 
 notebook tab
@@ -1200,18 +1229,6 @@ checkbutton:not(#import_metadata) check
   margin: 5px 8px 5px 0;
 }
 
-/* Arrow size of dropdown button arrow on filter collection */
-#left #lib-plugin-ui #dt-button
-{
-  padding: 0px;
-}
-
-/* Arrow size of some buttons on darkroom modules */
-#iop-plugin-ui #dt-button
-{
-  padding: 2px;
-}
-
 /* Set selected cell */
 cell:selected
 {
@@ -1227,38 +1244,37 @@ cell:selected
 /* Set mask button shown color */
 #show_mask_button
 {
-    color: #ffff00;
+  color: #ffff00;
 }
 
 /* Set specific padding for export module spinbutton */
 #export-max-size spinbutton
 {
-    padding: 0px 5px;
+  padding: 0px 5px;
 }
 
 /* Set below spacing between history items in darkroom */
+/* the label buttons */
 #left #history-button,
 #left #history-button-enabled,
-#left #history-switch,
-#left #history-switch-enabled,
-#left #history-button-enabled,
-#left #history-switch-deprecated,
 #left #history-button-always-enabled,
-#left #history-switch-always-enabled,
-#left #history-button-default-enabled,
-#left #history-switch-default-enabled
+#left #history-button-default-enabled
 {
   padding: 1px 2px 2px 2px;
   margin: 0px 1px 1px 1px;
 }
 
-  /* then set font size */
-#left #history-switch-always-enabled,
-#left #history-switch-default-enabled,
+/* then the switches */
 #left #history-switch,
-#left #history-switch-enabled
+#left #history-switch-enabled,
+#left #history-switch-always-enabled,
+#left #history-switch-default-enabled
 {
   font-size: 0.6em;
+  min-width: 1.4em;
+  min-height: 1.33em;
+  padding: 0;
+  margin: 1px 2px 2px 2px; /* align switches with create style icon */
 }
 
 #left #history-switch-deprecated
@@ -1302,18 +1318,30 @@ cell:selected
   - Set color pickers -
   ---------------------*/
 
+/* the main color picker button */
+#color-picker-button
+{
+  min-height: 2em;
+  min-width: 1.7em;
+}
+
+#color-picker-button #button-canvas
+{
+  margin: 5px; /* not real pixels, this is used as a percent extra space */
+}
+
 /* Module in darkroom left panel */
 #color-picker-area
 {
-    min-height: 9em;
-    min-width: 9em;
+  min-height: 9em;
+  min-width: 9em;
 }
 
 #live-sample
 {
-    padding: 2px;
-    min-height: 1em;
-    min-width: 3em;
+  padding: 2px;
+  min-height: 1em;
+  min-width: 3em;
 }
 
 /* Color picker visibility for levels and rgb levels modules.

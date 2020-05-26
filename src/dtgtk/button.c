@@ -70,17 +70,30 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   }
 
   /* begin cairo drawing */
+  /* get button total allocation */
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width;
   int height = allocation.height;
+
+  /* get the css geometry properties of the button */
+  GtkBorder margin, border, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_border(context, state, &border);
+  gtk_style_context_get_padding(context, state, &padding);
+
+  /* for button frame and background, we remove css margin from allocation */
+  int startx = margin.left;
+  int starty = margin.top;
+  int cwidth = width - margin.left - margin.right;
+  int cheight = height - margin.top - margin.bottom;
 
   /* draw standard button background if not transparent */
   if(flags & CPF_STYLE_FLAT)
   {
     if(flags & CPF_PRELIGHT)
     {
-      gtk_render_background(context, cr, 0, 0, width, height);
+      gtk_render_background(context, cr, startx, starty, cwidth, cheight);
     }
     else if (!(flags & CPF_ACTIVE))
     {
@@ -90,9 +103,8 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   else if(!(flags & CPF_BG_TRANSPARENT))
   {
     /* draw default boxed button */
-    gtk_render_background(context, cr, 0, 0, width, height);
-    if(!(flags & CPF_DO_NOT_USE_BORDER))
-      gtk_render_frame(context, cr, 0, 0, width, height);
+    gtk_render_background(context, cr, startx, starty, cwidth, cheight);
+    gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
   }
 
   gdk_cairo_set_source_rgba(cr, &fg_color);
@@ -100,15 +112,30 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_BUTTON(widget)->icon)
   {
-    /* set inner border and icon size */
-    float f_border = ((flags & CPF_DO_NOT_USE_BORDER) ? 4.0 : 6.0);
-    int border = round(f_border);
-    int icon_width = round(text ? height - (f_border * 2) : width - (f_border * 2));
-    int icon_height = round(height - (f_border * 2));
+    /* calculate the button content allocation */
+    startx += border.left + padding.left;
+    starty += border.top + padding.top;
+    cwidth -= border.left + border.right + padding.left + padding.right;
+    cheight -= border.top + border.bottom + padding.top + padding.bottom;
+
+    /* we have to leave some breathing room to the cairo icon paint function to possibly    */
+    /* draw slightly outside the bounding box, for optical alignment and balancing of icons */
+    /* we do this by putting a drawing area widget inside the button and using the CSS      */
+    /* margin property in px of the drawing area as extra room in percent (DPI safe)        */
+    /* we do this because Gtk+ does not support CSS size in percent                         */
+    /* this extra margin can be also (slightly) negative                                    */
+    GtkStyleContext *ccontext = gtk_widget_get_style_context(DTGTK_BUTTON(widget)->canvas);
+    GtkBorder cmargin;
+    gtk_style_context_get_margin(ccontext, state, &cmargin);
+
+    startx += round(cmargin.left * cwidth / 100.0f);
+    starty += round(cmargin.top * cheight / 100.0f);
+    cwidth = round((float)cwidth * (1.0 - (cmargin.left + cmargin.right) / 100.0f));
+    cheight = round((float)cheight * (1.0 - (cmargin.top + cmargin.bottom) / 100.0f));
 
     void *icon_data = DTGTK_BUTTON(widget)->icon_data;
-    if(icon_width > 0 && icon_height > 0)
-      DTGTK_BUTTON(widget)->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
+    if(cwidth > 0 && cheight > 0)
+      DTGTK_BUTTON(widget)->icon(cr, startx, starty, cwidth, cheight, flags, icon_data);
   }
 
   /* draw label */
@@ -133,7 +160,10 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
+  button->canvas = gtk_drawing_area_new();
+  gtk_container_add(GTK_CONTAINER(button), button->canvas);
   gtk_widget_set_name(GTK_WIDGET(button), "dt-button");
+  gtk_widget_set_name(GTK_WIDGET(button->canvas), "button-canvas");
   return (GtkWidget *)button;
 }
 
