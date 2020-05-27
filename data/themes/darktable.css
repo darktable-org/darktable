@@ -519,6 +519,8 @@ overshoot.right
   min-height: 1.15em;
   min-width: 1.15em;
   padding: 0.06em;
+  border: 0;
+  margin: 0 1px 0 1px
 }
 
 /* this need to be tweaked separately, because it used a different */
@@ -529,6 +531,7 @@ overshoot.right
   min-height: 0.81em;
   min-width: 0.81em;
   padding: 0.23em;
+  border: 0;
 }
 
 #module-always-enabled-button /* button on always activated module */
@@ -845,6 +848,7 @@ notebook tabs,
   min-height: 1.75em;
   min-width: 1.75em;
   padding: 0;
+  border: 0;
 }
 
 notebook tab
@@ -1275,6 +1279,7 @@ cell:selected
   min-height: 1.33em;
   padding: 0;
   margin: 1px 2px 2px 2px; /* align switches with create style icon */
+  border: 0;
 }
 
 #left #history-switch-deprecated

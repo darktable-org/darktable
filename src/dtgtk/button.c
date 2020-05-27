@@ -55,7 +55,8 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   else
     flags &= ~CPF_PRELIGHT;
 
-
+  if(DTGTK_BUTTON(widget)->icon == dtgtk_cairo_paint_reset)
+    dt_print(DT_DEBUG_LUA, "message");
   /* create pango text settings if label exists */
   PangoLayout *layout = NULL;
   int pw = 0, ph = 0;
@@ -104,9 +105,9 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   {
     /* draw default boxed button */
     gtk_render_background(context, cr, startx, starty, cwidth, cheight);
-    gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
   }
 
+  gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
   gdk_cairo_set_source_rgba(cr, &fg_color);
 
   /* draw icon */
