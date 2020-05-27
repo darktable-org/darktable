@@ -18,7 +18,6 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 
 #define GETTEXT_PACKAGE "darktable"
 
-#cmakedefine DARKTABLE_BINDIR    "@DARKTABLE_RELATIVE_BINDIR@"
 #cmakedefine DARKTABLE_LOCALEDIR "@DARKTABLE_RELATIVE_LOCALEDIR@"
 #cmakedefine DARKTABLE_LIBDIR    "@DARKTABLE_RELATIVE_LIBDIR@"
 #cmakedefine DARKTABLE_DATADIR   "@DARKTABLE_RELATIVE_DATADIR@"
