@@ -197,7 +197,7 @@ static void dwt_add_layer_sse(float *const img, float *layers, dwt_params_t *con
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(img, i_size) \
   shared(layers) \
-  schedule(static) num_threads(MIN(2,darktable.num_openmp_threads))
+  schedule(static) num_threads(MIN(8,darktable.num_openmp_threads))
 #endif // this loop runs so fast that heavy multi-threading just wastes CPU time
   for(int i = 0; i < i_size; i += 4)
   {
@@ -222,7 +222,7 @@ static void dwt_add_layer(float *const img, float *layers, dwt_params_t *const p
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(img, i_size) \
   shared(layers) \
-  schedule(static) num_threads(MIN(2,darktable.num_openmp_threads))
+  schedule(static) num_threads(MIN(8,darktable.num_openmp_threads))
 #endif // this loop runs so fast that heavy multi-threading just wastes CPU time
   for(int i = 0; i < i_size; i++) layers[i] += img[i];
 }
@@ -242,7 +242,7 @@ static void dwt_subtract_layer_sse(float *bl, float *bh, const dwt_params_t *con
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(v4_lpass_mult, size) \
   shared(bl, bh) \
-  schedule(static) num_threads(MIN(2,darktable.num_openmp_threads))
+  schedule(static) num_threads(MIN(8,darktable.num_openmp_threads))
 #endif // this loop runs so fast that heavy multi-threading just wastes CPU time
   for(int i = 0; i < size; i += 4)
   {
@@ -270,7 +270,7 @@ static void dwt_subtract_layer(float *bl, float *bh, const dwt_params_t *const p
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(size, lpass_mult) \
   shared(bl, bh) \
-  schedule(static) num_threads(MIN(2,darktable.num_openmp_threads))
+  schedule(static) num_threads(MIN(8,darktable.num_openmp_threads))
 #endif // this loop runs so fast that heavy multi-threading just wastes CPU time
   for(int i = 0; i < size; i++)
   {
