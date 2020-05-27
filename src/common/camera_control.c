@@ -121,9 +121,8 @@ static void _dispatch_camera_property_value_changed(const dt_camctl_t *c, const 
 /** Helper function to destroy a dt_camera_t object */
 static void dt_camctl_camera_destroy(dt_camera_t *cam);
 
-/** Wrapper to asynchronously look for cameras */
+/** background thread asynchronously looking for cameras */
 static int _detect_cameras_callback(dt_job_t *job);
-
 
 static int logid = 0;
 
@@ -602,6 +601,9 @@ dt_camctl_t *dt_camctl_new()
   dt_pthread_mutex_init(&camctl->lock, NULL);
   dt_pthread_mutex_init(&camctl->listeners_lock, NULL);
 
+  /* Initialise the counter for cameras and running */
+  camctl->running_cnt = 0;
+
   // asynchronously call dt_camctl_detect_cameras(camctl); to fill in camctl
   dt_job_t *job = dt_control_job_create(&_detect_cameras_callback, "detect connected cameras");
   if(job)
@@ -636,6 +638,7 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam)
 void dt_camctl_destroy(dt_camctl_t *camctl)
 {
   if(!camctl) return;
+  dt_print(DT_DEBUG_CAMCTL, "[camera_control] destroy context %p\n", camctl);
   // Go thru all c->cameras and release them..
   for(GList *it = g_list_first(camctl->cameras); it != NULL; it = g_list_delete_link(it, it))
   {
@@ -687,27 +690,25 @@ static gint _compare_camera_by_port(gconstpointer a, gconstpointer b)
   return g_strcmp0(ca->port, cb->port);
 }
 
-void dt_camctl_detect_cameras(const dt_camctl_t *c)
+static void dt_camctl_detect_cameras(const dt_camctl_t *c)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   dt_pthread_mutex_lock(&camctl->lock);
+  gboolean changed_camera = FALSE;
 
   /* reload portdrivers */
   if(camctl->gpports) gp_port_info_list_free(camctl->gpports);
 
   gp_port_info_list_new(&camctl->gpports);
   gp_port_info_list_load(camctl->gpports);
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] loaded %d port drivers.\n",
+  dt_print(DT_DEBUG_CAMCTL, "[camera_control] loaded %d port drivers, ",
            gp_port_info_list_count(camctl->gpports));
-
-
 
   CameraList *available_cameras = NULL;
   gp_list_new(&available_cameras);
   gp_abilities_list_detect(c->gpcams, c->gpports, available_cameras, c->gpcontext);
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] %d cameras connected\n",
-           gp_list_count(available_cameras) > 0 ? gp_list_count(available_cameras) : 0);
 
+  dt_print(DT_DEBUG_CAMCTL, " %d cameras connected\n", gp_list_count(available_cameras) > 0 ? gp_list_count(available_cameras) : 0);
 
   for(int i = 0; i < gp_list_count(available_cameras); i++)
   {
@@ -723,7 +724,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
 
     // if(g_strcmp0(camera->port,"usb:")==0) { g_free(camera); continue; }
     GList *citem;
-    if((citem = g_list_find_custom(c->cameras, camera, _compare_camera_by_port)) == NULL
+    if( ((citem = g_list_find_custom(c->cameras, camera, _compare_camera_by_port)) == NULL)
        || g_strcmp0(((dt_camera_t *)citem->data)->model, camera->model) != 0)
     {
       if(citem == NULL)
@@ -736,6 +737,12 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
                    camera->model, camera->port);
           dt_camctl_camera_destroy(camera);
           continue;
+        }
+        else
+        {
+          changed_camera = TRUE;
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] new camera initialized device %s on port %s.\n",
+                   camera->model, camera->port);
         }
 
         // Check if camera has capabilities for being presented to darktable
@@ -774,14 +781,28 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
     GList *citem = c->cameras;
     do
     {
-      int index = 0;
       dt_camera_t *cam = (dt_camera_t *)citem->data;
-      if(gp_list_find_by_name(available_cameras, &index, cam->model) != GP_OK)
+      gboolean remove_cam = TRUE;
+      for(int i = 0; i < gp_list_count(available_cameras); i++)
       {
+        const gchar *mymodel;
+        const gchar *myport;
+        gp_list_get_name(available_cameras, i, &mymodel);
+        gp_list_get_value(available_cameras, i, &myport);
+
+        if((g_strcmp0(mymodel, cam->model) == 0) && (g_strcmp0(myport, cam->port) == 0))
+          remove_cam = FALSE;
+      }
+      
+      if(remove_cam)
+      {
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] remove device %s on port %s from camera list as it's not available\n",
+                 cam->model, cam->port);
         /* remove camera from cached list.. */
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
         camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
         dt_camctl_camera_destroy(oldcam);
+        changed_camera = TRUE;
       }
     } while(citem && (citem = g_list_next(citem)) != NULL);
   }
@@ -792,14 +813,28 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
 
   // tell the world that we are done. this assumes that there is just one global camctl.
   // if there would ever be more it would be easy to pass c with the signal.
-  // TODO: only raise it when the connected cameras changed?
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
+  if(changed_camera)
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] detected changed cameras\n");
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
+  }
 }
 
 static int _detect_cameras_callback(dt_job_t *job)
 {
   dt_camctl_t *c = dt_control_job_get_params(job);
-  dt_camctl_detect_cameras(c);
+  while(TRUE)
+  {
+    // we want to sleep in the background thread but still want to be responsive for closing down
+    for(int i = 0; i < 10; i++)
+    {
+      if(c->running_cnt == -1)
+        return 0;   
+      c->running_cnt++;
+      g_usleep(50000);
+    }
+    dt_camctl_detect_cameras(c);
+  }
   return 0;
 }
 

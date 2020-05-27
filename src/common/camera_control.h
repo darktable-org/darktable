@@ -144,6 +144,9 @@ typedef struct dt_camctl_t
   /** List of cameras found and initialized by camera control.*/
   GList *cameras;
 
+  /** background thread control counter **/
+  int running_cnt;
+ 
   /** The actual gphoto2 context */
   GPContext *gpcontext;
   /** List of gphoto2 port drivers */
@@ -217,8 +220,6 @@ void dt_camctl_destroy(dt_camctl_t *c);
 void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Unregisters a listener of camera control */
 void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
-/** Detect cameras and update list of available cameras */
-void dt_camctl_detect_cameras(const dt_camctl_t *c);
 /** Check if there is any camera connected */
 int dt_camctl_have_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/
