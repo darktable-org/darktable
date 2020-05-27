@@ -154,7 +154,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
 static const __m128 fone ALIGNED(64) = VEC4(0x3f800000u);
 static const __m128 femo ALIGNED(64) = VEC4(0x00adf880u);
-static const __m128 ooo1 ALIGNED(64) = { 0.f, 0.f, 0.f, 1.f };
+static const __m128 o111 ALIGNED(64) = { ~0, ~0, ~0, 0 };
 
 /* SSE intrinsics version of dt_fast_expf defined in darktable.h */
 static inline __m128 dt_fast_expf_sse2(const __m128 x)
@@ -195,18 +195,14 @@ static inline void weight(const float *c1, const float *c2, const float sharpen,
  */
 static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float sharpen)
 {
-  const __m128 vsharpen = _mm_set1_ps(-sharpen); // (-s, -s, -s, -s)
-  __m128 diff = _mm_sub_ps(*c1, *c2);
-  __m128 square = _mm_mul_ps(diff, diff);                                   // (?, d3, d2, d1)
+  const __m128 diff = *c1 - *c2;
+  __m128 square = diff * diff;                                      // (?, d3, d2, d1)
   __m128 square2 = _mm_shuffle_ps(square, square, _MM_SHUFFLE(3, 1, 2, 0)); // (?, d2, d3, d1)
-  __m128 added = _mm_add_ps(square, square2);                               // (?, d2+d3, d2+d3, 2*d1)
-  added = _mm_sub_ss(added, square);                                        // (?, d2+d3, d2+d3, d1)
-  __m128 sharpened = _mm_mul_ps(added, vsharpen);                   // (?, -s*(d2+d3), -s*(d2+d3), -s*d1)
-  __m128 exp = dt_fast_expf_sse2(sharpened);                        // (?, wc, wc, wl)
-  exp = _mm_castsi128_ps(_mm_slli_si128(_mm_castps_si128(exp), 4)); // (wc, wc, wl, 0)
-  exp = _mm_castsi128_ps(_mm_srli_si128(_mm_castps_si128(exp), 4)); // (0, wc, wc, wl)
-  exp = _mm_or_ps(exp, ooo1);                                       // (1, wc, wc, wl)
-  return exp;
+  __m128 added = square + square2;                                  // (?, d2+d3, d2+d3, 2*d1)
+  added = _mm_sub_ss(added, square);                                // (?, d2+d3, d2+d3, d1)
+  __m128 sharpened = added * _mm_set1_ps(-sharpen);                 // (?, -s*(d2+d3), -s*(d2+d3), -s*d1)
+  sharpened = _mm_and_ps(sharpened,o111);			    // (0, -s*(d2+d3), -s*(d2+d3), -s*d1)
+  return dt_fast_expf_sse2(sharpened);                              // (1, wc, wc, wl)
 }
 #endif
 
