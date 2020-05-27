@@ -1117,7 +1117,7 @@ void dt_cleanup()
   dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
 #ifdef HAVE_GPHOTO2
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
-  camctl->running_cnt = -1;
+  if(camctl)  camctl->running_cnt = -1;
 #endif
 
 #ifdef HAVE_PRINT
