@@ -84,24 +84,34 @@ gchar *dt_loc_get_home_dir(const gchar *user)
 #endif
 }
 
-gchar *dt_loc_init_generic(const char *value, const char *application_directory, const char *default_value)
+gchar *dt_loc_init_generic(const char *absolute_value, const char *application_directory, const char *default_value)
 {
-  const gchar *path = value ? value : default_value;
-  gchar *fixed_path = dt_util_fix_path(path);
   gchar *result = NULL;
-
-  if(application_directory != NULL)
+  
+  // the only adjustment the absolute path needs is transforming the possible tilde '~' to an absolute path
+  if(absolute_value)
   {
-    // combine basename (application_directory) and relative path (value)
-    gchar complete_path[PATH_MAX] = { 0 };
-    g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, fixed_path);
-    g_free(fixed_path);
-    // removes '.', '..', and extra '/' characters 
-    result = g_realpath(complete_path);
+    gchar *path = dt_util_fix_path(absolute_value);
+    result = g_realpath(path);
+    g_free(path);
   }
   else
   {
-    result = fixed_path;
+    // the default_value could be absolute or relative. we decide upon presence of the application_directory.
+    if(application_directory)
+    {
+      // default_value is relative.
+      // combine basename (application_directory) and relative path (default_value).
+      gchar complete_path[PATH_MAX] = { 0 };
+      g_snprintf(complete_path, sizeof(complete_path), "%s%s", application_directory, default_value);
+      // removes '.', '..', and extra '/' characters.
+      result = g_realpath(complete_path);
+    }
+    else
+    {
+      // default_value is absolute
+      result = g_realpath(default_value);
+    }
   }
 
   if(g_file_test(result, G_FILE_TEST_EXISTS) == FALSE) g_mkdir_with_parents(result, 0700);
