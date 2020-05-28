@@ -770,7 +770,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     gchar* relative_application_directory = g_strndup(argv[0], lastPathCharacter - argv[0] + 1);
     // retrieving an absolute path
-    application_directory = g_realpath(relative_application_directory);
+    application_directory = g_realpath(relative_application_directory, TRUE);
     g_free(relative_application_directory);
   }
   dt_print(DT_DEBUG_DEV, "application directory: %s\n", application_directory);

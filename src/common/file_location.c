@@ -87,12 +87,13 @@ gchar *dt_loc_get_home_dir(const gchar *user)
 gchar *dt_loc_init_generic(const char *absolute_value, const char *application_directory, const char *default_value)
 {
   gchar *result = NULL;
+  const gboolean exit_on_error = FALSE;
   
   // the only adjustment the absolute path needs is transforming the possible tilde '~' to an absolute path
   if(absolute_value)
   {
     gchar *path = dt_util_fix_path(absolute_value);
-    result = g_realpath(path);
+    result = g_realpath(path, exit_on_error);
     g_free(path);
   }
   else
@@ -105,12 +106,12 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
       gchar complete_path[PATH_MAX] = { 0 };
       g_snprintf(complete_path, sizeof(complete_path), "%s/%s", application_directory, default_value);
       // removes '.', '..', and extra '/' characters.
-      result = g_realpath(complete_path);
+      result = g_realpath(complete_path, exit_on_error);
     }
     else
     {
       // default_value is absolute
-      result = g_realpath(default_value);
+      result = g_realpath(default_value, exit_on_error);
     }
   }
 

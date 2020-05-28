@@ -107,7 +107,7 @@ int dt_lua_copy_image(lua_State *L)
 
 static int import_images(lua_State *L)
 {
-  char *full_name = g_realpath(luaL_checkstring(L, -1));
+  char *full_name = g_realpath(luaL_checkstring(L, -1), TRUE);
   int result;
 
   if(!full_name || !g_file_test(full_name, G_FILE_TEST_EXISTS))
@@ -132,7 +132,7 @@ static int import_images(lua_State *L)
     char *dirname = g_path_get_dirname(full_name);
     char *expanded_path = dt_util_fix_path(dirname);
     g_free(dirname);
-    char *final_path = g_realpath(expanded_path);
+    char *final_path = g_realpath(expanded_path, TRUE);
     g_free(expanded_path);
     if(!final_path)
     {

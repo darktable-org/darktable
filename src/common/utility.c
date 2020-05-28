@@ -622,7 +622,7 @@ gchar *dt_util_normalize_path(const gchar *_input)
     char *current_dir = g_get_current_dir();
     char *tmp_filename = g_build_filename(current_dir, filename, NULL);
     g_free(filename);
-    filename = g_realpath(tmp_filename);
+    filename = g_realpath(tmp_filename, TRUE);
     if(filename == NULL)
     {
       g_free(current_dir);
