@@ -1057,13 +1057,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_halign(hw[DT_MODULE_RESET], GTK_ALIGN_END);
 
   gtk_widget_show_all(module->widget);
-
-  char *css_name = NULL;
-  css_name = dt_util_dstrcat(css_name, "lib-plugin-ui-%s", module->plugin_name);
-  gtk_widget_set_name(module->widget, css_name);
-  g_free(css_name);
-
-  //gtk_widget_set_name(module->widget, "lib-plugin-ui-main");
+  gtk_widget_set_name(module->widget, "lib-plugin-ui-main");
   gtk_widget_set_name(pluginui_frame, "lib-plugin-ui");
   module->expander = expander;
 
