@@ -44,18 +44,89 @@ include(DefineOptions.cmake)
 include(GNUInstallDirs)
 include(FeatureSummary)
 
-set(DARKTABLE_LIBDIR    "${CMAKE_BINARY_DIR}/lib/darktable")
-set(DARKTABLE_BINDIR    "${CMAKE_BINARY_DIR}/bin")
-set(DARKTABLE_DATADIR   "${CMAKE_BINARY_DIR}/share/darktable") # darktablerc, themes, icons, ... Cannot use ${CMAKE_BINDIR}/data because not everything resides there. Like icons (pixmaps)
-set(DARKTABLE_SHAREDIR  "${DARKTABLE_DATADIR}")
-set(DARKTABLE_LOCALEDIR "${CMAKE_BINARY_DIR}/share/locale")
+# given 
+# /games/bin/darktable.exe
+# /lib/darktable/{libdarktable.so, plugins/, views}
+# /share/{appdata, applications, darktable, doc, locale, man}
+# -> INSTALL TREE
+# CMAKE_BINARY_DIR:    /games/bin
+# DARKTABLE_LIBDIR:    /lib/darktable
+# DARKTABLE_DATADIR:   /share/darktable
+# DARKTABLE_SHAREDIR:  /share/darktable
+# DARKTABLE_LOCALEDIR: /share/locale
+# -> BUILD TREE
+# /home/foo/build/bin/games/bin/darktable.exe
+# /home/foo/build/bin/lib/darktable/{libdarktable.so, plugins/, views}
+# /home/foo/build/bin/share/{appdata, applications, darktable, doc, locale, man}
+# CMAKE_BINARY_DIR:    /home/foo/build/bin/games/bin
+# DARKTABLE_LIBDIR:    /home/foo/build/bin/lib/darktable
+# DARKTABLE_DATADIR:   /home/foo/build/bin/share/darktable
+# DARKTABLE_SHAREDIR:  /home/foo/build/bin/share/darktable
+# DARKTABLE_LOCALEDIR: /home/foo/build/bin/share/locale
 
-set(DARKTABLE_RELATIVE_LIBDIR    "../${CMAKE_INSTALL_LIBDIR}/darktable")
-set(DARKTABLE_RELATIVE_DATADIR   "../${CMAKE_INSTALL_DATAROOTDIR}/darktable")
-set(DARKTABLE_RELATIVE_SHAREDIR  "${DARKTABLE_RELATIVE_DATADIR}")
-set(DARKTABLE_RELATIVE_LOCALEDIR "../${CMAKE_INSTALL_LOCALEDIR}")
+include(CMakePrintHelpers)
 
-# https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
+cmake_print_variables(CMAKE_INSTALL_BINDIR) # (bin)
+cmake_print_variables(CMAKE_INSTALL_LIBDIR) # (lib) or lib64 or lib/<multiarch-tuple>
+cmake_print_variables(CMAKE_INSTALL_DATADIR) # (share) DATAROOTDIR
+cmake_print_variables(CMAKE_INSTALL_DATAROOTDIR) # (share)
+cmake_print_variables(CMAKE_INSTALL_LOCALEDIR) # (share/locale) DATAROOTDIR/locale
+MESSAGE("*******")
+# we transform the variables to CMAKE_PATH(slash based)
+file(TO_CMAKE_PATH "/${CMAKE_INSTALL_BINDIR}/" CMAKE_INSTALL_BINDIR_CMAKE_PATH)
+file(TO_CMAKE_PATH "/${CMAKE_INSTALL_LIBDIR}/" CMAKE_INSTALL_LIBDIR_CMAKE_PATH)
+file(TO_CMAKE_PATH "/${CMAKE_INSTALL_DATADIR}/" CMAKE_INSTALL_DATADIR_CMAKE_PATH)
+file(TO_CMAKE_PATH "/${CMAKE_INSTALL_DATAROOTDIR}/" CMAKE_INSTALL_DATAROOTDIR_CMAKE_PATH)
+file(TO_CMAKE_PATH "/${CMAKE_INSTALL_LOCALEDIR}/" CMAKE_INSTALL_LOCALEDIR_CMAKE_PATH)
+cmake_print_variables(CMAKE_INSTALL_BINDIR_CMAKE_PATH) # "/bin"
+cmake_print_variables(CMAKE_INSTALL_LIBDIR_CMAKE_PATH) # "/lib"
+cmake_print_variables(CMAKE_INSTALL_DATADIR_CMAKE_PATH) # "/share"
+cmake_print_variables(CMAKE_INSTALL_DATAROOTDIR_CMAKE_PATH) # "/share"
+cmake_print_variables(CMAKE_INSTALL_LOCALEDIR_CMAKE_PATH) # "/share/locale"
+MESSAGE("*******")
+file(TO_NATIVE_PATH "/" ROOT_NATIVE_PATH) 
+cmake_print_variables(ROOT_NATIVE_PATH) # "/"
+get_filename_component(CMAKE_INSTALL_BINDIR_ABS "${CMAKE_INSTALL_BINDIR}" REALPATH BASE_DIR "${ROOT_NATIVE_PATH}")
+get_filename_component(CMAKE_INSTALL_LIBDIR_ABS "${CMAKE_INSTALL_LIBDIR}" REALPATH BASE_DIR "${CMAKE_INSTALL_BINDIR_ABS}")
+get_filename_component(CMAKE_INSTALL_DATADIR_ABS "${CMAKE_INSTALL_DATADIR}" REALPATH BASE_DIR "${CMAKE_INSTALL_BINDIR_ABS}")
+get_filename_component(CMAKE_INSTALL_DATAROOTDIR_ABS "${CMAKE_INSTALL_DATAROOTDIR}" REALPATH BASE_DIR "${CMAKE_INSTALL_BINDIR_ABS}")
+get_filename_component(CMAKE_INSTALL_LOCALEDIR_ABS "${CMAKE_INSTALL_LOCALEDIR}" REALPATH BASE_DIR "${CMAKE_INSTALL_BINDIR_ABS}")
+cmake_print_variables(CMAKE_INSTALL_BINDIR_ABS) # /usr/bin
+cmake_print_variables(CMAKE_INSTALL_LIBDIR_ABS) # /usr/bin/lib
+cmake_print_variables(CMAKE_INSTALL_DATADIR_ABS) # /usr/bin/share
+cmake_print_variables(CMAKE_INSTALL_DATAROOTDIR_ABS) # /usr/bin/share
+cmake_print_variables(CMAKE_INSTALL_LOCALEDIR_ABS) # /usr/bin/share/locale
+MESSAGE("*******")
+file(RELATIVE_PATH DARKTABLE_RELATIVE_LIBDIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_LIBDIR_ABS}")
+file(RELATIVE_PATH DARKTABLE_RELATIVE_DATADIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_DATADIR_ABS}")
+file(RELATIVE_PATH DARKTABLE_RELATIVE_DATAROOTDIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_DATAROOTDIR_ABS}")
+file(RELATIVE_PATH DARKTABLE_RELATIVE_LOCALEDIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_LOCALEDIR_ABS}")
+cmake_print_variables(DARKTABLE_RELATIVE_LIBDIR) # lib
+cmake_print_variables(DARKTABLE_RELATIVE_DATADIR) # share
+cmake_print_variables(DARKTABLE_RELATIVE_DATAROOTDIR) # share
+cmake_print_variables(DARKTABLE_RELATIVE_LOCALEDIR) # share/locale
+MESSAGE("*******")
+# get relative pathes specific to the system
+file(RELATIVE_PATH REL_BIN_TO_LIB ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_LIBDIR_CMAKE_PATH}")
+file(RELATIVE_PATH REL_BIN_TO_DATADIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_DATADIR_CMAKE_PATH}")
+file(RELATIVE_PATH REL_BIN_TO_DATAROOT ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_DATAROOTDIR_CMAKE_PATH}")
+file(RELATIVE_PATH REL_BIN_TO_LOCALEDIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_LOCALEDIR_CMAKE_PATH}")
+cmake_print_variables(REL_BIN_TO_LIB) # ../../lib
+cmake_print_variables(REL_BIN_TO_DATADIR) # ../../share
+cmake_print_variables(REL_BIN_TO_DATAROOT) # ../../share
+cmake_print_variables(REL_BIN_TO_LOCALEDIR) # ../../share/locale
+MESSAGE("*******")
+set(DARKTABLE_BINDIR       "${CMAKE_BINARY_DIR}/bin")
+set(DARKTABLE_LIBDIR       "${CMAKE_BINARY_DIR}/${DARKTABLE_RELATIVE_LIBDIR}")
+set(DARKTABLE_DATADIR      "${CMAKE_BINARY_DIR}/${DARKTABLE_RELATIVE_DATADIR}") # DATAROOTDIR == DATADIR == SHAREDIR # darktablerc, themes, icons, ... Cannot use ${CMAKE_BINDIR}/data because not everything resides there. Like icons (pixmaps)
+set(DARKTABLE_DATAROOTDIR  "${DARKTABLE_DATADIR}")
+set(DARKTABLE_LOCALEDIR    "${CMAKE_BINARY_DIR}/share/locale")
+cmake_print_variables(DARKTABLE_BINDIR)
+cmake_print_variables(DARKTABLE_LIBDIR)
+cmake_print_variables(DARKTABLE_DATADIR)
+cmake_print_variables(DARKTABLE_DATAROOTDIR)
+cmake_print_variables(DARKTABLE_LOCALEDIR)
+
 if(${FORCE_COLORED_OUTPUT})
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_compile_options(-fdiagnostics-color=always)
