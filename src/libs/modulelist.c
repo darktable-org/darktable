@@ -33,7 +33,8 @@ DT_MODULE(1)
 
 #define DT_MODULE_LIST_SPACING DT_PIXEL_APPLY_DPI(2)
 
-#define ICON_SIZE DT_PIXEL_APPLY_DPI(16)
+#define ICON_SIZE DT_PIXEL_APPLY_DPI(20)
+#define FAV_SIZE DT_PIXEL_APPLY_DPI(18)
 typedef struct dt_lib_modulelist_t
 {
   GtkTreeView *tree;
@@ -214,7 +215,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   cairo_surface_t *fav_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
   cairo_t *fav_cr = cairo_create(fav_cst);
   cairo_set_source_rgb(fav_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_modulegroup_favorites(fav_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0, NULL);
+  dtgtk_cairo_paint_modulegroup_favorites(fav_cr, (ICON_SIZE - FAV_SIZE) / 2, (ICON_SIZE - FAV_SIZE) / 2, FAV_SIZE, FAV_SIZE, 0, NULL);
   cairo_destroy(fav_cr);
   guchar *data = cairo_image_surface_get_data(fav_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
