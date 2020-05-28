@@ -757,7 +757,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
 
-  // get the application directory from the first argument containing the full path to the executable
+  // get the application directory from the first argument containing the (relative) path to the executable
   gchar* application_directory = NULL;
   gchar* lastPathCharacter = g_strrstr(argv[0], "/");
 
@@ -768,7 +768,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(lastPathCharacter)
   {
-    application_directory = g_strndup(argv[0], lastPathCharacter - argv[0] + 1);
+    gchar* relative_application_directory = g_realpath(g_strndup(argv[0], lastPathCharacter - argv[0] + 1));
+    // retrieving an absolute path
+    application_directory = g_realpath(relative_application_directory);
+    g_free(relative_application_directory);
   }
   dt_print(DT_DEBUG_DEV, "application directory: %s\n", application_directory);
 
