@@ -79,6 +79,7 @@
 #include <unistd.h>
 #include <locale.h>
 #include <limits.h>
+#include "whereami.h"
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -757,29 +758,26 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
 
-  // get the application directory from the first argument containing the (relative) path to the executable
-  gchar* application_directory = NULL;
-  gchar* lastPathCharacter = g_strrstr(argv[0], "/");
-
-  if(!lastPathCharacter)
+  char* application_directory = NULL;
+  int dirname_length;
+  // calling wai_getExecutablePath twice as recommended in the docs:
+  // the first call retrieves the length of the path
+  int length = wai_getExecutablePath(NULL, 0, &dirname_length);
+  if (length > 0)
   {
-    lastPathCharacter = g_strrstr(argv[0], "\\");
+    application_directory = (char*)malloc(length + 1);
+    // the second call retrieves the path including the executable
+    wai_getExecutablePath(application_directory, length, &dirname_length);
+    // strip of the executable name from the path to retrieve the path alone
+    application_directory[dirname_length] = '\0';
   }
-
-  if(lastPathCharacter)
-  {
-    gchar* relative_application_directory = g_strndup(argv[0], lastPathCharacter - argv[0] + 1);
-    // retrieving an absolute path
-    application_directory = g_realpath(relative_application_directory);
-    g_free(relative_application_directory);
-  }
-  dt_print(DT_DEBUG_DEV, "application directory: %s\n", application_directory);
+  dt_print(DT_DEBUG_DEV, "application_directory: %s\n", application_directory);
 
   // set up absolute pathes based on their relative value
   dt_loc_init_datadir(application_directory, datadir_from_command);
   dt_loc_init_plugindir(application_directory, moduledir_from_command);
   dt_loc_init_localedir(application_directory, localedir_from_command);
-  g_free(application_directory);
+  free(application_directory);
 
   if(dt_loc_init_tmp_dir(tmpdir_from_command))
   {

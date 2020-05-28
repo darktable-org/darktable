@@ -2,6 +2,9 @@ if(USE_XCF)
   add_subdirectory(libxcf)
 endif()
 
+add_library(whereami STATIC "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src/whereami.c")
+target_include_directories(whereami PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src/")
+
 set(BUILD_TESTING_SAVE "${BUILD_TESTING}")
 
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
