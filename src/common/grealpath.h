@@ -31,8 +31,7 @@ static inline gchar *g_realpath(const char *path)
   }
   else 
   {     
-    fprintf(stderr, "path lookup '%s' fails with: '%s'\n", path, strerror(errno));
-    exit(EXIT_FAILURE);
+    return NULL;
   }
 #else
   char *buffer;
