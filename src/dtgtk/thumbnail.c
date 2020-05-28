@@ -1261,7 +1261,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // reject icon
     gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
-    gtk_widget_set_margin_start(thumb->w_reject, 0.03 * width);
+    int pos = MAX(0.03 * width, (width - 15.0 * r1) * 0.5 - 4 * 3.0 * r1);
+    gtk_widget_set_margin_start(thumb->w_reject, pos);
     gtk_widget_set_margin_bottom(thumb->w_reject, 0.03 * width);
 
     // stars
@@ -1276,9 +1277,10 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // the color labels
     gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
-    gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
+    gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_START);
     gtk_widget_set_margin_bottom(thumb->w_color, 0.03 * width);
-    gtk_widget_set_margin_end(thumb->w_color, 0.03 * width);
+    pos = MIN(width - (0.03 * width + r1 * 3.0), (width - 15.0 * r1) * 0.5 + 8.25 * 3.0 * r1);
+    gtk_widget_set_margin_start(thumb->w_color, pos);
 
     // the local copy indicator
     gtk_widget_set_size_request(thumb->w_local_copy, 1.618 * r1, 1.618 * r1);
