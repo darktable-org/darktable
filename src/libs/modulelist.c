@@ -33,7 +33,7 @@ DT_MODULE(1)
 
 #define DT_MODULE_LIST_SPACING DT_PIXEL_APPLY_DPI(2)
 
-#define ICON_SIZE DT_PIXEL_APPLY_DPI(20)
+#define ICON_SIZE DT_PIXEL_APPLY_DPI(16)
 typedef struct dt_lib_modulelist_t
 {
   GtkTreeView *tree;
