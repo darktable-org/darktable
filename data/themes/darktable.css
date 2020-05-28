@@ -394,13 +394,6 @@ overshoot.right
 }
 
 /* Set toolbars buttons in lighttable and darkroom */
-/* note that some button used to have different hardcoded paddings */
-/* overlay color changer */
-/* quick favorites */
-/* quick styles */
-/* display2 */
-/* they now look unbalanced */
-/* TODO: adjust icons individually */
 #header-toolbar #dt-toggle-button,
 #header-toolbar #dt-button,
 #footer-toolbar #dt-toggle-button,
@@ -476,7 +469,7 @@ overshoot.right
 #header-toolbar #control-button
 {
   min-height: 1em;
-  min-width: 0.81em;
+  min-width: 0.9em;
   padding: 0.15em;
   margin: 0.15em;
 }
@@ -513,22 +506,13 @@ overshoot.right
 #module-reset-button,
 #module-enable-button,
 #module-instance-button,
-#module-enable-button
+#module-enable-button,
+#module-collapse-button
 {
   /* background-color: transparent; this doesn't work */
   min-height: 1.15em;
   min-width: 1.15em;
   padding: 0.06em;
-}
-
-/* this need to be tweaked separately, because it used a different */
-/* hardcoded padding. TODO: scale icon instead */
-#module-collapse-button
-{
-  /* background-color: transparent; this doesn't work */
-  min-height: 0.81em;
-  min-width: 0.81em;
-  padding: 0.23em;
 }
 
 #module-always-enabled-button /* button on always activated module */
