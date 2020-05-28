@@ -216,7 +216,7 @@ static int dt_mipmap_cache_get_filename(gchar *mipmapfilename, size_t size)
     goto exit;
   }
 
-  abspath = g_realpath(dbfilename, TRUE);
+  abspath = g_realpath(dbfilename);
   if(!abspath) abspath = g_strdup(dbfilename);
 
   GChecksum *chk = g_checksum_new(G_CHECKSUM_SHA1);

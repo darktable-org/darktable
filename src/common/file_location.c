@@ -87,14 +87,12 @@ gchar *dt_loc_get_home_dir(const gchar *user)
 gchar *dt_loc_init_generic(const char *absolute_value, const char *application_directory, const char *default_value)
 {
   gchar *result = NULL;
-  const gboolean exit_on_error = FALSE;
+  gchar *path = NULL;
   
-  // the only adjustment the absolute path needs is transforming the possible tilde '~' to an absolute path
   if(absolute_value)
   {
-    gchar *path = dt_util_fix_path(absolute_value);
-    result = g_realpath(path, exit_on_error);
-    g_free(path);
+    // the only adjustment the absolute path needs is transforming the possible tilde '~' to an absolute path
+    path = dt_util_fix_path(absolute_value);
   }
   else
   {
@@ -105,18 +103,21 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
       // combine basename (application_directory) and relative path (default_value).
       gchar complete_path[PATH_MAX] = { 0 };
       g_snprintf(complete_path, sizeof(complete_path), "%s/%s", application_directory, default_value);
-      // removes '.', '..', and extra '/' characters.
-      result = g_realpath(complete_path, exit_on_error);
+      path = g_strdup(complete_path);
     }
     else
     {
       // default_value is absolute
-      result = g_realpath(default_value, exit_on_error);
+      path = g_strdup(default_value);
     }
   }
 
-  if(g_file_test(result, G_FILE_TEST_EXISTS) == FALSE) g_mkdir_with_parents(result, 0700);
-
+  // create file if it does not exist
+  if(g_file_test(path, G_FILE_TEST_EXISTS) == FALSE) g_mkdir_with_parents(path, 0700);
+  
+  // removes '.', '..', and extra '/' characters.
+  result = g_realpath(path);
+  g_free(path);
   return result;
 }
 

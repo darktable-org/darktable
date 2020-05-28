@@ -16,7 +16,7 @@
  * this should be a) filled in for win32 and b) put in glib...
  */
 
-static inline gchar *g_realpath(const char *path, gboolean exit_on_error)
+static inline gchar *g_realpath(const char *path)
 {
 #ifndef _WIN32
 #ifndef PATH_MAX
@@ -31,16 +31,8 @@ static inline gchar *g_realpath(const char *path, gboolean exit_on_error)
   }
   else 
   {     
-    if(exit_on_error)
-    {
-      fprintf(stderr, "path lookup '%s' fails with: '%s'\n", path, strerror(errno));
-      exit(EXIT_FAILURE);
-    }
-    else
-    {
-      return NULL;
-    }
-    
+    fprintf(stderr, "path lookup '%s' fails with: '%s'\n", path, strerror(errno));
+    exit(EXIT_FAILURE);
   }
 #else
   char *buffer;
