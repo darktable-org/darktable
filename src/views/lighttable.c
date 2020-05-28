@@ -205,7 +205,7 @@ static void _culling_reinit(dt_view_t *self)
   dt_culling_init(lib->culling, lib->culling->offset);
 }
 
-static void _culling_preview_refresh(dt_view_t *self)
+static void _culling_preview_reload_overlays(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
@@ -218,6 +218,14 @@ static void _culling_preview_refresh(dt_view_t *self)
   over = dt_conf_get_int(otxt);
   dt_culling_set_overlays_mode(lib->preview, over);
   g_free(otxt);
+}
+
+static void _culling_preview_refresh(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // change overlays if needed for culling and preview
+  _culling_preview_reload_overlays(self);
 
   // full_preview change
   if(lib->preview_state)
@@ -306,6 +314,7 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
   darktable.view_manager->proxy.lighttable.culling_init_mode = _culling_reinit;
   darktable.view_manager->proxy.lighttable.culling_preview_refresh = _culling_preview_refresh;
+  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays = _culling_preview_reload_overlays;
 
   // ensure the memory table is up to date
   dt_collection_memory_update();

@@ -1020,13 +1020,13 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
 
     cairo_paint(cr);
-/* from focus_peaking.h
-   static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
-                                   uint8_t *const restrict image,
-                                   const int buf_width, const int buf_height)
-   The current implementation assumes the data at image is organized as a rectangle without a stride,
-   So we pass the raw data to be processed, this is more data but correct. 
-*/
+    /* from focus_peaking.h
+       static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
+                                       uint8_t *const restrict image,
+                                       const int buf_width, const int buf_height)
+       The current implementation assumes the data at image is organized as a rectangle without a stride,
+       So we pass the raw data to be processed, this is more data but correct.
+    */
     if(darktable.gui->show_focus_peaking)
       dt_focuspeaking(cr, img_width, img_height, rgbbuf, buf_wd, buf_ht);
 
@@ -1211,6 +1211,11 @@ void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm)
 void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module) vm->proxy.lighttable.culling_preview_refresh(vm->proxy.lighttable.view);
+}
+
+void dt_view_lighttable_culling_preview_reload_overlays(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module) vm->proxy.lighttable.culling_preview_reload_overlays(vm->proxy.lighttable.view);
 }
 
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)

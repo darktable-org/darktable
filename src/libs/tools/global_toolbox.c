@@ -39,9 +39,9 @@ typedef struct dt_lib_tool_preferences_t
 {
   GtkWidget *preferences_button, *grouping_button, *overlays_button, *help_button;
   GtkWidget *over_popup, *thumbnails_box, *culling_box;
-  GtkWidget *over_label, *over_r0, *over_r1, *over_r2, *over_r3, *over_r4, *over_r5, *over_r6;
-  GtkWidget *over_culling_label, *over_culling_r0, *over_culling_r1, *over_culling_r2, *over_culling_r3,
-      *over_culling_r4, *over_culling_r5, *over_culling_r6;
+  GtkWidget *over_label, *over_r0, *over_r1, *over_r2, *over_r3, *over_r4, *over_r5, *over_r6, *over_timeout;
+  GtkWidget *over_culling_label, *over_culling_r0, *over_culling_r3, *over_culling_r4, *over_culling_r6,
+      *over_culling_timeout;
 } dt_lib_tool_preferences_t;
 
 /* callback for grouping button */
@@ -107,7 +107,10 @@ static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
 
   dt_thumbtable_set_overlays_mode(dt_ui_thumbtable(darktable.gui->ui), over);
 
-  gtk_widget_hide(d->over_popup);
+  gtk_widget_set_sensitive(d->over_timeout, (over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK));
+
+  // we don't hide the popup in case of block overlay, as the user may want to tweak the duration
+  if(over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) gtk_widget_hide(d->over_popup);
 
 #ifdef USE_LUA
   gboolean show = (over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED);
@@ -126,31 +129,51 @@ static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
   dt_thumbnail_overlay_t over = DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK;
   if(w == d->over_culling_r0)
     over = DT_THUMBNAIL_OVERLAYS_NONE;
-  else if(w == d->over_culling_r1)
-    over = DT_THUMBNAIL_OVERLAYS_HOVER_NORMAL;
-  else if(w == d->over_culling_r2)
-    over = DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED;
   else if(w == d->over_culling_r3)
     over = DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL;
   else if(w == d->over_culling_r4)
     over = DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED;
-  else if(w == d->over_culling_r5)
-    over = DT_THUMBNAIL_OVERLAYS_MIXED;
 
   dt_culling_mode_t cmode = DT_CULLING_MODE_CULLING;
   if(dt_view_lighttable_preview_state(darktable.view_manager)) cmode = DT_CULLING_MODE_PREVIEW;
   gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", cmode);
   dt_conf_set_int(txt, over);
   g_free(txt);
-  dt_view_lighttable_culling_preview_refresh(darktable.view_manager);
+  dt_view_lighttable_culling_preview_reload_overlays(darktable.view_manager);
 
-  gtk_widget_hide(d->over_popup);
+  gtk_widget_set_sensitive(d->over_culling_timeout, (over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK));
+
+  // we don't hide the popup in case of block overlay, as the user may want to tweak the duration
+  if(over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) gtk_widget_hide(d->over_popup);
 
 #ifdef USE_LUA
   gboolean show = (over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED);
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper, 0, NULL, NULL, LUA_ASYNC_TYPENAME, "const char*",
                           "global_toolbox-overlay_toggle", LUA_ASYNC_TYPENAME, "bool", show, LUA_ASYNC_DONE);
 #endif // USE_LUA
+}
+
+static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+
+  const int val = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(w));
+
+  if(w == d->over_timeout)
+  {
+    dt_thumbtable_set_overlays_block_timeout(dt_ui_thumbtable(darktable.gui->ui), val);
+  }
+  else if(w == d->over_culling_timeout)
+  {
+    dt_culling_mode_t cmode = DT_CULLING_MODE_CULLING;
+    if(dt_view_lighttable_preview_state(darktable.view_manager)) cmode = DT_CULLING_MODE_PREVIEW;
+    gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", cmode);
+    dt_conf_set_int(txt, val);
+    g_free(txt);
+
+    dt_view_lighttable_culling_preview_reload_overlays(darktable.view_manager);
+  }
 }
 
 static void _overlays_show_popup(dt_lib_module_t *self)
@@ -195,6 +218,10 @@ static void _overlays_show_popup(dt_lib_module_t *self)
     // we get and set the current value
     dt_thumbnail_overlay_t mode = dt_ui_thumbtable(darktable.gui->ui)->overlays;
 
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->over_timeout),
+                              dt_ui_thumbtable(darktable.gui->ui)->overlays_block_timeout);
+    gtk_widget_set_sensitive(d->over_timeout, FALSE);
+
     if(mode == DT_THUMBNAIL_OVERLAYS_NONE)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_r0), TRUE);
     else if(mode == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
@@ -206,7 +233,10 @@ static void _overlays_show_popup(dt_lib_module_t *self)
     else if(mode == DT_THUMBNAIL_OVERLAYS_MIXED)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_r5), TRUE);
     else if(mode == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+    {
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_r6), TRUE);
+      gtk_widget_set_sensitive(d->over_timeout, TRUE);
+    }
     else
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_r1), TRUE);
 
@@ -237,20 +267,28 @@ static void _overlays_show_popup(dt_lib_module_t *self)
     dt_thumbnail_overlay_t mode = dt_conf_get_int(otxt);
     g_free(otxt);
 
+    otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", cmode);
+    int timeout = 2;
+    if(!dt_conf_key_exists(otxt))
+      timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
+    else
+      timeout = dt_conf_get_int(otxt);
+    g_free(otxt);
+
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->over_culling_timeout), timeout);
+    gtk_widget_set_sensitive(d->over_culling_timeout, FALSE);
+
     if(mode == DT_THUMBNAIL_OVERLAYS_NONE)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_culling_r0), TRUE);
-    else if(mode == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_culling_r2), TRUE);
     else if(mode == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_culling_r3), TRUE);
     else if(mode == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_culling_r4), TRUE);
-    else if(mode == DT_THUMBNAIL_OVERLAYS_MIXED)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_culling_r5), TRUE);
-    else if(mode == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_culling_r6), TRUE);
     else
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_culling_r1), TRUE);
+    {
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_culling_r6), TRUE);
+      gtk_widget_set_sensitive(d->over_culling_timeout, TRUE);
+    }
 
     gtk_widget_show_all(d->culling_box);
     show = TRUE;
@@ -357,10 +395,15 @@ void gui_init(dt_lib_module_t *self)
                                                            _("permanent overlays extended on mouse hover"));
   g_signal_connect(G_OBJECT(d->over_r5), "toggled", G_CALLBACK(_overlays_toggle_button), self);
   gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_r5, TRUE, TRUE, 0);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->over_r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_r0),
-                                                           _("overlays block on mouse hover"));
+                                                           _("overlays block on mouse hover. duration (s) "));
   g_signal_connect(G_OBJECT(d->over_r6), "toggled", G_CALLBACK(_overlays_toggle_button), self);
-  gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_r6, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), d->over_r6, TRUE, TRUE, 0);
+  d->over_timeout = gtk_spin_button_new_with_range(-1, 99, 1);
+  g_signal_connect(G_OBJECT(d->over_timeout), "value-changed", G_CALLBACK(_overlays_timeout_changed), self);
+  gtk_box_pack_start(GTK_BOX(hbox), d->over_timeout, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(d->thumbnails_box), hbox, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), d->thumbnails_box, TRUE, TRUE, 0);
 
@@ -373,14 +416,6 @@ void gui_init(dt_lib_module_t *self)
   d->over_culling_r0 = gtk_radio_button_new_with_label(NULL, _("no overlays"));
   g_signal_connect(G_OBJECT(d->over_culling_r0), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
   gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r0, TRUE, TRUE, 0);
-  d->over_culling_r1 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_culling_r0),
-                                                                   _("overlays on mouse hover"));
-  g_signal_connect(G_OBJECT(d->over_culling_r1), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
-  gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r1, TRUE, TRUE, 0);
-  d->over_culling_r2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_culling_r0),
-                                                                   _("extended overlays on mouse hover"));
-  g_signal_connect(G_OBJECT(d->over_culling_r2), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
-  gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r2, TRUE, TRUE, 0);
   d->over_culling_r3
       = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_culling_r0), _("permanent overlays"));
   g_signal_connect(G_OBJECT(d->over_culling_r3), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
@@ -389,14 +424,15 @@ void gui_init(dt_lib_module_t *self)
                                                                    _("permanent extended overlays"));
   g_signal_connect(G_OBJECT(d->over_culling_r4), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
   gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r4, TRUE, TRUE, 0);
-  d->over_culling_r5 = gtk_radio_button_new_with_label_from_widget(
-      GTK_RADIO_BUTTON(d->over_culling_r0), _("permanent overlays extended on mouse hover"));
-  g_signal_connect(G_OBJECT(d->over_culling_r5), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
-  gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r5, TRUE, TRUE, 0);
-  d->over_culling_r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_culling_r0),
-                                                                   _("overlays block on mouse hover"));
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  d->over_culling_r6 = gtk_radio_button_new_with_label_from_widget(
+      GTK_RADIO_BUTTON(d->over_culling_r0), _("overlays block on mouse hover. duration (s) "));
   g_signal_connect(G_OBJECT(d->over_culling_r6), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
-  gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r6, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), d->over_culling_r6, TRUE, TRUE, 0);
+  d->over_culling_timeout = gtk_spin_button_new_with_range(-1, 99, 1);
+  g_signal_connect(G_OBJECT(d->over_culling_timeout), "value-changed", G_CALLBACK(_overlays_timeout_changed), self);
+  gtk_box_pack_start(GTK_BOX(hbox), d->over_culling_timeout, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(d->culling_box), hbox, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), d->culling_box, TRUE, TRUE, 0);
   gtk_widget_show(vbox);
