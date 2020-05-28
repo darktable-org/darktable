@@ -590,8 +590,11 @@ static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpo
       thumb->overlay_timeout_id = 0;
     }
     _thumbs_show_overlays(thumb);
-    thumb->overlay_timeout_id
-        = g_timeout_add_seconds(thumb->overlay_timeout_duration, _thumbs_hide_overlays, thumb);
+    if(thumb->overlay_timeout_duration >= 0)
+    {
+      thumb->overlay_timeout_id
+          = g_timeout_add_seconds(thumb->overlay_timeout_duration, _thumbs_hide_overlays, thumb);
+    }
   }
 
   if(!thumb->mouse_over && !thumb->disable_mouseover) dt_control_set_mouse_over_id(thumb->imgid);
