@@ -496,10 +496,6 @@ endif(BUILD_TESTING)
 # 	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-m${USE_SSE_SET}")
 # endif(USE_SSE_SET)
 
-# setup some theme specific variables
-set(THEME hicolor)
-set(THEME_DIRECTORY "${DARKTABLE_RELATIVE_DATADIR}/../icons/${THEME}")
-
 # we need some specific functions:
 if(NOT WIN32)
     if(CMAKE_SYSTEM MATCHES "SunOS.*")
