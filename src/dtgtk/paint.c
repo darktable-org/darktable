@@ -2171,7 +2171,8 @@ void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, g
 
 void dtgtk_cairo_paint_modulegroup_favorites(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  const gint s = w < h ? w : h;
+  float s = w < h ? w : h;
+  s *= 1.1; // optical balance
   cairo_translate(cr, x + (w / 2.) - (s / 2.), y + (h / 2.) - (s / 2.));
   cairo_scale(cr, s, s);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
