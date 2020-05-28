@@ -1490,8 +1490,9 @@ static void _widget_change_parent_overlay(GtkWidget *w, GtkOverlay *new_parent)
   gtk_widget_show(w);
   g_object_unref(w);
 }
-void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over)
+void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over, int timeout)
 {
+  thumb->overlay_timeout_duration = timeout;
   // if no change, do nothing...
   if(thumb->over == over) return;
   dt_thumbnail_overlay_t old_over = thumb->over;
