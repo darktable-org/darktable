@@ -93,19 +93,12 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   if(flags & CPF_STYLE_FLAT)
   {
     if(flags & CPF_PRELIGHT)
-    {
       gtk_render_background(context, cr, startx, starty, cwidth, cheight);
-    }
     else if (!(flags & CPF_ACTIVE))
-    {
       fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
-    }
   }
   else if(!(flags & CPF_BG_TRANSPARENT))
-  {
-    /* draw default boxed button */
     gtk_render_background(context, cr, startx, starty, cwidth, cheight);
-  }
 
   gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
   gdk_cairo_set_source_rgba(cr, &fg_color);

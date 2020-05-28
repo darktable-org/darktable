@@ -455,6 +455,7 @@ overshoot.right
   min-height: 1.3em;
   min-width: 1.3em;
   padding: 0;
+  border: 0;
 }
 
 /* adjust icon extra room for buttons in modules main body */
@@ -537,6 +538,7 @@ overshoot.right
 #module-always-enabled-button /* button on always activated module */
 {
   color: @plugin_label_color;
+  border: 0;
 }
 
 /* Entries options in lighttable */
@@ -840,6 +842,7 @@ notebook tabs,
   min-width: 2em;
   margin: 0;
   padding: 0.1em;
+  border: 0;
 }
 
 #blending-tabs button
@@ -1328,6 +1331,7 @@ cell:selected
 {
   min-height: 2em;
   min-width: 1.7em;
+  border: 0;
 }
 
 #color-picker-button #button-canvas

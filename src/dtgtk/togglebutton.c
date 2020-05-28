@@ -101,26 +101,20 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* draw standard button background if not transparent nor flat styled */
   if((flags & CPF_STYLE_FLAT))
   {
-    if(flags & CPF_PRELIGHT || (flags & CPF_ACTIVE && !(flags & CPF_BG_TRANSPARENT)))
+    if((flags & CPF_PRELIGHT) || ((flags & CPF_ACTIVE) && !(flags & CPF_BG_TRANSPARENT)))
     {
       // When CPF_BG_TRANSPARENT is set, change the background on
       // PRELIGHT, but not on ACTIVE
       if(!(flags & CPF_BG_TRANSPARENT) || (flags & CPF_PRELIGHT))
-      {
         gtk_render_background(context, cr, startx, starty, cwidth, cheight);
-      }
     }
     else if(!(flags & CPF_ACTIVE) || (flags & CPF_IGNORE_FG_STATE))
-    {
       fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
-    }
   }
   else if(!(flags & CPF_BG_TRANSPARENT))
-  {
-    /* draw default boxed button */
     gtk_render_background(context, cr, startx, starty, cwidth, cheight);
-    gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
-  }
+
+  gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
 
   /* create pango text settings if label exists */
   PangoLayout *layout = NULL;
