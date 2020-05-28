@@ -770,6 +770,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     application_directory = g_strndup(argv[0], lastPathCharacter - argv[0] + 1);
   }
+  dt_print(DT_DEBUG_DEV, "application directory: %s\n", application_directory);
 
   // set up absolute pathes based on their relative value
   dt_loc_init_datadir(application_directory, datadir_from_command);
