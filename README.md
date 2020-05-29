@@ -17,12 +17,8 @@ darktable is an open source photography workflow application and raw developer. 
 4. [Building](#building)
    - [Dependencies](#dependencies)
    - [Get the source](#get-the-source)
-     + [Master branch (unstable)](#master-branch-unstable)
-     + [Latest stable release](#latest-stable-release)
    - [Get submodules](#get-submodules)
    - [Compile](#compile)
-     + [Easy way](#easy-way)
-     + [Manual way](#manual-way)
    - [Further reading](#further-reading)
 5. [Using](#using)
    - [Test/unstable version](#testunstable-version)
@@ -122,6 +118,33 @@ Optional dependencies with no version requirement:
 * Colord, Xatom *(for system display color profile fetching)* 
 * G'Mic *(for HaldcLUT support)*
 
+To install all the dependencies on Linux systems, you may use the source repositories of your distribution 
+(provided they are up-to-date):
+
+**Fedora and RHEL**
+```
+sudo dnf builddep darktable
+```
+
+**OpenSuse**
+```
+sudo zypper si -d darktable
+```
+
+**Ubuntu**
+```
+sed -e '/^#\sdeb-src /s/^# *//;t;d' "/etc/apt/sources.list" \
+| sudo tee /etc/apt/sources.list.d/darktable-sources-tmp.list > /dev/null \
+  && (    sudo apt-get update \
+       && sudo apt-get build-dep darktable \
+  ); sudo rm /etc/apt/sources.list.d/darktable-sources-tmp.list
+```
+
+**Debian**
+
+```
+sudo apt-get build-dep darktable
+```
 
 ### Get the source
 
