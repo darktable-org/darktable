@@ -3003,7 +3003,7 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
       //  change size
       float radius = 0.0f, r = 0.0f, phi = 0.0f;
       get_stamp_params(module, &radius, &r, &phi);
-      
+
       float factor = 1.0f;
       if(up && cabs(warp->radius - warp->point) > 10.0f)
         factor *= 0.97f;
