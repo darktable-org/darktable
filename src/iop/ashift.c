@@ -3448,10 +3448,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float iyo = g->buf_y_off;
 
     // the four corners of the input buffer of this module
-    const float V[4][2] = { { ixo,        iyo       },
-                          {   ixo,        iyo + iht },
-                          {   ixo + iwd,  iyo + iht },
-                          {   ixo + iwd,  iyo       } };
+    float V[4][2] = { { ixo,        iyo       },
+                      { ixo,        iyo + iht },
+                      { ixo + iwd,  iyo + iht },
+                      { ixo + iwd,  iyo       } };
 
     // convert coordinates of corners to coordinates of this module's output
     if(!call_distort_transform(self->dev, self->dev->preview_pipe, self, (float *)V, 4))
@@ -3470,10 +3470,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float oht = ymax - ymin;
 
     // the four clipping corners
-    const float C[4][2] = { { xmin + p->cl * owd, ymin + p->ct * oht },
-                            { xmin + p->cl * owd, ymin + p->cb * oht },
-                            { xmin + p->cr * owd, ymin + p->cb * oht },
-                            { xmin + p->cr * owd, ymin + p->ct * oht } };
+    float C[4][2] = { { xmin + p->cl * owd, ymin + p->ct * oht },
+                      { xmin + p->cl * owd, ymin + p->cb * oht },
+                      { xmin + p->cr * owd, ymin + p->cb * oht },
+                      { xmin + p->cr * owd, ymin + p->ct * oht } };
 
     // convert clipping corners to final output image
     if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL,
