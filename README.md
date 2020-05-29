@@ -5,6 +5,31 @@ darktable is an open source photography workflow application and raw developer. 
 
 [https://www.darktable.org/](https://www.darktable.org/ "darktable homepage")
 
+### Requirements
+
+Supported platforms:
+* Linux (64 bits), 
+* Free BSD (64 bits),
+* Windows 8 (64 bits), Windows 10 (64 bits), 
+* MacOS X.
+
+*32 bits OS are not officially supported, they might or might not work.* 
+
+*Windows support is still young and suffers from bugs that do not affect Linux. If possible, 
+prefer using darktable on Linux.*
+
+Hardware (minimal / **recommended**):
+* RAM: 4 GB / **8 GB**
+* CPU: Intel Pentium 4 / **Intel Core i5 4×2.4 GHz** 
+* GPU: none / **Nvidia 1024 cores, 4 GB, OpenCL 1.2 compatible**
+* free disk space: 250 MB / **1 GB**
+
+*darktable can run on lightweight configurations (even Raspberry Pi), but expect modules like denoising, local contrast, 
+contrast equalizer, retouch or liquify to be slow beyond usable.*
+
+*GPU is not mandatory but strongly recommended for a smoother experience. 
+Nvidia GPU are recommended for safety because some AMD drivers behave unreliably with some modules (local contrast).*
+
 Installing
 ----------
 
@@ -26,25 +51,12 @@ The master branch is for beta testing and is generaly not safe. See the notes be
 Building
 --------
 
-### Requirements
-
-Supported platforms:
-* Linux,
-* Windows 8, 10,
-* MacOS.
+### Dependencies
 
 Compatible compilers:
 * Clang: 8, 9, 10
 * GCC: 8, 9, 10
 * Mingw64: 6, 7
-
-Hardware (minimal / **recommended**):
-* RAM: 4 GB / **8 GB**
-* CPU: Intel Pentium 4 (64 bits, SIMD) / **Intel Core i5 4×2.4 GHz (64 bits, SIMD)** 
-* GPU: none / **1024 cores, 4 GB, OpenCL 1.2 compatible**
-* free disk space: 250 MB / **1 GB**
-
-### Dependencies
 
 Required dependencies minimal version:
 * CMake 3.10
