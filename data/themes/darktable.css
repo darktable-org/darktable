@@ -525,7 +525,7 @@ overshoot.right
 #module-enable-button,
 #module-instance-button,
 #module-enable-button,
-#module-collapse-button
+#module-collapse-button,
 #module-always-disabled-button
 {
   /* background-color: transparent; this doesn't work */
