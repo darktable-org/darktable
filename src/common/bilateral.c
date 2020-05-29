@@ -159,13 +159,16 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
       // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
       // should not cause clipping here.
 #ifdef _OPENMP
-#pragma omp simd aligned(buf:64)
+//#pragma omp simd aligned(buf:64)
 #endif
       for(int k = 0; k < 8; k++)
       {
         const size_t ii = grid_index + ((k & 1) ? ox : 0) + ((k & 2) ? oy : 0) + ((k & 4) ? oz : 0);
         const float contrib = ((k & 1) ? xf : (1.0f - xf)) * ((k & 2) ? yf : (1.0f - yf))
                               * ((k & 4) ? zf : (1.0f - zf)) * 100.0f / sigma_s;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
         buf[ii] += contrib;
       }
     }
