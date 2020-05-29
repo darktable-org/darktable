@@ -5,18 +5,6 @@ darktable is an open source photography workflow application and raw developer. 
 
 [https://www.darktable.org/](https://www.darktable.org/ "darktable homepage")
 
-Contributing
-------------
-
-* Write a blog about darktable
-* Create a tutorial for darktable
-* Help expand the [user wiki](https://github.com/darktable-org/darktable/wiki)
-* Answer questions on the [user mailing list](https://www.mail-archive.com/darktable-user@lists.darktable.org/)
-* Share your ideas on the [developer mailing list](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)
-* Test [releases](https://www.darktable.org/install/)
-* Review [pull requests](https://github.com/darktable-org/darktable/pulls)
-* Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
-
 Installing
 ----------
 
@@ -24,13 +12,14 @@ Installing
 
 * [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2-win64.exe)
 * [Download executable for Mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2.dmg)
-* [Install packages and repository for Linux](https://software.opensuse.org/download.html?project=graphics:darktable&package=darktable)
+* [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable&package=darktable)
+* [Install Flatpack package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 
 ### Master branch (unstable)
 
 The master branch is for beta testing and is generaly not safe. See the notes below (in "Building" -> "Get the source") for warnings and precautions about using the master branch.
 
-* [Install packages and repository for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable)
+* [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
 * No precompiled packages are provided for the master branch on MacOS and Windows. See how to build it manually below.
 
 
@@ -194,6 +183,19 @@ In case you are having crashes at startup, try lauching darktable without OpenCL
 ### Further reading
 
 There is a comprehensive list of [build instructions for Ubuntu/Debian related Linux distributions](https://github.com/darktable-org/darktable/wiki/Build-instructions-for-Ubuntu-18.04-to-20.04) or for [Fedora and related ones distributions](https://github.com/darktable-org/darktable/wiki/Build-Instructions-for-Fedora). These build instructions could easily be adapted to all others distributions
+
+
+Contributing
+------------
+
+* Write a blog about darktable
+* Create a tutorial for darktable
+* Help expand the [user wiki](https://github.com/darktable-org/darktable/wiki)
+* Answer questions on the [user mailing list](https://www.mail-archive.com/darktable-user@lists.darktable.org/)
+* Share your ideas on the [developer mailing list](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)
+* Test [releases](https://www.darktable.org/install/)
+* Review [pull requests](https://github.com/darktable-org/darktable/pulls)
+* Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
 
 
 **Tip:** Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2 homepage") installed in order to support the newest cameras.
