@@ -143,7 +143,7 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
   {
     for(int i = 0; i < b->width; i++)
     {
-      size_t index = 4 * (j * b->width + i) ;
+      size_t index = 4 * (j * b->width + i);
       float x, y, z;
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
