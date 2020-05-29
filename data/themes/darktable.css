@@ -449,6 +449,7 @@ overshoot.right
 /* icon buttons in modules main body */
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
+#iop-plugin-ui-main #keep-active,
 #lib-plugin-ui-main #dt-button,
 #lib-plugin-ui-main #dt-toggle-button
 {
@@ -458,13 +459,29 @@ overshoot.right
   border: 0;
 }
 
+/* exception: non-flat buttons */
+#iop-plugin-ui-main #non-flat,
+#lib-plugin-ui-main #non-flat
+{
+  min-height: 1.3em;
+  min-width: 1.3em;
+  padding: 1px;
+  /*border: 1px solid;*/
+}
+
 /* adjust icon extra room for buttons in modules main body */
 #iop-plugin-ui-main #dt-button #button-canvas,
 #iop-plugin-ui-main #dt-toggle-button #button-canvas,
+#iop-plugin-ui-main #non-flat #button-canvas,
+#iop-plugin-ui-main #keep-active #button-canvas,
 #lib-plugin-ui-main #dt-button #button-canvas,
-#lib-plugin-ui-main #dt-toggle-button #button-canvas
+#lib-plugin-ui-main #dt-toggle-button #button-canvas,
+#lib-plugin-ui-main #non-flat #button-canvas,
+#picker-black #button-canvas,
+#picker-grey #button-canvas,
+#picker-white #button-canvas
 {
-  margin: 8px; /* not real pixels, this is used as a percent extra space */
+  margin: 5px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* size of control-buttons */
@@ -514,7 +531,8 @@ overshoot.right
 #module-reset-button,
 #module-enable-button,
 #module-instance-button,
-#module-enable-button
+#module-enable-button,
+#module-always-disabled-button
 {
   /* background-color: transparent; this doesn't work */
   min-height: 1.15em;
@@ -1358,16 +1376,22 @@ cell:selected
 #picker-black
 {
   color: @grey_00;
+  min-height: 1.3em;
+  border: 0;
 }
 
 #picker-grey
 {
   color: @grey_50;
+  min-height: 1.3em;
+  border: 0;
 }
 
 #picker-white
 {
   color: @grey_100;
+  min-height: 1.3em;
+  border: 0;
 }
 
 /*------------------------------------------------------------------
