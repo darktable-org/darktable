@@ -268,6 +268,134 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   return TRUE;
 }
 
+// FIXME: pass d or d->red/green/blue?
+static void _lib_histogram_draw_histogram(cairo_t *cr, dt_lib_histogram_t *d, int width, int height)
+{
+  dt_develop_t *dev = darktable.develop;
+
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
+  // FIXME: does this need to be aligned?
+  uint32_t *hist = dt_alloc_align(64, histsize);
+  if(hist) memcpy(hist, dev->histogram, histsize);
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+
+  if(hist == NULL) return;
+  if(!dev->histogram_max) return;
+
+  const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
+                                                                        : logf(1.0 + dev->histogram_max);
+  cairo_translate(cr, 0, height);
+  cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+  if(d->red)
+  {
+    cairo_set_source_rgba(cr, 1., 0., 0., 0.5);
+    dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+  }
+  if(d->green)
+  {
+    cairo_set_source_rgba(cr, 0., 1., 0., 0.5);
+    dt_draw_histogram_8(cr, hist, 4, 1, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+  }
+  if(d->blue)
+  {
+    cairo_set_source_rgba(cr, 0., 0., 1., 0.5);
+    dt_draw_histogram_8(cr, hist, 4, 2, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+  }
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+
+  // FIXME: just free if it isn't aligned
+  dt_free_align(hist);
+}
+
+static void _lib_histogram_draw_waveform(cairo_t *cr, dt_lib_histogram_t *d, int width, int height)
+{
+  dt_develop_t *dev = darktable.develop;
+
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  const int wf_width = dev->histogram_waveform_width;
+  const int wf_height = dev->histogram_waveform_height;
+  const gint wf_stride = dev->histogram_waveform_stride;
+  const size_t histsize = sizeof(uint8_t) * wf_height * wf_stride * 3;
+  // FIXME: does this need to be aligned?
+  uint8_t *wav = dt_alloc_align(64, histsize);
+  if(wav) memcpy(wav, dev->histogram_waveform, histsize);
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+  if(wav == NULL) return;
+
+  uint8_t mask[3] = { d->blue, d->green, d->red };
+
+  // NOTE: The nice way to do this would be to draw each color
+  // channel separately, overlaid, via cairo. Unfortunately,
+  // that is about twice as slow as compositing the channels by
+  // hand, so we do the latter, at the cost of allocating some
+  // memory here and of some extra code (and comments) and of
+  // making the color channel selector work by hand.
+  uint8_t *wf = dt_alloc_align(64, sizeof(uint8_t) * wf_height * wf_stride * 4);
+  // FIXME: copy this over directly, rather than memcpy then loop
+  for(int y = 0; y < wf_height; y++)
+    for(int x = 0; x < wf_width; x++)
+      for(int k = 0; k < 3; k++)
+        wf[4 * (y * wf_stride + x) + k] = wav[wf_stride * (y + k * wf_height) + x] * mask[k];
+
+  cairo_surface_t *source
+      = dt_cairo_image_surface_create_for_data(wf, CAIRO_FORMAT_RGB24,
+                                               wf_width, wf_height, wf_stride * 4);
+  cairo_scale(cr, darktable.gui->ppd*width/wf_width, darktable.gui->ppd*height/wf_height);
+  cairo_set_source_surface(cr, source, 0.0, 0.0);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_paint(cr);
+  cairo_surface_destroy(source);
+  dt_free_align(wf);
+
+  // FIXME: just free if it isn't aligned
+  dt_free_align(wav);
+}
+
+static void _lib_histogram_draw_rgb_parade(cairo_t *cr, dt_lib_histogram_t *d, int width, int height)
+{
+  dt_develop_t *dev = darktable.develop;
+
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  const int wf_width = dev->histogram_waveform_width;
+  const int wf_height = dev->histogram_waveform_height;
+  const gint wf_stride = dev->histogram_waveform_stride;
+  const size_t histsize = sizeof(uint8_t) * wf_height * wf_stride * 3;
+  // FIXME: does this need to be aligned?
+  uint8_t *wav = dt_alloc_align(64, histsize);
+  if(wav) memcpy(wav, dev->histogram_waveform, histsize);
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+  if(wav == NULL) return;
+
+  uint8_t mask[3] = { d->blue, d->green, d->red };
+
+  // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
+  cairo_scale(cr, (double)width/(wf_width*3), (double)height/wf_height);
+  // this makes the blue come in more than CAIRO_OPERATOR_ADD, as it can go darker than the background
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+
+  for(int k = 0; k < 3; k++)
+  {
+    if(mask[2-k])
+    {
+      cairo_save(cr);
+      cairo_set_source_rgb(cr, k==0, k==1, k==2);
+      cairo_surface_t *alpha
+          = cairo_image_surface_create_for_data(wav + wf_stride * wf_height * (2-k),
+                                                CAIRO_FORMAT_A8, wf_width, wf_height, wf_stride);
+      cairo_mask_surface(cr, alpha, 0, 0);
+      cairo_surface_destroy(alpha);
+      cairo_restore(cr);
+    }
+    cairo_translate(cr, wf_width, 0);
+  }
+
+  // FIXME: just free if it isn't aligned
+  dt_free_align(wav);
+}
+
 static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -277,27 +405,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int width = allocation.width, height = allocation.height;
-
-  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
-
-  const int waveform_width = dev->histogram_waveform_width;
-  const int waveform_height = dev->histogram_waveform_height;
-  const gint waveform_stride = dev->histogram_waveform_stride;
-  const size_t histsize = dev->scope_type == DT_DEV_SCOPE_WAVEFORM
-                            ? sizeof(uint8_t) * waveform_height * waveform_stride * 3
-                            : 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
-  void *buf = dt_alloc_align(64, histsize);
-
-  if(buf)
-  {
-    if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
-      memcpy(buf, dev->histogram_waveform, histsize);
-    else
-      memcpy(buf, dev->histogram, histsize);
-  }
-
-  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-  if(buf == NULL) return FALSE;
 
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
@@ -342,88 +449,24 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
-  // draw histogram
+  // draw scope
   if(dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
     if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
     {
-      uint8_t *hist_wav = buf;
-      uint8_t mask[3] = { d->blue, d->green, d->red };
-
       if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
       {
-        // NOTE: The nice way to do this would be to draw each color
-        // channel separately, overlaid, via cairo. Unfortunately,
-        // that is about twice as slow as compositing the channels by
-        // hand, so we do the latter, at the cost of allocating some
-        // memory here and of some extra code (and comments) and of
-        // making the color channel selector work by hand.
-        uint8_t *wf = dt_alloc_align(64, sizeof(uint8_t) * waveform_height * waveform_stride * 4);
-        for(int y = 0; y < waveform_height; y++)
-          for(int x = 0; x < waveform_width; x++)
-            for(int k = 0; k < 3; k++)
-              wf[4 * (y * waveform_stride + x) + k] = hist_wav[waveform_stride * (y + k * waveform_height) + x] * mask[k];
-
-        cairo_surface_t *source
-            = dt_cairo_image_surface_create_for_data(wf, CAIRO_FORMAT_RGB24,
-                                                     waveform_width, waveform_height, waveform_stride * 4);
-        cairo_scale(cr, darktable.gui->ppd*width/waveform_width, darktable.gui->ppd*height/waveform_height);
-        cairo_set_source_surface(cr, source, 0.0, 0.0);
-        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-        cairo_paint(cr);
-        cairo_surface_destroy(source);
-        dt_free_align(wf);
+        _lib_histogram_draw_waveform(cr, d, width, height);
       }
       else
-      { // RGB parade
-        // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
-        cairo_scale(cr, (double)width/(waveform_width*3), (double)height/waveform_height);
-        // this makes the blue come in more than CAIRO_OPERATOR_ADD, as it can go darker than the background
-        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-
-        for(int k = 0; k < 3; k++)
-        {
-          if(mask[2-k])
-          {
-            cairo_save(cr);
-            cairo_set_source_rgb(cr, k==0, k==1, k==2);
-            cairo_surface_t *alpha
-                = cairo_image_surface_create_for_data(hist_wav + waveform_stride * waveform_height * (2-k),
-                                                      CAIRO_FORMAT_A8, waveform_width, waveform_height, waveform_stride);
-            cairo_mask_surface(cr, alpha, 0, 0);
-            cairo_surface_destroy(alpha);
-            cairo_restore(cr);
-          }
-          cairo_translate(cr, waveform_width, 0);
-        }
+      {
+        _lib_histogram_draw_rgb_parade(cr, d, width, height);
       }
     }
-    else if(dev->histogram_max)
+    else
     {
-      uint32_t *hist = buf;
-      const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
-                                                                            : logf(1.0 + dev->histogram_max);
-      cairo_translate(cr, 0, height);
-      cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
-      cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-      if(d->red)
-      {
-        cairo_set_source_rgba(cr, 1., 0., 0., 0.5);
-        dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
-      }
-      if(d->green)
-      {
-        cairo_set_source_rgba(cr, 0., 1., 0., 0.5);
-        dt_draw_histogram_8(cr, hist, 4, 1, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
-      }
-      if(d->blue)
-      {
-        cairo_set_source_rgba(cr, 0., 0., 1., 0.5);
-        dt_draw_histogram_8(cr, hist, 4, 2, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
-      }
-      cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+      _lib_histogram_draw_histogram(cr, d, width, height);
     }
     cairo_restore(cr);
   }
@@ -455,8 +498,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
-
-  dt_free_align(buf);
 
   return TRUE;
 }
