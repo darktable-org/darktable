@@ -2959,7 +2959,7 @@ static float dt_conf_get_sanitize_float(const char *name, float min, float max, 
 {
   const float value = dt_conf_get_float(name);
   float new_value = CLAMP(value, min, max);
-  if (new_value != value) new_value = 0.25f * default_value + 0.75f * value;
+  if (default_value != 0.0f && new_value != value) new_value = 0.25f * default_value + 0.75f * value;
 
   dt_conf_set_float(name, new_value);
   return new_value;
@@ -2981,7 +2981,7 @@ static void get_stamp_params(dt_iop_module_t *module, float *radius, float *r_st
 
   *radius = dt_conf_get_sanitize_float(CONF_RADIUS, 0.33f*im_scale, 3.0f*im_scale, im_scale);
   *r_strength = dt_conf_get_sanitize_float(CONF_STRENGTH, 0.5f * *radius, 2.0f * *radius, 1.5f * *radius);
-  *phi = dt_conf_get_sanitize_float(CONF_ANGLE, 0.1f * M_PI, 1.9f * M_PI, 1.75f * M_PI);
+  *phi = dt_conf_get_sanitize_float(CONF_ANGLE, 0.0f, 2.0f * M_PI, 0.0f);
 }
 /*
   add support for changing the radius and the strength vector for the temp node
