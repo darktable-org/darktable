@@ -5,20 +5,24 @@ darktable is an open source photography workflow application and raw developer. 
 
 [https://www.darktable.org/](https://www.darktable.org/ "darktable homepage")
 
-### Requirements
+Requirements
+------------
 
-Supported platforms:
+### Supported platforms
+
 * Linux (64 bits), 
 * Free BSD (64 bits),
 * Windows 8 (64 bits), Windows 10 (64 bits), 
 * MacOS X.
 
-*32 bits OS are not officially supported, they might or might not work.* 
+*32 bits platforms are not officially supported, they might or might not work.* 
 
 *Windows support is still young and suffers from bugs that do not affect Linux. If possible, 
 prefer using darktable on Linux.*
 
-Hardware (minimal / **recommended**):
+### Hardware 
+
+(minimal / **recommended**):
 * RAM: 4 GB / **8 GB**
 * CPU: Intel Pentium 4 / **Intel Core i5 4×2.4 GHz** 
 * GPU: none / **Nvidia 1024 cores, 4 GB, OpenCL 1.2 compatible**
@@ -210,7 +214,29 @@ Contributing
 * Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
 
 
-**Tip:** Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2 homepage") installed in order to support the newest cameras.
+FAQ
+---
+
+### Why is my camera not detected when plugged-in ?
+
+Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2 homepage") installed in order to support the newest cameras.
+
+### Why is my lens not detected/correctedal in darkroom ?
+
+Lens correction profiles are provided by Lensfun, which has 2 parts: a program and a database. 
+Most Linux distributions provide a recent-enough version of the program, 
+but the majority provide an outdated version of the database. If 
+[Lensfun](https://lensfun.github.io/) is correctly installed, then update its database in a terminal by running:
+
+```
+lensfun-update-data
+```
+
+or alternatively
+
+```
+/usr/bin/g-lensfun-update-data 
+```
 
 Wiki
 ----
