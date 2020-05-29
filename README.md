@@ -17,6 +17,23 @@ Contributing
 * Review [pull requests](https://github.com/darktable-org/darktable/pulls)
 * Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
 
+Installing
+----------
+
+### Latest release : 3.0.2 (stable)
+
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2-win64.exe)
+* [Download executable for Mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2.dmg)
+* [Install packages and repository for Linux](https://software.opensuse.org/download.html?project=graphics:darktable&package=darktable)
+
+### Master branch (unstable)
+
+The master branch is for beta testing and is generaly not safe. See the notes below (in "Building" -> "Get the source") for warnings and precautions about using the master branch.
+
+* [Install packages and repository for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable)
+* No precompiled packages are provided for the master branch on MacOS and Windows. See how to build it manually below.
+
+
 Building
 --------
 
@@ -75,12 +92,18 @@ The master branch contains the latest version of the source code and is intended
 The master branch comes with no garanty of stability, might corrupt your database and XMP files, 
 might result in loss of data and edits history, and temporarily break compatibility with previous versions and commits.
 
+How dangerous is it ? Most of the time, it is fairly stable. As any rolling-release kind of deployment, bugs appear more often
+but are fixed faster too. But sometimes, they result in losses or inconsistencies in the editing history of your pictures,
+which is fine if you don't need to open your edits again in the future, but maybe not if you manage an estate.
+
 After backing up your `~/.config/darktable` directory as well as the sidecar .XMP files of the pictures you will open
 with the master branch, you may get the source:
 ```bash
 git clone https://github.com/darktable-org/darktable.git
 cd darktable
 ```
+
+See below (in "Using") how to start a test install of the unstable version without damaging your regular stable install and files.
 
 #### Latest release : 3.0.2 (stable)
 
@@ -108,13 +131,18 @@ git submodule update
 
 #### Easy way
 
-darktable provides a shell script that automaticaly takes care of the building for classic cases in a single command. 
+darktable provides a shell script that automaticaly takes care of the building on Linux and MacOS for classic cases in a single command. 
 
 
 ```bash
 ./build.sh --prefix /opt/darktable --build-type Release --install --sudo
 ```
 
+If you want to install a test version alongside your regular/stable version, change the install prefix:
+
+```bash
+./build.sh --prefix /opt/darktable-test --build-type Release --install --sudo
+```
 This builds the software for your own architecture only, with:
 
 * `-O3` optimization level, 
@@ -127,6 +155,7 @@ This builds the software for your own architecture only, with:
 
 You can alternatively use the manual building to pass on custom arguments. 
 
+##### Linux/MacOS
 
 ```bash
 mkdir build/
@@ -135,6 +164,32 @@ cmake -DCMAKE_INSTALL_PREFIX=/opt/darktable/ ..
 make
 sudo make install
 ```
+
+##### Windows
+
+See https://github.com/darktable-org/darktable/blob/master/packaging/windows/BUILD.txt
+
+### Using
+
+#### Test/unstable version
+
+To use a test version of darktable without damaging your regular/stable version files and database, start darktable in a terminal with:
+
+```
+/opt/darktable-test/bin/darktable --configdir "~/.config/darktable-test"
+```
+
+and ensure to disable the option "write sidecar file for each image" in preferences -> storage -> XMP.
+
+#### Regular/stable version
+
+Simply lauch it from your desktop application menu, or in terminal, run `darktable` or `/opt/darktable/bin/darktable`. If the installation did not create a launcher in your applications menu, run:
+
+```
+sudo ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
+```
+
+In case you are having crashes at startup, try lauching darktable without OpenCL with `darktable --conf opencl=FALSE`.
 
 ### Further reading
 
