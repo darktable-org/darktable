@@ -5,6 +5,35 @@ darktable is an open source photography workflow application and raw developer. 
 
 [https://www.darktable.org/](https://www.darktable.org/ "darktable homepage")
 
+## Table of Contents
+
+1. [Requirements](#requirements)
+   - [Supported platforms](#supported-platforms)
+   - [Hardware](#hardware)
+2. [Installing](#installing)
+   - [Latest release](#latest-release)
+   - [Development snapshot](#development-snapshot)
+3. [Getting extensions](#getting-extensions)
+4. [Building](#building)
+   - [Dependencies](#dependencies)
+   - [Get the source](#get-the-source)
+     + [Master branch (unstable)](#master-branch-unstable)
+     + [Latest stable release](#latest-stable-release)
+   - [Get submodules](#get-submodules)
+   - [Compile](#compile)
+     + [Easy way](#easy-way)
+     + [Manual way](#manual-way)
+   - [Further reading](#further-reading)
+5. [Using](#using)
+   - [Test/unstable version](#testunstable-version)
+   - [Regular/stable version](#regularstable-version)
+6. [Contributing](#contributing)
+7. [FAQ](#faq)
+   - [Why is my camera not detected when plugged-in](#why-is-my-camera-not-detected-when-plugged-in-)
+   - [Why is my lens not detected/corrected in darkroom ?](#why-is-my-lens-not-detectedcorrected-in-darkroom-)
+8. [Wiki](#wiki)
+9. [Mailing lists](#mailing-lists)
+
 Requirements
 ------------
 
@@ -37,16 +66,18 @@ Nvidia GPU are recommended for safety because some AMD drivers behave unreliably
 Installing
 ----------
 
-### Latest release : 3.0.2 (stable)
+### Latest release
+
+3.0.2 (stable)
 
 * [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2-win64.exe)
 * [Download executable for Mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable&package=darktable)
 * [Install Flatpack package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 
-### Master branch (unstable)
+### Development snapshot
 
-The master branch is for beta testing and is generaly not safe. See the notes below (in "Building" -> "Get the source") for warnings and precautions about using the master branch.
+The development snapshot is state of the master branch at current time, is intended for testing and is generaly not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
 
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
 * No precompiled packages are provided for the master branch on MacOS and Windows. See how to build it manually below.
@@ -117,7 +148,7 @@ cd darktable
 
 See below (in "Using") how to start a test install of the unstable version without damaging your regular stable install and files.
 
-#### Latest release : 3.0.2 (stable)
+#### Latest stable release
 
 darktable project releases one major version every year, for Christmas, tagged with even numbers, (like 2.2, 2.4, 2.6, 3.0). 
 Minor revisions are tagged with a third digit (like 3.0.1, 3.0.2) and mostly provide bug fixes and minor new features.
@@ -228,7 +259,7 @@ FAQ
 
 Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2 homepage") installed in order to support the newest cameras.
 
-### Why is my lens not detected/correctedal in darkroom ?
+### Why is my lens not detected/corrected in darkroom ?
 
 Lens correction profiles are provided by Lensfun, which has 2 parts: a program and a database. 
 Most Linux distributions provide a recent-enough version of the program, 
