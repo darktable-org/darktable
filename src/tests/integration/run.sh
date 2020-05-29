@@ -89,10 +89,10 @@ for dir in $(ls -d $PATTERN); do
 
             if [ $res -eq 0 ]; then
                 if [ ! -z $COMPARE ]; then
-                    compare output.png output-cl.png diff-cl.png
+                    diffcount="$(compare output.png output-cl.png -metric ae diff-cl.png 2>&1 )"
 
                     if [ $? -ne 0 ]; then
-                        echo "      CPU & GPU version differs"
+                        echo "      CPU & GPU version differ by ${diffcount} pixels"
                     fi
                 fi
 
@@ -103,8 +103,9 @@ for dir in $(ls -d $PATTERN); do
                 else
                     echo "  FAILS: image visually changed"
                     if [ ! -z $COMPARE ]; then
-                        compare expected.png output.png diff.png
+                        diffcount="$(compare expected.png output.png -metric ae diff.png 2>&1 )"
                         echo "         see diff.jpg for visual difference"
+			echo "         (${diffcount} pixels changed)"
                     fi
                     exit 1
                 fi
