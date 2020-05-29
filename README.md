@@ -51,6 +51,13 @@ The master branch is for beta testing and is generaly not safe. See the notes be
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
 * No precompiled packages are provided for the master branch on MacOS and Windows. See how to build it manually below.
 
+Getting extensions
+------------------
+
+Extensions and plugins use the Lua scripting language and can be downloaded [here](https://github.com/darktable-org/lua-scripts).
+
+They allow to export for various media, merge/stack/blend HDR, panoramas or focus bracketing, 
+apply AI-based facial recognition, manage tags and GPS data, etc.
 
 Building
 --------
