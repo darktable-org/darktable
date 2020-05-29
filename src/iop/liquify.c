@@ -3562,28 +3562,28 @@ void gui_init (dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
 
   g->btn_point_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_point_tool,
-                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
+                                                               CPF_STYLE_FLAT, NULL));
   g_signal_connect(G_OBJECT (g->btn_point_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_point_tool), _("point tool: draw points"));
   gtk_toggle_button_set_active(g->btn_point_tool, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_point_tool), FALSE, FALSE, 0);
 
   g->btn_line_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_line_tool,
-                                                              CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
+                                                              CPF_STYLE_FLAT, NULL));
   g_signal_connect(G_OBJECT (g->btn_line_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_line_tool), _("line tool: draw lines"));
   gtk_toggle_button_set_active(g->btn_line_tool, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_line_tool), FALSE, FALSE, 0);
 
   g->btn_curve_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_curve_tool,
-                                                               CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
+                                                               CPF_STYLE_FLAT, NULL));
   g_signal_connect(G_OBJECT (g->btn_curve_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_curve_tool), _("curve tool: draw curves"));
   gtk_toggle_button_set_active(g->btn_curve_tool, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_curve_tool), FALSE, FALSE, 0);
 
   g->btn_node_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_node_tool,
-                                                              CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL));
+                                                              CPF_STYLE_FLAT, NULL));
   g_signal_connect(G_OBJECT(g->btn_node_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_node_tool), _("node tool: edit, add and delete nodes"));
   gtk_toggle_button_set_active(g->btn_node_tool, 0);

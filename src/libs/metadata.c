@@ -740,8 +740,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_hexpand(button, TRUE);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_apply_button_clicked), self);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_preferences,
-      CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
   d->config_button = button;
   gtk_widget_set_tooltip_text(button, _("configure metadata"));
   gtk_grid_attach(grid, button, 2, 0, 1, 1);
