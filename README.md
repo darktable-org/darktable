@@ -65,20 +65,20 @@ Required dependencies minimal version:
 * Sqlite 3.15 (but 3.24 strongly recommended)
 
 Optional dependencies minimal version:
-* OpenMP 4.5
-* LLVM 3.9
-* OpenCL 1.2
-* Lua 5.3
-* libavif 0.6.0
-* WebP 0.3.0
+* OpenMP 4.5 *(for CPU multi-threading and SIMD vectorization)*
+* LLVM 3.9 *(for OpenCL checks at compilation time)*
+* OpenCL 1.2 *(for GPU-accelerated computing)*
+* Lua 5.3 *(for plugins and extensions scripting)*
+* libavif 0.6.0 *(for HEIC/HEIF/AVIF exports)*
+* WebP 0.3.0 *(for WebP exports)*
 
 Optional dependencies with no version requirement:
-* Gphoto2
-* Lensfun
-* OpenEXR
-* OpenJPEG
-* Colord
-* G'Mic
+* Gphoto2 *(for camera tethering)*
+* Lensfun *(for lens automatic correction)*
+* OpenEXR *(for EXR import and export)*
+* OpenJPEG *(for Jpeg2000 export)*
+* Colord, Xatom *(for system display color profile fetching)* 
+* G'Mic *(for HaldcLUT support)*
 
 
 ### Get the source
