@@ -2955,6 +2955,34 @@ done:
   return handled;
 }
 
+static float dt_conf_get_sanitize_float(const char *name, float min, float max, float default_value)
+{
+  const float value = dt_conf_get_float(name);
+  float new_value = CLAMP(value, min, max);
+  if (new_value != value) new_value = 0.25f * default_value + 0.75f * value;
+
+  dt_conf_set_float(name, new_value);
+  return new_value;
+}
+
+static void get_stamp_params(dt_iop_module_t *module, float *radius, float *r_strength, float *phi)
+{
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  const int last_win_min = MIN(allocation.width, allocation.height);
+
+  const dt_dev_pixelpipe_t *devpipe = darktable.develop->preview_pipe;
+  const float iwd_min = MIN(devpipe->iwidth, devpipe->iheight);
+  const float proc_wdht_min = MIN(devpipe->processed_width, devpipe->processed_height);
+  const float pr_d = darktable.develop->preview_downsampling;
+  const float scale = devpipe->iscale / (pr_d * get_zoom_scale(module->dev));
+  const float im_scale = 0.09f * iwd_min * last_win_min * scale / proc_wdht_min;
+
+  *radius = dt_conf_get_sanitize_float(CONF_RADIUS, 0.33f*im_scale, 3.0f*im_scale, im_scale);
+  *r_strength = dt_conf_get_sanitize_float(CONF_STRENGTH, 0.5f * *radius, 2.0f * *radius, 1.5f * *radius);
+  *phi = dt_conf_get_sanitize_float(CONF_ANGLE, 0.1f * M_PI, 1.9f * M_PI, 1.75f * M_PI);
+}
 /*
   add support for changing the radius and the strength vector for the temp node
  */
@@ -2973,11 +3001,10 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
     if (state == 0)
     {
       //  change size
-      float radius = dt_conf_get_float(CONF_RADIUS);
-      const float phi = carg(strength_v);
-      float r = cabs(strength_v);
+      float radius = 0.0f, r = 0.0f, phi = 0.0f;
+      get_stamp_params(module, &radius, &r, &phi);
+      
       float factor = 1.0f;
-
       if(up && cabs(warp->radius - warp->point) > 10.0f)
         factor *= 0.97f;
       else if(!up)
@@ -3413,35 +3440,12 @@ static void _liquify_cairo_paint_curve_tool(cairo_t *cr, const gint x, const gin
 static void _liquify_cairo_paint_node_tool(cairo_t *cr, const gint x, const gint y, const gint w, const gint h,
                                            const gint flags, void *data);
 
-
-static float conf_set_get_default(const char *name, float def)
-{
-  float value;
-  if(dt_conf_key_exists(name))
-  {
-    value = dt_conf_get_float(name);
-    // do some sanity check, the value must > 1.0 (these are value in pixels), reset to default if not
-    if((value <= 1.0f || value > 3000.0f) && strcmp(name, CONF_ANGLE))
-    {
-      value = def;
-      dt_conf_set_float(name, value);
-    }
-  }
-  else
-  {
-    value = def;
-    dt_conf_set_float(name, value);
-  }
-  return value;
-}
-
 // we need this only because darktable has no radiobutton support
-static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *module)
+static void btn_make_radio_callback(GtkToggleButton *btn, dt_iop_module_t *module)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
 
   // if currently dragging and a form (line or node) has been started, does nothing (expect resetting the toggle button status).
-
   if (is_dragging(g) && g->temp && node_prev(&g->params, g->temp))
   {
     g_signal_handlers_block_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
@@ -3449,7 +3453,7 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
     g_signal_handlers_block_matched(g->btn_curve_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
     g_signal_handlers_block_matched(g->btn_node_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
 
-    gtk_toggle_button_set_active (btn, !gtk_toggle_button_get_active(btn));
+    gtk_toggle_button_set_active(btn, !gtk_toggle_button_get_active(btn));
 
     g_signal_handlers_unblock_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
     g_signal_handlers_unblock_matched(g->btn_line_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
@@ -3458,26 +3462,23 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
     return;
   }
 
-  dt_control_hinter_message (darktable.control, "");
+  dt_control_hinter_message(darktable.control, "");
 
   // if we are on a preview, it means that a form (point, line, curve) has been started, but no node has yet been placed.
   // in this case we abort the current preview and let the new tool activated.
-
   if (g->status & DT_LIQUIFY_STATUS_PREVIEW)
   {
-    node_delete (&g->params, g->temp);
+    node_delete(&g->params, g->temp);
     g->temp = NULL;
     g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
   }
-
   // now, let's enable and start a new form safely
-
-  if (gtk_toggle_button_get_active (btn))
+  if (gtk_toggle_button_get_active(btn))
   {
-    gtk_toggle_button_set_active (g->btn_point_tool, btn == g->btn_point_tool);
-    gtk_toggle_button_set_active (g->btn_line_tool,  btn == g->btn_line_tool);
-    gtk_toggle_button_set_active (g->btn_curve_tool, btn == g->btn_curve_tool);
-    gtk_toggle_button_set_active (g->btn_node_tool,  btn == g->btn_node_tool);
+    gtk_toggle_button_set_active(g->btn_point_tool, btn == g->btn_point_tool);
+    gtk_toggle_button_set_active(g->btn_line_tool,  btn == g->btn_line_tool);
+    gtk_toggle_button_set_active(g->btn_curve_tool, btn == g->btn_curve_tool);
+    gtk_toggle_button_set_active(g->btn_node_tool,  btn == g->btn_node_tool);
 
     if (btn == g->btn_point_tool)
       dt_control_hinter_message
@@ -3492,39 +3493,31 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
         (darktable.control, _("click to add curve\nscroll to change size\n"
                               "shift+scroll to change strength - ctrl+scroll to change direction"));
     else if (btn == g->btn_node_tool)
-      dt_control_hinter_message (darktable.control, _("click to edit nodes"));
+      dt_control_hinter_message(darktable.control, _("click to edit nodes"));
 
     //  start the preview mode to show the shape that will be created
 
     if (btn == g->btn_point_tool || btn == g->btn_line_tool || btn == g->btn_curve_tool)
     {
-      float complex pt;
-      float scale;
-
       //  create initial shape at the center
-      get_point_scale(module, .5f * darktable.develop->width, .5f * darktable.develop->height, &pt, &scale);
-
+      float complex pt =0.0f;
+      float scale = 1.0f;
+      get_point_scale(module, 0.5f * darktable.develop->width, 0.5f * darktable.develop->height, &pt, &scale);
+      float radius = 0.0f, r = 1.0f, phi = 0.0f;
+      get_stamp_params(module, &radius, &r, &phi);
       //  start a new path
-      g->temp = alloc_move_to (module, pt);
-
-      //  start with current saved size/strength
-
-      const float radius = conf_set_get_default(CONF_RADIUS, GET_UI_WIDTH(DEFAULT_RADIUS));
-      const float r = conf_set_get_default(CONF_STRENGTH, GET_UI_WIDTH(DEFAULT_STRENGTH));
-      const float phi = conf_set_get_default(CONF_ANGLE, 0);
-
-      g->temp->warp.radius   = pt + radius;
-      g->temp->warp.strength = pt + r * cexp (phi * I);
-
+      g->temp = alloc_move_to(module, pt);
+      g->temp->warp.radius = pt + radius;
+      g->temp->warp.strength = pt + r * cexp(phi * I);
       g->status |= DT_LIQUIFY_STATUS_PREVIEW;
       g->status |= DT_LIQUIFY_STATUS_NEW;
 
-      start_drag (g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
+      start_drag(g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
       g->last_hit = NOWHERE;
     }
   }
 
-  sync_pipe (module, FALSE);
+  sync_pipe(module, FALSE);
   dt_iop_request_focus(module);
 }
 
