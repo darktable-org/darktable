@@ -11,16 +11,16 @@
    xmp:Rating="0"
    xmpMM:DerivedFrom="mire1.cr2"
    darktable:import_timestamp="1589767202"
-   darktable:change_timestamp="1590718822"
+   darktable:change_timestamp="1590719345"
    darktable:export_timestamp="1590365245"
    darktable:print_timestamp="-1"
    darktable:xmp_version="4"
    darktable:raw_params="0"
    darktable:auto_presets_applied="1"
-   darktable:history_end="10"
+   darktable:history_end="11"
    darktable:iop_order_version="2"
    darktable:history_auto_hash="b8c7f90a59641f932ce700b5d6d667dc"
-   darktable:history_current_hash="12706603b4a68b56f136e0a9547d59c6">
+   darktable:history_current_hash="787c656436fed810f3106abf732390ba">
    <darktable:masks_history>
     <rdf:Seq>
      <rdf:li
@@ -141,6 +141,16 @@
       darktable:enabled="1"
       darktable:modversion="3"
       darktable:params="020000009a99593f0000c84200000000"
+      darktable:multi_name=""
+      darktable:multi_priority="0"
+      darktable:blendop_version="9"
+      darktable:blendop_params="gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ="/>
+     <rdf:li
+      darktable:num="10"
+      darktable:operation="globaltonemap"
+      darktable:enabled="1"
+      darktable:modversion="3"
+      darktable:params="02000000f6285c3faec7d742a0ef273d"
       darktable:multi_name=""
       darktable:multi_priority="0"
       darktable:blendop_version="9"
