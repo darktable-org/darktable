@@ -276,7 +276,7 @@ static void _lib_histogram_draw_histogram(cairo_t *cr, dt_lib_histogram_t *d, in
   dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
   const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
   // FIXME: does this need to be aligned?
-  uint32_t *hist = dt_alloc_align(64, histsize);
+  uint32_t *hist = malloc(histsize);
   if(hist) memcpy(hist, dev->histogram, histsize);
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
 
@@ -307,7 +307,7 @@ static void _lib_histogram_draw_histogram(cairo_t *cr, dt_lib_histogram_t *d, in
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
   // FIXME: just free if it isn't aligned
-  dt_free_align(hist);
+  free(hist);
 }
 
 static void _lib_histogram_draw_waveform(cairo_t *cr, dt_lib_histogram_t *d, int width, int height)
@@ -318,40 +318,35 @@ static void _lib_histogram_draw_waveform(cairo_t *cr, dt_lib_histogram_t *d, int
   const int wf_width = dev->histogram_waveform_width;
   const int wf_height = dev->histogram_waveform_height;
   const gint wf_stride = dev->histogram_waveform_stride;
-  const size_t histsize = sizeof(uint8_t) * wf_height * wf_stride * 3;
-  // FIXME: does this need to be aligned?
-  uint8_t *wav = dt_alloc_align(64, histsize);
-  if(wav) memcpy(wav, dev->histogram_waveform, histsize);
+  uint8_t *wav = malloc(sizeof(uint8_t) * wf_height * wf_stride * 4);
+  if(wav)
+  {
+    const uint8_t *const wf_buf = dev->histogram_waveform;
+    uint8_t mask[3] = { d->blue, d->green, d->red };
+    for(int y = 0; y < wf_height; y++)
+      for(int x = 0; x < wf_width; x++)
+        for(int k = 0; k < 3; k++)
+          wav[4 * (y * wf_stride + x) + k] = wf_buf[wf_stride * (y + k * wf_height) + x] * mask[k];
+  }
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   if(wav == NULL) return;
 
-  uint8_t mask[3] = { d->blue, d->green, d->red };
-
-  // NOTE: The nice way to do this would be to draw each color
-  // channel separately, overlaid, via cairo. Unfortunately,
-  // that is about twice as slow as compositing the channels by
-  // hand, so we do the latter, at the cost of allocating some
-  // memory here and of some extra code (and comments) and of
+  // NOTE: The nice way to do this would be to draw each color channel
+  // separately, overlaid, via cairo. Unfortunately, that is about
+  // twice as slow as compositing the channels by hand, so we do the
+  // latter, at the cost of some extra code (and comments) and of
   // making the color channel selector work by hand.
-  uint8_t *wf = dt_alloc_align(64, sizeof(uint8_t) * wf_height * wf_stride * 4);
-  // FIXME: copy this over directly, rather than memcpy then loop
-  for(int y = 0; y < wf_height; y++)
-    for(int x = 0; x < wf_width; x++)
-      for(int k = 0; k < 3; k++)
-        wf[4 * (y * wf_stride + x) + k] = wav[wf_stride * (y + k * wf_height) + x] * mask[k];
 
   cairo_surface_t *source
-      = dt_cairo_image_surface_create_for_data(wf, CAIRO_FORMAT_RGB24,
+      = dt_cairo_image_surface_create_for_data(wav, CAIRO_FORMAT_RGB24,
                                                wf_width, wf_height, wf_stride * 4);
   cairo_scale(cr, darktable.gui->ppd*width/wf_width, darktable.gui->ppd*height/wf_height);
   cairo_set_source_surface(cr, source, 0.0, 0.0);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_paint(cr);
   cairo_surface_destroy(source);
-  dt_free_align(wf);
 
-  // FIXME: just free if it isn't aligned
-  dt_free_align(wav);
+  free(wav);
 }
 
 static void _lib_histogram_draw_rgb_parade(cairo_t *cr, dt_lib_histogram_t *d, int width, int height)
@@ -363,8 +358,7 @@ static void _lib_histogram_draw_rgb_parade(cairo_t *cr, dt_lib_histogram_t *d, i
   const int wf_height = dev->histogram_waveform_height;
   const gint wf_stride = dev->histogram_waveform_stride;
   const size_t histsize = sizeof(uint8_t) * wf_height * wf_stride * 3;
-  // FIXME: does this need to be aligned?
-  uint8_t *wav = dt_alloc_align(64, histsize);
+  uint8_t *wav = malloc(histsize);
   if(wav) memcpy(wav, dev->histogram_waveform, histsize);
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   if(wav == NULL) return;
@@ -392,8 +386,7 @@ static void _lib_histogram_draw_rgb_parade(cairo_t *cr, dt_lib_histogram_t *d, i
     cairo_translate(cr, wf_width, 0);
   }
 
-  // FIXME: just free if it isn't aligned
-  dt_free_align(wav);
+  free(wav);
 }
 
 static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
@@ -453,20 +446,19 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   if(dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
-    if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+    switch(dev->scope_type)
     {
-      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
-      {
-        _lib_histogram_draw_waveform(cr, d, width, height);
-      }
-      else
-      {
-        _lib_histogram_draw_rgb_parade(cr, d, width, height);
-      }
-    }
-    else
-    {
-      _lib_histogram_draw_histogram(cr, d, width, height);
+      case DT_DEV_SCOPE_HISTOGRAM:
+        _lib_histogram_draw_histogram(cr, d, width, height);
+        break;
+      case DT_DEV_SCOPE_WAVEFORM:
+        if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
+          _lib_histogram_draw_waveform(cr, d, width, height);
+        else
+          _lib_histogram_draw_rgb_parade(cr, d, width, height);
+        break;
+      case DT_DEV_SCOPE_N:
+        g_assert_not_reached();
     }
     cairo_restore(cr);
   }
