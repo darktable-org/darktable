@@ -109,9 +109,9 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->height = height;
   b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
-  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(float));
+  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(float) * darktable.num_openmp_threads);
 
-  memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(float));
+  memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(float) * darktable.num_openmp_threads);
 #if 0
   fprintf(stderr, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
@@ -130,11 +130,12 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
   const int oz = b->size_y * b->size_x;
   const float sigma_s = b->sigma_s * b->sigma_s;
   float *const buf = b->buf;
+  const int bufsize = b->size_x * b->size_y * b->size_z;
 
 // splat into downsampled grid
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, oy, oz, ox, sigma_s, buf) \
+  dt_omp_firstprivate(in, oy, oz, ox, sigma_s, buf, bufsize)    \
   shared(b) \
   collapse(2)
 #endif
@@ -142,7 +143,7 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
   {
     for(int i = 0; i < b->width; i++)
     {
-      size_t index = 4 * (j * b->width + i);
+      size_t index = 4 * (j * b->width + i) ;
       float x, y, z;
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
@@ -153,7 +154,7 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
       const float yf = y - yi;
       const float zf = z - zi;
       // nearest neighbour splatting:
-      const size_t grid_index = xi + b->size_x * (yi + b->size_y * zi);
+      const size_t grid_index = xi + b->size_x * (yi + b->size_y * zi) + bufsize * dt_get_thread_num();
       // sum up payload here, doesn't have to be same as edge stopping data
       // for cross bilateral applications.
       // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
@@ -168,6 +169,15 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
                               * ((k & 4) ? zf : (1.0f - zf)) * 100.0f / sigma_s;
         buf[ii] += contrib;
       }
+    }
+  }
+
+  // merge the per-thread results into the final result
+  for(int index = 0; index < bufsize; index++)
+  {
+    for(int i = 1; i < darktable.num_openmp_threads; i++)
+    {
+      buf[index] += buf[index + i*bufsize];
     }
   }
 }
