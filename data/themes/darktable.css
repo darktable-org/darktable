@@ -442,21 +442,39 @@ overshoot.right
 /* icon buttons in modules main body */
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
+#iop-plugin-ui-main #keep-active,
 #lib-plugin-ui-main #dt-button,
 #lib-plugin-ui-main #dt-toggle-button
 {
   min-height: 1.3em;
   min-width: 1.3em;
   padding: 0;
+  border: 0;
+}
+
+/* exception: non-flat buttons */
+#iop-plugin-ui-main #non-flat,
+#lib-plugin-ui-main #non-flat
+{
+  min-height: 1.3em;
+  min-width: 1.3em;
+  padding: 1px;
+  /*border: 1px solid;*/
 }
 
 /* adjust icon extra room for buttons in modules main body */
 #iop-plugin-ui-main #dt-button #button-canvas,
 #iop-plugin-ui-main #dt-toggle-button #button-canvas,
+#iop-plugin-ui-main #non-flat #button-canvas,
+#iop-plugin-ui-main #keep-active #button-canvas,
 #lib-plugin-ui-main #dt-button #button-canvas,
-#lib-plugin-ui-main #dt-toggle-button #button-canvas
+#lib-plugin-ui-main #dt-toggle-button #button-canvas,
+#lib-plugin-ui-main #non-flat #button-canvas,
+#picker-black #button-canvas,
+#picker-grey #button-canvas,
+#picker-white #button-canvas
 {
-  margin: 8px; /* not real pixels, this is used as a percent extra space */
+  margin: 5px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* size of control-buttons */
@@ -508,16 +526,20 @@ overshoot.right
 #module-instance-button,
 #module-enable-button,
 #module-collapse-button
+#module-always-disabled-button
 {
   /* background-color: transparent; this doesn't work */
   min-height: 1.15em;
   min-width: 1.15em;
   padding: 0.06em;
+  border: 0;
+  margin: 0 1px 0 1px
 }
 
 #module-always-enabled-button /* button on always activated module */
 {
   color: @plugin_label_color;
+  border: 0;
 }
 
 /* Entries options in lighttable */
@@ -821,6 +843,7 @@ notebook tabs,
   min-width: 2em;
   margin: 0;
   padding: 0.1em;
+  border: 0;
 }
 
 #blending-tabs button
@@ -829,6 +852,7 @@ notebook tabs,
   min-height: 1.75em;
   min-width: 1.75em;
   padding: 0;
+  border: 0;
 }
 
 notebook tab
@@ -1259,6 +1283,7 @@ cell:selected
   min-height: 1.33em;
   padding: 0;
   margin: 1px 2px 2px 2px; /* align switches with create style icon */
+  border: 0;
 }
 
 #left #history-switch-deprecated
@@ -1307,6 +1332,7 @@ cell:selected
 {
   min-height: 2em;
   min-width: 1.7em;
+  border: 0;
 }
 
 #color-picker-button #button-canvas
@@ -1333,16 +1359,22 @@ cell:selected
 #picker-black
 {
   color: @grey_00;
+  min-height: 1.3em;
+  border: 0;
 }
 
 #picker-grey
 {
   color: @grey_50;
+  min-height: 1.3em;
+  border: 0;
 }
 
 #picker-white
 {
   color: @grey_100;
+  min-height: 1.3em;
+  border: 0;
 }
 
 /*------------------------------------------------------------------

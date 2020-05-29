@@ -398,12 +398,14 @@ void gui_init(dt_lib_module_t *self)
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER, NULL);
   d->rotate_ccw_button = button;
+  gtk_widget_set_name(button, "non-flat");
   gtk_widget_set_tooltip_text(button, _("rotate selected images 90 degrees CCW"));
   gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1 | CPF_DO_NOT_USE_BORDER, NULL);
   d->rotate_cw_button = button;
+  gtk_widget_set_name(button, "non-flat");
   gtk_widget_set_tooltip_text(button, _("rotate selected images 90 degrees CW"));
   gtk_grid_attach(grid, button, 1, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(5));
