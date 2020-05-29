@@ -268,8 +268,7 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   return TRUE;
 }
 
-// FIXME: pass d or d->red/green/blue?
-static void _lib_histogram_draw_histogram(cairo_t *cr, dt_lib_histogram_t *d, int width, int height)
+static void _lib_histogram_draw_histogram(cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
   dt_develop_t *dev = darktable.develop;
 
@@ -289,28 +288,19 @@ static void _lib_histogram_draw_histogram(cairo_t *cr, dt_lib_histogram_t *d, in
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-  if(d->red)
-  {
-    cairo_set_source_rgba(cr, 1., 0., 0., 0.5);
-    dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
-  }
-  if(d->green)
-  {
-    cairo_set_source_rgba(cr, 0., 1., 0., 0.5);
-    dt_draw_histogram_8(cr, hist, 4, 1, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
-  }
-  if(d->blue)
-  {
-    cairo_set_source_rgba(cr, 0., 0., 1., 0.5);
-    dt_draw_histogram_8(cr, hist, 4, 2, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
-  }
+  for(int k = 0; k < 3; k++)
+    if(mask[k])
+    {
+      cairo_set_source_rgba(cr, k == 0 ? 1. : 0., k == 1 ? 1. : 0., k == 2 ? 1. : 0., 0.5);
+      dt_draw_histogram_8(cr, hist, 4, k, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+    }
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
   // FIXME: just free if it isn't aligned
   free(hist);
 }
 
-static void _lib_histogram_draw_waveform(cairo_t *cr, dt_lib_histogram_t *d, int width, int height)
+static void _lib_histogram_draw_waveform(cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
   dt_develop_t *dev = darktable.develop;
 
@@ -322,11 +312,10 @@ static void _lib_histogram_draw_waveform(cairo_t *cr, dt_lib_histogram_t *d, int
   if(wav)
   {
     const uint8_t *const wf_buf = dev->histogram_waveform;
-    uint8_t mask[3] = { d->blue, d->green, d->red };
     for(int y = 0; y < wf_height; y++)
       for(int x = 0; x < wf_width; x++)
         for(int k = 0; k < 3; k++)
-          wav[4 * (y * wf_stride + x) + k] = wf_buf[wf_stride * (y + k * wf_height) + x] * mask[k];
+          wav[4 * (y * wf_stride + x) + k] = wf_buf[wf_stride * (y + k * wf_height) + x] * mask[2-k];
   }
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   if(wav == NULL) return;
@@ -349,7 +338,7 @@ static void _lib_histogram_draw_waveform(cairo_t *cr, dt_lib_histogram_t *d, int
   free(wav);
 }
 
-static void _lib_histogram_draw_rgb_parade(cairo_t *cr, dt_lib_histogram_t *d, int width, int height)
+static void _lib_histogram_draw_rgb_parade(cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
   dt_develop_t *dev = darktable.develop;
 
@@ -363,8 +352,6 @@ static void _lib_histogram_draw_rgb_parade(cairo_t *cr, dt_lib_histogram_t *d, i
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   if(wav == NULL) return;
 
-  uint8_t mask[3] = { d->blue, d->green, d->red };
-
   // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
   cairo_scale(cr, (double)width/(wf_width*3), (double)height/wf_height);
   // this makes the blue come in more than CAIRO_OPERATOR_ADD, as it can go darker than the background
@@ -372,7 +359,7 @@ static void _lib_histogram_draw_rgb_parade(cairo_t *cr, dt_lib_histogram_t *d, i
 
   for(int k = 0; k < 3; k++)
   {
-    if(mask[2-k])
+    if(mask[k])
     {
       cairo_save(cr);
       cairo_set_source_rgb(cr, k==0, k==1, k==2);
@@ -446,16 +433,17 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   if(dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
+    uint8_t mask[3] = { d->red, d->green, d->blue };
     switch(dev->scope_type)
     {
       case DT_DEV_SCOPE_HISTOGRAM:
-        _lib_histogram_draw_histogram(cr, d, width, height);
+        _lib_histogram_draw_histogram(cr, width, height, mask);
         break;
       case DT_DEV_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
-          _lib_histogram_draw_waveform(cr, d, width, height);
+          _lib_histogram_draw_waveform(cr, width, height, mask);
         else
-          _lib_histogram_draw_rgb_parade(cr, d, width, height);
+          _lib_histogram_draw_rgb_parade(cr, width, height, mask);
         break;
       case DT_DEV_SCOPE_N:
         g_assert_not_reached();
