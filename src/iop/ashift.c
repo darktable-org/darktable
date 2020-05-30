@@ -2555,7 +2555,6 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   // start the simplex fit
   const int iter = simplex(crop_fitness, params, pcount, NMS_CROP_EPSILON, NMS_CROP_SCALE, NMS_CROP_ITERATIONS,
                            crop_constraint, (void*)&cropfit);
-
   // in case the fit did not converge -> failed
   if(iter >= NMS_CROP_ITERATIONS) goto failed;
 
@@ -2631,7 +2630,6 @@ static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, cons
   const float lensshift_v = p->lensshift_v;
   const float lensshift_h = p->lensshift_h;
   const float shear = p->shear;
-
   const float wd = g->buf_width;
   const float ht = g->buf_height;
 
@@ -2738,7 +2736,6 @@ static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, cons
   return;
 }
 
-
 // helper function to start analysis for structural data and report about errors
 static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
                             dt_iop_ashift_enhance_t enhance)
@@ -2843,14 +2840,12 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
 
   // finally apply cropping
   do_crop(module, p);
-
   return TRUE;
 
 error:
   g->fitting = 0;
   return FALSE;
 }
-
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -2879,8 +2874,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, points,
-                                      2);
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, 
+                                      DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
     float ovecl = sqrt(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
@@ -3014,8 +3009,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, points,
-                                      2);
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, 
+                                      DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
     float ovecl = sqrt(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
@@ -3136,8 +3131,8 @@ error:
 #endif
 
 // gather information about "near"-ness in g->points_idx
-static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, const int lines_count,
-                     float pzx, float pzy, float delta)
+static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, 
+                     const int lines_count, float pzx, float pzy, float delta)
 {
   const float delta2 = delta * delta;
 
@@ -3180,8 +3175,8 @@ static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx
 
 // mark lines which are inside a rectangular area in isbounding mode
 static void get_bounded_inside(const float *points, dt_iop_ashift_points_idx_t *points_idx,
-                               const int points_lines_count, float pzx, float pzy, float pzx2, float pzy2,
-                               dt_iop_ashift_bounding_t mode)
+                               const int points_lines_count, float pzx, float pzy,
+                               float pzx2, float pzy2, dt_iop_ashift_bounding_t mode)
 {
   // get bounding box coordinates
   float ax = pzx;
@@ -3442,10 +3437,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(g->buf && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
   {
     // roi data of the preview pipe input buffer
-    const float iwd = g->buf_width;
-    const float iht = g->buf_height;
-    const float ixo = g->buf_x_off;
-    const float iyo = g->buf_y_off;
+    const float pr_d = darktable.develop->preview_downsampling;
+    
+    const float iwd = g->buf_width / pr_d;
+    const float iht = g->buf_height / pr_d;
+    const float ixo = g->buf_x_off / pr_d;
+    const float iyo = g->buf_y_off / pr_d;
 
     // the four corners of the input buffer of this module
     const float V[4][2] = { { ixo,        iyo       },
@@ -3476,10 +3473,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                             { xmin + p->cr * owd, ymin + p->ct * oht } };
 
     // convert clipping corners to final output image
-    if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL,
-      (float *)C, 4))
+    if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, 
+                                     DT_DEV_TRANSFORM_DIR_FORW_EXCL, (float *)C, 4))
       return;
-
+      
     cairo_save(cr);
 
     double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
@@ -3687,7 +3684,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // and we draw the selection box if any
   if(g->isbounding != ASHIFT_BOUNDING_OFF)
   {
-    float pzx, pzy;
+    float pzx = 0.0f, pzy = 0.0f;
     dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
     pzx += 0.5f;
     pzy += 0.5f;
@@ -3697,8 +3694,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     dashed[1] /= zoom_scale;
     int len = sizeof(dashed) / sizeof(dashed[0]);
 
-    cairo_rectangle(cr, g->lastx * wd, g->lasty * ht, (pzx - g->lastx) * wd, (pzy - g->lasty) * ht);
-
+    cairo_rectangle(cr, g->lastx * wd, g->lasty * ht, (pzx - g->lastx) * wd,
+                   (pzy - g->lasty) * ht);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_set_line_width(cr, 1.0 / zoom_scale);
     cairo_set_dash(cr, dashed, len, 0);
@@ -3711,7 +3708,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // indicate which area is used for "near"-ness detection when selecting/deselecting lines
   if(g->near_delta > 0)
   {
-    float pzx, pzy;
+    float pzx = 0.0f, pzy = 0.0f;
     dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
     pzx += 0.5f;
     pzy += 0.5f;
@@ -3763,7 +3760,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   const float ht = self->dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return 1;
 
-  float pzx, pzy;
+  float pzx = 0.0f, pzy = 0.0f;
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
@@ -3838,7 +3835,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   int handled = 0;
 
-  float pzx, pzy;
+  float pzx = 0.0f, pzy = 0.0f;
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
@@ -3955,7 +3952,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     int handled = 0;
 
     // we compute the rectangle selection
-    float pzx, pzy;
+    float pzx = 0.0f, pzy = 0.0f;
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
 
     pzx += 0.5f;
@@ -4017,7 +4014,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   {
     int handled = 0;
 
-    float pzx, pzy;
+    float pzx = 0.0f, pzy = 0.0f;
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
     pzx += 0.5f;
     pzy += 0.5f;
@@ -4581,8 +4578,9 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0,
-                                                         ASHIFT_CROP_OFF, 0.0f, 1.0f, 0.0f, 1.0f };
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 
+                                1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0, ASHIFT_CROP_OFF,
+                                0.0f, 1.0f, 0.0f, 1.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
 }
@@ -4604,9 +4602,7 @@ void reload_defaults(dt_iop_module_t *module)
     // before pixelpipe has been set up. later we will get a definite result by
     // assessing the pixelpipe
     isflipped = (img->orientation == ORIENTATION_ROTATE_CCW_90_DEG
-                 || img->orientation == ORIENTATION_ROTATE_CW_90_DEG)
-                    ? 1
-                    : 0;
+                 || img->orientation == ORIENTATION_ROTATE_CW_90_DEG) ? 1 : 0;
 
     // focal length should be available in exif data if lens is electronically coupled to the camera
     f_length = isfinite(img->exif_focal_length) && img->exif_focal_length > 0.0f ? img->exif_focal_length : f_length;
