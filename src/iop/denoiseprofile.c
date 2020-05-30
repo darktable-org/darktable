@@ -26,6 +26,7 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
@@ -66,8 +67,8 @@ typedef enum dt_iop_denoiseprofile_mode_t {
 } dt_iop_denoiseprofile_mode_t;
 
 typedef enum dt_iop_denoiseprofile_wavelet_mode_t {
-  MODE_RGB = 0,
-  MODE_Y0U0V0 = 1
+  MODE_RGB = 0,    // $DESCRIPTION: "RGB"
+  MODE_Y0U0V0 = 1  // $DESCRIPTION: "Y0U0V0"
 } dt_iop_denoiseprofile_wavelet_mode_t;
 
 #define DT_DENOISE_PROFILE_NONE_V9 4
@@ -185,22 +186,32 @@ typedef struct dt_iop_denoiseprofile_params_v9_t
 
 typedef struct dt_iop_denoiseprofile_params_t
 {
-  float radius;     // patch size
-  float nbhood;     // search radius
-  float strength;   // noise level after equalization
-  float shadows;    // control the impact on shadows
-  float bias;       // allows to reduce backtransform bias
-  float scattering; // spread the patch search zone without increasing number of patches
-  float central_pixel_weight; // increase central pixel's weight in patch comparison
-  float overshooting; // adjusts the way parameters are autoset
+  float radius;     /* patch size
+                       $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "patch size" */
+  float nbhood;     /* search radius
+                       $MIN: 1.0 $MAX: 30.0 $DEFAULT: 7.0 $DESCRIPTION: "search radius" */
+  float strength;   /* noise level after equalization
+                       $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 */
+  float shadows;    /* control the impact on shadows
+                       $MIN: 0.0 $MAX: 1.8 $DEFAULT: 1.0 $DESCRIPTION: "preserve shadows" */
+  float bias;       /* allows to reduce backtransform bias
+                       $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "bias correction" */
+  float scattering; /* spread the patch search zone without increasing number of patches
+                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering (coarse-grain noise)" */
+  float central_pixel_weight; /* increase central pixel's weight in patch comparison
+                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight (details)" */
+  float overshooting; /* adjusts the way parameters are autoset
+                         $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
-  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+  dt_iop_denoiseprofile_mode_t mode; /* switch between nlmeans and wavelets
+                                        $DEFAULT: 0 MODE_NLMEANS */
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
-  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
-  gboolean fix_anscombe_and_nlmeans_norm; // backward compatibility options
-  gboolean use_new_vst; // backward compatibility options
-  dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; // switch between RGB and Y0U0V0 modes.
+  gboolean wb_adaptive_anscombe; // $DEFAULT: TRUE whether to adapt anscombe transform to wb coeffs
+  gboolean fix_anscombe_and_nlmeans_norm; // $DEFAULT: TRUE backward compatibility options
+  gboolean use_new_vst; // $DEFAULT: TRUE backward compatibility options
+  dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
+                                                              $DEFAULT: 1 MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -3362,23 +3373,15 @@ void reload_defaults(dt_iop_module_t *module)
     // set defaults depending on the profile
     // all these formulas were "guessed" and are completely empirical
     const float a = g->interpolated.a[1];
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = infer_radius_from_profile(a);
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = infer_scattering_from_profile(a);
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.1f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->overshooting = 1.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = infer_shadows_from_profile(a);
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->bias = infer_bias_from_profile(a);
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->wavelet_color_mode = MODE_Y0U0V0;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->use_new_vst = TRUE;
+    dt_iop_denoiseprofile_params_t *default_params = module->default_params;
+    default_params->radius = infer_radius_from_profile(a);
+    default_params->scattering = infer_scattering_from_profile(a);
+    default_params->shadows = infer_shadows_from_profile(a);
+    default_params->bias = infer_bias_from_profile(a);
     for(int k = 0; k < 3; k++)
     {
-      ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
-      ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[k] = g->interpolated.b[k];
+      default_params->a[k] = g->interpolated.a[k];
+      default_params->b[k] = g->interpolated.b[k];
     }
     memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
   }
@@ -3405,7 +3408,13 @@ void init(dt_iop_module_t *module)
   tmp.fix_anscombe_and_nlmeans_norm = TRUE;
   tmp.wb_adaptive_anscombe = TRUE;
   tmp.use_new_vst = TRUE;
+  tmp.mode = MODE_NLMEANS;
   tmp.wavelet_color_mode = MODE_Y0U0V0;
+  tmp.nbhood = 7.0f;
+  tmp.central_pixel_weight = 0.1f;
+  tmp.strength = 1.0f;
+  tmp.overshooting = 1.0f;
+
   memcpy(module->params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
 }
@@ -3648,110 +3657,56 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void wavelet_color_mode_callback(GtkWidget *w, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  const unsigned mode = dt_bauhaus_combobox_get(w);
-  p->wavelet_color_mode = mode;
-  gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (mode == MODE_RGB));
-  gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (mode == MODE_Y0U0V0));
-  if(mode == MODE_RGB)
-    g->channel = DT_DENOISE_PROFILE_ALL;
-  else
-    g->channel = DT_DENOISE_PROFILE_Y0;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
 
-static void radius_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  p->radius = (int)dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void nbhood_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_params_t *p = self->params;
-  p->nbhood = (int)dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void scattering_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_params_t *p = self->params;
-  p->scattering = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void central_pixel_weight_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_params_t *p = self->params;
-  p->central_pixel_weight = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  p->strength = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void overshooting_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  p->overshooting = dt_bauhaus_slider_get(w);
-  const float gain = p->overshooting;
-  float a = p->a[1];
-  if(p->a[0] == -1.0)
+  if(w == g->wavelet_color_mode)
   {
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
-    a = interpolated.a[1];
+    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (p->wavelet_color_mode == MODE_RGB));
+    gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (p->wavelet_color_mode == MODE_Y0U0V0));
+    if(p->wavelet_color_mode == MODE_RGB)
+      g->channel = DT_DENOISE_PROFILE_ALL;
+    else
+      g->channel = DT_DENOISE_PROFILE_Y0;
   }
-  // set the sliders as visible while we are setting their values
-  // otherwise a log message appears
-  if(p->mode == MODE_NLMEANS_AUTO)
+  else if(w == g->overshooting)
   {
-    gtk_widget_set_visible(g->radius, TRUE);
-    gtk_widget_set_visible(g->scattering, TRUE);
-    dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
-    dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
-    gtk_widget_set_visible(g->radius, FALSE);
-    gtk_widget_set_visible(g->scattering, FALSE);
+    const float gain = p->overshooting;
+    float a = p->a[1];
+    if(p->a[0] == -1.0)
+    {
+      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+      a = interpolated.a[1];
+    }
+    // set the sliders as visible while we are setting their values
+    // otherwise a log message appears
+    if(p->mode == MODE_NLMEANS_AUTO)
+    {
+      gtk_widget_set_visible(g->radius, TRUE);
+      gtk_widget_set_visible(g->scattering, TRUE);
+      dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
+      dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+      gtk_widget_set_visible(g->radius, FALSE);
+      gtk_widget_set_visible(g->scattering, FALSE);
+    }
+    else
+    {
+      // we are in wavelets mode.
+      // we need to show the box_nlm, setting the sliders to visible is not enough
+      gtk_widget_show_all(g->box_nlm);
+      dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
+      dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+      gtk_widget_hide(g->box_nlm);
+    }
+    gtk_widget_set_visible(g->shadows, TRUE);
+    gtk_widget_set_visible(g->bias, TRUE);
+    dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
+    dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
+    gtk_widget_set_visible(g->shadows, FALSE);
+    gtk_widget_set_visible(g->bias, FALSE);
   }
-  else
-  {
-    // we are in wavelets mode.
-    // we need to show the box_nlm, setting the sliders to visible is not enough
-    gtk_widget_show_all(g->box_nlm);
-    dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
-    dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
-    gtk_widget_hide(g->box_nlm);
-  }
-  gtk_widget_set_visible(g->shadows, TRUE);
-  gtk_widget_set_visible(g->bias, TRUE);
-  dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
-  dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
-  gtk_widget_set_visible(g->shadows, FALSE);
-  gtk_widget_set_visible(g->bias, FALSE);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void shadows_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  p->shadows = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void bias_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  p->bias = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -3760,10 +3715,10 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set(g->nbhood, p->nbhood);
+  dt_bauhaus_slider_set_soft(g->nbhood, p->nbhood);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
   dt_bauhaus_slider_set_soft(g->overshooting, p->overshooting);
-  dt_bauhaus_slider_set(g->shadows, p->shadows);
+  dt_bauhaus_slider_set_soft(g->shadows, p->shadows);
   dt_bauhaus_slider_set_soft(g->bias, p->bias);
   dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
   dt_bauhaus_slider_set_soft(g->central_pixel_weight, p->central_pixel_weight);
@@ -4250,7 +4205,7 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook, GtkWidget *page, gu
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_denoiseprofile_gui_data_t *c = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   if(p->wavelet_color_mode == MODE_Y0U0V0)
     c->channel = (dt_iop_denoiseprofile_channel_t)page_num + DT_DENOISE_PROFILE_Y0;
@@ -4292,41 +4247,79 @@ static void use_new_vst_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_denoiseprofile_gui_data_t));
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+
   g->profiles = NULL;
-  g->profile = dt_bauhaus_combobox_new(self);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
-  dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
-  g->overshooting = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->overshooting, 0.001f, 1000.0f);
-  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.8f, .05, 1.f, 2);
-  g->bias = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 1.0f, 0.f, 1);
-  dt_bauhaus_slider_enable_soft_boundaries(g->bias, -1000.0f, 1000.0f);
-  g->mode = dt_bauhaus_combobox_new(self);
-  g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 8.0f, 1.f, 1.f, 0);
-  dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 12.0);
-  g->nbhood = dt_bauhaus_slider_new_with_range(self, 1.0f, 30.0f, 1.f, 7.f, 0);
-  g->scattering = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->scattering, 0.0, 20.0);
-  g->central_pixel_weight = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.1f, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->central_pixel_weight, 0.0, 10.0);
+
   g->channel = 0;
-  g->wavelet_color_mode = dt_bauhaus_combobox_new(self);
 
-  g->box_nlm = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  g->box_wavelets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  // First build sub-level boxes
+  g->box_nlm = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->radius = dt_bauhaus_slider_new_from_params_box(self, "radius");
+  dt_bauhaus_slider_set_soft_range(g->radius, 0.0, 8.0);
+  dt_bauhaus_slider_set_step(g->radius, 1.0);
+  dt_bauhaus_slider_set_digits(g->radius, 0);
+  g->nbhood = dt_bauhaus_slider_new_from_params_box(self, "nbhood");
+  dt_bauhaus_slider_set_step(g->nbhood, 1.0);
+  dt_bauhaus_slider_set_digits(g->nbhood, 0);
+  g->scattering = dt_bauhaus_slider_new_from_params_box(self, "scattering");
+  dt_bauhaus_slider_set_soft_max(g->scattering, 1.0f);
+  dt_bauhaus_slider_set_step(g->scattering, 0.01f);
+  g->central_pixel_weight = dt_bauhaus_slider_new_from_params_box(self, "central_pixel_weight");
+  dt_bauhaus_slider_set_soft_max(g->central_pixel_weight, 1.0f);
+  dt_bauhaus_slider_set_step(g->central_pixel_weight, 0.01f);
+
+  g->box_wavelets = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->wavelet_color_mode = dt_bauhaus_combobox_new_from_params_box(self, "wavelet_color_mode");
+
+  g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), gtk_label_new(_("all")));
+  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), gtk_label_new(_("R")));
+  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), gtk_label_new(_("G")));
+  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), gtk_label_new(_("B")));
+  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs, g->channel)));
+  gtk_notebook_set_current_page(g->channel_tabs, g->channel);
+  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
+  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
+
+  g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
+  gtk_notebook_append_page(g->channel_tabs_Y0U0V0, gtk_grid_new(), gtk_label_new(_("Y0")));
+  gtk_notebook_append_page(g->channel_tabs_Y0U0V0, gtk_grid_new(), gtk_label_new(_("U0V0")));
+  gtk_widget_show_all(gtk_notebook_get_nth_page(g->channel_tabs_Y0U0V0, g->channel));
+  gtk_notebook_set_current_page(g->channel_tabs_Y0U0V0, g->channel);
+  g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
+  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->channel_tabs_Y0U0V0), FALSE, FALSE, 0);
+
+  const int ch = (int)g->channel;
+  g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
+  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0f,
+                                p->y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2]);
+  for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
+    (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][k], p->y[ch][k]);
+  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][1] + 1.0f, p->y[ch][1]);
+
+  g->mouse_x = g->mouse_y = g->mouse_pick = -1.0;
+  g->dragging = 0;
+  g->x_move = -1;
+  g->mouse_radius = 1.0f / (DT_IOP_DENOISE_PROFILE_BANDS * 2);
+
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
+  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                                 | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(denoiseprofile_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(denoiseprofile_button_press), self);
+  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(denoiseprofile_button_release), self);
+  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(denoiseprofile_motion_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(denoiseprofile_leave_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(denoiseprofile_scrolled), self);
+  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+
   g->box_variance = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  gtk_box_pack_start(GTK_BOX(g->box_nlm), g->radius, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_nlm), g->nbhood, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_nlm), g->scattering, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_nlm), g->central_pixel_weight, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets), g->wavelet_color_mode, TRUE, TRUE, 0);
 
   g->label_var = GTK_LABEL(gtk_label_new(_("use only with a perfectly\n"
                                            "uniform image if you want to\n"
@@ -4360,85 +4353,67 @@ void gui_init(dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->box_variance), "draw", G_CALLBACK(denoiseprofile_draw_variance), self);
 
-  g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+  // Start building top level widgets
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("all")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("R")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("G")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("B")));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs, g->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
-
-  g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
-
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("Y0")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("U0V0")));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs_Y0U0V0, g->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), g->channel);
-  g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
-
-  const int ch = (int)g->channel;
-  g->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.0f,
-                                p->y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2]);
-  for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
-    (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][k], p->y[ch][k]);
-  (void)dt_draw_curve_add_point(g->transition_curve, p->x[ch][1] + 1.0f, p->y[ch][1]);
-
-  g->mouse_x = g->mouse_y = g->mouse_pick = -1.0;
-  g->dragging = 0;
-  g->x_move = -1;
-  g->mouse_radius = 1.0f / (DT_IOP_DENOISE_PROFILE_BANDS * 2);
-
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
-
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->channel_tabs_Y0U0V0), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->area), FALSE, FALSE, 0);
-
-  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(denoiseprofile_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(denoiseprofile_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(denoiseprofile_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(denoiseprofile_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(denoiseprofile_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(denoiseprofile_scrolled), self);
+  g->profile = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
+  g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
 
   g->wb_adaptive_anscombe = gtk_check_button_new_with_label(_("whitebalance-adaptive transform"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe), p->wb_adaptive_anscombe);
+  g_signal_connect(G_OBJECT(g->wb_adaptive_anscombe), "toggled", G_CALLBACK(wb_adaptive_anscombe_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->wb_adaptive_anscombe, TRUE, TRUE, 0);
+
+  g->mode = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
+  dt_bauhaus_combobox_add(g->mode, _("non-local means"));
+  dt_bauhaus_combobox_add(g->mode, _("non-local means auto"));
+  dt_bauhaus_combobox_add(g->mode, _("wavelets"));
+  dt_bauhaus_combobox_add(g->mode, _("wavelets auto"));
+  const gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
+  if(compute_variance) dt_bauhaus_combobox_add(g->mode, _("compute variance"));
+  g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
+
+  g->overshooting = dt_bauhaus_slider_new_from_params_box(self, "overshooting");
+  dt_bauhaus_slider_set_soft_max(g->overshooting, 4.0f);
+  dt_bauhaus_slider_set_step(g->overshooting, 0.05f);
+  g->strength = dt_bauhaus_slider_new_from_params_box(self, "strength");
+  dt_bauhaus_slider_set_soft_max(g->strength, 4.0f);
+  dt_bauhaus_slider_set_step(g->strength, 0.5f);
+  g->shadows = dt_bauhaus_slider_new_from_params_box(self, "shadows");
+  dt_bauhaus_slider_set_step(g->shadows, 0.05f);
+  g->bias = dt_bauhaus_slider_new_from_params_box(self, "bias");
+  dt_bauhaus_slider_set_soft_range(g->bias, -10.0f, 10.0f);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
+
+  g->fix_anscombe_and_nlmeans_norm = gtk_check_button_new_with_label(_("fix various bugs in algorithm"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm), p->fix_anscombe_and_nlmeans_norm);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->fix_anscombe_and_nlmeans_norm, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->fix_anscombe_and_nlmeans_norm), "toggled", G_CALLBACK(fix_anscombe_and_nlmeans_norm_callback), self);
+
+  g->use_new_vst = gtk_check_button_new_with_label(_("upgrade profiled transform"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_new_vst), p->use_new_vst);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->use_new_vst, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->use_new_vst), "toggled", G_CALLBACK(use_new_vst_callback), self);
+
+  gtk_widget_show_all(g->box_nlm);
+  gtk_widget_show_all(g->box_wavelets);
+  gtk_widget_show_all(g->box_variance);
+
   gtk_widget_set_tooltip_text(g->wb_adaptive_anscombe, _("adapt denoising according to the\n"
                                                          "white balance coefficients.\n"
                                                          "should be enabled on a first instance\n"
                                                          "for better denoising.\n"
                                                          "should be disabled if an earlier instance\n"
                                                          "has been used with a color blending mode."));
-  g_signal_connect(G_OBJECT(g->wb_adaptive_anscombe), "toggled", G_CALLBACK(wb_adaptive_anscombe_callback), self);
-
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->wb_adaptive_anscombe, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->overshooting, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->bias, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
-
-  g->fix_anscombe_and_nlmeans_norm = gtk_check_button_new_with_label(_("fix various bugs in algorithm"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm), p->fix_anscombe_and_nlmeans_norm);
   gtk_widget_set_tooltip_text(g->fix_anscombe_and_nlmeans_norm, _("fix bugs in anscombe transform resulting\n"
                                                  "in undersmoothing of the green channel in\n"
                                                  "wavelets mode, combined with a bad handling\n"
@@ -4448,48 +4423,9 @@ void gui_init(dt_iop_module_t *self)
                                                  "enabling this option will change the denoising\n"
                                                  "you get. once enabled, you won't be able to\n"
                                                  "return back to old algorithm."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->fix_anscombe_and_nlmeans_norm, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->fix_anscombe_and_nlmeans_norm), "toggled", G_CALLBACK(fix_anscombe_and_nlmeans_norm_callback), self);
-  g->use_new_vst = gtk_check_button_new_with_label(_("upgrade profiled transform"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_new_vst), p->use_new_vst);
-  gtk_widget_set_tooltip_text(g->use_new_vst, _("upgrade the variance stabilizing algorithm.\n"
-                                                "new algorithm extends the current one.\n"
-                                                "it is more flexible but could give small\n"
-                                                "differences in the images already processed."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->use_new_vst, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->use_new_vst), "toggled", G_CALLBACK(use_new_vst_callback), self);
-
-  gtk_widget_show_all(g->box_nlm);
-  gtk_widget_show_all(g->box_wavelets);
-  gtk_widget_show_all(g->box_variance);
-
-  dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
-  dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
-  dt_bauhaus_widget_set_label(g->wavelet_color_mode, NULL, _("color mode"));
-  dt_bauhaus_widget_set_label(g->radius, NULL, _("patch size"));
-  dt_bauhaus_slider_set_format(g->radius, "%.0f");
-  dt_bauhaus_widget_set_label(g->nbhood, NULL, _("search radius"));
-  dt_bauhaus_slider_set_format(g->nbhood, "%.0f");
-  dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise)"));
-  dt_bauhaus_widget_set_label(g->central_pixel_weight, NULL, _("central pixel weight (details)"));
-  dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
-  dt_bauhaus_widget_set_label(g->overshooting, NULL, _("adjust autoset parameters"));
-  dt_bauhaus_widget_set_label(g->shadows, NULL, _("preserve shadows"));
-  dt_bauhaus_widget_set_label(g->bias, NULL, _("bias correction"));
-  dt_bauhaus_combobox_add(g->mode, _("non-local means"));
-  dt_bauhaus_combobox_add(g->mode, _("non-local means auto"));
-  dt_bauhaus_combobox_add(g->mode, _("wavelets"));
-  dt_bauhaus_combobox_add(g->mode, _("wavelets auto"));
-  dt_bauhaus_combobox_add(g->wavelet_color_mode, _("RGB"));
-  dt_bauhaus_combobox_add(g->wavelet_color_mode, _("Y0U0V0"));
-  const gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
-  if(compute_variance)
-  {
-    dt_bauhaus_combobox_add(g->mode, _("compute variance"));
-  }
   gtk_widget_set_tooltip_text(g->profile, _("profile used for variance stabilization"));
-  gtk_widget_set_tooltip_text(g->mode, _("method used in the denoising core. "
-                                         "non-local means works best for `lightness' blending, "
+  gtk_widget_set_tooltip_text(g->mode, _("method used in the denoising core.\n"
+                                         "non-local means works best for `lightness' blending,\n"
                                          "wavelets work best for `color' blending"));
   gtk_widget_set_tooltip_text(g->wavelet_color_mode, _("color representation used within the algorithm.\n"
                                                        "RGB keeps the RGB channels separated,\n"
@@ -4498,10 +4434,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match.\n"
                                            "increase for more sharpness on strong edges, and better denoising of smooth areas.\n"
                                            "if details are oversmoothed, reduce this value or increase the details slider."));
-  gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighbourhood to search patches in. increase for better denoising performance, but watch the long runtimes! large radii can be very slow. you have been warned"));
-  gtk_widget_set_tooltip_text(g->scattering,
-                              _("scattering of the neighbourhood to search patches in. increase for better "
-                                "coarse-grain noise reduction. does not affect execution time."));
+  gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighbourhood to search patches in. "
+                                           "increase for better denoising performance, but watch the long runtimes! "
+                                           "large radii can be very slow. you have been warned"));
+  gtk_widget_set_tooltip_text(g->scattering, _("scattering of the neighbourhood to search patches in.\n"
+                                               "increase for better coarse-grain noise reduction.\n"
+                                               "does not affect execution time."));
   gtk_widget_set_tooltip_text(g->central_pixel_weight, _("increase the weight of the central pixel\n"
                                                          "of the patch in the patch comparison.\n"
                                                          "useful to recover details when patch size\n"
@@ -4513,22 +4451,15 @@ void gui_init(dt_iop_module_t *self)
                                                  "this can happen if your picture is underexposed."));
   gtk_widget_set_tooltip_text(g->shadows, _("finetune shadows denoising.\n"
                                             "decrease to denoise more aggressively\n"
-                                            "dark areas of the image.\n"));
+                                            "dark areas of the image."));
   gtk_widget_set_tooltip_text(g->bias, _("correct color cast in shadows.\n"
                                          "decrease if shadows are too purple.\n"
                                          "increase if shadows are too green."));
-  g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
-  g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
-  g_signal_connect(G_OBJECT(g->wavelet_color_mode), "value-changed", G_CALLBACK(wavelet_color_mode_callback), self);
-  g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
-  g_signal_connect(G_OBJECT(g->nbhood), "value-changed", G_CALLBACK(nbhood_callback), self);
-  g_signal_connect(G_OBJECT(g->scattering), "value-changed", G_CALLBACK(scattering_callback), self);
-  g_signal_connect(G_OBJECT(g->central_pixel_weight), "value-changed", G_CALLBACK(central_pixel_weight_callback),
-                   self);
-  g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
-  g_signal_connect(G_OBJECT(g->overshooting), "value-changed", G_CALLBACK(overshooting_callback), self);
-  g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
-  g_signal_connect(G_OBJECT(g->bias), "value-changed", G_CALLBACK(bias_callback), self);
+  gtk_widget_set_tooltip_text(g->use_new_vst, _("upgrade the variance stabilizing algorithm.\n"
+                                                "new algorithm extends the current one.\n"
+                                                "it is more flexible but could give small\n"
+                                                "differences in the images already processed."));
+
 }
 
 void gui_cleanup(dt_iop_module_t *self)
