@@ -18,15 +18,10 @@
 /** a class to manage a collection of zoomable thumbnails for culling or full preview.  */
 #include "dtgtk/culling.h"
 #include "common/collection.h"
-#include "common/colorlabels.h"
 #include "common/debug.h"
-#include "common/history.h"
-#include "common/ratings.h"
 #include "common/selection.h"
 #include "control/control.h"
 #include "dtgtk/thumbtable.h"
-#include "gui/accelerators.h"
-#include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
 #include "views/view.h"
 
@@ -156,6 +151,44 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
   return ret;
 }
 
+// set mouse_over_id to thumb under mouse or to first thumb
+static void _thumbs_refocus(dt_culling_t *table)
+{
+  int overid = -1;
+
+  if(table->mouse_inside)
+  {
+    // the exact position of the mouse
+    int x = -1;
+    int y = -1;
+    gdk_window_get_origin(gtk_widget_get_window(table->widget), &x, &y);
+    x = table->pan_x - x;
+    y = table->pan_y - y;
+
+    // which thumb is under the mouse ?
+    GList *l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+      if(th->x <= x && th->x + th->width > x && th->y <= y && th->y + th->height > y)
+      {
+        overid = th->imgid;
+        break;
+      }
+      l = g_list_next(l);
+    }
+  }
+
+  // if overid not valid, we use the offest image
+  if(overid <= 0)
+  {
+    overid = table->offset_imgid;
+  }
+
+  // and we set the overid
+  dt_control_set_mouse_over_id(overid);
+}
+
 static void _thumbs_move(dt_culling_t *table, int move)
 {
   if(move == 0) return;
@@ -281,6 +314,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
   {
     table->offset = new_offset;
     dt_culling_full_redraw(table, TRUE);
+    _thumbs_refocus(table);
   }
 }
 
@@ -448,10 +482,14 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
 static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  // if the leaving cause is the hide of the widget, no mouseover change
-  if(!gtk_widget_is_visible(widget)) return FALSE;
-
   dt_culling_t *table = (dt_culling_t *)user_data;
+  // if the leaving cause is the hide of the widget, no mouseover change
+  if(!gtk_widget_is_visible(widget))
+  {
+    table->mouse_inside = FALSE;
+    return FALSE;
+  }
+
   // if we leave thumbtable in favour of an inferior (a thumbnail) it's not a real leave !
   if(event->detail == GDK_NOTIFY_INFERIOR) return FALSE;
 
@@ -516,7 +554,13 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
 static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
-  if(!table->panning) return FALSE;
+  table->mouse_inside = TRUE;
+  if(!table->panning)
+  {
+    table->pan_x = event->x_root;
+    table->pan_y = event->y_root;
+    return FALSE;
+  }
 
   GList *l;
 
@@ -649,7 +693,11 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
     dt_view_lighttable_set_zoom(darktable.view_manager, nz);
   }
   // if we navigate only in the selection we just redraw to ensure no unselected image is present
-  if(table->navigate_inside_selection) dt_culling_full_redraw(table, TRUE);
+  if(table->navigate_inside_selection)
+  {
+    dt_culling_full_redraw(table, TRUE);
+    _thumbs_refocus(table);
+  }
 }
 
 static void _dt_profile_change_callback(gpointer instance, int type, gpointer user_data)
@@ -702,6 +750,7 @@ static void _dt_filmstrip_change(gpointer instance, int imgid, gpointer user_dat
 
   table->offset = _thumb_get_rowid(imgid);
   dt_culling_full_redraw(table, TRUE);
+  _thumbs_refocus(table);
 }
 
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
@@ -779,8 +828,13 @@ void dt_culling_init(dt_culling_t *table, int offset)
   table->navigate_inside_selection = FALSE;
   table->selection_sync = FALSE;
 
+  const gboolean culling_dynamic
+      = (table->mode == DT_CULLING_MODE_CULLING
+         && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC);
+
   // get first id
   sqlite3_stmt *stmt;
+  gchar *query = NULL;
   int first_id = -1;
 
   if(offset > 0)
@@ -788,7 +842,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
   else
     first_id = dt_control_get_mouse_over_id();
 
-  if(first_id < 1)
+  if(first_id < 1 || culling_dynamic)
   {
     // search the first selected image
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -812,16 +866,6 @@ void dt_culling_init(dt_culling_t *table, int offset)
     return;
   }
 
-  // special culling dynamic mode
-  if(table->mode == DT_CULLING_MODE_CULLING
-     && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
-  {
-    table->navigate_inside_selection = TRUE;
-    table->offset = _thumb_get_rowid(first_id);
-    table->offset_imgid = first_id;
-    return;
-  }
-
   // selection count
   int sel_count = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -831,13 +875,27 @@ void dt_culling_init(dt_culling_t *table, int offset)
                               -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
+
+  // special culling dynamic mode
+  if(culling_dynamic)
+  {
+    if(sel_count == 0)
+    {
+      dt_control_log(_("no image selected !"));
+    }
+    table->navigate_inside_selection = TRUE;
+    table->offset = _thumb_get_rowid(first_id);
+    table->offset_imgid = first_id;
+    return;
+  }
+
   // is first_id inside selection ?
   gboolean inside = FALSE;
-  gchar *query = dt_util_dstrcat(NULL,
-                                 "SELECT col.imgid "
-                                 "FROM memory.collected_images AS col, main.selected_images AS sel "
-                                 "WHERE col.imgid=sel.imgid AND col.imgid=%d",
-                                 first_id);
+  query = dt_util_dstrcat(NULL,
+                          "SELECT col.imgid "
+                          "FROM memory.collected_images AS col, main.selected_images AS sel "
+                          "WHERE col.imgid=sel.imgid AND col.imgid=%d",
+                          first_id);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW) inside = TRUE;
   sqlite3_finalize(stmt);
@@ -1422,6 +1480,7 @@ void dt_culling_change_offset_image(dt_culling_t *table, int imgid)
 {
   table->offset = _thumb_get_rowid(imgid);
   dt_culling_full_redraw(table, TRUE);
+  _thumbs_refocus(table);
 }
 
 void dt_culling_zoom_max(dt_culling_t *table, gboolean only_current)

@@ -153,14 +153,7 @@ static void export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   gchar *icc_filename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
 
-  const int imgid = dt_view_get_image_to_act_on();
-  GList *list = NULL;
-
-  if(imgid != -1)
-    list = g_list_append(list, GINT_TO_POINTER(imgid));
-  else
-    list = dt_collection_get_selected(darktable.collection, -1);
-
+  GList *list = dt_view_get_images_to_act_on(TRUE);
   dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks,
                     style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export);
 
@@ -739,8 +732,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(button), TRUE, TRUE, 0);
 
   //  Add metadata exportation control
-  d->metadata_button = dtgtk_button_new(dtgtk_cairo_paint_preferences,
-      CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX, NULL);
+  d->metadata_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
   gtk_widget_set_tooltip_text(d->metadata_button, _("edit metadata exportation details"));
   gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
 

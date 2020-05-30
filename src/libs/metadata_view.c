@@ -149,12 +149,14 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_categories] = _("categories");
 }
 
-
 typedef struct dt_lib_metadata_view_t
 {
   GtkLabel *name[md_size];
   GtkLabel *metadata[md_size];
+  GtkWidget *scrolled_window;
 } dt_lib_metadata_view_t;
+
+static gboolean view_onMouseScroll(GtkWidget *view, GdkEventScroll *event, dt_lib_metadata_view_t *d);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -779,9 +781,21 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   _lib_metatdata_view_init_labels();
 
-  self->widget = gtk_grid_new();
+  GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *child_grid_window = gtk_grid_new();
+  gtk_container_add(GTK_CONTAINER(scrolled_window), child_grid_window);
+
+  d->scrolled_window = GTK_WIDGET(scrolled_window);
+  self->widget = d->scrolled_window;
+  
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
-  gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
+  
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->scrolled_window), DT_PIXEL_APPLY_DPI(300));
+  gint height = dt_conf_get_int("plugins/lighttable/metadata_view/windowheight");
+  gtk_widget_set_size_request(d->scrolled_window, -1, DT_PIXEL_APPLY_DPI(height));
+
 //   GtkWidget *last = NULL;
 
   /* initialize the metadata name/value labels */
@@ -801,8 +815,8 @@ void gui_init(dt_lib_module_t *self)
     }
     gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
     gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_START);
-    gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(name), 0, k, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(name), 0, k, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(child_grid_window), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
   }
 
   /* lets signup for mouse over image change signals */
@@ -821,6 +835,8 @@ void gui_init(dt_lib_module_t *self)
   /* signup for tags changes */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_mouse_over_image_callback), self);
+  /* adaptable window size */
+  g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(view_onMouseScroll), d);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -829,6 +845,28 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(self->data);
   self->data = NULL;
 }
+
+static gboolean view_onMouseScroll(GtkWidget *view, GdkEventScroll *event, dt_lib_metadata_view_t *d)
+{
+  if(event->state & GDK_CONTROL_MASK)
+  {
+    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
+    const gint min_height = gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(d->scrolled_window));
+    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
+    gint width, height;
+
+    gtk_widget_get_size_request(GTK_WIDGET(d->scrolled_window), &width, &height);
+    height = height + increment*event->delta_y;
+    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+
+    gtk_widget_set_size_request(GTK_WIDGET(d->scrolled_window), -1, height);
+    dt_conf_set_int("plugins/lighttable/metadata_view/windowheight", height);
+
+    return TRUE;
+  }
+  return FALSE;
+}
+
 #ifdef USE_LUA
 static int lua_update_widgets(lua_State*L)
 {

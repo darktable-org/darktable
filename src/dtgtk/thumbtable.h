@@ -111,6 +111,8 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, int oldzoom, int newzoom
 
 // ensure that the mentionned image is visible by moving the view if needed
 gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid);
+// check if the mentioned image is visible
+gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, int imgid);
 
 // move by key actions.
 // this key accels are not managed here but inside view

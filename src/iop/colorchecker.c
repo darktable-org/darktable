@@ -992,10 +992,9 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
     const float Cout = sqrtf(
         p->target_a[g->patch]*p->target_a[g->patch]+
         p->target_b[g->patch]*p->target_b[g->patch]);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_C, Cout);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   else
   {
@@ -1006,10 +1005,9 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
     const float Cout = sqrtf(
         p->target_a[g->patch]*p->target_a[g->patch]+
         p->target_b[g->patch]*p->target_b[g->patch]);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1026,10 +1024,9 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
     const float Cout = sqrtf(
         p->target_a[g->patch]*p->target_a[g->patch]+
         p->target_b[g->patch]*p->target_b[g->patch]);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_C, Cout);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   else
   {
@@ -1040,10 +1037,9 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
     const float Cout = sqrtf(
         p->target_a[g->patch]*p->target_a[g->patch]+
         p->target_b[g->patch]*p->target_b[g->patch]);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1066,22 +1062,20 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
     const float Cnew = CLAMP(dt_bauhaus_slider_get(slider), 0.01, 128.0);
     p->target_a[g->patch] = CLAMP(p->target_a[g->patch]*Cnew/Cout, -128.0, 128.0);
     p->target_b[g->patch] = CLAMP(p->target_b[g->patch]*Cnew/Cout, -128.0, 128.0);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch]);
     dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch]);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   else
   {
     const float Cnew = CLAMP(Cin + dt_bauhaus_slider_get(slider), 0.01, 128.0);
     p->target_a[g->patch] = CLAMP(p->target_a[g->patch]*Cnew/Cout, -128.0, 128.0);
     p->target_b[g->patch] = CLAMP(p->target_b[g->patch]*Cnew/Cout, -128.0, 128.0);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - p->source_a[g->patch]);
     dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - p->source_b[g->patch]);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1203,12 +1197,11 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     // freshly picked, also select it in gui:
     int pick = self->request_color_pick;
     g->drawn_patch = cells_x * bestj + besti;
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_combobox_set(g->combobox_patch, g->drawn_patch);
     g->patch = g->drawn_patch;
     self->gui_update(self);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     self->request_color_pick = pick; // restore, the combobox will kill it
   }
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));

@@ -50,6 +50,8 @@ group_basic=(
     'filmic'
     'filmicrgb'
     'basicadj'
+    'negadoctor'
+    'toneequal'
 )
 
 group_tone=(

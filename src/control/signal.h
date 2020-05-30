@@ -91,6 +91,9 @@ typedef enum dt_signal_t
   /** \brief This signal is raised when a style is added/deleted/changed  */
   DT_SIGNAL_STYLE_CHANGED,
 
+  /** \brief This signal is raised to request image order change */
+  DT_SIGNAL_IMAGES_ORDER_CHANGE,
+
   /** \brief This signal is raised when a filmroll is deleted/changed but not imported
       \note when a filmroll is imported, use DT_SIGNALS_FILMOLLS_IMPORTED, as the gui
        has to behave differently
@@ -216,6 +219,11 @@ typedef enum dt_signal_t
     no param, no returned value
   */
   DT_SIGNAL_CONTROL_LOG_REDRAW,
+
+  /** \brief This signal is raised when dt_control_toast_redraw() is called.
+    no param, no returned value
+  */
+  DT_SIGNAL_CONTROL_TOAST_REDRAW,
 
   /** \brief This signal is raised when new color picker data are available in the pixelpipe.
     1 module

@@ -20,9 +20,12 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
   $ pacman -S mingw-w64-x86_64-gmic
 
     For gphoto2:
-    You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables  properly set for LIBGPHOTO are available. You can check them with:
+    You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available. Also make sure they aren't pointing into your normal windows installation in case you already have Darktable installed. You can check them with:
 	$ echo $CAMLIBS
 	$ echo $IOLIBS
+    If you have to set them manually you can do so by setting the variables in your .bash_profile. Example:
+	export CAMLIBS="/mingw64/lib/libgphoto2/2.5.23/"
+	export IOLIBS="/mingw64/lib/libgphoto2_port/0.12.0/"
 
    	NOTE: at the moment, the lensfun version provided by MSYS2 (0.3.95-1) is broken. If you get errors in the build process, manually downgrade lensfun to version 0.3.2-4:
     Download the file mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz from http://repo.msys2.org/mingw/x86_64/
@@ -72,6 +75,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     # Added as per http://wiki.gimp.org/wiki/Hacking:Building/Windows
     export PREFIX="/mingw64"
     export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
+    export PATH="$PREFIX/bin:$PATH"
 
     # This can be different depending on your current JAVA version
     JAVA_HOME="/C/Program Files (x86)/Java/jre1.8.0_101"

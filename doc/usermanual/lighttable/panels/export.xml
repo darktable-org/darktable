@@ -125,6 +125,22 @@
             </row>
             <row>
               <entry>
+                <code>$(VERSION_IF_MULTI)</code>
+              </entry>
+              <entry>
+                same as $(VERSION) but null string if only one version exists
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(VERSION_NAME)</code>
+              </entry>
+              <entry>
+                version name from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <code>$(SEQUENCE)</code>
               </entry>
               <entry>
@@ -245,10 +261,26 @@
             </row>
             <row>
               <entry>
+                <code>$(EXIF_ISO)</code>
+              </entry>
+              <entry>
+                ISO value
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <code>$(EXIF_EXPOSURE)</code>
               </entry>
               <entry>
                 Exif exposure
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_EXPOSURE_BIAS)</code>
+              </entry>
+              <entry>
+                Exif exposure bias
               </entry>
             </row>
             <row>
@@ -333,6 +365,14 @@
             </row>
             <row>
               <entry>
+                <code>$(LENS)</code>
+              </entry>
+              <entry>
+                lens
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <code>$(TITLE)</code>
               </entry>
               <entry>
@@ -373,14 +413,6 @@
             </row>
             <row>
               <entry>
-                <code>$(USERNAME)</code>
-              </entry>
-              <entry>
-                user name
-              </entry>
-            </row>
-            <row>
-              <entry>
                 <code>$(PICTURES_FOLDER)</code>
               </entry>
               <entry>
@@ -401,6 +433,14 @@
               </entry>
               <entry>
                 desktop folder
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(OPENCL)</code>
+              </entry>
+              <entry>
+                whether OpenCL is activated
               </entry>
             </row>
             <row>

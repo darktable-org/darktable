@@ -119,15 +119,13 @@ static void _ratings_apply(GList *imgs, const int rating, GList **undo, const gb
   }
 }
 
-void dt_ratings_apply_on_list(const GList *img, const int rating,
-                              const gboolean undo_on, const gboolean group_on)
+void dt_ratings_apply_on_list(const GList *img, const int rating, const gboolean undo_on)
 {
   GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
 
     _ratings_apply(imgs, rating, &undo, undo_on);
 

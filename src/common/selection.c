@@ -33,6 +33,11 @@ typedef struct dt_selection_t
   uint32_t last_single_id;
 } dt_selection_t;
 
+const dt_collection_t *dt_selection_get_collection(struct dt_selection_t *selection)
+{
+  return selection->collection;
+}
+
 /* updates the internal collection of an selection */
 static void _selection_update_collection(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
                                          int next, gpointer user_data);
@@ -105,8 +110,11 @@ const dt_selection_t *dt_selection_new()
   if(dt_collection_get_selected_count(darktable.collection) >= 1)
   {
     GList *selected_image = dt_collection_get_selected(darktable.collection, 1);
-    s->last_single_id = GPOINTER_TO_INT(selected_image->data);
-    g_list_free(selected_image);
+    if(selected_image)
+    {
+      s->last_single_id = GPOINTER_TO_INT(selected_image->data);
+      g_list_free(selected_image);
+    }
   }
 
   /* setup signal handler for darktable collection update

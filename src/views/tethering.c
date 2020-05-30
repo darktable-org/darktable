@@ -30,9 +30,11 @@
 
 
 #include "common/camera_control.h"
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/import_session.h"
+#include "common/selection.h"
 #include "common/utility.h"
 #include "common/variables.h"
 #include "control/conf.h"
@@ -80,6 +82,7 @@ typedef struct dt_capture_t
   /** Cursor position for dragging the zoomed live view */
   double live_view_zoom_cursor_x, live_view_zoom_cursor_y;
 
+  gboolean busy;
 } dt_capture_t;
 
 /* signal handler for filmstrip image switching */
@@ -101,7 +104,19 @@ uint32_t view(const dt_view_t *self)
 
 static void _view_capture_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  if(imgid >= 0) dt_control_queue_redraw_center();
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_capture_t *lib = (dt_capture_t *)self->data;
+
+  lib->image_id = imgid;
+  dt_view_active_images_reset(FALSE);
+  dt_view_active_images_add(lib->image_id, TRUE);
+  if(imgid >= 0)
+  {
+    dt_collection_memory_update();
+    dt_selection_select_single(darktable.selection, imgid);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    dt_control_queue_redraw_center();
+  }
 }
 
 void init(dt_view_t *self)
@@ -152,6 +167,12 @@ void configure(dt_view_t *self, int wd, int ht)
 #define MARGIN DT_PIXEL_APPLY_DPI(20)
 #define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) /* see libs/camera.c */
 
+static gboolean _expose_again(gpointer user_data)
+{
+  dt_control_queue_redraw_center();
+  return FALSE;
+}
+
 static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                                   int32_t pointery)
 {
@@ -163,8 +184,8 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   GSList *l = dt_view_active_images_get();
   if(g_slist_length(l) > 0)
     lib->image_id = GPOINTER_TO_INT(g_slist_nth_data(l, 0));
-  else
-    lib->image_id = -1;
+
+  lib->image_over = lib->image_id;
 
   if(cam->is_live_viewing == TRUE) // display the preview
   {
@@ -197,17 +218,26 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   }
   else if(lib->image_id >= 0) // First of all draw image if available
   {
-    cairo_translate(cr, MARGIN, MARGIN);
-    dt_view_image_expose_t params = { 0 };
-    params.image_over = &(lib->image_over);
-    params.imgid = lib->image_id;
-    params.cr = cr;
-    params.width = width - (MARGIN * 2.0f);
-    params.height = height - (MARGIN * 2.0f);
-    params.px = pointerx;
-    params.py = pointery;
-    params.zoom = 1;
-    dt_view_image_expose(&params);
+    cairo_surface_t *surf = NULL;
+    const int res
+        = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf);
+    if(res)
+    {
+      // if the image is missing, we reload it again
+      g_timeout_add(250, _expose_again, NULL);
+      if(!lib->busy) dt_control_log_busy_enter();
+      lib->busy = TRUE;
+    }
+    else
+    {
+      cairo_translate(cr, (width - cairo_image_surface_get_width(surf)) / 2,
+                      (height - cairo_image_surface_get_height(surf)) / 2);
+      cairo_set_source_surface(cr, surf, 0, 0);
+      cairo_paint(cr);
+      cairo_surface_destroy(surf);
+      if(lib->busy) dt_control_log_busy_leave();
+      lib->busy = FALSE;
+    }
   }
 }
 
@@ -249,6 +279,13 @@ int try_enter(dt_view_t *self)
 
 static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgid, gpointer user_data)
 {
+  dt_view_t *self = (dt_view_t *)user_data;
+  struct dt_capture_t *lib = (dt_capture_t *)self->data;
+
+  lib->image_id = imgid;
+  dt_view_active_images_reset(FALSE);
+  dt_view_active_images_add(lib->image_id, TRUE);
+
   dt_control_queue_redraw_center();
 }
 
@@ -289,19 +326,17 @@ void enter(dt_view_t *self)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
 
-  /* connect signal for mipmap update for a redraw */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_capture_mipmaps_updated_signal_callback), (gpointer)self);
+  // no active image when entering the tethering view
+  lib->image_over = DT_VIEW_DESERT;
+  GSList *l = dt_view_active_images_get();
+  if(g_slist_length(l) > 0)
+    lib->image_id = GPOINTER_TO_INT(g_slist_nth_data(l, 0));
+  else
+    lib->image_id = -1;
 
-
-  /* connect signal for fimlstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                            G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
-
-  // change active image
-  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->image_id, TRUE);
   dt_view_active_images_reset(FALSE);
   dt_view_active_images_add(lib->image_id, TRUE);
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->image_id, TRUE);
 
   /* initialize a session */
   lib->session = dt_import_session_new();
@@ -312,6 +347,15 @@ void enter(dt_view_t *self)
     _capture_view_set_jobcode(self, tmp);
     g_free(tmp);
   }
+
+  /* connect signal for mipmap update for a redraw */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                            G_CALLBACK(_capture_mipmaps_updated_signal_callback), (gpointer)self);
+
+
+  /* connect signal for fimlstrip image activate */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                            G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
 
   // register listener
   lib->listener = g_malloc0(sizeof(dt_camctl_listener_t));

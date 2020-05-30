@@ -50,7 +50,6 @@ typedef struct dt_iop_invert_gui_data_t
   GtkWidget *picker;
   double RGB_to_CAM[4][3];
   double CAM_to_RGB[3][4];
-  dt_iop_color_picker_t color_picker;
 } dt_iop_invert_gui_data_t;
 
 typedef struct dt_iop_invert_global_data_t
@@ -161,7 +160,7 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpicker), &color);
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   static float old[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -174,10 +173,9 @@ static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dt_iop_invert_params_t *p = self->params;
   for(int k = 0; k < 4; k++) p->color[k] = grayrgb[k];
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   gui_update_from_coeffs(self);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   dt_control_queue_redraw_widget(self->widget);
@@ -635,16 +633,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->colorpicker), "color-set", G_CALLBACK(colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
 
-  g->picker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->picker, _("pick color of film material from image"));
-  g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-  gtk_box_pack_start(GTK_BOX(g->pickerbuttons), g->picker, TRUE, TRUE, 0);
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->picker),
-                     DT_COLOR_PICKER_AREA,
-                     _iop_color_picker_apply);
+  g->picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, GTK_WIDGET(g->pickerbuttons));
 }
 
 void gui_cleanup(dt_iop_module_t *self)

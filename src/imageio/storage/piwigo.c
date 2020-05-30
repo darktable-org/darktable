@@ -840,7 +840,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_widget_set_sensitive(ui->album_list, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), ui->album_list, TRUE, TRUE, 0);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
   gtk_widget_set_tooltip_text(button, _("refresh album list"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_piwigo_refresh_clicked), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);

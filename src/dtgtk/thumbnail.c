@@ -64,6 +64,7 @@ static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
   vp->jobcode = "infos";
   vp->imgid = thumb->imgid;
   vp->sequence = 0;
+  vp->escape_markup = TRUE;
 
   if(thumb->info_line) g_free(thumb->info_line);
   thumb->info_line = dt_variables_expand(vp, pattern, TRUE);
@@ -71,6 +72,65 @@ static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
   dt_variables_params_destroy(vp);
 
   g_free(pattern);
+}
+
+static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
+{
+  if(!thumb->w_group) return;
+  if(!thumb->is_grouped)
+  {
+    gtk_widget_set_has_tooltip(thumb->w_group, FALSE);
+    return;
+  }
+
+  gchar *tt = NULL;
+  int nb = 0;
+
+  // the group leader
+  if(thumb->imgid == thumb->groupid)
+    tt = dt_util_dstrcat(tt, "\n<b>%s (%s)</b>", _("current"), _("leader"));
+  else
+  {
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->groupid, 'r');
+    if(img)
+    {
+      tt = dt_util_dstrcat(tt, "\n<b>%s (%s)</b>", img->filename, _("leader"));
+      dt_image_cache_read_release(darktable.image_cache, img);
+    }
+  }
+
+  // and the other images
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id, version, filename FROM main.images WHERE group_id = ?1", -1, &stmt,
+                              NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    nb++;
+    const int id = sqlite3_column_int(stmt, 0);
+    const int v = sqlite3_column_int(stmt, 1);
+
+    if(id != thumb->groupid)
+    {
+      if(id == thumb->imgid)
+        tt = dt_util_dstrcat(tt, "\n%s", _("current"));
+      else
+      {
+        tt = dt_util_dstrcat(tt, "\n%s", sqlite3_column_text(stmt, 2));
+        if(v > 0) tt = dt_util_dstrcat(tt, " v%d", v);
+      }
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  // and the number of grouped images
+  gchar *ttf = dt_util_dstrcat(NULL, "%d %s\n%s", nb, _("grouped images"), tt);
+  g_free(tt);
+
+  // let's apply the tooltip
+  gtk_widget_set_tooltip_markup(thumb->w_group, ttf);
+  g_free(ttf);
 }
 
 static void _image_get_infos(dt_thumbnail_t *thumb)
@@ -129,6 +189,9 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, thumb->imgid);
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, thumb->imgid);
   thumb->is_grouped = (sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW);
+
+  // grouping tooltip
+  _image_update_group_tooltip(thumb);
 }
 
 static gboolean _thumb_expose_again(gpointer user_data)
@@ -465,7 +528,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   }
   else
   {
-    // we compute the info line (we reuse the function used in export to disk)
+    // we compute the tooltip (we reuse the function used in export to disk)
     char input_dir[1024] = { 0 };
     gboolean from_cache = TRUE;
     dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
@@ -477,6 +540,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
     vp->jobcode = "infos";
     vp->imgid = thumb->imgid;
     vp->sequence = 0;
+    vp->escape_markup = TRUE;
 
     gchar *msg = dt_variables_expand(vp, pattern, TRUE);
 
@@ -575,6 +639,7 @@ static gboolean _event_rating_press(GtkWidget *widget, GdkEventButton *event, gp
 static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(thumb->disable_actions) return FALSE;
   if(dtgtk_thumbnail_btn_is_hidden(widget)) return FALSE;
 
   if(event->button == 1 && !thumb->moved)
@@ -606,6 +671,7 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
 static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(thumb->disable_actions) return FALSE;
   if(dtgtk_thumbnail_btn_is_hidden(widget)) return FALSE;
 
   if(event->button == 1 && !thumb->moved)
@@ -640,6 +706,7 @@ static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event
 static gboolean _event_audio_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(thumb->disable_actions) return FALSE;
   if(dtgtk_thumbnail_btn_is_hidden(widget)) return FALSE;
 
   if(event->button == 1 && !thumb->moved)
@@ -798,6 +865,7 @@ static gboolean _event_image_enter_leave(GtkWidget *widget, GdkEventCrossing *ev
 static gboolean _event_btn_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(thumb->disable_actions) return TRUE;
   if(event->type == GDK_ENTER_NOTIFY) _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
   return FALSE;
 }
@@ -805,6 +873,7 @@ static gboolean _event_btn_enter_leave(GtkWidget *widget, GdkEventCrossing *even
 static gboolean _event_star_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(thumb->disable_actions) return TRUE;
   if(!thumb->mouse_over && !thumb->disable_mouseover) dt_control_set_mouse_over_id(thumb->imgid);
   _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, TRUE);
   _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, TRUE);
@@ -822,6 +891,7 @@ static gboolean _event_star_enter(GtkWidget *widget, GdkEventCrossing *event, gp
 static gboolean _event_star_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(thumb->disable_actions) return TRUE;
   for(int i = 0; i < MAX_STARS; i++)
   {
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_PRELIGHT, FALSE);
@@ -928,11 +998,15 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
        || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     {
       gchar *lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
-      thumb->w_bottom = gtk_label_new(lb);
+      thumb->w_bottom = gtk_label_new(NULL);
+      gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), lb);
       g_free(lb);
     }
     else
-      thumb->w_bottom = gtk_label_new("");
+    {
+      thumb->w_bottom = gtk_label_new(NULL);
+      gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), "");
+    }
     gtk_widget_set_name(thumb->w_bottom, "thumb_bottom_label");
     gtk_widget_show(thumb->w_bottom);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.05);
@@ -946,6 +1020,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_reject);
+    g_signal_connect(G_OBJECT(thumb->w_reject), "button-press-event", G_CALLBACK(_event_rating_press), thumb);
     g_signal_connect(G_OBJECT(thumb->w_reject), "button-release-event", G_CALLBACK(_event_rating_release), thumb);
     g_signal_connect(G_OBJECT(thumb->w_reject), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_reject);
@@ -1084,6 +1159,9 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
     }
   }
 
+  // grouping tooltip
+  _image_update_group_tooltip(thumb);
+
   // ensure all icons are up to date
   _thumb_update_icons(thumb);
 
@@ -1114,6 +1192,7 @@ void dt_thumbnail_update_infos(dt_thumbnail_t *thumb)
   if(!thumb) return;
   _image_get_infos(thumb);
   _thumb_update_icons(thumb);
+  gtk_widget_queue_draw(thumb->w_main);
 }
 
 static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
@@ -1122,6 +1201,9 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
   PangoAttribute *attr;
   int width = 0;
   int height = 0;
+
+  int max_size = darktable.gui->icon_size;
+
   if(thumb->over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
   {
     gtk_widget_get_size_request(thumb->w_main, &width, &height);
@@ -1130,7 +1212,9 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
     // colorlabels => 3 * r1 + space r1
     // inner margins are 0.045 * width
-    const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 22.0f);
+
+    // retrieves the size of the main icons in the top panel, thumbtable overlays shall not exceed that
+    const float r1 = fminf(max_size / 2.0f, 0.91 * width / 22.0f);
 
     // file extension
     gtk_widget_set_margin_top(thumb->w_ext, 0.5 * r1);
@@ -1201,7 +1285,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
     // all icons having a width of 3.0 * r1 => 21 * r1
     // we want r1 spaces at extremities, after reject, before colorlables => 4 * r1
-    const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, width / 25.0f);
+    const float r1 = fminf(max_size / 2.0f, width / 25.0f);
 
     // file extension
     gtk_widget_set_margin_top(thumb->w_ext, 0.5 * r1);
@@ -1216,7 +1300,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     int w = 0;
     int h = 0;
     pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
-    gtk_widget_set_size_request(thumb->w_bottom, CLAMP(w, 25 * r1, width), 6.5 * r1 + h);
+    gtk_widget_set_size_request(thumb->w_bottom, CLAMP(w, 25 * r1, width), 6.75 * r1 + h);
 
     gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0);
@@ -1295,7 +1379,11 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   gtk_widget_set_size_request(thumb->w_main, width, height);
   // file extension
   gtk_widget_set_margin_start(thumb->w_ext, 0.045 * width);
-  const int fsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * width);
+
+  // retrieves the size of the main icons in the top panel, thumbtable overlays shall not exceed that
+  int max_size = darktable.gui->icon_size;
+  const int fsize = fminf(max_size, .09 * width);
+
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
   pango_attr_list_insert(attrlist, attr);
@@ -1479,7 +1567,7 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
     lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
 
   // we set the text
-  gtk_label_set_text(GTK_LABEL(thumb->w_bottom), lb);
+  gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), lb);
   g_free(lb);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -109,7 +109,7 @@ static int dt_ellipse_point_close_to_path(float x, float y, float as, float *poi
     float l = r3 * r3 + r4 * r4;
     float p = d / l;
 
-    float xx, yy;
+    float xx = 0.0f, yy = 0.0f;
 
     if(p < 0 || (px == lastx && py == lasty))
     {
@@ -187,8 +187,8 @@ static void dt_ellipse_draw_shape(cairo_t *cr, double *dashed, const int selecte
   const float sinr = sin(r);
   const float cosr = cos(r);
 
-  float x = 0.f;
-  float y = 0.f;
+  float x = 0.0f;
+  float y = 0.0f;
 
   cairo_set_dash(cr, dashed, 0, 0);
   if(selected)
@@ -229,8 +229,8 @@ static void dt_ellipse_draw_border(cairo_t *cr, double *dashed, const float len,
   const float sinr = sin(r);
   const float cosr = cos(r);
 
-  float x = 0.f;
-  float y = 0.f;
+  float x = 0.0f;
+  float y = 0.0f;
 
   cairo_set_dash(cr, dashed, len, 0);
   if(selected)
@@ -366,10 +366,10 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
     }
     else if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
-      float masks_border;
-      int flags;
-      float radius_a;
-      float radius_b;
+      float masks_border = 0.0f;
+      int flags = 0;
+      float radius_a = 0.0f;
+      float radius_b = 0.0f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
@@ -402,8 +402,8 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
     }
     else if(state == 0)
     {
-      float radius_a;
-      float radius_b;
+      float radius_a = 0.0f;
+      float radius_b = 0.0f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
@@ -667,9 +667,10 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       // we save the move
       dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
       // and we switch in edit mode to show all the forms
-      if(gui->creation_continuous)
+      // spots and retouch have their own handling of creation_continuous
+      if(gui->creation_continuous && ( strcmp(crea_module->so->op, "spots") == 0 || strcmp(crea_module->so->op, "retouch") == 0))
         dt_masks_set_edit_mode_single_form(crea_module, form->formid, DT_MASKS_EDIT_FULL);
-      else
+      else if(!gui->creation_continuous)
         dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
       gui->creation_module = NULL;
@@ -715,6 +716,22 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
       gui2->form_selected = TRUE; // we also want to be selected after button released
 
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
+    }
+    //spot and retouch manage creation_continuous in their own way
+    if(crea_module && gui->creation_continuous && strcmp(crea_module->so->op, "spots") != 0 && strcmp(crea_module->so->op, "retouch") != 0)
+    {
+      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)crea_module->blend_data;
+      for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
+        if(bd->masks_type[n] == form->type)
+          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
+
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+      dt_masks_form_t *newform = dt_masks_create(form->type);
+      dt_masks_change_form_gui(newform);
+      darktable.develop->form_gui->creation = TRUE;
+      darktable.develop->form_gui->creation_module = crea_module;
+      darktable.develop->form_gui->creation_continuous = TRUE;
+      darktable.develop->form_gui->creation_continuous_module = crea_module;
     }
     return 1;
   }
@@ -1077,12 +1094,12 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       dt_masks_form_t *form = darktable.develop->form_visible;
       if(!form) return;
 
-      float x, y;
-      float masks_border;
-      int flags;
-      float radius_a;
-      float radius_b;
-      float rotation;
+      float x = 0.0f, y = 0.0f;
+      float masks_border = 0.0f;
+      int flags = 0;
+      float radius_a = 0.0f;
+      float radius_b = 0.0f;
+      float rotation = 0.0f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
@@ -1154,7 +1171,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       // draw a cross where the source will be created
       if(form->type & DT_MASKS_CLONE)
       {
-        float x = 0.f, y = 0.f;
+        float x = 0.0f, y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_ELLIPSE, pzx, pzy, pzx, pzy, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
@@ -1353,7 +1370,7 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
                            (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[1] * (1.0f + ellipse->border) : ellipse->radius[1] + ellipse->border) * MIN(wd, ht) };
   const float v1 = ((ellipse->rotation) / 180.0f) * M_PI;
   const float v2 = ((ellipse->rotation - 90.0f) / 180.0f) * M_PI;
-  float a, b, v;
+  float a = 0.0f, b = 0.0f, v = 0.0f;
 
   if(total[0] >= total[1])
   {
@@ -1410,9 +1427,7 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
   }
 
   // now we search min and max
-  float xmin, xmax, ymin, ymax;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
+  float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
   for(int i = 1; i < l + 5; i++)
   {
     xmin = fminf(points[i * 2], xmin);
@@ -1441,7 +1456,7 @@ static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
                            (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[1] * (1.0f + ellipse->border) : ellipse->radius[1] + ellipse->border) * MIN(wd, ht) };
   const float v1 = ((ellipse->rotation) / 180.0f) * M_PI;
   const float v2 = ((ellipse->rotation - 90.0f) / 180.0f) * M_PI;
-  float a, b, v;
+  float a = 0.0f, b = 0.0f, v = 0.0f;
 
   if(total[0] >= total[1])
   {
@@ -1578,7 +1593,7 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   const float total[2] =  { (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[0] * (1.0f + ellipse->border) : ellipse->radius[0] + ellipse->border) * MIN(wi, hi),
                             (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[1] * (1.0f + ellipse->border) : ellipse->radius[1] + ellipse->border) * MIN(wi, hi) };
 
-  float a, b, ta, tb, alpha;
+  float a = 0.0F, b = 0.0F, ta = 0.0F, tb = 0.0F, alpha = 0.0F;
 
   if(radius[0] >= radius[1])
   {
@@ -1631,7 +1646,7 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
 
 static inline float fast_atan2(float y, float x)
 {
-    float r, s, t, c, q;
+    float r = 0.0F, s = 0.0F, t = 0.0F, c = 0.0F, q = 0.0F;
     const float ax = ABS(x);
     const float ay = ABS(y);
     const float mx = MAX(ay, ax);

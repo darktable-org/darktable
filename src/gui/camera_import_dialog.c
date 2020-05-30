@@ -17,6 +17,8 @@
 */
 
 #include "gui/camera_import_dialog.h"
+#include "common/metadata.h"
+#include "gui/import_metadata.h"
 #include "common/camera_control.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -85,12 +87,7 @@ typedef struct _camera_import_dialog_t
       GtkWidget *ignore_jpeg;
       GtkWidget *date_override;
       GtkWidget *date_entry;
-      GtkWidget *apply_metadata;
-      GtkWidget *presets;
-      GtkWidget *creator;
-      GtkWidget *publisher;
-      GtkWidget *rights;
-      GtkWidget *tags;
+      dt_import_metadata_t *metadata;
     } general;
 
   } settings;
@@ -125,14 +122,6 @@ static void _check_button_callback(GtkWidget *cb, gpointer user_data)
     gtk_widget_set_sensitive(cid->settings.general.date_entry, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
                                                                    cid->settings.general.date_override)));
   }
-}
-
-static void _camera_import_set_metadata(_camera_import_dialog_t *data)
-{
-  dt_conf_set_string("ui_last/import_last_creator", gtk_entry_get_text(GTK_ENTRY(data->settings.general.creator)));
-  dt_conf_set_string("ui_last/import_last_publisher", gtk_entry_get_text(GTK_ENTRY(data->settings.general.publisher)));
-  dt_conf_set_string("ui_last/import_last_rights", gtk_entry_get_text(GTK_ENTRY(data->settings.general.rights)));
-  dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(data->settings.general.tags)));
 }
 
 static void _gcw_store_callback(GtkDarktableButton *button, gpointer user_data)
@@ -178,64 +167,6 @@ static void entry_it_callback(GtkEntryBuffer *entrybuffer, guint a1, gchar *a2, 
   _entry_text_changed((_camera_gconf_widget_t *)user_data, entrybuffer);
 }
 
-static void _camera_import_metadata_changed(GtkWidget *widget, gpointer user_data)
-{
-  _camera_import_dialog_t *data = (_camera_import_dialog_t *)user_data;
-  gtk_combo_box_set_active(GTK_COMBO_BOX(data->settings.general.presets), -1);
-  _camera_import_set_metadata(data);
-}
-
-static void _camera_import_apply_metadata_toggled(GtkWidget *widget, gpointer user_data)
-{
-  const gboolean is_active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  GtkWidget *grid = GTK_WIDGET(user_data);
-  gtk_widget_set_sensitive(grid, is_active);
-  dt_conf_set_bool("ui_last/import_apply_metadata", is_active);
-}
-
-static void _camera_import_presets_changed(GtkWidget *widget, _camera_import_dialog_t *data)
-{
-  GtkTreeIter iter;
-
-  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter) == TRUE)
-  {
-    GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
-    GValue value = {
-      0,
-    };
-    gchar *sv;
-
-    gtk_tree_model_get_value(model, &iter, CREATOR_COLUMN, &value);
-    if((sv = (gchar *)g_value_get_string(&value)) != NULL && sv[0] != '\0')
-    {
-      g_signal_handlers_block_by_func(data->settings.general.creator, _camera_import_metadata_changed, data);
-      gtk_entry_set_text(GTK_ENTRY(data->settings.general.creator), sv);
-      g_signal_handlers_unblock_by_func(data->settings.general.creator, _camera_import_metadata_changed, data);
-    }
-    g_value_unset(&value);
-
-    gtk_tree_model_get_value(model, &iter, PUBLISHER_COLUMN, &value);
-    if((sv = (gchar *)g_value_get_string(&value)) != NULL && sv[0] != '\0')
-    {
-      g_signal_handlers_block_by_func(data->settings.general.publisher, _camera_import_metadata_changed, data);
-      gtk_entry_set_text(GTK_ENTRY(data->settings.general.publisher), sv);
-      g_signal_handlers_unblock_by_func(data->settings.general.publisher, _camera_import_metadata_changed, data);
-    }
-    g_value_unset(&value);
-
-    gtk_tree_model_get_value(model, &iter, RIGHTS_COLUMN, &value);
-    if((sv = (gchar *)g_value_get_string(&value)) != NULL && sv[0] != '\0')
-    {
-      g_signal_handlers_block_by_func(data->settings.general.rights,  _camera_import_metadata_changed, data);
-      gtk_entry_set_text(GTK_ENTRY(data->settings.general.rights), sv);
-      g_signal_handlers_unblock_by_func(data->settings.general.rights, _camera_import_metadata_changed, data);
-    }
-    g_value_unset(&value);
-  }
-
-  _camera_import_set_metadata(data);
-}
-
 /** Creates a gconf widget. */
 static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg, gchar *label,
                                                            gchar *confstring)
@@ -258,12 +189,12 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gcw->entry), TRUE, TRUE, 0);
 
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_store, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_store, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(button, _("store value as default"));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_gcw_store_callback), gcw);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(button, _("reset value to default"));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_gcw_reset_callback), gcw);
@@ -343,9 +274,6 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   // SETTINGS PAGE
   data->settings.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  // general settings
-  gtk_box_pack_start(GTK_BOX(data->settings.page), gtk_label_new(_("general")), FALSE, FALSE, 0);
-
   // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
   data->settings.general.ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));
   gtk_widget_set_tooltip_text(data->settings.general.ignore_jpeg,
@@ -357,131 +285,11 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   g_signal_connect(G_OBJECT(data->settings.general.ignore_jpeg), "clicked",
                    G_CALLBACK(_check_button_callback), data);
 
-  // default metadata
-  data->settings.general.apply_metadata = gtk_check_button_new_with_label(_("apply metadata on import"));
-  gtk_widget_set_tooltip_text(data->settings.general.apply_metadata, _("apply some metadata to all newly imported images."));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->settings.general.apply_metadata),
-                               dt_conf_get_bool("ui_last/import_apply_metadata"));
-  gtk_box_pack_start(GTK_BOX(data->settings.page), data->settings.general.apply_metadata, FALSE, FALSE, 0);
+  // metadata
 
-  GValue value = {
-    0,
-  };
-  g_value_init(&value, G_TYPE_INT);
-  gtk_widget_style_get_property(data->settings.general.apply_metadata, "indicator-size", &value);
-  gtk_widget_style_get_property(data->settings.general.apply_metadata, "indicator-spacing", &value);
-  g_value_unset(&value);
-
-  GtkWidget *grid = gtk_grid_new();
-  gtk_box_pack_start(GTK_BOX(data->settings.page), grid, FALSE, FALSE, 0);
-
-  data->settings.general.creator = gtk_entry_new();
-  gtk_widget_set_size_request(data->settings.general.creator, DT_PIXEL_APPLY_DPI(300), -1);
-  gchar *str = dt_conf_get_string("ui_last/import_last_creator");
-  gtk_entry_set_text(GTK_ENTRY(data->settings.general.creator), str);
-  g_free(str);
-
-  data->settings.general.publisher = gtk_entry_new();
-  str = dt_conf_get_string("ui_last/import_last_publisher");
-  gtk_entry_set_text(GTK_ENTRY(data->settings.general.publisher), str);
-  g_free(str);
-
-  data->settings.general.rights = gtk_entry_new();
-  str = dt_conf_get_string("ui_last/import_last_rights");
-  gtk_entry_set_text(GTK_ENTRY(data->settings.general.rights), str);
-  g_free(str);
-
-  data->settings.general.tags = gtk_entry_new();
-  str = dt_conf_get_string("ui_last/import_last_tags");
-  gtk_widget_set_tooltip_text(data->settings.general.tags, _("comma separated list of tags"));
-  gtk_entry_set_text(GTK_ENTRY(data->settings.general.tags), str);
-  g_free(str);
-
-  // presets from the metadata plugin
-  GtkTreeIter iter;
-  GtkListStore *model = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING /*name*/, G_TYPE_STRING /*creator*/,
-                                           G_TYPE_STRING /*publisher*/, G_TYPE_STRING /*rights*/);
-
-  data->settings.general.presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
-  renderer = gtk_cell_renderer_text_new();
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(data->settings.general.presets), renderer, FALSE);
-  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(data->settings.general.presets), renderer, "text", NAME_COLUMN, NULL);
-
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params FROM data.presets WHERE operation = 'metadata'", -1, &stmt,
-                              NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    void *op_params = (void *)sqlite3_column_blob(stmt, 1);
-    int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
-
-    char *buf = (char *)op_params;
-    char *title_str = buf;
-    buf += strlen(title_str) + 1;
-    char *description_str = buf;
-    buf += strlen(description_str) + 1;
-    char *rights_str = buf;
-    buf += strlen(rights_str) + 1;
-    char *creator_str = buf;
-    buf += strlen(creator_str) + 1;
-    char *publisher_str = buf;
-
-    if(op_params_size
-       == strlen(title_str) + strlen(description_str) + strlen(rights_str) + strlen(creator_str)
-              + strlen(publisher_str) + 5)
-    {
-      gtk_list_store_append(model, &iter);
-      gtk_list_store_set(model, &iter, NAME_COLUMN, (char *)sqlite3_column_text(stmt, 0), CREATOR_COLUMN,
-                         creator_str, PUBLISHER_COLUMN, publisher_str, RIGHTS_COLUMN, rights_str, -1);
-    }
-  }
-  sqlite3_finalize(stmt);
-
-  g_object_unref(model);
-
-  int line = 0;
-
-  GtkWidget *label = gtk_label_new(_("preset"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), data->settings.general.presets, label, GTK_POS_RIGHT, 1, 1);
-
-  label = gtk_label_new(_("creator"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), data->settings.general.creator, label, GTK_POS_RIGHT, 1, 1);
-
-  label = gtk_label_new(_("publisher"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), data->settings.general.publisher, label, GTK_POS_RIGHT, 1, 1);
-
-  label = gtk_label_new(_("rights"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), data->settings.general.rights, label, GTK_POS_RIGHT, 1, 1);
-
-  label = gtk_label_new(_("tags"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, line, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), data->settings.general.tags, label, GTK_POS_RIGHT, 1, 1);
-
-  g_signal_connect(data->settings.general.apply_metadata, "toggled",
-                   G_CALLBACK(_camera_import_apply_metadata_toggled), grid);
-
-  _camera_import_apply_metadata_toggled(data->settings.general.apply_metadata, grid);
-
-  g_signal_connect(data->settings.general.presets, "changed",
-                   G_CALLBACK(_camera_import_presets_changed), data);
-  g_signal_connect(GTK_ENTRY(data->settings.general.creator), "changed",
-                   G_CALLBACK(_camera_import_metadata_changed), data);
-  g_signal_connect(GTK_ENTRY(data->settings.general.publisher), "changed",
-                   G_CALLBACK(_camera_import_metadata_changed), data);
-  g_signal_connect(GTK_ENTRY(data->settings.general.rights), "changed",
-                   G_CALLBACK(_camera_import_metadata_changed), data);
-  g_signal_connect(GTK_ENTRY(data->settings.general.tags), "changed",
-                   G_CALLBACK(_camera_import_metadata_changed), data);
+  dt_import_metadata_t *metadata = data->settings.general.metadata;
+  metadata->box = data->settings.page;
+  dt_import_metadata_dialog_new(metadata);
 
   // today's date
 
@@ -708,6 +516,9 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
     gint result = gtk_dialog_run(GTK_DIALOG(data->dialog));
     if(result == GTK_RESPONSE_ACCEPT)
     {
+      dt_import_metadata_t *metadata = data->settings.general.metadata;
+      dt_import_metadata_evaluate(metadata);
+
       GtkTreeIter iter;
       all_good = TRUE;
       GtkTreeSelection *selection
@@ -776,6 +587,8 @@ void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *params)
   _camera_import_dialog_t data;
   memset(&data, 0, sizeof(_camera_import_dialog_t)); // needed to initialize pointers to null
   data.params = params;
+  dt_import_metadata_t metadata;
+  data.settings.general.metadata = &metadata;
   _camera_import_dialog_new(&data);
   _camera_import_dialog_run(&data);
   _camera_import_dialog_free(&data);

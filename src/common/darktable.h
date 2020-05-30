@@ -38,7 +38,7 @@
 #define O_BINARY 0
 #endif
 
-#include "ThreadSafetyAnalysis.h"
+#include "external/ThreadSafetyAnalysis.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

@@ -35,10 +35,14 @@ typedef struct dt_tag_t
 
 typedef enum dt_tag_flags_t
 {
-  DT_TF_NONE     = 0,
-  DT_TF_CATEGORY = 1 << 0,  // this tag (or path) is not a keyword to be exported
-  DT_TF_PRIVATE  = 1 << 1, // this tag is private. Will be exported only on demand
+  DT_TF_NONE        = 0,
+  DT_TF_CATEGORY    = 1 << 0, // this tag (or path) is not a keyword to be exported
+  DT_TF_PRIVATE     = 1 << 1, // this tag is private. Will be exported only on demand
+  DT_TF_ORDER_SET   = 1 << 2, // set if the tag has got an images order
+  DT_TF_DESCENDING  = 1 << 31,
 } dt_tag_flags_t;
+
+#define DT_TF_ALL (DT_TF_CATEGORY | DT_TF_PRIVATE | DT_TF_ORDER_SET)
 
 typedef enum dt_tag_selection_t
 {
@@ -84,7 +88,7 @@ gboolean dt_tag_exists(const char *name, guint *tagid);
 
 /** attach a tag on images list. tagid id of tag to attach. img the list of image
  * id to attach tag to */
-gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on);
+gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolean undo_on);
 /** attach a tag on images. tagid id of tag to attach. imgid the image
  * id to attach tag to, if < 0 images to act on are used. */
 gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
@@ -99,15 +103,15 @@ gboolean dt_is_tag_attached(const guint tagid, const gint imgid);
  * if clear_on TRUE the image tags are cleared before attaching the new ones*/
 void dt_tag_set_tags(const GList *tags, const GList *img,
                      const gboolean ignore_dt_tags, const gboolean clear_on,
-                     const gboolean undo_on, const gboolean group_on);
+                     const gboolean undo_on);
 
 /** attach a list of tags on list of images. \param[in] tags a comma separated string of tags. \param[in]
  * img the list of images to attach tag to. \note If tag not exists it's created.*/
-void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboolean undo_on, const gboolean group_on);
+void dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboolean undo_on);
 
 /** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] img the list of image id to detach
  * tag from */
-void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean undo_on, const gboolean group_on);
+void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean undo_on);
 /** detach tag from images. \param[in] tagid if of tag to dettach. \param[in] imgid the image id to detach
  * tag from, if < 0 images to act on are used. */
 void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
@@ -189,8 +193,19 @@ uint32_t dt_selected_images_count();
 /** get number of images affected with that tag */
 uint32_t dt_tag_images_count(gint tagid);
 
-/** retrieves the subtag of requested level for the requested category */
-char *dt_tag_get_subtag(const gint imgid, const char *category, const int level);
+/** retrieves the subtags of requested level for the requested category */
+char *dt_tag_get_subtags(const gint imgid, const char *category, const int level);
+
+/** return the images order associated to that tag */
+const gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
+                                          gboolean *descending);
+
+/** save the images order on the tag */
+void dt_tag_set_tag_order_by_id(const uint32_t tagid, const uint32_t sort,
+                                const gboolean descending);
+
+/** return the tagid of that tag - return 0 if not found*/
+const uint32_t dt_tag_get_tag_id_by_name(const char * const name);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

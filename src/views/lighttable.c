@@ -42,6 +42,10 @@
 #include "views/view.h"
 #include "views/view_api.h"
 
+#ifdef USE_LUA
+#include "lua/image.h"
+#endif
+
 #include <assert.h>
 #include <dirent.h>
 #include <errno.h>
@@ -133,7 +137,21 @@ static void _lighttable_check_layout(dt_view_t *self)
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
 
     if(!lib->already_started)
-      dt_culling_init(lib->culling, lib->thumbtable_offset);
+    {
+      int id = lib->thumbtable_offset;
+      sqlite3_stmt *stmt;
+      gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d",
+                                     dt_conf_get_int("plugins/lighttable/culling_last_id"));
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        id = sqlite3_column_int(stmt, 0);
+      }
+      g_free(query);
+      sqlite3_finalize(stmt);
+
+      dt_culling_init(lib->culling, id);
+    }
     else
       dt_culling_init(lib->culling, -1);
 
@@ -181,26 +199,122 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
   }
 }
 
+static void _culling_reinit(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  dt_culling_init(lib->culling, lib->culling->offset);
+}
+
+static void _culling_preview_refresh(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  // full_preview change
+  if(lib->preview_state)
+  {
+    dt_culling_full_redraw(lib->preview, TRUE);
+  }
+
+  // culling change (note that full_preview can be combined with culling)
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    dt_culling_full_redraw(lib->culling, TRUE);
+  }
+}
+
 static gboolean _preview_get_state(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   return lib->preview_state;
 }
 
+#ifdef USE_LUA
+
+static int set_image_visible_cb(lua_State *L)
+{
+  dt_lua_image_t imgid = -1;
+  dt_view_t *self = lua_touserdata(L, lua_upvalueindex(1));  //check were in lighttable view
+  if(view(self) == DT_VIEW_LIGHTTABLE)
+  {
+    //check we are in file manager or zoomable
+    dt_library_t *lib = (dt_library_t *)self->data;
+    const dt_lighttable_layout_t layout = lib->current_layout;
+    if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+    {
+      if(luaL_testudata(L, 1, "dt_lua_image_t"))
+      {
+        luaA_to(L, dt_lua_image_t, &imgid, 1);
+        dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+        return 0;
+      }
+      else
+        return luaL_error(L, "no image specified");
+    }
+    else
+      return luaL_error(L, "must be in file manager or zoomable lighttable mode");
+  }
+  else
+    return luaL_error(L, "must be in lighttable view");
+}
+
+static gboolean is_image_visible_cb(lua_State *L)
+{
+  dt_lua_image_t imgid = -1;
+  dt_view_t *self = lua_touserdata(L, lua_upvalueindex(1));  //check were in lighttable view
+  //check we are in file manager or zoomable
+  if(view(self) == DT_VIEW_LIGHTTABLE)
+  {
+    //check we are in file manager or zoomable
+    dt_library_t *lib = (dt_library_t *)self->data;
+    const dt_lighttable_layout_t layout = lib->current_layout;
+    if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+    {
+      if(luaL_testudata(L, 1, "dt_lua_image_t"))
+      {
+        luaA_to(L, dt_lua_image_t, &imgid, 1);
+        lua_pushboolean(L, dt_thumbtable_check_imgid_visibility(dt_ui_thumbtable(darktable.gui->ui), imgid));
+        return 1;
+      }
+      else
+        return luaL_error(L, "no image specified");
+    }
+    else
+      return luaL_error(L, "must be in file manager or zoomable lighttable mode");
+  }
+  else
+    return luaL_error(L, "must be in lighttable view");
+}
+
+#endif
+
 void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_library_t));
-  dt_library_t *lib = (dt_library_t *)self->data;
 
   darktable.view_manager->proxy.lighttable.get_preview_state = _preview_get_state;
   darktable.view_manager->proxy.lighttable.view = self;
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
-
-  lib->culling = dt_culling_new(DT_CULLING_MODE_CULLING);
-  lib->preview = dt_culling_new(DT_CULLING_MODE_PREVIEW);
+  darktable.view_manager->proxy.lighttable.culling_init_mode = _culling_reinit;
+  darktable.view_manager->proxy.lighttable.culling_preview_refresh = _culling_preview_refresh;
 
   // ensure the memory table is up to date
   dt_collection_memory_update();
+  
+#ifdef USE_LUA
+  lua_State *L = darktable.lua_state.state;
+  const int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
+
+  lua_pushlightuserdata(L, self);  
+  lua_pushcclosure(L, set_image_visible_cb, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "set_image_visible");
+
+  lua_pushlightuserdata(L, self);  
+  lua_pushcclosure(L, is_image_visible_cb, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "is_image_visible");
+#endif
 }
 
 
@@ -904,6 +1018,7 @@ GSList *mouse_actions(const dt_view_t *self)
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->action = DT_MOUSE_ACTION_MIDDLE;
+    /* xgettext:no-c-format */
     g_strlcpy(a->name, _("zoom to 100% and back"), sizeof(a->name));
     lm = g_slist_append(lm, a);
   }
@@ -961,12 +1076,14 @@ GSList *mouse_actions(const dt_view_t *self)
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->action = DT_MOUSE_ACTION_MIDDLE;
+    /* xgettext:no-c-format */
     g_strlcpy(a->name, _("zoom to 100% and back"), sizeof(a->name));
     lm = g_slist_append(lm, a);
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->key.accel_mods = GDK_SHIFT_MASK;
     a->action = DT_MOUSE_ACTION_MIDDLE;
+    /* xgettext:no-c-format */
     g_strlcpy(a->name, _("zoom current image to 100% and back"), sizeof(a->name));
     lm = g_slist_append(lm, a);
   }
@@ -1197,11 +1314,16 @@ void gui_init(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  lib->culling = dt_culling_new(DT_CULLING_MODE_CULLING);
+  lib->preview = dt_culling_new(DT_CULLING_MODE_PREVIEW);
+
   // add culling and preview to the center widget
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->culling->widget);
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)), lib->preview->widget);
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                               gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
+  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
+                              gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
   // create display profile button
   GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT,
                                                      NULL);

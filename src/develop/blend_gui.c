@@ -54,14 +54,6 @@ typedef enum _iop_gui_blendif_channel_t
   ch_max = 4
 } _iop_gui_blendif_channel_t;
 
-typedef enum dt_gui_blendif_pickcolor_type_t
-{
-  DT_BLENDIF_PICK_NONE = 0,
-  DT_BLENDIF_PICK_COLORPICK = 1,
-  DT_BLENDIF_PICK_SET_VALUES = 2
-} dt_gui_blendif_pickcolor_type_t;
-
-
 static const dt_iop_gui_blendif_colorstop_t _gradient_L[]
     = { { 0.0f,   { 0, 0, 0, 1.0 } },
         { 0.125f, { NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, 1.0 } },
@@ -458,23 +450,29 @@ static void _blendop_blendif_contrast_callback(GtkWidget *slider, dt_iop_gui_ble
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
-static void _blendop_blendif_reset_picker_set_values(dt_iop_gui_blend_data_t *data)
-{
-  if(data->color_picker.current_picker == DT_BLENDIF_PICK_SET_VALUES)
-    dt_iop_color_picker_reset(data->module, TRUE);
-}
-
-static void _blendop_blendif_upper_callback(GtkDarktableGradientSlider *slider, dt_iop_gui_blend_data_t *data)
+static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider, dt_iop_gui_blend_data_t *data)
 {
   if(darktable.gui->reset) return;
   dt_develop_blend_params_t *bp = data->module->blend_params;
 
   const int tab = data->tab;
-  const int ch = data->channels[tab][1];
+  int ch;
+  GtkLabel **label;
+
+  if(slider == data->upper_slider)
+  {
+    ch = data->channels[tab][1];
+    label = data->upper_label;
+  }
+  else
+  {
+    ch = data->channels[tab][0];
+    label = data->lower_label;
+  }
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
 
-  _blendop_blendif_reset_picker_set_values(data);
+  dt_iop_color_picker_reset(data->module, TRUE);
 
   dt_pthread_mutex_lock(&data->lock);
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
@@ -484,7 +482,7 @@ static void _blendop_blendif_upper_callback(GtkDarktableGradientSlider *slider, 
   {
     char text[256];
     (data->scale_print[tab])(parameters[k], text, sizeof(text));
-    gtk_label_set_text(data->upper_label[k], text);
+    gtk_label_set_text(label[k], text);
   }
 
   /** de-activate processing of this channel if maximum span is selected */
@@ -495,40 +493,6 @@ static void _blendop_blendif_upper_callback(GtkDarktableGradientSlider *slider, 
 
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
-
-
-static void _blendop_blendif_lower_callback(GtkDarktableGradientSlider *slider, dt_iop_gui_blend_data_t *data)
-{
-  if(darktable.gui->reset) return;
-  dt_develop_blend_params_t *bp = data->module->blend_params;
-
-  const int tab = data->tab;
-  const int ch = data->channels[tab][0];
-
-  float *parameters = &(bp->blendif_parameters[4 * ch]);
-
-  _blendop_blendif_reset_picker_set_values(data);
-
-  dt_pthread_mutex_lock(&data->lock);
-  for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
-  dt_pthread_mutex_unlock(&data->lock);
-
-  for(int k = 0; k < 4; k++)
-  {
-    char text[256];
-    (data->scale_print[tab])(parameters[k], text, sizeof(text));
-    gtk_label_set_text(data->lower_label[k], text);
-  }
-
-  /** de-activate processing of this channel if maximum span is selected */
-  if(parameters[1] == 0.0f && parameters[2] == 1.0f)
-    bp->blendif &= ~(1 << ch);
-  else
-    bp->blendif |= (1 << ch);
-
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
 
 static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt_iop_gui_blend_data_t *data)
 {
@@ -686,57 +650,69 @@ static inline int _blendif_print_digits_picker(float value)
   return digits;
 }
 
-static void _update_gradient_slider_picker(GtkWidget *widget, dt_iop_module_t *module)
+static void _update_gradient_slider_pickers(GtkWidget *callback_dummy, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
-  float picker_mean[8], picker_min[8], picker_max[8];
-  float cooked[8];
+
+  dt_iop_color_picker_set_cst(module, _blendop_blendif_get_picker_colorspace(data));
+
   float *raw_mean, *raw_min, *raw_max;
-  char text[256];
+  GtkDarktableGradientSlider *widget;
   GtkLabel *label;
 
-  if(widget == GTK_WIDGET(data->lower_slider))
+  ++darktable.gui->reset;
+
+  for (int s = 0; s < 2; s++)
   {
-    raw_mean = module->picked_color;
-    raw_min = module->picked_color_min;
-    raw_max = module->picked_color_max;
-    label = data->lower_picker_label;
-  }
-  else
-  {
-    raw_mean = module->picked_output_color;
-    raw_min = module->picked_output_color_min;
-    raw_max = module->picked_output_color_max;
-    label = data->upper_picker_label;
+    if(s)
+    {
+      raw_mean = module->picked_color;
+      raw_min = module->picked_color_min;
+      raw_max = module->picked_color_max;
+      widget = data->lower_slider;
+      label = data->lower_picker_label;
+    }
+    else
+    {
+      raw_mean = module->picked_output_color;
+      raw_min = module->picked_output_color_min;
+      raw_max = module->picked_output_color_max;
+      widget = data->upper_slider;
+      label = data->upper_picker_label;
+    }
+
+    if((gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))) && 
+       (raw_min[0] != INFINITY))
+    {
+      float picker_mean[8], picker_min[8], picker_max[8];
+      float cooked[8];
+      char text[256];
+
+      const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
+                          ? data->csp
+                          : dt_iop_color_picker_get_active_cst(module);
+      const dt_iop_order_iccprofile_info_t *work_profile
+          = dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
+      _blendif_scale(cst, raw_mean, picker_mean, work_profile);
+      _blendif_scale(cst, raw_min, picker_min, work_profile);
+      _blendif_scale(cst, raw_max, picker_max, work_profile);
+      _blendif_cook(cst, raw_mean, cooked, work_profile);
+
+      snprintf(text, sizeof(text), "(%.*f)", _blendif_print_digits_picker(cooked[data->tab]), cooked[data->tab]);
+
+      dtgtk_gradient_slider_multivalue_set_picker_meanminmax(
+          widget, picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
+      gtk_label_set_text(label, text);
+    }
+    else
+    {
+      dtgtk_gradient_slider_multivalue_set_picker(widget, NAN);
+      gtk_label_set_text(label, "");
+    }
   }
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
-  if((module->request_color_pick == DT_REQUEST_COLORPICK_BLEND) && (raw_min[0] != INFINITY))
-  {
-    const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
-                        ? data->csp
-                        : dt_iop_color_picker_get_active_cst(module);
-    const dt_iop_order_iccprofile_info_t *work_profile
-        = dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
-    _blendif_scale(cst, raw_mean, picker_mean, work_profile);
-    _blendif_scale(cst, raw_min, picker_min, work_profile);
-    _blendif_scale(cst, raw_max, picker_max, work_profile);
-    _blendif_cook(cst, raw_mean, cooked, work_profile);
-
-    snprintf(text, sizeof(text), "(%.*f)", _blendif_print_digits_picker(cooked[data->tab]), cooked[data->tab]);
-
-    dtgtk_gradient_slider_multivalue_set_picker_meanminmax(
-        DTGTK_GRADIENT_SLIDER(widget), picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
-    gtk_label_set_text(label, text);
-  }
-  else
-  {
-    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), NAN);
-    gtk_label_set_text(label, "");
-  }
-
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 
@@ -746,8 +722,7 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab)
   dt_develop_blend_params_t *bp = module->blend_params;
   dt_develop_blend_params_t *dp = module->default_blendop_params;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   const int in_ch = data->channels[tab][0];
   const int out_ch = data->channels[tab][1];
@@ -823,8 +798,7 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab)
   dtgtk_gradient_slider_multivalue_set_increment(data->upper_slider, data->increments[tab]);
 
 
-  _update_gradient_slider_picker(GTK_WIDGET(data->upper_slider), module);
-  _update_gradient_slider_picker(GTK_WIDGET(data->lower_slider), module);
+  _update_gradient_slider_pickers(NULL, module);
 
   if(data->altdisplay[tab])
   {
@@ -837,7 +811,7 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab)
     _blendof_blendif_disp_alternative_reset(GTK_WIDGET(data->upper_slider), module);
   }
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 
@@ -848,10 +822,12 @@ static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, 
 
   data->tab = page_num;
 
-  if(data->module->request_color_pick == DT_REQUEST_COLORPICK_BLEND &&
-      (cst_old != _blendop_blendif_get_picker_colorspace(data) || data->color_picker.current_picker == DT_BLENDIF_PICK_SET_VALUES))
+  if(cst_old != _blendop_blendif_get_picker_colorspace(data) &&
+     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))))
+      
   {
-    dt_iop_color_picker_set_cst(&data->color_picker, _blendop_blendif_get_picker_colorspace(data));
+    dt_iop_color_picker_set_cst(data->module, _blendop_blendif_get_picker_colorspace(data));
     dt_dev_reprocess_all(data->module->dev);
     dt_control_queue_redraw();
   }
@@ -1024,8 +1000,7 @@ static void _blendop_blendif_invert(GtkButton *button, dt_iop_module_t *module)
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
 
-
-static int _blendop_masks_add_shape(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static int _blendop_masks_add_shape(GtkWidget *widget, dt_iop_module_t *self, gboolean continuous)
 {
   if(darktable.gui->reset) return FALSE;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
@@ -1047,23 +1022,35 @@ static int _blendop_masks_add_shape(GtkWidget *widget, GdkEventButton *event, dt
   for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), FALSE);
 
-  if(event->button == 1)
+  // we want to be sure that the iop has focus
+  dt_iop_request_focus(self);
+  dt_iop_color_picker_reset(self, TRUE);
+  bd->masks_shown = DT_MASKS_EDIT_FULL;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+  // we create the new form
+  dt_masks_form_t *form = dt_masks_create(bd->masks_type[this]);
+  dt_masks_change_form_gui(form);
+  darktable.develop->form_gui->creation = TRUE;
+  darktable.develop->form_gui->creation_module = self;
+
+  if (continuous)
   {
-    // we want to be sure that the iop has focus
-    dt_iop_request_focus(self);
-    dt_iop_color_picker_reset(self, TRUE);
-    bd->masks_shown = DT_MASKS_EDIT_FULL;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
-    // we create the new form
-    dt_masks_form_t *form = dt_masks_create(bd->masks_type[this]);
-    dt_masks_change_form_gui(form);
-    darktable.develop->form_gui->creation = TRUE;
-    darktable.develop->form_gui->creation_module = self;
-    dt_control_queue_redraw_center();
-    return TRUE;
+    darktable.develop->form_gui->creation_continuous = TRUE;
+    darktable.develop->form_gui->creation_continuous_module = self;
   }
 
+  dt_control_queue_redraw_center();
+
+  return TRUE;
+}
+
+static int _blendop_masks_add_shape_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+{
+  if(event->button ==1)
+  {
+    return _blendop_masks_add_shape(widget, self, event->state & GDK_CONTROL_MASK);
+  }
   return FALSE;
 }
 
@@ -1074,8 +1061,7 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
 
   if(event->button == 1)
   {
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
 
     dt_iop_request_focus(self);
     dt_iop_color_picker_reset(self, TRUE);
@@ -1114,7 +1100,7 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
     for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), FALSE);
 
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     return TRUE;
   }
@@ -1138,58 +1124,44 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 }
 
-static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
+gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_gui_blend_data_t *data = self->blend_data;
-  const int current_picker = data->color_picker.current_picker;
-
-  data->color_picker.current_picker = DT_BLENDIF_PICK_NONE;
-
-  if(button == data->colorpicker)
-    data->color_picker.current_picker = DT_BLENDIF_PICK_COLORPICK;
-  else if(button == data->colorpicker_set_values)
-    data->color_picker.current_picker = DT_BLENDIF_PICK_SET_VALUES;
-
-  if(current_picker == data->color_picker.current_picker)
-    return DT_COLOR_PICKER_ALREADY_SELECTED;
-  else
-    return data->color_picker.current_picker;
-}
-
-static void _iop_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(darktable.gui->reset) return;
-
   dt_iop_gui_blend_data_t *data = module->blend_data;
-  switch(data->color_picker.current_picker)
+  if(picker == data->colorpicker_set_values)
   {
-  case DT_BLENDIF_PICK_SET_VALUES:
-  {
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    if(darktable.gui->reset) return TRUE;
+
+    ++darktable.gui->reset;
 
     dt_develop_blend_params_t *bp = module->blend_params;
     const int tab = data->tab;
-    const int lower_upper = data->picker_set_upper_lower; // lower=0, upper=1
-    const int ch = data->channels[tab][lower_upper];
-    float *parameters = &(bp->blendif_parameters[4 * ch]);
     float *raw_mean, *raw_min, *raw_max;
     float picker_mean[8], picker_min[8], picker_max[8];
     float picker_values[4];
-    GtkDarktableGradientSlider *slider = (lower_upper == 0) ? data->lower_slider: data->upper_slider;
+    GtkDarktableGradientSlider *slider;
 
-    if(lower_upper == 0)
+    int lower_upper;
+    guint state = gdk_keymap_get_modifier_state(gdk_keymap_get_for_display(gdk_display_get_default()));
+    GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+    if((state & modifiers) == GDK_CONTROL_MASK) // flat=0, lower=-1, upper=1
     {
-      raw_mean = module->picked_color;
-      raw_min = module->picked_color_min;
-      raw_max = module->picked_color_max;
-    }
-    else
-    {
+      lower_upper = 1;
       raw_mean = module->picked_output_color;
       raw_min = module->picked_output_color_min;
       raw_max = module->picked_output_color_max;
+      slider = data->upper_slider;
     }
+    else
+    {
+      lower_upper = 0;
+      raw_mean = module->picked_color;
+      raw_min = module->picked_color_min;
+      raw_max = module->picked_color_max;
+      slider = data->lower_slider;
+    }
+
+    const int ch = data->channels[tab][lower_upper];
+    float *parameters = &(bp->blendif_parameters[4 * ch]);
 
     const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
                         ? data->csp
@@ -1228,8 +1200,7 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixel
     dt_pthread_mutex_unlock(&data->lock);
 
     // update picked values
-    _update_gradient_slider_picker(GTK_WIDGET(data->lower_slider), module);
-    _update_gradient_slider_picker(GTK_WIDGET(data->upper_slider), module);
+    _update_gradient_slider_pickers(NULL, module);
 
     for(int k = 0; k < 4; k++)
     {
@@ -1241,7 +1212,7 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixel
         gtk_label_set_text(data->upper_label[k], text);
     }
 
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     // save values to parameters
     dt_pthread_mutex_lock(&data->lock);
@@ -1256,62 +1227,18 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixel
       bp->blendif |= (1 << ch);
 
     dt_dev_add_history_item(darktable.develop, module, TRUE);
+
+    return TRUE;
   }
-  break;
-  case DT_BLENDIF_PICK_COLORPICK:
-    _update_gradient_slider_picker(GTK_WIDGET(data->upper_slider), module);
-    _update_gradient_slider_picker(GTK_WIDGET(data->lower_slider), module);
-    break;
-  default:
-    break;
-  }
-}
-
-static void _iop_color_picker_update(dt_iop_module_t *self)
-{
-  dt_iop_gui_blend_data_t *data = self->blend_data;
-  const int which_colorpicker = data->color_picker.current_picker;
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), which_colorpicker == DT_BLENDIF_PICK_COLORPICK);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values), which_colorpicker == DT_BLENDIF_PICK_SET_VALUES);
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_BLEND)
+  else if(picker == data->colorpicker)
   {
-    dt_iop_color_picker_set_cst(&data->color_picker, iop_cs_NONE);
+    if(darktable.gui->reset) return TRUE;
 
-    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(data->upper_slider), NAN);
-    gtk_label_set_text(data->upper_picker_label, "");
-    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(data->lower_slider), NAN);
-    gtk_label_set_text(data->lower_picker_label, "");
+    _update_gradient_slider_pickers(NULL, module);
+
+    return TRUE;
   }
-
-  darktable.gui->reset = reset;
-}
-
-static gboolean _blendop_blendif_color_picker_callback_button_press(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *module)
-{
-  if(darktable.gui->reset) return FALSE;
-
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-  dt_iop_color_picker_t *color_picker = &bd->color_picker;
-  dt_iop_color_picker_set_cst(&bd->color_picker, _blendop_blendif_get_picker_colorspace(bd));
-
-  // this is not pretty but we don't have a kind per-picker
-  // if at some some point a module needs it we can think something more elegant
-  if(widget == bd->colorpicker)
-    color_picker->kind = DT_COLOR_PICKER_POINT_AREA;
-  else
-    color_picker->kind = DT_COLOR_PICKER_AREA;
-
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  if((e->state & modifiers) == GDK_CONTROL_MASK) // lower=0, upper=1
-    bd->picker_set_upper_lower = 1;
-  else
-    bd->picker_set_upper_lower = 0;
-
-  return dt_iop_color_picker_callback_button_press(widget, e, color_picker);
+  else return FALSE;
 }
 
 // activate channel/mask view
@@ -1517,8 +1444,7 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 
   if(!data || !data->blendif_support || !data->blendif_inited) return;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   dt_pthread_mutex_lock(&data->lock);
   if(data->timeout_handle)
@@ -1536,7 +1462,7 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   const int tab = data->tab;
   _blendop_blendif_update_tab(module, tab);
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 
@@ -1723,38 +1649,39 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_notebook_set_current_page(GTK_NOTEBOOK(bd->channel_tabs), bd->tab);
     gtk_notebook_set_scrollable(bd->channel_tabs, TRUE);
 
+    gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(bd->channel_tabs), FALSE, FALSE, 0);
 
-    bd->colorpicker
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    bd->colorpicker = dt_color_picker_new(module, DT_COLOR_PICKER_POINT_AREA, header);
     gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
+    gtk_widget_set_name(bd->colorpicker, "keep-active");
 
-    bd->colorpicker_set_values = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker_set_values,
-                                                        CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    bd->colorpicker_set_values = dt_color_picker_new(module, DT_COLOR_PICKER_AREA, header);
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->colorpicker_set_values),
+                                 dtgtk_cairo_paint_colorpicker_set_values, 
+                                 CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
     gtk_widget_set_tooltip_text(bd->colorpicker_set_values, _("set the range based on an area from the image\n"
-        "click+drag to use the input image\nctrl+click + drag to use the output image"));
+                                                              "drag to use the input image\n"
+                                                              "ctrl+drag to use the output image"));
 
-    GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(res, _("reset blend mask settings"));
 
-    GtkWidget *inv = dtgtk_button_new(dtgtk_cairo_paint_invert, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    GtkWidget *inv = dtgtk_button_new(dtgtk_cairo_paint_invert, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(inv, _("invert all channel's polarities"));
 
-    gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(inv), FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(bd->colorpicker_set_values), FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(bd->colorpicker), FALSE, FALSE, 0);
 
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
     bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
 
     bd->lower_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
     gtk_widget_set_tooltip_text(bd->lower_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
 
     bd->upper_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
     gtk_widget_set_tooltip_text(bd->upper_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
 
     gtk_box_pack_start(GTK_BOX(upslider), GTK_WIDGET(bd->upper_slider), TRUE, TRUE, 0);
@@ -1793,11 +1720,9 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page", G_CALLBACK(_blendop_blendif_tab_switch), bd);
 
-    g_signal_connect(G_OBJECT(bd->upper_slider), "value-changed", G_CALLBACK(_blendop_blendif_upper_callback),
-                     bd);
+    g_signal_connect(G_OBJECT(bd->upper_slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
 
-    g_signal_connect(G_OBJECT(bd->lower_slider), "value-changed", G_CALLBACK(_blendop_blendif_lower_callback),
-                     bd);
+    g_signal_connect(G_OBJECT(bd->lower_slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
 
     g_signal_connect(G_OBJECT(bd->lower_slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
 
@@ -1811,9 +1736,9 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     g_signal_connect(G_OBJECT(bd->upper_slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
 
-    g_signal_connect(G_OBJECT(bd->colorpicker), "button-press-event", G_CALLBACK(_blendop_blendif_color_picker_callback_button_press), module);
+    g_signal_connect(G_OBJECT(bd->colorpicker), "toggled", G_CALLBACK(_update_gradient_slider_pickers), module);
 
-    g_signal_connect(G_OBJECT(bd->colorpicker_set_values), "button-press-event", G_CALLBACK(_blendop_blendif_color_picker_callback_button_press), module);
+    g_signal_connect(G_OBJECT(bd->colorpicker_set_values), "toggled", G_CALLBACK(_update_gradient_slider_pickers), module);
 
     g_signal_connect(G_OBJECT(res), "clicked", G_CALLBACK(_blendop_blendif_reset), module);
 
@@ -1832,13 +1757,6 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowslider), TRUE, FALSE, 0);
 
-    dt_iop_init_blend_picker(&bd->color_picker,
-                       module,
-                       DT_COLOR_PICKER_POINT_AREA,
-                       _iop_color_picker_get_set,
-                       _iop_color_picker_apply,
-                       _iop_color_picker_update);
-
     bd->blendif_inited = 1;
   }
 
@@ -1852,8 +1770,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
 
   if(!bd || !bd->masks_support || !bd->masks_inited) return;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   /* update masks state */
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
@@ -1893,7 +1810,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
     }
   }
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
@@ -1925,7 +1842,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_combo, TRUE, TRUE, 0);
 
     bd->masks_edit
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_edit), "button-press-event", G_CALLBACK(_blendop_masks_show_and_edit),
                      module);
     gtk_widget_set_tooltip_text(bd->masks_edit, _("show and edit mask elements"));
@@ -1933,7 +1850,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_edit, FALSE, FALSE, 0);
 
     bd->masks_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
     gtk_widget_set_tooltip_text(bd->masks_polarity, _("toggle polarity of drawn mask"));
     g_signal_connect(G_OBJECT(bd->masks_polarity), "toggled", G_CALLBACK(_blendop_masks_polarity_callback),
                      module);
@@ -1942,45 +1859,45 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->masks_type[0] = DT_MASKS_GRADIENT;
     bd->masks_shapes[0]
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[0]), "button-press-event",
-                     G_CALLBACK(_blendop_masks_add_shape), module);
+                     G_CALLBACK(_blendop_masks_add_shape_callback), module);
     gtk_widget_set_tooltip_text(bd->masks_shapes[0], _("add gradient"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[0]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[0], FALSE, FALSE, 0);
 
     bd->masks_type[1] = DT_MASKS_PATH;
     bd->masks_shapes[1]
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[1]), "button-press-event",
-                     G_CALLBACK(_blendop_masks_add_shape), module);
+                     G_CALLBACK(_blendop_masks_add_shape_callback), module);
     gtk_widget_set_tooltip_text(bd->masks_shapes[1], _("add path"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[1]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[1], FALSE, FALSE, 0);
 
     bd->masks_type[2] = DT_MASKS_ELLIPSE;
     bd->masks_shapes[2]
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[2]), "button-press-event",
-                     G_CALLBACK(_blendop_masks_add_shape), module);
+                     G_CALLBACK(_blendop_masks_add_shape_callback), module);
     gtk_widget_set_tooltip_text(bd->masks_shapes[2], _("add ellipse"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[2]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[2], FALSE, FALSE, 0);
 
     bd->masks_type[3] = DT_MASKS_CIRCLE;
     bd->masks_shapes[3]
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[3]), "button-press-event",
-                     G_CALLBACK(_blendop_masks_add_shape), module);
+                     G_CALLBACK(_blendop_masks_add_shape_callback), module);
     gtk_widget_set_tooltip_text(bd->masks_shapes[3], _("add circle"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[3]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[3], FALSE, FALSE, 0);
 
     bd->masks_type[4] = DT_MASKS_BRUSH;
     bd->masks_shapes[4]
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[4]), "button-press-event",
-                     G_CALLBACK(_blendop_masks_add_shape), module);
+                     G_CALLBACK(_blendop_masks_add_shape_callback), module);
     gtk_widget_set_tooltip_text(bd->masks_shapes[4], _("add brush"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[4]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[4], FALSE, FALSE, 0);
@@ -2130,7 +2047,7 @@ void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
     dt_bauhaus_combobox_add_populate_fct(bd->raster_combo, _raster_combo_populate);
     gtk_box_pack_start(GTK_BOX(hbox), bd->raster_combo, TRUE, TRUE, 0);
 
-    bd->raster_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE,
+    bd->raster_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE,
                                                  NULL);
     gtk_widget_set_tooltip_text(bd->raster_polarity, _("toggle polarity of raster mask"));
     g_signal_connect(G_OBJECT(bd->raster_polarity), "toggled", G_CALLBACK(_raster_polarity_callback), module);
@@ -2176,8 +2093,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   if(!(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) || !bd || !bd->blend_inited) return;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   const unsigned int mode = g_list_index(bd->masks_modes, GUINT_TO_POINTER(module->blend_params->mask_mode));
 
@@ -2364,7 +2280,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   else
     gtk_widget_show(GTK_WIDGET(bd->masks_modes_box));
 
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
@@ -2458,9 +2374,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->timeout_handle = 0;
     bd->save_for_leave = 0;
     dt_pthread_mutex_unlock(&bd->lock);
-
-    bd->picker_set_upper_lower = 0;
-
 
     /** generate a list of all available blend modes */
     _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2);
@@ -2848,7 +2761,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                      G_CALLBACK(_blendop_blendif_contrast_callback), bd);
 
 
-    bd->showmask = dtgtk_button_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    bd->showmask = dtgtk_button_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl+click to display mask, "
                                                 "shift+click to display channel. hover over parametric mask slider to "
                                                 "select channel for display"));
@@ -2856,7 +2769,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_name(bd->showmask, "show_mask_button");
 
     bd->suppress
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(bd->suppress, _("temporarily switch off blend mask. only for module in focus"));
     g_signal_connect(G_OBJECT(bd->suppress), "toggled", G_CALLBACK(_blendop_blendif_suppress_toggled), module);
 
