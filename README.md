@@ -13,6 +13,7 @@ darktable is an open source photography workflow application and raw developer. 
 2. [Installing](#installing)
    - [Latest release](#latest-release)
    - [Development snapshot](#development-snapshot)
+2. [Updating](#updating)
 3. [Getting extensions](#getting-extensions)
 4. [Building](#building)
    - [Dependencies](#dependencies)
@@ -87,6 +88,29 @@ The development snapshot is the state of the master branch at current time. It i
 
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
 * No precompiled packages are provided for the master branch on MacOS and Windows. See how to build it manually below.
+
+Updating
+--------
+
+When updating darktable from an older release, you simply need to install
+the newest version. Files will be preserved.
+
+However, sometimes newer releases need to change the structure of the library database 
+(containing the whole list of images known to darktable, with their editing history). You will then
+be prompted with a request to either upgrade the database or to close the software. 
+
+**The migration to a newer database structure/newer release means new and old edits 
+will not be compatible anymore with older versions of darktable.** Upgrades are definitive.
+darktable automatically backs up the library database when a new major version updates it 
+(in `~/.config/darktable/library.db-pre-3.0.0` for example), so
+you can switch back to the previous release by restoring this backup if needed 
+(simply rename it `library.db`).
+
+If you try to open a newer database with an older software version, the parts of the editings done with new features
+will be discarded and you will loose them. This also applies to the sidecar XMP files.
+
+If you plan to move regularly between 2 versions (new/unstable and old/stable) see [below](#testunstable-version)
+how to do it safely.
 
 Getting extensions
 ------------------
