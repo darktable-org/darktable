@@ -273,7 +273,7 @@ button,
 /* default extra margin for icons optical alignment */
 #button-canvas
 {
-  margin: 12px; /* not real pixels, this is used as a percent extra space */
+  margin: 5px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Default text fields and text boxes */
@@ -406,6 +406,12 @@ overshoot.right
   font-size: .7em;
 }
 
+#header-toolbar #button-canvas,
+#footer-toolbar #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
 #dt-icon
 {
   border-radius: 2px;
@@ -440,6 +446,7 @@ overshoot.right
 }
 
 /* icon buttons in modules main body */
+
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
 #iop-plugin-ui-main #keep-active,
@@ -450,9 +457,8 @@ overshoot.right
 #blending-box #show_mask_button,
 #blending-box #keep-active
 {
-  min-height: 1.3em;
+  min-height: 1.2em;
   min-width: 1.3em;
-  padding: 0;
   border: 0;
 }
 
@@ -460,30 +466,9 @@ overshoot.right
 #iop-plugin-ui-main #non-flat,
 #lib-plugin-ui-main #non-flat
 {
-  min-height: 1.3em;
+  min-height: 1.2em;
   min-width: 1.3em;
   padding: 1px;
-  /*border: 1px solid;*/
-}
-
-/* adjust icon extra room for buttons in modules main body */
-#iop-plugin-ui-main #dt-button #button-canvas,
-#iop-plugin-ui-main #dt-toggle-button #button-canvas,
-#iop-plugin-ui-main #non-flat #button-canvas,
-#iop-plugin-ui-main #keep-active #button-canvas,
-#lib-plugin-ui-main #dt-button #button-canvas,
-#lib-plugin-ui-main #dt-toggle-button #button-canvas,
-#lib-plugin-ui-main #non-flat #button-canvas,
-#picker-black #button-canvas,
-#picker-grey #button-canvas,
-#picker-white #button-canvas,
-#blending-box #button-canvas,
-#blending-box #button-canvas,
-#blending-box #button-canvas,
-#blending-box #button-canvas
-
-{
-  margin: 5px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* size of control-buttons */
@@ -499,6 +484,11 @@ overshoot.right
   min-width: 0.9em;
   padding: 0.15em;
   margin: 0.15em;
+}
+
+#control-button #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -549,6 +539,11 @@ overshoot.right
 {
   color: @plugin_label_color;
   border: 0;
+}
+
+#module-header #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Entries options in lighttable */
@@ -855,12 +850,17 @@ notebook tabs,
   border: 0;
 }
 
+#modules-tabs #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
 #blending-tabs button
 {
   font-size: 0.8em;
-  min-height: 1.75em;
-  min-width: 1.75em;
-  padding: 0;
+  min-height: 1.55em;
+  min-width: 1.55em;
+  padding: 0.2em;
   border: 0;
 }
 
@@ -1285,12 +1285,13 @@ cell:selected
 #left #history-switch,
 #left #history-switch-enabled,
 #left #history-switch-always-enabled,
-#left #history-switch-default-enabled
+#left #history-switch-default-enabled,
+#left #history-switch-deprecated
 {
   font-size: 0.6em;
-  min-width: 1.4em;
-  min-height: 1.33em;
-  padding: 0;
+  min-width: 1.2em;
+  min-height: 1.2em;
+  padding: 0.15em;
   margin: 1px 2px 2px 2px; /* align switches with create style icon */
   border: 0;
 }
@@ -1342,11 +1343,6 @@ cell:selected
   min-height: 2em;
   min-width: 1.7em;
   border: 0;
-}
-
-#color-picker-button #button-canvas
-{
-  margin: 5px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Module in darkroom left panel */
