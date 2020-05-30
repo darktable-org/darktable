@@ -217,8 +217,8 @@ void dt_camctl_destroy(dt_camctl_t *c);
 void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Unregisters a listener of camera control */
 void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
-/** Detect cameras and update list of available cameras */
-void dt_camctl_detect_cameras(const dt_camctl_t *c);
+/** start a thread job to detect cameras and update list of available cameras */
+void dt_camctl_background_detect_cameras();
 /** Check if there is any camera connected */
 int dt_camctl_have_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/

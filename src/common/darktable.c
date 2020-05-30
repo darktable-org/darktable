@@ -1001,6 +1001,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // Initialize the camera control.
     // this is done late so that the gui can react to the signal sent but before switching to lighttable!
     darktable.camctl = dt_camctl_new();
+    dt_camctl_background_detect_cameras();
 #endif
 
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
