@@ -3448,10 +3448,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float iyo = g->buf_y_off;
 
     // the four corners of the input buffer of this module
-    const float V[4][2] = { { ixo,        iyo       },
-                          {   ixo,        iyo + iht },
-                          {   ixo + iwd,  iyo + iht },
-                          {   ixo + iwd,  iyo       } };
+    float V[4][2] = { { ixo,        iyo       },
+                      { ixo,        iyo + iht },
+                      { ixo + iwd,  iyo + iht },
+                      { ixo + iwd,  iyo       } };
 
     // convert coordinates of corners to coordinates of this module's output
     if(!call_distort_transform(self->dev, self->dev->preview_pipe, self, (float *)V, 4))
@@ -3470,10 +3470,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float oht = ymax - ymin;
 
     // the four clipping corners
-    const float C[4][2] = { { xmin + p->cl * owd, ymin + p->ct * oht },
-                            { xmin + p->cl * owd, ymin + p->cb * oht },
-                            { xmin + p->cr * owd, ymin + p->cb * oht },
-                            { xmin + p->cr * owd, ymin + p->ct * oht } };
+    float C[4][2] = { { xmin + p->cl * owd, ymin + p->ct * oht },
+                      { xmin + p->cl * owd, ymin + p->cb * oht },
+                      { xmin + p->cr * owd, ymin + p->cb * oht },
+                      { xmin + p->cr * owd, ymin + p->ct * oht } };
 
     // convert clipping corners to final output image
     if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL,
@@ -3503,7 +3503,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_fill(cr);
 
     // draw white outline around clipping area
-    cairo_set_source_rgb(cr, .7, .7, .7);
+    dt_draw_set_color_overlay(cr, 0.7, 1.0);
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
     cairo_line_to(cr, C[2][0], C[2][1]);
@@ -3527,13 +3527,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       const double size_arrow = base_size / 25.0f;
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
-      cairo_set_source_rgb(cr, .7, .7, .7);
+      dt_draw_set_color_overlay(cr, 0.7, 1.0);
       cairo_arc (cr, xpos, ypos, size_circle, 0, 2.0 * M_PI);
       cairo_stroke(cr);
       cairo_fill(cr);
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
-      cairo_set_source_rgb(cr, .7, .7, .7);
+      dt_draw_set_color_overlay(cr, 0.7, 1.0);
 
       // horizontal line
       cairo_move_to(cr, xpos - size_line, ypos);
