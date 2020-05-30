@@ -1873,7 +1873,7 @@
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
-	<option>histogram</option>
+        <option>histogram</option>
         <option>waveform</option>
       </enum>
     </type>
@@ -1885,7 +1885,7 @@
     <name>plugins/darkroom/histogram/histogram</name>
     <type>
       <enum>
-	<option>logarithmic</option>
+        <option>logarithmic</option>
         <option>linear</option>
       </enum>
     </type>
@@ -1897,7 +1897,7 @@
     <name>plugins/darkroom/histogram/waveform</name>
     <type>
       <enum>
-	<option>overlaid</option>
+        <option>overlaid</option>
         <option>parade</option>
       </enum>
     </type>
