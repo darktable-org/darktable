@@ -225,7 +225,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 static void intent_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -234,7 +234,7 @@ static void intent_changed(GtkWidget *widget, gpointer user_data)
 static void output_profile_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   int pos = dt_bauhaus_combobox_get(widget);
 
