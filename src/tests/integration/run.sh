@@ -65,18 +65,23 @@ for dir in $(ls -d $PATTERN); do
             # This means that the tiling algorithm is probably broken.
             #
 
+            # All common core options:
+            CORE_OPTIONS="--conf host_memory_limit=8192 \
+                 --conf worker_threads=4 -t 4 \
+                 --conf plugins/lighttable/export/force_lcms2=FALSE \
+                 --conf plugins/lighttable/export/iccintent=0"
+
             $CLI --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
                  "$TEST_IMAGES/$IMAGE" "$TEST.xmp" output.png \
-                 --core --disable-opencl \
-                 --conf host_memory_limit=8192 2> /dev/null
+                 --core --disable-opencl $CORE_OPTIONS 1> /dev/null  2> /dev/null
 
             res=$?
 
             $CLI --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
                  "$TEST_IMAGES/$IMAGE" "$TEST.xmp" output-cl.png \
-                 --core --conf host_memory_limit=8192 2> /dev/null
+                 --core $CORE_OPTIONS 1> /dev/null 2> /dev/null
 
             res=$((res + $?))
 
@@ -84,10 +89,10 @@ for dir in $(ls -d $PATTERN); do
 
             if [ $res -eq 0 ]; then
                 if [ ! -z $COMPARE ]; then
-                    compare output.png output-cl.png diff-cl.png
+                    diffcount="$(compare output.png output-cl.png -metric ae diff-cl.png 2>&1 )"
 
                     if [ $? -ne 0 ]; then
-                        echo "      CPU & GPU version differs"
+                        echo "      CPU & GPU version differ by ${diffcount} pixels"
                     fi
                 fi
 
@@ -98,8 +103,9 @@ for dir in $(ls -d $PATTERN); do
                 else
                     echo "  FAILS: image visually changed"
                     if [ ! -z $COMPARE ]; then
-                        compare expected.png output.png diff.png
+                        diffcount="$(compare expected.png output.png -metric ae diff.png 2>&1 )"
                         echo "         see diff.jpg for visual difference"
+			echo "         (${diffcount} pixels changed)"
                     fi
                     exit 1
                 fi
