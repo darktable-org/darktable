@@ -785,9 +785,13 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     height = pipe.processed_height;
   }
 
-  const float max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
-  double scale = fminf(width >  0 ? fminf(width / (double)pipe.processed_width, max_scale) : max_scale,
-                       height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : max_scale);
+  const double max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
+  double scale = fmin((double)width >  0
+                      ? fmin((double)width / (double)pipe.processed_width, max_scale)
+                      : max_scale,
+                      (double)height > 0
+                      ? fmin((double)height / (double)pipe.processed_height, max_scale)
+                      : max_scale);
 
   int processed_width;
   int processed_height;
@@ -801,20 +805,20 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     if((height == 0) && exact_size)
       height = pipe.processed_height;
 
-    scale = fminf(width >  0 ? fminf(width / (double)pipe.processed_width, max_scale) : max_scale,
-                  height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : max_scale);
+    scale = fmin(width >  0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale,
+                 height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale);
 
     processed_width = scale * pipe.processed_width + 0.8f;
     processed_height = scale * pipe.processed_height + 0.8f;
 
-    if((ceilf(processed_width / scale) + origin[0] > pipe.iwidth) ||
-       (ceilf(processed_height / scale) + origin[1] > pipe.iheight))
+    if((ceil((double)processed_width / scale) + origin[0] > pipe.iwidth) ||
+       (ceil((double)processed_height / scale) + origin[1] > pipe.iheight))
     {
       // must either change scale or crop right/bottom border by one
       if(exact_size)
       {
-        scale = fminf(fminf((width-1) / (double)(pipe.processed_width), max_scale),
-                      fminf((height-1) / (double)(pipe.processed_height), max_scale));
+        scale = fmin(fmin((double)(width-1) / (double)(pipe.processed_width), max_scale),
+                     fmin((double)(height-1) / (double)(pipe.processed_height), max_scale));
       }
       else
       {
