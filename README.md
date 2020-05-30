@@ -25,8 +25,9 @@ darktable is an open source photography workflow application and raw developer. 
    - [Regular/stable version](#regularstable-version)
 6. [Contributing](#contributing)
 7. [FAQ](#faq)
-   - [Why is my camera not detected when plugged-in](#why-is-my-camera-not-detected-when-plugged-in-)
+   - [Why is my camera not detected when plugged-in ?](#why-is-my-camera-not-detected-when-plugged-in-)
    - [Why is my lens not detected/corrected in darkroom ?](#why-is-my-lens-not-detectedcorrected-in-darkroom-)
+   - [Why are the thumbnails in lighttable looking different than the preview in darkroom ?](#why-are-the-thumbnails-in-lighttable-looking-different-than-the-preview-in-darkroom-)
 8. [Wiki](#wiki)
 9. [Mailing lists](#mailing-lists)
 
@@ -298,6 +299,22 @@ or alternatively
 ```
 /usr/bin/g-lensfun-update-data 
 ```
+
+### Why are the thumbnails in lighttable looking different than the preview in darkroom ?
+
+For RAW files never edited before in darktable (when you only imported them), the lighttable uses by default
+the embedded JPEG thumbnail put in the RAW file by your camera. Loading this JPEG file is faster and makes the 
+lighttable more responsive when you import large collections of images. 
+
+However, this JPEG thumbnail is processed by the firmware of the camera, with proprietary algorithms,
+and colors, sharpness and contrast might not look the same as
+darktable processing, which is what you see when opening the darkroom. 
+
+However, once RAW images have been previously edited in darktable, 
+the lighttable thumbnail should match exactly the darkroom preview because they are processed the same.
+
+To never see the embedded JPEG thumbnail in lighttable, for RAW files, you can check the option 
+"don't use embedded preview JPEG but half-size raw" in preferences -> lighttable.
 
 Wiki
 ----
