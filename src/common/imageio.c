@@ -779,7 +779,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   int width = format_params->max_width > 0 ? format_params->max_width : 0;
   int height = format_params->max_height > 0 ? format_params->max_height : 0;
 
-  if(iscropped && !thumbnail_export)
+  if(iscropped && !thumbnail_export && width == 0 && height == 0)
   {
     width = pipe.processed_width;
     height = pipe.processed_height;
