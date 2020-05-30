@@ -732,8 +732,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(button), TRUE, TRUE, 0);
 
   //  Add metadata exportation control
-  d->metadata_button = dtgtk_button_new(dtgtk_cairo_paint_preferences,
-      CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX, NULL);
+  d->metadata_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
   gtk_widget_set_name(d->metadata_button, "non-flat");
   gtk_widget_set_tooltip_text(d->metadata_button, _("edit metadata exportation details"));
   gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
