@@ -762,7 +762,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
      4. Cropped images are detected and use b)
      5. Upscaled images use b)
      6. Rotating by +-90° does not change the output size.
-     7. Never generate images larger than requested.         
+     7. Never generate images larger than requested.
   */
 
   const gboolean iscropped =
@@ -784,7 +784,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     width = pipe.processed_width;
     height = pipe.processed_height;
   }
-  
+
   const float max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
   double scale = fminf(width >  0 ? fminf(width / (double)pipe.processed_width, max_scale) : max_scale,
                        height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : max_scale);
@@ -808,7 +808,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     processed_height = scale * pipe.processed_height + 0.8f;
 
     if((ceilf(processed_width / scale) + origin[0] > pipe.iwidth) ||
-       (ceilf(processed_height / scale) + origin[1] > pipe.iheight)) 
+       (ceilf(processed_height / scale) + origin[1] > pipe.iheight))
     {
       // must either change scale or crop right/bottom border by one
       if(exact_size)
@@ -1099,7 +1099,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   /* first of all, check if file exists, don't bother to test loading if not exists */
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return !DT_IMAGEIO_OK;
   const int32_t was_hdr = (img->flags & DT_IMAGE_HDR);
-  const int32_t was_bw = (img->flags & DT_IMAGE_MONOCHROME); 
+  const int32_t was_bw = (img->flags & DT_IMAGE_MONOCHROME);
 
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
   img->loader = LOADER_UNKNOWN;
