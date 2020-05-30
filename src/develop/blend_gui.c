@@ -1862,7 +1862,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[0]), "button-press-event",
                      G_CALLBACK(_blendop_masks_add_shape_callback), module);
-    gtk_widget_set_tooltip_text(bd->masks_shapes[0], _("add gradient"));
+    gtk_widget_set_tooltip_text(bd->masks_shapes[0], _("add gradient\nctrl+click to add multiple gradients"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[0]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[0], FALSE, FALSE, 0);
 
@@ -1871,7 +1871,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[1]), "button-press-event",
                      G_CALLBACK(_blendop_masks_add_shape_callback), module);
-    gtk_widget_set_tooltip_text(bd->masks_shapes[1], _("add path"));
+    gtk_widget_set_tooltip_text(bd->masks_shapes[1], _("add path\nctrl+click to add multiple paths"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[1]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[1], FALSE, FALSE, 0);
 
@@ -1880,7 +1880,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[2]), "button-press-event",
                      G_CALLBACK(_blendop_masks_add_shape_callback), module);
-    gtk_widget_set_tooltip_text(bd->masks_shapes[2], _("add ellipse"));
+    gtk_widget_set_tooltip_text(bd->masks_shapes[2], _("add ellipse\nctrl+click to add multiple ellipses"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[2]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[2], FALSE, FALSE, 0);
 
@@ -1889,7 +1889,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[3]), "button-press-event",
                      G_CALLBACK(_blendop_masks_add_shape_callback), module);
-    gtk_widget_set_tooltip_text(bd->masks_shapes[3], _("add circle"));
+    gtk_widget_set_tooltip_text(bd->masks_shapes[3], _("add circle\nctrl+click to add multiple circles"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[3]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[3], FALSE, FALSE, 0);
 
@@ -1898,7 +1898,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bd->masks_shapes[4]), "button-press-event",
                      G_CALLBACK(_blendop_masks_add_shape_callback), module);
-    gtk_widget_set_tooltip_text(bd->masks_shapes[4], _("add brush"));
+    gtk_widget_set_tooltip_text(bd->masks_shapes[4], _("add brush\nctrl+click to add multiple brush strokes"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[4]), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_shapes[4], FALSE, FALSE, 0);
 
