@@ -800,12 +800,12 @@ void gui_init(dt_lib_module_t *self)
   g_free(str);
 
   GtkBox *button_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  button = dtgtk_button_new(dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(button, _("calculate the time offset from an image"));
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_show_offset_window), self);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(button, _("apply time offset to selected images"));
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_apply_offset_callback), self);

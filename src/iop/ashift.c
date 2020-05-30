@@ -3448,10 +3448,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float iyo = g->buf_y_off;
 
     // the four corners of the input buffer of this module
-    const float V[4][2] = { { ixo,        iyo       },
-                          {   ixo,        iyo + iht },
-                          {   ixo + iwd,  iyo + iht },
-                          {   ixo + iwd,  iyo       } };
+    float V[4][2] = { { ixo,        iyo       },
+                      { ixo,        iyo + iht },
+                      { ixo + iwd,  iyo + iht },
+                      { ixo + iwd,  iyo       } };
 
     // convert coordinates of corners to coordinates of this module's output
     if(!call_distort_transform(self->dev, self->dev->preview_pipe, self, (float *)V, 4))
@@ -3470,10 +3470,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float oht = ymax - ymin;
 
     // the four clipping corners
-    const float C[4][2] = { { xmin + p->cl * owd, ymin + p->ct * oht },
-                            { xmin + p->cl * owd, ymin + p->cb * oht },
-                            { xmin + p->cr * owd, ymin + p->cb * oht },
-                            { xmin + p->cr * owd, ymin + p->ct * oht } };
+    float C[4][2] = { { xmin + p->cl * owd, ymin + p->ct * oht },
+                      { xmin + p->cl * owd, ymin + p->cb * oht },
+                      { xmin + p->cr * owd, ymin + p->cb * oht },
+                      { xmin + p->cr * owd, ymin + p->ct * oht } };
 
     // convert clipping corners to final output image
     if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL,
@@ -3503,7 +3503,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_fill(cr);
 
     // draw white outline around clipping area
-    cairo_set_source_rgb(cr, .7, .7, .7);
+    dt_draw_set_color_overlay(cr, 0.7, 1.0);
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
     cairo_line_to(cr, C[2][0], C[2][1]);
@@ -3527,13 +3527,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       const double size_arrow = base_size / 25.0f;
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
-      cairo_set_source_rgb(cr, .7, .7, .7);
+      dt_draw_set_color_overlay(cr, 0.7, 1.0);
       cairo_arc (cr, xpos, ypos, size_circle, 0, 2.0 * M_PI);
       cairo_stroke(cr);
       cairo_fill(cr);
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
-      cairo_set_source_rgb(cr, .7, .7, .7);
+      dt_draw_set_color_overlay(cr, 0.7, 1.0);
 
       // horizontal line
       cairo_move_to(cr, xpos - size_line, ypos);
@@ -4917,15 +4917,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_halign(label1, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), label1, 0, 0, 1, 1);
 
-  g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 1, NULL);
+  g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_v, label1, GTK_POS_RIGHT, 1, 1);
 
-  g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 2, NULL);
+  g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_h, g->fit_v, GTK_POS_RIGHT, 1, 1);
 
-  g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 3, NULL);
+  g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_both, g->fit_h, GTK_POS_RIGHT, 1, 1);
 
@@ -4933,15 +4933,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_halign(label2, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), label2, 0, 1, 1, 1);
 
-  g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
   gtk_grid_attach_next_to(GTK_GRID(grid), g->structure, label2, GTK_POS_RIGHT, 1, 1);
 
-  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->clean), TRUE);
   gtk_grid_attach_next_to(GTK_GRID(grid), g->clean, g->structure, GTK_POS_RIGHT, 1, 1);
 
-  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->eye), TRUE);
   gtk_grid_attach_next_to(GTK_GRID(grid), g->eye, g->clean, GTK_POS_RIGHT, 1, 1);
 
