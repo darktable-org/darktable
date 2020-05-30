@@ -22,7 +22,8 @@
 
 typedef struct dt_bilateral_t
 {
-  size_t size_x, size_y, size_z;
+  size_t size_x, size_y, size_z;		    // grid size in each dimension
+  float size_x_1, size_y_1, size_z_1;		    // max index, float because used in fp comparison
   int width, height;
   float sigma_s, sigma_r;
   float *buf __attribute__((aligned(64)));
@@ -53,7 +54,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,      // width of input image
                                   const float sigma_s,  // spatial sigma (blur pixel coords)
                                   const float sigma_r); // range sigma (blur luma values)
 
-void dt_bilateral_splat(dt_bilateral_t *b, const float *const in);
+void dt_bilateral_splat(const dt_bilateral_t *const b, const float *const in);
 
 void dt_bilateral_blur(dt_bilateral_t *b);
 

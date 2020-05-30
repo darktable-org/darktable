@@ -84,9 +84,9 @@ size_t dt_bilateral_singlebuffer_size2(const int width,
 static void image_to_grid(const dt_bilateral_t *const b, const int i, const int j, const float L, float *x,
                           float *y, float *z)
 {
-  *x = CLAMPS(i / b->sigma_s, 0, b->size_x - 1);
-  *y = CLAMPS(j / b->sigma_s, 0, b->size_y - 1);
-  *z = CLAMPS(L / b->sigma_r, 0, b->size_z - 1);
+  *x = CLAMPS(i / b->sigma_s, 0, b->size_x_1);  // limit to size_x - 1
+  *y = CLAMPS(j / b->sigma_s, 0, b->size_y_1);  // limit to size_y - 1
+  *z = CLAMPS(L / b->sigma_r, 0, b->size_z_1);  // limit to size_z - 1
 }
 
 dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
@@ -96,15 +96,15 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
 {
   dt_bilateral_t *b = (dt_bilateral_t *)malloc(sizeof(dt_bilateral_t));
   if(!b) return NULL;
-  // if(width/sigma_s < 4 || width/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
-  // if(height/sigma_s < 4 || height/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
-  // if(100.0/sigma_r < 4 || 100.0/sigma_r > 100) fprintf(stderr, "[bilateral] need to clamp sigma_r!\n");
   float _x = roundf(width / sigma_s);
   float _y = roundf(height / sigma_s);
   float _z = roundf(100.0f / sigma_r);
   b->size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
   b->size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
   b->size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
+  b->size_x_1 = b->size_x - 1;
+  b->size_y_1 = b->size_y - 1;
+  b->size_z_1 = b->size_z - 1;
   b->width = width;
   b->height = height;
   b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
@@ -124,20 +124,29 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in:64)
 #endif
-void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
+void dt_bilateral_splat(const dt_bilateral_t *const b, const float *const in)
 {
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
-  const float sigma_s = b->sigma_s * b->sigma_s;
   float *const buf = b->buf;
   const int bufsize = b->size_x * b->size_y * b->size_z;
 
+  const size_t offsets[8] =
+  {
+    0,
+    ox,
+    oy,
+    ox + oy,
+    oz,
+    oz + ox,
+    oz + oy,
+    oz + oy + ox
+  };
 // splat into downsampled grid
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, oy, oz, ox, sigma_s, buf, bufsize)    \
-  shared(b) \
+  dt_omp_firstprivate(b, in, buf, bufsize, offsets)     \
   collapse(2)
 #endif
   for(int j = 0; j < b->height; j++)
@@ -148,9 +157,9 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
       float x, y, z;
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
-      const int xi = MIN((int)x, b->size_x - 2);
-      const int yi = MIN((int)y, b->size_y - 2);
-      const int zi = MIN((int)z, b->size_z - 2);
+      const int xi = MIN((int)x, b->size_x - 2);  // limit to size_x - 2
+      const int yi = MIN((int)y, b->size_y - 2);  // limit to size_y - 2
+      const int zi = MIN((int)z, b->size_z - 2);  // limit to size_z - 2
       const float xf = x - xi;
       const float yf = y - yi;
       const float zf = z - zi;
@@ -160,27 +169,36 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
       // for cross bilateral applications.
       // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
       // should not cause clipping here.
+      const float contrib[4] = {
+        (1.0f - xf) * (1.0f - yf),	// precompute the first two dimensions
+        xf * (1.0f - yf),
+        (1.0f - xf) * yf,
+        xf * yf
+      };
 #ifdef _OPENMP
 #pragma omp simd aligned(buf:64)
 #endif
-      for(int k = 0; k < 8; k++)
+      for(int k = 0; k < 4; k++)
       {
-        const size_t ii = grid_index + ((k & 1) ? ox : 0) + ((k & 2) ? oy : 0) + ((k & 4) ? oz : 0);
-        const float contrib = ((k & 1) ? xf : (1.0f - xf)) * ((k & 2) ? yf : (1.0f - yf))
-                              * ((k & 4) ? zf : (1.0f - zf)) * 100.0f / sigma_s;
-        buf[ii] += contrib;
+        buf[grid_index + offsets[k]] += (contrib[k] * (1.0f - zf));
+        buf[grid_index + offsets[k+4]] += (contrib[k] * zf);
       }
     }
   }
 
-  // merge the per-thread results into the final result
+  // merge the per-thread results into the final result and apply the scaling factor
+  const float sigma_s = b->sigma_s * b->sigma_s;
+  const float scale = 100.0f / sigma_s;
+
   const int nthreads = /*darktable.num_openmp_threads*/ dt_get_num_threads();
   for(int index = 0; index < bufsize; index++)
   {
+    float sum = buf[index];
     for(int i = 1; i < nthreads; i++)
     {
-      buf[index] += buf[index + i*bufsize];
+      sum += buf[index + i*bufsize];
     }
+    buf[index] = sum * scale;
   }
 }
 
