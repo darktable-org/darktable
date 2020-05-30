@@ -444,7 +444,11 @@ overshoot.right
 #iop-plugin-ui-main #dt-toggle-button,
 #iop-plugin-ui-main #keep-active,
 #lib-plugin-ui-main #dt-button,
-#lib-plugin-ui-main #dt-toggle-button
+#lib-plugin-ui-main #dt-toggle-button,
+#blending-box #dt-button,
+#blending-box #dt-toggle-button,
+#blending-box #show_mask_button,
+#blending-box #keep-active
 {
   min-height: 1.3em;
   min-width: 1.3em;
@@ -472,7 +476,12 @@ overshoot.right
 #lib-plugin-ui-main #non-flat #button-canvas,
 #picker-black #button-canvas,
 #picker-grey #button-canvas,
-#picker-white #button-canvas
+#picker-white #button-canvas,
+#blending-box #button-canvas,
+#blending-box #button-canvas,
+#blending-box #button-canvas,
+#blending-box #button-canvas
+
 {
   margin: 5px; /* not real pixels, this is used as a percent extra space */
 }
