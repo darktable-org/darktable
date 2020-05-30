@@ -506,6 +506,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     else if(x > d->type_x && x < d->type_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       switch(dev->scope_type)
       {
         case DT_DEV_SCOPE_HISTOGRAM:
@@ -521,6 +522,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     else if(x > d->mode_x && x < d->mode_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_MODE;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       switch(dev->scope_type)
       {
         case DT_DEV_SCOPE_HISTOGRAM:
@@ -556,27 +558,32 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     else if(x > d->red_x && x < d->red_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_RED;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide red channel") : _("click to show red channel"));
     }
     else if(x > d->green_x && x < d->green_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_GREEN;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide green channel")
                                                  : _("click to show green channel"));
     }
     else if(x > d->blue_x && x < d->blue_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide blue channel") : _("click to show blue channel"));
     }
     else if((posx < 0.2f && dev->scope_type == DT_DEV_SCOPE_HISTOGRAM) ||
             (posy > 7.0f/9.0f && dev->scope_type == DT_DEV_SCOPE_WAVEFORM))
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
+      dt_control_change_cursor(GDK_HAND1);
       gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets"));
     }
     else
     {
+      dt_control_change_cursor(GDK_HAND1);
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
       gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets"));
     }
@@ -722,7 +729,6 @@ static gboolean _lib_histogram_enter_notify_callback(GtkWidget *widget, GdkEvent
                                                      gpointer user_data)
 {
   dt_control_change_cursor(GDK_HAND1);
-  // FIXME: change the cursor to pointer when over the buttons
   return TRUE;
 }
 
