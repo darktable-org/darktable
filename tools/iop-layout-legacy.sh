@@ -43,6 +43,8 @@ group_basic=(
     'highlights'
     'invert'
     'basicadj'
+    'negadoctor'
+    'toneequal'
 )
 
 group_tone=(
