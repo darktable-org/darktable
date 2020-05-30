@@ -759,6 +759,106 @@ static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
+static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
+
+  // The cycle order is Hist log -> Lin -> Waveform -> parade (update logic on more scopes)
+
+  switch(dev->scope_type)
+  {
+    case DT_DEV_SCOPE_HISTOGRAM:
+      dev->histogram_type = (dev->histogram_type + 1);
+      if(dev->histogram_type == DT_DEV_HISTOGRAM_N)
+      {
+        dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+        d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
+        dev->scope_type = DT_DEV_SCOPE_WAVEFORM;
+      }
+      break;
+    case DT_DEV_SCOPE_WAVEFORM:
+      d->waveform_type = (d->waveform_type + 1);
+      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_N)
+      {
+        dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+        d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
+        dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
+      }
+      break;
+    case DT_DEV_SCOPE_N:
+      g_assert_not_reached();
+  }
+  dt_conf_set_string("plugins/darkroom/histogram/mode", 
+                     dt_dev_scope_type_names[dev->scope_type]);
+  dt_conf_set_string("plugins/darkroom/histogram/histogram",
+                     dt_lib_histogram_histogram_type_names[dev->histogram_type]);
+  dt_conf_set_string("plugins/darkroom/histogram/waveform",
+                     dt_lib_histogram_waveform_type_names[d->waveform_type]);
+
+  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  {
+    dt_dev_process_preview(dev);
+  }
+
+  dt_control_queue_redraw_widget(self->widget);
+
+  return TRUE;
+}
+
+static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_develop_t *dev = darktable.develop;
+  dev->scope_type = (dev->scope_type + 1) % DT_DEV_SCOPE_N;
+  dt_conf_set_string("plugins/darkroom/histogram/mode",
+                     dt_dev_scope_type_names[dev->scope_type]);
+  // we need to reprocess the preview pipe
+  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well
+  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  {
+    dt_dev_process_preview(dev);
+  }
+  dt_control_queue_redraw_widget(self->widget);
+  return TRUE;
+}
+
+static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
+
+  switch(dev->scope_type)
+  {
+    case DT_DEV_SCOPE_HISTOGRAM:
+      dev->histogram_type = (dev->histogram_type + 1) % DT_DEV_HISTOGRAM_N;
+      dt_conf_set_string("plugins/darkroom/histogram/histogram",
+                         dt_lib_histogram_histogram_type_names[dev->histogram_type]);
+      break;
+    case DT_DEV_SCOPE_WAVEFORM:
+      d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
+      dt_conf_set_string("plugins/darkroom/histogram/waveform",
+                         dt_lib_histogram_waveform_type_names[d->waveform_type]);
+      break;
+    case DT_DEV_SCOPE_N:
+      g_assert_not_reached();
+  }
+  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  {
+    dt_dev_process_preview(dev);
+  }
+  dt_control_queue_redraw_widget(self->widget);
+  return TRUE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -822,12 +922,21 @@ void gui_cleanup(dt_lib_module_t *self)
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "cycle histogram modes"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "switch histogram mode"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "switch histogram type"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
   dt_accel_connect_lib(self, "hide histogram",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_collapse_callback), self, NULL));
+  dt_accel_connect_lib(self, "cycle histogram modes",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
+  dt_accel_connect_lib(self, "switch histogram mode",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_mode_callback), self, NULL));
+  dt_accel_connect_lib(self, "switch histogram type",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_type_callback), self, NULL));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
