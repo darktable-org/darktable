@@ -63,6 +63,8 @@
  */
 
 #define DT_UI_PANEL_MODULE_SPACING 0
+#define DT_UI_PANEL_SIDE_DEFAULT_SIZE 350
+#define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE 120
 
 typedef enum dt_gui_view_switch_t
 {
@@ -95,8 +97,8 @@ typedef struct dt_ui_t
   /* thumb table */
   dt_thumbtable_t *thumbtable;
 
-  /* log msg label */
-  GtkWidget *log_msg;
+  /* log msg and toast labels */
+  GtkWidget *log_msg, *toast_msg;
 } dt_ui_t;
 
 /* initialize the whole left panel */
@@ -121,6 +123,7 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container);
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
 /* callback for redraw log signals */
 static void _ui_log_redraw_callback(gpointer instance, GtkWidget *widget);
+static void _ui_toast_redraw_callback(gpointer instance, GtkWidget *widget);
 
 /* Set the HiDPI stuff */
 static void configure_ppd_dpi(dt_gui_gtk_t *gui);
@@ -1517,6 +1520,12 @@ static gboolean _ui_log_button_press_event(GtkWidget *widget, GdkEvent *event, g
   return TRUE;
 }
 
+static gboolean _ui_toast_button_press_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  gtk_widget_hide(GTK_WIDGET(user_data));
+  return TRUE;
+}
+
 static void init_widgets(dt_gui_gtk_t *gui)
 {
 
@@ -1585,6 +1594,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_show_all(dt_ui_main_window(gui->ui));
 
   gtk_widget_set_visible(dt_ui_log_msg(gui->ui), FALSE);
+  gtk_widget_set_visible(dt_ui_toast_msg(gui->ui), FALSE);
   gtk_widget_set_visible(gui->scrollbars.hscrollbar, FALSE);
   gtk_widget_set_visible(gui->scrollbars.vscrollbar, FALSE);
 
@@ -1689,6 +1699,20 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_halign(eb, GTK_ALIGN_CENTER);
   gtk_overlay_add_overlay(GTK_OVERLAY(ocda), eb);
 
+  /* the toast message */
+  eb = gtk_event_box_new();
+  darktable.gui->ui->toast_msg = gtk_label_new("");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_ui_toast_button_press_event),
+                   darktable.gui->ui->toast_msg);
+  gtk_widget_set_events(eb, GDK_BUTTON_PRESS_MASK | darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(eb), "scroll-event", G_CALLBACK(scrolled), NULL);
+  gtk_label_set_ellipsize(GTK_LABEL(darktable.gui->ui->toast_msg), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_widget_set_name(darktable.gui->ui->toast_msg, "toast-msg");
+  gtk_container_add(GTK_CONTAINER(eb), darktable.gui->ui->toast_msg);
+  gtk_widget_set_valign(eb, GTK_ALIGN_START);
+  gtk_widget_set_halign(eb, GTK_ALIGN_CENTER);
+  gtk_overlay_add_overlay(GTK_OVERLAY(ocda), eb);
+
   /* center should redraw when signal redraw center is raised*/
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER,
                             G_CALLBACK(_ui_widget_redraw_callback), darktable.gui->ui->center);
@@ -1696,6 +1720,10 @@ static void init_main_table(GtkWidget *container)
   /* update log message label */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW, G_CALLBACK(_ui_log_redraw_callback),
                             darktable.gui->ui->log_msg);
+
+  /* update toast message label */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW, G_CALLBACK(_ui_toast_redraw_callback),
+                            darktable.gui->ui->toast_msg);
 
   // Adding the scrollbars
   GtkWidget *vscrollBar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, NULL);
@@ -1816,7 +1844,7 @@ static void _ui_init_panel_size(GtkWidget *widget)
   if(strcmp(gtk_widget_get_name(widget), "right") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_RIGHT, "_size");
-    s = 350; // default panel size
+    s = DT_UI_PANEL_SIDE_DEFAULT_SIZE; // default panel size
     if(key && dt_conf_key_exists(key))
       s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
     if(key) gtk_widget_set_size_request(widget, s, -1);
@@ -1824,7 +1852,7 @@ static void _ui_init_panel_size(GtkWidget *widget)
   else if(strcmp(gtk_widget_get_name(widget), "left") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_LEFT, "_size");
-    s = 350; // default panel size
+    s = DT_UI_PANEL_SIDE_DEFAULT_SIZE; // default panel size
     if(key && dt_conf_key_exists(key))
       s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
     if(key) gtk_widget_set_size_request(widget, s, -1);
@@ -1832,7 +1860,7 @@ static void _ui_init_panel_size(GtkWidget *widget)
   else if(strcmp(gtk_widget_get_name(widget), "bottom") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_BOTTOM, "_size");
-    s = 120; // default panel size
+    s = DT_UI_PANEL_BOTTOM_DEFAULT_SIZE; // default panel size
     if(key && dt_conf_key_exists(key))
       s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_height"), dt_conf_get_int("max_panel_height"));
     if(key) gtk_widget_set_size_request(widget, -1, s);
@@ -2014,6 +2042,46 @@ gboolean dt_ui_panel_visible(dt_ui_t *ui, const dt_ui_panel_t p)
   return gtk_widget_get_visible(ui->panels[p]);
 }
 
+int dt_ui_panel_get_size(dt_ui_t *ui, const dt_ui_panel_t p)
+{
+  gchar *key = NULL;
+  int size;
+
+  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+  {
+    key = _panels_get_panel_path(p, "_size");
+    if(key && dt_conf_key_exists(key))
+    {
+      size = dt_conf_get_int(key);
+      g_free(key);
+    }
+    else // size hasn't been adjusted, so return default sizes
+    {
+      if(p == DT_UI_PANEL_BOTTOM)
+        size = DT_UI_PANEL_BOTTOM_DEFAULT_SIZE;
+      else
+        size = DT_UI_PANEL_SIDE_DEFAULT_SIZE;
+    }
+    return size;
+  }
+  return -1;
+}
+
+void dt_ui_panel_set_size(dt_ui_t *ui, const dt_ui_panel_t p, int s)
+{
+  gchar *key = NULL;
+  int width;
+
+  if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+  {
+    width = CLAMP(s, dt_conf_get_int("min_panel_width"), dt_conf_get_int("max_panel_width"));
+    gtk_widget_set_size_request(ui->panels[p], width, -1);
+    key = _panels_get_panel_path(p, "_size");
+    dt_conf_set_int(key, width);
+    g_free(key);
+  }
+}
+
 GtkWidget *dt_ui_center(dt_ui_t *ui)
 {
   return ui->center;
@@ -2029,6 +2097,10 @@ dt_thumbtable_t *dt_ui_thumbtable(struct dt_ui_t *ui)
 GtkWidget *dt_ui_log_msg(struct dt_ui_t *ui)
 {
   return ui->log_msg;
+}
+GtkWidget *dt_ui_toast_msg(struct dt_ui_t *ui)
+{
+  return ui->toast_msg;
 }
 
 GtkWidget *dt_ui_main_window(dt_ui_t *ui)
@@ -2467,6 +2539,28 @@ static void _ui_log_redraw_callback(gpointer instance, GtkWidget *widget)
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 }
 
+static void _ui_toast_redraw_callback(gpointer instance, GtkWidget *widget)
+{
+  // draw toast message, if any
+  dt_pthread_mutex_lock(&darktable.control->toast_mutex);
+  if(darktable.control->toast_ack != darktable.control->toast_pos)
+  {
+    if(strcmp(darktable.control->toast_message[darktable.control->toast_ack], gtk_label_get_text(GTK_LABEL(widget))))
+      gtk_label_set_text(GTK_LABEL(widget), darktable.control->toast_message[darktable.control->toast_ack]);
+    if(!gtk_widget_get_visible(widget))
+    {
+      const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
+      gtk_widget_set_margin_bottom(gtk_widget_get_parent(widget), 0.15 * h - DT_PIXEL_APPLY_DPI(10));
+      gtk_widget_show(widget);
+    }
+  }
+  else
+  {
+    if(gtk_widget_get_visible(widget)) gtk_widget_hide(widget);
+  }
+  dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
+}
+
 void dt_ellipsize_combo(GtkComboBox *cbox)
 {
   GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(cbox));
@@ -2511,6 +2605,8 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
   gtk_window_set_title(GTK_WINDOW(window), title);
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  gtk_window_set_position (GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(window), vbox);
@@ -2559,6 +2655,8 @@ char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup
   gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
   gtk_window_set_title(GTK_WINDOW(window), title);
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  gtk_window_set_position (GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_widget_set_margin_start(vbox, 10);
@@ -2621,6 +2719,23 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
+  if(!dt_conf_key_exists("use_system_font"))
+    dt_conf_set_bool("use_system_font", TRUE);
+
+  //set font size
+  if(dt_conf_get_bool("use_system_font"))
+    gtk_settings_reset_property(gtk_settings_get_default(), "gtk-font-name");
+  else 
+  {
+    //font name can only use period as decimal separator
+    //but printf format strings use comma for some locales, so replace comma with period
+    gchar *font_size = dt_util_dstrcat(NULL, _("%.1f"), dt_conf_get_float("font_size"));
+    gchar *font_name = dt_util_dstrcat(NULL, _("Sans %s"), dt_util_str_replace(font_size, ",", ".")); 
+    g_object_set(gtk_settings_get_default(), "gtk-font-name", font_name, NULL);
+    g_free(font_size);
+    g_free(font_name);
+  }
+
   char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 }, usercsspath[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
@@ -2648,36 +2763,25 @@ void dt_gui_load_theme(const char *theme)
   gtk_style_context_add_provider_for_screen
     (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
 
-  if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), path, &error))
+  g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
+
+  if(dt_conf_get_bool("themes/usercss") && g_file_test(usercsspath, G_FILE_TEST_EXISTS))
+  {
+    gchar *combinedcsscontent = g_strjoin(NULL, "@import url(\"", path, 
+                                           "\"); @import url(\"", usercsspath, "\");", NULL);
+
+    if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), combinedcsscontent, -1, &error))
+    {
+      fprintf(stderr, "%s: error parsing combined CSS: %s\n", G_STRFUNC, error->message);
+      g_clear_error(&error);
+    }
+
+    g_free(combinedcsscontent);
+  }
+  else if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), path, &error))
   {
     fprintf(stderr, "%s: error parsing %s: %s\n", G_STRFUNC, path, error->message);
     g_clear_error(&error);
-  }
-
-  if(dt_conf_get_bool("themes/usercss"))
-  {
-    g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
-
-    if(g_file_test(usercsspath, G_FILE_TEST_EXISTS))
-    {
-      //need to append currently loaded theme with user tweaks
-      const gchar *themecsscontent = gtk_css_provider_to_string(GTK_CSS_PROVIDER(themes_style_provider));
-
-      if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), usercsspath, &error))
-      {
-        fprintf(stderr, "%s: error parsing %s: %s\n", G_STRFUNC, usercsspath, error->message);
-        g_clear_error(&error);
-      }
-
-      const gchar *usercsscontent = gtk_css_provider_to_string(GTK_CSS_PROVIDER(themes_style_provider));
-      const gchar *combinedcsscontent = g_strjoin(" ", themecsscontent, usercsscontent, NULL);
-
-      if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), combinedcsscontent, -1, &error))
-      {
-        fprintf(stderr, "%s: error parsing combined CSS: %s\n", G_STRFUNC, error->message);
-        g_clear_error(&error);
-      }
-    }
   }
 
   g_object_unref(themes_style_provider);

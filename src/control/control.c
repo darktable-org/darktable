@@ -57,6 +57,11 @@ void dt_control_init(dt_control_t *s)
   s->log_message_timeout_id = 0;
   dt_pthread_mutex_init(&(s->log_mutex), NULL);
 
+  s->toast_pos = s->toast_ack = 0;
+  s->toast_busy = 0;
+  s->toast_message_timeout_id = 0;
+  dt_pthread_mutex_init(&(s->toast_mutex), NULL);
+
   pthread_cond_init(&s->cond, NULL);
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
@@ -173,6 +178,7 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->queue_mutex);
   dt_pthread_mutex_destroy(&s->cond_mutex);
   dt_pthread_mutex_destroy(&s->log_mutex);
+  dt_pthread_mutex_destroy(&s->toast_mutex);
   dt_pthread_mutex_destroy(&s->res_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
   dt_pthread_mutex_destroy(&s->progress_system.mutex);
@@ -381,6 +387,16 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
   return FALSE;
 }
 
+static gboolean _dt_ctl_toast_message_timeout_callback(gpointer data)
+{
+  dt_pthread_mutex_lock(&darktable.control->toast_mutex);
+  if(darktable.control->toast_ack != darktable.control->toast_pos)
+    darktable.control->toast_ack = (darktable.control->toast_ack + 1) % DT_CTL_TOAST_SIZE;
+  darktable.control->toast_message_timeout_id = 0;
+  dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
+  dt_control_toast_redraw();
+  return FALSE;
+}
 
 void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state)
 {
@@ -411,6 +427,22 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
     }
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 
+  // ack toast message:
+  dt_pthread_mutex_lock(&darktable.control->toast_mutex);
+  if(darktable.control->toast_ack != darktable.control->toast_pos)
+    if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
+    {
+      if(darktable.control->toast_message_timeout_id)
+      {
+        g_source_remove(darktable.control->toast_message_timeout_id);
+        darktable.control->toast_message_timeout_id = 0;
+      }
+      darktable.control->toast_ack = (darktable.control->toast_ack + 1) % DT_CTL_TOAST_SIZE;
+      dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
+      return;
+    }
+  dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
+
   if(!dt_view_manager_button_pressed(darktable.view_manager, x, y, pressure, which, type, state))
     if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
 }
@@ -418,6 +450,7 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
 static gboolean _redraw_center(gpointer user_data)
 {
   dt_control_log_redraw();
+  dt_control_toast_redraw();
   return FALSE; // don't call this again
 }
 
@@ -438,6 +471,23 @@ void dt_control_log(const char *msg, ...)
   g_idle_add(_redraw_center, 0);
 }
 
+void dt_toast_log(const char *msg, ...)
+{
+  dt_pthread_mutex_lock(&darktable.control->toast_mutex);
+  va_list ap;
+  va_start(ap, msg);
+  vsnprintf(darktable.control->toast_message[darktable.control->toast_pos], DT_CTL_TOAST_MSG_SIZE, msg, ap);
+  va_end(ap);
+  if(darktable.control->toast_message_timeout_id) g_source_remove(darktable.control->toast_message_timeout_id);
+  darktable.control->toast_ack = darktable.control->toast_pos;
+  darktable.control->toast_pos = (darktable.control->toast_pos + 1) % DT_CTL_TOAST_SIZE;
+  darktable.control->toast_message_timeout_id
+      = g_timeout_add(DT_CTL_TOAST_TIMEOUT, _dt_ctl_toast_message_timeout_callback, NULL);
+  dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
+  // redraw center later in gui thread:
+  g_idle_add(_redraw_center, 0);
+}
+
 static void dt_control_log_ack_all()
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
@@ -453,11 +503,27 @@ void dt_control_log_busy_enter()
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 }
 
+void dt_control_toast_busy_enter()
+{
+  dt_pthread_mutex_lock(&darktable.control->toast_mutex);
+  darktable.control->toast_busy++;
+  dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
+}
+
 void dt_control_log_busy_leave()
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   darktable.control->log_busy--;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+  /* lets redraw */
+  dt_control_queue_redraw_center();
+}
+
+void dt_control_toast_busy_leave()
+{
+  dt_pthread_mutex_lock(&darktable.control->toast_mutex);
+  darktable.control->toast_busy--;
+  dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
   /* lets redraw */
   dt_control_queue_redraw_center();
 }
@@ -480,6 +546,11 @@ void dt_control_navigation_redraw()
 void dt_control_log_redraw()
 {
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
+}
+
+void dt_control_toast_redraw()
+{
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
 static gboolean _gtk_widget_queue_draw(gpointer user_data)

@@ -207,9 +207,11 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   const gboolean geotag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags");
   const gboolean dttag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/tags");
   const int imageid = d->imageid;
-  GList *imgs = dt_view_get_images_to_act_on();
+  GList *imgs = dt_view_get_images_to_act_on(FALSE);
   if(imgs)
   {
+    // for all the above actions, we don't use the grpu_on tag, as grouped images have already been added to image
+    // list
     const dt_undo_type_t undo_type = (rating_flag ? DT_UNDO_RATINGS : 0) |
                                     (colors_flag ? DT_UNDO_COLORLABELS : 0) |
                                     (dtmetadata_flag ? DT_UNDO_METADATA : 0) |
@@ -220,17 +222,17 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     if(rating_flag)
     {
       const int stars = (action == DT_MA_CLEAR) ? 0 : dt_ratings_get(imageid);
-      dt_ratings_apply_on_list(imgs, stars, TRUE, TRUE);
+      dt_ratings_apply_on_list(imgs, stars, TRUE);
     }
     if(colors_flag)
     {
       const int colors = (action == DT_MA_CLEAR) ? 0 : dt_colorlabels_get_labels(imageid);
-      dt_colorlabels_set_labels(imgs, colors, action != DT_MA_MERGE, TRUE, TRUE);
+      dt_colorlabels_set_labels(imgs, colors, action != DT_MA_MERGE, TRUE);
     }
     if(dtmetadata_flag)
     {
       GList *metadata = (action == DT_MA_CLEAR) ? NULL : dt_metadata_get_list_id(imageid);
-      dt_metadata_set_list_id(imgs, metadata, action != DT_MA_MERGE, TRUE, TRUE);
+      dt_metadata_set_list_id(imgs, metadata, action != DT_MA_MERGE, TRUE);
       g_list_free_full(metadata, g_free);
     }
     if(geotag_flag)
@@ -240,14 +242,14 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
         geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
       else
         dt_image_get_location(imageid, geoloc);
-      dt_image_set_locations(imgs, geoloc, TRUE, TRUE);
+      dt_image_set_locations(imgs, geoloc, TRUE);
       g_free(geoloc);
     }
     if(dttag_flag)
     {
       // affect only user tags (not dt tags)
       GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid, TRUE);
-      dt_tag_set_tags(tags, imgs, TRUE, action != DT_MA_MERGE, TRUE, TRUE);
+      dt_tag_set_tags(tags, imgs, TRUE, action != DT_MA_MERGE, TRUE);
       g_list_free(tags);
     }
 
@@ -266,7 +268,7 @@ static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
 
-  d->imageid = dt_view_get_image_to_act_on2();
+  d->imageid = dt_view_get_image_to_act_on();
   if(d->imageid)
   {
     gtk_widget_set_sensitive(d->paste_metadata_button, TRUE);
@@ -394,13 +396,13 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
   d->rotate_ccw_button = button;
   gtk_widget_set_tooltip_text(button, _("rotate selected images 90 degrees CCW"));
   gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1 | CPF_DO_NOT_USE_BORDER, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1 | CPF_NONE, NULL);
   d->rotate_cw_button = button;
   gtk_widget_set_tooltip_text(button, _("rotate selected images 90 degrees CW"));
   gtk_grid_attach(grid, button, 1, line, 1, 1);

@@ -2274,11 +2274,10 @@ static void corrections_done(gpointer instance, gpointer user_data)
     modifiers = g_list_next(modifiers);
   }
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   gtk_label_set_text(g->message, message);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->message), message);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 void gui_init(struct dt_iop_module_t *self)

@@ -219,8 +219,7 @@ void expose(
   if(dev->gui_synch && !dev->image_loading)
   {
     // synch module guis from gtk thread:
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     GList *modules = dev->iop;
     while(modules)
     {
@@ -228,7 +227,7 @@ void expose(
       dt_iop_gui_update(module);
       modules = g_list_next(modules);
     }
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     dev->gui_synch = 0;
   }
 
@@ -420,12 +419,34 @@ void expose(
     PangoRectangle ink;
     PangoLayout *layout;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    const float fontsize = DT_PIXEL_APPLY_DPI(14);
+    float fontsize;
+    gchar *load_txt;
+
+    if(dev->image_invalid_cnt)
+    {
+      fontsize = DT_PIXEL_APPLY_DPI(20);
+      load_txt = dt_util_dstrcat(NULL, "%s `%s' %s\n\n%s\n%s",
+          "darktable could not load image",
+          dev->image_storage.filename,
+          ", switch to lighttable now.",
+          "Please check image (use exiv2 or exiftool) for corrupted data. If the image",
+          "seems to be intact concider to open an issue at https://github.com/darktable-org/darktable." );
+      if(dev->image_invalid_cnt > 400)
+      {
+        dev->image_invalid_cnt = 0;
+        dt_view_manager_switch(darktable.view_manager, "lighttable");
+      }
+    }
+    else
+    {
+      fontsize = DT_PIXEL_APPLY_DPI(14);
+      load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
+    }
+
     pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
-    gchar *load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
     pango_layout_set_text(layout, load_txt, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(10), wd = ink.width * .5f;
@@ -573,13 +594,27 @@ void expose(
     const float *point = dev->gui_module->color_picker_point;
     if(darktable.lib->proxy.colorpicker.size)
     {
-      cairo_rectangle(cri, box[0] * wd, box[1] * ht, (box[2] - box[0]) * wd, (box[3] - box[1]) * ht);
-      cairo_stroke(cri);
       cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
-      cairo_set_source_rgb(cri, .8, .8, .8);
-      cairo_rectangle(cri, box[0] * wd + 1.0 / zoom_scale, box[1] * ht,
-                      (box[2] - box[0]) * wd - 3. / zoom_scale, (box[3] - box[1]) * ht - 2. / zoom_scale);
-      cairo_stroke(cri);
+
+      double x = box[0] * wd, y = box[1] * ht;
+
+      double d = 1. / zoom_scale;
+      cairo_set_source_rgb(cri, .0, .0, .0);
+      for(int blackwhite = 2; blackwhite; blackwhite--)
+      {
+        double w = 5. / zoom_scale - d;
+
+        cairo_rectangle(cri, x + d, y + d, (box[2] - box[0]) * wd - 2. * d, (box[3] - box[1]) * ht - 2. * d);
+
+        cairo_rectangle(cri, x - w, y - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, x - w, box[3] * ht - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, box[2] * wd - w, y - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, box[2] * wd - w, box[3] * ht - w, 2. * w, 2. *w);
+        cairo_stroke(cri);
+
+        d = 0;
+        cairo_set_source_rgb(cri, .8, .8, .8);
+      }
     }
     else if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
     {
@@ -650,35 +685,17 @@ void reset(dt_view_t *self)
 
 int try_enter(dt_view_t *self)
 {
-  int selected = dt_control_get_mouse_over_id();
+  int imgid = dt_view_get_image_to_act_on();
 
-  if(selected < 0)
-  {
-    // try last selected
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                                NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) selected = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-
-    // Leave as selected only the image being edited
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, selected);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
-
-  if(selected < 0)
+  if(imgid < 0)
   {
     // fail :(
-    dt_control_log(_("no image selected!"));
+    dt_control_log(_("no image to open !"));
     return 1;
   }
 
   // this loads the image from db if needed:
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, selected, 'r');
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   // get image and check if it has been deleted from disk first!
 
   char imgfilename[PATH_MAX] = { 0 };
@@ -687,13 +704,12 @@ int try_enter(dt_view_t *self)
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
-    // dt_image_remove(selected);
     dt_image_cache_read_release(darktable.image_cache, img);
     return 1;
   }
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
-  darktable.develop->image_storage.id = selected;
+  darktable.develop->image_storage.id = imgid;
   return 0;
 }
 
@@ -829,8 +845,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_reload_image(dev, imgid);
 
   // make sure no signals propagate here:
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
 
   const guint nb_iop = g_list_length(dev->iop);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
@@ -951,7 +966,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
      are blocked due to implementation of dt_iop_request_focus so we do it now
      A double history entry is not generated.
   */
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   /* Now we can request focus again and write a safe plugins/darkroom/active */
   if(active_plugin)
@@ -1033,10 +1048,17 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
     new_offset = sqlite3_column_int(stmt, 0);
     new_id = sqlite3_column_int(stmt, 1);
   }
+  else
+  {
+    // if we are here, that means that the current is not anymore in the list
+    // in this case, let's use the current offset image
+    new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
+    new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
+  }
   g_free(query);
   sqlite3_finalize(stmt);
 
-  if(new_id < 0) return;
+  if(new_id < 0 || new_id == imgid) return;
 
   // if id seems valid, we change the image and move filmstrip
   dt_dev_change_image(dev, new_id);
@@ -1987,8 +2009,7 @@ static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GOb
   {
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)mod->blend_data;
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
 
     dt_iop_color_picker_reset(mod, TRUE);
 
@@ -2008,7 +2029,7 @@ static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GOb
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), FALSE);
     }
 
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     return TRUE;
   }
@@ -2041,7 +2062,7 @@ void gui_init(dt_view_t *self)
 
   /* create second window display button */
   dev->second_window.button
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(dev->second_window.button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
                    dev);
   g_signal_connect(G_OBJECT(dev->second_window.button), "button-press-event",
@@ -2710,8 +2731,7 @@ void enter(dt_view_t *self)
    * add IOP modules to plugin list
    */
   // avoid triggering of events before plugin is ready:
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   char option[1024];
   GList *modules = g_list_last(dev->iop);
   while(modules)
@@ -2746,7 +2766,7 @@ void enter(dt_view_t *self)
     modules = g_list_previous(modules);
   }
   // make signals work again:
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   /* signal that darktable.develop is initialized and ready to be used */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
@@ -3020,16 +3040,15 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       float delta_x = 1 / (float) dev->pipe->processed_width;
       float delta_y = 1 / (float) dev->pipe->processed_height;
 
-      float zoom_x, zoom_y, bzoom_x, bzoom_y;
+      float zoom_x, zoom_y;
       dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
-      dt_dev_get_pointer_zoom_pos(dev, ctl->button_x + offx, ctl->button_y + offy, &bzoom_x, &bzoom_y);
 
       if(darktable.lib->proxy.colorpicker.size)
       {
-        dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f + bzoom_x, .5f + zoom_x) - delta_x);
-        dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f + bzoom_y, .5f + zoom_y) - delta_y);
-        dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f + bzoom_x, .5f + zoom_x) + delta_x);
-        dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f + bzoom_y, .5f + zoom_y) + delta_y);
+        dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[0], .5f + zoom_x) - delta_x);
+        dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[1], .5f + zoom_y) - delta_y);
+        dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[0], .5f + zoom_x) + delta_x);
+        dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[1], .5f + zoom_y) + delta_y);
       }
       else
       {
@@ -3129,18 +3148,47 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       // The default box will be a square with 1% of the image width
       const float delta_x = 0.01f;
       const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
+
+      zoom_x += 0.5f;
+      zoom_y += 0.5f;
+
+      dev->gui_module->color_picker_point[0] = zoom_x;
+      dev->gui_module->color_picker_point[1] = zoom_y;
+
       if(darktable.lib->proxy.colorpicker.size)
       {
-        dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f + zoom_x - delta_x);
-        dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f + zoom_y - delta_y);
-        dev->gui_module->color_picker_box[2] = fminf(1.0, .5f + zoom_x + delta_x);
-        dev->gui_module->color_picker_box[3] = fminf(1.0, .5f + zoom_y + delta_y);
+        gboolean on_corner_prev_box = TRUE;
+        float opposite_x, opposite_y;
+
+        if(fabsf(zoom_x - dev->gui_module->color_picker_box[0]) < .005f)
+          opposite_x = dev->gui_module->color_picker_box[2];
+        else if(fabsf(zoom_x - dev->gui_module->color_picker_box[2]) < .005f)
+          opposite_x = dev->gui_module->color_picker_box[0];
+        else
+          on_corner_prev_box = FALSE;
+
+        if(fabsf(zoom_y - dev->gui_module->color_picker_box[1]) < .005f)
+          opposite_y = dev->gui_module->color_picker_box[3];
+        else if(fabsf(zoom_y - dev->gui_module->color_picker_box[3]) < .005f)
+          opposite_y = dev->gui_module->color_picker_box[1];
+        else
+          on_corner_prev_box = FALSE;
+
+        if(on_corner_prev_box)
+        {
+          dev->gui_module->color_picker_point[0] = opposite_x;
+          dev->gui_module->color_picker_point[1] = opposite_y;
+        }
+        else
+        {
+          dev->gui_module->color_picker_box[0] = fmaxf(0.0, zoom_x - delta_x);
+          dev->gui_module->color_picker_box[1] = fmaxf(0.0, zoom_y - delta_y);
+          dev->gui_module->color_picker_box[2] = fminf(1.0, zoom_x + delta_x);
+          dev->gui_module->color_picker_box[3] = fminf(1.0, zoom_y + delta_y);
+        }
       }
       else
       {
-        dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-        dev->gui_module->color_picker_point[1] = .5f + zoom_y;
-
         dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       }
     }
@@ -3247,7 +3295,6 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
     if(w->type == DT_BAUHAUS_SLIDER)
     {
-      gtk_widget_grab_focus(self->dynamic_accel_current->widget);
       float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
       float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
 

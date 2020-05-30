@@ -103,6 +103,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     G_CALLBACK(_image_info_changed_destroy_callback), FALSE }, // DT_SIGNAL_IMAGE_INFO_CHANGED
   { "dt-style-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_STYLE_CHANGED
+  { "dt-images-order-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
+    FALSE }, // DT_SIGNAL_IMAGES_ORDER_CHANGE
   { "dt-filmrolls-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_FILMROLLS_CHANGED
   { "dt-filmrolls-imported", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
@@ -156,6 +158,9 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-control-log-redraw", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_CONTROL_LOG_REDRAW
+
+  { "dt-control-toast-redraw", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_CONTROL_TOAST_REDRAW
 
   { "dt-control-pickerdata-ready", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
     FALSE }, // DT_SIGNAL_CONTROL_PICKERDATA_REAEDY
