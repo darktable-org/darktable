@@ -790,7 +790,7 @@ static gboolean zoom_max_callback(GtkAccelGroup *accel_group, GObject *accelerat
 static gboolean zoom_min_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
-  dt_view_lighttable_set_zoom(darktable.view_manager, 2 * DT_LIGHTTABLE_MAX_ZOOM);
+  dt_view_lighttable_set_zoom(darktable.view_manager, DT_LIGHTTABLE_MAX_ZOOM);
   return TRUE;
 }
 
