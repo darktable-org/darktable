@@ -1066,7 +1066,7 @@ void gui_init(dt_iop_module_t *self)
   c->bt_auto_levels = gtk_button_new_with_label(_("auto"));
   gtk_widget_set_tooltip_text(c->bt_auto_levels, _("apply auto levels"));
 
-  c->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  c->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(c->bt_select_region), "tooltip-text",
                _("apply auto levels based on a region defined by the user\n"
                  "click and drag to draw the area\n"

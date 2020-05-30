@@ -506,6 +506,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     else if(x > d->type_x && x < d->type_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       switch(dev->scope_type)
       {
         case DT_DEV_SCOPE_HISTOGRAM:
@@ -521,6 +522,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     else if(x > d->mode_x && x < d->mode_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_MODE;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       switch(dev->scope_type)
       {
         case DT_DEV_SCOPE_HISTOGRAM:
@@ -556,27 +558,32 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     else if(x > d->red_x && x < d->red_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_RED;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide red channel") : _("click to show red channel"));
     }
     else if(x > d->green_x && x < d->green_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_GREEN;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide green channel")
                                                  : _("click to show green channel"));
     }
     else if(x > d->blue_x && x < d->blue_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE;
+      dt_control_change_cursor(GDK_LEFT_PTR);
       gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide blue channel") : _("click to show blue channel"));
     }
     else if((posx < 0.2f && dev->scope_type == DT_DEV_SCOPE_HISTOGRAM) ||
             (posy > 7.0f/9.0f && dev->scope_type == DT_DEV_SCOPE_WAVEFORM))
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
+      dt_control_change_cursor(GDK_HAND1);
       gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets"));
     }
     else
     {
+      dt_control_change_cursor(GDK_HAND1);
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
       gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets"));
     }
@@ -722,7 +729,6 @@ static gboolean _lib_histogram_enter_notify_callback(GtkWidget *widget, GdkEvent
                                                      gpointer user_data)
 {
   dt_control_change_cursor(GDK_HAND1);
-  // FIXME: change the cursor to pointer when over the buttons
   return TRUE;
 }
 
@@ -750,6 +756,106 @@ static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
   // Inverse the visibility
   dt_lib_set_visible(self, !visible);
 
+  return TRUE;
+}
+
+static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
+
+  // The cycle order is Hist log -> Lin -> Waveform -> parade (update logic on more scopes)
+
+  switch(dev->scope_type)
+  {
+    case DT_DEV_SCOPE_HISTOGRAM:
+      dev->histogram_type = (dev->histogram_type + 1);
+      if(dev->histogram_type == DT_DEV_HISTOGRAM_N)
+      {
+        dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+        d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
+        dev->scope_type = DT_DEV_SCOPE_WAVEFORM;
+      }
+      break;
+    case DT_DEV_SCOPE_WAVEFORM:
+      d->waveform_type = (d->waveform_type + 1);
+      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_N)
+      {
+        dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+        d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
+        dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
+      }
+      break;
+    case DT_DEV_SCOPE_N:
+      g_assert_not_reached();
+  }
+  dt_conf_set_string("plugins/darkroom/histogram/mode", 
+                     dt_dev_scope_type_names[dev->scope_type]);
+  dt_conf_set_string("plugins/darkroom/histogram/histogram",
+                     dt_lib_histogram_histogram_type_names[dev->histogram_type]);
+  dt_conf_set_string("plugins/darkroom/histogram/waveform",
+                     dt_lib_histogram_waveform_type_names[d->waveform_type]);
+
+  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  {
+    dt_dev_process_preview(dev);
+  }
+
+  dt_control_queue_redraw_widget(self->widget);
+
+  return TRUE;
+}
+
+static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_develop_t *dev = darktable.develop;
+  dev->scope_type = (dev->scope_type + 1) % DT_DEV_SCOPE_N;
+  dt_conf_set_string("plugins/darkroom/histogram/mode",
+                     dt_dev_scope_type_names[dev->scope_type]);
+  // we need to reprocess the preview pipe
+  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well
+  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  {
+    dt_dev_process_preview(dev);
+  }
+  dt_control_queue_redraw_widget(self->widget);
+  return TRUE;
+}
+
+static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
+
+  switch(dev->scope_type)
+  {
+    case DT_DEV_SCOPE_HISTOGRAM:
+      dev->histogram_type = (dev->histogram_type + 1) % DT_DEV_HISTOGRAM_N;
+      dt_conf_set_string("plugins/darkroom/histogram/histogram",
+                         dt_lib_histogram_histogram_type_names[dev->histogram_type]);
+      break;
+    case DT_DEV_SCOPE_WAVEFORM:
+      d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
+      dt_conf_set_string("plugins/darkroom/histogram/waveform",
+                         dt_lib_histogram_waveform_type_names[d->waveform_type]);
+      break;
+    case DT_DEV_SCOPE_N:
+      g_assert_not_reached();
+  }
+  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  {
+    dt_dev_process_preview(dev);
+  }
+  dt_control_queue_redraw_widget(self->widget);
   return TRUE;
 }
 
@@ -816,12 +922,21 @@ void gui_cleanup(dt_lib_module_t *self)
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "cycle histogram modes"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "switch histogram mode"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "switch histogram type"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
   dt_accel_connect_lib(self, "hide histogram",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_collapse_callback), self, NULL));
+  dt_accel_connect_lib(self, "cycle histogram modes",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
+  dt_accel_connect_lib(self, "switch histogram mode",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_mode_callback), self, NULL));
+  dt_accel_connect_lib(self, "switch histogram type",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_type_callback), self, NULL));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
