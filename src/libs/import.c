@@ -133,7 +133,7 @@ void connect_key_accels(dt_lib_module_t *self)
 static void _lib_import_scan_devices_callback(GtkButton *button, gpointer data)
 {
   /* detect cameras */
-  dt_camctl_detect_cameras(darktable.camctl);
+  dt_camctl_background_detect_cameras();
   /* update UI */
   // this part is now asynchronously done by the signal connected to in gui_init()
 }
@@ -185,8 +185,10 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   g_list_free(item);
 
   uint32_t count = 0;
-  /* FIXME: Verify that it's safe to access camctl->cameras list here ? */
-  if((citem = g_list_first(darktable.camctl->cameras)) != NULL)
+  dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
+  dt_pthread_mutex_lock(&camctl->lock);
+
+  if((citem = g_list_first(camctl->cameras)) != NULL)
   {
     // Add detected supported devices
     char buffer[512] = { 0 };
@@ -242,6 +244,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     } while((citem = g_list_next(citem)) != NULL);
   }
+  dt_pthread_mutex_unlock(&camctl->lock);
 
   if(count == 0)
   {
@@ -257,7 +260,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 /** camctl camera disconnect callback */
 static gboolean _detect_async(gpointer user_data)
 {
-  dt_camctl_detect_cameras(darktable.camctl);
+  dt_camctl_background_detect_cameras();
   return FALSE;
 }
 
