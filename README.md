@@ -48,10 +48,10 @@ prefer using darktable on Linux.*
 
 ### Hardware 
 
-(minimal / **recommended**):
+(workable minimum / **recommended minimum**):
 * RAM: 4 GB / **8 GB**
 * CPU: Intel Pentium 4 / **Intel Core i5 4×2.4 GHz** 
-* GPU: none / **Nvidia 1024 cores, 4 GB, OpenCL 1.2 compatible**
+* GPU: none / **Nvidia with 1024 CUDA cores, 4 GB, OpenCL 1.2 compatible**
 * free disk space: 250 MB / **1 GB**
 
 *darktable can run on lightweight configurations (even Raspberry Pi), but expect modules like denoising, local contrast, 
@@ -63,6 +63,9 @@ Nvidia GPU are recommended for safety because some AMD drivers behave unreliably
 Installing
 ----------
 
+If the latest release is still not available as a pre-built package for your distribution, 
+you can build the software yourself following the instructions [below](#building).
+
 ### Latest release
 
 3.0.2 (stable)
@@ -70,11 +73,17 @@ Installing
 * [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2-win64.exe)
 * [Download executable for Mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable&package=darktable)
-* [Install Flatpack package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
+* [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
+* [More information about installing darktable on any system](https://www.darktable.org/install/)
+
+*When using a pre-built package, ensure it has been built with Lua, OpenCL, OpenMP and Colord support.
+These are optional and will not prevent darktable from running if missing, 
+but their absence will degrade user experience.
+Noticeably, some Flatpak, Snap and Appimage packages lack OpenCL and Lua support.*
 
 ### Development snapshot
 
-The development snapshot is state of the master branch at current time, is intended for testing and is generaly not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
+The development snapshot is the state of the master branch at current time. It is intended for testing and is generaly not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
 
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
 * No precompiled packages are provided for the master branch on MacOS and Windows. See how to build it manually below.
@@ -82,9 +91,11 @@ The development snapshot is state of the master branch at current time, is inten
 Getting extensions
 ------------------
 
-Extensions and plugins use the Lua scripting language and can be downloaded [here](https://github.com/darktable-org/lua-scripts).
+Extensions and plugins use the Lua scripting language and can be downloaded [here](https://github.com/darktable-org/lua-scripts). Lua support is optional in darktable, ensure you have the interpreter `lua` and its development files (package 
+`lua-dev` or `lua-devel`, depending on distributions) installed on your system 
+while building or ensure the package you are using has been built with this library.
 
-They allow to export for various media, merge/stack/blend HDR, panoramas or focus bracketing, 
+Extensions allow to export for various media and websites, merge/stack/blend HDR, panoramas or focus bracketing, 
 apply AI-based facial recognition, manage tags and GPS data, etc.
 
 Building
@@ -122,17 +133,17 @@ Optional dependencies with no version requirement:
 To install all the dependencies on Linux systems, you may use the source repositories of your distribution 
 (provided they are up-to-date):
 
-**Fedora and RHEL**
+#### Fedora and RHEL
 ```
 sudo dnf builddep darktable
 ```
 
-**OpenSuse**
+#### OpenSuse
 ```
 sudo zypper si -d darktable
 ```
 
-**Ubuntu**
+#### Ubuntu
 ```
 sed -e '/^#\sdeb-src /s/^# *//;t;d' "/etc/apt/sources.list" \
 | sudo tee /etc/apt/sources.list.d/darktable-sources-tmp.list > /dev/null \
@@ -141,11 +152,24 @@ sed -e '/^#\sdeb-src /s/^# *//;t;d' "/etc/apt/sources.list" \
   ); sudo rm /etc/apt/sources.list.d/darktable-sources-tmp.list
 ```
 
-**Debian**
+#### Debian
 
 ```
 sudo apt-get build-dep darktable
 ```
+
+#### Install missing dependencies
+
+If mandatory dependencies are missing on your system, building the software will fail with
+errors like `Package XXX has not been found` or `Command YYY has no provider on this system`.
+What you need to do, then, is to search which package provides the required missing package or command in your distribution,
+then install it. This can usually be done in your package manager (not the applications manager
+customarily provided by default in your distribution) or on the internet with a search engine. 
+You may need to install a package manager first (like Synaptic on Debian/Ubuntu, or DNF Dragora on Fedora/RHEL).
+
+This process might be tedious but you only need to do it once. See this 
+[outdated page on building darktable 2.6](https://redmine.darktable.org/projects/darktable/wiki/Building_darktable_26)
+for one-line commands that will install most dependencies on the most frequent Linux distributions.
 
 ### Get the source
 
@@ -173,6 +197,8 @@ cd darktable
 See below (in "Using") how to start a test install of the unstable version without damaging your regular stable install and files.
 
 #### Latest stable release
+
+3.0.2
 
 darktable project releases one major version every year, for Christmas, tagged with even numbers, (like 2.2, 2.4, 2.6, 3.0). 
 Minor revisions are tagged with a third digit (like 3.0.1, 3.0.2) and mostly provide bug fixes and minor new features.
