@@ -870,7 +870,7 @@ void dt_gui_gtk_quit()
 
   // Write out windows dimension before miminizing
   dt_gui_gtk_write_config();
-  gtk_window_iconify(win);
+  gtk_widget_hide(GTK_WIDGET(win));
 
   GtkWidget *widget;
   widget = darktable.gui->widgets.left_border;
