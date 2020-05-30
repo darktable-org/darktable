@@ -77,26 +77,15 @@ static int hovered_cb(lua_State *L)
 
 static int act_on_cb(lua_State *L)
 {
-
-  int32_t imgid = dt_view_get_image_to_act_on();
   lua_newtable(L);
-  if(imgid != -1)
+  GList *image = dt_view_get_images_to_act_on(FALSE);
+  while(image)
   {
-    luaA_push(L, dt_lua_image_t, &imgid);
+    luaA_push(L, dt_lua_image_t, &image->data);
     luaL_ref(L, -2);
-    return 1;
+    image = g_list_delete_link(image, image);
   }
-  else
-  {
-    GList *image = dt_collection_get_selected(darktable.collection, -1);
-    while(image)
-    {
-      luaA_push(L, dt_lua_image_t, &image->data);
-      luaL_ref(L, -2);
-      image = g_list_delete_link(image, image);
-    }
-    return 1;
-  }
+  return 1;
 }
 
 
@@ -173,6 +162,56 @@ static int panel_show_all_cb(lua_State *L)
   for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(darktable.gui->ui, k, TRUE, TRUE);
   // code goes here
   return 0;
+}
+
+static int panel_get_size_cb(lua_State *L)
+{
+  dt_ui_panel_t p;
+  int size;
+
+  if(lua_gettop(L) > 0)
+  {
+    luaA_to(L, dt_ui_panel_t, &p, 1);
+    if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+    {
+      size = dt_ui_panel_get_size(darktable.gui->ui, p);
+      lua_pushnumber(L, size);
+      return 1;
+    }
+    else
+    {
+      return luaL_error(L, "size not supported for specified panel");
+    }
+  }
+  else
+  {
+    return luaL_error(L, "no panel specified");
+  }
+}
+
+static int panel_set_size_cb(lua_State *L)
+{
+  dt_ui_panel_t p;
+  int size;
+
+  if(lua_gettop(L) > 1)
+  {
+    luaA_to(L, dt_ui_panel_t, &p, 1);
+    luaA_to(L, int, &size, 2);
+    if(p == DT_UI_PANEL_LEFT || p == DT_UI_PANEL_RIGHT || p == DT_UI_PANEL_BOTTOM)
+    {
+      dt_ui_panel_set_size(darktable.gui->ui, p, size);
+      return 0;
+    }
+    else
+    {
+      return luaL_error(L, "changing size not supported for specified panel");
+    }
+  }
+  else
+  {
+    return luaL_error(L, "no panel specified");
+  }
 }
 
 typedef dt_progress_t *dt_lua_backgroundjob_t;
@@ -328,6 +367,12 @@ int dt_lua_init_gui(lua_State *L)
     lua_pushcfunction(L, panel_show_all_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_show_all");
+    lua_pushcfunction(L, panel_get_size_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "panel_get_size");
+    lua_pushcfunction(L, panel_set_size_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "panel_set_size");
     lua_pushcfunction(L, lua_create_job);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "create_job");

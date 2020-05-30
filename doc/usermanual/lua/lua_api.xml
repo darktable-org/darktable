@@ -573,11 +573,9 @@
 <para>The type of storage object to create, one of : <itemizedlist>
 <listitem><para>disk</para></listitem>
 <listitem><para>email</para></listitem>
-<listitem><para>facebook</para></listitem>
-<listitem><para>flickr</para></listitem>
 <listitem><para>gallery</para></listitem>
 <listitem><para>latex</para></listitem>
-<listitem><para>picasa</para></listitem>
+<listitem><para>piwigo</para></listitem>
 </itemizedlist>
 (Other, lua-defined, storage types may appear.)</para>
 
@@ -836,6 +834,54 @@
 
 </section>
 
+<section status="final" id="darktable_gui_panel_get_size">
+<title>darktable.gui.panel_get_size</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_get_size</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_get_size_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+)int</synopsis>
+<para>Gets the size in pixels of the specified panel.  This only works for the left, right, and bottom panels.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_get_size_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to get the size of.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_panel_set_size">
+<title>darktable.gui.panel_set_size</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_set_size</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_set_size_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+	<emphasis><link linkend="darktable_gui_panel_set_size_size">size</link></emphasis> : int
+)</synopsis>
+<para>Sets the size in pixels of the specified panel.  This only works for the left, right, and bottom panels.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_set_size_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to set the size of.</para>
+
+</listitem></varlistentry>
+<varlistentry id="darktable_gui_panel_set_size_size"><term>size</term><listitem>
+<synopsis>int></synopsis>
+<para>The size to set the panel to.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 <section status="final" id="darktable_gui_create_job">
 <title>darktable.gui.create_job</title>
 <indexterm>
@@ -1049,6 +1095,61 @@
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+
+<section status="final" id="darktable_gui_views_lighttable_is_image_visible">
+<title>darktable.gui.views.lighttable.is_image_visible</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>is_image_visible</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_views_lighttable_is_image_visible_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Check if the image is visible in lighttable view.  The lighttable must be in file manager or zoomable mode.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_views_lighttable_is_image_visible_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to be checked.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>boolean</synopsis>
+<para>True if the image is displayed. False if the image is partially displayed or not displayed.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_views_lighttable_set_image_visible">
+<title>darktable.gui.views.lighttable.set_image_visible</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>set_image_visible</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_views_lighttable_set_image_visible_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Set the image visible in lighttable view.  The lighttable must be in file manager or zoomable mode.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_views_lighttable_set_image_visible_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to set visible.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>int</synopsis>
+<para>An error is returned if no image is specified.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_views_tethering">
@@ -4286,6 +4387,48 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_dt_lua_image_t_notes">
+<title>types.dt_lua_image_t.notes</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>notes</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The notes field for the image.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_lua_image_t_version_name">
+<title>types.dt_lua_image_t.version_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>version_name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The version_name field for the image.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_dt_lua_image_t_exif_maker">
 <title>types.dt_lua_image_t.exif_maker</title>
 <indexterm>
@@ -5964,48 +6107,6 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_imageio_module_storage_data_flickr">
-<title>types.dt_imageio_module_storage_data_flickr</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>dt_imageio_module_storage_data_flickr</secondary>
-</indexterm>
-<synopsis>dt_type</synopsis>
-<para>An object containing parameters to export to flickr.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
-<section status="final" id="types_dt_imageio_module_storage_data_facebook">
-<title>types.dt_imageio_module_storage_data_facebook</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>dt_imageio_module_storage_data_facebook</secondary>
-</indexterm>
-<synopsis>dt_type</synopsis>
-<para>An object containing parameters to export to facebook.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
 <section status="final" id="types_dt_imageio_module_storage_data_latex">
 <title>types.dt_imageio_module_storage_data_latex</title>
 <indexterm>
@@ -6069,14 +6170,14 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 
 </section>
 
-<section status="final" id="types_dt_imageio_module_storage_data_picasa">
-<title>types.dt_imageio_module_storage_data_picasa</title>
+<section status="final" id="types_dt_imageio_module_storage_data_piwigo">
+<title>types.dt_imageio_module_storage_data_piwigo</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>dt_imageio_module_storage_data_picasa</secondary>
+<secondary>dt_imageio_module_storage_data_piwigo</secondary>
 </indexterm>
 <synopsis>dt_type</synopsis>
-<para>An object containing parameters to export to picasa.</para>
+<para>An object containing parameters to export to piwigo.</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -7194,6 +7295,10 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <listitem><para>DT_COLLECTION_PROP_TAG</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_DAY</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_TIME</para></listitem>
+<listitem><para>DT_COLLECTION_PROP_IMPORT_TIMESTAMP</para></listitem>
+<listitem><para>DT_COLLECTION_PROP_CHANGE_TIMESTAMP</para></listitem>
+<listitem><para>DT_COLLECTION_PROP_EXPORT_TIMESTAMP</para></listitem>
+<listitem><para>DT_COLLECTION_PROP_PRINT_TIMESTAMP</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_HISTORY</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_COLORLABEL</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_TITLE</para></listitem>

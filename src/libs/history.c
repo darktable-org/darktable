@@ -129,7 +129,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), self);
 
   /* add toolbar button for creating style */
-  d->create_button = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_DO_NOT_USE_BORDER, NULL);
+  d->create_button = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_NONE, NULL);
   g_signal_connect(G_OBJECT(d->create_button), "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   gtk_widget_set_tooltip_text(d->create_button, _("create a style from the current history stack"));
@@ -181,8 +181,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
 
   if(always_on)
   {
-    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on,
-                             CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
     gtk_widget_set_name(onoff, "history-switch-always-enabled");
     gtk_widget_set_name(widget, "history-button-always-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
@@ -190,8 +189,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   }
   else if(default_enabled)
   {
-    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch,
-                             CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
     gtk_widget_set_name(onoff, "history-switch-default-enabled");
     gtk_widget_set_name(widget, "history-button-default-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
@@ -201,15 +199,13 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   {
     if(deprecated)
     {
-      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated,
-                               CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
       gtk_widget_set_name(onoff, "history-switch-deprecated");
       gtk_widget_set_tooltip_text(onoff, _("deprecated module"));
     }
     else
     {
-      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch,
-                               CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
       gtk_widget_set_name(onoff, enabled ? "history-switch-enabled" : "history-switch");
     }
     gtk_widget_set_name(widget, enabled ? "history-button-enabled" : "history-button");
@@ -380,8 +376,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
 
       if(darktable.develop->gui_module == mod) dt_iop_request_focus(NULL);
 
-      const int reset = darktable.gui->reset;
-      darktable.gui->reset = 1;
+      ++darktable.gui->reset;
 
       // we remove the plugin effectively
       if(!dt_iop_is_hidden(mod))
@@ -406,7 +401,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
       // don't delete the module, a pipe may still need it
       dev->alliop = g_list_append(dev->alliop, mod);
 
-      darktable.gui->reset = reset;
+      --darktable.gui->reset;
 
       // and reset the list
       modules = g_list_first(iop_list);

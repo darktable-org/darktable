@@ -65,7 +65,6 @@ typedef struct dt_iop_colorize_gui_data_t
 {
   GtkWidget *scale1, *scale2; //  lightness, source_lightnessmix
   GtkWidget *gslider1, *gslider2; // hue, saturation
-  dt_iop_color_picker_t color_picker;
 } dt_iop_colorize_gui_data_t;
 
 typedef struct dt_iop_colorize_data_t
@@ -286,7 +285,7 @@ static void saturation_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
@@ -308,12 +307,11 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpi
   p->hue        = H;
   p->saturation = S;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);
   update_saturation_slider_end_color(g->gslider2, p->hue);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -427,9 +425,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->gslider1, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->gslider1, 1.0f, 1.0f, 0.0f, 0.0f);
   gtk_widget_set_tooltip_text(g->gslider1, _("select the hue tone"));
-  dt_bauhaus_widget_set_quad_paint(g->gslider1, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->gslider1, TRUE);
-  g_signal_connect(G_OBJECT(g->gslider1), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+  dt_color_picker_new(self, DT_COLOR_PICKER_POINT, g->gslider1);
 
   /* saturation slider */
   g->gslider2 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
@@ -461,12 +457,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->gslider2), "value-changed", G_CALLBACK(saturation_callback), self);
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(lightness_callback), self);
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(source_lightness_mix_callback), self);
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     g->gslider1,
-                     DT_COLOR_PICKER_POINT,
-                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

@@ -19,6 +19,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "common/collection.h"
+#include "common/debug.h"
 #include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -400,7 +401,24 @@ static void _lib_lighttable_zoom_mode_changed(GtkComboBox *widget, gpointer user
     int selnb = dt_collection_get_selected_count(darktable.collection);
     if(selnb <= 1) selnb = dt_conf_get_int("plugins/lighttable/culling_num_images");
     _lib_lighttable_set_zoom(self, selnb);
+    // and we set the offset to the first selected image
+    if(selnb != 0)
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                                  "WHERE m.imgid=s.imgid "
+                                  "ORDER BY m.rowid LIMIT 1",
+                                  -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        dt_view_lighttable_change_offset(darktable.view_manager, FALSE, sqlite3_column_int(stmt, 0));
+      }
+      sqlite3_finalize(stmt);
+    }
   }
+  dt_view_lighttable_culling_init_mode(darktable.view_manager);
+
   gtk_widget_set_sensitive(
       d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || d->zoom_mode != DT_LIGHTTABLE_ZOOM_DYNAMIC));
   gtk_widget_set_sensitive(

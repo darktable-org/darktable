@@ -646,20 +646,20 @@ void dt_accel_widget_toast(GtkWidget *widget)
       if(w->label[0] != '\0')
       { // label is not empty
         if(w->module && w->module->multi_name[0] != '\0')
-          dt_control_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, text);
+          dt_toast_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, text);
         else if(w->module && !strstr(w->module->name(), w->label))
-          dt_control_log(_("%s / %s: %s"), w->module->name(), w->label, text);
+          dt_toast_log(_("%s / %s: %s"), w->module->name(), w->label, text);
         else
-          dt_control_log(_("%s: %s"), w->label, text);
+          dt_toast_log(_("%s: %s"), w->label, text);
       }
       else
       { //label is empty
         if(w->module && w->module->multi_name[0] != '\0')
-          dt_control_log(_("%s %s / %s"), w->module->name(), w->module->multi_name, text);
+          dt_toast_log(_("%s %s / %s"), w->module->name(), w->module->multi_name, text);
         else if(w->module)
-          dt_control_log(_("%s / %s"), w->module->name(), text);
+          dt_toast_log(_("%s / %s"), w->module->name(), text);
         else
-          dt_control_log(_("%s"), text);
+          dt_toast_log(_("%s"), text);
       }
     }
 

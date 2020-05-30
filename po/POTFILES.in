@@ -48,6 +48,7 @@ src/develop/lightroom.c
 src/develop/masks/masks.c
 src/develop/pixelpipe_hb.c
 src/develop/tiling.c
+src/dtgtk/culling.c
 src/dtgtk/resetlabel.c
 src/dtgtk/thumbnail.c
 src/dtgtk/thumbnail_btn.c

@@ -207,10 +207,10 @@ for filename in argv[1:]:
         elif tag == "White Balance Fine Tune" and maker.startswith("NIKON"): # nikon
             finetune = 0-(int(values[0]) * 2) # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
             gm_skew = gm_skew or (int(values[1]) != 0)
-        elif tag == "White Balance Fine Tune" and maker == "FUJIFILM": # fuji
+        elif tag == "White Balance Fine Tune" and maker == "FUJIFILM" and int(values[3]) != 0: # fuji
             eprint("Warning: Fuji does not seem to produce any sensible data for finetuning! If all finetuned values are identical, use one with no finetuning (0)")
             finetune = int(values[3]) / 20 # Fuji has -180..180 but steps are every 20
-            gm_skew = gm_skew or (int(values[1]) != 0)
+            gm_skew = gm_skew or (int(values[1].replace(',','')) != 0)
         elif tag == "White Balance Fine Tune" and maker == "SONY" and preset == "CoolWhiteFluorescent":
             # Sony's Fluorescent Fun
             if values[0] == "-1":
