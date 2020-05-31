@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-26 11:47-0500\n"
-"PO-Revision-Date: 2020-05-26 13:43-0500\n"
+"POT-Creation-Date: 2020-05-30 14:57-0500\n"
+"PO-Revision-Date: 2020-05-31 00:08-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1377,7 +1377,7 @@ msgstr "Imprimir tus imagenes"
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:354
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:475
-#: ../src/libs/import.c:552 ../src/libs/import.c:658 ../src/libs/lib.c:227
+#: ../src/libs/import.c:555 ../src/libs/import.c:661 ../src/libs/lib.c:227
 #: ../src/libs/styles.c:305 ../src/libs/styles.c:328 ../src/libs/tagging.c:2165
 #: ../src/libs/tagging.c:2206
 msgid "_cancel"
@@ -1592,7 +1592,7 @@ msgid "grouping"
 msgstr "grupos"
 
 #: ../src/common/collection.c:695 ../src/libs/metadata_view.c:108
-#: ../src/libs/metadata_view.c:349
+#: ../src/libs/metadata_view.c:351
 msgid "local copy"
 msgstr "copia local"
 
@@ -1860,7 +1860,7 @@ msgstr "Error al cargar el directorio '%s'"
 msgid "file `%s' has unknown format!"
 msgstr "El archivo `%s' tiene un formato desconocido"
 
-#: ../src/common/darktable.c:288 ../src/libs/import.c:618
+#: ../src/common/darktable.c:288 ../src/libs/import.c:621
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Error al cargar el archivo '%s'"
@@ -1889,7 +1889,7 @@ msgstr ""
 #: ../src/iop/clipping.c:2218 ../src/iop/filmicrgb.c:1501
 #: ../src/iop/toneequal.c:3320 ../src/libs/export.c:629
 #: ../src/libs/export.c:635 ../src/libs/export.c:642
-#: ../src/libs/metadata_view.c:291
+#: ../src/libs/metadata_view.c:293
 msgid "no"
 msgstr "no"
 
@@ -1897,7 +1897,7 @@ msgstr "no"
 #: ../src/common/variables.c:456 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/iop/clipping.c:2219
 #: ../src/libs/export.c:630 ../src/libs/export.c:636 ../src/libs/export.c:643
-#: ../src/libs/metadata_view.c:291
+#: ../src/libs/metadata_view.c:293
 msgid "yes"
 msgstr "sí"
 
@@ -2441,7 +2441,7 @@ msgid "below sea level"
 msgstr "bajo el nivel del mar"
 
 #: ../src/common/utility.c:506 ../src/iop/watermark.c:826
-#: ../src/libs/metadata_view.c:639
+#: ../src/libs/metadata_view.c:641
 msgid "m"
 msgstr "m"
 
@@ -2903,7 +2903,7 @@ msgstr[1] "Importando %d imágenes"
 msgid "importing image %s"
 msgstr "Importando imagen %s"
 
-#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:552
+#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:555
 msgid "import image"
 msgstr "importar imagen"
 
@@ -4408,11 +4408,11 @@ msgid "storage file"
 msgstr "archivo de almacenamiento"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:278 ../src/libs/import.c:386
+#: ../src/gui/camera_import_dialog.c:278 ../src/libs/import.c:389
 msgid "ignore JPEG files"
 msgstr "Ignorar archivos JPEG"
 
-#: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:387
+#: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:390
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -4914,7 +4914,7 @@ msgid "normal images"
 msgstr "imagenes normales"
 
 #: ../src/gui/preferences.c:89 ../src/gui/presets.c:57
-#: ../src/libs/metadata_view.c:344
+#: ../src/libs/metadata_view.c:346
 msgid "raw"
 msgstr "RAW"
 
@@ -5087,8 +5087,8 @@ msgstr "Seleccionar el archivo a importar"
 
 #: ../src/gui/preferences.c:1463 ../src/gui/preferences.c:1545
 #: ../src/libs/collect.c:355 ../src/libs/copy_history.c:78
-#: ../src/libs/geotagging.c:476 ../src/libs/import.c:553
-#: ../src/libs/import.c:659 ../src/libs/styles.c:329
+#: ../src/libs/geotagging.c:476 ../src/libs/import.c:556
+#: ../src/libs/import.c:662 ../src/libs/styles.c:329
 msgid "_open"
 msgstr "_abrir"
 
@@ -9657,7 +9657,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3231 ../src/iop/toneequal.c:3237
 #: ../src/iop/toneequal.c:3243 ../src/iop/toneequal.c:3249
 #: ../src/iop/toneequal.c:3255 ../src/iop/toneequal.c:3261
-#: ../src/iop/toneequal.c:3267 ../src/libs/metadata_view.c:504
+#: ../src/iop/toneequal.c:3267 ../src/libs/metadata_view.c:506
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -10447,7 +10447,7 @@ msgstr "blanco"
 msgid "liquify"
 msgstr "licuar"
 
-#: ../src/iop/liquify.c:3484
+#: ../src/iop/liquify.c:3476
 msgid ""
 "click and drag to add point\n"
 "scroll to change size\n"
@@ -10457,7 +10457,7 @@ msgstr ""
 "Desplazamiento para cambiar el tamaño\n"
 "Mayús+Desplazamiento fija la fuerza. Ctrl+Desplazamiento fija el sentido"
 
-#: ../src/iop/liquify.c:3488
+#: ../src/iop/liquify.c:3480
 msgid ""
 "click to add line\n"
 "scroll to change size\n"
@@ -10467,7 +10467,7 @@ msgstr ""
 "Desplazamiento para cambiar el tamaño\n"
 "Mayús+Desplazamiento fija la fuerza. Ctrl+Desplazamiento fija el sentido"
 
-#: ../src/iop/liquify.c:3492
+#: ../src/iop/liquify.c:3484
 msgid ""
 "click to add curve\n"
 "scroll to change size\n"
@@ -10477,11 +10477,11 @@ msgstr ""
 "Desplazamiento para cambiar el tamaño \n"
 "Mayús+Desplazamiento fija la fuerza. Ctrl+Desplazamiento fija el sentido"
 
-#: ../src/iop/liquify.c:3495
+#: ../src/iop/liquify.c:3487
 msgid "click to edit nodes"
 msgstr "Pulsar para editar nodos"
 
-#: ../src/iop/liquify.c:3561
+#: ../src/iop/liquify.c:3545
 msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
@@ -10489,27 +10489,27 @@ msgstr ""
 "Utilice una herramienta para agregar deformaciones.\n"
 "Clic secundario para eliminar una deformación."
 
-#: ../src/iop/liquify.c:3564
+#: ../src/iop/liquify.c:3548
 msgid "warps|nodes count:"
 msgstr "Deformaciones|cuenta de nodos:"
 
-#: ../src/iop/liquify.c:3574
+#: ../src/iop/liquify.c:3557
 msgid "point tool: draw points"
 msgstr "Herramienta de punto: dibujar puntos"
 
-#: ../src/iop/liquify.c:3581
+#: ../src/iop/liquify.c:3563
 msgid "line tool: draw lines"
 msgstr "Herramienta de linea: dibujar lineas"
 
-#: ../src/iop/liquify.c:3588
+#: ../src/iop/liquify.c:3569
 msgid "curve tool: draw curves"
 msgstr "Herramienta de curva: dibujar curvas"
 
-#: ../src/iop/liquify.c:3595
+#: ../src/iop/liquify.c:3575
 msgid "node tool: edit, add and delete nodes"
 msgstr "Herramienta de nodo: agregar y eliminar nodos"
 
-#: ../src/iop/liquify.c:3599
+#: ../src/iop/liquify.c:3579
 msgid ""
 "ctrl+click: add node - right click: remove path\n"
 "ctrl+alt+click: toggle line/curve"
@@ -10517,7 +10517,7 @@ msgstr ""
 "Ctrl+Clic: agregar nodo; Clic secundario: eliminar ruta\n"
 "Ctrl+Alt+Clic: alternar entre línea y curva"
 
-#: ../src/iop/liquify.c:3601
+#: ../src/iop/liquify.c:3581
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
@@ -10526,23 +10526,23 @@ msgstr ""
 "Ctrl+Clic: suavizado automático, cúspide, suavizado, simétrico. Clic "
 "secundario para eliminar"
 
-#: ../src/iop/liquify.c:3604 ../src/iop/liquify.c:3605
+#: ../src/iop/liquify.c:3584 ../src/iop/liquify.c:3585
 msgid "drag to change shape of path"
 msgstr "Arrastrar para cambiar la figura de la ruta"
 
-#: ../src/iop/liquify.c:3606
+#: ../src/iop/liquify.c:3586
 msgid "drag to adjust warp radius"
 msgstr "Arrastrar para ajustar el radio de deformación"
 
-#: ../src/iop/liquify.c:3607
+#: ../src/iop/liquify.c:3587
 msgid "drag to adjust hardness (center)"
 msgstr "Arrastrar para ajustar la dureza (centro)"
 
-#: ../src/iop/liquify.c:3608
+#: ../src/iop/liquify.c:3588
 msgid "drag to adjust hardness (feather)"
 msgstr "Arrastrar para ajustar la dureza (difuminado)"
 
-#: ../src/iop/liquify.c:3609
+#: ../src/iop/liquify.c:3589
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click: linear, grow, and shrink"
@@ -10550,22 +10550,22 @@ msgstr ""
 "Arrastre para ajustar la fuerza del deformado\n"
 "Ctrl+Clic : lineal, aumentar y encoger"
 
-#: ../src/iop/liquify.c:3627
+#: ../src/iop/liquify.c:3607
 msgctxt "accel"
 msgid "point tool"
 msgstr "herramienta de punto"
 
-#: ../src/iop/liquify.c:3628
+#: ../src/iop/liquify.c:3608
 msgctxt "accel"
 msgid "line tool"
 msgstr "herramienta de línea"
 
-#: ../src/iop/liquify.c:3629
+#: ../src/iop/liquify.c:3609
 msgctxt "accel"
 msgid "curve tool"
 msgstr "herramienta de curva"
 
-#: ../src/iop/liquify.c:3630
+#: ../src/iop/liquify.c:3610
 msgctxt "accel"
 msgid "node tool"
 msgstr "herramienta de nodo"
@@ -10838,7 +10838,7 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "Hald CLUT (png) o LUT 3D (cube)"
 
 #: ../src/iop/lut3d.c:1638 ../src/libs/copy_history.c:92
-#: ../src/libs/geotagging.c:497 ../src/libs/import.c:583
+#: ../src/libs/geotagging.c:497 ../src/libs/import.c:586
 #: ../src/libs/styles.c:346
 msgid "all files"
 msgstr "todos los archivos"
@@ -13606,12 +13606,12 @@ msgstr "exportar"
 msgid "export with current settings"
 msgstr "Exportar con la configuración actual"
 
-#: ../src/libs/export.c:737
+#: ../src/libs/export.c:736
 msgid "edit metadata exportation details"
 msgstr "Editar los detalles de exportación de los metadatos"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1361 ../src/libs/styles.c:72
+#: ../src/libs/export.c:1360 ../src/libs/styles.c:72
 #: ../src/views/darkroom.c:3604
 msgctxt "accel"
 msgid "export"
@@ -13858,51 +13858,51 @@ msgstr ""
 msgid "histogram"
 msgstr "histograma"
 
-#: ../src/libs/histogram.c:512 ../src/libs/histogram.c:546
+#: ../src/libs/histogram.c:513 ../src/libs/histogram.c:548
 msgid "set mode to waveform"
 msgstr "Cambiar histograma a modo de onda"
 
-#: ../src/libs/histogram.c:515
+#: ../src/libs/histogram.c:516
 msgid "set mode to histogram"
 msgstr "Establecer el modo del histograma"
 
-#: ../src/libs/histogram.c:530
+#: ../src/libs/histogram.c:532
 msgid "set mode to linear"
 msgstr "Cambiar histograma a modo lineal"
 
-#: ../src/libs/histogram.c:533
+#: ../src/libs/histogram.c:535
 msgid "set mode to logarithmic"
 msgstr "Cambiar histograma a modo logarítmico"
 
-#: ../src/libs/histogram.c:543
+#: ../src/libs/histogram.c:545
 msgid "set mode to RGB parade"
 msgstr "Establecer el modo de canales en paralelo RGB"
 
-#: ../src/libs/histogram.c:559
+#: ../src/libs/histogram.c:562
 msgid "click to hide red channel"
 msgstr "Pulse para ocultar canal rojo"
 
-#: ../src/libs/histogram.c:559
+#: ../src/libs/histogram.c:562
 msgid "click to show red channel"
 msgstr "Pulse para mostrar canal rojo"
 
-#: ../src/libs/histogram.c:564
+#: ../src/libs/histogram.c:568
 msgid "click to hide green channel"
 msgstr "Pulse para ocultar canal verde"
 
-#: ../src/libs/histogram.c:565
+#: ../src/libs/histogram.c:569
 msgid "click to show green channel"
 msgstr "Pulse para mostrar canal verde"
 
-#: ../src/libs/histogram.c:570
+#: ../src/libs/histogram.c:575
 msgid "click to hide blue channel"
 msgstr "Pulse para ocultar canal azul"
 
-#: ../src/libs/histogram.c:570
+#: ../src/libs/histogram.c:575
 msgid "click to show blue channel"
 msgstr "Pulse para mostrar canal azul"
 
-#: ../src/libs/histogram.c:576
+#: ../src/libs/histogram.c:582
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
@@ -13911,7 +13911,7 @@ msgstr ""
 "Para reiniciar, pulse dos veces"
 
 #. connect callbacks
-#: ../src/libs/histogram.c:581 ../src/libs/histogram.c:783
+#: ../src/libs/histogram.c:588 ../src/libs/histogram.c:889
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
@@ -13919,10 +13919,25 @@ msgstr ""
 "Para cambiar la exposición, arrástrelo.\n"
 "Para reiniciar, pulse dos veces."
 
-#: ../src/libs/histogram.c:818
+#: ../src/libs/histogram.c:924
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "ocultar histograma"
+
+#: ../src/libs/histogram.c:925
+msgctxt "accel"
+msgid "cycle histogram modes"
+msgstr "modo cíclico del histograma"
+
+#: ../src/libs/histogram.c:926
+msgctxt "accel"
+msgid "switch histogram mode"
+msgstr "cambiar modo de histograma"
+
+#: ../src/libs/histogram.c:927
+msgctxt "accel"
+msgid "switch histogram type"
+msgstr "cambiar tipo de histograma"
 
 #: ../src/libs/history.c:95
 msgctxt "accel"
@@ -13947,19 +13962,19 @@ msgstr "Generar un historial de acciones mínimo que produzca la misma imagen"
 msgid "create a style from the current history stack"
 msgstr "Crear un estilo a partir del historial de acciones"
 
-#: ../src/libs/history.c:189
+#: ../src/libs/history.c:188
 msgid "always-on module"
 msgstr "Módulo siempre activo"
 
-#: ../src/libs/history.c:198
+#: ../src/libs/history.c:196
 msgid "default enabled module"
 msgstr "Módulo habilitado por defecto"
 
-#: ../src/libs/history.c:207
+#: ../src/libs/history.c:204
 msgid "deprecated module"
 msgstr "Módulo sin soporte"
 
-#: ../src/libs/history.c:676 ../src/libs/snapshots.c:458
+#: ../src/libs/history.c:672 ../src/libs/snapshots.c:458
 msgid "original"
 msgstr "original"
 
@@ -14245,75 +14260,75 @@ msgctxt "accel"
 msgid "import folder"
 msgstr "importar carpeta"
 
-#: ../src/libs/import.c:209
+#: ../src/libs/import.c:211
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "Dispositivo \"%s\" conectado en el puerto \"%s\"."
 
-#: ../src/libs/import.c:219
+#: ../src/libs/import.c:221
 msgid "import from camera"
 msgstr "importar desde la cámara"
 
-#: ../src/libs/import.c:225
+#: ../src/libs/import.c:227
 msgid "tethered shoot"
 msgstr "captura"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:249
+#: ../src/libs/import.c:252
 msgid "no supported devices found"
 msgstr "no se encontraron dispositivos compatibles"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:362
+#: ../src/libs/import.c:365
 msgid "import options"
 msgstr "opciones al importar"
 
 #. recursive opening.
-#: ../src/libs/import.c:379
+#: ../src/libs/import.c:382
 msgid "import folders recursively"
 msgstr "Importar carpetas recursivamente"
 
-#: ../src/libs/import.c:381
+#: ../src/libs/import.c:384
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr ""
 "Importar carpetas de manera recursiva. Cada carpeta forma un carrete nuevo."
 
-#: ../src/libs/import.c:578
+#: ../src/libs/import.c:581
 msgid "supported images"
 msgstr "imágenes admitidas"
 
-#: ../src/libs/import.c:634
+#: ../src/libs/import.c:637
 msgid "file has unknown format!"
 msgstr "El archivo tiene un formato desconocido"
 
-#: ../src/libs/import.c:658
+#: ../src/libs/import.c:661
 msgid "import folder"
 msgstr "Importar carpeta"
 
 #. add import single image buttons
-#: ../src/libs/import.c:773
+#: ../src/libs/import.c:776
 msgid "image..."
 msgstr "imagen..."
 
-#: ../src/libs/import.c:777
+#: ../src/libs/import.c:780
 msgid "select one or more images to import"
 msgstr "Seleccionar una o más imágenes para importar"
 
 #. adding the import folder button
-#: ../src/libs/import.c:784
+#: ../src/libs/import.c:787
 msgid "folder..."
 msgstr "carpeta..."
 
-#: ../src/libs/import.c:788
+#: ../src/libs/import.c:791
 msgid "select a folder to import as film roll"
 msgstr "Seleccionar una carpeta para importar como carrete"
 
 #. add the rescan button
-#: ../src/libs/import.c:797
+#: ../src/libs/import.c:800
 msgid "scan for devices"
 msgstr "buscar dispositivos"
 
-#: ../src/libs/import.c:801
+#: ../src/libs/import.c:804
 msgid "scan for newly attached devices"
 msgstr "Buscar nuevos dispositivos conectados"
 
@@ -14650,64 +14665,64 @@ msgstr "Eliminar los metadatos de todas las imágenes seleccionadas"
 msgid "write metadata for selected images"
 msgstr "Establecer los metadatos en las imágenes seleccionadas"
 
-#: ../src/libs/metadata.c:746
+#: ../src/libs/metadata.c:745
 msgid "configure metadata"
 msgstr "configurar metadatos"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:788
+#: ../src/libs/metadata.c:787
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:788
+#: ../src/libs/metadata.c:787
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Atribución (CC BY)"
 
-#: ../src/libs/metadata.c:789
+#: ../src/libs/metadata.c:788
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:789
+#: ../src/libs/metadata.c:788
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Atribución-Compartir Igual (CC BY-SA)"
 
-#: ../src/libs/metadata.c:790
+#: ../src/libs/metadata.c:789
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:790
+#: ../src/libs/metadata.c:789
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Atribución-Sin Derivadas (CC BY-ND)"
 
-#: ../src/libs/metadata.c:791
+#: ../src/libs/metadata.c:790
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:791
+#: ../src/libs/metadata.c:790
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Atribución-No Comercial  (CC BY-NC)"
 
-#: ../src/libs/metadata.c:792
+#: ../src/libs/metadata.c:791
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:793
+#: ../src/libs/metadata.c:792
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Atribución-No Comercial-Compartir Igual (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:794
+#: ../src/libs/metadata.c:793
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:795
+#: ../src/libs/metadata.c:794
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Atribución-No Comercial-Sin Derivadas (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:796
+#: ../src/libs/metadata.c:795
 msgid "all rights reserved"
 msgstr "todos los derechos reservados"
 
-#: ../src/libs/metadata.c:796
+#: ../src/libs/metadata.c:795
 msgid "all rights reserved."
 msgstr "todos los derechos reservados."
 
@@ -14765,11 +14780,11 @@ msgstr "elevación"
 msgid "categories"
 msgstr "categorías"
 
-#: ../src/libs/metadata_view.c:161
+#: ../src/libs/metadata_view.c:163
 msgid "image information"
 msgstr "información de la imagen"
 
-#: ../src/libs/metadata_view.c:273
+#: ../src/libs/metadata_view.c:275
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -14778,107 +14793,107 @@ msgstr ""
 "doble clic para saltar al carrete\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:341
+#: ../src/libs/metadata_view.c:343
 msgid "unused"
 msgstr "sin usar"
 
-#: ../src/libs/metadata_view.c:342
+#: ../src/libs/metadata_view.c:344
 msgid "unused/deprecated"
 msgstr "sin usar/sin soporte"
 
-#: ../src/libs/metadata_view.c:343
+#: ../src/libs/metadata_view.c:345
 msgid "ldr"
 msgstr "ldr"
 
-#: ../src/libs/metadata_view.c:345
+#: ../src/libs/metadata_view.c:347
 msgid "hdr"
 msgstr "hdr"
 
-#: ../src/libs/metadata_view.c:346
+#: ../src/libs/metadata_view.c:348
 msgid "marked for deletion"
 msgstr "marcado para ser eliminado"
 
-#: ../src/libs/metadata_view.c:347
+#: ../src/libs/metadata_view.c:349
 msgid "auto-applying presets applied"
 msgstr "ajustes automáticos establecidos"
 
-#: ../src/libs/metadata_view.c:348
+#: ../src/libs/metadata_view.c:350
 msgid "legacy flag. set for all new images"
 msgstr "Banderas (antiguo). Asignadas a todas las imágenes nuevas"
 
-#: ../src/libs/metadata_view.c:350
+#: ../src/libs/metadata_view.c:352
 msgid "has .txt"
 msgstr "tiene .txt"
 
-#: ../src/libs/metadata_view.c:351
+#: ../src/libs/metadata_view.c:353
 msgid "has .wav"
 msgstr "tiene .wav"
 
-#: ../src/libs/metadata_view.c:363
+#: ../src/libs/metadata_view.c:365
 msgid "image rejected"
 msgstr "imagen rechazada"
 
-#: ../src/libs/metadata_view.c:368
+#: ../src/libs/metadata_view.c:370
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
 msgstr[0] "la imagen tiene %d estrella"
 msgstr[1] "la imagen tiene %d estrellas"
 
-#: ../src/libs/metadata_view.c:448 ../src/libs/snapshots.c:466
+#: ../src/libs/metadata_view.c:450 ../src/libs/snapshots.c:466
 msgid "unknown"
 msgstr "desconocido"
 
-#: ../src/libs/metadata_view.c:449
+#: ../src/libs/metadata_view.c:451
 msgid "tiff"
 msgstr "tiff"
 
-#: ../src/libs/metadata_view.c:450
+#: ../src/libs/metadata_view.c:452
 msgid "png"
 msgstr "png"
 
-#: ../src/libs/metadata_view.c:451
+#: ../src/libs/metadata_view.c:453
 msgid "j2k"
 msgstr "j2k"
 
-#: ../src/libs/metadata_view.c:452
+#: ../src/libs/metadata_view.c:454
 msgid "jpeg"
 msgstr "jpeg"
 
-#: ../src/libs/metadata_view.c:453
+#: ../src/libs/metadata_view.c:455
 msgid "exr"
 msgstr "exr"
 
-#: ../src/libs/metadata_view.c:454
+#: ../src/libs/metadata_view.c:456
 msgid "rgbe"
 msgstr "rgbe"
 
-#: ../src/libs/metadata_view.c:455
+#: ../src/libs/metadata_view.c:457
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/libs/metadata_view.c:456
+#: ../src/libs/metadata_view.c:458
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
-#: ../src/libs/metadata_view.c:457
+#: ../src/libs/metadata_view.c:459
 msgid "rawspeed"
 msgstr "velocidad de disparo"
 
-#: ../src/libs/metadata_view.c:458
+#: ../src/libs/metadata_view.c:460
 msgid "netpnm"
 msgstr "netpnm"
 
-#: ../src/libs/metadata_view.c:459
+#: ../src/libs/metadata_view.c:461
 msgid "avif"
 msgstr "avif"
 
-#: ../src/libs/metadata_view.c:464
+#: ../src/libs/metadata_view.c:466
 #, c-format
 msgid "loader: %s"
 msgstr "cargando: %s"
 
-#: ../src/libs/metadata_view.c:766
+#: ../src/libs/metadata_view.c:768
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "saltar al carrete"
@@ -14929,15 +14944,15 @@ msgstr "Buscar módulos por nombre o etiqueta"
 msgid "clear text"
 msgstr "Borrar texto"
 
-#: ../src/libs/modulelist.c:56
+#: ../src/libs/modulelist.c:59
 msgid "more modules"
 msgstr "más módulos"
 
-#: ../src/libs/modulelist.c:359
+#: ../src/libs/modulelist.c:383
 msgid "subset: no module"
 msgstr "subconjunto: ningún módulo"
 
-#: ../src/libs/modulelist.c:360
+#: ../src/libs/modulelist.c:384
 msgid "subset: all modules"
 msgstr "subconjunto: todos los modulos"
 
@@ -14947,7 +14962,7 @@ msgstr "subconjunto: todos los modulos"
 #. tones
 #. colors
 #. local contrast / sharpness
-#: ../src/libs/modulelist.c:375
+#: ../src/libs/modulelist.c:399
 msgid "subset: default modules"
 msgstr "subconjunto: módulos por defecto"
 
@@ -14963,7 +14978,7 @@ msgstr "subconjunto: módulos por defecto"
 #. colors
 #. sharpness
 #. image reconstruction
-#: ../src/libs/modulelist.c:391
+#: ../src/libs/modulelist.c:415
 msgid "workspace: all-purpose"
 msgstr "espacio de trabajo: polivalente / todo uso"
 
@@ -14982,7 +14997,7 @@ msgstr "espacio de trabajo: polivalente / todo uso"
 #. workspace addings
 #. colors
 #. HDR reconstruction - tones
-#: ../src/libs/modulelist.c:410
+#: ../src/libs/modulelist.c:434
 msgid "workspace: landscape & HDR"
 msgstr "espacio de trabajo: paisaje y HDR"
 
@@ -15000,7 +15015,7 @@ msgstr "espacio de trabajo: paisaje y HDR"
 #. image reconstruction
 #. workspace addings
 #. perspective and spot removal
-#: ../src/libs/modulelist.c:429
+#: ../src/libs/modulelist.c:453
 msgid "workspace: architecture & streets"
 msgstr "espacio de trabajo: arquitectura y calles"
 
@@ -15019,7 +15034,7 @@ msgstr "espacio de trabajo: arquitectura y calles"
 #. workspace addings
 #. colors
 #. skin retouch
-#: ../src/libs/modulelist.c:449
+#: ../src/libs/modulelist.c:473
 msgid "workspace: portrait & beauty"
 msgstr "espacio de trabajo: retrato y belleza"
 
@@ -15037,15 +15052,15 @@ msgstr "espacio de trabajo: retrato y belleza"
 #. image reconstruction
 #. workspace addings
 #. extra denoising methods
-#: ../src/libs/modulelist.c:468
+#: ../src/libs/modulelist.c:492
 msgid "workspace: lowlight & high ISO"
 msgstr "espacio de trabajo: baja luminosidad e ISO alto"
 
-#: ../src/libs/modulelist.c:476
+#: ../src/libs/modulelist.c:500
 msgid "subset: creative modules only"
 msgstr "subconjunto: sólo módulos creativos"
 
-#: ../src/libs/modulelist.c:486
+#: ../src/libs/modulelist.c:510
 msgid "subset: technical modules only"
 msgstr "subconjunto: sólo módulos técnicos"
 
@@ -15928,124 +15943,124 @@ msgstr "preferencias"
 
 #. we write the label with the size categorie
 #: ../src/libs/tools/global_toolbox.c:120
-#: ../src/libs/tools/global_toolbox.c:181
+#: ../src/libs/tools/global_toolbox.c:209
 msgid "overlay mode for size"
 msgstr "modo de superposición para el tamaño"
 
-#: ../src/libs/tools/global_toolbox.c:158
-#: ../src/libs/tools/global_toolbox.c:246
+#: ../src/libs/tools/global_toolbox.c:184
+#: ../src/libs/tools/global_toolbox.c:274
 msgid "expand grouped images"
 msgstr "Desplegar imágenes agrupadas"
 
-#: ../src/libs/tools/global_toolbox.c:160
-#: ../src/libs/tools/global_toolbox.c:248
+#: ../src/libs/tools/global_toolbox.c:186
+#: ../src/libs/tools/global_toolbox.c:276
 msgid "collapse grouped images"
 msgstr "Plegar imágenes agrupadas"
 
-#: ../src/libs/tools/global_toolbox.c:167
+#: ../src/libs/tools/global_toolbox.c:193
 msgid "click to change the type of overlays shown on thumbnails"
 msgstr ""
 "Pulse para cambiar el tipo de superposición que se muestra en las miniaturas"
 
-#: ../src/libs/tools/global_toolbox.c:184
+#: ../src/libs/tools/global_toolbox.c:212
 msgid "no overlays"
 msgstr "sin superposición"
 
-#: ../src/libs/tools/global_toolbox.c:188
+#: ../src/libs/tools/global_toolbox.c:216
 msgid "overlays on mouse hover"
 msgstr "superposición al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:192
+#: ../src/libs/tools/global_toolbox.c:220
 msgid "extended overlays on mouse hover"
 msgstr "superposición ampliada al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:195
+#: ../src/libs/tools/global_toolbox.c:223
 msgid "permanent overlays"
 msgstr "superposición permanente"
 
-#: ../src/libs/tools/global_toolbox.c:199
+#: ../src/libs/tools/global_toolbox.c:227
 msgid "permanent extended overlays"
 msgstr "superposición permanente ampliada"
 
-#: ../src/libs/tools/global_toolbox.c:203
+#: ../src/libs/tools/global_toolbox.c:231
 msgid "permanent overlays extended on mouse hover"
 msgstr "superposición ampliada permanente al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:207
+#: ../src/libs/tools/global_toolbox.c:235
 msgid "overlays block on mouse hover"
 msgstr "información superpuesta al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:214
+#: ../src/libs/tools/global_toolbox.c:242
 msgid "enable this, then click on a control element to see its online help"
 msgstr ""
 "Activar, luego pulsar sobre un elemento de control para visitar la ayuda en "
 "línea"
 
-#: ../src/libs/tools/global_toolbox.c:224
+#: ../src/libs/tools/global_toolbox.c:252
 msgid "show global preferences"
 msgstr "Mostrar preferencias globales"
 
-#: ../src/libs/tools/global_toolbox.c:319
+#: ../src/libs/tools/global_toolbox.c:347
 msgid "do you want to access https://darktable.gitlab.io/doc/?"
 msgstr "¿Desea acceder a https://darktable.gitlab.io/doc/?"
 
-#: ../src/libs/tools/global_toolbox.c:324
+#: ../src/libs/tools/global_toolbox.c:352
 msgid "access the online usermanual?"
 msgstr "¿Desea acceder al manual de usuario en línea?"
 
-#: ../src/libs/tools/global_toolbox.c:367
+#: ../src/libs/tools/global_toolbox.c:395
 msgid "help url opened in web browser"
 msgstr "URL de ayuda abierta en el navegador"
 
-#: ../src/libs/tools/global_toolbox.c:371
+#: ../src/libs/tools/global_toolbox.c:399
 msgid "error while opening help url in web browser"
 msgstr "Error al abrir el enlace de ayuda en el navegador"
 
-#: ../src/libs/tools/global_toolbox.c:382
+#: ../src/libs/tools/global_toolbox.c:410
 msgid "there is no help available for this element"
 msgstr "Sin ayuda disponible para este elemento"
 
-#: ../src/libs/tools/global_toolbox.c:424
+#: ../src/libs/tools/global_toolbox.c:452
 msgctxt "accel"
 msgid "grouping"
 msgstr "agrupar"
 
-#: ../src/libs/tools/global_toolbox.c:425
+#: ../src/libs/tools/global_toolbox.c:453
 msgctxt "accel"
 msgid "preferences"
 msgstr "preferencias"
 
-#: ../src/libs/tools/global_toolbox.c:427
+#: ../src/libs/tools/global_toolbox.c:455
 msgctxt "accel"
 msgid "no overlays"
 msgstr "sin superposiciones"
 
-#: ../src/libs/tools/global_toolbox.c:428
+#: ../src/libs/tools/global_toolbox.c:456
 msgctxt "accel"
 msgid "overlays on mouse hover"
 msgstr "superposición al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:429
+#: ../src/libs/tools/global_toolbox.c:457
 msgctxt "accel"
 msgid "extended overlays on mouse hover"
 msgstr "superposición ampliada al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:430
+#: ../src/libs/tools/global_toolbox.c:458
 msgctxt "accel"
 msgid "permanent overlays"
 msgstr "superposición permanente"
 
-#: ../src/libs/tools/global_toolbox.c:431
+#: ../src/libs/tools/global_toolbox.c:459
 msgctxt "accel"
 msgid "permanent extended overlays"
 msgstr "superposición permanente ampliada"
 
-#: ../src/libs/tools/global_toolbox.c:432
+#: ../src/libs/tools/global_toolbox.c:460
 msgctxt "accel"
 msgid "permanent overlays extended on mouse hover"
 msgstr "superposición ampliada permanente al pasar el ratón"
 
-#: ../src/libs/tools/global_toolbox.c:433
+#: ../src/libs/tools/global_toolbox.c:461
 msgctxt "accel"
 msgid "overlays block on mouse hover"
 msgstr "información superpuesta al pasar el ratón"
@@ -17731,10 +17746,6 @@ msgstr "Acción"
 
 #~ msgid "local HDD"
 #~ msgstr "hdd local"
-
-#~ msgctxt "accel"
-#~ msgid "histogram source"
-#~ msgstr "fuente de histograma"
 
 #~ msgid "almost no clipping"
 #~ msgstr "casi sin recorte"
