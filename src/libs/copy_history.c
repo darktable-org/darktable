@@ -40,7 +40,6 @@ DT_MODULE(1)
 
 typedef struct dt_lib_copy_history_t
 {
-  int32_t imageid;
   GtkWidget *pastemode;
   GtkButton *paste, *paste_parts;
   GtkWidget *copy_button, *delete_button, *load_button, *write_button;
@@ -241,17 +240,32 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
+static void _update(dt_lib_module_t *self)
+{
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+
+  const gboolean has_paste = darktable.view_manager->copy_paste.copied_imageid > 0;
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->paste), has_paste);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), has_paste);
+}
+
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int mode = dt_bauhaus_combobox_get(widget);
+  const int mode = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
+
+  _update((dt_lib_module_t *)user_data);
 }
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
-  d->imageid = -1;
-  gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
+  _update(self);
+}
+
+static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
+{
+  _update(self);
 }
 
 int position()
@@ -300,6 +314,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste), 3, line++, 3, 1);
 
+  const gboolean has_paste = darktable.view_manager->copy_paste.copied_imageid > 0;
+  gtk_widget_set_sensitive(GTK_WIDGET(d->paste), has_paste);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), has_paste);
+
   d->compress_button = GTK_BUTTON(gtk_button_new_with_label(_("compress history")));
   ellipsize_button(d->compress_button);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->compress_button), _("compress history stack of\nall selected images"));
@@ -337,6 +355,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, button, 3, line, 3, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
 
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
