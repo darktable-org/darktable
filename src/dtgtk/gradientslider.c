@@ -521,10 +521,8 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
 
   // Begin cairo drawing
   // First build the cairo gradient and then fill the gradient
-  //float gheight = height / 2.0f;
   float gwidth = width - 2 * margins;
   float y1 = 0.25f * height;
-  //float y2 = 0.75f * height;
   GList *current = NULL;
   cairo_pattern_t *gradient = NULL;
   if((current = g_list_first(gslider->colors)) != NULL)
