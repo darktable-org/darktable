@@ -146,7 +146,7 @@ Optional dependencies minimal version:
 * LLVM 3.9 *(for OpenCL checks at compilation time)*
 * OpenCL 1.2 *(for GPU-accelerated computing)*
 * Lua 5.3 *(for plugins and extensions scripting)*
-* libavif 0.6.0 *(for HEIC/HEIF/AVIF exports)*
+* libavif 0.7.2 *(for AVIF import/export)*
 * WebP 0.3.0 *(for WebP exports)*
 
 Optional dependencies with no version requirement:
