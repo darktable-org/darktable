@@ -26,7 +26,7 @@
 
 static void _import_metadata_changed(GtkWidget *widget, GtkComboBox *box)
 {
-  gtk_combo_box_set_active(box, FALSE);
+  gtk_combo_box_set_active(box, -1);
 }
 
 static void _apply_metadata_toggled(GtkWidget *widget, gpointer user_data)
