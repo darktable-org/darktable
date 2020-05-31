@@ -347,17 +347,22 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   module->get_introspection = default_get_introspection;
   if(!g_module_symbol(module->module, "introspection_init", (gpointer) & (module->introspection_init)))
     module->introspection_init = NULL;
-  if(module->introspection_init && !module->introspection_init(module, DT_INTROSPECTION_VERSION))
+  if(module->introspection_init)
   {
-    // set the introspection related fields in module
-    module->have_introspection = TRUE;
-    if(!g_module_symbol(module->module, "get_p", (gpointer) & (module->get_p))) goto error;
-    if(!g_module_symbol(module->module, "get_f", (gpointer) & (module->get_f))) goto error;
-    if(!g_module_symbol(module->module, "get_introspection", (gpointer) & (module->get_introspection)))
-      goto error;
-    if(!g_module_symbol(module->module, "get_introspection_linear",
-                        (gpointer) & (module->get_introspection_linear)))
-      goto error;
+    if(!module->introspection_init(module, DT_INTROSPECTION_VERSION))
+    {
+      // set the introspection related fields in module
+      module->have_introspection = TRUE;
+      if(!g_module_symbol(module->module, "get_p", (gpointer) & (module->get_p))) goto error;
+      if(!g_module_symbol(module->module, "get_f", (gpointer) & (module->get_f))) goto error;
+      if(!g_module_symbol(module->module, "get_introspection", (gpointer) & (module->get_introspection)))
+        goto error;
+      if(!g_module_symbol(module->module, "get_introspection_linear",
+                          (gpointer) & (module->get_introspection_linear)))
+        goto error;
+    }
+    else
+      fprintf(stderr, "[iop_load_module] failed to initialize introspection for operation `%s'\n", op);
   }
 
   if(module->init_global) module->init_global(module);

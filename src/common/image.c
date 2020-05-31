@@ -617,7 +617,7 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid)
   dt_image_orientation_t orientation = ORIENTATION_NULL;
 
   // db lookup flip params
-  if(flip && flip->get_p)
+  if(flip && flip->have_introspection && flip->get_p)
   {
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(
