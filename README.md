@@ -1,7 +1,7 @@
 [![icon](/data/pixmaps/idbutton.png?raw=true)](https://www.darktable.org/) darktable [![build status](https://travis-ci.org/darktable-org/darktable.svg?branch=master)](https://travis-ci.org/darktable-org/darktable) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/470/badge)](https://bestpractices.coreinfrastructure.org/projects/470)
 =========
 
-darktable is an open source photography workflow application and raw developer. A virtual lighttable and darkroom for photographers. It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images and enhance them.
+darktable is an open source photography workflow application and non-destructive raw developer. A virtual lighttable and darkroom for photographers. It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images, enhance them and export them on local or remote containers.
 
 [https://www.darktable.org/](https://www.darktable.org/ "darktable homepage")
 
@@ -13,7 +13,7 @@ darktable is an open source photography workflow application and raw developer. 
 2. [Installing](#installing)
    - [Latest release](#latest-release)
    - [Development snapshot](#development-snapshot)
-2. [Updating](#updating)
+2. [Updating from older versions](#updating-from-older-versions)
 3. [Getting extensions](#getting-extensions)
 4. [Building](#building)
    - [Dependencies](#dependencies)
@@ -89,8 +89,8 @@ The development snapshot is the state of the master branch at current time. It i
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
 * No precompiled packages are provided for the master branch on MacOS and Windows. See how to build it manually below.
 
-Updating
---------
+Updating from older versions
+----------------------------
 
 When updating darktable from an older release, you simply need to install
 the newest version. Files will be preserved.
@@ -101,9 +101,12 @@ be prompted with a request to either upgrade the database or to close the softwa
 
 **The migration to a newer database structure/newer release means new and old edits 
 will not be compatible anymore with older versions of darktable.** Upgrades are definitive.
-darktable automatically backs up the library database when a new major version updates it 
+Newer versions are always compatible with older edits, but newer edits are generaly 
+not compatible with older versions.
+
+darktable automatically backs up the library database when a new version upgrades it 
 (in `~/.config/darktable/library.db-pre-3.0.0` for example), so
-you can switch back to the previous release by restoring this backup if needed 
+you can revert to the previous release by restoring this backup if needed 
 (simply rename it `library.db`).
 
 If you try to open a newer database with an older software version, the parts of the editings done with new features
@@ -296,7 +299,9 @@ To use a test version of darktable without damaging your regular/stable version 
 /opt/darktable-test/bin/darktable --configdir "~/.config/darktable-test"
 ```
 
-and ensure to disable the option "write sidecar file for each image" in preferences -> storage -> XMP.
+and ensure to disable the option "write sidecar file for each image" in preferences -> storage -> XMP. This way, 
+your regular/stable version will save its configuration files in `~/.config/darktable`, as usual, and 
+the test/unstable one in `~/.config/darktable-test`, so they will not produce database conflicts.
 
 #### Regular/stable version
 
@@ -306,6 +311,7 @@ Simply lauch it from your desktop application menu, or in terminal, run `darktab
 sudo ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
 ```
 
+You may find darktable configuration files in `~/.config/darktable`.
 In case you are having crashes at startup, try lauching darktable without OpenCL with `darktable --conf opencl=FALSE`.
 
 ### Further reading
