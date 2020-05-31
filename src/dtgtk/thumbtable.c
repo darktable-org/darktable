@@ -2003,19 +2003,7 @@ void dt_thumbtable_init_accels(dt_thumbtable_t *table)
 // disconnect them if not
 void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int view)
 {
-  // we verify that thumbtable may be active for this view
-  /*if(!(view & DT_VIEW_LIGHTTABLE) && !(view & DT_VIEW_DARKROOM) && !(view & DT_VIEW_TETHERING)
-     && !(view & DT_VIEW_MAP) && !(view & DT_VIEW_PRINT))
-  {
-    // disconnect all accels
-    dt_accel_disconnect_list(table->accel_closures);
-    return;
-  }
-  else if(g_slist_length(table->accel_closures) > 1)
-  {
-    // already loaded, nothing to do !
-    return;
-  }*/
+  //disconnect all accels and reconnect if thumbtable may be active for this view
 
   dt_accel_disconnect_list(table->accel_closures);
 
