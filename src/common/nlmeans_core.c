@@ -32,15 +32,31 @@
 #include <xmmintrin.h>
 #endif
 
+#ifdef _OPENMP
+#if defined(__clang__) || __GNUC__ > 8
+# define dt_omp_shared(var, ...)  shared(var, __VA_ARGS__)
+#else
+  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
+  //  'const' variables as shared
+# define dt_omp_shared(var, ...)
+#endif
+#endif /* _OPENMP */
+
 // to avoid accumulation of rounding errors, we should do a full recomputation of the patch differences
 //   every so many rows of the image.  We'll also use that interval as the target maximum chunk size for
 //   parallelization
-// lower values reduce the accumulation of rounding errors at the cost of slightly more computation, but
-//  also improve cache sharing between threads (on the boundaries of slices), resulting in better scaling
-//  because memory bandwidth is less of a limitation.  The value of 20 is a good tradeoff between
-//  single-threaded performance and highly-threaded performance; 12 was found to be best on a 32-core
-//  third-gen Threadripper.
-#define SLICE_HEIGHT 20
+// in addition, to keep the working set within L1 cache, we need to limit the width of the chunks that
+//   are processed.  The working set uses (radius+3)*(ceil(width/4)+1) + (2*radius+3)*(ceil(width/16)+1)
+//   64-byte cache lines.  The typical x86 CPU has an L1 cache containing 256 lines, and we'll need to
+//   reserve a few for variables in the stack frame and the like.  That results in a maximal width of
+//   128 pixels for radius=2, 104 pixels for radius=3, 88 for radius=4, and 64 for radius=5 (default patch
+//   radius is 2)
+// lower values for SLICE_HEIGHT reduce the accumulation of rounding errors at the cost of more computation;
+//  to avoid excessive overhead, width*height should be at least 10000.  Note that the values specified here
+//  are targets and may be adjusted slightly to avoid having many partial chunks at the right/bottom edge
+//  of the images (width will only be reduced, height could be either reduced or increased)
+#define SLICE_WIDTH 104
+#define SLICE_HEIGHT 200
 
 // number of intermediate buffers used by OpenCL code path.  If you change this, you must also change
 //   the definition in src/iop/nlmeans.c and src/iop/denoiseprofile.c
@@ -301,17 +317,10 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   const int chunk_size = compute_slice_size(roi_out->height);
   const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
 #ifdef _OPENMP
-#if defined(__clang__) || __GNUC__ > 8
-  #define SHARED()  shared(chunk_size, num_chunks, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert)
-#else
-  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
-  #define SHARED()
-#endif
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
       dt_omp_firstprivate(patches, num_patches, scratch_buf) \
-      SHARED()                                         \
+      dt_omp_shared(chunk_size, num_chunks, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
       schedule(static)
-#undef SHARED
 #endif
   for (int chk = 0 ; chk < num_chunks; chk++)
   {
@@ -486,17 +495,10 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   const int chunk_size = compute_slice_size(roi_out->height);
   const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
 #ifdef _OPENMP
-#if defined(__clang__) || __GNUC__ > 8
-  #define SHARED()  shared(chunk_size, num_chunks, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert)
-#else
-  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
-  #define SHARED()
-#endif
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
       dt_omp_firstprivate(patches, num_patches, scratch_buf)           \
-      SHARED()                                                   \
+      dt_omp_shared(chunk_size, num_chunks, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
       schedule(static)
-#undef SHARED
 #endif
   for (int chk = 0 ; chk < num_chunks; chk++)
   {
