@@ -521,8 +521,8 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
 
   // Begin cairo drawing
   // First build the cairo gradient and then fill the gradient
-  float gheight = height / 2.0;
   float gwidth = width - 2 * margins;
+  float y1 = 0.25f * height;
   GList *current = NULL;
   cairo_pattern_t *gradient = NULL;
   if((current = g_list_first(gslider->colors)) != NULL)
@@ -541,9 +541,9 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     cairo_set_line_width(cr, 0.1);
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
     cairo_save(cr);
-    cairo_translate(cr, margins, (height - gheight) / 2.0);
+    cairo_translate(cr, margins, y1);
     cairo_set_source(cr, gradient);
-    cairo_rectangle(cr, 0, 0, gwidth, gheight);
+    cairo_rectangle(cr, 0, 0, gwidth, 2.0f * y1);
     cairo_fill(cr);
     cairo_stroke(cr);
     cairo_restore(cr);
@@ -564,13 +564,13 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
 
     cairo_set_source_rgba(cr, color.red, color.green, color.blue, 0.33);
 
-    cairo_rectangle(cr, vx_min, (height - gheight) / 2.0, fmax((float)vx_max - vx_min, 0.0f), gheight);
+    cairo_rectangle(cr, vx_min, y1, fmax((float)vx_max - vx_min, 0.0f), 2.0f * y1);
     cairo_fill(cr);
 
     cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
 
-    cairo_move_to(cr, vx_avg, (height - gheight) / 2.0);
-    cairo_line_to(cr, vx_avg, (height + gheight) / 2.0);
+    cairo_move_to(cr, vx_avg, y1);
+    cairo_line_to(cr, vx_avg, 3.0f * y1);
     cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
     cairo_set_line_width(cr, 1.0);
     cairo_stroke(cr);
@@ -587,7 +587,7 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     const int l = indirect[k];
     const int vx = _scale_to_screen(widget, gslider->position[l]);
     const int mk = gslider->marker[l];
-    const int sz = (mk & (1 << 3)) ? 13 : 10; // big or small marker?
+    const float sz = DT_PIXEL_APPLY_DPI((mk & (1 << 3)) ? 13.0 : 10.0); // big or small marker?
 
     // FIXME: enable this when enter/leave event is working again
     if(l == selected /*&& (gslider->is_entered == TRUE || gslider->is_dragging == TRUE)*/)
@@ -605,26 +605,17 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     if(mk & 0x04) /* upper arrow */
     {
       if(mk & 0x01) /* filled */
-        dtgtk_cairo_paint_solid_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5),
-                                         sz < 10 ? DT_PIXEL_APPLY_DPI(1) : DT_PIXEL_APPLY_DPI(-2),
-                                         DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_DOWN, NULL);
+        dtgtk_cairo_paint_solid_triangle(cr, (vx - 0.5f * sz), y1 - 0.55f * sz, sz, sz, CPF_DIRECTION_DOWN, NULL);
       else
-        dtgtk_cairo_paint_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5),
-                                   sz < 10 ? DT_PIXEL_APPLY_DPI(1) : DT_PIXEL_APPLY_DPI(-2),
-                                   DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_DOWN, NULL);
+        dtgtk_cairo_paint_triangle(cr, (vx - 0.5f * sz), y1 - 0.55f * sz, sz, sz, CPF_DIRECTION_DOWN, NULL);
     }
 
     if(mk & 0x02) /* lower arrow */
     {
       if(mk & 0x01) /* filled */
-        dtgtk_cairo_paint_solid_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5),
-                                         sz < 10 ? height - DT_PIXEL_APPLY_DPI(6) : height
-                                                                                    - DT_PIXEL_APPLY_DPI(11),
-                                         DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_UP, NULL);
+        dtgtk_cairo_paint_solid_triangle(cr, (vx - 0.5f * sz), 3.0f * y1 - 0.45f * sz, sz, sz, CPF_DIRECTION_UP, NULL);
       else
-        dtgtk_cairo_paint_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5),
-                                   sz < 10 ? height - DT_PIXEL_APPLY_DPI(6) : height - DT_PIXEL_APPLY_DPI(11),
-                                   DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_UP, NULL);
+        dtgtk_cairo_paint_triangle(cr, (vx - 0.5f * sz), 3.0f * y1 - 0.45f * sz, sz, sz, CPF_DIRECTION_UP, NULL);
     }
   }
 
