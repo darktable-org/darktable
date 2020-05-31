@@ -457,7 +457,7 @@ overshoot.right
 #blending-box #show_mask_button,
 #blending-box #keep-active
 {
-  min-height: 1.2em;
+  min-height: 1.3em;
   min-width: 1.3em;
   border: 0;
 }
@@ -466,7 +466,7 @@ overshoot.right
 #iop-plugin-ui-main #non-flat,
 #lib-plugin-ui-main #non-flat
 {
-  min-height: 1.2em;
+  min-height: 1.3em;
   min-width: 1.3em;
   padding: 1px;
 }
