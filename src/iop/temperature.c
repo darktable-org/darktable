@@ -1280,7 +1280,7 @@ void gui_update(struct dt_iop_module_t *self)
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle));
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+                               CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
 
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), (found && gtk_widget_get_sensitive(g->finetune)));
 
@@ -1833,7 +1833,7 @@ static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer us
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle));
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+                               CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
   g->expand_coeffs = active;
   dt_conf_set_bool("plugins/darkroom/temperature/expand_coefficients", active);
 }
@@ -1992,9 +1992,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   // create color picker to be able to send its signal when spot selected
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
-  g->btn_asshot = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g->btn_user = dtgtk_togglebutton_new(dtgtk_cairo_paint_star, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g->btn_d65 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g->btn_asshot = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+  g->btn_user = dtgtk_togglebutton_new(dtgtk_cairo_paint_star, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+  g->btn_d65 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
   gtk_grid_attach(grid, g->colorpicker, 1, 1, 1, 1);
   gtk_grid_attach(grid, g->btn_asshot, 2, 1, 1, 1);
   gtk_grid_attach(grid, g->btn_user, 1, 2, 1, 1);
@@ -2017,7 +2017,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *destdisp = dt_ui_section_label_new(_("channels coefficients"));
 
-  g->coeffs_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  g->coeffs_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), g->expand_coeffs);
   gtk_widget_set_name(GTK_WIDGET(g->coeffs_toggle), "control-button");
 
@@ -2100,7 +2100,7 @@ void gui_reset(struct dt_iop_module_t *self)
 
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), g->expand_coeffs);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (g->expand_coeffs?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+                               CPF_STYLE_BOX | (g->expand_coeffs?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), g->expand_coeffs);
 
   gui_sliders_update(self);
