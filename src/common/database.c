@@ -2438,8 +2438,11 @@ dt_database_t *dt_database_init(const char *alternative, const gboolean load_dat
   sqlite3_initialize();
 
 start:
-  /* migrate default database location to new default */
-  _database_migrate_to_xdg_structure();
+  if(alternative == NULL)
+  {
+    /* migrate default database location to new default */
+    _database_migrate_to_xdg_structure();
+  }
 
   /* delete old mipmaps files */
   _database_delete_mipmaps_files();
@@ -2825,15 +2828,15 @@ static void _database_migrate_to_xdg_structure()
 
   if(conf_db && conf_db[0] != '/')
   {
-    char *homedir = getenv("HOME");
+    const char *homedir = getenv("HOME");
     snprintf(dbfilename, sizeof(dbfilename), "%s/%s", homedir, conf_db);
     if(g_file_test(dbfilename, G_FILE_TEST_EXISTS))
     {
-      fprintf(stderr, "[init] moving database into new XDG directory structure\n");
       char destdbname[PATH_MAX] = { 0 };
       snprintf(destdbname, sizeof(dbfilename), "%s/%s", datadir, "library.db");
       if(!g_file_test(destdbname, G_FILE_TEST_EXISTS))
       {
+        fprintf(stderr, "[init] moving database into new XDG directory structure\n");
         rename(dbfilename, destdbname);
         dt_conf_set_string("database", "library.db");
       }
