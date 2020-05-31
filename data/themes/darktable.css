@@ -273,7 +273,7 @@ button,
 /* default extra margin for icons optical alignment */
 #button-canvas
 {
-  margin: 12px; /* not real pixels, this is used as a percent extra space */
+  margin: 5px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Default text fields and text boxes */
@@ -406,6 +406,12 @@ overshoot.right
   font-size: .7em;
 }
 
+#header-toolbar #button-canvas,
+#footer-toolbar #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
 #dt-icon
 {
   border-radius: 2px;
@@ -440,23 +446,29 @@ overshoot.right
 }
 
 /* icon buttons in modules main body */
+
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
+#iop-plugin-ui-main #keep-active,
 #lib-plugin-ui-main #dt-button,
-#lib-plugin-ui-main #dt-toggle-button
+#lib-plugin-ui-main #dt-toggle-button,
+#blending-box #dt-button,
+#blending-box #dt-toggle-button,
+#blending-box #show_mask_button,
+#blending-box #keep-active
 {
   min-height: 1.3em;
   min-width: 1.3em;
-  padding: 0;
+  border: 0;
 }
 
-/* adjust icon extra room for buttons in modules main body */
-#iop-plugin-ui-main #dt-button #button-canvas,
-#iop-plugin-ui-main #dt-toggle-button #button-canvas,
-#lib-plugin-ui-main #dt-button #button-canvas,
-#lib-plugin-ui-main #dt-toggle-button #button-canvas
+/* exception: non-flat buttons */
+#iop-plugin-ui-main #non-flat,
+#lib-plugin-ui-main #non-flat
 {
-  margin: 8px; /* not real pixels, this is used as a percent extra space */
+  min-height: 1.3em;
+  min-width: 1.3em;
+  padding: 1px;
 }
 
 /* size of control-buttons */
@@ -472,6 +484,11 @@ overshoot.right
   min-width: 0.9em;
   padding: 0.15em;
   margin: 0.15em;
+}
+
+#control-button #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -507,17 +524,26 @@ overshoot.right
 #module-enable-button,
 #module-instance-button,
 #module-enable-button,
-#module-collapse-button
+#module-collapse-button,
+#module-always-disabled-button
 {
   /* background-color: transparent; this doesn't work */
   min-height: 1.15em;
   min-width: 1.15em;
   padding: 0.06em;
+  border: 0;
+  margin: 0 1px 0 1px
 }
 
 #module-always-enabled-button /* button on always activated module */
 {
   color: @plugin_label_color;
+  border: 0;
+}
+
+#module-header #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Entries options in lighttable */
@@ -821,14 +847,21 @@ notebook tabs,
   min-width: 2em;
   margin: 0;
   padding: 0.1em;
+  border: 0;
+}
+
+#modules-tabs #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
 #blending-tabs button
 {
   font-size: 0.8em;
-  min-height: 1.75em;
-  min-width: 1.75em;
-  padding: 0;
+  min-height: 1.55em;
+  min-width: 1.55em;
+  padding: 0.2em;
+  border: 0;
 }
 
 notebook tab
@@ -1252,13 +1285,15 @@ cell:selected
 #left #history-switch,
 #left #history-switch-enabled,
 #left #history-switch-always-enabled,
-#left #history-switch-default-enabled
+#left #history-switch-default-enabled,
+#left #history-switch-deprecated
 {
   font-size: 0.6em;
-  min-width: 1.4em;
-  min-height: 1.33em;
-  padding: 0;
+  min-width: 1.2em;
+  min-height: 1.2em;
+  padding: 0.15em;
   margin: 1px 2px 2px 2px; /* align switches with create style icon */
+  border: 0;
 }
 
 #left #history-switch-deprecated
@@ -1307,11 +1342,7 @@ cell:selected
 {
   min-height: 2em;
   min-width: 1.7em;
-}
-
-#color-picker-button #button-canvas
-{
-  margin: 5px; /* not real pixels, this is used as a percent extra space */
+  border: 0;
 }
 
 /* Module in darkroom left panel */
@@ -1333,16 +1364,22 @@ cell:selected
 #picker-black
 {
   color: @grey_00;
+  min-height: 1.3em;
+  border: 0;
 }
 
 #picker-grey
 {
   color: @grey_50;
+  min-height: 1.3em;
+  border: 0;
 }
 
 #picker-white
 {
   color: @grey_100;
+  min-height: 1.3em;
+  border: 0;
 }
 
 /*------------------------------------------------------------------
