@@ -1,5 +1,5 @@
 #  This file is part of darktable,
-#  copyright (c) 2013-2014 tobias ellinghaus.
+#  copyright (c) 2013-2020 tobias ellinghaus.
 #
 #  darktable is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ use warnings;
 
 use Exporter;
 our @ISA = 'Exporter';
-our @EXPORT = qw( @token @comments
+our @EXPORT = qw( @token %comments
                   $P_LINENO $P_FILENAME $P_TYPE $P_VALUE
                   $T_NONE $T_IDENT $T_KEYWORD $T_INTEGER_LITERAL $T_OPERATOR
                   $K_UNSIGNED $K_SIGNED $K_GBOOLEAN $K_CHAR $K_INT8 $K_UINT8 $K_SHORT $K_USHORT $K_INT $K_UINT $K_LONG $K_ULONG $K_FLOAT $K_DOUBLE $K_COMPLEX $K_TYPEDEF $K_STRUCT $K_UNION $K_CONST $K_VOLATILE $K_STATIC $K_ENUM $K_VOID $K_DT_MODULE_INTROSPECTION
@@ -41,7 +41,7 @@ my $file;
 our $folder = "";
 my @tokens;
 our @token;
-our @comments;
+our %comments;
 
 my @code;
 
@@ -219,7 +219,7 @@ sub handle_comment
   }
   my $comment = join('', @buf);
 
-  push(@{$comments[$_lineno]{raw}}, $comment);
+  push(@{$comments{$file}[$_lineno]{raw}}, $comment);
 }
 
 sub handle_include
