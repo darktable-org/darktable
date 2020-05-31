@@ -1958,8 +1958,9 @@ static gboolean _accel_select_untouched(GtkAccelGroup *accel_group, GObject *acc
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table)
 {
-  dt_view_type_flags_t views
+  const dt_view_type_flags_t views
       = DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
+  const dt_view_type_flags_t views_nolt = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
   /* setup rating key accelerators */
   dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 0"), views, GDK_KEY_0, 0);
   dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 1"), views, GDK_KEY_1, 0);
@@ -1970,13 +1971,13 @@ void dt_thumbtable_init_accels(dt_thumbtable_t *table)
   dt_accel_register_manual(NC_("accel", "views/thumbtable/rate reject"), views, GDK_KEY_r, 0);
 
   /* setup history key accelerators */
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history"), views, GDK_KEY_c, GDK_CONTROL_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history parts"), views, GDK_KEY_c,
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history"), views_nolt, GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history parts"), views_nolt, GDK_KEY_c,
                            GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history"), views, GDK_KEY_v, GDK_CONTROL_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history parts"), views, GDK_KEY_v,
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history"), views_nolt, GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history parts"), views_nolt, GDK_KEY_v,
                            GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/discard history"), views, 0, 0);
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/discard history"), views_nolt, 0, 0);
 
   dt_accel_register_manual(NC_("accel", "views/thumbtable/duplicate image"), views, GDK_KEY_d, GDK_CONTROL_MASK);
   dt_accel_register_manual(NC_("accel", "views/thumbtable/duplicate image virgin"), views, GDK_KEY_d,
