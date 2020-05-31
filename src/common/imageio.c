@@ -796,6 +796,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   int processed_width;
   int processed_height;
 
+  gboolean corrected = FALSE;
   float origin[] = { 0.0f, 0.0f };
 
   if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, origin, 1))
@@ -814,6 +815,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     if((ceil((double)processed_width / scale) + origin[0] > pipe.iwidth) ||
        (ceil((double)processed_height / scale) + origin[1] > pipe.iheight))
     {
+      corrected = TRUE;
       // must either change scale or crop right/bottom border by one
       if(exact_size)
       {
@@ -827,9 +829,9 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       }
     }
 
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] pipe %ix%i, range %ix%i --> exact %i, upscale %i, scale %.9f, size %ix%i\n",
+    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] pipe %ix%i, range %ix%i --> exact %i, upscale %i, corrected %i, scale %.9f, size %ix%i\n",
            pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
-           exact_size, upscale, scale, processed_width, processed_height);
+           exact_size, upscale, corrected, scale, processed_width, processed_height);
   }
   else
   {
