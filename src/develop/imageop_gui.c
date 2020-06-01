@@ -84,7 +84,7 @@ static void generic_combobox_callback(GtkWidget *combobox, dt_module_param_t *da
   }
 }
 
-GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param)
+GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
   dt_introspection_field_t *f = self->so->get_f(param);
@@ -162,7 +162,7 @@ GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const ch
   return slider;
 }
 
-GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const char *param)
+GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *param)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
   dt_introspection_field_t *f = self->so->get_f(param);
@@ -197,8 +197,7 @@ GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const 
     {
      for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values; iter->name; iter++)
       {
-//        This is dependent on perl code generating introspection definitions that @houz is finishing        
-//        dt_bauhaus_combobox_add(combobox, gettext(iter->description));
+        dt_bauhaus_combobox_add(combobox, gettext(iter->description));
       }
     }
   }

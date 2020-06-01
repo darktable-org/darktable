@@ -20,9 +20,9 @@
 
 #include "develop/imageop.h"
 
-GtkWidget *dt_bauhaus_slider_new_from_params_box(dt_iop_module_t *self, const char *param);
+GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param);
 
-GtkWidget *dt_bauhaus_combobox_new_from_params_box(dt_iop_module_t *self, const char *param);
+GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *param);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
