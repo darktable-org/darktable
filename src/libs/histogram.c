@@ -903,7 +903,8 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_histogram_configure_callback), self);
 
   /* set size of navigation draw area */
-  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(175.0));
+  const float histheight = dt_conf_get_int("histogram_height") * 1.0f;
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
