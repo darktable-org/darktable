@@ -837,9 +837,9 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   {
     processed_width = floor(scale * pipe.processed_width);
     processed_height = floor(scale * pipe.processed_height);
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] (direct) pipe %ix%i, range %ix%i --> size %ix%i / %ix%i\n",
-           pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
-           processed_width, processed_height, width, height);
+    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] (direct) imgid %d, pipe %ix%i, range %ix%i --> size %ix%i / %ix%i\n",
+             imgid, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
+             processed_width, processed_height, width, height);
   }
 
   const int bpp = format->bpp(format_params);
