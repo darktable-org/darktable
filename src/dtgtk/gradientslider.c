@@ -642,6 +642,8 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new(gint positions)
   for(int k = 0; k < positions; k++) gslider->position[k] = 0.0;
   for(int k = 0; k < positions; k++) gslider->resetvalue[k] = 0.0;
   for(int k = 0; k < positions; k++) gslider->marker[k] = GRADIENT_SLIDER_MARKER_LOWER_FILLED;
+
+  gtk_widget_set_name(GTK_WIDGET(gslider), "gradient-slider");
   return (GtkWidget *)gslider;
 }
 
@@ -676,7 +678,7 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkRGBA start, GdkRGB
   memcpy(&gc->color, &end, sizeof(GdkRGBA));
   gslider->colors = g_list_append(gslider->colors, gc);
 
-
+  gtk_widget_set_name(GTK_WIDGET(gslider), "gradient-slider");
   return (GtkWidget *)gslider;
 }
 
