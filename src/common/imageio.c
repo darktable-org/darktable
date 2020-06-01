@@ -786,15 +786,12 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   }
 
   const double max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
-  double scale = fmin((double)width >  0
-                      ? fmin((double)width / (double)pipe.processed_width, max_scale)
-                      : max_scale,
-                      (double)height > 0
-                      ? fmin((double)height / (double)pipe.processed_height, max_scale)
-                      : max_scale);
+  const double scalex = width > 0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale;
+  const double scaley = height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale;
+  double scale = fmin(scalex, scaley);
 
-  int processed_width;
-  int processed_height;
+  int processed_width = 0;
+  int processed_height = 0;
 
   gboolean corrected = FALSE;
   float origin[] = { 0.0f, 0.0f };
