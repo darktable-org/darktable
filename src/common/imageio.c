@@ -770,11 +770,11 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
      (pipe.processed_height < (ht - img->crop_y - img->crop_height)));
 
   const gboolean exact_size = (
-      iscropped ||
-      upscale ||
-      (format_params->max_width != 0) ||
-      (format_params->max_height != 0) ||
-      thumbnail_export);
+    !thumbnail_export
+    && (iscropped
+        || upscale
+        || (format_params->max_width != 0)
+        || (format_params->max_height != 0)));
 
   int width = format_params->max_width > 0 ? format_params->max_width : 0;
   int height = format_params->max_height > 0 ? format_params->max_height : 0;
@@ -814,7 +814,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     {
       corrected = TRUE;
       // must either change scale or crop right/bottom border by one
-      if(exact_size)
+      if(exact_size && !thumbnail_export)
       {
         scale = fmin(fmin((double)(width-1) / (double)(pipe.processed_width), max_scale),
                      fmin((double)(height-1) / (double)(pipe.processed_height), max_scale));
