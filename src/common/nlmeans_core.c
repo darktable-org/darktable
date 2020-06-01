@@ -589,7 +589,7 @@ fprintf(stderr,"%d x %d image, chk height=%d width=%d\n",roi_in->width, roi_in->
 #ifdef _OPENMP
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
   dt_omp_firstprivate(patches, num_patches, scratch_buf, chk_height, chk_width, radius) \
-  dt_omp_shared(chunk_size, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
+  dt_omp_shared(params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
       schedule(static) \
       collapse(2)
 #endif
