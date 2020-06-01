@@ -61,7 +61,7 @@
 
 // try to speed up processing by caching pixel differences?  If cached, they won't need to be computed a second
 // time when sliding the patch window away from the pixel.  Seems to be slower than recomputing for SSE.
-#define CACHE_PIXDIFFS_SCALAR
+//#define CACHE_PIXDIFFS_SCALAR
 //#define CACHE_PIXDIFFS_SSE
 
 // number of intermediate buffers used by OpenCL code path.  If you change this, you must also change
