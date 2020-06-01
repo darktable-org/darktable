@@ -22,6 +22,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# make sure parsed alias will be expanded
+shopt -s expand_aliases
+
 . "$(dirname "$0")/common.sh"
 
 if pgrep -x "darktable" > /dev/null ; then
