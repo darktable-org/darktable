@@ -829,9 +829,9 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       }
     }
 
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] pipe %ix%i, range %ix%i --> exact %i, upscale %i, corrected %i, scale %.9f, size %ix%i\n",
-           pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
-           exact_size, upscale, corrected, scale, processed_width, processed_height);
+    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] imgid %d, pipe %ix%i, range %ix%i --> exact %i, upscale %i, corrected %i, scale %.9f, size %ix%i\n",
+             imgid, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
+             exact_size, upscale, corrected, scale, processed_width, processed_height);
   }
   else
   {
