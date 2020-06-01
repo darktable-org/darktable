@@ -230,6 +230,20 @@ static void _thumb_retrieve_margins(dt_thumbnail_t *thumb)
   gtk_style_context_get_margin(context, state, thumb->img_margin);
 }
 
+static void _thumb_write_extension(dt_thumbnail_t *thumb)
+{
+  // fill the file extension label
+  const char *ext = thumb->filename + strlen(thumb->filename);
+  gchar *ext2 = NULL;
+  while(ext > thumb->filename && *ext != '.') ext--;
+  ext++;
+  gchar *uext = dt_view_extend_modes_str(ext, thumb->is_hdr, thumb->is_bw);
+  ext2 = dt_util_dstrcat(ext2, "%s", uext);
+  gtk_label_set_text(GTK_LABEL(thumb->w_ext), ext2);
+  g_free(uext);
+  g_free(ext2);
+}
+
 static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!user_data) return TRUE;
@@ -452,25 +466,6 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     // for overlay block, we need to resize it
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
 
-    // now that we know image ratio, we can fill the extension label
-    const char *ext = thumb->filename + strlen(thumb->filename);
-    gchar *ext2 = NULL;
-    while(ext > thumb->filename && *ext != '.') ext--;
-    ext++;
-    gchar *uext = dt_view_extend_modes_str(ext, thumb->is_hdr, thumb->is_bw);
-
-    if(thumb->img_width < thumb->img_height)
-    {
-      // vertical disposition
-      for(int i = 0; i < strlen(uext); i++) ext2 = dt_util_dstrcat(ext2, "%.1s\n", &uext[i]);
-    }
-    else
-      ext2 = dt_util_dstrcat(ext2, "%s", uext);
-
-    gtk_label_set_text(GTK_LABEL(thumb->w_ext), ext2);
-    g_free(uext);
-    g_free(ext2);
-
     // and we can also set the zooming level if needed
     if(thumb->zoomable && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     {
@@ -508,6 +503,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   gtk_widget_set_visible(thumb->w_zoom_eb, (thumb->zoomable && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK));
   gtk_widget_show(thumb->w_bottom_eb);
   gtk_widget_show(thumb->w_reject);
+  gtk_widget_show(thumb->w_ext);
   for(int i = 0; i < MAX_STARS; i++) gtk_widget_show(thumb->w_stars[i]);
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
@@ -570,6 +566,7 @@ static gboolean _thumbs_hide_overlays(gpointer user_data)
   gtk_widget_hide(thumb->w_group);
   gtk_widget_hide(thumb->w_audio);
   gtk_widget_hide(thumb->w_zoom_eb);
+  gtk_widget_hide(thumb->w_ext);
   return G_SOURCE_REMOVE;
 }
 static gboolean _thumbs_show_overlays(gpointer user_data)
@@ -1162,6 +1159,9 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   // grouping tooltip
   _image_update_group_tooltip(thumb);
 
+  // get the file extension
+  _thumb_write_extension(thumb);
+
   // ensure all icons are up to date
   _thumb_update_icons(thumb);
 
@@ -1211,13 +1211,14 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
     // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
     // colorlabels => 3 * r1 + space r1
-    // inner margins are 0.045 * width
+    // inner margins are 0.02 * width
 
     // retrieves the size of the main icons in the top panel, thumbtable overlays shall not exceed that
-    const float r1 = fminf(max_size / 2.0f, 0.91 * width / 22.0f);
+    const float r1 = fminf(max_size / 2.0f, 0.94 * width / 22.0f);
 
     // file extension
-    gtk_widget_set_margin_top(thumb->w_ext, 0.5 * r1);
+    gtk_widget_set_margin_top(thumb->w_ext, 0.03 * width);
+    gtk_widget_set_margin_start(thumb->w_ext, 0.03 * width);
 
     // bottom background
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
@@ -1231,52 +1232,59 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
       int w = 0;
       int h = 0;
       pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
-      gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1 + h);
+      gtk_widget_set_size_request(thumb->w_bottom, width, 3.0 * r1 + h + 0.06 * width);
     }
     else
-      gtk_widget_set_size_request(thumb->w_bottom, width, 4.0 * r1);
+      gtk_widget_set_size_request(thumb->w_bottom, width, 2.0 * r1 + 0.06 * width);
+
     gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0.5);
-    gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.05);
+    gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.03);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
 
     // reject icon
     gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
-    gtk_widget_set_margin_start(thumb->w_reject, 0.045 * width - r1 * 0.75);
-    gtk_widget_set_margin_bottom(thumb->w_reject, 0.5 * r1);
+    gtk_widget_set_margin_start(thumb->w_reject, 0.03 * width);
+    gtk_widget_set_margin_bottom(thumb->w_reject, 0.03 * width);
+
     // stars
     for(int i = 0; i < MAX_STARS; i++)
     {
       gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
-      gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.5 * r1);
-      gtk_widget_set_margin_start(thumb->w_stars[i], (width - 15.0 * r1) * 0.5 + i * 3.0 * r1);
+      gtk_widget_set_margin_bottom(thumb->w_stars[i], 0.03 * width);
+      gtk_widget_set_margin_start(thumb->w_stars[i], (width - 13.0 * r1) * 0.5 + i * 2.5 * r1);
     }
+
     // the color labels
     gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
-    gtk_widget_set_margin_bottom(thumb->w_color, 0.5 * r1);
-    gtk_widget_set_margin_end(thumb->w_color, 0.045 * width);
+    gtk_widget_set_margin_bottom(thumb->w_color, 0.03 * width);
+    gtk_widget_set_margin_end(thumb->w_color, 0.03 * width);
+
     // the local copy indicator
-    gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_size_request(thumb->w_local_copy, 1.618 * r1, 1.618 * r1);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
+
     // the altered icon
     gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_altered, 0.5 * r1);
-    gtk_widget_set_margin_end(thumb->w_altered, 0.045 * width);
+    gtk_widget_set_margin_top(thumb->w_altered, 0.03 * width);
+    gtk_widget_set_margin_end(thumb->w_altered, 0.03 * width);
+
     // the group bouton
     gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_group, 0.5 * r1);
-    gtk_widget_set_margin_end(thumb->w_group, 0.045 * width + 3.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_group, 0.03 * width);
+    gtk_widget_set_margin_end(thumb->w_group, 0.03 * width + 2.5 * r1);
+
     // the sound icon
     gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_audio, 0.5 * r1);
-    gtk_widget_set_margin_end(thumb->w_audio, 0.045 * width + 6.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_audio, 0.03 * width);
+    gtk_widget_set_margin_end(thumb->w_audio, 0.03 * width + 5.0 * r1);
   }
   else
   {
@@ -1288,7 +1296,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     const float r1 = fminf(max_size / 2.0f, width / 25.0f);
 
     // file extension
-    gtk_widget_set_margin_top(thumb->w_ext, 0.5 * r1);
+    gtk_widget_set_margin_top(thumb->w_ext, 0.03 * width);
+    gtk_widget_set_margin_start(thumb->w_ext, 0.03 * width);
 
     // bottom background
     attrlist = pango_attr_list_new();
@@ -1377,12 +1386,14 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   thumb->width = width;
   thumb->height = height;
   gtk_widget_set_size_request(thumb->w_main, width, height);
+
   // file extension
-  gtk_widget_set_margin_start(thumb->w_ext, 0.045 * width);
+  gtk_widget_set_margin_start(thumb->w_ext, 0.03 * width);
+  gtk_widget_set_margin_top(thumb->w_ext, 0.03 * width);
 
   // retrieves the size of the main icons in the top panel, thumbtable overlays shall not exceed that
   int max_size = darktable.gui->icon_size;
-  const int fsize = fminf(max_size, .09 * width);
+  const int fsize = fminf(max_size, 0.94 * width / 11.0f);
 
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
@@ -1549,9 +1560,7 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
   }
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
      || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
-  {
     _thumb_update_extended_infos_line(thumb);
-  }
 
   // we read all other infos
   if(thumb->over != DT_THUMBNAIL_OVERLAYS_NONE)
@@ -1559,6 +1568,8 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
     _image_get_infos(thumb);
     _thumb_update_icons(thumb);
   }
+
+  _thumb_write_extension(thumb);
 
   // extended overlay text
   gchar *lb = NULL;
