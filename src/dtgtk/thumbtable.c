@@ -156,6 +156,8 @@ void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table, const int 
   dt_conf_set_int(txt, timeout);
   g_free(txt);
 
+  table->overlays_block_timeout = timeout;
+
   // we need to change the overlay timeout for each thumbnails
   GList *l = table->list;
   while(l)
