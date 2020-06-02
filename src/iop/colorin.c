@@ -1853,7 +1853,7 @@ void gui_update(struct dt_iop_module_t *self)
 // FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){ .type = DT_COLORSPACE_ENHANCED_MATRIX,
+  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){ .type = DT_COLORSPACE_STANDARD_MATRIX,
                                                            .filename = "",
                                                            .intent = DT_INTENT_PERCEPTUAL,
                                                            .normalize = DT_NORMALIZE_OFF,
