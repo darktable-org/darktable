@@ -190,7 +190,8 @@ void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint ac
   gtk_accel_map_add_entry(accel_path, accel_key, mods);
   g_strlcpy(accel->path, accel_path, sizeof(accel->path));
 
-  snprintf(accel_path, sizeof(accel_path), "<Darktable>/%s/%s/%s", C_("accel", "views"), view_name,
+  snprintf(accel_path, sizeof(accel_path), "<Darktable>/%s/%s/%s", C_("accel", "views"),
+           g_dgettext(NULL, view_name),
            g_dpgettext2(NULL, "accel", path));
 
   g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
