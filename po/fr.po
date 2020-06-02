@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-30 19:41+0200\n"
-"PO-Revision-Date: 2020-05-30 19:51+0200\n"
+"POT-Creation-Date: 2020-06-02 14:58+0200\n"
+"PO-Revision-Date: 2020-06-02 15:04+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -27,7 +27,7 @@ msgstr "Organiser et développer les images d'un boîtier numérique"
 msgid "graphics;photography;raw;"
 msgstr "graphisme;photographie;raw;"
 
-#: ../build/src/preferences_gen.h:1608 ../src/libs/tools/lighttable.c:91
+#: ../build/src/preferences_gen.h:1608 ../src/libs/tools/lighttable.c:79
 #: ../src/views/lighttable.c:87
 msgid "lighttable"
 msgstr "table lumineuse"
@@ -679,9 +679,9 @@ msgstr "répertoire 3D lut racine"
 
 #: ../build/src/preferences_gen.h:2795 ../src/control/jobs/control_jobs.c:1540
 #: ../src/control/jobs/control_jobs.c:1603 ../src/gui/preferences.c:1880
-#: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
-#: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
-#: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
+#: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:195
+#: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:180
+#: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:179
 #: ../src/libs/styles.c:305 ../src/lua/preferences.c:631
 msgid "select directory"
 msgstr "sélectionner répertoire"
@@ -1132,7 +1132,7 @@ msgstr ""
 
 #. tags
 #: ../build/src/preferences_gen.h:3691 ../src/develop/lightroom.c:1508
-#: ../src/libs/export_metadata.c:310 ../src/libs/image.c:467
+#: ../src/libs/export_metadata.c:310 ../src/libs/image.c:469
 #: ../src/libs/metadata_view.c:148
 msgid "tags"
 msgstr "mots-clés"
@@ -1525,7 +1525,7 @@ msgstr "objectif"
 #. focal length
 #: ../src/common/collection.c:687 ../src/gui/preferences.c:731
 #: ../src/gui/preferences.c:1759 ../src/gui/presets.c:494
-#: ../src/iop/ashift.c:4882 ../src/libs/camera.c:578
+#: ../src/iop/ashift.c:4878 ../src/libs/camera.c:578
 #: ../src/libs/metadata_view.c:124
 msgid "focal length"
 msgstr "focale"
@@ -2134,7 +2134,7 @@ msgstr ""
 #: ../src/common/history.c:836 ../src/common/history.c:839
 #: ../src/common/history.c:855 ../src/common/styles.c:997
 #: ../src/common/styles.c:1001 ../src/develop/blend_gui.c:2702
-#: ../src/develop/develop.c:2029 ../src/iop/ashift.c:4865
+#: ../src/develop/develop.c:2036 ../src/iop/ashift.c:4861
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activé(e)"
@@ -2142,9 +2142,9 @@ msgstr "activé(e)"
 #: ../src/common/history.c:836 ../src/common/history.c:839
 #: ../src/common/history.c:855 ../src/common/styles.c:997
 #: ../src/common/styles.c:1001 ../src/develop/blend_gui.c:2434
-#: ../src/develop/blend_gui.c:2699 ../src/develop/develop.c:2029
+#: ../src/develop/blend_gui.c:2699 ../src/develop/develop.c:2036
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
-#: ../src/iop/ashift.c:4864 ../src/iop/ashift.c:4870 ../src/iop/colorin.c:2153
+#: ../src/iop/ashift.c:4860 ../src/iop/ashift.c:4866 ../src/iop/colorin.c:2153
 #: ../src/iop/demosaic.c:5159 ../src/iop/vignette.c:1152
 #: ../src/libs/live_view.c:434
 msgid "off"
@@ -2434,7 +2434,7 @@ msgstr "diffuseur"
 
 #. title
 #: ../src/common/metadata.c:48 ../src/imageio/format/pdf.c:584
-#: ../src/imageio/storage/gallery.c:185 ../src/imageio/storage/latex.c:185
+#: ../src/imageio/storage/gallery.c:186 ../src/imageio/storage/latex.c:186
 #: ../src/imageio/storage/piwigo.c:857 ../src/libs/tools/filter.c:95
 msgid "title"
 msgstr "titre"
@@ -2827,7 +2827,7 @@ msgstr[1] "copier les images ?"
 msgid "local copy images"
 msgstr "copie locale d'images"
 
-#: ../src/control/jobs/control_jobs.c:1666 ../src/libs/image.c:520
+#: ../src/control/jobs/control_jobs.c:1666 ../src/libs/image.c:522
 msgid "refresh exif"
 msgstr "rafraîchir exif"
 
@@ -3095,33 +3095,48 @@ msgstr "montre et édite les éléments d'un masque"
 msgid "toggle polarity of drawn mask"
 msgstr "inverser la polarité du masque dessiné"
 
-#: ../src/develop/blend_gui.c:1865 ../src/libs/masks.c:1009
-#: ../src/libs/masks.c:1049 ../src/libs/masks.c:1657
-msgid "add gradient"
-msgstr "ajouter un dégradé"
+#: ../src/develop/blend_gui.c:1865
+msgid ""
+"add gradient\n"
+"ctrl+click to add multiple gradients"
+msgstr ""
+"ajouter gradient\n"
+"ctrl+clic pour ajout continu"
 
 #: ../src/develop/blend_gui.c:1874 ../src/iop/retouch.c:2664
-#: ../src/iop/spots.c:807 ../src/libs/masks.c:1005 ../src/libs/masks.c:1045
-#: ../src/libs/masks.c:1663
-msgid "add path"
-msgstr "ajouter un chemin"
+#: ../src/iop/spots.c:807
+msgid ""
+"add path\n"
+"ctrl+click to add multiple paths"
+msgstr ""
+"ajouter chemin\n"
+"ctrl+clic pour ajout continu"
 
 #: ../src/develop/blend_gui.c:1883 ../src/iop/retouch.c:2671
-#: ../src/iop/spots.c:814 ../src/libs/masks.c:1001 ../src/libs/masks.c:1041
-#: ../src/libs/masks.c:1670
-msgid "add ellipse"
-msgstr "ajouter une ellipse"
+#: ../src/iop/spots.c:814
+msgid ""
+"add ellipse\n"
+"ctrl+click to add multiple ellipses"
+msgstr ""
+"ajouter ellipse\n"
+"ctrl+clic pour ajout continu"
 
 #: ../src/develop/blend_gui.c:1892 ../src/iop/retouch.c:2678
-#: ../src/iop/spots.c:821 ../src/libs/masks.c:997 ../src/libs/masks.c:1037
-#: ../src/libs/masks.c:1677
-msgid "add circle"
-msgstr "ajouter un cercle"
+#: ../src/iop/spots.c:821
+msgid ""
+"add circle\n"
+"ctrl+click to add multiple circles"
+msgstr ""
+"ajouter cercle\n"
+"ctrl+clic pour ajout continu"
 
 #: ../src/develop/blend_gui.c:1901 ../src/iop/retouch.c:2658
-#: ../src/libs/masks.c:1033 ../src/libs/masks.c:1683
-msgid "add brush"
-msgstr "ajouter une forme au pinceau"
+msgid ""
+"add brush\n"
+"ctrl+click to add multiple brush strokes"
+msgstr ""
+"ajouter pinceau\n"
+"ctrl+clic pour ajout continu"
 
 #: ../src/develop/blend_gui.c:2042 ../src/develop/blend_gui.c:2479
 msgid "raster mask"
@@ -3472,84 +3487,84 @@ msgstr "amélioration du masque"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : module « %s » version non cohérente : %d != %d"
 
-#: ../src/develop/imageop.c:1012
+#: ../src/develop/imageop.c:1017
 msgid "new instance"
 msgstr "nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:1018
+#: ../src/develop/imageop.c:1023
 msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:1024 ../src/libs/masks.c:1170
+#: ../src/develop/imageop.c:1029 ../src/libs/masks.c:1170
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:1030 ../src/libs/masks.c:1173
+#: ../src/develop/imageop.c:1035 ../src/libs/masks.c:1173
 msgid "move down"
 msgstr "descendre"
 
-#: ../src/develop/imageop.c:1036 ../src/libs/image.c:168
+#: ../src/develop/imageop.c:1041 ../src/libs/image.c:168
 #: ../src/libs/tagging.c:1258 ../src/libs/tagging.c:1348
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1043 ../src/libs/tagging.c:1772
+#: ../src/develop/imageop.c:1048 ../src/libs/tagging.c:1772
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1097 ../src/develop/imageop.c:2037
+#: ../src/develop/imageop.c:1102 ../src/develop/imageop.c:2042
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1097 ../src/develop/imageop.c:2037
+#: ../src/develop/imageop.c:1102 ../src/develop/imageop.c:2042
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1420 ../src/gui/accelerators.c:938
-#: ../src/gui/accelerators.c:1022 ../src/gui/accelerators.c:1237
-#: ../src/gui/accelerators.c:1262 ../src/gui/presets.c:190
+#: ../src/develop/imageop.c:1425 ../src/gui/accelerators.c:1014
+#: ../src/gui/accelerators.c:1098 ../src/gui/accelerators.c:1313
+#: ../src/gui/accelerators.c:1338 ../src/gui/presets.c:190
 #: ../src/gui/presets.c:303 ../src/gui/presets.c:644
 #: ../src/iop/temperature.c:1465 ../src/libs/lib.c:319 ../src/libs/lib.c:347
 #: ../src/libs/lib.c:1201
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1440
+#: ../src/develop/imageop.c:1445
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1445 ../src/libs/lib.c:621
+#: ../src/develop/imageop.c:1450 ../src/libs/lib.c:621
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1446
+#: ../src/develop/imageop.c:1451
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1447
+#: ../src/develop/imageop.c:1452
 msgctxt "accel"
 msgid "focus module"
 msgstr "module focus"
 
-#: ../src/develop/imageop.c:1449 ../src/libs/lib.c:613
+#: ../src/develop/imageop.c:1454 ../src/libs/lib.c:613
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1450 ../src/libs/lib.c:617
+#: ../src/develop/imageop.c:1455 ../src/libs/lib.c:617
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1995
+#: ../src/develop/imageop.c:2000
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -3557,17 +3572,17 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2006 ../src/libs/lib.c:1036
+#: ../src/develop/imageop.c:2011 ../src/libs/lib.c:1036
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2014 ../src/gui/preferences.c:685
+#: ../src/develop/imageop.c:2019 ../src/gui/preferences.c:685
 #: ../src/libs/lib.c:1045
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/develop/imageop.c:2016
+#: ../src/develop/imageop.c:2021
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -3575,7 +3590,7 @@ msgstr ""
 "pré-réglages\n"
 "clic-milieu pour appliquer sur une nouvelle instance"
 
-#: ../src/develop/imageop.c:2289
+#: ../src/develop/imageop.c:2294
 msgid "ERROR"
 msgstr "ERREUR"
 
@@ -4242,6 +4257,7 @@ msgid "global"
 msgstr "options globales"
 
 #: ../src/gui/accelerators.c:38 ../src/gui/accelerators.c:82
+#: ../src/gui/accelerators.c:193
 msgctxt "accel"
 msgid "views"
 msgstr "vues"
@@ -4258,11 +4274,11 @@ msgstr "vues"
 #: ../src/gui/accelerators.c:89 ../src/gui/accelerators.c:104
 #: ../src/gui/accelerators.c:106 ../src/gui/accelerators.c:108
 #: ../src/gui/accelerators.c:110 ../src/gui/accelerators.c:112
-#: ../src/gui/accelerators.c:246 ../src/gui/accelerators.c:248
-#: ../src/gui/accelerators.c:259 ../src/gui/accelerators.c:261
-#: ../src/gui/accelerators.c:272 ../src/gui/accelerators.c:274
-#: ../src/gui/accelerators.c:681 ../src/gui/accelerators.c:690
-#: ../src/gui/accelerators.c:699
+#: ../src/gui/accelerators.c:281 ../src/gui/accelerators.c:283
+#: ../src/gui/accelerators.c:294 ../src/gui/accelerators.c:296
+#: ../src/gui/accelerators.c:307 ../src/gui/accelerators.c:309
+#: ../src/gui/accelerators.c:757 ../src/gui/accelerators.c:766
+#: ../src/gui/accelerators.c:775
 msgctxt "accel"
 msgid "image operations"
 msgstr "chambre noire"
@@ -4294,8 +4310,8 @@ msgid "edit"
 msgstr "modifier"
 
 #: ../src/gui/accelerators.c:62 ../src/gui/accelerators.c:113
-#: ../src/gui/accelerators.c:273 ../src/gui/accelerators.c:275
-#: ../src/gui/accelerators.c:700
+#: ../src/gui/accelerators.c:308 ../src/gui/accelerators.c:310
+#: ../src/gui/accelerators.c:776
 msgctxt "accel"
 msgid "dynamic"
 msgstr "dynamique"
@@ -4305,49 +4321,49 @@ msgctxt "accel"
 msgid "lua"
 msgstr "lua"
 
-#: ../src/gui/accelerators.c:247 ../src/gui/accelerators.c:249
-#: ../src/gui/accelerators.c:682
+#: ../src/gui/accelerators.c:282 ../src/gui/accelerators.c:284
+#: ../src/gui/accelerators.c:758
 msgctxt "accel"
 msgid "next"
 msgstr "suivant"
 
-#: ../src/gui/accelerators.c:260 ../src/gui/accelerators.c:262
-#: ../src/gui/accelerators.c:691
+#: ../src/gui/accelerators.c:295 ../src/gui/accelerators.c:297
+#: ../src/gui/accelerators.c:767
 msgctxt "accel"
 msgid "previous"
 msgstr "précédent"
 
-#: ../src/gui/accelerators.c:575
+#: ../src/gui/accelerators.c:651
 #, c-format
 msgid "%s %s / %s: %s"
 msgstr "%s %s / %s : %s"
 
-#: ../src/gui/accelerators.c:577
+#: ../src/gui/accelerators.c:653
 #, c-format
 msgid "%s / %s: %s"
 msgstr "%s / %s : %s"
 
-#: ../src/gui/accelerators.c:579
+#: ../src/gui/accelerators.c:655
 #, c-format
 msgid "%s: %s"
 msgstr "%s : %s"
 
-#: ../src/gui/accelerators.c:584
+#: ../src/gui/accelerators.c:660
 #, c-format
 msgid "%s %s / %s"
 msgstr "%s %s / %s"
 
-#: ../src/gui/accelerators.c:586
+#: ../src/gui/accelerators.c:662
 #, c-format
 msgid "%s / %s"
 msgstr "%s / %s"
 
-#: ../src/gui/accelerators.c:588 ../src/libs/tagging.c:2136
+#: ../src/gui/accelerators.c:664 ../src/libs/tagging.c:2136
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/gui/accelerators.c:1005 ../src/libs/lib.c:402
+#: ../src/gui/accelerators.c:1081 ../src/libs/lib.c:402
 msgid "deleting preset for obsolete module"
 msgstr "suppression du pré-réglages pour le module obsolète"
 
@@ -5280,7 +5296,7 @@ msgstr "modifier"
 msgid "can't create style out of unaltered image"
 msgstr "impossible de créer un style depuis une image non développée"
 
-#: ../src/imageio/format/copy.c:124 ../src/libs/image.c:488
+#: ../src/imageio/format/copy.c:124 ../src/libs/image.c:490
 msgid "copy"
 msgstr "copier"
 
@@ -5387,9 +5403,9 @@ msgstr "taille du papier non valide"
 msgid "invalid border size, using 0"
 msgstr "taille des bords non valide, 0 est utilisé"
 
-#: ../src/imageio/format/pdf.c:259 ../src/imageio/storage/disk.c:333
-#: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:350
-#: ../src/imageio/storage/gallery.c:391 ../src/imageio/storage/piwigo.c:970
+#: ../src/imageio/format/pdf.c:259 ../src/imageio/storage/disk.c:334
+#: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:351
+#: ../src/imageio/storage/gallery.c:392 ../src/imageio/storage/piwigo.c:970
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier « %s » !"
@@ -5663,50 +5679,50 @@ msgstr ""
 "les variables supportent les substitutions comme le shell bash\n"
 "variables reconnues :"
 
-#: ../src/imageio/storage/disk.c:199
+#: ../src/imageio/storage/disk.c:200
 msgid "on conflict"
 msgstr "sur conflit"
 
-#: ../src/imageio/storage/disk.c:200
+#: ../src/imageio/storage/disk.c:201
 msgid "create unique filename"
 msgstr "créer fichier unique"
 
-#: ../src/imageio/storage/disk.c:201 ../src/libs/copy_history.c:318
-#: ../src/libs/image.c:514 ../src/libs/styles.c:459
+#: ../src/imageio/storage/disk.c:202 ../src/libs/copy_history.c:318
+#: ../src/libs/image.c:516 ../src/libs/styles.c:459
 msgid "overwrite"
 msgstr "écraser"
 
-#: ../src/imageio/storage/disk.c:202
+#: ../src/imageio/storage/disk.c:203
 msgid "skip"
 msgstr "sauter"
 
-#: ../src/imageio/storage/disk.c:282 ../src/imageio/storage/gallery.c:275
-#: ../src/imageio/storage/latex.c:274
+#: ../src/imageio/storage/disk.c:283 ../src/imageio/storage/gallery.c:276
+#: ../src/imageio/storage/latex.c:275
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "impossible de créer le répertoire « %s » !"
 
-#: ../src/imageio/storage/disk.c:289
+#: ../src/imageio/storage/disk.c:290
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "impossible d'écrire dans le répertoire « %s » !"
 
-#: ../src/imageio/storage/disk.c:319
+#: ../src/imageio/storage/disk.c:320
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
 msgstr[0] "%d/%d, « %s » sauté"
 msgstr[1] "%d/%d, « %s » sauté"
 
-#: ../src/imageio/storage/disk.c:338 ../src/imageio/storage/email.c:144
-#: ../src/imageio/storage/gallery.c:399 ../src/imageio/storage/latex.c:363
+#: ../src/imageio/storage/disk.c:339 ../src/imageio/storage/email.c:144
+#: ../src/imageio/storage/gallery.c:400 ../src/imageio/storage/latex.c:364
 #, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
 msgstr[0] "%d/%d exportée vers « %s »"
 msgstr[1] "%d/%d exportées vers « %s »"
 
-#: ../src/imageio/storage/disk.c:397
+#: ../src/imageio/storage/disk.c:398
 msgid ""
 "you are going to export on overwrite mode, this will overwrite any existing "
 "images\n"
@@ -5734,7 +5750,7 @@ msgstr "impossible de lancer le client de messagerie!"
 msgid "website gallery"
 msgstr "galerie web"
 
-#: ../src/imageio/storage/gallery.c:191
+#: ../src/imageio/storage/gallery.c:192
 msgid "enter the title of the website"
 msgstr "entrer un nom pour le site"
 
@@ -5743,7 +5759,7 @@ msgid "LaTeX book template"
 msgstr "modèle de livre LaTeX"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
-#: ../src/imageio/storage/latex.c:194
+#: ../src/imageio/storage/latex.c:195
 msgid "enter the title of the book"
 msgstr "entrer le titre du livre"
 
@@ -5929,135 +5945,135 @@ msgctxt "accel"
 msgid "lens model"
 msgstr "modèle d'objectif"
 
-#: ../src/iop/ashift.c:2614
+#: ../src/iop/ashift.c:2613
 msgid "automatic cropping failed"
 msgstr "recadrage automatique impossible"
 
-#: ../src/iop/ashift.c:2758
+#: ../src/iop/ashift.c:2755
 msgid "data pending - please repeat"
 msgstr "données en attente, merci de recommencer"
 
-#: ../src/iop/ashift.c:2764
+#: ../src/iop/ashift.c:2761
 msgid "could not detect structural data in image"
 msgstr "impossible de détecter les structures dans l'image"
 
-#: ../src/iop/ashift.c:2775
+#: ../src/iop/ashift.c:2772
 msgid "could not run outlier removal"
 msgstr "impossible de supprimer les lignes de contrôle"
 
-#: ../src/iop/ashift.c:2829
+#: ../src/iop/ashift.c:2826
 msgid "not enough structure for automatic correction"
 msgstr "pas assez de structure pour corriger automatiquement"
 
-#: ../src/iop/ashift.c:2834
+#: ../src/iop/ashift.c:2831
 msgid "automatic correction failed, please correct manually"
 msgstr "correction automatique impossible, merci de corriger manuellement"
 
-#: ../src/iop/ashift.c:4631 ../src/iop/ashift.c:4632 ../src/iop/ashift.c:4737
-#: ../src/iop/ashift.c:4738
+#: ../src/iop/ashift.c:4627 ../src/iop/ashift.c:4628 ../src/iop/ashift.c:4733
+#: ../src/iop/ashift.c:4734
 #, c-format
 msgid "lens shift (%s)"
 msgstr "correction d'objectif (%s)"
 
-#: ../src/iop/ashift.c:4631 ../src/iop/ashift.c:4632 ../src/iop/ashift.c:4737
-#: ../src/iop/ashift.c:4738 ../src/iop/clipping.c:1868
+#: ../src/iop/ashift.c:4627 ../src/iop/ashift.c:4628 ../src/iop/ashift.c:4733
+#: ../src/iop/ashift.c:4734 ../src/iop/clipping.c:1868
 #: ../src/iop/clipping.c:2164 ../src/iop/clipping.c:2210
 msgid "horizontal"
 msgstr "horizontale"
 
-#: ../src/iop/ashift.c:4631 ../src/iop/ashift.c:4632 ../src/iop/ashift.c:4737
-#: ../src/iop/ashift.c:4738 ../src/iop/clipping.c:1867
+#: ../src/iop/ashift.c:4627 ../src/iop/ashift.c:4628 ../src/iop/ashift.c:4733
+#: ../src/iop/ashift.c:4734 ../src/iop/clipping.c:1867
 #: ../src/iop/clipping.c:2165 ../src/iop/clipping.c:2209
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/ashift.c:4842 ../src/iop/graduatednd.c:1240
+#: ../src/iop/ashift.c:4838 ../src/iop/graduatednd.c:1240
 #: ../src/iop/watermark.c:1542
 msgid "rotation"
 msgstr "rotation"
 
-#: ../src/iop/ashift.c:4848
+#: ../src/iop/ashift.c:4844
 msgid "lens shift (vertical)"
 msgstr "correction d'objectif (verticale)"
 
-#: ../src/iop/ashift.c:4853
+#: ../src/iop/ashift.c:4849
 msgid "lens shift (horizontal)"
 msgstr "correction d'objectif (horizontale)"
 
-#: ../src/iop/ashift.c:4858
+#: ../src/iop/ashift.c:4854
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:4863 ../src/iop/clipping.c:2341
+#: ../src/iop/ashift.c:4859 ../src/iop/clipping.c:2341
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/ashift.c:4869 ../src/iop/clipping.c:2217
+#: ../src/iop/ashift.c:4865 ../src/iop/clipping.c:2217
 msgid "automatic cropping"
 msgstr "recadrage"
 
-#: ../src/iop/ashift.c:4871
+#: ../src/iop/ashift.c:4867
 msgid "largest area"
 msgstr "plus grand coté"
 
-#: ../src/iop/ashift.c:4872
+#: ../src/iop/ashift.c:4868
 msgid "original format"
 msgstr "format d'origine"
 
-#: ../src/iop/ashift.c:4876
+#: ../src/iop/ashift.c:4872
 msgid "lens model"
 msgstr "modèle d'objectif"
 
-#: ../src/iop/ashift.c:4877
+#: ../src/iop/ashift.c:4873
 msgid "generic"
 msgstr "générique"
 
-#: ../src/iop/ashift.c:4878
+#: ../src/iop/ashift.c:4874
 msgid "specific"
 msgstr "spécifique"
 
-#: ../src/iop/ashift.c:4891
+#: ../src/iop/ashift.c:4887
 msgid "crop factor"
 msgstr "facteur de cadrage"
 
-#: ../src/iop/ashift.c:4896
+#: ../src/iop/ashift.c:4892
 msgid "lens dependence"
 msgstr "dépendance à l'objectif"
 
-#: ../src/iop/ashift.c:4906
+#: ../src/iop/ashift.c:4902
 msgid "aspect adjust"
 msgstr "ajustement aspect"
 
-#: ../src/iop/ashift.c:4916
+#: ../src/iop/ashift.c:4912
 msgid "automatic fit"
 msgstr "correction automatique"
 
-#: ../src/iop/ashift.c:4932
+#: ../src/iop/ashift.c:4928
 msgid "get structure"
 msgstr "récupère les structures"
 
-#: ../src/iop/ashift.c:4977
+#: ../src/iop/ashift.c:4973
 msgid "rotate image"
 msgstr "rotation de l'image"
 
-#: ../src/iop/ashift.c:4978 ../src/iop/ashift.c:4979
+#: ../src/iop/ashift.c:4974 ../src/iop/ashift.c:4975
 msgid "apply lens shift correction in one direction"
 msgstr "applique la correction d'objectif dans une direction"
 
-#: ../src/iop/ashift.c:4980
+#: ../src/iop/ashift.c:4976
 msgid "shear the image along one diagonal"
 msgstr "cisaillement de l'image selon une diagonale"
 
-#: ../src/iop/ashift.c:4981
+#: ../src/iop/ashift.c:4977
 msgid "display guide lines overlay"
 msgstr "superpose des lignes guides"
 
-#: ../src/iop/ashift.c:4982 ../src/iop/clipping.c:2220
+#: ../src/iop/ashift.c:4978 ../src/iop/clipping.c:2220
 msgid "automatically crop to avoid black edges"
 msgstr "recadre automatique pour éviter les bords noirs"
 
-#: ../src/iop/ashift.c:4983
+#: ../src/iop/ashift.c:4979
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -6065,13 +6081,13 @@ msgstr ""
 "modèle d'objectif pour la correction de perspective : générique ou fonction "
 "de la longueur focale"
 
-#: ../src/iop/ashift.c:4985
+#: ../src/iop/ashift.c:4981
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "longueur focale de l'objectif, valeur par défaut depuis les exif si "
 "disponible"
 
-#: ../src/iop/ashift.c:4987
+#: ../src/iop/ashift.c:4983
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -6079,7 +6095,7 @@ msgstr ""
 "facteur de cadrage du capteur de l'appareil, valeur par défaut depuis les "
 "exif si disponible, positionnement manuel souvent nécessaire"
 
-#: ../src/iop/ashift.c:4990
+#: ../src/iop/ashift.c:4986
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -6087,13 +6103,13 @@ msgstr ""
 "le niveau de correction dépendant de l'objectif, positionner au maximum pour "
 "une dépendance totale, positionner à zéro pour un modèle générique"
 
-#: ../src/iop/ashift.c:4992
+#: ../src/iop/ashift.c:4988
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "ajuste les dimensions de l'image en redimensionnant horizontalement ou "
 "verticalement"
 
-#: ../src/iop/ashift.c:4993
+#: ../src/iop/ashift.c:4989
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -6103,7 +6119,7 @@ msgstr ""
 "ctrl+clic pour la correction de rotation seulement\n"
 "shift+clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4996
+#: ../src/iop/ashift.c:4992
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -6113,7 +6129,7 @@ msgstr ""
 "ctrl+clic pour la correction de rotation seulement\n"
 "shift+clic pour la correction de distorsion uniquement"
 
-#: ../src/iop/ashift.c:4999
+#: ../src/iop/ashift.c:4995
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -6129,7 +6145,7 @@ msgstr ""
 "ctrl+shift-clic pour uniquement la correction de rotation et d'alignement "
 "d'objectif"
 
-#: ../src/iop/ashift.c:5005
+#: ../src/iop/ashift.c:5001
 msgid ""
 "analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -6141,30 +6157,30 @@ msgstr ""
 "shift+clic pour une amélioration des détails accrue\n"
 "ctrl+shift+clic pour une combinaison des deux méthodes"
 
-#: ../src/iop/ashift.c:5009
+#: ../src/iop/ashift.c:5005
 msgid "remove line structure information"
 msgstr "supprime la visualisation des lignes de structure"
 
-#: ../src/iop/ashift.c:5010
+#: ../src/iop/ashift.c:5006
 msgid "toggle visibility of structure lines"
 msgstr "active/désactive l'affichage des lignes de structure"
 
-#: ../src/iop/ashift.c:5058
+#: ../src/iop/ashift.c:5054
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s sur segment] sélectionner segment"
 
-#: ../src/iop/ashift.c:5063
+#: ../src/iop/ashift.c:5059
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s sur segment] désélectionner segment"
 
-#: ../src/iop/ashift.c:5069
+#: ../src/iop/ashift.c:5065
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] sélectionner tous les segments de la zone"
 
-#: ../src/iop/ashift.c:5075
+#: ../src/iop/ashift.c:5071
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] désélectionner tous les segments de la zone"
@@ -6755,7 +6771,7 @@ msgstr "mode"
 #: ../src/iop/lens.cc:2455 ../src/iop/levels.c:649
 #: ../src/iop/profile_gamma.c:799 ../src/iop/rgbcurve.c:1443
 #: ../src/iop/rgblevels.c:989 ../src/libs/copy_history.c:316
-#: ../src/libs/export.c:696 ../src/libs/image.c:512
+#: ../src/libs/export.c:696 ../src/libs/image.c:514
 #: ../src/libs/print_settings.c:1515 ../src/libs/styles.c:457
 #: ../src/views/darkroom.c:2114
 msgid "mode"
@@ -8211,21 +8227,21 @@ msgstr "rendu (sortie)"
 #: ../src/iop/colorout.c:882 ../src/libs/export.c:679
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
 #: ../src/views/darkroom.c:2257 ../src/views/darkroom.c:2265
-#: ../src/views/lighttable.c:1335 ../src/views/lighttable.c:1343
+#: ../src/views/lighttable.c:1355 ../src/views/lighttable.c:1363
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:883 ../src/libs/export.c:680
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2258 ../src/views/darkroom.c:2266
-#: ../src/views/lighttable.c:1336 ../src/views/lighttable.c:1344
+#: ../src/views/lighttable.c:1356 ../src/views/lighttable.c:1364
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:884 ../src/libs/export.c:681
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2259 ../src/views/darkroom.c:2267
-#: ../src/views/lighttable.c:1337 ../src/views/lighttable.c:1345
+#: ../src/views/lighttable.c:1357 ../src/views/lighttable.c:1365
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
@@ -8233,7 +8249,7 @@ msgstr "saturation"
 #: ../src/iop/colorout.c:885 ../src/libs/export.c:682
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2260 ../src/views/darkroom.c:2268
-#: ../src/views/lighttable.c:1338 ../src/views/lighttable.c:1346
+#: ../src/views/lighttable.c:1358 ../src/views/lighttable.c:1366
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -13592,12 +13608,12 @@ msgstr "exporter"
 msgid "export with current settings"
 msgstr "exporte avec les réglages actuels"
 
-#: ../src/libs/export.c:736
+#: ../src/libs/export.c:737
 msgid "edit metadata exportation details"
 msgstr "modification de l'exportation des métadonnées"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1360 ../src/libs/styles.c:72
+#: ../src/libs/export.c:1361 ../src/libs/styles.c:72
 #: ../src/views/darkroom.c:3604
 msgctxt "accel"
 msgid "export"
@@ -13649,7 +13665,7 @@ msgid "export exif metadata"
 msgstr "exporter les métadonnées exif"
 
 #: ../src/libs/export_metadata.c:289 ../src/libs/image.c:345
-#: ../src/libs/image.c:481 ../src/libs/metadata.c:431
+#: ../src/libs/image.c:483 ../src/libs/metadata.c:431
 #: ../src/libs/metadata.c:618
 msgid "metadata"
 msgstr "métadonnées"
@@ -13677,7 +13693,7 @@ msgstr ""
 "si le stockage distant ne supporte pas les métadonnées de darktable, il est "
 "possible de les définir."
 
-#: ../src/libs/export_metadata.c:307 ../src/libs/image.c:474
+#: ../src/libs/export_metadata.c:307 ../src/libs/image.c:476
 msgid "geo tags"
 msgstr "géolocalisation"
 
@@ -13907,28 +13923,48 @@ msgstr ""
 
 #: ../src/libs/histogram.c:924
 msgctxt "accel"
-msgid "hide histogram"
-msgstr "cacher histogramme"
+msgid "histogram/hide histogram"
+msgstr "histogramme/cacher histogramme"
 
 #: ../src/libs/histogram.c:925
 msgctxt "accel"
-msgid "cycle histogram modes"
-msgstr "cycle sur les modes de l'histogramme"
+msgid "hide histogram"
+msgstr "cacher histogramme"
 
 #: ../src/libs/histogram.c:926
 msgctxt "accel"
-msgid "switch histogram mode"
-msgstr "change le mode de l'histogramme"
+msgid "histogram/cycle histogram modes"
+msgstr "histogramme/cycler sur les modes de l'histogramme"
 
 #: ../src/libs/histogram.c:927
 msgctxt "accel"
+msgid "cycle histogram modes"
+msgstr "cycler sur les modes de l'histogramme"
+
+#: ../src/libs/histogram.c:928
+msgctxt "accel"
+msgid "histogram/switch histogram mode"
+msgstr "histogramme/changer le mode de l'histogramme"
+
+#: ../src/libs/histogram.c:929
+msgctxt "accel"
+msgid "switch histogram mode"
+msgstr "changer le mode de l'histogramme"
+
+#: ../src/libs/histogram.c:930
+msgctxt "accel"
+msgid "histogram/switch histogram type"
+msgstr "histogramme/changer le type de l'histogramme"
+
+#: ../src/libs/histogram.c:931
+msgctxt "accel"
 msgid "switch histogram type"
-msgstr "change le type de l'histogramme"
+msgstr "changer le type de l'histogramme"
 
 #: ../src/libs/history.c:95
 msgctxt "accel"
 msgid "create style from history"
-msgstr "crée un style depuis l'historique actuel"
+msgstr "créer un style depuis l'historique actuel"
 
 #. dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
 #: ../src/libs/history.c:97
@@ -13944,23 +13980,23 @@ msgstr "compresser l'historique"
 msgid "create a minimal history stack which produces the same image"
 msgstr "génère l'historique minimum qui produit la même image"
 
-#: ../src/libs/history.c:135
+#: ../src/libs/history.c:136
 msgid "create a style from the current history stack"
 msgstr "crée un style depuis l'historique actuel"
 
-#: ../src/libs/history.c:188
+#: ../src/libs/history.c:189
 msgid "always-on module"
 msgstr "module toujours activé"
 
-#: ../src/libs/history.c:196
+#: ../src/libs/history.c:197
 msgid "default enabled module"
 msgstr "module activé par défaut"
 
-#: ../src/libs/history.c:204
+#: ../src/libs/history.c:205
 msgid "deprecated module"
 msgstr "module déprécié"
 
-#: ../src/libs/history.c:672 ../src/libs/snapshots.c:458
+#: ../src/libs/history.c:673 ../src/libs/snapshots.c:458
 msgid "original"
 msgstr "original"
 
@@ -14021,213 +14057,213 @@ msgstr ""
 "crée une copie virtuelle de l'image et de son développement dans la "
 "collection"
 
-#: ../src/libs/image.c:401
+#: ../src/libs/image.c:402
 msgid "rotate selected images 90 degrees CCW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens anti-horaire)"
 
-#: ../src/libs/image.c:407
+#: ../src/libs/image.c:409
 msgid "rotate selected images 90 degrees CW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens horaire)"
 
-#: ../src/libs/image.c:411
+#: ../src/libs/image.c:413
 msgid "reset rotation"
 msgstr "réinitialiser"
 
-#: ../src/libs/image.c:414
+#: ../src/libs/image.c:416
 msgid "reset rotation to EXIF data"
 msgstr ""
 "réinitialise l'orientation\n"
 "à la valeur EXIF"
 
-#: ../src/libs/image.c:419
+#: ../src/libs/image.c:421
 msgid "copy locally"
 msgstr "copier localement"
 
-#: ../src/libs/image.c:422
+#: ../src/libs/image.c:424
 msgid "copy the image locally"
 msgstr "copie l'image localement"
 
-#: ../src/libs/image.c:426
+#: ../src/libs/image.c:428
 msgid "resync local copy"
 msgstr "resync copie locale"
 
-#: ../src/libs/image.c:429
+#: ../src/libs/image.c:431
 msgid "synchronize the image's XMP and remove the local copy"
 msgstr "synchronise le fichier XMP de l'image et supprime la copie locale"
 
-#: ../src/libs/image.c:434 ../src/libs/tools/filter.c:92
+#: ../src/libs/image.c:436 ../src/libs/tools/filter.c:92
 msgid "group"
 msgstr "grouper"
 
-#: ../src/libs/image.c:437
+#: ../src/libs/image.c:439
 msgid "add selected images to expanded group or create a new one"
 msgstr ""
 "ajoute les images sélectionnées au groupe actuel ou à un nouveau groupe"
 
-#: ../src/libs/image.c:441
+#: ../src/libs/image.c:443
 msgid "ungroup"
 msgstr "dégrouper"
 
-#: ../src/libs/image.c:444
+#: ../src/libs/image.c:446
 msgid "remove selected images from the group"
 msgstr "enlève les images sélectionnées du groupe"
 
-#: ../src/libs/image.c:453 ../src/libs/tools/ratings.c:55
+#: ../src/libs/image.c:455 ../src/libs/tools/ratings.c:55
 msgid "ratings"
 msgstr "étoiles"
 
-#: ../src/libs/image.c:455
+#: ../src/libs/image.c:457
 msgid "select ratings metadata"
 msgstr "sélectionner les métadonnées étoiles"
 
-#: ../src/libs/image.c:460
+#: ../src/libs/image.c:462
 msgid "colors"
 msgstr "couleurs"
 
-#: ../src/libs/image.c:462
+#: ../src/libs/image.c:464
 msgid "select colors metadata"
 msgstr "sélectionner les métadonnées couleurs"
 
-#: ../src/libs/image.c:469
+#: ../src/libs/image.c:471
 msgid "select tags metadata"
 msgstr "sélectionner les métadonnées mots-clés"
 
-#: ../src/libs/image.c:476
+#: ../src/libs/image.c:478
 msgid "select geo tags metadata"
 msgstr "sélectionner les métadonnées géolocalisation"
 
-#: ../src/libs/image.c:483
+#: ../src/libs/image.c:485
 msgid "select dt metadata (from metadata editor module)"
 msgstr "sélectionner les métadonnées dt (du module d'édition des métadonnées)"
 
-#: ../src/libs/image.c:492
+#: ../src/libs/image.c:494
 msgid "set the (first) selected image as source of metadata"
 msgstr "copier les métadonnées de la première image sélectionnée"
 
-#: ../src/libs/image.c:496
+#: ../src/libs/image.c:498
 msgid "paste"
 msgstr "coller"
 
-#: ../src/libs/image.c:500
+#: ../src/libs/image.c:502
 msgid "paste selected metadata on selected images"
 msgstr "coller les métadonnées sur images sélectionnées"
 
-#: ../src/libs/image.c:504 ../src/libs/metadata.c:729
+#: ../src/libs/image.c:506 ../src/libs/metadata.c:729
 msgid "clear"
 msgstr "effacer"
 
-#: ../src/libs/image.c:507
+#: ../src/libs/image.c:509
 msgid "clear selected metadata on selected images"
 msgstr "effacer les métadonnées des images sélectionnées"
 
-#: ../src/libs/image.c:513
+#: ../src/libs/image.c:515
 msgid "merge"
 msgstr "fusionner"
 
-#: ../src/libs/image.c:515
+#: ../src/libs/image.c:517
 msgid "how to handle existing metadata"
 msgstr "gestion métadonnées existantes"
 
-#: ../src/libs/image.c:523
+#: ../src/libs/image.c:525
 msgid "update image information to match changes to file"
 msgstr "mise à jour des informations de l'image depuis le fichier"
 
-#: ../src/libs/image.c:553
+#: ../src/libs/image.c:555
 msgctxt "accel"
 msgid "remove from collection"
 msgstr "enlever de la bibliothèque"
 
-#: ../src/libs/image.c:554
+#: ../src/libs/image.c:556
 msgctxt "accel"
 msgid "delete from disk or send to trash"
 msgstr "supprimer physiquement du disque ou envoyer à la poubelle"
 
-#: ../src/libs/image.c:555
+#: ../src/libs/image.c:557
 msgctxt "accel"
 msgid "move to other folder"
 msgstr "déplace vers un autre dossier"
 
-#: ../src/libs/image.c:556
+#: ../src/libs/image.c:558
 msgctxt "accel"
 msgid "copy to other folder"
 msgstr "copie vers un autre dossier"
 
-#: ../src/libs/image.c:557
+#: ../src/libs/image.c:559
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens horaire)"
 
-#: ../src/libs/image.c:558
+#: ../src/libs/image.c:560
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CCW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens anit-horaire)"
 
-#: ../src/libs/image.c:559
+#: ../src/libs/image.c:561
 msgctxt "accel"
 msgid "create HDR"
 msgstr "créer HDR"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/libs/image.c:560
+#: ../src/libs/image.c:562
 msgctxt "accel"
 msgid "duplicate"
 msgstr "cloner"
 
-#: ../src/libs/image.c:561
+#: ../src/libs/image.c:563
 msgctxt "accel"
 msgid "reset rotation"
 msgstr "réinitialiser"
 
-#: ../src/libs/image.c:562
+#: ../src/libs/image.c:564
 msgctxt "accel"
 msgid "copy the image locally"
 msgstr "copie l'image localement"
 
-#: ../src/libs/image.c:563
+#: ../src/libs/image.c:565
 msgctxt "accel"
 msgid "resync the local copy"
 msgstr "resync copie locale"
 
-#: ../src/libs/image.c:564
+#: ../src/libs/image.c:566
 msgctxt "accel"
 msgid "refresh exif"
 msgstr "rafraîchir exif"
 
-#: ../src/libs/image.c:565
+#: ../src/libs/image.c:567
 msgctxt "accel"
 msgid "copy metadata"
 msgstr "copier métadonnées"
 
-#: ../src/libs/image.c:566
+#: ../src/libs/image.c:568
 msgctxt "accel"
 msgid "replace metadata"
 msgstr "remplacer métadonnée"
 
-#: ../src/libs/image.c:567
+#: ../src/libs/image.c:569
 msgctxt "accel"
 msgid "paste metadata"
 msgstr "coller métadonnée"
 
-#: ../src/libs/image.c:568
+#: ../src/libs/image.c:570
 msgctxt "accel"
 msgid "clear metadata"
 msgstr "effacer métadonnées"
 
 #. Grouping keys
-#: ../src/libs/image.c:570
+#: ../src/libs/image.c:572
 msgctxt "accel"
 msgid "group"
 msgstr "grouper"
 
-#: ../src/libs/image.c:571
+#: ../src/libs/image.c:573
 msgctxt "accel"
 msgid "ungroup"
 msgstr "dégrouper"
@@ -14548,6 +14584,26 @@ msgstr ""
 msgid "group #%d"
 msgstr "groupe #%d"
 
+#: ../src/libs/masks.c:997 ../src/libs/masks.c:1037 ../src/libs/masks.c:1677
+msgid "add circle"
+msgstr "ajouter un cercle"
+
+#: ../src/libs/masks.c:1001 ../src/libs/masks.c:1041 ../src/libs/masks.c:1670
+msgid "add ellipse"
+msgstr "ajouter une ellipse"
+
+#: ../src/libs/masks.c:1005 ../src/libs/masks.c:1045 ../src/libs/masks.c:1663
+msgid "add path"
+msgstr "ajouter un chemin"
+
+#: ../src/libs/masks.c:1009 ../src/libs/masks.c:1049 ../src/libs/masks.c:1657
+msgid "add gradient"
+msgstr "ajouter un dégradé"
+
+#: ../src/libs/masks.c:1033 ../src/libs/masks.c:1683
+msgid "add brush"
+msgstr "ajouter une forme au pinceau"
+
 #: ../src/libs/masks.c:1123
 msgid "duplicate this shape"
 msgstr "dupliquer cette forme"
@@ -14670,57 +14726,57 @@ msgstr ""
 "écrire les métadonnées\n"
 "des images sélectionnées"
 
-#: ../src/libs/metadata.c:745
+#: ../src/libs/metadata.c:746
 msgid "configure metadata"
 msgstr "configurer métadonnées"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:787
+#: ../src/libs/metadata.c:788
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:787
+#: ../src/libs/metadata.c:788
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Paternité (CC-BY)"
 
-#: ../src/libs/metadata.c:788
+#: ../src/libs/metadata.c:789
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:788
+#: ../src/libs/metadata.c:789
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr ""
 "Creative Commons \n"
 "Paternité\n"
 "Partage des conditions initiales à l'identique (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:789
+#: ../src/libs/metadata.c:790
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:789
+#: ../src/libs/metadata.c:790
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr ""
 "Creative Commons \n"
 "Paternité\n"
 "Pas de modification(CC-BY-ND)"
 
-#: ../src/libs/metadata.c:790
+#: ../src/libs/metadata.c:791
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:790
+#: ../src/libs/metadata.c:791
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr ""
 "Creative Commons \n"
 "Paternité\n"
 "Pas d'utilisation commerciale (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:791
+#: ../src/libs/metadata.c:792
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:792
+#: ../src/libs/metadata.c:793
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr ""
 "Creative Commons\n"
@@ -14728,11 +14784,11 @@ msgstr ""
 "Pas d'utilisation commerciale\n"
 "Partage des conditions initiales à l'identique (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:793
+#: ../src/libs/metadata.c:794
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:794
+#: ../src/libs/metadata.c:795
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr ""
 "Creative Commons \n"
@@ -14740,11 +14796,11 @@ msgstr ""
 "Pas d'utilisation commerciale\n"
 "Pas de modification (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:795
+#: ../src/libs/metadata.c:796
 msgid "all rights reserved"
 msgstr "tous droits réservés"
 
-#: ../src/libs/metadata.c:795
+#: ../src/libs/metadata.c:796
 msgid "all rights reserved."
 msgstr "tous droits réservés"
 
@@ -16062,38 +16118,41 @@ msgstr "préférences"
 
 #: ../src/libs/tools/global_toolbox.c:455
 msgctxt "accel"
-msgid "no overlays"
-msgstr "pas de surimpression"
+msgid "thumbnail overlays/no overlays"
+msgstr "superpositions miniature/pas de superposiion"
 
 #: ../src/libs/tools/global_toolbox.c:456
 msgctxt "accel"
-msgid "overlays on mouse hover"
-msgstr "surimpression lors du survol souris"
+msgid "thumbnail overlays/overlays on mouse hover"
+msgstr "superpositions miniature/surimpression lors du survol souris"
 
 #: ../src/libs/tools/global_toolbox.c:457
 msgctxt "accel"
-msgid "extended overlays on mouse hover"
-msgstr "surimpression étendue lors du survol souris"
+msgid "thumbnail overlays/extended overlays on mouse hover"
+msgstr "superpositions miniature/surimpression étendue lors du survol souris"
 
 #: ../src/libs/tools/global_toolbox.c:458
 msgctxt "accel"
-msgid "permanent overlays"
-msgstr "surimpressions permanentes"
+msgid "thumbnail overlays/permanent overlays"
+msgstr "superpositions miniature/surimpressions permanentes"
 
 #: ../src/libs/tools/global_toolbox.c:459
 msgctxt "accel"
-msgid "permanent extended overlays"
-msgstr "surimpressions étendues permanentes"
+msgid "thumbnail overlays/permanent extended overlays"
+msgstr "superpositions miniature/surimpressions étendues permanentes"
 
 #: ../src/libs/tools/global_toolbox.c:460
 msgctxt "accel"
-msgid "permanent overlays extended on mouse hover"
-msgstr "surimpressions permanentes et étendues lors du survol souris"
+msgid "thumbnail overlays/permanent overlays extended on mouse hover"
+msgstr ""
+"superpositions miniature/surimpressions permanentes et étendues lors du "
+"survol souris"
 
 #: ../src/libs/tools/global_toolbox.c:461
 msgctxt "accel"
-msgid "overlays block on mouse hover"
-msgstr "bloc de superposition lors du survol de la souris"
+msgid "thumbnail overlays/overlays block on mouse hover"
+msgstr ""
+"superpositions miniature/bloc de superposition lors du survol de la souris"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
@@ -16103,61 +16162,38 @@ msgstr "rendu"
 msgid "image infos"
 msgstr "information de l'image"
 
-#: ../src/libs/tools/lighttable.c:143
+#: ../src/libs/tools/lighttable.c:131
 msgid "zoomable light table"
 msgstr "table lumineuse zoomable"
 
-#: ../src/libs/tools/lighttable.c:144
+#: ../src/libs/tools/lighttable.c:132
 msgid "file manager"
 msgstr "navigateur de fichier"
 
-#: ../src/libs/tools/lighttable.c:145
+#: ../src/libs/tools/lighttable.c:133
 msgid "culling"
 msgstr "sélection"
 
-#: ../src/libs/tools/lighttable.c:176
+#: ../src/libs/tools/lighttable.c:164
 msgid "fixed zoom"
 msgstr "zoom fixe"
 
-#: ../src/libs/tools/lighttable.c:177
+#: ../src/libs/tools/lighttable.c:165
 msgid "dynamic zoom"
 msgstr "plage dynamique"
 
 #. view accels
-#: ../src/libs/tools/lighttable.c:214
-msgctxt "accel"
-msgid "zoom max"
-msgstr "zoom maxi"
-
-#. zoom in/out
-#: ../src/libs/tools/lighttable.c:215 ../src/views/darkroom.c:3600
-#: ../src/views/lighttable.c:826
-msgctxt "accel"
-msgid "zoom in"
-msgstr "zoom"
-
-#: ../src/libs/tools/lighttable.c:216 ../src/views/darkroom.c:3601
-#: ../src/views/lighttable.c:827
-msgctxt "accel"
-msgid "zoom out"
-msgstr "dézoom"
-
-#: ../src/libs/tools/lighttable.c:217
-msgctxt "accel"
-msgid "zoom min"
-msgstr "zoom mini"
-
-#: ../src/libs/tools/lighttable.c:219
+#: ../src/libs/tools/lighttable.c:202
 msgctxt "accel"
 msgid "toggle culling mode"
 msgstr "activer/désactiver le mode trie/sélection"
 
-#: ../src/libs/tools/lighttable.c:220
+#: ../src/libs/tools/lighttable.c:203
 msgctxt "accel"
 msgid "toggle culling dynamic mode"
 msgstr "activer/désactiver le mode sélection dynamique"
 
-#: ../src/libs/tools/lighttable.c:221
+#: ../src/libs/tools/lighttable.c:204
 msgctxt "accel"
 msgid "toggle culling zoom mode"
 msgstr "activer/désactiver le mode sélection"
@@ -16371,19 +16407,19 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:2255 ../src/views/lighttable.c:1333
+#: ../src/views/darkroom.c:2255 ../src/views/lighttable.c:1353
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:2263 ../src/views/lighttable.c:1341
+#: ../src/views/darkroom.c:2263 ../src/views/lighttable.c:1361
 msgid "preview display intent"
 msgstr "rendu (écran secondaire)"
 
-#: ../src/views/darkroom.c:2283 ../src/views/lighttable.c:1349
+#: ../src/views/darkroom.c:2283 ../src/views/lighttable.c:1369
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:2284 ../src/views/lighttable.c:1353
+#: ../src/views/darkroom.c:2284 ../src/views/lighttable.c:1373
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
@@ -16391,12 +16427,12 @@ msgstr "profil (écran secondaire)"
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:2339 ../src/views/lighttable.c:1383
+#: ../src/views/darkroom.c:2339 ../src/views/lighttable.c:1403
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2342 ../src/views/lighttable.c:1386
+#: ../src/views/darkroom.c:2342 ../src/views/lighttable.c:1406
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
@@ -16442,6 +16478,18 @@ msgstr "zoomer"
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
+
+#. zoom in/out
+#. zoom in/out/min/max
+#: ../src/views/darkroom.c:3600 ../src/views/lighttable.c:840
+msgctxt "accel"
+msgid "zoom in"
+msgstr "zoom"
+
+#: ../src/views/darkroom.c:3601 ../src/views/lighttable.c:842
+msgctxt "accel"
+msgid "zoom out"
+msgstr "dézoom"
 
 #. Shortcut to skip images
 #: ../src/views/darkroom.c:3607
@@ -16536,13 +16584,13 @@ msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3647 ../src/views/lighttable.c:818
+#: ../src/views/darkroom.c:3647 ../src/views/lighttable.c:832
 #: ../src/views/map.c:919
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3648 ../src/views/lighttable.c:819
+#: ../src/views/darkroom.c:3648 ../src/views/lighttable.c:833
 #: ../src/views/map.c:920
 msgctxt "accel"
 msgid "redo"
@@ -16564,7 +16612,7 @@ msgstr "rechercher module"
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3777 ../src/views/lighttable.c:996
+#: ../src/views/darkroom.c:3777 ../src/views/lighttable.c:1016
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
@@ -16616,195 +16664,205 @@ msgstr ""
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #. movement keys
-#: ../src/views/lighttable.c:786
+#: ../src/views/lighttable.c:800
 msgctxt "accel"
 msgid "move page up"
 msgstr "monter d'une page"
 
-#: ../src/views/lighttable.c:787
+#: ../src/views/lighttable.c:801
 msgctxt "accel"
 msgid "move page down"
 msgstr "descendre d'une page"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/views/lighttable.c:788
+#: ../src/views/lighttable.c:802
 msgctxt "accel"
 msgid "move up"
 msgstr "monter"
 
-#: ../src/views/lighttable.c:789
+#: ../src/views/lighttable.c:803
 msgctxt "accel"
 msgid "move down"
 msgstr "descendre"
 
-#: ../src/views/lighttable.c:790
+#: ../src/views/lighttable.c:804
 msgctxt "accel"
 msgid "move left"
 msgstr "à gauche"
 
-#: ../src/views/lighttable.c:791
+#: ../src/views/lighttable.c:805
 msgctxt "accel"
 msgid "move right"
 msgstr "à droite"
 
-#: ../src/views/lighttable.c:792
+#: ../src/views/lighttable.c:806
 msgctxt "accel"
 msgid "move start"
 msgstr "aller au début"
 
-#: ../src/views/lighttable.c:793
+#: ../src/views/lighttable.c:807
 msgctxt "accel"
 msgid "move end"
 msgstr "aller à la fin"
 
 #. movement keys with selection
-#: ../src/views/lighttable.c:796
+#: ../src/views/lighttable.c:810
 msgctxt "accel"
 msgid "move page up and select"
 msgstr "monter d'une page et sélectionner"
 
-#: ../src/views/lighttable.c:797
+#: ../src/views/lighttable.c:811
 msgctxt "accel"
 msgid "move page down and select"
 msgstr "descendre d'une page et sélectionner"
 
-#: ../src/views/lighttable.c:798
+#: ../src/views/lighttable.c:812
 msgctxt "accel"
 msgid "move up and select"
 msgstr "monter et sélectionner"
 
-#: ../src/views/lighttable.c:799
+#: ../src/views/lighttable.c:813
 msgctxt "accel"
 msgid "move down and select"
 msgstr "descendre et sélectionner"
 
-#: ../src/views/lighttable.c:800
+#: ../src/views/lighttable.c:814
 msgctxt "accel"
 msgid "move left and select"
 msgstr "à gauche et sélectionner"
 
-#: ../src/views/lighttable.c:801
+#: ../src/views/lighttable.c:815
 msgctxt "accel"
 msgid "move right and select"
 msgstr "à droite et sélectionner"
 
-#: ../src/views/lighttable.c:802
+#: ../src/views/lighttable.c:816
 msgctxt "accel"
 msgid "move start and select"
 msgstr "aller au début et sélectionner"
 
-#: ../src/views/lighttable.c:803
+#: ../src/views/lighttable.c:817
 msgctxt "accel"
 msgid "move end and select"
 msgstr "aller à la fin et sélectionner"
 
-#: ../src/views/lighttable.c:805
+#: ../src/views/lighttable.c:819
 msgctxt "accel"
 msgid "align images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:806
+#: ../src/views/lighttable.c:820
 msgctxt "accel"
 msgid "reset first image offset"
 msgstr "repositionner première image"
 
-#: ../src/views/lighttable.c:807
+#: ../src/views/lighttable.c:821
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:808
+#: ../src/views/lighttable.c:822
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:811
+#: ../src/views/lighttable.c:825
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:812
+#: ../src/views/lighttable.c:826
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:813
+#: ../src/views/lighttable.c:827
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:814
+#: ../src/views/lighttable.c:828
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:822
+#: ../src/views/lighttable.c:836
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "zoom image 100%"
 
-#: ../src/views/lighttable.c:823
+#: ../src/views/lighttable.c:837
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zoom image ajustée"
 
-#: ../src/views/lighttable.c:983
+#: ../src/views/lighttable.c:841
+msgctxt "accel"
+msgid "zoom max"
+msgstr "zoom maxi"
+
+#: ../src/views/lighttable.c:843
+msgctxt "accel"
+msgid "zoom min"
+msgstr "zoom mini"
+
+#: ../src/views/lighttable.c:1003
 msgid "open image in darkroom"
 msgstr "ouvrir l'image dans la chambre noire"
 
-#: ../src/views/lighttable.c:990
+#: ../src/views/lighttable.c:1010
 msgid "switch to next/previous image"
 msgstr "passer à l'image suivante/précédente"
 
-#: ../src/views/lighttable.c:1002 ../src/views/lighttable.c:1060
+#: ../src/views/lighttable.c:1022 ../src/views/lighttable.c:1080
 #, no-c-format
 msgid "zoom to 100% and back"
 msgstr "zoom à 100% et retour vers ajusté"
 
-#: ../src/views/lighttable.c:1009 ../src/views/lighttable.c:1031
+#: ../src/views/lighttable.c:1029 ../src/views/lighttable.c:1051
 msgid "scroll the collection"
 msgstr "défiler la collection"
 
-#: ../src/views/lighttable.c:1015
+#: ../src/views/lighttable.c:1035
 msgid "change number of images per row"
 msgstr "changer le nombre d'image par ligne"
 
-#: ../src/views/lighttable.c:1023
+#: ../src/views/lighttable.c:1043
 msgid "change image order"
 msgstr "changer l'ordre des images"
 
-#: ../src/views/lighttable.c:1037
+#: ../src/views/lighttable.c:1057
 msgid "zoom all the images"
 msgstr "zoom toutes les images"
 
-#: ../src/views/lighttable.c:1042
+#: ../src/views/lighttable.c:1062
 msgid "pan inside all the images"
 msgstr "déplacer toutes les images"
 
-#: ../src/views/lighttable.c:1048
+#: ../src/views/lighttable.c:1068
 msgid "zoom current image"
 msgstr "zoom image"
 
-#: ../src/views/lighttable.c:1054
+#: ../src/views/lighttable.c:1074
 msgid "pan inside current image"
 msgstr "déplacer l'image"
 
-#: ../src/views/lighttable.c:1067
+#: ../src/views/lighttable.c:1087
 #, no-c-format
 msgid "zoom current image to 100% and back"
 msgstr "zoom sur l'image actuelle à 100% et retour vers ajusté"
 
-#: ../src/views/lighttable.c:1074
+#: ../src/views/lighttable.c:1094
 msgid "zoom the main view"
 msgstr "zoom vue principale"
 
-#: ../src/views/lighttable.c:1079
+#: ../src/views/lighttable.c:1099
 msgid "pan inside the main view"
 msgstr "déplacer la vue principale"
 
-#: ../src/views/lighttable.c:1310
+#: ../src/views/lighttable.c:1330
 msgid "set display profile"
 msgstr "profil (écran)"
 
@@ -16935,6 +16993,34 @@ msgstr "raccourci"
 #: ../src/views/view.c:1583
 msgid "Action"
 msgstr "action"
+
+#~ msgctxt "accel"
+#~ msgid "no overlays"
+#~ msgstr "pas de surimpression"
+
+#~ msgctxt "accel"
+#~ msgid "overlays on mouse hover"
+#~ msgstr "surimpression lors du survol souris"
+
+#~ msgctxt "accel"
+#~ msgid "extended overlays on mouse hover"
+#~ msgstr "surimpression étendue lors du survol souris"
+
+#~ msgctxt "accel"
+#~ msgid "permanent overlays"
+#~ msgstr "surimpressions permanentes"
+
+#~ msgctxt "accel"
+#~ msgid "permanent extended overlays"
+#~ msgstr "surimpressions étendues permanentes"
+
+#~ msgctxt "accel"
+#~ msgid "permanent overlays extended on mouse hover"
+#~ msgstr "surimpressions permanentes et étendues lors du survol souris"
+
+#~ msgctxt "accel"
+#~ msgid "overlays block on mouse hover"
+#~ msgstr "bloc de superposition lors du survol de la souris"
 
 #~ msgid "apply metadata on import"
 #~ msgstr "appliquer des métadonnées lors de l'importation"
