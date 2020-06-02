@@ -637,7 +637,7 @@ inline static void blur_2D_Bspline_horizontal(const float *const restrict in, fl
   // Convolve B-spline filter over columns
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stdout, out, in, width, height, ch, bound_bot, bound_top, mult) \
+    dt_omp_firstprivate(out, in, width, height, ch, bound_bot, bound_top, mult) \
     schedule(simd:static) collapse(2)
   #endif
   for(size_t i = 0; i < height; i++)
