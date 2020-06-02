@@ -263,7 +263,7 @@ void gui_reset(dt_lib_module_t *self)
   _update(self);
 }
 
-static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
+static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
   _update(self);
 }
@@ -355,8 +355,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, button, 3, line, 3, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                            G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_image_selection_changed_callback), self);
 
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
