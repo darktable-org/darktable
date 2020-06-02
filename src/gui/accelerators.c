@@ -193,6 +193,8 @@ void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint ac
   snprintf(accel_path, sizeof(accel_path), "<Darktable>/%s/%s/%s", C_("accel", "views"), view_name,
            g_dpgettext2(NULL, "accel", path));
 
+  g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
+
   g_strlcpy(accel->module, view_name, sizeof(accel->module));
   accel->local = FALSE;
 
