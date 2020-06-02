@@ -921,21 +921,33 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "cycle histogram modes"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "switch histogram mode"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "switch histogram type"), 0, 0);
+  dt_accel_register_lib_as_view("darkroom", NC_("accel", "histogram/hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib_as_view("tethering", NC_("accel", "hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib_as_view("darkroom", NC_("accel", "histogram/cycle histogram modes"), 0, 0);
+  dt_accel_register_lib_as_view("tethering", NC_("accel", "cycle histogram modes"), 0, 0);
+  dt_accel_register_lib_as_view("darkroom", NC_("accel", "histogram/switch histogram mode"), 0, 0);
+  dt_accel_register_lib_as_view("tethering", NC_("accel", "switch histogram mode"), 0, 0);
+  dt_accel_register_lib_as_view("darkroom", NC_("accel", "histogram/switch histogram type"), 0, 0);
+  dt_accel_register_lib_as_view("tethering", NC_("accel", "switch histogram type"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_connect_lib(self, "hide histogram",
+  dt_accel_connect_lib_as_view(self, "darkroom", "histogram/hide histogram",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_collapse_callback), self, NULL));
-  dt_accel_connect_lib(self, "cycle histogram modes",
+  dt_accel_connect_lib_as_view(self, "tethering", "hide histogram",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_collapse_callback), self, NULL));
+  dt_accel_connect_lib_as_view(self, "darkroom", "histogram/cycle histogram modes",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
-  dt_accel_connect_lib(self, "switch histogram mode",
+  dt_accel_connect_lib_as_view(self, "tethering", "cycle histogram modes",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
+  dt_accel_connect_lib_as_view(self, "darkroom", "histogram/switch histogram mode",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_change_mode_callback), self, NULL));
-  dt_accel_connect_lib(self, "switch histogram type",
+  dt_accel_connect_lib_as_view(self, "tethering", "switch histogram mode",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_mode_callback), self, NULL));
+  dt_accel_connect_lib_as_view(self, "darkroom", "histogram/switch histogram type",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_type_callback), self, NULL));
+  dt_accel_connect_lib_as_view(self, "tethering", "switch histogram type",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_change_type_callback), self, NULL));
 }
 
