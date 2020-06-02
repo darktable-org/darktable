@@ -563,7 +563,7 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
   // for content drawing, we remove css margin, border and padding from allocation
   const int starty = padding.top + border.top + margin.top;
   const int cheight = allocation.height - (padding.top + padding.bottom + border.top + border.bottom + margin.top + margin.bottom);
-  const int y1 = round(0.25f * cheight);
+  const int y1 = round(0.3f * cheight);
   const int gwidth = allocation.width - gslider->margin_left - gslider->margin_right;
   const int gheight = cheight - 2 * y1;
 
