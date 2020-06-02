@@ -780,6 +780,20 @@ static gboolean zoom_out_callback(GtkAccelGroup *accel_group, GObject *accelerat
   return TRUE;
 }
 
+static gboolean zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  dt_view_lighttable_set_zoom(darktable.view_manager, 1);
+  return TRUE;
+}
+
+static gboolean zoom_min_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  dt_view_lighttable_set_zoom(darktable.view_manager, DT_LIGHTTABLE_MAX_ZOOM);
+  return TRUE;
+}
+
 void init_key_accels(dt_view_t *self)
 {
   // movement keys
@@ -822,9 +836,11 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "preview zoom 100%"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "preview zoom fit"), 0, 0);
 
-  // zoom in/out
+  // zoom in/out/min/max
   dt_accel_register_view(self, NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "zoom max"), GDK_KEY_plus, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "zoom min"), GDK_KEY_minus, GDK_MOD1_MASK);
 }
 
 static gboolean _lighttable_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -965,11 +981,15 @@ void connect_key_accels(dt_view_t *self)
   closure = g_cclosure_new(G_CALLBACK(_accel_culling_zoom_fit), (gpointer)self, NULL);
   dt_accel_connect_view(self, "preview zoom fit", closure);
 
-  // zoom in/out
+  // zoom in/out/min/max
   closure = g_cclosure_new(G_CALLBACK(zoom_in_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "zoom in", closure);
   closure = g_cclosure_new(G_CALLBACK(zoom_out_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "zoom out", closure);
+  closure = g_cclosure_new(G_CALLBACK(zoom_min_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "zoom min", closure);
+  closure = g_cclosure_new(G_CALLBACK(zoom_max_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "zoom max", closure);
 }
 
 GSList *mouse_actions(const dt_view_t *self)
