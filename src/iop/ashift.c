@@ -973,7 +973,6 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   const float cx = roi_out->scale * fullwidth * data->cl;
   const float cy = roi_out->scale * fullheight * data->ct;
 
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(cx, cy, in, out, roi_in, roi_out) \
@@ -1056,6 +1055,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       yM = MAX(yM, pout[1]);
     }
   }
+
   float width = xM - xm + 1;
   float height = yM - ym + 1;
 
@@ -1417,6 +1417,7 @@ static int line_detect(float *in, const int width, const int height, const int x
   // LSD stores the number of found lines in lines_count.
   // it returns structural details as vector 'double lines[7 * lines_count]'
   int lines_count;
+
   lsd_lines = LineSegmentDetection(&lines_count, greyscale, width, height,
                                    LSD_SCALE, LSD_SIGMA_SCALE, LSD_QUANT,
                                    LSD_ANG_TH, LSD_LOG_EPS, LSD_DENSITY_TH,
@@ -1424,7 +1425,6 @@ static int line_detect(float *in, const int width, const int height, const int x
 
   // we count the lines that we really want to use
   int lct = 0;
-
   if(lines_count > 0)
   {
     // aggregate lines data into our own structures
@@ -2861,12 +2861,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
-
+    const float pr_d = self->dev->preview_downsampling;
     const int width = roi_in->width;
     const int height = roi_in->height;
     const int x_off = roi_in->x;
     const int y_off = roi_in->y;
-    const float scale = roi_in->scale;
+    const float scale = roi_in->scale / pr_d;
 
     // origin of image and opposite corner as reference points
     float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
@@ -2916,7 +2916,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     dt_pthread_mutex_unlock(&g->lock);
   }
-
+  
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
   {
@@ -2935,7 +2935,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float fullheight = (float)piece->buf_out.height / (data->cb - data->ct);
   const float cx = roi_out->scale * fullwidth * data->cl;
   const float cy = roi_out->scale * fullheight * data->ct;
-
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -2998,10 +2997,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
-
+    const float pr_d = self->dev->preview_downsampling;
     const int x_off = roi_in->x;
     const int y_off = roi_in->y;
-    const float scale = roi_in->scale;
+    const float scale = roi_in->scale / pr_d;
 
     // origin of image and opposite corner as reference points
     float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
@@ -3276,7 +3275,7 @@ static int update_colors(struct dt_iop_module_t *self, dt_iop_ashift_points_idx_
 // get all the points to display lines in the gui
 static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *lines, const int lines_count,
                       const int lines_version, float **points, dt_iop_ashift_points_idx_t **points_idx,
-                      int *points_lines_count)
+                      int *points_lines_count, float scale)
 {
   dt_develop_t *dev = self->dev;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
@@ -3332,12 +3331,12 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   {
     my_points_idx[n].offset = offset;
 
-    float x = lines[n].p1[0];
-    float y = lines[n].p1[1];
+    float x = lines[n].p1[0] / scale;
+    float y = lines[n].p1[1] / scale;
     const int length = lines[n].length;
 
-    const float dx = (lines[n].p2[0] - x) / (float)(length - 1);
-    const float dy = (lines[n].p2[1] - y) / (float)(length - 1);
+    const float dx = (lines[n].p2[0] / scale - x) / (float)(length - 1);
+    const float dy = (lines[n].p2[1] / scale - y) / (float)(length - 1);
 
     for(int l = 0; l < length && offset < total_points; l++, offset++)
     {
@@ -3426,6 +3425,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float wd = dev->preview_pipe->backbuf_width;
   const float ht = dev->preview_pipe->backbuf_height;
   if(wd < 1.0 || ht < 1.0) return;
+  const float pr_d = dev->preview_downsampling;
   const float zoom_y = dt_control_get_dev_zoom_y();
   const float zoom_x = dt_control_get_dev_zoom_x();
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
@@ -3437,7 +3437,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(g->buf && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
   {
     // roi data of the preview pipe input buffer
-    const float pr_d = darktable.develop->preview_downsampling;
     
     const float iwd = g->buf_width / pr_d;
     const float iht = g->buf_height / pr_d;
@@ -3608,7 +3607,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     g->points_lines_count = 0;
 
     if(!get_points(self, g->lines, g->lines_count, g->lines_version, &g->points, &g->points_idx,
-                   &g->points_lines_count))
+                   &g->points_lines_count, pr_d))
       return;
 
     g->points_version = g->lines_version;
