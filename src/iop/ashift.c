@@ -2874,7 +2874,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, 
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
@@ -2916,7 +2916,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     dt_pthread_mutex_unlock(&g->lock);
   }
-  
+
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
   {
@@ -3008,7 +3008,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, 
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
@@ -3130,7 +3130,7 @@ error:
 #endif
 
 // gather information about "near"-ness in g->points_idx
-static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, 
+static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx,
                      const int lines_count, float pzx, float pzy, float delta)
 {
   const float delta2 = delta * delta;
@@ -3437,7 +3437,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(g->buf && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
   {
     // roi data of the preview pipe input buffer
-    
+
     const float iwd = g->buf_width / pr_d;
     const float iht = g->buf_height / pr_d;
     const float ixo = g->buf_x_off / pr_d;
@@ -3472,10 +3472,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                       { xmin + p->cr * owd, ymin + p->ct * oht } };
 
     // convert clipping corners to final output image
-    if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, 
+    if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                      DT_DEV_TRANSFORM_DIR_FORW_EXCL, (float *)C, 4))
       return;
-      
+
     cairo_save(cr);
 
     double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
@@ -4577,7 +4577,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_ashift_params_t);
   module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH, 
+  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH,
                                 1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0, ASHIFT_CROP_OFF,
                                 0.0f, 1.0f, 0.0f, 1.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
