@@ -3500,6 +3500,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     // draw white outline around clipping area
     dt_draw_set_color_overlay(cr, 0.7, 1.0);
+    cairo_set_line_width(cr, 2.0 / zoom_scale);
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
     cairo_line_to(cr, C[2][0], C[2][1]);
