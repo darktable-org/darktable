@@ -935,6 +935,7 @@ void dt_gui_gtk_quit()
 
   // Write out windows dimension
   dt_gui_gtk_write_config();
+  gtk_widget_hide(GTK_WIDGET(win));
 
   GtkWidget *widget;
   widget = darktable.gui->widgets.left_border;
@@ -2686,7 +2687,14 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   {
     GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
     gtk_window_set_transient_for(GTK_WINDOW(window), win);
-    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
+    if(gtk_widget_get_visible(GTK_WIDGET(win)))
+    {
+      gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
+    }
+    else
+    {
+      gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
+    }
   }
   else
   {
@@ -2741,13 +2749,20 @@ char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup
   gtk_window_set_title(GTK_WINDOW(window), title);
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-  if(darktable.gui) 
+  if(darktable.gui)
   {
     GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
     gtk_window_set_transient_for(GTK_WINDOW(window), win);
-    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
+    if(gtk_widget_get_visible(GTK_WIDGET(win)))
+    {
+      gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
+    }
+    else
+    {
+      gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
+    }
   }
-  else 
+  else
   {
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
   }
