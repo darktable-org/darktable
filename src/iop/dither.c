@@ -67,12 +67,12 @@ typedef enum dt_iop_dither_type_t
 
 typedef struct dt_iop_dither_params_t
 {
-  dt_iop_dither_type_t dither_type; // $DEFAULT: 5 DITHER_FSAUTO
+  dt_iop_dither_type_t dither_type; // $DEFAULT: DITHER_FSAUTO
   int palette; // reserved for future extensions
   struct
   {
     float radius;   // reserved for future extensions
-    float range[4]; // reserved for future extensions
+    float range[4]; // reserved for future extensions {0,0,1,1}
     float damping;  // $MIN: -200.0 $MAX: 0.0 $DEFAULT: -200.0
   } random;
 } dt_iop_dither_params_t;
@@ -756,19 +756,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->random, p->dither_type == DITHER_RANDOM);
 } 
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_dither_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_dither_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_dither_params_t);
-  module->gui_data = NULL;
-  dt_iop_dither_params_t tmp
-      = (dt_iop_dither_params_t){ DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
-  memcpy(module->params, &tmp, sizeof(dt_iop_dither_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_dither_params_t));
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_dither_gui_data_t));
@@ -797,7 +784,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(rlabel), GTK_WIDGET(g->range_label), FALSE, FALSE, 0);
 #endif
 
-  g->damping = dt_bauhaus_slider_new_from_params_box(self, "random.damping");
+  g->damping = dt_bauhaus_slider_from_params(self, "random.damping");
 
   gtk_widget_set_tooltip_text(g->damping, _("damping level of random dither"));
   dt_bauhaus_slider_set_digits(g->damping, 3);
@@ -812,7 +799,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->dither_type = dt_bauhaus_combobox_new_from_params_box(self, "dither_type");
+  g->dither_type = dt_bauhaus_combobox_from_params(self, "dither_type");
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->random, TRUE, TRUE, 0);
 
