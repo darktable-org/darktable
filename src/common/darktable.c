@@ -1118,6 +1118,8 @@ void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
 
+  // last chance to ask user for any input...
+
   dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
 
 #ifdef HAVE_PRINT
@@ -1127,8 +1129,14 @@ void dt_cleanup()
 #ifdef USE_LUA
   dt_lua_finalize_early();
 #endif
+
+  // anything that asks user for input should be placed before this line
+
   if(init_gui)
   {
+    // hide main window and do rest of the cleanup in the background
+    gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
+
     dt_ctl_switch_mode_to("");
     dt_dbus_destroy(darktable.dbus);
 
