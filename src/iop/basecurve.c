@@ -53,8 +53,8 @@ DT_MODULE_INTROSPECTION(6, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {
-  float x;
-  float y;
+  float x; // $MIN: 0.0 $MAX: 1.0
+  float y; // $MIN: 0.0 $MAX: 1.0
 } dt_iop_basecurve_node_t;
 
 typedef struct dt_iop_basecurve_params_t
@@ -62,15 +62,15 @@ typedef struct dt_iop_basecurve_params_t
   // three curves (c, ., .) with max number of nodes
   // the other two are reserved, maybe we'll have cam rgb at some point.
   dt_iop_basecurve_node_t basecurve[3][MAXNODES];
-  int basecurve_nodes[3];
-  int basecurve_type[3];
+  int basecurve_nodes[3]; // $MIN: 0 $MAX: MAXNODES $DEFAULT: 0
+  int basecurve_type[3];  // $MIN: 0 $MAX: MONOTONE_HERMITE $DEFAULT: MONOTONE_HERMITE
   int exposure_fusion;    /* number of exposure fusion steps
                              $DEFAULT: 0 $DESCRIPTION: "fusion" */
   float exposure_stops;   /* number of stops between fusion images
                              $MIN: 0.01 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure shift" */
   float exposure_bias;    /* whether to do exposure-fusion with over or under-exposure
                              $MIN: -1.0 $MAX: 1.0 $DEFAULT: 1.0 */
-  int preserve_colors;    /* $DEFAULT: 1 DT_RGB_NORM_LUMINANCE */
+  dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE */
 } dt_iop_basecurve_params_t;
 
 typedef struct dt_iop_basecurve_params5_t
@@ -1450,33 +1450,14 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_basecurve_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_basecurve_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_basecurve_params_t);
-  module->gui_data = NULL;
-  dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t){
-    {
-      { // three curves (L, a, b) with a number of nodes
-        { 0.0, 0.0 },
-        { 1.0, 1.0 }
-      },
-    },
-    { 2, 0, 0 }, // number of nodes per curve
-    { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-    0, 1.0f, 1.0f, // no exposure fusion, but if we would, add one stop
-    DT_RGB_NORM_LUMINANCE
-  };
-  memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
-}
+  dt_iop_default_init(module);
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  dt_iop_basecurve_params_t *d = module->default_params;
+
+  d->basecurve[0][1].x = d->basecurve[0][1].y = 1.0;
+  d->basecurve_nodes[0] = 2;
+
+  memcpy(module->params, module->default_params, sizeof(dt_iop_basecurve_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -2146,37 +2127,35 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
 
-  c->cmb_preserve_colors = dt_bauhaus_combobox_new_from_params_box(self, "preserve_colors");
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("none"));
+  c->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
+/*  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("luminance"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("max RGB"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("average RGB"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("sum RGB"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("norm RGB"));
   dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("basic power"));
-  gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
+*/  gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
-  c->fusion = dt_bauhaus_combobox_new_from_params_box(self, "exposure_fusion");
+  c->fusion = dt_bauhaus_combobox_from_params(self, "exposure_fusion");
   dt_bauhaus_combobox_add(c->fusion, _("none"));
   dt_bauhaus_combobox_add(c->fusion, _("two exposures"));
   dt_bauhaus_combobox_add(c->fusion, _("three exposures"));
   gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
                                            "compress high dynamic range. expose for the highlights before use."));
 
-  c->exposure_step = dt_bauhaus_slider_new_from_params_box(self, "exposure_stops");
-//  dt_bauhaus_slider_set_digits(c->exposure_step, 3); 
+  c->exposure_step = dt_bauhaus_slider_from_params(self, "exposure_stops");
+  dt_bauhaus_slider_set_digits(c->exposure_step, 3);
   gtk_widget_set_tooltip_text(c->exposure_step, _("how many stops to shift the individual exposures apart"));
-//  gtk_widget_show_all(c->exposure_step);
   gtk_widget_set_no_show_all(c->exposure_step, TRUE);
   gtk_widget_set_visible(c->exposure_step, p->exposure_fusion != 0 ? TRUE : FALSE);
 
   // initially set to 1 (consistency with previous versions), but double-click resets to 0
   // to get a quick way to reach 0 with the mouse.
-  c->exposure_bias = dt_bauhaus_slider_new_from_params_box(self, "exposure_bias");
-//  dt_bauhaus_slider_set_digits(c->exposure_bias, 3); 
+  c->exposure_bias = dt_bauhaus_slider_from_params(self, "exposure_bias");
+  dt_bauhaus_slider_set_digits(c->exposure_bias, 3); 
   gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
-//  gtk_widget_show_all(c->exposure_bias);
   gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
   gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
 
