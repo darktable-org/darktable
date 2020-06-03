@@ -327,9 +327,9 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->contrast = dt_bauhaus_slider_new_from_params_box(self, "contrast");
-  g->brightness = dt_bauhaus_slider_new_from_params_box(self, "brightness");
-  g->saturation = dt_bauhaus_slider_new_from_params_box(self, "saturation");
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  g->brightness = dt_bauhaus_slider_from_params(self, "brightness");
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
 
   gtk_widget_set_tooltip_text(g->contrast, _("contrast adjustment"));
   gtk_widget_set_tooltip_text(g->brightness, _("brightness adjustment"));
