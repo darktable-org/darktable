@@ -280,10 +280,10 @@ typedef struct dt_iop_ashift_params3_t
 
 typedef struct dt_iop_ashift_params_t
 {
-  float rotation;    // $MIN: -20.0 $MAX: 20.0 $DEFAULT: 0.0
-  float lensshift_v; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "lens shift (vertical)"
-  float lensshift_h; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "lens shift (horizontal)"
-  float shear;       // $MIN: -0.5 $MAX: 0.5 $DEFAULT: 0.0
+  float rotation;    // $MIN: -ROTATION_RANGE_SOFT $MAX: ROTATION_RANGE_SOFT $DEFAULT: 0.0
+  float lensshift_v; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (vertical)"
+  float lensshift_h; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (horizontal)"
+  float shear;       // $MIN: -SHEAR_RANGE_SOFT $MAX: SHEAR_RANGE_SOFT $DEFAULT: 0.0
   float f_length;    // $MIN: 1.0 $MAX: 2000.0 $DEFAULT: 28.0 $DESCRIPTION: "focal length"
   float crop_factor; // $MIN: 0.5 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "crop factor"
   float orthocorr;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "lens dependence"
@@ -4685,19 +4685,19 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->rotation = dt_bauhaus_slider_new_from_params_box(self, "rotation");
+  g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 
-  g->lensshift_v = dt_bauhaus_slider_new_from_params_box(self, "lensshift_v");
+  g->lensshift_v = dt_bauhaus_slider_from_params(self, "lensshift_v");
   dt_bauhaus_slider_set_soft_range(g->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
   dt_bauhaus_slider_set_digits(g->lensshift_v, 3);
 
-  g->lensshift_h = dt_bauhaus_slider_new_from_params_box(self, "lensshift_h");
+  g->lensshift_h = dt_bauhaus_slider_from_params(self, "lensshift_h");
   dt_bauhaus_slider_set_soft_range(g->lensshift_h, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
   dt_bauhaus_slider_set_digits(g->lensshift_h, 3);
 
-  g->shear = dt_bauhaus_slider_new_from_params_box(self, "shear");
+  g->shear = dt_bauhaus_slider_from_params(self, "shear");
   dt_bauhaus_slider_set_soft_range(g->shear, -SHEAR_RANGE, SHEAR_RANGE);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
@@ -4706,23 +4706,23 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->guide_lines, _("on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
-  g->cropmode = dt_bauhaus_combobox_new_from_params_box(self, "cropmode");
+  g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
 
-  g->mode = dt_bauhaus_combobox_new_from_params_box(self, "mode");
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
 
   GtkWidget *saved_widget = self->widget;
   self->widget = g->specifics = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->f_length = dt_bauhaus_slider_new_from_params_box(self, "f_length");
+  g->f_length = dt_bauhaus_slider_from_params(self, "f_length");
   dt_bauhaus_slider_set_soft_range(g->f_length, 10.0f, 1000.0f);
   dt_bauhaus_slider_set_curve(g->f_length, log10_curve);
   dt_bauhaus_slider_set_format(g->f_length, "%.0fmm");
   dt_bauhaus_slider_set_step(g->f_length, 1.0);
 
-  g->crop_factor = dt_bauhaus_slider_new_from_params_box(self, "crop_factor"); 
+  g->crop_factor = dt_bauhaus_slider_from_params(self, "crop_factor"); 
   dt_bauhaus_slider_set_soft_range(g->crop_factor, 1.0f, 2.0f);
 
-  g->orthocorr = dt_bauhaus_slider_new_from_params_box(self, "orthocorr");
+  g->orthocorr = dt_bauhaus_slider_from_params(self, "orthocorr");
   dt_bauhaus_slider_set_format(g->orthocorr, "%.0f%%");
   // this parameter could serve to finetune between generic model (0%) and specific model (100%).
   // however, users can more easily get the same effect with the aspect adjust parameter so we keep
@@ -4730,7 +4730,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_no_show_all(g->orthocorr, TRUE);
   gtk_widget_set_visible(g->orthocorr, FALSE);
 
-  g->aspect = dt_bauhaus_slider_new_from_params_box(self, "aspect");
+  g->aspect = dt_bauhaus_slider_from_params(self, "aspect");
   dt_bauhaus_slider_set_curve(g->aspect, log2_curve);
 
   self->widget = saved_widget;
