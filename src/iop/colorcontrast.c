@@ -53,7 +53,7 @@ typedef struct dt_iop_colorcontrast_params_t
   float a_offset;
   float b_steepness; // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "blue vs yellow"
   float b_offset;
-  int unbound;
+  int unbound;       // $DEFAULT: 1
 } dt_iop_colorcontrast_params_t;
 
 typedef struct dt_iop_colorcontrast_gui_data_t
@@ -297,16 +297,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-void reload_defaults(dt_iop_module_t *module)
-{
-  // change default_enabled depending on type of image, or set new default_params even.
-  // if this callback exists, it has to write default_params and default_enabled.
-  dt_iop_colorcontrast_params_t tmp = (dt_iop_colorcontrast_params_t){ 1.0, 0.0, 1.0, 0.0, 1 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
-  module->default_enabled = 0;
-}
-
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -348,11 +338,10 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->a_scale = dt_bauhaus_slider_new_from_params_box(self, "a_steepness");
-  dt_bauhaus_widget_set_label(g->a_scale, NULL, _("green vs magenta"));
+  g->a_scale = dt_bauhaus_slider_from_params(self, "a_steepness");
   gtk_widget_set_tooltip_text(g->a_scale, _("steepness of the a* curve in Lab"));
 
-  g->b_scale = dt_bauhaus_slider_new_from_params_box(self, "b_steepness");
+  g->b_scale = dt_bauhaus_slider_from_params(self, "b_steepness");
   gtk_widget_set_tooltip_text(g->b_scale, _("steepness of the b* curve in Lab"));
 }
 
