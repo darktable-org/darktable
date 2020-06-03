@@ -88,7 +88,6 @@ void gui_init(dt_lib_module_t *self)
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_widget_set_size_request(GTK_WIDGET(d->tree), DT_PIXEL_APPLY_DPI(50), -1);
   gtk_container_add(GTK_CONTAINER(self->widget), GTK_WIDGET(d->tree));
-  gtk_widget_set_name(GTK_WIDGET(self->widget), "lib-modulelist");
 
   /* connect to signal for darktable.develop initialization */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
