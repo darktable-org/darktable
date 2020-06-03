@@ -263,11 +263,6 @@ void gui_reset(dt_lib_module_t *self)
   _update(self);
 }
 
-static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
-{
-  _update(self);
-}
-
 int position()
 {
   return 600;
@@ -355,8 +350,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, button, 3, line, 3, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                            G_CALLBACK(_image_selection_changed_callback), self);
+  //dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  //                          G_CALLBACK(_image_selection_changed_callback), self);
 
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
@@ -373,6 +368,12 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   free(self->data);
   self->data = NULL;
+}
+
+void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
+                     int32_t pointerx, int32_t pointery)
+{
+  _update(self);
 }
 
 void init_key_accels(dt_lib_module_t *self)
