@@ -307,17 +307,53 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
   }
 }
 
-void dt_styles_update(const char *name, const char *newname, const char *newdescription, GList *filter,
-                      const int32_t imgid, GList *update, gboolean copy_iop_order)
+static void  _dt_style_update_iop_order(const gchar *name, const int id, const int32_t imgid,
+                                        const gboolean copy_iop_order, const gboolean update_iop_order)
 {
   sqlite3_stmt *stmt;
-  int id = 0;
-  gchar *desc = NULL;
 
-  id = dt_styles_get_id_by_name(name);
+  GList *iop_list = dt_styles_module_order_list(name);
+
+  // if we update of if the style does not contains an order then the
+  // copy must be done using the imgid iop-order.
+
+  if(update_iop_order || g_list_length(iop_list) == 0)
+    iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+
+  gchar *iop_list_txt = dt_ioppr_serialize_text_iop_order_list(iop_list);
+
+  if(copy_iop_order || update_iop_order)
+  {
+    // copy from style name to style id
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE data.styles SET iop_list=?1 WHERE id=?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop_list_txt, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
+  }
+  else
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE data.styles SET iop_list=NULL WHERE id=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  }
+
+  g_list_free_full(iop_list, free);
+  g_free(iop_list_txt);
+
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+void dt_styles_update(const char *name, const char *newname, const char *newdescription, GList *filter,
+                      const int32_t imgid, GList *update,
+                      const gboolean copy_iop_order, const gboolean update_iop_order)
+{
+  sqlite3_stmt *stmt;
+
+  const int id = dt_styles_get_id_by_name(name);
   if(id == 0) return;
 
-  desc = dt_styles_get_description(name);
+  gchar *desc = dt_styles_get_description(name);
 
   if((g_strcmp0(name, newname)) || (g_strcmp0(desc, newdescription)))
   {
@@ -354,6 +390,8 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
 
   _dt_style_update_from_image(id, imgid, filter, update);
 
+  _dt_style_update_iop_order(name, id, imgid, copy_iop_order, update_iop_order);
+
   _dt_style_cleanup_multi_instance(id);
 
   /* backup style to disk */
@@ -388,26 +426,17 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
 }
 
 void dt_styles_create_from_style(const char *name, const char *newname, const char *description,
-                                 GList *filter, const int32_t imgid, GList *update, gboolean copy_iop_order)
+                                 GList *filter, const int32_t imgid, GList *update,
+                                 const gboolean copy_iop_order, const gboolean update_iop_order)
 {
   sqlite3_stmt *stmt;
   int id = 0;
-  int oldid = 0;
 
-  oldid = dt_styles_get_id_by_name(name);
+  const int oldid = dt_styles_get_id_by_name(name);
   if(oldid == 0) return;
 
-  GList *iop_list = NULL;
-
-  if(copy_iop_order)
-  {
-    iop_list = dt_styles_module_order_list(name);
-  }
-
   /* create the style header */
-  if(!dt_styles_create_style_header(newname, description, iop_list)) return;
-
-  g_list_free_full(iop_list, g_free);
+  if(!dt_styles_create_style_header(newname, description, NULL)) return;
 
   if((id = dt_styles_get_id_by_name(newname)) != 0)
   {
@@ -455,6 +484,8 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
     /* insert items from imgid if defined */
 
     _dt_style_update_from_image(id, imgid, filter, update);
+
+    _dt_style_update_iop_order(name, id, imgid, copy_iop_order, update_iop_order);
 
     _dt_style_cleanup_multi_instance(id);
 

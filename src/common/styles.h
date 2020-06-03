@@ -68,11 +68,13 @@ void dt_styles_create_from_list(GList *list);
 
 /** creates a new style from specified style, items are the style number of items to include in style */
 void dt_styles_create_from_style(const char *name, const char *newname, const char *description,
-                                 GList *filter, const int32_t imgid, GList *update, gboolean copy_iop_order);
+                                 GList *filter, const int32_t imgid, GList *update,
+                                 gboolean copy_iop_order, const gboolean update_iop_order);
 
 /** update a style */
 void dt_styles_update(const char *name, const char *newname, const char *description, GList *filter,
-                      const int32_t imgid, GList *update, gboolean copy_iop_order);
+                      const int32_t imgid, GList *update,
+                      const gboolean copy_iop_order, const gboolean update_iop_order);
 
 /** applies the style to selection of images */
 void dt_styles_apply_to_list(const char *name, GList *list, gboolean duplicate);
