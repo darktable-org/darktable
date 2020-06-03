@@ -48,8 +48,8 @@ DT_MODULE_INTROSPECTION(5, dt_iop_colorzones_params_t)
 
 typedef enum dt_iop_colorzones_modes_t
 {
-  DT_IOP_COLORZONES_MODE_SMOOTH = 0,
-  DT_IOP_COLORZONES_MODE_STRONG = 1
+  DT_IOP_COLORZONES_MODE_SMOOTH = 0, // $DESCRIPTION: "smooth"
+  DT_IOP_COLORZONES_MODE_STRONG = 1  // $DESCRIPTION: "strong"
 } dt_iop_colorzones_modes_t;
 
 typedef enum dt_iop_colorzones_splines_version_t
@@ -60,9 +60,9 @@ typedef enum dt_iop_colorzones_splines_version_t
 
 typedef enum dt_iop_colorzones_channel_t
 {
-  DT_IOP_COLORZONES_L = 0,
-  DT_IOP_COLORZONES_C = 1,
-  DT_IOP_COLORZONES_h = 2,
+  DT_IOP_COLORZONES_L = 0, // $DESCRIPTION: "lightness"
+  DT_IOP_COLORZONES_C = 1, // $DESCRIPTION: "saturation"
+  DT_IOP_COLORZONES_h = 2, // $DESCRIPTION: "hue"
   DT_IOP_COLORZONES_MAX_CHANNELS = 3
 } dt_iop_colorzones_channel_t;
 
@@ -74,13 +74,13 @@ typedef struct dt_iop_colorzones_node_t
 
 typedef struct dt_iop_colorzones_params_t
 {
-  int32_t channel; // $DEFAULT: 2 $DESCIPTION: "select by"
+  dt_iop_colorzones_channel_t channel; // $DEFAULT: DT_IOP_COLORZONES_h $DESCIPTION: "select by"
   // three curves (L, C, h) with max number of nodes
   dt_iop_colorzones_node_t curve[DT_IOP_COLORZONES_MAX_CHANNELS][DT_IOP_COLORZONES_MAXNODES];
   int curve_num_nodes[DT_IOP_COLORZONES_MAX_CHANNELS]; // number of nodes per curve
   int curve_type[DT_IOP_COLORZONES_MAX_CHANNELS];      // CUBIC_SPLINE, CATMULL_ROM, MONOTONE_HERMITE
-  float strength;  // $MIN: -200.0 $MAX: 200.0 $DESCRIPTION: "mix"
-  int mode;        // $MIN: 0 $MAX: 1 $DESCRIPTION: "process mode"
+  float strength;  // $MIN: -200.0 $MAX: 200.0 $DEFAULT: 0.0 $DESCRIPTION: "mix"
+  dt_iop_colorzones_modes_t mode; // $MIN: 0 $MAX: 1 $DEFAULT: DT_IOP_COLORZONES_MODE_SMOOTH $DESCRIPTION: "process mode"
   int splines_version;
 } dt_iop_colorzones_params_t;
 
@@ -2379,7 +2379,7 @@ void gui_init(struct dt_iop_module_t *self)
   // display selection
   c->bt_showmask
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(c->bt_showmask), "tooltip-text", _("display selection"), (char *)NULL);
+  gtk_widget_set_tooltip_text(c->bt_showmask, _("display selection"));
   g_signal_connect(G_OBJECT(c->bt_showmask), "toggled", G_CALLBACK(_display_mask_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->bt_showmask), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_select_by), c->bt_showmask, FALSE, FALSE, 0);
@@ -2387,18 +2387,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox_select_by, TRUE, TRUE, 0);
 
   // select by which dimension
-  c->select_by = dt_bauhaus_combobox_new_from_params_box(self, "channel");
+  c->select_by = dt_bauhaus_combobox_from_params(self, "channel");
+  dt_bauhaus_combobox_remove_at(c->select_by, DT_IOP_COLORZONES_MAX_CHANNELS);
   gtk_widget_set_tooltip_text(c->select_by, _("choose selection criterion, will be the abscissa in the graph"));
-  dt_bauhaus_combobox_add(c->select_by, _("lightness"));
-  dt_bauhaus_combobox_add(c->select_by, _("saturation"));
-  dt_bauhaus_combobox_add(c->select_by, _("hue"));
 
-  c->mode = dt_bauhaus_combobox_new_from_params_box(self, "mode");
-  dt_bauhaus_combobox_add(c->mode, _("smooth"));
-  dt_bauhaus_combobox_add(c->mode, _("strong"));
+  c->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(c->mode, _("choose between a smoother or stronger effect"));
 
-  c->strength = dt_bauhaus_slider_new_from_params_box(self, "strength");
+  c->strength = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_step(c->strength, 10.0f);
   dt_bauhaus_slider_set_format(c->strength, "%.01f%%");
   gtk_widget_set_tooltip_text(c->strength, _("make effect stronger or weaker"));
@@ -2434,8 +2430,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(c->interpolator, _("centripetal spline"));
   dt_bauhaus_combobox_add(c->interpolator, _("monotonic spline"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->interpolator, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(
-      c->interpolator,
+  gtk_widget_set_tooltip_text(c->interpolator,
       _("change this method if you see oscillations or cusps in the curve\n"
         "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
         "- centripetal is better to avoids cusps and oscillations with close nodes but is less smooth\n"
@@ -2631,19 +2626,9 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->request_histogram |= (DT_REQUEST_ON);
 
-  dt_iop_colorzones_params_t tmp;
-  _reset_parameters(&tmp, DT_IOP_COLORZONES_h, DT_IOP_COLORZONES_SPLINES_V2);
+  _reset_parameters(module->default_params, DT_IOP_COLORZONES_h, DT_IOP_COLORZONES_SPLINES_V2);
 
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorzones_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorzones_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  memcpy(module->params, module->default_params, sizeof(dt_iop_colorzones_params_t));
 }
 
 #undef DT_IOP_COLORZONES_INSET
