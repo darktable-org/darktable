@@ -67,6 +67,8 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs]">
     <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
       <xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;{&#xA;  if(response_id != GTK_RESPONSE_DELETE_EVENT) return;&#xA;</xsl:text>
+      <xsl:text>gtk_widget_set_can_focus(GTK_WIDGET(dialog), TRUE);&#xA;</xsl:text>
+      <xsl:text>gtk_widget_grab_focus(GTK_WIDGET(dialog));&#xA;</xsl:text>
       <xsl:apply-templates select="." mode="change"/>
       <xsl:text>&#xA;}&#xA;&#xA;</xsl:text>
     </xsl:if>
