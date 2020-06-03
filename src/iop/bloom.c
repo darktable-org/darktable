@@ -476,15 +476,15 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->size = dt_bauhaus_slider_new_from_params_box(self, "size");
+  g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_format(g->size, "%.0f%%");
   gtk_widget_set_tooltip_text(g->size, _("the size of bloom"));
 
-  g->threshold = dt_bauhaus_slider_new_from_params_box(self, "threshold");
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_format(g->threshold, "%.0f%%");
   gtk_widget_set_tooltip_text(g->threshold, _("the threshold of light"));
 
-  g->strength = dt_bauhaus_slider_new_from_params_box(self, "strength");
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
   gtk_widget_set_tooltip_text(g->strength, _("the strength of bloom"));
 }
