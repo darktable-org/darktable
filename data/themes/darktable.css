@@ -549,7 +549,7 @@ overshoot.right
 /* gradient sliders */
 #gradient-slider
 {
-  min-height: 2.0em;
+  min-height: 1.7em;
   margin: 0;
   border: 0;
   padding: 0.15em 0.6em 0.15em 0.6em;

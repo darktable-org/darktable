@@ -444,7 +444,8 @@ static void _gradient_slider_init(GtkDarktableGradientSlider *slider)
   slider->selected = slider->positions == 1 ? 0 : -1;
   slider->active = -1;
   slider->scale_callback = _default_linear_scale_callback;
-  gtk_widget_set_has_window(GTK_WIDGET(slider), TRUE);
+  //gtk_widget_set_has_window(GTK_WIDGET(slider), TRUE); this seems non needed
+  gtk_widget_set_can_focus(GTK_WIDGET(slider), TRUE);
 }
 
 static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *min_height, gint *nat_height)
@@ -468,17 +469,6 @@ static void _gradient_slider_size_allocate(GtkWidget *widget, GtkAllocation *all
   if (gtk_widget_get_realized(widget))
   	gdk_window_move_resize(gtk_widget_get_window(widget), allocation->x, allocation->y,
                            allocation->width, allocation->height);
-}
-
-static void _gradient_slider_realize(GtkWidget *widget)
-{
-  GdkWindowAttr attributes;
-  guint attributes_mask;
-
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
-
-  gtk_widget_set_realized(widget, TRUE);
 
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
@@ -489,7 +479,17 @@ static void _gradient_slider_realize(GtkWidget *widget)
 
   DTGTK_GRADIENT_SLIDER(widget)->margin_left = padding.left + border.left + margin.left;
   DTGTK_GRADIENT_SLIDER(widget)->margin_right = padding.right + border.right + margin.right;
+}
 
+static void _gradient_slider_realize(GtkWidget *widget)
+{
+  g_return_if_fail(widget != NULL);
+  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
+
+  gtk_widget_set_realized(widget, TRUE);
+
+  GdkWindowAttr attributes;
+  guint attributes_mask;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   attributes.window_type = GDK_WINDOW_CHILD;
@@ -504,8 +504,6 @@ static void _gradient_slider_realize(GtkWidget *widget)
                           | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK
                           | darktable.gui->scroll_mask;
   attributes_mask = GDK_WA_X | GDK_WA_Y;
-
-  gtk_widget_set_can_focus(widget, TRUE);
 
   GdkWindow *window = gdk_window_new(gtk_widget_get_parent_window(widget), &attributes, attributes_mask);
   gtk_widget_set_window(widget, window);
