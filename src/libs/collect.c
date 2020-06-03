@@ -2523,6 +2523,7 @@ void gui_init(dt_lib_module_t *self)
     box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
     d->rule[i].hbox = GTK_WIDGET(box);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
+    gtk_widget_set_name(GTK_WIDGET(box), "lib-dtbutton");
     GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
     w = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
