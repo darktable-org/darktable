@@ -26,6 +26,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
@@ -118,19 +119,19 @@ typedef struct dt_iop_filmic_rgb_spline_t
 
 typedef struct dt_iop_filmicrgb_params_t
 {
-  float grey_point_source;
-  float black_point_source;
-  float white_point_source;
-  float security_factor;
-  float grey_point_target;
-  float black_point_target;
-  float white_point_target;
-  float output_power;
-  float latitude;
-  float contrast;
-  float saturation;
-  float balance;
-  int preserve_color;
+  float grey_point_source;  // $MIN: 0 $MAX: 100 $DEFAULT: 9.225 $DESCRIPTION: "middle grey luminance"
+  float black_point_source; // $MIN: -16 $MAX: -0.1 $DEFAULT: -10.55 $DESCRIPTION: "black relative exposure"
+  float white_point_source; // $MIN: 0 $MAX: 16 $DEFAULT: 3.45 $DESCRIPTION: "white relative exposure"
+  float security_factor;    // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
+  float grey_point_target;  // $MIN: .1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle grey"
+  float black_point_target; // $MIN: 0 $MAX: 100 $DEFAULT: 0 $DESCRIPTION: "target black luminance"
+  float white_point_target; // $MIN: 0 $MAX: 100 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
+  float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 5.98 $DESCRIPTION: "target power transfer function"
+  float latitude;           // $MIN: 0.01 $MAX: 100 $DEFAULT: 45
+  float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.30
+  float saturation;         // $MIN: -50 $MAX: 200 $DEFAULT: 5 $DESCRIPTION: "extreme luminance saturation"
+  float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 12 $DESCRIPTION: "shadows/highlights balance"
+  int preserve_color;       // $DESCRIPTION: "preserve chrominance" $DEFAULT: 3
 } dt_iop_filmicrgb_params_t;
 
 typedef struct dt_iop_filmicrgb_gui_data_t
@@ -633,7 +634,7 @@ error:
 
 static void apply_auto_grey(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
 
@@ -661,7 +662,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
 
 static void apply_auto_black(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
 
@@ -688,7 +689,7 @@ static void apply_auto_black(dt_iop_module_t *self)
 
 static void apply_auto_white_point_source(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
 
@@ -760,198 +761,6 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
        apply_auto_white_point_source(self);
   else if (picker == g->auto_button)
        apply_autotune(self);
-}
-
-static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  float prev_grey = p->grey_point_source;
-  p->grey_point_source = dt_bauhaus_slider_get(slider);
-
-  float grey_var = log2f(prev_grey / p->grey_point_source);
-  p->black_point_source = p->black_point_source - grey_var;
-  p->white_point_source = p->white_point_source + grey_var;
-  p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
-
-  ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
-  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
-  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  --darktable.gui->reset;
-
-  dt_iop_color_picker_reset(self, TRUE);
-
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-
-  p->white_point_source = dt_bauhaus_slider_get(slider);
-  p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
-
-  ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  --darktable.gui->reset;
-
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-
-  p->black_point_source = dt_bauhaus_slider_get(slider);
-  p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
-
-  ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  --darktable.gui->reset;
-
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-
-  float previous = p->security_factor;
-  p->security_factor = dt_bauhaus_slider_get(slider);
-  float ratio = (p->security_factor - previous) / (previous + 100.0f);
-
-  float EVmin = p->black_point_source;
-  EVmin = EVmin + ratio * EVmin;
-
-  float EVmax = p->white_point_source;
-  EVmax = EVmax + ratio * EVmax;
-
-  p->white_point_source = EVmax;
-  p->black_point_source = EVmin;
-  p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
-
-  ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
-  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
-  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-  --darktable.gui->reset;
-
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void grey_point_target_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->grey_point_target = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void latitude_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->latitude = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void contrast_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->contrast = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void saturation_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->saturation = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void white_point_target_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->white_point_target = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void black_point_target_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->black_point_target = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void output_power_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->output_power = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void balance_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->balance = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void preserve_color_callback(GtkWidget *combo, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  p->preserve_color = dt_bauhaus_combobox_get(combo);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p, struct dt_iop_filmic_rgb_spline_t *const spline)
@@ -1184,35 +993,6 @@ void gui_update(dt_iop_module_t *self)
 
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_filmicrgb_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_filmicrgb_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_filmicrgb_params_t);
-  module->gui_data = NULL;
-
-  dt_iop_filmicrgb_params_t tmp
-    = (dt_iop_filmicrgb_params_t){
-                                 .grey_point_source   = 9.225, // source grey
-                                 .black_point_source  = -10.55f,  // source black
-                                 .white_point_source  = 3.45f,  // source white
-                                 .security_factor     = 0.0f,
-                                 .grey_point_target   = 18.45f, // target grey
-                                 .black_point_target  = 0.0,  // target black
-                                 .white_point_target  = 100.0,  // target white
-                                 .output_power        = 5.98f,  // target power (~ gamma)
-                                 .latitude            = 45.0f,  // intent latitude
-                                 .contrast            = 1.30f,  // intent contrast
-                                 .saturation          = 5.0f,   // intent saturation
-                                 .balance             = 12.0f, // balance shadows/highlights
-                                 .preserve_color      = DT_FILMIC_METHOD_POWER_NORM // run the saturated variant
-                              };
-  memcpy(module->params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
-}
-
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 22; // filmic.cl, from programs.conf
@@ -1223,15 +1003,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_filmic_rgb_split = dt_opencl_create_kernel(program, "filmicrgb_split");
   gd->kernel_filmic_rgb_chroma = dt_opencl_create_kernel(program, "filmicrgb_chroma");
 }
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
@@ -1365,78 +1136,52 @@ void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_filmicrgb_gui_data_t));
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // don't make the area square to safe some vertical space -- it's not interactive anyway
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.618));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("read-only graph, use the parameters below to set the nodes\n"
                                                      "the bright curve is the filmic tone mapping curve\n"
                                                      "the dark curve is the desaturation curve\n"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
 
   // Init GTK notebook
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
-  GtkWidget *page1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page1, gtk_label_new(_("scene")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, gtk_label_new(_("look")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("display")));
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
-
-  dtgtk_justify_notebook_tabs(g->notebook);
+  
+  GtkWidget *page1 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  gtk_notebook_append_page(g->notebook, page1, gtk_label_new(_("scene")));
 
   // grey_point_source slider
-  g->grey_point_source = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->grey_point_source, 2);
-  dt_bauhaus_slider_set_soft_range(g->grey_point_source, 0.1, 36.0);
-  dt_bauhaus_widget_set_label(g->grey_point_source, NULL, _("middle grey luminance"));
-  gtk_box_pack_start(GTK_BOX(page1), g->grey_point_source, FALSE, FALSE, 0);
+  g->grey_point_source = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                         dt_bauhaus_slider_from_params(self, "grey_point_source"));
+  dt_bauhaus_slider_set_soft_range(g->grey_point_source, .1, .36);
   dt_bauhaus_slider_set_format(g->grey_point_source, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the image's subject.\n"
                                                       "the value entered here will then be remapped to 18.45%.\n"
                                                       "decrease the value to increase the overall brightness."));
-  g_signal_connect(G_OBJECT(g->grey_point_source), "value-changed", G_CALLBACK(grey_point_source_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->grey_point_source);
 
   // White slider
-  g->white_point_source = dt_bauhaus_slider_new_with_range(self, 0.0, 16.0, 0.1, p->white_point_source, 2);
+  g->white_point_source = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                          dt_bauhaus_slider_from_params(self, "white_point_source"));
   dt_bauhaus_slider_set_soft_range(g->white_point_source, 2.0, 8.0);
-  dt_bauhaus_widget_set_label(g->white_point_source, NULL, _("white relative exposure"));
-  gtk_box_pack_start(GTK_BOX(page1), g->white_point_source, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->white_point_source, _("%+.2f EV"));
   gtk_widget_set_tooltip_text(g->white_point_source, _("number of stops between middle grey and pure white.\n"
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "adjust so highlights clipping is avoided"));
-  g_signal_connect(G_OBJECT(g->white_point_source), "value-changed", G_CALLBACK(white_point_source_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->white_point_source);
 
   // Black slider
-  g->black_point_source = dt_bauhaus_slider_new_with_range(self, -16.0, -0.1, 0.1, p->black_point_source, 2);
-  dt_bauhaus_slider_set_soft_range(g->black_point_source, -14.0, -3.0);
-  dt_bauhaus_widget_set_label(g->black_point_source, NULL, _("black relative exposure"));
-  gtk_box_pack_start(GTK_BOX(page1), g->black_point_source, FALSE, FALSE, 0);
+  g->black_point_source = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                          dt_bauhaus_slider_from_params(self, "black_point_source"));
+  dt_bauhaus_slider_set_soft_range(g->black_point_source, -14.0, -3);
   dt_bauhaus_slider_set_format(g->black_point_source, _("%+.2f EV"));
   gtk_widget_set_tooltip_text(g->black_point_source, _("number of stops between middle grey and pure black.\n"
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "increase to get more contrast.\ndecrease to recover more details in low-lights."));
-  g_signal_connect(G_OBJECT(g->black_point_source), "value-changed", G_CALLBACK(black_point_source_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->black_point_source);
 
-  // Security factor
-  g->security_factor = dt_bauhaus_slider_new_with_range(self, -50., 200., 1.0, p->security_factor, 2);
-  dt_bauhaus_slider_set_soft_max(g->security_factor, 50.0);
-  dt_bauhaus_widget_set_label(g->security_factor, NULL, _("dynamic range scaling"));
-  gtk_box_pack_start(GTK_BOX(page1), g->security_factor, FALSE, FALSE, 0);
+  g->security_factor = dt_bauhaus_slider_from_params(self, "security_factor");
+  dt_bauhaus_slider_set_soft_max(g->security_factor, 50);
   dt_bauhaus_slider_set_format(g->security_factor, "%+.2f %%");
   gtk_widget_set_tooltip_text(g->security_factor, _("symmetrically enlarge or shrink the computed dynamic range.\n"
                                                     "useful to give a safety margin to extreme luminances."));
-  g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
 
   // Auto tune slider
   g->auto_button = dt_bauhaus_combobox_new(self);
@@ -1450,54 +1195,39 @@ void gui_init(dt_iop_module_t *self)
                                                 "ensure you understand its assumptions before using it."));
   gtk_box_pack_start(GTK_BOX(page1), g->auto_button, FALSE, FALSE, 0);
 
-  // contrast slider
-  g->contrast = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.01, p->contrast, 3);
-  dt_bauhaus_slider_set_soft_range(g->contrast, 1.0, 2.0);
-  dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
-  gtk_box_pack_start(GTK_BOX(page2), g->contrast, FALSE, FALSE, 0);
+  GtkWidget *page2 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  gtk_notebook_append_page(g->notebook, page2, gtk_label_new(_("look")));
+  
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  dt_bauhaus_slider_set_soft_range(g->contrast, 0.1, 2.0);
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve\n"
                                              "affects mostly the mid-tones"));
-  g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
 
-  // latitude slider
-  g->latitude = dt_bauhaus_slider_new_with_range(self, 0.01, 100.0, 1.0, p->latitude, 2);
+  g->latitude = dt_bauhaus_slider_from_params(self, "latitude");
   dt_bauhaus_slider_set_soft_range(g->latitude, 5.0, 45.0);
-  dt_bauhaus_widget_set_label(g->latitude, NULL, _("latitude"));
   dt_bauhaus_slider_set_format(g->latitude, "%.2f %%");
-  gtk_box_pack_start(GTK_BOX(page2), g->latitude, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->latitude, _("width of the linear domain in the middle of the curve,\n"
                                              "in percent of the dynamic range (white exposure - black exposure).\n"
                                              "increase to get more contrast and less desaturation at extreme luminances,\n"
                                              "decrease otherwise. no desaturation happens in the latitude range.\n"
                                              "this has no effect on mid-tones."));
-  g_signal_connect(G_OBJECT(g->latitude), "value-changed", G_CALLBACK(latitude_callback), self);
 
-  // balance slider
-  g->balance = dt_bauhaus_slider_new_with_range(self, -50., 50., 1.0, p->balance, 2);
-  dt_bauhaus_widget_set_label(g->balance, NULL, _("shadows/highlights balance"));
-  gtk_box_pack_start(GTK_BOX(page2), g->balance, FALSE, FALSE, 0);
+  g->balance = dt_bauhaus_slider_from_params(self, "balance");
   dt_bauhaus_slider_set_format(g->balance, "%.2f %%");
   gtk_widget_set_tooltip_text(g->balance, _("slides the latitude along the slope\n"
                                             "to give more room to shadows or highlights.\n"
                                             "use it if you need to protect the details\n"
                                             "at one extremity of the histogram."));
-  g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
-  // saturation slider
-  g->saturation = dt_bauhaus_slider_new_with_range(self, -50., 200., 0.5, p->saturation, 2);
-  dt_bauhaus_widget_set_label(g->saturation, NULL, _("extreme luminance saturation"));
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_soft_max(g->saturation, 50.0);
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
-  gtk_box_pack_start(GTK_BOX(page2), g->saturation, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
                                                "specifically at extreme luminances.\n"
                                                "increase if shadows and/or highlights are under-saturated."));
-  g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
 
-  // Preserve color
-  g->preserve_color = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->preserve_color, NULL, _("preserve chrominance"));
+  g->preserve_color = dt_bauhaus_combobox_from_params(self, "preserve_color");
   dt_bauhaus_combobox_add(g->preserve_color, _("no"));
   dt_bauhaus_combobox_add(g->preserve_color, _("max RGB"));
   dt_bauhaus_combobox_add(g->preserve_color, _("luminance Y"));
@@ -1505,47 +1235,84 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original color are preserved.\n"
                                                    "may reinforce chromatic aberrations and chroma noise,\n"
                                                    "so ensure they are properly corrected elsewhere.\n"));
-  gtk_box_pack_start(GTK_BOX(page2), g->preserve_color , FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(g->preserve_color), "value-changed", G_CALLBACK(preserve_color_callback), self);
 
-  // Black slider
-  g->black_point_target = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1, p->black_point_target, 2);
-  dt_bauhaus_widget_set_label(g->black_point_target, NULL, _("target black luminance"));
-  gtk_box_pack_start(GTK_BOX(page3), g->black_point_target, FALSE, FALSE, 0);
+  GtkWidget *page3 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  gtk_notebook_append_page(g->notebook, page3, gtk_label_new(_("display")));
+
+  g->black_point_target = dt_bauhaus_slider_from_params(self, "black_point_target");
   dt_bauhaus_slider_set_format(g->black_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->black_point_target, _("luminance of output pure black, "
                                                         "this should be 0%\nexcept if you want a faded look"));
-  g_signal_connect(G_OBJECT(g->black_point_target), "value-changed", G_CALLBACK(black_point_target_callback), self);
 
-  // grey_point_source slider
-  g->grey_point_target = dt_bauhaus_slider_new_with_range(self, 0.1, 50., 0.5, p->grey_point_target, 2);
-  dt_bauhaus_widget_set_label(g->grey_point_target, NULL, _("target middle grey"));
-  gtk_box_pack_start(GTK_BOX(page3), g->grey_point_target, FALSE, FALSE, 0);
+  g->grey_point_target = dt_bauhaus_slider_from_params(self, "grey_point_target");
   dt_bauhaus_slider_set_format(g->grey_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point_target, _("midde grey value of the target display or color space.\n"
                                                       "you should never touch that unless you know what you are doing."));
-  g_signal_connect(G_OBJECT(g->grey_point_target), "value-changed", G_CALLBACK(grey_point_target_callback), self);
 
-  // White slider
-  g->white_point_target = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1., p->white_point_target, 2);
-  dt_bauhaus_widget_set_label(g->white_point_target, NULL, _("target white luminance"));
-  gtk_box_pack_start(GTK_BOX(page3), g->white_point_target, FALSE, FALSE, 0);
+  g->white_point_target = dt_bauhaus_slider_from_params(self, "white_point_target");
   dt_bauhaus_slider_set_format(g->white_point_target, "%.2f %%");
   gtk_widget_set_tooltip_text(g->white_point_target, _("luminance of output pure white, "
                                                         "this should be 100%\nexcept if you want a faded look"));
-  g_signal_connect(G_OBJECT(g->white_point_target), "value-changed", G_CALLBACK(white_point_target_callback), self);
 
-  // power/gamma slider
-  g->output_power = dt_bauhaus_slider_new_with_range(self, 1.0, 10.0, 0.1, p->output_power, 2);
-  dt_bauhaus_widget_set_label(g->output_power, NULL, _("target power transfer function"));
-  gtk_box_pack_start(GTK_BOX(page3), g->output_power, FALSE, FALSE, 0);
+  g->output_power = dt_bauhaus_slider_from_params(self, "output_power");
   gtk_widget_set_tooltip_text(g->output_power, _("power or gamma of the transfer function\nof the display or color space.\n"
                                                  "you should never touch that unless you know what you are doing."));
-  g_signal_connect(G_OBJECT(g->output_power), "value-changed", G_CALLBACK(output_power_callback), self);
 
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
+  dtgtk_justify_notebook_tabs(g->notebook);
 }
 
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
+{
+  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
+  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+
+  if (w == g->security_factor || w == g->grey_point_source || 
+      w == g->black_point_source || w == g->white_point_source)
+  {
+    ++darktable.gui->reset;
+
+    if (w == g->security_factor || w == g->grey_point_source)
+    {
+      float prev = *(float*)previous;
+      if (w == g->security_factor)
+      {
+        float ratio = (p->security_factor - prev) / (prev + 100.0f);
+
+        float EVmin = p->black_point_source;
+        EVmin = EVmin + ratio * EVmin;
+
+        float EVmax = p->white_point_source;
+        EVmax = EVmax + ratio * EVmax;
+
+        p->white_point_source = EVmax;
+        p->black_point_source = EVmin;
+      }
+      else
+      {
+        float grey_var = log2f(prev / p->grey_point_source);
+        p->black_point_source = p->black_point_source - grey_var;
+        p->white_point_source = p->white_point_source + grey_var;
+      }
+
+      dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
+      dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
+    }
+
+    p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
+
+    dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
+  
+    --darktable.gui->reset;
+  }
+
+  gtk_widget_queue_draw(self->widget); // Is this needed?
+}
 
 void gui_cleanup(dt_iop_module_t *self)
 {
