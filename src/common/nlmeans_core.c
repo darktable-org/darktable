@@ -32,6 +32,7 @@
 #include <xmmintrin.h>
 #endif
 
+#ifndef dt_omp_shared
 #ifdef _OPENMP
 #if defined(__clang__) || __GNUC__ > 8
 # define dt_omp_shared(var, ...)  shared(var, __VA_ARGS__)
@@ -41,6 +42,7 @@
 # define dt_omp_shared(var, ...)
 #endif
 #endif /* _OPENMP */
+#endif /* dt_omp_shared */
 
 // to avoid accumulation of rounding errors, we should do a full recomputation of the patch differences
 //   every so many rows of the image.  We'll also use that interval as the target maximum chunk size for
@@ -54,14 +56,16 @@
 // lower values for SLICE_HEIGHT reduce the accumulation of rounding errors at the cost of more computation;
 //  to avoid excessive overhead, width*height should be at least 2000.  Keeping width*height below 10000 or so
 //  will greatly improve L2/L3 cache hit rates and help with scaling beyond 16 threads.  Note that the values
-//  specified here are targets and may be adjusted slightly to avoid having many partial chunks at the
+//  specified here are targets and may be adjusted slightly to avoid having extremely small chunks at the
 //  right/bottom edge of the images (width will only be reduced, height could be either reduced or increased)
 #define SLICE_WIDTH 72
 #define SLICE_HEIGHT 60
 
-// try to speed up processing by caching pixel differences?  If cached, they won't need to be computed a second
-// time when sliding the patch window away from the pixel.  Seems to be slower than recomputing for SSE.
-//#define CACHE_PIXDIFFS_SCALAR
+// try to speed up processing by caching pixel differences?  If cached, they won't need to be computed a
+// second time when sliding the patch window away from the pixel.  Testing shows it to be slower than
+// recomputing for both scalar and SSE on a Threadripper due to increased memory writes; this may differ on
+// architectures with slower multiplication.
+//#define CACHE_PIXDIFFS
 //#define CACHE_PIXDIFFS_SSE
 
 // number of intermediate buffers used by OpenCL code path.  If you change this, you must also change
@@ -89,6 +93,10 @@ typedef struct patch_t patch_t;
 #define SIMD_FOR for
 #endif
 
+// avoid cluttering the scalar codepath with #ifdefs by hiding the dependency on SSE2
+#ifndef __SSE2__
+# define _mm_prefetch(where,hint)
+#endif
 
 typedef union floatint_t
 {
@@ -209,7 +217,7 @@ static inline float pixel_difference_sse2(const float* const pix1, const float* 
 }
 #endif /* __SSE2__ */
 
-#if defined(CACHE_PIXDIFFS_SCALAR) || defined(CACHE_PIXDIFFS_SSE)
+#if defined(CACHE_PIXDIFFS) || defined(CACHE_PIXDIFFS_SSE)
 static inline float get_pixdiff(const float *const col_sums, const int radius, const int row, const int col)
 {
   const int stride = 2*(radius+1);
@@ -219,7 +227,7 @@ static inline float get_pixdiff(const float *const col_sums, const int radius, c
 }
 #endif
 
-#if defined(CACHE_PIXDIFFS_SCALAR) || defined(CACHE_PIXDIFFS_SSE)
+#if defined(CACHE_PIXDIFFS) || defined(CACHE_PIXDIFFS_SSE)
 static inline void set_pixdiff(float *const col_sums, const int radius, const int row, const int col,
                                const float diff)
 {
@@ -230,7 +238,7 @@ static inline void set_pixdiff(float *const col_sums, const int radius, const in
 }
 #endif
 
-#if defined(CACHE_PIXDIFFS_SCALAR) || defined(CACHE_PIXDIFFS_SSE)
+#if defined(CACHE_PIXDIFFS) || defined(CACHE_PIXDIFFS_SSE)
 static inline float pixdiff_column_sum(const float *const col_sums, const int radius, const int col)
 {
   const int stride = SLICE_WIDTH + 2*radius;
@@ -242,34 +250,54 @@ static inline float pixdiff_column_sum(const float *const col_sums, const int ra
 #endif
 
 static void init_column_sums(float *const col_sums, const patch_t *const patch, const float *const in,
-                             const int row, const int height, const int width, const int stride,
+                             const int row, const int chunk_left, const int chunk_right,
+                             const int height, const int width, const int stride,
                              const int radius, const float *const norm)
 {
-  const int srow = row + patch->rows;
-  const int scol = patch->cols;
-  const int col_min = MAX(0,-scol);        // columns left of this correspond to a patch column outside the RoI
-  const int col_max = width - MAX(0,scol); // columns right of this correspond to a patch column outside the RoI
-  const float *pixel = in + 4*col_min;
-  const float *shifted = pixel + patch->offset;
   // Compute column sums from scratch.  Needed for the very first row, and at intervals thereafter
   //   to limit accumulation of rounding errors
+
+  // figure out which columns can possibly contribute to patches whose centers lie within the RoI
+  // we can go up to 'radius' columns beyond the current chunk provided that the patch does not
+  // lie in the same direction from the pixel being denoised and that we're still in the RoI
+  const int scol = patch->cols;
+  const int col_min = chunk_left - MIN(radius,MIN(chunk_left,chunk_left+scol));
+  const int col_max = chunk_right + MIN(radius,MIN(width-chunk_right,width-(chunk_right+scol)));
   // adjust bounds if the patch extends past top/bottom of RoI
-  const int rmin = MAX(-radius,MAX(MIN(-srow,0),-row));
-  const int rmax = MIN(radius,MIN(height-srow,height-row)-1);
-  for (int col = 0; col < col_min; col++)
+  const int srow = patch->rows;
+  const int rmin = row - MIN(radius,MIN(row,row+srow));
+  const int rmax = row + MIN(radius,MIN(height-1-row,height-1-(row+srow)));
+  for (int col = chunk_left-radius-1; col < col_min; col++)
+  {
     col_sums[col] = 0;
-  for (int col = col_min; col < col_max; col++, pixel+=4, shifted+=4)
+#ifdef CACHE_PIXDIFFS
+    for(int i = row-radius; i <= row+radius; i++)
+      set_pixdiff(col_sums,radius,i,col,0.0f);
+#endif
+  }
+  for (int col = col_min; col < col_max; col++)
   {
     float sum = 0;
     for (int r = rmin; r <= rmax; r++)
     {
-      sum += pixel_difference(pixel+r*stride,shifted+r*stride,norm);
+      const float *pixel = in + r*stride + 4*col;
+      const float diff = pixel_difference(pixel,pixel+patch->offset,norm);
+#ifdef CACHE_PIXDIFFS
+      set_pixdiff(col_sums,radius,r,col,diff);
+#endif
+      sum += diff;
     }
     col_sums[col] = sum;
   }
   // clear out any columns where the patch column would be outside the RoI, as well as our overrun area
-  for (int col = col_max; col < width + radius; col++)
+  for (int col = col_max; col < chunk_right + radius; col++)
+  {
     col_sums[col] = 0;
+#ifdef CACHE_PIXDIFFS
+    for(int i = row-radius; i <= row+radius; i++)
+      set_pixdiff(col_sums,radius,i,col,0.0f);
+#endif
+  }
   return;
 }
 
@@ -393,153 +421,199 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   int max_shift;
   struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
   // allocate scratch space, including an overrun area on each end so we don't need a boundary check on every access
-  const int scratch_size = (roi_out->width + 2*params->patch_radius + 1) ;
-  const int padded_scratch_size = ((scratch_size+15)/16)*16; // round up to a full cache line
+  const int radius = params->patch_radius;
+#if defined(CACHE_PIXDIFFS)
+  const int scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
+#else
+  const int scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
+#endif /* CACHE_PIXDIFFS */
+  const int padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
   const int numthreads = dt_get_num_threads() ;
   float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
-  // zero out the overrun areas
-  memset(scratch_buf,'\0',numthreads*padded_scratch_size*sizeof(float));
-  const int chunk_size = compute_slice_height(roi_out->height);
-  const int num_chunks = (roi_out->height + chunk_size - 1) / chunk_size;
+  const int chk_height = compute_slice_height(roi_out->height);
+  const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
-      dt_omp_firstprivate(patches, num_patches, scratch_buf) \
-      dt_omp_shared(chunk_size, num_chunks, params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
-      schedule(static)
+      dt_omp_firstprivate(patches, num_patches, scratch_buf, chk_height, chk_width, radius) \
+      dt_omp_shared(params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
+      schedule(static) \
+      collapse(2)
 #endif
-  for (int chk = 0 ; chk < num_chunks; chk++)
+  for (int chunk_top = 0 ; chunk_top < roi_out->height; chunk_top += chk_height)
   {
-    // locate our scratch space within the big buffer allocated above
-    size_t tnum = dt_get_thread_num();
-    const int radius = params->patch_radius;
-    float *const col_sums = scratch_buf + tnum * padded_scratch_size + radius + 1;
-    // determine which horizontal slice of the image to process
-    const int chunk_top = chk * chunk_size;
-    const int chunk_bot = MIN((chk+1)*chunk_size,roi_out->height);
-    // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
-    memset(outbuf+chunk_top*roi_out->width*4, '\0', roi_out->width * (chunk_bot-chunk_top) * 4 * sizeof(float));
-    // cycle through all of the patches over our slice of the image
-    for (int p = 0; p < num_patches; p++)
+    for (int chunk_left = 0; chunk_left < roi_out->width; chunk_left += chk_width)
     {
-      // retrieve info about the current patch
-      const patch_t *patch = &patches[p];
-      // skip any rows where the patch center would be above top of RoI or below bottom of RoI
-      const int height = roi_out->height;
-      const int row_min = MAX(chunk_top,MAX(0,-patch->rows));
-      const int row_max = MIN(chunk_bot,height - MAX(0,patch->rows));
-      // figure out which rows at top and bottom result in patches extending outside the RoI, even though the
-      // center pixel is inside
-      const int row_top = MAX(row_min,MAX(radius,radius-patch->rows));
-      const int row_bot = MIN(row_max,height-MAX(radius+1,radius+patch->rows+1));
-      // skip any columns where the patch center would be to the left or the right of the RoI
-      const int scol = patch->cols;
-      const int col_min = MAX(0,-scol);
-      const int col_max = roi_out->width - MAX(0,scol);
-      init_column_sums(col_sums,patch,inbuf+stride*row_min,row_min,height,roi_out->width,stride,radius,params->norm);
-      for (int row = row_min; row < row_max; row++)
+      // locate our scratch space within the big buffer allocated above
+      // we'll offset by chunk_left so that we don't have to subtract on every access
+      size_t tnum = dt_get_thread_num();
+      float *const col_sums = scratch_buf + tnum * padded_scratch_size + (radius+1) - chunk_left;
+      // determine which horizontal slice of the image to process
+      const int chunk_bot = MIN(chunk_top + chk_height, roi_out->height);
+      // determine which vertical slice of the image to process
+      const int chunk_right = MIN(chunk_left + chk_width, roi_out->width);
+      // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
+      for (int i = chunk_top; i < chunk_bot; i++)
       {
-        // add up the initial columns of the sliding window of total patch distortion
-        float distortion = 0.0;
-        for (int i = col_min - radius; i < col_min+radius; i++)
+        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', (chunk_right-chunk_left) * 4 * sizeof(float));
+      }
+      // cycle through all of the patches over our slice of the image
+      for (int p = 0; p < num_patches; p++)
+      {
+        // retrieve info about the current patch
+        const patch_t *patch = &patches[p];
+        // skip any rows where the patch center would be above top of RoI or below bottom of RoI
+        const int height = roi_out->height;
+        const int row_min = MAX(chunk_top,MAX(0,-patch->rows));
+        const int row_max = MIN(chunk_bot,height - MAX(0,patch->rows));
+        // figure out which rows at top and bottom result in patches extending outside the RoI, even though the
+        // center pixel is inside
+        const int row_top = MAX(row_min,MAX(radius,radius-patch->rows));
+        const int row_bot = MIN(row_max,height-1-MAX(radius,radius+patch->rows));
+        // skip any columns where the patch center would be to the left or the right of the RoI
+        const int width = roi_out->width;
+        const int scol = patch->cols;
+        const int col_min = MAX(chunk_left,-scol);
+        const int col_max = MIN(chunk_right,roi_out->width - scol);
+
+        init_column_sums(col_sums,patch,inbuf,row_min,chunk_left,chunk_right,height,width,
+                         stride,radius,params->norm);
+        for (int row = row_min; row < row_max; row++)
         {
-          distortion += col_sums[i];
-        }
-        // now proceed down the current row of the image
-        const float *in = inbuf + stride * row + 4 * col_min;
-        float *out = outbuf + 4 * ((size_t)roi_out->width * row + col_min);
-        const int offset = patch->offset;
-        const float sharpness = params->sharpness;
-        if (params->center_weight < 0)
-        {
-          // computation as used by denoise(non-local) iop
-          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
+          // add up the initial columns of the sliding window of total patch distortion
+          float distortion = 0.0;
+          for (int i = col_min - radius; i < col_min+radius; i++)
           {
-            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-            const float wt = gh(distortion * sharpness);
-            const float pixel[4] = { in[offset],  in[offset+1], in[offset+2], 1.0f };
-            SIMD_FOR (size_t c = 0; c < 4; c++)
+            distortion += col_sums[i];
+          }
+          // now proceed down the current row of the image
+          const float *in = inbuf + stride * row;
+          float *const out = outbuf + (size_t)4 * width * row;
+          const int offset = patch->offset;
+          const float sharpness = params->sharpness;
+          if (params->center_weight < 0)
+          {
+            // computation as used by denoise(non-local) iop
+            for (int col = col_min; col < col_max; col++)
             {
-              out[c] += pixel[c] * wt;
+              distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
+              const float wt = gh(distortion * sharpness);
+              const float *const inpx = in+4*col;
+              const float pixel[4] = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
+              SIMD_FOR (size_t c = 0; c < 4; c++)
+              {
+                out[4*col+c] += pixel[c] * wt;
+              }
+              _mm_prefetch(in+4*col+offset+stride,_MM_HINT_T0);	// try to ensure next row is ready in time
             }
           }
-        }
-        else
-        {
-          // computation as used by denoiseprofiled iop with non-local means
-          for (int col = col_min; col < col_max; col++, in+=4, out+=4)
+          else
           {
-            distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-            const float dissimilarity = (distortion + pixel_difference(in,in+offset,center_norm)
-                                         / (1.0f + params->center_weight));
-            const float wt = gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f));
-            const float pixel[4] = { in[offset],  in[offset+1], in[offset+2], 1.0f };
-            SIMD_FOR (size_t c = 0; c < 4; c++)
+            // computation as used by denoiseprofiled iop with non-local means
+            for (int col = col_min; col < col_max; col++)
             {
-              out[c] += pixel[c] * wt;
+              distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
+              const float dissimilarity = (distortion + pixel_difference(in+4*col,in+4*col+offset,center_norm)
+                                           / (1.0f + params->center_weight));
+              const float wt = gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f));
+              const float *const inpx = in + 4*col;
+              const float pixel[4] = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
+              SIMD_FOR (size_t c = 0; c < 4; c++)
+              {
+                out[4*col+c] += pixel[c] * wt;
+              }
+              _mm_prefetch(in+4*col+offset+stride,_MM_HINT_T0);	// try to ensure next row is ready in time
             }
           }
-        }
-        if (row < row_top)
-        {
-          // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
-          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
-          for (int col = col_min; col < col_max; col++, pixel_bot+=4)
+          const int pcol_min = chunk_left - MIN(radius,MIN(chunk_left,chunk_left+scol));
+          const int pcol_max = chunk_right + MIN(radius,MIN(width-chunk_right,width-(chunk_right+scol)));
+          if (row < row_top)
           {
-            col_sums[col] += pixel_difference(pixel_bot,pixel_bot+offset,params->norm);
+            // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
+            const float *bot_row = inbuf + (row+1+radius)*stride;
+            for (int col = pcol_min; col < pcol_max; col++)
+            {
+              const float *const bot_px = bot_row + 4*col;
+              const float diff = pixel_difference(bot_px,bot_px+offset,params->norm);
+              _mm_prefetch(bot_px+stride, _MM_HINT_T0);
+#ifdef CACHE_PIXDIFFS
+              set_pixdiff(col_sums,radius,row+radius+1,col,diff);
+#endif
+              col_sums[col] += diff;
+              _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
+            }
           }
-        }
-        else if (row >= row_bot)
-        {
-          if (row + 1 < row_max) // don't bother updating if last iteration
+          else if (row < row_bot)
+          {
+#ifndef CACHE_PIXDIFFS
+            const float *const top_row = inbuf + (row-radius)*stride   /* +(2*radius+1)*stride*/ ;
+#endif /* !CACHE_PIXDIFFS */
+            const float *const bot_row = inbuf + (row+1+radius)*stride ;
+            // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
+            for (int col = pcol_min; col < pcol_max; col++)
+            {
+#ifdef CACHE_PIXDIFFS
+              const float *const bot_px = bot_row + 4*col;
+              const float diff = pixel_difference(bot_px,bot_px+offset,params->norm);
+              col_sums[col] += diff - get_pixdiff(col_sums,radius,row-radius,col);
+              _mm_prefetch(bot_px+stride, _MM_HINT_T0);
+              set_pixdiff(col_sums,radius,row+1+radius,col,diff);
+#else
+              const float *const top_px = top_row + 4*col;
+              const float *const bot_px = bot_row + 4*col;
+              const float diff = (pixel_difference(bot_px,bot_px+offset,params->norm)
+                                  - pixel_difference(top_px,top_px+offset,params->norm));
+              _mm_prefetch(bot_px+stride, _MM_HINT_T0);
+              col_sums[col] += diff;
+#endif /* CACHE_PIXDIFFS */
+              _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
+            }
+          }
+          else if (row + 1 < row_max) // don't bother updating if last iteration
           {
             // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
-            const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
-            for (int col = col_min; col < col_max; col++, pixel_top+=4)
+#ifndef CACHE_PIXDIFFS
+            const float *top_row = inbuf + (row-radius)*stride;
+#endif /* !CACHE_PIXDIFFS */
+            for (int col = pcol_min; col < pcol_max; col++)
             {
-              col_sums[col] -= pixel_difference(pixel_top,pixel_top+offset,params->norm);
+#ifdef CACHE_PIXDIFFS
+              col_sums[col] -= get_pixdiff(col_sums,radius,row-radius,col);
+#else
+              const float *const top_px = top_row + 4*col;
+              col_sums[col] -= pixel_difference(top_px,top_px+offset,params->norm);
+#endif /* CACHE_PIXDIFFS */
             }
           }
         }
-        else
+      }
+      if (skip_blend)
+      {
+        // normalize the pixels
+        for (int row = chunk_top; row < chunk_bot; row++)
         {
-          const float *pixel_top = inbuf + (row-radius)*stride + 4*col_min;
-          const float *pixel_bot = inbuf + (row+1+radius)*stride + 4*col_min;
-          // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
-          for (int col = col_min; col < col_max; col++, pixel_top+=4, pixel_bot+=4)
+          float *const out = outbuf + 4 * row * roi_out->width;
+          for (int col = chunk_left; col < chunk_right; col++)
           {
-            col_sums[col] += (pixel_difference(pixel_bot,pixel_bot+offset,params->norm)
-                              - pixel_difference(pixel_top,pixel_top+offset,params->norm));
+            SIMD_FOR(size_t c = 0; c < 4; c++)
+            {
+              out[4*col+c] /= out[3];
+            }
           }
         }
       }
-    }
-    if (skip_blend)
-    {
-      // normalize the pixels
-      for (int row = chunk_top; row < chunk_bot; row++)
+      else
       {
-        float *out = outbuf + row * 4 * roi_out->width;
-        for (int col = 0; col < roi_out->width; col++, out+=4)
+        // normalize and apply chroma/luma blending
+        for (int row = chunk_top; row < chunk_bot; row++)
         {
-          SIMD_FOR(size_t c = 0; c < 4; c++)
+          const float *in = inbuf + row * stride;
+          float *out = outbuf + row * 4 * roi_out->width;
+          for (int col = chunk_left; col < chunk_right; col++)
           {
-            out[c] /= out[3];
-          }
-        }
-      }
-    }
-    else
-    {
-      // normalize and apply chroma/luma blending
-      for (int row = chunk_top; row < chunk_bot; row++)
-      {
-        const float *in = inbuf + row * stride;
-        float *out = outbuf + row * 4 * roi_out->width;
-        for (int col = 0; col < roi_out->width; col++, in+=4, out+=4)
-        {
-          SIMD_FOR(size_t c = 0; c < 4; c++)
-          {
-            out[c] = (in[c] * invert[c]) + (out[c] / out[3] * weight[c]);
+            SIMD_FOR(size_t c = 0; c < 4; c++)
+            {
+              out[4*col+c] = (in[4*col+c] * invert[c]) + (out[4*col+c] / out[4*col+3] * weight[c]);
+            }
           }
         }
       }
@@ -557,7 +631,6 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                           const dt_nlmeans_param_t *const params)
 {
-  memcpy(outbuf,inbuf,4*sizeof(float)*roi_out->width*roi_out->height);//DEBUG
   // define the factors for applying blending between the original image and the denoised version
   // if running in RGB space, 'luma' should equal 'chroma'
   const __m128 weight = { params->luma, params->chroma, params->chroma, 1.0f };
@@ -583,13 +656,12 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   const int padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
   const int numthreads = dt_get_num_threads() ;
   float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
-  int chk_height = compute_slice_height(roi_out->height);
-  int chk_width = compute_slice_width(roi_out->width);
-fprintf(stderr,"%d x %d image, chk height=%d width=%d\n",roi_in->width, roi_in->height, chk_height,chk_width);
+  const int chk_height = compute_slice_height(roi_out->height);
+  const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
-  dt_omp_firstprivate(patches, num_patches, scratch_buf, chk_height, chk_width, radius) \
-  dt_omp_shared(params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
+      dt_omp_firstprivate(patches, num_patches, scratch_buf, chk_height, chk_width, radius) \
+      dt_omp_shared(params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
       schedule(static) \
       collapse(2)
 #endif
