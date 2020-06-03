@@ -1291,13 +1291,13 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->threshold = dt_bauhaus_slider_new_from_params_box(self, "threshold");
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_step(g->threshold, 0.1f);
-  g->spatial = dt_bauhaus_slider_new_from_params_box(self, "spatial");
-  g->range = dt_bauhaus_slider_new_from_params_box(self, "range");
+  g->spatial = dt_bauhaus_slider_from_params(self, "spatial");
+  g->range = dt_bauhaus_slider_from_params(self, "range");
   dt_bauhaus_slider_set_step(g->range, 0.1f);
-  g->precedence = dt_bauhaus_combobox_new_from_params_box(self, "precedence");
-  g->hue = dt_bauhaus_slider_new_from_params_box(self, "hue");
+  g->precedence = dt_bauhaus_combobox_from_params(self, "precedence");
+  g->hue = dt_bauhaus_slider_from_params(self, "hue");
 //  dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_stop(g->hue, 0.0f,   1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
