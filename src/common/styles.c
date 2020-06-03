@@ -349,13 +349,11 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
                       const gboolean copy_iop_order, const gboolean update_iop_order)
 {
   sqlite3_stmt *stmt;
-  int id = 0;
-  gchar *desc = NULL;
 
-  id = dt_styles_get_id_by_name(name);
+  const int id = dt_styles_get_id_by_name(name);
   if(id == 0) return;
 
-  desc = dt_styles_get_description(name);
+  gchar *desc = dt_styles_get_description(name);
 
   if((g_strcmp0(name, newname)) || (g_strcmp0(desc, newdescription)))
   {
@@ -433,9 +431,8 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
 {
   sqlite3_stmt *stmt;
   int id = 0;
-  int oldid = 0;
 
-  oldid = dt_styles_get_id_by_name(name);
+  const int oldid = dt_styles_get_id_by_name(name);
   if(oldid == 0) return;
 
   /* create the style header */
