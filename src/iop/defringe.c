@@ -23,6 +23,7 @@
 #include "common/gaussian.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
 #include "iop/iop_api.h"
@@ -34,23 +35,22 @@ DT_MODULE_INTROSPECTION(1, dt_iop_defringe_params_t)
 
 typedef enum dt_iop_defringe_mode_t
 {
-  MODE_GLOBAL_AVERAGE = 0,
-  MODE_LOCAL_AVERAGE = 1,
-  MODE_STATIC = 2
+  MODE_GLOBAL_AVERAGE = 0, // $DESCRIPTION: "global average (fast)"
+  MODE_LOCAL_AVERAGE = 1,  // $DESCRIPTION: "local average (slow)"
+  MODE_STATIC = 2          // $DESCRIPTION: "static threshold (fast)"
 } dt_iop_defringe_mode_t;
 
 typedef struct dt_iop_defringe_params_t
 {
-  float radius;
-  float thresh;
-  dt_iop_defringe_mode_t op_mode;
+  float radius; // $MIN: 0.5 $MAX: 20.0 $DEFAULT: 4.0 $DESCRIPTION: "edge detection radius"
+  float thresh; // $MIN: 0.5 $MAX: 128.0 $DEFAULT: 20.0 $DESCRIPTION: "threshold"
+  dt_iop_defringe_mode_t op_mode; // $DEFAULT: MODE_GLOBAL_AVERAGE $DESCRIPTION: "operation mode"
 } dt_iop_defringe_params_t;
 
 typedef dt_iop_defringe_params_t dt_iop_defringe_data_t;
 
 typedef struct dt_iop_defringe_gui_data_t
 {
-  GtkBox *vbox;
   GtkWidget *mode_select;
   GtkWidget *radius_scale;
   GtkWidget *thresh_scale;
@@ -410,94 +410,29 @@ FINISH_PROCESS:
   free(xy_avg);
 }
 
-void reload_defaults(dt_iop_module_t *module)
-{
-  module->default_enabled = 0;
-  ((dt_iop_defringe_params_t *)module->default_params)->radius = 4.0;
-  ((dt_iop_defringe_params_t *)module->default_params)->thresh = 20.0;
-  ((dt_iop_defringe_params_t *)module->default_params)->op_mode = MODE_GLOBAL_AVERAGE;
-  memcpy(module->params, module->default_params, sizeof(dt_iop_defringe_params_t));
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_defringe_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_defringe_params_t));
-  module->params_size = sizeof(dt_iop_defringe_params_t);
-  module->gui_data = NULL;
-  module->global_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
-static void radius_slider_callback(GtkWidget *w, dt_iop_module_t *module)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
-  p->radius = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
-}
-
-static void thresh_slider_callback(GtkWidget *w, dt_iop_module_t *module)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
-  p->thresh = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
-}
-
-static void mode_callback(GtkWidget *w, dt_iop_module_t *module)
-{
-  dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
-  p->op_mode = dt_bauhaus_combobox_get(w);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
-}
-
 void gui_init(dt_iop_module_t *module)
 {
   module->gui_data = malloc(sizeof(dt_iop_defringe_gui_data_t));
   dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)module->gui_data;
-  dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
 
   module->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(module->widget, dt_get_help_url(module->op));
 
-  /* mode selection */
-  g->mode_select = dt_bauhaus_combobox_new(module);
-  gtk_box_pack_start(GTK_BOX(module->widget), g->mode_select, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->mode_select, NULL, _("operation mode"));
-  dt_bauhaus_combobox_add(g->mode_select, _("global average (fast)"));   // 0
-  dt_bauhaus_combobox_add(g->mode_select, _("local average (slow)"));    // 1
-  dt_bauhaus_combobox_add(g->mode_select, _("static threshold (fast)")); // 2
+  g->mode_select = dt_bauhaus_combobox_from_params(module, "op_mode");
   gtk_widget_set_tooltip_text(g->mode_select,
       _("method for color protection:\n - global average: fast, might show slightly wrong previews in high "
         "magnification; might sometimes protect saturation too much or too low in comparison to local "
         "average\n - local average: slower, might protect saturation better than global average by using "
         "near pixels as color reference, so it can still allow for more desaturation where required\n - "
         "static: fast, only uses the threshold as a static limit"));
-  g_signal_connect(G_OBJECT(g->mode_select), "value-changed", G_CALLBACK(mode_callback), module);
 
-  /* radius and threshold sliders */
-  g->radius_scale = dt_bauhaus_slider_new_with_range(module, 0.5, 20.0, 0.1, p->radius, 1);
+  g->radius_scale = dt_bauhaus_slider_from_params(module, "radius");
   dt_bauhaus_widget_set_label(g->radius_scale, NULL, _("edge detection radius"));
-
-  g->thresh_scale = dt_bauhaus_slider_new_with_range(module, 0.5, 128.0, 0.1, p->thresh, 1);
-  dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
-
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->radius_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->thresh_scale), TRUE, TRUE, 0);
-
   gtk_widget_set_tooltip_text(g->radius_scale, _("radius for detecting fringe"));
-  gtk_widget_set_tooltip_text(g->thresh_scale, _("threshold for defringe, higher values mean less defringing"));
 
-  g_signal_connect(G_OBJECT(g->radius_scale), "value-changed", G_CALLBACK(radius_slider_callback), module);
-  g_signal_connect(G_OBJECT(g->thresh_scale), "value-changed", G_CALLBACK(thresh_slider_callback), module);
+  g->thresh_scale = dt_bauhaus_slider_from_params(module, "thresh");
+  dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
+  gtk_widget_set_tooltip_text(g->thresh_scale, _("threshold for defringe, higher values mean less defringing"));
 }
 
 void gui_update(dt_iop_module_t *module)
