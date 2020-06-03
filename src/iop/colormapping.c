@@ -84,7 +84,7 @@ typedef struct dt_iop_colormapping_flowback_t
 
 typedef struct dt_iop_colormapping_params_t
 {
-  dt_iop_colormapping_flags_t flag; // $DEFAULT: 0
+  dt_iop_colormapping_flags_t flag; // $DEFAULT: NEUTRAL
   // number of gaussians used.
   int n; // $MIN: 1 $MAX: 5 $DEFAULT: 3 $DESCRIPTION: "number of clusters"
 
@@ -92,7 +92,7 @@ typedef struct dt_iop_colormapping_params_t
   float dominance; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "color dominance"
 
   // level of histogram equalization
-  float equalization; // $MIN: 0.0 $MAX: 50.0 $DEFAULT: 50.0 $DESCRIPTION: "histogram equalization"
+  float equalization; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "histogram equalization"
 
   // hist matching table for source image
   float source_ihist[HISTN];
@@ -865,15 +865,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_control_queue_redraw_widget(self->widget);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_colormapping_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colormapping_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_colormapping_params_t);
-  module->gui_data = NULL;
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
@@ -895,12 +886,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_colormapping_params_t *tmp = (dt_iop_colormapping_params_t *)malloc(sizeof(dt_iop_colormapping_params_t));
-
-  tmp->flag = NEUTRAL;
-  tmp->n = 3;
-  tmp->dominance = 100.f;
-  tmp->equalization = 50.0f;
+  dt_iop_colormapping_params_t *d = module->default_params;
 
   // we might be called from presets update infrastructure => there is no image
   if(module->dev)
@@ -908,19 +894,16 @@ void reload_defaults(dt_iop_module_t *module)
     dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
     if(module->dev->gui_attached && g && g->flowback_set)
     {
-      memcpy(tmp->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
-      memcpy(tmp->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
-      memcpy(tmp->source_var, g->flowback.var, sizeof(float) * MAXN * 2);
-      memcpy(tmp->source_weight, g->flowback.weight, sizeof(float) * MAXN);
-      tmp->n = g->flowback.n;
-      tmp->flag = HAS_SOURCE;
+      memcpy(d->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
+      memcpy(d->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
+      memcpy(d->source_var, g->flowback.var, sizeof(float) * MAXN * 2);
+      memcpy(d->source_weight, g->flowback.weight, sizeof(float) * MAXN);
+      d->n = g->flowback.n;
+      d->flag = HAS_SOURCE;
     }
-    module->default_enabled = 0;
   }
 
-  memcpy(module->default_params, tmp, sizeof(dt_iop_colormapping_params_t));
-  memcpy(module->params, tmp, sizeof(dt_iop_colormapping_params_t));
-  free(tmp);
+  memcpy(module->params, module->default_params, sizeof(dt_iop_colormapping_params_t));
 }
 
 
@@ -1133,12 +1116,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->clusters), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->clusters), "value-changed", G_CALLBACK(clusters_changed), (gpointer)self);
 
-  g->dominance = dt_bauhaus_slider_new_from_params_box(self, "dominance");
+  g->dominance = dt_bauhaus_slider_from_params(self, "dominance");
   gtk_widget_set_tooltip_text(g->dominance, _("how clusters are mapped. low values: based on color "
                                               "proximity, high values: based on color dominance"));
   dt_bauhaus_slider_set_format(g->dominance, "%.02f%%");
 
-  g->equalization = dt_bauhaus_slider_new_from_params_box(self, "equalization");
+  g->equalization = dt_bauhaus_slider_from_params(self, "equalization");
   gtk_widget_set_tooltip_text(g->equalization, _("level of histogram equalization"));
   dt_bauhaus_slider_set_format(g->equalization, "%.02f%%");
 
