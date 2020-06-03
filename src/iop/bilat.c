@@ -361,7 +361,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     gtk_widget_set_visible(g->spatial, p->mode != s_mode_local_laplacian);
     dt_bauhaus_slider_set(g->spatial, 50.0f);
   }
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 /** gui callbacks, these are needed. */
