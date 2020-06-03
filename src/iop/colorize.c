@@ -346,22 +346,10 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_colorize_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorize_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_colorize_params_t);
-  module->gui_data = NULL;
-  dt_iop_colorize_params_t tmp = (dt_iop_colorize_params_t){ 0, 0.5, 50, 50, module->version() };
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorize_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorize_params_t));
-}
+  dt_iop_default_init(module);
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  ((dt_iop_colorize_params_t *)module->default_params)->version = module->version();
+  memcpy(module->params, module->default_params, sizeof(dt_iop_colorize_params_t));
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -374,7 +362,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* hue slider */
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, 
-                dt_bauhaus_slider_new_from_params_box (self, "hue"));
+                dt_bauhaus_slider_from_params (self, "hue"));
   dt_bauhaus_slider_set_stop(g->hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
@@ -385,19 +373,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue, _("select the hue tone"));
 
   /* saturation slider */
-  g->saturation = dt_bauhaus_slider_new_from_params_box(self, "saturation");
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(g->saturation, _("select the saturation shadow tone"));
 
 
   // Additional parameters
-  g->lightness = dt_bauhaus_slider_new_from_params_box(self, "lightness");
+  g->lightness = dt_bauhaus_slider_from_params(self, "lightness");
   dt_bauhaus_slider_set_format(g->lightness, "%.2f%%");
   dt_bauhaus_slider_set_step(g->lightness, 0.1);
   gtk_widget_set_tooltip_text(g->lightness, _("lightness of color"));
 
-  g->source_mix = dt_bauhaus_slider_new_from_params_box(self, "source_lightness_mix");
+  g->source_mix = dt_bauhaus_slider_from_params(self, "source_lightness_mix");
   dt_bauhaus_slider_set_format(g->source_mix, "%.2f%%");
   dt_bauhaus_slider_set_step(g->source_mix, 0.1);
   gtk_widget_set_tooltip_text(g->source_mix, _("mix value of source lightness"));
