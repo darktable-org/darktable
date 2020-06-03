@@ -268,7 +268,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_colorcorrection_scrolled), self);
   g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_colorcorrection_key_press), self);
 
-  g->slider = dt_bauhaus_slider_new_from_params_box(self, "saturation");
+  g->slider = dt_bauhaus_slider_from_params(self, "saturation");
   gtk_widget_set_tooltip_text(g->slider, _("set the global saturation"));
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
