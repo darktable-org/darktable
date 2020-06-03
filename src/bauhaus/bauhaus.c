@@ -546,9 +546,9 @@ void dt_bauhaus_load_theme()
   darktable.bauhaus->widget_space = INNER_PADDING / 2.0f; // used as a top/bottom margin for widgets
   darktable.bauhaus->quad_width = darktable.bauhaus->line_height;
 
-  darktable.bauhaus->baseline_size = darktable.bauhaus->line_height / 2.0f; // absolute size in Cairo unit
-  darktable.bauhaus->border_width = 3.0f; // absolute size in Cairo unit
-  darktable.bauhaus->marker_size = (darktable.bauhaus->baseline_size + darktable.bauhaus->border_width) * 0.75f;
+  darktable.bauhaus->baseline_size = darktable.bauhaus->line_height / 2.5f; // absolute size in Cairo unit
+  darktable.bauhaus->border_width = 2.0f; // absolute size in Cairo unit
+  darktable.bauhaus->marker_size = (darktable.bauhaus->baseline_size + darktable.bauhaus->border_width) * 0.9f;
 }
 
 void dt_bauhaus_init()
@@ -1287,7 +1287,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   const float size = darktable.bauhaus->marker_size;
 
   cairo_save(cr);
-  cairo_translate(cr, slider_coordinate(pos, wd), get_line_height() + INNER_PADDING - border_width * 0.25f);
+  cairo_translate(cr, slider_coordinate(pos, wd), get_line_height() + INNER_PADDING - border_width);
   cairo_scale(cr, 1.0f, -1.0f);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
