@@ -299,9 +299,9 @@ static inline float xoshiro256ss(uint64_t state[4])
 
 typedef enum dt_noise_distribution_t
 {
-  DT_NOISE_UNIFORM = 0,
-  DT_NOISE_GAUSSIAN = 1,
-  DT_NOISE_POISSONIAN = 2
+  DT_NOISE_UNIFORM = 0,   // $DESCRIPTION: "uniform"
+  DT_NOISE_GAUSSIAN = 1,  // $DESCRIPTION: "gaussian"
+  DT_NOISE_POISSONIAN = 2 // $DESCRIPTION: "poissonian"
 } dt_noise_distribution_t;
 
 
