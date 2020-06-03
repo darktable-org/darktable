@@ -2058,7 +2058,7 @@
     <shortdescription>method to use for getting the display profile</shortdescription>
     <longdescription>this option allows to force a specific means of getting the current display profile. this is useful when one alternative gives wrong results</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="interface">
+  <dtconfig>
     <name>histogram_height</name>
     <type min="100" max="200">int</type>
     <default>175</default>
