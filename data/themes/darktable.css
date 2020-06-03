@@ -552,7 +552,7 @@ overshoot.right
   min-height: 1.7em;
   margin: 0;
   border: 0;
-  padding: 0.15em 0.6em 0.15em 0.6em;
+  padding: 0.25em 0.6em;
 }
 
 /* Entries options in lighttable */
