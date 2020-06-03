@@ -785,7 +785,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *vbox_manual = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_manual, "manual");
 
-  g->exposure = dt_bauhaus_slider_new_from_params_box(self, "exposure");
+  g->exposure = dt_bauhaus_slider_from_params(self, "exposure");
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 3.0);
@@ -801,13 +801,13 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *vbox_deflicker = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");
 
-  g->deflicker_percentile = dt_bauhaus_slider_new_from_params_box(self, "deflicker_percentile");
+  g->deflicker_percentile = dt_bauhaus_slider_from_params(self, "deflicker_percentile");
   dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
   gtk_widget_set_tooltip_text(g->deflicker_percentile,
                               // xgettext:no-c-format
                               _("where in the histogram to meter for deflicking. E.g. 50% is median"));
 
-  g->deflicker_target_level = dt_bauhaus_slider_new_from_params_box(self, "deflicker_target_level");
+  g->deflicker_target_level = dt_bauhaus_slider_from_params(self, "deflicker_target_level");
   dt_bauhaus_slider_set_step(g->deflicker_target_level, 0.1);
   dt_bauhaus_slider_set_format(g->deflicker_target_level, _("%.2f EV"));
   gtk_widget_set_tooltip_text(g->deflicker_target_level,
@@ -829,11 +829,11 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->mode = dt_bauhaus_combobox_new_from_params_box(self, "mode");
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode_stack), TRUE, TRUE, 0);
 
-  g->black = dt_bauhaus_slider_new_from_params_box(self, "black");
+  g->black = dt_bauhaus_slider_from_params(self, "black");
   gtk_widget_set_tooltip_text(g->black, _("adjust the black level to unclip negative RGB values.\n"
                                           "you should never use it to add more density in blacks!\n"
                                           "if poorly set, it will clip near-black colors out of gamut\n"
