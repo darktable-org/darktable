@@ -546,6 +546,15 @@ overshoot.right
   margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
+/* gradient sliders */
+#gradient-slider
+{
+  min-height: 1.7em;
+  margin: 0;
+  border: 0;
+  padding: 0.25em 0.6em;
+}
+
 /* Entries options in lighttable */
 #left #lib-plugin-ui entry /* this will avoid having too much height on entry items in filter collections modules */
 {
