@@ -69,6 +69,7 @@ static void generic_combobox_callback(GtkWidget *combobox, dt_module_param_t *da
 
   dt_iop_module_t *self = data->module;
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
+
   int *field = (int*)(p + data->param_offset);
 
   int previous = *field;
@@ -170,7 +171,10 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
   GtkWidget *combobox = NULL;
   gchar *str = NULL;
 
-  if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM || f->header.type == DT_INTROSPECTION_TYPE_INT))
+  if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM || 
+            f->header.type == DT_INTROSPECTION_TYPE_INT  ||
+            f->header.type == DT_INTROSPECTION_TYPE_UINT ||
+            f->header.type == DT_INTROSPECTION_TYPE_BOOL))
   {
     combobox = dt_bauhaus_combobox_new(self);
 
@@ -193,12 +197,17 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     module_param->param_offset = self->so->get_p(p, param) - p;
     g_signal_connect_data(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_callback), module_param, (GClosureNotify)g_free, 0);
 
-    if (f->header.type == DT_INTROSPECTION_TYPE_ENUM)
+    if(f->header.type == DT_INTROSPECTION_TYPE_ENUM)
     {
      for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values; iter->name; iter++)
       {
         dt_bauhaus_combobox_add(combobox, gettext(iter->description));
       }
+    }
+    else if(f->header.type == DT_INTROSPECTION_TYPE_BOOL)
+    {
+        dt_bauhaus_combobox_add(combobox, _("no"));
+        dt_bauhaus_combobox_add(combobox, _("yes"));
     }
   }
   else
