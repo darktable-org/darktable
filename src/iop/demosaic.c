@@ -26,6 +26,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -51,23 +52,24 @@ DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
 typedef enum dt_iop_demosaic_method_t
 {
   // methods for Bayer images
-  DT_IOP_DEMOSAIC_PPG = 0,
-  DT_IOP_DEMOSAIC_AMAZE = 1,
-  DT_IOP_DEMOSAIC_VNG4 = 2,
-  DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3,
+  DT_IOP_DEMOSAIC_PPG = 0,   // $DESCRIPTION: "PPG (fast)"
+  DT_IOP_DEMOSAIC_AMAZE = 1, // $DESCRIPTION: "AMaZE (slow)"
+  DT_IOP_DEMOSAIC_VNG4 = 2,  // $DESCRIPTION: "VNG4"
+  DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3, // $DESCRIPTION: "passthrough (monochrome) (experimental)"
   // methods for x-trans images
-  DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,
-  DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
-  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2,
-  DT_IOP_DEMOSAIC_FDC = DEMOSAIC_XTRANS | 4
+  DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,           // $DESCRIPTION: "VNG"
+  DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,   // $DESCRIPTION: "Markesteijn 1-pass"
+  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2, // $DESCRIPTION: "Markesteijn 3-pass (slow)"
+  DT_IOP_DEMOSAIC_PASSTHR_MONOX = DEMOSAIC_XTRANS | 3, // $DESCRIPTION: "passthrough (monochrome) (experimental)"
+  DT_IOP_DEMOSAIC_FDC = DEMOSAIC_XTRANS | 4            // $DESCRIPTION: "frequency domain chroma (slow)"
 } dt_iop_demosaic_method_t;
 
 typedef enum dt_iop_demosaic_greeneq_t
 {
-  DT_IOP_GREEN_EQ_NO = 0,
-  DT_IOP_GREEN_EQ_LOCAL = 1,
-  DT_IOP_GREEN_EQ_FULL = 2,
-  DT_IOP_GREEN_EQ_BOTH = 3
+  DT_IOP_GREEN_EQ_NO = 0,    // $DESCRIPTION: "disabled"
+  DT_IOP_GREEN_EQ_LOCAL = 1, // $DESCRIPTION: "local average"
+  DT_IOP_GREEN_EQ_FULL = 2,  // $DESCRIPTION: "full average"
+  DT_IOP_GREEN_EQ_BOTH = 3   // $DESCRIPTION: "full and local average"
 } dt_iop_demosaic_greeneq_t;
 
 typedef enum dt_iop_demosaic_qual_flags_t
@@ -82,10 +84,10 @@ typedef enum dt_iop_demosaic_qual_flags_t
 
 typedef struct dt_iop_demosaic_params_t
 {
-  dt_iop_demosaic_greeneq_t green_eq;
-  float median_thrs;
-  uint32_t color_smoothing;
-  dt_iop_demosaic_method_t demosaicing_method;
+  dt_iop_demosaic_greeneq_t green_eq; // $DEFAULT: DT_IOP_GREEN_EQ_NO $DESCRIPTION: "match greens"
+  float median_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "edge threshold"
+  uint32_t color_smoothing; // $DEFAULT: 0
+  dt_iop_demosaic_method_t demosaicing_method; // $DEFAULT: DT_IOP_DEMOSAIC_PPG
   uint32_t yet_unused_data_specific_to_demosaicing_method;
 } dt_iop_demosaic_params_t;
 
@@ -4740,18 +4742,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_demosaic_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_demosaic_params_t));
-  module->default_enabled = 1;
-  module->hide_enable_button = 1;
-  module->params_size = sizeof(dt_iop_demosaic_params_t);
-  module->gui_data = NULL;
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 0; // from programs.conf
@@ -4801,14 +4791,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_markesteijn_zero = dt_opencl_create_kernel(markesteijn, "markesteijn_zero");
   gd->kernel_markesteijn_accu = dt_opencl_create_kernel(markesteijn, "markesteijn_accu");
   gd->kernel_markesteijn_final = dt_opencl_create_kernel(markesteijn, "markesteijn_final");
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -4992,170 +4974,70 @@ void gui_update(struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_demosaic_params_t tmp
-      = (dt_iop_demosaic_params_t){ .green_eq = DT_IOP_GREEN_EQ_NO,
-                                    .median_thrs = 0.0f,
-                                    .color_smoothing = 0,
-                                    .demosaicing_method = DT_IOP_DEMOSAIC_PPG,
-                                    .yet_unused_data_specific_to_demosaicing_method = 0 };
-
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
+  if(!module->dev) return;
+
+  dt_iop_demosaic_params_t *d = module->default_params;
 
   if(dt_image_is_monochrome(&module->dev->image_storage))
-    tmp.demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+    d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
 
   // only on for raw images:
   if(dt_image_is_raw(&module->dev->image_storage))
     module->default_enabled = 1;
   else
-    {
-    module->default_enabled = 0;
-      module->hide_enable_button = 1;
-    }
-  if(module->dev->image_storage.buf_dsc.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
-
-end:
-  memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_demosaic_params_t));
-}
-
-static void median_thrs_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->median_thrs = dt_bauhaus_slider_get(slider);
-  if(p->median_thrs < 0.001f) p->median_thrs = 0.0f;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void color_smoothing_callback(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->color_smoothing = dt_bauhaus_combobox_get(button);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void greeneq_callback(GtkWidget *combo, dt_iop_module_t *self)
-{
-  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  int active = dt_bauhaus_combobox_get(combo);
-  switch(active)
   {
-    case DT_IOP_GREEN_EQ_FULL:
-      p->green_eq = DT_IOP_GREEN_EQ_FULL;
-      break;
-    case DT_IOP_GREEN_EQ_LOCAL:
-      p->green_eq = DT_IOP_GREEN_EQ_LOCAL;
-      break;
-    case DT_IOP_GREEN_EQ_BOTH:
-      p->green_eq = DT_IOP_GREEN_EQ_BOTH;
-      break;
-    default:
-    case DT_IOP_GREEN_EQ_NO:
-      p->green_eq = DT_IOP_GREEN_EQ_NO;
-      break;
+    module->default_enabled = 0;
+    module->hide_enable_button = 1;
   }
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  if(module->dev->image_storage.buf_dsc.filters == 9u) 
+    d->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+
+  memcpy(module->params, module->default_params, sizeof(dt_iop_demosaic_params_t));
 }
 
-static void demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  int active = dt_bauhaus_combobox_get(combo);
 
-  switch(active)
+  if(w == g->demosaic_method_bayer)
   {
-    case DT_IOP_DEMOSAIC_AMAZE:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_AMAZE;
-      break;
-    case DT_IOP_DEMOSAIC_VNG4:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_VNG4;
-      break;
-    case DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
-      break;
-    default:
-    case DT_IOP_DEMOSAIC_PPG:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
-      break;
+    gtk_widget_set_visible(g->median_thrs, p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
+    gtk_widget_set_visible(g->color_smoothing, p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME);
+    gtk_widget_set_visible(g->greeneq, p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME);
   }
-
-  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+  else if(w == g->demosaic_method_xtrans)
   {
-    gtk_widget_hide(g->median_thrs);
-    gtk_widget_hide(g->color_smoothing);
-    gtk_widget_hide(g->greeneq);
+    p->demosaicing_method |= DEMOSAIC_XTRANS;
+    if((p->demosaicing_method > (DT_IOP_DEMOSAIC_FDC)) ||
+       (p->demosaicing_method < (DT_IOP_DEMOSAIC_VNG)))
+      p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
   }
-  else if(p->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE || p->demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
-  {
-    gtk_widget_hide(g->median_thrs);
-    gtk_widget_show(g->color_smoothing);
-    gtk_widget_show(g->greeneq);
-  }
-  else
-  {
-    gtk_widget_show(g->median_thrs);
-    gtk_widget_show(g->color_smoothing);
-    gtk_widget_show(g->greeneq);
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *self)
-{
-  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->demosaicing_method = dt_bauhaus_combobox_get(combo) | DEMOSAIC_XTRANS;
-  if((p->demosaicing_method > (DT_IOP_DEMOSAIC_FDC | DEMOSAIC_XTRANS))
-     || (p->demosaicing_method < (DT_IOP_DEMOSAIC_VNG | DEMOSAIC_XTRANS)))
-    p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_demosaic_gui_data_t));
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  g->box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  g->demosaic_method_bayer = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->demosaic_method_bayer, NULL, _("method"));
-  gtk_box_pack_start(GTK_BOX(g->box_raw), g->demosaic_method_bayer, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("PPG (fast)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("AMaZE (slow)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4"));
-  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("passthrough (monochrome) (experimental)"));
+  g->demosaic_method_bayer = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
+  for(int i=0;i<5;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, 4);
   gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("demosaicing raw data method"));
 
-  g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->demosaic_method_xtrans, NULL, _("method"));
-  gtk_box_pack_start(GTK_BOX(g->box_raw), g->demosaic_method_xtrans, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("passthrough (monochrome) (experimental)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("frequency domain chroma (slow)"));
+  g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
+  for(int i=0;i<4;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
 
-  g->median_thrs = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
+  g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
+  dt_bauhaus_slider_set_step(g->median_thrs, 0.001);
   gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off.\n"
                                                 "set to 1.0 to ignore edges."));
-  dt_bauhaus_widget_set_label(g->median_thrs, NULL, _("edge threshold"));
-  gtk_box_pack_start(GTK_BOX(g->box_raw), g->median_thrs, TRUE, TRUE, 0);
 
-  g->color_smoothing = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->color_smoothing, NULL, _("color smoothing"));
-  gtk_box_pack_start(GTK_BOX(g->box_raw), g->color_smoothing, TRUE, TRUE, 0);
+  g->color_smoothing = dt_bauhaus_combobox_from_params(self, "color_smoothing");
   dt_bauhaus_combobox_add(g->color_smoothing, _("off"));
   dt_bauhaus_combobox_add(g->color_smoothing, _("one time"));
   dt_bauhaus_combobox_add(g->color_smoothing, _("two times"));
@@ -5164,22 +5046,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->color_smoothing, _("five times"));
   gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));
 
-  g->greeneq = dt_bauhaus_combobox_new(self);
-  gtk_box_pack_start(GTK_BOX(g->box_raw), g->greeneq, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->greeneq, NULL, _("match greens"));
-  dt_bauhaus_combobox_add(g->greeneq, _("disabled"));
-  dt_bauhaus_combobox_add(g->greeneq, _("local average"));
-  dt_bauhaus_combobox_add(g->greeneq, _("full average"));
-  dt_bauhaus_combobox_add(g->greeneq, _("full and local average"));
+  g->greeneq = dt_bauhaus_combobox_from_params(self, "green_eq");
   gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method"));
 
-  g_signal_connect(G_OBJECT(g->median_thrs), "value-changed", G_CALLBACK(median_thrs_callback), self);
-  g_signal_connect(G_OBJECT(g->color_smoothing), "value-changed", G_CALLBACK(color_smoothing_callback), self);
-  g_signal_connect(G_OBJECT(g->greeneq), "value-changed", G_CALLBACK(greeneq_callback), self);
-  g_signal_connect(G_OBJECT(g->demosaic_method_bayer), "value-changed",
-                   G_CALLBACK(demosaic_method_bayer_callback), self);
-  g_signal_connect(G_OBJECT(g->demosaic_method_xtrans), "value-changed",
-                   G_CALLBACK(demosaic_method_xtrans_callback), self);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
 
