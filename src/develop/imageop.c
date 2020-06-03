@@ -206,7 +206,7 @@ static dt_introspection_field_t *default_get_f(const char *name)
   return NULL;
 }
 
-void default_init(dt_iop_module_t *module)
+void dt_iop_default_init(dt_iop_module_t *module)
 {
   size_t param_size = module->so->get_introspection()->size;
   module->params_size = param_size;
@@ -217,34 +217,57 @@ void default_init(dt_iop_module_t *module)
   module->gui_data = NULL;
 
   dt_introspection_field_t *i = module->so->get_introspection_linear();
-  for (int num = module->so->get_introspection()->field->Struct.entries; num; num--,i++)
+  while(i->header.type != DT_INTROSPECTION_TYPE_NONE)
   {
-    if (i->header.type == DT_INTROSPECTION_TYPE_FLOAT)
+    switch(i->header.type)
     {
+    case DT_INTROSPECTION_TYPE_FLOAT:
       *(float*)(module->default_params + i->header.offset) = i->Float.Default;
-    }
-    else if (i->header.type == DT_INTROSPECTION_TYPE_INT)
-    {
+      break;
+    case DT_INTROSPECTION_TYPE_INT:
       *(int*)(module->default_params + i->header.offset) = i->Int.Default;
-    }
-    else if (i->header.type == DT_INTROSPECTION_TYPE_UINT)
-    {
+      break;
+    case DT_INTROSPECTION_TYPE_UINT:
       *(unsigned int*)(module->default_params + i->header.offset) = i->UInt.Default;
-    }
-    else if (i->header.type == DT_INTROSPECTION_TYPE_ENUM)
-    {
-//      Introspection $DEFAULT: not available for enums
-//      *(enum*)(module->default_params + i->header.offset) = i->Enum.Default;
-      *(int*)(module->default_params + i->header.offset) = 0;
-    }
-    else if (i->header.type == DT_INTROSPECTION_TYPE_BOOL)
-    {
+      break;
+    case DT_INTROSPECTION_TYPE_ENUM:
+      *(int*)(module->default_params + i->header.offset) = i->Enum.Default;
+      break;
+    case DT_INTROSPECTION_TYPE_BOOL:
       *(gboolean*)(module->default_params + i->header.offset) = i->Bool.Default;
+      break;
+    case DT_INTROSPECTION_TYPE_CHAR:
+      *(char*)(module->default_params + i->header.offset) = i->Char.Default;
+      break;
+    case DT_INTROSPECTION_TYPE_OPAQUE:
+      memset(module->default_params + i->header.offset, 0, i->header.size);
+      break;
+    case DT_INTROSPECTION_TYPE_ARRAY:
+      {
+        if(i->Array.type == DT_INTROSPECTION_TYPE_CHAR) break;
+
+        size_t element_size = i->Array.field->header.size;
+        if(element_size % sizeof(int))
+        {
+          fprintf(stderr, "trying to initialize array not multiple of sizeof(int) in dt_iop_default_init\n");
+        }
+        element_size /= sizeof(int);
+        size_t num_ints = i->header.size / sizeof(int);
+
+        int *p = module->default_params + i->header.offset;
+        for (size_t c = element_size; c < num_ints; c++, p++) 
+          p[element_size] = *p;
+      }
+      break;
+    case DT_INTROSPECTION_TYPE_STRUCT:
+      // ignore STRUCT; nothing to do
+      break;
+    default:
+      fprintf(stderr, "unsupported introspection type \"%s\" encountered in dt_iop_default_init (field %s)\n", i->header.type_name, i->header.field_name);
+      break;
     }
-    else
-    {
-      fprintf(stderr, "[default_init] can't support module `%s': needs custom init()\n", module->op);
-    }
+
+    i++;
   }
 
   memcpy(module->params, module->default_params, param_size);
@@ -332,7 +355,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   if(!g_module_symbol(module->module, "scrolled", (gpointer) & (module->scrolled))) module->scrolled = NULL;
 
   if(!g_module_symbol(module->module, "init", (gpointer) & (module->init))) 
-    module->init = default_init;
+    module->init = dt_iop_default_init;
   if(!g_module_symbol(module->module, "cleanup", (gpointer) & (module->cleanup)))
     module->cleanup = default_cleanup;
   if(!g_module_symbol(module->module, "init_global", (gpointer) & (module->init_global)))
