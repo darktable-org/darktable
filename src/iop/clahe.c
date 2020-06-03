@@ -24,7 +24,6 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "develop/imageop_gui.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -44,8 +43,8 @@ DT_MODULE(1)
 
 typedef struct dt_iop_rlce_params_t
 {
-  double radius; // $MIN: 0.0 $MAX: 64.0 $DEFAULT: 1.0
-  double slope;  // $MIN: 0.0 $MAX: 1.25 $DEFAULT: 1.0 $DESCRIPTION: "amount"
+  double radius;
+  double slope;
 } dt_iop_rlce_params_t;
 
 typedef struct dt_iop_rlce_gui_data_t
@@ -330,10 +329,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-  
-//  g->scale1 = dt_bauhaus_slider_new_from_params_box(self, "radius");
-//  g->scale2 = dt_bauhaus_slider_new_from_params_box(self, "slope");
-
   g->vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g->vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 0);
