@@ -61,7 +61,7 @@ typedef struct dt_iop_borders_params_t
 {
   float color[3];           // border color $DEFAULT: 1.0
   float aspect;             /* aspect ratio of the outer frame w/h
-                               $MIN: 1.0 $MAX: 3.0 $DEFAULT: -1.0 $DESCRIPTION: "aspect ratio" */
+                               $MIN: 1.0 $MAX: 3.0 $DEFAULT: DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE $DESCRIPTION: "aspect ratio" */
   char aspect_text[20];     /* aspect ratio of the outer frame w/h (user string version)
                                DEFAULT: "constant border" */
   int aspect_orient;        /* aspect ratio orientation
@@ -843,22 +843,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->frame_colorpick), &fc);
 }
 
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_borders_data_t));
-  module->params = calloc(1, sizeof(dt_iop_borders_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_borders_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_borders_params_t);
-  module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-}
-
 static void gui_init_aspect(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
@@ -932,7 +916,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->size = dt_bauhaus_slider_new_from_params_box(self, "size");
+  g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_factor(g->size, 100);
   dt_bauhaus_slider_set_format(g->size, "%.2f %%");
   gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
@@ -944,10 +928,10 @@ void gui_init(struct dt_iop_module_t *self)
   gui_init_aspect(self);
   g_signal_connect(G_OBJECT(g->aspect), "value-changed", G_CALLBACK(aspect_changed), self);
   gtk_widget_set_tooltip_text(g->aspect, _("select the aspect ratio or right click and type your own (w:h)"));
-  g->aspect_slider = dt_bauhaus_slider_new_from_params_box(self, "aspect");
+  g->aspect_slider = dt_bauhaus_slider_from_params(self, "aspect");
   gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio"));
 
-  g->aspect_orient = dt_bauhaus_combobox_new_from_params_box(self, "aspect_orient");
+  g->aspect_orient = dt_bauhaus_combobox_from_params(self, "aspect_orient");
   dt_bauhaus_combobox_add(g->aspect_orient, _("auto"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("portrait"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("landscape"));
@@ -960,7 +944,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->pos_h), "value-changed", G_CALLBACK(position_h_changed), self);
   gtk_widget_set_tooltip_text(g->pos_h, _("select the horizontal position ratio relative to top "
                                           "or right click and type your own (y:h)"));
-  g->pos_h_slider = dt_bauhaus_slider_new_from_params_box(self, "pos_h");
+  g->pos_h_slider = dt_bauhaus_slider_from_params(self, "pos_h");
   dt_bauhaus_slider_set_step(g->pos_h_slider, 0.1);
   gtk_widget_set_tooltip_text(g->pos_h_slider, _("custom horizontal position"));
 
@@ -971,19 +955,19 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->pos_v), "value-changed", G_CALLBACK(position_v_changed), self);
   gtk_widget_set_tooltip_text(g->pos_v, _("select the vertical position ratio relative to left "
                                           "or right click and type your own (x:w)"));
-  g->pos_v_slider = dt_bauhaus_slider_new_from_params_box(self, "pos_v");
+  g->pos_v_slider = dt_bauhaus_slider_from_params(self, "pos_v");
   dt_bauhaus_slider_set_step(g->pos_v_slider, 0.1);
   gtk_widget_set_tooltip_text(g->pos_v_slider, _("custom vertical position"));
 
   gui_init_positions(self);
 
-  g->frame_size = dt_bauhaus_slider_new_from_params_box(self, "frame_size");
+  g->frame_size = dt_bauhaus_slider_from_params(self, "frame_size");
   dt_bauhaus_slider_set_factor(g->frame_size, 100);
   dt_bauhaus_slider_set_step(g->frame_size, 0.005);
   dt_bauhaus_slider_set_format(g->frame_size, "%.2f %%");
   gtk_widget_set_tooltip_text(g->frame_size, _("size of the frame line in percent of min border width"));
 
-  g->frame_offset = dt_bauhaus_slider_new_from_params_box(self, "frame_offset");
+  g->frame_offset = dt_bauhaus_slider_from_params(self, "frame_offset");
   dt_bauhaus_slider_set_factor(g->frame_offset, 100);
   dt_bauhaus_slider_set_step(g->frame_size, 0.005);
   dt_bauhaus_slider_set_format(g->frame_offset, "%.2f %%");
@@ -1019,24 +1003,17 @@ void gui_init(struct dt_iop_module_t *self)
 }
 
 
-void reload_defaults(dt_iop_module_t *self)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_borders_params_t tmp = (dt_iop_borders_params_t){ { 1.0f, 1.0f, 1.0f },
-                                                           DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE,
-                                                           "constant border",
-                                                           0,
-                                                           0.1f,
-                                                           0.5f,
-                                                           "1/2",
-                                                           0.5f,
-                                                           "1/2",
-                                                           0.0f,
-                                                           0.5f,
-                                                           { 0.0f, 0.0f, 0.0f },
-                                                           TRUE };
-  memcpy(self->params, &tmp, sizeof(dt_iop_borders_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_borders_params_t));
-  self->default_enabled = 0;
+  dt_iop_default_init(self);
+
+  dt_iop_borders_params_t *defaults = self->default_params;
+
+  g_strlcpy(defaults->aspect_text, "constant border", sizeof(defaults->aspect_text));
+  g_strlcpy(defaults->pos_h_text, "1/2", sizeof(defaults->pos_h_text));
+  g_strlcpy(defaults->pos_v_text, "1/2", sizeof(defaults->pos_v_text));
+
+  memcpy(self->params, self->default_params, sizeof(dt_iop_borders_params_t));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
