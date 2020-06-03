@@ -73,8 +73,9 @@ typedef enum atrous_channel_t
 
 typedef struct dt_iop_atrous_params_t
 {
-  int32_t octaves;
-  float x[atrous_none][BANDS], y[atrous_none][BANDS];
+  int32_t octaves; // $DEFAULT: 3
+  float x[atrous_none][BANDS];
+  float y[atrous_none][BANDS]; // $DEFAULT: 0.5
 } dt_iop_atrous_params_t;
 
 typedef struct dt_iop_atrous_gui_data_t
@@ -962,22 +963,17 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_atrous_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_atrous_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_atrous_params_t);
-  module->gui_data = NULL;
-  dt_iop_atrous_params_t tmp;
-  tmp.octaves = 3;
+  dt_iop_default_init(module);
+
+  dt_iop_atrous_params_t *d = module->default_params;
+  
   for(int k = 0; k < BANDS; k++)
   {
-    tmp.y[atrous_L][k] = tmp.y[atrous_s][k] = tmp.y[atrous_c][k] = 0.5f;
-    tmp.x[atrous_L][k] = tmp.x[atrous_s][k] = tmp.x[atrous_c][k] = k / (BANDS - 1.0f);
-    tmp.y[atrous_Lt][k] = tmp.y[atrous_ct][k] = 0.0f;
-    tmp.x[atrous_Lt][k] = tmp.x[atrous_ct][k] = k / (BANDS - 1.0f);
+    d->y[atrous_Lt][k] = d->y[atrous_ct][k] = 0.0f;
+    for(int c = atrous_L; c <= atrous_ct; c++) d->x[c][k] = k / (BANDS - 1.0f);
   }
-  memcpy(module->params, &tmp, sizeof(dt_iop_atrous_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_atrous_params_t));
+
+  memcpy(module->params, module->default_params, sizeof(dt_iop_atrous_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -988,14 +984,6 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_decompose = dt_opencl_create_kernel(program, "eaw_decompose");
   gd->kernel_synthesize = dt_opencl_create_kernel(program, "eaw_synthesize");
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1870,13 +1858,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(),  gtk_label_new(_("luma")));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("luma")));
   gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
                               _("change lightness at each feature size"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(),  gtk_label_new(_("chroma")));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("chroma")));
   gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
                               _("change color saturation at each feature size"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(),  gtk_label_new(_("edges")));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("edges")));
   gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
                               _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
 
