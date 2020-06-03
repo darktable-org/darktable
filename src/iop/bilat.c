@@ -401,44 +401,44 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->mode = dt_bauhaus_combobox_new_from_params_box(self, "mode");
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
-  g->detail = dt_bauhaus_slider_new_from_params_box(self, "detail");
+  g->detail = dt_bauhaus_slider_from_params(self, "detail");
   dt_bauhaus_slider_set_factor(g->detail, 100);
   dt_bauhaus_slider_set_offset(g->detail, 100);
   dt_bauhaus_slider_set_format(g->detail, "%.0f%%");
   gtk_widget_set_tooltip_text(g->detail, _("changes the local contrast"));
 
-  g->spatial = dt_bauhaus_slider_new_from_params_box(self, "sigma_s");
+  g->spatial = dt_bauhaus_slider_from_params(self, "sigma_s");
   dt_bauhaus_slider_set_default(g->spatial, 50.0);
   dt_bauhaus_slider_set_hard_min(g->spatial, 1.0);
   dt_bauhaus_slider_set_digits(g->spatial, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, _("coarseness"));
   gtk_widget_set_tooltip_text(g->spatial, _("feature size of local details (spatial sigma of bilateral filter)"));
 
-  g->range = dt_bauhaus_slider_new_from_params_box(self, "sigma_r");
+  g->range = dt_bauhaus_slider_from_params(self, "sigma_r");
   dt_bauhaus_slider_set_default(g->range, 20.0);
   dt_bauhaus_slider_set_hard_min(g->range, 1.0);
   dt_bauhaus_slider_set_digits(g->range, 0);
   dt_bauhaus_widget_set_label(g->range, NULL, _("contrast"));
   gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
-  g->highlights = dt_bauhaus_slider_new_from_params_box(self, "sigma_r");
+  g->highlights = dt_bauhaus_slider_from_params(self, "sigma_r");
   dt_bauhaus_slider_set_hard_max(g->highlights, 2.0);
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
   dt_bauhaus_slider_set_factor(g->highlights, 100);
   dt_bauhaus_slider_set_format(g->highlights, "%.0f%%");
   gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
 
-  g->shadows = dt_bauhaus_slider_new_from_params_box(self, "sigma_s");
+  g->shadows = dt_bauhaus_slider_from_params(self, "sigma_s");
   dt_bauhaus_slider_set_hard_max(g->shadows, 2.0);
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadows"));
   dt_bauhaus_slider_set_factor(g->shadows, 100);
   dt_bauhaus_slider_set_format(g->shadows, "%.0f%%");
   gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
 
-  g->midtone = dt_bauhaus_slider_new_from_params_box(self, "midtone");
+  g->midtone = dt_bauhaus_slider_from_params(self, "midtone");
   gtk_widget_set_tooltip_text(g->midtone, _("defines what counts as midtones. lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
 
   // work around multi-instance issue which calls show all a fair bit:
