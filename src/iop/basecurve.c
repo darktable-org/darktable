@@ -2128,14 +2128,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
 
   c->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
-/*  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("none"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("max RGB"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("average RGB"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("sum RGB"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("norm RGB"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("basic power"));
-*/  gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
+  gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
   c->fusion = dt_bauhaus_combobox_from_params(self, "exposure_fusion");
   dt_bauhaus_combobox_add(c->fusion, _("none"));
@@ -2153,6 +2146,7 @@ void gui_init(struct dt_iop_module_t *self)
   // initially set to 1 (consistency with previous versions), but double-click resets to 0
   // to get a quick way to reach 0 with the mouse.
   c->exposure_bias = dt_bauhaus_slider_from_params(self, "exposure_bias");
+  dt_bauhaus_slider_set_default(c->exposure_bias, 0.0f); 
   dt_bauhaus_slider_set_digits(c->exposure_bias, 3); 
   gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
