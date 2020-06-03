@@ -95,7 +95,7 @@ typedef enum _colorbalance_patch_t
 
 typedef struct dt_iop_colorbalance_params_t
 {
-  dt_iop_colorbalance_mode_t mode;
+  dt_iop_colorbalance_mode_t mode; // $DEFAULT: SLOPE_OFFSET_POWER
   float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE]; // $DEFAULT: 1.0
   float saturation;     // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "input saturation"
   float contrast;       // $MIN: 0.01 $MAX: 1.99 $DEFAULT: 1.0
@@ -1390,34 +1390,6 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   _check_tuner_picker_labels(self);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorbalance_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_colorbalance_params_t);
-  module->gui_data = NULL;
-  dt_iop_colorbalance_params_t tmp = (dt_iop_colorbalance_params_t){ SLOPE_OFFSET_POWER,
-                                                                     { 1.0f, 1.0f, 1.0f, 1.0f },
-                                                                     { 1.0f, 1.0f, 1.0f, 1.0f },
-                                                                     { 1.0f, 1.0f, 1.0f, 1.0f },
-                                                                     1.0f,
-                                                                     1.0f,
-                                                                     18.0f,
-                                                                     1.0f };
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorbalance_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorbalance_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
@@ -2081,7 +2053,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // mode choice
-  g->mode = dt_bauhaus_combobox_new_from_params_box(self, "mode");
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("color-grading mapping method"));
 
   // control choice
@@ -2103,24 +2075,24 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->master_box), dt_ui_section_label_new(_("master")), FALSE, FALSE, 0);
 
-  g->saturation = dt_bauhaus_slider_new_from_params_box(self, "saturation");
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_soft_range(g->saturation, 0.5f, 1.5f);
   dt_bauhaus_slider_set_factor(g->saturation, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_widget_set_tooltip_text(g->saturation, _("saturation correction before the color balance"));
 
-  g->saturation_out = dt_bauhaus_slider_new_from_params_box(self, "saturation_out");
+  g->saturation_out = dt_bauhaus_slider_from_params(self, "saturation_out");
   dt_bauhaus_slider_set_soft_range(g->saturation_out, 0.5f, 1.5f);
   dt_bauhaus_slider_set_factor(g->saturation_out, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation_out, "%.2f %%");
   gtk_widget_set_tooltip_text(g->saturation_out, _("saturation correction after the color balance"));
 
   g->grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
-            dt_bauhaus_slider_new_from_params_box(self, "grey"));
+            dt_bauhaus_slider_from_params(self, "grey"));
   dt_bauhaus_slider_set_format(g->grey, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey, _("adjust to match a neutral tone"));
 
-  g->contrast = dt_bauhaus_slider_new_from_params_box(self, "contrast");
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
   dt_bauhaus_slider_set_soft_range(g->contrast, 0.5f, 1.5f);
   dt_bauhaus_slider_set_factor(g->contrast, -100.0f);
   dt_bauhaus_slider_set_offset(g->contrast, 100.0f);
