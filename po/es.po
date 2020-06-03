@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-03 00:50-0500\n"
-"PO-Revision-Date: 2020-06-03 00:31-0500\n"
+"POT-Creation-Date: 2020-06-03 15:59-0500\n"
+"PO-Revision-Date: 2020-06-03 16:01-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1152,8 +1152,8 @@ msgstr ""
 
 #. tags
 #: ../build/src/preferences_gen.h:3691 ../src/develop/lightroom.c:1508
-#: ../src/libs/export_metadata.c:310 ../src/libs/image.c:469
-#: ../src/libs/metadata_view.c:148
+#: ../src/gui/import_metadata.c:220 ../src/libs/export_metadata.c:310
+#: ../src/libs/image.c:469 ../src/libs/metadata_view.c:148
 msgid "tags"
 msgstr "etiquetas"
 
@@ -1373,7 +1373,7 @@ msgstr "Imprimir tus imagenes"
 #: ../src/gui/preferences.c:1437 ../src/gui/preferences.c:1463
 #: ../src/gui/preferences.c:1545 ../src/gui/preferences.c:1651
 #: ../src/gui/preferences.c:1880 ../src/gui/presets.c:387
-#: ../src/gui/styles_dialog.c:340 ../src/imageio/storage/disk.c:121
+#: ../src/gui/styles_dialog.c:357 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:354
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:475
@@ -1384,7 +1384,7 @@ msgid "_cancel"
 msgstr "_cancelar"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1437
-#: ../src/gui/preferences.c:1652 ../src/gui/styles_dialog.c:343
+#: ../src/gui/preferences.c:1652 ../src/gui/styles_dialog.c:360
 #: ../src/libs/styles.c:306
 msgid "_save"
 msgstr "_guardar"
@@ -1600,7 +1600,7 @@ msgstr "copia local"
 msgid "module"
 msgstr "módulo"
 
-#: ../src/common/collection.c:697
+#: ../src/common/collection.c:697 ../src/libs/ioporder.c:39
 msgid "module order"
 msgstr "orden de módulo"
 
@@ -2134,7 +2134,7 @@ msgstr[0] "¿Eliminar directorio vacío?"
 msgstr[1] "¿Eliminar directorios vacíos?"
 
 #: ../src/common/film.c:295 ../src/gui/preferences.c:703
-#: ../src/gui/styles_dialog.c:368
+#: ../src/gui/styles_dialog.c:385
 msgid "name"
 msgstr "nombre"
 
@@ -2150,16 +2150,16 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr "Necesita copiar el historial de una imagen antes de pegarlo en otra"
 
 #: ../src/common/history.c:836 ../src/common/history.c:839
-#: ../src/common/history.c:855 ../src/common/styles.c:997
-#: ../src/common/styles.c:1001 ../src/develop/blend_gui.c:2702
+#: ../src/common/history.c:855 ../src/common/styles.c:1028
+#: ../src/common/styles.c:1032 ../src/develop/blend_gui.c:2702
 #: ../src/develop/develop.c:2036 ../src/iop/ashift.c:4861
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activo"
 
 #: ../src/common/history.c:836 ../src/common/history.c:839
-#: ../src/common/history.c:855 ../src/common/styles.c:997
-#: ../src/common/styles.c:1001 ../src/develop/blend_gui.c:2434
+#: ../src/common/history.c:855 ../src/common/styles.c:1028
+#: ../src/common/styles.c:1032 ../src/develop/blend_gui.c:2434
 #: ../src/develop/blend_gui.c:2699 ../src/develop/develop.c:2036
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4860 ../src/iop/ashift.c:4866 ../src/iop/colorin.c:2153
@@ -2284,11 +2284,11 @@ msgstr ""
 msgid "custom"
 msgstr "personalizado"
 
-#: ../src/common/iop_order.c:59
+#: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:201
 msgid "legacy"
 msgstr "heredado"
 
-#: ../src/common/iop_order.c:60
+#: ../src/common/iop_order.c:60 ../src/libs/ioporder.c:189
 msgid "v3.0"
 msgstr "v3.0"
 
@@ -2394,40 +2394,40 @@ msgid "style with name '%s' already exists"
 msgstr "El estilo con nombre '%s' ya existe"
 
 #. freed by _destroy_style_shortcut_callback
-#: ../src/common/styles.c:373 ../src/common/styles.c:377
-#: ../src/common/styles.c:471 ../src/common/styles.c:555
-#: ../src/common/styles.c:881 ../src/common/styles.c:1453
-#: ../src/common/styles.c:1472
+#: ../src/common/styles.c:411 ../src/common/styles.c:415
+#: ../src/common/styles.c:502 ../src/common/styles.c:586
+#: ../src/common/styles.c:912 ../src/common/styles.c:1484
+#: ../src/common/styles.c:1503
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
 msgstr "estilos/utilizar %s"
 
-#: ../src/common/styles.c:477 ../src/gui/styles_dialog.c:188
+#: ../src/common/styles.c:508 ../src/gui/styles_dialog.c:201
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "El estilo nombrado '%s' ha sido creado correctamente"
 
-#: ../src/common/styles.c:593 ../src/common/styles.c:609
+#: ../src/common/styles.c:624 ../src/common/styles.c:640
 msgid "no image selected!"
 msgstr "Ninguna imagen ha sido seleccionada"
 
-#: ../src/common/styles.c:664
+#: ../src/common/styles.c:695
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "Módulo '%s' la versión no coincide: %d != %d"
 
-#: ../src/common/styles.c:1090
+#: ../src/common/styles.c:1121
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "Falló al intentar sobrescribir el archivo del estilo para %s"
 
-#: ../src/common/styles.c:1096
+#: ../src/common/styles.c:1127
 #, c-format
 msgid "style file for %s exists"
 msgstr "Ya existe el archivo del estilo para %s"
 
-#: ../src/common/styles.c:1344
+#: ../src/common/styles.c:1375
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "El estilo %s fue importado correctamente"
@@ -2461,7 +2461,7 @@ msgstr "editor"
 msgid "title"
 msgstr "título"
 
-#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:372
+#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:389
 #: ../src/libs/tools/filter.c:96
 msgid "description"
 msgstr "descripción"
@@ -3541,8 +3541,8 @@ msgstr "%s está desactivado"
 
 #: ../src/develop/imageop.c:1425 ../src/gui/accelerators.c:1015
 #: ../src/gui/accelerators.c:1099 ../src/gui/accelerators.c:1314
-#: ../src/gui/accelerators.c:1339 ../src/gui/presets.c:190
-#: ../src/gui/presets.c:303 ../src/gui/presets.c:644
+#: ../src/gui/accelerators.c:1339 ../src/gui/import_metadata.c:162
+#: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
 #: ../src/iop/temperature.c:1465 ../src/libs/lib.c:319 ../src/libs/lib.c:347
 #: ../src/libs/lib.c:1201
 msgid "preset"
@@ -4892,11 +4892,11 @@ msgstr "seleccionar ítems para copiar"
 msgid "select parts to paste"
 msgstr "seleccionar ítems para pegar"
 
-#: ../src/gui/hist_dialog.c:188 ../src/gui/styles_dialog.c:341
+#: ../src/gui/hist_dialog.c:188 ../src/gui/styles_dialog.c:358
 msgid "select _all"
 msgstr "incluir _todos"
 
-#: ../src/gui/hist_dialog.c:189 ../src/gui/styles_dialog.c:342
+#: ../src/gui/hist_dialog.c:189 ../src/gui/styles_dialog.c:359
 msgid "select _none"
 msgstr "excluir _todos"
 
@@ -4905,24 +4905,52 @@ msgstr "excluir _todos"
 msgid "_ok"
 msgstr "_aceptar"
 
-#: ../src/gui/hist_dialog.c:216 ../src/gui/styles_dialog.c:408
-#: ../src/gui/styles_dialog.c:417
+#: ../src/gui/hist_dialog.c:216 ../src/gui/styles_dialog.c:425
+#: ../src/gui/styles_dialog.c:434
 msgid "include"
 msgstr "incluir"
 
-#: ../src/gui/hist_dialog.c:223 ../src/gui/styles_dialog.c:437
-#: ../src/gui/styles_dialog.c:440
+#: ../src/gui/hist_dialog.c:223 ../src/gui/styles_dialog.c:454
+#: ../src/gui/styles_dialog.c:457
 msgid "item"
 msgstr "ítem"
 
-#: ../src/gui/hist_dialog.c:240 ../src/gui/styles_dialog.c:458
-#: ../src/gui/styles_dialog.c:500
+#: ../src/gui/hist_dialog.c:240 ../src/gui/styles_dialog.c:475
+#: ../src/gui/styles_dialog.c:517
 msgid "modules order"
 msgstr "orden de los módulos"
 
 #: ../src/gui/hist_dialog.c:268
 msgid "can't copy history out of unaltered image"
 msgstr "No se puede copiar el historial de una imagen no modificada"
+
+#. default metadata
+#: ../src/gui/import_metadata.c:98
+msgid "apply metadata on import"
+msgstr "establecer los metadatos al importar"
+
+#: ../src/gui/import_metadata.c:99
+msgid "apply some metadata to all newly imported images."
+msgstr "Establecer ciertos metadatos a todas las imágenes importadas."
+
+#: ../src/gui/import_metadata.c:165
+msgid "metadata to be applied per default"
+msgstr "Metadatos que se aplicarán por defecto"
+
+#: ../src/gui/import_metadata.c:175
+msgid "to be imported"
+msgstr "para ser importado"
+
+#: ../src/gui/import_metadata.c:177
+msgid ""
+"selected metadata are imported from image and override the default value"
+msgstr ""
+"Los metadatos seleccionados se importan desde la imagen anulando el valor "
+"predeterminado"
+
+#: ../src/gui/import_metadata.c:227
+msgid "comma separated list of tags"
+msgstr "Lista de etiquetas separadas por coma"
 
 #. format string and corresponding flag stored into the database
 #: ../src/gui/preferences.c:88 ../src/gui/presets.c:56
@@ -5274,42 +5302,42 @@ msgstr "actualizar preajuste"
 msgid "favourite"
 msgstr "favoritos"
 
-#: ../src/gui/styles_dialog.c:228 ../src/libs/styles.c:316
+#: ../src/gui/styles_dialog.c:245 ../src/libs/styles.c:316
 #, c-format
 msgid "style %s was successfully saved"
 msgstr "El estilo %s fue correctamente guardado"
 
-#: ../src/gui/styles_dialog.c:328
+#: ../src/gui/styles_dialog.c:345
 msgid "edit style"
 msgstr "editar estilo"
 
-#: ../src/gui/styles_dialog.c:329
+#: ../src/gui/styles_dialog.c:346
 msgid "duplicate style"
 msgstr "duplicar estilo"
 
-#: ../src/gui/styles_dialog.c:330
+#: ../src/gui/styles_dialog.c:347
 msgid "creates a duplicate of the style before applying changes"
 msgstr "crea un duplicado del estilo antes de efectuar los cambios"
 
-#: ../src/gui/styles_dialog.c:334
+#: ../src/gui/styles_dialog.c:351
 msgid "create new style"
 msgstr "crear un estilo nuevo"
 
-#: ../src/gui/styles_dialog.c:369
+#: ../src/gui/styles_dialog.c:386
 msgid "enter a name for the new style"
 msgstr "introduzca un nombre para el nuevo estilo"
 
-#: ../src/gui/styles_dialog.c:374
+#: ../src/gui/styles_dialog.c:391
 msgid "enter a description for the new style, this description is searchable"
 msgstr ""
 "introduzca una descripción para el nuevo estilo. es posible buscar esta "
 "descripción"
 
-#: ../src/gui/styles_dialog.c:429
+#: ../src/gui/styles_dialog.c:446
 msgid "update"
 msgstr "actualizar"
 
-#: ../src/gui/styles_dialog.c:548
+#: ../src/gui/styles_dialog.c:565
 msgid "can't create style out of unaltered image"
 msgstr "No se puede crear el estilo de una imagen no editada"
 
@@ -14368,6 +14396,14 @@ msgstr "buscar dispositivos"
 msgid "scan for newly attached devices"
 msgstr "Buscar nuevos dispositivos conectados"
 
+#: ../src/libs/ioporder.c:149
+msgid "current order"
+msgstr "orden actual"
+
+#: ../src/libs/ioporder.c:206
+msgid "v3.0 (default)"
+msgstr "v3.0 (por defecto)"
+
 #: ../src/libs/lib.c:225
 #, c-format
 msgid "edit `%s'"
@@ -16987,27 +17023,6 @@ msgstr "Acción"
 #~ msgctxt "accel"
 #~ msgid "overlays block on mouse hover"
 #~ msgstr "información superpuesta al pasar el ratón"
-
-#~ msgid "apply metadata on import"
-#~ msgstr "establecer los metadatos al importar"
-
-#~ msgid "apply some metadata to all newly imported images."
-#~ msgstr "Establecer ciertos metadatos a todas las imágenes importadas."
-
-#~ msgid "comma separated list of tags"
-#~ msgstr "Lista de etiquetas separadas por coma"
-
-#~ msgid "metadata to be applied per default"
-#~ msgstr "Metadatos que se aplicarán por defecto"
-
-#~ msgid "to be imported"
-#~ msgstr "para ser importado"
-
-#~ msgid ""
-#~ "selected metadata are imported from image and override the default value"
-#~ msgstr ""
-#~ "Los metadatos seleccionados se importan desde la imagen anulando el valor "
-#~ "predeterminado"
 
 #~ msgid "date"
 #~ msgstr "fecha"
