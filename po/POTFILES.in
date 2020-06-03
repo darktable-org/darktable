@@ -61,6 +61,7 @@ src/gui/gtk.c
 src/gui/gtkentry.c
 src/gui/guides.c
 src/gui/hist_dialog.c
+src/gui/import_metadata.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/styles_dialog.c
@@ -173,6 +174,7 @@ src/libs/histogram.c
 src/libs/history.c
 src/libs/image.c
 src/libs/import.c
+src/libs/ioporder.c
 src/libs/lib.c
 src/libs/live_view.c
 src/libs/location.c
