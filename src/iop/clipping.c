@@ -78,7 +78,7 @@ typedef struct dt_iop_clipping_params_t
   float kyd;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.8
   int k_type, k_sym;
   int k_apply;   // $DEFAULT: 0
-  int crop_auto; // $DEFAULT: 1 $DESCRIPTION: "automatic cropping"
+  gboolean crop_auto; // $DEFAULT: TRUE $DESCRIPTION: "automatic cropping"
   int ratio_n;   // $DEFAULT: -1
   int ratio_d;   // $DEFAULT: -1
 } dt_iop_clipping_params_t;
@@ -1597,12 +1597,13 @@ void reload_defaults(dt_iop_module_t *self)
   const dt_image_t *img = &self->dev->image_storage;
   
   dt_iop_clipping_params_t *d = (dt_iop_clipping_params_t *)self->default_params;
+
   d->cx = img->usercrop[1];
   d->cy = img->usercrop[0];
   d->cw = img->usercrop[3];
   d->ch = img->usercrop[2];
+
   memcpy(self->params, self->default_params, sizeof(dt_iop_clipping_params_t));
-  self->default_enabled = 0;
 }
 
 static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
@@ -2129,7 +2130,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hvflip, _("mirror image horizontally and/or vertically"));
   gtk_box_pack_start(GTK_BOX(page1), g->hvflip, TRUE, TRUE, 0);
 
-  g->angle = dt_bauhaus_slider_new_from_params_box(self, "angle");
+  g->angle = dt_bauhaus_slider_from_params(self, "angle");
   dt_bauhaus_slider_set_step(g->angle, 0.25);
   dt_bauhaus_slider_set_factor(g->angle, -1.0);
   dt_bauhaus_slider_set_format(g->angle, "%.02f°");
@@ -2145,9 +2146,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->keystone_type), "value-changed", G_CALLBACK(keystone_type_changed), self);
   gtk_box_pack_start(GTK_BOX(page1), g->keystone_type, TRUE, TRUE, 0);
 
-  g->crop_auto = dt_bauhaus_combobox_new_from_params_box(self, "crop_auto");
-  dt_bauhaus_combobox_add(g->crop_auto, _("no"));
-  dt_bauhaus_combobox_add(g->crop_auto, _("yes"));
+  g->crop_auto = dt_bauhaus_combobox_from_params(self, "crop_auto");
   gtk_widget_set_tooltip_text(g->crop_auto, _("automatically crop to avoid black edges"));
 
   dt_iop_clipping_aspect_t aspects[] = { { _("freehand"), 0, 0 },
@@ -2314,23 +2313,23 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *page2 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
-  g->cx = dt_bauhaus_slider_new_from_params_box(self, "cx");
+  g->cx = dt_bauhaus_slider_from_params(self, "cx");
   dt_bauhaus_slider_set_factor(g->cx, 100.0);
   dt_bauhaus_slider_set_format(g->cx, "%0.f %%");
   gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
 
-  g->cw = dt_bauhaus_slider_new_from_params_box(self, "cw");
+  g->cw = dt_bauhaus_slider_from_params(self, "cw");
   dt_bauhaus_slider_set_factor(g->cw, -100.0);
   dt_bauhaus_slider_set_offset(g->cw, 100.0);
   dt_bauhaus_slider_set_format(g->cw, "%0.f %%");
   gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
 
-  g->cy = dt_bauhaus_slider_new_from_params_box(self, "cy");
+  g->cy = dt_bauhaus_slider_from_params(self, "cy");
   dt_bauhaus_slider_set_factor(g->cy, 100.0);
   dt_bauhaus_slider_set_format(g->cy, "%0.f %%");
   gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
 
-  g->ch = dt_bauhaus_slider_new_from_params_box(self, "ch");
+  g->ch = dt_bauhaus_slider_from_params(self, "ch");
   dt_bauhaus_slider_set_factor(g->ch, -100.0);
   dt_bauhaus_slider_set_offset(g->ch, 100.0);
   dt_bauhaus_slider_set_format(g->ch, "%0.f %%");
