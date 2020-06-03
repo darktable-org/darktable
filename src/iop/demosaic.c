@@ -4982,13 +4982,14 @@ void reload_defaults(dt_iop_module_t *module)
   if(dt_image_is_monochrome(&module->dev->image_storage))
     d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
 
+  module->hide_enable_button = 1;
+
   // only on for raw images:
   if(dt_image_is_raw(&module->dev->image_storage))
     module->default_enabled = 1;
   else
   {
     module->default_enabled = 0;
-    module->hide_enable_button = 1;
   }
 
   if(module->dev->image_storage.buf_dsc.filters == 9u) 
