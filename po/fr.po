@@ -2,16 +2,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-02 14:58+0200\n"
-"PO-Revision-Date: 2020-06-02 15:04+0200\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"POT-Creation-Date: 2020-06-03 20:39+0200\n"
+"PO-Revision-Date: 2020-06-03 20:40+0200\n"
+"Last-Translator: Nicolas Auffray <nicolas.auffray@zaclys.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.3.1\n"
+"X-Generator: Poedit 2.3\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -677,8 +677,8 @@ msgstr ""
 msgid "3D lut root folder"
 msgstr "répertoire 3D lut racine"
 
-#: ../build/src/preferences_gen.h:2795 ../src/control/jobs/control_jobs.c:1540
-#: ../src/control/jobs/control_jobs.c:1603 ../src/gui/preferences.c:1880
+#: ../build/src/preferences_gen.h:2795 ../src/control/jobs/control_jobs.c:1546
+#: ../src/control/jobs/control_jobs.c:1609 ../src/gui/preferences.c:1880
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:195
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:180
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:179
@@ -1132,8 +1132,8 @@ msgstr ""
 
 #. tags
 #: ../build/src/preferences_gen.h:3691 ../src/develop/lightroom.c:1508
-#: ../src/libs/export_metadata.c:310 ../src/libs/image.c:469
-#: ../src/libs/metadata_view.c:148
+#: ../src/gui/import_metadata.c:220 ../src/libs/export_metadata.c:310
+#: ../src/libs/image.c:469 ../src/libs/metadata_view.c:148
 msgid "tags"
 msgstr "mots-clés"
 
@@ -1349,12 +1349,12 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer vos images"
 
-#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1540
-#: ../src/control/jobs/control_jobs.c:1603 ../src/gui/hist_dialog.c:187
+#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1546
+#: ../src/control/jobs/control_jobs.c:1609 ../src/gui/hist_dialog.c:187
 #: ../src/gui/preferences.c:1437 ../src/gui/preferences.c:1463
 #: ../src/gui/preferences.c:1545 ../src/gui/preferences.c:1651
 #: ../src/gui/preferences.c:1880 ../src/gui/presets.c:387
-#: ../src/gui/styles_dialog.c:340 ../src/imageio/storage/disk.c:121
+#: ../src/gui/styles_dialog.c:357 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:354
 #: ../src/libs/copy_history.c:77 ../src/libs/geotagging.c:475
@@ -1365,7 +1365,7 @@ msgid "_cancel"
 msgstr "_annuler"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1437
-#: ../src/gui/preferences.c:1652 ../src/gui/styles_dialog.c:343
+#: ../src/gui/preferences.c:1652 ../src/gui/styles_dialog.c:360
 #: ../src/libs/styles.c:306
 msgid "_save"
 msgstr "_enregistrer"
@@ -1582,7 +1582,7 @@ msgstr "copie locale"
 msgid "module"
 msgstr "module"
 
-#: ../src/common/collection.c:697
+#: ../src/common/collection.c:697 ../src/libs/ioporder.c:39
 msgid "module order"
 msgstr "ordre des modules"
 
@@ -1760,11 +1760,11 @@ msgstr "matrice intégrée"
 
 #: ../src/common/colorspaces.c:1622
 msgid "standard color matrix"
-msgstr "matrice standard"
+msgstr "matrice couleur standard"
 
 #: ../src/common/colorspaces.c:1624
 msgid "enhanced color matrix"
-msgstr "matrice améliorée"
+msgstr "matrice couleur améliorée"
 
 #: ../src/common/colorspaces.c:1626
 msgid "vendor color matrix"
@@ -2114,7 +2114,7 @@ msgstr[0] "supprimer le répertoire vide ?"
 msgstr[1] "supprimer les répertoires vides ?"
 
 #: ../src/common/film.c:295 ../src/gui/preferences.c:703
-#: ../src/gui/styles_dialog.c:368
+#: ../src/gui/styles_dialog.c:385
 msgid "name"
 msgstr "nom"
 
@@ -2132,16 +2132,16 @@ msgstr ""
 "sur une autre"
 
 #: ../src/common/history.c:836 ../src/common/history.c:839
-#: ../src/common/history.c:855 ../src/common/styles.c:997
-#: ../src/common/styles.c:1001 ../src/develop/blend_gui.c:2702
+#: ../src/common/history.c:855 ../src/common/styles.c:1028
+#: ../src/common/styles.c:1032 ../src/develop/blend_gui.c:2702
 #: ../src/develop/develop.c:2036 ../src/iop/ashift.c:4861
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activé(e)"
 
 #: ../src/common/history.c:836 ../src/common/history.c:839
-#: ../src/common/history.c:855 ../src/common/styles.c:997
-#: ../src/common/styles.c:1001 ../src/develop/blend_gui.c:2434
+#: ../src/common/history.c:855 ../src/common/styles.c:1028
+#: ../src/common/styles.c:1032 ../src/develop/blend_gui.c:2434
 #: ../src/develop/blend_gui.c:2699 ../src/develop/develop.c:2036
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4860 ../src/iop/ashift.c:4866 ../src/iop/colorin.c:2153
@@ -2168,56 +2168,56 @@ msgstr ""
 "<h1>Merci,</h1><p>tout devrait s'être bien passé, vous pouvez <b>fermer</b> "
 "votre navigateur maintenant et <b>retourner</b> dans darktable.</p>"
 
-#: ../src/common/image.c:189
+#: ../src/common/image.c:190
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1621
+#: ../src/common/image.c:1630
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "accès à la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1628
+#: ../src/common/image.c:1637
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "création de la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1635
+#: ../src/common/image.c:1644
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
-#: ../src/common/image.c:1651
+#: ../src/common/image.c:1660
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erreur de déplacement « %s » : le fichier n'existe pas"
 
-#: ../src/common/image.c:1661
+#: ../src/common/image.c:1670
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erreur de déplacement « %s » → « %s » : le fichier existe"
 
-#: ../src/common/image.c:1665
+#: ../src/common/image.c:1674
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erreur lors du déplacement « %s » → « %s »"
 
-#: ../src/common/image.c:1944
+#: ../src/common/image.c:1953
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1958
+#: ../src/common/image.c:1967
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:2030 ../src/control/jobs/control_jobs.c:658
+#: ../src/common/image.c:2039 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible."
 
-#: ../src/common/image.c:2211
+#: ../src/common/image.c:2220
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -2266,11 +2266,11 @@ msgstr ""
 msgid "custom"
 msgstr "personnalisé"
 
-#: ../src/common/iop_order.c:59
+#: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:201
 msgid "legacy"
 msgstr "originel"
 
-#: ../src/common/iop_order.c:60
+#: ../src/common/iop_order.c:60 ../src/libs/ioporder.c:189
 msgid "v3.0"
 msgstr "v3.0"
 
@@ -2372,40 +2372,40 @@ msgid "style with name '%s' already exists"
 msgstr "le style « %s » existe déjà"
 
 #. freed by _destroy_style_shortcut_callback
-#: ../src/common/styles.c:373 ../src/common/styles.c:377
-#: ../src/common/styles.c:471 ../src/common/styles.c:555
-#: ../src/common/styles.c:881 ../src/common/styles.c:1453
-#: ../src/common/styles.c:1472
+#: ../src/common/styles.c:411 ../src/common/styles.c:415
+#: ../src/common/styles.c:502 ../src/common/styles.c:586
+#: ../src/common/styles.c:912 ../src/common/styles.c:1484
+#: ../src/common/styles.c:1503
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
 msgstr "styles/appliquer %s"
 
-#: ../src/common/styles.c:477 ../src/gui/styles_dialog.c:188
+#: ../src/common/styles.c:508 ../src/gui/styles_dialog.c:201
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "le style « %s » a été créé"
 
-#: ../src/common/styles.c:593 ../src/common/styles.c:609
+#: ../src/common/styles.c:624 ../src/common/styles.c:640
 msgid "no image selected!"
 msgstr "aucune image sélectionnée"
 
-#: ../src/common/styles.c:664
+#: ../src/common/styles.c:695
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "module « %s » version non cohérente : %d != %d"
 
-#: ../src/common/styles.c:1090
+#: ../src/common/styles.c:1121
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "impossible de remplacer le style %s"
 
-#: ../src/common/styles.c:1096
+#: ../src/common/styles.c:1127
 #, c-format
 msgid "style file for %s exists"
 msgstr "le fichier du style « %s » existe"
 
-#: ../src/common/styles.c:1344
+#: ../src/common/styles.c:1375
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "le style « %s » a été importé"
@@ -2439,7 +2439,7 @@ msgstr "diffuseur"
 msgid "title"
 msgstr "titre"
 
-#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:372
+#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:389
 #: ../src/libs/tools/filter.c:96
 msgid "description"
 msgstr "description"
@@ -2571,220 +2571,220 @@ msgid_plural "duplicating %d images"
 msgstr[0] "duplication de %d image"
 msgstr[1] "duplication de %d images"
 
-#: ../src/control/jobs/control_jobs.c:562
+#: ../src/control/jobs/control_jobs.c:565
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "rotation de %d image"
 msgstr[1] "rotation de %d images"
 
-#: ../src/control/jobs/control_jobs.c:634
+#: ../src/control/jobs/control_jobs.c:640
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "suppression de %d image"
 msgstr[1] "suppression de %d images"
 
-#: ../src/control/jobs/control_jobs.c:736
+#: ../src/control/jobs/control_jobs.c:742
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "impossible de placer « %s » dans la poubelle%s%s"
 
-#: ../src/control/jobs/control_jobs.c:737
+#: ../src/control/jobs/control_jobs.c:743
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "impossible de supprimer du disque %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:747
+#: ../src/control/jobs/control_jobs.c:753
 msgid "physically delete"
 msgstr "supprime du disque définitivement"
 
-#: ../src/control/jobs/control_jobs.c:748
+#: ../src/control/jobs/control_jobs.c:754
 msgid "physically delete all files"
 msgstr "supprime physiquement tous les fichiers"
 
-#: ../src/control/jobs/control_jobs.c:750
+#: ../src/control/jobs/control_jobs.c:756
 msgid "only remove from the collection"
 msgstr "enlève uniquement de la collection"
 
-#: ../src/control/jobs/control_jobs.c:751
+#: ../src/control/jobs/control_jobs.c:757
 msgid "skip to next file"
 msgstr "passe au fichier suivant"
 
-#: ../src/control/jobs/control_jobs.c:752
+#: ../src/control/jobs/control_jobs.c:758
 msgid "stop process"
 msgstr "arrête l'effacement"
 
-#: ../src/control/jobs/control_jobs.c:757
+#: ../src/control/jobs/control_jobs.c:763
 msgid "trashing error"
 msgstr "erreur de la poubelle"
 
-#: ../src/control/jobs/control_jobs.c:758
+#: ../src/control/jobs/control_jobs.c:764
 msgid "deletion error"
 msgstr "erreur de suppression"
 
-#: ../src/control/jobs/control_jobs.c:899
+#: ../src/control/jobs/control_jobs.c:905
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "mise à la poubelle de %d image"
 msgstr[1] "mise à la poubelle de %d images"
 
-#: ../src/control/jobs/control_jobs.c:901
+#: ../src/control/jobs/control_jobs.c:907
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "suppression de %d image"
 msgstr[1] "suppression de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1028
+#: ../src/control/jobs/control_jobs.c:1034
 msgid "failed to parse GPX file"
 msgstr "erreur de lecture du fichier GPX"
 
-#: ../src/control/jobs/control_jobs.c:1093
+#: ../src/control/jobs/control_jobs.c:1099
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "application des données GPX recalées à %d image"
 msgstr[1] "application des données GPX recalées à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1108
+#: ../src/control/jobs/control_jobs.c:1114
 #, c-format
 msgid "moving %d image"
 msgstr "déplacement de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1109
+#: ../src/control/jobs/control_jobs.c:1115
 #, c-format
 msgid "moving %d images"
 msgstr "déplacement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1114
+#: ../src/control/jobs/control_jobs.c:1120
 #, c-format
 msgid "copying %d image"
 msgstr "copie de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1115
+#: ../src/control/jobs/control_jobs.c:1121
 #, c-format
 msgid "copying %d images"
 msgstr "copie de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1130
+#: ../src/control/jobs/control_jobs.c:1136
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "création de copie locale de %d image"
 msgstr[1] "création des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1133
+#: ../src/control/jobs/control_jobs.c:1139
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "suppression de la copie locale de %d image"
 msgstr[1] "suppression des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1171
+#: ../src/control/jobs/control_jobs.c:1177
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "mise à jour des informations de %d image"
 msgstr[1] "mise à jour des informations de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1236
+#: ../src/control/jobs/control_jobs.c:1242
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportation de %d image..."
 msgstr[1] "exportation de %d images..."
 
-#: ../src/control/jobs/control_jobs.c:1268
+#: ../src/control/jobs/control_jobs.c:1274
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "exportation %d / %d vers %s"
 
-#: ../src/control/jobs/control_jobs.c:1289 ../src/views/darkroom.c:706
+#: ../src/control/jobs/control_jobs.c:1295 ../src/views/darkroom.c:706
 #: ../src/views/print.c:313
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "image « %s » non disponible actuellement"
 
-#: ../src/control/jobs/control_jobs.c:1377
+#: ../src/control/jobs/control_jobs.c:1383
 msgid "merge hdr image"
 msgstr "fusion hdr d'images"
 
-#: ../src/control/jobs/control_jobs.c:1391
+#: ../src/control/jobs/control_jobs.c:1397
 msgid "duplicate images"
 msgstr "cloner les images"
 
-#: ../src/control/jobs/control_jobs.c:1397
+#: ../src/control/jobs/control_jobs.c:1403
 msgid "flip images"
 msgstr "retourner les images"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1404
+#: ../src/control/jobs/control_jobs.c:1410
 msgid "remove images"
 msgstr "enlever les images"
 
-#: ../src/control/jobs/control_jobs.c:1421
+#: ../src/control/jobs/control_jobs.c:1427
 #, c-format
 msgid "do you really want to remove %d image from the collection?"
 msgid_plural "do you really want to remove %d images from the collection?"
 msgstr[0] "êtes-vous sûr de vouloir enlever de la collection %d image ?"
 msgstr[1] "êtes-vous sûr de vouloir enlever de la collection %d images ?"
 
-#: ../src/control/jobs/control_jobs.c:1428
+#: ../src/control/jobs/control_jobs.c:1434
 msgid "remove images?"
 msgstr "enlever les images ?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1444
-#: ../src/control/jobs/control_jobs.c:1488
+#: ../src/control/jobs/control_jobs.c:1450
+#: ../src/control/jobs/control_jobs.c:1494
 msgid "delete images"
 msgstr "supprimer les images"
 
-#: ../src/control/jobs/control_jobs.c:1464
+#: ../src/control/jobs/control_jobs.c:1470
 #, c-format
 msgid "do you really want to send %d image to trash?"
 msgid_plural "do you really want to send %d images to trash?"
 msgstr[0] "êtes-vous sûr de vouloir déplacer vers la poubelle %d image ?"
 msgstr[1] "êtes-vous sûr de vouloir déplacer vers la poubelle %d images ?"
 
-#: ../src/control/jobs/control_jobs.c:1466
+#: ../src/control/jobs/control_jobs.c:1472
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "êtes-vous sûr de vouloir supprimer définitivement %d image ?"
 msgstr[1] "êtes-vous sûr de vouloir supprimer définitivement %d images ?"
 
-#: ../src/control/jobs/control_jobs.c:1473
-#: ../src/control/jobs/control_jobs.c:1511
+#: ../src/control/jobs/control_jobs.c:1479
+#: ../src/control/jobs/control_jobs.c:1517
 msgid "trash images?"
 msgstr "mise à la poubelle ?"
 
-#: ../src/control/jobs/control_jobs.c:1473
-#: ../src/control/jobs/control_jobs.c:1511
+#: ../src/control/jobs/control_jobs.c:1479
+#: ../src/control/jobs/control_jobs.c:1517
 msgid "delete images?"
 msgstr "supprimer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1505
+#: ../src/control/jobs/control_jobs.c:1511
 msgid "do you really want to send selected image to trash?"
 msgstr ""
 "êtes-vous sûr de vouloir déplacer l'image sélectionnée vers la poubelle ?"
 
-#: ../src/control/jobs/control_jobs.c:1506
+#: ../src/control/jobs/control_jobs.c:1512
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
 "êtes-vous sûr de vouloir supprimer définitivement les images sélectionnées ?"
 
-#: ../src/control/jobs/control_jobs.c:1529
+#: ../src/control/jobs/control_jobs.c:1535
 msgid "move images"
 msgstr "déplacer les images"
 
-#: ../src/control/jobs/control_jobs.c:1541
-#: ../src/control/jobs/control_jobs.c:1604
+#: ../src/control/jobs/control_jobs.c:1547
+#: ../src/control/jobs/control_jobs.c:1610
 msgid "_select as destination"
 msgstr "_sélectionner comme destination"
 
-#: ../src/control/jobs/control_jobs.c:1562
+#: ../src/control/jobs/control_jobs.c:1568
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -2799,68 +2799,68 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer %d images vers %s ?\n"
 "(les clones seront également déplacés)"
 
-#: ../src/control/jobs/control_jobs.c:1571
+#: ../src/control/jobs/control_jobs.c:1577
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "déplacer l'image ?"
 msgstr[1] "déplacer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1592
+#: ../src/control/jobs/control_jobs.c:1598
 msgid "copy images"
 msgstr "copier les images"
 
-#: ../src/control/jobs/control_jobs.c:1625
+#: ../src/control/jobs/control_jobs.c:1631
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "êtes-vous sûr de vouloir copier %d image vers %s ?"
 msgstr[1] "êtes-vous sûr de vouloir copier %d images vers %s ?"
 
-#: ../src/control/jobs/control_jobs.c:1631
+#: ../src/control/jobs/control_jobs.c:1637
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copier l'image ?"
 msgstr[1] "copier les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1651
-#: ../src/control/jobs/control_jobs.c:1659
+#: ../src/control/jobs/control_jobs.c:1657
+#: ../src/control/jobs/control_jobs.c:1665
 msgid "local copy images"
 msgstr "copie locale d'images"
 
-#: ../src/control/jobs/control_jobs.c:1666 ../src/libs/image.c:522
+#: ../src/control/jobs/control_jobs.c:1672 ../src/libs/image.c:522
 msgid "refresh exif"
 msgstr "rafraîchir exif"
 
-#: ../src/control/jobs/control_jobs.c:1730
+#: ../src/control/jobs/control_jobs.c:1736
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage « %s », "
 "exportation abandonnée."
 
-#: ../src/control/jobs/control_jobs.c:1746
+#: ../src/control/jobs/control_jobs.c:1752
 msgid "export images"
 msgstr "exporter les images"
 
-#: ../src/control/jobs/control_jobs.c:1771
+#: ../src/control/jobs/control_jobs.c:1777
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1786
+#: ../src/control/jobs/control_jobs.c:1792
 #, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
 msgstr[0] "décalage horaire ajouté à %d image"
 msgstr[1] "décalage horaire ajouté à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1825 ../src/libs/geotagging.c:783
+#: ../src/control/jobs/control_jobs.c:1831 ../src/libs/geotagging.c:783
 msgid "time offset"
 msgstr "décalage : "
 
-#: ../src/control/jobs/control_jobs.c:1849 ../src/libs/copy_history.c:332
+#: ../src/control/jobs/control_jobs.c:1855 ../src/libs/copy_history.c:332
 msgid "write sidecar files"
 msgstr "sauver en xmp"
 
@@ -3524,10 +3524,10 @@ msgstr "%s est activé"
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1425 ../src/gui/accelerators.c:1014
-#: ../src/gui/accelerators.c:1098 ../src/gui/accelerators.c:1313
-#: ../src/gui/accelerators.c:1338 ../src/gui/presets.c:190
-#: ../src/gui/presets.c:303 ../src/gui/presets.c:644
+#: ../src/develop/imageop.c:1425 ../src/gui/accelerators.c:1015
+#: ../src/gui/accelerators.c:1099 ../src/gui/accelerators.c:1314
+#: ../src/gui/accelerators.c:1339 ../src/gui/import_metadata.c:162
+#: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
 #: ../src/iop/temperature.c:1465 ../src/libs/lib.c:319 ../src/libs/lib.c:347
 #: ../src/libs/lib.c:1201
 msgid "preset"
@@ -3921,7 +3921,7 @@ msgstr "tête de groupe"
 msgid "grouped images"
 msgstr "images groupées"
 
-#: ../src/dtgtk/thumbnail.c:479
+#: ../src/dtgtk/thumbnail.c:474
 msgid "fit"
 msgstr "ajusté"
 
@@ -4274,11 +4274,11 @@ msgstr "vues"
 #: ../src/gui/accelerators.c:89 ../src/gui/accelerators.c:104
 #: ../src/gui/accelerators.c:106 ../src/gui/accelerators.c:108
 #: ../src/gui/accelerators.c:110 ../src/gui/accelerators.c:112
-#: ../src/gui/accelerators.c:281 ../src/gui/accelerators.c:283
-#: ../src/gui/accelerators.c:294 ../src/gui/accelerators.c:296
-#: ../src/gui/accelerators.c:307 ../src/gui/accelerators.c:309
-#: ../src/gui/accelerators.c:757 ../src/gui/accelerators.c:766
-#: ../src/gui/accelerators.c:775
+#: ../src/gui/accelerators.c:282 ../src/gui/accelerators.c:284
+#: ../src/gui/accelerators.c:295 ../src/gui/accelerators.c:297
+#: ../src/gui/accelerators.c:308 ../src/gui/accelerators.c:310
+#: ../src/gui/accelerators.c:758 ../src/gui/accelerators.c:767
+#: ../src/gui/accelerators.c:776
 msgctxt "accel"
 msgid "image operations"
 msgstr "chambre noire"
@@ -4310,8 +4310,8 @@ msgid "edit"
 msgstr "modifier"
 
 #: ../src/gui/accelerators.c:62 ../src/gui/accelerators.c:113
-#: ../src/gui/accelerators.c:308 ../src/gui/accelerators.c:310
-#: ../src/gui/accelerators.c:776
+#: ../src/gui/accelerators.c:309 ../src/gui/accelerators.c:311
+#: ../src/gui/accelerators.c:777
 msgctxt "accel"
 msgid "dynamic"
 msgstr "dynamique"
@@ -4321,49 +4321,49 @@ msgctxt "accel"
 msgid "lua"
 msgstr "lua"
 
-#: ../src/gui/accelerators.c:282 ../src/gui/accelerators.c:284
-#: ../src/gui/accelerators.c:758
+#: ../src/gui/accelerators.c:283 ../src/gui/accelerators.c:285
+#: ../src/gui/accelerators.c:759
 msgctxt "accel"
 msgid "next"
 msgstr "suivant"
 
-#: ../src/gui/accelerators.c:295 ../src/gui/accelerators.c:297
-#: ../src/gui/accelerators.c:767
+#: ../src/gui/accelerators.c:296 ../src/gui/accelerators.c:298
+#: ../src/gui/accelerators.c:768
 msgctxt "accel"
 msgid "previous"
 msgstr "précédent"
 
-#: ../src/gui/accelerators.c:651
+#: ../src/gui/accelerators.c:652
 #, c-format
 msgid "%s %s / %s: %s"
 msgstr "%s %s / %s : %s"
 
-#: ../src/gui/accelerators.c:653
+#: ../src/gui/accelerators.c:654
 #, c-format
 msgid "%s / %s: %s"
 msgstr "%s / %s : %s"
 
-#: ../src/gui/accelerators.c:655
+#: ../src/gui/accelerators.c:656
 #, c-format
 msgid "%s: %s"
 msgstr "%s : %s"
 
-#: ../src/gui/accelerators.c:660
+#: ../src/gui/accelerators.c:661
 #, c-format
 msgid "%s %s / %s"
 msgstr "%s %s / %s"
 
-#: ../src/gui/accelerators.c:662
+#: ../src/gui/accelerators.c:663
 #, c-format
 msgid "%s / %s"
 msgstr "%s / %s"
 
-#: ../src/gui/accelerators.c:664 ../src/libs/tagging.c:2136
+#: ../src/gui/accelerators.c:665 ../src/libs/tagging.c:2136
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/gui/accelerators.c:1081 ../src/libs/lib.c:402
+#: ../src/gui/accelerators.c:1082 ../src/libs/lib.c:402
 msgid "deleting preset for obsolete module"
 msgstr "suppression du pré-réglages pour le module obsolète"
 
@@ -4386,7 +4386,7 @@ msgstr "annuler"
 #: ../src/gui/camera_import_dialog.c:219
 msgctxt "camera import"
 msgid "import"
-msgstr "importation"
+msgstr "importer"
 
 #. Top info
 #: ../src/gui/camera_import_dialog.c:235
@@ -4448,7 +4448,7 @@ msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
 msgstr ""
-"sélectionner les images de la liste ci-dessous que vous souhaitez importer "
+"sélectionner les images, de la liste ci-dessous, que vous souhaitez importer "
 "dans une nouvelle pellicule"
 
 #: ../src/gui/camera_import_dialog.c:565
@@ -4875,11 +4875,11 @@ msgstr "sélectionner les modules à copier"
 msgid "select parts to paste"
 msgstr "sélectionner les modules à coller"
 
-#: ../src/gui/hist_dialog.c:188 ../src/gui/styles_dialog.c:341
+#: ../src/gui/hist_dialog.c:188 ../src/gui/styles_dialog.c:358
 msgid "select _all"
 msgstr "tout"
 
-#: ../src/gui/hist_dialog.c:189 ../src/gui/styles_dialog.c:342
+#: ../src/gui/hist_dialog.c:189 ../src/gui/styles_dialog.c:359
 msgid "select _none"
 msgstr "aucu_ne"
 
@@ -4888,24 +4888,54 @@ msgstr "aucu_ne"
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/gui/hist_dialog.c:216 ../src/gui/styles_dialog.c:408
-#: ../src/gui/styles_dialog.c:417
+#: ../src/gui/hist_dialog.c:216 ../src/gui/styles_dialog.c:425
+#: ../src/gui/styles_dialog.c:434
 msgid "include"
 msgstr "inclure"
 
-#: ../src/gui/hist_dialog.c:223 ../src/gui/styles_dialog.c:437
-#: ../src/gui/styles_dialog.c:440
+#: ../src/gui/hist_dialog.c:223 ../src/gui/styles_dialog.c:454
+#: ../src/gui/styles_dialog.c:457
 msgid "item"
 msgstr "élément"
 
-#: ../src/gui/hist_dialog.c:240 ../src/gui/styles_dialog.c:458
-#: ../src/gui/styles_dialog.c:500
+#: ../src/gui/hist_dialog.c:240 ../src/gui/styles_dialog.c:475
+#: ../src/gui/styles_dialog.c:517
 msgid "modules order"
 msgstr "ordre des modules"
 
 #: ../src/gui/hist_dialog.c:268
 msgid "can't copy history out of unaltered image"
 msgstr "impossible de copier le développement d'une image non développée"
+
+#. default metadata
+#: ../src/gui/import_metadata.c:98
+msgid "apply metadata on import"
+msgstr "appliquer des métadonnées lors de l'importation"
+
+#: ../src/gui/import_metadata.c:99
+msgid "apply some metadata to all newly imported images."
+msgstr ""
+"appliquer des métadonnées\n"
+"à toutes les images nouvellement importées."
+
+#: ../src/gui/import_metadata.c:165
+msgid "metadata to be applied per default"
+msgstr "métadonnées à appliquer par défaut"
+
+#: ../src/gui/import_metadata.c:175
+msgid "to be imported"
+msgstr "à importer"
+
+#: ../src/gui/import_metadata.c:177
+msgid ""
+"selected metadata are imported from image and override the default value"
+msgstr ""
+"les métadonnées sélectionnées sont importées depuis l'image et remplacent "
+"celles par défaut"
+
+#: ../src/gui/import_metadata.c:227
+msgid "comma separated list of tags"
+msgstr "liste de mots-clés séparés par une virgule"
 
 #. format string and corresponding flag stored into the database
 #: ../src/gui/preferences.c:88 ../src/gui/presets.c:56
@@ -5258,41 +5288,41 @@ msgstr "mettre à jour le pré-réglage"
 msgid "favourite"
 msgstr "favoris"
 
-#: ../src/gui/styles_dialog.c:228 ../src/libs/styles.c:316
+#: ../src/gui/styles_dialog.c:245 ../src/libs/styles.c:316
 #, c-format
 msgid "style %s was successfully saved"
 msgstr "le style « %s » a été sauvegardé"
 
-#: ../src/gui/styles_dialog.c:328
+#: ../src/gui/styles_dialog.c:345
 msgid "edit style"
 msgstr "modifier le style"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/gui/styles_dialog.c:329
+#: ../src/gui/styles_dialog.c:346
 msgid "duplicate style"
 msgstr "cloner le style"
 
-#: ../src/gui/styles_dialog.c:330
+#: ../src/gui/styles_dialog.c:347
 msgid "creates a duplicate of the style before applying changes"
 msgstr "duplique le style avant d'appliquer les changements"
 
-#: ../src/gui/styles_dialog.c:334
+#: ../src/gui/styles_dialog.c:351
 msgid "create new style"
 msgstr "nouveau style"
 
-#: ../src/gui/styles_dialog.c:369
+#: ../src/gui/styles_dialog.c:386
 msgid "enter a name for the new style"
 msgstr "entrer un nom pour le style"
 
-#: ../src/gui/styles_dialog.c:374
+#: ../src/gui/styles_dialog.c:391
 msgid "enter a description for the new style, this description is searchable"
 msgstr "entrer une description pour le nouveau style (recherche)"
 
-#: ../src/gui/styles_dialog.c:429
+#: ../src/gui/styles_dialog.c:446
 msgid "update"
 msgstr "modifier"
 
-#: ../src/gui/styles_dialog.c:548
+#: ../src/gui/styles_dialog.c:565
 msgid "can't create style out of unaltered image"
 msgstr "impossible de créer un style depuis une image non développée"
 
@@ -11582,7 +11612,7 @@ msgstr "niveaux automatiques"
 
 #: ../src/iop/retouch.c:2867
 msgid "shape selected:"
-msgstr "forme sélectionnée :"
+msgstr "forme sélectionnée : "
 
 #: ../src/iop/retouch.c:2871
 msgid ""
@@ -13849,7 +13879,7 @@ msgstr "applique le décalage horaire aux images sélectionnées"
 #. gpx
 #: ../src/libs/geotagging.c:817
 msgid "apply GPX track file..."
-msgstr "applique un ficher GPX..."
+msgstr "appliquer un ficher GPX..."
 
 #: ../src/libs/geotagging.c:818
 msgid "parses a GPX file and updates location of selected images"
@@ -14365,6 +14395,14 @@ msgstr "rechercher un appareil"
 #: ../src/libs/import.c:804
 msgid "scan for newly attached devices"
 msgstr "recherche des appareils branchés récemment"
+
+#: ../src/libs/ioporder.c:149
+msgid "current order"
+msgstr "ordre actuel"
+
+#: ../src/libs/ioporder.c:206
+msgid "v3.0 (default)"
+msgstr "v3.0 (défaut)"
 
 #: ../src/libs/lib.c:225
 #, c-format
@@ -17021,29 +17059,6 @@ msgstr "action"
 #~ msgctxt "accel"
 #~ msgid "overlays block on mouse hover"
 #~ msgstr "bloc de superposition lors du survol de la souris"
-
-#~ msgid "apply metadata on import"
-#~ msgstr "appliquer des métadonnées lors de l'importation"
-
-#~ msgid "apply some metadata to all newly imported images."
-#~ msgstr ""
-#~ "appliquer des métadonnées\n"
-#~ "à toutes les images nouvellement importées."
-
-#~ msgid "comma separated list of tags"
-#~ msgstr "liste de mots-clés séparés par une virgule"
-
-#~ msgid "metadata to be applied per default"
-#~ msgstr "métadonnées à appliquer par défaut"
-
-#~ msgid "to be imported"
-#~ msgstr "à importer"
-
-#~ msgid ""
-#~ "selected metadata are imported from image and override the default value"
-#~ msgstr ""
-#~ "les métadonnées sélectionnées sont importées depuis l'image et remplacent "
-#~ "celles par défaut"
 
 #~ msgid "date"
 #~ msgstr "date"
