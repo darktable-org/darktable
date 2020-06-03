@@ -129,7 +129,7 @@ void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd, GList **enabled, G
                          DT_STYLE_ITEMS_COL_NUM, &num,
                          DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num,
                          -1);
-      if(active && num >= 0)
+      if(active)
       {
         if(update_num == -1) // item from style
         {
