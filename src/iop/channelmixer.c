@@ -78,12 +78,12 @@ typedef enum _channelmixer_output_t
 typedef struct dt_iop_channelmixer_params_t
 {
   //_channelmixer_output_t output_channel;
-  /** amount of red to mix value -1.0 - 1.0 */
-  float red[CHANNEL_SIZE];
-  /** amount of green to mix value -1.0 - 1.0 */
-  float green[CHANNEL_SIZE];
-  /** amount of blue to mix value -1.0 - 1.0 */
-  float blue[CHANNEL_SIZE];
+  /** amount of red to mix value */
+  float red[CHANNEL_SIZE];   // $MIN: -1.0 $MAX: 1.0 
+  /** amount of green to mix value */
+  float green[CHANNEL_SIZE]; // $MIN: -1.0 $MAX: 1.0 
+  /** amount of blue to mix value */
+  float blue[CHANNEL_SIZE];  // $MIN: -1.0 $MAX: 1.0 
 } dt_iop_channelmixer_params_t;
 
 typedef struct dt_iop_channelmixer_gui_data_t
@@ -420,24 +420,13 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_channelmixer_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_channelmixer_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_channelmixer_params_t);
-  module->gui_data = NULL;
-  dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },
-                                                                     { 0, 0, 0, 0, 1, 0, 0 },
-                                                                     { 0, 0, 0, 0, 0, 1, 0 } };
-  memcpy(module->params, &tmp, sizeof(dt_iop_channelmixer_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_channelmixer_params_t));
-}
+  dt_iop_default_init(module);
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  dt_iop_channelmixer_params_t *d = module->default_params;
+
+  d->red[CHANNEL_RED] = d->green[CHANNEL_GREEN] = d->blue[CHANNEL_BLUE] = 1.0;
+
+  memcpy(module->params, module->default_params, sizeof(dt_iop_channelmixer_params_t));
 }
 
 void gui_init(struct dt_iop_module_t *self)
