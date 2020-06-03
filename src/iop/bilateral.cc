@@ -316,22 +316,22 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->radius = dt_bauhaus_slider_new_from_params_box(self, "radius");
+  g->radius = dt_bauhaus_slider_from_params(self, "radius");
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the gaussian"));
   dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 30.0);
   dt_bauhaus_slider_set_step(g->radius, 1.0);
 
-  g->red = dt_bauhaus_slider_new_from_params_box(self, "red");
+  g->red = dt_bauhaus_slider_from_params(self, "red");
   gtk_widget_set_tooltip_text(g->red, _("how much to blur red"));
   dt_bauhaus_slider_set_soft_max(g->red, 0.1);
   dt_bauhaus_slider_set_digits(g->red, 4);
 
-  g->green = dt_bauhaus_slider_new_from_params_box(self, "green");
+  g->green = dt_bauhaus_slider_from_params(self, "green");
   gtk_widget_set_tooltip_text(g->green, _("how much to blur green"));
   dt_bauhaus_slider_set_soft_max(g->green, 0.1);
   dt_bauhaus_slider_set_digits(g->green, 4);
 
-  g->blue = dt_bauhaus_slider_new_from_params_box(self, "blue");
+  g->blue = dt_bauhaus_slider_from_params(self, "blue");
   gtk_widget_set_tooltip_text(g->blue, _("how much to blur blue"));
   dt_bauhaus_slider_set_soft_max(g->blue, 0.1);
   dt_bauhaus_slider_set_digits(g->blue, 4);
