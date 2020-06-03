@@ -204,14 +204,15 @@ typedef struct dt_iop_denoiseprofile_params_t
                          $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; /* switch between nlmeans and wavelets
-                                        $DEFAULT: 0 MODE_NLMEANS */
+                                        $DEFAULT: MODE_NLMEANS */
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; /* values to change wavelet force by frequency
+                                                                     $DEFAULT: 0.5 */
   gboolean wb_adaptive_anscombe; // $DEFAULT: TRUE whether to adapt anscombe transform to wb coeffs
   gboolean fix_anscombe_and_nlmeans_norm; // $DEFAULT: TRUE backward compatibility options
   gboolean use_new_vst; // $DEFAULT: TRUE backward compatibility options
   dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
-                                                              $DEFAULT: 1 MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
+                                                              $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -3323,8 +3324,6 @@ static inline float infer_bias_from_profile(const float a)
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
-  // our module is disabled by default
-  module->default_enabled = 0;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)module->gui_data;
   if(g)
   {
@@ -3383,48 +3382,15 @@ void reload_defaults(dt_iop_module_t *module)
       default_params->a[k] = g->interpolated.a[k];
       default_params->b[k] = g->interpolated.b[k];
     }
+    for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
+    {
+      for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
+      {
+        default_params->x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.f);
+      }
+    }
     memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
   }
-}
-
-/** init, cleanup, commit to pipeline */
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
-  module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
-  module->gui_data = NULL;
-  module->global_data = NULL;
-  dt_iop_denoiseprofile_params_t tmp;
-  memset(&tmp, 0, sizeof(dt_iop_denoiseprofile_params_t));
-  for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
-  {
-    for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
-    {
-      tmp.x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.f);
-      tmp.y[ch][k] = 0.5f;
-    }
-  }
-  tmp.fix_anscombe_and_nlmeans_norm = TRUE;
-  tmp.wb_adaptive_anscombe = TRUE;
-  tmp.use_new_vst = TRUE;
-  tmp.mode = MODE_NLMEANS;
-  tmp.wavelet_color_mode = MODE_Y0U0V0;
-  tmp.nbhood = 7.0f;
-  tmp.central_pixel_weight = 0.1f;
-  tmp.strength = 1.0f;
-  tmp.overshooting = 1.0f;
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -4258,23 +4224,23 @@ void gui_init(dt_iop_module_t *self)
   // First build sub-level boxes
   g->box_nlm = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->radius = dt_bauhaus_slider_new_from_params_box(self, "radius");
+  g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_range(g->radius, 0.0, 8.0);
   dt_bauhaus_slider_set_step(g->radius, 1.0);
   dt_bauhaus_slider_set_digits(g->radius, 0);
-  g->nbhood = dt_bauhaus_slider_new_from_params_box(self, "nbhood");
+  g->nbhood = dt_bauhaus_slider_from_params(self, "nbhood");
   dt_bauhaus_slider_set_step(g->nbhood, 1.0);
   dt_bauhaus_slider_set_digits(g->nbhood, 0);
-  g->scattering = dt_bauhaus_slider_new_from_params_box(self, "scattering");
+  g->scattering = dt_bauhaus_slider_from_params(self, "scattering");
   dt_bauhaus_slider_set_soft_max(g->scattering, 1.0f);
   dt_bauhaus_slider_set_step(g->scattering, 0.01f);
-  g->central_pixel_weight = dt_bauhaus_slider_new_from_params_box(self, "central_pixel_weight");
+  g->central_pixel_weight = dt_bauhaus_slider_from_params(self, "central_pixel_weight");
   dt_bauhaus_slider_set_soft_max(g->central_pixel_weight, 1.0f);
   dt_bauhaus_slider_set_step(g->central_pixel_weight, 0.01f);
 
   g->box_wavelets = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->wavelet_color_mode = dt_bauhaus_combobox_new_from_params_box(self, "wavelet_color_mode");
+  g->wavelet_color_mode = dt_bauhaus_combobox_from_params(self, "wavelet_color_mode");
 
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
   gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), gtk_label_new(_("all")));
@@ -4381,15 +4347,16 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
 
-  g->overshooting = dt_bauhaus_slider_new_from_params_box(self, "overshooting");
+  g->overshooting = dt_bauhaus_slider_from_params(self, "overshooting");
   dt_bauhaus_slider_set_soft_max(g->overshooting, 4.0f);
   dt_bauhaus_slider_set_step(g->overshooting, 0.05f);
-  g->strength = dt_bauhaus_slider_new_from_params_box(self, "strength");
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_soft_max(g->strength, 4.0f);
+  dt_bauhaus_slider_set_digits(g->strength, 3);
   dt_bauhaus_slider_set_step(g->strength, 0.5f);
-  g->shadows = dt_bauhaus_slider_new_from_params_box(self, "shadows");
+  g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
   dt_bauhaus_slider_set_step(g->shadows, 0.05f);
-  g->bias = dt_bauhaus_slider_new_from_params_box(self, "bias");
+  g->bias = dt_bauhaus_slider_from_params(self, "bias");
   dt_bauhaus_slider_set_soft_range(g->bias, -10.0f, 10.0f);
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
