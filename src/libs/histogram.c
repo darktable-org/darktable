@@ -579,13 +579,13 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
       dt_control_change_cursor(GDK_HAND1);
-      gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets"));
+      gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets\nctrl+scroll to change display height"));
     }
     else
     {
       dt_control_change_cursor(GDK_HAND1);
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
-      gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets"));
+      gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
     }
     gtk_widget_queue_draw(widget);
   }
@@ -707,7 +707,20 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   // scroll events
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+    if(event->state & GDK_CONTROL_MASK && !darktable.gui->reset)
+    {
+      /* set size of navigation draw area */
+      const float histheight = clamp_range_f(dt_conf_get_int("histogram_height") * 1.0f - 10 * delta_y, 100.0f, 200.0f);
+      dt_conf_set_int("histogram_height", histheight);
+      gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
+      darktable.develop->histogram_waveform_height = DT_PIXEL_APPLY_DPI(histheight);
+      free(darktable.develop->histogram_waveform);
+      darktable.develop->histogram_waveform = calloc(darktable.develop->histogram_waveform_height * darktable.develop->histogram_waveform_stride * 3, sizeof(uint8_t));
+      if(darktable.develop->scope_type == DT_DEV_SCOPE_WAVEFORM)
+        dt_dev_process_preview(darktable.develop);
+      dt_control_queue_redraw_widget(self->widget);
+    }
+    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
       dt_dev_exposure_set_exposure(darktable.develop, ce - 0.15f * delta_y);
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
       dt_dev_exposure_set_black(darktable.develop, cb + 0.001f * delta_y);
@@ -886,7 +899,7 @@ void gui_init(dt_lib_module_t *self)
                                       darktable.gui->scroll_mask);
 
   /* connect callbacks */
-  gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets"));
+  gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-press-event",
                    G_CALLBACK(_lib_histogram_button_press_callback), self);
@@ -903,7 +916,8 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_histogram_configure_callback), self);
 
   /* set size of navigation draw area */
-  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(175.0));
+  const float histheight = dt_conf_get_int("histogram_height") * 1.0f;
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
