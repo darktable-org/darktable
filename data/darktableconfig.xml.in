@@ -2073,6 +2073,13 @@
     <longdescription>this option allows to force a specific means of getting the current display profile. this is useful when one alternative gives wrong results</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>histogram_height</name>
+    <type min="100" max="200">int</type>
+    <default>175</default>
+    <shortdescription>height of the histogram module</shortdescription>
+    <longdescription>height of the histogram module in the darkroom and tethering views (needs a restart)</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>metadata/resolution</name>
     <type>int</type>
     <default>300</default>
