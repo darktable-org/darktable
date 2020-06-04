@@ -96,24 +96,37 @@ for dir in $(ls -d $PATTERN); do
                     fi
                 fi
 
-                ../deltae expected.png output.png
+                if [ -f expected.png ]; then
+                    ../deltae expected.png output.png
+                else
+                    false
+                fi
 
-                if [ $? = 0 ]; then
+                res=$?
+
+                if [ $res = 0 ]; then
                     echo "  OK"
                 else
                     echo "  FAILS: image visually changed"
-                    if [ ! -z $COMPARE ]; then
+                    if [ ! -z $COMPARE -a -f expected.png ]; then
                         diffcount="$(compare expected.png output.png -metric ae diff.png 2>&1 )"
                         echo "         see diff.jpg for visual difference"
 			echo "         (${diffcount} pixels changed)"
                     fi
-                    exit 1
                 fi
 
             else
                 echo "  FAILS : darktable-cli errored"
-                exit 1
             fi
+
+            if [ ! -f expected.png ]; then
+                echo "  copy output.png to expected.png"
+                echo "  check that expected.png is correct:"
+                echo "  \$ eog $(basename $PWD)/expected.png"
+                cp output.png expected.png
+            fi
+
+            exit $res
         )
 
         if [ $? -ne 0 ]; then
