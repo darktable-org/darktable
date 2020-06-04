@@ -141,8 +141,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     // (regardless of ppd). Try to get enough detail for a (default)
     // 350px panel, possibly 2x that on hidpi.
     dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
-    const float histheight = dt_conf_get_int("histogram_height") * 1.0f;
-    dev->histogram_waveform_height = DT_PIXEL_APPLY_DPI(histheight);
+    const float histheight = (float)dt_conf_get_int("histogram_height");
+    dev->histogram_waveform_height = histheight;
     // making the stride work for cairo muddles UI and underlying
     // data, and mipmap widths should already reasonable, but better
     // to be safe, and the histogram is for the sake of UI, after all
