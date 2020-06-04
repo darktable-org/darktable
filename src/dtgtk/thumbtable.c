@@ -1905,12 +1905,14 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
 static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
-  return dt_history_copy(dt_view_get_image_to_act_on());
+  dt_history_copy(dt_view_get_image_to_act_on());
+  return TRUE;
 }
 static gboolean _accel_copy_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                   GdkModifierType modifier, gpointer data)
 {
-  return dt_history_copy_parts(dt_view_get_image_to_act_on());
+  dt_history_copy_parts(dt_view_get_image_to_act_on());
+  return TRUE;
 }
 static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
@@ -1918,7 +1920,7 @@ static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable,
   GList *imgs = dt_view_get_images_to_act_on(TRUE);
   const gboolean ret = dt_history_paste_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
-  return ret;
+  return TRUE;
 }
 static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                    GdkModifierType modifier, gpointer data)
@@ -1926,7 +1928,7 @@ static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *accelera
   GList *imgs = dt_view_get_images_to_act_on(TRUE);
   const gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
-  return ret;
+  return TRUE;
 }
 static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                     GdkModifierType modifier, gpointer data)
@@ -1934,7 +1936,7 @@ static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceler
   GList *imgs = dt_view_get_images_to_act_on(TRUE);
   const gboolean ret = dt_history_delete_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
-  return ret;
+  return TRUE;
 }
 static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                  GdkModifierType modifier, gpointer data)
@@ -1985,8 +1987,9 @@ static gboolean _accel_select_untouched(GtkAccelGroup *accel_group, GObject *acc
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table)
 {
-  dt_view_type_flags_t views
+  const dt_view_type_flags_t views
       = DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
+  const dt_view_type_flags_t views_nolt = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
   /* setup rating key accelerators */
   dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 0"), views, GDK_KEY_0, 0);
   dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 1"), views, GDK_KEY_1, 0);
@@ -1997,13 +2000,13 @@ void dt_thumbtable_init_accels(dt_thumbtable_t *table)
   dt_accel_register_manual(NC_("accel", "views/thumbtable/rate reject"), views, GDK_KEY_r, 0);
 
   /* setup history key accelerators */
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history"), views, GDK_KEY_c, GDK_CONTROL_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history parts"), views, GDK_KEY_c,
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history"), views_nolt, GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history parts"), views_nolt, GDK_KEY_c,
                            GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history"), views, GDK_KEY_v, GDK_CONTROL_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history parts"), views, GDK_KEY_v,
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history"), views_nolt, GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history parts"), views_nolt, GDK_KEY_v,
                            GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/discard history"), views, 0, 0);
+  dt_accel_register_manual(NC_("accel", "views/thumbtable/discard history"), views_nolt, 0, 0);
 
   dt_accel_register_manual(NC_("accel", "views/thumbtable/duplicate image"), views, GDK_KEY_d, GDK_CONTROL_MASK);
   dt_accel_register_manual(NC_("accel", "views/thumbtable/duplicate image virgin"), views, GDK_KEY_d,
@@ -2029,78 +2032,75 @@ void dt_thumbtable_init_accels(dt_thumbtable_t *table)
 // disconnect them if not
 void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int view)
 {
-  // we verify that thumbtable may be active for this view
-  if(!(view & DT_VIEW_LIGHTTABLE) && !(view & DT_VIEW_DARKROOM) && !(view & DT_VIEW_TETHERING)
-     && !(view & DT_VIEW_MAP) && !(view & DT_VIEW_PRINT))
+  //disconnect all accels and reconnect if thumbtable may be active for this view
+
+  dt_accel_disconnect_list(table->accel_closures);
+
+  if((view & DT_VIEW_LIGHTTABLE) || (view & DT_VIEW_DARKROOM) || (view & DT_VIEW_TETHERING)
+     || (view & DT_VIEW_MAP) || (view & DT_VIEW_PRINT))
   {
-    // disconnect all accels
-    dt_accel_disconnect_list(table->accel_closures);
-    return;
+    // Rating accels
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 0",
+                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_DESERT), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 1",
+                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_1), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 2",
+                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_2), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 3",
+                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_3), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 4",
+                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_4), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 5",
+                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_5), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate reject",
+                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_REJECT), NULL));
+
+    // History key accels
+    if(!(view & DT_VIEW_LIGHTTABLE))
+    {
+      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/copy history",
+                              g_cclosure_new(G_CALLBACK(_accel_copy), NULL, NULL));
+      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/copy history parts",
+                              g_cclosure_new(G_CALLBACK(_accel_copy_parts), NULL, NULL));
+      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/paste history",
+                              g_cclosure_new(G_CALLBACK(_accel_paste), NULL, NULL));
+      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/paste history parts",
+                              g_cclosure_new(G_CALLBACK(_accel_paste_parts), NULL, NULL));
+      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/discard history",
+                              g_cclosure_new(G_CALLBACK(_accel_hist_discard), NULL, NULL));
+    }
+
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/duplicate image",
+                            g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(0), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/duplicate image virgin",
+                            g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(1), NULL));
+
+    // Color label accels
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color red",
+                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(0), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color yellow",
+                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(1), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color green",
+                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(2), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color blue",
+                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(3), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color purple",
+                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(4), NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/clear color labels",
+                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(5), NULL));
+
+    // Selection accels
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select all",
+                            g_cclosure_new(G_CALLBACK(_accel_select_all), NULL, NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select none",
+                            g_cclosure_new(G_CALLBACK(_accel_select_none), NULL, NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/invert selection",
+                            g_cclosure_new(G_CALLBACK(_accel_select_invert), NULL, NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select film roll",
+                            g_cclosure_new(G_CALLBACK(_accel_select_film), NULL, NULL));
+    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select untouched",
+                            g_cclosure_new(G_CALLBACK(_accel_select_untouched), NULL, NULL));
   }
-  else if(g_slist_length(table->accel_closures) > 1)
-  {
-    // already loaded, nothing to do !
-    return;
-  }
-
-  // Rating accels
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 0",
-                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_DESERT), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 1",
-                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_1), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 2",
-                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_2), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 3",
-                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_3), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 4",
-                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_4), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 5",
-                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_5), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate reject",
-                          g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_REJECT), NULL));
-
-  // History key accels
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/copy history",
-                          g_cclosure_new(G_CALLBACK(_accel_copy), NULL, NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/copy history parts",
-                          g_cclosure_new(G_CALLBACK(_accel_copy_parts), NULL, NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/paste history",
-                          g_cclosure_new(G_CALLBACK(_accel_paste), NULL, NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/paste history parts",
-                          g_cclosure_new(G_CALLBACK(_accel_paste_parts), NULL, NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/discard history",
-                          g_cclosure_new(G_CALLBACK(_accel_hist_discard), NULL, NULL));
-
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/duplicate image",
-                          g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(0), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/duplicate image virgin",
-                          g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(1), NULL));
-
-  // Color label accels
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color red",
-                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(0), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color yellow",
-                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(1), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color green",
-                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(2), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color blue",
-                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(3), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color purple",
-                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(4), NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/clear color labels",
-                          g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(5), NULL));
-
-  // Selection accels
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select all",
-                          g_cclosure_new(G_CALLBACK(_accel_select_all), NULL, NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select none",
-                          g_cclosure_new(G_CALLBACK(_accel_select_none), NULL, NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/invert selection",
-                          g_cclosure_new(G_CALLBACK(_accel_select_invert), NULL, NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select film roll",
-                          g_cclosure_new(G_CALLBACK(_accel_select_film), NULL, NULL));
-  dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select untouched",
-                          g_cclosure_new(G_CALLBACK(_accel_select_untouched), NULL, NULL));
 }
 
 static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
