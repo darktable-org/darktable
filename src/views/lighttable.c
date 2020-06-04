@@ -93,6 +93,56 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_LIGHTTABLE;
 }
 
+// exit the full preview mode
+static void _preview_quit(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  gtk_widget_hide(lib->preview->widget);
+  if(lib->preview->selection_sync)
+  {
+    dt_selection_select_single(darktable.selection, lib->preview->offset_imgid);
+  }
+  lib->preview_state = FALSE;
+  // restore panels
+  dt_ui_restore_panels(darktable.gui->ui);
+
+  // show/hide filmstrip & timeline when entering the view
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    // update thumbtable, to indicate if we navigate inside selection or not
+    // this is needed as collection change is handle there
+    dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->culling->navigate_inside_selection;
+
+    dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
+    dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
+                       TRUE); // always on, visibility is driven by panel state
+  }
+  else
+  {
+    dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = FALSE;
+    dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, FALSE); // not available in this layouts
+    dt_lib_set_visible(darktable.view_manager->proxy.timeline.module,
+                       TRUE); // always on, visibility is driven by panel state
+
+    // set offset back
+    dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, TRUE);
+
+    // we need to show thumbtable
+    if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+    {
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                               DT_THUMBTABLE_MODE_FILEMANAGER);
+    }
+    else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+    {
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                               DT_THUMBTABLE_MODE_ZOOM);
+    }
+    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
+    dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
+  }
+}
+
 // check if we need to change the layout, and apply the change if needed
 static void _lighttable_check_layout(dt_view_t *self)
 {
@@ -101,6 +151,10 @@ static void _lighttable_check_layout(dt_view_t *self)
   const dt_lighttable_layout_t layout_old = lib->current_layout;
 
   if(lib->current_layout == layout) return;
+
+  // if we are in full preview mode, we first need to exit this mode
+  if(lib->preview_state) _preview_quit(self);
+
   lib->current_layout = layout;
 
   // layout has changed, let restore panels
@@ -205,9 +259,28 @@ static void _culling_reinit(dt_view_t *self)
   dt_culling_init(lib->culling, lib->culling->offset);
 }
 
+static void _culling_preview_reload_overlays(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // change overlays if needed for culling and preview
+  gchar *otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_CULLING);
+  dt_thumbnail_overlay_t over = dt_conf_get_int(otxt);
+  dt_culling_set_overlays_mode(lib->culling, over);
+  g_free(otxt);
+  otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_PREVIEW);
+  over = dt_conf_get_int(otxt);
+  dt_culling_set_overlays_mode(lib->preview, over);
+  g_free(otxt);
+}
+
 static void _culling_preview_refresh(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  // change overlays if needed for culling and preview
+  _culling_preview_reload_overlays(self);
+
   // full_preview change
   if(lib->preview_state)
   {
@@ -295,21 +368,22 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
   darktable.view_manager->proxy.lighttable.culling_init_mode = _culling_reinit;
   darktable.view_manager->proxy.lighttable.culling_preview_refresh = _culling_preview_refresh;
+  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays = _culling_preview_reload_overlays;
 
   // ensure the memory table is up to date
   dt_collection_memory_update();
-  
+
 #ifdef USE_LUA
   lua_State *L = darktable.lua_state.state;
   const int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
 
-  lua_pushlightuserdata(L, self);  
+  lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, set_image_visible_cb, 1);
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "set_image_visible");
 
-  lua_pushlightuserdata(L, self);  
+  lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, is_image_visible_cb, 1);
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
@@ -518,54 +592,6 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
 
   // we don't need the scrollbars
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
-}
-static void _preview_quit(dt_view_t *self)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-  gtk_widget_hide(lib->preview->widget);
-  if(lib->preview->selection_sync)
-  {
-    dt_selection_select_single(darktable.selection, lib->preview->offset_imgid);
-  }
-  lib->preview_state = FALSE;
-  // restore panels
-  dt_ui_restore_panels(darktable.gui->ui);
-
-  // show/hide filmstrip & timeline when entering the view
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    // update thumbtable, to indicate if we navigate inside selection or not
-    // this is needed as collection change is handle there
-    dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->culling->navigate_inside_selection;
-
-    dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
-    dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
-                       TRUE); // always on, visibility is driven by panel state
-  }
-  else
-  {
-    dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = FALSE;
-    dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module, FALSE); // not available in this layouts
-    dt_lib_set_visible(darktable.view_manager->proxy.timeline.module,
-                       TRUE); // always on, visibility is driven by panel state
-
-    // set offset back
-    dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, TRUE);
-
-    // we need to show thumbtable
-    if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
-    {
-      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
-                               DT_THUMBTABLE_MODE_FILEMANAGER);
-    }
-    else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
-    {
-      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
-                               DT_THUMBTABLE_MODE_ZOOM);
-    }
-    gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
-    dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
-  }
 }
 
 void leave(dt_view_t *self)

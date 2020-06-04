@@ -45,6 +45,7 @@ typedef struct dt_thumbtable_t
 {
   dt_thumbtable_mode_t mode;
   dt_thumbnail_overlay_t overlays;
+  int overlays_block_timeout;
 
   GtkWidget *widget; // GtkLayout -- main widget
 
@@ -132,6 +133,8 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view);
 
 // change the type of overlays that should be shown (over or under the image)
 void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over);
+// change the timeout of the overlays block
+void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table, const int timeout);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

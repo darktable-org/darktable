@@ -312,6 +312,7 @@ typedef struct dt_view_manager_t
       void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
       void (*culling_init_mode)(struct dt_view_t *view);
       void (*culling_preview_refresh)(struct dt_view_t *view);
+      void (*culling_preview_reload_overlays)(struct dt_view_t *view);
       dt_lighttable_culling_zoom_mode_t (*get_zoom_mode)(struct dt_lib_module_t *module);
       gboolean (*get_preview_state)(struct dt_view_t *view);
       void (*change_offset)(struct dt_view_t *view, gboolean reset, gint imgid);
@@ -445,6 +446,8 @@ dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_vi
 void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm);
 /** force refresh of culling and/or preview */
 void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm);
+/** force refresh of culling and/or preview overlays */
+void dt_view_lighttable_culling_preview_reload_overlays(dt_view_manager_t *vm);
 /** sets the offset image (for culling and full preview) */
 void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid);
 

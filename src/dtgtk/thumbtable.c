@@ -44,7 +44,7 @@ static void _list_remove_thumb(gpointer user_data)
 }
 
 // get the class name associated with the overlays mode
-gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
+static gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
 {
   switch(over)
   {
@@ -110,7 +110,7 @@ static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
 // change the type of overlays that should be shown
 void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over)
 {
-  if(over == table->overlays) return;
+  if(!table || over == table->overlays) return;
   gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/%d/%d", table->mode, table->prefs_size);
   dt_conf_set_int(txt, over);
   g_free(txt);
@@ -121,21 +121,51 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
   gtk_style_context_remove_class(context, cl0);
   gtk_style_context_add_class(context, cl1);
 
+  txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays_block_timeout/%d/%d", table->mode, table->prefs_size);
+  int timeout = 2;
+  if(!dt_conf_key_exists(txt))
+    timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
+  else
+    timeout = dt_conf_get_int(txt);
+  g_free(txt);
+
   // we need to change the overlay content if we pass from normal to extended overlays
   // this is not done on the fly with css to avoid computing extended msg for nothing and to reserve space if needed
   GList *l = table->list;
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    dt_thumbnail_set_overlay(th, over);
+    dt_thumbnail_set_overlay(th, over, timeout);
     // and we resize the bottom area
     dt_thumbnail_resize(th, th->width, th->height, TRUE);
     l = g_list_next(l);
   }
 
   table->overlays = over;
+  table->overlays_block_timeout = timeout;
   g_free(cl0);
   g_free(cl1);
+}
+
+// change the type of overlays that should be shown
+void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table, const int timeout)
+{
+  if(!table) return;
+  gchar *txt
+      = dt_util_dstrcat(NULL, "plugins/lighttable/overlays_block_timeout/%d/%d", table->mode, table->prefs_size);
+  dt_conf_set_int(txt, timeout);
+  g_free(txt);
+
+  table->overlays_block_timeout = timeout;
+
+  // we need to change the overlay timeout for each thumbnails
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    th->overlay_timeout_duration = timeout;
+    l = g_list_next(l);
+  }
 }
 
 // get the thumb at specific position
@@ -338,7 +368,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
     }
   }
 
-  // if the thumb size has changed, we nee to set overlays, etc... correctly
+  // if the thumb size has changed, we need to set overlays, etc... correctly
   if(table->thumb_size != old_size)
   {
     _thumbs_update_overlays_mode(table);
@@ -1014,7 +1044,6 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    th->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
     dt_thumbnail_reload_infos(th);
     dt_thumbnail_resize(th, th->width, th->height, TRUE);
     l = g_list_next(l);
