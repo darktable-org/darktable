@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -713,7 +714,7 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
       const float histheight = clamp_range_f(dt_conf_get_int("histogram_height") * 1.0f - 10 * delta_y, 100.0f, 200.0f);
       dt_conf_set_int("histogram_height", histheight);
       gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
-      darktable.develop->histogram_waveform_height = DT_PIXEL_APPLY_DPI(histheight);
+      darktable.develop->histogram_waveform_height = histheight;
       free(darktable.develop->histogram_waveform);
       darktable.develop->histogram_waveform = calloc(darktable.develop->histogram_waveform_height * darktable.develop->histogram_waveform_stride * 3, sizeof(uint8_t));
       if(darktable.develop->scope_type == DT_DEV_SCOPE_WAVEFORM)
