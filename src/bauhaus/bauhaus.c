@@ -494,7 +494,7 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
 void dt_bauhaus_load_theme()
 {
   darktable.bauhaus->line_space = 1.5;
-  darktable.bauhaus->line_height = 10;
+  darktable.bauhaus->line_height = 9;
   darktable.bauhaus->marker_size = 0.25f;
   darktable.bauhaus->label_font_size = 0.6f;
   darktable.bauhaus->value_font_size = 0.6f;
@@ -543,7 +543,7 @@ void dt_bauhaus_load_theme()
 
   darktable.bauhaus->scale = 1.33f;
   darktable.bauhaus->line_height = pango_height / PANGO_SCALE;
-  darktable.bauhaus->widget_space = INNER_PADDING / 2.0f; // used as a top/bottom margin for widgets
+  darktable.bauhaus->widget_space = INNER_PADDING / 4.0f; // used as a top/bottom margin for widgets
   darktable.bauhaus->quad_width = darktable.bauhaus->line_height;
 
   darktable.bauhaus->baseline_size = darktable.bauhaus->line_height / 2.5f; // absolute size in Cairo unit
@@ -752,7 +752,7 @@ void dt_bauhaus_slider_set_hard_max(GtkWidget* widget, float val)
   d->max = MIN(d->max, d->hard_max);
   d->soft_max = MIN(d->soft_max, d->hard_max);
   if(rawval < d->hard_min) dt_bauhaus_slider_set_hard_min(widget,val);
-  if(pos > val) 
+  if(pos > val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
   }
