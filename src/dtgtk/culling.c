@@ -753,6 +753,28 @@ static void _dt_filmstrip_change(gpointer instance, int imgid, gpointer user_dat
   _thumbs_refocus(table);
 }
 
+// get the class name associated with the overlays mode
+static gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
+{
+  switch(over)
+  {
+    case DT_THUMBNAIL_OVERLAYS_NONE:
+      return dt_util_dstrcat(NULL, "dt_overlays_none");
+    case DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED:
+      return dt_util_dstrcat(NULL, "dt_overlays_hover_extended");
+    case DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL:
+      return dt_util_dstrcat(NULL, "dt_overlays_always");
+    case DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED:
+      return dt_util_dstrcat(NULL, "dt_overlays_always_extended");
+    case DT_THUMBNAIL_OVERLAYS_MIXED:
+      return dt_util_dstrcat(NULL, "dt_overlays_mixed");
+    case DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK:
+      return dt_util_dstrcat(NULL, "dt_overlays_hover_block");
+    default:
+      return dt_util_dstrcat(NULL, "dt_overlays_hover");
+  }
+}
+
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 {
   dt_culling_t *table = (dt_culling_t *)calloc(1, sizeof(dt_culling_t));
@@ -770,7 +792,20 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
     gtk_style_context_add_class(context, "dt_preview");
   else
     gtk_style_context_add_class(context, "dt_culling");
-  gtk_style_context_add_class(context, "dt_overlays_hover_block");
+
+  // overlays
+  gchar *otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", table->mode);
+  table->overlays = dt_conf_get_int(otxt);
+  g_free(otxt);
+  gtk_style_context_add_class(context, _thumbs_get_overlays_class(table->overlays));
+
+  otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
+  table->overlays_block_timeout = 2;
+  if(!dt_conf_key_exists(otxt))
+    table->overlays_block_timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
+  else
+    table->overlays_block_timeout = dt_conf_get_int(otxt);
+  g_free(otxt);
 
   // set widget signals
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
@@ -1075,7 +1110,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     else
     {
       // we create a completly new thumb
-      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK, TRUE);
+      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, table->overlays, TRUE);
       thumb->display_focus = table->focus;
       thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
       double aspect_ratio = sqlite3_column_double(stmt, 2);
@@ -1126,7 +1161,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         else
         {
           // we create a completly new thumb
-          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK, TRUE);
+          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, table->overlays, TRUE);
           thumb->display_focus = table->focus;
           thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
           double aspect_ratio = sqlite3_column_double(stmt, 2);
@@ -1389,6 +1424,8 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   while(l)
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+    // we set the overlays timeout
+    thumb->overlay_timeout_duration = table->overlays_block_timeout;
     // we add or move the thumb at the right position
     if(!gtk_widget_get_parent(thumb->w_main))
     {
@@ -1531,6 +1568,45 @@ void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current)
       l = g_list_next(l);
     }
   }
+}
+
+// change the type of overlays that should be shown
+void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t over)
+{
+  if(!table) return;
+  gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", table->mode);
+  dt_conf_set_int(txt, over);
+  g_free(txt);
+  gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
+  gchar *cl1 = _thumbs_get_overlays_class(over);
+
+  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
+  gtk_style_context_remove_class(context, cl0);
+  gtk_style_context_add_class(context, cl1);
+
+  txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
+  int timeout = 2;
+  if(!dt_conf_key_exists(txt))
+    timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
+  else
+    timeout = dt_conf_get_int(txt);
+  g_free(txt);
+
+  // we need to change the overlay content if we pass from normal to extended overlays
+  // this is not done on the fly with css to avoid computing extended msg for nothing and to reserve space if needed
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_set_overlay(th, over, timeout);
+    // and we resize the bottom area
+    dt_thumbnail_resize(th, th->width, th->height, TRUE);
+    l = g_list_next(l);
+  }
+
+  table->overlays = over;
+  g_free(cl0);
+  g_free(cl1);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

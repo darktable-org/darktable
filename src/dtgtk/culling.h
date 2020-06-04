@@ -66,6 +66,9 @@ typedef struct dt_culling_t
   gboolean mouse_inside; // is the mouse inside culling center view ?
 
   gboolean focus; // do we show focus rectangles on images ?
+
+  dt_thumbnail_overlay_t overlays; // overlays type
+  int overlays_block_timeout;      // overlay block visibility duration
 } dt_culling_t;
 
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
@@ -85,6 +88,8 @@ void dt_culling_change_offset_image(dt_culling_t *table, int offset);
 void dt_culling_zoom_max(dt_culling_t *table, gboolean only_current);
 void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current);
 
+// set the overlays type
+void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t over);
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
