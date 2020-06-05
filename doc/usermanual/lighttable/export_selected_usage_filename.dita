@@ -48,6 +48,18 @@
             <xref href="sidecar_files.dita#sidecar_files" type="topic">Sidecar files</xref>)</entry>
           </row>
           <row>
+            <entry>
+              <codeph>$(VERSION_IF_MULTI)</codeph>
+            </entry>
+            <entry>same as $(VERSION) but null string if only one version exists</entry>
+          </row>
+          <row>
+            <entry>
+              <codeph>$(VERSION_NAME)</codeph>
+            </entry>
+            <entry>version name from metadata</entry>
+          </row>
+          <row>
             <entry colname="col1">
               <codeph>$(SEQUENCE)</codeph>
             </entry>
@@ -138,10 +150,22 @@
             <entry colname="col2">Exif second</entry>
           </row>
           <row>
+            <entry>
+              <codeph>$(EXIF_ISO)</codeph>
+            </entry>
+            <entry>ISO value</entry>
+          </row>
+          <row>
             <entry colname="col1">
               <codeph>$(EXIF_EXPOSURE)</codeph>
             </entry>
             <entry colname="col2">Exif exposure</entry>
+          </row>
+          <row>
+            <entry>
+              <codeph>$(EXIF_EXPOSURE_BIAS)</codeph>
+            </entry>
+            <entry>Exif exposure bias</entry>
           </row>
           <row>
             <entry colname="col1">
@@ -204,6 +228,12 @@
             <entry colname="col2">camera model</entry>
           </row>
           <row>
+            <entry>
+              <codeph>$(LENS)</codeph>
+            </entry>
+            <entry>lens</entry>
+          </row>
+          <row>
             <entry colname="col1">
               <codeph>$(TITLE)</codeph>
             </entry>
@@ -235,12 +265,6 @@
           </row>
           <row>
             <entry colname="col1">
-              <codeph>$(USERNAME)</codeph>
-            </entry>
-            <entry colname="col2">user name</entry>
-          </row>
-          <row>
-            <entry colname="col1">
               <codeph>$(PICTURES_FOLDER)</codeph>
             </entry>
             <entry colname="col2">pictures folder</entry>
@@ -256,6 +280,12 @@
               <codeph>$(DESKTOP)</codeph>
             </entry>
             <entry colname="col2">desktop folder</entry>
+          </row>
+          <row>
+            <entry>
+              <codeph>$(OPENCL)</codeph>
+            </entry>
+            <entry>whether OpenCL is activated</entry>
           </row>
           <row>
             <entry colname="col1">
