@@ -1484,6 +1484,14 @@ void dt_thumbnail_set_drop(dt_thumbnail_t *thumb, gboolean accept_drop)
 void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb)
 {
   thumb->img_surf_dirty = TRUE;
+
+  // we ensure that the image is not completly outside the thumbnail, otherwise the image_draw is not triggered
+  if(gtk_widget_get_margin_start(thumb->w_image_box) >= thumb->width
+     || gtk_widget_get_margin_top(thumb->w_image_box) >= thumb->height)
+  {
+    gtk_widget_set_margin_start(thumb->w_image_box, 0);
+    gtk_widget_set_margin_top(thumb->w_image_box, 0);
+  }
   gtk_widget_queue_draw(thumb->w_main);
 }
 
