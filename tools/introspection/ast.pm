@@ -52,6 +52,18 @@ sub print_tree
   $OUT = $OLD_OUT;
 }
 
+sub mark_for_translation
+{
+  my $string = shift;
+
+  my $GETTEXT_CONTEXT = "introspection description";
+
+  my $result = "(char*)\"$string\"";
+  $result = "NC_(\"$GETTEXT_CONTEXT\", $result)" if($string ne "");
+
+  return $result;
+}
+
 #################### BASE ####################
 
 package ast_node;
@@ -200,7 +212,8 @@ sub get_introspection_code
 
   # we have to add the outermost struct here
   my $description = $self->get_description();
-  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"$self->{name}\", (char*)\"\", (char*)\"\", (char*)\"$description\", sizeof($params_type), 0, NULL";
+  $description = ast::mark_for_translation($description);
+  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"$self->{name}\", (char*)\"\", (char*)\"\", $description, sizeof($params_type), 0, NULL";
   my $specific = $self->{type}->get_introspection_code($name_prefix, $params_type);
   my $linear_line = ".Struct = {\n    { $header },\n    $specific\n  }";
   $self->{type}->add_to_linear("", $linear_line);
@@ -964,7 +977,8 @@ sub get_introspection_code
       my %comment_line = %{$scanner::comments{${@$token[0]}[$parser::P_FILENAME]}[${@$token[0]}[$parser::P_LINENO]]};
       my $description = "";
       $description = $comment_line{description} if(defined($comment_line{description}));
-      $arrays_line .= "\n    { \"$id\", $id, \"$description\" },";
+      $description = ast::mark_for_translation($description);
+      $arrays_line .= "\n    { \"$id\", $id, $description },";
     }
     $arrays_line .= "\n    { NULL, 0 },\n  };";
     push(@arrays, $arrays_line);
@@ -1062,8 +1076,9 @@ sub get_introspection_code
 
   my $description = $self->get_description();
   $description = $self->{type}->get_description() if($description eq "");
+  $description = ast::mark_for_translation($description);
 
-  my $header = "$type, (char*)\"$type_name\", (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
+  my $header = "$type, (char*)\"$type_name\", (char*)\"$inner_varname\", (char*)\"$field_name\", $description, sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
   my $specific = $self->{type}->get_introspection_code($inner_varname, $params_type, $self->{declaration});
   my $linear_line = ".$union_type = {\n    { $header },\n    $specific\n  }";
   $self->add_to_linear($inner_varname, $linear_line);
@@ -1079,7 +1094,7 @@ sub get_introspection_code
       $inner_varname = $varname.("[0]"x$depth);
       my $array_type_name = $type_name.("[]"x($dimensions - $depth));
       $field_name = $self->{declaration}->{id}.("[0]"x$depth);
-      $header = "DT_INTROSPECTION_TYPE_ARRAY, (char*)\"$array_type_name\", (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
+      $header = "DT_INTROSPECTION_TYPE_ARRAY, (char*)\"$array_type_name\", (char*)\"$inner_varname\", (char*)\"$field_name\", $description, sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
       $specific = "/*count*/ G_N_ELEMENTS((($params_type*)NULL)->$inner_varname), /*type*/ $subtype, /*field*/ &introspection_linear[".($linearisation_pos-1)."]";
       $linear_line = ".Array = {\n    { $header },\n    $specific\n  }";
       $self->add_to_linear($inner_varname, $linear_line);
