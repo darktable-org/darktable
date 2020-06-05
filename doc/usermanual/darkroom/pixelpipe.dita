@@ -16,11 +16,13 @@
     <p>darktable processes images – from input to output – in a so called 
     <q>pixelpipe</q>. Within the pixelpipe image processing consists of consecutive operations which are implemented as 
     <q>modules</q>.</p>
-    <p>Modules are applied in a fixed order. This differentiates darktable, as a non-destructive image editor, from classical image manipulation programs like GIMP. As module order is fixed, you are free to activate, deactivate or change the parameters of a module at arbitrary points in time; the order of activation in your workflow does not have any impact on the outcome.</p>
-    <p>Users frequently ask why the module order is fixed and if there are plans to change that restriction. There are several reasons why darktable works in the way described: 
+    <p>Modules are applied in a predefined order. This differentiates darktable, as a non-destructive image editor, from classical image manipulation programs like GIMP. As module order is fixed, you are free to activate, deactivate or change the parameters of a module at arbitrary points in time; the order of activation in your workflow does not have any impact on the outcome.</p>
+    <p>The module order used to be fixed and could not be changed. Since version 3.0 it is possible to change the order of modules via 
+    <tt>Shift+Ctrl+Drag-and-drop</tt>. It is very important to note that this feature is not a question of visual preference - it really + changes the order in which the modules are applied to the image. It is strongly recommended not to change the original module order, unless you exactly know what you are doing. Some modules are still fixed and cannot be moved.</p>
+    <p>There are several reasons why darktable works in the way described: 
     <ul>
       <li>
-        <p>The sequence of modules has been selected with great care in order go give highest output quality. Changes to the sequence would generally worsen the result rather than improving it.</p>
+        <p>The sequence of modules has been selected with great care in order go give highest output quality. Changes to the sequence can generally worsen the result rather than improving it.</p>
       </li>
       <li>
         <p>Certain image processing steps just don't make sense if they are shifted in the pixelpipe. To mention just a few: highlight reconstruction needs to be done on raw data before demosaicing and the demosaic step needs to be performed before any input color profile can be applied.</p>
@@ -29,7 +31,7 @@
         <p>Most of darktable's modules are designed to work within a specific color model (see 
         <xref href="color_management.dita#color_management" type="topic">Color management</xref>for more details). Full flexibility would require modules to support different parallel algorithms depending on the color space they are working in – this would drastically increase complexity.</p>
       </li>
-    </ul>That said, the fixed sequence of modules is not likely to change in the near future.</p>
+    </ul></p>
     <p>Whenever you activate or deactivate a module or go back to a module and change the parameters, this adds an item on top of the 
     <q>history stack</q>.</p>
     <p>For example, when working on a raw file, the history stack on the left panel might say that you first enabled 
