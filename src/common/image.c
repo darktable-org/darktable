@@ -316,28 +316,12 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
 {
-  if(img->exif_exposure >= 1.0f)
-    if(nearbyintf(img->exif_exposure) == img->exif_exposure)
-      snprintf(line, line_len, "%.0f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
-               (int)img->exif_focal_length, (int)img->exif_iso);
-    else
-      snprintf(line, line_len, "%.1f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
-               (int)img->exif_focal_length, (int)img->exif_iso);
-  /* want to catch everything below 0.3 seconds */
-  else if(img->exif_exposure < 0.29f)
-    snprintf(line, line_len, "1/%.0f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
-  /* catch 1/2, 1/3 */
-  else if(nearbyintf(1.0f / img->exif_exposure) == 1.0f / img->exif_exposure)
-    snprintf(line, line_len, "1/%.0f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
-  /* catch 1/1.3, 1/1.6, etc. */
-  else if(10 * nearbyintf(10.0f / img->exif_exposure) == nearbyintf(100.0f / img->exif_exposure))
-    snprintf(line, line_len, "1/%.1f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
-  else
-    snprintf(line, line_len, "%.1f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
+  char *exposure_str = dt_util_format_exposure(img->exif_exposure);
+
+  snprintf(line, line_len, "%s f/%.1f %dmm ISO %d", exposure_str, img->exif_aperture, (int)img->exif_focal_length,
+           (int)img->exif_iso);
+
+  g_free(exposure_str);
 }
 
 int dt_image_get_xmp_rating_from_flags(const int flags)
