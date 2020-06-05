@@ -295,9 +295,9 @@
           </row>
           <row>
             <entry colname="col1">
-              <codeph>$(CATEGORYn$(category))</codeph>
+              <codeph>$(CATEGORYn(category))</codeph>
             </entry>
-            <entry colname="col2">tag name of level n [0,3] of selected category (or tag)</entry>
+            <entry colname="col2">tag name of level n [0,9] of selected category (or tag)</entry>
           </row>
         </tbody>
       </tgroup>
