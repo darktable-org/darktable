@@ -1311,7 +1311,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       // and advice the pipe to redraw in full:
       g->clip_x = fmaxf(p->cx, 0.0f);
       g->clip_w = fminf(fabsf(p->cw) - p->cx, 1.0f);
-      g->clip_y = fmaxf(p->cy, 0);
+      g->clip_y = fmaxf(p->cy, 0.0f);
       g->clip_h = fminf(fabsf(p->ch) - p->cy, 1.0f);
       if(g->clip_x > 0 || g->clip_y > 0 || g->clip_h < 1.0f || g->clip_w < 1.0f)
       {
