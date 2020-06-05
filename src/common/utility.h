@@ -72,7 +72,7 @@ gboolean dt_util_gps_elevation_to_number(const double r_1, const double r_2, cha
 gchar *dt_util_normalize_path(const gchar *input);
 
 // format exposure time string
-gchar *dt_util_format_exposure(float exposuretime);
+gchar *dt_util_format_exposure(const float exposuretime);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
