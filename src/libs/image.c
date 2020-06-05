@@ -54,6 +54,7 @@ typedef struct dt_lib_image_t
       *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
   GtkWidget *page1; // saved here for lua extensions
   int imageid;
+  guint timeout_handle;
 } dt_lib_image_t;
 
 typedef enum dt_lib_metadata_id
@@ -176,6 +177,99 @@ else
   return _("physically delete from disk");
 }
 
+static void _update(dt_lib_module_t *self)
+{
+  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+
+  const guint act_on_cnt = g_list_length(imgs);
+  const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
+  const gboolean can_paste = d->imageid > 0 && 
+    (
+      act_on_cnt > 1 || 
+      (act_on_cnt == 1 && (d->imageid != dt_view_get_image_to_act_on()))
+    );
+
+  gboolean has_local_copy = selected_cnt > 0; //FALSE;
+  
+  // TODO: code below would be "correct" however for some reason causes busy spin with grouped images :/
+  /* GList *l;
+  for (l = imgs; l != NULL && !has_local_copy; l = l->next)
+  {
+    const int imgid = GPOINTER_TO_INT(l->data);
+    const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
+    if(image)
+    {
+      has_local_copy = has_local_copy || ((image->flags & DT_IMAGE_LOCAL_COPY) == DT_IMAGE_LOCAL_COPY);
+    }
+  }  */
+
+  g_list_free(imgs);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->remove_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->move_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->create_hdr_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->duplicate_button), act_on_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_ccw_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_cw_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->reset_button), act_on_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->cache_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->uncache_button), has_local_copy);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->group_button), selected_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), selected_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_metadata_button), act_on_cnt == 1);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->paste_metadata_button), can_paste);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->clear_metadata_button), act_on_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_cnt > 0);
+
+  if(d->timeout_handle)
+  {
+    g_source_remove(d->timeout_handle);
+    d->timeout_handle = 0;
+  }
+}
+
+static gboolean _postponed_update(gpointer data)
+{
+  // timeout handle clearing is handled by update code
+  _update((dt_lib_module_t *)data);
+
+  return FALSE;
+}
+
+static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                        int next, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
+static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
+{
+  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
+
+  if(d->timeout_handle)
+  {
+    // here we're making sure the event fires at last hover
+    // and we won't have avalanche of events in the mean time.
+    g_source_remove(d->timeout_handle);
+  }
+  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
+}
 
 static void _image_preference_changed(gpointer instance, gpointer user_data)
 {
@@ -269,10 +363,8 @@ static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
 
   d->imageid = dt_view_get_image_to_act_on();
-  if(d->imageid)
-  {
-    gtk_widget_set_sensitive(d->paste_metadata_button, TRUE);
-  }
+
+  _update(self);
 }
 
 static void paste_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
@@ -332,6 +424,7 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
   self->data = (void *)d;
+  d->timeout_handle = 0;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "selected_images.html#selected_images_usage");
 
@@ -498,7 +591,6 @@ void gui_init(dt_lib_module_t *self)
   button = gtk_button_new_with_label(_("paste"));
   ellipsize_button(button);
   d->paste_metadata_button = button;
-  gtk_widget_set_sensitive(button, FALSE);
   gtk_widget_set_tooltip_text(button, _("paste selected metadata on selected images"));
   gtk_grid_attach(grid, button, 2, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(paste_metadata_callback), self);
@@ -532,6 +624,15 @@ void gui_init(dt_lib_module_t *self)
       DT_SIGNAL_PREFERENCES_CHANGE,
       G_CALLBACK(_image_preference_changed),
       (gpointer)self);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_collection_updated_callback), self);
+
+  _update(self);
 }
 #undef ellipsize_button
 
@@ -539,12 +640,19 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   d->imageid = 0;
-  gtk_widget_set_sensitive(d->paste_metadata_button, FALSE);
+  _update(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_preference_changed), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+
+  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  if(d->timeout_handle)
+    g_source_remove(d->timeout_handle);
 
   free(self->data);
   self->data = NULL;
