@@ -231,7 +231,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   if(!g_module_symbol(module->module, "default_group", (gpointer) & (module->default_group)))
     module->default_group = default_group;
   if(!g_module_symbol(module->module, "flags", (gpointer) & (module->flags))) module->flags = default_flags;
-  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = NULL;
+  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = module->name;
   if(!g_module_symbol(module->module, "operation_tags", (gpointer) & (module->operation_tags)))
     module->operation_tags = default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter", (gpointer) & (module->operation_tags_filter)))
@@ -1143,11 +1143,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   gtk_widget_set_name(lab, "iop-panel-label");
   gchar *label = dt_history_item_get_name_html(module);
-  gchar *tooltip;
-  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    tooltip = g_strdup(module->name());
-  else
-    tooltip = g_strdup_printf("%s %s", module->name(), module->multi_name);
+  gchar *tooltip = g_strdup(module->description());
   gtk_label_set_markup(GTK_LABEL(lab), label);
   gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(lab, tooltip);
