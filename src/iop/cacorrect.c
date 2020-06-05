@@ -57,7 +57,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -178,25 +178,25 @@ static INLINE float intp(const float a, const float b, const float c)
 
 ////////////////////////////////////////////////////////////////
 //
-//		Chromatic Aberration Auto-correction
+//    Chromatic Aberration Auto-correction
 //
-//		copyright (c) 2008-2010  Emil Martinec <ejmartin@uchicago.edu>
+//    copyright (c) 2008-2010  Emil Martinec <ejmartin@uchicago.edu>
 //
 //
 // code dated: November 26, 2010
 //
-//	CA_correct_RT.cc is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, either version 3 of the License, or
-//	(at your option) any later version.
+//  CA_correct_RT.cc is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 //
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
 //
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 ////////////////////////////////////////////////////////////////
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

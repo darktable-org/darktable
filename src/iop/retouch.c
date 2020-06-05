@@ -191,7 +191,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_EFFECT;
 }
 
 int flags()
@@ -2654,7 +2654,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, g->hbox_color_pick);
   g_object_set(G_OBJECT(g->colorpicker), "tooltip-text", _("pick fill color from image"), (char *)NULL);
-  
+
   g->sl_fill_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .0005, .0, 4);
   dt_bauhaus_widget_set_label(g->sl_fill_brightness, _("brightness"), _("brightness"));
   g_object_set(g->sl_fill_brightness, "tooltip-text",

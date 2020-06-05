@@ -113,8 +113,10 @@ int position()
 
 static int _iop_get_group_order(const int group_id, const int default_order)
 {
-  if (group_id < DT_MODULEGROUP_BASIC)
+  if (group_id < DT_MODULEGROUP_TECHNICAL)
     return group_id;
+
+#if 0
 
   gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/group_order/%d", group_id - 1);
   int prefs = dt_conf_get_int(key);
@@ -130,6 +132,9 @@ static int _iop_get_group_order(const int group_id, const int default_order)
 
   g_free(key);
   return prefs<1 ? 1 : (prefs>DT_MODULEGROUP_SIZE? DT_MODULEGROUP_SIZE: prefs);
+#endif
+
+  return default_order;
 }
 
 static dt_lib_modulegroup_iop_visibility_type_t _get_search_iop_visibility()
@@ -208,29 +213,17 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_FAVORITES],
                               _("show only your favourite modules (selected in `more modules' below)"));
 
-  /* basic */
-  int g_index = _iop_get_group_order(DT_MODULEGROUP_BASIC, DT_MODULEGROUP_BASIC);
-  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basic, pf, NULL);
+  /* technical */
+  int g_index = _iop_get_group_order(DT_MODULEGROUP_TECHNICAL, DT_MODULEGROUP_TECHNICAL);
+  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_technical, pf, NULL);
   g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[g_index], _("basic group"));
+  gtk_widget_set_tooltip_text(d->buttons[g_index], _("technical group"));
 
-  /* tone */
-  g_index = _iop_get_group_order(DT_MODULEGROUP_TONE, DT_MODULEGROUP_TONE);
-  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_tone, pf, NULL);
+  /* grading */
+  g_index = _iop_get_group_order(DT_MODULEGROUP_GRADING, DT_MODULEGROUP_GRADING);
+  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_grading, pf, NULL);
   g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[g_index], _("tone group"));
-
-  /* color */
-  g_index = _iop_get_group_order(DT_MODULEGROUP_COLOR, DT_MODULEGROUP_COLOR);
-  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_color, pf, NULL);
-  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[g_index], _("color group"));
-
-  /* correct */
-  g_index = _iop_get_group_order(DT_MODULEGROUP_CORRECT, DT_MODULEGROUP_CORRECT);
-  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_correct, pf, NULL);
-  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[g_index], _("correction group"));
+  gtk_widget_set_tooltip_text(d->buttons[g_index], _("grading group"));
 
   /* effect */
   g_index = _iop_get_group_order(DT_MODULEGROUP_EFFECT, DT_MODULEGROUP_EFFECT);
@@ -332,13 +325,9 @@ static gboolean _lib_modulegroups_test_internal(dt_lib_module_t *self, uint32_t 
     return TRUE;
   else if(iop_group & IOP_SPECIAL_GROUP_USER_DEFINED && group == DT_MODULEGROUP_FAVORITES)
     return TRUE;
-  else if(iop_group & IOP_GROUP_BASIC && group == DT_MODULEGROUP_BASIC)
+  else if(iop_group & IOP_GROUP_TECHNICAL && group == DT_MODULEGROUP_TECHNICAL)
     return TRUE;
-  else if(iop_group & IOP_GROUP_TONE && group == DT_MODULEGROUP_TONE)
-    return TRUE;
-  else if(iop_group & IOP_GROUP_COLOR && group == DT_MODULEGROUP_COLOR)
-    return TRUE;
-  else if(iop_group & IOP_GROUP_CORRECT && group == DT_MODULEGROUP_CORRECT)
+  else if(iop_group & IOP_GROUP_GRADING && group == DT_MODULEGROUP_GRADING)
     return TRUE;
   else if(iop_group & IOP_GROUP_EFFECT && group == DT_MODULEGROUP_EFFECT)
     return TRUE;
@@ -654,7 +643,7 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
   if(_lib_modulegroups_test_internal(self, d->current, dt_iop_get_group(module))) return;
 
   /* lets find the group which is not favorite/active pipe */
-  for(int k = DT_MODULEGROUP_BASIC; k < DT_MODULEGROUP_SIZE; k++)
+  for(int k = DT_MODULEGROUP_TECHNICAL; k < DT_MODULEGROUP_SIZE; k++)
   {
     if(_lib_modulegroups_test(self, k, dt_iop_get_group(module)))
     {

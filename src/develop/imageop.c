@@ -107,7 +107,7 @@ static void dt_iop_modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pi
 /* default group for modules which do not implement the default_group() function */
 static int default_group(void)
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_TECHNICAL;
 }
 
 /* default flags for modules which does not implement the flags() function */

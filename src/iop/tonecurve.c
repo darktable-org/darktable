@@ -191,7 +191,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -1354,7 +1354,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
-  
+
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), TRUE, TRUE, 0);
 

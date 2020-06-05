@@ -71,7 +71,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -163,7 +163,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int l = -rad; l <= rad; l++)
           for(int k = -rad; k <= rad; k++)
           {
-	    const float *inp = in + ch * (l * roi_in->width + k);
+      const float *inp = in + ch * (l * roi_in->width + k);
             sumw += w[l * wd + k] = m[l * wd + k]
                                     * expf(-((in[0] - inp[0]) * (in[0] - inp[0]) * isig2col[0]
                                              + (in[1] - inp[1]) * (in[1] - inp[1]) * isig2col[1]

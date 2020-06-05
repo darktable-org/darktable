@@ -19,19 +19,21 @@
 #include "common/utility.h"
 #include "control/conf.h"
 #include "common/iop_group.h"
+#include "libs/modulegroups.h"
 
+/*
 static int _group_number(int group_id)
 {
-  if      (group_id == IOP_GROUP_EFFECT)  return 5;
-  else if (group_id == IOP_GROUP_CORRECT) return 4;
-  else if (group_id == IOP_GROUP_COLOR)   return 3;
-  else if (group_id == IOP_GROUP_TONE)    return 2;
-  else if (group_id == IOP_GROUP_BASIC)   return 1;
-  else                                    return 0;
+  if      (group_id == IOP_GROUP_EFFECT)    return DT_MODULEGROUP_EFFECT;
+  else if (group_id == IOP_GROUP_GRADING)   return DT_MODULEGROUP_GRADING;
+  else if (group_id == IOP_GROUP_TECHNICAL) return DT_MODULEGROUP_TECHNICAL;
+  else                                      return 0;
 }
+*/
 
 int dt_iop_get_group(const dt_iop_module_t *module)
 {
+#if 0
   gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/modulegroup", module->op);
   int prefs = dt_conf_get_int(key);
 
@@ -51,12 +53,15 @@ int dt_iop_get_group(const dt_iop_module_t *module)
 
     if (prefs > IOP_GROUP_EFFECT)
       prefs = IOP_GROUP_EFFECT;
-    else if (prefs < IOP_GROUP_BASIC)
-      prefs = IOP_GROUP_BASIC;
+    else if (prefs < IOP_GROUP_TECHNICAL)
+      prefs = IOP_GROUP_TECHNICAL;
 
     g_free(g_key);
   }
 
   g_free(key);
   return prefs;
+#endif
+
+  return module->default_group();
 }

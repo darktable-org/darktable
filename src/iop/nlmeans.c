@@ -104,7 +104,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_TECHNICAL;
 }
 
 int flags()

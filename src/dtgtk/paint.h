@@ -39,7 +39,7 @@ typedef enum dtgtk_cairo_paint_flags_t
   CPF_DO_NOT_USE_BORDER = 1 << 10, // do not paint inner border
   CPF_CUSTOM_BG = 1 << 11,
   CPF_CUSTOM_FG = 1 << 12,
-  CPF_FOCUS = 1 << 13, 
+  CPF_FOCUS = 1 << 13,
   CPF_SPECIAL_FLAG = 1 << 14       // this needs to be the last one. also update shift in dtgtk_cairo_paint_alignment
 } dtgtk_cairo_paint_flags_t;
 
@@ -195,6 +195,10 @@ void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, gint x, gint y, gint w, gi
 void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint effect modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+
+void dtgtk_cairo_paint_modulegroup_grading(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+void dtgtk_cairo_paint_modulegroup_technical(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+
 
 /** paint the pin for map thumbnails */
 void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);

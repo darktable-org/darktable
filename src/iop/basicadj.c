@@ -142,7 +142,7 @@ const char *description()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_GRADING;
 }
 
 int flags()

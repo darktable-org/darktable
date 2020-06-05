@@ -130,7 +130,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_TECHNICAL;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -196,8 +196,8 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
 #if 0
-  float maximum = 1.0;		/* FIXME */
-  float black = 0.0;		/* FIXME */
+  float maximum = 1.0;    /* FIXME */
+  float black = 0.0;    /* FIXME */
   maximum *= BIT16;
   black *= BIT16;
   for (c=0; c<4; c++)
@@ -320,7 +320,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   }
 #if 0
   /* FIXME: Haven't ported this part yet */
-  if (filters && colors == 3)	/* pull G1 and G3 closer together */
+  if (filters && colors == 3) /* pull G1 and G3 closer together */
   {
     float *window[4];
     int wlast, blk[2];

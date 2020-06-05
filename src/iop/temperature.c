@@ -163,7 +163,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -1265,7 +1265,7 @@ static void apply_preset(dt_iop_module_t *self)
       break;
     case 3: // directly changing one of the coeff sliders also changes the mod_coeff so it can be read here
       for(int k = 0; k < 4; k++) p->coeffs[k] = g->mod_coeff[k];
-      break;      
+      break;
     default: // camera WB presets
     {
       gboolean found = FALSE;
@@ -1487,7 +1487,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->stack), g->label_disabled, "disabled");
 
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "disabled" : "enabled");
-  
+
   self->gui_update(self);
 
   g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(tint_callback), self);

@@ -57,7 +57,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_EFFECT;
 }
 
 int flags()
@@ -703,7 +703,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
         if(bd->masks_shown == DT_MASKS_EDIT_OFF) dt_masks_set_edit_mode(self, DT_MASKS_EDIT_FULL);
 
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
-                                     (bd->masks_shown != DT_MASKS_EDIT_OFF) 
+                                     (bd->masks_shown != DT_MASKS_EDIT_OFF)
                                      && (darktable.develop->gui_module == self));
       }
       else

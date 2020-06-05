@@ -75,7 +75,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_GRADING;
 }
 
 int flags()

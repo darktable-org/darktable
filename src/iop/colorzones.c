@@ -145,7 +145,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -2373,7 +2373,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_name(c->colorpicker, "keep-active");
   c->colorpicker_set_values = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(c->colorpicker_set_values),
-                               dtgtk_cairo_paint_colorpicker_set_values, 
+                               dtgtk_cairo_paint_colorpicker_set_values,
                                CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
   gtk_widget_set_size_request(c->colorpicker_set_values, DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
   gtk_widget_set_tooltip_text(c->colorpicker_set_values, _("create a curve based on an area from the image\n"

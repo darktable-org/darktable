@@ -121,7 +121,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -1471,7 +1471,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->channel_tabs), TRUE, TRUE, 0);
-  
+
 
   // color pickers
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
@@ -1479,7 +1479,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_name(g->colorpicker, "keep-active");
   g->colorpicker_set_values = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker_set_values),
-                               dtgtk_cairo_paint_colorpicker_set_values, 
+                               dtgtk_cairo_paint_colorpicker_set_values,
                                CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
   gtk_widget_set_size_request(g->colorpicker_set_values, DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
   gtk_widget_set_tooltip_text(g->colorpicker_set_values, _("create a curve based on an area from the image\n"

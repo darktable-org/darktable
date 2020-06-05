@@ -19,9 +19,9 @@
 /*
  * This is a dummy module intended only to be used in history so hist->module is not NULL
  * when the entry correspond to the mask manager
- * 
+ *
  * It is always disabled and do not show in module list, only in history
- * 
+ *
  * We start at version 2 so previous version of dt can add records in history with NULL params
  */
 
@@ -47,7 +47,7 @@ const char *name()
 
 int groups()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_TECHNICAL;
 }
 
 int flags()

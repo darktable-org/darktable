@@ -63,7 +63,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()

@@ -104,7 +104,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_EFFECT;
 }
 
 int flags()
@@ -396,7 +396,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ch, mapio, mean, roi_out, var) \
     shared(data, in, out) \
-    schedule(static) 
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {

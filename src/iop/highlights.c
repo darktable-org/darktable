@@ -80,7 +80,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -1051,7 +1051,7 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
-  // enable this per default if raw or sraw, 
+  // enable this per default if raw or sraw,
   module->default_enabled = dt_image_is_rawprepare_supported(&(module->dev->image_storage));
 
 end:
