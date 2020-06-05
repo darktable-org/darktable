@@ -190,20 +190,6 @@ static void _update(dt_lib_module_t *self)
       (act_on_cnt == 1 && (d->imageid != dt_view_get_image_to_act_on()))
     );
 
-  gboolean has_local_copy = selected_cnt > 0; //FALSE;
-  
-  // TODO: code below would be "correct" however for some reason causes busy spin with grouped images :/
-  /* GList *l;
-  for (l = imgs; l != NULL && !has_local_copy; l = l->next)
-  {
-    const int imgid = GPOINTER_TO_INT(l->data);
-    const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
-    if(image)
-    {
-      has_local_copy = has_local_copy || ((image->flags & DT_IMAGE_LOCAL_COPY) == DT_IMAGE_LOCAL_COPY);
-    }
-  }  */
-
   g_list_free(imgs);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->remove_button), act_on_cnt > 0);
@@ -220,7 +206,7 @@ static void _update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->reset_button), act_on_cnt > 0);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->cache_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->uncache_button), has_local_copy);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->uncache_button), act_on_cnt > 0);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->group_button), selected_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), selected_cnt > 0);
