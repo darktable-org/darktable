@@ -23,12 +23,16 @@
 #include "paint.h"
 #include <gtk/gtk.h>
 G_BEGIN_DECLS
+
 #define DTGTK_GRADIENT_SLIDER(obj)                                                                           \
   G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSlider)
 #define DTGTK_GRADIENT_SLIDER_CLASS(klass)                                                                   \
   G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSliderClass)
-#define DTGTK_IS_GRADIENT_SLIDER(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_gradient_slider_get_type())
-#define DTGTK_IS_GRADIENT_SLIDER_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_get_type())
+#define DTGTK_IS_GRADIENT_SLIDER(obj)                                                                        \
+  G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_gradient_slider_get_type())
+#define DTGTK_IS_GRADIENT_SLIDER_CLASS(klass)                                                                \
+  G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_get_type())
+
 #define DTGTK_GRADIENT_SLIDER_MULTIVALUE(obj)                                                                \
   G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_multivalue_get_type(), GtkDarktableGradientSlider)
 #define DTGTK_GRADIENT_SLIDER_MULTIVALUE_CLASS(klass)                                                        \
@@ -85,7 +89,8 @@ enum
 
 typedef struct _GtkDarktableGradientSlider
 {
-  GtkWidget widget;
+  GtkDrawingArea widget;
+  GdkWindow *window;
   GList *colors;
   gint selected;
   gint active;
@@ -108,7 +113,7 @@ typedef struct _GtkDarktableGradientSlider
 
 typedef struct _GtkDarktableGradientSliderClass
 {
-  GtkWidgetClass parent_class;
+  GtkDrawingAreaClass parent_class;
 } GtkDarktableGradientSliderClass;
 
 typedef struct _gradient_slider_stop_t
