@@ -488,14 +488,12 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value_end(d->metadata[md_exif_lens], img->exif_lens);
     _metadata_update_value_end(d->metadata[md_exif_maker], img->camera_maker);
 
-    snprintf(value, sizeof(value), "F/%.1f", img->exif_aperture);
+    snprintf(value, sizeof(value), "f/%.1f", img->exif_aperture);
     _metadata_update_value(d->metadata[md_exif_aperture], value);
 
-    if(img->exif_exposure <= 0.5)
-      snprintf(value, sizeof(value), "1/%.0f", 1.0 / img->exif_exposure);
-    else
-      snprintf(value, sizeof(value), "%.1f''", img->exif_exposure);
-    _metadata_update_value(d->metadata[md_exif_exposure], value);
+    char *exposure_str = dt_util_format_exposure(img->exif_exposure);
+    _metadata_update_value(d->metadata[md_exif_exposure], exposure_str);
+    g_free(exposure_str);
 
     if(isnan(img->exif_exposure_bias))
     {
