@@ -755,6 +755,12 @@ gdouble dtgtk_gradient_slider_multivalue_get_value(GtkDarktableGradientSlider *g
   return gslider->scale_callback((GtkWidget *)gslider, gslider->position[pos], GRADIENT_SLIDER_GET);
 }
 
+void dtgtk_gradient_slider_multivalue_get_values(GtkDarktableGradientSlider *gslider, gdouble *values)
+{
+  for(int k = 0; k < gslider->positions; k++)
+    values[k] = gslider->scale_callback((GtkWidget *)gslider, gslider->position[k], GRADIENT_SLIDER_GET);
+}
+
 void dtgtk_gradient_slider_multivalue_set_value(GtkDarktableGradientSlider *gslider, gdouble value, gint pos)
 {
   assert(pos <= gslider->positions);
@@ -837,6 +843,41 @@ void dtgtk_gradient_slider_multivalue_set_increment(GtkDarktableGradientSlider *
   gslider->increment = value;
 }
 
+void dtgtk_gradient_slider_multivalue_set_scale_callback(GtkDarktableGradientSlider *gslider, float (*callback)(GtkWidget *self, float value, int dir))
+{
+  float (*old_callback)(GtkWidget*, float, int) = gslider->scale_callback;
+  float (*new_callback)(GtkWidget*, float, int) = (callback == NULL ? _default_linear_scale_callback : callback);
+  GtkWidget *self = (GtkWidget *)gslider;
+  GList *current = NULL;
+
+  if(old_callback == new_callback) return;
+
+  for(int k = 0; k < gslider->positions; k++)
+  {
+    gslider->position[k] = new_callback(self, old_callback(self, gslider->position[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
+    gslider->resetvalue[k] = new_callback(self, old_callback(self, gslider->resetvalue[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
+  }
+
+  for(int k = 0; k < 3; k++)
+  {
+    gslider->picker[k] = new_callback(self, old_callback(self, gslider->picker[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
+  }
+
+  if((current = g_list_first(gslider->colors)) != NULL)
+  {
+    do
+    {
+      _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
+      stop->position = new_callback(self, old_callback(self, stop->position, GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
+    } while((current = g_list_next(current)) != NULL);
+  }
+
+  gslider->scale_callback = new_callback;
+  gtk_widget_queue_draw(GTK_WIDGET(gslider));
+}
+
+
+
 // Public functions for single value type
 
 
@@ -863,12 +904,6 @@ GType dtgtk_gradient_slider_get_type()
 gdouble dtgtk_gradient_slider_get_value(GtkDarktableGradientSlider *gslider)
 {
   return dtgtk_gradient_slider_multivalue_get_value(gslider, 0);
-}
-
-void dtgtk_gradient_slider_multivalue_get_values(GtkDarktableGradientSlider *gslider, gdouble *values)
-{
-  for(int k = 0; k < gslider->positions; k++)
-    values[k] = gslider->scale_callback((GtkWidget *)gslider, gslider->position[k], GRADIENT_SLIDER_GET);
 }
 
 void dtgtk_gradient_slider_set_value(GtkDarktableGradientSlider *gslider, gdouble value)
@@ -917,38 +952,6 @@ void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider, gd
   gslider->increment = value;
 }
 
-void dtgtk_gradient_slider_set_scale_callback(GtkDarktableGradientSlider *gslider, float (*callback)(GtkWidget *self, float value, int dir))
-{
-  float (*old_callback)(GtkWidget*, float, int) = gslider->scale_callback;
-  float (*new_callback)(GtkWidget*, float, int) = (callback == NULL ? _default_linear_scale_callback : callback);
-  GtkWidget *self = (GtkWidget *)gslider;
-  GList *current = NULL;
-
-  if(old_callback == new_callback) return;
-
-  for(int k = 0; k < gslider->positions; k++)
-  {
-    gslider->position[k] = new_callback(self, old_callback(self, gslider->position[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
-    gslider->resetvalue[k] = new_callback(self, old_callback(self, gslider->resetvalue[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
-  }
-
-  for(int k = 0; k < 3; k++)
-  {
-    gslider->picker[k] = new_callback(self, old_callback(self, gslider->picker[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
-  }
-
-  if((current = g_list_first(gslider->colors)) != NULL)
-  {
-    do
-    {
-      _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
-      stop->position = new_callback(self, old_callback(self, stop->position, GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
-    } while((current = g_list_next(current)) != NULL);
-  }
-
-  gslider->scale_callback = new_callback;
-  gtk_widget_queue_draw(GTK_WIDGET(gslider));
-}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

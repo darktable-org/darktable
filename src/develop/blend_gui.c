@@ -588,13 +588,13 @@ static int _blendop_blendif_disp_alternative_worker(GtkWidget *widget, dt_iop_mo
 
   if(newmode == 1)
   {
-    dtgtk_gradient_slider_set_scale_callback(slider, scale_callback);
+    dtgtk_gradient_slider_multivalue_set_scale_callback(slider, scale_callback);
     snprintf(text, sizeof(text), "%s%s", inout, label);
     gtk_label_set_text(head, text);
   }
   else
   {
-    dtgtk_gradient_slider_set_scale_callback(slider, NULL);
+    dtgtk_gradient_slider_multivalue_set_scale_callback(slider, NULL);
     snprintf(text, sizeof(text), "%s%s", inout, "");
     gtk_label_set_text(head, text);
   }

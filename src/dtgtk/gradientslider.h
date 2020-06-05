@@ -199,7 +199,7 @@ void dtgtk_gradient_slider_multivalue_set_margins(GtkDarktableGradientSlider *gs
 void dtgtk_gradient_slider_multivalue_set_increment(GtkDarktableGradientSlider *gslider, gdouble value);
 
 /** set scaling function callback */
-void dtgtk_gradient_slider_set_scale_callback(GtkDarktableGradientSlider *gslider, float (*callback)(GtkWidget *self, float value, int dir));
+void dtgtk_gradient_slider_multivalue_set_scale_callback(GtkDarktableGradientSlider *gslider, float (*callback)(GtkWidget *self, float value, int dir));
 
 G_END_DECLS
 
