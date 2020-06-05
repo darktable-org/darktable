@@ -149,6 +149,9 @@ typedef struct dt_iop_retouch_gui_data_t
 
   GtkWidget *vbox_preview_scale;
   GtkWidget *preview_levels_bar;
+
+  GtkWidget *preview_levels_gslider;
+
   float lvlbar_mouse_x, lvlbar_mouse_y;
   GtkWidget *bt_auto_levels;
 
@@ -2850,6 +2853,32 @@ void gui_init(dt_iop_module_t *self)
                                                                | GDK_SMOOTH_SCROLL_MASK);
   gtk_widget_set_size_request(g->preview_levels_bar, -1, DT_PIXEL_APPLY_DPI(5));
 
+
+
+
+    g->preview_levels_gslider = dtgtk_gradient_slider_multivalue_new_with_name(3, "preview-levels");
+    gtk_widget_set_tooltip_text(g->preview_levels_gslider, _("adjust preview levels"));
+    dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->preview_levels_gslider),
+                                                GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);
+    dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->preview_levels_gslider),
+                                                GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
+    dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->preview_levels_gslider),
+                                                GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
+  /*
+    for(int k = 0; k < 3; k++)
+    {
+      dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->preview_levels_bar), levels[k], k);
+      dtgtk_gradient_slider_multivalue_set_resetvalue(DTGTK_GRADIENT_SLIDER(g->preview_levels_bar), levels[k], k);
+    }
+  */
+    /*
+    g_signal_connect(G_OBJECT(bd->upper_slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
+    g_signal_connect(G_OBJECT(bd->upper_slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
+    g_signal_connect(G_OBJECT(bd->upper_slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
+    g_signal_connect(G_OBJECT(bd->upper_slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
+  */
+
+
   g->bt_auto_levels
       = dtgtk_togglebutton_new(_retouch_cairo_paint_auto_levels, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_auto_levels), "tooltip-text", _("auto levels"), (char *)NULL);
@@ -2859,8 +2888,16 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_end(GTK_BOX(prev_lvl), g->bt_auto_levels, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_bar), TRUE, TRUE, 0);
-
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), prev_lvl, TRUE, TRUE, 0);
+
+
+
+
+  gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), g->preview_levels_gslider, TRUE, TRUE, 0);
+
+
+
+
 
   // shapes selected (label)
   GtkWidget *hbox_shape_sel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
