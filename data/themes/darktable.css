@@ -547,7 +547,8 @@ overshoot.right
 }
 
 /* gradient sliders */
-#gradient-slider
+.dt_gslider,
+.dt_gslider_multivalue
 {
   min-height: 1.7em;
   margin: 0;
