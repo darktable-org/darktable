@@ -48,6 +48,7 @@
 #include <time.h>
 
 
+#define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
@@ -290,7 +291,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->preserve_color = o->preserve_color;
     n->shadows = DT_FILMIC_CURVE_POLY_4;
     n->highlights = DT_FILMIC_CURVE_POLY_3;
-    n->reconstruct_threshold = 3.0f; // for old edits, this ensures clipping threshold >> white level, so it's a no-op
+    n->reconstruct_threshold = 6.0f; // for old edits, this ensures clipping threshold >> white level, so it's a no-op
     n->reconstruct_bloom_vs_details = d->reconstruct_bloom_vs_details;
     n->reconstruct_grey_vs_color = d->reconstruct_grey_vs_color;
     n->reconstruct_structure_vs_texture = d->reconstruct_structure_vs_texture;
@@ -298,7 +299,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->version = DT_FILMIC_COLORSCIENCE_V1;
     n->auto_hardness = TRUE;
     n->custom_grey = TRUE;
-    n->high_quality_reconstruction = FALSE;
+    n->high_quality_reconstruction = 0;
     return 0;
   }
   return 1;
@@ -545,7 +546,7 @@ static inline gint mask_clipped_pixels(const float *const restrict in,
     mask[k / ch] = weight;
 
     // at x = 4, the sigmoid produces opacity = 5.882 %.
-    // any x > 4 will produce neglictible changes over the image,
+    // any x > 4 will produce negligible changes over the image,
     // especially since we have reduced visual sensitivity in highlights.
     // so we discard pixels for argument > 4. for they are not worth computing.
     clipped += (4.f > argument);
@@ -557,7 +558,7 @@ static inline gint mask_clipped_pixels(const float *const restrict in,
 
 
 // B spline filter
-#define fsize 5
+#define FSIZE 5
 
 
 #ifdef _OPENMP
@@ -589,15 +590,15 @@ inline static void blur_2D_Bspline_vertical(const float *const restrict in, floa
         #ifdef _OPENMP
         #pragma omp simd aligned(in:64) aligned(accumulator:16) reduction(+:accumulator)
         #endif
-        for(size_t jj = 0; jj < fsize; ++jj)
+        for(size_t jj = 0; jj < FSIZE; ++jj)
           for(size_t c = 0; c < 3; ++c)
           {
-            int index_x = mult * (jj - (fsize - 1) / 2) + j;
+            int index_x = mult * (jj - (FSIZE - 1) / 2) + j;
             index_x = (index_x < bound_left)  ? bound_left  :
                       (index_x > bound_right) ? bound_right :
                                                 index_x     ;
 
-            static const float DT_ALIGNED_ARRAY filter[fsize] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+            static const float DT_ALIGNED_ARRAY filter[FSIZE] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
             accumulator[c] += filter[jj] * in[(i * width + index_x) * ch + c];
           }
@@ -607,11 +608,11 @@ inline static void blur_2D_Bspline_vertical(const float *const restrict in, floa
         #ifdef _OPENMP
         #pragma omp simd aligned(in:64) aligned(accumulator:16) reduction(+:accumulator)
         #endif
-        for(size_t jj = 0; jj < fsize; ++jj)
+        for(size_t jj = 0; jj < FSIZE; ++jj)
           for(size_t c = 0; c < 3; ++c)
           {
-            const size_t index_x = mult * (jj - (fsize - 1) / 2) + j;
-            static const float DT_ALIGNED_ARRAY filter[fsize] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+            const size_t index_x = mult * (jj - (FSIZE - 1) / 2) + j;
+            static const float DT_ALIGNED_ARRAY filter[FSIZE] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
             accumulator[c] += filter[jj] * in[(i * width + index_x) * ch + c];
           }
       }
@@ -655,31 +656,31 @@ inline static void blur_2D_Bspline_horizontal(const float *const restrict in, fl
         #ifdef _OPENMP
         #pragma omp simd aligned(in:64) aligned(accumulator:16) reduction(+:accumulator)
         #endif
-        for(size_t ii = 0; ii < fsize; ++ii)
+        for(size_t ii = 0; ii < FSIZE; ++ii)
           for(size_t c = 0; c < 3; ++c)
           {
-            int index_y = mult * (ii - (fsize - 1) / 2) + i;
+            int index_y = mult * (ii - (FSIZE - 1) / 2) + i;
             index_y = (index_y < bound_top) ? bound_top :
                       (index_y > bound_bot) ? bound_bot :
                                               index_y   ;
 
-            static const float DT_ALIGNED_ARRAY filter[fsize] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+            static const float DT_ALIGNED_ARRAY filter[FSIZE] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
             accumulator[c] += filter[ii] * in[(index_y * width + j) * ch + c];
           }
       }
       else // fast-track
       {
-        for(size_t ii = 0; ii < fsize; ++ii)
+        for(size_t ii = 0; ii < FSIZE; ++ii)
         {
-          const size_t index_y = mult * (ii - (fsize - 1) / 2) + i;
+          const size_t index_y = mult * (ii - (FSIZE - 1) / 2) + i;
 
           #ifdef _OPENMP
           #pragma omp simd aligned(in:64) aligned(accumulator:16) reduction(+:accumulator)
           #endif
           for(size_t c = 0; c < 3; ++c)
           {
-            static const float DT_ALIGNED_ARRAY filter[fsize] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
+            static const float DT_ALIGNED_ARRAY filter[FSIZE] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
             accumulator[c] += filter[ii] * in[(index_y * width + j) * ch + c];
           }
         }
@@ -719,11 +720,11 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
 
     // synthesize the max of all RGB channels texture as a flat texture term for the whole pixel
     // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other channels
-    float grey_texture = gamma * texture[k / ch];
+    const float grey_texture = gamma * texture[k / ch];
 
     // synthesize the max of all interpolated/inpainted RGB channels as a flat details term for the whole pixel
     // this is smoother than grey_texture and will fill holes smoothly in details layers if grey_texture ~= 0.f
-    float grey_details = gamma_comp * fmaxabsf(fmaxabsf(HF_c[0], HF_c[1]), HF_c[2]);
+    const float grey_details = gamma_comp * fmaxabsf(fmaxabsf(HF_c[0], HF_c[1]), HF_c[2]);
 
     // synthesize both terms with weighting
     // when beta_comp ~= 1.0, we force the reconstruction to be achromatic, which may help with gamut issues or magenta highlights.
@@ -731,7 +732,7 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
 
     // synthesize the min of all low-frequency RGB channels as a flat structure term for the whole pixel
     // when beta_comp ~= 1.0, we force the reconstruction to be achromatic, which may help with gamut issues or magenta highlights.
-    float grey_residual = beta_comp * fminf(fminf(LF_c[0], LF_c[1]), LF_c[2]);
+    const float grey_residual = beta_comp * fminf(fminf(LF_c[0], LF_c[1]), LF_c[2]);
 
     for(size_t c = 0; c < 3; c++)
     {
@@ -788,11 +789,11 @@ inline static void wavelets_reconstruct_ratios(const float *const restrict HF, c
 
     // synthesize the max of all RGB channels texture as a flat texture term for the whole pixel
     // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other channels
-    float grey_texture = gamma * texture[k / ch];
+    const float grey_texture = gamma * texture[k / ch];
 
     // synthesize the max of all interpolated/inpainted RGB channels as a flat details term for the whole pixel
     // this is smoother than grey_texture and will fill holes smoothly in details layers if grey_texture ~= 0.f
-    float grey_details = gamma_comp * fmaxabsf(fmaxabsf(HF_c[0], HF_c[1]), HF_c[2]);
+    const float grey_details = gamma_comp * fmaxabsf(fmaxabsf(HF_c[0], HF_c[1]), HF_c[2]);
 
     // synthesize both terms with weighting
     // when beta_comp ~= 1.0, we force the reconstruction to be achromatic, which may help with gamut issues or magenta highlights.
@@ -800,7 +801,7 @@ inline static void wavelets_reconstruct_ratios(const float *const restrict HF, c
 
     // synthesize the min of all low-frequency RGB channels as a flat structure term for the whole pixel
     // when beta_comp ~= 1.0, we force the reconstruction to be achromatic, which may help with gamut issues or magenta highlights.
-    float grey_residual = beta_comp * fmaxf(fmaxf(LF_c[0], LF_c[1]), LF_c[2]);
+    const float grey_residual = beta_comp * fmaxf(fmaxf(LF_c[0], LF_c[1]), LF_c[2]);
 
     for(size_t c = 0; c < 3; c++)
     {
@@ -884,15 +885,15 @@ static int get_scales(const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *
   /* How many wavelets scales do we need to compute at current zoom level ?
    * 0. To get the same preview no matter the zoom scale, the relative image coverage ratio of the filter at
    * the coarsest wavelet level should always stay constant.
-   * 1. The image coverage of each B spline filter of size `fsize` is `2^(level) * (fsize - 1) / 2 + 1` pixels
-   * 2. The coarsest level filter at full resolution should cover `1/fsize` of the largest image dimension.
-   * 3. The coarsest level filter at current zoom level should cover `scale/fsize` of the largest image dimension.
+   * 1. The image coverage of each B spline filter of size `FSIZE` is `2^(level) * (FSIZE - 1) / 2 + 1` pixels
+   * 2. The coarsest level filter at full resolution should cover `1/FSIZE` of the largest image dimension.
+   * 3. The coarsest level filter at current zoom level should cover `scale/FSIZE` of the largest image dimension.
    *
    * So we compute the level that solves 1. subject to 3. Of course, integer rounding doesn't make that 1:1 accurate.
    */
   const float scale = roi_in->scale / piece->iscale;
   const size_t size = MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale);
-  const int scales = floorf(log2f((2.0f * size * scale / ((fsize - 1) * fsize)) - 1.0f));
+  const int scales = floorf(log2f((2.0f * size * scale / ((FSIZE - 1) * FSIZE)) - 1.0f));
   return CLAMP(scales, 1, MAX_NUM_SCALES);
 }
 
@@ -1037,8 +1038,7 @@ static inline void filmic_split_v1(const float *const restrict in, float *const 
 
     // Log tone-mapping
     for(int c = 0; c < 3; c++)
-      temp[c] = log_tonemapping_v1((pix_in[c] < 1.52587890625e-05f) ? 1.52587890625e-05f : pix_in[c],
-                                   data->grey_source, data->black_source, data->dynamic_range);
+      temp[c] = log_tonemapping_v1(fmaxf(pix_in[c], NORM_MIN), data->grey_source, data->black_source, data->dynamic_range);
 
     // Get the desaturation coeff based on the log value
     const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(temp,
@@ -1081,8 +1081,7 @@ static inline void filmic_split_v2(const float *const restrict in, float *const 
 
     // Log tone-mapping
     for(int c = 0; c < 3; c++)
-      temp[c] = log_tonemapping_v2((pix_in[c] < 1.52587890625e-05f) ? 1.52587890625e-05f : pix_in[c],
-                                    data->grey_source, data->black_source, data->dynamic_range);
+      temp[c] = log_tonemapping_v2(fmaxf(pix_in[c], NORM_MIN), data->grey_source, data->black_source, data->dynamic_range);
 
     // Get the desaturation coeff based on the log value
     const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(temp,
@@ -1123,10 +1122,8 @@ static inline void filmic_chroma_v1(const float *const restrict in, float *const
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
 
-    float DT_ALIGNED_PIXEL ratios[4];
-    float norm = get_pixel_norm(pix_in, variant, work_profile);
-
-    norm = (norm < 1.52587890625e-05f) ? 1.52587890625e-05f : norm; // norm can't be < to 2^(-16)
+    float DT_ALIGNED_PIXEL ratios[4] = { 0.0f };
+    float norm = fmaxf(get_pixel_norm(pix_in, variant, work_profile), NORM_MIN);
 
     // Save the ratios
     for(int c = 0; c < 3; c++) ratios[c] = pix_in[c] / norm;
@@ -1185,11 +1182,10 @@ static inline void filmic_chroma_v2(const float *const restrict in, float *const
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
 
-    float norm = get_pixel_norm(pix_in, variant, work_profile);
-    norm = (norm < 1.52587890625e-05f) ? 1.52587890625e-05f : norm; // norm can't be < to 2^(-16)
+    float norm = fmaxf(get_pixel_norm(pix_in, variant, work_profile), NORM_MIN);
 
     // Save the ratios
-    float DT_ALIGNED_PIXEL ratios[4];
+    float DT_ALIGNED_PIXEL ratios[4] = { 0.0f };
     for(int c = 0; c < 3; c++) ratios[c] = pix_in[c] / norm;
 
     // Sanitize the ratios
@@ -1266,8 +1262,7 @@ static inline void compute_ratios(const float *const restrict in, float *const r
   #endif
   for(size_t k = 0; k < height * width * ch; k += ch)
   {
-    float norm = get_pixel_norm(in + k, variant, work_profile);
-    norm = (norm < 1.52587890625e-05f) ? 1.52587890625e-05f : norm; // norm can't be < to 2^(-16)
+    const float norm = fmaxf(get_pixel_norm(in + k, variant, work_profile), NORM_MIN);
     norms[k / ch] = norm;
 
     for(size_t c = 0; c < 3; c++) ratios[k + c] = in[k + c] / norm;
@@ -1526,7 +1521,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   // Black
   const dt_iop_order_iccprofile_info_t *const work_profile
         = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
-  const float black = get_pixel_norm(self->picked_color_min, p->preserve_color, work_profile);
+  const float black = get_pixel_norm(self->picked_color_min, DT_FILMIC_METHOD_MAX_RGB, work_profile);
 
   float EVmin = CLAMP(log2f(black / (p->grey_point_source / 100.0f)), -16.0f, -1.0f);
   EVmin *= (1.0f + p->security_factor / 100.0f);
@@ -1553,7 +1548,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   // White
   const dt_iop_order_iccprofile_info_t *const work_profile
         = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
-  const float white = get_pixel_norm(self->picked_color_max, p->preserve_color, work_profile);
+  const float white = get_pixel_norm(self->picked_color_max, DT_FILMIC_METHOD_MAX_RGB, work_profile);
 
   float EVmax = CLAMP(log2f(white / (p->grey_point_source / 100.0f)), 1.0f, 16.0f);
   EVmax *= (1.0f + p->security_factor / 100.0f);
@@ -1578,16 +1573,19 @@ static void apply_autotune(dt_iop_module_t *self)
         = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
   // Grey
-  const float grey = get_pixel_norm(self->picked_color, p->preserve_color, work_profile) / 2.0f;
-  p->grey_point_source = CLAMP(100.f * grey, 0.001f, 100.0f);
+  if(p->custom_grey)
+  {
+    const float grey = get_pixel_norm(self->picked_color, p->preserve_color, work_profile) / 2.0f;
+    p->grey_point_source = CLAMP(100.f * grey, 0.001f, 100.0f);
+  }
 
   // White
-  const float white = get_pixel_norm(self->picked_color_max, p->preserve_color, work_profile);
+  const float white = get_pixel_norm(self->picked_color_max, DT_FILMIC_METHOD_MAX_RGB, work_profile);
   float EVmax = CLAMP(log2f(white / (p->grey_point_source / 100.0f)), 1.0f, 16.0f);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   // Black
-  const float black = get_pixel_norm(self->picked_color_min, p->preserve_color, work_profile);
+  const float black = get_pixel_norm(self->picked_color_min, DT_FILMIC_METHOD_MAX_RGB, work_profile);
   float EVmin = CLAMP(log2f(black / (p->grey_point_source / 100.0f)), -16.0f, -1.0f);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
@@ -1943,11 +1941,10 @@ static void custom_grey_callback(GtkWidget *widget, dt_iop_module_t *self)
 
   p->custom_grey = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   gtk_widget_set_visible(g->grey_point_source, p->custom_grey);
   gtk_widget_set_visible(g->grey_point_target, p->custom_grey);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   gtk_widget_queue_draw(self->widget);
 
@@ -1966,10 +1963,9 @@ static void auto_hardness_callback(GtkWidget *widget, dt_iop_module_t *self)
 
     p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
 
     gtk_widget_queue_draw(self->widget);
   }
@@ -1998,7 +1994,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 
 inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p, struct dt_iop_filmic_rgb_spline_t *const spline)
 {
-  float grey_display;
+  float grey_display = 0.4638f;
 
   if(p->custom_grey)
   {
@@ -2185,7 +2181,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_filmicrgb_data_t *d = (dt_iop_filmicrgb_data_t *)piece->data;
 
   // source and display greys
-  float grey_source, grey_display;
+  float grey_source = 0.1845f, grey_display = 0.4638f;
   if(p->custom_grey)
   {
     // user set a custom value
@@ -2336,7 +2332,7 @@ void init(dt_iop_module_t *module)
                                  .grey_point_source   = 18.45,  // source grey
                                  .black_point_source  = -10.55f,// source black
                                  .white_point_source  = 5.45f,  // source white
-                                 .reconstruct_threshold = -1.0f,
+                                 .reconstruct_threshold = -0.5f,
                                  .reconstruct_feather   = 3.0f,
                                  .reconstruct_bloom_vs_details = 100.0f,
                                  .reconstruct_grey_vs_color    = 100.0f,
@@ -2450,7 +2446,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     for(int k = 1; k < 256; k++)
     {
       const float x = k / 255.0;
-      float y = filmic_desaturate_v1(x, sigma_toe, sigma_shoulder, saturation);
+      const float y = filmic_desaturate_v1(x, sigma_toe, sigma_shoulder, saturation);
       cairo_line_to(cr, x * width, height * (1.0 - y));
     }
   }
@@ -2460,7 +2456,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     for(int k = 1; k < 256; k++)
     {
       const float x = k / 255.0;
-      float y = filmic_desaturate_v2(x, sigma_toe, sigma_shoulder, saturation);
+      const float y = filmic_desaturate_v2(x, sigma_toe, sigma_shoulder, saturation);
       cairo_line_to(cr, x * width, height * (1.0 - y));
     }
   }
