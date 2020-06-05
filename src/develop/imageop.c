@@ -557,7 +557,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
 
   // we set the focus to the other instance
   dt_iop_gui_set_expanded(next, TRUE, FALSE);
-  gtk_widget_grab_focus(next->expander);
+  dt_iop_request_focus(next);
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
@@ -1751,9 +1751,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   {
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module), GTK_STATE_FLAG_SELECTED, TRUE);
 
-    //used to take focus away from module search text input box when module selected
-    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-
     if(module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_accel_connect_locals_iop(module);
@@ -1905,6 +1902,9 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
       const gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK);
       dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
+
+      //used to take focus away from module search text input box when module selected
+      gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
       return TRUE;
     }
