@@ -563,6 +563,11 @@ void reload_defaults(dt_iop_module_t *module)
                                                             .deflicker_target_level = -4.0f
   };
 
+  // Init exposure with EXIF exposure bias
+  tmp.exposure = -(module->dev->image_storage.exif_exposure_bias);
+  if(tmp.exposure != 0.0f)
+    module->default_enabled = TRUE;
+
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
 }
