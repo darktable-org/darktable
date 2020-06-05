@@ -725,7 +725,7 @@ GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
 }
 
 // format exposure time given in seconds to a string in a unified way
-char *dt_util_format_exposure(float exposuretime)
+char *dt_util_format_exposure(const float exposuretime)
 {
   char *result;
   if(exposuretime >= 1.0f)
