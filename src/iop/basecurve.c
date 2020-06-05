@@ -344,6 +344,14 @@ const char *name()
   return _("base curve");
 }
 
+const char *description()
+{
+  return _("apply a view transform based on camera manufacturer look in RGB,\n"
+           "for corrective purposes, to prepare images for display.\n"
+           "takes preferably a linear RGB input,\n"
+           "outputs non-linear RGB.");
+}
+
 int default_group()
 {
   return IOP_GROUP_BASIC;

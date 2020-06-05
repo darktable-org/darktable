@@ -145,7 +145,10 @@ const char *name()
 
 const char *description()
 {
-  return _("lift/gamma/gain controls as seen in video editors");
+  return _("affect color, brightness and contrast in RGB,\n"
+           "for corrective and creative purposes.\n"
+           "takes preferably a linear RGB input,\n"
+           "outputs possibly non-linear RGB, depending on settings.");
 }
 
 int flags()
@@ -2464,7 +2467,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue_gamma, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->hue_gamma), "value-changed", G_CALLBACK(hue_gamma_callback), self);
   dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->hue_gamma);
-  
+
   g->sat_gamma = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 25.0f, 0.5f, 0.0f, 2, 0);
   dt_bauhaus_slider_set_format(g->sat_gamma, "%.2f %%");
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_gamma, 0.0f, 100.0f);
