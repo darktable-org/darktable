@@ -118,6 +118,14 @@ const char *name()
   return _("contrast equalizer");
 }
 
+const char *description()
+{
+  return _("add or remove local contrast in Lab,\n"
+           "for corrective and creative purposes.\n"
+           "takes preferably a linear RGB input,\n"
+           "outputs almost linear RGB.");
+}
+
 int default_group()
 {
   return IOP_GROUP_CORRECT;

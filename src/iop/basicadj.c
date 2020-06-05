@@ -131,6 +131,14 @@ const char *name()
   return _("basic adjustments");
 }
 
+const char *description()
+{
+  return _("apply usual adjustments in RGB,\n"
+           "for corrective and creative purposes.\n"
+           "takes preferably a linear RGB input,\n"
+           "outputs non-linear RGB.");
+}
+
 int default_group()
 {
   return IOP_GROUP_BASIC;

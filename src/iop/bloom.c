@@ -77,6 +77,14 @@ const char *name()
   return _("bloom");
 }
 
+const char *description()
+{
+  return _("apply Orton effect for a dreamy aetherical look in Lab,\n"
+           "for creative purposes.\n"
+           "takes preferably a linear RGB input,\n"
+           "outputs non-linear RGB.");
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
