@@ -112,6 +112,14 @@ const char *name()
   return _("perspective correction");
 }
 
+const char *description()
+{
+  return _("distort perspective automatically in RGB,\n"
+           "for corrective and creative purposes.\n"
+           "takes preferably a linear RGB input,\n"
+           "outputs linear RGB.");
+}
+
 int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;

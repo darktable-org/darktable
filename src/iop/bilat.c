@@ -92,6 +92,14 @@ const char *name()
   return _("local contrast");
 }
 
+const char *description()
+{
+  return _("manipulate local and global contrast separately in Lab,\n"
+           "for corrective and creative purposes.\n"
+           "takes any RGB input,\n"
+           "outputs non-linear RGB.");
+}
+
 // some additional flags (self explanatory i think):
 int flags()
 {
