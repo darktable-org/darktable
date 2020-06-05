@@ -2005,7 +2005,7 @@ static gboolean dt_bauhaus_slider_key_press(GtkWidget *widget, GdkEventKey *even
     delta = -d->scale / 5.0f;
   }
 
-  if(!handled) return FALSE;
+  if(!handled) return dt_control_key_pressed(gdk_keyval_to_lower(event->keyval), dt_gui_translated_key_state(event));
 
   return dt_bauhaus_slider_add_delta_internal(widget, delta, event->state);
 }
@@ -2067,7 +2067,7 @@ static gboolean dt_bauhaus_combobox_key_press(GtkWidget *widget, GdkEventKey *ev
       dt_bauhaus_combobox_set(widget, new_pos);
     return TRUE;
   }
-  return FALSE;
+  return dt_control_key_pressed(gdk_keyval_to_lower(event->keyval), dt_gui_translated_key_state(event));
 }
 
 static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
