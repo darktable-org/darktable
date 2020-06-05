@@ -12,7 +12,7 @@
     <q>image</q>or 
     <q>folder</q>opens a file selector dialog. Navigate through the filesystem, and select the item to import. On the lower part of the dialog, are some further import options.</p>
     <p>As the name implies, checking 
-    <q>import directories recursively</q>will import images in the currently selected directory, and all subdirectories. It is not recommended, and wastes resources, to do this on an exhaustive list of images. darktable would generate thumbnails for all of them, but in the end only keep the recent ones in its cache. It is better to import images in smaller chunks, making logical film rolls.</p>
+    <q>import folders recursively</q>will import images in the currently selected folder, and all subfolders. It is not recommended, and wastes resources, to do this on an exhaustive list of images. darktable would generate thumbnails for all of them, but in the end only keep the recent ones in its cache. It is better to import images in smaller chunks, making logical film rolls.</p>
     <p>Checking 
     <q>ignore JPEG files</q>is a good choice if there are JPEG images in the same folder that you do not want to process; eg. if the camera stores RAW+JPEG, you often only want to work on the raws, leaving the JPEG images alone.</p>
     <p>You can also apply some metadata during import; see 

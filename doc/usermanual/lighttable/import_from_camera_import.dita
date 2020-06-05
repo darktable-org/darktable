@@ -5,7 +5,7 @@
   <title>Import from camera</title>
   <body>
     <p>This will bring up an import dialog, showing the images on camera that can be selected for import into a film roll in darktable.</p>
-    <p>You define the base directory for storing imported images and the naming pattern of sub directories and individual images in the preferences dialog (see 
+    <p>You define the base folder for storing imported images and the naming pattern of subfolders and individual images in the preferences dialog (see 
     <xref href="../preferences/session_options.dita#session_options" type="topic">Session options</xref>).</p>
   </body>
 </topic>
