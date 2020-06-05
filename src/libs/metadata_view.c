@@ -491,7 +491,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     snprintf(value, sizeof(value), "f/%.1f", img->exif_aperture);
     _metadata_update_value(d->metadata[md_exif_aperture], value);
 
-    char *exposure_str = dt_format_exposure(img->exif_exposure);
+    char *exposure_str = dt_util_format_exposure(img->exif_exposure);
     _metadata_update_value(d->metadata[md_exif_exposure], exposure_str);
     g_free(exposure_str);
 

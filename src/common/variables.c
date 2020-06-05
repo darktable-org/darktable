@@ -214,7 +214,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     else
     {
-      result = dt_format_exposure(params->data->exif_exposure);
+      result = dt_util_format_exposure(params->data->exif_exposure);
     }
   }
   else if(has_prefix(variable, "EXIF_APERTURE"))
@@ -903,34 +903,7 @@ void dt_variables_set_tags_flags(dt_variables_params_t *params, uint32_t flags)
   params->data->tags_flags = flags;
 }
 
-// format exposure time given in seconds to a string in a unified way
-char *dt_format_exposure(float exposuretime)
-{
-  char *result;
-  if(exposuretime >= 1.0f)
-  {
-    if(nearbyintf(exposuretime) == exposuretime)
-      result = g_strdup_printf("%.0f″", exposuretime);
-    else
-      result = g_strdup_printf("%.1f″", exposuretime);
-  }
-  /* want to catch everything below 0.3 seconds */
-  else if(exposuretime < 0.29f)
-    result = g_strdup_printf("1/%.0f", 1.0 / exposuretime);
 
-  /* catch 1/2, 1/3 */
-  else if(nearbyintf(1.0f / exposuretime) == 1.0f / exposuretime)
-    result = g_strdup_printf("1/%.0f", 1.0 / exposuretime);
-
-  /* catch 1/1.3, 1/1.6, etc. */
-  else if(10 * nearbyintf(10.0f / exposuretime) == nearbyintf(100.0f / exposuretime))
-    result = g_strdup_printf("1/%.1f", 1.0 / exposuretime);
-
-  else
-    result = g_strdup_printf("%.1f″", exposuretime);
-
-  return result;
-}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

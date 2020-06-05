@@ -316,7 +316,7 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
 {
-  char *exposure_str = dt_format_exposure(img->exif_exposure);
+  char *exposure_str = dt_util_format_exposure(img->exif_exposure);
 
   snprintf(line, line_len, "%s f/%.1f %dmm ISO %d", exposure_str, img->exif_aperture, (int)img->exif_focal_length,
            (int)img->exif_iso);
