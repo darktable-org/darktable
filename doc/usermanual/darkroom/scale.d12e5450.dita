@@ -6,6 +6,6 @@
   <body>
     <p>This combobox toggles between 
     <q>linear</q>and 
-    <q>logarithmic</q>view. In the double logarithmic view more space is given to the lower values allowing a more fine-grained adjustment of the shadows.</p>
+      <q>logarithmic</q>view. In the logarithmic view more space is given to the lower values allowing a more fine-grained adjustment of the shadows.</p>
   </body>
 </topic>
