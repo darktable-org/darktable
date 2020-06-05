@@ -18,10 +18,10 @@ print("Hello World !")
     <xref href="lua_api.dita#lua_api" type="topic">Lua API</xref>).</p>
     <pre xml:space="preserve">
 local darktable = require "darktable"
-darktable.print_error("Hello World !")
-</pre>
-    <p>Run the script ... and nothing happens. The function 
-    <codeph>darktable.print_error</codeph>is just like print but will only print the message if you have enabled lua traces with 
-    <cmdname>-d lua</cmdname>on the command line. This is the recommended way to do traces in a darktable lua script.</p>
+darktable.print_log("Hello World !")</pre>
+    <p>Run the script ... and nothing happens. The function <codeph>darktable.print_log</codeph>is
+      just like print but will only print the message if you have enabled lua traces with
+        <cmdname>-d lua</cmdname>on the command line. This is the recommended way to do traces in a
+      darktable lua script.</p>
   </body>
 </topic>

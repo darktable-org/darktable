@@ -44,7 +44,7 @@ local scp_path = darktable.new_widget("entry"){
 darktable.register_storage("scp_export","Export via scp",
   function( storage, image, format, filename,
      number, total, high_quality, extra_data)
-    if coroutine.yield("RUN_COMMAND","scp "..filename.." "..
+    if darktable.control.execute("scp "..filename.." "..
       scp_path.text
     ) then
       darktable.print_error("scp failed for "..tostring(image))
@@ -72,9 +72,9 @@ darktable.register_storage("scp_export","Export via scp",
       <li>Make sure to declare all your functions as 
       <codeph>local</codeph>to not pollute the general namespace.</li>
       <li>Make sure you do not leave debug prints in your code. 
-      <codeph>darktable.print_error</codeph>in particular allows you to leave debug prints in your final code without disturbing the console.</li>
+        <codeph>darktable.print_log</codeph> in particular allows you to leave debug prints in your final code without disturbing the console.</li>
       <li>You are free to choose any license for your script but scripts that are uploaded on darktable's website need to be GPLv2.</li>
     </ul>Once you have filled all the fields, checked your code, you can upload it to our script page 
-    <xref format="html" href="https://darktable.org/redmine/projects/darktable/wiki/LuaScripts" scope="external">here</xref>.</p>
+      <xref format="html" href="https://github.com/darktable-org/lua-scripts" scope="external">here</xref>.</p>
   </body>
 </topic>

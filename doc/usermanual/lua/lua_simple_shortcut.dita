@@ -14,18 +14,20 @@ darktable.print("Hello, I just received '"..event..
 end
 
 darktable.register_event("shortcut",hello_shortcut,
-       "A shortcut that print its parameters")
+       "A shortcut that prints its parameters")
       
 </pre>
-    <p>Now start darktable, go to 
-    <codeph>preferences =&gt; shortcut =&gt; lua =&gt; A shortcut that print its parameters</codeph>assign a shortcut and try it. You should have a nice message printed on the screen.</p>
+    <p>Now start darktable, go to <codeph>preferences =&gt; shortcut =&gt; lua =&gt; A shortcut that
+        prints its parameters</codeph>assign a shortcut and try it. You should have a nice message
+      printed on the screen.</p>
     <p>Let's look at the code in details. We first define a function with two parameters. These parameters are strings. The first one is the type of event that is triggered ( 
     <codeph>"shortcut"</codeph>) and the second one is what shortcut specifically ( 
     <codeph>"A shortcut that print its parameters"</codeph>). The function itself calls 
     <codeph>darktable.print</codeph>that will print the message as an overlay in the main window.</p>
     <p>Once that function is defined, we register it as a shortcut callback. To do that we call 
     <codeph>darktable.register_event</codeph>which is a generic function for all types of events. We tell it that we are registering a shortcut event, then we give the callback to call and last, we give the string to use to describe the shortcut in the preference window.</p>
-    <p>Let's try a shortcut a little more interactive. This one will look at the images the user is currently interested in (selected or moused-over) and will increase their rating.</p>
+    <p>Let's try a shortcut that is a little more interactive. This one will look at the images the
+      user is currently interested in (selected or moused-over) and will increase their rating.</p>
     <p>
       <pre xml:space="preserve">
 darktable = require "darktable"

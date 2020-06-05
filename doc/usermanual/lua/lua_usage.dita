@@ -9,7 +9,9 @@
     <xref format="html" href="http://www.lua.org/" scope="external">
       <i>Lua</i>
     </xref>, which is an independent project founded in 1993, providing a powerful, fast, lightweight, embeddable scripting language. Lua is widely used by many open source applications, in commercial programs, and for games programming.</p>
-    <p>darktable uses Lua version 5.2. Describing the principles and syntax of Lua is beyond the scope of this usermanual. For a detailed introduction see the 
-    <xref format="html" href="http://www.lua.org/manual/5.2/manual.html" scope="external">Lua reference manual</xref>.</p>
+    <p>darktable uses Lua version 5.3. Describing the principles and syntax of Lua is beyond the
+      scope of this usermanual. For a detailed introduction see the <xref format="html"
+        href="http://www.lua.org/manual/5.3/manual.html" scope="external">Lua reference
+        manual</xref>.</p>
   </body>
 </topic>

@@ -4,7 +4,10 @@
 <topic id="lua_storage_example" xml:lang="en-us">
   <title>Exporting images with Lua</title>
   <body>
-    <p>We have learned to use lua to adapt darktable to our particular workflow, let's look at how to use lua to easily export images. darktable can easily export images to quite a few online services but there are always more. If you are able to upload an image to a service via the command line then you can use lua to integrate it into darktable's user interface.</p>
+    <p>We have learned to use lua to adapt darktable to our particular workflow, now let's look at
+      how to use lua to easily export images. darktable can easily export images to some  online
+      services but there are always more. If you are able to upload an image to a service via the
+      command line then you can use lua to integrate it into darktable's user interface.</p>
     <p>In this next example we will use lua to export via 
     <cmdname>scp</cmdname>. A new storage will appear in darktable's UI which will export images to a remote target via ssh's copy mechanism.</p>
     <p>
@@ -18,7 +21,7 @@ darktable.preferences.register("scp_export","export_path",
 darktable.register_storage("scp_export","Export via scp",
   function( storage, image, format, filename,
      number, total, high_quality, extra_data)
-    if coroutine.yield("RUN_COMMAND","scp "..filename.." "..
+    if darktable.control.execute("scp "..filename.." "..
       darktable.preferences.read("scp_export",
          "export_path","string")) then
       darktable.print_error("scp failed for "..tostring(image))
@@ -27,11 +30,13 @@ end)
 </pre>
     </p>
     <p>
-    <codeph>darktable.preferences.register</codeph>will add a new preference to darktable's preference menu. 
-    <codeph>scp_export</codeph>and 
-    <codeph>export_path</codeph>allow us to uniquely identify our preference. These fields are reused when we read the value of the preference. The 
-    <codeph>string</codeph>field tells the lua engine that the preference is a string. It could also be an integer, a filename or any of the types detailed in API manual relating to 
-    <codeph>types_lua_pref_type</codeph>. We then have the label for the preference in the preference menu, the tooltip when hovering over the value and a default value.</p>
+      <codeph>darktable.preferences.register</codeph>will add a new preference to darktable's
+      preference menu. <codeph>scp_export</codeph> and <codeph>export_path</codeph> allows us to
+      uniquely identify our preference. These fields are reused when we read the value of the
+      preference. The <codeph>string</codeph>field tells the lua engine that the preference is a
+      string. It could also be an integer, a filename or any of the types detailed in API manual
+      relating to <codeph>types_lua_pref_type</codeph>. We then have the label for the preference in
+      the preference menu, the tooltip when hovering over the value and a default value.</p>
     <p>
     <codeph>darktable.register_storage</codeph>is the call that actually registers a new storage. The first argument is a name for the storage, the second is the label that will be displayed in the UI and last is a function to call on each image. This function has a lot of parameters, but 
     <codeph>filename</codeph>is the only one we use in this example. It contains the name of a temporary file where the image was exported by darktable's engine.</p>
@@ -41,9 +46,8 @@ end)
       <li>We do not check the returned value of scp. That command might fail, in particular if the user has not correctly set the preference.</li>
       <li>This script can't read input from the user. The remote scp must use password-less copy. Scp can't be provided a password easily, so we will leave it that way</li>
       <li>There is no message displayed once the example is done, only the progressbar on the lower left side tells the user that the job is done.</li>
-      <li>We use 
-      <codeph>coroutine.yield</codeph>to call an external program. The normal 
-      <codeph>os.execute</codeph>would block other lua codes from happening.</li>
+      <li>We use <codeph>darktable.control.execute</codeph>to call an external program. The normal
+            <codeph>os.execute</codeph>would block other lua codes from happening.</li>
     </ul></p>
   </body>
 </topic>
