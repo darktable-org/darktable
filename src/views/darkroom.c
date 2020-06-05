@@ -3491,6 +3491,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       // we quit the active iop if any
       lib->full_preview_last_module = darktable.develop->gui_module;
       dt_iop_request_focus(NULL);
+      gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
       dt_dev_invalidate(darktable.develop);
       dt_control_queue_redraw_center();
     }
