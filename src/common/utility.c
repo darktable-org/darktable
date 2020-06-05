@@ -58,9 +58,9 @@ gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
   va_list args;
   gchar *ns;
   va_start(args, format);
-  size_t clen = str ? strlen(str) : 0;
-  int alen = g_vsnprintf(NULL, 0, format, args);
-  int nsize = alen + clen + 1;
+  const size_t clen = str ? strlen(str) : 0;
+  const int alen = g_vsnprintf(NULL, 0, format, args);
+  const int nsize = alen + clen + 1;
 
   /* realloc for new string */
   ns = g_realloc(str, nsize);
@@ -331,18 +331,18 @@ gchar *dt_util_foo_to_utf8(const char *string)
 // get easter sunday (in the western world)
 static void easter(int Y, int* month, int *day)
 {
-  int a  = Y % 19;
-  int b  = Y / 100;
-  int c  = Y % 100;
-  int d  = b / 4;
-  int e  = b % 4;
-  int f  = (b + 8) / 25;
-  int g  = (b - f + 1) / 3;
-  int h  = (19*a + b - d - g + 15) % 30;
-  int i  = c / 4;
-  int k  = c % 4;
-  int L  = (32 + 2*e + 2*i - h - k) % 7;
-  int m  = (a + 11*h + 22*L) / 451;
+  const int a  = Y % 19;
+  const int b  = Y / 100;
+  const int c  = Y % 100;
+  const int d  = b / 4;
+  const int e  = b % 4;
+  const int f  = (b + 8) / 25;
+  const int g  = (b - f + 1) / 3;
+  const int h  = (19*a + b - d - g + 15) % 30;
+  const int i  = c / 4;
+  const int k  = c % 4;
+  const int L  = (32 + 2*e + 2*i - h - k) % 7;
+  const int m  = (a + 11*h + 22*L) / 451;
   *month = (h + L - 7*m + 114) / 31;
   *day   = ((h + L - 7*m + 114) % 31) + 1;
 }
@@ -377,13 +377,13 @@ dt_logo_season_t dt_util_get_logo_season(void)
   return DT_LOGO_SEASON_NONE;
 }
 
-cairo_surface_t *dt_util_get_logo(float size)
+cairo_surface_t *dt_util_get_logo(const float size)
 {
   GError *error = NULL;
   cairo_surface_t *surface = NULL;
   char datadir[PATH_MAX] = { 0 };
   char *logo;
-  dt_logo_season_t season = dt_util_get_logo_season();
+  const dt_logo_season_t season = dt_util_get_logo_season();
   if(season != DT_LOGO_SEASON_NONE)
     logo = g_strdup_printf("idbutton-%d.svg", (int)season);
   else
@@ -397,13 +397,13 @@ cairo_surface_t *dt_util_get_logo(float size)
     RsvgDimensionData dimension;
     rsvg_handle_get_dimensions(svg, &dimension);
 
-    float ppd = darktable.gui ? darktable.gui->ppd : 1.0;
+    const float ppd = darktable.gui ? darktable.gui->ppd : 1.0;
 
-    float svg_size = MAX(dimension.width, dimension.height);
-    float factor = size > 0.0 ? size / svg_size : -1.0 * size;
-    float final_width = dimension.width * factor * ppd,
-          final_height = dimension.height * factor * ppd;
-    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
+    const float svg_size = MAX(dimension.width, dimension.height);
+    const float factor = size > 0.0 ? size / svg_size : -1.0 * size;
+    const float final_width = dimension.width * factor * ppd,
+                final_height = dimension.height * factor * ppd;
+    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
 
     guint8 *image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
     if(darktable.gui)
