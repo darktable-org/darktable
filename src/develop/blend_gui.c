@@ -1350,7 +1350,7 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
 
   dt_control_key_accelerators_off(darktable.control);
   gtk_widget_grab_focus(widget);
-  return TRUE;
+  return FALSE;
 }
 
 
@@ -1391,7 +1391,7 @@ static gboolean _blendop_blendif_leave(GtkWidget *widget, GdkEventCrossing *even
   dt_pthread_mutex_unlock(&data->lock);
 
   if(!darktable.control->key_accelerators_on) dt_control_key_accelerators_on(darktable.control);
-  return TRUE;
+  return FALSE;
 }
 
 
