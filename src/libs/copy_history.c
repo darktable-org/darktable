@@ -70,12 +70,13 @@ static void _update(dt_lib_module_t *self)
 
   GList *imgs = dt_view_get_images_to_act_on(TRUE);
   const guint act_on_cnt = g_list_length(imgs);
-  gboolean can_paste = darktable.view_manager->copy_paste.copied_imageid > 0 && act_on_cnt > 0;
+  const gboolean can_paste = darktable.view_manager->copy_paste.copied_imageid > 0 && 
+    (
+      act_on_cnt > 1 ||
+      (act_on_cnt == 1 && (darktable.view_manager->copy_paste.copied_imageid != dt_view_get_image_to_act_on()))
+    );
 
-  if(act_on_cnt == 1){
-    const int id = dt_view_get_image_to_act_on();
-    can_paste = can_paste && (darktable.view_manager->copy_paste.copied_imageid != id);
-  }
+  g_list_free(imgs);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->compress_button), act_on_cnt > 0);
@@ -421,6 +422,9 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
   if(d->timeout_handle)
     g_source_remove(d->timeout_handle);
