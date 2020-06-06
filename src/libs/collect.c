@@ -1735,6 +1735,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
         }
         else
         {
+          gchar *order_by = NULL;
+          if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "id") == 0)
+            order_by = g_strdup("ORDER BY film_rolls_id DESC");
+          else
+            order_by = g_strdup("ORDER BY folder");
+                
           // filmroll
           g_snprintf(query, sizeof(query),
                      "SELECT folder, film_rolls_id, COUNT(*) AS count"
@@ -1743,8 +1749,9 @@ static void list_view(dt_lib_collect_rule_t *dr)
                      "       FROM main.film_rolls)"
                      "   ON film_id = film_rolls_id "
                      " WHERE %s"
-                     " GROUP BY folder"
-                     " ORDER BY film_rolls_id DESC", where_ext);
+                     " GROUP BY folder %s", where_ext, order_by);
+
+          g_free(order_by);
         }
         break;
     }
@@ -2296,6 +2303,11 @@ static void filmrolls_imported(gpointer instance, int film_id, gpointer self)
   _lib_collect_gui_update(self);
 }
 
+static void preferences_changed(gpointer instance, gpointer self)
+{
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+}
+
 static void filmrolls_removed(gpointer instance, gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
@@ -2619,6 +2631,9 @@ void gui_init(dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED, G_CALLBACK(filmrolls_updated),
                             self);
 
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(preferences_changed),
+                            self);
+
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(filmrolls_imported),
                             self);
 
@@ -2642,6 +2657,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(preferences_changed), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(tag_changed), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(view_set_click), self);

@@ -448,6 +448,18 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="lighttable">
+    <name>plugins/collect/filmroll_sort</name>
+    <type>
+      <enum>
+        <option>id</option>
+        <option>folder</option>
+      </enum>
+    </type>
+    <default>id</default>
+    <shortdescription>sort film rolls by</shortdescription>
+    <longdescription>sets the collections-list order for film rolls</longdescription>
+  </dtconfig>
+  <dtconfig prefs="lighttable">
     <name>plugins/collect/descending</name>
     <type>bool</type>
     <default>true</default>
