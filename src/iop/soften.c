@@ -29,6 +29,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
@@ -51,16 +52,15 @@ DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)
 
 typedef struct dt_iop_soften_params_t
 {
-  float size;
-  float saturation;
-  float brightness;
-  float amount;
+  float size;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
+  float saturation; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0
+  float brightness; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.33
+  float amount;     // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "mix"
 } dt_iop_soften_params_t;
 
 typedef struct dt_iop_soften_gui_data_t
 {
-  GtkBox *vbox1, *vbox2;
-  GtkWidget *scale1, *scale2, *scale3, *scale4; // size,saturation,brightness,amount
+  GtkWidget *size, *saturation, *brightness, *amount;
 } dt_iop_soften_gui_data_t;
 
 typedef struct dt_iop_soften_data_t
@@ -112,10 +112,10 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "size", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale2));
-  dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->scale3));
-  dt_accel_connect_slider_iop(self, "mix", GTK_WIDGET(g->scale4));
+  dt_accel_connect_slider_iop(self, "size", GTK_WIDGET(g->size));
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
+  dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->brightness));
+  dt_accel_connect_slider_iop(self, "mix", GTK_WIDGET(g->amount));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -629,43 +629,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-static void size_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
-  p->size = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void saturation_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
-  p->saturation = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void brightness_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
-  p->brightness = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void amount_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
-  p->amount = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -695,76 +658,36 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)module->params;
-  dt_bauhaus_slider_set(g->scale1, p->size);
-  dt_bauhaus_slider_set(g->scale2, p->saturation);
-  dt_bauhaus_slider_set(g->scale3, p->brightness);
-  dt_bauhaus_slider_set(g->scale4, p->amount);
+  dt_bauhaus_slider_set(g->size, p->size);
+  dt_bauhaus_slider_set(g->saturation, p->saturation);
+  dt_bauhaus_slider_set(g->brightness, p->brightness);
+  dt_bauhaus_slider_set(g->amount, p->amount);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_soften_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_soften_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_soften_params_t);
-  module->gui_data = NULL;
-  dt_iop_soften_params_t tmp = (dt_iop_soften_params_t){ 50, 100.0, 0.33, 50 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_soften_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_soften_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
 
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_soften_gui_data_t));
   dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
-  dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  /* size */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 2, p->size, 2);
-  dt_bauhaus_slider_set_format(g->scale1, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale1, NULL, _("size"));
-  gtk_widget_set_tooltip_text(g->scale1, _("the size of blur"));
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(size_callback), self);
+  g->size = dt_bauhaus_slider_from_params(self, "size");
+  dt_bauhaus_slider_set_format(g->size, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->size, _("the size of blur"));
 
-  /* saturation */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 2, p->saturation, 2);
-  dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("saturation"));
-  gtk_widget_set_tooltip_text(g->scale2, _("the saturation of blur"));
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(saturation_callback), self);
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
+  dt_bauhaus_slider_set_format(g->saturation, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->saturation, _("the saturation of blur"));
 
-  /* brightness */
-  g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.01, p->brightness, 2);
-  dt_bauhaus_slider_set_format(g->scale3, _("%.2f EV"));
-  dt_bauhaus_widget_set_label(g->scale3, NULL, _("brightness"));
-  gtk_widget_set_tooltip_text(g->scale3, _("the brightness of blur"));
-  g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(brightness_callback), self);
+  g->brightness = dt_bauhaus_slider_from_params(self, "brightness");
+  dt_bauhaus_slider_set_format(g->brightness, _("%.2f EV"));
+  gtk_widget_set_tooltip_text(g->brightness, _("the brightness of blur"));
 
-  /* amount */
-  // TODO: deprecate this function in favor for blending
-  g->scale4 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 2, p->amount, 2);
-  dt_bauhaus_slider_set_format(g->scale4, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale4, NULL, _("mix"));
-  gtk_widget_set_tooltip_text(g->scale4, _("the mix of effect"));
-  g_signal_connect(G_OBJECT(g->scale4), "value-changed", G_CALLBACK(amount_callback), self);
-
-
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
+  g->amount = dt_bauhaus_slider_from_params(self, "amount");
+  dt_bauhaus_slider_set_format(g->amount, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->amount, _("the mix of effect"));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
