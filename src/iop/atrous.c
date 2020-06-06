@@ -1858,15 +1858,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("luma")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("change lightness at each feature size"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("chroma")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("change color saturation at each feature size"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("edges")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
+  GtkWidget *tab_label = gtk_label_new(_("luma"));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("luma")));
+  gtk_widget_set_tooltip_text(tab_label, _("change lightness at each feature size"));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("chroma")));
+  gtk_widget_set_tooltip_text(tab_label, _("change color saturation at each feature size"));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("edges")));
+  gtk_widget_set_tooltip_text(tab_label, _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
