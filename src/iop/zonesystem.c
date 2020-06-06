@@ -56,8 +56,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_zonesystem_params_t)
 /** gui params. */
 typedef struct dt_iop_zonesystem_params_t
 {
-  int size;
-  float zone[MAX_ZONE_SYSTEM_SIZE + 1];
+  int size; // $DEFAULT: 10
+  float zone[MAX_ZONE_SYSTEM_SIZE + 1]; // $DEFAULT: -1.0
 } dt_iop_zonesystem_params_t;
 
 /** and pixelpipe data is just the same */
@@ -473,29 +473,6 @@ void gui_update(struct dt_iop_module_t *self)
   // dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)module->params;
   gtk_widget_queue_draw(GTK_WIDGET(g->zones));
 }
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_zonesystem_params_t);
-  module->gui_data = NULL;
-  dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t){
-    10, { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }
-  };
-  memcpy(module->params, &tmp, sizeof(dt_iop_zonesystem_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_zonesystem_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 
 static void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_data);
 
