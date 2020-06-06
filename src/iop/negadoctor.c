@@ -532,7 +532,7 @@ static void Dmin_picker_update(dt_iop_module_t *self)
 
 static void Dmin_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -577,7 +577,7 @@ static void WB_low_picker_update(dt_iop_module_t *self)
 
 static void WB_low_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -628,7 +628,7 @@ static void WB_high_picker_update(dt_iop_module_t *self)
 
 static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -662,7 +662,7 @@ static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *sel
 // measure Dmin from the film edges first
 static void apply_auto_Dmin(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -682,7 +682,7 @@ static void apply_auto_Dmin(dt_iop_module_t *self)
 // from Dmin, find out the range of density values of the film and compute Dmax
 static void apply_auto_Dmax(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -706,7 +706,7 @@ static void apply_auto_Dmax(dt_iop_module_t *self)
 // from Dmax, compute the offset so the range of density is rescaled between [0; 1]
 static void apply_auto_offset(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -729,7 +729,7 @@ static void apply_auto_offset(dt_iop_module_t *self)
 // such that offset × wb[c] make black monochrome
 static void apply_auto_WB_low(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -755,7 +755,7 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
 // such that WB[c] / Dmax make white monochrome
 static void apply_auto_WB_high(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -781,7 +781,7 @@ static void apply_auto_WB_high(dt_iop_module_t *self)
 // such that the printed values range from 0 to + infinity
 static void apply_auto_black(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -807,7 +807,7 @@ static void apply_auto_black(dt_iop_module_t *self)
 // such that the printed values range from 0 to 1
 static void apply_auto_exposure(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
@@ -832,7 +832,7 @@ static void apply_auto_exposure(dt_iop_module_t *self)
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
 
   if     (picker == g->Dmin_sampler)
@@ -1059,9 +1059,9 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *page2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   GtkWidget *page3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page1, gtk_label_new(_("film properties")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, gtk_label_new(_("corrections")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("print properties")));
+  gtk_notebook_append_page(g->notebook, page1, gtk_label_new(_("film properties")));
+  gtk_notebook_append_page(g->notebook, page2, gtk_label_new(_("corrections")));
+  gtk_notebook_append_page(g->notebook, page3, gtk_label_new(_("print properties")));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
