@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -61,17 +62,18 @@ typedef enum _dt_iop_grain_channel_t
 
 typedef struct dt_iop_grain_params_t
 {
-  _dt_iop_grain_channel_t channel;
-  float scale;
-  float strength;
-  float midtones_bias;
+  _dt_iop_grain_channel_t channel; // $DEFAULT: DT_GRAIN_CHANNEL_LIGHTNESS
+  float scale;         /* $MIN: 20.0/GRAIN_SCALE_FACTOR 
+                          $MAX: 6400.0/GRAIN_SCALE_FACTOR 
+                          $DEFAULT: 1600.0/GRAIN_SCALE_FACTOR 
+                          $DESCRIPTION: "coarseness" */
+  float strength;      // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
+  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0
 } dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
 {
-  GtkBox *vbox;
-  GtkWidget *label1, *label2, *label3; // channel, scale, strength
-  GtkWidget *scale1, *scale2, *scale3; // scale, strength, midtones_bias
+  GtkWidget *scale, *strength, *midtones_bias; // scale, strength, midtones_bias
 } dt_iop_grain_gui_data_t;
 
 typedef struct dt_iop_grain_data_t
@@ -445,9 +447,9 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t*)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale2));
-  dt_accel_connect_slider_iop(self, "midtones bias", GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->scale));
+  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
+  dt_accel_connect_slider_iop(self, "midtones bias", GTK_WIDGET(g->midtones_bias));
 }
 
 // see: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
@@ -530,33 +532,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-static void scale_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->scale = dt_bauhaus_slider_get(slider) / GRAIN_SCALE_FACTOR;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void strength_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->strength = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void midtones_bias_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->midtones_bias = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -585,69 +560,42 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
-  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)module->params;
+  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
 
-  dt_bauhaus_slider_set(g->scale1, p->scale * GRAIN_SCALE_FACTOR);
-  dt_bauhaus_slider_set(g->scale2, p->strength);
-  dt_bauhaus_slider_set(g->scale3, p->midtones_bias);
+  dt_bauhaus_slider_set(g->scale, p->scale);
+  dt_bauhaus_slider_set(g->strength, p->strength);
+  dt_bauhaus_slider_set(g->midtones_bias, p->midtones_bias);
 }
 
-void init(dt_iop_module_t *module)
+void init_global(struct dt_iop_module_so_t *self)
 {
   _simplex_noise_init();
-  module->params = calloc(1, sizeof(dt_iop_grain_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_grain_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_grain_params_t);
-  module->gui_data = NULL;
-  dt_iop_grain_params_t tmp
-      = (dt_iop_grain_params_t){ DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0 / GRAIN_SCALE_FACTOR, 25.0, 100.0 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_grain_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_grain_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_grain_gui_data_t));
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
-  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   /* courseness */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 6400.0, 20.0, p->scale * GRAIN_SCALE_FACTOR, 0);
-  dt_bauhaus_widget_set_label(g->scale1, NULL, _("coarseness"));
-  dt_bauhaus_slider_set_format(g->scale1, _("%.0f ISO"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->scale1, _("the grain size (~ISO of the film)"));
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(scale_callback), self);
+  g->scale = dt_bauhaus_slider_from_params(self, "scale");
+  dt_bauhaus_slider_set_factor(g->scale, GRAIN_SCALE_FACTOR);
+  dt_bauhaus_slider_set_step(g->scale, 20.0/GRAIN_SCALE_FACTOR);
+  dt_bauhaus_slider_set_digits(g->scale, 5);
+  dt_bauhaus_slider_set_format(g->scale, _("%.0f ISO"));
+  gtk_widget_set_tooltip_text(g->scale, _("the grain size (~ISO of the film)"));
 
-  /* strength */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->strength, 2);
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("strength"));
-  dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->scale2, _("the strength of applied grain"));
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(strength_callback), self);
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->strength, _("the strength of applied grain"));
 
-  /* midtones bias */
-  g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->midtones_bias, 2);
-  dt_bauhaus_widget_set_label(g->scale3, NULL, _("midtones bias"));
-  dt_bauhaus_slider_set_format(g->scale3, "%.0f%%");
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->scale3, _("amount of midtones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
-  g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(midtones_bias_callback), self);
+  g->midtones_bias = dt_bauhaus_slider_from_params(self, "midtones_bias");
+  dt_bauhaus_slider_set_format(g->midtones_bias, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->midtones_bias, _("amount of midtones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
