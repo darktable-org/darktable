@@ -286,7 +286,6 @@ textview
 {
   border-radius: 3px;
 }
-
 /* Default text fields and text boxes */
 entry,
 textview
@@ -545,7 +544,7 @@ overshoot.right
   min-width: 1.15em;
   padding: 0.06em;
   border: 0;
-  margin: 0 1px;
+  margin: 0 1px 0 1px;
 }
 
 #module-always-enabled-button /* button on always activated module */
@@ -557,11 +556,6 @@ overshoot.right
 #module-header #button-canvas
 {
   margin: 12px; /* not real pixels, this is used as a percent extra space */
-}
-
-#module-collapse-button #button-canvas /* Adjust collapse arrow size */
-{
-  margin: 18px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Gradient sliders */
@@ -610,10 +604,9 @@ overshoot.right
   font-size: 1.1em;
 }
 
-.dt_module_focus #iop-panel-label /* set focus mode */
+.dt_module_focus #iop-panel-label/* set focus mode */
 {
-  color: shade(@plugin_label_color, 1.1);
-  text-shadow: 0px 0px 2px shade(@plugin_label_color, 1.05);
+  color: shade(@plugin_label_color, 1.2);
 }
 
 /* Labels of controls sections in modules */
@@ -1247,6 +1240,36 @@ treeview header label,
   margin: 0px;
 }
 
+/*------------
+  - Map view -
+  ------------*/
+
+/* Set how to display result list on find location module */
+#dt-map-location > *
+{
+margin: 2px;
+}
+
+#dt-map-location label
+{
+padding: 2px;
+}
+
+#dt-map-location
+{
+border-bottom: 1px solid @button_border;
+}
+
+#dt-map-location:hover
+{
+  background-color: @field_hover_bg;
+}
+
+#dt-map-location:hover label
+{
+  color: @field_hover_fg;
+}
+
 /*---------------
   - Other stuff -
   ---------------*/
@@ -1572,7 +1595,8 @@ treeview check /* set specific background color about check buttons in treeviews
 treeview:not(#lutname) *:hover:not(check),
 filechooser .sidebar :hover .sidebar-button,  /* set here specific button hover like eject button in filechooser sidebar */
 #import_metadata title:hover,
-#import_metadata title:hover *
+#import_metadata title:hover *,
+radiobutton:hover label  /* set hover effect on popover menu from star icon */
 {
   background-color: @field_hover_bg;
   color: @field_hover_fg;
@@ -1927,6 +1951,12 @@ radiobutton radio
   background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
 }
 
+/* Set specific background on hover mode to let show most of the image and be sure bottom infos are visible on vertical or square images */
+.dt_overlays_hover #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(0deg, rgba(241, 241, 241, 0.8) 0%, rgba(241, 241, 241, 0.8) 65%,rgba(241, 241, 241, 0) 100%);
+}
+
 /* Set background on block infos in last overlay mode and culling/preview modes shown with mouse hover */
 .dt_overlays_hover_block #thumb_image:hover #thumb_bottom
 {
@@ -1974,8 +2004,6 @@ radiobutton radio
 }
 
 /* Set hover and selected color icons, extension name and text infos */
-.dt_overlays_hover #thumb_main:hover #thumb_ext,
-.dt_overlays_hover_extended #thumb_main:hover #thumb_ext,
 .dt_overlays_always #thumb_main:hover #thumb_ext,
 .dt_overlays_always #thumb_main:selected #thumb_ext,
 .dt_overlays_always_extended #thumb_main:hover #thumb_ext,
@@ -2032,7 +2060,7 @@ radiobutton radio
   background-color: @thumbnail_font_color;
 }
 
-/* Set star icon hover effect */
+/* Set stars icon hover effect */
 .dt_overlays_hover #thumb_main:hover #thumb_star:hover,
 .dt_overlays_hover_extended #thumb_main:hover #thumb_star:hover,
 .dt_overlays_always #thumb_main:hover #thumb_star:hover,
@@ -2045,10 +2073,6 @@ radiobutton radio
 }
 
 /* Set hover group and audio effect */
-.dt_overlays_hover #thumb_main:hover #thumb_group:hover,
-.dt_overlays_hover #thumb_main:hover #thumb_audio:hover,
-.dt_overlays_hover_extended #thumb_main:hover #thumb_group:hover,
-.dt_overlays_hover_extended #thumb_main:hover #thumb_audio:hover,
 .dt_overlays_always #thumb_main:hover #thumb_group:hover,
 .dt_overlays_always #thumb_main:hover #thumb_audio:hover,
 .dt_overlays_always_extended #thumb_main:hover #thumb_group:hover,
@@ -2059,6 +2083,16 @@ radiobutton radio
 .dt_overlays_hover_block #thumb_main:hover #thumb_audio:hover
 {
   color: @thumbnail_fg_color;
+}
+
+.dt_overlays_hover #thumb_main:hover #thumb_group,
+.dt_overlays_hover #thumb_main:hover #thumb_altered,
+.dt_overlays_hover #thumb_main:hover #thumb_audio,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_group,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_altered,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_audio
+{
+  color: transparent;
 }
 
 /* Set local copy mark */
