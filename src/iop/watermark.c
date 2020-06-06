@@ -429,7 +429,8 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     // Simple text from watermark module
     gchar buffer[1024];
 
-    if (data->font[0] && data->text[0])
+    // substitute $(WATERMARK_TEXT)
+    if(data->text[0])
     {
       g_strlcpy(buffer, data->text, sizeof(buffer));
       svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
@@ -438,21 +439,22 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
         g_free(svgdata);
         svgdata = svgdoc;
       }
+    }
+    // apply font style substitutions
+    PangoFontDescription *font = pango_font_description_from_string(data->font);
+    const PangoStyle font_style = pango_font_description_get_style(font);
+    const int font_weight = (int)pango_font_description_get_weight(font);
 
-      PangoFontDescription *font = pango_font_description_from_string(data->font);
-      const PangoStyle font_style = pango_font_description_get_style(font);
-      const int font_weight = (int)pango_font_description_get_weight(font);
+    g_strlcpy(buffer, pango_font_description_get_family(font), sizeof(buffer));
+    svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
+    if(svgdoc != svgdata)
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
 
-      g_strlcpy(buffer, pango_font_description_get_family(font), sizeof(buffer));
-      svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
-      if(svgdoc != svgdata)
-      {
-        g_free(svgdata);
-        svgdata = svgdoc;
-      }
-
-      switch (font_style)
-      {
+    switch(font_style)
+    {
       case PANGO_STYLE_OBLIQUE:
         g_strlcpy(buffer, "oblique", sizeof(buffer));
         break;
@@ -462,24 +464,23 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
       default:
         g_strlcpy(buffer, "normal", sizeof(buffer));
         break;
-      }
-      svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_STYLE)", buffer);
-      if(svgdoc != svgdata)
-      {
-        g_free(svgdata);
-        svgdata = svgdoc;
-      }
-
-      g_snprintf(buffer, sizeof(buffer), "%d", font_weight);
-      svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_WEIGHT)", buffer);
-      if(svgdoc != svgdata)
-      {
-        g_free(svgdata);
-        svgdata = svgdoc;
-      }
-
-      pango_font_description_free(font);
     }
+    svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_STYLE)", buffer);
+    if(svgdoc != svgdata)
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+
+    g_snprintf(buffer, sizeof(buffer), "%d", font_weight);
+    svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_WEIGHT)", buffer);
+    if(svgdoc != svgdata)
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+
+    pango_font_description_free(font);
 
     // watermark color
     GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
