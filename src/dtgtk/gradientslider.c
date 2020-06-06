@@ -461,9 +461,12 @@ static void _gradient_slider_init(GtkDarktableGradientSlider *gslider)
   gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = NAN;
   gslider->increment = DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT;
   gslider->margin_left = gslider->margin_right = GRADIENT_SLIDER_MARGINS_DEFAULT;
-  for(int k = 0; k < gslider->positions; k++) gslider->position[k] = 0.0;
-  for(int k = 0; k < gslider->positions; k++) gslider->resetvalue[k] = 0.0;
-  for(int k = 0; k < gslider->positions; k++) gslider->marker[k] = GRADIENT_SLIDER_MARKER_LOWER_FILLED;
+  for(int k = 0; k < gslider->positions; k++)
+  {
+    gslider->position[k] = 0.0;
+    gslider->resetvalue[k] = 0.0;
+    gslider->marker[k] = GRADIENT_SLIDER_MARKER_LOWER_FILLED;
+  }
 }
 
 static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *min_height, gint *nat_height)
@@ -585,7 +588,6 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
   // Lets draw position arrows
   cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
 
-
   // do we have a picker value to draw?
   if(!isnan(gslider->picker[0]))
   {
@@ -607,21 +609,13 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     cairo_stroke(cr);
   }
 
-  int indirect[GRADIENT_SLIDER_MAX_POSITIONS];
-  const gint selected = _get_active_marker(gslider);
-  for(int k = 0; k < gslider->positions; k++)
-    indirect[k] = (selected == -1) ? k : (selected + 1 + k) % gslider->positions;
-
-
   for(int k = 0; k < gslider->positions; k++)
   {
-    const int l = indirect[k];
-    const int vx = _scale_to_screen(widget, gslider->position[l]);
-    const int mk = gslider->marker[l];
+    const int vx = _scale_to_screen(widget, gslider->position[k]);
+    const int mk = gslider->marker[k];
     const int sz = round((mk & (1 << 3)) ? 1.9f * y1 : 1.4f * y1); // big or small marker?
 
-    // highlight the active marker
-    if(l == selected && (gslider->is_entered == TRUE || gslider->is_dragging == TRUE))
+    if(k == gslider->selected && gslider->is_entered) // highlight the active marker
       cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
     else
       cairo_set_source_rgba(cr, color.red * 0.8, color.green * 0.8, color.blue * 0.8, 1.0);
