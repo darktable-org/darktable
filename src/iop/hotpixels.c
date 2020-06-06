@@ -23,6 +23,7 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -35,10 +36,10 @@ DT_MODULE_INTROSPECTION(1, dt_iop_hotpixels_params_t)
 
 typedef struct dt_iop_hotpixels_params_t
 {
-  float strength;
-  float threshold;
-  gboolean markfixed;
-  gboolean permissive;
+  float strength;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.25
+  float threshold; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.05
+  gboolean markfixed;  // $DEFAULT: FALSE
+  gboolean permissive; // $DEFAULT: FALSE
 } dt_iop_hotpixels_params_t;
 
 typedef struct dt_iop_hotpixels_gui_data_t
@@ -305,41 +306,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  const dt_iop_hotpixels_params_t tmp
-      = {.strength = 0.25, .threshold = 0.05, .markfixed = FALSE, .permissive = FALSE };
-
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
+  if(!module->dev) return;
 
   // can't be switched on for non-raw images:
-  if(dt_image_is_raw(&module->dev->image_storage))
-    module->hide_enable_button = 0;
-  else
-    module->hide_enable_button = 1;
-
-end:
-  memcpy(module->params, &tmp, sizeof(dt_iop_hotpixels_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_hotpixels_params_t));
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->global_data = NULL;
-  module->params = calloc(1, sizeof(dt_iop_hotpixels_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_hotpixels_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_hotpixels_params_t);
-  module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-  free(module->global_data);
-  module->global_data = NULL;
+  module->hide_enable_button = !dt_image_is_raw(&module->dev->image_storage);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -366,24 +337,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 {
   free(piece->data);
   piece->data = NULL;
-}
-
-static void strength_callback(GtkRange *range, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
-  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
-  p->strength = dt_bauhaus_slider_get(g->strength);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void threshold_callback(GtkRange *range, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
-  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
-  p->threshold = dt_bauhaus_slider_get(g->threshold);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void markfixed_callback(GtkRange *range, dt_iop_module_t *self)
@@ -453,45 +406,38 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
   g->pixels_fixed = -1;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(g->box_raw), "draw", G_CALLBACK(draw), self);
 
-  /* threshold */
-  g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.005, p->threshold, 4);
-  dt_bauhaus_slider_set_format(g->threshold, "%.4f");
-  dt_bauhaus_widget_set_label(g->threshold, NULL, _("threshold"));
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
+  dt_bauhaus_slider_set_step(g->threshold, 0.005);
+  dt_bauhaus_slider_set_digits(g->threshold, 4);
   gtk_widget_set_tooltip_text(g->threshold, _("lower threshold for hot pixel"));
-  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
 
-  /* strength */
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, p->strength, 4);
-  dt_bauhaus_slider_set_format(g->threshold, "%.4f");
-  dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  dt_bauhaus_slider_set_digits(g->strength, 4);
   gtk_widget_set_tooltip_text(g->strength, _("strength of hot pixel correction"));
-  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
 
-  /* 3 neighbours */
+  // 3 neighbours
   g->permissive = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("detect by 3 neighbors")));
   gtk_toggle_button_set_active(g->permissive, p->permissive);
   gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->permissive), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->permissive), "toggled", G_CALLBACK(permissive_callback), self);
 
-
+  // mark fixed pixels
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   g->markfixed = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("mark fixed pixels")));
   gtk_toggle_button_set_active(g->markfixed, p->markfixed);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->markfixed), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->markfixed), "toggled", G_CALLBACK(markfixed_callback), self);
-
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->message), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
+
+  // start building top level widget
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
 
