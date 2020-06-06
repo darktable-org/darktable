@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -40,7 +41,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_vibrance_params_t)
 
 typedef struct dt_iop_vibrance_params_t
 {
-  float amount;
+  float amount; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0 $DESCRIPTION: "vibrance"
 } dt_iop_vibrance_params_t;
 
 typedef struct dt_iop_vibrance_gui_data_t
@@ -178,16 +179,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-
-static void amount_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)self->params;
-  p->amount = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -215,44 +206,17 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)module->params;
   dt_bauhaus_slider_set(g->amount_scale, p->amount);
 }
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_vibrance_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_vibrance_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_vibrance_params_t);
-  module->gui_data = NULL;
-  dt_iop_vibrance_params_t tmp = (dt_iop_vibrance_params_t){ 25 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_vibrance_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_vibrance_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_vibrance_gui_data_t));
   dt_iop_vibrance_gui_data_t *g = (dt_iop_vibrance_gui_data_t *)self->gui_data;
-  dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-  ;
 
-  /* vibrance */
-  g->amount_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1, p->amount, 0);
+  g->amount_scale = dt_bauhaus_slider_from_params(self, "amount");
   dt_bauhaus_slider_set_format(g->amount_scale, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->amount_scale, NULL, _("vibrance"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->amount_scale), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->amount_scale, _("the amount of vibrance"));
-  g_signal_connect(G_OBJECT(g->amount_scale), "value-changed", G_CALLBACK(amount_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
