@@ -797,8 +797,7 @@ void gui_init(dt_iop_module_t *self)
   g->bt_edit_masks
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_edit_masks), "button-press-event", G_CALLBACK(_edit_masks), self);
-  g_object_set(G_OBJECT(g->bt_edit_masks), "tooltip-text", _("show and edit shapes"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_edit_masks, _("show and edit shapes"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_edit_masks, FALSE, FALSE, 0);
 
