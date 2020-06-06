@@ -241,7 +241,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(w == g->hue)
   {
     update_saturation_slider_end_color(g->saturation, p->hue);
-    gtk_widget_queue_draw(GTK_WIDGET(g->saturation));
+    gtk_widget_queue_draw(g->saturation);
   }
 }
 
@@ -360,9 +360,9 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  /* hue slider */
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, 
            dt_bauhaus_slider_from_params (self, "hue"));
+  dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_stop(g->hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
@@ -372,14 +372,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->hue, 1.0f  , 1.0f, 0.0f, 0.0f);
   gtk_widget_set_tooltip_text(g->hue, _("select the hue tone"));
 
-  /* saturation slider */
   g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(g->saturation, _("select the saturation shadow tone"));
 
-
-  // Additional parameters
   g->lightness = dt_bauhaus_slider_from_params(self, "lightness");
   dt_bauhaus_slider_set_format(g->lightness, "%.2f%%");
   dt_bauhaus_slider_set_step(g->lightness, 0.1);
