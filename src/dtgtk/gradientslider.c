@@ -39,9 +39,8 @@ G_DEFINE_TYPE(GtkDarktableGradientSlider, _gradient_slider, GTK_TYPE_DRAWING_ARE
 // Class overrides
 static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *min_height, gint *nat_height);
 static void _gradient_slider_get_preferred_width(GtkWidget *widget, gint *min_width, gint *nat_width);
-static void _gradient_slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
-static void _gradient_slider_destroy(GtkWidget *widget);
 static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr);
+static void _gradient_slider_destroy(GtkWidget *widget);
 
 // Events
 static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event);
@@ -300,16 +299,13 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       if(!gslider->timeout_handle)
         gslider->timeout_handle = g_timeout_add(delay, _gradient_slider_postponed_value_change, widget);
     }
-    else if(gslider->positions
-            > 1) // right mouse button: switch on/off selection (only if we have more than one marker)
+    else if(gslider->positions > 1) // right mouse button: switch on/off selection (only if we have more than one marker)
     {
       gslider->is_dragging = FALSE;
       gslider->do_reset = FALSE;
 
       if(gslider->selected != lselected)
-      {
         gslider->selected = lselected;
-      }
       else
         gslider->selected = -1;
 
@@ -423,7 +419,6 @@ static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
 
   widget_class->get_preferred_height = _gradient_slider_get_preferred_height;
   widget_class->get_preferred_width = _gradient_slider_get_preferred_width;
-  widget_class->size_allocate = _gradient_slider_size_allocate;
   widget_class->draw = _gradient_slider_draw;
   widget_class->destroy = _gradient_slider_destroy;
 
@@ -439,9 +434,10 @@ static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
                                          NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
-static void _gradient_slider_init(GtkDarktableGradientSlider *slider)
+static void _gradient_slider_init(GtkDarktableGradientSlider *gslider)
 {
-  gtk_widget_add_events(GTK_WIDGET(slider),
+  GtkWidget *widget = GTK_WIDGET(gslider);
+  gtk_widget_add_events(widget,
                         GDK_EXPOSURE_MASK |
                         GDK_BUTTON_PRESS_MASK |
                         GDK_BUTTON_RELEASE_MASK |
@@ -452,22 +448,22 @@ static void _gradient_slider_init(GtkDarktableGradientSlider *slider)
                         GDK_POINTER_MOTION_MASK |
                         darktable.gui->scroll_mask);
 
-  gtk_widget_set_has_window(GTK_WIDGET(slider), TRUE);
-  gtk_widget_set_can_focus(GTK_WIDGET(slider), TRUE);
+  gtk_widget_set_has_window(widget, TRUE);
+  gtk_widget_set_can_focus(widget, TRUE);
 
-  slider->is_dragging = slider->is_changed = slider->do_reset = slider->is_entered = 0;
-  slider->timeout_handle = 0;
-  slider->selected = slider->positions == 1 ? 0 : -1;
-  slider->active = -1;
-  slider->scale_callback = _default_linear_scale_callback;
-  slider->is_resettable = FALSE;
-  slider->is_entered = FALSE;
-  slider->picker[0] = slider->picker[1] = slider->picker[2] = NAN;
-  slider->increment = DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT;
-  slider->margin_left = slider->margin_right = GRADIENT_SLIDER_MARGINS_DEFAULT;
-  for(int k = 0; k < slider->positions; k++) slider->position[k] = 0.0;
-  for(int k = 0; k < slider->positions; k++) slider->resetvalue[k] = 0.0;
-  for(int k = 0; k < slider->positions; k++) slider->marker[k] = GRADIENT_SLIDER_MARKER_LOWER_FILLED;
+  gslider->is_dragging = gslider->is_changed = gslider->do_reset = gslider->is_entered = 0;
+  gslider->timeout_handle = 0;
+  gslider->selected = gslider->positions == 1 ? 0 : -1;
+  gslider->active = -1;
+  gslider->scale_callback = _default_linear_scale_callback;
+  gslider->is_resettable = FALSE;
+  gslider->is_entered = FALSE;
+  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = NAN;
+  gslider->increment = DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT;
+  gslider->margin_left = gslider->margin_right = GRADIENT_SLIDER_MARGINS_DEFAULT;
+  for(int k = 0; k < gslider->positions; k++) gslider->position[k] = 0.0;
+  for(int k = 0; k < gslider->positions; k++) gslider->resetvalue[k] = 0.0;
+  for(int k = 0; k < gslider->positions; k++) gslider->marker[k] = GRADIENT_SLIDER_MARKER_LOWER_FILLED;
 }
 
 static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *min_height, gint *nat_height)
@@ -496,38 +492,27 @@ static void _gradient_slider_get_preferred_width(GtkWidget *widget, gint *min_wi
   gtk_style_context_get_border(context, state, &border);
   gtk_style_context_get_padding(context, state, &padding);
   *min_width = *nat_width = css_min_width + padding.left + padding.right + border.left + border.right + margin.left + margin.right;
-}
-
-static void _gradient_slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
-{
-  GTK_WIDGET_CLASS(parent_class)->size_allocate(widget, allocation);
-
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  GtkBorder margin, border, padding;
-  gtk_style_context_get_margin(context, state, &margin);
-  gtk_style_context_get_border(context, state, &border);
-  gtk_style_context_get_padding(context, state, &padding);
 
   DTGTK_GRADIENT_SLIDER(widget)->margin_left = padding.left + border.left + margin.left;
   DTGTK_GRADIENT_SLIDER(widget)->margin_right = padding.right + border.right + margin.right;
 }
-
 
 static void _gradient_slider_destroy(GtkWidget *widget)
 {
   g_return_if_fail(widget != NULL);
   g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
 
-  if(DTGTK_GRADIENT_SLIDER(widget)->timeout_handle)
-    g_source_remove(DTGTK_GRADIENT_SLIDER(widget)->timeout_handle);
+  GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
 
-  DTGTK_GRADIENT_SLIDER(widget)->timeout_handle = 0;
+  if(gslider->timeout_handle)
+    g_source_remove(gslider->timeout_handle);
 
-  if(DTGTK_GRADIENT_SLIDER(widget)->colors)
-    g_list_free_full(DTGTK_GRADIENT_SLIDER(widget)->colors, g_free);
+  gslider->timeout_handle = 0;
 
-  DTGTK_GRADIENT_SLIDER(widget)->colors = NULL;
+  if(gslider->colors)
+    g_list_free_full(gslider->colors, g_free);
+
+  gslider->colors = NULL;
 
   GTK_WIDGET_CLASS(parent_class)->destroy(widget);
 }
@@ -555,11 +540,20 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
   gtk_style_context_get_padding(context, state, &padding);
 
   // Begin cairo drawing
-  // for content drawing, we remove css margin, border and padding from allocation
-  const int starty = padding.top + border.top + margin.top;
-  const int cheight = allocation.height - (padding.top + padding.bottom + border.top + border.bottom + margin.top + margin.bottom);
+  // for frame and background, we remove css margin from allocation
+  int startx = margin.left;
+  int starty = margin.top;
+  int cwidth = allocation.width - margin.left - margin.right;
+  int cheight = allocation.height - margin.top - margin.bottom;
+  gtk_render_background(context, cr, startx, starty, cwidth, cheight);
+  gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
+
+  // then we draw the content
+  startx += padding.left + border.left;
+  starty += padding.top + border.top;
+  cwidth -= padding.left + padding.right + border.left + border.right;
+  cheight -= padding.top + padding.bottom + border.top + border.bottom;
   const int y1 = round(0.3f * cheight);
-  const int gwidth = allocation.width - gslider->margin_left - gslider->margin_right;
   const int gheight = cheight - 2 * y1;
 
   // First build the cairo gradient and then fill the gradient
@@ -567,7 +561,7 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
   cairo_pattern_t *gradient = NULL;
   if((current = g_list_first(gslider->colors)) != NULL)
   {
-    gradient = cairo_pattern_create_linear(0, 0, gwidth, 0);
+    gradient = cairo_pattern_create_linear(0, 0, cwidth, 0);
     do
     {
       _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
@@ -582,7 +576,7 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
     cairo_translate(cr, 0, starty);
     cairo_set_source(cr, gradient);
-    cairo_rectangle(cr, gslider->margin_left, y1, gwidth, gheight);
+    cairo_rectangle(cr, startx, y1, cwidth, gheight);
     cairo_fill(cr);
     cairo_stroke(cr);
     cairo_pattern_destroy(gradient);
@@ -625,7 +619,6 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     const int vx = _scale_to_screen(widget, gslider->position[l]);
     const int mk = gslider->marker[l];
     const int sz = round((mk & (1 << 3)) ? 1.9f * y1 : 1.4f * y1); // big or small marker?
-
 
     if(l == selected && (gslider->is_entered == TRUE || gslider->is_dragging == TRUE))
     {

@@ -23,7 +23,6 @@
 #include "paint.h"
 #include <gtk/gtk.h>
 G_BEGIN_DECLS
-
 #define DTGTK_GRADIENT_SLIDER(obj)                                                                           \
   G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSlider)
 #define DTGTK_GRADIENT_SLIDER_CLASS(klass)                                                                   \
@@ -125,8 +124,6 @@ typedef struct _gradient_slider_stop_t
 GType dtgtk_gradient_slider_get_type(void);
 GType dtgtk_gradient_slider_multivalue_get_type(void);
 
-
-
 /** instantiate a new darktable gradient slider control */
 GtkWidget *dtgtk_gradient_slider_new();
 GtkWidget *dtgtk_gradient_slider_new_with_color(GdkRGBA start, GdkRGBA end);
@@ -155,7 +152,6 @@ void dtgtk_gradient_slider_set_picker_meanminmax(GtkDarktableGradientSlider *gsl
 
 /** set increment for scroll action */
 void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider, gdouble value);
-
 
 
 /** instantiate a new darktable gradient slider multivalue control */
