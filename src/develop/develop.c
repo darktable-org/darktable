@@ -104,6 +104,13 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   else if(g_strcmp0(histogram_type, "logarithmic") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
   g_free(histogram_type);
+  gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
+  dev->preview_downsampling =
+    (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
+    : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
+    : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
+    : 0.25f;
+  g_free(preview_downsample);
   dev->forms = NULL;
   dev->form_visible = NULL;
   dev->form_gui = NULL;
@@ -117,13 +124,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
     dt_dev_pixelpipe_init_preview2(dev->preview2_pipe);
-    gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
-    dev->preview_downsampling =
-      (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
-      : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
-      : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
-      : 0.25f;
-    g_free(preview_downsample);
+
     dev->histogram = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
@@ -140,9 +141,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     // (regardless of ppd). Try to get enough detail for a (default)
     // 350px panel, possibly 2x that on hidpi.
     dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
-    // Hardcoded hack: histogram widget will probably be either 175 or
-    // 350 pixels high depending on hidpi
-    dev->histogram_waveform_height = 175;
+    dev->histogram_waveform_height = dt_conf_get_int("histogram_height");
     // making the stride work for cairo muddles UI and underlying
     // data, and mipmap widths should already reasonable, but better
     // to be safe, and the histogram is for the sake of UI, after all
@@ -358,7 +357,6 @@ restart:
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_change(dev->preview_pipe, dev);
-  
   if(dt_dev_pixelpipe_process(
          dev->preview_pipe, dev, 0, 0, dev->preview_pipe->processed_width * dev->preview_downsampling,
          dev->preview_pipe->processed_height * dev->preview_downsampling, dev->preview_downsampling))
@@ -493,6 +491,7 @@ restart:
   const int ht = MIN(window_height, dev->preview2_pipe->processed_height * scale);
   int x = MAX(0, scale * dev->preview2_pipe->processed_width * (.5 + zoom_x) - wd / 2);
   int y = MAX(0, scale * dev->preview2_pipe->processed_height * (.5 + zoom_y) - ht / 2);
+
   if(dt_dev_pixelpipe_process(dev->preview2_pipe, dev, x, y, wd, ht, scale))
   {
     if(dev->preview2_loading || dev->preview2_input_changed)
