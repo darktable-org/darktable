@@ -620,14 +620,11 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     const int mk = gslider->marker[l];
     const int sz = round((mk & (1 << 3)) ? 1.9f * y1 : 1.4f * y1); // big or small marker?
 
+    // highlight the active marker
     if(l == selected && (gslider->is_entered == TRUE || gslider->is_dragging == TRUE))
-    {
       cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
-    }
     else
-    {
       cairo_set_source_rgba(cr, color.red * 0.8, color.green * 0.8, color.blue * 0.8, 1.0);
-    }
 
     cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 
