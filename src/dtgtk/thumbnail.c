@@ -992,6 +992,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_show(thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image_box);
+    _thumb_retrieve_margins(thumb);
 
     // determine the overlays parents
     GtkWidget *overlays_parent = thumb->w_main;
@@ -1224,10 +1225,10 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
   {
     gtk_widget_get_size_request(thumb->w_main, &width, &height);
 
-    const int margin_l = thumb->img_margin->left * width / 100;
-    const int margin_t = thumb->img_margin->top * height / 100;
-    const int margin_r = thumb->img_margin->right * width / 100;
-    const int margin_b = thumb->img_margin->bottom * height / 100;
+    const int margin_l = MAX(0, thumb->img_margin->left * width / 100);
+    const int margin_t = MAX(0, thumb->img_margin->top * height / 100);
+    const int margin_r = MAX(0, thumb->img_margin->right * width / 100);
+    const int margin_b = MAX(0, thumb->img_margin->bottom * height / 100);
 
     // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
     // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
@@ -1411,9 +1412,10 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   thumb->height = height;
   gtk_widget_set_size_request(thumb->w_main, width, height);
 
-  const int margin_l = thumb->img_margin->left * width / 100;
-  const int margin_t = thumb->img_margin->top * height / 100;
-  const int margin_b = thumb->img_margin->bottom * height / 100;
+  _thumb_retrieve_margins(thumb);
+  const int margin_l = MAX(0, thumb->img_margin->left * width / 100);
+  const int margin_t = MAX(0, thumb->img_margin->top * height / 100);
+  const int margin_b = MAX(0, thumb->img_margin->bottom * height / 100);
 
   // file extension
   gtk_widget_set_margin_start(thumb->w_ext, margin_l);
