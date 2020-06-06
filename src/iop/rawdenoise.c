@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -50,8 +51,9 @@ typedef enum dt_iop_rawdenoise_channel_t
 
 typedef struct dt_iop_rawdenoise_params_t
 {
-  float threshold;
-  float x[DT_RAWDENOISE_NONE][DT_IOP_RAWDENOISE_BANDS], y[DT_RAWDENOISE_NONE][DT_IOP_RAWDENOISE_BANDS];
+  float threshold; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.01 $DESCRIPTION: "noise threshold"
+  float x[DT_RAWDENOISE_NONE][DT_IOP_RAWDENOISE_BANDS];
+  float y[DT_RAWDENOISE_NONE][DT_IOP_RAWDENOISE_BANDS]; // $DEFAULT: 0.5
 } dt_iop_rawdenoise_params_t;
 
 typedef struct dt_iop_rawdenoise_gui_data_t
@@ -524,15 +526,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // init defaults:
-  dt_iop_rawdenoise_params_t tmp;
-  tmp.threshold = 0.01;
+  dt_iop_rawdenoise_params_t *d = module->default_params;
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
   {
     for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
     {
-      tmp.x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.0);
-      tmp.y[ch][k] = 0.5f;
+      d->x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.0);
     }
   }
   // we might be called from presets update infrastructure => there is no image
@@ -543,45 +542,11 @@ void reload_defaults(dt_iop_module_t *module)
     module->hide_enable_button = 0;
   else
     module->hide_enable_button = 1;
+
   module->default_enabled = 0;
 
 end:
- memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
- memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->global_data = NULL;
-  module->params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
-  module->default_enabled = 0;
-
-  // raw denoise must come just before demosaicing.
-  module->params_size = sizeof(dt_iop_rawdenoise_params_t);
-  module->gui_data = NULL;
-  dt_iop_rawdenoise_params_t tmp;
-  for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
-  {
-    for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
-    {
-      tmp.x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.0);
-      tmp.y[ch][k] = 0.5f;
-    }
-  }
-  tmp.threshold = 0.01f;
-  memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-  free(module->global_data);
-  module->global_data = NULL;
+ memcpy(module->params, module->default_params, sizeof(dt_iop_rawdenoise_params_t));
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -641,15 +606,6 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
-}
-
-static void threshold_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
-  p->threshold = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void dt_iop_rawdenoise_get_params(dt_iop_rawdenoise_params_t *p, const int ch, const double mouse_x,
@@ -981,7 +937,7 @@ static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
 static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   c->channel = (dt_iop_rawdenoise_channel_t)page_num;
   gtk_widget_queue_draw(self->widget);
@@ -993,23 +949,16 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   c->stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(c->stack), FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), c->stack, TRUE, TRUE, 0);
 
   c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("all")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("R")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("G")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("B")));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("all")));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("R")));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("G")));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("B")));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
@@ -1029,7 +978,7 @@ void gui_init(dt_iop_module_t *self)
   c->timeout_handle = 0;
   c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
-  c->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  c->box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
 
@@ -1046,11 +995,9 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(rawdenoise_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(rawdenoise_scrolled), self);
 
-  c->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 0.1, 0.001, p->threshold, 3);
-  dt_bauhaus_slider_enable_soft_boundaries(c->threshold, 0.0, 1.0);
-  gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->threshold), TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(c->threshold, NULL, _("noise threshold"));
-  g_signal_connect(G_OBJECT(c->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
+  c->threshold = dt_bauhaus_slider_from_params(self, "threshold");
+  dt_bauhaus_slider_set_soft_max(c->threshold, 0.1);
+  dt_bauhaus_slider_set_digits(c->threshold, 3);
 
   c->label_non_raw = gtk_label_new(_("raw denoising\nonly works for raw images."));
   gtk_widget_set_halign(c->label_non_raw, GTK_ALIGN_START);
@@ -1072,6 +1019,11 @@ void gui_init(dt_iop_module_t *self)
   }
 
   gtk_stack_set_visible_child_name(GTK_STACK(c->stack), self->hide_enable_button ? "non_raw" : "raw");
+
+  // start building top level widget
+  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->stack, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
