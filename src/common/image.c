@@ -2334,6 +2334,24 @@ char *dt_image_get_text_path(const int32_t imgid)
   return dt_image_get_text_path_from_path(image_path);
 }
 
+float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
+{
+  // just check that pointers exist and are initialized
+  if((image_storage) && (image_storage->exif_exposure_bias))
+  {
+    // sanity checks because I don't trust exif tags too much
+    if(image_storage->exif_exposure_bias == NAN ||
+       image_storage->exif_exposure_bias != image_storage->exif_exposure_bias ||
+       isnan(image_storage->exif_exposure_bias) ||
+       CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f) != image_storage->exif_exposure_bias)
+      return 0.0f; // isnan
+    else
+      return CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f);
+  }
+  else
+    return 0.0f;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
