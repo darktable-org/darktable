@@ -1038,49 +1038,34 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
         CameraFile *preview = NULL;
         CameraFile *exif = NULL;
         char *file = g_build_filename(path, filename, NULL);
-        gboolean gotit = FALSE;
+        int gotpreview = 0;
 
-        /*
-         * Fetch image preview if flagged...
-         */
-        if(flags & CAMCTL_IMAGE_PREVIEW_DATA)
+        if(flags & CAMCTL_IMAGE_EXIF_DATA)
         {
+          gp_file_new(&exif);
+          if(gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_EXIF, exif,
+                                c->gpcontext) < GP_OK)
+          {
+            gp_file_free(exif);
+            exif = NULL;
+            dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to retrieve exif of file %sin folder %s\n", filename,path);
+            }
+          }
+
+         /* Fetch image preview if flagged... */
+        if(flags & CAMCTL_IMAGE_PREVIEW_DATA)
+          {
           gp_file_new(&preview);
 
-
-          if (cfi.preview.size > 0)   // we have valid preview data for this file
-          {
-            uint64_t chunksize = cfi.preview.size;
-            char *chunk = malloc(chunksize);
-            if (chunk)
+          if(gotpreview == 0)
             {
-              if (gp_camera_file_read(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW, 0, chunk,
-                    &chunksize, c->gpcontext) == GP_OK)
-              {
-                gp_file_set_data_and_size(preview, (char *)chunk, chunksize);
-                gotit = TRUE;
-              }
-            }
+             if(gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW, preview,
+                 c->gpcontext) == GP_OK)
+               gotpreview = 1;
           }
 
-          // If there has been no preview we try to take a small file
-          if (!gotit && (cfi.file.size > 0 && cfi.file.size < 512000))
-          {
-            uint64_t chunksize = cfi.file.size;
-            char *chunk = malloc(chunksize);
-            if (chunk)
-            {
-              if (gp_camera_file_read(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL, 0, chunk,
-                    &chunksize, c->gpcontext) == GP_OK)
-              {
-                gp_file_set_data_and_size(preview, (char *)chunk, chunksize);
-                gotit = TRUE;
-              }
-            }
-          }
-
-          // Still no preview? get it via the thumbnail generator
-          if (!gotit && (!strncmp(c->active_camera->port, "disk:", 5)))
+          // It's better to get a preview via the thumbnail generator
+          if((gotpreview == 0) && (!strncmp(c->active_camera->port, "disk:", 5)))
           {
             char fullpath[PATH_MAX] = { 0 };
             snprintf(fullpath, sizeof(fullpath), "%s/%s/%s", c->active_camera->port + 5, path, filename);
@@ -1091,53 +1076,49 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
             if(!dt_exif_get_thumbnail(fullpath, &buf, &bufsize, &mime_type))
             {
               gp_file_set_data_and_size(preview, (char *)buf, bufsize);
-              gotit = TRUE;
+              gotpreview = -1;
             }
             free(mime_type);
           }
 
+          if((gotpreview == 0) && (cfi.file.size > 0) && (cfi.file.size < 512000))
+          {
+            if(gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL, preview,
+                 c->gpcontext) == GP_OK)
+              gotpreview = 1;
+          }
+
           // If we couldn't get preview data we clean up
-          if(!gotit)
+          if(gotpreview == 0)
           {
             gp_file_free(preview);
             preview = NULL;
-            dt_print(DT_DEBUG_CAMCTL,
-              "[camera_control] failed to get a preview of %s in folder %s on device\n", filename, path);
-          }
-        }
-
-        if(flags & CAMCTL_IMAGE_EXIF_DATA)
-        {
-          gp_file_new(&exif);
-
-          uint64_t chunksize = 0x200000;
-          char *chunk = calloc(chunksize,sizeof(char));
-          if (chunk)
-          {
-            if (gp_camera_file_read(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_EXIF, 0, chunk,
-                  &chunksize, c->gpcontext) == GP_OK)
-            {
-              gp_file_set_data_and_size(exif, (char *)chunk, chunksize);
-            }
-            else
-            {
-              free(chunk);
-              gp_file_free(exif);
-              exif = NULL;
-            }
-          }
-          if (!exif)
-          {
-            dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to retrieve exif of file %s\n", filename);
+            dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed preview of %s in folder %s\n", filename, path); 
           }
         }
 
         // let's dispatch to host app.. return if we should stop...
         int res = _dispatch_camera_storage_image_filename(c, c->active_camera, file, preview, exif);
 
-        g_free(file);
-        if (preview) gp_file_free(preview);
-        if (exif) gp_file_free(exif); 
+        /* Why can't we just gp_file_free(preview)?
+           1. we may open the dialog with thumb selection multiple times, if we gp_camera_file_get
+              multiple times we oly have valid data the first time, **not** when re-reading.
+              Symptom is not-seeing the thumbs when reopening this dialog.
+           2. Also gphoto internal mem-management get's this wrong leading to double-free or alike.
+              This has been in dt for very long.
+           3. Freeing a gp_file only works if we passed an address & size so the gphoto de-allocation
+              get's it right.
+           4. I tried to use gp_camera_file_read (to allow passing address & size) but after reading
+              gphoto issues it becomes obvious that this doesn't work as it's internals are not implemented
+              for some drivers.
+           5. As the thumbs extractor has preallocated memory gp_file_free works fine, this means it's the
+              better option compare to reading a small file.
+           6. Unfortunately this is basically a gphoto issue we can't solve here so we have to bypass it.
+
+           So what is bad with this?
+           The is a minor memory leak but i prefer this to crashing or not reading thumbs from jpegs. 
+        */
+        if((preview) && (gotpreview == -1)) gp_file_free(preview);
 
         if(!res) return 0;
       }
