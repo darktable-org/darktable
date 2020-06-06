@@ -26,6 +26,7 @@
 #include "common/file_location.h"
 #include "common/iop_profile.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
@@ -51,26 +52,26 @@ DT_MODULE_INTROSPECTION(3, dt_iop_lut3d_params_t)
 
 typedef enum dt_iop_lut3d_colorspace_t
 {
-  DT_IOP_SRGB = 0,
-  DT_IOP_ARGB,
-  DT_IOP_REC709,
-  DT_IOP_LIN_REC709,
-  DT_IOP_LIN_REC2020,
+  DT_IOP_SRGB = 0,    // $DESCRIPTION: "sRGB"
+  DT_IOP_ARGB,        // $DESCRIPTION: "Adobe RGB"
+  DT_IOP_REC709,      // $DESCRIPTION: "gamma rec709 RGB"
+  DT_IOP_LIN_REC709,  // $DESCRIPTION: "linear rec709 RGB"
+  DT_IOP_LIN_REC2020, // $DESCRIPTION: "linear rec2020 RGB"
 } dt_iop_lut3d_colorspace_t;
 
 typedef enum dt_iop_lut3d_interpolation_t
 {
-  DT_IOP_TETRAHEDRAL = 0,
-  DT_IOP_TRILINEAR = 1,
-  DT_IOP_PYRAMID = 2,
+  DT_IOP_TETRAHEDRAL = 0, // $DESCRIPTION: "tetrahedral"
+  DT_IOP_TRILINEAR = 1,   // $DESCRIPTION: "trilinear"
+  DT_IOP_PYRAMID = 2,     // $DESCRIPTION: "pyramid"
 } dt_iop_lut3d_interpolation_t;
 
 typedef struct dt_iop_lut3d_params_t
 {
   char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
-  int colorspace;
-  int interpolation;
-  int nb_keypoints; // >0 indicates the presence of compressed lut
+  dt_iop_lut3d_colorspace_t colorspace; // $DEFAULT: DT_IOP_SRGB $DESCRIPTION: "application color space"
+  dt_iop_lut3d_interpolation_t interpolation; // $DEFAULT: DT_IOP_TETRAHEDRAL
+  int nb_keypoints; // $DEFAULT: 0 >0 indicates the presence of compressed lut
   char c_clut[DT_IOP_LUT3D_MAX_KEYPOINTS*2*3];
   char lutname[DT_IOP_LUT3D_MAX_LUTNAME];
 } dt_iop_lut3d_params_t;
@@ -1111,43 +1112,6 @@ void filepath_set_unix_separator(char *filepath)
     if (filepath[i]=='\\') filepath[i] = '/';
 }
 
-void init(dt_iop_module_t *self)
-{
-  self->global_data = NULL;
-  self->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
-  self->default_enabled = 0;
-  self->params_size = sizeof(dt_iop_lut3d_params_t);
-  self->gui_data = NULL;
-  dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t)
-    { {0}, // no filename
-    DT_IOP_SRGB,
-    DT_IOP_TETRAHEDRAL,
-    0, // not compressed - nb_keypoints = 0
-    {0}, // no keypoints
-    {0} // no lut name
-    };
-
-  memcpy(self->params, &tmp, sizeof(dt_iop_lut3d_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_lut3d_params_t));
-
-#ifdef HAVE_GMIC
-  // make sure the cache dir exists
-  char *cache_dir = g_build_filename(g_get_user_cache_dir(), "gmic", NULL);
-  char *cache_gmic_dir = dt_loc_init_generic(cache_dir, NULL);
-  g_free(cache_dir);
-  g_free(cache_gmic_dir);
-#endif // HAVE_GMIC
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 28; // rgbcurve.cl, from programs.conf
@@ -1158,6 +1122,14 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_lut3d_trilinear = dt_opencl_create_kernel(program, "lut3d_trilinear");
   gd->kernel_lut3d_pyramid = dt_opencl_create_kernel(program, "lut3d_pyramid");
   gd->kernel_lut3d_none = dt_opencl_create_kernel(program, "lut3d_none");
+
+#ifdef HAVE_GMIC
+  // make sure the cache dir exists
+  char *cache_dir = g_build_filename(g_get_user_cache_dir(), "gmic", NULL);
+  char *cache_gmic_dir = dt_loc_init_generic(cache_dir, NULL);
+  g_free(cache_dir);
+  g_free(cache_gmic_dir);
+#endif // HAVE_GMIC
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1496,22 +1468,6 @@ static gboolean mouse_scroll(GtkWidget *view, GdkEventScroll *event, dt_lib_modu
 }
 #endif // HAVE_GMIC
 
-static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-  p->colorspace = dt_bauhaus_combobox_get(widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void interpolation_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-  p->interpolation = dt_bauhaus_combobox_get(widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 // remove root lut folder from path
 static void remove_root_from_path(const char *const lutfolder, char *const filepath)
 {
@@ -1791,25 +1747,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start((GtkBox *)self->widget, sw , TRUE, TRUE, 0);
 #endif // HAVE_GMIC
 
-  g->colorspace = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->colorspace, NULL, _("application color space"));
-  dt_bauhaus_combobox_add(g->colorspace, _("sRGB"));
-  dt_bauhaus_combobox_add(g->colorspace, _("Adobe RGB"));
-  dt_bauhaus_combobox_add(g->colorspace, _("gamma rec709 RGB"));
-  dt_bauhaus_combobox_add(g->colorspace, _("linear rec709 RGB"));
-  dt_bauhaus_combobox_add(g->colorspace, _("linear rec2020 RGB"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->colorspace) , TRUE, TRUE, 0);
+  g->colorspace = dt_bauhaus_combobox_from_params(self, "colorspace");
   gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied"));
-  g_signal_connect(G_OBJECT(g->colorspace), "value-changed", G_CALLBACK(colorspace_callback), self);
 
-  g->interpolation = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->interpolation, NULL, _("interpolation"));
-  dt_bauhaus_combobox_add(g->interpolation, _("tetrahedral"));
-  dt_bauhaus_combobox_add(g->interpolation, _("trilinear"));
-  dt_bauhaus_combobox_add(g->interpolation, _("pyramid"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->interpolation) , TRUE, TRUE, 0);
+  g->interpolation = dt_bauhaus_combobox_from_params(self, "interpolation");
   gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method"));
-  g_signal_connect(G_OBJECT(g->interpolation), "value-changed", G_CALLBACK(interpolation_callback), self);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED,
                             G_CALLBACK(module_moved_callback), self);
