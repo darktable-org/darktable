@@ -28,6 +28,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -45,15 +46,13 @@ DT_MODULE_INTROSPECTION(1, dt_iop_highpass_params_t)
 
 typedef struct dt_iop_highpass_params_t
 {
-  float sharpness;
-  float contrast;
+  float sharpness; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
+  float contrast;  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "contrast boost"
 } dt_iop_highpass_params_t;
 
 typedef struct dt_iop_highpass_gui_data_t
 {
-  GtkBox *vbox1, *vbox2;
-  GtkWidget *label1, *label2; // sharpness,contrast
-  GtkWidget *scale1, *scale2; // sharpness,contrast
+  GtkWidget *sharpness, *contrast;
 } dt_iop_highpass_gui_data_t;
 
 typedef struct dt_iop_highpass_data_t
@@ -102,8 +101,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_highpass_gui_data_t *g =
     (dt_iop_highpass_gui_data_t*)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "sharpness", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "contrast boost", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "sharpness", GTK_WIDGET(g->sharpness));
+  dt_accel_connect_slider_iop(self, "contrast boost", GTK_WIDGET(g->contrast));
 }
 
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -386,25 +385,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-static void sharpness_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
-  p->sharpness = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void contrast_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
-  p->contrast = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -429,23 +409,10 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_highpass_gui_data_t *g = (dt_iop_highpass_gui_data_t *)self->gui_data;
-  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)module->params;
-  dt_bauhaus_slider_set(g->scale1, p->sharpness);
-  dt_bauhaus_slider_set(g->scale2, p->contrast);
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_highpass_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_highpass_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_highpass_params_t);
-  module->gui_data = NULL;
-  dt_iop_highpass_params_t tmp = (dt_iop_highpass_params_t){ 50, 50 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_highpass_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_highpass_params_t));
+  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
+  dt_bauhaus_slider_set(g->sharpness, p->sharpness);
+  dt_bauhaus_slider_set(g->contrast, p->contrast);
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -458,15 +425,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_highpass_hblur = dt_opencl_create_kernel(program, "highpass_hblur");
   gd->kernel_highpass_vblur = dt_opencl_create_kernel(program, "highpass_vblur");
   gd->kernel_highpass_mix = dt_opencl_create_kernel(program, "highpass_mix");
-}
-
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -485,26 +443,17 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_highpass_gui_data_t));
   dt_iop_highpass_gui_data_t *g = (dt_iop_highpass_gui_data_t *)self->gui_data;
-  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  /* sharpness */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->sharpness, 2);
-  dt_bauhaus_widget_set_label(g->scale1, NULL, _("sharpness"));
-  dt_bauhaus_slider_set_format(g->scale1, "%.0f%%");
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->scale1, _("the sharpness of highpass filter"));
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(sharpness_callback), self);
+  g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
+  dt_bauhaus_slider_set_format(g->sharpness, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->sharpness, _("the sharpness of highpass filter"));
 
-  /* contrast boost */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->contrast, 2);
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("contrast boost"));
-  dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->scale2, _("the contrast of highpass filter"));
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(contrast_callback), self);
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  dt_bauhaus_slider_set_format(g->contrast, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->contrast, _("the contrast of highpass filter"));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
