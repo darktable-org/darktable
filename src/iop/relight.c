@@ -29,6 +29,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/color_picker_proxy.h"
@@ -43,9 +44,9 @@ DT_MODULE_INTROSPECTION(1, dt_iop_relight_params_t)
 
 typedef struct dt_iop_relight_params_t
 {
-  float ev;
-  float center;
-  float width;
+  float ev;     // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.33 $DESCRIPTION: "exposure"
+  float center; // $DEFAULT: 0.0
+  float width; // $MIN: 2.0 $MAX: 10.0 $DEFAULT: 4.0
 } dt_iop_relight_params_t;
 
 void init_presets(dt_iop_module_so_t *self)
@@ -64,11 +65,9 @@ void init_presets(dt_iop_module_so_t *self)
 
 typedef struct dt_iop_relight_gui_data_t
 {
-  GtkBox *vbox1, *vbox2;                // left and right controlboxes
-  GtkLabel *label1, *label2, *label3;   // ev, center, width
-  GtkWidget *scale1, *scale2;           // ev,width
-  GtkDarktableGradientSlider *gslider1; // center
-  GtkWidget *tbutton1;                  // Pick median lightness
+  GtkWidget *exposure, *width;        // ev,width
+  GtkDarktableGradientSlider *center; // center
+  GtkWidget *colorpicker;             // Pick median lightness
 } dt_iop_relight_gui_data_t;
 
 typedef struct dt_iop_relight_data_t
@@ -114,8 +113,8 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "width", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->exposure));
+  dt_accel_connect_slider_iop(self, "width", GTK_WIDGET(g->width));
 }
 
 
@@ -213,37 +212,14 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void ev_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
-  p->ev = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void width_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
-  p->width = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 static void center_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   dt_iop_color_picker_reset(self, TRUE);
-
-  {
-    p->center = dtgtk_gradient_slider_get_value(slider);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+  p->center = dtgtk_gradient_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -275,31 +251,10 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)module->params;
-  dt_bauhaus_slider_set(g->scale1, p->ev);
-  dt_bauhaus_slider_set(g->scale2, p->width);
-  dtgtk_gradient_slider_set_value(g->gslider1, p->center);
+  dt_bauhaus_slider_set(g->exposure, p->ev);
+  dt_bauhaus_slider_set(g->width, p->width);
+  dtgtk_gradient_slider_set_value(g->center, p->center);
 }
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_relight_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_relight_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_relight_params_t);
-  module->gui_data = NULL;
-  dt_iop_relight_params_t tmp = (dt_iop_relight_params_t){ 0.33, 0, 4 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_relight_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_relight_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -317,52 +272,39 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     mean = min = max = NAN;
   }
 
-  dtgtk_gradient_slider_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(g->gslider1), mean, min, max);
+  dtgtk_gradient_slider_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(g->center), mean, min, max);
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_relight_gui_data_t));
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
-  dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  /* exposure */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.05, p->ev, 2);
-  dt_bauhaus_slider_set_format(g->scale1, _("%.2f EV"));
-  dt_bauhaus_widget_set_label(g->scale1, NULL, _("exposure"));
-  gtk_widget_set_tooltip_text(g->scale1, _("the fill-light in EV"));
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(ev_callback), self);
-  /* width*/
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 2, 10, 0.5, p->width, 1);
-  dt_bauhaus_slider_set_format(g->scale2, "%.1f");
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("width"));
-  /* xgettext:no-c-format */
-  gtk_widget_set_tooltip_text(g->scale2, _("width of fill-light area defined in zones"));
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(width_callback), self);
+  g->exposure = dt_bauhaus_slider_from_params(self, "ev");
+  dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
+  gtk_widget_set_tooltip_text(g->exposure, _("the fill-light in EV"));
 
   /* lightnessslider */
-  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-
+  GtkBox *sliderbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 #define NEUTRAL_GRAY 0.5
   static const GdkRGBA _gradient_L[]
       = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
-  g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color_and_name(_gradient_L[0], _gradient_L[1], "gslider-relight"));
+      
+  g->center = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color_and_name(_gradient_L[0], _gradient_L[1], "gslider-relight"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->center), _("select the center of fill-light\nctrl+click to select an area"));
+  g_signal_connect(G_OBJECT(g->center), "value-changed", G_CALLBACK(center_callback), self);
+  gtk_box_pack_start(sliderbox, GTK_WIDGET(g->center), TRUE, TRUE, 0);
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, GTK_WIDGET(sliderbox));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->colorpicker), _("toggle tool for picking median lightness in image"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sliderbox), TRUE, FALSE, 0);
 
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->gslider1), _("select the center of fill-light\nctrl+click to select an area"));
-  g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(center_callback), self);
-  gtk_box_pack_start(hbox, GTK_WIDGET(g->gslider1), TRUE, TRUE, 0);
-  g->tbutton1 = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, GTK_WIDGET(hbox));
-
-  /* add controls to widget ui */
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, FALSE, 0);
-
-
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->tbutton1), _("toggle tool for picking median lightness in image"));
+  g->width = dt_bauhaus_slider_from_params(self, "width");
+  dt_bauhaus_slider_set_format(g->width, "%.1f");
+  dt_bauhaus_slider_set_step(g->width, 0.5);
+  gtk_widget_set_tooltip_text(g->width, _("width of fill-light area defined in zones"));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
