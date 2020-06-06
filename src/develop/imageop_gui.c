@@ -101,7 +101,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     int digits = 2;
     float step = 0;
 
-    const float top = fmaxf(fabsf(min),fabsf(max));
+    const float top = fminf(max-min, fmaxf(fabsf(min),fabsf(max)));
     if (top>=100)
     {
       step = 1.f;
