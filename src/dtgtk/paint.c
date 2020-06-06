@@ -1284,7 +1284,7 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
 
 void dtgtk_cairo_paint_colorpicker(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1.05, 0, -0.05)
+  PREAMBLE(1, 0, 0.05)
 
   /* draw pipette */
 
@@ -1316,7 +1316,7 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr, gint x, gint y, gint w, gint h, 
 
 void dtgtk_cairo_paint_colorpicker_set_values(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1.05, 0, -0.05)
+  PREAMBLE(1, 0, 0.05)
 
   /* draw pipette */
 
