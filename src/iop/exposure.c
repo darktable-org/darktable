@@ -49,7 +49,7 @@
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(1e-20f, x))
 
-DT_MODULE_INTROSPECTION(5, dt_iop_exposure_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_exposure_params_t)
 
 typedef enum dt_iop_exposure_mode_t
 {
@@ -67,6 +67,7 @@ typedef struct dt_iop_exposure_params_t
   float black;
   float exposure;
   float deflicker_percentile, deflicker_target_level;
+  int compensate_exposure_bias;
 } dt_iop_exposure_params_t;
 
 typedef struct dt_iop_exposure_gui_data_t
@@ -82,6 +83,7 @@ typedef struct dt_iop_exposure_gui_data_t
   uint32_t *deflicker_histogram; // used to cache histogram of source file
   dt_dev_histogram_stats_t deflicker_histogram_stats;
   GtkLabel *deflicker_used_EC;
+  GtkWidget *compensate_exposure_bias;
   float deflicker_computed_exposure;
   dt_pthread_mutex_t lock;
 } dt_iop_exposure_gui_data_t;
@@ -215,6 +217,30 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     // but deflicker still was not publicly released at that point
     return 0;
   }
+  if(old_version == 5 && new_version == 6)
+  {
+    typedef struct dt_iop_exposure_params_v5_t
+    {
+      dt_iop_exposure_mode_t mode;
+      float black;
+      float exposure;
+      float deflicker_percentile, deflicker_target_level;
+    } dt_iop_exposure_params_v5_t;
+
+    dt_iop_exposure_params_v5_t *o = (dt_iop_exposure_params_v5_t *)old_params;
+    dt_iop_exposure_params_t *n = (dt_iop_exposure_params_t *)new_params;
+    dt_iop_exposure_params_t *d = (dt_iop_exposure_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->mode = o->mode;
+    n->black = o->black;
+    n->exposure = o->exposure;
+    n->deflicker_percentile = o->deflicker_percentile;
+    n->deflicker_target_level = o->deflicker_target_level;
+    n->compensate_exposure_bias = FALSE;
+    return 0;
+  }
   return 1;
 }
 
@@ -227,7 +253,8 @@ void init_presets (dt_iop_module_so_t *self)
                                                          .black = 0.0f,
                                                          .exposure = 0.0f,
                                                          .deflicker_percentile = 50.0f,
-                                                         .deflicker_target_level = -4.0f },
+                                                         .deflicker_target_level = -4.0f,
+                                                         .compensate_exposure_bias = FALSE},
                              sizeof(dt_iop_exposure_params_t), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
@@ -449,13 +476,37 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 }
 #endif
 
+
+static float get_exposure_bias(const struct dt_iop_module_t *self)
+{
+  float bias = 0.0f;
+
+  // just check that pointers exist and are initialized
+  if(&(self->dev->image_storage) && &(self->dev->image_storage.exif_exposure_bias))
+    bias = self->dev->image_storage.exif_exposure_bias;
+
+  // sanity checks because I don't trust exif tags too much
+  if(!isnan(bias))
+    return CLAMP(bias, -5.0f, 5.0f);
+  else
+    return 0.0f;
+}
+
+
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)p1;
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
 
-  d->params = *p;
+  d->params.black = p->black;
+  d->params.exposure = p->exposure;
+  d->params.deflicker_percentile = p->deflicker_percentile;
+  d->params.deflicker_target_level = p->deflicker_target_level;
+
+  // If exposure bias compensation has been required, add it on top of user exposure correction
+  if(p->compensate_exposure_bias)
+    d->params.exposure -= get_exposure_bias(self);
 
   d->deflicker = 0;
 
@@ -504,6 +555,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(p->mode)));
 
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);
   dt_bauhaus_slider_set_soft(g->black, p->black);
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
@@ -560,13 +612,20 @@ void reload_defaults(dt_iop_module_t *module)
                                                             .black = 0.0f,
                                                             .exposure = 0.0f,
                                                             .deflicker_percentile = 50.0f,
-                                                            .deflicker_target_level = -4.0f
-  };
+                                                            .deflicker_target_level = -4.0f,
+                                                            .compensate_exposure_bias = TRUE};
 
-  // Init exposure with EXIF exposure bias
-  tmp.exposure = -(module->dev->image_storage.exif_exposure_bias);
-  if(tmp.exposure != 0.0f)
-    module->default_enabled = TRUE;
+  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage))
+  {
+    // if is raw image
+    if(strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
+    {
+      // For scene-referred workflow, since filmic doesn't brighten as base curve does,
+      // we need an initial exposure boost. This might be too much in some cases but…
+      tmp.exposure = 1.0f;
+      module->default_enabled = TRUE;
+    }
+  }
 
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
@@ -656,6 +715,13 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
   ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
   --darktable.gui->reset;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void compensate_exposure_bias_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  p->compensate_exposure_bias = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -880,6 +946,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
+  g->compensate_exposure_bias = gtk_check_button_new_with_label(g_strdup_printf(_("compensate camera exposure bias (%.1f EV)"),
+                                                                                  get_exposure_bias(self)));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);
+  gtk_widget_set_tooltip_text(g->compensate_exposure_bias, _("automatically remove the camera exposure bias\n"
+                                                             "this is useful if you exposed the image to the right."));
+  gtk_box_pack_start(GTK_BOX(vbox_manual), g->compensate_exposure_bias, TRUE, TRUE, 0);
+
   g->exposure = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, .02, p->exposure, 3);
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
@@ -945,6 +1018,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->black), "value-changed", G_CALLBACK(black_callback), self);
   g_signal_connect(G_OBJECT(g->exposure), "value-changed", G_CALLBACK(exposure_callback), self);
+  g_signal_connect(G_OBJECT(g->compensate_exposure_bias), "toggled", G_CALLBACK(compensate_exposure_bias_callback),
+                   self);
   g_signal_connect(G_OBJECT(g->autoexpp), "value-changed", G_CALLBACK(autoexpp_callback), self);
   g_signal_connect(G_OBJECT(g->deflicker_percentile), "value-changed", G_CALLBACK(deflicker_params_callback),
                    self);
