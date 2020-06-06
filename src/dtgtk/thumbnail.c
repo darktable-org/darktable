@@ -1254,10 +1254,10 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
       int w = 0;
       int h = 0;
       pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
-      gtk_widget_set_size_request(thumb->w_bottom, width, 3.0 * r1 + h + 2 * margin_b);
+      gtk_widget_set_size_request(thumb->w_bottom, width, 2.5 * r1 + h + 2 * margin_b);
     }
     else
-      gtk_widget_set_size_request(thumb->w_bottom, width, 2.0 * r1 + 2 * margin_b);
+      gtk_widget_set_size_request(thumb->w_bottom, width, 1.75 * r1 + 2 * margin_b);
 
     gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0.5);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.03);
@@ -1265,7 +1265,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
 
     // reject icon
-    gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_size_request(thumb->w_reject, 2.5 * r1, 2.5 * r1);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
     int pos = MAX(margin_l, (width - 15.0 * r1) * 0.5 - 4 * 3.0 * r1);
     gtk_widget_set_margin_start(thumb->w_reject, pos);
@@ -1274,7 +1274,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // stars
     for(int i = 0; i < MAX_STARS; i++)
     {
-      gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
+      gtk_widget_set_size_request(thumb->w_stars[i], 2.5 * r1, 2.5 * r1);
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_margin_bottom(thumb->w_stars[i], margin_b);
       gtk_widget_set_margin_start(thumb->w_stars[i],
@@ -1282,7 +1282,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     }
 
     // the color labels
-    gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_size_request(thumb->w_color, 2.5 * r1, 2.5 * r1);
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_START);
     gtk_widget_set_margin_bottom(thumb->w_color, margin_b);
