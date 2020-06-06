@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/image.h"
 #include "common/iop_profile.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
@@ -2326,13 +2327,16 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_filmicrgb_params_t);
   module->gui_data = NULL;
+}
 
+void reload_defaults(dt_iop_module_t *module)
+{
   dt_iop_filmicrgb_params_t tmp
     = (dt_iop_filmicrgb_params_t){
                                  .grey_point_source   = 18.45,  // source grey
-                                 .black_point_source  = -10.55f,// source black
-                                 .white_point_source  = 5.45f,  // source white
-                                 .reconstruct_threshold = -0.5f,
+                                 .black_point_source  = -8.00f, // source black
+                                 .white_point_source  = 4.00f,  // source white
+                                 .reconstruct_threshold = -1.0f,
                                  .reconstruct_feather   = 3.0f,
                                  .reconstruct_bloom_vs_details = 100.0f,
                                  .reconstruct_grey_vs_color    = 100.0f,
@@ -2344,7 +2348,7 @@ void init(dt_iop_module_t *module)
                                  .output_power        = 4.0f,   // target power (~ gamma)
                                  .latitude            = 33.0f,  // intent latitude
                                  .contrast            = 1.50f,  // intent contrast
-                                 .saturation          = 5.0f,   // intent saturation
+                                 .saturation          = 10.0f,   // intent saturation
                                  .balance             = 0.0f,  // balance shadows/highlights
                                  .preserve_color      = DT_FILMIC_METHOD_POWER_NORM, // run the saturated variant
                                  .shadows             = DT_FILMIC_CURVE_POLY_4,
@@ -2354,6 +2358,27 @@ void init(dt_iop_module_t *module)
                                  .custom_grey         = FALSE,
                                  .high_quality_reconstruction = 1
                               };
+
+  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage))
+  {
+    // if is raw image
+    if(strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
+    {
+      // For scene-referred workflow, auto-enable and adjust based on exposure
+      // TODO: fetch actual exposure in module, don't assume 1.
+      const float exposure = 1.f - dt_image_get_exposure_bias(&module->dev->image_storage);
+
+      // As global exposure increases, white exposure increases faster than black
+      // this is probably because raw black/white points offsets the lower bound of the dynamic range to 0
+      // so exposure compensation actually increases the dynamic range too (stretches only white).
+      tmp.black_point_source += 0.5f * exposure;
+      tmp.white_point_source += 0.8f * exposure;
+      tmp.output_power = logf(tmp.grey_point_target / 100.0f) / logf(-tmp.black_point_source / (tmp.white_point_source - tmp.black_point_source));
+
+      module->default_enabled = TRUE;
+    }
+  }
+
   memcpy(module->params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
 }
