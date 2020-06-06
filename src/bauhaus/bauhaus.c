@@ -2241,6 +2241,19 @@ float dt_bauhaus_slider_get_step(GtkWidget *widget)
   return d->step;
 }
 
+void dt_bauhaus_slider_set_feedback(GtkWidget *widget, int feedback)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  d->fill_feedback = feedback;
+
+  gtk_widget_queue_draw(widget);
+}
+
 void dt_bauhaus_slider_reset(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
