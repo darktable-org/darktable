@@ -57,6 +57,7 @@ typedef struct dt_lib_export_t
   GtkWidget *export_masks;
   GtkWidget *metadata_button;
   char *metadata_export;
+  guint timeout_handle;
 } dt_lib_export_t;
 
 char *dt_lib_export_metadata_configuration_dialog(char *list, const gboolean ondisk);
@@ -81,6 +82,66 @@ const char **views(dt_lib_module_t *self)
 uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
+}
+
+static void _update(dt_lib_module_t *self)
+{
+  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+
+  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  const guint act_on_cnt = g_list_length(imgs);
+  g_list_free(imgs);
+
+  char *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
+  char *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
+  const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
+  const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
+
+  g_free(format_name);
+  g_free(storage_name);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->export_button), act_on_cnt > 0 && format_index != -1 && storage_index != -1);
+
+  if(d->timeout_handle)
+  {
+    g_source_remove(d->timeout_handle);
+    d->timeout_handle = 0;
+  }
+}
+
+static gboolean _postponed_update(gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+
+  // timeout handle clearing is handled by update code
+  _update(self);
+
+  return FALSE;
+}
+
+static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                        int next, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
+static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
+{
+  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
+
+  if(d->timeout_handle)
+  {
+    // here we're making sure the event fires at last hover
+    // and we won't have avalanche of events in the mean time.
+    g_source_remove(d->timeout_handle);
+  }
+  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
 }
 
 static void export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
@@ -226,6 +287,8 @@ void gui_reset(dt_lib_module_t *self)
   if(mformat) mformat->gui_reset(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   if(mstorage) mstorage->gui_reset(mstorage);
+
+  _update(self);
 }
 
 static void set_format_by_name(dt_lib_export_t *d, const char *name)
@@ -541,6 +604,7 @@ static void metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
+  d->timeout_handle = 0;
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
@@ -747,6 +811,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(self->widget, TRUE);
 
   d->metadata_export = NULL;
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_collection_updated_callback), self);
+
   self->gui_reset(self);
 }
 
@@ -758,6 +830,13 @@ void gui_cleanup(dt_lib_module_t *self)
 
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(on_storage_list_changed), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_export_styles_changed_callback), self);
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+
+  if(d->timeout_handle)
+    g_source_remove(d->timeout_handle);
 
   GList *it = g_list_first(darktable.imageio->plugins_storage);
   if(it != NULL) do
