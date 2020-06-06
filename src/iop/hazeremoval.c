@@ -40,6 +40,7 @@
 #include "common/guided_filter.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
 #include "iop/iop_api.h"
@@ -64,8 +65,8 @@ typedef float rgb_pixel[3];
 
 typedef struct dt_iop_hazeremoval_params_t
 {
-  float strength;
-  float distance;
+  float strength; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.2
+  float distance; // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.2
 } dt_iop_hazeremoval_params_t;
 
 // types  dt_iop_hazeremoval_params_t and dt_iop_hazeremoval_data_t are
@@ -172,46 +173,6 @@ void cleanup_global(dt_iop_module_so_t *self)
 }
 
 
-void init(dt_iop_module_t *self)
-{
-  self->params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
-  self->default_enabled = 0;
-  self->params_size = sizeof(dt_iop_hazeremoval_params_t);
-  self->gui_data = NULL;
-  dt_iop_hazeremoval_params_t tmp = (dt_iop_hazeremoval_params_t){ 0.2f, 0.2f };
-  memcpy(self->params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
-}
-
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
-}
-
-
-static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_hazeremoval_params_t *p = self->params;
-  p->strength = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
-static void distance_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_hazeremoval_params_t *p = (dt_iop_hazeremoval_params_t *)self->params;
-  p->distance = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
@@ -233,7 +194,6 @@ void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_hazeremoval_gui_data_t));
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
-  dt_iop_hazeremoval_params_t *p = (dt_iop_hazeremoval_params_t *)self->params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->distance_max = NAN;
@@ -245,17 +205,13 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->strength = dt_bauhaus_slider_new_with_range(self, -1, 1, 0.01, p->strength, 2);
-  dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
   gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
 
-  g->distance = dt_bauhaus_slider_new_with_range(self, 0, 1, 0.005, p->distance, 3);
-  dt_bauhaus_widget_set_label(g->distance, NULL, _("distance"));
+  g->distance = dt_bauhaus_slider_from_params(self, "distance");
+  dt_bauhaus_slider_set_step(g->distance, 0.005);
+  dt_bauhaus_slider_set_digits(g->distance, 3);
   gtk_widget_set_tooltip_text(g->distance, _("limit haze removal up to a specific spatial depth"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->distance), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->distance), "value-changed", G_CALLBACK(distance_callback), self);
 }
 
 
