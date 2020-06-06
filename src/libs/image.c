@@ -208,7 +208,7 @@ static void _update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->cache_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->uncache_button), act_on_cnt > 0);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->group_button), selected_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->group_button), selected_cnt > 1);
   gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), selected_cnt > 0);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->copy_metadata_button), act_on_cnt == 1);
