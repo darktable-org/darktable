@@ -462,14 +462,6 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
 }
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)
 {
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
