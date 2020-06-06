@@ -430,14 +430,16 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     gchar buffer[1024];
 
     // substitute $(WATERMARK_TEXT)
-    g_strlcpy(buffer, data->text, sizeof(buffer));
-    svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
-    if(svgdoc != svgdata)
+    if(data->text[0])
     {
-      g_free(svgdata);
-      svgdata = svgdoc;
+      g_strlcpy(buffer, data->text, sizeof(buffer));
+      svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
+      if(svgdoc != svgdata)
+      {
+        g_free(svgdata);
+        svgdata = svgdoc;
+      }
     }
-
     // apply font style substitutions
     PangoFontDescription *font = pango_font_description_from_string(data->font);
     const PangoStyle font_style = pango_font_description_get_style(font);
