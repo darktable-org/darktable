@@ -58,8 +58,10 @@
 @define-color button_border @grey_60;
 @define-color button_bg @grey_55;
 @define-color button_fg @grey_90;
-@define-color button_checked_bg @grey_75;
+@define-color button_checked_bg @grey_70;
 @define-color button_checked_fg @grey_100;
+@define-color button_hover_bg @grey_80;
+@define-color button_hover_fg @grey_25;
 
 /* text fields */
 @define-color field_bg @grey_45;
