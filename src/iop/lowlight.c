@@ -26,6 +26,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
@@ -46,8 +47,9 @@ DT_MODULE_INTROSPECTION(1, dt_iop_lowlight_params_t)
 
 typedef struct dt_iop_lowlight_params_t
 {
-  float blueness;
-  float transition_x[DT_IOP_LOWLIGHT_BANDS], transition_y[DT_IOP_LOWLIGHT_BANDS];
+  float blueness; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "blue shift"
+  float transition_x[DT_IOP_LOWLIGHT_BANDS]; 
+  float transition_y[DT_IOP_LOWLIGHT_BANDS]; // $DEFAULT: 0.5
 } dt_iop_lowlight_params_t;
 
 typedef struct dt_iop_lowlight_gui_data_t
@@ -299,25 +301,13 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_lowlight_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_lowlight_params_t));
-  module->default_enabled = 0; // we're a rather slow and rare op.
-  module->params_size = sizeof(dt_iop_lowlight_params_t);
-  module->gui_data = NULL;
-  dt_iop_lowlight_params_t tmp;
-  for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++) tmp.transition_x[k] = k / (DT_IOP_LOWLIGHT_BANDS - 1.0);
-  for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++) tmp.transition_y[k] = 0.5f;
-  tmp.blueness = 0.0f;
-  memcpy(module->params, &tmp, sizeof(dt_iop_lowlight_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_lowlight_params_t));
-}
+  dt_iop_default_init(module);
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  dt_iop_lowlight_params_t *d = module->default_params;
+
+  for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++) d->transition_x[k] = k / (DT_IOP_LOWLIGHT_BANDS - 1.0);
+
+  memcpy(module->params, module->default_params, sizeof(dt_iop_lowlight_params_t));
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -837,15 +827,6 @@ static gboolean lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoi
   return TRUE;
 }
 
-static void blueness_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-  p->blueness = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_lowlight_gui_data_t));
@@ -882,14 +863,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(lowlight_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(lowlight_scrolled), self);
 
-  c->scale_blueness = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->blueness, 2);
-  dt_bauhaus_widget_set_label(c->scale_blueness, NULL, _("blue shift"));
+  c->scale_blueness = dt_bauhaus_slider_from_params(self, "blueness");
   dt_bauhaus_slider_set_format(c->scale_blueness, "%0.2f%%");
   gtk_widget_set_tooltip_text(c->scale_blueness, _("blueness in shadows"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(c->scale_blueness), "value-changed", G_CALLBACK(blueness_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
