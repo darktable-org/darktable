@@ -1506,6 +1506,7 @@ gboolean dt_history_copy(int imgid)
   if(dt_dev_is_current_image(darktable.develop, imgid)) dt_dev_write_history(darktable.develop);
   return TRUE;
 }
+
 gboolean dt_history_copy_parts(int imgid)
 {
   if(dt_history_copy(imgid))
@@ -1517,6 +1518,7 @@ gboolean dt_history_copy_parts(int imgid)
   else
     return FALSE;
 }
+
 gboolean dt_history_paste_on_list(GList *list, gboolean undo)
 {
   if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
