@@ -48,6 +48,7 @@ typedef struct dt_lib_metadata_t
   GtkWidget *config_button;
   gint line_height;
   gboolean init_layout;
+  guint timeout_handle;
 } dt_lib_metadata_t;
 
 const char *name(dt_lib_module_t *self)
@@ -200,8 +201,35 @@ static void _update(dt_lib_module_t *self, gboolean early_bark_out)
     d->metadata_list[i] = metadata[keyid];
     _fill_text_view(i, metadata_count[keyid], self);
   }
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->apply_button), imgs_count > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->clear_button), imgs_count > 0);
+
+  if(d->timeout_handle)
+  {
+    g_source_remove(d->timeout_handle);
+    d->timeout_handle = 0;
+  }
 }
 
+static gboolean _postponed_update(gpointer data)
+{
+  // timeout handle clearing is handled by update code
+  _update((dt_lib_module_t *)data, FALSE);
+
+  return FALSE;
+}
+
+static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  _update(self, FALSE);
+}
+
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                        int next, dt_lib_module_t *self)
+{
+  _update(self, FALSE);
+}
 
 static gboolean _draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 {
@@ -370,7 +398,17 @@ static void _update_layout(dt_lib_module_t *self)
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
   /* lets trigger an expose for a redraw of widget */
-  _update(self, FALSE);
+
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
+
+  if(d->timeout_handle)
+  {
+    // here we're making sure the event fires at last hover
+    // and we won't have avalanche of events in the mean time.
+    g_source_remove(d->timeout_handle);
+  }
+  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
 }
 
 static gboolean _metadata_list_size_changed(GtkWidget *window, GdkEvent  *event, GtkCellRenderer *renderer)
@@ -659,6 +697,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->imgsel = -1;
+  d->timeout_handle = 0;
 
   GtkGrid *grid = (GtkGrid *)gtk_grid_new();
   self->widget = GTK_WIDGET(grid);
@@ -754,6 +793,12 @@ void gui_init(dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
+  // and 2 other interesting signals:
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_collection_updated_callback), self);
+
   _update(self, FALSE);
 }
 
@@ -761,6 +806,12 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+
+  if(d->timeout_handle)
+    g_source_remove(d->timeout_handle);
+
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->textview[i]));
