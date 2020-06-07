@@ -665,6 +665,14 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new(gint positions)
   return (GtkWidget *)gslider;
 }
 
+GtkWidget *dtgtk_gradient_slider_multivalue_new_with_name(gint positions, gchar *name)
+{
+  GtkWidget *widget = GTK_WIDGET(dtgtk_gradient_slider_multivalue_new(positions));
+  gtk_widget_set_name(widget, name);
+
+  return widget;
+}
+
 GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkRGBA start, GdkRGBA end, gint positions)
 {
   assert(positions <= GRADIENT_SLIDER_MAX_POSITIONS);
@@ -689,6 +697,14 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkRGBA start, GdkRGB
   gtk_style_context_add_class(context, "dt_gslider_multivalue");
 
   return (GtkWidget *)gslider;
+}
+
+GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color_and_name(GdkRGBA start, GdkRGBA end, gint positions, gchar *name)
+{
+  GtkWidget *widget = GTK_WIDGET(dtgtk_gradient_slider_multivalue_new_with_color(start, end, positions));
+  gtk_widget_set_name(widget, name);
+
+  return widget;
 }
 
 void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslider, gfloat position,
@@ -862,6 +878,14 @@ GtkWidget *dtgtk_gradient_slider_new()
   return gslider;
 }
 
+GtkWidget *dtgtk_gradient_slider_new_with_name(gchar *name)
+{
+  GtkWidget *widget = GTK_WIDGET(dtgtk_gradient_slider_new());
+  gtk_widget_set_name(widget, name);
+
+  return widget;
+}
+
 GtkWidget *dtgtk_gradient_slider_new_with_color(GdkRGBA start, GdkRGBA end)
 {
   GtkWidget *gslider = dtgtk_gradient_slider_multivalue_new_with_color(start, end, 1);
@@ -870,6 +894,14 @@ GtkWidget *dtgtk_gradient_slider_new_with_color(GdkRGBA start, GdkRGBA end)
   gtk_style_context_add_class(context, "dt_gslider");
 
   return gslider;
+}
+
+GtkWidget *dtgtk_gradient_slider_new_with_color_and_name(GdkRGBA start, GdkRGBA end, gchar *name)
+{
+  GtkWidget *widget = GTK_WIDGET(dtgtk_gradient_slider_new_with_color(start, end));
+  gtk_widget_set_name(widget, name);
+
+  return widget;
 }
 
 void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider, gfloat position, GdkRGBA color)
