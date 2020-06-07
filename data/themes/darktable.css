@@ -133,16 +133,16 @@
 @define-color lighttable_bg_font_color @grey_75;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_30;
+@define-color thumbnail_font_color @grey_25;
 @define-color thumbnail_bg_color @grey_40;
-@define-color thumbnail_star_bg_color @grey_45;
+@define-color thumbnail_star_bg_color @grey_50;
 @define-color thumbnail_fg_color @grey_60;
 @define-color thumbnail_bg50_color @grey_100;
 @define-color thumbnail_infos_color @grey_20;
-@define-color thumbnail_selected_bg_color @grey_50;
-@define-color thumbnail_hover_bg_color @grey_85;
+@define-color thumbnail_selected_bg_color @grey_45;
+@define-color thumbnail_hover_bg_color @grey_80;
 @define-color filmstrip_bg_color @darkroom_bg_color;
-@define-color thumbnail_localcopy_color @grey_75;
+@define-color thumbnail_localcopy_color @grey_70;
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
@@ -286,6 +286,7 @@ textview
 {
   border-radius: 3px;
 }
+
 /* Default text fields and text boxes */
 entry,
 textview
@@ -1880,9 +1881,19 @@ radiobutton label
   padding: 0.2em;
 }
 
+radiobutton label
+{
+  margin: 2px;
+}
+
 radiobutton radio
 {
   padding: 0.25em;
+}
+
+spinbutton>button
+{
+  margin: 2px 1px;
 }
 
   /*** for following settings line, remember which popover mode name and related line on popover menu
@@ -1903,12 +1914,12 @@ radiobutton radio
 #thumb_image
 {
   border: none;
-  margin: 3px; /* not real pixels, but percentage of the thumb size */
+  margin: 2px; /* not real pixels, but percentage of the thumb size */
 }
 
 .dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
 {
-  margin: 3px;
+  margin: 1.5px;
 }
 
 #thumb_main:active #thumb_image
@@ -1944,17 +1955,12 @@ radiobutton radio
   border-right-width: 2px;
 }
 
-/* Set background on most modes of thumbnails overlays */
+/* Set background on thumbnails hover overlays */
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
-.dt_overlays_mixed #thumb_main:hover #thumb_bottom
-{
-  background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
-}
-
-/* Set specific background on hover mode to let show most of the image and be sure bottom infos are visible on vertical or square images */
+.dt_overlays_mixed #thumb_main:hover #thumb_bottom,
 .dt_overlays_hover #thumb_main:hover #thumb_bottom
 {
-  background-image: linear-gradient(0deg, rgba(241, 241, 241, 0.8) 0%, rgba(241, 241, 241, 0.8) 65%,rgba(241, 241, 241, 0) 100%);
+  background-image: linear-gradient(0deg, rgba(198, 198, 198, 0.7) 0%, rgba(198, 198, 198, 0.7) 90%,rgba(198, 198, 198, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
 }
 
 /* Set background on block infos in last overlay mode and culling/preview modes shown with mouse hover */
@@ -2085,16 +2091,6 @@ radiobutton radio
   color: @thumbnail_fg_color;
 }
 
-.dt_overlays_hover #thumb_main:hover #thumb_group,
-.dt_overlays_hover #thumb_main:hover #thumb_altered,
-.dt_overlays_hover #thumb_main:hover #thumb_audio,
-.dt_overlays_hover_extended #thumb_main:hover #thumb_group,
-.dt_overlays_hover_extended #thumb_main:hover #thumb_altered,
-.dt_overlays_hover_extended #thumb_main:hover #thumb_audio
-{
-  color: transparent;
-}
-
 /* Set local copy mark */
 #thumb_localcopy
 {
@@ -2121,6 +2117,43 @@ radiobutton radio
   background-color: @thumbnail_localcopy_color;
 }
 
+/*--------------------------------------
+  - Hide icons on all lighttable modes -
+  --------------------------------------*/
+
+.dt_overlays_hover #thumb_main:hover #thumb_group,
+.dt_overlays_hover #thumb_main:hover #thumb_altered,
+.dt_overlays_hover #thumb_main:hover #thumb_audio,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_group,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_altered,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_audio,
+.dt_culling #thumb_ext,
+.dt_culling #thumb_main:selected #thumb_ext,
+.dt_culling #thumb_main:hover #thumb_ext,
+.dt_overlays_always#culling #thumb_altered,
+.dt_overlays_always#culling #thumb_audio,
+.dt_overlays_always#culling #thumb_group,
+.dt_overlays_always_extended#culling #thumb_altered,
+.dt_overlays_always_extended#culling #thumb_audio,
+.dt_overlays_always_extended#culling #thumb_group,
+.dt_preview #thumb_ext,
+.dt_preview #thumb_main:selected #thumb_ext,
+.dt_preview #thumb_main:hover #thumb_ext,
+.dt_overlays_always#preview #thumb_altered,
+.dt_overlays_always#preview #thumb_audio,
+.dt_overlays_always#preview #thumb_group,
+.dt_overlays_always_extended#preview #thumb_altered,
+.dt_overlays_always_extended#preview #thumb_audio,
+.dt_overlays_always_extended#preview #thumb_group
+{
+  color: transparent;
+}
+
+.dt_overlays_always#preview #thumb_bottom>*
+{
+  padding-top: 3px;
+}
+
 /*-----------------------------
   - Culling and preview modes -
   -----------------------------*/
@@ -2135,22 +2168,6 @@ radiobutton radio
 {
   background-color: transparent;
   border: none;
-}
-
-.dt_culling #thumb_ext,
-.dt_culling #thumb_main:selected #thumb_ext,
-.dt_culling #thumb_main:hover #thumb_ext,
-.dt_overlays_always#culling #thumb_altered,
-.dt_overlays_always#culling #thumb_audio,
-.dt_overlays_always#culling #thumb_group,
-.dt_overlays_always_extended#culling #thumb_altered,
-.dt_overlays_always_extended#culling #thumb_audio,
-.dt_overlays_always_extended#culling #thumb_group,
-.dt_preview #thumb_ext,
-.dt_preview #thumb_main:selected #thumb_ext,
-.dt_preview #thumb_main:hover #thumb_ext
-{
-  color: transparent;
 }
 
 /* Set image borders */
@@ -2176,8 +2193,9 @@ radiobutton radio
 .dt_overlays_always#preview #thumb_bottom,
 .dt_overlays_always_extended#preview #thumb_bottom
 {
-  border-top: 1px inset shade(@lighttable_bg_color, 0.9);
-  background-color: shade(@lighttable_bg_color, 1.1);
+  border-radius: 3px;
+  border-top: 1px solid @lighttable_bg_color;
+  background-image: linear-gradient(rgba(171, 171, 171, 0.2) 0%, rgba(171, 171, 171, 0.1) 5%, rgba(171, 171, 171, 0) 100%);
 }
 
 .dt_overlays_always#culling #thumb_main:hover #thumb_bottom,
@@ -2185,8 +2203,7 @@ radiobutton radio
 .dt_overlays_always#preview #thumb_main:hover #thumb_bottom,
 .dt_overlays_always_extended#preview #thumb_main:hover #thumb_bottom
 {
-  border-top: 1px inset shade(@lighttable_bg_color, 0.9);
-  background-color: shade(@lighttable_bg_color, 1.15);
+  background-image: linear-gradient(rgba(191, 191, 191, 0.4) 0%, rgba(191, 191, 191, 0.2) 5%, rgba(171, 171, 171, 0) 100%);
 }
 
 /* Set zoom info */
