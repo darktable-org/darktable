@@ -270,14 +270,13 @@ button,
   padding: 2px;
 }
 
-/* default extra margin for icons optical alignment */
+/* Default extra margin for icons optical alignment */
 #button-canvas
 {
   margin: 5px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Set same settings on all those items */
-
 button,
 #add-color-button,
 #dt-icon,
@@ -459,7 +458,6 @@ overshoot.right
 }
 
 /* icon buttons in modules main body */
-
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
 #iop-plugin-ui-main #keep-active,
@@ -488,7 +486,6 @@ overshoot.right
 /* filter in collect images */
 /* filter in header toolbar */
 /* arrow in filmic */
-/* TODO: move this part to special items? */
 #iop-plugin-ui-main #control-button,
 #lib-plugin-ui-main #control-button,
 #header-toolbar #control-button
@@ -545,7 +542,7 @@ overshoot.right
   min-width: 1.15em;
   padding: 0.06em;
   border: 0;
-  margin: 0 1px 0 1px;
+  margin: 0 1px;
 }
 
 #module-always-enabled-button /* button on always activated module */
@@ -1636,7 +1633,7 @@ filechooser checkbutton:checked
   background-color: transparent;
 }
 
-/* adjust delete folder dialog window */
+/* Adjust delete folder dialog window */
 treeview#delete-dialog,
 treeview#delete-dialog:selected
 {
@@ -1879,11 +1876,6 @@ radiobutton radio,
 radiobutton label
 {
   padding: 0.2em;
-}
-
-radiobutton label
-{
-  margin: 2px;
 }
 
 radiobutton radio
