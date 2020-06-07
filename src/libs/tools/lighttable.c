@@ -63,18 +63,6 @@ static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey
                                                    dt_lib_module_t *self);
 
 /* zoom key accel callback */
-static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data);
-static gboolean _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data);
-static gboolean _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                                                           guint keyval, GdkModifierType modifier,
-                                                           gpointer data);
-static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data);
 static gboolean _lib_lighttable_key_accel_toggle_culling_dynamic_mode(GtkAccelGroup *accel_group,
                                                                       GObject *acceleratable, guint keyval,
                                                                       GdkModifierType modifier, gpointer data);
@@ -211,14 +199,9 @@ void gui_init(dt_lib_module_t *self)
 void init_key_accels(dt_lib_module_t *self)
 {
   // view accels
-  dt_accel_register_lib(self, NC_("accel", "zoom max"), GDK_KEY_1, GDK_MOD1_MASK);
-  dt_accel_register_lib(self, NC_("accel", "zoom in"), GDK_KEY_2, GDK_MOD1_MASK);
-  dt_accel_register_lib(self, NC_("accel", "zoom out"), GDK_KEY_3, GDK_MOD1_MASK);
-  dt_accel_register_lib(self, NC_("accel", "zoom min"), GDK_KEY_4, GDK_MOD1_MASK);
-
-  dt_accel_register_lib(self, NC_("accel", "toggle culling mode"), GDK_KEY_x, 0);
-  dt_accel_register_lib(self, NC_("accel", "toggle culling dynamic mode"), GDK_KEY_x, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "toggle culling zoom mode"), GDK_KEY_less, 0);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling mode"), GDK_KEY_x, 0);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling dynamic mode"), GDK_KEY_x, GDK_CONTROL_MASK);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling zoom mode"), GDK_KEY_less, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -226,20 +209,12 @@ void connect_key_accels(dt_lib_module_t *self)
   /* setup key accelerators */
 
   // view accels
-  dt_accel_connect_lib(self, "zoom max",
-                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_max_callback), self, NULL));
-  dt_accel_connect_lib(self, "zoom in",
-                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_in_callback), self, NULL));
-  dt_accel_connect_lib(self, "zoom out",
-                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_out_callback), self, NULL));
-  dt_accel_connect_lib(self, "zoom min",
-                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_min_callback), self, NULL));
-  dt_accel_connect_lib(
-      self, "toggle culling dynamic mode",
+  dt_accel_connect_lib_as_view(
+      self,"lighttable", "toggle culling dynamic mode",
       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_dynamic_mode), self, NULL));
-  dt_accel_connect_lib(self, "toggle culling mode",
+  dt_accel_connect_lib_as_view(self,"lighttable", "toggle culling mode",
                        g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_mode), self, NULL));
-  dt_accel_connect_lib(self, "toggle culling zoom mode",
+  dt_accel_connect_lib_as_view(self,"lighttable", "toggle culling zoom mode",
                        g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_zoom_mode), self, NULL));
 }
 
@@ -483,57 +458,6 @@ static dt_lighttable_culling_zoom_mode_t _lib_lighttable_get_zoom_mode(dt_lib_mo
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   return d->zoom_mode;
-}
-
-static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  gtk_range_set_value(GTK_RANGE(d->zoom), 1);
-  // FIXME: scroll to active image
-  return TRUE;
-}
-
-static gboolean _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  gtk_range_set_value(GTK_RANGE(d->zoom), DT_LIGHTTABLE_MAX_ZOOM);
-  return TRUE;
-}
-
-static gboolean _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                                                           guint keyval, GdkModifierType modifier,
-                                                           gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  int zoom = d->current_zoom;
-  if(zoom <= 1)
-    zoom = 1;
-  else
-    zoom--;
-  gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
-  return TRUE;
-}
-
-static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  int zoom = d->current_zoom;
-  if(zoom >= 2 * DT_LIGHTTABLE_MAX_ZOOM)
-    zoom = 2 * DT_LIGHTTABLE_MAX_ZOOM;
-  else
-    zoom++;
-  gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
-  return TRUE;
 }
 
 static gboolean _lib_lighttable_key_accel_toggle_culling_dynamic_mode(GtkAccelGroup *accel_group,

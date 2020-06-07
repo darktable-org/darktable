@@ -95,7 +95,8 @@ typedef struct _GtkDarktableGradientSlider
   gint marker[GRADIENT_SLIDER_MAX_POSITIONS];
   gdouble increment;
   gdouble picker[3];
-  gint margins;
+  gint margin_left;
+  gint margin_right;
   gboolean is_dragging;
   gboolean is_changed;
   gboolean is_resettable;

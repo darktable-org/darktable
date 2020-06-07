@@ -229,7 +229,7 @@ eventbox *,
 box,
 box *
 {
-  font-size: 1em;	/* avoid changing this settings or you will made the UI quite awful (too big or too small) */
+  font-size: 1em; /* avoid changing this settings or you will made the UI quite awful (too big or too small) */
   background-color: transparent;
 }
 
@@ -245,7 +245,7 @@ box *
 /* Sets outer borders that could be hide or shown in darktable with 'b' shortcut.
   remember, in gui/gtk.c, outer borders (active areas used to collapse panels)
   are defined to 5 px × DPI. We cheat by setting inner borders/spacing here to 5 px as well. */
-#outer-border   
+#outer-border
 {
   background-color: @border_color;
   min-width: 20px;
@@ -273,7 +273,7 @@ button,
 /* default extra margin for icons optical alignment */
 #button-canvas
 {
-  margin: 12px; /* not real pixels, this is used as a percent extra space */
+  margin: 5px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Default text fields and text boxes */
@@ -386,7 +386,7 @@ overshoot.right
 /*------------------------------
   - Header and footer toolbars -
   ------------------------------*/
-  
+
 #header-toolbar,
 #footer-toolbar
 {
@@ -406,6 +406,12 @@ overshoot.right
   font-size: .7em;
 }
 
+#header-toolbar #button-canvas,
+#footer-toolbar #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
 #dt-icon
 {
   border-radius: 2px;
@@ -422,7 +428,7 @@ overshoot.right
 /*---------------------------
   - Side panels and modules -
   ---------------------------*/
-	
+
 /* Frame around modules boxes */
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
 #lib-plugin-ui,
@@ -440,23 +446,29 @@ overshoot.right
 }
 
 /* icon buttons in modules main body */
+
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
+#iop-plugin-ui-main #keep-active,
 #lib-plugin-ui-main #dt-button,
-#lib-plugin-ui-main #dt-toggle-button
+#lib-plugin-ui-main #dt-toggle-button,
+#blending-box #dt-button,
+#blending-box #dt-toggle-button,
+#blending-box #show_mask_button,
+#blending-box #keep-active
 {
   min-height: 1.3em;
   min-width: 1.3em;
-  padding: 0;
+  border: 0;
 }
 
-/* adjust icon extra room for buttons in modules main body */
-#iop-plugin-ui-main #dt-button #button-canvas,
-#iop-plugin-ui-main #dt-toggle-button #button-canvas,
-#lib-plugin-ui-main #dt-button #button-canvas,
-#lib-plugin-ui-main #dt-toggle-button #button-canvas
+/* exception: non-flat buttons */
+#iop-plugin-ui-main #non-flat,
+#lib-plugin-ui-main #non-flat
 {
-  margin: 8px; /* not real pixels, this is used as a percent extra space */
+  min-height: 1.3em;
+  min-width: 1.3em;
+  padding: 1px;
 }
 
 /* size of control-buttons */
@@ -472,6 +484,11 @@ overshoot.right
   min-width: 0.9em;
   padding: 0.15em;
   margin: 0.15em;
+}
+
+#control-button #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -507,17 +524,35 @@ overshoot.right
 #module-enable-button,
 #module-instance-button,
 #module-enable-button,
-#module-collapse-button
+#module-collapse-button,
+#module-always-disabled-button
 {
   /* background-color: transparent; this doesn't work */
   min-height: 1.15em;
   min-width: 1.15em;
   padding: 0.06em;
+  border: 0;
+  margin: 0 1px 0 1px
 }
 
 #module-always-enabled-button /* button on always activated module */
 {
   color: @plugin_label_color;
+  border: 0;
+}
+
+#module-header #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
+/* gradient sliders */
+#gradient-slider
+{
+  min-height: 1.7em;
+  margin: 0;
+  border: 0;
+  padding: 0.25em 0.6em;
 }
 
 /* Entries options in lighttable */
@@ -692,8 +727,8 @@ frame#import_metadata checkbutton
 dialog .dialog-vbox notebook stack /* set top margin ; between tabs and text below */
 {
   margin-top: 4px;
-} 
- 
+}
+
 dialog .dialog-vbox notebook stack box box > label  /* set code project name on first tab */
 {
   font-size: 0.90em;
@@ -821,14 +856,21 @@ notebook tabs,
   min-width: 2em;
   margin: 0;
   padding: 0.1em;
+  border: 0;
+}
+
+#modules-tabs #button-canvas
+{
+  margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
 #blending-tabs button
 {
   font-size: 0.8em;
-  min-height: 1.75em;
-  min-width: 1.75em;
-  padding: 0;
+  min-height: 1.55em;
+  min-width: 1.55em;
+  padding: 0.2em;
+  border: 0;
 }
 
 notebook tab
@@ -1252,13 +1294,15 @@ cell:selected
 #left #history-switch,
 #left #history-switch-enabled,
 #left #history-switch-always-enabled,
-#left #history-switch-default-enabled
+#left #history-switch-default-enabled,
+#left #history-switch-deprecated
 {
   font-size: 0.6em;
-  min-width: 1.4em;
-  min-height: 1.33em;
-  padding: 0;
+  min-width: 1.2em;
+  min-height: 1.2em;
+  padding: 0.15em;
   margin: 1px 2px 2px 2px; /* align switches with create style icon */
+  border: 0;
 }
 
 #left #history-switch-deprecated
@@ -1307,11 +1351,7 @@ cell:selected
 {
   min-height: 2em;
   min-width: 1.7em;
-}
-
-#color-picker-button #button-canvas
-{
-  margin: 5px; /* not real pixels, this is used as a percent extra space */
+  border: 0;
 }
 
 /* Module in darkroom left panel */
@@ -1333,16 +1373,22 @@ cell:selected
 #picker-black
 {
   color: @grey_00;
+  min-height: 1.3em;
+  border: 0;
 }
 
 #picker-grey
 {
   color: @grey_50;
+  min-height: 1.3em;
+  border: 0;
 }
 
 #picker-white
 {
   color: @grey_100;
+  min-height: 1.3em;
+  border: 0;
 }
 
 /*------------------------------------------------------------------
@@ -1774,16 +1820,16 @@ radiobutton radio
   padding: 0.25em;
 }
 
-	/*** for following settings line, remember which popover mode name and related line on popover menu
-	1) .dt_overlays_none
-	2) .dt_overlays_hover
-	3) .dt_overlays_hover_extended
-	4) .dt_overlays_always
-	5) .dt_overlays_always_extended
-	6) .dt_overlays_mixed
-	7) .dt_overlays_hover_block (also to set culling and preview hover block infos)
-	
-	These modes will be ordered on next related lines ***/
+  /*** for following settings line, remember which popover mode name and related line on popover menu
+  1) .dt_overlays_none
+  2) .dt_overlays_hover
+  3) .dt_overlays_hover_extended
+  4) .dt_overlays_always
+  5) .dt_overlays_always_extended
+  6) .dt_overlays_mixed
+  7) .dt_overlays_hover_block (also to set culling and preview hover block infos)
+
+  These modes will be ordered on next related lines ***/
 
 /*-----------------
   - Image options -
@@ -1797,7 +1843,7 @@ radiobutton radio
 
 .dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
 {
-  margin : 2px;
+  margin: 3px;
 }
 
 #thumb_main:active #thumb_image
@@ -1805,7 +1851,7 @@ radiobutton radio
   border: 2px solid @plugin_bg_color;
 }
 
-#thumb_ext	/* adjust margin to align to group, audio... icons */
+#thumb_ext  /* adjust margin to align to group, audio... icons */
 {
   margin-top: -1px;
 }
@@ -1835,7 +1881,7 @@ radiobutton radio
 
 /* Set background on block infos in last overlay mode and culling/preview modes shown with mouse hover */
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
-.dt_overlays_mixed #thumb_main:hover #thumb_bottom 
+.dt_overlays_mixed #thumb_main:hover #thumb_bottom
 {
   background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
 }
@@ -1854,12 +1900,39 @@ radiobutton radio
 }
 
 /*--------------------
+  - Thumbnails extension -
+  --------------------*/
+
+/* by default, the extension is hidden */
+#thumb_ext
+{
+  color: transparent;
+  background-color: transparent;
+}
+
+/* and we show it for specific overlays */
+.dt_overlays_always #thumb_ext,
+.dt_overlays_always_extended #thumb_ext,
+.dt_overlays_mixed #thumb_ext
+{
+  color: @thumbnail_infos_color;
+}
+.dt_overlays_hover #thumb_main:hover #thumb_ext,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_ext,
+.dt_overlays_always #thumb_main:selected #thumb_ext,
+.dt_overlays_always_extended #thumb_main:selected #thumb_ext,
+.dt_overlays_mixed #thumb_main:selected #thumb_ext
+{
+  color: @thumbnail_font_color;
+}
+
+
+/*--------------------
   - Thumbnails infos -
   --------------------*/
 
 /* Set default color icons and text infos on thumbnails and block infos */
 .dt_thumb_btn,
-#thumb_ext,
 .dt_overlays_always_extended #thumb_bottom_label
 {
   color: @thumbnail_infos_color;
@@ -1877,8 +1950,6 @@ radiobutton radio
 }
 
 /* Set hover and selected color icons and text infos */
-.dt_thumbtable #thumb_main:hover #thumb_ext,
-.dt_thumbtable #thumb_main:selected #thumb_ext,
 .dt_overlays_hover #thumb_main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb_main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,

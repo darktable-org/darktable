@@ -70,7 +70,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dt_image_init(&dev->image_storage);
   dev->image_status = dev->preview_status = dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
-  dev->history_updating = dev->image_force_reload = dev->image_loading = dev->preview_loading = FALSE; 
+  dev->history_updating = dev->image_force_reload = dev->image_loading = dev->preview_loading = FALSE;
   dev->preview2_loading = dev->preview_input_changed = dev->preview2_input_changed = FALSE;
   dev->image_invalid_cnt = 0;
   dev->pipe = dev->preview_pipe = dev->preview2_pipe = NULL;
@@ -141,9 +141,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     // (regardless of ppd). Try to get enough detail for a (default)
     // 350px panel, possibly 2x that on hidpi.
     dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
-    // Hardcoded hack: histogram widget will probably be either 175 or
-    // 350 pixels high depending on hidpi
-    dev->histogram_waveform_height = 175;
+    dev->histogram_waveform_height = dt_conf_get_int("histogram_height");
     // making the stride work for cairo muddles UI and underlying
     // data, and mipmap widths should already reasonable, but better
     // to be safe, and the histogram is for the sake of UI, after all
@@ -540,7 +538,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_control_toast_busy_enter();
   // let gui know to draw preview instead of us, if it's there:
   dev->image_status = DT_DEV_PIXELPIPE_RUNNING;
-  
+
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_times(&start);
@@ -1872,8 +1870,13 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   dt_history_hash_t flags = DT_HISTORY_HASH_CURRENT;
   if(first_run)
   {
-    flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_BASIC);
-
+    const dt_history_hash_t hash_status = dt_history_hash_get_status(imgid);
+    // if altered doesn't mask it
+    if(!(hash_status & DT_HISTORY_HASH_CURRENT))
+    {
+      flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_BASIC);
+    }
+    dt_history_hash_write_from_history(imgid, flags);
     // As we have a proper history right now and this is first_run we write the xmp now
     dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
@@ -1886,10 +1889,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       // if image not altered keep the current status
       flags = flags | hash_status;
     }
+    dt_history_hash_write_from_history(imgid, flags);
   }
-  // write history_hash when the image has an history
-  dt_history_hash_write_from_history(imgid, flags);
-
+  else
+  {
+    dt_history_hash_write_from_history(imgid, flags);
+  }
   dt_unlock_image(imgid);
 }
 

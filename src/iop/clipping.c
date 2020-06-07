@@ -639,20 +639,17 @@ static int _iop_clipping_set_max_clip(struct dt_iop_module_t *self)
   if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 4))
     return 0;
 
-  g->clip_max_x = points[0] / self->dev->preview_pipe->backbuf_width;
-  g->clip_max_y = points[1] / self->dev->preview_pipe->backbuf_height;
-  g->clip_max_w = (points[2] - points[0]) / self->dev->preview_pipe->backbuf_width;
-  g->clip_max_h = (points[3] - points[1]) / self->dev->preview_pipe->backbuf_height;
+  g->clip_max_x = fmaxf(points[0] / self->dev->preview_pipe->backbuf_width, 0.0f);
+  g->clip_max_y = fmaxf(points[1] / self->dev->preview_pipe->backbuf_height, 0.0f);
+  g->clip_max_w = fminf((points[2] - points[0]) / self->dev->preview_pipe->backbuf_width, 1.0f);
+  g->clip_max_h = fminf((points[3] - points[1]) / self->dev->preview_pipe->backbuf_height, 1.0f);
 
   // if clipping values are not null, this is undistorted values...
-  g->clip_x = points[4] / self->dev->preview_pipe->backbuf_width;
-  g->clip_y = points[5] / self->dev->preview_pipe->backbuf_height;
-  g->clip_w = (points[6] - points[4]) / self->dev->preview_pipe->backbuf_width;
-  g->clip_h = (points[7] - points[5]) / self->dev->preview_pipe->backbuf_height;
-  g->clip_x = fmaxf(g->clip_x, g->clip_max_x);
-  g->clip_y = fmaxf(g->clip_y, g->clip_max_y);
-  g->clip_w = fminf(g->clip_w, g->clip_max_w);
-  g->clip_h = fminf(g->clip_h, g->clip_max_h);
+  g->clip_x = fmaxf(points[4] / self->dev->preview_pipe->backbuf_width, g->clip_max_x);
+  g->clip_y = fmaxf(points[5] / self->dev->preview_pipe->backbuf_height, g->clip_max_y);
+  g->clip_w = fminf((points[6] - points[4]) / self->dev->preview_pipe->backbuf_width, g->clip_max_w);
+  g->clip_h = fminf((points[7] - points[5]) / self->dev->preview_pipe->backbuf_height, g->clip_max_h);
+
   g->clip_max_pipe_hash = self->dev->preview_pipe->backbuf_hash;
   return 1;
 }
@@ -1312,10 +1309,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       // got focus. make it redraw in full and grab stuff to gui:
       // need to get gui stuff for the first time for this image,
       // and advice the pipe to redraw in full:
-      g->clip_x = p->cx;
-      g->clip_w = fabsf(p->cw) - p->cx;
-      g->clip_y = p->cy;
-      g->clip_h = fabsf(p->ch) - p->cy;
+      g->clip_x = fmaxf(p->cx, 0.0f);
+      g->clip_w = fminf(fabsf(p->cw) - p->cx, 1.0f);
+      g->clip_y = fmaxf(p->cy, 0.0f);
+      g->clip_h = fminf(fabsf(p->ch) - p->cy, 1.0f);
       if(g->clip_x > 0 || g->clip_y > 0 || g->clip_h < 1.0f || g->clip_w < 1.0f)
       {
         g->old_width = self->dev->preview_pipe->backbuf_width;
@@ -1570,10 +1567,10 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
       clip_h = g->clip_max_y + g->clip_max_h - clip_y;
       if(grab & GRAB_LEFT) clip_x += prev_clip_w - clip_w;
     }
-    g->clip_x = clip_x;
-    g->clip_y = clip_y;
-    g->clip_w = clip_w;
-    g->clip_h = clip_h;
+    g->clip_x = fmaxf(clip_x, 0.0f);
+    g->clip_y = fmaxf(clip_y, 0.0f);
+    g->clip_w = fminf(clip_w, 1.0f);
+    g->clip_h = fminf(clip_h, 1.0f);
   }
 }
 
@@ -2447,8 +2444,8 @@ static void gui_draw_sym(cairo_t *cr, float x, float y, float scale, gboolean ac
   dt_draw_set_color_overlay(cr, 0.5, 0.7);
   gui_draw_rounded_rectangle(
       cr, ink.width + DT_PIXEL_APPLY_DPI(4) * scale, ink.height + DT_PIXEL_APPLY_DPI(8) * scale,
-      x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(2) * scale, y - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(4) * scale);    /* *** */
-  cairo_move_to(cr, x - ink.width / 2.0f, y - 3.0 * ink.height / 4.0f - DT_PIXEL_APPLY_DPI(4) * scale);    /* *** */
+      x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(2) * scale, y - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(4) * scale);
+  cairo_move_to(cr, x - ink.width / 2.0f, y - 3.0 * ink.height / 4.0f - DT_PIXEL_APPLY_DPI(4) * scale);
   if(active)
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, .9);
   else
@@ -2484,7 +2481,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float pr_d = dev->preview_downsampling;
   const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
-  cairo_translate(cr, width / 2.0, height / 2.0f);
+  cairo_translate(cr, width / 2.0, height / 2.0);
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 

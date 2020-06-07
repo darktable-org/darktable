@@ -752,7 +752,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
      But we can test for that situation and if there is an out-of-bounds problem we
      have basically two options:
      a) reduce the output image size by one for width & height.
-     b) change the scale. In theory this marginally reduces quality.
+     b) increase the scale while keeping the output size. In theory this marginally reduces quality.
 
      These are the rules for export:
      1. If we have the **full image** (defined by dt_image_t width, height and crops) we look for upscale.
@@ -786,16 +786,16 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   }
 
   const double max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
-  double scale = fmin((double)width >  0
-                      ? fmin((double)width / (double)pipe.processed_width, max_scale)
-                      : max_scale,
-                      (double)height > 0
-                      ? fmin((double)height / (double)pipe.processed_height, max_scale)
-                      : max_scale);
 
-  int processed_width;
-  int processed_height;
+  const double scalex = width > 0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale;
+  const double scaley = height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale;
+  double scale = fmin(scalex, scaley);
+  double corrscale = 1.0f;
 
+  int processed_width = 0;
+  int processed_height = 0;
+
+  gboolean corrected = FALSE;
   float origin[] = { 0.0f, 0.0f };
 
   if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, origin, 1))
@@ -814,11 +814,17 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     if((ceil((double)processed_width / scale) + origin[0] > pipe.iwidth) ||
        (ceil((double)processed_height / scale) + origin[1] > pipe.iheight))
     {
-      // must either change scale or crop right/bottom border by one
+      corrected = TRUE;
+     /* Here the scale is too **small** so while reading data from the right or low borders we are out-of-bounds.
+        We can either just decrease output width & height or
+        have to find a scale that takes data from within the origin data, so we have to increase scale to a size
+        that fits both width & height.
+     */
       if(exact_size)
       {
-        scale = fmin(fmin((double)(width-1) / (double)(pipe.processed_width), max_scale),
-                     fmin((double)(height-1) / (double)(pipe.processed_height), max_scale));
+        corrscale = fmax( ((double)(pipe.processed_width + 1) / (double)(pipe.processed_width)),
+                           ((double)(pipe.processed_height +1) / (double)(pipe.processed_height)) );
+        scale = scale * corrscale;
       }
       else
       {
@@ -827,17 +833,17 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       }
     }
 
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] pipe %ix%i, range %ix%i --> exact %i, upscale %i, scale %.9f, size %ix%i\n",
-           pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
-           exact_size, upscale, scale, processed_width, processed_height);
+    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] imgid %d, pipe %ix%i, range %ix%i --> exact %i, upscale %i, corrected %i, scale %.7f, corr %.6f, size %ix%i\n",
+             imgid, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
+             exact_size, upscale, corrected, scale, corrscale, processed_width, processed_height);
   }
   else
   {
     processed_width = floor(scale * pipe.processed_width);
     processed_height = floor(scale * pipe.processed_height);
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] (direct) pipe %ix%i, range %ix%i --> size %ix%i / %ix%i\n",
-           pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
-           processed_width, processed_height, width, height);
+    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] (direct) imgid %d, pipe %ix%i, range %ix%i --> size %ix%i / %ix%i\n",
+             imgid, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
+             processed_width, processed_height, width, height);
   }
 
   const int bpp = format->bpp(format_params);

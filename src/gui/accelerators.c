@@ -179,6 +179,42 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
+void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods)
+{
+  //register a lib shortcut but place it in the path of a view
+  gchar accel_path[256];
+  dt_accel_path_view(accel_path, sizeof(accel_path), view_name, path);
+  if (dt_accel_find_by_path(accel_path)) return; // return if nothing to add, to avoid multiple entries
+
+  dt_accel_t *accel = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
+  gtk_accel_map_add_entry(accel_path, accel_key, mods);
+  g_strlcpy(accel->path, accel_path, sizeof(accel->path));
+
+  snprintf(accel_path, sizeof(accel_path), "<Darktable>/%s/%s/%s", C_("accel", "views"),
+           g_dgettext(NULL, view_name),
+           g_dpgettext2(NULL, "accel", path));
+
+  g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
+
+  g_strlcpy(accel->module, view_name, sizeof(accel->module));
+  accel->local = FALSE;
+
+  if(strcmp(view_name, "lighttable") == 0)
+    accel->views = DT_VIEW_LIGHTTABLE;
+  else if(strcmp(view_name, "darkroom") == 0)
+    accel->views = DT_VIEW_DARKROOM;
+  else if(strcmp(view_name, "print") == 0)
+    accel->views = DT_VIEW_PRINT;
+  else if(strcmp(view_name, "slideshow") == 0)
+    accel->views = DT_VIEW_SLIDESHOW;
+  else if(strcmp(view_name, "map") == 0)
+    accel->views = DT_VIEW_MAP;
+  else if(strcmp(view_name, "tethering") == 0)
+    accel->views = DT_VIEW_TETHERING;
+
+  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+}
+
 void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t views, const gchar *path,
                                      guint accel_key, GdkModifierType mods)
 {
@@ -415,6 +451,37 @@ void dt_accel_connect_view(dt_view_t *self, const gchar *path, GClosure *closure
   self->accel_closures = g_slist_prepend(self->accel_closures, laccel);
 }
 
+dt_accel_t *dt_accel_connect_lib_as_view(dt_lib_module_t *module, gchar *view_name, const gchar *path, GClosure *closure)
+{
+  gchar accel_path[256];
+  dt_accel_path_view(accel_path, sizeof(accel_path), view_name, path);
+  gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
+
+  dt_accel_t *accel = _lookup_accel(accel_path);
+  if(!accel) return NULL; // this happens when the path doesn't match any accel (typos, ...)
+
+  accel->closure = closure;
+
+  module->accel_closures = g_slist_prepend(module->accel_closures, accel);
+  return accel;
+}
+
+dt_accel_t *dt_accel_connect_lib_as_global(dt_lib_module_t *module, const gchar *path, GClosure *closure)
+{
+  gchar accel_path[256];
+  dt_accel_path_global(accel_path, sizeof(accel_path), path);
+
+  dt_accel_t *accel = _lookup_accel(accel_path);
+  if(!accel) return NULL; // this happens when the path doesn't match any accel (typos, ...)
+
+  gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
+
+  accel->closure = closure;
+
+  module->accel_closures = g_slist_prepend(module->accel_closures, accel);
+  return accel;
+}
+
 static void _connect_local_accel(dt_iop_module_t *module, dt_accel_t *accel)
 {
   module->accel_closures_local = g_slist_prepend(module->accel_closures_local, accel);
@@ -524,6 +591,16 @@ void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, Gtk
 {
   GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback), button, NULL);
   dt_accel_t *accel = dt_accel_connect_lib(module, path, closure);
+  g_object_set_data(G_OBJECT(button), "dt-accel", accel);
+
+  if(gtk_widget_get_has_tooltip(button))
+    g_signal_connect(G_OBJECT(button), "query-tooltip", G_CALLBACK(_tooltip_callback), NULL);
+}
+
+void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar *path, GtkWidget *button)
+{
+  GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback), button, NULL);
+  dt_accel_t *accel = dt_accel_connect_lib_as_global(module, path, closure);
   g_object_set_data(G_OBJECT(button), "dt-accel", accel);
 
   if(gtk_widget_get_has_tooltip(button))

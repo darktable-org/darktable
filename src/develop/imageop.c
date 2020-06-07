@@ -231,7 +231,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   if(!g_module_symbol(module->module, "default_group", (gpointer) & (module->default_group)))
     module->default_group = default_group;
   if(!g_module_symbol(module->module, "flags", (gpointer) & (module->flags))) module->flags = default_flags;
-  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = NULL;
+  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = module->name;
   if(!g_module_symbol(module->module, "operation_tags", (gpointer) & (module->operation_tags)))
     module->operation_tags = default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter", (gpointer) & (module->operation_tags_filter)))
@@ -347,17 +347,22 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   module->get_introspection = default_get_introspection;
   if(!g_module_symbol(module->module, "introspection_init", (gpointer) & (module->introspection_init)))
     module->introspection_init = NULL;
-  if(module->introspection_init && !module->introspection_init(module, DT_INTROSPECTION_VERSION))
+  if(module->introspection_init)
   {
-    // set the introspection related fields in module
-    module->have_introspection = TRUE;
-    if(!g_module_symbol(module->module, "get_p", (gpointer) & (module->get_p))) goto error;
-    if(!g_module_symbol(module->module, "get_f", (gpointer) & (module->get_f))) goto error;
-    if(!g_module_symbol(module->module, "get_introspection", (gpointer) & (module->get_introspection)))
-      goto error;
-    if(!g_module_symbol(module->module, "get_introspection_linear",
-                        (gpointer) & (module->get_introspection_linear)))
-      goto error;
+    if(!module->introspection_init(module, DT_INTROSPECTION_VERSION))
+    {
+      // set the introspection related fields in module
+      module->have_introspection = TRUE;
+      if(!g_module_symbol(module->module, "get_p", (gpointer) & (module->get_p))) goto error;
+      if(!g_module_symbol(module->module, "get_f", (gpointer) & (module->get_f))) goto error;
+      if(!g_module_symbol(module->module, "get_introspection", (gpointer) & (module->get_introspection)))
+        goto error;
+      if(!g_module_symbol(module->module, "get_introspection_linear",
+                          (gpointer) & (module->get_introspection_linear)))
+        goto error;
+    }
+    else
+      fprintf(stderr, "[iop_load_module] failed to initialize introspection for operation `%s'\n", op);
   }
 
   if(module->init_global) module->init_global(module);
@@ -559,7 +564,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
 
   // we set the focus to the other instance
   dt_iop_gui_set_expanded(next, TRUE, FALSE);
-  gtk_widget_grab_focus(next->expander);
+  dt_iop_request_focus(next);
 
   ++darktable.gui->reset;
 
@@ -814,7 +819,6 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   /* initialize gui if iop have one defined */
   if(!dt_iop_is_hidden(module))
   {
-    ++darktable.gui->reset;
     module->gui_init(module);
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
     if(copy_params)
@@ -846,7 +850,6 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
                           expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
     dt_iop_gui_set_expanded(module, TRUE, FALSE);
     dt_iop_gui_update_blending(module);
-    --darktable.gui->reset;
   }
 
   if(dt_conf_get_bool("darkroom/ui/single_module"))
@@ -1140,11 +1143,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   gtk_widget_set_name(lab, "iop-panel-label");
   gchar *label = dt_history_item_get_name_html(module);
-  gchar *tooltip;
-  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    tooltip = g_strdup(module->name());
-  else
-    tooltip = g_strdup_printf("%s %s", module->name(), module->multi_name);
+  gchar *tooltip = g_strdup(module->description());
   gtk_label_set_markup(GTK_LABEL(lab), label);
   gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(lab, tooltip);
@@ -1765,11 +1764,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   {
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module), GTK_STATE_FLAG_SELECTED, TRUE);
 
-    //used to take focus away from module search text input box when module selected
-    gtk_widget_set_can_focus(dt_iop_gui_get_pluginui(module), TRUE);
-    gtk_widget_grab_focus(dt_iop_gui_get_pluginui(module));
-    gtk_widget_set_can_focus(dt_iop_gui_get_pluginui(module), FALSE);
-
     if(module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_accel_connect_locals_iop(module);
@@ -1929,6 +1923,9 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
       const gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK);
       dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
+
+      //used to take focus away from module search text input box when module selected
+      gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
       return TRUE;
     }

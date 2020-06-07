@@ -24,6 +24,7 @@
 #include "common/file_location.h"
 #include "common/grouping.h"
 #include "common/history.h"
+#include "common/history_snapshot.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_rawspeed.h"
@@ -315,28 +316,12 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
 {
-  if(img->exif_exposure >= 1.0f)
-    if(nearbyintf(img->exif_exposure) == img->exif_exposure)
-      snprintf(line, line_len, "%.0f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
-               (int)img->exif_focal_length, (int)img->exif_iso);
-    else
-      snprintf(line, line_len, "%.1f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
-               (int)img->exif_focal_length, (int)img->exif_iso);
-  /* want to catch everything below 0.3 seconds */
-  else if(img->exif_exposure < 0.29f)
-    snprintf(line, line_len, "1/%.0f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
-  /* catch 1/2, 1/3 */
-  else if(nearbyintf(1.0f / img->exif_exposure) == 1.0f / img->exif_exposure)
-    snprintf(line, line_len, "1/%.0f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
-  /* catch 1/1.3, 1/1.6, etc. */
-  else if(10 * nearbyintf(10.0f / img->exif_exposure) == nearbyintf(100.0f / img->exif_exposure))
-    snprintf(line, line_len, "1/%.1f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
-  else
-    snprintf(line, line_len, "%.1f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
+  char *exposure_str = dt_util_format_exposure(img->exif_exposure);
+
+  snprintf(line, line_len, "%s f/%.1f %dmm ISO %d", exposure_str, img->exif_aperture, (int)img->exif_focal_length,
+           (int)img->exif_iso);
+
+  g_free(exposure_str);
 }
 
 int dt_image_get_xmp_rating_from_flags(const int flags)
@@ -617,7 +602,7 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid)
   dt_image_orientation_t orientation = ORIENTATION_NULL;
 
   // db lookup flip params
-  if(flip && flip->get_p)
+  if(flip && flip->have_introspection && flip->get_p)
   {
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -650,6 +635,10 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(darktable.develop->image_storage.id == imgid && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) return;
 
+  dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
+  hist->imgid = imgid;
+  dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+
   dt_image_orientation_t orientation = dt_image_get_orientation(imgid);
 
   if(cw == 1)
@@ -670,6 +659,10 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
 
   if(cw == 2) orientation = ORIENTATION_NULL;
   dt_image_set_flip(imgid, orientation);
+
+  dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
+  dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                 dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
 }
 
 void dt_image_set_raw_aspect_ratio(const int32_t imgid)
