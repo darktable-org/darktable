@@ -126,7 +126,9 @@ GType dtgtk_gradient_slider_multivalue_get_type(void);
 
 /** instantiate a new darktable gradient slider control */
 GtkWidget *dtgtk_gradient_slider_new();
+GtkWidget *dtgtk_gradient_slider_new_with_name(gchar *name);
 GtkWidget *dtgtk_gradient_slider_new_with_color(GdkRGBA start, GdkRGBA end);
+GtkWidget *dtgtk_gradient_slider_new_with_color_and_name(GdkRGBA start, GdkRGBA end, gchar *name);
 
 /** Set a color at specified stop */
 void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider, gfloat position, GdkRGBA color);
@@ -156,7 +158,10 @@ void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider, gd
 
 /** instantiate a new darktable gradient slider multivalue control */
 GtkWidget *dtgtk_gradient_slider_multivalue_new(gint positions);
+GtkWidget *dtgtk_gradient_slider_multivalue_new_with_name(gint positions, gchar *name);
 GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkRGBA start, GdkRGBA end, gint positions);
+GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color_and_name(GdkRGBA start, GdkRGBA end, gint positions, gchar *name);
+
 
 /** Set a color at specified stop for multivalue control */
 void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslider, gfloat position,
