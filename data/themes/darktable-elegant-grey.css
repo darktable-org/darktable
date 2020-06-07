@@ -122,3 +122,20 @@
 {
   background-color: rgba(110,110,110,0.6);
 }
+
+/* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
+.dt_overlays_always#culling #thumb_bottom,
+.dt_overlays_always_extended#culling #thumb_bottom,
+.dt_overlays_always#preview #thumb_bottom,
+.dt_overlays_always_extended#preview #thumb_bottom
+{
+  background-image: linear-gradient(rgba(226, 226, 226, 0.2) 0%, rgba(226, 226, 226, 0.1) 5%, rgba(226, 226, 226, 0) 100%);
+}
+
+.dt_overlays_always#culling #thumb_main:hover #thumb_bottom,
+.dt_overlays_always_extended#culling #thumb_main:hover #thumb_bottom,
+.dt_overlays_always#preview #thumb_main:hover #thumb_bottom,
+.dt_overlays_always_extended#preview #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(rgba(246, 246, 246, 0.4) 0%, rgba(246, 246, 246, 0.2) 5%, rgba(226, 226, 226, 0) 100%);
+}

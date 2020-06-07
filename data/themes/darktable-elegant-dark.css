@@ -83,9 +83,9 @@
 @define-color lighttable_bg_font_color @grey_85;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_40;
+@define-color thumbnail_font_color @grey_35;
 @define-color thumbnail_bg_color @grey_55;
-@define-color thumbnail_infos_color @grey_35;
+@define-color thumbnail_infos_color @grey_30;
 @define-color thumbnail_selected_bg_color @grey_65;
 @define-color thumbnail_hover_bg_color @grey_95;
 @define-color thumbnail_localcopy_color @grey_80;
@@ -103,4 +103,29 @@
 #toast-msg
 {
   background-color: rgba(90,90,90,0.6);
+}
+
+/* Set background on thumbnails hover overlays */
+.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
+.dt_overlays_mixed #thumb_main:hover #thumb_bottom,
+.dt_overlays_hover #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(rgba(241, 241, 241, 0.7) 0%, rgba(241, 241, 241, 0.7) 90%,rgba(241, 241, 241, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
+}
+
+/* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
+.dt_overlays_always#culling #thumb_bottom,
+.dt_overlays_always_extended#culling #thumb_bottom,
+.dt_overlays_always#preview #thumb_bottom,
+.dt_overlays_always_extended#preview #thumb_bottom
+{
+  background-image: linear-gradient(rgba(198, 198, 198, 0.2) 0%, rgba(198, 198, 198, 0.1) 5%, rgba(198, 198, 198, 0) 100%);
+}
+
+.dt_overlays_always#culling #thumb_main:hover #thumb_bottom,
+.dt_overlays_always_extended#culling #thumb_main:hover #thumb_bottom,
+.dt_overlays_always#preview #thumb_main:hover #thumb_bottom,
+.dt_overlays_always_extended#preview #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(rgba(218, 218, 218, 0.4) 0%, rgba(218, 218, 218, 0.2) 5%, rgba(198, 198, 198, 0) 100%);
 }
