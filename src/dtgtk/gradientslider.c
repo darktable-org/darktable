@@ -668,7 +668,7 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new(gint positions)
 GtkWidget *dtgtk_gradient_slider_multivalue_new_with_name(gint positions, gchar *name)
 {
   GtkWidget *widget = GTK_WIDGET(dtgtk_gradient_slider_multivalue_new(positions));
-  gtk_widget_set_name(widget, name);
+  if (name) gtk_widget_set_name(widget, name);
 
   return widget;
 }
@@ -702,7 +702,7 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkRGBA start, GdkRGB
 GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color_and_name(GdkRGBA start, GdkRGBA end, gint positions, gchar *name)
 {
   GtkWidget *widget = GTK_WIDGET(dtgtk_gradient_slider_multivalue_new_with_color(start, end, positions));
-  gtk_widget_set_name(widget, name);
+  if (name) gtk_widget_set_name(widget, name);
 
   return widget;
 }
@@ -881,7 +881,7 @@ GtkWidget *dtgtk_gradient_slider_new()
 GtkWidget *dtgtk_gradient_slider_new_with_name(gchar *name)
 {
   GtkWidget *widget = GTK_WIDGET(dtgtk_gradient_slider_new());
-  gtk_widget_set_name(widget, name);
+  if (name) gtk_widget_set_name(widget, name);
 
   return widget;
 }
@@ -899,7 +899,7 @@ GtkWidget *dtgtk_gradient_slider_new_with_color(GdkRGBA start, GdkRGBA end)
 GtkWidget *dtgtk_gradient_slider_new_with_color_and_name(GdkRGBA start, GdkRGBA end, gchar *name)
 {
   GtkWidget *widget = GTK_WIDGET(dtgtk_gradient_slider_new_with_color(start, end));
-  gtk_widget_set_name(widget, name);
+  if (name) gtk_widget_set_name(widget, name);
 
   return widget;
 }
