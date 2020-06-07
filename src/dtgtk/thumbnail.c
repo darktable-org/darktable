@@ -289,7 +289,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       gtk_widget_get_size_request(thumb->w_bottom, &w, &h);
       image_h = thumb->height - h;
       gtk_widget_get_size_request(thumb->w_altered, &w, &h);
-      image_h -= h + gtk_widget_get_margin_top(thumb->w_altered);
+      if (!thumb->zoomable) image_h -= h + gtk_widget_get_margin_top(thumb->w_altered);
       image_h *= ratio_h;
     }
     else if(thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
@@ -436,8 +436,15 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       posx = thumb->width * thumb->img_margin->left / 100 + (image_w - imgbox_w) / 2;
       int w = 0;
       int h = 0;
-      gtk_widget_get_size_request(thumb->w_altered, &w, &h);
-      posy = h + gtk_widget_get_margin_top(thumb->w_altered);
+       if (!thumb->zoomable)
+      {
+        gtk_widget_get_size_request(thumb->w_altered, &w, &h);
+        posy = h + gtk_widget_get_margin_top(thumb->w_altered);
+      }
+      else
+      {
+        posy = 0;
+      }
 
       gtk_widget_get_size_request(thumb->w_bottom, &w, &h);
       posy += (thumb->height - posy - h) * thumb->img_margin->top / 100 + (image_h - imgbox_h) / 2;
@@ -1257,7 +1264,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
       gtk_widget_set_size_request(thumb->w_bottom, width, 2.5 * r1 + h + 2 * margin_b);
     }
     else
-      gtk_widget_set_size_request(thumb->w_bottom, width, 1.75 * r1 + 2 * margin_b);
+      gtk_widget_set_size_request(thumb->w_bottom, width, 2.5 * r1 + 2 * margin_b);
 
     gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0.5);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.03);
