@@ -831,15 +831,6 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_masks_reset_form_gui();
 }
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  // dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
-  // nothing else necessary, gtk will clean up the labels
-
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
 void init_key_accels (dt_iop_module_so_t *module)
 {
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot circle tool"),   0, 0);

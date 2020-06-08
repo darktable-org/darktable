@@ -1326,14 +1326,6 @@ void gui_update(dt_iop_module_t *const self)
   WB_low_picker_update(self);
 }
 
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
-
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
