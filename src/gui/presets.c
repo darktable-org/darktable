@@ -696,6 +696,12 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   dt_iop_gui_update(module);
   dt_dev_add_history_item(darktable.develop, module, FALSE);
   gtk_widget_queue_draw(module->widget);
+
+  if(dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
+  {
+    // rebuild the accelerators
+    dt_iop_connect_accels_multi(module->so);
+  }
 }
 
 static gboolean menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventButton *event, dt_iop_module_t *module)
@@ -710,6 +716,13 @@ static gboolean menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventB
     if (new_module)
       menuitem_pick_preset(menuitem, new_module);
   }
+
+  if(dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
+  {
+    // rebuild the accelerators
+    dt_iop_connect_accels_multi(module->so);
+  }
+
   return FALSE;
 }
 

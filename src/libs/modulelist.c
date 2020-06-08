@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -319,10 +320,14 @@ static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer
     gtk_tree_model_get(model, &iter, COL_MODULE, &module, -1);
 
     dt_iop_so_gui_set_state(module, (module->state + 1) % dt_iop_state_LAST);
+
     if(module->state == dt_iop_state_FAVORITE)
       dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
 
     update_selection(self);
+
+    // rebuild the accelerators 
+    dt_iop_connect_accels_multi(module);
   }
 }
 

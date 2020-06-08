@@ -120,6 +120,11 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const float exposure);
+static float dt_iop_exposure_get_exposure(struct dt_iop_module_t *self);
+static void dt_iop_exposure_set_black(struct dt_iop_module_t *self, const float black);
+static float dt_iop_exposure_get_black(struct dt_iop_module_t *self);
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black"));
@@ -140,6 +145,18 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "percentile", GTK_WIDGET(g->deflicker_percentile));
   dt_accel_connect_slider_iop(self, "target level", GTK_WIDGET(g->deflicker_target_level));
   dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
+
+  /* register hooks with current dev so that  histogram
+     can interact with this module.
+  */
+  dt_dev_proxy_exposure_t *instance = g_malloc0(sizeof(dt_dev_proxy_exposure_t));
+  instance->module = self;
+  instance->set_exposure = dt_iop_exposure_set_exposure;
+  instance->get_exposure = dt_iop_exposure_get_exposure;
+  instance->set_black = dt_iop_exposure_set_black;
+  instance->get_black = dt_iop_exposure_get_black;
+  darktable.develop->proxy.exposure
+      = g_list_prepend(darktable.develop->proxy.exposure, instance);
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -839,18 +856,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->deflicker_histogram = NULL;
 
   dt_pthread_mutex_init(&g->lock, NULL);
-
-  /* register hooks with current dev so that  histogram
-     can interact with this module.
-   */
-  dt_dev_proxy_exposure_t *instance = g_malloc0(sizeof(dt_dev_proxy_exposure_t));
-  instance->module = self;
-  instance->set_exposure = dt_iop_exposure_set_exposure;
-  instance->get_exposure = dt_iop_exposure_get_exposure;
-  instance->set_black = dt_iop_exposure_set_black;
-  instance->get_black = dt_iop_exposure_get_black;
-  darktable.develop->proxy.exposure
-      = g_list_insert_sorted(darktable.develop->proxy.exposure, instance, dt_dev_exposure_hooks_sort);
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));

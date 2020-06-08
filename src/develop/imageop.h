@@ -650,6 +650,18 @@ dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module);
 // initializes memory.darktable_iop_names
 void dt_iop_set_darktable_iop_table();
 
+/** adds keyboard accels to the first module in the pipe to handle where there are multiple instances */
+void dt_iop_connect_accels_multi(dt_iop_module_so_t *module);
+
+/** adds keyboard accels for all modules in the pipe */
+void dt_iop_connect_accels_all();
+
+/** get the module that accelerators are attached to for the current so */
+dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
+
+/** count instances of a module **/
+int dt_iop_count_instances(dt_iop_module_so_t *module);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -28,6 +28,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -712,9 +713,11 @@ int dt_control_key_pressed_override(guint key, guint state)
   if(darktable.view_manager->current_view->dynamic_accel_current)
   {
     gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->translated_path, "/", -1);
+    dt_iop_module_so_t *mod_so = darktable.view_manager->current_view->dynamic_accel_current->mod_so;
+    dt_iop_module_t *mod = dt_iop_get_module_accel_curr(mod_so);
     if(vals[0] && vals[1] && vals[2] && vals[3])
     {
-      gchar *txt = dt_util_dstrcat(NULL, _("scroll to change <b>%s</b> of %s module"), vals[3], vals[2]);
+      gchar *txt = dt_util_dstrcat(NULL, _("scroll to change <b>%s</b> of %s %s module"), vals[3], vals[2], mod->multi_name);
       dt_control_hinter_message(darktable.control, txt);
       g_free(txt);
     }

@@ -807,6 +807,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   /* signal history changed */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+  dt_iop_connect_accels_all() ;
 }
 
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget, gpointer user_data)

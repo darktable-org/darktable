@@ -2057,8 +2057,7 @@ static dt_dev_proxy_exposure_t *find_last_exposure_instance(dt_develop_t *dev)
 {
   if(!dev->proxy.exposure) return NULL;
 
-  dev->proxy.exposure = g_list_sort(dev->proxy.exposure, dt_dev_exposure_hooks_sort);
-  dt_dev_proxy_exposure_t *instance = (dt_dev_proxy_exposure_t *)(g_list_last(dev->proxy.exposure)->data);
+  dt_dev_proxy_exposure_t *instance = (dt_dev_proxy_exposure_t *)(g_list_first(dev->proxy.exposure)->data);
 
   return instance;
 };

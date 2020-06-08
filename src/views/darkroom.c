@@ -930,11 +930,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
         dt_iop_gui_set_expanded(module, FALSE, dt_conf_get_bool("darkroom/ui/single_module"));
         dt_iop_gui_update_blending(module);
       }
-
-      /* setup key accelerators */
-      module->accel_closures = NULL;
-      if(module->connect_key_accels) module->connect_key_accels(module);
-      dt_iop_connect_common_accels(module);
     }
     else
     {
@@ -1010,6 +1005,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // just make sure at this stage we have only history info into the undo, all automatic
   // tagging should be ignored.
   dt_undo_clear(darktable.undo, DT_UNDO_TAGS);
+
+  //connect iop accelerators
+  dt_iop_connect_accels_all();
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
@@ -1204,6 +1202,9 @@ static void _darkroom_ui_apply_style_activate_callback(gchar *name)
   /* apply style on image and reload*/
   dt_styles_apply_to_image(name, FALSE, darktable.develop->image_storage.id);
   dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
+
+  // rebuild the accelerators (style might have changed order)
+  dt_iop_connect_accels_all();
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
@@ -2626,6 +2627,9 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
     module_src->dev->preview_pipe->cache_obsolete = 1;
     module_src->dev->preview2_pipe->cache_obsolete = 1;
 
+    // rebuild the accelerators
+    dt_iop_connect_accels_multi(module_src->so);
+
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
     // invalidate buffers and force redraw of darkroom
@@ -2755,14 +2759,6 @@ void enter(dt_view_t *self)
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
     }
 
-    /* setup key accelerators (only if not hidden) */
-    module->accel_closures = NULL;
-    if(module->so->state != dt_iop_state_HIDDEN)
-    {
-      if(module->connect_key_accels) module->connect_key_accels(module);
-      dt_iop_connect_common_accels(module);
-    }
-
     modules = g_list_previous(modules);
   }
   // make signals work again:
@@ -2826,6 +2822,9 @@ void enter(dt_view_t *self)
 
   // update accels_window
   darktable.view_manager->accels_window.prevent_refresh = FALSE;
+
+  //connect iop accelerators
+  dt_iop_connect_accels_all();
 }
 
 void leave(dt_view_t *self)
