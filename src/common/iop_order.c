@@ -309,7 +309,9 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
 
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
 {
-  dt_iop_order_t iop_order_version = DT_IOP_ORDER_V30;
+  char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+  dt_iop_order_t iop_order_version = strcmp(workflow, "display-referred") == 0 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
+  g_free(workflow);
 
   // check current iop order version
   sqlite3_stmt *stmt;
@@ -656,7 +658,14 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
   // and new image not yet loaded or whose history has been reset.
   if(!iop_order_list)
   {
-    iop_order_list = _table_to_list(v30_order);
+    char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+    dt_iop_order_t iop_order_version = strcmp(workflow, "display-referred") == 0 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
+    g_free(workflow);
+
+    if(iop_order_version == DT_IOP_ORDER_LEGACY)
+      iop_order_list = _table_to_list(legacy_order);
+    else
+      iop_order_list = _table_to_list(v30_order);
   }
 
   if(sorted) iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
