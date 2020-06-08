@@ -807,6 +807,10 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
     table->overlays_block_timeout = dt_conf_get_int(otxt);
   g_free(otxt);
 
+  otxt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/culling/%d", table->mode);
+  table->show_tooltips = dt_conf_get_bool(otxt);
+  g_free(otxt);
+
   // set widget signals
   gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
@@ -1110,7 +1114,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     else
     {
       // we create a completly new thumb
-      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, table->overlays, TRUE);
+      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, table->overlays, TRUE, table->show_tooltips);
       thumb->display_focus = table->focus;
       thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
       double aspect_ratio = sqlite3_column_double(stmt, 2);
@@ -1161,7 +1165,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         else
         {
           // we create a completly new thumb
-          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, table->overlays, TRUE);
+          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, table->overlays, TRUE, table->show_tooltips);
           thumb->display_focus = table->focus;
           thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
           double aspect_ratio = sqlite3_column_double(stmt, 2);
@@ -1592,6 +1596,10 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
     timeout = dt_conf_get_int(txt);
   g_free(txt);
 
+  txt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/culling/%d", table->mode);
+  table->show_tooltips = dt_conf_get_bool(txt);
+  g_free(txt);
+
   // we need to change the overlay content if we pass from normal to extended overlays
   // this is not done on the fly with css to avoid computing extended msg for nothing and to reserve space if needed
   GList *l = table->list;
@@ -1599,6 +1607,7 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     dt_thumbnail_set_overlay(th, over, timeout);
+    th->tooltip = table->show_tooltips;
     // and we resize the bottom area
     dt_thumbnail_resize(th, th->width, th->height, TRUE);
     l = g_list_next(l);
