@@ -349,7 +349,7 @@ void gui_init(struct dt_iop_module_t *self)
 #define NEUTRAL_GRAY 0.5
   static const GdkRGBA _gradient_L[]
       = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
-  g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color(_gradient_L[0], _gradient_L[1]));
+  g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color_and_name(_gradient_L[0], _gradient_L[1], "gslider-relight"));
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->gslider1), _("select the center of fill-light\nctrl+click to select an area"));
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(center_callback), self);
