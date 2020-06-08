@@ -142,17 +142,12 @@ static gint _get_active_marker_internal(GtkWidget *widget, const gdouble x, cons
   assert(gslider->positions > 0);
 
   for(int k = 0; k < gslider->positions; k++)
-  {
     if(_test_if_marker_is_upper_or_down(gslider->marker[k], up))
     {
       if(lselected < 0) lselected = k;
       if(fabs(newposition - gslider->position[k]) < fabs(newposition - gslider->position[lselected]))
-      {
         lselected = k;
-        break;
-      }
     }
-  }
 
   return lselected;
 }
