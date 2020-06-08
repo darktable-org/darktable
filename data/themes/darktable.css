@@ -1966,7 +1966,6 @@ spinbutton>button
 /* Set text margins in bottom infos area */
 #thumb_bottom_label
 {
-  border : 5px solid transparent;
   color: transparent;
 }
 
