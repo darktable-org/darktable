@@ -240,9 +240,6 @@ void expose(
   if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp)
   {
-if(&(self->preview_downsample_update) != NULL && self->preview_downsample_update >0.0f)
-      dev->preview_downsampling = (self->preview_downsample_update);
-
     dt_dev_process_preview(dev);
   }
 
@@ -2385,7 +2382,7 @@ void gui_init(dt_view_t *self)
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                               G_CALLBACK(_preference_changed), (gpointer)display2_intent);
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                              G_CALLBACK(_preference_prev_downsample_change), &(self->preview_downsample_update));
+                              G_CALLBACK(_preference_prev_downsample_change), &(dev->preview_downsampling));
 
     // and when profiles change
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,

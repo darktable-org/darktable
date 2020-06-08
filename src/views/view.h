@@ -169,7 +169,7 @@ typedef struct dt_view_t
 
   GSList *accel_closures;
   struct dt_accel_dynamic_t *dynamic_accel_current;
-  float preview_downsample_update;
+
 } dt_view_t;
 
 typedef enum dt_view_image_over_t
