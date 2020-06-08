@@ -232,10 +232,10 @@ static void _thumb_retrieve_margins(dt_thumbnail_t *thumb)
   // and we apply it to the thumb size
   int width, height;
   gtk_widget_get_size_request(thumb->w_main, &width, &height);
-  thumb->img_margin->left = MAX(0, thumb->img_margin->left * width / 100);
-  thumb->img_margin->top = MAX(0, thumb->img_margin->top * height / 100);
-  thumb->img_margin->right = MAX(0, thumb->img_margin->right * width / 100);
-  thumb->img_margin->bottom = MAX(0, thumb->img_margin->bottom * height / 100);
+  thumb->img_margin->left = MAX(0, thumb->img_margin->left * width / 1000);
+  thumb->img_margin->top = MAX(0, thumb->img_margin->top * height / 1000);
+  thumb->img_margin->right = MAX(0, thumb->img_margin->right * width / 1000);
+  thumb->img_margin->bottom = MAX(0, thumb->img_margin->bottom * height / 1000);
 }
 
 static void _thumb_write_extension(dt_thumbnail_t *thumb)
