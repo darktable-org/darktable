@@ -630,6 +630,9 @@ void reload_defaults(dt_iop_module_t *module)
                                                             .deflicker_target_level = -4.0f,
                                                             .compensate_exposure_bias = TRUE};
 
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev || module->dev->image_storage.id == -1) goto end;
+
   if(dt_image_is_matrix_correction_supported(&module->dev->image_storage))
   {
     // if is raw image
@@ -642,6 +645,7 @@ void reload_defaults(dt_iop_module_t *module)
     }
   }
 
+end:
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
 }
