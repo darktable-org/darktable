@@ -2239,8 +2239,8 @@
       </enum>
     </type>
     <default>display-referred</default>
-    <shortdescription>pixel workflow</shortdescription>
-    <longdescription>scene-referred is based on filmic and the linear modules,\ndisplay-referred is based on base curve and non-linear modules (needs a restart)</longdescription>
+    <shortdescription>auto-apply pixel workflow defaults</shortdescription>
+    <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve. (needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
