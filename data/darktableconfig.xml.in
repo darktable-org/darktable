@@ -2230,11 +2230,17 @@
     <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. need to restart darktable.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
-    <name>plugins/darkroom/basecurve/auto_apply</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>auto-apply basecurve</shortdescription>
-    <longdescription>use a basecurve by default (needs a restart)</longdescription>
+    <name>plugins/darkroom/workflow</name>
+    <type>
+      <enum>
+        <option>scene-referred</option>
+        <option>display-referred</option>
+        <option>none</option>
+      </enum>
+    </type>
+    <default>display-referred</default>
+    <shortdescription>pixel workflow</shortdescription>
+    <longdescription>scene-referred is based on filmic and the linear modules,\ndisplay-referred is based on base curve and non-linear modules (needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
