@@ -1542,7 +1542,6 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_label_new("");
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   self->gui_data = &dummy;
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }
 
 void gui_cleanup(dt_iop_module_t *self)

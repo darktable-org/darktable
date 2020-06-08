@@ -706,7 +706,6 @@ void gui_init(dt_iop_module_t *self)
 
   // start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   c->mode = dt_bauhaus_combobox_from_params(self, "mode");
  

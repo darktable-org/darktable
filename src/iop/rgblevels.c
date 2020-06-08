@@ -953,9 +953,6 @@ void gui_init(dt_iop_module_t *self)
   c->dragging = 0;
   c->last_picked_color = -1;
 
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
   c->cmb_autoscale = dt_bauhaus_combobox_from_params(self, "autoscale");
   gtk_widget_set_tooltip_text(c->cmb_autoscale, _("choose between linked and independent channels."));
 

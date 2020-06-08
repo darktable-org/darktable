@@ -4311,7 +4311,6 @@ void gui_init(dt_iop_module_t *self)
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->profile = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));

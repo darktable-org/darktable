@@ -3096,7 +3096,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
   dtgtk_justify_notebook_tabs(g->notebook);

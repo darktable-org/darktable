@@ -2154,6 +2154,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_iop_gui_init_blending(iopw, module);
   gtk_widget_set_name(module->widget, "iop-plugin-ui-main");
+  dt_gui_add_help_link(module->widget, dt_get_help_url(module->op));
   gtk_widget_hide(iopw);
 
   module->expander = expander;

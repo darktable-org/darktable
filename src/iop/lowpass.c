@@ -595,22 +595,6 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_lowpass_gui_data_t));
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-#if 0 // gaussian is order not user selectable here, as it does not make much sense for a lowpass filter
-  GtkBox *hbox  = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
-  GtkWidget *label = dtgtk_reset_label_new(_("filter order"), self, &p->order, sizeof(float));
-  gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
-  g->order = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  gtk_combo_box_text_append_text(g->order, _("0th order"));
-  gtk_combo_box_text_append_text(g->order, _("1st order"));
-  gtk_combo_box_text_append_text(g->order, _("2nd order"));
-  gtk_widget_set_tooltip_text(g->order, _("filter order of gaussian blur"));
-  gtk_box_pack_start(hbox, GTK_WIDGET(g->order), TRUE, TRUE, 0);
-#endif
-
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_step(g->radius, 0.1);
   g->lowpass_algo = dt_bauhaus_combobox_from_params(self, "lowpass_algo");

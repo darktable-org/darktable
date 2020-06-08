@@ -913,9 +913,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
   g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_factor(g->size, 100);
   dt_bauhaus_slider_set_format(g->size, "%.2f %%");
