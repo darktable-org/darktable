@@ -1627,6 +1627,10 @@ static void rt_preview_levels_update(const float levels[3], dt_iop_module_t *sel
 
   rt_clamp_minmax(levels_old, p->preview_levels);
 
+  for(int i = 0; i < 3; i++)
+    dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, (p->preview_levels[i] + 3.0) / 6.0, i);
+
+
   gtk_widget_queue_draw(g->preview_levels_bar);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1849,20 +1853,6 @@ static gboolean rt_levelsbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module
       cairo_stroke(cr);
   }
 
-
-
-  for(int i = 0; i < 3; i++)
-  {
-    dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, (p->preview_levels[i] + 3.0) / 6.0, i);
-  }
-
-/*
-  dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, 0.1, 0);
-  dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, 0.5, 1);
-  dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, 0.9, 2);
-
-*/
-
   /* push mem surface into widget */
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
@@ -1992,7 +1982,18 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
 
     dt_pthread_mutex_unlock(&g->lock);
 
-    for(int i = 0; i < 3; i++) p->preview_levels[i] = g->preview_levels[i];
+
+
+
+
+    for(int i = 0; i < 3; i++)
+    {
+      p->preview_levels[i] = g->preview_levels[i];
+      dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, (p->preview_levels[i] + 3.0) / 6.0, i);
+    }
+
+
+
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
