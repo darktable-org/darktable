@@ -43,6 +43,7 @@ typedef struct dt_lib_tool_preferences_t
       *over_tt;
   GtkWidget *over_culling_label, *over_culling_r0, *over_culling_r3, *over_culling_r4, *over_culling_r6,
       *over_culling_timeout, *over_culling_tt;
+  gboolean disable_over_events;
 } dt_lib_tool_preferences_t;
 
 /* callback for grouping button */
@@ -87,23 +88,23 @@ static void _overlays_accels_callback(GtkAccelGroup *accel_group, GObject *accel
 
 static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
 {
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w))) return;
-
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
 
+  if(d->disable_over_events) return;
+
   dt_thumbnail_overlay_t over = DT_THUMBNAIL_OVERLAYS_HOVER_NORMAL;
-  if(w == d->over_r0)
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_r0)))
     over = DT_THUMBNAIL_OVERLAYS_NONE;
-  else if(w == d->over_r2)
+  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_r2)))
     over = DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED;
-  else if(w == d->over_r3)
+  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_r3)))
     over = DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL;
-  else if(w == d->over_r4)
+  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_r4)))
     over = DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED;
-  else if(w == d->over_r5)
+  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_r5)))
     over = DT_THUMBNAIL_OVERLAYS_MIXED;
-  else if(w == d->over_r6)
+  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_r6)))
     over = DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK;
 
   dt_ui_thumbtable(darktable.gui->ui)->show_tooltips = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_tt));
@@ -123,17 +124,17 @@ static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
 
 static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
 {
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w))) return;
-
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
 
+  if(d->disable_over_events) return;
+
   dt_thumbnail_overlay_t over = DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK;
-  if(w == d->over_culling_r0)
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_culling_r0)))
     over = DT_THUMBNAIL_OVERLAYS_NONE;
-  else if(w == d->over_culling_r3)
+  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_culling_r3)))
     over = DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL;
-  else if(w == d->over_culling_r4)
+  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_culling_r4)))
     over = DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED;
 
   dt_culling_mode_t cmode = DT_CULLING_MODE_CULLING;
@@ -184,6 +185,8 @@ static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
 static void _overlays_show_popup(dt_lib_module_t *self)
 {
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+
+  d->disable_over_events = TRUE;
 
   gboolean show = FALSE;
 
@@ -335,6 +338,8 @@ static void _overlays_show_popup(dt_lib_module_t *self)
   if(show) gtk_widget_show(d->over_popup);
   else
     dt_control_log(_("overlays not available here..."));
+
+  d->disable_over_events = FALSE;
 }
 
 static void _main_icons_register_size(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
