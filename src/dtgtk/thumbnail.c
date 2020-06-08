@@ -525,7 +525,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
 
   // and the tooltip
   gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK || strcmp(pattern, "") == 0)
+  if(!thumb->tooltip || strcmp(pattern, "") == 0)
   {
     gtk_widget_set_has_tooltip(thumb->w_main, FALSE);
   }
@@ -1130,7 +1130,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
   return thumb->w_main;
 }
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over, gboolean zoomable)
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over,
+                                 gboolean zoomable, gboolean tooltip)
 {
   dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));
   thumb->width = width;
@@ -1141,6 +1142,7 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   thumb->zoomable = zoomable;
   thumb->zoom = 1.0f;
   thumb->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
+  thumb->tooltip = tooltip;
 
   // we read and cache all the infos from dt_image_t that we need
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
@@ -1172,11 +1174,11 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   // set tooltip for altered icon if needed
   if(thumb->is_altered)
   {
-    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
-    if(tooltip)
+    char *tooltip_txt = dt_history_get_items_as_string(thumb->imgid);
+    if(tooltip_txt)
     {
-      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
-      g_free(tooltip);
+      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip_txt);
+      g_free(tooltip_txt);
     }
   }
 
