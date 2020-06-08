@@ -346,8 +346,9 @@ const char *name()
 
 const char *description()
 {
-  return _("apply a view transform based on camera manufacturer look in RGB,\n"
+  return _("apply a view transform based on camera manufacturer look,\n"
            "for corrective purposes, to prepare images for display.\n"
+           "works in RGB,\n"
            "takes preferably a linear RGB input,\n"
            "outputs non-linear RGB.");
 }
