@@ -2678,6 +2678,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->reconstruct_structure_vs_texture, NULL, _("balance structure/texture"));
   dt_bauhaus_slider_set_format(g->reconstruct_structure_vs_texture, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_structure_vs_texture, FALSE, FALSE, 0);
+  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->reconstruct_structure_vs_texture, _("decide which reconstruction strategy to favor,\n"
                                                                      "between inpainting a smooth color gradient,\n"
                                                                      "or trying to recover the textured details.\n"
@@ -2691,6 +2692,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->reconstruct_bloom_vs_details, NULL, _("balance bloom/reconstruct"));
   dt_bauhaus_slider_set_format(g->reconstruct_bloom_vs_details, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_bloom_vs_details, FALSE, FALSE, 0);
+  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->reconstruct_bloom_vs_details, _("decide which reconstruction strategy to favor,\n"
                                                                  "between blooming highlights like film does,\n"
                                                                  "or trying to recover sharp details.\n"
@@ -2704,6 +2706,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->reconstruct_grey_vs_color, NULL, _("balance grey/colorful details"));
   dt_bauhaus_slider_set_format(g->reconstruct_grey_vs_color, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_grey_vs_color, FALSE, FALSE, 0);
+  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->reconstruct_grey_vs_color, _("decide which reconstruction strategy to favor,\n"
                                                               "between recovering monochromatic highlights,\n"
                                                               "or trying to recover colorful highlights.\n"

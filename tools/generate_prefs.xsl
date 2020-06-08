@@ -225,7 +225,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
-      g_object_set(lbox,  "tooltip-text", _("Where multiple module instances are present, these preferences control rules that are applied (in order) to decide which module instance keyboard shortcuts will be applied to"), (gchar *)0);
+      g_object_set(lbox,  "tooltip-text", _("where multiple module instances are present, these preferences control rules that are applied (in order) to decide which module instance keyboard shortcuts will be applied to"), (gchar *)0);
    }
 </xsl:text>
 
