@@ -2481,14 +2481,16 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
 
 static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(event->x <= allocation.width - darktable.bauhaus->quad_width)
+  if(d->is_dragging || event->x <= allocation.width - darktable.bauhaus->quad_width)
   {
     // remember mouse position for motion effects in draw
     if(event->state & GDK_BUTTON1_MASK && event->type != GDK_2BUTTON_PRESS)
     {
-      dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
       if(w->module) dt_iop_request_focus(w->module);
       gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
       const float l = 0.0f;
