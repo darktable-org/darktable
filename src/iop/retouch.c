@@ -50,9 +50,6 @@ DT_MODULE_INTROSPECTION(1, dt_iop_retouch_params_t)
 typedef enum dt_iop_retouch_drag_types_t {
   DT_IOP_RETOUCH_WDBAR_DRAG_TOP = 1,
   DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM = 2,
-  DT_IOP_RETOUCH_LVLBAR_DRAG_LEFT = 3,
-  DT_IOP_RETOUCH_LVLBAR_DRAG_MIDDLE = 4,
-  DT_IOP_RETOUCH_LVLBAR_DRAG_RIGHT = 5
 } dt_iop_retouch_drag_types_t;
 
 typedef enum dt_iop_retouch_fill_modes_t {
@@ -148,7 +145,6 @@ typedef struct dt_iop_retouch_gui_data_t
   GtkWidget *bt_paste_scale;
 
   GtkWidget *vbox_preview_scale;
-  GtkWidget *preview_levels_bar;
 
   GtkDarktableGradientSlider *preview_levels_gslider;
 
@@ -1572,324 +1568,30 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   return TRUE;
 }
 
-// preview levels bar
-
-#define RT_LVLBAR_INSET DT_PIXEL_APPLY_DPI(5)
-
-static float rt_mouse_x_to_levels(const float mouse_x, const float width)
-{
-  return (mouse_x * ((RETOUCH_PREVIEW_LVL_MAX - RETOUCH_PREVIEW_LVL_MIN) / width)) + RETOUCH_PREVIEW_LVL_MIN;
-}
-
-static float rt_levels_to_mouse_x(const float levels, const float width)
-{
-  return ((levels - RETOUCH_PREVIEW_LVL_MIN) * (width / (RETOUCH_PREVIEW_LVL_MAX - RETOUCH_PREVIEW_LVL_MIN)));
-}
-
-static int rt_mouse_x_is_over_levels(const float mouse_x, const float levels, const float width)
-{
-  const float arrw = DT_PIXEL_APPLY_DPI(7.0f) * .5f;
-  const float middle = rt_levels_to_mouse_x(levels, width);
-
-  return (mouse_x > middle - arrw && mouse_x < middle + arrw);
-}
-
-static int rt_mouse_x_to_levels_index(const float mouse_x, const float levels[3], const float width)
-{
-  int levels_index = -1;
-
-  const float mouse_x_left = rt_levels_to_mouse_x(levels[0], width);
-  const float mouse_x_middle = rt_levels_to_mouse_x(levels[1], width);
-  const float mouse_x_right = rt_levels_to_mouse_x(levels[2], width);
-
-  if(mouse_x <= mouse_x_left + (mouse_x_middle - mouse_x_left) / 2.f)
-    levels_index = 0;
-  else if(mouse_x <= mouse_x_middle + (mouse_x_right - mouse_x_middle) / 2.f)
-    levels_index = 1;
-  else
-    levels_index = 2;
-
-  return levels_index;
-}
-
-static void rt_preview_levels_update(const float levels[3], dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
-  float levels_old[3] = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
-
-  p->preview_levels[0] = levels[0];
-  p->preview_levels[1] = levels[1];
-  p->preview_levels[2] = levels[2];
-
-  rt_clamp_minmax(levels_old, p->preview_levels);
-
-  gtk_widget_queue_draw(g->preview_levels_bar);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
-
 
 static void rt_levelsbar_changed(GtkDarktableGradientSlider *gslider, dt_iop_module_t *self)
 {
-  //if(darktable.gui->reset) return;
-  //dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-  //dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
-  //dt_pthread_mutex_lock(&g->lock);
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 
   double dlevels[3];
-  float levels[3];
+  float levels_old[3];
+
+  if(darktable.gui->reset) return;
 
   dtgtk_gradient_slider_multivalue_get_values(gslider, dlevels);
 
-  for (int i = 0; i < 3; i++) levels[i] = 6.0 * dlevels[i] - 3.0;
+  for (int i = 0; i < 3; i++)
+  {
+    levels_old[i] = p->preview_levels[i];
+    p->preview_levels[i] = 6.0 * dlevels[i] - 3.0;
+  }
 
-  rt_preview_levels_update(levels, self);
+  rt_clamp_minmax(levels_old, p->preview_levels);
 
-
-  //dt_pthread_mutex_unlock(&g->lock);
-
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 
 }
 
-
-
-
-
-
-
-
-static gboolean rt_levelsbar_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
-{
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
-  g->lvlbar_mouse_x = -1;
-  g->lvlbar_mouse_y = -1;
-
-  gtk_widget_queue_draw(g->preview_levels_bar);
-
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return TRUE;
-
-  dt_iop_request_focus(self);
-
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
-  const int inset = RT_LVLBAR_INSET;
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const float width = allocation.width - 2 * inset;
-
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
-  {
-    // reset values
-    const float levels[3] = { RETOUCH_PREVIEW_LVL_MIN, 0.f, RETOUCH_PREVIEW_LVL_MAX };
-    rt_preview_levels_update(levels, self);
-  }
-  else if(event->button == 1)
-  {
-    // left slider
-    if(rt_mouse_x_is_over_levels(g->lvlbar_mouse_x, p->preview_levels[0], width))
-    {
-      g->is_dragging = DT_IOP_RETOUCH_LVLBAR_DRAG_LEFT;
-    }
-    // middle slider
-    else if(rt_mouse_x_is_over_levels(g->lvlbar_mouse_x, p->preview_levels[1], width))
-    {
-      g->is_dragging = DT_IOP_RETOUCH_LVLBAR_DRAG_MIDDLE;
-    }
-    // right slider
-    else if(rt_mouse_x_is_over_levels(g->lvlbar_mouse_x, p->preview_levels[2], width))
-    {
-      g->is_dragging = DT_IOP_RETOUCH_LVLBAR_DRAG_RIGHT;
-    }
-    else
-    {
-      const int lvl_idx = rt_mouse_x_to_levels_index(g->lvlbar_mouse_x, p->preview_levels, width);
-      if(lvl_idx >= 0)
-      {
-        float levels[3] = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
-        levels[lvl_idx] = rt_mouse_x_to_levels(g->lvlbar_mouse_x, width);
-        rt_preview_levels_update(levels, self);
-      }
-    }
-  }
-
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
-{
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  if(event->button == 1)
-  {
-    g->is_dragging = 0;
-  }
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return TRUE;
-
-  dt_iop_request_focus(self);
-
-  int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-  {
-    dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-    dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
-    const int inset = RT_LVLBAR_INSET;
-
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    const float width = allocation.width - 2 * inset;
-
-    const int lvl_idx = rt_mouse_x_to_levels_index(g->lvlbar_mouse_x, p->preview_levels, width);
-    if(lvl_idx >= 0)
-    {
-      float levels[3] = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
-      levels[lvl_idx]
-          = CLAMP(levels[lvl_idx] - (0.05 * delta_y), RETOUCH_PREVIEW_LVL_MIN, RETOUCH_PREVIEW_LVL_MAX);
-      rt_preview_levels_update(levels, self);
-    }
-  }
-
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
-{
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  const int inset = RT_LVLBAR_INSET;
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const float width = allocation.width - 2 * inset;
-  const float height = allocation.height - 2 * inset;
-
-  /* record mouse position within control */
-  g->lvlbar_mouse_x = CLAMP(event->x - inset, 0, width);
-  g->lvlbar_mouse_y = CLAMP(event->y - inset, 0, height);
-
-  float levels[3] = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
-
-  if(g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_LEFT)
-  {
-    levels[0] = rt_mouse_x_to_levels(g->lvlbar_mouse_x, width);
-    rt_preview_levels_update(levels, self);
-  }
-  else if(g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_MIDDLE)
-  {
-    levels[1] = rt_mouse_x_to_levels(g->lvlbar_mouse_x, width);
-    rt_preview_levels_update(levels, self);
-  }
-  else if(g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_RIGHT)
-  {
-    levels[2] = rt_mouse_x_to_levels(g->lvlbar_mouse_x, width);
-    rt_preview_levels_update(levels, self);
-  }
-
-  gtk_widget_queue_draw(g->preview_levels_bar);
-
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
-{
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  const int inset = RT_LVLBAR_INSET;
-  const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
-
-  GdkRGBA color;
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get_color(context, gtk_widget_get_state_flags(widget), &color);
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  float width = allocation.width;
-  float height = allocation.height;
-
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
-
-  // translate and scale
-  width -= 2.f * inset;
-  height -= 2.f * inset;
-  cairo_save(cr);
-
-  // draw backgrownd
-  cairo_pattern_t *gradient = NULL;
-  gradient = cairo_pattern_create_linear(0, 0, width, height);
-  if(gradient != NULL)
-  {
-    cairo_pattern_add_color_stop_rgb(gradient, 0, 0., 0., 0.);
-    cairo_pattern_add_color_stop_rgb(gradient, 1, .5, .5, .5);
-
-    cairo_set_line_width(cr, 0.1);
-    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-    cairo_set_source(cr, gradient);
-    cairo_rectangle(cr, inset, inset - DT_PIXEL_APPLY_DPI(2), width, height + 2. * DT_PIXEL_APPLY_DPI(2));
-    cairo_fill(cr);
-    cairo_stroke(cr);
-    cairo_pattern_destroy(gradient);
-  }
-
-  cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
-  cairo_restore(cr);
-
-  /* render control points handles */
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-
-  // draw arrows
-  for(int i = 0; i < 3; i++)
-  {
-    const float levels_value = p->preview_levels[i];
-    const float middle = rt_levels_to_mouse_x(levels_value, width);
-    const gboolean is_under_mouse
-        = g->lvlbar_mouse_x >= 0.f && rt_mouse_x_to_levels_index(g->lvlbar_mouse_x, p->preview_levels, width) == i;
-    const int is_dragging = (g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_LEFT && i == 0)
-                            || (g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_MIDDLE && i == 1)
-                            || (g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_RIGHT && i == 2);
-
-    cairo_move_to(cr, inset + middle, height + (2 * inset) - 1);
-    cairo_rel_line_to(cr, -arrw * .5f, 0);
-    cairo_rel_line_to(cr, arrw * .5f, -arrw);
-    cairo_rel_line_to(cr, arrw * .5f, arrw);
-    cairo_close_path(cr);
-
-    if(is_under_mouse || is_dragging)
-      cairo_fill(cr);
-    else
-      cairo_stroke(cr);
-  }
-
-  /* push mem surface into widget */
-  cairo_destroy(cr);
-  cairo_set_source_surface(crf, cst, 0, 0);
-  cairo_paint(crf);
-  cairo_surface_destroy(cst);
-
-  return TRUE;
-}
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -2017,20 +1719,15 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
 
     dt_pthread_mutex_lock(&g->lock);
 
-
     /* FIXME: preview pipe, is this neded ? */
     double levels[3];
     for(int i = 0; i < 3; i++) levels[i] = (p->preview_levels[i] + 3.0) / 6.0;
     dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, levels, FALSE);
 
-    
-
-
     g->preview_auto_levels = 0;
 
     dt_pthread_mutex_unlock(&g->lock);
 
-    gtk_widget_queue_draw(GTK_WIDGET(g->preview_levels_bar));
   }
   else
   {
@@ -2606,7 +2303,6 @@ void gui_update(dt_iop_module_t *self)
 
   // update the rest of the fields
   gtk_widget_queue_draw(GTK_WIDGET(g->wd_bar));
-  gtk_widget_queue_draw(GTK_WIDGET(g->preview_levels_bar));
 
   dt_bauhaus_combobox_set(g->cmb_blur_type, p->blur_type);
   dt_bauhaus_slider_set(g->sl_blur_radius, p->blur_radius);
@@ -2876,46 +2572,22 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *prev_lvl = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  g->preview_levels_bar = gtk_drawing_area_new();
-
-  gtk_widget_set_tooltip_text(g->preview_levels_bar, _("adjust preview levels"));
-  /*
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "draw", G_CALLBACK(rt_levelsbar_draw), self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "motion-notify-event", G_CALLBACK(rt_levelsbar_motion_notify),
-                   self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "leave-notify-event", G_CALLBACK(rt_levelsbar_leave_notify),
-                   self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "button-press-event", G_CALLBACK(rt_levelsbar_button_press),
-                   self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "button-release-event", G_CALLBACK(rt_levelsbar_button_release), self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "scroll-event", G_CALLBACK(rt_levelsbar_scrolled), self);
-  */
-  gtk_widget_add_events(GTK_WIDGET(g->preview_levels_bar), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                                               | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                               | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
-                                                               | GDK_SMOOTH_SCROLL_MASK);
-  gtk_widget_set_size_request(g->preview_levels_bar, -1, DT_PIXEL_APPLY_DPI(5));
-
-
+  // gradient slider
   #define NEUTRAL_GRAY 0.5
   static const GdkRGBA _gradient_L[]
       = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
-
   g->preview_levels_gslider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(
       dtgtk_gradient_slider_multivalue_new_with_color_and_name(_gradient_L[0], _gradient_L[1], 3, "preview-levels"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->preview_levels_gslider), _("adjust preview levels"));
   dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 0);
   dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 1);
   dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
-
-
   double vdefault[3] = {0.0 ,0.5, 1.0};
   dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, vdefault, FALSE);
   dtgtk_gradient_slider_multivalue_set_resetvalues(g->preview_levels_gslider, vdefault);
-
   g_signal_connect(G_OBJECT(g->preview_levels_gslider), "value-changed", G_CALLBACK(rt_levelsbar_changed), self);
 
-
+  // auto-levels button
   g->bt_auto_levels
       = dtgtk_togglebutton_new(_retouch_cairo_paint_auto_levels, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(g->bt_auto_levels), "tooltip-text", _("auto levels"), (char *)NULL);
@@ -2924,14 +2596,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_auto_levels), FALSE);
 
   gtk_box_pack_end(GTK_BOX(prev_lvl), g->bt_auto_levels, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_bar), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 20);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), prev_lvl, TRUE, TRUE, 0);
-
-
-
-  gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 20);
-
 
   // shapes selected (label)
   GtkWidget *hbox_shape_sel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -3876,7 +3543,6 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 }
 
 #undef RT_WDBAR_INSET
-#undef RT_LVLBAR_INSET
 
 #undef RETOUCH_NO_FORMS
 #undef RETOUCH_MAX_SCALES
