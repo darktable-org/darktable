@@ -1395,9 +1395,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->timeout_handle = 0;
   change_image(self);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
   g->autoscale = dt_bauhaus_combobox_from_params(self, "curve_autoscale");
   gtk_widget_set_tooltip_text(g->autoscale, _("choose between linked and independent channels."));
 

@@ -415,9 +415,6 @@ void gui_init(dt_iop_module_t *module)
   module->gui_data = malloc(sizeof(dt_iop_defringe_gui_data_t));
   dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)module->gui_data;
 
-  module->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(module->widget, dt_get_help_url(module->op));
-
   g->mode_select = dt_bauhaus_combobox_from_params(module, "op_mode");
   gtk_widget_set_tooltip_text(g->mode_select,
       _("method for color protection:\n - global average: fast, might show slightly wrong previews in high "

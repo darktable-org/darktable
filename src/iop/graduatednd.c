@@ -1153,9 +1153,6 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_graduatednd_gui_data_t));
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
   g->density = dt_bauhaus_slider_from_params(self, "density");
   dt_bauhaus_slider_set_format(g->density, _("%.2f EV"));
   gtk_widget_set_tooltip_text(g->density, _("the density in EV for the filter"));

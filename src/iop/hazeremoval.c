@@ -202,9 +202,6 @@ void gui_init(dt_iop_module_t *self)
   g->A0[2] = NAN;
   g->hash = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
   gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
 

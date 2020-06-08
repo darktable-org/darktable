@@ -1022,7 +1022,7 @@ void gui_init(dt_iop_module_t *self)
 
   // start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+
   gtk_box_pack_start(GTK_BOX(self->widget), c->stack, TRUE, TRUE, 0);
 }
 
