@@ -216,6 +216,23 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='misc' and @section='tags']">
     <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
+
+<xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("keyboard shortcuts with multiple instances"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_hexpand(lbox, TRUE);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+      g_object_set(lbox,  "tooltip-text", _("Where multiple module instances are present, these preferences control rules that are applied (in order) to decide which module instance keyboard shortcuts will be applied to"), (gchar *)0);
+   }
+</xsl:text>
+
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='misc' and @section='accel']">
+    <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+
 <xsl:text>
    {
       GtkWidget *seclabel = gtk_label_new(_("other"));
