@@ -150,7 +150,7 @@ typedef struct dt_iop_retouch_gui_data_t
   GtkWidget *vbox_preview_scale;
   GtkWidget *preview_levels_bar;
 
-  GtkWidget *preview_levels_gslider;
+  GtkDarktableGradientSlider *preview_levels_gslider;
 
   float lvlbar_mouse_x, lvlbar_mouse_y;
   GtkWidget *bt_auto_levels;
@@ -1849,6 +1849,20 @@ static gboolean rt_levelsbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module
       cairo_stroke(cr);
   }
 
+
+
+  for(int i = 0; i < 3; i++)
+  {
+    dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, (p->preview_levels[i] + 3.0) / 6.0, i);
+  }
+
+/*
+  dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, 0.1, 0);
+  dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, 0.5, 1);
+  dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, 0.9, 2);
+
+*/
+
   /* push mem surface into widget */
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
@@ -2854,16 +2868,17 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(g->preview_levels_bar, -1, DT_PIXEL_APPLY_DPI(5));
 
 
+  #define NEUTRAL_GRAY 0.5
+  static const GdkRGBA _gradient_L[]
+      = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
 
+  g->preview_levels_gslider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(
+      dtgtk_gradient_slider_multivalue_new_with_color_and_name(_gradient_L[0], _gradient_L[1], 3, "preview-levels"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->preview_levels_gslider), _("adjust preview levels"));
+  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);
+  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
+  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
 
-    g->preview_levels_gslider = dtgtk_gradient_slider_multivalue_new_with_name(3, "preview-levels");
-    gtk_widget_set_tooltip_text(g->preview_levels_gslider, _("adjust preview levels"));
-    dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->preview_levels_gslider),
-                                                GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);
-    dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->preview_levels_gslider),
-                                                GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
-    dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->preview_levels_gslider),
-                                                GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
   /*
     for(int k = 0; k < 3; k++)
     {
@@ -2893,7 +2908,7 @@ void gui_init(dt_iop_module_t *self)
 
 
 
-  gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), g->preview_levels_gslider, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 20);
 
 
 

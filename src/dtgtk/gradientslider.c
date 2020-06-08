@@ -460,7 +460,7 @@ static void _gradient_slider_init(GtkDarktableGradientSlider *gslider)
   {
     gslider->position[k] = 0.0;
     gslider->resetvalue[k] = 0.0;
-    gslider->marker[k] = GRADIENT_SLIDER_MARKER_LOWER_FILLED;
+    gslider->marker[k] = GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG;
   }
 }
 
