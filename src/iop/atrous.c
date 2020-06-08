@@ -120,8 +120,9 @@ const char *name()
 
 const char *description()
 {
-  return _("add or remove local contrast in Lab,\n"
+  return _("add or remove local contrast,\n"
            "for corrective and creative purposes.\n"
+           "works in Lab,\n"
            "takes preferably a linear RGB input,\n"
            "outputs almost linear RGB.");
 }

@@ -79,8 +79,9 @@ const char *name()
 
 const char *description()
 {
-  return _("apply Orton effect for a dreamy aetherical look in Lab,\n"
+  return _("apply Orton effect for a dreamy aetherical look,\n"
            "for creative purposes.\n"
+           "works in Lab,\n"
            "takes preferably a linear RGB input,\n"
            "outputs non-linear RGB.");
 }

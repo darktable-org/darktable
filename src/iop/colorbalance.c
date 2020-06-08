@@ -145,8 +145,9 @@ const char *name()
 
 const char *description()
 {
-  return _("affect color, brightness and contrast in RGB,\n"
+  return _("affect color, brightness and contrast\n"
            "for corrective and creative purposes.\n"
+           "works in RGB\n"
            "takes preferably a linear RGB input,\n"
            "outputs possibly non-linear RGB, depending on settings.");
 }
