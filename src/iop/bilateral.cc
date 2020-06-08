@@ -313,9 +313,6 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = (dt_iop_gui_data_t *)malloc(sizeof(dt_iop_bilateral_gui_data_t));
   dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the gaussian"));
   dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 30.0);
@@ -335,7 +332,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->blue, _("how much to blur blue"));
   dt_bauhaus_slider_set_soft_max(g->blue, 0.1);
   dt_bauhaus_slider_set_digits(g->blue, 4);
-
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

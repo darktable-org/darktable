@@ -341,13 +341,9 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_velvia_gui_data_t));
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
   g->strength_scale = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_format(g->strength_scale, "%.0f%%");
   gtk_widget_set_tooltip_text(g->strength_scale, _("the strength of saturation boost"));
-
 
   g->bias_scale = dt_bauhaus_slider_from_params(self, "bias");
   gtk_widget_set_tooltip_text(g->bias_scale, _("how much to spare highlights and shadows"));

@@ -1401,7 +1401,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->stack), FALSE);
