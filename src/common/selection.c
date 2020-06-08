@@ -344,6 +344,11 @@ void dt_selection_select_filmroll(dt_selection_t *selection)
   dt_collection_update(selection->collection);
 
   selection->last_single_id = -1;
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+
+  /* update hint message */
+  dt_collection_hint_message(darktable.collection);
 }
 
 void dt_selection_select_unaltered(dt_selection_t *selection)
@@ -374,6 +379,10 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
   g_free(fullq);
 
   selection->last_single_id = -1;
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+
+  /* update hint message */
+  dt_collection_hint_message(darktable.collection);
 }
 
 

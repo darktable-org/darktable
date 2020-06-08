@@ -344,7 +344,7 @@ static gboolean _camera_storage_image_filename_gui_thread(gpointer user_data)
 }
 
 static int _camera_storage_image_filename(const dt_camera_t *camera, const char *filename,
-                                          CameraFile *preview, CameraFile *exif, void *user_data)
+                                          CameraFile *preview, void *user_data)
 {
   _camera_import_dialog_t *data = (_camera_import_dialog_t *)user_data;
   const char *img;
@@ -354,8 +354,6 @@ static int _camera_storage_image_filename(const dt_camera_t *camera, const char 
 
   /* stop fetching previews if job is cancelled */
   if(data->preview_job && dt_control_job_get_state(data->preview_job) == DT_JOB_STATE_CANCELLED) return 0;
-
-  char exif_info[1024] = { 0 };
 
   if(preview)
   {
@@ -378,24 +376,6 @@ static int _camera_storage_image_filename(const dt_camera_t *camera, const char 
     }
   }
 
-#if 0
-  // libgphoto only supports fetching exif in jpegs, not raw
-  char buffer[1024]= {0};
-  if ( exif )
-  {
-    const char *exif_data;
-    char *value=NULL;
-    gp_file_get_data_and_size(exif, &exif_data, &size);
-    if( size > 0 )
-    {
-      void *exif=dt_exif_data_new((uint8_t *)exif_data,size);
-      if( (value=g_strdup( dt_exif_data_get_value(exif,"Exif.Photo.ExposureTime",buffer,1024) ) ) != NULL);
-      snprintf(exif_info, sizeof(exif_info), "exposure: %s\n", value);
-    }
-    else fprintf(stderr,"No exifdata read\n");
-  }
-#endif
-
   _image_filename_t *params = (_image_filename_t *)malloc(sizeof(_image_filename_t));
   if(!params)
   {
@@ -404,9 +384,7 @@ static int _camera_storage_image_filename(const dt_camera_t *camera, const char 
     return 0;
   }
 
-  // filename\n 1/60 f/2.8 24mm iso 160
-  params->file_info = g_strdup_printf("%s%c%s", filename, *exif_info ? '\n' : '\0',
-                                      *exif_info ? exif_info : "");
+  params->file_info = g_strdup(filename);
   params->thumb = thumb;
   params->store = data->store;
   g_main_context_invoke(NULL, _camera_storage_image_filename_gui_thread, params);

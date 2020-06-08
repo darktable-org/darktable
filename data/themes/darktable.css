@@ -556,8 +556,9 @@ overshoot.right
   margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
-/* Gradient sliders */
-#gradient-slider
+/* gradient sliders */
+.dt_gslider,
+.dt_gslider_multivalue
 {
   min-height: 1.7em;
   margin: 0;
