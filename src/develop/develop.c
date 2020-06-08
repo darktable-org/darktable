@@ -2155,6 +2155,12 @@ void dt_dev_modulegroups_switch(dt_develop_t *dev, dt_iop_module_t *module)
     dev->proxy.modulegroups.switch_group(dev->proxy.modulegroups.module, module);
 }
 
+void dt_dev_modulegroups_update_visibility(dt_develop_t *dev)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.switch_group && dev->first_load == FALSE)
+    dev->proxy.modulegroups.update_visibility(dev->proxy.modulegroups.module);
+}
+
 void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.search_text_focus && dev->first_load == 0)
