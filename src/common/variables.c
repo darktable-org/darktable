@@ -380,7 +380,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     gchar *txt = NULL;
     if(res != NULL)
     {
-      GList *labels = NULL;
       do
       {
         const char *lb = (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data))));
@@ -406,12 +405,11 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
         }
       } while((res = g_list_next(res)) != NULL);
       result = g_strdup(txt);
-      g_list_free(labels);
       g_free(txt);
     }
     g_list_free(res);
   }
-  else if(has_prefix(variable, "LABELS"))
+  else if(has_prefix(variable, "LABELS") || has_prefix(variable, "LABELS_ICONS"))
   {
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
     // only use the first/last label?
