@@ -2653,7 +2653,9 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
 {
   sqlite3_stmt *stmt;
 
-  const gboolean basecurve_auto_apply = strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "display-referred") == 0;
+  char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+  const gboolean basecurve_auto_apply = strcmp(workflow, "display-referred") == 0;
+  g_free(workflow);
   const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
 
   char query[1024] = { 0 };
