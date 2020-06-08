@@ -1907,12 +1907,12 @@ spinbutton>button
 #thumb_image
 {
   border: none;
-  margin: 2px; /* not real pixels, but percentage of the thumb size */
+  margin: 20px; /* not real pixels, but per thousand of the thumb size */
 }
 
 .dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
 {
-  margin: 1.5px;
+  margin: 15px;
 }
 
 #thumb_main:active #thumb_image
@@ -2165,7 +2165,7 @@ spinbutton>button
 /* Set image borders */
 .dt_preview #thumb_image
 {
-  margin : 1px;
+  margin : 10px;
 }
 .dt_culling #thumb_main:selected #thumb_image,
 .dt_preview #thumb_main:selected #thumb_image
