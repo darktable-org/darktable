@@ -151,7 +151,6 @@ typedef struct dt_iop_retouch_gui_data_t
   GtkWidget *preview_levels_bar;
 
   GtkDarktableGradientSlider *preview_levels_gslider;
-  gulong change_signal_id;
 
   float lvlbar_mouse_x, lvlbar_mouse_y;
   GtkWidget *bt_auto_levels;
@@ -1627,10 +1626,6 @@ static void rt_preview_levels_update(const float levels[3], dt_iop_module_t *sel
   p->preview_levels[2] = levels[2];
 
   rt_clamp_minmax(levels_old, p->preview_levels);
-/*
-  for(int i = 0; i < 3; i++)
-    dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, (p->preview_levels[i] + 3.0) / 6.0, i);
-*/
 
   gtk_widget_queue_draw(g->preview_levels_bar);
 
@@ -1647,34 +1642,20 @@ static void rt_levelsbar_changed(GtkDarktableGradientSlider *gslider, dt_iop_mod
   //dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
   //dt_pthread_mutex_lock(&g->lock);
-  //g_signal_handler_block(G_OBJECT(gslider), g->change_signal_id);
 
-
+  double dlevels[3];
   float levels[3];
-  for (int i = 0; i < 3; i++)
-    levels[i] = 6.0f * dtgtk_gradient_slider_multivalue_get_value(gslider, i) - 3.0f;
 
-  /*
-  float levels_old[3] = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
+  dtgtk_gradient_slider_multivalue_get_values(gslider, dlevels);
 
-  p->preview_levels[0] = levels[0];
-  p->preview_levels[1] = levels[1];
-  p->preview_levels[2] = levels[2];
-
-  rt_clamp_minmax(levels_old, p->preview_levels);
-
-
-  for(int i = 0; i < 3; i++)
-    dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, (p->preview_levels[i] + 3.0) / 6.0, i);
-
-  g_signal_handler_unblock(G_OBJECT(gslider), g->change_signal_id);
-
-  dt_pthread_mutex_unlock(&g->lock);
-
-
-*/
+  for (int i = 0; i < 3; i++) levels[i] = 6.0 * dlevels[i] - 3.0;
 
   rt_preview_levels_update(levels, self);
+
+
+  //dt_pthread_mutex_unlock(&g->lock);
+
+
 }
 
 
@@ -2030,22 +2011,20 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
 
     dt_pthread_mutex_unlock(&g->lock);
 
-
-
-
-
-    for(int i = 0; i < 3; i++)
-    {
-      p->preview_levels[i] = g->preview_levels[i];
-      dtgtk_gradient_slider_multivalue_set_value(g->preview_levels_gslider, (p->preview_levels[i] + 3.0) / 6.0, i);
-    }
-
-
-
+    for(int i = 0; i < 3; i++) p->preview_levels[i] = g->preview_levels[i];
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
     dt_pthread_mutex_lock(&g->lock);
+
+
+    /* FIXME: preview pipe, is this neded ? */
+    double levels[3];
+    for(int i = 0; i < 3; i++) levels[i] = (p->preview_levels[i] + 3.0) / 6.0;
+    dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, levels, FALSE);
+
+    
+
 
     g->preview_auto_levels = 0;
 
@@ -2930,30 +2909,10 @@ void gui_init(dt_iop_module_t *self)
 
 
   double vdefault[3] = {0.0 ,0.5, 1.0};
-  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, vdefault);
+  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, vdefault, FALSE);
   dtgtk_gradient_slider_multivalue_set_resetvalues(g->preview_levels_gslider, vdefault);
 
-
-
-
-
-
-
-
-  g->change_signal_id = g_signal_connect(G_OBJECT(g->preview_levels_gslider), "value-changed", G_CALLBACK(rt_levelsbar_changed), self);
-  /*
-    for(int k = 0; k < 3; k++)
-    {
-      dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->preview_levels_bar), levels[k], k);
-      dtgtk_gradient_slider_multivalue_set_resetvalue(DTGTK_GRADIENT_SLIDER(g->preview_levels_bar), levels[k], k);
-    }
-  */
-    /*
-    g_signal_connect(G_OBJECT(bd->upper_slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
-    g_signal_connect(G_OBJECT(bd->upper_slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
-    g_signal_connect(G_OBJECT(bd->upper_slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
-    g_signal_connect(G_OBJECT(bd->upper_slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
-  */
+  g_signal_connect(G_OBJECT(g->preview_levels_gslider), "value-changed", G_CALLBACK(rt_levelsbar_changed), self);
 
 
   g->bt_auto_levels
@@ -2965,15 +2924,12 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_end(GTK_BOX(prev_lvl), g->bt_auto_levels, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_bar), TRUE, TRUE, 0);
+
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), prev_lvl, TRUE, TRUE, 0);
 
 
 
-
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 20);
-
-
-
 
 
   // shapes selected (label)
