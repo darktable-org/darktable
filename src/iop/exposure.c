@@ -569,6 +569,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(p->mode)));
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);
+  /* xgettext:no-c-format */
   gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), g_strdup_printf(_("compensate camera exposure (%+.1f EV)"),
                                                                                   get_exposure_bias(self)));
   dt_bauhaus_slider_set_soft(g->black, p->black);
@@ -953,6 +954,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
+  /* xgettext:no-c-format */
   g->compensate_exposure_bias = gtk_check_button_new_with_label(g_strdup_printf(_("compensate camera exposure (%+.1f EV)"),
                                                                                   get_exposure_bias(self)));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);

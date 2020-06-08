@@ -2678,6 +2678,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->reconstruct_structure_vs_texture, NULL, _("balance structure/texture"));
   dt_bauhaus_slider_set_format(g->reconstruct_structure_vs_texture, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_structure_vs_texture, FALSE, FALSE, 0);
+  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->reconstruct_structure_vs_texture, _("decide which reconstruction strategy to favor,\n"
                                                                      "between inpainting a smooth color gradient,\n"
                                                                      "or trying to recover the textured details.\n"
@@ -2691,6 +2692,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->reconstruct_bloom_vs_details, NULL, _("balance bloom/reconstruct"));
   dt_bauhaus_slider_set_format(g->reconstruct_bloom_vs_details, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_bloom_vs_details, FALSE, FALSE, 0);
+  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->reconstruct_bloom_vs_details, _("decide which reconstruction strategy to favor,\n"
                                                                  "between blooming highlights like film does,\n"
                                                                  "or trying to recover sharp details.\n"
@@ -2704,6 +2706,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->reconstruct_grey_vs_color, NULL, _("balance grey/colorful details"));
   dt_bauhaus_slider_set_format(g->reconstruct_grey_vs_color, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_grey_vs_color, FALSE, FALSE, 0);
+  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->reconstruct_grey_vs_color, _("decide which reconstruction strategy to favor,\n"
                                                               "between recovering monochromatic highlights,\n"
                                                               "or trying to recover colorful highlights.\n"
@@ -2851,7 +2854,7 @@ void gui_init(dt_iop_module_t *self)
   // Custom grey
   g->custom_grey = gtk_check_button_new_with_label(_("use custom middle-grey values"));
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->custom_grey), p->custom_grey);
-  gtk_widget_set_tooltip_text(g->custom_grey, _("enable to input custom middle-grey values\n."
+  gtk_widget_set_tooltip_text(g->custom_grey, _("enable to input custom middle-grey values.\n"
                                                 "this is not recommended in general.\n"
                                                 "fix the global exposure in the exposure module instead.\n"
                                                 "disable to use standard 18.45 %% middle grey."));
@@ -2871,7 +2874,8 @@ void gui_init(dt_iop_module_t *self)
   // High quality reconstruction
   g->high_quality_reconstruction = dt_bauhaus_slider_new_with_range(self, 0, 10, 1, p->high_quality_reconstruction, 0);
   dt_bauhaus_widget_set_label(g->high_quality_reconstruction, NULL, _("iterations of high-quality reconstruction"));
-  gtk_widget_set_tooltip_text(g->high_quality_reconstruction, _("run an extra passes of chromaticity reconstructione\n."
+  gtk_widget_set_tooltip_text(g->high_quality_reconstruction, _("run extra passes of chromaticity reconstruction.\n"
+                                                                "more iterations means more color propagation from neighbourhood.\n"
                                                                 "this will be slower but will yield more neutral highlights.\n"
                                                                 "it also helps with difficult cases of magenta highlights."));
   gtk_box_pack_start(GTK_BOX(page4), g->high_quality_reconstruction , FALSE, FALSE, 0);
