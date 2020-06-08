@@ -2879,6 +2879,7 @@ void gui_init(dt_iop_module_t *self)
   g->preview_levels_bar = gtk_drawing_area_new();
 
   gtk_widget_set_tooltip_text(g->preview_levels_bar, _("adjust preview levels"));
+  /*
   g_signal_connect(G_OBJECT(g->preview_levels_bar), "draw", G_CALLBACK(rt_levelsbar_draw), self);
   g_signal_connect(G_OBJECT(g->preview_levels_bar), "motion-notify-event", G_CALLBACK(rt_levelsbar_motion_notify),
                    self);
@@ -2886,9 +2887,9 @@ void gui_init(dt_iop_module_t *self)
                    self);
   g_signal_connect(G_OBJECT(g->preview_levels_bar), "button-press-event", G_CALLBACK(rt_levelsbar_button_press),
                    self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "button-release-event",
-                   G_CALLBACK(rt_levelsbar_button_release), self);
+  g_signal_connect(G_OBJECT(g->preview_levels_bar), "button-release-event", G_CALLBACK(rt_levelsbar_button_release), self);
   g_signal_connect(G_OBJECT(g->preview_levels_bar), "scroll-event", G_CALLBACK(rt_levelsbar_scrolled), self);
+  */
   gtk_widget_add_events(GTK_WIDGET(g->preview_levels_bar), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                                | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                                | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
