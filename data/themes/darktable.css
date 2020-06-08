@@ -625,6 +625,11 @@ overshoot.right
   margin: 12px 0 6px 0;
 }
 
+#iop-plugin-ui #section_label.section_label_top
+{
+  margin: 2px 0 6px 0;
+}
+
 /* Special modules: image infos, navigation and search ones */
 #image-info
 {
