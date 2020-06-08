@@ -79,6 +79,9 @@ void dt_styles_update(const char *name, const char *newname, const char *descrip
 /** applies the style to selection of images */
 void dt_styles_apply_to_list(const char *name, GList *list, gboolean duplicate);
 
+/** applies list of styles to selection of images */
+void dt_multiple_styles_apply_to_list(GList *styles, GList *list, gboolean duplicate);
+
 /** applies the item style to dev->history */
 void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, GList **modules_used, const gboolean append);
 
