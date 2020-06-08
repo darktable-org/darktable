@@ -1188,12 +1188,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->define = 0;
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
 GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;

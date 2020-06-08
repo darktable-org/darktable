@@ -454,13 +454,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->spatial), "no-show-all", TRUE, NULL);
 }
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

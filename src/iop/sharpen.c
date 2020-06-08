@@ -752,12 +752,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->threshold, _("threshold to activate sharpen"));
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
 #undef MAXR
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

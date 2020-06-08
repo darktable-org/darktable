@@ -333,12 +333,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_max(g->blue, 0.1);
   dt_bauhaus_slider_set_digits(g->blue, 4);
 }
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

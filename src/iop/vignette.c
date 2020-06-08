@@ -1068,12 +1068,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->autoratio), "toggled", G_CALLBACK(autoratio_callback), self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
 GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;

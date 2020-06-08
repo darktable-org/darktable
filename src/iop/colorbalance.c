@@ -2337,13 +2337,6 @@ void gui_init(dt_iop_module_t *self)
 #undef ADD_CHANNEL
 }
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
 /** additional, optional callbacks to capture darkroom center events. */
 // int mouse_moved(dt_iop_module_t *self, double x, double y, double pressure, int which);
 // int button_pressed(dt_iop_module_t *self, double x, double y, double pressure, int which, int type,

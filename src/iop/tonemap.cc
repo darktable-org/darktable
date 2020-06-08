@@ -251,12 +251,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->Fsize = dt_bauhaus_slider_from_params(self, "Fsize");
   dt_bauhaus_slider_set_format(g->Fsize, "%.0f%%");
 }
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
