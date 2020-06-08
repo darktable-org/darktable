@@ -1427,7 +1427,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // insert an history_hash entry for all images which have an history
     // note that images without history don't get hash and are considered as basic
     sqlite3_stmt *h_stmt;
-    const gboolean basecurve_auto_apply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
+    const gboolean basecurve_auto_apply = strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "display-referred") == 0;
     const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
     char *query = NULL;
     query = dt_util_dstrcat(query,
