@@ -441,12 +441,6 @@ void gui_update(dt_iop_module_t *module)
   dt_bauhaus_slider_set(g->thresh_scale, p->thresh);
 }
 
-void gui_cleanup(dt_iop_module_t *module)
-{
-  free(module->gui_data);
-  module->gui_data = NULL;
-}
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
