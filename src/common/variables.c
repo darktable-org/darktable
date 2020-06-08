@@ -165,6 +165,7 @@ static inline gboolean has_prefix(char **str, const char *prefix)
 static char *get_base_value(dt_variables_params_t *params, char **variable)
 {
   char *result = NULL;
+  gboolean escape = TRUE;
 
   struct tm exif_tm = params->data->have_exif_tm ? params->data->exif_tm : params->data->time;
 
@@ -371,6 +372,45 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
         break;
     }
   }
+  else if(has_prefix(variable, "LABELS_ICONS") && g_strcmp0(params->jobcode, "infos") == 0)
+  {
+    escape = FALSE;
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    res = g_list_first(res);
+    gchar *txt = NULL;
+    if(res != NULL)
+    {
+      GList *labels = NULL;
+      do
+      {
+        const char *lb = (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data))));
+        if(g_strcmp0(lb, "red") == 0)
+        {
+          txt = dt_util_dstrcat(txt, "<span foreground=\"#ee0000\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "yellow") == 0)
+        {
+          txt = dt_util_dstrcat(txt, "<span foreground=\"#eeee00\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "green") == 0)
+        {
+          txt = dt_util_dstrcat(txt, "<span foreground=\"#00ee00\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "blue") == 0)
+        {
+          txt = dt_util_dstrcat(txt, "<span foreground=\"#0000ee\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "purple") == 0)
+        {
+          txt = dt_util_dstrcat(txt, "<span foreground=\"#ee00ee\">⚫ </span>");
+        }
+      } while((res = g_list_next(res)) != NULL);
+      result = g_strdup(txt);
+      g_list_free(labels);
+      g_free(txt);
+    }
+    g_list_free(res);
+  }
   else if(has_prefix(variable, "LABELS"))
   {
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
@@ -507,7 +547,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   }
   if(!result) result = g_strdup("");
 
-  if(params->escape_markup)
+  if(params->escape_markup && escape)
   {
     gchar *e_res = g_markup_escape_text(result, -1);
     g_free(result);
