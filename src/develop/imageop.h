@@ -172,6 +172,13 @@ typedef struct dt_iop_module_so_t
   int (*flags)(void);
 
   const char *(*description)(void);
+  /* should return a string with 5 lines:
+     line 1 : summary of what it does
+     line 2 : oriented creative or corrective ?
+     line 3 : working space
+     line 4 : input space
+     line 5 : output space
+  */
 
   int (*operation_tags)(void);
   int (*operation_tags_filter)(void);
