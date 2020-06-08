@@ -348,7 +348,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkStyleContext *context = gtk_widget_get_style_context(hb);
     gtk_style_context_add_class(context, "dt_overlays_always");
 
-    dt_thumbnail_t *thumb = dt_thumbnail_new(100, 100, imgid, -1, DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL, FALSE);
+    dt_thumbnail_t *thumb
+        = dt_thumbnail_new(100, 100, imgid, -1, DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL, FALSE, TRUE);
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
     thumb->disable_mouseover = TRUE;
     thumb->disable_actions = TRUE;
