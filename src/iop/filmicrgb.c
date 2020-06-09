@@ -2578,11 +2578,21 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *page5 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page1, gtk_label_new(_("scene")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page5, gtk_label_new(_("reconstruct")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, gtk_label_new(_("look")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("display")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page4, gtk_label_new(_("options")));
+  GtkWidget *label = gtk_label_new(_("scene"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page1, label);
+  label = gtk_label_new(_("reconstruct"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page5, label);
+  label = gtk_label_new(_("look"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, label);
+  label = gtk_label_new(_("display"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, label);
+  label = gtk_label_new(_("options"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page4, label);
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
@@ -2649,7 +2659,11 @@ void gui_init(dt_iop_module_t *self)
   // Reconstruction threshold
   g->reconstruct_threshold = dt_bauhaus_slider_new_with_range(self, -6., 6., 0.1, p->reconstruct_threshold, 2);
   dt_bauhaus_slider_set_format(g->reconstruct_threshold, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->reconstruct_threshold, NULL, _("highlights clipping threshold"));
+  dt_bauhaus_widget_set_label(g->reconstruct_threshold, NULL, _("threshold"));
+  label = dt_ui_section_label_new(_("highlights clipping"));
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
+  gtk_style_context_add_class(context, "section_label_top");
+  gtk_box_pack_start(GTK_BOX(page5), label, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_threshold, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->reconstruct_threshold, _("set the exposure threshold upon which\n"
                                                           "clipped highlights get reconstructed.\n"
@@ -2662,7 +2676,7 @@ void gui_init(dt_iop_module_t *self)
   // Reconstruction feather
   g->reconstruct_feather = dt_bauhaus_slider_new_with_range(self, 0.25, 6., 0.1, p->reconstruct_feather, 2);
   dt_bauhaus_slider_set_format(g->reconstruct_feather, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->reconstruct_feather, NULL, _("highlights clipping transition"));
+  dt_bauhaus_widget_set_label(g->reconstruct_feather, NULL, _("transition"));
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_feather, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->reconstruct_feather, _("soften the transition between clipped highlights and valid pixels.\n"
                                                         "decrease to make the transition harder and sharper,\n"
@@ -2675,8 +2689,9 @@ void gui_init(dt_iop_module_t *self)
 
   // Reconstruction structure/texture
   g->reconstruct_structure_vs_texture = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->reconstruct_structure_vs_texture, 2);
-  dt_bauhaus_widget_set_label(g->reconstruct_structure_vs_texture, NULL, _("balance structure/texture"));
+  dt_bauhaus_widget_set_label(g->reconstruct_structure_vs_texture, NULL, _("structure/texture"));
   dt_bauhaus_slider_set_format(g->reconstruct_structure_vs_texture, "%.2f %%");
+  gtk_box_pack_start(GTK_BOX(page5), dt_ui_section_label_new(_("balance")), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_structure_vs_texture, FALSE, FALSE, 0);
   /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->reconstruct_structure_vs_texture, _("decide which reconstruction strategy to favor,\n"
@@ -2689,7 +2704,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Bloom vs. reconstruct
   g->reconstruct_bloom_vs_details = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->reconstruct_grey_vs_color, 2);
-  dt_bauhaus_widget_set_label(g->reconstruct_bloom_vs_details, NULL, _("balance bloom/reconstruct"));
+  dt_bauhaus_widget_set_label(g->reconstruct_bloom_vs_details, NULL, _("bloom/reconstruct"));
   dt_bauhaus_slider_set_format(g->reconstruct_bloom_vs_details, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_bloom_vs_details, FALSE, FALSE, 0);
   /* xgettext:no-c-format */
@@ -2703,7 +2718,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Bloom threshold
   g->reconstruct_grey_vs_color = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->reconstruct_grey_vs_color, 2);
-  dt_bauhaus_widget_set_label(g->reconstruct_grey_vs_color, NULL, _("balance grey/colorful details"));
+  dt_bauhaus_widget_set_label(g->reconstruct_grey_vs_color, NULL, _("grey/colorful details"));
   dt_bauhaus_slider_set_format(g->reconstruct_grey_vs_color, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page5), g->reconstruct_grey_vs_color, FALSE, FALSE, 0);
   /* xgettext:no-c-format */
