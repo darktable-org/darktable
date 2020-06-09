@@ -425,10 +425,13 @@ void gui_init(dt_lib_module_t *self)
   lib->gui.main_grid = GTK_GRID(self->widget);
   gtk_grid_set_row_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
 
+  gtk_grid_set_column_homogeneous(GTK_GRID(self->widget), FALSE);
+
   GtkBox *hbox;
 
   // Camera control
   GtkWidget *label = dt_ui_section_label_new(_("camera control"));
+  gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(GTK_GRID(self->widget), label, lib->gui.rows++, 0, 2, 1);
   dt_gui_add_help_link(self->widget, "camera_settings.html#camera_settings");
 
@@ -515,7 +518,7 @@ void gui_init(dt_lib_module_t *self)
 
   // user specified properties
   label = dt_ui_section_label_new(_("additional properties"));
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
   dt_gui_add_help_link(self->widget, "camera_settings.html#camera_settings");
 
   label = gtk_label_new(_("label"));
