@@ -222,20 +222,13 @@ static void _styles_row_activated_callback(GtkTreeView *view, GtkTreePath *path,
   g_list_free(list);
 }
 
-static void apply_clicked(GtkWidget *w, gpointer user_data)
+// get list of style names from selection
+// free returned list with g_list_free_full(list, g_free)
+GList* _get_selected_style_names(GList* selected_styles, GtkTreeModel *model)
 {
-  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree));
-
-  if(gtk_tree_selection_count_selected_rows(selection) == 0) return;
-
   GtkTreeIter iter;
-  GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
-
-  GList *selected_styles = gtk_tree_selection_get_selected_rows(selection, &model);
   GList *style_names = NULL;
-  GList *style = NULL;
-  for (style = selected_styles; style != NULL; style = style->next)
+  for (GList *style = selected_styles; style != NULL; style = style->next)
   {
     GValue value = {0,};
     gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)style->data);
@@ -244,6 +237,19 @@ static void apply_clicked(GtkWidget *w, gpointer user_data)
       style_names = g_list_append(style_names, g_strdup(g_value_get_string(&value)));
     g_value_unset(&value);
   }
+  return style_names;
+}
+
+static void apply_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree));
+
+  if(gtk_tree_selection_count_selected_rows(selection) == 0) return;
+
+  GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
+  GList *selected_styles = gtk_tree_selection_get_selected_rows(selection, &model);
+  GList *style_names = _get_selected_style_names(selected_styles, model);
   g_list_free_full(selected_styles, (GDestroyNotify) gtk_tree_path_free);
 
   if(style_names == NULL) return;
@@ -253,7 +259,7 @@ static void apply_clicked(GtkWidget *w, gpointer user_data)
   if(list) dt_multiple_styles_apply_to_list(style_names, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
 
   g_list_free(list);
-  g_list_free(style_names);
+  g_list_free_full(style_names, g_free);
 }
 
 static void create_clicked(GtkWidget *w, gpointer user_data)
@@ -277,8 +283,7 @@ static void edit_clicked(GtkWidget *w, gpointer user_data)
   GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
 
   GList *styles = gtk_tree_selection_get_selected_rows(selection, &model);
-  GList *style = NULL;
-  for (style = styles; style != NULL; style = style->next)
+  for (GList *style = styles; style != NULL; style = style->next)
   {
     char *name = NULL;
     GValue value = {0,};
@@ -306,21 +311,9 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
 
   if(gtk_tree_selection_count_selected_rows(selection) == 0) return;
 
-  GtkTreeIter iter;
   GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
-
   GList *selected_styles = gtk_tree_selection_get_selected_rows(selection, &model);
-  GList *style_names = NULL;
-  GList *style = NULL;
-  for (style = selected_styles; style != NULL; style = style->next)
-  {
-    GValue value = {0,};
-    gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)style->data);
-    gtk_tree_model_get_value(model, &iter, DT_STYLES_COL_FULLNAME, &value);
-    if(G_VALUE_HOLDS_STRING(&value))
-      style_names = g_list_append(style_names, g_strdup(g_value_get_string(&value)));
-    g_value_unset(&value);
-  }
+  GList *style_names = _get_selected_style_names(selected_styles, model);
   g_list_free_full(selected_styles, (GDestroyNotify) gtk_tree_path_free);
 
   if(style_names == NULL) return;
@@ -347,14 +340,14 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
 
   if(res == GTK_RESPONSE_YES)
   {
-    for (style = style_names; style != NULL; style = style->next)
+    for (GList *style = style_names; style != NULL; style = style->next)
     {
       dt_styles_delete_by_name((char*)style->data);
     }
     _gui_styles_update_view(d);
   }
 
-  g_list_free(style_names);
+  g_list_free_full(style_names, g_free);
 }
 
 static void export_clicked(GtkWidget *w, gpointer user_data)
@@ -365,21 +358,9 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 
   if(gtk_tree_selection_count_selected_rows(selection) == 0) return;
 
-  GtkTreeIter iter;
   GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
-
   GList *selected_styles = gtk_tree_selection_get_selected_rows(selection, &model);
-  GList *style_names = NULL;
-  GList *style = NULL;
-  for (style = selected_styles; style != NULL; style = style->next)
-  {
-    GValue value = {0,};
-    gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)style->data);
-    gtk_tree_model_get_value(model, &iter, DT_STYLES_COL_FULLNAME, &value);
-    if(G_VALUE_HOLDS_STRING(&value))
-      style_names = g_list_append(style_names, g_strdup(g_value_get_string(&value)));
-    g_value_unset(&value);
-  }
+  GList *style_names = _get_selected_style_names(selected_styles, model);
   g_list_free_full(selected_styles, (GDestroyNotify) gtk_tree_path_free);
 
   if(style_names == NULL) return;
@@ -396,7 +377,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    for (style = style_names; style != NULL; style = style->next)
+    for (GList *style = style_names; style != NULL; style = style->next)
     {
       dt_styles_save_to_file((char*)style->data, filedir, FALSE);
       dt_control_log(_("style %s was successfully saved"), (char*)style->data);
@@ -404,7 +385,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
     g_free(filedir);
   }
   gtk_widget_destroy(filechooser);
-  g_list_free(style_names);
+  g_list_free_full(style_names, g_free);
 }
 
 static void import_clicked(GtkWidget *w, gpointer user_data)
