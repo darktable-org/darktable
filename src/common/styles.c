@@ -599,9 +599,9 @@ void dt_styles_apply_to_list(const char *name, GList *list, gboolean duplicate)
 {
   gboolean selected = FALSE;
 
-  /* write current history changes so nothing gets lost, do that only in the darkroom as there is nothing to
-     be
-     save when in the lighttable (and it would write over current history stack) */
+  /* write current history changes so nothing gets lost,
+     do that only in the darkroom as there is nothing to be saved
+     when in the lighttable (and it would write over current history stack) */
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
 
@@ -622,13 +622,14 @@ void dt_styles_apply_to_list(const char *name, GList *list, gboolean duplicate)
   dt_undo_end_group(darktable.undo);
 
   if(!selected) dt_control_log(_("no image selected!"));
+  dt_control_log(_("style %s successfully applied!"), name);
 }
 
 void dt_multiple_styles_apply_to_list(GList *styles, GList *list, gboolean duplicate)
 {
-  /* write current history changes so nothing gets lost, do that only in the darkroom as there is nothing to
-     be
-     save when in the lighttable (and it would write over current history stack) */
+  /* write current history changes so nothing gets lost,
+     do that only in the darkroom as there is nothing to be saved
+     when in the lighttable (and it would write over current history stack) */
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
 
@@ -669,6 +670,7 @@ void dt_multiple_styles_apply_to_list(GList *styles, GList *list, gboolean dupli
     l = g_list_next(l);
   }
   dt_undo_end_group(darktable.undo);
+  dt_control_log(ngettext("style successfully applied!", "styles successfully applied", styles_cnt));
 }
 
 void dt_styles_create_from_list(GList *list)
