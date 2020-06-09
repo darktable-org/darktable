@@ -287,8 +287,10 @@ void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc,
                            const gboolean undo_on);
 /** get image location lon/lat/ele */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
-/** returns 1 if there is history data found for this image, 0 else. */
+/** returns TRUE if current hash is not basic nor auto_apply, FALSE otherwise. */
 gboolean dt_image_altered(const uint32_t imgid);
+/** returns TRUE if if current has is basic, FALSE otherwise. */
+gboolean dt_image_basic(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */
 double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise);
 /** set the image raw aspect ratio */

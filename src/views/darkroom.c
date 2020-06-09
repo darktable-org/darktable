@@ -817,7 +817,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_write_history(dev);
 
   // be sure light table will update the thumbnail
-  if (!dt_history_hash_get_mipmap_sync(dev->image_storage.id))
+  if (!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_reset_final_size(dev->image_storage.id);
@@ -2879,7 +2879,7 @@ void leave(dt_view_t *self)
   }
 
   // be sure light table will regenerate the thumbnail:
-  if (!dt_history_hash_get_mipmap_sync(dev->image_storage.id))
+  if (!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_reset_final_size(dev->image_storage.id);

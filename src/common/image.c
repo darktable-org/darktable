@@ -1009,6 +1009,11 @@ gboolean dt_image_altered(const uint32_t imgid)
   return status & DT_HISTORY_HASH_CURRENT;
 }
 
+gboolean dt_image_basic(const uint32_t imgid)
+{
+  dt_history_hash_t status = dt_history_hash_get_status(imgid);
+  return status & DT_HISTORY_HASH_BASIC;
+}
 
 GList* dt_image_find_duplicates(const char* filename)
 {
