@@ -251,6 +251,9 @@ git submodule update
 
 #### Easy way
 
+WARNING: in case you have already built darktable in the past, don't forget to remove entirely (`rm -R`) the `build` 
+and `/opt/darktable` directories to avoid conflicting files from different versions.
+
 darktable provides a shell script that automaticaly takes care of the building on Linux and MacOS for classic cases in a single command. 
 
 
