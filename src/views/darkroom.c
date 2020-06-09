@@ -566,8 +566,14 @@ void expose(
     cairo_restore(cri);
   }
 
+  // display mask if we have a current module activated or if the masks manager module is expanded
+
+  const gboolean display_masks =
+    (dev->gui_module && dev->gui_module->enabled)
+    || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
+
   // execute module callback hook.
-  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && display_masks)
   {
     // The colorpicker bounding rectangle should only be displayed inside the visible image
     const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
@@ -641,8 +647,7 @@ void expose(
   }
   else
   {
-    // masks
-    if(dev->gui_module && dev->form_visible && dev->gui_module->enabled)
+    if(dev->form_visible && display_masks)
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
     // module
     if(dev->gui_module && dev->gui_module->gui_post_expose)
