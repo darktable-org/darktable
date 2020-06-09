@@ -1429,17 +1429,14 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   gtk_widget_set_size_request(thumb->w_main, width, height);
 
   _thumb_retrieve_margins(thumb);
-  const int margin_l = MAX(0, thumb->img_margin->left * width / 100);
-  const int margin_t = MAX(0, thumb->img_margin->top * height / 100);
-  const int margin_b = MAX(0, thumb->img_margin->bottom * height / 100);
 
   // file extension
-  gtk_widget_set_margin_start(thumb->w_ext, margin_l);
-  gtk_widget_set_margin_top(thumb->w_ext, margin_t);
+  gtk_widget_set_margin_start(thumb->w_ext, thumb->img_margin->left);
+  gtk_widget_set_margin_top(thumb->w_ext, thumb->img_margin->top);
 
   // retrieves the size of the main icons in the top panel, thumbtable overlays shall not exceed that
   int max_size = darktable.gui->icon_size;
-  const int fsize = fminf(max_size, (height - margin_t - margin_b) / 11.0f);
+  const int fsize = fminf(max_size, (height - thumb->img_margin->top - thumb->img_margin->bottom) / 11.0f);
 
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
