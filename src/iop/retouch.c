@@ -1569,7 +1569,7 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
 }
 
 
-static void rt_levelsbar_changed(GtkDarktableGradientSlider *gslider, dt_iop_module_t *self)
+static void rt_gslider_changed(GtkDarktableGradientSlider *gslider, dt_iop_module_t *self)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 
@@ -1586,7 +1586,7 @@ static void rt_levelsbar_changed(GtkDarktableGradientSlider *gslider, dt_iop_mod
     p->preview_levels[i] = 6.0 * dlevels[i] - 3.0;
   }
 
-  rt_clamp_minmax(levels_old, p->preview_levels);
+  rt_clamp_minmax(levels_old, p->preview_levels); // eliminate and transfer to library?
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1719,7 +1719,7 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
 
     dt_pthread_mutex_lock(&g->lock);
 
-    /* FIXME: preview pipe, is this neded ? */
+    // update the gradient slider
     double levels[3];
     for(int i = 0; i < 3; i++) levels[i] = (p->preview_levels[i] + 3.0) / 6.0;
     dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, levels, FALSE);
@@ -2332,6 +2332,11 @@ void gui_update(dt_iop_module_t *self)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
   }
+
+  // update the gradient slider
+  double levels[3];
+  for(int i = 0; i < 3; i++) levels[i] = (p->preview_levels[i] + 3.0) / 6.0;
+  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, levels, FALSE);
 }
 
 void change_image(struct dt_iop_module_t *self)
@@ -2585,7 +2590,7 @@ void gui_init(dt_iop_module_t *self)
   double vdefault[3] = {0.0 ,0.5, 1.0};
   dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, vdefault, FALSE);
   dtgtk_gradient_slider_multivalue_set_resetvalues(g->preview_levels_gslider, vdefault);
-  g_signal_connect(G_OBJECT(g->preview_levels_gslider), "value-changed", G_CALLBACK(rt_levelsbar_changed), self);
+  g_signal_connect(G_OBJECT(g->preview_levels_gslider), "value-changed", G_CALLBACK(rt_gslider_changed), self);
 
   // auto-levels button
   g->bt_auto_levels
