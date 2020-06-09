@@ -228,6 +228,14 @@ static void _thumb_retrieve_margins(dt_thumbnail_t *thumb)
   thumb->img_margin = gtk_border_new();
   GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
   gtk_style_context_get_margin(context, state, thumb->img_margin);
+
+  // and we apply it to the thumb size
+  int width, height;
+  gtk_widget_get_size_request(thumb->w_main, &width, &height);
+  thumb->img_margin->left = MAX(0, thumb->img_margin->left * width / 1000);
+  thumb->img_margin->top = MAX(0, thumb->img_margin->top * height / 1000);
+  thumb->img_margin->right = MAX(0, thumb->img_margin->right * width / 1000);
+  thumb->img_margin->bottom = MAX(0, thumb->img_margin->bottom * height / 1000);
 }
 
 static void _thumb_write_extension(dt_thumbnail_t *thumb)
@@ -277,36 +285,36 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     // let's ensure we have the right margins
     _thumb_retrieve_margins(thumb);
 
-    const float ratio_h = (float)(100 - thumb->img_margin->top - thumb->img_margin->bottom) / 100.0;
-    const float ratio_w = (float)(100 - thumb->img_margin->left - thumb->img_margin->right) / 100.0;
-
     int image_w, image_h;
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
     {
-      image_w = thumb->width * ratio_w;
+      image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
       int w = 0;
       int h = 0;
-      gtk_widget_get_size_request(thumb->w_bottom, &w, &h);
+      gtk_widget_get_size_request(thumb->w_bottom_eb, &w, &h);
       image_h = thumb->height - h;
       gtk_widget_get_size_request(thumb->w_altered, &w, &h);
       if (!thumb->zoomable) image_h -= h + gtk_widget_get_margin_top(thumb->w_altered);
-      image_h *= ratio_h;
+      else
+        image_h -= thumb->img_margin->bottom;
+      image_h -= thumb->img_margin->top;
     }
     else if(thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
     {
-      image_w = thumb->width * ratio_w;
+      image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
       int w = 0;
       int h = 0;
       gtk_widget_get_size_request(thumb->w_reject, &w, &h);
-      image_h = thumb->height - (h + 2 * gtk_widget_get_margin_bottom(thumb->w_reject));
+      image_h = thumb->height - (h + gtk_widget_get_margin_bottom(thumb->w_reject));
       gtk_widget_get_size_request(thumb->w_altered, &w, &h);
       image_h -= h + gtk_widget_get_margin_top(thumb->w_altered);
-      image_h *= ratio_h;
+      image_h -= thumb->img_margin->top + thumb->img_margin->bottom;
     }
     else
     {
-      image_w = thumb->width * ratio_w;
-      image_h = thumb->height * ratio_h;
+      image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
+      image_h = thumb->height - thumb->img_margin->top - thumb->img_margin->bottom;
+      ;
     }
 
     if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
@@ -433,10 +441,10 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     int posx, posy;
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
     {
-      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - imgbox_w) / 2;
+      posx = thumb->img_margin->left + (image_w - imgbox_w) / 2;
       int w = 0;
       int h = 0;
-       if (!thumb->zoomable)
+      if(!thumb->zoomable)
       {
         gtk_widget_get_size_request(thumb->w_altered, &w, &h);
         posy = h + gtk_widget_get_margin_top(thumb->w_altered);
@@ -446,26 +454,23 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         posy = 0;
       }
 
-      gtk_widget_get_size_request(thumb->w_bottom, &w, &h);
-      posy += (thumb->height - posy - h) * thumb->img_margin->top / 100 + (image_h - imgbox_h) / 2;
+      gtk_widget_get_size_request(thumb->w_bottom_eb, &w, &h);
+      posy += thumb->img_margin->top + (image_h - imgbox_h) / 2;
     }
     else if(thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
     {
-      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - imgbox_w) / 2;
+      posx = thumb->img_margin->left + (image_w - imgbox_w) / 2;
       int w = 0;
       int h = 0;
       gtk_widget_get_size_request(thumb->w_altered, &w, &h);
       posy = h + gtk_widget_get_margin_top(thumb->w_altered);
 
-      gtk_widget_get_size_request(thumb->w_reject, &w, &h);
-      posy += (thumb->height - posy - h - 2 * gtk_widget_get_margin_bottom(thumb->w_reject))
-                  * thumb->img_margin->top / 100
-              + (image_h - imgbox_h) / 2;
+      posy += thumb->img_margin->top + (image_h - imgbox_h) / 2;
     }
     else
     {
-      posx = thumb->width * thumb->img_margin->left / 100 + (image_w - imgbox_w) / 2;
-      posy = thumb->height * thumb->img_margin->top / 100 + (image_h - imgbox_h) / 2;
+      posx = thumb->img_margin->left + (image_w - imgbox_w) / 2;
+      posy = thumb->img_margin->top + (image_h - imgbox_h) / 2;
     }
     gtk_widget_set_margin_start(thumb->w_image_box, posx);
     gtk_widget_set_margin_top(thumb->w_image_box, posy);
@@ -1233,25 +1238,22 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
   if(thumb->over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
   {
     gtk_widget_get_size_request(thumb->w_main, &width, &height);
-
-    const int margin_l = MAX(0, thumb->img_margin->left * width / 100);
-    const int margin_t = MAX(0, thumb->img_margin->top * height / 100);
-    const int margin_r = MAX(0, thumb->img_margin->right * width / 100);
-    const int margin_b = MAX(0, thumb->img_margin->bottom * height / 100);
-
     // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
     // stars + reject having a width of 2 * r1 and spaced by r1 => 18 * r1
     // colorlabels => 3 * r1 + space r1
     // inner margins are defined in css (margin_* values)
 
     // retrieves the size of the main icons in the top panel, thumbtable overlays shall not exceed that
-    const float r1 = fminf(max_size / 2.0f, (width - margin_l - margin_r) / 22.0f);
+    const float r1 = fminf(max_size / 2.0f, (width - thumb->img_margin->left - thumb->img_margin->right) / 22.0f);
+    const float icon_size = 2.5 * r1;
 
     // file extension
-    gtk_widget_set_margin_top(thumb->w_ext, margin_t);
-    gtk_widget_set_margin_start(thumb->w_ext, margin_l);
+    gtk_widget_set_margin_top(thumb->w_ext, thumb->img_margin->top);
+    gtk_widget_set_margin_start(thumb->w_ext, thumb->img_margin->left);
 
     // bottom background
+    gtk_widget_set_margin_start(thumb->w_bottom, thumb->img_margin->left);
+    gtk_widget_set_margin_end(thumb->w_bottom, thumb->img_margin->right);
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
        || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
     {
@@ -1263,39 +1265,44 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
       int w = 0;
       int h = 0;
       pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
-      gtk_widget_set_size_request(thumb->w_bottom, width, 2.5 * r1 + h + 2 * margin_b);
+      gtk_widget_set_size_request(thumb->w_bottom_eb, width, icon_size * 0.75 + h + 3 * thumb->img_margin->bottom);
     }
     else
-      gtk_widget_set_size_request(thumb->w_bottom, width, 2.5 * r1 + 2 * margin_b);
+      gtk_widget_set_size_request(thumb->w_bottom_eb, width, icon_size * 0.75 + 2 * thumb->img_margin->bottom);
 
     gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0.5);
-    gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.03);
+    gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0);
+    gtk_widget_set_margin_top(thumb->w_bottom, thumb->img_margin->bottom);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
 
     // reject icon
-    gtk_widget_set_size_request(thumb->w_reject, 2.5 * r1, 2.5 * r1);
+    const int margin_b_icons = thumb->img_margin->bottom - icon_size * 0.125 - 1;
+    gtk_widget_set_size_request(thumb->w_reject, icon_size, icon_size);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
-    int pos = MAX(margin_l, (width - 15.0 * r1) * 0.5 - 4 * 3.0 * r1);
+    int pos = MAX(thumb->img_margin->left - icon_size * 0.125, (width - 15.0 * r1) * 0.5 - 4 * 3.0 * r1);
     gtk_widget_set_margin_start(thumb->w_reject, pos);
-    gtk_widget_set_margin_bottom(thumb->w_reject, margin_b);
+    gtk_widget_set_margin_bottom(thumb->w_reject, margin_b_icons);
 
     // stars
     for(int i = 0; i < MAX_STARS; i++)
     {
-      gtk_widget_set_size_request(thumb->w_stars[i], 2.5 * r1, 2.5 * r1);
+      gtk_widget_set_size_request(thumb->w_stars[i], icon_size, icon_size);
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
-      gtk_widget_set_margin_bottom(thumb->w_stars[i], margin_b);
-      gtk_widget_set_margin_start(thumb->w_stars[i],
-                                  margin_l + (width - margin_l - margin_r - 13.0 * r1) * 0.5 + i * 2.5 * r1);
+      gtk_widget_set_margin_bottom(thumb->w_stars[i], margin_b_icons);
+      gtk_widget_set_margin_start(
+          thumb->w_stars[i], thumb->img_margin->left
+                                 + (width - thumb->img_margin->left - thumb->img_margin->right - 13.0 * r1) * 0.5
+                                 + i * 2.5 * r1);
     }
 
     // the color labels
-    gtk_widget_set_size_request(thumb->w_color, 2.5 * r1, 2.5 * r1);
+    gtk_widget_set_size_request(thumb->w_color, icon_size, icon_size);
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_START);
-    gtk_widget_set_margin_bottom(thumb->w_color, margin_b);
-    pos = MIN(width - (margin_r + r1 * 3.0), (width - 15.0 * r1) * 0.5 + 8.25 * 3.0 * r1);
+    gtk_widget_set_margin_bottom(thumb->w_color, margin_b_icons);
+    pos = MIN(width - (thumb->img_margin->right - icon_size * 0.125 + icon_size),
+              (width - 15.0 * r1) * 0.5 + 8.25 * 3.0 * r1);
     gtk_widget_set_margin_start(thumb->w_color, pos);
 
     // the local copy indicator
@@ -1305,20 +1312,20 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // the altered icon
     gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_altered, margin_t);
-    gtk_widget_set_margin_end(thumb->w_altered, margin_r);
+    gtk_widget_set_margin_top(thumb->w_altered, thumb->img_margin->top);
+    gtk_widget_set_margin_end(thumb->w_altered, thumb->img_margin->right);
 
     // the group bouton
     gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_group, margin_t);
-    gtk_widget_set_margin_end(thumb->w_group, margin_r + 2.5 * r1);
+    gtk_widget_set_margin_top(thumb->w_group, thumb->img_margin->top);
+    gtk_widget_set_margin_end(thumb->w_group, thumb->img_margin->right + 2.5 * r1);
 
     // the sound icon
     gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_audio, margin_t);
-    gtk_widget_set_margin_end(thumb->w_audio, margin_r + 5.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_audio, thumb->img_margin->top);
+    gtk_widget_set_margin_end(thumb->w_audio, thumb->img_margin->right + 5.0 * r1);
   }
   else
   {
@@ -1422,17 +1429,14 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   gtk_widget_set_size_request(thumb->w_main, width, height);
 
   _thumb_retrieve_margins(thumb);
-  const int margin_l = MAX(0, thumb->img_margin->left * width / 100);
-  const int margin_t = MAX(0, thumb->img_margin->top * height / 100);
-  const int margin_b = MAX(0, thumb->img_margin->bottom * height / 100);
 
   // file extension
-  gtk_widget_set_margin_start(thumb->w_ext, margin_l);
-  gtk_widget_set_margin_top(thumb->w_ext, margin_t);
+  gtk_widget_set_margin_start(thumb->w_ext, thumb->img_margin->left);
+  gtk_widget_set_margin_top(thumb->w_ext, thumb->img_margin->top);
 
   // retrieves the size of the main icons in the top panel, thumbtable overlays shall not exceed that
   int max_size = darktable.gui->icon_size;
-  const int fsize = fminf(max_size, (height - margin_t - margin_b) / 11.0f);
+  const int fsize = fminf(max_size, (height - thumb->img_margin->top - thumb->img_margin->bottom) / 11.0f);
 
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
