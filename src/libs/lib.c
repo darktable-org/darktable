@@ -1180,7 +1180,7 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module)
   if(module->reset_button)
     dt_accel_connect_button_lib(module, "reset module parameters", module->reset_button);
   if(module->presets_button) dt_accel_connect_button_lib(module, "show preset menu", module->presets_button);
-  if(module->expandable(module)) 
+  if(module->expandable(module))
   {
     GClosure *closure = NULL;
     closure = g_cclosure_new(G_CALLBACK(show_module_callback), module, NULL);
@@ -1246,6 +1246,19 @@ void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y)
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_point) return;
   lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, x, y);
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+}
+
+dt_lib_module_t *dt_lib_get_module(const char *name)
+{
+  /* hide/show modules as last config */
+  for(GList *iter = darktable.lib->plugins; iter; iter = g_list_next(iter))
+  {
+    dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
+    if(strcmp(plugin->plugin_name, name) == 0)
+      return plugin;
+  }
+
+  return NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
