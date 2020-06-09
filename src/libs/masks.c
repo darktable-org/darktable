@@ -1249,7 +1249,7 @@ static gboolean _tree_query_tooltip(GtkWidget *widget, gint x, gint y, gboolean 
 
   gtk_tree_model_get(model, &iter, TREE_IC_USED_VISIBLE, &show, TREE_USED_TEXT, &tmp, -1);
   if(show)
-  { 
+  {
     gtk_tooltip_set_markup(tooltip, tmp);
     gtk_tree_view_set_tooltip_row(tree_view, tooltip, path);
   }
