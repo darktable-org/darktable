@@ -1912,12 +1912,12 @@ spinbutton>button
 #thumb_image
 {
   border: none;
-  margin: 2px; /* not real pixels, but percentage of the thumb size */
+  margin: 25px; /* not real pixels, but per thousand of the thumb size */
 }
 
 .dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
 {
-  margin: 1.5px;
+  margin: 20px;
 }
 
 #thumb_main:active #thumb_image
@@ -1927,7 +1927,7 @@ spinbutton>button
 
 #thumb_ext /* adjust margin to align to group, audio... icons */
 {
-  margin-top: -1px;
+  margin-top: -3px;
 }
 
 /*---------------
@@ -1971,7 +1971,6 @@ spinbutton>button
 /* Set text margins in bottom infos area */
 #thumb_bottom_label
 {
-  border : 5px solid transparent;
   color: transparent;
 }
 
@@ -2171,7 +2170,7 @@ spinbutton>button
 /* Set image borders */
 .dt_preview #thumb_image
 {
-  margin : 1px;
+  margin : 10px;
 }
 .dt_culling #thumb_main:selected #thumb_image,
 .dt_preview #thumb_main:selected #thumb_image
