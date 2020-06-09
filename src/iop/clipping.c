@@ -1881,28 +1881,6 @@ static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_a
   keystone_type_changed(g->keystone_type, self);
 }
 
-static void _ratio_refresh_combo(dt_iop_module_t *self)
-{
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-
-  int combo_index = 0;
-  int index = 0;
-
-  for(GList *iter = g->aspect_list; iter; iter=g_list_next(iter))
-  {
-    dt_iop_clipping_aspect_t *aspect = (dt_iop_clipping_aspect_t *)iter->data;
-    if(aspect->d == p->ratio_d && aspect->n == p->ratio_n)
-    {
-      combo_index = index;
-      break;
-    }
-    index++;
-  }
-
-  dt_bauhaus_combobox_set(g->aspect_presets, combo_index);
-}
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -1942,7 +1920,22 @@ void gui_update(struct dt_iop_module_t *self)
     p->ratio_n = dt_conf_get_int("plugins/darkroom/clipping/ratio_n");
   }
 
-  _ratio_refresh_combo(self);
+  const int d = abs(p->ratio_d), n = p->ratio_n;
+
+  int act = -1;
+  int i = 0;
+  GList *iter = g->aspect_list;
+  while(iter != NULL)
+  {
+    const dt_iop_clipping_aspect_t *aspect = iter->data;
+    if((aspect->d == d) && (aspect->n == n))
+    {
+      act = i;
+      break;
+    }
+    i++;
+    iter = g_list_next(iter);
+  }
 
   // keystone :
   if(p->k_apply == 1) g->k_show = 2; // needed to initialise correctly the combobox
@@ -1957,7 +1950,19 @@ void gui_update(struct dt_iop_module_t *self)
     keystone_type_populate(self, FALSE, p->k_type);
   }
 
-  aspect_presets_changed(g->aspect_presets, self);
+  /* special handling the combobox when current act is already selected
+     callback is not called, let do it our self then..
+   */
+  if(act == -1)
+  {
+    char str[128];
+    snprintf(str, sizeof(str), "%d:%d %2.2f", p->ratio_d, p->ratio_n, (float)p->ratio_d / (float)p->ratio_n);
+    dt_bauhaus_combobox_set_text(g->aspect_presets, str);
+  }
+  if(dt_bauhaus_combobox_get(g->aspect_presets) == act)
+    aspect_presets_changed(g->aspect_presets, self);
+  else
+    dt_bauhaus_combobox_set(g->aspect_presets, act);
 
   // reset gui draw box to what we have in the parameters:
   g->applied = 1;
