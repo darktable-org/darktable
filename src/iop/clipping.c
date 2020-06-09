@@ -1352,13 +1352,28 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static float _ratio_get_aspect(dt_iop_module_t *self)
+static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-
+  
+  //retrieve full image dimensions to calculate aspect ratio if "original image" specified
+  const char *text = dt_bauhaus_combobox_get_text(combo);
+  if(text && !g_strcmp0(text,"original image"))
+  {
+    int proc_iwd = 0, proc_iht = 0;
+    dt_dev_get_processed_size(darktable.develop, &proc_iwd, &proc_iht);
+  
+    if(!(proc_iwd > 0 && proc_iht > 0)) return 0.0f;
+    
+    p->ratio_d = proc_iwd;
+    p->ratio_n = proc_iht;
+    if(proc_iwd >= proc_iht) return (float)proc_iwd / (float)proc_iht;
+    else  return (float)proc_iht / (float)proc_iwd;
+  }
+ 
   // we want to know the size of the actual buffer
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-  if(!piece) return 0;
+  if(!piece) return 0.0f;
 
   const int iwd = piece->buf_in.width, iht = piece->buf_in.height;
 
@@ -1477,17 +1492,20 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
   dt_dev_get_processed_size(darktable.develop, &iwd, &iht);
 
   // enforce aspect ratio.
-  float aspect = _ratio_get_aspect(self);
+  float aspect = _ratio_get_aspect(self, g->aspect_presets);
 
   // since one rarely changes between portrait and landscape by cropping,
   // long side of the crop box should match the long side of the image.
   if(iwd < iht) aspect = 1.0f / aspect;
 
   if(aspect > 0)
-  {
+  {                                                                                                 
     // if only one side changed, force aspect by two adjacent in equal parts
     // 1 2 4 8 : x y w h
-    double clip_x = g->clip_x, clip_y = g->clip_y, clip_w = g->clip_w, clip_h = g->clip_h;
+        double clip_x = MAX(floor(iwd * g->clip_x) / (float)iwd, 0.0f);
+    double clip_y = MAX(floor(iht * g->clip_y) / (float)iht, 0.0f);
+    double clip_w = MIN(ceil(iwd * g->clip_w) / (float)iwd, 1.0f);
+    double clip_h = MIN(ceil(iht * g->clip_h) / (float)iht, 1.0f);
 
     // if we only modified one dim, respectively, we wanted these values:
     const double target_h = (double)iwd * g->clip_w / ((double)iht * aspect);
@@ -1535,7 +1553,6 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
       clip_w = clip_w + off;
       clip_x = clip_x - .5 * off;
     }
-
     // now fix outside boxes:
     if(clip_x < g->clip_max_x)
     {
@@ -1912,7 +1929,7 @@ void gui_update(struct dt_iop_module_t *self)
   //  set aspect ratio based on the current image, if not found let's default
   //  to free aspect.
 
-  if(p->ratio_d == -2 && p->ratio_n == -2) _ratio_get_aspect(self);
+  if(p->ratio_d == -2 && p->ratio_n == -2) _ratio_get_aspect(self, g->aspect_presets);
 
   if(p->ratio_d == -1 && p->ratio_n == -1)
   {
