@@ -1162,7 +1162,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     return;
   }
 
-  const gboolean altered = dt_image_altered(imgid);
+  const gboolean altered = !dt_image_basic(imgid);
   int res = 1;
 
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');

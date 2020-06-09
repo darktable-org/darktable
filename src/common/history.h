@@ -120,7 +120,7 @@ void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_ha
 const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);
 
 /** return true if mipmap_hash = current_hash */
-const gboolean dt_history_hash_get_mipmap_sync(const int32_t imgid);
+const gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid);
 
 /** update mipmap hash to db (= current_hash) */
 void dt_history_hash_set_mipmap(const int32_t imgid);
