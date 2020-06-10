@@ -301,8 +301,9 @@ making a backup is strongly advised.
 
 - Added function darktable.gui.views.lighttable.set_image_visible to force an 
   image to be visible in lighttable view.
+
+- Added a lua scripts installer to the default luarc
   
->>>>>>> 1ae858b9d2efe2a746f00205b699719ffabc54db
 ## Changed Dependencies
 
 
