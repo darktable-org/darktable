@@ -132,47 +132,27 @@ if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bo
           return
         end
 
-        -- check for luarc and move it 
-
-
-
-        os.execute("\"" .. _scripts_install.git_bin .. "\" " .. "clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.dt.configuration.config_dir .. "/lua")
-        if _scripts_install.widgets["luarc"].value == "luarc" then
-          os.execute("echo -- syntax: require \"directory/file\" > " .. _scripts_install.dt.configuration.config_dir .. "/luarc")
-        else
-          if _scripts_install.dt.configuration.running_os == "windows" then
-            -- _scripts_install.dt.print_log("copying script_manager to luarc")
-            os.execute("copy " .. _scripts_install.dt.configuration.config_dir .. "\\lua\\tools\\script_manager.lua " .. _scripts_install.dt.configuration.config_dir  .. "\\luarc")
-          else
-            os.execute("ln -s " .. _scripts_install.dt.configuration.config_dir .. "/lua/tools/script_manager.lua " .. _scripts_install.dt.configuration.config_dir  .. "/luarc")
-          end
+        _scripts_install.require_string = "require \"tools/script_manager\""
+        if _scripts_install.dt.configuration.running_os ~= "windows" then
+          _scripts_install.require_string = "'" .. _scripts_install.require_string .. "'"
         end
+        
+        os.execute("\"" .. _scripts_install.git_bin .. "\" " .. "clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.dt.configuration.config_dir .. "/lua")
+        os.execute("echo " .. _scripts_install.require_string .. " > " .. _scripts_install.dt.configuration.config_dir .. "/luarc")
         _scripts_install.dt.print("lua scripts are installed")
+        require "tools/script_manager"
       end
       _scripts_install.minimize_lib()
+      _scripts_install.dt.gui.libs["script_manager"].visible = true
     end
 
     -- _scripts_install.dt.print_log("building widgets")
-
-    _scripts_install.widgets["luarc"] = _scripts_install.dt.new_widget("combobox"){
-      label = "manager",
-      tooltip = "script_manager provides a point and click interface for managing scripts.\nluarc provides a file that must be edited by hand.",
-      selected = 1, 
-      "script_manager","luarc",
-    }
 
     _scripts_install.widgets["choice"] = _scripts_install.dt.new_widget("combobox"){
       label = "select action",
       tooltip = "select action to perform",
       selected = 1,
       "install scripts", "remind me later", "don't show again",
-      changed_callback = function(this)
-        if this.selected == 1 then
-          _scripts_install.widgets.luarc.sensitive = true
-        else
-          _scripts_install.widgets.luarc.sensitive = false
-        end
-      end
     }
 
     _scripts_install.widgets["execute"] = _scripts_install.dt.new_widget("button"){
@@ -193,12 +173,13 @@ if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bo
       _scripts_install.dt.new_widget("box"){
         orientation = "vertical",
         _scripts_install.widgets["choice"],
-        _scripts_install.widgets["luarc"],
         _scripts_install.widgets["execute"]
       },
       nil,
       nil
     )
+    _scripts_install.dt.control.sleep(500)
+     _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
   end
 end
 
