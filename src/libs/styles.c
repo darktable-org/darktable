@@ -464,19 +464,19 @@ static void _update(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
   GList *imgs = dt_view_get_images_to_act_on(TRUE);
-  const guint act_on_cnt = g_list_length(imgs);
+  const gboolean has_act_on = imgs != NULL;
   g_list_free(imgs);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree));
   const gint sel_styles_cnt = gtk_tree_selection_count_selected_rows(selection);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->create_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->create_button), has_act_on);
   gtk_widget_set_sensitive(GTK_WIDGET(d->edit_button), sel_styles_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), sel_styles_cnt > 0);
 
   //import is ALWAYS enabled.
   gtk_widget_set_sensitive(GTK_WIDGET(d->export_button), sel_styles_cnt > 0);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->apply_button), act_on_cnt >0 && sel_styles_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->apply_button), has_act_on && sel_styles_cnt > 0);
 
   if(d->timeout_handle)
   {
