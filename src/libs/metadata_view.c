@@ -253,11 +253,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     char value[512];
     char pathname[PATH_MAX] = { 0 };
 
-    // get the size before locking the image!
-    // TODO: put that into dt_image_t and make sure it stays in sync
-    int width = 0, height = 0;
-//     dt_image_get_final_size(mouse_over_id, &width, &height); // kind of slow on some machines
-
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
     if(!img) goto fill_minuses;
     if(img->film_id == -1)
@@ -537,16 +532,33 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     else
       _metadata_update_value(d->metadata[md_exif_datetime], img->exif_datetime_taken);
 
+    if(((img->p_width != img->width) || (img->p_height != img->height))  &&
+       (img->p_width || img->p_height))
+    {
+      snprintf(value, sizeof(value), "%d (%d)", img->p_height, img->height);
+      _metadata_update_value(d->metadata[md_exif_height], value);
+      snprintf(value, sizeof(value), "%d (%d) ",img->p_width, img->width);
+      _metadata_update_value(d->metadata[md_exif_width], value);
+    }
+    else {
     snprintf(value, sizeof(value), "%d", img->height);
     _metadata_update_value(d->metadata[md_exif_height], value);
     snprintf(value, sizeof(value), "%d", img->width);
     _metadata_update_value(d->metadata[md_exif_width], value);
+    }
 
-    snprintf(value, sizeof(value), "%d", height);
+    if(img->verified_size)
+    {
+      snprintf(value, sizeof(value), "%d", img->final_height);
     _metadata_update_value(d->metadata[md_height], value);
-    snprintf(value, sizeof(value), "%d", width);
+      snprintf(value, sizeof(value), "%d", img->final_width);
     _metadata_update_value(d->metadata[md_width], value);
-
+    }
+    else
+    {
+      _metadata_update_value(d->metadata[md_height], "-");
+      _metadata_update_value(d->metadata[md_width], "-");
+    }
     /* XMP */
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
@@ -833,6 +845,11 @@ void gui_init(dt_lib_module_t *self)
   /* signup for tags changes */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_mouse_over_image_callback), self);
+
+  /* signup for metadata changes */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_METADATA_UPDATE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
+
   /* adaptable window size */
   g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(view_onMouseScroll), d);
 }
