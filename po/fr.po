@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-10 12:29+0200\n"
-"PO-Revision-Date: 2020-06-10 12:30+0200\n"
+"POT-Creation-Date: 2020-06-10 22:06+0200\n"
+"PO-Revision-Date: 2020-06-10 22:08+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1462,7 +1462,7 @@ msgstr "Imprimer vos images"
 #: ../src/control/jobs/control_jobs.c:1609 ../src/gui/hist_dialog.c:187
 #: ../src/gui/preferences.c:1437 ../src/gui/preferences.c:1463
 #: ../src/gui/preferences.c:1545 ../src/gui/preferences.c:1651
-#: ../src/gui/preferences.c:1880 ../src/gui/presets.c:387
+#: ../src/gui/preferences.c:1880 ../src/gui/presets.c:394
 #: ../src/gui/styles_dialog.c:357 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:354
@@ -1626,37 +1626,37 @@ msgid "color label"
 msgstr "label couleur"
 
 #: ../src/common/collection.c:686 ../src/gui/preferences.c:715
-#: ../src/gui/preferences.c:1710 ../src/gui/presets.c:445
+#: ../src/gui/preferences.c:1710 ../src/gui/presets.c:452
 #: ../src/libs/metadata_view.c:120
 msgid "lens"
 msgstr "objectif"
 
 #. focal length
 #: ../src/common/collection.c:687 ../src/gui/preferences.c:731
-#: ../src/gui/preferences.c:1759 ../src/gui/presets.c:494
-#: ../src/iop/ashift.c:4887 ../src/libs/camera.c:578
+#: ../src/gui/preferences.c:1759 ../src/gui/presets.c:501
+#: ../src/iop/ashift.c:4887 ../src/libs/camera.c:581
 #: ../src/libs/metadata_view.c:124
 msgid "focal length"
 msgstr "focale"
 
 #. iso
 #: ../src/common/collection.c:688 ../src/gui/preferences.c:719
-#: ../src/gui/preferences.c:1716 ../src/gui/presets.c:451
-#: ../src/libs/camera.c:586 ../src/libs/metadata_view.c:126
+#: ../src/gui/preferences.c:1716 ../src/gui/presets.c:458
+#: ../src/libs/camera.c:589 ../src/libs/metadata_view.c:126
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
 #: ../src/common/collection.c:689 ../src/gui/preferences.c:727
-#: ../src/gui/preferences.c:1744 ../src/gui/presets.c:479
-#: ../src/libs/camera.c:573 ../src/libs/camera.c:575
+#: ../src/gui/preferences.c:1744 ../src/gui/presets.c:486
+#: ../src/libs/camera.c:576 ../src/libs/camera.c:578
 #: ../src/libs/metadata_view.c:121
 msgid "aperture"
 msgstr "ouverture"
 
 #. exposure
 #: ../src/common/collection.c:690 ../src/gui/preferences.c:723
-#: ../src/gui/preferences.c:1729 ../src/gui/presets.c:464
+#: ../src/gui/preferences.c:1729 ../src/gui/presets.c:471
 #: ../src/iop/basicadj.c:771 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:970 ../src/iop/relight.c:335
 #: ../src/libs/metadata_view.c:122
@@ -2548,9 +2548,9 @@ msgstr "aucun style sélectionné!"
 
 #: ../src/common/styles.c:673
 msgid "style successfully applied!"
-msgid_plural "styles successfully applied"
-msgstr[0] "le style a été appliqué"
-msgstr[1] "les styles ont été appliqués"
+msgid_plural "styles successfully applied!"
+msgstr[0] "le style a été appliqué !"
+msgstr[1] "les styles ont été appliqués !"
 
 #: ../src/common/styles.c:744
 #, c-format
@@ -3656,9 +3656,9 @@ msgstr "%s est désactivé"
 #: ../src/develop/imageop.c:1434 ../src/gui/accelerators.c:1015
 #: ../src/gui/accelerators.c:1099 ../src/gui/accelerators.c:1314
 #: ../src/gui/accelerators.c:1339 ../src/gui/import_metadata.c:162
-#: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
-#: ../src/iop/temperature.c:1465 ../src/libs/lib.c:319 ../src/libs/lib.c:347
-#: ../src/libs/lib.c:1201
+#: ../src/gui/presets.c:198 ../src/gui/presets.c:310 ../src/gui/presets.c:670
+#: ../src/iop/temperature.c:1465 ../src/libs/lib.c:338 ../src/libs/lib.c:375
+#: ../src/libs/lib.c:1228
 msgid "preset"
 msgstr "pré-réglage"
 
@@ -3668,7 +3668,7 @@ msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1459 ../src/libs/lib.c:621
+#: ../src/develop/imageop.c:1459 ../src/libs/lib.c:648
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
@@ -3683,12 +3683,12 @@ msgctxt "accel"
 msgid "focus module"
 msgstr "module focus"
 
-#: ../src/develop/imageop.c:1463 ../src/libs/lib.c:613
+#: ../src/develop/imageop.c:1463 ../src/libs/lib.c:640
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1464 ../src/libs/lib.c:617
+#: ../src/develop/imageop.c:1464 ../src/libs/lib.c:644
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
@@ -3701,13 +3701,13 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2030 ../src/libs/lib.c:1036
+#: ../src/develop/imageop.c:2030 ../src/libs/lib.c:1063
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2038 ../src/gui/preferences.c:685
-#: ../src/libs/lib.c:1045
+#: ../src/libs/lib.c:1072
 msgid "presets"
 msgstr "pré-réglages"
 
@@ -4492,7 +4492,7 @@ msgstr "%s / %s"
 msgid "%s"
 msgstr "%s"
 
-#: ../src/gui/accelerators.c:1082 ../src/libs/lib.c:402
+#: ../src/gui/accelerators.c:1082 ../src/libs/lib.c:429
 msgid "deleting preset for obsolete module"
 msgstr "suppression du pré-réglages pour le module obsolète"
 
@@ -5013,7 +5013,7 @@ msgid "select _none"
 msgstr "aucu_ne"
 
 #: ../src/gui/hist_dialog.c:190 ../src/gui/preferences.c:1653
-#: ../src/gui/presets.c:387 ../src/libs/lib.c:227
+#: ../src/gui/presets.c:394 ../src/libs/lib.c:227
 msgid "_ok"
 msgstr "_ok"
 
@@ -5152,12 +5152,12 @@ msgstr "préférences"
 
 #. exif
 #: ../src/gui/preferences.c:707 ../src/gui/preferences.c:1694
-#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:118
+#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:118
 msgid "model"
 msgstr "modèle"
 
 #: ../src/gui/preferences.c:711 ../src/gui/preferences.c:1702
-#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:119
+#: ../src/gui/presets.c:445 ../src/libs/metadata_view.c:119
 msgid "maker"
 msgstr "fabricant"
 
@@ -5225,12 +5225,12 @@ msgstr ""
 msgid "accel conflict"
 msgstr "conflit de raccourci"
 
-#: ../src/gui/preferences.c:1396 ../src/gui/presets.c:182 ../src/libs/lib.c:339
+#: ../src/gui/preferences.c:1396 ../src/gui/presets.c:186 ../src/libs/lib.c:363
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "voulez-vous réellement supprimer le pré-réglage « %s » ?"
 
-#: ../src/gui/preferences.c:1400 ../src/gui/presets.c:186 ../src/libs/lib.c:343
+#: ../src/gui/preferences.c:1400 ../src/gui/presets.c:190 ../src/libs/lib.c:367
 msgid "delete preset?"
 msgstr "supprimer ce pré-réglage ?"
 
@@ -5268,24 +5268,24 @@ msgstr "sélectionne le pré-réglage à importer"
 msgid "failed to import preset"
 msgstr "échec d'importation du pré-réglage"
 
-#: ../src/gui/preferences.c:1648 ../src/gui/presets.c:385
+#: ../src/gui/preferences.c:1648 ../src/gui/presets.c:392
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "éditer « %s » pour le module « %s »"
 
-#: ../src/gui/preferences.c:1671 ../src/gui/presets.c:408 ../src/libs/lib.c:251
+#: ../src/gui/preferences.c:1671 ../src/gui/presets.c:415 ../src/libs/lib.c:251
 msgid "description or further information"
 msgstr "description ou information complémentaire"
 
-#: ../src/gui/preferences.c:1674 ../src/gui/presets.c:411
+#: ../src/gui/preferences.c:1674 ../src/gui/presets.c:418
 msgid "auto apply this preset to matching images"
 msgstr "appliquer automatiquement ce pré-réglage aux images correspondantes"
 
-#: ../src/gui/preferences.c:1677 ../src/gui/presets.c:414
+#: ../src/gui/preferences.c:1677 ../src/gui/presets.c:421
 msgid "only show this preset for matching images"
 msgstr "n'afficher ce pré-réglage qu'aux images correspondantes"
 
-#: ../src/gui/preferences.c:1679 ../src/gui/presets.c:415
+#: ../src/gui/preferences.c:1679 ../src/gui/presets.c:422
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -5293,55 +5293,55 @@ msgstr ""
 "soyez vigilant avec cette option, ce pourrait être la dernière fois que vous "
 "voyez votre pré-réglage."
 
-#: ../src/gui/preferences.c:1693 ../src/gui/presets.c:430
+#: ../src/gui/preferences.c:1693 ../src/gui/presets.c:437
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "nom du modèle (utiliser % comme joker)"
 
-#: ../src/gui/preferences.c:1701 ../src/gui/presets.c:437
+#: ../src/gui/preferences.c:1701 ../src/gui/presets.c:444
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "nom du fabricant (utiliser % comme joker)"
 
-#: ../src/gui/preferences.c:1709 ../src/gui/presets.c:444
+#: ../src/gui/preferences.c:1709 ../src/gui/presets.c:451
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "nom de l'objectif (utiliser % comme joker)"
 
-#: ../src/gui/preferences.c:1719 ../src/gui/presets.c:454
+#: ../src/gui/preferences.c:1719 ../src/gui/presets.c:461
 msgid "minimum ISO value"
 msgstr "valeur d'ISO minimale"
 
-#: ../src/gui/preferences.c:1722 ../src/gui/presets.c:457
+#: ../src/gui/preferences.c:1722 ../src/gui/presets.c:464
 msgid "maximum ISO value"
 msgstr "valeur d'ISO maximale"
 
-#: ../src/gui/preferences.c:1733 ../src/gui/presets.c:468
+#: ../src/gui/preferences.c:1733 ../src/gui/presets.c:475
 msgid "minimum exposure time"
 msgstr "temps d'exposition maximum"
 
-#: ../src/gui/preferences.c:1734 ../src/gui/presets.c:469
+#: ../src/gui/preferences.c:1734 ../src/gui/presets.c:476
 msgid "maximum exposure time"
 msgstr "temps d'exposition maximum"
 
-#: ../src/gui/preferences.c:1748 ../src/gui/presets.c:483
+#: ../src/gui/preferences.c:1748 ../src/gui/presets.c:490
 msgid "minimum aperture value"
 msgstr "valeur d'ouverture minimale"
 
-#: ../src/gui/preferences.c:1749 ../src/gui/presets.c:484
+#: ../src/gui/preferences.c:1749 ../src/gui/presets.c:491
 msgid "maximum aperture value"
 msgstr "valeur d'ouverture maximale"
 
-#: ../src/gui/preferences.c:1764 ../src/gui/presets.c:500
+#: ../src/gui/preferences.c:1764 ../src/gui/presets.c:507
 msgid "minimum focal length"
 msgstr "longueur focale minimale"
 
-#: ../src/gui/preferences.c:1765 ../src/gui/presets.c:501
+#: ../src/gui/preferences.c:1765 ../src/gui/presets.c:508
 msgid "maximum focal length"
 msgstr "longueur focale maximale"
 
 #. raw/hdr/ldr
-#: ../src/gui/preferences.c:1774 ../src/gui/presets.c:507
+#: ../src/gui/preferences.c:1774 ../src/gui/presets.c:514
 #: ../src/imageio/format/j2k.c:645
 msgid "format"
 msgstr "format"
@@ -5357,22 +5357,22 @@ msgid "preset %s was successfully saved"
 msgstr "le pré-réglage « %s » a été sauvegardé"
 
 #. then show edit dialog
-#: ../src/gui/presets.c:218 ../src/gui/presets.c:637 ../src/gui/presets.c:644
-#: ../src/gui/presets.c:646 ../src/gui/presets.c:648 ../src/libs/lib.c:297
-#: ../src/libs/lib.c:311 ../src/libs/lib.c:319 ../src/libs/lib.c:321
-#: ../src/libs/lib.c:323
+#: ../src/gui/presets.c:225 ../src/gui/presets.c:663 ../src/gui/presets.c:670
+#: ../src/gui/presets.c:672 ../src/gui/presets.c:674 ../src/libs/lib.c:316
+#: ../src/libs/lib.c:330 ../src/libs/lib.c:338 ../src/libs/lib.c:340
+#: ../src/libs/lib.c:342
 msgid "new preset"
 msgstr "nouveau pré-réglage"
 
-#: ../src/gui/presets.c:224
+#: ../src/gui/presets.c:231
 msgid "please give preset a name"
 msgstr "merci de donner un nom au pré-réglage"
 
-#: ../src/gui/presets.c:229
+#: ../src/gui/presets.c:236
 msgid "unnamed preset"
 msgstr "pré-réglage sans nom"
 
-#: ../src/gui/presets.c:254 ../src/libs/lib.c:149
+#: ../src/gui/presets.c:261 ../src/libs/lib.c:149
 #, c-format
 msgid ""
 "preset `%s' already exists.\n"
@@ -5381,39 +5381,48 @@ msgstr ""
 "le pré-réglage « %s » existe déjà.\n"
 "voulez-vous le remplacer ?"
 
-#: ../src/gui/presets.c:259 ../src/libs/lib.c:153
+#: ../src/gui/presets.c:266 ../src/libs/lib.c:153
 msgid "overwrite preset?"
 msgstr "remplacer ce pré-réglage ?"
 
-#: ../src/gui/presets.c:404 ../src/libs/lib.c:247
+#: ../src/gui/presets.c:411 ../src/libs/lib.c:247
 msgid "name of the preset"
 msgstr "nom du pré-réglage"
 
-#: ../src/gui/presets.c:894 ../src/gui/presets.c:907
+#: ../src/gui/presets.c:625 ../src/libs/lib.c:283
+#, c-format
+msgid "do you really want to update the preset `%s'?"
+msgstr "voulez-vous réellement mettre à jour le pré-réglage « %s » ?"
+
+#: ../src/gui/presets.c:629 ../src/libs/lib.c:287
+msgid "update preset?"
+msgstr "mettre à jour le pré-réglage ?"
+
+#: ../src/gui/presets.c:920 ../src/gui/presets.c:933
 msgid "(default)"
 msgstr "(défaut)"
 
-#: ../src/gui/presets.c:918
+#: ../src/gui/presets.c:944
 msgid "disabled: wrong module version"
 msgstr "désactivé : version du module non cohérente"
 
-#: ../src/gui/presets.c:942 ../src/libs/lib.c:488
+#: ../src/gui/presets.c:968 ../src/libs/lib.c:515
 msgid "edit this preset.."
 msgstr "modifier ce pré-réglage..."
 
-#: ../src/gui/presets.c:946 ../src/libs/lib.c:492
+#: ../src/gui/presets.c:972 ../src/libs/lib.c:519
 msgid "delete this preset"
 msgstr "supprimer ce pré-réglage"
 
-#: ../src/gui/presets.c:952 ../src/libs/lib.c:499
+#: ../src/gui/presets.c:978 ../src/libs/lib.c:526
 msgid "store new preset.."
 msgstr "nouveau pré-réglage..."
 
-#: ../src/gui/presets.c:958 ../src/libs/lib.c:511
+#: ../src/gui/presets.c:984 ../src/libs/lib.c:538
 msgid "update preset"
 msgstr "mettre à jour le pré-réglage"
 
-#: ../src/gui/presets.c:971
+#: ../src/gui/presets.c:997
 msgid "favourite"
 msgstr "favoris"
 
@@ -5520,7 +5529,7 @@ msgid "jp2"
 msgstr "jp2"
 
 #: ../src/imageio/format/j2k.c:653 ../src/imageio/format/jpeg.c:592
-#: ../src/imageio/format/webp.c:332 ../src/libs/camera.c:592
+#: ../src/imageio/format/webp.c:332 ../src/libs/camera.c:595
 msgid "quality"
 msgstr "qualité"
 
@@ -7161,7 +7170,7 @@ msgctxt "accel"
 msgid "strength"
 msgstr "force"
 
-#: ../src/iop/bloom.c:541 ../src/iop/soften.c:736 ../src/libs/camera.c:595
+#: ../src/iop/bloom.c:541 ../src/iop/soften.c:736 ../src/libs/camera.c:598
 msgid "size"
 msgstr "taille"
 
@@ -12526,7 +12535,7 @@ msgstr "sélectionne la saturation"
 #. Additional parameters
 #. Camera settings
 #: ../src/iop/splittoning.c:641 ../src/iop/watermark.c:1531
-#: ../src/libs/camera.c:508
+#: ../src/libs/camera.c:511
 msgid "properties"
 msgstr "paramètres"
 
@@ -13507,51 +13516,51 @@ msgid "n/a"
 msgstr "n/a"
 
 #. Camera control
-#: ../src/libs/camera.c:431
+#: ../src/libs/camera.c:433
 msgid "camera control"
 msgstr "pilotage du boîtier"
 
-#: ../src/libs/camera.c:435
+#: ../src/libs/camera.c:438
 msgid "modes"
 msgstr "modes"
 
-#: ../src/libs/camera.c:436
+#: ../src/libs/camera.c:439
 msgid "timer (s)"
 msgstr "retardateur (s)"
 
-#: ../src/libs/camera.c:437
+#: ../src/libs/camera.c:440
 msgid "count"
 msgstr "nombre"
 
-#: ../src/libs/camera.c:438
+#: ../src/libs/camera.c:441
 msgid "brackets"
 msgstr "bracketing"
 
-#: ../src/libs/camera.c:439
+#: ../src/libs/camera.c:442
 msgid "bkt. steps"
 msgstr "pas de bkt."
 
-#: ../src/libs/camera.c:475
+#: ../src/libs/camera.c:478
 msgid "capture image(s)"
 msgstr "capturer"
 
-#: ../src/libs/camera.c:478
+#: ../src/libs/camera.c:481
 msgid "toggle delayed capture mode"
 msgstr "active/désactive le mode retardateur"
 
-#: ../src/libs/camera.c:479
+#: ../src/libs/camera.c:482
 msgid "toggle sequenced capture mode"
 msgstr "active/désactive le mode séquence"
 
-#: ../src/libs/camera.c:480
+#: ../src/libs/camera.c:483
 msgid "toggle bracketed capture mode"
 msgstr "active/désactive le mode bracketing d'exposition »"
 
-#: ../src/libs/camera.c:481
+#: ../src/libs/camera.c:484
 msgid "the count of seconds before actually doing a capture"
 msgstr "nombre de secondes avant d'effectuer une capture"
 
-#: ../src/libs/camera.c:483
+#: ../src/libs/camera.c:486
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -13561,7 +13570,7 @@ msgstr ""
 "vous pouvez utiliser cela avec le mode de retardement pour créer des "
 "séquences de stop-motion."
 
-#: ../src/libs/camera.c:486
+#: ../src/libs/camera.c:489
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
@@ -13569,7 +13578,7 @@ msgstr ""
 "nombre d'expositions de chaque côté de l'exposition nominale, nombre "
 "d'images = (nombre d'expositions * 2) + 1"
 
-#: ../src/libs/camera.c:488
+#: ../src/libs/camera.c:491
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
@@ -13580,39 +13589,39 @@ msgstr ""
 "autrement dit, 3 pas correspondent à 1 IL entre expositions."
 
 #. user specified properties
-#: ../src/libs/camera.c:517
+#: ../src/libs/camera.c:520
 msgid "additional properties"
 msgstr "paramètres additionnels"
 
-#: ../src/libs/camera.c:521
+#: ../src/libs/camera.c:524
 msgid "label"
 msgstr "nom"
 
-#: ../src/libs/camera.c:530
+#: ../src/libs/camera.c:533
 msgid "property"
 msgstr "paramètres"
 
-#: ../src/libs/camera.c:543
+#: ../src/libs/camera.c:546
 msgid "add user property"
 msgstr "ajouter"
 
-#: ../src/libs/camera.c:565
+#: ../src/libs/camera.c:568
 msgid "program"
 msgstr "programme"
 
-#: ../src/libs/camera.c:568 ../src/libs/camera.c:570
+#: ../src/libs/camera.c:571 ../src/libs/camera.c:573
 msgid "focus mode"
 msgstr "mode focus"
 
-#: ../src/libs/camera.c:581
+#: ../src/libs/camera.c:584
 msgid "shutterspeed2"
 msgstr "vitesse"
 
-#: ../src/libs/camera.c:583
+#: ../src/libs/camera.c:586
 msgid "shutterspeed"
 msgstr "vitesse d'obturation"
 
-#: ../src/libs/camera.c:589
+#: ../src/libs/camera.c:592
 msgid "WB"
 msgstr "BdB"
 
@@ -14869,7 +14878,7 @@ msgstr "v3.0 (défaut)"
 msgid "edit `%s'"
 msgstr "modifier « %s »"
 
-#: ../src/libs/lib.c:503
+#: ../src/libs/lib.c:530
 msgid "nothing to save"
 msgstr "rien à sauvegarder"
 
@@ -15988,9 +15997,9 @@ msgid "import"
 msgstr "importer"
 
 #: ../src/libs/styles.c:330
-#, c-format
+#, fuzzy, c-format
 msgid "do you really want to remove %d style?"
-msgid_plural "do you realy want to remove %d styles?"
+msgid_plural "do you really want to remove %d styles?"
 msgstr[0] "voulez-vous réellement enlever %d style ?"
 msgstr[1] "voulez-vous réellement enlever %d styles ?"
 
