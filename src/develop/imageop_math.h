@@ -176,27 +176,25 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
   return coeff[1] * powf(x * coeff[0], coeff[2]);
 }
 
+
 /** Copy alpha channel 1:1 from input to output */
-static inline void dt_iop_alpha_copy(const void *const __restrict__ ivoid,
-                                     void *const __restrict__ ovoid,
-                                     const int width, const int height)
-{
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, ovoid, ivoid) \
+#pragma omp declare simd uniform(width, height) aligned(ivoid, ovoid:64)
+#endif
+static inline void dt_iop_alpha_copy(const void *const ivoid,
+                                     void *const ovoid,
+                                     const size_t width, const size_t height)
+{
+  const float *const __restrict__ in = (const float *const)ivoid;
+  float *const __restrict__ out = (float *const)ovoid;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) aligned(out, in:64)\
+  dt_omp_firstprivate(height, width, out, in) \
   schedule(static)
 #endif
-  for(int j = 0; j < height; j++)
-  {
-    const float *in = ((const float *)ivoid) + (size_t)4 * width * j + 3;
-    float *out = ((float *)ovoid) + (size_t)4 * width * j + 3;
-    for(int i = 0; i < width; i++)
-    {
-      *out = *in;
-      out += 4;
-      in += 4;
-    }
-  }
+  for(size_t k = 3; k < width * height * 4; k += 4)
+    out[k] = in[k];
 }
 
 /** Calculate the bayer pattern color from the row and column **/
