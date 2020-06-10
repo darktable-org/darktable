@@ -180,17 +180,12 @@ else
 static void _update(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE);
 
   const guint act_on_cnt = g_list_length(imgs);
   const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
-  const gboolean can_paste = d->imageid > 0 && 
-    (
-      act_on_cnt > 1 || 
-      (act_on_cnt == 1 && (d->imageid != dt_view_get_image_to_act_on()))
-    );
-
-  g_list_free(imgs);
+  const gboolean can_paste
+      = d->imageid > 0 && (act_on_cnt > 1 || (act_on_cnt == 1 && (d->imageid != dt_view_get_image_to_act_on())));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->remove_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_cnt > 0);
@@ -287,7 +282,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   const gboolean geotag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags");
   const gboolean dttag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/tags");
   const int imageid = d->imageid;
-  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
   if(imgs)
   {
     // for all the above actions, we don't use the grpu_on tag, as grouped images have already been added to image
@@ -337,10 +332,9 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     {
       dt_undo_end_group(darktable.undo);
       dt_image_synch_xmps(imgs);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
       dt_control_queue_redraw_center();
     }
-    else g_list_free(imgs);
   }
 }
 

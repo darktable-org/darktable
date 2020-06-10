@@ -22,6 +22,7 @@
 #include "common/image_cache.h"
 #include "control/signal.h"
 #include "gui/gtk.h"
+#include "views/view.h"
 
 typedef struct dt_selection_t
 {
@@ -36,6 +37,14 @@ typedef struct dt_selection_t
 const dt_collection_t *dt_selection_get_collection(struct dt_selection_t *selection)
 {
   return selection->collection;
+}
+
+static void _selection_raise_signal()
+{
+  // discard cached images_to_act_on list
+  darktable.view_manager->act_on.ok = FALSE;
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 }
 
 /* updates the internal collection of an selection */
@@ -74,7 +83,7 @@ static void _selection_select(dt_selection_t *selection, uint32_t imgid)
     }
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -151,7 +160,7 @@ void dt_selection_invert(dt_selection_t *selection)
 
   g_free(fullq);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -161,7 +170,7 @@ void dt_selection_clear(const dt_selection_t *selection)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -203,7 +212,7 @@ void dt_selection_deselect(dt_selection_t *selection, uint32_t imgid)
     }
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -241,7 +250,7 @@ void dt_selection_toggle(dt_selection_t *selection, uint32_t imgid)
     selection->last_single_id = imgid;
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -263,7 +272,7 @@ void dt_selection_select_all(dt_selection_t *selection)
 
   g_free(fullq);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -345,7 +354,7 @@ void dt_selection_select_filmroll(dt_selection_t *selection)
 
   selection->last_single_id = -1;
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -379,7 +388,7 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
   g_free(fullq);
 
   selection->last_single_id = -1;
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -413,7 +422,7 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
     g_free(query);
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);

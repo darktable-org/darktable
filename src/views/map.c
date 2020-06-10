@@ -815,11 +815,10 @@ static gboolean _display_selected(gpointer user_data)
   dt_view_t *self = (dt_view_t *)user_data;
   gboolean done = FALSE;
 
-  GList *selected_images = dt_view_get_images_to_act_on(TRUE);
+  GList *selected_images = dt_view_get_images_to_act_on(TRUE, TRUE);
   if(selected_images)
   {
     done = _view_map_center_on_image_list(self, selected_images);
-    g_list_free(selected_images);
   }
 
   if(!done)

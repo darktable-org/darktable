@@ -196,9 +196,9 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
   dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
   if(d->current > 0)
   {
-    GList *imgs = dt_view_get_images_to_act_on(FALSE);
+    GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
     dt_ratings_apply_on_list(imgs, d->current, TRUE);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
 
     dt_control_queue_redraw_center();
   }

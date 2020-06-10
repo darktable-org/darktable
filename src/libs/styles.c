@@ -217,9 +217,8 @@ static void _styles_row_activated_callback(GtkTreeView *view, GtkTreePath *path,
   gchar *name;
   gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
 
-  GList *list = dt_view_get_images_to_act_on(TRUE);
+  GList *list = dt_view_get_images_to_act_on(TRUE, TRUE);
   if(name) dt_styles_apply_to_list(name, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
-  g_list_free(list);
 }
 
 // get list of style names from selection
@@ -254,11 +253,10 @@ static void apply_clicked(GtkWidget *w, gpointer user_data)
 
   if(style_names == NULL) return;
 
-  GList *list = dt_view_get_images_to_act_on(TRUE);
+  GList *list = dt_view_get_images_to_act_on(TRUE, TRUE);
 
   if(list) dt_multiple_styles_apply_to_list(style_names, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
 
-  g_list_free(list);
   g_list_free_full(style_names, g_free);
 }
 
@@ -266,9 +264,8 @@ static void create_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
 
-  GList *list = dt_view_get_images_to_act_on(TRUE);
+  GList *list = dt_view_get_images_to_act_on(TRUE, TRUE);
   dt_styles_create_from_list(list);
-  g_list_free(list);
   _gui_styles_update_view(d);
 }
 
@@ -438,9 +435,8 @@ static gboolean entry_activated(GtkEntry *entry, gpointer user_data)
   const gchar *name = gtk_entry_get_text(d->entry);
   if(name)
   {
-    GList *imgs = dt_view_get_images_to_act_on(TRUE);
+    GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
     dt_styles_apply_to_list(name, imgs, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
-    g_list_free(imgs);
   }
 
   return FALSE;
@@ -463,9 +459,10 @@ static void applymode_combobox_changed(GtkWidget *widget, gpointer user_data)
 static void _update(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
   const gboolean has_act_on = imgs != NULL;
-  g_list_free(imgs);
+
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree));
   const gint sel_styles_cnt = gtk_tree_selection_count_selected_rows(selection);
 

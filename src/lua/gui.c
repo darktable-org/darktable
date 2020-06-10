@@ -78,12 +78,12 @@ static int hovered_cb(lua_State *L)
 static int act_on_cb(lua_State *L)
 {
   lua_newtable(L);
-  GList *image = dt_view_get_images_to_act_on(FALSE);
+  GList *image = dt_view_get_images_to_act_on(FALSE, TRUE);
   while(image)
   {
     luaA_push(L, dt_lua_image_t, &image->data);
     luaL_ref(L, -2);
-    image = g_list_delete_link(image, image);
+    image = g_list_next(image);
   }
   return 1;
 }

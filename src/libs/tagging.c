@@ -139,9 +139,8 @@ static void _update_atdetach_buttons(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
   const gboolean has_act_on = imgs != NULL;
-  g_list_free(imgs);
 
   const gint dict_tags_sel_cnt =
     gtk_tree_selection_count_selected_rows(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->dictionary_view)));
@@ -1046,11 +1045,10 @@ static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_li
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
   if(tagid <= 0) return;
 
-  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
   if(!imgs) return;
 
   GList *affected_images = dt_tag_get_images_from_list(imgs, tagid);
-  g_list_free(imgs);
   if(affected_images)
   {
     dt_tag_detach_images(tagid, affected_images, TRUE);
@@ -1233,10 +1231,9 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   const gchar *tag = gtk_entry_get_text(d->entry);
   if(!tag || tag[0] == '\0') return;
 
-  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
   dt_tag_attach_string_list(tag, imgs, TRUE);
   dt_image_synch_xmps(imgs);
-  g_list_free(imgs);
 
   /** record last tag used */
   g_free(d->last_tag);
@@ -2933,10 +2930,9 @@ static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *accel
 
   if(d->last_tag)
   {
-    GList *imgs = dt_view_get_images_to_act_on(TRUE);
+    GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
     dt_tag_attach_string_list(d->last_tag, imgs, TRUE);
     dt_image_synch_xmps(imgs);
-    g_list_free(imgs);
 
     _init_treeview(self, 0);
     _init_treeview(self, 1);
@@ -2955,7 +2951,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
     return TRUE;  // doesn't work properly with tree treeview
   }
 
-  d->floating_tag_imgs = dt_view_get_images_to_act_on(FALSE);
+  d->floating_tag_imgs = g_list_copy(dt_view_get_images_to_act_on(FALSE, TRUE));
   gint x, y;
   gint px, py, w, h;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
