@@ -89,7 +89,7 @@ static void _update(dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   GList *imgs = dt_view_get_images_to_act_on(TRUE);
-  const guint act_on_cnt = g_list_length(imgs);
+  const gboolean has_act_on = imgs != NULL;
   g_list_free(imgs);
 
   char *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
@@ -100,7 +100,7 @@ static void _update(dt_lib_module_t *self)
   g_free(format_name);
   g_free(storage_name);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->export_button), act_on_cnt > 0 && format_index != -1 && storage_index != -1);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->export_button), has_act_on && format_index != -1 && storage_index != -1);
 
   if(d->timeout_handle)
   {
