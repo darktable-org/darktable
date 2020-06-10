@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-13 22:44+0200\n"
-"PO-Revision-Date: 2020-05-23 17:43+0200\n"
+"PO-Revision-Date: 2020-06-10 08:40+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1959,9 +1959,8 @@ msgid ""
 msgstr ""
 
 #: ../src/common/database.c:2854
-#, fuzzy
 msgid "darktable - schema maintenance"
-msgstr "darktable - Datenbank Umstellung"
+msgstr "darktable - Datenbank Wartung"
 
 #: ../src/common/database.c:2855
 #, fuzzy
@@ -4093,14 +4092,14 @@ msgid "previous"
 msgstr "Kurzvorschau"
 
 #: ../src/gui/accelerators.c:575
-#, fuzzy, c-format
+#, c-format
 msgid "%s %s / %s: %s"
-msgstr "%s/%s: %s"
+msgstr "%s %s / %s: %s"
 
 #: ../src/gui/accelerators.c:577
-#, fuzzy, c-format
+#, c-format
 msgid "%s / %s: %s"
-msgstr "%s/%s: %s"
+msgstr "%s / %s: %s"
 
 #: ../src/gui/accelerators.c:579
 #, c-format
@@ -4108,14 +4107,14 @@ msgid "%s: %s"
 msgstr "%s: %s"
 
 #: ../src/gui/accelerators.c:584
-#, fuzzy, c-format
+#, c-format
 msgid "%s %s / %s"
-msgstr "%s/%s: %s"
+msgstr "%s %s / %s"
 
 #: ../src/gui/accelerators.c:586
-#, fuzzy, c-format
+#, c-format
 msgid "%s / %s"
-msgstr "%s/%s: %s"
+msgstr "%s / %s"
 
 #: ../src/gui/accelerators.c:588 ../src/libs/tagging.c:2135
 #, c-format
@@ -4467,43 +4466,36 @@ msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) – ISO-Wert"
 
 #: ../src/gui/gtkentry.c:207
-#, fuzzy
 msgid "$(EXIF_EXPOSURE) - EXIF exposure"
-msgstr "$(EXIF_HOUR) – Exif-Stunde"
+msgstr "$(EXIF_EXPOSURE) – Exif-Belichtung"
 
 #: ../src/gui/gtkentry.c:208
-#, fuzzy
 msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
-msgstr "$(EXIF_HOUR) – Exif-Stunde"
+msgstr "$(EXIF_EXPOSURE_BIAS) – Exif-Belichtungskorrektur"
 
 #: ../src/gui/gtkentry.c:209
-#, fuzzy
 msgid "$(EXIF_APERTURE) - EXIF aperture"
-msgstr "$(EXIF_YEAR) – Exif-Jahr"
+msgstr "$(EXIF_APERTURE) – Exif-Blende"
 
 #: ../src/gui/gtkentry.c:210
-#, fuzzy
 msgid "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
-msgstr "$(EXIF_MONTH) – Exif-Monat"
+msgstr "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
 
 #: ../src/gui/gtkentry.c:211
-#, fuzzy
 msgid "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
-msgstr "$(EXIF_MINUTE) – Exif-Minute"
+msgstr "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
 
 #: ../src/gui/gtkentry.c:212
-#, fuzzy
 msgid "$(LONGITUDE) - longitude"
-msgstr "$(MONTH) – Monat"
+msgstr "$(LONGITUDE) – geographische Länge"
 
 #: ../src/gui/gtkentry.c:213
-#, fuzzy
 msgid "$(LATITUDE) - latitude"
-msgstr "$(MINUTE) – Minute"
+msgstr "$(LATITUDE) – geografische Breite"
 
 #: ../src/gui/gtkentry.c:214
 msgid "$(ELEVATION) - elevation"
-msgstr ""
+msgstr "$(ELEVATION) – Höhe"
 
 #: ../src/gui/gtkentry.c:215
 msgid "$(STARS) - star rating"
@@ -4522,9 +4514,8 @@ msgid "$(MODEL) - camera model"
 msgstr "$(MODEL) – Kameramodell"
 
 #: ../src/gui/gtkentry.c:219
-#, fuzzy
 msgid "$(LENS) - lens"
-msgstr "$(LABELS) – Farbmarkierungen"
+msgstr "$(LENS) – Objektiv"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(TITLE) - title from metadata"
@@ -4596,11 +4587,11 @@ msgstr "Anzahl der Unterteilungen pro Gitterrechteck"
 
 #: ../src/gui/guides.c:440
 msgid "extra"
-msgstr "weiter"
+msgstr "Variante"
 
 #: ../src/gui/guides.c:441
 msgid "golden sections"
-msgstr "Goldener Schnitt"
+msgstr "goldener Schnitt"
 
 #: ../src/gui/guides.c:442
 msgid "golden spiral sections"
@@ -4608,7 +4599,7 @@ msgstr "Abschnitte der goldenen Spirale"
 
 #: ../src/gui/guides.c:443
 msgid "golden spiral"
-msgstr "Goldene Spirale"
+msgstr "goldene Spirale"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:682
 #: ../src/iop/denoiseprofile.c:4369 ../src/iop/lens.cc:2313 ../src/iop/rawdenoise.c:1006
@@ -7112,12 +7103,11 @@ msgstr "Korrektur angewandt"
 
 #: ../src/iop/clipping.c:2130
 msgid "main"
-msgstr ""
+msgstr "Beschnitt"
 
 #: ../src/iop/clipping.c:2131
-#, fuzzy
 msgid "margins"
-msgstr "oberer Rand"
+msgstr "Ränder"
 
 #: ../src/iop/clipping.c:2140 ../src/libs/live_view.c:372
 msgid "flip"
@@ -7144,39 +7134,36 @@ msgstr ""
 "markieren"
 
 #: ../src/iop/clipping.c:2157
-#, fuzzy
 msgid "left"
-msgstr "oben links"
+msgstr "links"
 
 #: ../src/iop/clipping.c:2160
 msgid "the left margin cannot overlap with the right margin"
-msgstr ""
+msgstr "Linker Rand kann nicht über rechten Rand hinauslaufen."
 
 #: ../src/iop/clipping.c:2164
-#, fuzzy
 msgid "right"
-msgstr "Rechte"
+msgstr "rechts"
 
 #: ../src/iop/clipping.c:2167
 msgid "the right margin cannot overlap with the left margin"
-msgstr ""
+msgstr "Rechter Rand kann nicht über linken Rand hinauslaufen."
 
 #: ../src/iop/clipping.c:2171
 msgid "top"
-msgstr ""
+msgstr "oben"
 
 #: ../src/iop/clipping.c:2174
 msgid "the top margin cannot overlap with the bottom margin"
-msgstr ""
+msgstr "Oberer Rand kann nicht über unteren Rand hinauslaufen."
 
 #: ../src/iop/clipping.c:2178
-#, fuzzy
 msgid "bottom"
 msgstr "unten"
 
 #: ../src/iop/clipping.c:2181
 msgid "the bottom margin cannot overlap with the top margin"
-msgstr ""
+msgstr "Unterer Rand kann nicht über oberen Rand hinauslaufen."
 
 #: ../src/iop/clipping.c:2185
 msgid "keystone"
@@ -7269,7 +7256,7 @@ msgid ""
 "the list is sorted: from most square to least square"
 msgstr ""
 "Seitenverhältnis\n"
-"die Liste ist nach absteigendem Seitenverhätnis sortiert"
+"Die Liste ist nach absteigendem Seitenverhältnis sortiert."
 
 #: ../src/iop/clipping.c:2348 ../src/libs/live_view.c:368
 msgid "display guide lines to help compose your photograph"
@@ -7298,48 +7285,41 @@ msgid "angle"
 msgstr "Winkel"
 
 #: ../src/iop/clipping.c:3451
-#, fuzzy
 msgctxt "accel"
 msgid "left"
-msgstr "oben links"
+msgstr "links"
 
 #: ../src/iop/clipping.c:3452
 msgctxt "accel"
 msgid "top"
-msgstr ""
+msgstr "oben"
 
 #: ../src/iop/clipping.c:3453
-#, fuzzy
 msgctxt "accel"
 msgid "right"
-msgstr "Rechte"
+msgstr "rechts"
 
 #: ../src/iop/clipping.c:3454
-#, fuzzy
 msgctxt "accel"
 msgid "bottom"
 msgstr "unten"
 
 #: ../src/iop/clipping.c:3455
-#, fuzzy
 msgctxt "accel"
 msgid "aspect ratio"
 msgstr "Seitenverhältnis"
 
 #: ../src/iop/clipping.c:3456
-#, fuzzy
 msgctxt "accel"
 msgid "guide lines"
 msgstr "Hilfslinien"
 
 #: ../src/iop/clipping.c:3457
-#, fuzzy
 msgctxt "accel"
 msgid "flip"
 msgstr "spiegeln"
 
 #: ../src/iop/clipping.c:3458
-#, fuzzy
 msgctxt "accel"
 msgid "keystone"
 msgstr "Trapezkorrektur"
@@ -7402,25 +7382,21 @@ msgid "similar to Kodachrome"
 msgstr "ähnlich zu Kodachrome"
 
 #: ../src/iop/colorbalance.c:285
-#, fuzzy
 msgctxt "accel"
 msgid "input saturation"
 msgstr "Eingangssättigung"
 
 #: ../src/iop/colorbalance.c:286
-#, fuzzy
 msgctxt "accel"
 msgid "output saturation"
 msgstr "Ausgangssättigung"
 
 #: ../src/iop/colorbalance.c:287
-#, fuzzy
 msgctxt "accel"
 msgid "contrast fulcrum"
 msgstr "Kontraststützpunkt"
 
 #: ../src/iop/colorbalance.c:290
-#, fuzzy
 msgctxt "accel"
 msgid "color control sliders"
 msgstr "Farbsteuerungsregler"
@@ -7794,19 +7770,16 @@ msgid "input color profile"
 msgstr "Eingabefarbprofil"
 
 #: ../src/iop/colorin.c:162
-#, fuzzy
 msgctxt "accel"
 msgid "input profile"
 msgstr "Eingabeprofil"
 
 #: ../src/iop/colorin.c:163
-#, fuzzy
 msgctxt "accel"
 msgid "working profile"
 msgstr "Arbeitsprofil"
 
 #: ../src/iop/colorin.c:164
-#, fuzzy
 msgctxt "accel"
 msgid "gamut clipping"
 msgstr "Gamut beschneiden"
@@ -8346,24 +8319,21 @@ msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
 #: ../src/iop/demosaic.c:182
-#, fuzzy
 msgctxt "accel"
 msgid "method (bayer)"
-msgstr "Methode"
+msgstr "Methode (Bayer)"
 
 #: ../src/iop/demosaic.c:183
 msgctxt "accel"
 msgid "method (xtrans)"
-msgstr ""
+msgstr "Methode (X-Trans)"
 
 #: ../src/iop/demosaic.c:184
-#, fuzzy
 msgctxt "accel"
 msgid "color smoothing"
 msgstr "Farbglättung"
 
 #: ../src/iop/demosaic.c:185
-#, fuzzy
 msgctxt "accel"
 msgid "match greens"
 msgstr "Grün anpassen"
@@ -8598,11 +8568,11 @@ msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:4384
 msgid "Y0"
-msgstr ""
+msgstr "Y0"
 
 #: ../src/iop/denoiseprofile.c:4386
 msgid "U0V0"
-msgstr ""
+msgstr "U0V0"
 
 #: ../src/iop/denoiseprofile.c:4421
 msgid "whitebalance-adaptive transform"
@@ -8672,9 +8642,8 @@ msgid "profile"
 msgstr "Profil"
 
 #: ../src/iop/denoiseprofile.c:4471
-#, fuzzy
 msgid "color mode"
-msgstr "Abwedeln"
+msgstr "Farbmodus"
 
 #: ../src/iop/denoiseprofile.c:4472 ../src/iop/nlmeans.c:849
 msgid "patch size"
@@ -8727,7 +8696,7 @@ msgstr "RGB"
 
 #: ../src/iop/denoiseprofile.c:4487
 msgid "Y0U0V0"
-msgstr ""
+msgstr "Y0U0V0"
 
 #: ../src/iop/denoiseprofile.c:4493
 msgid "profile used for variance stabilization"
@@ -8832,7 +8801,6 @@ msgid "dithering"
 msgstr "Dithering"
 
 #: ../src/iop/dither.c:123 ../src/iop/highlights.c:99
-#, fuzzy
 msgctxt "accel"
 msgid "method"
 msgstr "Methode"
@@ -9681,10 +9649,9 @@ msgid "density"
 msgstr "Dichte"
 
 #: ../src/iop/graduatednd.c:163
-#, fuzzy
 msgctxt "accel"
 msgid "hardness"
-msgstr "Schärfe"
+msgstr "Härte"
 
 #: ../src/iop/graduatednd.c:1223
 msgid "density"
@@ -9695,18 +9662,17 @@ msgid "the density in EV for the filter"
 msgstr "die Dichte in EV für den Filter"
 
 #: ../src/iop/graduatednd.c:1230
-#, fuzzy
 msgid "hardness"
-msgstr "Schärfe"
+msgstr "Härte"
 
 #: ../src/iop/graduatednd.c:1232
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "hardness of graduation:\n"
 "0% = soft, 100% = hard"
 msgstr ""
-"Kompression des Verlaufs:\n"
-"0% = weich, 100% = hart"
+"Breite des Übergangs von transparent zu nicht-transparent:\n"
+"0% = weicher Verlauf, 100% = harter Verlauf"
 
 #: ../src/iop/graduatednd.c:1239
 msgid "rotation of filter -180 to 180 degrees"
@@ -9736,16 +9702,15 @@ msgid "[%s on line] change density"
 msgstr "[%s on line] Dichte ändern"
 
 #: ../src/iop/graduatednd.c:1308
-#, fuzzy, c-format
+#, c-format
 msgid "[%s on line] change hardness"
-msgstr "[%s on line] Dichte ändern"
+msgstr "[%s on line] Härte ändern"
 
 #: ../src/iop/grain.c:418
 msgid "grain"
 msgstr "Körnung"
 
 #: ../src/iop/grain.c:440
-#, fuzzy
 msgctxt "accel"
 msgid "midtones bias"
 msgstr "Mittenbetonung"
@@ -9753,7 +9718,7 @@ msgstr "Mittenbetonung"
 #: ../src/iop/grain.c:631
 #, c-format
 msgid "%.0f ISO"
-msgstr ""
+msgstr "%.0f ISO"
 
 #: ../src/iop/grain.c:633
 msgid "the grain size (~ISO of the film)"
@@ -9780,7 +9745,6 @@ msgid "haze removal"
 msgstr "Dunstentfernung"
 
 #: ../src/iop/hazeremoval.c:122
-#, fuzzy
 msgctxt "accel"
 msgid "distance"
 msgstr "Distanz"
@@ -10688,19 +10652,16 @@ msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
 #: ../src/iop/lut3d.c:1798
-#, fuzzy
 msgid "gamma rec709 RGB"
-msgstr "Gamma Rec709 RGB"
+msgstr "Gamma Rec. 709 RGB"
 
 #: ../src/iop/lut3d.c:1799
-#, fuzzy
 msgid "linear rec709 RGB"
-msgstr "lineares Rec709-RGB"
+msgstr "lineares Rec. 709 RGB"
 
 #: ../src/iop/lut3d.c:1800
-#, fuzzy
 msgid "linear rec2020 RGB"
-msgstr "lineares Rec2020-RGB"
+msgstr "lineares Rec. 2020 RGB"
 
 #: ../src/iop/lut3d.c:1802
 msgid "select the color space in which the LUT has to be applied"
@@ -10747,9 +10708,8 @@ msgid "how much to keep highlights"
 msgstr "wie sehr sollen Spitzlichter ausgenommen werden"
 
 #: ../src/iop/negadoctor.c:192
-#, fuzzy
 msgid "negadoctor"
-msgstr "Faktor"
+msgstr "Negadoctor"
 
 #: ../src/iop/negadoctor.c:421
 msgid "color film"
@@ -10760,9 +10720,8 @@ msgid "black and white film"
 msgstr "Schwarz-Weiß-Film"
 
 #: ../src/iop/negadoctor.c:495
-#, fuzzy
 msgid "D min"
-msgstr "Minimaler Zoom"
+msgstr "D min"
 
 #: ../src/iop/negadoctor.c:501 ../src/iop/negadoctor.c:1102
 msgid "D min red component"
@@ -10773,9 +10732,8 @@ msgid "film stock"
 msgstr "Filmmaterial"
 
 #: ../src/iop/negadoctor.c:1061
-#, fuzzy
 msgid "black and white"
-msgstr "schwarz & weiß"
+msgstr "schwarz-weiß"
 
 #: ../src/iop/negadoctor.c:1062 ../src/iop/retouch.c:2888 ../src/iop/watermark.c:1490
 msgid "color"
@@ -13718,19 +13676,16 @@ msgid "create a style from the current history stack"
 msgstr "Erzeuge einen Stil aus dem aktuellen Verlaufsstapel"
 
 #: ../src/libs/history.c:189
-#, fuzzy
 msgid "always-on module"
-msgstr "Modul zeigen"
+msgstr "Modul nicht deaktivierbar"
 
 #: ../src/libs/history.c:198
-#, fuzzy
 msgid "default enabled module"
-msgstr "Modul aktivieren"
+msgstr "Modul standardmäßig aktiv"
 
 #: ../src/libs/history.c:207
-#, fuzzy
 msgid "deprecated module"
-msgstr "Modul suchen"
+msgstr "veraltetes Modul"
 
 #: ../src/libs/history.c:677 ../src/libs/snapshots.c:458
 msgid "original"
@@ -13970,28 +13925,24 @@ msgid "refresh exif"
 msgstr "Exif-Daten aktualisieren"
 
 #: ../src/libs/image.c:565
-#, fuzzy
 msgctxt "accel"
 msgid "copy metadata"
-msgstr "Metadaten"
+msgstr "Metadaten kopieren"
 
 #: ../src/libs/image.c:566
-#, fuzzy
 msgctxt "accel"
 msgid "replace metadata"
-msgstr "Metadaten-Tag löschen"
+msgstr "Metadaten ersetzen"
 
 #: ../src/libs/image.c:567
-#, fuzzy
 msgctxt "accel"
 msgid "paste metadata"
-msgstr "Metadaten"
+msgstr "Metadaten einfügen"
 
 #: ../src/libs/image.c:568
-#, fuzzy
 msgctxt "accel"
 msgid "clear metadata"
-msgstr "Metadaten"
+msgstr "Metadaten löschen"
 
 #. Grouping keys
 #: ../src/libs/image.c:570
@@ -16253,10 +16204,9 @@ msgstr "Gamut überprüfen"
 
 #. toggle visability of drawn masks for current gui module
 #: ../src/views/darkroom.c:3605
-#, fuzzy
 msgctxt "accel"
 msgid "show drawn masks"
-msgstr "gezeichnete Maske"
+msgstr "gezeichnete Maske anzeigen"
 
 #. brush size +/-
 #: ../src/views/darkroom.c:3608
@@ -16457,10 +16407,9 @@ msgid "move end and select"
 msgstr "zum Ende navigieren und auswählen"
 
 #: ../src/views/lighttable.c:694
-#, fuzzy
 msgctxt "accel"
 msgid "align images to grid"
-msgstr "Bilder wieder am Raster ausrichten"
+msgstr "Bilder am Raster ausrichten"
 
 #: ../src/views/lighttable.c:695
 #, fuzzy
