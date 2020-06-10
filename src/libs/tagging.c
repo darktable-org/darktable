@@ -140,7 +140,7 @@ static void _update_atdetach_buttons(dt_lib_module_t *self)
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
   GList *imgs = dt_view_get_images_to_act_on(TRUE);
-  const guint act_on_cnt = g_list_length(imgs);
+  const gboolean has_act_on = imgs != NULL;
   g_list_free(imgs);
 
   const gint dict_tags_sel_cnt =
@@ -148,8 +148,8 @@ static void _update_atdetach_buttons(dt_lib_module_t *self)
   const gint atached_tags_sel_cnt =
     gtk_tree_selection_count_selected_rows(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->attached_view)));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->attach_button), act_on_cnt > 0 && dict_tags_sel_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->detach_button), act_on_cnt > 0 && atached_tags_sel_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->attach_button), has_act_on && dict_tags_sel_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->detach_button), has_act_on && atached_tags_sel_cnt > 0);
 
   if(d->timeout_handle)
   {
