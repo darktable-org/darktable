@@ -558,6 +558,48 @@ static inline gint mask_clipped_pixels(const float *const restrict in,
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, mask, inpainted:64) uniform(num_elem, ch, threshold)
+#endif
+inline static void inpaint_noise(const float *const in, const float *const mask,
+                                 float *const inpainted, const float threshold,
+                                 const size_t num_elem, const size_t ch)
+{
+  // add gaussian noise in highlights to fill-in texture
+  // this creates "particules" in highlights, that will help the implicit partial derivative equation
+  // solver used in wavelets reconstruction to generate texture
+
+  // Init random number generator
+  uint64_t DT_ALIGNED_ARRAY state[4] = { 0 };
+  xoshiro256_init(1, state);
+
+  // in case we have 0 iteration of high-quality reconstruction, we need to be really gentle on the noise level
+  // so we set gain to 1, and to 1.25 otherwise
+  //const float gain = fminf((float)iterations + 1, 1.25f);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, mask, inpainted, num_elem, ch, state, threshold) \
+  schedule(simd:static) aligned(mask, in, inpainted, state:64)
+#endif
+  for(size_t k = 0; k < num_elem; k += ch)
+  {
+    // get the mask value in [0 ; 1]
+    const float weight = mask[k / ch];
+
+    for(size_t c = 0; c < 3; c++)
+    {
+      // create gaussian noise
+      const float input = in[k + c];
+      const float noise = gaussian_noise(input, fmaxf(sqf(input / threshold), FLT_MIN), (c % 2) == 0.f, state);
+
+      // add noise to input
+      inpainted[k + c] = input * (1.0f - weight) + weight * noise;
+    }
+  }
+}
+
+
 // B spline filter
 #define FSIZE 5
 
@@ -1341,8 +1383,13 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(recover_highlights && mask && reconstructed)
   {
-    const gint success_1 = reconstruct_highlights(in, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, ch, data, piece, roi_in, roi_out);
+    float *const restrict inpainted =  dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
+    inpaint_noise(in, mask, inpainted, data->reconstruct_threshold, roi_out->width * roi_out->height * ch, ch);
+
+    const gint success_1 = reconstruct_highlights(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, ch, data, piece, roi_in, roi_out);
     gint success_2 = TRUE;
+
+    dt_free_align(inpainted);
 
     if(data->high_quality_reconstruction > 0 && success_1)
     {

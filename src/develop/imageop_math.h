@@ -224,12 +224,100 @@ static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *con
   return xtrans[irow % 6][icol % 6];
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline int fcol(const int row, const int col, const uint32_t filters, const uint8_t (*const xtrans)[6])
 {
   if(filters == 9)
     return FCxtrans(row, col, NULL, xtrans);
   else
     return FC(row, col, filters);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline uint64_t splitmix64(const uint64_t seed)
+{
+  // fast random number generator
+  // reference : http://prng.di.unimi.it/splitmix64.c
+  uint64_t result = (seed ^ (seed >> 30)) * 0xBF58476D1CE4E5B9;
+  result = (result ^ (result >> 27)) * 0x94D049BB133111EB;
+  return result ^ (result >> 31);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(state:64)
+#endif
+static inline void xoshiro256_init(uint64_t seed, uint64_t state[4])
+{
+  // Init the xoshiro256 random generator
+  uint64_t tmp = splitmix64(seed);
+  state[0] = (uint32_t)tmp;
+  state[1] = (uint32_t)(tmp >> 32);
+
+  tmp = splitmix64(seed + 0x9E3779B97f4A7C15);
+  state[2] = (uint32_t)tmp;
+  state[3] = (uint32_t)(tmp >> 32);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd uniform(k)
+#endif
+static inline uint64_t rol64(const uint64_t x, const uint64_t k)
+{
+  return (x << k) | (x >> (64 - k));
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(state:64)
+#endif
+static inline float xoshiro256ss(uint64_t state[4])
+{
+  // fast random number generator
+  // reference : http://prng.di.unimi.it/
+  const uint64_t result = rol64(state[1] * 5, 7) * 9;
+  const uint64_t t = state[1] << 17;
+
+  state[2] ^= state[0];
+  state[3] ^= state[1];
+  state[1] ^= state[2];
+  state[0] ^= state[3];
+
+  state[2] ^= t;
+  state[3] = rol64(state[3], 45);
+
+  return (float)result / (float)UINT64_MAX;
+}
+
+
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline float gaussian_noise(const float mu, const float sigma, const int flip, uint64_t state[4])
+{
+  // Create gaussian noise centered in mu of standard deviation sigma
+  // state should be initialized with xoshiro256_init() before calling and private in thread
+  // flip needs to be flipped every next iteration
+
+  const float u1 = fmaxf(xoshiro256ss(state), FLT_MIN);
+  const float u2 = xoshiro256ss(state);
+
+  float z;
+
+  if(flip)
+    z = sqrtf(-2.0f * logf(u1)) * cosf(2.f * M_PI * u2);
+  else
+    z = sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
+
+  return z * sigma + mu;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
