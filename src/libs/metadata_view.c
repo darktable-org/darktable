@@ -253,11 +253,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     char value[512];
     char pathname[PATH_MAX] = { 0 };
 
-    // get the size before locking the image!
-    // TODO: put that into dt_image_t and make sure it stays in sync
-//    int width = 0, height = 0;
-//     dt_image_get_final_size(mouse_over_id, &width, &height); // kind of slow on some machines
-
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
     if(!img) goto fill_minuses;
     if(img->film_id == -1)
