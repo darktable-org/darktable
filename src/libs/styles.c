@@ -327,7 +327,7 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     GtkWidget *dialog = gtk_message_dialog_new
       (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-       ngettext("do you really want to remove %d style?", "do you realy want to remove %d styles?", select_cnt),
+       ngettext("do you really want to remove %d style?", "do you really want to remove %d styles?", select_cnt),
        select_cnt);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);

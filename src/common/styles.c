@@ -670,7 +670,7 @@ void dt_multiple_styles_apply_to_list(GList *styles, GList *list, gboolean dupli
     l = g_list_next(l);
   }
   dt_undo_end_group(darktable.undo);
-  dt_control_log(ngettext("style successfully applied!", "styles successfully applied", styles_cnt));
+  dt_control_log(ngettext("style successfully applied!", "styles successfully applied!", styles_cnt));
 }
 
 void dt_styles_create_from_list(GList *list)
