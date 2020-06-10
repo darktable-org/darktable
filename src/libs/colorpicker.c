@@ -547,6 +547,8 @@ void gui_init(dt_lib_module_t *self)
 
   // Setting up the GUI
   self->widget = container;
+  GtkStyleContext *context = gtk_widget_get_style_context(self->widget);
+  gtk_style_context_add_class(context, "picker-module");
   gtk_box_pack_start(GTK_BOX(container), output_row, TRUE, TRUE, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 

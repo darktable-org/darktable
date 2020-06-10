@@ -457,7 +457,8 @@ void gui_init(dt_lib_module_t *self)
   d->preview_zoom = 1.0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(self->widget, "duplicate-ui");
+  GtkStyleContext *context = gtk_widget_get_style_context(self->widget);
+  gtk_style_context_add_class(context, "duplicate-ui");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);

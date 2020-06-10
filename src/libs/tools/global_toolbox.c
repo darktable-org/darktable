@@ -444,6 +444,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->thumbnails_box), hbox, TRUE, TRUE, 0);
   d->over_tt = gtk_check_button_new_with_label(_("show tooltip"));
   g_signal_connect(G_OBJECT(d->over_tt), "toggled", G_CALLBACK(_overlays_toggle_button), self);
+  gtk_widget_set_name(d->over_tt, "show-tooltip");
   gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_tt, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), d->thumbnails_box, TRUE, TRUE, 0);
@@ -476,6 +477,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->culling_box), hbox, TRUE, TRUE, 0);
   d->over_culling_tt = gtk_check_button_new_with_label(_("show tooltip"));
   g_signal_connect(G_OBJECT(d->over_culling_tt), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
+  gtk_widget_set_name(d->over_culling_tt, "show-tooltip");
   gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_tt, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), d->culling_box, TRUE, TRUE, 0);
