@@ -9431,7 +9431,7 @@ msgstr "échec de l'obtention du cache pour l'image « %s »"
 #: ../src/iop/exposure.c:573 ../src/iop/exposure.c:959
 #, no-c-format
 msgid "compensate camera exposure (%+.1f EV)"
-msgstr "compenser exposition boîtier (%+.1 IL)"
+msgstr "compenser exposition boîtier (%+.1f IL)"
 
 #: ../src/iop/exposure.c:941 ../src/iop/levels.c:651
 msgctxt "mode"
