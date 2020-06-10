@@ -2600,10 +2600,27 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_auto_levels), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_auto_levels), FALSE);
 
-  gtk_box_pack_end(GTK_BOX(prev_lvl), g->bt_auto_levels, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 20);
+  gtk_box_pack_end(GTK_BOX(prev_lvl), g->bt_auto_levels, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), prev_lvl, TRUE, TRUE, 0);
+
+
+
+
+  GtkDarktableGradientSlider *prova = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_color_and_name(_gradient_L[0], _gradient_L[1], 5, "prova"));
+  prova->markers_type = FREE_MARKERS;
+  prova->min_spacing = 0.05;
+  for (int i = 0; i < 5; i++)
+    dtgtk_gradient_slider_multivalue_set_marker(prova, GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, i);
+  double pdefault[5] = {0.0 ,0.2, 0.5, 0.8, 1.0};
+  dtgtk_gradient_slider_multivalue_set_values(prova, pdefault, FALSE);
+  dtgtk_gradient_slider_multivalue_set_resetvalues(prova, pdefault);
+  gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), GTK_WIDGET(prova), TRUE, TRUE, 0);
+
+
+
+
 
   // shapes selected (label)
   GtkWidget *hbox_shape_sel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

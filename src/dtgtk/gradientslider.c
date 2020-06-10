@@ -171,28 +171,49 @@ static gdouble _slider_move(GtkWidget *widget, gint k, gdouble value, gint direc
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
 
   gdouble newvalue = value;
-  const gdouble leftnext = (k == 0) ? 0.0f : gslider->position[k - 1];
-  const gdouble rightnext = (k == gslider->positions - 1) ? 1.0f : gslider->position[k + 1];
+  gdouble leftnext, rightnext, ms;
 
-  switch(direction)
+  switch(gslider->markers_type)
   {
-    case MOVE_LEFT:
-      if(value < leftnext)
+    case FREE_MARKERS:
+    {
+      leftnext = (k == 0) ? 0.0f : gslider->position[k - 1];
+      rightnext = (k == gslider->positions - 1) ? 1.0f : gslider->position[k + 1];
+      ms = gslider->min_spacing;
+      switch(direction)
       {
-        newvalue = (k == 0) ? fmax(value, 0.0f) : _slider_move(widget, k - 1, value, direction);
+        case MOVE_LEFT:
+          if(value < leftnext + ms)
+            newvalue = (k == 0) ? fmax(value, 0.0f) : _slider_move(widget, k - 1, value - ms, direction) + ms;
+          break;
+        case MOVE_RIGHT:
+          if(value > rightnext - ms)
+            newvalue = (k == gslider->positions - 1) ? fmin(value, 1.0f) : _slider_move(widget, k + 1, value +  ms, direction) - ms;
+          break;
       }
       break;
-    case MOVE_RIGHT:
-      if(value > rightnext)
-      {
-        newvalue = (k == gslider->positions - 1) ? fmin(value, 1.0f)
-                                                 : _slider_move(widget, k + 1, value, direction);
-      }
+    }
+    case PROPORTIONAL_MARKERS:
+    {
+      ms = fmax(gslider->min_spacing, 1.0e-6);
+      const double vmin = ((k == 0) ? 0.0f : gslider->position[0]);
+      const double vmax = ((k == gslider->positions - 1) ? 1.0f : gslider->position[gslider->positions - 1]);
+
+      newvalue = CLAMP_RANGE(value, vmin + ms * k, vmax - ms * (gslider->positions - 1 - k));
+      const double rl = (newvalue - gslider->position[0]) / (gslider->position[k] - gslider->position[0]);
+      const double rh = (gslider->position[gslider->positions - 1] - newvalue) /
+                        (gslider->position[gslider->positions - 1] - gslider->position[k]);
+
+      for(int i = 1; i < k; i++)
+        gslider->position[i] = rl * (gslider->position[i] - gslider->position[0]) + gslider->position[0];
+
+      for(int i = k + 1; i < gslider->positions; i++)
+        gslider->position[i] = gslider->position[gslider->positions - 1] -
+                               rh * (gslider->position[gslider->positions - 1] - gslider->position[i]);
       break;
+    }
   }
-
   gslider->position[k] = newvalue;
-
   return newvalue;
 }
 
@@ -247,10 +268,13 @@ static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventC
 static gboolean _gradient_slider_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event)
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
-  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
-  gslider->is_entered = FALSE;
-  gslider->active = -1;
-  gtk_widget_queue_draw(widget);
+  if(!(gslider->is_dragging))
+  {
+    gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
+    gslider->is_entered = FALSE;
+    gslider->active = -1;
+    gtk_widget_queue_draw(widget);
+  }
   return FALSE;
 }
 
@@ -456,6 +480,7 @@ static void _gradient_slider_init(GtkDarktableGradientSlider *gslider)
   gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = NAN;
   gslider->increment = DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT;
   gslider->margin_left = gslider->margin_right = GRADIENT_SLIDER_MARGINS_DEFAULT;
+  //gslider->markers_type = PROPORTIONAL_MARKERS;
   for(int k = 0; k < gslider->positions; k++)
   {
     gslider->position[k] = 0.0;
