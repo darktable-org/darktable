@@ -1369,6 +1369,13 @@
     <shortdescription>ask before deleting a style</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig prefs="security">
+    <name>plugins/lighttable/preset/ask_before_delete_preset</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>ask before deleting a preset</shortdescription>
+    <longdescription>will ask for confirmation before deleting or overwritting a preset</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/map/show_map_osd</name>
     <type>bool</type>
