@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-10 10:39-0500\n"
-"PO-Revision-Date: 2020-06-10 11:43-0500\n"
+"POT-Creation-Date: 2020-06-10 11:57-0500\n"
+"PO-Revision-Date: 2020-06-10 12:16-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1652,7 +1652,7 @@ msgstr "lente"
 #. focal length
 #: ../src/common/collection.c:687 ../src/gui/preferences.c:731
 #: ../src/gui/preferences.c:1759 ../src/gui/presets.c:494
-#: ../src/iop/ashift.c:4887 ../src/libs/camera.c:578
+#: ../src/iop/ashift.c:4887 ../src/libs/camera.c:581
 #: ../src/libs/metadata_view.c:124
 msgid "focal length"
 msgstr "longitud focal"
@@ -1660,14 +1660,14 @@ msgstr "longitud focal"
 #. iso
 #: ../src/common/collection.c:688 ../src/gui/preferences.c:719
 #: ../src/gui/preferences.c:1716 ../src/gui/presets.c:451
-#: ../src/libs/camera.c:586 ../src/libs/metadata_view.c:126
+#: ../src/libs/camera.c:589 ../src/libs/metadata_view.c:126
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
 #: ../src/common/collection.c:689 ../src/gui/preferences.c:727
 #: ../src/gui/preferences.c:1744 ../src/gui/presets.c:479
-#: ../src/libs/camera.c:573 ../src/libs/camera.c:575
+#: ../src/libs/camera.c:576 ../src/libs/camera.c:578
 #: ../src/libs/metadata_view.c:121
 msgid "aperture"
 msgstr "apertura"
@@ -2570,7 +2570,7 @@ msgstr "Ningún estilo ha sido seleccionado"
 
 #: ../src/common/styles.c:673
 msgid "style successfully applied!"
-msgid_plural "styles successfully applied"
+msgid_plural "styles successfully applied!"
 msgstr[0] "Estilo aplicado exitosamente"
 msgstr[1] "Estilos aplicados exitosamente"
 
@@ -5535,7 +5535,7 @@ msgid "jp2"
 msgstr "jp2"
 
 #: ../src/imageio/format/j2k.c:653 ../src/imageio/format/jpeg.c:592
-#: ../src/imageio/format/webp.c:332 ../src/libs/camera.c:592
+#: ../src/imageio/format/webp.c:332 ../src/libs/camera.c:595
 msgid "quality"
 msgstr "calidad"
 
@@ -7170,7 +7170,7 @@ msgctxt "accel"
 msgid "strength"
 msgstr "fuerza"
 
-#: ../src/iop/bloom.c:541 ../src/iop/soften.c:736 ../src/libs/camera.c:595
+#: ../src/iop/bloom.c:541 ../src/iop/soften.c:736 ../src/libs/camera.c:598
 msgid "size"
 msgstr "tamaño"
 
@@ -12550,7 +12550,7 @@ msgstr "Seleccionar el tono de saturación"
 #. Additional parameters
 #. Camera settings
 #: ../src/iop/splittoning.c:641 ../src/iop/watermark.c:1531
-#: ../src/libs/camera.c:508
+#: ../src/libs/camera.c:511
 msgid "properties"
 msgstr "propiedades"
 
@@ -13540,51 +13540,51 @@ msgid "n/a"
 msgstr "n/a"
 
 #. Camera control
-#: ../src/libs/camera.c:431
+#: ../src/libs/camera.c:433
 msgid "camera control"
 msgstr "control de cámara"
 
-#: ../src/libs/camera.c:435
+#: ../src/libs/camera.c:438
 msgid "modes"
 msgstr "modos"
 
-#: ../src/libs/camera.c:436
+#: ../src/libs/camera.c:439
 msgid "timer (s)"
 msgstr "temporizador(es)"
 
-#: ../src/libs/camera.c:437
+#: ../src/libs/camera.c:440
 msgid "count"
 msgstr "disparo secuencial"
 
-#: ../src/libs/camera.c:438
+#: ../src/libs/camera.c:441
 msgid "brackets"
 msgstr "ahorquillado"
 
-#: ../src/libs/camera.c:439
+#: ../src/libs/camera.c:442
 msgid "bkt. steps"
 msgstr "incrementos"
 
-#: ../src/libs/camera.c:475
+#: ../src/libs/camera.c:478
 msgid "capture image(s)"
 msgstr "capturar imagen"
 
-#: ../src/libs/camera.c:478
+#: ../src/libs/camera.c:481
 msgid "toggle delayed capture mode"
 msgstr "Activar modo de captura con retraso"
 
-#: ../src/libs/camera.c:479
+#: ../src/libs/camera.c:482
 msgid "toggle sequenced capture mode"
 msgstr "Activar modo de captura secuenciado"
 
-#: ../src/libs/camera.c:480
+#: ../src/libs/camera.c:483
 msgid "toggle bracketed capture mode"
 msgstr "Activar modo de captura horquillado"
 
-#: ../src/libs/camera.c:481
+#: ../src/libs/camera.c:484
 msgid "the count of seconds before actually doing a capture"
 msgstr "Cuenta regresiva en segundos antes de hacer una captura"
 
-#: ../src/libs/camera.c:483
+#: ../src/libs/camera.c:486
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -13594,13 +13594,13 @@ msgstr ""
 "Puede utilizarse en conjunto con el modo diferido para crear animación "
 "cuadro por cuadro"
 
-#: ../src/libs/camera.c:486
+#: ../src/libs/camera.c:489
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
 msgstr "Cantidad de capturas en el ahorquillado; cantidad = (posiciones*2)+1."
 
-#: ../src/libs/camera.c:488
+#: ../src/libs/camera.c:491
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
@@ -13611,39 +13611,39 @@ msgstr ""
 "Es decir, 3 incrementos son 1 EV de exposición de diferencia entre disparos."
 
 #. user specified properties
-#: ../src/libs/camera.c:517
+#: ../src/libs/camera.c:520
 msgid "additional properties"
 msgstr "propiedades adicionales"
 
-#: ../src/libs/camera.c:521
+#: ../src/libs/camera.c:524
 msgid "label"
 msgstr "etiqueta"
 
-#: ../src/libs/camera.c:530
+#: ../src/libs/camera.c:533
 msgid "property"
 msgstr "propiedades"
 
-#: ../src/libs/camera.c:543
+#: ../src/libs/camera.c:546
 msgid "add user property"
 msgstr "añadir propiedades del usuario"
 
-#: ../src/libs/camera.c:565
+#: ../src/libs/camera.c:568
 msgid "program"
 msgstr "programa"
 
-#: ../src/libs/camera.c:568 ../src/libs/camera.c:570
+#: ../src/libs/camera.c:571 ../src/libs/camera.c:573
 msgid "focus mode"
 msgstr "modo de enfoque"
 
-#: ../src/libs/camera.c:581
+#: ../src/libs/camera.c:584
 msgid "shutterspeed2"
 msgstr "velocidad de disparo 2"
 
-#: ../src/libs/camera.c:583
+#: ../src/libs/camera.c:586
 msgid "shutterspeed"
 msgstr "velocidad de disparo"
 
-#: ../src/libs/camera.c:589
+#: ../src/libs/camera.c:592
 msgid "WB"
 msgstr "Balance de blancos"
 
@@ -15968,7 +15968,7 @@ msgstr "importar"
 #: ../src/libs/styles.c:330
 #, c-format
 msgid "do you really want to remove %d style?"
-msgid_plural "do you realy want to remove %d styles?"
+msgid_plural "do you really want to remove %d styles?"
 msgstr[0] "¿Realmente desea eliminar el estilo %d?"
 msgstr[1] "¿Realmente desea eliminar los estilos %d?"
 
