@@ -188,7 +188,7 @@ typedef enum dt_view_image_over_t
 } dt_view_image_over_t;
 
 // get images to act on for gloabals change (via libs or accels)
-GList *dt_view_get_images_to_act_on(gboolean only_visible);
+GList *dt_view_get_images_to_act_on(gboolean only_visible, gboolean force);
 // get the main image to act on during global changes (libs, accels)
 int dt_view_get_image_to_act_on();
 
@@ -226,6 +226,15 @@ typedef struct dt_view_manager_t
     gboolean sticky;
     gboolean prevent_refresh;
   } accels_window;
+
+  struct
+  {
+    GList *images;
+    gboolean ok;
+    int image_over;
+    gboolean inside_table;
+    GSList *active_imgs;
+  } act_on;
 
   /* reusable db statements
    * TODO: reconsider creating a common/database helper API
