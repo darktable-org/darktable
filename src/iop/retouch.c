@@ -949,50 +949,6 @@ static int rt_masks_get_delta_to_destination(dt_iop_module_t *self, dt_dev_pixel
   return res;
 }
 
-static void rt_clamp_minmax(float levels_old[3], float levels_new[3])
-{
-  // left or right has changed
-  if((levels_old[0] != levels_new[0] || levels_old[2] != levels_new[2]) && levels_old[1] == levels_new[1])
-  {
-    // if old left and right are the same just use the new values
-    if(levels_old[2] != levels_old[0])
-    {
-      // set the new value but keep the middle proportional
-      const float left = MAX(levels_new[0], RETOUCH_PREVIEW_LVL_MIN);
-      const float right = MIN(levels_new[2], RETOUCH_PREVIEW_LVL_MAX);
-
-      const float percentage = (levels_old[1] - levels_old[0]) / (levels_old[2] - levels_old[0]);
-      levels_new[1] = left + (right - left) * percentage;
-      levels_new[0] = left;
-      levels_new[2] = right;
-    }
-  }
-
-  // if all zero make it gray
-  if(levels_new[0] == 0.f && levels_new[1] == 0.f && levels_new[2] == 0.f)
-  {
-    levels_new[0] = -1.5f;
-    levels_new[1] = 0.f;
-    levels_new[2] = 1.5f;
-  }
-
-  // check the range
-  if(levels_new[2] < levels_new[0] + 0.05f * 2.f) levels_new[2] = levels_new[0] + 0.05f * 2.f;
-  if(levels_new[1] < levels_new[0] + 0.05f) levels_new[1] = levels_new[0] + 0.05f;
-  if(levels_new[1] > levels_new[2] - 0.05f) levels_new[1] = levels_new[2] - 0.05f;
-
-  {
-    // set the new value but keep the middle proportional
-    const float left = MAX(levels_new[0], RETOUCH_PREVIEW_LVL_MIN);
-    const float right = MIN(levels_new[2], RETOUCH_PREVIEW_LVL_MAX);
-
-    const float percentage = (levels_new[1] - levels_new[0]) / (levels_new[2] - levels_new[0]);
-    levels_new[1] = left + (right - left) * percentage;
-    levels_new[0] = left;
-    levels_new[2] = right;
-  }
-}
-
 static int rt_shape_is_beign_added(dt_iop_module_t *self, const int shape_type)
 {
   int being_added = 0;
@@ -1568,25 +1524,35 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   return TRUE;
 }
 
+static float rt_gslider_scale_callback(GtkWidget *self, float inval, int dir)
+{
+  float outval;
+  switch(dir)
+  {
+    case GRADIENT_SLIDER_SET:
+      outval = (inval - RETOUCH_PREVIEW_LVL_MIN) / (RETOUCH_PREVIEW_LVL_MAX - RETOUCH_PREVIEW_LVL_MIN);
+      break;
+    case GRADIENT_SLIDER_GET:
+      outval = (RETOUCH_PREVIEW_LVL_MAX - RETOUCH_PREVIEW_LVL_MIN) * inval + RETOUCH_PREVIEW_LVL_MIN;
+      break;
+    default:
+      outval = inval;
+  }
+  return outval;
+}
+
 
 static void rt_gslider_changed(GtkDarktableGradientSlider *gslider, dt_iop_module_t *self)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 
   double dlevels[3];
-  float levels_old[3];
 
   if(darktable.gui->reset) return;
 
   dtgtk_gradient_slider_multivalue_get_values(gslider, dlevels);
 
-  for (int i = 0; i < 3; i++)
-  {
-    levels_old[i] = p->preview_levels[i];
-    p->preview_levels[i] = 6.0 * dlevels[i] - 3.0;
-  }
-
-  rt_clamp_minmax(levels_old, p->preview_levels); // eliminate and transfer to library?
+  for (int i = 0; i < 3; i++) p->preview_levels[i] = dlevels[i];
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -1720,9 +1686,9 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
     dt_pthread_mutex_lock(&g->lock);
 
     // update the gradient slider
-    double levels[3];
-    for(int i = 0; i < 3; i++) levels[i] = (p->preview_levels[i] + 3.0) / 6.0;
-    dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, levels, FALSE);
+    double dlevels[3];
+    for(int i = 0; i < 3; i++) dlevels[i] = p->preview_levels[i];
+    dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels, FALSE);
 
     g->preview_auto_levels = 0;
 
@@ -2334,9 +2300,9 @@ void gui_update(dt_iop_module_t *self)
   }
 
   // update the gradient slider
-  double levels[3];
-  for(int i = 0; i < 3; i++) levels[i] = (p->preview_levels[i] + 3.0) / 6.0;
-  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, levels, FALSE);
+  double dlevels[3];
+  for(int i = 0; i < 3; i++) dlevels[i] = p->preview_levels[i];
+  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels, FALSE);
 }
 
 void change_image(struct dt_iop_module_t *self)
@@ -2584,12 +2550,15 @@ void gui_init(dt_iop_module_t *self)
   g->preview_levels_gslider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(
       dtgtk_gradient_slider_multivalue_new_with_color_and_name(_gradient_L[0], _gradient_L[1], 3, "preview-levels"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->preview_levels_gslider), _("adjust preview levels"));
-  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 0);
-  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 1);
-  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
-  double vdefault[3] = {0.0 ,0.5, 1.0};
+  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);
+  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
+  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
+  (g->preview_levels_gslider)->scale_callback = rt_gslider_scale_callback;
+  double vdefault[3] = {RETOUCH_PREVIEW_LVL_MIN, (RETOUCH_PREVIEW_LVL_MIN + RETOUCH_PREVIEW_LVL_MAX) / 2.0, RETOUCH_PREVIEW_LVL_MAX};
   dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, vdefault, FALSE);
   dtgtk_gradient_slider_multivalue_set_resetvalues(g->preview_levels_gslider, vdefault);
+  (g->preview_levels_gslider)->markers_type = PROPORTIONAL_MARKERS;
+  (g->preview_levels_gslider)->min_spacing = 0.05;
   g_signal_connect(G_OBJECT(g->preview_levels_gslider), "value-changed", G_CALLBACK(rt_gslider_changed), self);
 
   // auto-levels button
@@ -2600,27 +2569,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_auto_levels), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_auto_levels), FALSE);
 
-  gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 20);
+  gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(prev_lvl), g->bt_auto_levels, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), prev_lvl, TRUE, TRUE, 0);
-
-
-
-
-  GtkDarktableGradientSlider *prova = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_color_and_name(_gradient_L[0], _gradient_L[1], 5, "prova"));
-  prova->markers_type = FREE_MARKERS;
-  prova->min_spacing = 0.05;
-  for (int i = 0; i < 5; i++)
-    dtgtk_gradient_slider_multivalue_set_marker(prova, GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, i);
-  double pdefault[5] = {0.0 ,0.2, 0.5, 0.8, 1.0};
-  dtgtk_gradient_slider_multivalue_set_values(prova, pdefault, FALSE);
-  dtgtk_gradient_slider_multivalue_set_resetvalues(prova, pdefault);
-  gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), GTK_WIDGET(prova), TRUE, TRUE, 0);
-
-
-
-
 
   // shapes selected (label)
   GtkWidget *hbox_shape_sel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -4244,7 +4196,6 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
       levels[0] = levels[1] = levels[2] = 0;
       rt_process_stats(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
-      rt_clamp_minmax(levels, levels);
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
 
@@ -5102,8 +5053,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       levels[0] = levels[1] = levels[2] = 0;
       err = rt_process_stats_cl(self, piece, devid, in_retouch, roi_rt->width, roi_rt->height, levels);
       if(err != CL_SUCCESS) goto cleanup;
-
-      rt_clamp_minmax(levels, levels);
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
 
