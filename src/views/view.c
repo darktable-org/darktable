@@ -757,7 +757,7 @@ static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboo
 }
 
 // get the list of images to act on during global changes (libs, accels)
-GList *dt_view_get_images_to_act_on(gboolean only_visible)
+GList *dt_view_get_images_to_act_on(gboolean only_visible, gboolean force)
 {
   /** Here's how it works
    *
@@ -773,9 +773,36 @@ GList *dt_view_get_images_to_act_on(gboolean only_visible)
    *  if only_visible is FALSE, then it will add also not visible images because of grouping
    **/
 
-  GList *l = NULL;
   const int mouseover = dt_control_get_mouse_over_id();
 
+  // if possible, we return the cached list
+  if(!force && darktable.view_manager->act_on.ok && darktable.view_manager->act_on.image_over == mouseover
+     && darktable.view_manager->act_on.inside_table == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
+     && g_slist_length(darktable.view_manager->act_on.active_imgs)
+            == g_slist_length(darktable.view_manager->active_images))
+  {
+    // we test active images if mouse outside table
+    gboolean ok = TRUE;
+    if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
+       && g_slist_length(darktable.view_manager->act_on.active_imgs) > 0)
+    {
+      GSList *l1 = darktable.view_manager->act_on.active_imgs;
+      GSList *l2 = darktable.view_manager->active_images;
+      while(l1 && l2)
+      {
+        if(GPOINTER_TO_INT(l1->data) != GPOINTER_TO_INT(l2->data))
+        {
+          ok = FALSE;
+          break;
+        }
+        l2 = g_slist_next(l2);
+        l1 = g_slist_next(l1);
+      }
+    }
+    if(ok) return darktable.view_manager->act_on.images;
+  }
+
+  GList *l = NULL;
   if(mouseover > 0)
   {
     // collumn 1,2,3
@@ -850,7 +877,16 @@ GList *dt_view_get_images_to_act_on(gboolean only_visible)
     }
   }
 
-  return l;
+  // let's register the new list as cached
+  darktable.view_manager->act_on.image_over = mouseover;
+  g_list_free(darktable.view_manager->act_on.images);
+  darktable.view_manager->act_on.images = l;
+  g_slist_free(darktable.view_manager->act_on.active_imgs);
+  darktable.view_manager->act_on.active_imgs = g_slist_copy(darktable.view_manager->active_images);
+  darktable.view_manager->act_on.inside_table = dt_ui_thumbtable(darktable.gui->ui)->mouse_inside;
+  darktable.view_manager->act_on.ok = TRUE;
+
+  return darktable.view_manager->act_on.images;
 }
 
 // get the main image to act on during global changes (libs, accels)
