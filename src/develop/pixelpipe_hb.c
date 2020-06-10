@@ -1016,7 +1016,6 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // waveform buffer is 128 (about smallest possible), bin_width is
   // 12, making max count of 10,800, still much smaller than uint16_t
   uint16_t *buf = calloc(waveform_width * waveform_height * 3, sizeof(uint16_t));
-  memset(waveform, 0, sizeof(uint8_t) * waveform_height * waveform_stride * 3);
 
   // 1.0 is at 8/9 of the height!
   const float _height = (float)(waveform_height - 1);
