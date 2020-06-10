@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-10 00:35-0500\n"
-"PO-Revision-Date: 2020-06-10 00:29-0500\n"
+"POT-Creation-Date: 2020-06-10 10:39-0500\n"
+"PO-Revision-Date: 2020-06-10 11:43-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -715,7 +715,7 @@ msgstr "Carpeta raíz de LUT 3D"
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:195
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:180
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:179
-#: ../src/libs/styles.c:305 ../src/lua/preferences.c:631
+#: ../src/libs/styles.c:370 ../src/lua/preferences.c:631
 msgid "select directory"
 msgstr "Seleccionar directorio"
 
@@ -1487,14 +1487,14 @@ msgstr "Imprimir tus imagenes"
 #: ../src/iop/lut3d.c:1606 ../src/libs/collect.c:354
 #: ../src/libs/copy_history.c:118 ../src/libs/geotagging.c:475
 #: ../src/libs/import.c:555 ../src/libs/import.c:661 ../src/libs/lib.c:227
-#: ../src/libs/styles.c:305 ../src/libs/styles.c:328 ../src/libs/tagging.c:2165
-#: ../src/libs/tagging.c:2206
+#: ../src/libs/styles.c:370 ../src/libs/styles.c:395 ../src/libs/tagging.c:2215
+#: ../src/libs/tagging.c:2256
 msgid "_cancel"
 msgstr "_cancelar"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1437
 #: ../src/gui/preferences.c:1652 ../src/gui/styles_dialog.c:360
-#: ../src/libs/styles.c:306
+#: ../src/libs/styles.c:371
 msgid "_save"
 msgstr "_guardar"
 
@@ -2259,16 +2259,16 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr "Necesita copiar el historial de una imagen antes de pegarlo en otra"
 
 #: ../src/common/history.c:836 ../src/common/history.c:839
-#: ../src/common/history.c:855 ../src/common/styles.c:1028
-#: ../src/common/styles.c:1032 ../src/develop/blend_gui.c:2708
+#: ../src/common/history.c:855 ../src/common/styles.c:1077
+#: ../src/common/styles.c:1081 ../src/develop/blend_gui.c:2708
 #: ../src/develop/develop.c:2034 ../src/iop/ashift.c:4870
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activo"
 
 #: ../src/common/history.c:836 ../src/common/history.c:839
-#: ../src/common/history.c:855 ../src/common/styles.c:1028
-#: ../src/common/styles.c:1032 ../src/develop/blend_gui.c:2440
+#: ../src/common/history.c:855 ../src/common/styles.c:1077
+#: ../src/common/styles.c:1081 ../src/develop/blend_gui.c:2440
 #: ../src/develop/blend_gui.c:2705 ../src/develop/develop.c:2034
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4869 ../src/iop/ashift.c:4875 ../src/iop/colorin.c:2153
@@ -2299,52 +2299,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr "imágenes huérfanas"
 
-#: ../src/common/image.c:1614
+#: ../src/common/image.c:1619
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "No se puede acceder a la copia local `%s'"
 
-#: ../src/common/image.c:1621
+#: ../src/common/image.c:1626
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "No se puede escribir la copia local `%s'"
 
-#: ../src/common/image.c:1628
+#: ../src/common/image.c:1633
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Error al mover la copia local `%s' -> `%s'"
 
-#: ../src/common/image.c:1644
+#: ../src/common/image.c:1649
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Error al mover `%s': no se encuentra el archivo"
 
-#: ../src/common/image.c:1654
+#: ../src/common/image.c:1659
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Error al mover `%s' -> `%s': el archivo ya existe"
 
-#: ../src/common/image.c:1658
+#: ../src/common/image.c:1663
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Error al mover `%s' -> `%s'"
 
-#: ../src/common/image.c:1937
+#: ../src/common/image.c:1942
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "la copia local no se puede crear cuando el archivo original no es accesible."
 
-#: ../src/common/image.c:1951
+#: ../src/common/image.c:1956
 msgid "cannot create local copy."
 msgstr "no se puede crear una copia local."
 
-#: ../src/common/image.c:2023 ../src/control/jobs/control_jobs.c:664
+#: ../src/common/image.c:2028 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "la copia local no se puede eliminar el archivo original cuando no es "
 "accesible."
 
-#: ../src/common/image.c:2204
+#: ../src/common/image.c:2209
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -2538,8 +2538,8 @@ msgstr "El estilo con nombre '%s' ya existe"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:411 ../src/common/styles.c:415
 #: ../src/common/styles.c:502 ../src/common/styles.c:586
-#: ../src/common/styles.c:912 ../src/common/styles.c:1484
-#: ../src/common/styles.c:1503
+#: ../src/common/styles.c:961 ../src/common/styles.c:1533
+#: ../src/common/styles.c:1552
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -2550,26 +2550,46 @@ msgstr "estilos/utilizar %s"
 msgid "style named '%s' successfully created"
 msgstr "El estilo nombrado '%s' ha sido creado correctamente"
 
-#: ../src/common/styles.c:624 ../src/common/styles.c:640
+#: ../src/common/styles.c:624 ../src/common/styles.c:651
+#: ../src/common/styles.c:689
 msgid "no image selected!"
 msgstr "Ninguna imagen ha sido seleccionada"
 
-#: ../src/common/styles.c:695
+#: ../src/common/styles.c:625
+#, c-format
+msgid "style %s successfully applied!"
+msgstr "El estilo %s fue aplicado correctamente"
+
+#: ../src/common/styles.c:641
+msgid "no images nor styles selected!"
+msgstr "Ninguna imagen ni estilo han sido seleccionados"
+
+#: ../src/common/styles.c:646
+msgid "no styles selected!"
+msgstr "Ningún estilo ha sido seleccionado"
+
+#: ../src/common/styles.c:673
+msgid "style successfully applied!"
+msgid_plural "styles successfully applied"
+msgstr[0] "Estilo aplicado exitosamente"
+msgstr[1] "Estilos aplicados exitosamente"
+
+#: ../src/common/styles.c:744
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "Módulo '%s' la versión no coincide: %d != %d"
 
-#: ../src/common/styles.c:1121
+#: ../src/common/styles.c:1170
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "Falló al intentar sobrescribir el archivo del estilo para %s"
 
-#: ../src/common/styles.c:1127
+#: ../src/common/styles.c:1176
 #, c-format
 msgid "style file for %s exists"
 msgstr "Ya existe el archivo del estilo para %s"
 
-#: ../src/common/styles.c:1375
+#: ../src/common/styles.c:1424
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "El estilo %s fue importado correctamente"
@@ -3630,11 +3650,11 @@ msgid "move down"
 msgstr "bajar"
 
 #: ../src/develop/imageop.c:1045 ../src/libs/image.c:169
-#: ../src/libs/tagging.c:1258 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1307 ../src/libs/tagging.c:1397
 msgid "delete"
 msgstr "borrar"
 
-#: ../src/develop/imageop.c:1052 ../src/libs/tagging.c:1772
+#: ../src/develop/imageop.c:1052 ../src/libs/tagging.c:1821
 msgid "rename"
 msgstr "renombrar"
 
@@ -4430,7 +4450,7 @@ msgid "reset"
 msgstr "restablecer"
 
 #: ../src/gui/accelerators.c:60 ../src/gui/accelerators.c:111
-#: ../src/libs/styles.c:74
+#: ../src/libs/styles.c:76
 msgctxt "accel"
 msgid "edit"
 msgstr "editar"
@@ -4484,7 +4504,7 @@ msgstr "%s %s / %s"
 msgid "%s / %s"
 msgstr "%s / %s"
 
-#: ../src/gui/accelerators.c:665 ../src/libs/tagging.c:2136
+#: ../src/gui/accelerators.c:665 ../src/libs/tagging.c:2186
 #, c-format
 msgid "%s"
 msgstr "%s"
@@ -4503,9 +4523,9 @@ msgstr "Restablecer valor a predeterminado"
 
 #: ../src/gui/camera_import_dialog.c:219 ../src/libs/export_metadata.c:269
 #: ../src/libs/geotagging.c:421 ../src/libs/metadata.c:464
-#: ../src/libs/tagging.c:1258 ../src/libs/tagging.c:1348
-#: ../src/libs/tagging.c:1429 ../src/libs/tagging.c:1554
-#: ../src/libs/tagging.c:1772
+#: ../src/libs/tagging.c:1307 ../src/libs/tagging.c:1397
+#: ../src/libs/tagging.c:1478 ../src/libs/tagging.c:1603
+#: ../src/libs/tagging.c:1821
 msgid "cancel"
 msgstr "cancelar"
 
@@ -5195,7 +5215,7 @@ msgstr ""
 "Haga clic o pulse Entrar de nuevo para recorrer los resultados"
 
 #. export button
-#: ../src/gui/preferences.c:856 ../src/libs/styles.c:496
+#: ../src/gui/preferences.c:856 ../src/libs/styles.c:632
 msgid "export..."
 msgstr "exportar..."
 
@@ -5241,7 +5261,7 @@ msgstr "Seleccionar el archivo a importar"
 #: ../src/gui/preferences.c:1463 ../src/gui/preferences.c:1545
 #: ../src/libs/collect.c:355 ../src/libs/copy_history.c:119
 #: ../src/libs/geotagging.c:476 ../src/libs/import.c:556
-#: ../src/libs/import.c:662 ../src/libs/styles.c:329
+#: ../src/libs/import.c:662 ../src/libs/styles.c:396
 msgid "_open"
 msgstr "_abrir"
 
@@ -5411,7 +5431,7 @@ msgstr "actualizar preajuste"
 msgid "favourite"
 msgstr "favoritos"
 
-#: ../src/gui/styles_dialog.c:245 ../src/libs/styles.c:316
+#: ../src/gui/styles_dialog.c:245 ../src/libs/styles.c:383
 #, c-format
 msgid "style %s was successfully saved"
 msgstr "El estilo %s fue correctamente guardado"
@@ -5842,7 +5862,7 @@ msgid "create unique filename"
 msgstr "crear nombre único"
 
 #: ../src/imageio/storage/disk.c:202 ../src/libs/copy_history.c:382
-#: ../src/libs/image.c:594 ../src/libs/styles.c:459
+#: ../src/libs/image.c:594 ../src/libs/styles.c:592
 msgid "overwrite"
 msgstr "sobreescribir"
 
@@ -6995,7 +7015,7 @@ msgstr "modo"
 #: ../src/iop/profile_gamma.c:799 ../src/iop/rgbcurve.c:1443
 #: ../src/iop/rgblevels.c:989 ../src/libs/copy_history.c:380
 #: ../src/libs/export.c:760 ../src/libs/image.c:592
-#: ../src/libs/print_settings.c:1515 ../src/libs/styles.c:457
+#: ../src/libs/print_settings.c:1515 ../src/libs/styles.c:590
 #: ../src/views/darkroom.c:2120
 msgid "mode"
 msgstr "modo"
@@ -8611,7 +8631,9 @@ msgstr "adquirir"
 msgid "analyze this image"
 msgstr "Analizar esta imagen"
 
+#. apply button
 #: ../src/iop/colortransfer.c:696 ../src/libs/metadata.c:775
+#: ../src/libs/styles.c:639
 msgid "apply"
 msgstr "establecer"
 
@@ -11329,7 +11351,7 @@ msgstr "Hald CLUT (png) o LUT 3D (cube)"
 
 #: ../src/iop/lut3d.c:1638 ../src/libs/copy_history.c:133
 #: ../src/libs/geotagging.c:497 ../src/libs/import.c:586
-#: ../src/libs/styles.c:346
+#: ../src/libs/styles.c:413
 msgid "all files"
 msgstr "todos los archivos"
 
@@ -13897,11 +13919,11 @@ msgstr ""
 "Descartar el historial de acciones de\n"
 "todas las imágenes seleccionadas"
 
-#: ../src/libs/copy_history.c:381 ../src/libs/styles.c:458
+#: ../src/libs/copy_history.c:381 ../src/libs/styles.c:591
 msgid "append"
 msgstr "anexar"
 
-#: ../src/libs/copy_history.c:383 ../src/libs/styles.c:460
+#: ../src/libs/copy_history.c:383 ../src/libs/styles.c:593
 msgid "how to handle existing history"
 msgstr "Manera de gestionar al historial existente"
 
@@ -14093,7 +14115,7 @@ msgid "edit metadata exportation details"
 msgstr "Editar los detalles de exportación de los metadatos"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1440 ../src/libs/styles.c:72
+#: ../src/libs/export.c:1440 ../src/libs/styles.c:74
 #: ../src/views/darkroom.c:3609
 msgctxt "accel"
 msgid "export"
@@ -14128,7 +14150,7 @@ msgid "edit metadata exportation"
 msgstr "Editar la exportación de metadatos"
 
 #: ../src/libs/export_metadata.c:269 ../src/libs/metadata.c:464
-#: ../src/libs/tagging.c:1429 ../src/libs/tagging.c:1554
+#: ../src/libs/tagging.c:1478 ../src/libs/tagging.c:1603
 msgid "save"
 msgstr "guardar"
 
@@ -14501,7 +14523,7 @@ msgid "physically delete from disk"
 msgstr "eliminar físicamente del disco"
 
 #. delete
-#: ../src/libs/image.c:435 ../src/libs/styles.c:482
+#: ../src/libs/image.c:435 ../src/libs/styles.c:618
 msgid "remove"
 msgstr "quitar"
 
@@ -15151,8 +15173,8 @@ msgstr ""
 "imagen\n"
 "y el módulo de importación tampoco los exportará"
 
-#: ../src/libs/metadata.c:477 ../src/libs/tagging.c:1459
-#: ../src/libs/tagging.c:1598
+#: ../src/libs/metadata.c:477 ../src/libs/tagging.c:1508
+#: ../src/libs/tagging.c:1647
 msgid "private"
 msgstr "privado"
 
@@ -15929,38 +15951,42 @@ msgstr ""
 "Crea una instantánea para comparar con la misma imagen pero en un momento "
 "diferente del proceso o con otra imagen"
 
-#: ../src/libs/styles.c:50
+#: ../src/libs/styles.c:52
 msgid "styles"
 msgstr "estilos"
 
-#: ../src/libs/styles.c:71
+#: ../src/libs/styles.c:73
 msgctxt "accel"
 msgid "remove"
 msgstr "eliminar"
 
-#: ../src/libs/styles.c:73
+#: ../src/libs/styles.c:75
 msgctxt "accel"
 msgid "import"
 msgstr "importar"
 
-#: ../src/libs/styles.c:279
+#: ../src/libs/styles.c:330
 #, c-format
-msgid "do you really want to remove style '%s'?"
-msgstr "¿Realmente desea eliminar el estilo '%s'?"
+msgid "do you really want to remove %d style?"
+msgid_plural "do you realy want to remove %d styles?"
+msgstr[0] "¿Realmente desea eliminar el estilo %d?"
+msgstr[1] "¿Realmente desea eliminar los estilos %d?"
 
-#: ../src/libs/styles.c:284
+#: ../src/libs/styles.c:336
 msgid "remove style?"
-msgstr "¿Quitar el estilo?"
+msgid_plural "remove styles?"
+msgstr[0] "Eliminar estilo"
+msgstr[1] "Eliminar estilos"
 
-#: ../src/libs/styles.c:328
+#: ../src/libs/styles.c:395
 msgid "select style"
 msgstr "seleccionar estilo"
 
-#: ../src/libs/styles.c:341
+#: ../src/libs/styles.c:408
 msgid "darktable style files"
 msgstr "archivos de estilo darktable"
 
-#: ../src/libs/styles.c:427
+#: ../src/libs/styles.c:559
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -15968,104 +15994,110 @@ msgstr ""
 "Estilos disponibles: \n"
 "pulsación doble para aplicarlo"
 
-#: ../src/libs/styles.c:433
+#: ../src/libs/styles.c:566
 msgid "filter style names"
 msgstr "filtrar nombres de estilo"
 
-#: ../src/libs/styles.c:448
+#: ../src/libs/styles.c:581
 msgid "create duplicate"
 msgstr "crear duplicado"
 
-#: ../src/libs/styles.c:453
+#: ../src/libs/styles.c:586
 msgid "creates a duplicate of the image before applying style"
 msgstr "Crear un duplicado de la imagen antes de aplicar el estilo"
 
 #. create
-#: ../src/libs/styles.c:469
+#: ../src/libs/styles.c:604
 msgid "create..."
 msgstr "crear..."
 
-#: ../src/libs/styles.c:471
+#: ../src/libs/styles.c:607
 msgid "create styles from history stack of selected images"
 msgstr ""
 "Crear estilos a partir del historial de acciones de las imágenes "
 "seleccionadas"
 
 #. edit
-#: ../src/libs/styles.c:475
+#: ../src/libs/styles.c:611
 msgid "edit..."
 msgstr "editar..."
 
-#: ../src/libs/styles.c:478
-msgid "edit the selected style in list above"
-msgstr "Edita el estilo seleccionado en la lista anterior"
+#: ../src/libs/styles.c:614
+msgid "edit the selected styles in list above"
+msgstr "Edita los estilos seleccionados de la lista anterior"
 
-#: ../src/libs/styles.c:485
-msgid "removes the selected style in list above"
-msgstr "Elimina el estilo seleccionado de la lista anterior"
+#: ../src/libs/styles.c:621
+msgid "removes the selected styles in list above"
+msgstr "Elimina los estilos seleccionados de la lista anterior"
 
 #. import button
-#: ../src/libs/styles.c:489 ../src/libs/tagging.c:2745
+#: ../src/libs/styles.c:625 ../src/libs/tagging.c:2804
 msgctxt "verb"
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/libs/styles.c:491
-msgid "import style from a style file"
-msgstr "Importar el estilo desde un fichero"
+#: ../src/libs/styles.c:627
+msgid "import styles from a style files"
+msgstr "Importar los estilos desde un fichero de estilos"
 
-#: ../src/libs/styles.c:498
-msgid "export the selected style into a style file"
-msgstr "Exportar el estilo seleccionado a un fichero"
+#: ../src/libs/styles.c:634
+msgid "export the selected styles into a style files"
+msgstr "Exportar los estilos seleccionados a un fichero de estilos"
 
-#: ../src/libs/tagging.c:94
+#: ../src/libs/styles.c:642
+msgid "apply the selected styles in list above to selected images"
+msgstr ""
+"Aplicar los estilos seleccionados de la lista anterior a las imágenes "
+"seleccionadas"
+
+#: ../src/libs/tagging.c:95
 msgid "tagging"
 msgstr "etiquetado"
 
-#: ../src/libs/tagging.c:119
+#: ../src/libs/tagging.c:120
 msgctxt "accel"
 msgid "attach"
 msgstr "añadir"
 
-#: ../src/libs/tagging.c:120
+#: ../src/libs/tagging.c:121
 msgctxt "accel"
 msgid "detach"
 msgstr "disociar"
 
-#: ../src/libs/tagging.c:121
+#: ../src/libs/tagging.c:122
 msgctxt "accel"
 msgid "new"
 msgstr "nueva"
 
-#: ../src/libs/tagging.c:122
+#: ../src/libs/tagging.c:123
 msgctxt "accel"
 msgid "tag"
 msgstr "etiqueta"
 
-#: ../src/libs/tagging.c:123
+#: ../src/libs/tagging.c:124
 msgctxt "accel"
 msgid "redo last tag"
 msgstr "deshacer el último etiquetado"
 
-#: ../src/libs/tagging.c:1126
+#: ../src/libs/tagging.c:1174
 msgid "attach tag to all"
 msgstr "Añadir etiqueta a todas las imágenes"
 
-#: ../src/libs/tagging.c:1134 ../src/libs/tagging.c:1956
+#: ../src/libs/tagging.c:1182 ../src/libs/tagging.c:2005
 msgid "detach tag"
 msgstr "disociar etiqueta"
 
-#: ../src/libs/tagging.c:1257
+#: ../src/libs/tagging.c:1306
 msgid "delete tag?"
 msgstr "¿Borrar etiqueta?"
 
-#: ../src/libs/tagging.c:1264 ../src/libs/tagging.c:1354
-#: ../src/libs/tagging.c:1560
+#: ../src/libs/tagging.c:1313 ../src/libs/tagging.c:1403
+#: ../src/libs/tagging.c:1609
 #, c-format
 msgid "tag: %s "
 msgstr "etiqueta: %s "
 
-#: ../src/libs/tagging.c:1271
+#: ../src/libs/tagging.c:1320
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -16080,77 +16112,77 @@ msgstr[1] ""
 "¿Desea borrar las etiqueta `%s'?\n"
 "%d imágenes tienen asignada esta etiqueta!"
 
-#: ../src/libs/tagging.c:1307
+#: ../src/libs/tagging.c:1356
 #, c-format
 msgid "tag %s removed"
 msgstr "Etiqueta %s eliminada"
 
-#: ../src/libs/tagging.c:1347 ../src/libs/tagging.c:1972
+#: ../src/libs/tagging.c:1396 ../src/libs/tagging.c:2021
 msgid "delete path"
 msgstr "Borrar ruta"
 
-#: ../src/libs/tagging.c:1361
+#: ../src/libs/tagging.c:1410
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "<u>%d</u> etiqueta se eliminará."
 msgstr[1] "<u>%d</u> etiqueta se eliminarán."
 
-#: ../src/libs/tagging.c:1366 ../src/libs/tagging.c:1572
-#: ../src/libs/tagging.c:1790
+#: ../src/libs/tagging.c:1415 ../src/libs/tagging.c:1621
+#: ../src/libs/tagging.c:1839
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> imagen se actualizará."
 msgstr[1] "<u>%d</u> imágenes se actualizarán."
 
-#: ../src/libs/tagging.c:1392
+#: ../src/libs/tagging.c:1441
 #, c-format
 msgid "%d tags removed"
 msgstr "%d etiquetas eliminadas"
 
-#: ../src/libs/tagging.c:1428
+#: ../src/libs/tagging.c:1477
 msgid "create tag"
 msgstr "Crear etiqueta"
 
-#: ../src/libs/tagging.c:1438 ../src/libs/tagging.c:1580
+#: ../src/libs/tagging.c:1487 ../src/libs/tagging.c:1629
 msgid "name: "
 msgstr "nombre:"
 
-#: ../src/libs/tagging.c:1450
+#: ../src/libs/tagging.c:1499
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "añadir a: \"%s\" "
 
-#: ../src/libs/tagging.c:1456 ../src/libs/tagging.c:1595
+#: ../src/libs/tagging.c:1505 ../src/libs/tagging.c:1644
 msgid "category"
 msgstr "categoría"
 
-#: ../src/libs/tagging.c:1465 ../src/libs/tagging.c:1604
+#: ../src/libs/tagging.c:1514 ../src/libs/tagging.c:1653
 msgid "synonyms: "
 msgstr "sinónimos:"
 
-#: ../src/libs/tagging.c:1482 ../src/libs/tagging.c:1626
-#: ../src/libs/tagging.c:1812
+#: ../src/libs/tagging.c:1531 ../src/libs/tagging.c:1675
+#: ../src/libs/tagging.c:1861
 msgid "empty tag is not allowed, aborting"
 msgstr "No se permite una etiqueta en blanco. Abortando."
 
-#: ../src/libs/tagging.c:1493
+#: ../src/libs/tagging.c:1542
 msgid "tag name already exists. aborting."
 msgstr "El nombre de la etiqueta ya existe. Abortando."
 
-#: ../src/libs/tagging.c:1553
+#: ../src/libs/tagging.c:1602
 msgid "edit tag"
 msgstr "editar etiqueta"
 
-#: ../src/libs/tagging.c:1567 ../src/libs/tagging.c:1785
+#: ../src/libs/tagging.c:1616 ../src/libs/tagging.c:1834
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> etiqueta se actualizará."
 msgstr[1] "<u>%d</u> etiquetas se actualizarán."
 
-#: ../src/libs/tagging.c:1628
+#: ../src/libs/tagging.c:1677
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -16158,100 +16190,100 @@ msgstr ""
 "El caracter '|' no se puede usar para renombrar una etiqueta.\n"
 "Use cambiar ruta para modificar la jerarquía. Abortando."
 
-#: ../src/libs/tagging.c:1667
+#: ../src/libs/tagging.c:1716
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "Al menos un nuevo nombre de etiqueta (% s) ya existe... abortando."
 
-#: ../src/libs/tagging.c:1771
+#: ../src/libs/tagging.c:1820
 msgid "rename path?"
 msgstr "¿confirma cambiar la ruta?"
 
-#: ../src/libs/tagging.c:1778
+#: ../src/libs/tagging.c:1827
 #, c-format
 msgid "selected path: %s "
 msgstr "Ruta seleccionada: %s "
 
-#: ../src/libs/tagging.c:1814
+#: ../src/libs/tagging.c:1863
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' fuera de lugar. No se permite una etiqueta en blanco... abortando."
 
-#: ../src/libs/tagging.c:1840
+#: ../src/libs/tagging.c:1889
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "Al menos un nombre de etiqueta nuevo (% s) ya existe... abortando."
 
-#: ../src/libs/tagging.c:1952
+#: ../src/libs/tagging.c:2001
 msgid "attach tag"
 msgstr "añadir etiqueta"
 
-#: ../src/libs/tagging.c:1967
+#: ../src/libs/tagging.c:2016
 msgid "delete tag"
 msgstr "borrar etiqueta"
 
-#: ../src/libs/tagging.c:1978
+#: ../src/libs/tagging.c:2027
 msgid "create tag..."
 msgstr "crear etiqueta..."
 
-#: ../src/libs/tagging.c:1982
+#: ../src/libs/tagging.c:2031
 msgid "edit tag..."
 msgstr "editar etiqueta..."
 
-#: ../src/libs/tagging.c:1991
+#: ../src/libs/tagging.c:2040
 msgid "rename path..."
 msgstr "cambiar la ruta..."
 
-#: ../src/libs/tagging.c:1998
+#: ../src/libs/tagging.c:2047
 msgid "copy to entry"
 msgstr "copiar al campo de texto"
 
-#: ../src/libs/tagging.c:2015
+#: ../src/libs/tagging.c:2064
 msgid "go to tag collection"
 msgstr "ir a la colección de etiquetas"
 
-#: ../src/libs/tagging.c:2021
+#: ../src/libs/tagging.c:2070
 msgid "go back to work"
 msgstr "regresar al trabajo"
 
-#: ../src/libs/tagging.c:2137
+#: ../src/libs/tagging.c:2187
 msgid "(private)"
 msgstr "(privado)"
 
-#: ../src/libs/tagging.c:2163
+#: ../src/libs/tagging.c:2213
 msgid "Select a keyword file"
 msgstr "Selecciona un archivo de palabras clave"
 
-#: ../src/libs/tagging.c:2166
+#: ../src/libs/tagging.c:2216
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/libs/tagging.c:2180
+#: ../src/libs/tagging.c:2230
 msgid "error importing tags"
 msgstr "Error al importar etiquetas"
 
-#: ../src/libs/tagging.c:2182
+#: ../src/libs/tagging.c:2232
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd etiquetas importadas"
 
-#: ../src/libs/tagging.c:2204
+#: ../src/libs/tagging.c:2254
 msgid "Select file to export to"
 msgstr "Seleccione el archivo para exportar"
 
-#: ../src/libs/tagging.c:2207
+#: ../src/libs/tagging.c:2257
 msgid "_export"
 msgstr "_exportar"
 
-#: ../src/libs/tagging.c:2222
+#: ../src/libs/tagging.c:2272
 msgid "error exporting tags"
 msgstr "Error al exportar etiquetas"
 
-#: ../src/libs/tagging.c:2224
+#: ../src/libs/tagging.c:2274
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd etiquetas exportadas"
 
-#: ../src/libs/tagging.c:2597
+#: ../src/libs/tagging.c:2654
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -16263,43 +16295,43 @@ msgstr ""
 "Pulse clic secundario para mostrar más opciones\n"
 "Ctrl+Rueda del Ratón para cambiar el tamaño de la ventana"
 
-#: ../src/libs/tagging.c:2608
+#: ../src/libs/tagging.c:2666
 msgid "attach"
 msgstr "añadir"
 
-#: ../src/libs/tagging.c:2611
+#: ../src/libs/tagging.c:2669
 msgid "attach tag to all selected images"
 msgstr "Añadir etiqueta a todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:2616
+#: ../src/libs/tagging.c:2674
 msgid "detach"
 msgstr "disociar"
 
-#: ../src/libs/tagging.c:2619
+#: ../src/libs/tagging.c:2677
 msgid "detach tag from all selected images"
 msgstr "Disociar etiquetas de todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:2626
+#: ../src/libs/tagging.c:2684
 msgid "toggle list with / without hierarchy"
 msgstr "Conmutar lista (con jerarquía o sin jerarquía)"
 
-#: ../src/libs/tagging.c:2634
+#: ../src/libs/tagging.c:2692
 msgid "toggle sort by name or by count"
 msgstr "Cambiar entre ordenar por nombre y ordenar por recuento"
 
-#: ../src/libs/tagging.c:2644
+#: ../src/libs/tagging.c:2702
 msgid "toggle show or not darktable tags"
 msgstr "Cambiar entre mostrar y ocultar etiquetas de darktable"
 
-#: ../src/libs/tagging.c:2660
+#: ../src/libs/tagging.c:2718
 msgid "enter tag name"
 msgstr "Introducir el nombre de la etiqueta"
 
-#: ../src/libs/tagging.c:2670
+#: ../src/libs/tagging.c:2728
 msgid "clear entry"
 msgstr "Borrar texto"
 
-#: ../src/libs/tagging.c:2722
+#: ../src/libs/tagging.c:2780
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -16311,11 +16343,11 @@ msgstr ""
 "para más opciones con clic secundario en la etiqueta seleccionada,\n"
 "Ctrl+Rueda del Ratón para redimensionar la ventana"
 
-#: ../src/libs/tagging.c:2737
+#: ../src/libs/tagging.c:2796
 msgid "new"
 msgstr "nueva"
 
-#: ../src/libs/tagging.c:2740
+#: ../src/libs/tagging.c:2799
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -16323,28 +16355,28 @@ msgstr ""
 "Crear una nueva etiqueta con el\n"
 "nombre designado"
 
-#: ../src/libs/tagging.c:2748
+#: ../src/libs/tagging.c:2807
 msgid "import tags from a Lightroom keyword file"
 msgstr "Importar etiquetas desde el archivo Lightroom"
 
-#: ../src/libs/tagging.c:2753
+#: ../src/libs/tagging.c:2812
 msgctxt "verb"
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/libs/tagging.c:2756
+#: ../src/libs/tagging.c:2815
 msgid "export all tags to a Lightroom keyword file"
 msgstr "Exportar todas las etiquetas al archivo Lightroom"
 
-#: ../src/libs/tagging.c:2763
+#: ../src/libs/tagging.c:2822
 msgid "toggle list / tree view"
 msgstr "Conmutar vista (de lista o de árbol)"
 
-#: ../src/libs/tagging.c:2771
+#: ../src/libs/tagging.c:2830
 msgid "toggle list with / without suggestion"
 msgstr "Cambiar entre lista con o sin sugerencia"
 
-#: ../src/libs/tagging.c:2890
+#: ../src/libs/tagging.c:2954
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
