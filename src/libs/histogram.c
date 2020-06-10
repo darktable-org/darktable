@@ -738,19 +738,15 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
       const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
       dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
       gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
-      dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
-      dev->histogram_waveform_height = histheight;
-      free(dev->histogram_waveform);
-      dev->histogram_waveform = calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride * 3, sizeof(uint8_t));
-      dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-      if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
-        dt_dev_process_preview(dev);
-      dt_control_queue_redraw_widget(self->widget);
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+    {
       dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
+    }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+    {
       dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
+    }
   }
 
   return TRUE;
