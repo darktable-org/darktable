@@ -273,18 +273,37 @@ static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
 {
   char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
-  // commit all the module fields
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE data.presets SET operation=?1, op_version=?2, op_params=?3 WHERE name=?4",
-                              -1, &stmt, NULL);
+  gint res = GTK_RESPONSE_YES;
 
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, minfo->params, minfo->params_size, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, name, -1, SQLITE_TRANSIENT);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
+  {
+    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+    GtkWidget *dialog
+      = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
+                               GTK_BUTTONS_YES_NO, _("do you really want to update the preset `%s'?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+    gtk_window_set_title(GTK_WINDOW(dialog), _("update preset?"));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
+
+  if(res == GTK_RESPONSE_YES)
+  {
+    // commit all the module fields
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE data.presets SET operation=?1, op_version=?2, op_params=?3 WHERE name=?4",
+                                -1, &stmt, NULL);
+
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, minfo->params, minfo->params_size, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, name, -1, SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
 }
 
 static void menuitem_new_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
@@ -333,15 +352,24 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
   sqlite3_stmt *stmt;
   gchar *name = get_active_preset_name(minfo);
   if(name == NULL) return;
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog
+
+  gint res = GTK_RESPONSE_YES;
+
+  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
+  {
+    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+    GtkWidget *dialog
       = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
                                GTK_BUTTONS_YES_NO, _("do you really want to delete the preset `%s'?"), name);
 #ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(dialog);
+    dt_osx_disallow_fullscreen(dialog);
 #endif
-  gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
-  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+    gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
+
+  if(res == GTK_RESPONSE_YES)
   {
     char tmp_path[1024];
     snprintf(tmp_path, sizeof(tmp_path), "%s/%s", _("preset"), name);
@@ -357,7 +385,6 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
     sqlite3_finalize(stmt);
   }
   g_free(name);
-  gtk_widget_destroy(dialog);
 }
 
 static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
