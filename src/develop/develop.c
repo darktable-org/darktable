@@ -134,14 +134,23 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
 
-    // FIXME: allow setting these via dt_conf system?
+    // Waveform buffer doesn't need to be coupled with the histogram
+    // widget size. The waveform is almost always scaled when
+    // drawn. Choose buffer dimensions which produces workable detail,
+    // don't use too much CPU/memory, and allow reasonable gradations
+    // of tone.
+
     // Don't use absurd amounts of memory, exceed width of DT_MIPMAP_F
     // (which will be darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
     // for mosaiced images), nor make it too slow to calculate
     // (regardless of ppd). Try to get enough detail for a (default)
-    // 350px panel, possibly 2x that on hidpi.
+    // 350px panel, possibly 2x that on hidpi.  The actual buffer
+    // width will vary with integral binning of image.
     dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
-    dev->histogram_waveform_height = dt_conf_get_int("histogram_height");
+    // 175 rows is the default histogram widget height. It's OK if the
+    // widget height changes from this, as the width will almost
+    // always be scaled, regardless.
+    dev->histogram_waveform_height = 175;
     // making the stride work for cairo muddles UI and underlying
     // data, and mipmap widths should already reasonable, but better
     // to be safe, and the histogram is for the sake of UI, after all
