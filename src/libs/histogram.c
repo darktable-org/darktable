@@ -698,9 +698,10 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
 
-  const float ce = dt_dev_exposure_get_exposure(darktable.develop);
-  const float cb = dt_dev_exposure_get_black(darktable.develop);
+  const float ce = dt_dev_exposure_get_exposure(dev);
+  const float cb = dt_dev_exposure_get_black(dev);
 
   int delta_y;
   // note are using unit rather than smooth scroll events, as
@@ -714,17 +715,19 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
       const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
       dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
       gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
-      darktable.develop->histogram_waveform_height = histheight;
-      free(darktable.develop->histogram_waveform);
-      darktable.develop->histogram_waveform = calloc(darktable.develop->histogram_waveform_height * darktable.develop->histogram_waveform_stride * 3, sizeof(uint8_t));
-      if(darktable.develop->scope_type == DT_DEV_SCOPE_WAVEFORM)
-        dt_dev_process_preview(darktable.develop);
+      dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+      dev->histogram_waveform_height = histheight;
+      free(dev->histogram_waveform);
+      dev->histogram_waveform = calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride * 3, sizeof(uint8_t));
+      dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+      if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+        dt_dev_process_preview(dev);
       dt_control_queue_redraw_widget(self->widget);
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-      dt_dev_exposure_set_exposure(darktable.develop, ce - 0.15f * delta_y);
+      dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-      dt_dev_exposure_set_black(darktable.develop, cb + 0.001f * delta_y);
+      dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
   }
 
   return TRUE;
