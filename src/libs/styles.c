@@ -639,7 +639,7 @@ void gui_init(dt_lib_module_t *self)
   widget = gtk_button_new_with_label(_("apply"));
   d->apply_button = widget;
   g_signal_connect(widget, "clicked", G_CALLBACK(apply_clicked), d);
-  gtk_widget_set_tooltip_text(widget, _("aply the selected styles in list above to selected images"));
+  gtk_widget_set_tooltip_text(widget, _("apply the selected styles in list above to selected images"));
   gtk_box_pack_start(GTK_BOX(hbox3), widget, TRUE, TRUE, 0);
 
   // add entry completion
