@@ -297,15 +297,23 @@ static inline float xoshiro256ss(uint64_t state[4])
 }
 
 
+typedef enum dt_noise_distribution_t
+{
+  DT_NOISE_UNIFORM = 0,
+  DT_NOISE_GAUSSIAN = 1,
+  DT_NOISE_POISSONIAN = 2
+} dt_noise_distribution_t;
+
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd uniform(sigma)
 #endif
 static inline float gaussian_noise(const float mu, const float sigma, const int flip, uint64_t state[4])
 {
   // Create gaussian noise centered in mu of standard deviation sigma
   // state should be initialized with xoshiro256_init() before calling and private in thread
   // flip needs to be flipped every next iteration
+  // reference : https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
   const float u1 = fmaxf(xoshiro256ss(state), FLT_MIN);
   const float u2 = xoshiro256ss(state);
@@ -318,6 +326,51 @@ static inline float gaussian_noise(const float mu, const float sigma, const int 
     z = sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
 
   return z * sigma + mu;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd uniform(sigma)
+#endif
+static inline float poisson_noise(const float mu, const float sigma, const int flip, uint64_t state[4])
+{
+  // create poisson noise - It's just gaussian with squared radius
+
+  const float u1 = fmaxf(xoshiro256ss(state), FLT_MIN);
+  const float u2 = xoshiro256ss(state);
+
+  float z;
+
+  if(flip)
+    z = -2.0f * logf(u1) * cosf(2.f * M_PI * u2);
+  else
+    z = -2.0f * logf(u1) * sinf(2.f * M_PI * u2);
+
+  return z * sigma + mu;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd uniform(distribution, param)
+#endif
+static inline float dt_noise_generator(const dt_noise_distribution_t distribution,
+                                       const float mu, const float param, const int flip, uint64_t state[4])
+{
+  // param needs to be squared for uniform and poissonian distributions in order to have roughly the
+  // same effect as in gaussian.
+
+  switch(distribution)
+  {
+    case(DT_NOISE_UNIFORM):
+    default:
+      return mu + 2.0f * (xoshiro256ss(state) - 0.5f) * param;
+
+    case(DT_NOISE_GAUSSIAN):
+      return gaussian_noise(mu, param, flip, state);
+
+    case(DT_NOISE_POISSONIAN):
+      return poisson_noise(mu, param, flip, state);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
