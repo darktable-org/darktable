@@ -232,6 +232,9 @@ typedef enum dt_signal_t
   */
   DT_SIGNAL_CONTROL_PICKERDATA_READY,
 
+  /* \brief This signal is raised when metadata view needs update */
+  DT_SIGNAL_METADATA_UPDATE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
