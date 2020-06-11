@@ -2494,11 +2494,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pzy += 0.5f;
   if(_iop_clipping_set_max_clip(self))
   {
-    cairo_set_dash(cr, &dashes, 0, 0);
     cairo_set_source_rgba(cr, .2, .2, .2, .8);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-    cairo_rectangle(cr, g->clip_max_x * wd - 1.0f, g->clip_max_y * ht - 1.0f, g->clip_max_w * wd + 1.0f,
-                    g->clip_max_h * ht + 1.0f);
+    cairo_rectangle(cr, g->clip_max_x * wd - pr_d, g->clip_max_y * ht - pr_d, 
+                    g->clip_max_w * wd + 2.0 * pr_d, g->clip_max_h * ht + 2.0 * pr_d);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
     cairo_fill(cr);
   }
@@ -2538,8 +2537,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     // ensure that the rendered string remains visible within the window bounds
     double x1, y1, x2, y2;
     cairo_clip_extents(cr, &x1, &y1, &x2, &y2);
-    xp = CLAMPF(xp, x1 + 2 * margin, x2 - text_w - 2 * margin);
-    yp = CLAMPF(yp, y1 + 2 * margin, y2 - text_h - 2 * margin);
+    xp = CLAMPF(xp, x1 + 2.0 * margin, x2 - text_w - 2.0 * margin);
+    yp = CLAMPF(yp, y1 + 2.0 * margin, y2 - text_h - 2.0 * margin);
 
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
     gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
@@ -2578,7 +2577,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
   if(guide)
   {
-    guide->draw(cr, -cwidth / 2, -cheight / 2, cwidth, cheight, zoom_scale, guide->user_data);
+    guide->draw(cr, -cwidth / 2.0, -cheight / 2.0, cwidth, cheight, zoom_scale, guide->user_data);
     cairo_stroke_preserve(cr);
     cairo_set_dash(cr, &dashes, 0, 0);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
@@ -2849,7 +2848,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                                  ink.height + DT_PIXEL_APPLY_DPI(12) * pr_d,
                                  c[0] - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(4) * pr_d,
                                  c[1] - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(6) * pr_d);
-      cairo_move_to(cr, c[0] - ink.width / 2.0f, c[1] - 3.0 * ink.height / 4.0f);
+      cairo_move_to(cr, c[0] - ink.width / 2.0, c[1] - 3.0 * ink.height / 4.0);
       dt_draw_set_color_overlay(cr, 0.2, 0.9);
       pango_cairo_show_layout(cr, layout);
       pango_font_description_free(desc);
