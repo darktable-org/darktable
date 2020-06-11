@@ -2492,7 +2492,7 @@ void reload_defaults(dt_iop_module_t *module)
                                  .auto_hardness       = TRUE,
                                  .custom_grey         = FALSE,
                                  .high_quality_reconstruction = 1,
-                                 .noise_level         = 0.5f,
+                                 .noise_level         = 0.1f,
                                  .noise_distribution  = DT_NOISE_POISSONIAN
                               };
 
