@@ -1207,6 +1207,7 @@ static void _darkroom_ui_apply_style_activate_callback(gchar *name)
   /* apply style on image and reload*/
   dt_styles_apply_to_image(name, FALSE, darktable.develop->image_storage.id);
   dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();

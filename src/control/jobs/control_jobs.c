@@ -1148,13 +1148,11 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     const int imgid = GPOINTER_TO_INT(t->data);
     if(is_copy)
     {
-      if (dt_image_local_copy_set(imgid) == 0)
-        dt_tag_attach_from_gui(tagid, imgid, FALSE, FALSE);
+      if(dt_image_local_copy_set(imgid) == 0) dt_tag_attach(tagid, imgid, FALSE, FALSE);
     }
     else
     {
-      if (dt_image_local_copy_reset(imgid) == 0)
-        dt_tag_detach_from_gui(tagid, imgid, FALSE, FALSE);
+      if(dt_image_local_copy_reset(imgid) == 0) dt_tag_detach(tagid, imgid, FALSE, FALSE);
     }
     t = g_list_next(t);
 
@@ -1163,6 +1161,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   }
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
@@ -1278,7 +1277,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     // remove 'changed' tag from image
     dt_tag_detach(tagid, imgid, FALSE, FALSE);
     // make sure the 'exported' tag is set on the image
-    dt_tag_attach_from_gui(etagid, imgid, FALSE, FALSE);
+    dt_tag_attach(etagid, imgid, FALSE, FALSE);
 
     /* register export timestamp in cache */
     dt_image_cache_set_export_timestamp(darktable.image_cache, imgid);
@@ -1322,6 +1321,7 @@ end:
   // notify the user via the window manager
   dt_ui_notify_user();
 
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return 0;
 }
 

@@ -473,12 +473,6 @@ gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_
   return res;
 }
 
-void dt_tag_attach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
-{
-  if(dt_tag_attach(tagid, imgid, undo_on, group_on))
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-}
-
 void dt_tag_set_tags(const GList *tags, const GList *img, const gboolean ignore_dt_tags,
                      const gboolean clear_on, const gboolean undo_on)
 {
@@ -579,14 +573,6 @@ void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, 
 
   dt_tag_detach_images(tagid, imgs, undo_on);
   if(imgid != -1) g_list_free(imgs);
-}
-
-
-void dt_tag_detach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
-{
-  dt_tag_detach(tagid, imgid, undo_on, group_on);
-
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_detach_by_string(const char *name, const gint imgid, const gboolean undo_on, const gboolean group_on)

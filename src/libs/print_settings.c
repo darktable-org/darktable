@@ -360,7 +360,8 @@ static int _print_job_run(dt_job_t *job)
   guint tagid = 0;
   snprintf (tag, sizeof(tag), "darktable|printed|%s", params->prt.printer.name);
   dt_tag_new(tag, &tagid);
-  dt_tag_attach_from_gui(tagid, params->imgid, FALSE, FALSE);
+  dt_tag_attach(tagid, params->imgid, FALSE, FALSE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   /* register print timestamp in cache */
   dt_image_cache_set_print_timestamp(darktable.image_cache, params->imgid);
