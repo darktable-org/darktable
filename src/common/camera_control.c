@@ -123,9 +123,13 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam);
 
 /** Wrapper to asynchronously look for cameras */
 static int _detect_cameras_callback(dt_job_t *job);
+/** Wrapper to asynchronously look for disconnected cameras */
+static int _remove_cameras_callback(dt_job_t *job);
 
 /* Starts a job to update the camera list */
 void dt_camctl_background_detect_cameras();
+/* Starts a background job (running as long as the control system is present) removing disconnected cameras */
+void dt_camctl_background_remove_cameras();
 
 static int logid = 0;
 
@@ -586,6 +590,16 @@ void dt_camctl_background_detect_cameras()
   }
 }
 
+void dt_camctl_background_remove_cameras()
+{
+  dt_job_t *job = dt_control_job_create(&_remove_cameras_callback, "remove connected cameras");
+  if(job)
+  {
+    dt_control_job_set_params(job, NULL, NULL);
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
+  }
+}
+
 dt_camctl_t *dt_camctl_new()
 {
   dt_camctl_t *camctl = g_malloc0(sizeof(dt_camctl_t));
@@ -833,6 +847,78 @@ static int _detect_cameras_callback(dt_job_t *job)
 {
   const dt_camctl_t *c = darktable.camctl;
   dt_camctl_detect_cameras(c);
+  return 0;
+}
+
+static void dt_camctl_remove_cameras(const dt_camctl_t *c)
+{
+  dt_camctl_t *camctl = (dt_camctl_t *)c;
+  if(!camctl) return;
+  dt_pthread_mutex_lock(&camctl->lock);
+  gboolean changed_camera = FALSE;
+
+  /* reload portdrivers */
+  if(camctl->gpports) gp_port_info_list_free(camctl->gpports);
+
+  gp_port_info_list_new(&camctl->gpports);
+  gp_port_info_list_load(camctl->gpports);
+
+  CameraList *available_cameras = NULL;
+  gp_list_new(&available_cameras);
+  gp_abilities_list_detect(c->gpcams, c->gpports, available_cameras, c->gpcontext);
+
+  /* check c->cameras in available_cameras */
+  if(c->cameras && g_list_length(c->cameras) > 0)
+  {
+    GList *citem = c->cameras;
+    do
+    {
+      dt_camera_t *cam = (dt_camera_t *)citem->data;
+      gboolean remove_cam = TRUE;
+      for(int i = 0; i < gp_list_count(available_cameras); i++)
+      {
+        const gchar *mymodel;
+        const gchar *myport;
+        gp_list_get_name(available_cameras, i, &mymodel);
+        gp_list_get_value(available_cameras, i, &myport);
+
+        if((g_strcmp0(mymodel, cam->model) == 0) && (g_strcmp0(myport, cam->port) == 0))
+          remove_cam = FALSE;
+      }
+      
+      if(remove_cam)
+      {
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] remove device %s on port %s from camera list as it's not available\n",
+                 cam->model, cam->port);
+        /* remove camera from cached list.. */
+        dt_camera_t *oldcam = (dt_camera_t *)citem->data;
+        camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
+        dt_camctl_camera_destroy(oldcam);
+        changed_camera = TRUE;
+      }
+    } while(citem && (citem = g_list_next(citem)) != NULL);
+  }
+
+  gp_list_unref(available_cameras);
+
+  dt_pthread_mutex_unlock(&camctl->lock);
+
+  if(changed_camera)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
+}
+
+static int _remove_cameras_callback(dt_job_t *job)
+{
+  while(darktable.control->running && darktable.camctl)
+  {
+    // we want to sleep in the background thread but still want to be responsive for closing down
+    for(int i = 0; i < 10; i++)
+    {
+      if(!darktable.control->running) return 0;   
+      g_usleep(50000);
+    }
+    dt_camctl_remove_cameras(darktable.camctl);
+  }
   return 0;
 }
 

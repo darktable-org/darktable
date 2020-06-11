@@ -1002,6 +1002,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // this is done late so that the gui can react to the signal sent but before switching to lighttable!
     darktable.camctl = dt_camctl_new();
     dt_camctl_background_detect_cameras();
+    dt_camctl_background_remove_cameras();
 #endif
 
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
@@ -1169,6 +1170,7 @@ void dt_cleanup()
   free(darktable.opencl);
 #ifdef HAVE_GPHOTO2
   dt_camctl_destroy((dt_camctl_t *)darktable.camctl);
+  darktable.camctl = NULL;
 #endif
   dt_pwstorage_destroy(darktable.pwstorage);
 

@@ -257,22 +257,6 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   gtk_widget_show_all(GTK_WIDGET(d->devices));
 }
 
-/** camctl camera disconnect callback */
-static gboolean _detect_async(gpointer user_data)
-{
-  dt_camctl_background_detect_cameras();
-  return FALSE;
-}
-
-static void _camctl_camera_disconnected_callback(const dt_camera_t *camera, void *data)
-{
-  /* rescan connected cameras. do that asynchronously since otherwise we deadlock (#10314) */
-  g_idle_add(_detect_async, NULL);
-
-  /* update gui with detected devices */
-  // this is done asynchronously in _camera_detected()
-}
-
 /** camctl status listener callback */
 typedef struct _control_status_params_t
 {
@@ -814,7 +798,8 @@ void gui_init(dt_lib_module_t *self)
   /* initialize camctl listener and update devices */
   d->camctl_listener.data = self;
   d->camctl_listener.control_status = _camctl_camera_control_status_callback;
-  d->camctl_listener.camera_disconnected = _camctl_camera_disconnected_callback;
+// We don't need this any longer as removal of disconnected cameras is in a background thread now
+//  d->camctl_listener.camera_disconnected = _camctl_camera_disconnected_callback;
   dt_camctl_register_listener(darktable.camctl, &d->camctl_listener);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
                             self);
