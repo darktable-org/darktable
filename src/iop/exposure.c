@@ -646,7 +646,6 @@ void reload_defaults(dt_iop_module_t *module)
       // For scene-referred workflow, since filmic doesn't brighten as base curve does,
       // we need an initial exposure boost. This might be too much in some cases but…
       tmp.exposure = 1.0f;
-      module->default_enabled = TRUE;
     }
   }
 
