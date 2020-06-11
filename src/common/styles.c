@@ -612,13 +612,14 @@ void dt_styles_apply_to_list(const char *name, GList *list, gboolean duplicate)
   while(l)
   {
     const int imgid = GPOINTER_TO_INT(l->data);
-    if(mode == DT_STYLE_HISTORY_OVERWRITE)
-      dt_history_delete_on_image_ext(imgid, FALSE);
+    if(mode == DT_STYLE_HISTORY_OVERWRITE) dt_history_delete_on_image_ext(imgid, FALSE);
     dt_styles_apply_to_image(name, duplicate, imgid);
     selected = TRUE;
     l = g_list_next(l);
   }
   dt_undo_end_group(darktable.undo);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   if(!selected) dt_control_log(_("no image selected!"));
   dt_control_log(_("style %s successfully applied!"), name);
@@ -660,8 +661,7 @@ void dt_multiple_styles_apply_to_list(GList *styles, GList *list, gboolean dupli
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     GList *style = NULL;
-    if(mode == DT_STYLE_HISTORY_OVERWRITE)
-      dt_history_delete_on_image_ext(imgid, FALSE);
+    if(mode == DT_STYLE_HISTORY_OVERWRITE) dt_history_delete_on_image_ext(imgid, FALSE);
     for (style = styles; style != NULL; style = style->next)
     {
       dt_styles_apply_to_image((char*)style->data, duplicate, imgid);
@@ -669,6 +669,9 @@ void dt_multiple_styles_apply_to_list(GList *styles, GList *list, gboolean dupli
     l = g_list_next(l);
   }
   dt_undo_end_group(darktable.undo);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
   dt_control_log(ngettext("style successfully applied!", "styles successfully applied!", styles_cnt));
 }
 
