@@ -87,6 +87,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback),
                      GINT_TO_POINTER(k));
+    gtk_widget_set_name(self->widget, "lib-label-colors");
   }
 }
 
