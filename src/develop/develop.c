@@ -1419,7 +1419,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
-  //add scene-referred workflow modules
+  //add scene-referred workflow 
   if(dt_image_is_matrix_correction_supported(image)
      && strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
   {
@@ -1428,8 +1428,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
       if(!dt_history_check_module_exists(imgid, module->op)
-         && (strcmp(module->op, "exposure") == 0
-             || strcmp(module->op, "filmicrgb") == 0)
+         && strcmp(module->op, "filmicrgb") == 0
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
       {
         _dev_insert_module(dev, module, imgid);
