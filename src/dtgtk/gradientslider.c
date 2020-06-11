@@ -782,7 +782,7 @@ void dtgtk_gradient_slider_multivalue_set_value(GtkDarktableGradientSlider *gsli
 {
   assert(pos <= gslider->positions);
 
-  gslider->position[pos] = gslider->scale_callback((GtkWidget *)gslider, value, GRADIENT_SLIDER_SET);
+  gslider->position[pos] = CLAMP_RANGE(gslider->scale_callback((GtkWidget *)gslider, value, GRADIENT_SLIDER_SET), 0.0, 1.0);
   gslider->selected = gslider->positions == 1 ? 0 : -1;
   if (emit_signal) g_signal_emit_by_name(G_OBJECT(gslider), "value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(gslider));
@@ -791,7 +791,7 @@ void dtgtk_gradient_slider_multivalue_set_value(GtkDarktableGradientSlider *gsli
 void dtgtk_gradient_slider_multivalue_set_values(GtkDarktableGradientSlider *gslider, gdouble *values, gboolean emit_signal)
 {
   for(int k = 0; k < gslider->positions; k++)
-    gslider->position[k] = gslider->scale_callback((GtkWidget *)gslider, values[k], GRADIENT_SLIDER_SET);
+    gslider->position[k] = CLAMP_RANGE(gslider->scale_callback((GtkWidget *)gslider, values[k], GRADIENT_SLIDER_SET), 0.0, 1.0);
   gslider->selected = gslider->positions == 1 ? 0 : -1;
   if (emit_signal) g_signal_emit_by_name(G_OBJECT(gslider), "value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(gslider));
