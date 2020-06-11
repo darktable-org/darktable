@@ -3471,6 +3471,13 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   if(key == accels->darkroom_preview.accel_key && state == accels->darkroom_preview.accel_mods)
   {
+    // hack to avoid triggering darkroom fullpreview if user enter the view with the key already pressed
+    if(!lib->full_preview
+       && (lib->preview_status == DT_DEV_PIXELPIPE_DIRTY || lib->preview_status == DT_DEV_PIXELPIPE_INVALID))
+    {
+      lib->full_preview = TRUE;
+    }
+
     if(!lib->full_preview)
     {
       lib->full_preview = TRUE;
