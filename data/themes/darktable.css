@@ -157,7 +157,6 @@
 @define-color inset_histogram alpha(@grey_65, 0.50);
 
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
-
 *
 {
   background-color: @bg_color;
@@ -213,8 +212,6 @@ stack,
 stack *,
 scrollbar,
 scrollbar *,
-eventbox,
-eventbox *,
 scale,
 scale *,
 button,
@@ -816,7 +813,7 @@ menuitem > menu, /* sub-menu */
 menuitem arrow,
 tooltip,
 popover,
-#background_job_eventbox,
+#background_job_eventbox, /* background of export progress bar */
 combobox window,
 dialog combobox window
 {
