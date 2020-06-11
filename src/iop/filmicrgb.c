@@ -307,6 +307,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->custom_grey = TRUE;
     n->high_quality_reconstruction = 0;
     n->noise_distribution = d->noise_distribution;
+    n->noise_level = 0.f;
     return 0;
   }
   if(old_version == 2 && new_version == 3)
@@ -371,6 +372,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->high_quality_reconstruction = o->high_quality_reconstruction;
     n->noise_level = d->noise_level;
     n->noise_distribution = d->noise_distribution;
+    n->noise_level = 0.f;
     return 0;
   }
   return 1;
