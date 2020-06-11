@@ -92,8 +92,6 @@ gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolea
 /** attach a tag on images. tagid id of tag to attach. imgid the image
  * id to attach tag to, if < 0 images to act on are used. */
 gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
-/** same as above but raises a DT_SIGNAL_TAG_CHANGED */
-void dt_tag_attach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
 
 /** check if a tag is attached to the given image */
 gboolean dt_is_tag_attached(const guint tagid, const gint imgid);
@@ -115,8 +113,6 @@ void dt_tag_detach_images(const guint tagid, const GList *img, const gboolean un
 /** detach tag from images. \param[in] tagid if of tag to dettach. \param[in] imgid the image id to detach
  * tag from, if < 0 images to act on are used. */
 void dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
-/** same as above but raises a DT_SIGNAL_TAG_CHANGED */
-void dt_tag_detach_from_gui(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
 
 /** detach tags from images that matches name, it is valid to use % to match tag */
 void dt_tag_detach_by_string(const char *name, const gint imgid, const gboolean undo_on, const gboolean group_on);

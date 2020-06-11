@@ -590,10 +590,11 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
         char *tag = dt_util_foo_to_utf8(str.c_str());
         guint tagid = 0;
         dt_tag_new(tag, &tagid);
-        dt_tag_attach_from_gui(tagid, img->id, FALSE, FALSE);
+        dt_tag_attach(tagid, img->id, FALSE, FALSE);
         g_free(tag);
         ++pos;
       }
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Caption"))
     {
