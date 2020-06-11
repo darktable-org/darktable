@@ -949,6 +949,50 @@ static int rt_masks_get_delta_to_destination(dt_iop_module_t *self, dt_dev_pixel
   return res;
 }
 
+static void rt_clamp_minmax(float levels_old[3], float levels_new[3])
+{
+  // left or right has changed
+  if((levels_old[0] != levels_new[0] || levels_old[2] != levels_new[2]) && levels_old[1] == levels_new[1])
+  {
+    // if old left and right are the same just use the new values
+    if(levels_old[2] != levels_old[0])
+    {
+      // set the new value but keep the middle proportional
+      const float left = MAX(levels_new[0], RETOUCH_PREVIEW_LVL_MIN);
+      const float right = MIN(levels_new[2], RETOUCH_PREVIEW_LVL_MAX);
+
+      const float percentage = (levels_old[1] - levels_old[0]) / (levels_old[2] - levels_old[0]);
+      levels_new[1] = left + (right - left) * percentage;
+      levels_new[0] = left;
+      levels_new[2] = right;
+    }
+  }
+
+  // if all zero make it gray
+  if(levels_new[0] == 0.f && levels_new[1] == 0.f && levels_new[2] == 0.f)
+  {
+    levels_new[0] = -1.5f;
+    levels_new[1] = 0.f;
+    levels_new[2] = 1.5f;
+  }
+
+  // check the range
+  if(levels_new[2] < levels_new[0] + 0.05f * 2.f) levels_new[2] = levels_new[0] + 0.05f * 2.f;
+  if(levels_new[1] < levels_new[0] + 0.05f) levels_new[1] = levels_new[0] + 0.05f;
+  if(levels_new[1] > levels_new[2] - 0.05f) levels_new[1] = levels_new[2] - 0.05f;
+
+  {
+    // set the new value but keep the middle proportional
+    const float left = MAX(levels_new[0], RETOUCH_PREVIEW_LVL_MIN);
+    const float right = MIN(levels_new[2], RETOUCH_PREVIEW_LVL_MAX);
+
+    const float percentage = (levels_new[1] - levels_new[0]) / (levels_new[2] - levels_new[0]);
+    levels_new[1] = left + (right - left) * percentage;
+    levels_new[0] = left;
+    levels_new[2] = right;
+  }
+}
+
 static int rt_shape_is_beign_added(dt_iop_module_t *self, const int shape_type)
 {
   int being_added = 0;
@@ -4196,6 +4240,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
       levels[0] = levels[1] = levels[2] = 0;
       rt_process_stats(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
+      rt_clamp_minmax(levels, levels);
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
 
@@ -5053,6 +5098,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       levels[0] = levels[1] = levels[2] = 0;
       err = rt_process_stats_cl(self, piece, devid, in_retouch, roi_rt->width, roi_rt->height, levels);
       if(err != CL_SUCCESS) goto cleanup;
+
+      rt_clamp_minmax(levels, levels);
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
 
