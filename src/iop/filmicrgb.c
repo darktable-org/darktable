@@ -3035,7 +3035,7 @@ void gui_init(dt_iop_module_t *self)
 
 
   // Highlight noise
-  g->noise_level = dt_bauhaus_slider_new_with_range(self, 0.0, 6.0, 1, p->noise_level, 2);
+  g->noise_level = dt_bauhaus_slider_new_with_range(self, 0.0, 6.0, 0.1, p->noise_level, 2);
   dt_bauhaus_widget_set_label(g->noise_level, NULL, _("add noise in highlights"));
   gtk_widget_set_tooltip_text(g->noise_level, _("add gaussian noise in reconstructed highlights.\n"
                                                 "this avoids highlights to look too smooth\n"
