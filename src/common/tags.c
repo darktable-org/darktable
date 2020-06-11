@@ -457,7 +457,7 @@ gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolea
 gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
 {
   GList *imgs = NULL;
-  gboolean res;
+  gboolean res = FALSE;
   if(imgid == -1)
   {
     imgs = dt_view_get_images_to_act_on(!group_on, TRUE);
