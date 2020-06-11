@@ -2382,8 +2382,6 @@ void reload_defaults(dt_iop_module_t *module)
       tmp.black_point_source += 0.5f * exposure;
       tmp.white_point_source += 0.8f * exposure;
       tmp.output_power = logf(tmp.grey_point_target / 100.0f) / logf(-tmp.black_point_source / (tmp.white_point_source - tmp.black_point_source));
-
-      module->default_enabled = TRUE;
     }
   }
 

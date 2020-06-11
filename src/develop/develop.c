@@ -1383,6 +1383,22 @@ static int _dev_get_module_nb_records()
   return cnt;
 }
 
+void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int imgid)
+{
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+    dt_database_get(darktable.db),
+    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '')",
+    -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->op, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->default_params, module->params_size, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 {
   // NOTE: the presets/default iops will be *prepended* into the history.
@@ -1401,6 +1417,24 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   {
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
     return FALSE;
+  }
+
+  //add scene-referred workflow modules
+  if(dt_image_is_matrix_correction_supported(image)
+     && strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
+  {
+    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+
+      if(!dt_history_check_module_exists(imgid, module->op)
+         && (strcmp(module->op, "exposure") == 0
+             || strcmp(module->op, "filmicrgb") == 0)
+         && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
+      {
+        _dev_insert_module(dev, module, imgid);
+      }
+    }
   }
 
   // select all presets from one of the following table and add them into memory.history. Note that
@@ -1490,30 +1524,29 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   return TRUE;
 }
 
-void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int imgid)
-{
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-    dt_database_get(darktable.db),
-    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '')",
-    -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->op, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->default_params, module->params_size, SQLITE_TRANSIENT);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-}
-
 static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
 {
+  //start with those modules that cannot be disabled
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
     if(!dt_history_check_module_exists(imgid, module->op)
-       && module->default_enabled == 1
+       && module->default_enabled
+       && module->hide_enable_button
+       && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
+    {
+      _dev_insert_module(dev, module, imgid);
+    }
+  }
+  //now modules that can be disabled but are auto-on
+  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+
+    if(!dt_history_check_module_exists(imgid, module->op)
+       && module->default_enabled
+       && !module->hide_enable_button
        && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
     {
       _dev_insert_module(dev, module, imgid);
