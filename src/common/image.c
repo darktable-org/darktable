@@ -908,6 +908,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     // make sure that the duplicate doesn't have some magic darktable| tags
     dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE);
     dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
     /* unset change timestamp */
     dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
