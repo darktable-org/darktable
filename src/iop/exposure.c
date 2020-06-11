@@ -164,7 +164,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2 && new_version == 6)
   {
     typedef struct dt_iop_exposure_params_v2_t
     {
@@ -181,7 +181,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->exposure = o->exposure;
     return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3 && new_version == 6)
   {
     typedef struct dt_iop_exposure_params_v3_t
     {
@@ -203,7 +203,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->deflicker_target_level = o->deflicker_target_level;
     return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4 && new_version == 6)
   {
     typedef enum dt_iop_exposure_deflicker_histogram_source_t {
       DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL,
