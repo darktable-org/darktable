@@ -75,6 +75,7 @@
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_35;
+@define-color tooltip_fg_color @grey_80;
 @define-color log_fg_color @grey_95;
 
 /* Views */

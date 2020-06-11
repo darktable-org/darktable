@@ -71,7 +71,8 @@
 @define-color field_hover_fg @grey_20;
 
 /* Tooltips and contextual helpers */
-@define-color tooltip_bg_color @grey_20;
+@define-color tooltip_bg_color @grey_25;
+@define-color tooltip_fg_color @grey_75;
 @define-color log_fg_color @grey_90;
 
 /* Views */

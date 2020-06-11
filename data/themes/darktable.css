@@ -120,7 +120,7 @@
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_05;
-@define-color tooltip_fg_color @grey_70;
+@define-color tooltip_fg_color @grey_65;
 @define-color really_dark_bg_color @grey_05;
 @define-color log_fg_color @grey_85;
 
@@ -821,7 +821,6 @@ combobox window,
 dialog combobox window
 {
   background-color: @tooltip_bg_color;
-  color: @tooltip_fg_color;
   outline-style:none;
   border-radius: 4px;
   border: 0;
@@ -829,6 +828,11 @@ dialog combobox window
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em;
+}
+
+tooltip label
+{
+  color: @tooltip_fg_color;
 }
 
 combobox label
