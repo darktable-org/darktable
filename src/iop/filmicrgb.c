@@ -2492,8 +2492,8 @@ void reload_defaults(dt_iop_module_t *module)
                                  .auto_hardness       = TRUE,
                                  .custom_grey         = FALSE,
                                  .high_quality_reconstruction = 1,
-                                 .noise_level         = 1.f,
-                                 .noise_distribution  = DT_NOISE_GAUSSIAN
+                                 .noise_level         = 0.5f,
+                                 .noise_distribution  = DT_NOISE_POISSONIAN
                               };
 
   // we might be called from presets update infrastructure => there is no image

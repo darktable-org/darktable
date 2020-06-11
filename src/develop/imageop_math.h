@@ -318,14 +318,14 @@ static inline float gaussian_noise(const float mu, const float sigma, const int 
   const float u1 = fmaxf(xoshiro256ss(state), FLT_MIN);
   const float u2 = xoshiro256ss(state);
 
-  float z;
+  float noise;
 
   if(flip)
-    z = sqrtf(-2.0f * logf(u1)) * cosf(2.f * M_PI * u2);
+    noise = sqrtf(-2.0f * logf(u1)) * cosf(2.f * M_PI * u2);
   else
-    z = sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
+    noise = sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
 
-  return z * sigma + mu;
+  return noise * sigma + mu;
 }
 
 
@@ -334,19 +334,19 @@ static inline float gaussian_noise(const float mu, const float sigma, const int 
 #endif
 static inline float poisson_noise(const float mu, const float sigma, const int flip, uint64_t state[4])
 {
-  // create poisson noise - It's just gaussian with squared radius
-
+  // create poisson noise - It's just gaussian noise with Anscombe transform applied
   const float u1 = fmaxf(xoshiro256ss(state), FLT_MIN);
   const float u2 = xoshiro256ss(state);
 
-  float z;
+  float noise;
 
   if(flip)
-    z = -2.0f * logf(u1) * cosf(2.f * M_PI * u2);
+    noise = sqrtf(-2.0f * logf(u1)) * cosf(2.f * M_PI * u2);
   else
-    z = -2.0f * logf(u1) * sinf(2.f * M_PI * u2);
+    noise = sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
 
-  return z * sigma + mu;
+  const float r = noise * sigma + 2.0f * sqrtf(fmaxf(mu + 3.f / 8.f, 0.0f));
+  return r * r / 4.f - 3.f / 8.f;
 }
 
 
