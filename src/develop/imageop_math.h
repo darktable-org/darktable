@@ -346,7 +346,7 @@ static inline float poisson_noise(const float mu, const float sigma, const int f
     noise = sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
 
   const float r = noise * sigma + 2.0f * sqrtf(fmaxf(mu + 3.f / 8.f, 0.0f));
-  return r * r / 4.f - 3.f / 8.f;
+  return (r * r - sigma * sigma) / 4.f - 3.f / 8.f;
 }
 
 
