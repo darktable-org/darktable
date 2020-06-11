@@ -596,8 +596,6 @@ void dt_tag_detach_by_string(const char *name, const gint imgid, const gboolean 
   if (!dt_tag_exists(name, &tagid)) return;
 
   dt_tag_detach(tagid, imgid, undo_on, group_on);
-
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 // to be called before issuing any query based on memory.darktable_tags
