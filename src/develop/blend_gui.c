@@ -774,8 +774,8 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab)
   dt_pthread_mutex_lock(&data->lock);
   for(int k = 0; k < 4; k++)
   {
-    dtgtk_gradient_slider_multivalue_set_value(data->lower_slider, iparameters[k], k);
-    dtgtk_gradient_slider_multivalue_set_value(data->upper_slider, oparameters[k], k);
+    dtgtk_gradient_slider_multivalue_set_value(data->lower_slider, iparameters[k], k, TRUE);
+    dtgtk_gradient_slider_multivalue_set_value(data->upper_slider, oparameters[k], k, TRUE);
     dtgtk_gradient_slider_multivalue_set_resetvalue(data->lower_slider, idefaults[k], k);
     dtgtk_gradient_slider_multivalue_set_resetvalue(data->upper_slider, odefaults[k], k);
   }
@@ -1202,7 +1202,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
 
     dt_pthread_mutex_lock(&data->lock);
     for(int k = 0; k < 4; k++)
-      dtgtk_gradient_slider_multivalue_set_value(slider, picker_values[k], k);
+      dtgtk_gradient_slider_multivalue_set_value(slider, picker_values[k], k, TRUE);
     dt_pthread_mutex_unlock(&data->lock);
 
     // update picked values
