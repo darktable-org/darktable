@@ -1956,12 +1956,16 @@ static void auto_hardness_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
+  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+
   p->auto_hardness = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+  ++darktable.gui->reset;
+  gtk_widget_set_visible(GTK_WIDGET(g->output_power), !p->auto_hardness);
+  --darktable.gui->reset;
 
   if(p->auto_hardness)
   {
-    dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-
     p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
     ++darktable.gui->reset;
@@ -2298,6 +2302,7 @@ void gui_update(dt_iop_module_t *self)
 
   gtk_widget_set_visible(g->grey_point_source, p->custom_grey);
   gtk_widget_set_visible(g->grey_point_target, p->custom_grey);
+  gtk_widget_set_visible(g->output_power, !p->auto_hardness);
 
   if(p->reconstruct_bloom_vs_details == -100.f)
   {
