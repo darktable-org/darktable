@@ -179,6 +179,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     n->black = o->black;
     n->exposure = o->exposure;
+    n->compensate_exposure_bias = FALSE;
     return 0;
   }
   if(old_version == 3 && new_version == 6)
@@ -201,6 +202,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->exposure = o->exposure;
     n->deflicker_percentile = o->deflicker_percentile;
     n->deflicker_target_level = o->deflicker_target_level;
+    n->compensate_exposure_bias = FALSE;
     return 0;
   }
   if(old_version == 4 && new_version == 6)
@@ -232,6 +234,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->deflicker_target_level = o->deflicker_target_level;
     // deflicker_histogram_source is dropped. this does change output,
     // but deflicker still was not publicly released at that point
+    n->compensate_exposure_bias = FALSE;
     return 0;
   }
   if(old_version == 5 && new_version == 6)
