@@ -68,15 +68,13 @@ static void _update(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
   const guint act_on_cnt = g_list_length(imgs);
-  const gboolean can_paste = darktable.view_manager->copy_paste.copied_imageid > 0 && 
-    (
-      act_on_cnt > 1 ||
-      (act_on_cnt == 1 && (darktable.view_manager->copy_paste.copied_imageid != dt_view_get_image_to_act_on()))
-    );
-
-  g_list_free(imgs);
+  const gboolean can_paste
+      = darktable.view_manager->copy_paste.copied_imageid > 0
+        && (act_on_cnt > 1
+            || (act_on_cnt == 1
+                && (darktable.view_manager->copy_paste.copied_imageid != dt_view_get_image_to_act_on())));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->compress_button), act_on_cnt > 0);
@@ -137,10 +135,9 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   {
     char *dtfilename;
     dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    GList *imgs = dt_view_get_images_to_act_on(TRUE);
+    GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
     if(dt_history_load_and_apply_on_list(dtfilename, imgs) != 0)
     {
-      g_list_free(imgs);
       GtkWidget *dialog
           = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_CLOSE, _("error loading file '%s'"), dtfilename);
@@ -152,7 +149,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     }
     else
     {
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
       dt_control_queue_redraw_center();
     }
 
@@ -165,12 +162,12 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
   if(g_list_length(imgs) < 1) return;
 
   const int missing = dt_history_compress_on_list(imgs);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
   dt_control_queue_redraw_center();
   if (missing)
   {
@@ -217,7 +214,7 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
   if(dt_conf_get_bool("ask_before_delete"))
   {
@@ -244,7 +241,7 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
   {
     dt_history_delete_on_list(imgs, TRUE);
 
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
     dt_control_queue_redraw_center();
   }
 }
@@ -260,22 +257,22 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from previously copied image and past onto selection */
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
   }
 }
 
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   /* copy history from previously copied image and past onto selection */
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
   if(dt_history_paste_parts_on_list(imgs, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
   }
 }
 

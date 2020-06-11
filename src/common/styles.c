@@ -98,9 +98,8 @@ void dt_style_item_free(gpointer data)
 static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                guint keyval, GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
   dt_styles_apply_to_list(data, imgs, FALSE);
-  g_list_free(imgs);
   return TRUE;
 }
 

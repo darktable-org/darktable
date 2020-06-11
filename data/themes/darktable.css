@@ -120,7 +120,7 @@
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_05;
-@define-color tooltip_fg_color @grey_70;
+@define-color tooltip_fg_color @grey_65;
 @define-color really_dark_bg_color @grey_05;
 @define-color log_fg_color @grey_85;
 
@@ -134,15 +134,15 @@
 
 /* Lighttable and film-strip */
 @define-color thumbnail_font_color @grey_25;
-@define-color thumbnail_bg_color @grey_40;
-@define-color thumbnail_star_bg_color @grey_50;
-@define-color thumbnail_fg_color @grey_60;
+@define-color thumbnail_bg_color @grey_50;
+@define-color thumbnail_star_bg_color @grey_35;
+@define-color thumbnail_fg_color @grey_55;
 @define-color thumbnail_bg50_color @grey_100;
-@define-color thumbnail_infos_color @grey_20;
-@define-color thumbnail_selected_bg_color @grey_45;
+@define-color thumbnail_selected_bg_color @grey_60;
 @define-color thumbnail_hover_bg_color @grey_80;
+@define-color thumbnail_hover_fg_color @grey_85;
 @define-color filmstrip_bg_color @darkroom_bg_color;
-@define-color thumbnail_localcopy_color @grey_70;
+@define-color thumbnail_localcopy_color @grey_75;
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
@@ -157,7 +157,6 @@
 @define-color inset_histogram alpha(@grey_65, 0.50);
 
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
-
 *
 {
   background-color: @bg_color;
@@ -213,8 +212,6 @@ stack,
 stack *,
 scrollbar,
 scrollbar *,
-eventbox,
-eventbox *,
 scale,
 scale *,
 button,
@@ -268,6 +265,12 @@ button,
   min-height: 1em;
   min-width: 1em;
   padding: 2px;
+}
+
+button:disabled,
+#add-color-button:disabled
+{
+  border: 1px solid shade(@button_border, 0.95);
 }
 
 /* Default extra margin for icons optical alignment */
@@ -424,6 +427,11 @@ overshoot.right
   margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
+#footer-toolbar #lib-label-colors #button-canvas
+{
+  margin: 16px; /* not real pixels, this is used as a percent extra space */
+}
+
 #dt-icon
 {
   border-radius: 2px;
@@ -482,10 +490,8 @@ overshoot.right
   padding: 1px;
 }
 
-/* size of control-buttons */
-/* filter in collect images */
-/* filter in header toolbar */
-/* arrow in filmic */
+/* Size of control-buttons an duplicate module ones */
+  /* control-buttons are: filter in collect images, filter in header toolbar and arrow in filmic */
 #iop-plugin-ui-main #control-button,
 #lib-plugin-ui-main #control-button,
 #header-toolbar #control-button
@@ -496,9 +502,16 @@ overshoot.right
   margin: 0.15em;
 }
 
-#control-button #button-canvas
+#control-button #button-canvas,
+.duplicate-ui #button-canvas
 {
   margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
+/* Adjust add button in picker module */
+.picker-module button
+{
+  padding: 0 3px;
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -556,7 +569,7 @@ overshoot.right
   margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
-/* gradient sliders */
+/* Gradient sliders */
 .dt_gslider,
 .dt_gslider_multivalue
 {
@@ -800,12 +813,11 @@ menuitem > menu, /* sub-menu */
 menuitem arrow,
 tooltip,
 popover,
-#background_job_eventbox,
+#background_job_eventbox, /* background of export progress bar */
 combobox window,
 dialog combobox window
 {
   background-color: @tooltip_bg_color;
-  color: @tooltip_fg_color;
   outline-style:none;
   border-radius: 4px;
   border: 0;
@@ -813,6 +825,11 @@ dialog combobox window
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em;
+}
+
+tooltip label
+{
+  color: @tooltip_fg_color;
 }
 
 combobox label
@@ -1894,6 +1911,12 @@ spinbutton>button
   margin: 2px 1px;
 }
 
+#show-tooltip
+{
+  margin: 4px 0 0 4px;
+  border-top: 1px dashed @button_border;
+}
+
   /*** for following settings line, remember which popover mode name and related line on popover menu
   1) .dt_overlays_none
   2) .dt_overlays_hover
@@ -1925,9 +1948,9 @@ spinbutton>button
   border: 2px solid @plugin_bg_color;
 }
 
-#thumb_ext /* adjust margin to align to group, audio... icons */
+#thumb_ext /* adjust margin to better align to group, audio... icons and match to near all thumbnails sizes */
 {
-  margin-top: -3px;
+  margin-top: -1px;
 }
 
 /*---------------
@@ -1958,7 +1981,7 @@ spinbutton>button
 .dt_overlays_mixed #thumb_main:hover #thumb_bottom,
 .dt_overlays_hover #thumb_main:hover #thumb_bottom
 {
-  background-image: linear-gradient(0deg, rgba(198, 198, 198, 0.7) 0%, rgba(198, 198, 198, 0.7) 90%,rgba(198, 198, 198, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
+  background-image: linear-gradient(rgba(198, 198, 198, 0.7) 0%, rgba(198, 198, 198, 0.7) 90%,rgba(198, 198, 198, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
 }
 
 /* Set background on block infos in last overlay mode and culling/preview modes shown with mouse hover */
@@ -1992,7 +2015,7 @@ spinbutton>button
 .dt_overlays_always_extended #thumb_ext,
 .dt_overlays_mixed #thumb_ext
 {
-  color: @thumbnail_infos_color;
+  color: shade(@thumbnail_font_color, 1.1);
 }
 
 /* Reset color icons to be hidden in following modes, including culling/preview overlays hover block*/
@@ -2071,7 +2094,7 @@ spinbutton>button
 .dt_overlays_mixed #thumb_main:hover #thumb_star:hover,
 .dt_overlays_hover_block #thumb_main:hover #thumb_star:hover
 {
-  color: @bauhaus_fg_hover;
+  color: @thumbnail_hover_fg_color;
   background-color: @thumbnail_star_bg_color;
 }
 
@@ -2114,9 +2137,9 @@ spinbutton>button
   background-color: @thumbnail_localcopy_color;
 }
 
-/*--------------------------------------
-  - Hide icons on all lighttable modes -
-  --------------------------------------*/
+/*---------------------------------------------------------
+  - Hide icons on all lighttable modes and duplicate ones -
+  ---------------------------------------------------------*/
 
 .dt_overlays_hover #thumb_main:hover #thumb_group,
 .dt_overlays_hover #thumb_main:hover #thumb_altered,
@@ -2141,12 +2164,18 @@ spinbutton>button
 .dt_overlays_always#preview #thumb_group,
 .dt_overlays_always_extended#preview #thumb_altered,
 .dt_overlays_always_extended#preview #thumb_audio,
-.dt_overlays_always_extended#preview #thumb_group
+.dt_overlays_always_extended#preview #thumb_group,
+.duplicate-ui #thumb_main:hover #thumb_group,
+.duplicate-ui #thumb_main:hover #thumb_altered,
+.duplicate-ui #thumb_main:hover #thumb_audio,
+.duplicate-ui #thumb_altered,
+.duplicate-ui #thumb_audio,
+.duplicate-ui #thumb_group
 {
   color: transparent;
 }
 
-.dt_overlays_always#preview #thumb_bottom>*
+.dt_overlays_always#preview #thumb_bottom > *
 {
   padding-top: 3px;
 }

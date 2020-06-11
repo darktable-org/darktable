@@ -457,12 +457,12 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on(TRUE);
+    imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   if(group_on) dt_grouping_add_grouped_images(&imgs);
   dt_image_set_locations(imgs, geoloc, undo_on);
-  g_list_free(imgs);
+  if(imgid != -1) g_list_free(imgs);
 }
 
 void dt_image_reset_final_size(const int32_t imgid)
@@ -663,6 +663,24 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
   dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
                  dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+}
+
+/* About the image size ratio 
+   It has been calculated from the exif data width&height, this is not exact as we crop
+   the sensor data in most cases for raws.
+   This is managed by
+   rawspeed - knowing about default crops
+   rawprepare - modify the defaults
+
+   The database does **not** hold the cropped width & height so we fill the data
+   when starting to develop.
+*/
+double dt_image_get_sensor_ratio(const struct dt_image_t *img)
+{
+  if(img->p_height >0)
+    return (double)img->p_width / (double)img->p_height;
+
+  return (double)img->width / (double)img->height;
 }
 
 void dt_image_set_raw_aspect_ratio(const int32_t imgid)
@@ -1408,7 +1426,7 @@ uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboole
 void dt_image_init(dt_image_t *img)
 {
   img->width = img->height = img->verified_size = 0;
-  img->final_width = img->final_height = 0;
+  img->final_width = img->final_height = img->p_width = img->p_height = 0;
   img->aspect_ratio = 0.f;
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
@@ -2142,9 +2160,8 @@ void dt_image_synch_xmp(const int selected)
   }
   else
   {
-    GList *imgs = dt_view_get_images_to_act_on(FALSE);
+    GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
     dt_image_synch_xmps(imgs);
-    g_list_free(imgs);
   }
 }
 

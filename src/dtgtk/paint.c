@@ -944,7 +944,9 @@ void dtgtk_cairo_paint_directory(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   PREAMBLE(1, 0, 0);
 
-  cairo_set_source_rgb(cr, .8, .8, .8);
+  cairo_scale(cr, 0.8, 0.8);
+  cairo_translate(cr, 0.1, 0.1);
+
   cairo_rectangle(cr, 0., 0., 1., 1.);
   cairo_stroke(cr);
   cairo_move_to(cr, 0., .2);
