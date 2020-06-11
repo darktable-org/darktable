@@ -181,8 +181,11 @@ if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bo
         nil,
         nil
       )
-      _scripts_install.dt.control.sleep(500)
+      if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
+       _scripts_install.dt.control.sleep(500)
        _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
+       _scripts_install.dt.preferences.write("_scripts_install", "initialized", "bool", true)
+     end
     end
   end
 end
