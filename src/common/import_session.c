@@ -45,7 +45,8 @@ static void _import_session_cleanup_filmroll(dt_import_session_t *self)
 {
   if(self->film == NULL) return;
   /* if current filmroll for session is empty, remove it */
-  if(dt_film_is_empty(self->film->id)){
+  if(dt_film_is_empty(self->film->id))
+  {
     dt_film_remove(self->film->id);
     if(self->current_path != NULL && g_file_test(self->current_path, G_FILE_TEST_IS_DIR) && dt_util_is_dir_empty(self->current_path))
     {
