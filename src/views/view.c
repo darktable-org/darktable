@@ -941,7 +941,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
 
   // get mipmap cahe image
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, width, height);
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, width * darktable.gui->ppd, height * darktable.gui->ppd);
 
   // if needed, we load the mimap buffer
   dt_mipmap_buffer_t buf;
@@ -1053,7 +1053,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     else
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
+      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
 
     cairo_paint(cr);
     /* from focus_peaking.h
