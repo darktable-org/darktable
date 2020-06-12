@@ -26,6 +26,15 @@ local _scripts_install = {}
 _scripts_install.dt = require 'darktable'
 
 
+_scripts_install.dt.preferences.register(
+  "_scripts_install",
+  "dont_show",
+  "bool",
+  _scripts_install.dt.gettext.gettext("lua scripts installer dont show again"),
+  _scripts_install.dt.gettext.gettext("do not show scripts_installer if lua scripts are not installed"),
+  false
+)
+
 if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bool") then
   -- _scripts_install.dt.print_log("dont show not set")
 
@@ -206,6 +215,7 @@ if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bo
         nil,
         nil
       )
+
       if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
        _scripts_install.dt.control.sleep(1000)
        _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
