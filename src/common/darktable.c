@@ -79,7 +79,7 @@
 #include <unistd.h>
 #include <locale.h>
 #include <limits.h>
-#include "whereami.h"
+
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -688,41 +688,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
   }
 
+  // get valid directories
+  dt_loc_init(datadir_from_command, moduledir_from_command, localedir_from_command, configdir_from_command, cachedir_from_command, tmpdir_from_command);
+
   if(darktable.unmuted & DT_DEBUG_MEMORY)
   {
     fprintf(stderr, "[memory] at startup\n");
     dt_print_mem_usage();
-  }
-
-  // Assemble pathes
-  char* application_directory = NULL;
-  int dirname_length;
-  // calling wai_getExecutablePath twice as recommended in the docs:
-  // the first call retrieves the length of the path
-  int length = wai_getExecutablePath(NULL, 0, &dirname_length);
-  if (length > 0)
-  {
-    application_directory = (char*)malloc(length + 1);
-    // the second call retrieves the path including the executable
-    wai_getExecutablePath(application_directory, length, &dirname_length);
-    // strip of the executable name from the path to retrieve the path alone
-    application_directory[dirname_length] = '\0';
-  }
-  dt_print(DT_DEBUG_DEV, "application_directory: %s\n", application_directory);
-
-  // set up absolute pathes based on their relative value
-  dt_loc_init_datadir(application_directory, datadir_from_command);
-  dt_loc_init_plugindir(application_directory, moduledir_from_command);
-  dt_loc_init_localedir(application_directory, localedir_from_command);
-  dt_loc_init_user_config_dir(configdir_from_command);
-  dt_loc_init_user_cache_dir(cachedir_from_command);
-  dt_loc_init_sharedir(application_directory);
-  free(application_directory);
-
-  if(dt_loc_init_tmp_dir(tmpdir_from_command))
-  {
-    fprintf(stderr, "error: invalid temporary directory: %s\n", darktable.tmpdir);
-    return usage(argv[0]);
   }
 
   char sharedir[PATH_MAX] = { 0 };

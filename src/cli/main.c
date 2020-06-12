@@ -40,7 +40,6 @@
 #include "common/points.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
-#include "whereami.h"
 
 #include <inttypes.h>
 #include <libintl.h>
@@ -82,30 +81,11 @@ int main(int argc, char *arg[])
   dt_osx_prepare_environment();
 #endif
 
-  // Assemble pathes
-  char* application_directory = NULL;
-  int dirname_length;
-  // calling wai_getExecutablePath twice as recommended in the docs:
-  // the first call retrieves the length of the path
-  int length = wai_getExecutablePath(NULL, 0, &dirname_length);
-  if (length > 0)
-  {
-    application_directory = (char*)malloc(length + 1);
-    // the second call retrieves the path including the executable
-    wai_getExecutablePath(application_directory, length, &dirname_length);
-    // strip of the executable name from the path to retrieve the path alone
-    application_directory[dirname_length] = '\0';
-  }
-  dt_print(DT_DEBUG_DEV, "application_directory: %s\n", application_directory);
-
-  // set up absolute pathes based on their relative value
-  dt_loc_init_localedir(application_directory, NULL);
-
+  // get valid locale dir
+  dt_loc_init(NULL, NULL, NULL, NULL, NULL, NULL);
   char localedir[PATH_MAX] = { 0 };
   dt_loc_get_localedir(localedir, sizeof(localedir));
   bindtextdomain(GETTEXT_PACKAGE, localedir);
-  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-  textdomain(GETTEXT_PACKAGE);
 
   if(!gtk_parse_args(&argc, &arg)) exit(1);
 

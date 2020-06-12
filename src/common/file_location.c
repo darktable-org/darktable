@@ -38,6 +38,39 @@
 
 #include "darktable.h"
 #include "file_location.h"
+#include "whereami.h"
+
+void dt_loc_init(const char *datadir, const char *moduledir, const char *localedir, const char *configdir, const char *cachedir, const char *tmpdir)
+{
+  // Assemble pathes
+  char* application_directory = NULL;
+  int dirname_length;
+  // calling wai_getExecutablePath twice as recommended in the docs:
+  // the first call retrieves the length of the path
+  int length = wai_getExecutablePath(NULL, 0, &dirname_length);
+  if (length > 0)
+  {
+    application_directory = (char*)malloc(length + 1);
+    // the second call retrieves the path including the executable
+    wai_getExecutablePath(application_directory, length, &dirname_length);
+    // strip of the executable name from the path to retrieve the path alone
+    application_directory[dirname_length] = '\0';
+  }
+  dt_print(DT_DEBUG_DEV, "application_directory: %s\n", application_directory);
+
+  // set up absolute pathes based on their relative value
+  dt_loc_init_localedir(application_directory, NULL);
+
+  // set up absolute pathes based on their relative value
+  dt_loc_init_datadir(application_directory, datadir);
+  dt_loc_init_plugindir(application_directory, moduledir);
+  dt_loc_init_localedir(application_directory, localedir);
+  dt_loc_init_user_config_dir(configdir);
+  dt_loc_init_user_cache_dir(cachedir);
+  dt_loc_init_sharedir(application_directory);
+  dt_loc_init_tmp_dir(tmpdir);
+  free(application_directory);
+}
 
 gchar *dt_loc_get_home_dir(const gchar *user)
 {
@@ -125,7 +158,7 @@ void dt_loc_init_user_config_dir(const char *configdir)
 {
   char *default_config_dir = g_build_filename(g_get_user_config_dir(), "darktable", NULL);
   darktable.configdir = dt_loc_init_generic(configdir, NULL, default_config_dir);
-  dt_check_opendir("darktable.configdir", darktable.configdir, TRUE);
+  dt_check_opendir("darktable.configdir", darktable.configdir);
   g_free(default_config_dir);
 }
 
@@ -167,19 +200,17 @@ char *dt_loc_find_install_dir(const char *suffix, const char *searchname)
 }
 #endif
 
-int dt_loc_init_tmp_dir(const char *tmpdir)
+void dt_loc_init_tmp_dir(const char *tmpdir)
 {
   darktable.tmpdir = dt_loc_init_generic(tmpdir, NULL, g_get_tmp_dir());
-  dt_check_opendir("darktable.tmpdir", darktable.tmpdir, FALSE);
-  if(darktable.tmpdir == NULL) return 1;
-  return 0;
+  dt_check_opendir("darktable.tmpdir", darktable.tmpdir);
 }
 
 void dt_loc_init_user_cache_dir(const char *cachedir)
 {
   char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
   darktable.cachedir = dt_loc_init_generic(cachedir, NULL, default_cache_dir);
-  dt_check_opendir("darktable.cachedir", darktable.cachedir, TRUE);
+  dt_check_opendir("darktable.cachedir", darktable.cachedir);
   g_free(default_cache_dir);
 }
 
@@ -190,15 +221,15 @@ void dt_loc_init_plugindir(const char* application_directory, const char *plugin
   char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
   g_free(suffix);
   darktable.plugindir = dt_loc_init_generic(plugindir, application_directory, directory ? directory : DARKTABLE_LIBDIR);
-  dt_check_opendir("darktable.plugindir", darktable.plugindir, TRUE);
+  dt_check_opendir("darktable.plugindir", darktable.plugindir);
   g_free(directory);
 #else
   darktable.plugindir =  dt_loc_init_generic(plugindir, application_directory, DARKTABLE_LIBDIR);
-  dt_check_opendir("darktable.plugindir", darktable.plugindir, TRUE);
+  dt_check_opendir("darktable.plugindir", darktable.plugindir);
 #endif
 }
 
-void dt_check_opendir(const char* text, const char* directory, gboolean exit_on_error)
+void dt_check_opendir(const char* text, const char* directory)
 {
   if (!directory) {
     fprintf(stderr, "directory for %s has not been set.\n", text);
@@ -213,10 +244,7 @@ void dt_check_opendir(const char* text, const char* directory, gboolean exit_on_
   else 
   {
     fprintf(stderr, "opendir '%s' fails with: '%s'\n", directory, strerror(errno));
-    if(exit_on_error)
-    {
-      exit(EXIT_FAILURE);
-    }
+    exit(EXIT_FAILURE);
   }
 }
 
@@ -227,11 +255,11 @@ void dt_loc_init_localedir(const char* application_directory, const char *locale
   char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
   g_free(suffix);
   darktable.localedir = dt_loc_init_generic(localedir, application_directory, directory ? directory : DARKTABLE_LOCALEDIR);
-  dt_check_opendir("darktable.localedir", darktable.localedir, TRUE);
+  dt_check_opendir("darktable.localedir", darktable.localedir);
   g_free(directory);
 #else
   darktable.localedir = dt_loc_init_generic(localedir, application_directory, DARKTABLE_LOCALEDIR);
-  dt_check_opendir("darktable.localedir", darktable.localedir, TRUE);
+  dt_check_opendir("darktable.localedir", darktable.localedir);
 #endif
 }
 
@@ -242,11 +270,11 @@ void dt_loc_init_datadir(const char* application_directory, const char *datadir)
   char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
   g_free(suffix);
   darktable.datadir = dt_loc_init_generic(datadir, application_directory, directory ? directory : DARKTABLE_DATADIR);
-  dt_check_opendir("darktable.datadir", darktable.datadir, TRUE);
+  dt_check_opendir("darktable.datadir", darktable.datadir);
   g_free(directory);
 #else
   darktable.datadir = dt_loc_init_generic(datadir, application_directory, DARKTABLE_DATADIR);
-  dt_check_opendir("darktable.datadir", darktable.datadir, TRUE);
+  dt_check_opendir("darktable.datadir", darktable.datadir);
 #endif
 }
 
@@ -257,11 +285,11 @@ void dt_loc_init_sharedir(const char* application_directory)
   char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
   g_free(suffix);
   darktable.sharedir = dt_loc_init_generic(NULL, application_directory, directory ? directory : DARKTABLE_SHAREDIR);
-  dt_check_opendir("darktable.sharedir", darktable.sharedir, TRUE);
+  dt_check_opendir("darktable.sharedir", darktable.sharedir);
   g_free(directory);
 #else
   darktable.sharedir = dt_loc_init_generic(NULL, application_directory, DARKTABLE_SHAREDIR);
-  dt_check_opendir("darktable.sharedir", darktable.sharedir, TRUE);
+  dt_check_opendir("darktable.sharedir", darktable.sharedir);
 #endif
 }
 
