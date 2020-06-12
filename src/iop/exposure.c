@@ -276,22 +276,21 @@ void init_presets (dt_iop_module_so_t *self)
                              sizeof(dt_iop_exposure_params_t), 1);
 
 
-  if(strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
-  {
-    // For scene-referred workflow, since filmic doesn't brighten as base curve does,
-    // we need an initial exposure boost. This might be too much in some cases but…
-    dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
-                               &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
-                                                           .black = 0.0f,
-                                                           .exposure = 1.0f,
-                                                           .deflicker_percentile = 50.0f,
-                                                           .deflicker_target_level = -4.0f,
-                                                           .compensate_exposure_bias = TRUE},
-                               sizeof(dt_iop_exposure_params_t), 1);
+  // For scene-referred workflow, since filmic doesn't brighten as base curve does,
+  // we need an initial exposure boost. This might be too much in some cases but…
+  dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
+                             &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
+                                                         .black = 0.0f,
+                                                         .exposure = 1.0f,
+                                                         .deflicker_percentile = 50.0f,
+                                                         .deflicker_target_level = -4.0f,
+                                                         .compensate_exposure_bias = TRUE},
+                             sizeof(dt_iop_exposure_params_t), 1);
 
-    dt_gui_presets_update_ldr(_("scene-referred default"), self->op, self->version(), FOR_RAW);
-    dt_gui_presets_update_autoapply(_("scene-referred default"), self->op, self->version(), TRUE);
-  }
+  dt_gui_presets_update_ldr(_("scene-referred default"), self->op, self->version(), FOR_RAW);
+
+  dt_gui_presets_update_autoapply(_("scene-referred default"), self->op, self->version(),
+     (strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0));
 }
 
 static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
