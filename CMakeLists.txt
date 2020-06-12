@@ -44,7 +44,7 @@ include(DefineOptions.cmake)
 include(GNUInstallDirs)
 include(FeatureSummary)
 
-# given 
+# given
 # /games/bin/darktable.exe
 # /lib/darktable/{libdarktable.so, plugins/, views}
 # /share/{appdata, applications, darktable, doc, locale, man}
@@ -85,8 +85,8 @@ get_filename_component(CMAKE_INSTALL_BINDIR_ABS "${CMAKE_INSTALL_FULL_BINDIR}" R
 cmake_print_variables(CMAKE_INSTALL_BINDIR_ABS)
 # MESSAGE("*******")
 # get relative pathes specific to the system
-file(RELATIVE_PATH REL_BIN_TO_LIB ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_LIBDIR_CMAKE_PATH}")
-file(RELATIVE_PATH REL_BIN_TO_DATADIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_DATADIR_CMAKE_PATH}")
+file(RELATIVE_PATH REL_BIN_TO_LIB ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_LIBDIR_CMAKE_PATH}/darktable")
+file(RELATIVE_PATH REL_BIN_TO_DATADIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_DATADIR_CMAKE_PATH}/darktable")
 file(RELATIVE_PATH REL_BIN_TO_LOCALEDIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_LOCALEDIR_CMAKE_PATH}")
 # cmake_print_variables(REL_BIN_TO_LIB) # ../lib
 # cmake_print_variables(REL_BIN_TO_DATADIR) # ../share
