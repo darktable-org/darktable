@@ -1448,9 +1448,18 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
   }
 
+  // the highlight reconstruction is slow and impair a lot the use of perspective correction module
+  // for example when trying to change the crop area. When  ashif & clipping module are the active
+  // module in the GUI we do disable the highlight reconstruction, not really needed while cropping
+  // anyway.
+  const gboolean run_fast = darktable.develop
+    && darktable.develop->gui_module
+    && (strcmp(darktable.develop->gui_module->op, "ashift") == 0
+        || strcmp(darktable.develop->gui_module->op, "clipping") == 0);
+
   float *const restrict reconstructed = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
 
-  if(recover_highlights && mask && reconstructed)
+  if(!run_fast && recover_highlights && mask && reconstructed)
   {
     float *const restrict inpainted =  dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
     inpaint_noise(in, mask, inpainted, data->noise_level, data->reconstruct_threshold, data->noise_distribution,
