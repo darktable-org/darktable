@@ -1249,7 +1249,7 @@ static gboolean _tree_query_tooltip(GtkWidget *widget, gint x, gint y, gboolean 
 
   gtk_tree_model_get(model, &iter, TREE_IC_USED_VISIBLE, &show, TREE_USED_TEXT, &tmp, -1);
   if(show)
-  { 
+  {
     gtk_tooltip_set_markup(tooltip, tmp);
     gtk_tree_view_set_tooltip_row(tree_view, tooltip, path);
   }
@@ -1649,6 +1649,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *label = gtk_label_new(_("created shapes"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 
   d->bt_gradient

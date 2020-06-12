@@ -94,8 +94,9 @@ const char *name()
 
 const char *description()
 {
-  return _("manipulate local and global contrast separately in Lab,\n"
+  return _("manipulate local and global contrast separately,\n"
            "for corrective and creative purposes.\n"
+           "works in Lab,\n"
            "takes any RGB input,\n"
            "outputs non-linear RGB.");
 }

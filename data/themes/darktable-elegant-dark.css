@@ -47,7 +47,6 @@
 @define-color bauhaus_fill @grey_55;
 @define-color bauhaus_bg @grey_30;
 @define-color bauhaus_bg_hover @grey_65;
-@define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_85;
 @define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.4);
@@ -56,10 +55,10 @@
 @define-color button_border @grey_45;
 @define-color button_bg @grey_40;
 @define-color button_fg @grey_80;
-@define-color button_checked_bg @grey_60;
-@define-color button_checked_fg @grey_100;
+@define-color button_checked_bg @grey_55;
+@define-color button_checked_fg @grey_95;
 @define-color button_hover_bg @grey_65;
-@define-color button_hover_fg @grey_30;
+@define-color button_hover_fg @grey_25;
 
 /* text fields */
 @define-color field_bg @grey_30;
@@ -67,12 +66,13 @@
 @define-color field_active_bg @grey_40;
 @define-color field_active_fg @grey_90;
 @define-color field_selected_bg @grey_50;
-@define-color field_selected_fg @grey_100;
+@define-color field_selected_fg @button_checked_fg;
 @define-color field_hover_bg @grey_60;
 @define-color field_hover_fg @grey_20;
 
 /* Tooltips and contextual helpers */
-@define-color tooltip_bg_color @grey_20;
+@define-color tooltip_bg_color @grey_25;
+@define-color tooltip_fg_color @grey_75;
 @define-color log_fg_color @grey_90;
 
 /* Views */
@@ -84,11 +84,12 @@
 @define-color lighttable_bg_font_color @grey_85;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_40;
 @define-color thumbnail_bg_color @grey_55;
-@define-color thumbnail_infos_color @grey_80;
-@define-color thumbnail_selected_bg_color @grey_70;
-@define-color thumbnail_hover_bg_color @grey_95;
+@define-color thumbnail_star_bg_color @grey_40;
+@define-color thumbnail_fg_color @grey_60;
+@define-color thumbnail_selected_bg_color @grey_65;
+@define-color thumbnail_hover_bg_color @grey_85;
+@define-color thumbnail_hover_fg_color @grey_90;
 @define-color thumbnail_localcopy_color @grey_80;
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
@@ -104,4 +105,29 @@
 #toast-msg
 {
   background-color: rgba(90,90,90,0.6);
+}
+
+/* Set background on thumbnails hover overlays */
+.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
+.dt_overlays_mixed #thumb_main:hover #thumb_bottom,
+.dt_overlays_hover #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(rgba(212, 212, 212, 0.7) 0%, rgba(212, 212, 212, 0.7) 90%,rgba(212, 212, 212, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
+}
+
+/* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
+.dt_overlays_always#culling #thumb_bottom,
+.dt_overlays_always_extended#culling #thumb_bottom,
+.dt_overlays_always#preview #thumb_bottom,
+.dt_overlays_always_extended#preview #thumb_bottom
+{
+  background-image: linear-gradient(rgba(198, 198, 198, 0.2) 0%, rgba(198, 198, 198, 0.1) 5%, rgba(198, 198, 198, 0) 100%);
+}
+
+.dt_overlays_always#culling #thumb_main:hover #thumb_bottom,
+.dt_overlays_always_extended#culling #thumb_main:hover #thumb_bottom,
+.dt_overlays_always#preview #thumb_main:hover #thumb_bottom,
+.dt_overlays_always_extended#preview #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(rgba(218, 218, 218, 0.4) 0%, rgba(218, 218, 218, 0.2) 5%, rgba(198, 198, 198, 0) 100%);
 }

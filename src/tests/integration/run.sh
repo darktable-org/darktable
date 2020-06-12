@@ -109,6 +109,8 @@ for dir in $(ls -d $PATTERN); do
                     if [ $res = 1 ]; then
                         diffcount="$(compare expected.png output.png -metric ae diff-ok.png 2>&1 )"
                     fi
+                    res=0
+
                 else
                     echo "  FAILS: image visually changed"
                     if [ ! -z $COMPARE -a -f expected.png ]; then

@@ -114,8 +114,9 @@ const char *name()
 
 const char *description()
 {
-  return _("distort perspective automatically in RGB,\n"
+  return _("distort perspective automatically,\n"
            "for corrective and creative purposes.\n"
+           "works in RGB,\n"
            "takes preferably a linear RGB input,\n"
            "outputs linear RGB.");
 }

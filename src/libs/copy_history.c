@@ -40,13 +40,12 @@ DT_MODULE(1)
 
 typedef struct dt_lib_copy_history_t
 {
-  int32_t imageid;
   GtkWidget *pastemode;
   GtkButton *paste, *paste_parts;
   GtkWidget *copy_button, *delete_button, *load_button, *write_button;
   GtkWidget *copy_parts_button;
   GtkButton *compress_button;
-
+  guint timeout_handle;
 } dt_lib_copy_history_t;
 
 const char *name(dt_lib_module_t *self)
@@ -63,6 +62,46 @@ const char **views(dt_lib_module_t *self)
 uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
+}
+
+static void _update(dt_lib_module_t *self)
+{
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
+  const guint act_on_cnt = g_list_length(imgs);
+  const gboolean can_paste
+      = darktable.view_manager->copy_paste.copied_imageid > 0
+        && (act_on_cnt > 1
+            || (act_on_cnt == 1
+                && (darktable.view_manager->copy_paste.copied_imageid != dt_view_get_image_to_act_on())));
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->compress_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->load_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->write_button), act_on_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_cnt == 1);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_parts_button), act_on_cnt == 1);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->paste), can_paste);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), can_paste);
+
+  if(d->timeout_handle)
+  {
+    g_source_remove(d->timeout_handle);
+    d->timeout_handle = 0;
+  }
+}
+
+static gboolean _postponed_update(gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+
+  // timeout handle clearing is handled by update code
+  _update(self);
+
+  return FALSE;
 }
 
 static void write_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
@@ -96,10 +135,9 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   {
     char *dtfilename;
     dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    GList *imgs = dt_view_get_images_to_act_on(TRUE);
+    GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
     if(dt_history_load_and_apply_on_list(dtfilename, imgs) != 0)
     {
-      g_list_free(imgs);
       GtkWidget *dialog
           = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_CLOSE, _("error loading file '%s'"), dtfilename);
@@ -111,7 +149,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     }
     else
     {
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
       dt_control_queue_redraw_center();
     }
 
@@ -121,29 +159,15 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
-static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
-
-  const int id = dt_view_get_image_to_act_on();
-
-  if(id > 0 && dt_history_copy(id))
-  {
-    gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
-  }
-}
-
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
   if(g_list_length(imgs) < 1) return;
 
   const int missing = dt_history_compress_on_list(imgs);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
   dt_control_queue_redraw_center();
   if (missing)
   {
@@ -161,17 +185,28 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
+
+static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+
+  const int id = dt_view_get_image_to_act_on();
+
+  if(id > 0 && dt_history_copy(id))
+  {
+    _update(self);
+  }
+}
+
 static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   const int id = dt_view_get_image_to_act_on();
 
   if(id > 0 && dt_history_copy_parts(id))
   {
-    gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
+    _update(self);
   }
 }
 
@@ -179,7 +214,7 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
   if(dt_conf_get_bool("ask_before_delete"))
   {
@@ -206,7 +241,7 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
   {
     dt_history_delete_on_list(imgs, TRUE);
 
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
     dt_control_queue_redraw_center();
   }
 }
@@ -222,36 +257,61 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from previously copied image and past onto selection */
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
   }
 }
 
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   /* copy history from previously copied image and past onto selection */
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
   if(dt_history_paste_parts_on_list(imgs, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
   }
 }
 
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int mode = dt_bauhaus_combobox_get(widget);
+  const int mode = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
+
+  _update((dt_lib_module_t *)user_data);
+}
+
+static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                        int next, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
+static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
+{
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
+
+  if(d->timeout_handle)
+  {
+    // here we're making sure the event fires at last hover
+    // and we won't have avalanche of events in the mean time.
+    g_source_remove(d->timeout_handle);
+  }
+  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
 }
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
-  d->imageid = -1;
-  gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
+  _update(self);
 }
 
 int position()
@@ -264,12 +324,14 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
+
+  d->timeout_handle = 0;
+
   self->widget = gtk_grid_new();
   GtkGrid *grid = GTK_GRID(self->widget);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
-
 
   GtkWidget *copy_parts = gtk_button_new_with_label(_("copy..."));
   ellipsize_button(copy_parts);
@@ -284,7 +346,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(copy, _("copy history stack of\nfirst selected image"));
   dt_gui_add_help_link(copy, "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, copy, 3, line++, 3, 1);
-
 
   d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste...")));
   ellipsize_button(d->paste_parts);
@@ -321,7 +382,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
   dt_bauhaus_combobox_set(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
-
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file..."));
   ellipsize_button(loadbutton);
   d->load_button = loadbutton;
@@ -337,6 +397,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, button, 3, line, 3, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_collection_updated_callback), self);
+
+  _update(self);
 
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
@@ -351,6 +419,13 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  if(d->timeout_handle)
+    g_source_remove(d->timeout_handle);
+
   free(self->data);
   self->data = NULL;
 }

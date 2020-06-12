@@ -25,6 +25,7 @@
 #include "common/opencl.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
+#include "common/image_cache.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -641,6 +642,21 @@ static int image_is_normalized(const dt_image_t *const image)
   return image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT;
 }
 
+static gboolean image_set_rawcrops(const uint32_t imgid, int dx, int dy)
+{
+  dt_image_t *img = NULL;
+  img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const gboolean test = (img->p_width == img->width - dx) && (img->p_height == img->height - dy);
+  dt_image_cache_read_release(darktable.image_cache, img);
+  if(test) return FALSE;
+
+  img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  img->p_width = img->width - dx;  
+  img->p_height = img->height - dy;
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  return TRUE;
+}
+
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -688,6 +704,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   }
   d->rawprepare.raw_black_level = (uint16_t)(black / 4.0f);
   d->rawprepare.raw_white_point = p->raw_white_point;
+
+  if(image_set_rawcrops(pipe->image.id, d->x + d->width, d->y + d->height))
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 
   if(!(dt_image_is_rawprepare_supported(&piece->pipe->image)) || image_is_normalized(&piece->pipe->image)) piece->enabled = 0;
 }
@@ -743,7 +762,6 @@ void init_global(dt_iop_module_so_t *self)
 
 void init(dt_iop_module_t *self)
 {
-
   self->params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->hide_enable_button = 1;

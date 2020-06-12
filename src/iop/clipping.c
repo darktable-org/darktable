@@ -1352,13 +1352,28 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static float _ratio_get_aspect(dt_iop_module_t *self)
+static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
+  //retrieve full image dimensions to calculate aspect ratio if "original image" specified
+  const char *text = dt_bauhaus_combobox_get_text(combo);
+  if(text && !g_strcmp0(text,"original image"))
+  {
+    int proc_iwd = 0, proc_iht = 0;
+    dt_dev_get_processed_size(darktable.develop, &proc_iwd, &proc_iht);
+
+    if(!(proc_iwd > 0 && proc_iht > 0)) return 0.0f;
+
+    p->ratio_d = proc_iwd;
+    p->ratio_n = proc_iht;
+    if(proc_iwd >= proc_iht) return (float)proc_iwd / (float)proc_iht;
+    else  return (float)proc_iht / (float)proc_iwd;
+  }
+
   // we want to know the size of the actual buffer
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-  if(!piece) return 0;
+  if(!piece) return 0.0f;
 
   const int iwd = piece->buf_in.width, iht = piece->buf_in.height;
 
@@ -1477,7 +1492,7 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
   dt_dev_get_processed_size(darktable.develop, &iwd, &iht);
 
   // enforce aspect ratio.
-  float aspect = _ratio_get_aspect(self);
+  float aspect = _ratio_get_aspect(self, g->aspect_presets);
 
   // since one rarely changes between portrait and landscape by cropping,
   // long side of the crop box should match the long side of the image.
@@ -1487,7 +1502,10 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
   {
     // if only one side changed, force aspect by two adjacent in equal parts
     // 1 2 4 8 : x y w h
-    double clip_x = g->clip_x, clip_y = g->clip_y, clip_w = g->clip_w, clip_h = g->clip_h;
+    double clip_x = MAX(floor(iwd * g->clip_x) / (float)iwd, 0.0f);
+    double clip_y = MAX(floor(iht * g->clip_y) / (float)iht, 0.0f);
+    double clip_w = MIN(ceil(iwd * g->clip_w) / (float)iwd, 1.0f);
+    double clip_h = MIN(ceil(iht * g->clip_h) / (float)iht, 1.0f);
 
     // if we only modified one dim, respectively, we wanted these values:
     const double target_h = (double)iwd * g->clip_w / ((double)iht * aspect);
@@ -1535,7 +1553,6 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
       clip_w = clip_w + off;
       clip_x = clip_x - .5 * off;
     }
-
     // now fix outside boxes:
     if(clip_x < g->clip_max_x)
     {
@@ -1881,28 +1898,6 @@ static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_a
   keystone_type_changed(g->keystone_type, self);
 }
 
-static void _ratio_refresh_combo(dt_iop_module_t *self)
-{
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-
-  int combo_index = 0;
-  int index = 0;
-
-  for(GList *iter = g->aspect_list; iter; iter=g_list_next(iter))
-  {
-    dt_iop_clipping_aspect_t *aspect = (dt_iop_clipping_aspect_t *)iter->data;
-    if(aspect->d == p->ratio_d && aspect->n == p->ratio_n)
-    {
-      combo_index = index;
-      break;
-    }
-    index++;
-  }
-
-  dt_bauhaus_combobox_set(g->aspect_presets, combo_index);
-}
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -1934,7 +1929,7 @@ void gui_update(struct dt_iop_module_t *self)
   //  set aspect ratio based on the current image, if not found let's default
   //  to free aspect.
 
-  if(p->ratio_d == -2 && p->ratio_n == -2) _ratio_get_aspect(self);
+  if(p->ratio_d == -2 && p->ratio_n == -2) _ratio_get_aspect(self, g->aspect_presets);
 
   if(p->ratio_d == -1 && p->ratio_n == -1)
   {
@@ -1942,7 +1937,22 @@ void gui_update(struct dt_iop_module_t *self)
     p->ratio_n = dt_conf_get_int("plugins/darkroom/clipping/ratio_n");
   }
 
-  _ratio_refresh_combo(self);
+  const int d = abs(p->ratio_d), n = p->ratio_n;
+
+  int act = -1;
+  int i = 0;
+  GList *iter = g->aspect_list;
+  while(iter != NULL)
+  {
+    const dt_iop_clipping_aspect_t *aspect = iter->data;
+    if((aspect->d == d) && (aspect->n == n))
+    {
+      act = i;
+      break;
+    }
+    i++;
+    iter = g_list_next(iter);
+  }
 
   // keystone :
   if(p->k_apply == 1) g->k_show = 2; // needed to initialise correctly the combobox
@@ -1957,7 +1967,19 @@ void gui_update(struct dt_iop_module_t *self)
     keystone_type_populate(self, FALSE, p->k_type);
   }
 
-  aspect_presets_changed(g->aspect_presets, self);
+  /* special handling the combobox when current act is already selected
+     callback is not called, let do it our self then..
+   */
+  if(act == -1)
+  {
+    char str[128];
+    snprintf(str, sizeof(str), "%d:%d %2.2f", p->ratio_d, p->ratio_n, (float)p->ratio_d / (float)p->ratio_n);
+    dt_bauhaus_combobox_set_text(g->aspect_presets, str);
+  }
+  if(dt_bauhaus_combobox_get(g->aspect_presets) == act)
+    aspect_presets_changed(g->aspect_presets, self);
+  else
+    dt_bauhaus_combobox_set(g->aspect_presets, act);
 
   // reset gui draw box to what we have in the parameters:
   g->applied = 1;
@@ -2494,11 +2516,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pzy += 0.5f;
   if(_iop_clipping_set_max_clip(self))
   {
-    cairo_set_dash(cr, &dashes, 0, 0);
     cairo_set_source_rgba(cr, .2, .2, .2, .8);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-    cairo_rectangle(cr, g->clip_max_x * wd - 1.0f, g->clip_max_y * ht - 1.0f, g->clip_max_w * wd + 1.0f,
-                    g->clip_max_h * ht + 1.0f);
+    cairo_rectangle(cr, g->clip_max_x * wd - pr_d, g->clip_max_y * ht - pr_d, 
+                    g->clip_max_w * wd + 2.0 * pr_d, g->clip_max_h * ht + 2.0 * pr_d);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
     cairo_fill(cr);
   }
@@ -2538,8 +2559,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     // ensure that the rendered string remains visible within the window bounds
     double x1, y1, x2, y2;
     cairo_clip_extents(cr, &x1, &y1, &x2, &y2);
-    xp = CLAMPF(xp, x1 + 2 * margin, x2 - text_w - 2 * margin);
-    yp = CLAMPF(yp, y1 + 2 * margin, y2 - text_h - 2 * margin);
+    xp = CLAMPF(xp, x1 + 2.0 * margin, x2 - text_w - 2.0 * margin);
+    yp = CLAMPF(yp, y1 + 2.0 * margin, y2 - text_h - 2.0 * margin);
 
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
     gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
@@ -2578,7 +2599,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
   if(guide)
   {
-    guide->draw(cr, -cwidth / 2, -cheight / 2, cwidth, cheight, zoom_scale, guide->user_data);
+    guide->draw(cr, -cwidth / 2.0, -cheight / 2.0, cwidth, cheight, zoom_scale, guide->user_data);
     cairo_stroke_preserve(cr);
     cairo_set_dash(cr, &dashes, 0, 0);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
@@ -2849,7 +2870,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                                  ink.height + DT_PIXEL_APPLY_DPI(12) * pr_d,
                                  c[0] - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(4) * pr_d,
                                  c[1] - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(6) * pr_d);
-      cairo_move_to(cr, c[0] - ink.width / 2.0f, c[1] - 3.0 * ink.height / 4.0f);
+      cairo_move_to(cr, c[0] - ink.width / 2.0, c[1] - 3.0 * ink.height / 4.0);
       dt_draw_set_color_overlay(cr, 0.2, 0.9);
       pango_cairo_show_layout(cr, layout);
       pango_font_description_free(desc);

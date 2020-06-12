@@ -348,7 +348,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkStyleContext *context = gtk_widget_get_style_context(hb);
     gtk_style_context_add_class(context, "dt_overlays_always");
 
-    dt_thumbnail_t *thumb = dt_thumbnail_new(100, 100, imgid, -1, DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL, FALSE);
+    dt_thumbnail_t *thumb
+        = dt_thumbnail_new(100, 100, imgid, -1, DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL, FALSE, TRUE);
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
     thumb->disable_mouseover = TRUE;
     thumb->disable_actions = TRUE;
@@ -456,7 +457,8 @@ void gui_init(dt_lib_module_t *self)
   d->preview_zoom = 1.0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(self->widget, "duplicate-ui");
+  GtkStyleContext *context = gtk_widget_get_style_context(self->widget);
+  gtk_style_context_add_class(context, "duplicate-ui");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);

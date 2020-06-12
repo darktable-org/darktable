@@ -113,6 +113,7 @@ typedef struct
   dt_thumbnail_overlay_t over;  // type of overlays
   int overlay_timeout_duration; // for hover_block overlay, we hide the it after a delay
   int overlay_timeout_id;       // id of the g_source timeout fct
+  gboolean tooltip;             // should we show the tooltip ?
 
   // specific for culling and preview
   gboolean zoomable;   // can we zoom in/out the thumbnail (used for culling/preview)
@@ -130,7 +131,8 @@ typedef struct
   gboolean display_focus; // do we display rectangles to show focused part of the image
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over, gboolean zoomable);
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over,
+                                 gboolean zoomable, gboolean tooltip);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force);

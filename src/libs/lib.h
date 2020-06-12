@@ -153,6 +153,9 @@ gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module);
 /** connects the reset and presets shortcuts to a lib */
 void dt_lib_connect_common_accels(dt_lib_module_t *module);
 
+/** return the plugin with the given name */
+dt_lib_module_t *dt_lib_get_module(const char *name);
+
 /** get the visible state of a plugin */
 gboolean dt_lib_is_visible(dt_lib_module_t *module);
 /** set the visible state of a plugin */

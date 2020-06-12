@@ -59,6 +59,7 @@ typedef struct dt_lib_tagging_t
   char *collection;
   GtkEntryCompletion *completion;
   char *last_tag;
+  guint timeout_handle;
 } dt_lib_tagging_t;
 
 typedef struct dt_tag_op_t
@@ -132,6 +133,28 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "new", d->new_button);
   dt_accel_connect_lib(self, "tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_show), self, NULL));
   dt_accel_connect_lib(self, "redo last tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_redo), self, NULL));
+}
+
+static void _update_atdetach_buttons(dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
+  const gboolean has_act_on = imgs != NULL;
+
+  const gint dict_tags_sel_cnt =
+    gtk_tree_selection_count_selected_rows(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->dictionary_view)));
+  const gint atached_tags_sel_cnt =
+    gtk_tree_selection_count_selected_rows(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->attached_view)));
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->attach_button), has_act_on && dict_tags_sel_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->detach_button), has_act_on && atached_tags_sel_cnt > 0);
+
+  if(d->timeout_handle)
+  {
+    g_source_remove(d->timeout_handle);
+    d->timeout_handle = 0;
+  }
 }
 
 static void _propagate_sel_to_parents(GtkTreeModel *model, GtkTreeIter *iter)
@@ -504,9 +527,30 @@ static void _tree_select_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer,
   g_object_set(renderer, "active", active, "inconsistent", inconsistent, NULL);
 }
 
+static gboolean _postponed_update(gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+
+  _init_treeview(self, 0);
+
+   // timeout handle clearing is handled by update code
+  _update_atdetach_buttons(self);
+
+  return FALSE;
+}
+
 static void _lib_tagging_redraw_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _init_treeview(self, 0);
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
+
+  if(d->timeout_handle)
+  {
+    // here we're making sure the event fires at last hover
+    // and we won't have avalanche of events in the mean time.
+    g_source_remove(d->timeout_handle);
+  }
+  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
 }
 
 static void _lib_tagging_tags_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -520,6 +564,7 @@ static void _collection_updated_callback(gpointer instance, dt_collection_change
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   d->collection[0] = '\0';
+  _update_atdetach_buttons(self);
 }
 
 static void _raise_signal_tag_changed(dt_lib_module_t *self)
@@ -794,6 +839,8 @@ static void _lib_selection_changed_callback(gpointer instance, dt_lib_module_t *
   else
     _update_sel_on_tree(d->tree_flag ? GTK_TREE_MODEL(d->dictionary_treestore)
                                     : GTK_TREE_MODEL(d->dictionary_liststore));
+
+  _update_atdetach_buttons(self);
 }
 
 static void _set_keyword(dt_lib_module_t *self)
@@ -998,11 +1045,10 @@ static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_li
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
   if(tagid <= 0) return;
 
-  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
   if(!imgs) return;
 
   GList *affected_images = dt_tag_get_images_from_list(imgs, tagid);
-  g_list_free(imgs);
   if(affected_images)
   {
     dt_tag_detach_images(tagid, affected_images, TRUE);
@@ -1160,6 +1206,7 @@ static gboolean _click_on_view_attached(GtkWidget *view, GdkEventButton *event, 
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
     {
       gtk_tree_selection_select_path(selection, path);
+      _update_atdetach_buttons(self);
       if(event->type == GDK_BUTTON_PRESS && event->button == 3)
       {
         _pop_menu_attached(view, event, self);
@@ -1184,10 +1231,9 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   const gchar *tag = gtk_entry_get_text(d->entry);
   if(!tag || tag[0] == '\0') return;
 
-  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
   dt_tag_attach_string_list(tag, imgs, TRUE);
   dt_image_synch_xmps(imgs);
-  g_list_free(imgs);
 
   /** record last tag used */
   g_free(d->last_tag);
@@ -2050,6 +2096,7 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
     {
       gtk_tree_selection_select_path(selection, path);
+      _update_atdetach_buttons(self);
       if(event->type == GDK_BUTTON_PRESS && event->button == 3)
       {
         _pop_menu_dictionary(view, event, self);
@@ -2427,6 +2474,7 @@ void gui_reset(dt_lib_module_t *self)
   gtk_entry_set_text(d->entry, "");
   _set_keyword(self);
   _init_treeview(self, 1);
+  _update_atdetach_buttons(self);
 }
 
 int position()
@@ -2533,11 +2581,17 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
   return res;
 }
 
+static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer data)
+{
+  _update_atdetach_buttons((dt_lib_module_t *)data);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)malloc(sizeof(dt_lib_tagging_t));
   self->data = (void *)d;
   d->last_tag = NULL;
+  d->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
@@ -2600,6 +2654,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(GTK_WIDGET(view), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(_mouse_scroll_attached), (gpointer)self);
+  g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(view));
 
   // attach/detach buttons
@@ -2730,6 +2785,7 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(d->dictionary_listfilter);
   g_object_set(G_OBJECT(view), "has-tooltip", TRUE, NULL);
   g_signal_connect(G_OBJECT(view), "query-tooltip", G_CALLBACK(_row_tooltip_setup), (gpointer)self);
+  g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
 
   // buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -2804,11 +2860,16 @@ void gui_init(dt_lib_module_t *self)
   _init_treeview(self, 0);
   _set_keyword(self);
   _init_treeview(self, 1);
+  _update_atdetach_buttons(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+
+  if(d->timeout_handle)
+    g_source_remove(d->timeout_handle);
+
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
@@ -2869,10 +2930,9 @@ static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *accel
 
   if(d->last_tag)
   {
-    GList *imgs = dt_view_get_images_to_act_on(TRUE);
+    GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
     dt_tag_attach_string_list(d->last_tag, imgs, TRUE);
     dt_image_synch_xmps(imgs);
-    g_list_free(imgs);
 
     _init_treeview(self, 0);
     _init_treeview(self, 1);
@@ -2891,7 +2951,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
     return TRUE;  // doesn't work properly with tree treeview
   }
 
-  d->floating_tag_imgs = dt_view_get_images_to_act_on(FALSE);
+  d->floating_tag_imgs = g_list_copy(dt_view_get_images_to_act_on(FALSE, TRUE));
   gint x, y;
   gint px, py, w, h;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
