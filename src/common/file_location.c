@@ -59,9 +59,6 @@ void dt_loc_init(const char *datadir, const char *moduledir, const char *localed
   dt_print(DT_DEBUG_DEV, "application_directory: %s\n", application_directory);
 
   // set up absolute pathes based on their relative value
-  dt_loc_init_localedir(application_directory, NULL);
-
-  // set up absolute pathes based on their relative value
   dt_loc_init_datadir(application_directory, datadir);
   dt_loc_init_plugindir(application_directory, moduledir);
   dt_loc_init_localedir(application_directory, localedir);
