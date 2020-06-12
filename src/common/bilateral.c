@@ -44,7 +44,7 @@ size_t dt_bilateral_memory_use(const int width,     // width of input image
   size_t size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
   size_t size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
 
-  return size_x * size_y * size_z * sizeof(float);
+  return dt_get_num_threads() * size_x * size_y * size_z * sizeof(float);
 }
 
 // for the CPU path this is just an alias as no additional temp buffer is needed
@@ -68,7 +68,7 @@ size_t dt_bilateral_singlebuffer_size(const int width,     // width of input ima
   size_t size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
   size_t size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
 
-  return size_x * size_y * size_z * sizeof(float);
+  return dt_get_num_threads() * size_x * size_y * size_z * sizeof(float);
 }
 
 // for the CPU path this is just an alias as no additional temp buffer is needed
@@ -109,9 +109,10 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->height = height;
   b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
-  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(float) * darktable.num_openmp_threads);
+  const int nthreads = /*darktable.num_openmp_threads*/ dt_get_num_threads();
+  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(float) * nthreads);
 
-  memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(float) * darktable.num_openmp_threads);
+  memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(float) * nthreads);
 #if 0
   fprintf(stderr, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
@@ -173,9 +174,10 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
   }
 
   // merge the per-thread results into the final result
+  const int nthreads = /*darktable.num_openmp_threads*/ dt_get_num_threads();
   for(int index = 0; index < bufsize; index++)
   {
-    for(int i = 1; i < darktable.num_openmp_threads; i++)
+    for(int i = 1; i < nthreads; i++)
     {
       buf[index] += buf[index + i*bufsize];
     }
