@@ -566,14 +566,14 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_GREEN;
       dt_control_change_cursor(GDK_LEFT_PTR);
-      gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide green channel")
+      gtk_widget_set_tooltip_text(widget, d->green ? _("click to hide green channel")
                                                  : _("click to show green channel"));
     }
     else if(x > d->blue_x && x < d->blue_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE;
       dt_control_change_cursor(GDK_LEFT_PTR);
-      gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide blue channel") : _("click to show blue channel"));
+      gtk_widget_set_tooltip_text(widget, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
     }
     else if((posx < 0.2f && dev->scope_type == DT_DEV_SCOPE_HISTOGRAM) ||
             (posy > 7.0f/9.0f && dev->scope_type == DT_DEV_SCOPE_WAVEFORM))
