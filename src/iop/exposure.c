@@ -274,6 +274,23 @@ void init_presets (dt_iop_module_so_t *self)
                                                          .deflicker_target_level = -4.0f,
                                                          .compensate_exposure_bias = FALSE},
                              sizeof(dt_iop_exposure_params_t), 1);
+
+
+  // For scene-referred workflow, since filmic doesn't brighten as base curve does,
+  // we need an initial exposure boost. This might be too much in some cases but…
+  dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
+                             &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
+                                                         .black = 0.0f,
+                                                         .exposure = 1.0f,
+                                                         .deflicker_percentile = 50.0f,
+                                                         .deflicker_target_level = -4.0f,
+                                                         .compensate_exposure_bias = TRUE},
+                             sizeof(dt_iop_exposure_params_t), 1);
+
+  dt_gui_presets_update_ldr(_("scene-referred default"), self->op, self->version(), FOR_RAW);
+
+  dt_gui_presets_update_autoapply(_("scene-referred default"), self->op, self->version(),
+     (strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0));
 }
 
 static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
@@ -633,24 +650,8 @@ void reload_defaults(dt_iop_module_t *module)
                                                             .exposure = 0.0f,
                                                             .deflicker_percentile = 50.0f,
                                                             .deflicker_target_level = -4.0f,
-                                                            .compensate_exposure_bias = TRUE};
+                                                            .compensate_exposure_bias = FALSE};
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id == -1) goto end;
-
-  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage))
-  {
-    // if is raw image
-    if(strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
-    {
-      // For scene-referred workflow, since filmic doesn't brighten as base curve does,
-      // we need an initial exposure boost. This might be too much in some cases but…
-      tmp.exposure = 1.0f;
-      module->default_enabled = TRUE;
-    }
-  }
-
-end:
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
 }
