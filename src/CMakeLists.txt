@@ -777,6 +777,11 @@ else(USE_GAME)
   message(STATUS "Game: no")
 endif(USE_GAME)
 
+if(USE_SIGNAL_TRACE)
+  add_definitions("-DDT_PRINT_SIGNAL_TRACE")
+  message(WARNING "Enabling signal tracing.\nrunning `-d signal` will print backlogs.\nthis is solely for developers!")
+endif(USE_SIGNAL_TRACE)
+
 #
 # set development flags for our code
 #

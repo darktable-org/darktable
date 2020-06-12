@@ -657,6 +657,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting mesages on console
         else if(!strcmp(argv[k + 1], "undo"))
           darktable.unmuted |= DT_DEBUG_UNDO; // undo/redo
+        else if(!strcmp(argv[k + 1], "signal"))
+          darktable.unmuted |= DT_DEBUG_SIGNAL; // signal information on console
         else
           return usage(argv[0]);
         k++;
