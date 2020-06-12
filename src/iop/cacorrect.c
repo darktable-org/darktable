@@ -426,7 +426,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     {
 // Main algorithm: Tile loop calculating correction parameters per tile
 #ifdef _OPENMP
-#pragma omp for collapse(2) schedule(dynamic) nowait
+#pragma omp for collapse(2) schedule(static) nowait
 #endif
       for(int top = -border; top < height; top += ts - border2)
         for(int left = -border; left < width; left += ts - border2)
@@ -1074,7 +1074,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     if(processpasstwo)
     {
 #ifdef _OPENMP
-#pragma omp for schedule(dynamic) collapse(2) nowait
+#pragma omp for schedule(static) collapse(2) nowait
 #endif
 
       for(int top = -border; top < height; top += ts - border2)
