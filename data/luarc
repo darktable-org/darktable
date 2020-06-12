@@ -25,57 +25,59 @@ local _scripts_install = {}
 
 _scripts_install.dt = require 'darktable'
 
+-- check for gui so that we don't hang darktable-cli
 
-_scripts_install.dt.preferences.register(
-  "_scripts_install",
-  "dont_show",
-  "bool",
-  _scripts_install.dt.gettext.gettext("lua scripts installer dont show again"),
-  _scripts_install.dt.gettext.gettext("do not show scripts_installer if lua scripts are not installed"),
-  false
-)
+if _scripts_install.dt.configuration.has_gui then
 
-if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bool") then
-  -- _scripts_install.dt.print_log("dont show not set")
 
-  if _scripts_install.dt.preferences.read("_scripts_install", "remind", "bool") then
-    -- _scripts_install.dt.print_log("remind set")
-    if _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer") < 4 then
-      _scripts_install.dt.preferences.write("_scripts_install", "restarts", "integer", _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer") + 1)
-      -- _scripts_install.dt.print_log("retries set to " .. _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer"))
-      return
+  _scripts_install.dt.preferences.register(
+    "_scripts_install",
+    "dont_show",
+    "bool",
+    _scripts_install.dt.gettext.gettext("lua scripts installer dont show again"),
+    _scripts_install.dt.gettext.gettext("do not show scripts_installer if lua scripts are not installed"),
+    false
+  )
+
+  if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bool") then
+    -- _scripts_install.dt.print_log("dont show not set")
+
+    if _scripts_install.dt.preferences.read("_scripts_install", "remind", "bool") then
+      -- _scripts_install.dt.print_log("remind set")
+      if _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer") < 4 then
+        _scripts_install.dt.preferences.write("_scripts_install", "restarts", "integer", _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer") + 1)
+        -- _scripts_install.dt.print_log("retries set to " .. _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer"))
+        return
+      else
+        _scripts_install.dt.preferences.write("_scripts_install", "restarts", "integer", 0)
+      end
+    end
+
+    _scripts_install.not_installed = true
+    --_scripts_install.dt.print_log("checking for lua directory")
+
+    -- check for lua scripts directory 
+    if _scripts_install.dt.configuration.running_os == "windows" then
+      _scripts_install.dir_cmd = "dir /b "
+      _scripts_install.which_cmd = "where "
     else
-      _scripts_install.dt.preferences.write("_scripts_install", "restarts", "integer", 0)
+      _scripts_install.dir_cmd = "ls "
+      _scripts_install.which_cmd = "which "
     end
-  end
 
-  _scripts_install.not_installed = true
-  --_scripts_install.dt.print_log("checking for lua directory")
+    -- check for the scripts directory
+    -- _scripts_install.dt.print_log("checking for scripts")
 
-  -- check for lua scripts directory 
-  if _scripts_install.dt.configuration.running_os == "windows" then
-    _scripts_install.dir_cmd = "dir /b "
-    _scripts_install.which_cmd = "where "
-  else
-    _scripts_install.dir_cmd = "ls "
-    _scripts_install.which_cmd = "which "
-  end
-
-  -- check for the scripts directory
-  -- _scripts_install.dt.print_log("checking for scripts")
-
-  _scripts_install.p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
-  for line in _scripts_install.p:lines() do 
-    -- _scripts_install.dt.print_log("line is " .. line)
-    if string.match(line, "^lua$") then
-      _scripts_install.not_installed = false
-     -- _scripts_install. dt.print_log("scripts found")
+    _scripts_install.p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
+    for line in _scripts_install.p:lines() do 
+      -- _scripts_install.dt.print_log("line is " .. line)
+      if string.match(line, "^lua$") then
+        _scripts_install.not_installed = false
+       -- _scripts_install. dt.print_log("scripts found")
+      end
     end
-  end
-  _scripts_install.p:close()
+    _scripts_install.p:close()
 
-  -- check for gui before trying to write to it
-  if _scripts_install.dt.configuration.has_gui then
     local gettext = _scripts_install.dt.gettext
 
     local function _(msg)
