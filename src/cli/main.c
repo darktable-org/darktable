@@ -30,6 +30,7 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/film.h"
+#include "common/file_location.h"
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -39,6 +40,7 @@
 #include "common/points.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
+#include "whereami.h"
 
 #include <inttypes.h>
 #include <libintl.h>

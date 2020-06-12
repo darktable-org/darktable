@@ -30,11 +30,13 @@
 
 #include "common/darktable.h"    // for darktable, darktable_t, dt_cleanup, etc
 #include "common/database.h"     // for dt_database_get
-#include "common/debug.h"        // for DT_DEBUG_SQLITE3_PREPARE_V2
-#include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
+#include "common/debug.h"        // for DT_DEBUG_SQLITE3_PREPARE_V
+#include "common/file_location.h"
 #include "common/history.h"      // for dt_history_hash_set_mipmap
+#include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
 #include "config.h"              // for GETTEXT_PACKAGE, etc
 #include "control/conf.h"        // for dt_conf_get_bool
+#include "whereami.h"
 
 #ifdef __APPLE__
 #include "osx/osx.h"

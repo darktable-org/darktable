@@ -2,7 +2,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
 add_executable(darktable-generate-cache main.c)
 
 set_target_properties(darktable-generate-cache PROPERTIES LINKER_LANGUAGE C)
-target_link_libraries(darktable-generate-cache lib_darktable)
+target_link_libraries(darktable-generate-cache lib_darktable whereami)
 
 if (WIN32)
   _detach_debuginfo (darktable-generate-cache bin)
