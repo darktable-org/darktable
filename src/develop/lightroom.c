@@ -848,6 +848,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
   {
     xmlNodePtr tagNode = node;
 
+    gboolean tag_change = FALSE;
     while(tagNode)
     {
       if(!xmlStrcmp(tagNode->name, (const xmlChar *)"li"))
@@ -856,13 +857,13 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
         guint tagid = 0;
         if(!dt_tag_exists((char *)cvalue, &tagid)) dt_tag_new((char *)cvalue, &tagid);
 
-        dt_tag_attach(tagid, imgid, FALSE, FALSE);
+        if(dt_tag_attach(tagid, imgid, FALSE, FALSE)) tag_change = TRUE;
         data->has_tags = TRUE;
         xmlFree(cvalue);
       }
       tagNode = tagNode->next;
     }
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    if(tag_change) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
   else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"RetouchInfo"))
   {

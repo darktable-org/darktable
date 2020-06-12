@@ -1143,12 +1143,16 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 
   dt_tag_new("darktable|local-copy", &tagid);
 
+  gboolean tag_change = FALSE;
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     const int imgid = GPOINTER_TO_INT(t->data);
     if(is_copy)
     {
-      if(dt_image_local_copy_set(imgid) == 0) dt_tag_attach(tagid, imgid, FALSE, FALSE);
+      if(dt_image_local_copy_set(imgid) == 0)
+      {
+        if(dt_tag_attach(tagid, imgid, FALSE, FALSE)) tag_change = TRUE;
+      }
     }
     else
     {
@@ -1161,7 +1165,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   }
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(tag_change) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
@@ -1206,6 +1210,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
   g_assert(mstorage);
   dt_imageio_module_data_t *sdata = settings->sdata;
+
+  gboolean tag_change = FALSE;
 
   // get a thread-safe fdata struct (one jpeg struct per thread etc):
   dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
@@ -1277,7 +1283,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     // remove 'changed' tag from image
     dt_tag_detach(tagid, imgid, FALSE, FALSE);
     // make sure the 'exported' tag is set on the image
-    dt_tag_attach(etagid, imgid, FALSE, FALSE);
+    if(dt_tag_attach(etagid, imgid, FALSE, FALSE)) tag_change = TRUE;
 
     /* register export timestamp in cache */
     dt_image_cache_set_export_timestamp(darktable.image_cache, imgid);
@@ -1321,7 +1327,7 @@ end:
   // notify the user via the window manager
   dt_ui_notify_user();
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(tag_change) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return 0;
 }
 
