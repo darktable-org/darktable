@@ -1156,7 +1156,10 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     }
     else
     {
-      if(dt_image_local_copy_reset(imgid) == 0) dt_tag_detach(tagid, imgid, FALSE, FALSE);
+      if(dt_image_local_copy_reset(imgid) == 0)
+      {
+        if(dt_tag_detach(tagid, imgid, FALSE, FALSE)) tag_change = TRUE;
+      }
     }
     t = g_list_next(t);
 
@@ -1281,7 +1284,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     dt_control_job_set_progress_message(job, message);
 
     // remove 'changed' tag from image
-    dt_tag_detach(tagid, imgid, FALSE, FALSE);
+    if(dt_tag_detach(tagid, imgid, FALSE, FALSE)) tag_change = TRUE;
     // make sure the 'exported' tag is set on the image
     if(dt_tag_attach(etagid, imgid, FALSE, FALSE)) tag_change = TRUE;
 
