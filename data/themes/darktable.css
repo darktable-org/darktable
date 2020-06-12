@@ -119,7 +119,7 @@
 @define-color field_hover_fg @grey_95;
 
 /* Tooltips and contextual helpers */
-@define-color tooltip_bg_color @grey_05;
+@define-color tooltip_bg_color @grey_15;
 @define-color tooltip_fg_color @grey_65;
 @define-color really_dark_bg_color @grey_05;
 @define-color log_fg_color @grey_85;
@@ -811,15 +811,13 @@ context-menu,
 menu,
 menuitem > menu, /* sub-menu */
 menuitem arrow,
-tooltip,
+tooltip label,
 popover,
 #background_job_eventbox, /* background of export progress bar */
 combobox window,
 dialog combobox window
 {
-  opacity: 1;
   background-color: @tooltip_bg_color;
-  outline-style:none;
   border-radius: 4px;
   border: 0;
   outline-style: none;
@@ -828,9 +826,23 @@ dialog combobox window
   padding: 0.2em;
 }
 
+tooltip
+{
+  opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
+}
+
+tooltip *,
+tooltip.background
+{
+  background-color: transparent;
+}
+
 tooltip label
 {
+  margin-top: 3px;
+  padding: 0.4em;
   color: @tooltip_fg_color;
+  border: 1px solid shade(@tooltip_bg_color, 1.5);
 }
 
 combobox label
@@ -2181,6 +2193,13 @@ spinbutton>button
   padding-top: 3px;
 }
 
+/* Padding of overlays block hover on thumbnail overlay mode */
+.dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label
+{
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
 /*-----------------------------
   - Culling and preview modes -
   -----------------------------*/
@@ -2256,14 +2275,9 @@ spinbutton>button
   background-color: rgba(20, 20, 20, 0.5);
 }
 
-/* Padding of overlays block hover on culling/preview and thumbnail overlay mode */
-.dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label
+/* Padding of overlays block hover on culling/preview */
+.dt_overlays_hover_block#culling #thumb_image:hover #thumb_bottom_label,
+.dt_overlays_hover_block#preview #thumb_image:hover #thumb_bottom_label
 {
-  padding-left: 6px;
-  padding-right: 6px;
-}
-
-.dt_overlays_hover_block #thumb_image:hover #thumb_colorlabels
-{
-  padding-right: 6px;
+  padding: 8px;
 }
