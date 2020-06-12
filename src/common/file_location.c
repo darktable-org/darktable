@@ -228,10 +228,6 @@ void dt_loc_init_localedir(const char* application_directory, const char *locale
   g_free(suffix);
   darktable.localedir = dt_loc_init_generic(localedir, application_directory, directory ? directory : DARKTABLE_LOCALEDIR);
   dt_check_opendir("darktable.localedir", darktable.localedir, TRUE);
-#ifdef __APPLE__
-  if(directory && !localedir) //bind to bundle path
-    bindtextdomain(GETTEXT_PACKAGE, darktable.localedir);
-#endif
   g_free(directory);
 #else
   darktable.localedir = dt_loc_init_generic(localedir, application_directory, DARKTABLE_LOCALEDIR);
