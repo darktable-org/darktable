@@ -778,8 +778,10 @@ else(USE_GAME)
 endif(USE_GAME)
 
 if(USE_SIGNAL_TRACE)
-  add_definitions("-DDT_PRINT_SIGNAL_TRACE")
-  message(WARNING "Enabling signal tracing.\nrunning `-d signal` will print backlogs.\nthis is solely for developers!")
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_definitions("-DDT_PRINT_SIGNAL_TRACE")
+    message(WARNING "Enabling signal tracing.\nrunning `-d signal` will print backlogs.\nthis is solely for developers!")
+  endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif(USE_SIGNAL_TRACE)
 
 #
