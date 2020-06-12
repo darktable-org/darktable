@@ -410,7 +410,7 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     }
 
     // second, show computed correction in UI.
-    if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     {
       dt_pthread_mutex_lock(&g->lock);
       g->deflicker_computed_exposure = exposure;
