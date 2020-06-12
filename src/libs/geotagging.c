@@ -192,7 +192,6 @@ static gboolean _lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *
   switch(event->keyval)
   {
     case GDK_KEY_Escape:
-    case GDK_KEY_Tab:
     {
       // reset
       gchar *str = dt_conf_get_string("plugins/lighttable/geotagging/offset");
