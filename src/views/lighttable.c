@@ -596,9 +596,8 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
 
 void leave(dt_view_t *self)
 {
-  // we remove the thumbtable from main view
   dt_library_t *lib = (dt_library_t *)self->data;
-  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), NULL, DT_THUMBTABLE_MODE_FILMSTRIP);
+
   // ensure we have no active image remaining
   if(darktable.view_manager->active_images)
   {
@@ -616,6 +615,9 @@ void leave(dt_view_t *self)
   {
     _preview_quit(self);
   }
+
+  // we remove the thumbtable from main view
+  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), NULL, DT_THUMBTABLE_MODE_FILMSTRIP);
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 }
