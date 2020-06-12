@@ -191,8 +191,7 @@ int dt_lua_tag_attach(lua_State *L)
     luaA_to(L, dt_lua_tag_t, &tagid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_tag_attach(tagid, imgid, TRUE, TRUE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(dt_tag_attach(tagid, imgid, TRUE, TRUE)) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_image_synch_xmp(imgid);
   return 0;
 }
