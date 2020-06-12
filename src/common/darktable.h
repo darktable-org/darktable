@@ -273,6 +273,7 @@ typedef struct darktable_t
   dt_pthread_mutex_t readFile_mutex;
   char *progname;
   char *datadir;
+  char *sharedir;
   char *plugindir;
   char *localedir;
   char *tmpdir;

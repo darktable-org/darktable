@@ -254,6 +254,20 @@ void dt_loc_init_datadir(const char* application_directory, const char *datadir)
 #endif
 }
 
+void dt_loc_init_sharedir(const char* application_directory)
+{
+#if defined(__APPLE__) || defined(_WIN32)
+  char *suffix = g_build_filename("share", "darktable", NULL);
+  char *directory = dt_loc_find_install_dir(suffix, darktable.progname);
+  g_free(suffix);
+  darktable.sharedir = dt_loc_init_generic(NULL, application_directory, directory ? directory : DARKTABLE_SHAREDIR);
+  dt_check_opendir("darktable.sharedir", darktable.sharedir, TRUE);
+  g_free(directory);
+#else
+  darktable.sharedir = dt_loc_init_generic(NULL, application_directory, DARKTABLE_SHAREDIR);
+  dt_check_opendir("darktable.sharedir", darktable.sharedir, TRUE);
+#endif
+}
 
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize)
 {
@@ -280,6 +294,10 @@ void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize)
 void dt_loc_get_datadir(char *datadir, size_t bufsize)
 {
   g_strlcpy(datadir, darktable.datadir, bufsize);
+}
+void dt_loc_get_sharedir(char *sharedir, size_t bufsize)
+{
+  g_strlcpy(sharedir, darktable.sharedir, bufsize);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

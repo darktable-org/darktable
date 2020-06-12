@@ -1140,8 +1140,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_setenv("LIBOVERLAY_SCROLLBAR", "0", 0);
 
   // unset gtk rc from kde:
-  char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
+  char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, sharedir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_sharedir(sharedir, sizeof(sharedir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
   gchar *css_theme = dt_conf_get_string("ui_last/theme");
@@ -1216,7 +1217,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
-  snprintf(path, sizeof(path), "%s/icons", DARKTABLE_SHAREDIR);
+  snprintf(path, sizeof(path), "%s/icons", sharedir);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
 
   widget = dt_ui_center(darktable.gui->ui);

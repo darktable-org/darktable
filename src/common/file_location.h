@@ -26,23 +26,26 @@ gchar *dt_loc_get_home_dir(const gchar *user);
 
 /** init systemwide data dir */
 void dt_loc_init_datadir(const char *application_directory, const char *datadir);
-/** get the plugin dir */
+/** init the plugin dir */
 void dt_loc_init_plugindir(const char *application_directory, const char *plugindir);
 /** init the locale dir */
 void dt_loc_init_localedir(const char *application_directory, const char *localedir);
-/** get user local dir */
+/** init share dir */
+void dt_loc_init_sharedir(const char* application_directory);
+/** init user local dir */
 int dt_loc_init_tmp_dir(const char *tmpdir);
-/** get user config dir */
+/** init user config dir */
 void dt_loc_init_user_config_dir(const char *configdir);
-/** get user cache dir */
+/** init user cache dir */
 void dt_loc_init_user_cache_dir(const char *cachedir);
-/** get specific dir. Value is appended if application_directory is not NULL (relative path resolution). */
+/** init specific dir. Value is appended if application_directory is not NULL (relative path resolution). */
 gchar *dt_loc_init_generic(const char *value, const char *application_directory, const char *default_value);
 /** check if directory open worked. Provide error message in case it did not and optionally exit */
 void dt_check_opendir(const char* text, const char* directory, gboolean exit_on_error);
 
 /* temporary backward_compatibility*/
 void dt_loc_get_datadir(char *datadir, size_t bufsize);
+void dt_loc_get_sharedir(char *sharedir, size_t bufsize);
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize);
 void dt_loc_get_localedir(char *localedir, size_t bufsize);
 void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize);

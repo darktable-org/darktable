@@ -378,56 +378,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // make sure that stack/frame limits are good (musl)
   dt_set_rlimits();
 
-  // we have to have our share dir in XDG_DATA_DIRS,
-  // otherwise GTK+ won't find our logo for the about screen (and maybe other things)
-  {
-    const gchar *xdg_data_dirs = g_getenv("XDG_DATA_DIRS");
-    gchar *new_xdg_data_dirs = NULL;
-    gboolean set_env = TRUE;
-    if(xdg_data_dirs != NULL && *xdg_data_dirs != '\0')
-    {
-      // check if DARKTABLE_SHAREDIR is already in there
-      gboolean found = FALSE;
-      gchar **tokens = g_strsplit(xdg_data_dirs, G_SEARCHPATH_SEPARATOR_S, 0);
-      // xdg_data_dirs is neither NULL nor empty => tokens != NULL
-      for(char **iter = tokens; *iter != NULL; iter++)
-        if(!strcmp(DARKTABLE_SHAREDIR, *iter))
-        {
-          found = TRUE;
-          break;
-        }
-      g_strfreev(tokens);
-      if(found)
-        set_env = FALSE;
-      else
-        new_xdg_data_dirs = g_strjoin(G_SEARCHPATH_SEPARATOR_S, DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
-    }
-    else
-    {
-#ifndef _WIN32
-      // see http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html for a reason to use those as a
-      // default
-      if(!g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share")
-         || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share/")
-         || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share/"))
-        new_xdg_data_dirs = g_strdup("/usr/local/share/" G_SEARCHPATH_SEPARATOR_S "/usr/share/");
-      else
-        new_xdg_data_dirs = g_strdup_printf("%s" G_SEARCHPATH_SEPARATOR_S "/usr/local/share/" G_SEARCHPATH_SEPARATOR_S
-                                            "/usr/share/", DARKTABLE_SHAREDIR);
-#else
-      set_env = FALSE;
-#endif
-    }
-
-    if(set_env) g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
-    g_free(new_xdg_data_dirs);
-  }
-
-  setlocale(LC_ALL, "");
-  bindtextdomain(GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
-  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-  textdomain(GETTEXT_PACKAGE);
-
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
 
@@ -604,7 +554,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
       {
         localedir_from_command = argv[++k];
-        bindtextdomain(GETTEXT_PACKAGE, localedir_from_command);
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
@@ -745,19 +694,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_print_mem_usage();
   }
 
-  if(init_gui)
-  {
-    // I doubt that connecting to dbus for darktable-cli makes sense
-    darktable.dbus = dt_dbus_init();
-
-    // make sure that we have no stale global progress bar visible. thus it's run as early as possible
-    dt_control_progress_init(darktable.control);
-  }
-
-#ifdef _OPENMP
-  omp_set_num_threads(darktable.num_openmp_threads);
-#endif
-
+  // Assemble pathes
   char* application_directory = NULL;
   int dirname_length;
   // calling wai_getExecutablePath twice as recommended in the docs:
@@ -777,6 +714,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_loc_init_datadir(application_directory, datadir_from_command);
   dt_loc_init_plugindir(application_directory, moduledir_from_command);
   dt_loc_init_localedir(application_directory, localedir_from_command);
+  dt_loc_init_user_config_dir(configdir_from_command);
+  dt_loc_init_user_cache_dir(cachedir_from_command);
+  dt_loc_init_sharedir(application_directory);
   free(application_directory);
 
   if(dt_loc_init_tmp_dir(tmpdir_from_command))
@@ -784,8 +724,75 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     fprintf(stderr, "error: invalid temporary directory: %s\n", darktable.tmpdir);
     return usage(argv[0]);
   }
-  dt_loc_init_user_config_dir(configdir_from_command);
-  dt_loc_init_user_cache_dir(cachedir_from_command);
+
+  char sharedir[PATH_MAX] = { 0 };
+  dt_loc_get_sharedir(sharedir, sizeof(sharedir));
+
+  // we have to have our share dir in XDG_DATA_DIRS,
+  // otherwise GTK+ won't find our logo for the about screen (and maybe other things)
+  {
+    const gchar *xdg_data_dirs = g_getenv("XDG_DATA_DIRS");
+    gchar *new_xdg_data_dirs = NULL;
+    gboolean set_env = TRUE;
+    if(xdg_data_dirs != NULL && *xdg_data_dirs != '\0')
+    {
+      // check if sharedir is already in there
+      gboolean found = FALSE;
+      gchar **tokens = g_strsplit(xdg_data_dirs, G_SEARCHPATH_SEPARATOR_S, 0);
+      // xdg_data_dirs is neither NULL nor empty => tokens != NULL
+      for(char **iter = tokens; *iter != NULL; iter++)
+        if(!strcmp(sharedir, *iter))
+        {
+          found = TRUE;
+          break;
+        }
+      g_strfreev(tokens);
+      if(found)
+        set_env = FALSE;
+      else
+        new_xdg_data_dirs = g_strjoin(G_SEARCHPATH_SEPARATOR_S, sharedir, xdg_data_dirs, NULL);
+    }
+    else
+    {
+#ifndef _WIN32
+      // see http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html for a reason to use those as a
+      // default
+      if(!g_strcmp0(sharedir, "/usr/local/share")
+         || !g_strcmp0(sharedir, "/usr/local/share/")
+         || !g_strcmp0(sharedir, "/usr/share") || !g_strcmp0(sharedir, "/usr/share/"))
+        new_xdg_data_dirs = g_strdup("/usr/local/share/" G_SEARCHPATH_SEPARATOR_S "/usr/share/");
+      else
+        new_xdg_data_dirs = g_strdup_printf("%s" G_SEARCHPATH_SEPARATOR_S "/usr/local/share/" G_SEARCHPATH_SEPARATOR_S
+                                            "/usr/share/", sharedir);
+#else
+      set_env = FALSE;
+#endif
+    }
+
+    if(set_env) g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
+    dt_print(DT_DEBUG_DEV, "new_xdg_data_dirs: %s\n", new_xdg_data_dirs);
+    g_free(new_xdg_data_dirs);
+  }
+
+  setlocale(LC_ALL, "");
+  char localedir[PATH_MAX] = { 0 };
+  dt_loc_get_localedir(localedir, sizeof(localedir));
+  bindtextdomain(GETTEXT_PACKAGE, localedir);
+  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+  textdomain(GETTEXT_PACKAGE);
+
+  if(init_gui)
+  {
+    // I doubt that connecting to dbus for darktable-cli makes sense
+    darktable.dbus = dt_dbus_init();
+
+    // make sure that we have no stale global progress bar visible. thus it's run as early as possible
+    dt_control_progress_init(darktable.control);
+  }
+
+#ifdef _OPENMP
+  omp_set_num_threads(darktable.num_openmp_threads);
+#endif
 
 #ifdef USE_LUA
   dt_lua_init_early(L);
