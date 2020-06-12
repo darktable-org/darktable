@@ -2512,8 +2512,8 @@ void reload_defaults(dt_iop_module_t *module)
     if(strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
     {
       // For scene-referred workflow, auto-enable and adjust based on exposure
-      // TODO: fetch actual exposure in module, don't assume 1.
-      const float exposure = 1.f - dt_image_get_exposure_bias(&module->dev->image_storage);
+      // TODO: fetch actual exposure in module, don't assume 0.5.
+      const float exposure = 0.5f - dt_image_get_exposure_bias(&module->dev->image_storage);
 
       // As global exposure increases, white exposure increases faster than black
       // this is probably because raw black/white points offsets the lower bound of the dynamic range to 0
