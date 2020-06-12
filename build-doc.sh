@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This script is a quick hack to make it easier to build the darktable documetation
 # in PDF, html-multi and html-single formats, for the user manual and LUA API.

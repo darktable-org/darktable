@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Hash using its key as a search Regex, and its value as associated
 # error message.

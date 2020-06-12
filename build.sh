@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -180,6 +180,12 @@ num_cpu()
 			fi
 		fi
 		;;
+
+	FreeBSD)
+		export CMAKE_MAKE_PROGRAM=/usr/local/bin/gmake
+		ncpu=$(/sbin/sysctl -n kern.smp.cpus 2>/dev/null)
+		;;
+
 	Darwin)
 		ncpu=$(/usr/sbin/sysctl -n machdep.cpu.core_count 2>/dev/null)
 		;;
@@ -250,6 +256,8 @@ if [ $PRINT_HELP -ne 0 ] ; then
 fi
 
 CMAKE_MORE_OPTIONS=""
+export CMAKE_MAKE_PROGRAM=/usr/local/bin/gmake
+
 for i in $FEATURES; do
 	eval cmake_boolean_option USE_$i \$FEAT_$i
 done
