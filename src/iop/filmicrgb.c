@@ -636,7 +636,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
                                  const dt_noise_distribution_t noise_distribution,
                                  const size_t num_elem, const size_t ch)
 {
-  // add gaussian noise in highlights to fill-in texture
+  // add statistical noise in highlights to fill-in texture
   // this creates "particules" in highlights, that will help the implicit partial derivative equation
   // solver used in wavelets reconstruction to generate texture
 
@@ -656,7 +656,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
 
     for(size_t c = 0; c < 3; c++)
     {
-      // create gaussian noise
+      // create statistical noise
       const float input = in[k + c];
       const float noise = dt_noise_generator(noise_distribution, input, input * noise_level / threshold, (c % 2) == 0.f, state);
 
@@ -3040,7 +3040,7 @@ void gui_init(dt_iop_module_t *self)
   // Highlight noise
   g->noise_level = dt_bauhaus_slider_new_with_range(self, 0.0, 6.0, 0.1, p->noise_level, 2);
   dt_bauhaus_widget_set_label(g->noise_level, NULL, _("add noise in highlights"));
-  gtk_widget_set_tooltip_text(g->noise_level, _("add gaussian noise in reconstructed highlights.\n"
+  gtk_widget_set_tooltip_text(g->noise_level, _("add statistical noise in reconstructed highlights.\n"
                                                 "this avoids highlights to look too smooth\n"
                                                 "when the picture is noisy overall,\n"
                                                 "so they blend with the rest of the picture."));
