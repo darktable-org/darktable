@@ -214,10 +214,8 @@ void dt_loc_init_user_cache_dir(const char *cachedir)
 void dt_loc_init_plugindir(const char* application_directory, const char *plugindir)
 {
 #if defined(__APPLE__) || defined(_WIN32)
-  char *suffix = g_build_filename(DARKTABLE_LIBDIR, NULL);
-  char *directory = dt_loc_find_install_dir(suffix);
-  darktable.plugindir = dt_loc_init_generic(plugindir, application_directory, directory ? directory : suffix);
-  g_free(suffix);
+  char *directory = dt_loc_find_install_dir(DARKTABLE_LIBDIR);
+  darktable.plugindir = dt_loc_init_generic(plugindir, application_directory, directory ? directory : DARKTABLE_LIBDIR);
   g_free(directory);
 #else
   darktable.plugindir = dt_loc_init_generic(plugindir, application_directory, DARKTABLE_LIBDIR);
@@ -247,10 +245,8 @@ void dt_check_opendir(const char* text, const char* directory)
 void dt_loc_init_localedir(const char* application_directory, const char *localedir)
 {
 #if defined(__APPLE__) || defined(_WIN32)
-  char *suffix = g_build_filename(DARKTABLE_LOCALEDIR, NULL);
-  char *directory = dt_loc_find_install_dir(suffix);
-  darktable.localedir = dt_loc_init_generic(localedir, application_directory, directory ? directory : suffix);
-  g_free(suffix);
+  char *directory = dt_loc_find_install_dir(DARKTABLE_LOCALEDIR);
+  darktable.localedir = dt_loc_init_generic(localedir, application_directory, directory ? directory : DARKTABLE_LOCALEDIR);
   g_free(directory);
 #else
   darktable.localedir = dt_loc_init_generic(localedir, application_directory, DARKTABLE_LOCALEDIR);
@@ -261,10 +257,8 @@ void dt_loc_init_localedir(const char* application_directory, const char *locale
 void dt_loc_init_datadir(const char* application_directory, const char *datadir)
 {
 #if defined(__APPLE__) || defined(_WIN32)
-  char *suffix = g_build_filename(DARKTABLE_DATADIR, NULL);
-  char *directory = dt_loc_find_install_dir(suffix);
-  darktable.datadir = dt_loc_init_generic(datadir, application_directory, directory ? directory : suffix);
-  g_free(suffix);
+  char *directory = dt_loc_find_install_dir(DARKTABLE_DATADIR);
+  darktable.datadir = dt_loc_init_generic(datadir, application_directory, directory ? directory : DARKTABLE_DATADIR);
   g_free(directory);
 #else
   darktable.datadir = dt_loc_init_generic(datadir, application_directory, DARKTABLE_DATADIR);
@@ -275,10 +269,8 @@ void dt_loc_init_datadir(const char* application_directory, const char *datadir)
 void dt_loc_init_sharedir(const char* application_directory)
 {
 #if defined(__APPLE__) || defined(_WIN32)
-  char *suffix = g_build_filename(DARKTABLE_SHAREDIR, NULL);
-  char *directory = dt_loc_find_install_dir(suffix);
-  g_free(suffix);
-  darktable.sharedir = dt_loc_init_generic(NULL, application_directory, directory ? directory : suffix);
+  char *directory = dt_loc_find_install_dir(DARKTABLE_SHAREDIR);
+  darktable.sharedir = dt_loc_init_generic(NULL, application_directory, directory ? directory : DARKTABLE_SHAREDIR);
   g_free(directory);
 #else
   darktable.sharedir = dt_loc_init_generic(NULL, application_directory, DARKTABLE_SHAREDIR);
