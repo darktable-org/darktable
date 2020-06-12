@@ -88,19 +88,18 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_NONE = 0,
 
   /** Flag for the iop module to be enabled/included by default when creating a style */
-  IOP_FLAGS_INCLUDE_IN_STYLES = 1 << 0,
-  IOP_FLAGS_SUPPORTS_BLENDING = 1 << 1, // Does provide blending modes
-  IOP_FLAGS_DEPRECATED = 1 << 2,
-  IOP_FLAGS_ALLOW_TILING = 1 << 4, // Does allow tile-wise processing (valid for CPU and GPU processing)
-  IOP_FLAGS_HIDDEN = 1 << 5,       // Hide the iop from userinterface
-  IOP_FLAGS_TILING_FULL_ROI
-  = 1 << 6, // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
-  IOP_FLAGS_ONE_INSTANCE = 1 << 7, // The module doesn't support multiple instances
-  IOP_FLAGS_PREVIEW_NON_OPENCL
-  = 1 << 8, // Preview pixelpipe of this module must not run on GPU but always on CPU
-  IOP_FLAGS_NO_HISTORY_STACK = 1 << 9, // This iop will never show up in the history stack
-  IOP_FLAGS_NO_MASKS = 1 << 10,         // The module doesn't support masks (used with SUPPORT_BLENDING)
-  IOP_FLAGS_FENCE = 1 << 11              // No module can be moved pass this one
+  IOP_FLAGS_INCLUDE_IN_STYLES  = 1 << 0,
+  IOP_FLAGS_SUPPORTS_BLENDING  = 1 << 1,  // Does provide blending modes
+  IOP_FLAGS_DEPRECATED         = 1 << 2,
+  IOP_FLAGS_ALLOW_TILING       = 1 << 4,  // Does allow tile-wise processing (valid for CPU and GPU processing)
+  IOP_FLAGS_HIDDEN             = 1 << 5,  // Hide the iop from userinterface
+  IOP_FLAGS_TILING_FULL_ROI    = 1 << 6,  // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
+  IOP_FLAGS_ONE_INSTANCE       = 1 << 7,  // The module doesn't support multiple instances
+  IOP_FLAGS_PREVIEW_NON_OPENCL = 1 << 8,  // Preview pixelpipe of this module must not run on GPU but always on CPU
+  IOP_FLAGS_NO_HISTORY_STACK   = 1 << 9,  // This iop will never show up in the history stack
+  IOP_FLAGS_NO_MASKS           = 1 << 10, // The module doesn't support masks (used with SUPPORT_BLENDING)
+  IOP_FLAGS_FENCE              = 1 << 11, // No module can be moved pass this one
+  IOP_FLAGS_ALLOW_FAST_PIPE    = 1 << 12  // Module can work with a fast pipe
 } dt_iop_flags_t;
 
 /** status of a module*/
