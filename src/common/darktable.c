@@ -121,7 +121,7 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
   printf("      lua,masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder,\n");
-  printf("      imageio,undo}\n");
+  printf("      imageio,undo,signal}\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
