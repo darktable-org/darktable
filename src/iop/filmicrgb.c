@@ -54,7 +54,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
 
-DT_MODULE_INTROSPECTION(2, dt_iop_filmicrgb_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_filmicrgb_params_t)
 
 /**
  * DOCUMENTATION
@@ -161,11 +161,13 @@ typedef struct dt_iop_filmicrgb_params_t
   float contrast;
   float saturation;
   float balance;
+  float noise_level;
   int preserve_color;
   int version;
   int auto_hardness;
   int custom_grey;
   int high_quality_reconstruction;
+  dt_noise_distribution_t noise_distribution;
   dt_iop_filmicrgb_curve_type_t shadows;
   dt_iop_filmicrgb_curve_type_t highlights;
 } dt_iop_filmicrgb_params_t;
@@ -193,6 +195,7 @@ typedef struct dt_iop_filmicrgb_gui_data_t
   GtkWidget *auto_hardness;
   GtkWidget *custom_grey;
   GtkWidget *high_quality_reconstruction;
+  GtkWidget *noise_level, *noise_distribution;
   GtkNotebook *notebook;
   GtkDrawingArea *area;
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
@@ -215,10 +218,12 @@ typedef struct dt_iop_filmicrgb_data_t
   float output_power;
   float contrast;
   float sigma_toe, sigma_shoulder;
+  float noise_level;
   int preserve_color;
   int version;
   int high_quality_reconstruction;
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
+  dt_noise_distribution_t noise_distribution;
 } dt_iop_filmicrgb_data_t;
 
 
@@ -252,7 +257,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_iop_filmicrgb_params_v1_t
     {
@@ -301,6 +306,71 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->auto_hardness = TRUE;
     n->custom_grey = TRUE;
     n->high_quality_reconstruction = 0;
+    n->noise_distribution = d->noise_distribution;
+    return 0;
+  }
+  if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_filmicrgb_params_v2_t
+    {
+      float grey_point_source;
+      float black_point_source;
+      float white_point_source;
+      float reconstruct_threshold;
+      float reconstruct_feather;
+      float reconstruct_bloom_vs_details;
+      float reconstruct_grey_vs_color;
+      float reconstruct_structure_vs_texture;
+      float security_factor;
+      float grey_point_target;
+      float black_point_target;
+      float white_point_target;
+      float output_power;
+      float latitude;
+      float contrast;
+      float saturation;
+      float balance;
+      int preserve_color;
+      int version;
+      int auto_hardness;
+      int custom_grey;
+      int high_quality_reconstruction;
+      dt_iop_filmicrgb_curve_type_t shadows;
+      dt_iop_filmicrgb_curve_type_t highlights;
+    } dt_iop_filmicrgb_params_v2_t;
+
+    dt_iop_filmicrgb_params_v2_t *o = (dt_iop_filmicrgb_params_v2_t *)old_params;
+    dt_iop_filmicrgb_params_t *n = (dt_iop_filmicrgb_params_t *)new_params;
+    dt_iop_filmicrgb_params_t *d = (dt_iop_filmicrgb_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->grey_point_source = o->grey_point_source;
+    n->white_point_source = o->white_point_source;
+    n->black_point_source = o->black_point_source;
+    n->security_factor = o->security_factor;
+    n->grey_point_target = o->grey_point_target;
+    n->black_point_target = o->black_point_target;
+    n->white_point_target = o->white_point_target;
+    n->output_power = o->output_power;
+    n->latitude = o->latitude;
+    n->contrast = o->contrast;
+    n->saturation = o->saturation;
+    n->balance = o->balance;
+    n->preserve_color = o->preserve_color;
+    n->shadows = o->shadows;
+    n->highlights = o->highlights;
+    n->reconstruct_threshold = o->reconstruct_threshold;
+    n->reconstruct_bloom_vs_details = o->reconstruct_bloom_vs_details;
+    n->reconstruct_grey_vs_color = o->reconstruct_grey_vs_color;
+    n->reconstruct_structure_vs_texture = o->reconstruct_structure_vs_texture;
+    n->reconstruct_feather = o->reconstruct_feather;
+    n->version = o->version;
+    n->auto_hardness = o->auto_hardness;
+    n->custom_grey = o->custom_grey;
+    n->high_quality_reconstruction = o->high_quality_reconstruction;
+    n->noise_level = d->noise_level;
+    n->noise_distribution = d->noise_distribution;
     return 0;
   }
   return 1;
@@ -555,6 +625,45 @@ static inline gint mask_clipped_pixels(const float *const restrict in,
 
   // If clipped area is < 9 pixels, recovery is not worth the computational cost, so skip it.
   return (clipped > 9);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, mask, inpainted:64) uniform(num_elem, ch, noise_level, noise_distribution, threshold)
+#endif
+inline static void inpaint_noise(const float *const in, const float *const mask,
+                                 float *const inpainted, const float noise_level, const float threshold,
+                                 const dt_noise_distribution_t noise_distribution,
+                                 const size_t num_elem, const size_t ch)
+{
+  // add gaussian noise in highlights to fill-in texture
+  // this creates "particules" in highlights, that will help the implicit partial derivative equation
+  // solver used in wavelets reconstruction to generate texture
+
+  // Init random number generator
+  uint64_t DT_ALIGNED_ARRAY state[4] = { 0 };
+  xoshiro256_init(1, state);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, mask, inpainted, num_elem, ch, state, noise_level, noise_distribution, threshold) \
+  schedule(simd:static) aligned(mask, in, inpainted, state:64)
+#endif
+  for(size_t k = 0; k < num_elem; k += ch)
+  {
+    // get the mask value in [0 ; 1]
+    const float weight = mask[k / ch];
+
+    for(size_t c = 0; c < 3; c++)
+    {
+      // create gaussian noise
+      const float input = in[k + c];
+      const float noise = dt_noise_generator(noise_distribution, input, input * noise_level / threshold, (c % 2) == 0.f, state);
+
+      // add noise to input
+      inpainted[k + c] = input * (1.0f - weight) + weight * noise;
+    }
+  }
 }
 
 
@@ -1341,8 +1450,13 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(recover_highlights && mask && reconstructed)
   {
-    const gint success_1 = reconstruct_highlights(in, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, ch, data, piece, roi_in, roi_out);
+    float *const restrict inpainted =  dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
+    inpaint_noise(in, mask, inpainted, data->noise_level, data->reconstruct_threshold, data->noise_distribution,
+                  roi_out->width * roi_out->height * ch, ch);
+    const gint success_1 = reconstruct_highlights(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, ch, data, piece, roi_in, roi_out);
     gint success_2 = TRUE;
+
+    dt_free_align(inpainted);
 
     if(data->high_quality_reconstruction > 0 && success_1)
     {
@@ -1986,6 +2100,23 @@ static void high_quality_reconstruction_callback(GtkWidget *widget, dt_iop_modul
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void noise_level_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
+  p->noise_level = dt_bauhaus_slider_get(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void noise_distribution_callback(GtkWidget *combo, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
+  p->noise_distribution = dt_bauhaus_combobox_get(combo);
+  gtk_widget_queue_draw(self->widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
@@ -2225,6 +2356,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->version = p->version;
   d->preserve_color = p->preserve_color;
   d->high_quality_reconstruction = p->high_quality_reconstruction;
+  d->noise_level = p->noise_level;
+  d->noise_distribution = p->noise_distribution;
 
   // TODO: write OpenCL for v2
   piece->process_cl_ready = FALSE;
@@ -2299,6 +2432,8 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->custom_grey), p->custom_grey);
 
   dt_bauhaus_slider_set_soft(g->high_quality_reconstruction, p->high_quality_reconstruction);
+  dt_bauhaus_slider_set_soft(g->noise_level, p->noise_level);
+  dt_bauhaus_combobox_set(g->noise_distribution, p->noise_distribution);
 
   gtk_widget_set_visible(g->grey_point_source, p->custom_grey);
   gtk_widget_set_visible(g->grey_point_target, p->custom_grey);
@@ -2361,7 +2496,9 @@ void reload_defaults(dt_iop_module_t *module)
                                  .version             = DT_FILMIC_COLORSCIENCE_V2,
                                  .auto_hardness       = TRUE,
                                  .custom_grey         = FALSE,
-                                 .high_quality_reconstruction = 1
+                                 .high_quality_reconstruction = 1,
+                                 .noise_level         = 0.1f,
+                                 .noise_distribution  = DT_NOISE_POISSONIAN
                               };
 
   // we might be called from presets update infrastructure => there is no image
@@ -2900,6 +3037,29 @@ void gui_init(dt_iop_module_t *self)
                                                                 "it also helps with difficult cases of magenta highlights."));
   gtk_box_pack_start(GTK_BOX(page4), g->high_quality_reconstruction , FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->high_quality_reconstruction), "value-changed", G_CALLBACK(high_quality_reconstruction_callback), self);
+
+
+  // Highlight noise
+  g->noise_level = dt_bauhaus_slider_new_with_range(self, 0.0, 6.0, 0.1, p->noise_level, 2);
+  dt_bauhaus_widget_set_label(g->noise_level, NULL, _("add noise in highlights"));
+  gtk_widget_set_tooltip_text(g->noise_level, _("add gaussian noise in reconstructed highlights.\n"
+                                                "this avoids highlights to look too smooth\n"
+                                                "when the picture is noisy overall,\n"
+                                                "so they blend with the rest of the picture."));
+  gtk_box_pack_start(GTK_BOX(page4), g->noise_level, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->noise_level), "value-changed", G_CALLBACK(noise_level_callback), self);
+
+
+  // Noise distribution
+  g->noise_distribution = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->noise_distribution, NULL, _("type of noise"));
+  dt_bauhaus_combobox_add(g->noise_distribution, _("uniform"));
+  dt_bauhaus_combobox_add(g->noise_distribution, _("gaussian"));
+  dt_bauhaus_combobox_add(g->noise_distribution, _("poissonian"));
+  gtk_widget_set_tooltip_text(g->noise_distribution, _("choose the statistical distribution of noise.\n"
+                                                       "this is useful to match natural sensor noise pattern.\n"));
+  gtk_box_pack_start(GTK_BOX(page4), g->noise_distribution, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->noise_distribution), "value-changed", G_CALLBACK(noise_distribution_callback), self);
 
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }
