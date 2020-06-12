@@ -546,7 +546,7 @@ static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clip, filters, ivoid, ovoid, roi_out) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -647,7 +647,7 @@ static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clip, ivoid, ovoid, roi_in, roi_out, xtrans) \
-  schedule(dynamic)
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -901,7 +901,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(clips, filters, ivoid, ovoid, roi_in, roi_out, \
                             xtrans) \
-        schedule(dynamic)
+        schedule(static)
 #endif
         for(int j = 0; j < roi_out->height; j++)
         {
@@ -912,7 +912,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(clips, filters, ivoid, ovoid, roi_in, roi_out, \
                             xtrans) \
-        schedule(dynamic)
+        schedule(static)
 #endif
         for(int i = 0; i < roi_out->width; i++)
         {
@@ -926,7 +926,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(clips, filters, ivoid, ovoid, roi_out) \
         shared(data, piece) \
-        schedule(dynamic)
+        schedule(static)
 #endif
         for(int j = 0; j < roi_out->height; j++)
         {
@@ -939,7 +939,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(clips, filters, ivoid, ovoid, roi_out) \
         shared(data, piece) \
-        schedule(dynamic)
+        schedule(static)
 #endif
         for(int i = 0; i < roi_out->width; i++)
         {

@@ -1218,7 +1218,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // of points.
 
     #ifdef _OPENMP
-    #pragma omp parallel for schedule (dynamic) default (shared)
+    #pragma omp parallel for schedule (static) default (shared)
     #endif
 
     for(int y = 0; y <  map_extent->height; y++)
