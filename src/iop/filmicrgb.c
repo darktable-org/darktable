@@ -1453,7 +1453,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   float *const restrict reconstructed = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
 
-  if(recover_highlights && mask && reconstructed)
+  const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+
+  if(!run_fast && recover_highlights && mask && reconstructed)
   {
     float *const restrict inpainted =  dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
     inpaint_noise(in, mask, inpainted, data->noise_level, data->reconstruct_threshold, data->noise_distribution,
