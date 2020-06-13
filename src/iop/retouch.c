@@ -1732,7 +1732,10 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
     // update the gradient slider
     double dlevels[3];
     for(int i = 0; i < 3; i++) dlevels[i] = p->preview_levels[i];
-    dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels, FALSE);
+
+    ++darktable.gui->reset;
+    dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
+    --darktable.gui->reset;
 
     g->preview_auto_levels = 0;
 
@@ -2346,7 +2349,7 @@ void gui_update(dt_iop_module_t *self)
   // update the gradient slider
   double dlevels[3];
   for(int i = 0; i < 3; i++) dlevels[i] = p->preview_levels[i];
-  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels, FALSE);
+  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
 }
 
 void change_image(struct dt_iop_module_t *self)
@@ -2599,7 +2602,7 @@ void gui_init(dt_iop_module_t *self)
   dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
   (g->preview_levels_gslider)->scale_callback = rt_gslider_scale_callback;
   double vdefault[3] = {RETOUCH_PREVIEW_LVL_MIN, (RETOUCH_PREVIEW_LVL_MIN + RETOUCH_PREVIEW_LVL_MAX) / 2.0, RETOUCH_PREVIEW_LVL_MAX};
-  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, vdefault, FALSE);
+  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, vdefault);
   dtgtk_gradient_slider_multivalue_set_resetvalues(g->preview_levels_gslider, vdefault);
   (g->preview_levels_gslider)->markers_type = PROPORTIONAL_MARKERS;
   (g->preview_levels_gslider)->min_spacing = 0.05;

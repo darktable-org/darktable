@@ -277,7 +277,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)module->params;
   dt_bauhaus_slider_set(g->scale1, p->ev);
   dt_bauhaus_slider_set(g->scale2, p->width);
-  dtgtk_gradient_slider_set_value(g->gslider1, p->center, TRUE);
+  dtgtk_gradient_slider_set_value(g->gslider1, p->center);
 }
 
 void init(dt_iop_module_t *module)
