@@ -178,6 +178,7 @@ typedef struct dt_iop_filmicrgb_gui_data_t
   GtkWidget *grey_point_source;
   GtkWidget *black_point_source;
   GtkWidget *reconstruct_threshold, *reconstruct_bloom_vs_details, *reconstruct_grey_vs_color, *reconstruct_structure_vs_texture, *reconstruct_feather;
+  GtkWidget *show_highlight_mask;
   GtkWidget *security_factor;
   GtkWidget *auto_button;
   GtkWidget *grey_point_target;
@@ -2825,10 +2826,16 @@ void gui_init(dt_iop_module_t *self)
                                                         "decrease to make the transition harder and sharper,\n"
                                                         "increase to make the transition softer and blurrier."));
   g_signal_connect(G_OBJECT(g->reconstruct_feather), "value-changed", G_CALLBACK(reconstruct_feather_callback), self);
-  dt_bauhaus_widget_set_quad_paint(g->reconstruct_feather, dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->reconstruct_feather, TRUE);
-  g_signal_connect(G_OBJECT(g->reconstruct_feather), "quad-pressed", G_CALLBACK(show_mask_callback), self);
 
+  // Highlight Reconstruction Mask
+  g->show_highlight_mask = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->show_highlight_mask, NULL, _("display highlight reconstruction mask"));
+  dt_bauhaus_widget_set_quad_paint(g->show_highlight_mask, dtgtk_cairo_paint_showmask,
+                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->show_highlight_mask, TRUE);
+  g_object_set(G_OBJECT(g->show_highlight_mask), "tooltip-text", _("display highlight reconstruction mask"), (char *)NULL);
+  g_signal_connect(G_OBJECT(g->show_highlight_mask), "quad-pressed", G_CALLBACK(show_mask_callback), self);
+  gtk_box_pack_start(GTK_BOX(page5), g->show_highlight_mask, FALSE, FALSE, 0);
 
   // Reconstruction structure/texture
   g->reconstruct_structure_vs_texture = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->reconstruct_structure_vs_texture, 2);
