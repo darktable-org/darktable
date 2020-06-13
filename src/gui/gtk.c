@@ -2767,8 +2767,23 @@ void dt_gui_load_theme(const char *theme)
 
   if(dt_conf_get_bool("themes/usercss") && g_file_test(usercsspath, G_FILE_TEST_EXISTS))
   {
-    gchar *combinedcsscontent = g_strjoin(NULL, "@import url(\"", path, 
-                                           "\"); @import url(\"", usercsspath, "\");", NULL);
+
+    char *c1 = path;
+    char *c2 = usercsspath;
+
+#ifdef _WIN32
+    // for Windows, we need to remove the drive letter and the colon, if present, and replace '\' with '/'
+    c1 = strchr(path, ':');
+    c1 = (c1 == NULL ? path : c1 + 1);
+    c2 = strchr(usercsspath, ':');
+    c2 = (c2 == NULL ? usercsspath : c2 + 1);
+
+    c1 = g_strdelimit(c1, "\\", '/');
+    c2 = g_strdelimit(c2, "\\", '/');
+#endif
+
+    gchar *combinedcsscontent = g_strjoin(NULL, "@import url('", c1,
+                                           "'); @import url('", c2, "');", NULL);
 
     if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), combinedcsscontent, -1, &error))
     {
