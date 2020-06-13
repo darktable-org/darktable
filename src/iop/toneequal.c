@@ -1997,12 +1997,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
   if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
 
-  if(!self->enabled)
-  {
-    // If module disabled, enable and do nothing
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    return;
-  }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
