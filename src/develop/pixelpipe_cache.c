@@ -90,7 +90,8 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_pixelpipe_t *pipe, int module)
 {
   // bernstein hash (djb2)
-  uint64_t hash = 5381 + imgid;
+  // the hash is made of imgid and the actual fast-pipe mode if activated
+  uint64_t hash = 5381 + imgid + (pipe->type & DT_DEV_PIXELPIPE_FAST);
   // go through all modules up to module and compute a weird hash using the operation and params.
   GList *pieces = pipe->nodes;
   for(int k = 0; k < module && pieces; k++)
