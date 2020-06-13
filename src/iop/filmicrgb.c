@@ -836,11 +836,11 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
 
     // synthesize the max of all interpolated/inpainted RGB channels as a flat details term for the whole pixel
     // this is smoother than grey_texture and will fill holes smoothly in details layers if grey_texture ~= 0.f
-    const float grey_details = gamma_comp * fmaxabsf(fmaxabsf(HF_c[0], HF_c[1]), HF_c[2]);
+    const float grey_details = fmaxabsf(fmaxabsf(HF_c[0], HF_c[1]), HF_c[2]);
 
     // synthesize both terms with weighting
     // when beta_comp ~= 1.0, we force the reconstruction to be achromatic, which may help with gamut issues or magenta highlights.
-    const float grey_HF = beta_comp * (grey_details + grey_texture);
+    const float grey_HF = beta_comp * (gamma_comp * grey_details + grey_texture);
 
     // synthesize the min of all low-frequency RGB channels as a flat structure term for the whole pixel
     // when beta_comp ~= 1.0, we force the reconstruction to be achromatic, which may help with gamut issues or magenta highlights.
@@ -854,7 +854,7 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
 
       // synthesize interpolated/inpainted RGB channels color details and weigh them
       // this brings back some color on top of the grey_details
-      const float color_details = HF_c[c] * beta * gamma_comp;
+      const float color_details = (HF_c[c] * gamma_comp + fminf(fabsf(HF_c[c] / grey_details), 1.f) * grey_texture) * beta;
 
       // reconstruction
       reconstructed[k + c] += alpha * (delta * (grey_HF + color_details) + (grey_residual + color_residual) / (float)scales);
@@ -905,11 +905,11 @@ inline static void wavelets_reconstruct_ratios(const float *const restrict HF, c
 
     // synthesize the max of all interpolated/inpainted RGB channels as a flat details term for the whole pixel
     // this is smoother than grey_texture and will fill holes smoothly in details layers if grey_texture ~= 0.f
-    const float grey_details = gamma_comp * fmaxabsf(fmaxabsf(HF_c[0], HF_c[1]), HF_c[2]);
+    const float grey_details = fmaxabsf(fmaxabsf(HF_c[0], HF_c[1]), HF_c[2]);
 
     // synthesize both terms with weighting
     // when beta_comp ~= 1.0, we force the reconstruction to be achromatic, which may help with gamut issues or magenta highlights.
-    const float grey_HF = beta_comp * (grey_details + grey_texture);
+    const float grey_HF = beta_comp * (gamma_comp * grey_details + grey_texture);
 
     // synthesize the min of all low-frequency RGB channels as a flat structure term for the whole pixel
     // when beta_comp ~= 1.0, we force the reconstruction to be achromatic, which may help with gamut issues or magenta highlights.
@@ -923,7 +923,7 @@ inline static void wavelets_reconstruct_ratios(const float *const restrict HF, c
 
       // synthesize interpolated/inpainted RGB channels color details and weigh them
       // this brings back some color on top of the grey_details
-      const float color_details = HF_c[c] * beta * gamma_comp;
+      const float color_details = (HF_c[c] * gamma_comp - 0.5f * fminf(fabsf(HF_c[c] / grey_details), 1.f) * grey_texture) * beta;
 
       // reconstruction
       reconstructed[k + c] += alpha * (delta * (grey_HF + color_details) + (grey_residual + color_residual) / (float)scales);
@@ -1868,6 +1868,7 @@ static void show_mask_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
   g->show_mask = !(g->show_mask);
   dt_bauhaus_widget_set_quad_active(g->reconstruct_feather, g->show_mask);

@@ -335,19 +335,15 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      cairo_rectangle(cr, -tb / 3, -tb / 3.0, wd + 2. * tb / 3., ht + 2. * tb / 3.);
+      cairo_rectangle(cr, -tb / 3., -tb / 3.0, wd + 2. * tb / 3., ht + 2. * tb / 3.);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
     }
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    if(closeup)
-      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
-    else
-      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
-
-    cairo_fill(cr);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_paint(cr);
 
     if(darktable.gui->show_focus_peaking)
     {
@@ -388,7 +384,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      cairo_rectangle(cr, 2 * tb / 3, 2 * tb / 3.0, width - 4. * tb / 3., height - 4. * tb / 3.);
+      cairo_rectangle(cr, 2 * tb / 3., 2 * tb / 3.0, width - 4. * tb / 3., height - 4. * tb / 3.);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
     }

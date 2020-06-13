@@ -358,7 +358,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         if((buf_width <= 8 && buf_height <= 8) || fabsf(scale - 1.0f) < 0.01f)
           cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_NEAREST);
         else
-          cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_GOOD);
+          cairo_pattern_set_filter(cairo_get_source(cr2), darktable.gui->filter_image);
 
         cairo_paint(cr2);
 
