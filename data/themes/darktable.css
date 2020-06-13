@@ -562,8 +562,6 @@ overshoot.right
 {
   color: @plugin_label_color;
   border: 0;
-  padding: 0.06em;
-  margin: 0 2px 0 1px;
 }
 
 #module-header #button-canvas
