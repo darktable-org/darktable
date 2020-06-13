@@ -2772,25 +2772,14 @@ void dt_gui_load_theme(const char *theme)
     char *c2 = usercsspath;
 
 #ifdef _WIN32
-    // for Windows, we need to remove the drive letter and replace '\' with '/'
+    // for Windows, we need to remove the drive letter and the colon, if present, and replace '\' with '/'
     c1 = strchr(path, ':');
     c1 = (c1 == NULL ? path : c1 + 1);
     c2 = strchr(usercsspath, ':');
     c2 = (c2 == NULL ? usercsspath : c2 + 1);
 
-    char *c = c1;
-    while(*c != '\0')
-    {
-      if(*c == '\\') *c = '/';
-      c++;
-    }
-
-    c = c2;
-    while(*c != '\0')
-    {
-      if(*c == '\\') *c = '/';
-      c++;
-    }
+    c1 = g_strdelimit(c1, "\\", '/');
+    c2 = g_strdelimit(c2, "\\", '/');
 #endif
 
     gchar *combinedcsscontent = g_strjoin(NULL, "@import url('", c1,
