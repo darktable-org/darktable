@@ -1918,7 +1918,7 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
                              GdkModifierType modifier, gpointer data)
 {
   GList *imgs = g_list_copy(dt_view_get_images_to_act_on(FALSE, TRUE));
-  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), FALSE);
+  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
@@ -1971,6 +1971,7 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return TRUE;
 }
 static gboolean _accel_select_all(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,

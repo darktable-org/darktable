@@ -16,10 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
-#include "common/history.h"
-#include "common/debug.h"
 #include "common/history_snapshot.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/history.h"
+#include "control/signal.h"
 
 dt_undo_lt_history_t *dt_history_snapshot_item_init(void)
 {
@@ -114,6 +115,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
   sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
 
   dt_history_delete_on_image_ext(imgid, FALSE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   // copy undo_history snapshot back as current history state
 
