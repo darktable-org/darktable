@@ -1051,7 +1051,7 @@ static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_li
   GList *affected_images = dt_tag_get_images_from_list(imgs, tagid);
   if(affected_images)
   {
-    dt_tag_detach_images(tagid, affected_images, TRUE);
+    const gboolean res = dt_tag_detach_images(tagid, affected_images, TRUE);
 
     _init_treeview(self, 0);
     if (d->tree_flag || !d->suggestion_flag)
@@ -1083,9 +1083,9 @@ static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_li
     {
       _init_treeview(self, 1);
     }
-    _raise_signal_tag_changed(self);
+    if(res) _raise_signal_tag_changed(self);
 
-    dt_image_synch_xmps(affected_images);
+    if(res) dt_image_synch_xmps(affected_images);
     g_list_free(affected_images);
   }
 }
@@ -1115,7 +1115,7 @@ static void _pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_
   if(tagid <= 0) return;
 
   // attach tag on images to act on
-  dt_tag_attach(tagid, -1, TRUE, TRUE);
+  const gboolean res = dt_tag_attach(tagid, -1, TRUE, TRUE);
 
   /** record last tag used */
   g_free(d->last_tag);
@@ -1144,8 +1144,11 @@ static void _pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_
     }
   }
 
-  _raise_signal_tag_changed(self);
-  dt_image_synch_xmp(-1);
+  if(res)
+  {
+    _raise_signal_tag_changed(self);
+    dt_image_synch_xmp(-1);
+  }
 }
 
 static void _pop_menu_attached_detach(GtkWidget *menuitem, dt_lib_module_t *self)
@@ -1232,8 +1235,8 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   if(!tag || tag[0] == '\0') return;
 
   GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
-  dt_tag_attach_string_list(tag, imgs, TRUE);
-  dt_image_synch_xmps(imgs);
+  const gboolean res = dt_tag_attach_string_list(tag, imgs, TRUE);
+  if(res) dt_image_synch_xmps(imgs);
 
   /** record last tag used */
   g_free(d->last_tag);
@@ -1245,7 +1248,7 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   _init_treeview(self, 0);
   _init_treeview(self, 1);
   char *tagname = strrchr(d->last_tag, ',');
-  _raise_signal_tag_changed(self);
+  if(res) _raise_signal_tag_changed(self);
   _show_tag_on_view(GTK_TREE_VIEW(d->dictionary_view),
                     tagname ? tagname + 1 : d->last_tag);
 }
@@ -2897,8 +2900,8 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
     case GDK_KEY_KP_Enter:
     {
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
-      dt_tag_attach_string_list(tag, d->floating_tag_imgs, TRUE);
-      dt_image_synch_xmps(d->floating_tag_imgs);
+      const gboolean res = dt_tag_attach_string_list(tag, d->floating_tag_imgs, TRUE);
+      if(res) dt_image_synch_xmps(d->floating_tag_imgs);
       g_list_free(d->floating_tag_imgs);
 
       /** record last tag used */
@@ -2909,7 +2912,7 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
       _init_treeview(self, 1);
       gtk_widget_destroy(d->floating_tag_window);
       gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+      if(res) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
       return TRUE;
     }
@@ -2931,12 +2934,12 @@ static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *accel
   if(d->last_tag)
   {
     GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
-    dt_tag_attach_string_list(d->last_tag, imgs, TRUE);
-    dt_image_synch_xmps(imgs);
+    const gboolean res = dt_tag_attach_string_list(d->last_tag, imgs, TRUE);
+    if(res) dt_image_synch_xmps(imgs);
 
     _init_treeview(self, 0);
     _init_treeview(self, 1);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    if(res) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
   return TRUE;
 }
