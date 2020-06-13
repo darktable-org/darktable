@@ -1049,6 +1049,9 @@ void dt_history_compress_on_image(int32_t imgid)
   }
   dt_unlock_image(imgid);
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
+
+  GList *imgs = g_list_append(NULL, GINT_TO_POINTER(imgid));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgs);
 }
 
 int dt_history_compress_on_list(GList *imgs)

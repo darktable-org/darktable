@@ -560,6 +560,19 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
     g_free(msg);
   }
   g_free(pattern);
+
+  // we recompte the history tooltip if needed
+  thumb->is_altered = dt_image_altered(thumb->imgid);
+  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
+  if(thumb->is_altered)
+  {
+    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
+    if(tooltip)
+    {
+      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
+      g_free(tooltip);
+    }
+  }
 }
 
 static gboolean _thumbs_hide_overlays(gpointer user_data)
