@@ -205,74 +205,88 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-
   if (d->imgid == 0) return;
-
-  const int32_t tb = darktable.develop->border_size;
-  int nw = width-2*tb;
-  int nh = height-2*tb;
-
   dt_develop_t *dev = darktable.develop;
-  if(!dev->preview_pipe->backbuf || dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
+  if(!dev->pipe->output_backbuf || dev->image_status != DT_DEV_PIXELPIPE_VALID) return;
 
-  int img_wd = dev->preview_pipe->backbuf_width;
-  int img_ht = dev->preview_pipe->backbuf_height;
+  // use the same resolution as main previem image to avoid blur
+  float img_wd = dev->pipe->output_backbuf_width / darktable.gui->ppd;
+  float img_ht = dev->pipe->output_backbuf_height / darktable.gui->ppd;
+  const int32_t tb = darktable.develop->border_size;
 
-  // and now we get the values to "fit the screen"
-  int nimgw, nimgh;
-  if (img_ht*nw > img_wd*nh)
+  // Get the resizing from borders - only to check validity of mipmap cache size
+  float zoom_ratio = 1.f;
+  if(dev->iso_12646.enabled)
   {
-    nimgh = nh;
-    nimgw = img_wd*nh/img_ht;
-  }
-  else
-  {
-    nimgw = nw;
-    nimgh = img_ht*nw/img_wd;
+    if(img_wd - 2 * tb < img_ht - 2 * tb)
+      zoom_ratio = (img_ht - 2 * tb) / img_ht;
+    else
+      zoom_ratio = (img_wd - 2 * tb) / img_wd;
   }
 
   // if image have too different sizes, we show the full preview not zoomed
-  float zoom_x = 0.0f;
-  float zoom_y = 0.0f;
   float nz = 1.0f;
   if(d->allow_zoom)
   {
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
-    zoom_x = dt_control_get_dev_zoom_x();
-    zoom_y = dt_control_get_dev_zoom_y();
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1 << closeup, 0);
     const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 0);
     nz = cur_scale / min_scale;
   }
 
-  const float dx = nw * 0.5 - nimgw * nz * (0.5 + zoom_x);
-  const float dy = nh * 0.5 - nimgh * nz * (0.5 + zoom_y);
-
-  // if needed, we load the surface
+  // if not cached, load or reload a mipmap
   int res = 0;
-  if(d->preview_id != d->imgid || d->preview_zoom != nz || !d->preview_surf)
+  if(d->preview_id != d->imgid || d->preview_zoom != nz * zoom_ratio || !d->preview_surf)
   {
-    res = dt_view_image_get_surface(d->imgid, nimgw * nz, nimgh * nz, &d->preview_surf);
+    res = dt_view_image_get_surface(d->imgid, img_wd * nz, img_ht * nz, &d->preview_surf);
+
     if(!res)
     {
       d->preview_id = d->imgid;
-      d->preview_zoom = nz;
+      d->preview_zoom = nz * zoom_ratio; //  only to check validity of mipmap cache size
     }
   }
 
   // if ready, we draw the surface
   if(d->preview_surf)
   {
+    cairo_save(cri);
+
+    // force middle grey in background
+    if(dev->iso_12646.enabled)
+      cairo_set_source_rgb(cri, 0.5, 0.5, 0.5);
+    else
+      dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
+
     // draw background
-    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cri);
-    // let margins
-    cairo_translate(cri, tb, tb);
-    cairo_rectangle(cri, 0, 0, nw, nh);
-    cairo_clip(cri);
+
+    // move coordinates according to margin
+    cairo_translate(cri, ceilf(.5f * (width - img_wd)), ceilf(.5f * (height - img_ht)));
+
+    if(dev->iso_12646.enabled)
+    {
+      // draw the white frame around picture
+      cairo_rectangle(cri, -tb / 3., -tb / 3., img_wd + 2. * tb / 3., img_ht + 2. * tb / 3.);
+      cairo_set_source_rgb(cri, 1., 1., 1.);
+      cairo_fill(cri);
+    }
+
+    // compute the surface pixel shift to match reference image FIXME!
+    const float zoom_y = dt_control_get_dev_zoom_y();
+    const float zoom_x = dt_control_get_dev_zoom_x();
+    const float dx = -zoom_x * img_wd - (img_wd - 2. * tb) * nz / 2. + (img_wd - 2. * tb) / 2.;
+    const float dy = -zoom_y * img_ht - (img_ht - 2. * tb) * nz / 2. + (img_ht - 2. * tb) / 2.;
+
+    // finally, draw the image
+    cairo_rectangle(cri, 0, 0, img_wd, img_ht);
+    cairo_clip_preserve(cri);
     cairo_set_source_surface(cri, d->preview_surf, dx, dy);
+    cairo_pattern_set_filter(cairo_get_source(cri), darktable.gui->filter_image);
     cairo_paint(cri);
+
+    cairo_restore(cri);
   }
 
   if(res)
