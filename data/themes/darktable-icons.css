@@ -77,8 +77,10 @@
     background-image: url('../pixmaps/plugins/darkroom/bloom.svg');
     background-size: contain;
     background-repeat: no-repeat;
-    padding-left: 18px;
-    margin: 3px 0px;
+    padding: 0;
+    margin-top: 0.13em;
+    min-height: 1.1em;
+    min-width: 1.1em;
 }
 
 #iop-panel-icon-borders
