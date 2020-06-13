@@ -817,6 +817,7 @@ popover,
 combobox window,
 dialog combobox window
 {
+  opacity: 1;
   background-color: @tooltip_bg_color;
   outline-style:none;
   border-radius: 4px;
