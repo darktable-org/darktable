@@ -2326,13 +2326,36 @@ static void tag_changed(gpointer instance, gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-
   // update tree
   if(_combo_get_active_collection(GTK_COMBO_BOX(d->rule[d->active_rule].combo)) == DT_COLLECTION_PROP_TAG)
   {
     d->view_rule = -1;
     d->rule[d->active_rule].typing = FALSE;
     _lib_collect_gui_update(self);
+
+    //need to reload collection since we have tags as active collection filter
+    dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                    darktable.view_manager->proxy.module_collect.module);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                      darktable.view_manager->proxy.module_collect.module);
+  }
+  else
+  {
+    // currently tag filter isn't the one selected but it might be in one of rules. needs check
+    gboolean needs_update = FALSE;
+    for(int i = 0; i < d->nb_rules && !needs_update; i++)
+    {
+      needs_update = needs_update || _combo_get_active_collection(GTK_COMBO_BOX(d->rule[i].combo)) == DT_COLLECTION_PROP_TAG;
+    }
+    if(needs_update){
+      // we have tags as one of rules, needs reload.
+      dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                      darktable.view_manager->proxy.module_collect.module);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+      dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                        darktable.view_manager->proxy.module_collect.module);
+    }
   }
 }
 
