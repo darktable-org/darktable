@@ -146,6 +146,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
 void dt_history_delete_on_image(int32_t imgid)
 {
   dt_history_delete_on_image_ext(imgid, TRUE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only)
@@ -1596,6 +1597,8 @@ gboolean dt_history_delete_on_list(GList *list, gboolean undo)
 
     l = g_list_next(l);
   }
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   if(undo) dt_undo_end_group(darktable.undo);
   return TRUE;
