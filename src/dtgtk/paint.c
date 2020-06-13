@@ -272,16 +272,18 @@ void dtgtk_cairo_paint_switch_on(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   PREAMBLE(1, 0, 0)
 
-  if(flags & CPF_FOCUS)
-  {
-    cairo_arc(cr, 0.5, 0.5, 0.65, 0, 2 * M_PI);
-    cairo_stroke(cr);
-  }
-  cairo_arc(cr, 0.5, 0.5, 0.35, 0, 2 * M_PI);
-  cairo_fill(cr);
-
   cairo_arc(cr, 0.5, 0.5, 0.50, 0, 2 * M_PI);
   cairo_stroke(cr);
+
+  cairo_arc(cr, 0.5, 0.5, 0.30, 0, 2 * M_PI);
+  cairo_fill(cr);
+
+  if(flags & CPF_FOCUS)
+  {
+    cairo_arc(cr, 0.5, 0.5, 0.50, 0.0, 2*M_PI);
+    cairo_clip(cr);
+    cairo_paint_with_alpha(cr, 0.5);
+  }
 
   FINISH
 }
