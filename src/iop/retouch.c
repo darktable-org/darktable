@@ -204,248 +204,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-//---------------------------------------------------------------------------------
-// draw buttons
-//---------------------------------------------------------------------------------
-
-#define PREAMBLE                                                                                                  \
-  cairo_save(cr);                                                                                                 \
-  const gint s = MIN(w, h);                                                                                       \
-  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));                                      \
-  cairo_scale(cr, s, s);                                                                                          \
-  cairo_push_group(cr);                                                                                           \
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);                                                                  \
-  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);                                                                   \
-  cairo_set_line_width(cr, 0.1);
-
-#define POSTAMBLE                                                                                                 \
-  cairo_pop_group_to_source(cr);                                                                                  \
-  cairo_paint_with_alpha(cr, flags &CPF_ACTIVE ? 1.0 : 0.5);                                                      \
-  cairo_restore(cr);
-
-static void _retouch_cairo_paint_tool_clone(cairo_t *cr, const gint x, const gint y, const gint w, const gint h,
-                                            const gint flags, void *data)
-{
-  PREAMBLE;
-
-  cairo_arc(cr, 0.65, 0.35, 0.35, 0, 2 * M_PI);
-  cairo_stroke(cr);
-
-  cairo_arc(cr, 0.35, 0.65, 0.35, 0, 2 * M_PI);
-  cairo_stroke(cr);
-
-  POSTAMBLE;
-}
-
-static void _retouch_cairo_paint_tool_heal(cairo_t *cr, const gint x, const gint y, const gint w, const gint h,
-                                           const gint flags, void *data)
-{
-  PREAMBLE;
-
-  cairo_rectangle(cr, 0., 0., 1., 1.);
-  cairo_fill(cr);
-
-  cairo_set_source_rgba(cr, .74, 0.13, 0.13, 1.0);
-  cairo_set_line_width(cr, 0.3);
-
-  cairo_move_to(cr, 0.5, 0.18);
-  cairo_line_to(cr, 0.5, 0.82);
-  cairo_move_to(cr, 0.18, 0.5);
-  cairo_line_to(cr, 0.82, 0.5);
-  cairo_stroke(cr);
-
-  POSTAMBLE;
-}
-
-static void _retouch_cairo_paint_tool_fill(cairo_t *cr, const gint x, const gint y, const gint w, const gint h,
-                                           const gint flags, void *data)
-{
-  PREAMBLE;
-
-  cairo_move_to(cr, 0.1, 0.1);
-  cairo_line_to(cr, 0.2, 0.1);
-  cairo_line_to(cr, 0.2, 0.9);
-  cairo_line_to(cr, 0.8, 0.9);
-  cairo_line_to(cr, 0.8, 0.1);
-  cairo_line_to(cr, 0.9, 0.1);
-  cairo_stroke(cr);
-  cairo_rectangle(cr, 0.2, 0.4, .6, .5);
-  cairo_fill(cr);
-  cairo_stroke(cr);
-
-  POSTAMBLE;
-}
-
-static void _retouch_cairo_paint_tool_blur(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
-{
-  PREAMBLE;
-
-  cairo_pattern_t *pat = NULL;
-  pat = cairo_pattern_create_radial(.5, .5, 0.005, .5, .5, .5);
-  cairo_pattern_add_color_stop_rgba(pat, 0.0, 1, 1, 1, 1);
-  cairo_pattern_add_color_stop_rgba(pat, 1.0, 1, 1, 1, 0.1);
-  cairo_set_source(cr, pat);
-
-  cairo_set_line_width(cr, 0.125);
-  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-  cairo_arc(cr, 0.5, 0.5, 0.45, 0, 2 * M_PI);
-  cairo_fill(cr);
-
-  cairo_pattern_destroy(pat);
-
-  POSTAMBLE;
-}
-
-static void _retouch_cairo_paint_paste_forms(cairo_t *cr, const gint x, const gint y, const gint w, const gint h,
-                                             const gint flags, void *data)
-{
-  PREAMBLE;
-
-  if(flags & CPF_ACTIVE)
-  {
-    cairo_set_source_rgba(cr, .75, 0.75, 0.75, 1.0);
-    cairo_arc(cr, 0.5, 0.5, 0.40, 0, 2 * M_PI);
-    cairo_fill(cr);
-  }
-  else
-  {
-    cairo_move_to(cr, 0.1, 0.5);
-    cairo_line_to(cr, 0.9, 0.5);
-    cairo_line_to(cr, 0.5, 0.9);
-    cairo_line_to(cr, 0.1, 0.5);
-    cairo_stroke(cr);
-    cairo_move_to(cr, 0.1, 0.5);
-    cairo_line_to(cr, 0.9, 0.5);
-    cairo_line_to(cr, 0.5, 0.9);
-    cairo_line_to(cr, 0.1, 0.5);
-    cairo_fill(cr);
-
-    cairo_move_to(cr, 0.4, 0.1);
-    cairo_line_to(cr, 0.6, 0.1);
-    cairo_line_to(cr, 0.6, 0.5);
-    cairo_line_to(cr, 0.4, 0.5);
-    cairo_stroke(cr);
-    cairo_move_to(cr, 0.4, 0.1);
-    cairo_line_to(cr, 0.6, 0.1);
-    cairo_line_to(cr, 0.6, 0.5);
-    cairo_line_to(cr, 0.4, 0.5);
-    cairo_fill(cr);
-  }
-
-  POSTAMBLE;
-}
-
-static void _retouch_cairo_paint_cut_forms(cairo_t *cr, const gint x, const gint y, const gint w, const gint h,
-                                           const gint flags, void *data)
-{
-  PREAMBLE;
-
-  if(flags & CPF_ACTIVE)
-  {
-    cairo_move_to(cr, 0.11, 0.25);
-    cairo_line_to(cr, 0.89, 0.75);
-    cairo_move_to(cr, 0.25, 0.11);
-    cairo_line_to(cr, 0.75, 0.89);
-    cairo_stroke(cr);
-
-    cairo_arc(cr, 0.89, 0.53, 0.17, 0, 2 * M_PI);
-    cairo_stroke(cr);
-
-    cairo_arc(cr, 0.53, 0.89, 0.17, 0, 2 * M_PI);
-    cairo_stroke(cr);
-  }
-  else
-  {
-    cairo_move_to(cr, 0.01, 0.35);
-    cairo_line_to(cr, 0.99, 0.65);
-    cairo_move_to(cr, 0.35, 0.01);
-    cairo_line_to(cr, 0.65, 0.99);
-    cairo_stroke(cr);
-
-    cairo_arc(cr, 0.89, 0.53, 0.17, 0, 2 * M_PI);
-    cairo_stroke(cr);
-
-    cairo_arc(cr, 0.53, 0.89, 0.17, 0, 2 * M_PI);
-    cairo_stroke(cr);
-  }
-
-  POSTAMBLE;
-}
-
-static void _retouch_cairo_paint_display_wavelet_scale(cairo_t *cr, const gint x, const gint y, const gint w,
-                                                       const gint h, const gint flags, void *data)
-{
-  PREAMBLE;
-
-  if(flags & CPF_ACTIVE)
-  {
-    float x1 = 0.2f;
-    float y1 = 1.f;
-
-    cairo_move_to(cr, x1, y1);
-
-    const int steps = 4;
-    const float delta = 1. / (float)steps;
-    for(int i = 0; i < steps; i++)
-    {
-      y1 -= delta;
-      cairo_line_to(cr, x1, y1);
-      x1 += delta;
-      if(x1 > .9) x1 = .9;
-      cairo_line_to(cr, x1, y1);
-    }
-    cairo_stroke(cr);
-
-    cairo_set_line_width(cr, 0.1);
-    cairo_rectangle(cr, 0., 0., 1., 1.);
-    cairo_stroke(cr);
-  }
-  else
-  {
-    cairo_move_to(cr, 0.08, 1.);
-    cairo_curve_to(cr, 0.4, 0.05, 0.6, 0.05, 1., 1.);
-    cairo_line_to(cr, 0.08, 1.);
-    cairo_fill(cr);
-
-    cairo_set_line_width(cr, 0.1);
-    cairo_rectangle(cr, 0., 0., 1., 1.);
-    cairo_stroke(cr);
-  }
-
-  POSTAMBLE;
-}
-
-static void _retouch_cairo_paint_auto_levels(cairo_t *cr, const gint x, const gint y, const gint w, const gint h,
-                                             const gint flags, void *data)
-{
-  PREAMBLE;
-
-  cairo_move_to(cr, .1, 0.3);
-  cairo_line_to(cr, .1, 1.);
-  cairo_stroke(cr);
-
-  cairo_move_to(cr, .5, 0.1);
-  cairo_line_to(cr, .5, 1.);
-  cairo_stroke(cr);
-
-  cairo_move_to(cr, .9, 0.3);
-  cairo_line_to(cr, .9, 1.);
-  cairo_stroke(cr);
-
-  cairo_move_to(cr, 0., 1.0);
-  cairo_line_to(cr, 1.0, 1.0);
-  cairo_stroke(cr);
-
-  POSTAMBLE;
-}
-
-#undef PREAMBLE
-#undef POSTAMBLE
-
-//---------------------------------------------------------------------------------
-// shape selection
-//---------------------------------------------------------------------------------
-
 static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const int formid)
 {
   int index = -1;
@@ -1660,7 +1418,8 @@ static void rt_copypaste_scale_callback(GtkToggleButton *togglebutton, dt_iop_mo
   }
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), g->copied_scale >= 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), g->copied_scale < 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), g->copied_scale >= 0);
+  gtk_widget_set_sensitive(g->bt_paste_scale, g->copied_scale >= 0);
 
   --darktable.gui->reset;
 
@@ -2326,7 +2085,8 @@ void gui_update(dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_display_wavelet_scale), g->display_wavelet_scale);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), g->copied_scale >= 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), g->copied_scale < 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), g->copied_scale >= 0);
+  gtk_widget_set_sensitive(g->bt_paste_scale, g->copied_scale >= 0);
 
   // show/hide some fields
   rt_show_hide_controls(self, g, p, g);
@@ -2442,28 +2202,28 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox_algo), label2, FALSE, TRUE, 0);
 
   g->bt_fill
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_fill, CPF_STYLE_FLAT, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_fill, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_fill, _("activates fill tool"));
   g_signal_connect(G_OBJECT(g->bt_fill), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_fill), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), FALSE);
 
   g->bt_blur
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_blur, CPF_STYLE_FLAT, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_blur, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_blur, _("activates blur tool"));
   g_signal_connect(G_OBJECT(g->bt_blur), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_blur), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), FALSE);
 
   g->bt_heal
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_heal, CPF_STYLE_FLAT, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_heal, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_heal, _("activates healing tool"));
   g_signal_connect(G_OBJECT(g->bt_heal), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_heal), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_heal), FALSE);
 
   g->bt_clone
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_clone, CPF_STYLE_FLAT, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_clone, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_clone, _("activates cloning tool"));
   g_signal_connect(G_OBJECT(g->bt_clone), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_clone), bs, bs);
@@ -2542,7 +2302,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_suppress), FALSE);
 
   // display final image/current scale
-  g->bt_display_wavelet_scale = dtgtk_togglebutton_new(_retouch_cairo_paint_display_wavelet_scale,
+  g->bt_display_wavelet_scale = dtgtk_togglebutton_new(dtgtk_cairo_paint_display_wavelet_scale,
                                                        CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_display_wavelet_scale, _("display wavelet scale"));
   g_signal_connect(G_OBJECT(g->bt_display_wavelet_scale), "toggled", G_CALLBACK(rt_display_wavelet_scale_callback),
@@ -2551,16 +2311,17 @@ void gui_init(dt_iop_module_t *self)
 
   // copy/paste shapes
   g->bt_copy_scale
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_cut_forms, CPF_STYLE_FLAT, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_cut_forms, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_copy_scale, _("cut shapes from current scale"));
   g_signal_connect(G_OBJECT(g->bt_copy_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), FALSE);
 
   g->bt_paste_scale
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_paste_forms, CPF_STYLE_FLAT, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_paste_forms, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_paste_scale, _("paste cut shapes to current scale"));
   g_signal_connect(G_OBJECT(g->bt_paste_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), FALSE);
+  gtk_widget_set_sensitive(g->bt_paste_scale, FALSE);
 
   gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_showmask, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_suppress, FALSE, FALSE, 0);
@@ -2606,7 +2367,7 @@ void gui_init(dt_iop_module_t *self)
 
   // auto-levels button
   g->bt_auto_levels
-      = dtgtk_togglebutton_new(_retouch_cairo_paint_auto_levels, CPF_STYLE_FLAT, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_auto_levels, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_auto_levels, _("auto levels"));
   g_signal_connect(G_OBJECT(g->bt_auto_levels), "toggled", G_CALLBACK(rt_auto_levels_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_auto_levels), bs, bs);

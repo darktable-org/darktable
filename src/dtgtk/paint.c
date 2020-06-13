@@ -444,6 +444,7 @@ void dtgtk_cairo_paint_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
 {
   PREAMBLE(1, 0, 0)
 
+  cairo_set_line_width(cr, 0.1);
   cairo_arc(cr, 0.5, 0.5, 0.1, 0, 6.2832);
   cairo_stroke(cr);
 
@@ -866,6 +867,7 @@ void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 0, 0)
 
+  cairo_set_line_width(cr, 0.1);
   cairo_arc(cr, 0.5, 0.5, 0.1, 0, 6.2832);
   cairo_stroke(cr);
 
@@ -879,7 +881,6 @@ void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, g
   cairo_translate(cr, 0, -0.20);
   if((flags & CPF_ACTIVE))
   {
-    cairo_set_source_rgba(cr, 0.6, 0.1, 0.1, 1.0);
     cairo_move_to(cr, 0.1, 0.9);
     cairo_line_to(cr, 0.9, 0.1);
     cairo_stroke(cr);
@@ -887,7 +888,6 @@ void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, g
 
   FINISH
 }
-
 
 
 void dtgtk_cairo_paint_timer(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
@@ -1396,15 +1396,14 @@ void dtgtk_cairo_paint_showmask(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 {
   PREAMBLE(1, 0, 0)
 
+  /* draw circle */
+  cairo_arc(cr, 0.5, 0.5, 0.30, -M_PI, M_PI);
+
   /* draw rectangle */
   cairo_rectangle(cr, 0.0, 0.0, 1.0, 1.0);
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_fill(cr);
   cairo_stroke(cr);
-
-  /* draw circle */
-  cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
-  cairo_arc(cr, 0.5, 0.5, 0.30, -M_PI, M_PI);
-  cairo_fill(cr);
 
   FINISH
 }
@@ -2044,6 +2043,209 @@ void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint
 
   FINISH
 }
+
+
+
+
+
+
+
+
+
+
+void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_arc(cr, 0.65, 0.35, 0.35, 0, 2 * M_PI);
+  cairo_stroke(cr);
+
+  cairo_arc(cr, 0.35, 0.65, 0.35, 0, 2 * M_PI);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_tool_heal(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_rectangle(cr, 0., 0., 1., 1.);
+  cairo_fill(cr);
+
+  cairo_set_source_rgba(cr, .74, 0.13, 0.13, 1.0);
+  cairo_set_line_width(cr, 0.3);
+
+  cairo_move_to(cr, 0.5, 0.18);
+  cairo_line_to(cr, 0.5, 0.82);
+  cairo_move_to(cr, 0.18, 0.5);
+  cairo_line_to(cr, 0.82, 0.5);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_tool_fill(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, 0.1, 0.1);
+  cairo_line_to(cr, 0.2, 0.1);
+  cairo_line_to(cr, 0.2, 0.9);
+  cairo_line_to(cr, 0.8, 0.9);
+  cairo_line_to(cr, 0.8, 0.1);
+  cairo_line_to(cr, 0.9, 0.1);
+  cairo_stroke(cr);
+  cairo_rectangle(cr, 0.2, 0.4, .6, .5);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_tool_blur(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_pattern_t *pat = NULL;
+  pat = cairo_pattern_create_radial(.5, .5, 0.005, .5, .5, .5);
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, 1, 1, 1, 1);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, 1, 1, 1, 0.1);
+  cairo_set_source(cr, pat);
+
+  cairo_set_line_width(cr, 0.125);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  cairo_arc(cr, 0.5, 0.5, 0.45, 0, 2 * M_PI);
+  cairo_fill(cr);
+
+  cairo_pattern_destroy(pat);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_paste_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, 0.1, 0.6);
+  cairo_line_to(cr, 0.9, 0.6);
+  cairo_line_to(cr, 0.5, 1.0);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.4, 0.0);
+  cairo_line_to(cr, 0.6, 0.0);
+  cairo_line_to(cr, 0.6, 0.6);
+  cairo_line_to(cr, 0.4, 0.6);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_cut_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, -0.07)
+
+  cairo_set_line_width(cr, 0.1);
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_move_to(cr, 0.11, 0.25);
+    cairo_line_to(cr, 0.89, 0.75);
+    cairo_move_to(cr, 0.25, 0.11);
+    cairo_line_to(cr, 0.75, 0.89);
+    cairo_stroke(cr);
+
+    cairo_arc(cr, 0.89, 0.53, 0.17, 0, 2 * M_PI);
+    cairo_stroke(cr);
+
+    cairo_arc(cr, 0.53, 0.89, 0.17, 0, 2 * M_PI);
+    cairo_stroke(cr);
+  }
+  else
+  {
+    cairo_move_to(cr, 0.01, 0.35);
+    cairo_line_to(cr, 0.99, 0.65);
+    cairo_move_to(cr, 0.35, 0.01);
+    cairo_line_to(cr, 0.65, 0.99);
+    cairo_stroke(cr);
+
+    cairo_arc(cr, 0.89, 0.53, 0.17, 0, 2 * M_PI);
+    cairo_stroke(cr);
+
+    cairo_arc(cr, 0.53, 0.89, 0.17, 0, 2 * M_PI);
+    cairo_stroke(cr);
+  }
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_display_wavelet_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(0.93, 0, 0)
+
+  if(flags & CPF_ACTIVE)
+  {
+    float x1 = 0.2f;
+    float y1 = 1.f;
+
+    cairo_move_to(cr, x1, y1);
+
+    const int steps = 4;
+    const float delta = 1. / (float)steps;
+    for(int i = 0; i < steps; i++)
+    {
+      y1 -= delta;
+      cairo_line_to(cr, x1, y1);
+      x1 += delta;
+      if(x1 > .9) x1 = .9;
+      cairo_line_to(cr, x1, y1);
+    }
+    cairo_stroke(cr);
+
+    cairo_set_line_width(cr, 0.1);
+    cairo_rectangle(cr, 0., 0., 1., 1.);
+    cairo_stroke(cr);
+  }
+  else
+  {
+    cairo_move_to(cr, 0.08, 1.);
+    cairo_curve_to(cr, 0.4, 0.05, 0.6, 0.05, 1., 1.);
+    cairo_line_to(cr, 0.08, 1.);
+    cairo_fill(cr);
+
+    cairo_set_line_width(cr, 0.1);
+    cairo_rectangle(cr, 0., 0., 1., 1.);
+    cairo_stroke(cr);
+  }
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_auto_levels(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, .1, 0.3);
+  cairo_line_to(cr, .1, 1.);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, .5, 0.1);
+  cairo_line_to(cr, .5, 1.);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, .9, 0.3);
+  cairo_line_to(cr, .9, 1.);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0., 1.0);
+  cairo_line_to(cr, 1.0, 1.0);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
