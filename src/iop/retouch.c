@@ -504,6 +504,9 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
     if(p->rt_forms[i].formid != 0 && p->rt_forms[i].scale == scale) count++;
   }
 
+  // if there are shapes on this scale, make the cut shapes button sensitive
+  gtk_widget_set_sensitive(g->bt_copy_scale, count > 0);
+
   // if no shapes on this scale, we hide all
   if(bd->masks_shown == DT_MASKS_EDIT_OFF || count == 0)
   {
@@ -2100,10 +2103,12 @@ void gui_update(dt_iop_module_t *self)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
                                  (bd->masks_shown != DT_MASKS_EDIT_OFF) && (darktable.develop->gui_module == self));
+  // gtk_widget_set_sensitive(g->bt_copy_scale, TRUE);
   }
   else
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
+  //  gtk_widget_set_sensitive(g->bt_copy_scale, FALSE);
   }
 
   // update the gradient slider
@@ -2315,6 +2320,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->bt_copy_scale, _("cut shapes from current scale"));
   g_signal_connect(G_OBJECT(g->bt_copy_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), FALSE);
+  gtk_widget_set_sensitive(g->bt_copy_scale, FALSE);
 
   g->bt_paste_scale
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_paste_forms, CPF_STYLE_FLAT, NULL);
