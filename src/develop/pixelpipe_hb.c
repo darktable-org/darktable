@@ -340,7 +340,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     piece->hash = 0;
-    piece->enabled = piece->module->default_enabled;
+    piece->enabled = (piece->module->default_enabled && piece->module->hide_enable_button);
     dt_iop_commit_params(piece->module, piece->module->default_params, piece->module->default_blendop_params,
                          pipe, piece);
     nodes = g_list_next(nodes);

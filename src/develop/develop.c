@@ -1183,7 +1183,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     memcpy(module->params, module->default_params, module->params_size);
     dt_iop_commit_blend_params(module, module->default_blendop_params);
-    module->enabled = module->default_enabled;
+    module->enabled = (module->default_enabled && module->hide_enable_button);
 
     if(module->multi_priority == 0)
       module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
@@ -1420,6 +1420,20 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
+  //now modules that can be disabled but are auto-on
+  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+
+    if(!dt_history_check_module_exists(imgid, module->op)
+       && module->default_enabled
+       && !module->hide_enable_button
+       && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
+    {
+      _dev_insert_module(dev, module, imgid);
+    }
+  }
+
   //add scene-referred workflow 
   if(dt_image_is_matrix_correction_supported(image)
      && strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
@@ -1534,19 +1548,6 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
     if(!dt_history_check_module_exists(imgid, module->op)
        && module->default_enabled
        && module->hide_enable_button
-       && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
-    {
-      _dev_insert_module(dev, module, imgid);
-    }
-  }
-  //now modules that can be disabled but are auto-on
-  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-  {
-    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-
-    if(!dt_history_check_module_exists(imgid, module->op)
-       && module->default_enabled
-       && !module->hide_enable_button
        && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
     {
       _dev_insert_module(dev, module, imgid);
