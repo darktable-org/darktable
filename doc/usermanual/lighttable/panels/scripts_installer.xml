@@ -1,0 +1,109 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
+<sect2 status="final" id="lua_scripts_installer">
+
+  <title>Lua Scripts Installer</title>
+
+  <indexterm>
+    <primary>lighttable panels</primary>
+    <secondary>lua scripts installer</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>lua scripts installer</primary>
+  </indexterm>
+
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            This panel provides an interface for installing the darktable lua scripts.  The first time it is run, instructions
+            are displayed.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_lua_scripts_installer_first_run.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+        <row>
+          <entry>
+            Panel appearance after the first run.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_lua_scripts_installer.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+
+  <sect3 id="lua_scripts_installer_usage">
+
+    <title>Usage</title>
+
+    <sect4 id="lua_scripts_installer_usage_select_action">
+
+      <title>select action</title>
+
+      <para>
+        Select an action from the list of actions.
+      </para>
+
+        <sect5 id="lua_scripts_installer_usage_select_action_install_scripts">
+
+          <title>install scripts</title>
+
+          <para>
+            Install the darktable lua scripts by cloning the lua scripts repository using git.  The git executable
+            must be installed and in the user's path.  After the scripts are installed, the script manager
+            module starts, providing a point and click interface for managing the lua scripts.
+          </para>
+
+          <para>
+            The next time darktable starts, this module wont be active since the scripts are installed.
+          </para>
+
+        </sect5>
+
+        <sect5 id="lua_scripts_installer_usage_select_action_remind_me_later">
+
+          <title>remind me later</title>
+
+          <para>
+            This module will reappear every 5th time darktable is restarted.
+          </para>
+
+        </sect5>
+
+        <sect5 id="lua_scripts_installer_usage_select_action_dont_show_again">
+
+          <title>don't show again</title>
+
+          <para>
+            When darktable is restarted this module will no longer be active.  If the user changes their
+            mind and wants to use the module they can go to settings->lua options and uncheck the "install
+            scripts dont show again" checkbox.
+          </para>
+
+        </sect5>
+
+    </sect4>
+
+    <sect4 id="lua_scripts_installer_usage_execute">
+
+      <title>execute</title>
+
+      <para>
+        Perform the selected action.
+      </para>
+
+    </sect4>
+
+  </sect3>
+
+</sect2>
