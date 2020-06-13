@@ -25,6 +25,7 @@
 #include "common/file_location.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
@@ -278,6 +279,29 @@ static gboolean view_switch_key_accel_callback(GtkAccelGroup *accel_group, GObje
   return TRUE;
 }
 
+static gboolean toggle_tooltip_visibility(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                               guint keyval, GdkModifierType modifier, gpointer data)
+{
+  if(gdk_screen_is_composited(gdk_screen_get_default()))
+  {
+    gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
+    dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
+    if(tooltip_hidden)
+      dt_toast_log(_("tooltips off"));
+    else
+      dt_toast_log(_("tooltips on"));
+  }
+  else
+  {
+    dt_conf_set_bool("ui/hide_tooltips", FALSE);
+    dt_control_log(_("tooltip visibility can only be toggled if compositing is enabled in your window manager"));
+  }
+
+  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+  dt_bauhaus_load_theme();
+
+  return TRUE;
+}
 static gboolean _focuspeaking_switch_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -1377,6 +1401,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // accels window
   dt_accel_register_global(NC_("accel", "show accels window"), GDK_KEY_h, 0);
+
+  // View-switch
+  dt_accel_register_global(NC_("accel", "toggle tooltip visibility"), GDK_KEY_T, GDK_SHIFT_MASK);
+
+  dt_accel_connect_global("toggle tooltip visibility",
+                          g_cclosure_new(G_CALLBACK(toggle_tooltip_visibility), NULL, NULL));
 
   darktable.gui->reset = 0;
 
@@ -2765,39 +2795,47 @@ void dt_gui_load_theme(const char *theme)
 
   g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
 
-  if(dt_conf_get_bool("themes/usercss") && g_file_test(usercsspath, G_FILE_TEST_EXISTS))
-  {
-
-    char *c1 = path;
-    char *c2 = usercsspath;
+  char *c1 = path;
+  char *c2 = usercsspath;
 
 #ifdef _WIN32
-    // for Windows, we need to remove the drive letter and the colon, if present, and replace '\' with '/'
-    c1 = strchr(path, ':');
-    c1 = (c1 == NULL ? path : c1 + 1);
-    c2 = strchr(usercsspath, ':');
-    c2 = (c2 == NULL ? usercsspath : c2 + 1);
+  // for Windows, we need to remove the drive letter and the colon, if present, and replace '\' with '/'
+  c1 = strchr(path, ':');
+  c1 = (c1 == NULL ? path : c1 + 1);
+  c2 = strchr(usercsspath, ':');
+  c2 = (c2 == NULL ? usercsspath : c2 + 1);
 
-    c1 = g_strdelimit(c1, "\\", '/');
-    c2 = g_strdelimit(c2, "\\", '/');
+  c1 = g_strdelimit(c1, "\\", '/');
+  c2 = g_strdelimit(c2, "\\", '/');
 #endif
 
-    gchar *combinedcsscontent = g_strjoin(NULL, "@import url('", c1,
-                                           "'); @import url('", c2, "');", NULL);
+  gchar *themecss = NULL;
 
-    if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), combinedcsscontent, -1, &error))
-    {
-      fprintf(stderr, "%s: error parsing combined CSS: %s\n", G_STRFUNC, error->message);
-      g_clear_error(&error);
-    }
-
-    g_free(combinedcsscontent);
-  }
-  else if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), path, &error))
+  if(dt_conf_get_bool("themes/usercss") && g_file_test(c2, G_FILE_TEST_EXISTS))
   {
-    fprintf(stderr, "%s: error parsing %s: %s\n", G_STRFUNC, path, error->message);
+    themecss = g_strjoin(NULL, "@import url('", c1,
+                                           "'); @import url('", c2, "');", NULL);
+  }
+  else
+  {
+    themecss = g_strjoin(NULL, "@import url('", c1, "');", NULL);
+  }
+
+  if(dt_conf_get_bool("ui/hide_tooltips"))
+  {
+    gchar *newcss = g_strjoin(NULL, themecss, " tooltip {opacity: 0; background: transparent;}", NULL);
+    g_free(themecss);
+    themecss = newcss;
+  }
+
+  if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), themecss, -1, &error))
+  {
+    fprintf(stderr, "%s: error parsing combined CSS: %s\n", G_STRFUNC, error->message);
     g_clear_error(&error);
   }
+
+
+  g_free(themecss);
 
   g_object_unref(themes_style_provider);
 
