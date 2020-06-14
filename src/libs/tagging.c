@@ -1253,9 +1253,21 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
                     tagname ? tagname + 1 : d->last_tag);
 }
 
-static void _entry_activated(GtkButton *button, dt_lib_module_t *self)
+static gboolean _key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
-  _new_button_clicked(NULL, self);
+  switch(event->keyval)
+  {
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
+      _new_button_clicked(NULL, self);
+      break;
+    case GDK_KEY_Escape:
+      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      break;
+    default:
+      break;
+  }
+  return FALSE;
 }
 
 static void _clear_entry_button_callback(GtkButton *button, dt_lib_module_t *self)
@@ -2720,7 +2732,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_tag_name_changed), (gpointer)self);
-  g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(_entry_activated), (gpointer)self);
+  g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(_key_pressed), (gpointer)self);
   d->entry = GTK_ENTRY(w);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
 
