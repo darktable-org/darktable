@@ -278,9 +278,16 @@ void dt_loc_init_sharedir(const char* application_directory)
   dt_check_opendir("darktable.sharedir", darktable.sharedir);
 }
 
+void dt_loc_get_kerneldir(char *kerneldir, size_t bufsize)
+{
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(kerneldir, bufsize, "%s" G_DIR_SEPARATOR_S "kernels", datadir);
+}
+
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize)
 {
-  g_strlcpy(plugindir, darktable.plugindir, bufsize);
+  g_strlcpy(plugindir, darktable.plugindir, bufsize);  
 }
 
 void dt_loc_get_localedir(char *localedir, size_t bufsize)

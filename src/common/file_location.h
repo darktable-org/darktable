@@ -48,6 +48,7 @@ void dt_check_opendir(const char* text, const char* directory);
 /* temporary backward_compatibility*/
 void dt_loc_get_datadir(char *datadir, size_t bufsize);
 void dt_loc_get_sharedir(char *sharedir, size_t bufsize);
+void dt_loc_get_kerneldir(char *kerneldir, size_t bufsize);
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize);
 void dt_loc_get_localedir(char *localedir, size_t bufsize);
 void dt_loc_get_tmp_dir(char *tmpdir, size_t bufsize);
