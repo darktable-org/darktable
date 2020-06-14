@@ -3143,17 +3143,21 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
         if(piece)
         {
-          p->cx = points[0] / (float)piece->buf_out.width;
-          p->cy = points[1] / (float)piece->buf_out.height;
-          p->cw = copysignf(points[2] / (float)piece->buf_out.width, p->cw);
-          p->ch = copysignf(points[3] / (float)piece->buf_out.height, p->ch);
+          // only update the sliders, not the dt_iop_clipping_params_t structure, so that the call to
+          // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
+          // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
+          // from the sliders when the iop loses focus, at which time the final selected crop is applied.
+          float p_cx = points[0] / (float)piece->buf_out.width;
+          float p_cy = points[1] / (float)piece->buf_out.height;
+          float p_cw = copysignf(points[2] / (float)piece->buf_out.width, p->cw);
+          float p_ch = copysignf(points[3] / (float)piece->buf_out.height, p->ch);
 
           ++darktable.gui->reset;
 
-          dt_bauhaus_slider_set(g->cx, p->cx*100);
-          dt_bauhaus_slider_set(g->cy, p->cy*100);
-          dt_bauhaus_slider_set(g->cw, 100-p->cw*100);
-          dt_bauhaus_slider_set(g->ch, 100-p->ch*100);
+          dt_bauhaus_slider_set(g->cx, p_cx*100);
+          dt_bauhaus_slider_set(g->cy, p_cy*100);
+          dt_bauhaus_slider_set(g->cw, 100-p_cw*100);
+          dt_bauhaus_slider_set(g->ch, 100-p_ch*100);
 
           --darktable.gui->reset;
         }
