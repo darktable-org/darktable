@@ -959,6 +959,12 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
   }
 
+  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  {
+    // make sure any edition field loses the focus
+    gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+  }
+
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM && id < 1 && event->button == 1 && event->type == GDK_BUTTON_PRESS)
   {
     // we click in an empty area, let's deselect all images
@@ -1103,13 +1109,6 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   const int imgid = dt_control_get_mouse_over_id();
-
-  if(imgid > 0)
-  {
-    // let's be absolutely sure that the right widget has the focus
-    // otherwise accels don't work...
-    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-  }
 
   int groupid = -1;
   // we crawl over all images to find the right one
