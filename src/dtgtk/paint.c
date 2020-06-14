@@ -2057,6 +2057,7 @@ void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 0, 0)
 
+  cairo_set_line_width(cr, 0.1);
   cairo_arc(cr, 0.65, 0.35, 0.35, 0, 2 * M_PI);
   cairo_stroke(cr);
 
@@ -2070,16 +2071,25 @@ void dtgtk_cairo_paint_tool_heal(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   PREAMBLE(1, 0, 0)
 
+  cairo_set_line_width(cr, 0.01);
+  cairo_move_to(cr, 0.35, 0.1);
+  cairo_rel_line_to(cr, 0.3, 0.0);
+  cairo_rel_line_to(cr, 0.0, 0.25);
+  cairo_rel_line_to(cr, 0.25, 0.0);
+  cairo_rel_line_to(cr, 0.0, 0.3);
+  cairo_rel_line_to(cr, -0.25, 0.0);
+  cairo_rel_line_to(cr, 0.0, 0.25);
+  cairo_rel_line_to(cr, -0.3, 0.0);
+  cairo_rel_line_to(cr, 0.0, -0.25);
+  cairo_rel_line_to(cr, -0.25, 0.0);
+  cairo_rel_line_to(cr, 0.0, -0.3);
+  cairo_rel_line_to(cr, 0.25, 0.0);
+  cairo_close_path(cr);
+
   cairo_rectangle(cr, 0., 0., 1., 1.);
+
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_fill(cr);
-
-  cairo_set_source_rgba(cr, .74, 0.13, 0.13, 1.0);
-  cairo_set_line_width(cr, 0.3);
-
-  cairo_move_to(cr, 0.5, 0.18);
-  cairo_line_to(cr, 0.5, 0.82);
-  cairo_move_to(cr, 0.18, 0.5);
-  cairo_line_to(cr, 0.82, 0.5);
   cairo_stroke(cr);
 
   FINISH
@@ -2087,8 +2097,9 @@ void dtgtk_cairo_paint_tool_heal(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 
 void dtgtk_cairo_paint_tool_fill(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 0, 0)
+  PREAMBLE(1.08, 0, 0)
 
+  cairo_set_line_width(cr, 0.1);
   cairo_move_to(cr, 0.1, 0.1);
   cairo_line_to(cr, 0.2, 0.1);
   cairo_line_to(cr, 0.2, 0.9);
@@ -2105,20 +2116,15 @@ void dtgtk_cairo_paint_tool_fill(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 
 void dtgtk_cairo_paint_tool_blur(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 0, 0)
+  PREAMBLE(1.1, 0, 0)
 
-  cairo_pattern_t *pat = NULL;
-  pat = cairo_pattern_create_radial(.5, .5, 0.005, .5, .5, .5);
-  cairo_pattern_add_color_stop_rgba(pat, 0.0, 1, 1, 1, 1);
-  cairo_pattern_add_color_stop_rgba(pat, 1.0, 1, 1, 1, 0.1);
-  cairo_set_source(cr, pat);
-
-  cairo_set_line_width(cr, 0.125);
-  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-  cairo_arc(cr, 0.5, 0.5, 0.45, 0, 2 * M_PI);
-  cairo_fill(cr);
-
-  cairo_pattern_destroy(pat);
+ cairo_set_line_width(cr, 0.1);
+ cairo_move_to(cr, 0.5, 0.1);
+ cairo_arc(cr, 0.5, 0.65, 0.28, -0.2 * M_PI, 1.2 * M_PI);
+ cairo_close_path(cr);
+ cairo_stroke(cr);
+ cairo_arc(cr, 0.5, 0.65, 0.13, 0.65 * M_PI, 1.2 * M_PI);
+ cairo_stroke(cr);
 
   FINISH
 }
