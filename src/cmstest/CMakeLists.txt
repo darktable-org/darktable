@@ -1,4 +1,4 @@
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
+include_directories(${DARKTABLE_BINDIR})
 add_executable(darktable-cmstest main.c ${DARKTABLE_BINDIR}/version_gen.c)
 
 # cmake implicitly sets GENERATED on the source file in the directory of the custom command
@@ -36,7 +36,9 @@ else(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
 endif(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
 
 
-set_target_properties(darktable-cmstest PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(darktable-cmstest 
+                     PROPERTIES LINKER_LANGUAGE C
+                     RUNTIME_OUTPUT_DIRECTORY ${DARKTABLE_BINDIR})
 
 if (WIN32)
   _detach_debuginfo (darktable-cmstest bin)
