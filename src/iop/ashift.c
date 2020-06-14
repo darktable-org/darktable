@@ -428,6 +428,10 @@ typedef struct dt_iop_ashift_gui_data_t
   int jobparams;
   dt_pthread_mutex_t lock;
   gboolean adjust_crop;
+  float cl;	// shadow copy of dt_iop_ashift_data_t.cl
+  float cr;	// shadow copy of dt_iop_ashift_data_t.cr
+  float ct;	// shadow copy of dt_iop_ashift_data_t.ct
+  float cb;	// shadow copy of dt_iop_ashift_data_t.cb
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -2477,10 +2481,10 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   // reset fit margins if auto-cropping is off
   if(p->cropmode == ASHIFT_CROP_OFF)
   {
-    p->cl = 0.0f;
-    p->cr = 1.0f;
-    p->ct = 0.0f;
-    p->cb = 1.0f;
+    g->cl = p->cl = 0.0f;
+    g->cr = p->cr = 1.0f;
+    g->ct = p->ct = 0.0f;
+    g->cb = p->cb = 1.0f;
     return;
   }
 
@@ -2592,19 +2596,19 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   P[1] /= P[2];
 
   // calculate clipping margins relative to output image dimensions
-  p->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-  p->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-  p->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
-  p->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+  g->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+  g->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+  g->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+  g->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
 
   // final sanity check
-  if(p->cr - p->cl <= 0.0f || p->cb - p->ct <= 0.0f) goto failed;
+  if(g->cr - g->cl <= 0.0f || g->cb - g->ct <= 0.0f) goto failed;
 
   g->fitting = 0;
 
 #ifdef ASHIFT_DEBUG
   printf("margins after crop fitting: iter %d, x %f, y %f, angle %f, crop area (%f %f %f %f), width %f, height %f\n",
-         iter, cropfit.x, cropfit.y, cropfit.alpha, p->cl, p->cr, p->ct, p->cb, wd, ht);
+         iter, cropfit.x, cropfit.y, cropfit.alpha, g->cl, g->cr, g->ct, g->cb, wd, ht);
 #endif
   dt_control_queue_redraw_center();
   return;
@@ -2612,10 +2616,10 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 failed:
   // in case of failure: reset clipping margins, set "automatic cropping" parameter
   // to "off" state, and display warning message
-  p->cl = 0.0f;
-  p->cr = 1.0f;
-  p->ct = 0.0f;
-  p->cb = 1.0f;
+  g->cl = p->cl = 0.0f;
+  g->cr = p->cr = 1.0f;
+  g->ct = p->ct = 0.0f;
+  g->cb = p->cb = 1.0f;
   p->cropmode = ASHIFT_CROP_OFF;
   dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
   g->fitting = 0;
@@ -2732,14 +2736,14 @@ static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, cons
   if(A < 0.01f * wd * ht) return;
 
   // calculate clipping margins relative to output image dimensions
-  p->cl = CLAMP((P[0] - d * cos(alpha)) / owd, 0.0f, 1.0f);
-  p->cr = CLAMP((P[0] + d * cos(alpha)) / owd, 0.0f, 1.0f);
-  p->ct = CLAMP((P[1] - d * sin(alpha)) / oht, 0.0f, 1.0f);
-  p->cb = CLAMP((P[1] + d * sin(alpha)) / oht, 0.0f, 1.0f);
+  g->cl = CLAMP((P[0] - d * cos(alpha)) / owd, 0.0f, 1.0f);
+  g->cr = CLAMP((P[0] + d * cos(alpha)) / owd, 0.0f, 1.0f);
+  g->ct = CLAMP((P[1] - d * sin(alpha)) / oht, 0.0f, 1.0f);
+  g->cb = CLAMP((P[1] + d * sin(alpha)) / oht, 0.0f, 1.0f);
 
 #ifdef ASHIFT_DEBUG
   printf("margins after crop adjustment: x %f, y %f, angle %f, crop area (%f %f %f %f), width %f, height %f\n",
-         0.5f * (p->cl + p->cr), 0.5f * (p->ct + p->cb), alpha, p->cl, p->cr, p->ct, p->cb, wd, ht);
+         0.5f * (g->cl + g->cr), 0.5f * (g->ct + g->cb), alpha, g->cl, g->cr, g->ct, g->cb, wd, ht);
 #endif
   dt_control_queue_redraw_center();
   return;
@@ -3475,10 +3479,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float oht = ymax - ymin;
 
     // the four clipping corners
-    float C[4][2] = { { xmin + p->cl * owd, ymin + p->ct * oht },
-                      { xmin + p->cl * owd, ymin + p->cb * oht },
-                      { xmin + p->cr * owd, ymin + p->cb * oht },
-                      { xmin + p->cr * owd, ymin + p->ct * oht } };
+    float C[4][2] = { { xmin + g->cl * owd, ymin + g->ct * oht },
+                      { xmin + g->cl * owd, ymin + g->cb * oht },
+                      { xmin + g->cr * owd, ymin + g->cb * oht },
+                      { xmin + g->cr * owd, ymin + g->ct * oht } };
 
     // convert clipping corners to final output image
     if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
@@ -3871,6 +3875,11 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
       g->lasty = pts[1] - pts[3];
       g->crop_cx = 0.5f * (p->cl + p->cr);
       g->crop_cy = 0.5f * (p->ct + p->cb);
+      // copy current crop box into shadow variables
+      g->cl = p->cl;
+      g->cr = p->cr;
+      g->ct = p->ct;
+      g->cb = p->cb;
       return TRUE;
     }
     else
@@ -3950,8 +3959,17 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  // stop adjust crop
-  g->adjust_crop = FALSE;
+  if (g->adjust_crop)
+  {
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    // copy shadow values for crop box
+    p->cl = g->cl;
+    p->cr = g->cr;
+    p->ct = g->ct;
+    p->cb = g->cb;
+    // stop adjust crop
+    g->adjust_crop = FALSE;
+  }
   dt_control_change_cursor(GDK_LEFT_PTR);
 
   // finalize the isbounding mode
@@ -4561,6 +4579,12 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->guide_lines, g->show_guides);
   dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
+
+  // copy crop box into shadow variables
+  g->cl = p->cl;
+  g->cr = p->cr;
+  g->ct = p->ct;
+  g->cb = p->cb;
 
   switch(p->mode)
   {
