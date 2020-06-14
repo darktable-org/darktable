@@ -89,6 +89,7 @@ install(FILES ${WATERMARKS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/w
 #
 # Install gdb command file for backtrace generation
 #
+FILE(COPY gdb_commands DESTINATION "${DARKTABLE_DATADIR}")
 install(FILES gdb_commands DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
 #
