@@ -293,13 +293,13 @@ typedef struct dt_iop_ashift_params_t
   float lensshift_v; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (vertical)"
   float lensshift_h; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (horizontal)"
   float shear;       // $MIN: -SHEAR_RANGE_SOFT $MAX: SHEAR_RANGE_SOFT $DEFAULT: 0.0
-  float f_length;    // $MIN: 1.0 $MAX: 2000.0 $DEFAULT: 28.0 $DESCRIPTION: "focal length"
+  float f_length;    // $MIN: 1.0 $MAX: 2000.0 $DEFAULT: DEFAULT_F_LENGTH $DESCRIPTION: "focal length"
   float crop_factor; // $MIN: 0.5 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "crop factor"
   float orthocorr;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "lens dependence"
   float aspect;      // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "aspect adjust"
-  dt_iop_ashift_mode_t mode;     // $DESCRIPTION: "lens model"
-  int toggle;
-  dt_iop_ashift_crop_t cropmode; // $DESCRIPTION: "automatic cropping"
+  dt_iop_ashift_mode_t mode;     // $DEFAULT: ASHIFT_MODE_GENERIC $DESCRIPTION: "lens model"
+  int toggle;                    // $DEFAULT: 0
+  dt_iop_ashift_crop_t cropmode; // $DEFAULT: ASHIFT_CROP_OFF $DESCRIPTION: "automatic cropping"
   float cl;          // $DEFAULT: 0.0
   float cr;          // $DEFAULT: 1.0
   float ct;          // $DEFAULT: 0.0
@@ -430,6 +430,10 @@ typedef struct dt_iop_ashift_gui_data_t
   int jobparams;
   dt_pthread_mutex_t lock;
   gboolean adjust_crop;
+  float cl;	// shadow copy of dt_iop_ashift_data_t.cl
+  float cr;	// shadow copy of dt_iop_ashift_data_t.cr
+  float ct;	// shadow copy of dt_iop_ashift_data_t.ct
+  float cb;	// shadow copy of dt_iop_ashift_data_t.cb
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -649,6 +653,44 @@ static void print_roi(const dt_iop_roi_t *roi, const char *label)
   printf("{ %5d  %5d  %5d  %5d  %.6f } %s\n", roi->x, roi->y, roi->width, roi->height, roi->scale, label);
 }
 #endif
+
+static inline void shadow_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+{
+  // copy actual crop box values into shadow variables
+  g->cl = p->cl;
+  g->cr = p->cr;
+  g->ct = p->ct;
+  g->cb = p->cb;
+}
+
+static void clear_shadow_crop_box(dt_iop_ashift_gui_data_t *g)
+{
+  // reset the crop to the full image
+  g->cl = 0.0f;
+  g->cr = 1.0f;
+  g->ct = 0.0f;
+  g->cb = 1.0f;
+}
+
+static inline void commit_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+{
+  // copy shadow values for crop box into actual parameters
+  p->cl = g->cl;
+  p->cr = g->cr;
+  p->ct = g->ct;
+  p->cb = g->cb;
+}
+
+static inline void swap_shadow_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+{
+  // exchange shadow values and actual crop values
+  // this is needed for a temporary commit to be able to properly update the undo history
+  float tmp;
+  tmp = p->cl; p->cl = g->cl; g->cl = tmp;
+  tmp = p->cr; p->cr = g->cr; g->cr = tmp;
+  tmp = p->ct; p->ct = g->ct; g->ct = tmp;
+  tmp = p->cb; p->cb = g->cb; g->cb = tmp;
+}
 
 #define MAT3SWAP(a, b) { float (*tmp)[3] = (a); (a) = (b); (b) = tmp; }
 
@@ -2479,10 +2521,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   // reset fit margins if auto-cropping is off
   if(p->cropmode == ASHIFT_CROP_OFF)
   {
-    p->cl = 0.0f;
-    p->cr = 1.0f;
-    p->ct = 0.0f;
-    p->cb = 1.0f;
+    clear_shadow_crop_box(g);
+    commit_crop_box(p,g);
     return;
   }
 
@@ -2594,19 +2634,19 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   P[1] /= P[2];
 
   // calculate clipping margins relative to output image dimensions
-  p->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-  p->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-  p->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
-  p->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+  g->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+  g->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
+  g->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+  g->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
 
   // final sanity check
-  if(p->cr - p->cl <= 0.0f || p->cb - p->ct <= 0.0f) goto failed;
+  if(g->cr - g->cl <= 0.0f || g->cb - g->ct <= 0.0f) goto failed;
 
   g->fitting = 0;
 
 #ifdef ASHIFT_DEBUG
   printf("margins after crop fitting: iter %d, x %f, y %f, angle %f, crop area (%f %f %f %f), width %f, height %f\n",
-         iter, cropfit.x, cropfit.y, cropfit.alpha, p->cl, p->cr, p->ct, p->cb, wd, ht);
+         iter, cropfit.x, cropfit.y, cropfit.alpha, g->cl, g->cr, g->ct, g->cb, wd, ht);
 #endif
   dt_control_queue_redraw_center();
   return;
@@ -2614,10 +2654,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 failed:
   // in case of failure: reset clipping margins, set "automatic cropping" parameter
   // to "off" state, and display warning message
-  p->cl = 0.0f;
-  p->cr = 1.0f;
-  p->ct = 0.0f;
-  p->cb = 1.0f;
+  clear_shadow_crop_box(g);
+  commit_crop_box(p,g);
   p->cropmode = ASHIFT_CROP_OFF;
   dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
   g->fitting = 0;
@@ -2626,7 +2664,8 @@ failed:
 }
 
 // manually adjust crop area by shifting its center
-static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, const float newx, const float newy)
+static void crop_adjust(dt_iop_module_t *module, const dt_iop_ashift_params_t *const p,
+                        const float newx, const float newy)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -2734,16 +2773,15 @@ static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, cons
   if(A < 0.01f * wd * ht) return;
 
   // calculate clipping margins relative to output image dimensions
-  p->cl = CLAMP((P[0] - d * cos(alpha)) / owd, 0.0f, 1.0f);
-  p->cr = CLAMP((P[0] + d * cos(alpha)) / owd, 0.0f, 1.0f);
-  p->ct = CLAMP((P[1] - d * sin(alpha)) / oht, 0.0f, 1.0f);
-  p->cb = CLAMP((P[1] + d * sin(alpha)) / oht, 0.0f, 1.0f);
+  g->cl = CLAMP((P[0] - d * cos(alpha)) / owd, 0.0f, 1.0f);
+  g->cr = CLAMP((P[0] + d * cos(alpha)) / owd, 0.0f, 1.0f);
+  g->ct = CLAMP((P[1] - d * sin(alpha)) / oht, 0.0f, 1.0f);
+  g->cb = CLAMP((P[1] + d * sin(alpha)) / oht, 0.0f, 1.0f);
 
 #ifdef ASHIFT_DEBUG
   printf("margins after crop adjustment: x %f, y %f, angle %f, crop area (%f %f %f %f), width %f, height %f\n",
-         0.5f * (p->cl + p->cr), 0.5f * (p->ct + p->cb), alpha, p->cl, p->cr, p->ct, p->cb, wd, ht);
+         0.5f * (g->cl + g->cr), 0.5f * (g->ct + g->cb), alpha, g->cl, g->cr, g->ct, g->cb, wd, ht);
 #endif
-  dt_control_queue_redraw_center();
   return;
 }
 
@@ -3417,12 +3455,16 @@ static int call_distort_transform(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, s
   int ret = 0;
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   if(!piece) return ret;
-  if(piece->module == self && piece->enabled &&
+  if(piece->module == self && /*piece->enabled && */  //see note below
      !(dev->gui_module && dev->gui_module->operation_tags_filter() & piece->module->operation_tags()))
   {
     ret = piece->module->distort_transform(piece->module, piece, points, points_count);
   }
   return ret;
+  //NOTE: piece->enabled is FALSE for exactly the first mouse_moved event following a button_pressed event
+  //  when ASHIFT_CROP_ASPECT is active, which causes the first gui_post_expose call on starting to resize
+  //  the crop box to draw the center image without the crop overlay, resulting in an annoying visual glitch.
+  //  Removing the check appears to have no adverse effects and eliminates the glitch.
 }
 
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
@@ -3477,10 +3519,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const float oht = ymax - ymin;
 
     // the four clipping corners
-    float C[4][2] = { { xmin + p->cl * owd, ymin + p->ct * oht },
-                      { xmin + p->cl * owd, ymin + p->cb * oht },
-                      { xmin + p->cr * owd, ymin + p->cb * oht },
-                      { xmin + p->cr * owd, ymin + p->ct * oht } };
+    float C[4][2] = { { xmin + g->cl * owd, ymin + g->ct * oht },
+                      { xmin + g->cl * owd, ymin + g->cb * oht },
+                      { xmin + g->cr * owd, ymin + g->cb * oht },
+                      { xmin + g->cr * owd, ymin + g->ct * oht } };
 
     // convert clipping corners to final output image
     if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
@@ -3788,9 +3830,14 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     const float newy = g->crop_cy + (pts[1] - pts[3]) - g->lasty;
 
     crop_adjust(self, p, newx, newy);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_control_queue_redraw_center();
     return TRUE;
   }
+
+  // if visibility of lines is switched off or no lines available, we would normally adjust the crop box
+  // but since g->adjust_crop was FALSE, we have nothing to do
+  if(g->lines_suppressed || g->lines == NULL)
+    return TRUE;
 
   // if in rectangle selecting mode adjust "near"-ness of lines according to
   // the rectangular selection
@@ -3871,8 +3918,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
       g->lastx = pts[0] - pts[2];
       g->lasty = pts[1] - pts[3];
-      g->crop_cx = 0.5f * (p->cl + p->cr);
-      g->crop_cy = 0.5f * (p->ct + p->cb);
+      g->crop_cx = 0.5f * (g->cl + g->cr);
+      g->crop_cy = 0.5f * (g->ct + g->cb);
       return TRUE;
     }
     else
@@ -3952,9 +3999,16 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  // stop adjust crop
-  g->adjust_crop = FALSE;
   dt_control_change_cursor(GDK_LEFT_PTR);
+  if (g->adjust_crop)
+  {
+    // stop adjust crop
+    g->adjust_crop = FALSE;
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    swap_shadow_crop_box(p,g);  // temporarily update the crop box in p
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    swap_shadow_crop_box(p,g);  // restore p
+  }
 
   // finalize the isbounding mode
   // if user has released the shift button in-between -> do nothing
@@ -4003,7 +4057,6 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   }
 
   // end of sweeping/isbounding mode
-  dt_control_change_cursor(GDK_LEFT_PTR);
   g->isselecting = g->isdeselecting = 0;
   g->isbounding = ASHIFT_BOUNDING_OFF;
   g->near_delta = 0;
@@ -4076,24 +4129,35 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  if(w == g->cropmode)
-  {
-    if(g->lines != NULL && !g->lines_suppressed)
-    {
-      g->lines_suppressed = 1;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
-    }
-  }
-  else if(w == g->mode)
-  {
-    gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
-  }
-
 #ifdef ASHIFT_DEBUG
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   model_probe(self, p, g->lastfit);
 #endif
   do_crop(self, p);
+  commit_crop_box(p,g);
+  
+  if(w == g->mode)
+  {
+    gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
+  }
+}
+
+static void cropmode_callback(GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  if(g->lines != NULL && !g->lines_suppressed)
+  {
+    g->lines_suppressed = 1;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
+  }
+
+  swap_shadow_crop_box(p,g);	//temporarily update real crop box
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  swap_shadow_crop_box(p,g);
 }
 
 static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
@@ -4103,7 +4167,7 @@ static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   g->show_guides = dt_bauhaus_combobox_get(widget);
   dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
+  dt_control_queue_redraw_center();
 }
 
 static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -4129,7 +4193,6 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       g->lastfit = fitaxis = ASHIFT_FIT_VERTICALLY;
 
     dt_iop_request_focus(self);
-    dt_dev_reprocess_all(self->dev);
 
     if(self->enabled)
     {
@@ -4153,7 +4216,7 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       p->toggle ^= 1;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
@@ -4182,7 +4245,6 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       g->lastfit = fitaxis = ASHIFT_FIT_HORIZONTALLY;
 
     dt_iop_request_focus(self);
-    dt_dev_reprocess_all(self->dev);
 
     if(self->enabled)
     {
@@ -4206,7 +4268,7 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       p->toggle ^= 1;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
@@ -4237,7 +4299,6 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
       fitaxis = ASHIFT_FIT_BOTH_SHEAR;
 
     dt_iop_request_focus(self);
-    dt_dev_reprocess_all(self->dev);
 
     if(self->enabled)
     {
@@ -4261,7 +4322,7 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
       p->toggle ^= 1;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
@@ -4292,7 +4353,6 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
       enhance = ASHIFT_ENHANCE_NONE;
 
     dt_iop_request_focus(self);
-    dt_dev_reprocess_all(self->dev);
 
     if(self->enabled)
     {
@@ -4308,7 +4368,7 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
       p->toggle ^= 1;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE); // also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
@@ -4450,6 +4510,9 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
   gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
+
+  // copy crop box into shadow variables
+  shadow_crop_box(p,g);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -4611,7 +4674,19 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   if(self->enabled)
-    dt_dev_reprocess_all(self->dev);
+  {
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+    if (in)
+    {
+      shadow_crop_box(p,g);
+      dt_control_queue_redraw_center();
+    }
+    else
+    {
+      commit_crop_box(p,g);
+    }
+  }
 }
 
 static float log10_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
@@ -4691,6 +4766,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->lastx = g->lasty = -1.0f;
   g->crop_cx = g->crop_cy = 1.0f;
 
+  shadow_crop_box(p,g);
+
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
@@ -4713,6 +4790,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
+  g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
 
