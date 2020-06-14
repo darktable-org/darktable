@@ -3657,9 +3657,15 @@ static void wavelet_color_mode_callback(GtkWidget *w, dt_iop_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (mode == MODE_RGB));
   gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (mode == MODE_Y0U0V0));
   if(mode == MODE_RGB)
+  {
     g->channel = DT_DENOISE_PROFILE_ALL;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
+  }
   else
+  {
     g->channel = DT_DENOISE_PROFILE_Y0;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), g->channel - DT_DENOISE_PROFILE_Y0);
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3861,9 +3867,15 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs), (p->wavelet_color_mode == MODE_RGB));
   gtk_widget_set_visible(GTK_WIDGET(g->channel_tabs_Y0U0V0), (p->wavelet_color_mode == MODE_Y0U0V0));
   if((p->wavelet_color_mode == MODE_Y0U0V0) && (g->channel < DT_DENOISE_PROFILE_Y0))
+  {
     g->channel = DT_DENOISE_PROFILE_Y0;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), g->channel - DT_DENOISE_PROFILE_Y0);
+  }
   if((p->wavelet_color_mode == MODE_RGB) && (g->channel > DT_DENOISE_PROFILE_B))
+  {
     g->channel = DT_DENOISE_PROFILE_ALL;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
+  }
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -3871,9 +3883,15 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   if(p->wavelet_color_mode == MODE_Y0U0V0)
+  {
     g->channel = DT_DENOISE_PROFILE_Y0;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), g->channel - DT_DENOISE_PROFILE_Y0);
+  }
   else
+  {
     g->channel = DT_DENOISE_PROFILE_ALL;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
+  }
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm, !p->fix_anscombe_and_nlmeans_norm);
   gtk_widget_set_visible(g->use_new_vst, !p->use_new_vst);
 }
@@ -4383,7 +4401,7 @@ void gui_init(dt_iop_module_t *self)
                            gtk_label_new(_("U0V0")));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs_Y0U0V0, g->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), g->channel);
+  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs_Y0U0V0), g->channel - DT_DENOISE_PROFILE_Y0);
   g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
 
   const int ch = (int)g->channel;
