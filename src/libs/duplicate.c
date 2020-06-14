@@ -207,12 +207,24 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
   if (d->imgid == 0) return;
   dt_develop_t *dev = darktable.develop;
-  if(!dev->pipe->output_backbuf || dev->image_status != DT_DEV_PIXELPIPE_VALID) return;
+  if(!dev->preview_pipe->backbuf || dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
 
   // use the same resolution as main previem image to avoid blur
-  float img_wd = dev->pipe->output_backbuf_width / darktable.gui->ppd;
-  float img_ht = dev->pipe->output_backbuf_height / darktable.gui->ppd;
+  float img_wd = dev->preview_pipe->backbuf_width;
+  float img_ht = dev->preview_pipe->backbuf_height;
   const int32_t tb = darktable.develop->border_size;
+
+  // we rescale the sizes to the screen size
+  if (img_ht * (width - 2 * tb) > img_wd * (height - 2 * tb))
+  {
+    img_wd = img_wd*(height - 2 * tb)/img_ht;
+    img_ht = (height - 2 * tb);
+  }
+  else
+  {
+    img_ht = img_ht*(width - 2 * tb)/img_wd;
+    img_wd = (width - 2 * tb);
+  }
 
   // Get the resizing from borders - only to check validity of mipmap cache size
   float zoom_ratio = 1.f;
@@ -263,12 +275,16 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_paint(cri);
 
     // move coordinates according to margin
-    cairo_translate(cri, ceilf(.5f * (width - img_wd)), ceilf(.5f * (height - img_ht)));
+    const float wd = dev->pipe->output_backbuf_width / darktable.gui->ppd;
+    const float ht = dev->pipe->output_backbuf_height / darktable.gui->ppd;
+    const float margin_left = ceilf(.5f * (width - wd));
+    const float margin_top = ceilf(.5f * (height - ht));
+    cairo_translate(cri, margin_left, margin_top);
 
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      cairo_rectangle(cri, -tb / 3., -tb / 3., img_wd + 2. * tb / 3., img_ht + 2. * tb / 3.);
+      cairo_rectangle(cri, -tb / 3., -tb / 3., wd + 2. * tb / 3., ht + 2. * tb / 3.);
       cairo_set_source_rgb(cri, 1., 1., 1.);
       cairo_fill(cri);
     }
@@ -276,11 +292,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     // compute the surface pixel shift to match reference image FIXME!
     const float zoom_y = dt_control_get_dev_zoom_y();
     const float zoom_x = dt_control_get_dev_zoom_x();
-    const float dx = -zoom_x * img_wd - (img_wd - 2. * tb) * nz / 2. + (img_wd - 2. * tb) / 2.;
-    const float dy = -zoom_y * img_ht - (img_ht - 2. * tb) * nz / 2. + (img_ht - 2. * tb) / 2.;
+    const float dx = -floorf(zoom_x * (img_wd) * nz + img_wd * nz / 2. - width / 2.) - margin_left;
+    const float dy = -floorf(zoom_y * (img_ht) * nz + img_ht * nz / 2. - height/ 2.) - margin_top;
 
     // finally, draw the image
-    cairo_rectangle(cri, 0, 0, img_wd, img_ht);
+    cairo_rectangle(cri, 0, 0, wd, ht);
     cairo_clip_preserve(cri);
     cairo_set_source_surface(cri, d->preview_surf, dx, dy);
     cairo_pattern_set_filter(cairo_get_source(cri), darktable.gui->filter_image);
