@@ -379,7 +379,7 @@ static void init_tab_general(GtkWidget *stack)
 
 
   //font size selector
-  if(dt_conf_get_bool("use_system_font") < 5.0f || dt_conf_get_float("font_size") > 20.0f)
+  if(dt_conf_get_float("font_size") < 5.0f || dt_conf_get_float("font_size") > 20.0f)
     dt_conf_set_float("font_size", 12.0f);
 
   label = gtk_label_new(_("font size in points"));
