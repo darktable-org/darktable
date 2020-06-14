@@ -125,9 +125,6 @@ static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
 static void _ui_log_redraw_callback(gpointer instance, GtkWidget *widget);
 static void _ui_toast_redraw_callback(gpointer instance, GtkWidget *widget);
 
-/* Set the HiDPI stuff */
-static void configure_ppd_dpi(dt_gui_gtk_t *gui);
-
 /*
  * OLD UI API
  */
@@ -998,7 +995,7 @@ static gboolean configure(GtkWidget *da, GdkEventConfigure *event, gpointer user
   oldh = event->height;
 
 #ifndef GDK_WINDOWING_QUARTZ
-  configure_ppd_dpi((dt_gui_gtk_t *) user_data);
+  dt_configure_ppd_dpi((dt_gui_gtk_t *) user_data);
 #endif
 
   return dt_control_configure(da, event, user_data);
@@ -1448,7 +1445,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_cleanup();
 }
 
-static void configure_ppd_dpi(dt_gui_gtk_t *gui)
+void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
 {
   GtkWidget *widget = gui->ui->main_window;
 
@@ -1537,7 +1534,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_name(widget, "main_window");
   gui->ui->main_window = widget;
 
-  configure_ppd_dpi(gui);
+  dt_configure_ppd_dpi(gui);
 
   gtk_window_set_default_size(GTK_WINDOW(widget), DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(500));
 
@@ -2725,12 +2722,12 @@ void dt_gui_load_theme(const char *theme)
   //set font size
   if(dt_conf_get_bool("use_system_font"))
     gtk_settings_reset_property(gtk_settings_get_default(), "gtk-font-name");
-  else 
+  else
   {
     //font name can only use period as decimal separator
     //but printf format strings use comma for some locales, so replace comma with period
     gchar *font_size = dt_util_dstrcat(NULL, _("%.1f"), dt_conf_get_float("font_size"));
-    gchar *font_name = dt_util_dstrcat(NULL, _("Sans %s"), dt_util_str_replace(font_size, ",", ".")); 
+    gchar *font_name = dt_util_dstrcat(NULL, _("Sans %s"), dt_util_str_replace(font_size, ",", "."));
     g_object_set(gtk_settings_get_default(), "gtk-font-name", font_name, NULL);
     g_free(font_size);
     g_free(font_name);
