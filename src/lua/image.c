@@ -182,7 +182,7 @@ static int rating_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    int score = dt_image_get_xmp_rating(my_image);
+    const int score = dt_image_get_xmp_rating(my_image);
 
     lua_pushinteger(L, score);
     releasereadimage(L, my_image);
