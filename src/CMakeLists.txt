@@ -412,11 +412,11 @@ endif(USE_KWALLET)
 
 if(USE_MAC_INTEGRATION)
   find_package(MacIntegration)
-  if(MACINTEGRATION_FOUND)
+  if(MacIntegration_FOUND)
     include_directories(SYSTEM ${MacIntegration_INCLUDE_DIRS})
     list(APPEND LIBS ${MacIntegration_LIBRARIES})
     add_definitions("-DMAC_INTEGRATION")
-  endif(MACINTEGRATION_FOUND)
+  endif(MacIntegration_FOUND)
 endif(USE_MAC_INTEGRATION)
 
 if(USE_UNITY)
