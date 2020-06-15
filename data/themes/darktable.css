@@ -830,6 +830,7 @@ dialog combobox window
 tooltip
 {
   border: 1px solid shade(@tooltip_bg_color, 1.5);
+  border-radius: 0;
 }
 
 tooltip label
