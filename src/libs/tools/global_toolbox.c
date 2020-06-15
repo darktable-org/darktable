@@ -342,32 +342,6 @@ static void _overlays_show_popup(dt_lib_module_t *self)
   d->disable_over_events = FALSE;
 }
 
-static void _main_icons_register_size(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
-{
-
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-
-  /* get the css geometry properties */
-  GtkBorder margin, border, padding;
-  gtk_style_context_get_margin(context, state, &margin);
-  gtk_style_context_get_border(context, state, &border);
-  gtk_style_context_get_padding(context, state, &padding);
-
-  /* we first remove css margin border and padding from allocation */
-  int width = allocation->width - margin.left - margin.right - border.left - border.right - padding.left - padding.right;
-
-  GtkStyleContext *ccontext = gtk_widget_get_style_context(DTGTK_BUTTON(widget)->canvas);
-  GtkBorder cmargin;
-  gtk_style_context_get_margin(ccontext, state, &cmargin);
-
-  /* we remove the extra room for optical alignment */
-  width = round((float)width * (1.0 - (cmargin.left + cmargin.right) / 100.0f));
-
-  // we store the icon size in order to keep in sync thumbtable overlays
-  darktable.gui->icon_size = width;
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -398,8 +372,6 @@ void gui_init(dt_lib_module_t *self)
 #endif
   g_signal_connect_swapped(G_OBJECT(d->overlays_button), "button-press-event", G_CALLBACK(_overlays_show_popup),
                            self);
-  // we register size of overlay icon to keep in sync thumbtable overlays
-  g_signal_connect(G_OBJECT(d->overlays_button), "size-allocate", G_CALLBACK(_main_icons_register_size), NULL);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 

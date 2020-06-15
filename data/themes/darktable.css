@@ -1841,6 +1841,11 @@ Details :
   background-color: @lighttable_bg_color;
 }
 
+#thumbtable_filemanager
+{
+min-height: 2em;
+}
+
 #thumb_back
 {
   background-color: @thumbnail_bg_color;
