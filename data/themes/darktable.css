@@ -811,12 +811,13 @@ context-menu,
 menu,
 menuitem > menu, /* sub-menu */
 menuitem arrow,
-tooltip label,
+tooltip,
 popover,
 #background_job_eventbox, /* background of export progress bar */
 combobox window,
 dialog combobox window
 {
+  opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
   border-radius: 4px;
   border: 0;
@@ -828,21 +829,12 @@ dialog combobox window
 
 tooltip
 {
-  opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
-}
-
-tooltip *,
-tooltip.background
-{
-  background-color: transparent;
+  border: 1px solid shade(@tooltip_bg_color, 1.5);
 }
 
 tooltip label
 {
-  margin-top: 3px;
-  padding: 0.4em;
   color: @tooltip_fg_color;
-  border: 1px solid shade(@tooltip_bg_color, 1.5);
 }
 
 combobox label
