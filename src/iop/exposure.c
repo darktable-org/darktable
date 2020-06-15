@@ -280,7 +280,7 @@ void init_presets (dt_iop_module_so_t *self)
   // we need an initial exposure boost. This might be too much in some cases but…
   dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
                              &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
-                                                         .black = 0.0f,
+                                                         .black = -0.000244140625f,
                                                          .exposure = 0.5f,
                                                          .deflicker_percentile = 50.0f,
                                                          .deflicker_target_level = -4.0f,
