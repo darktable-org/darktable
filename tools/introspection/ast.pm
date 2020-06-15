@@ -1076,8 +1076,15 @@ sub get_introspection_code
 
   my $description = $self->get_description();
   $description = $self->{type}->get_description() if($description eq "");
-  $description = $field_name =~ s/\_/ /gr  if(($description eq "") and ((substr $field_name, -1) ne ']') and (defined($self->{declaration}->get_default())));
-  $description = ast::mark_for_translation($description);
+  if($description ne "")
+  {
+    $description = ast::mark_for_translation($description);
+  }
+  else
+  {
+    $description = $field_name =~ s/\_/ /gr  if((substr $field_name, -1) ne ']');
+    $description = "(char*)\"$description\"";
+  }
 
   my $header = "$type, (char*)\"$type_name\", (char*)\"$inner_varname\", (char*)\"$field_name\", $description, sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
   my $specific = $self->{type}->get_introspection_code($inner_varname, $params_type, $self->{declaration});
