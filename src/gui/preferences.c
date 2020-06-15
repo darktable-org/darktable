@@ -394,7 +394,7 @@ static void init_tab_general(GtkWidget *stack)
   g_signal_connect(G_OBJECT(fontsize), "value_changed", G_CALLBACK(font_size_changed_callback), 0);
 
   GtkWidget *screen_ppd_overwrite = gtk_spin_button_new_with_range(-1.0f, 8.0f, 0.2f);
-  label = gtk_label_new(_("images DPI scaling factor"));
+  label = gtk_label_new(_("GUI thumbs and previews DPI scaling factor"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
@@ -403,21 +403,21 @@ static void init_tab_general(GtkWidget *stack)
   gtk_grid_attach_next_to(GTK_GRID(grid), screen_ppd_overwrite, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(screen_ppd_overwrite, _("scale the thumbnails and previews resolutions for high DPI screens.\n"
                                                       "increase if thumbnails look blurry, decrease if lighttable is too slow.\n"
-                                                      "-1.0 uses the system global scaling if defined."));
+                                                      "set to -1.0 to use the system-defined global scaling."));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_ppd_overwrite), dt_conf_get_float("screen_ppd_overwrite"));
   g_signal_connect(G_OBJECT(screen_ppd_overwrite), "value_changed", G_CALLBACK(gui_scaling_changed_callback), 0);
 
   GtkWidget *screen_dpi_overwrite = gtk_spin_button_new_with_range(-1.0f, 360, 1.f);
-  label = gtk_label_new(_("GUI DPI"));
+  label = gtk_label_new(_("GUI controls and text DPI"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), screen_dpi_overwrite, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(screen_dpi_overwrite, _("adjust the global GUI resolution to rescale icons and controls.\n"
+  gtk_widget_set_tooltip_text(screen_dpi_overwrite, _("adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
                                                       "increase for a magnified GUI, decrease to fit more content in window.\n"
-                                                      "-1.0 uses the system global resolution if defined."));
+                                                      "set to -1.0 to use the system-defined global resolution."));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_dpi_overwrite), dt_conf_get_float("screen_dpi_overwrite"));
   g_signal_connect(G_OBJECT(screen_dpi_overwrite), "value_changed", G_CALLBACK(dpi_scaling_changed_callback), 0);
 
