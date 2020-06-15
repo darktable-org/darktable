@@ -21,7 +21,6 @@
     || defined _SVID_SOURCE || defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__         \
     || defined __NetBSD__ || defined __OpenBSD__
 #include "config.h"
-#include "common/grealpath.h"
 
 #include <pwd.h>
 #include <sys/types.h>
@@ -36,6 +35,7 @@
 #include "osx/osx.h"
 #endif
 
+#include "common/grealpath.h"
 #include "darktable.h"
 #include "file_location.h"
 #include "whereami.h"
@@ -225,13 +225,28 @@ void dt_loc_init_plugindir(const char* application_directory, const char *plugin
 
 void dt_check_opendir(const char* text, const char* directory)
 {
-  if (!directory) {
+  if (!directory)
+  {
     fprintf(stderr, "directory for %s has not been set.\n", text);
     exit(EXIT_FAILURE);
   } 
 
+#if _WIN32
+  DWORD attribs = GetFileAttributesA(directory);
+  if (attribs != INVALID_FILE_ATTRIBUTES &&
+      (attribs & FILE_ATTRIBUTE_DIRECTORY))
+  {
+    dt_print(DT_DEBUG_DEV, "%s: %s\n", text, directory);
+  }
+  else
+  {
+    fprintf(stderr, "directory '%s' fails to open.'\n", directory);
+    exit(EXIT_FAILURE);
+  }
+#else
   DIR* dir = opendir(directory);
-  if (dir) {
+  if (dir)
+  {
     dt_print(DT_DEBUG_DEV, "%s: %s\n", text, directory);
     closedir(dir);
   } 
@@ -240,6 +255,7 @@ void dt_check_opendir(const char* text, const char* directory)
     fprintf(stderr, "opendir '%s' fails with: '%s'\n", directory, strerror(errno));
     exit(EXIT_FAILURE);
   }
+#endif
 }
 
 void dt_loc_init_localedir(const char* application_directory, const char *localedir)

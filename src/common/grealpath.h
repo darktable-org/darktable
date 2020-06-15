@@ -10,6 +10,10 @@
 #include <errno.h>
 #include <glib.h>
 
+#ifdef _WIN32
+#include <fileapi.h>
+#endif
+
 /**
  * g_realpath:
  *
