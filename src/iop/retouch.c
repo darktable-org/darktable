@@ -882,8 +882,7 @@ static void rt_colorpick_color_set_callback(GtkColorButton *widget, dt_iop_modul
 }
 
 // wavelet decompose bar
-
-#define RT_WDBAR_INSET DT_PIXEL_APPLY_DPI(5)
+#define RT_WDBAR_INSET 0.2f
 
 static inline int rt_mouse_x_to_wdbar_box(const float mouse_x, const float width)
 {
@@ -1024,10 +1023,10 @@ static gboolean rt_wdbar_button_press(GtkWidget *widget, GdkEventButton *event, 
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  const int inset = RT_WDBAR_INSET;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
+  const int inset = round(0.2f * allocation.height);
   const float width = allocation.width - 2 * inset;
   const float height = allocation.height - 2 * inset;
 
@@ -1137,10 +1136,11 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  const int inset = RT_WDBAR_INSET;
+  //const int inset = RT_WDBAR_INSET;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
+  const int inset = round(0.2f * allocation.height);
   const float width = allocation.width - 2 * inset;
   const float height = allocation.height - 2 * inset;
 
@@ -1170,9 +1170,7 @@ static int rt_scale_has_shapes(dt_iop_retouch_params_t *p, const int scale)
   int has_shapes = 0;
 
   for(int i = 0; i < RETOUCH_NO_FORMS && has_shapes == 0; i++)
-  {
     has_shapes = (p->rt_forms[i].formid != 0 && p->rt_forms[i].scale == scale);
-  }
 
   return has_shapes;
 }
@@ -1181,15 +1179,16 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
+  float middle;
+  gboolean is_under_mouse;
 
-  const int inset = RT_WDBAR_INSET;
-  const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
   const int first_scale_visible = (g->first_scale_visible > 0) ? g->first_scale_visible : RETOUCH_MAX_SCALES;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   float width = allocation.width;
   float height = allocation.height;
+
 
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
@@ -1198,13 +1197,15 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   cairo_set_source_rgb(cr, .15, .15, .15);
   cairo_paint(cr);
 
-  // translate and scale
-  width -= 2.f * inset;
-  height -= 2.f * inset;
+  // inner margin
+  const int inset = round(RT_WDBAR_INSET * height);
+  width -= 2.0f * inset;
+  height -= 2.0f * inset;
   cairo_save(cr);
 
   const float box_w = width / (float)RETOUCH_NO_SCALES;
   const float box_h = height;
+  const float lw = DT_PIXEL_APPLY_DPI(1.0f);
 
   // render the boxes
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
@@ -1230,12 +1231,12 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
     if(i >= first_scale_visible && i <= p->num_scales)
     {
       cairo_set_source_rgb(cr, .5, .5, .5);
-      cairo_rectangle(cr, box_w * i + inset, 0, box_w, 1);
+      cairo_rectangle(cr, box_w * i + inset, 0, box_w, 2.0f * lw);
       cairo_fill(cr);
     }
 
     // draw a border
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+    cairo_set_line_width(cr, lw);
     cairo_set_source_rgb(cr, .0, .0, .0);
     cairo_rectangle(cr, box_w * i + inset, inset, box_w, box_h);
     cairo_stroke(cr);
@@ -1244,7 +1245,7 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
     if(rt_scale_has_shapes(p, i))
     {
       cairo_set_source_rgb(cr, .1, .8, 0);
-      cairo_rectangle(cr, box_w * i + inset, inset, box_w, 1);
+      cairo_rectangle(cr, box_w * i + inset, inset, box_w, 2.0f * lw);
       cairo_fill(cr);
     }
   }
@@ -1252,73 +1253,53 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
   cairo_restore(cr);
 
-  // red box for the current scale
+  // red dot for the current scale
   if(p->curr_scale >= 0 && p->curr_scale < RETOUCH_NO_SCALES)
   {
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+    cairo_set_line_width(cr, lw);
     cairo_set_source_rgb(cr, 0.8, 0, 0);
-    cairo_rectangle(cr, box_w * p->curr_scale + inset + DT_PIXEL_APPLY_DPI(3),
-                    inset + arrw * .5f + DT_PIXEL_APPLY_DPI(1), box_w - 2 * DT_PIXEL_APPLY_DPI(3),
-                    box_h - arrw - 2 * DT_PIXEL_APPLY_DPI(1));
+    middle = box_w * (0.5f + (float)p->curr_scale);
+    cairo_arc(cr, middle + inset, 0.5f * box_h + inset, 0.5f * inset, 0, 2.0f * M_PI);
+    cairo_fill(cr);
     cairo_stroke(cr);
   }
 
   // if mouse is over a box highlight it
-  if(g->wdbar_mouse_y > arrw * .5f && g->wdbar_mouse_y < height - arrw * .5f)
+  const int curr_scale = g->wdbar_mouse_x / box_w;
+  if(g->wdbar_mouse_y > 0 && g->wdbar_mouse_y < box_h)
   {
-    const int curr_scale = rt_mouse_x_to_wdbar_box(g->wdbar_mouse_x, width);
     if(curr_scale >= 0 && curr_scale < RETOUCH_NO_SCALES)
     {
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+      cairo_set_line_width(cr, lw);
       if(curr_scale == p->num_scales + 1)
         cairo_set_source_rgb(cr, 0.25, 0.25, 0.25);
       else
         cairo_set_source_rgb(cr, 0.75, 0.75, 0.75);
-      cairo_rectangle(cr, box_w * curr_scale + inset + DT_PIXEL_APPLY_DPI(1), inset + DT_PIXEL_APPLY_DPI(1),
-                      box_w - 2 * DT_PIXEL_APPLY_DPI(1), box_h - 2 * DT_PIXEL_APPLY_DPI(1));
+      cairo_rectangle(cr, box_w * curr_scale + inset + lw, inset + lw, box_w - 2.0f * lw, box_h - 2.0f * lw);
       cairo_stroke(cr);
     }
   }
 
   /* render control points handles */
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6); //TODO: take color from style properties
 
   // draw number of scales arrow (bottom arrow)
-  {
-    const float middle = rt_get_middle_wdbar_box((float)p->num_scales, width);
-    gboolean is_under_mouse = rt_mouse_over_arrow_wdbar((float)p->num_scales, g->wdbar_mouse_x, width);
-    is_under_mouse &= rt_mouse_over_bottom_wdbar(g->wdbar_mouse_y, height);
-
-    cairo_move_to(cr, inset + middle, box_h + (2 * inset) - 1);
-    cairo_rel_line_to(cr, -arrw * .5f, 0);
-    cairo_rel_line_to(cr, arrw * .5f, -arrw);
-    cairo_rel_line_to(cr, arrw * .5f, arrw);
-    cairo_close_path(cr);
-
-    if(is_under_mouse || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM)
-      cairo_fill(cr);
-    else
-      cairo_stroke(cr);
-  }
+  middle = box_w * (0.5f + (float)p->num_scales);
+  is_under_mouse = (g->wdbar_mouse_x >= (middle - inset) && g->wdbar_mouse_x <= (middle + inset));
+  is_under_mouse &= (g->wdbar_mouse_y >= box_h && g->wdbar_mouse_y <= (box_h + inset));
+  if(is_under_mouse || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM)
+    dtgtk_cairo_paint_solid_triangle(cr, middle, box_h, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_UP, NULL);
+  else
+    dtgtk_cairo_paint_triangle(cr, middle, box_h, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_UP, NULL);
 
   // draw merge scales arrow (top arrow)
-  {
-    const float middle = rt_get_middle_wdbar_box((float)p->merge_from_scale, width);
-    gboolean is_under_mouse = rt_mouse_over_arrow_wdbar((float)p->merge_from_scale, g->wdbar_mouse_x, width);
-    is_under_mouse &= rt_mouse_over_top_wdbar(g->wdbar_mouse_y);
-
-    cairo_move_to(cr, inset + middle, 1);
-    cairo_rel_line_to(cr, -arrw * .5f, 0);
-    cairo_rel_line_to(cr, arrw * .5f, arrw);
-    cairo_rel_line_to(cr, arrw * .5f, -arrw);
-    cairo_close_path(cr);
-
-    if(is_under_mouse || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_TOP)
-      cairo_fill(cr);
-    else
-      cairo_stroke(cr);
-  }
+  middle = box_w * (0.5f + (float)p->merge_from_scale);
+  is_under_mouse = (g->wdbar_mouse_x >= (middle - inset) && g->wdbar_mouse_x <= (middle + inset));
+  is_under_mouse &= (g->wdbar_mouse_y >= 0 && g->wdbar_mouse_y <= inset);
+  if(is_under_mouse || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_TOP)
+    dtgtk_cairo_paint_solid_triangle(cr, middle, 0, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_DOWN, NULL);
+  else
+    dtgtk_cairo_paint_triangle(cr, middle, 0, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_DOWN, NULL);
 
   /* push mem surface into widget */
   cairo_destroy(cr);
