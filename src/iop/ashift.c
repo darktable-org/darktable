@@ -652,6 +652,44 @@ static void print_roi(const dt_iop_roi_t *roi, const char *label)
 }
 #endif
 
+static inline void shadow_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+{
+  // copy actual crop box values into shadow variables
+  g->cl = p->cl;
+  g->cr = p->cr;
+  g->ct = p->ct;
+  g->cb = p->cb;
+}
+
+static void clear_shadow_crop_box(dt_iop_ashift_gui_data_t *g)
+{
+  // reset the crop to the full image
+  g->cl = 0.0f;
+  g->cr = 1.0f;
+  g->ct = 0.0f;
+  g->cb = 1.0f;
+}
+
+static inline void commit_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+{
+  // copy shadow values for crop box into actual parameters
+  p->cl = g->cl;
+  p->cr = g->cr;
+  p->ct = g->ct;
+  p->cb = g->cb;
+}
+
+static inline void swap_shadow_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+{
+  // exchange shadow values and actual crop values
+  // this is needed for a temporary commit to be able to properly update the undo history
+  float tmp;
+  tmp = p->cl; p->cl = g->cl; g->cl = tmp;
+  tmp = p->cr; p->cr = g->cr; g->cr = tmp;
+  tmp = p->ct; p->ct = g->ct; g->ct = tmp;
+  tmp = p->cb; p->cb = g->cb; g->cb = tmp;
+}
+
 #define MAT3SWAP(a, b) { float (*tmp)[3] = (a); (a) = (b); (b) = tmp; }
 
 static void homography(float *homograph, const float angle, const float shift_v, const float shift_h,
@@ -2481,10 +2519,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   // reset fit margins if auto-cropping is off
   if(p->cropmode == ASHIFT_CROP_OFF)
   {
-    g->cl = p->cl = 0.0f;
-    g->cr = p->cr = 1.0f;
-    g->ct = p->ct = 0.0f;
-    g->cb = p->cb = 1.0f;
+    clear_shadow_crop_box(g);
+    commit_crop_box(p,g);
     return;
   }
 
@@ -2616,10 +2652,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 failed:
   // in case of failure: reset clipping margins, set "automatic cropping" parameter
   // to "off" state, and display warning message
-  g->cl = p->cl = 0.0f;
-  g->cr = p->cr = 1.0f;
-  g->ct = p->ct = 0.0f;
-  g->cb = p->cb = 1.0f;
+  clear_shadow_crop_box(g);
+  commit_crop_box(p,g);
   p->cropmode = ASHIFT_CROP_OFF;
   dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
   g->fitting = 0;
@@ -3781,6 +3815,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   if (g->adjust_crop)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    shadow_crop_box(p,g);
 
     float pts[4] = { pzx, pzy, 1.0f, 1.0f };
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
@@ -3790,7 +3825,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     const float newy = g->crop_cy + (pts[1] - pts[3]) - g->lasty;
 
     crop_adjust(self, p, newx, newy);
+    swap_shadow_crop_box(p,g);  // temporarily update the crop box in p
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    swap_shadow_crop_box(p,g);  // restore p
     return TRUE;
   }
 
@@ -3876,10 +3913,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
       g->crop_cx = 0.5f * (p->cl + p->cr);
       g->crop_cy = 0.5f * (p->ct + p->cb);
       // copy current crop box into shadow variables
-      g->cl = p->cl;
-      g->cr = p->cr;
-      g->ct = p->ct;
-      g->cb = p->cb;
+      shadow_crop_box(p,g);
       return TRUE;
     }
     else
@@ -3962,11 +3996,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   if (g->adjust_crop)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-    // copy shadow values for crop box
-    p->cl = g->cl;
-    p->cr = g->cr;
-    p->ct = g->ct;
-    p->cb = g->cb;
+    commit_crop_box(p,g);
     // stop adjust crop
     g->adjust_crop = FALSE;
   }
@@ -4581,10 +4611,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
   // copy crop box into shadow variables
-  g->cl = p->cl;
-  g->cr = p->cr;
-  g->ct = p->ct;
-  g->cb = p->cb;
+  shadow_crop_box(p,g);
 
   switch(p->mode)
   {
@@ -4863,6 +4890,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->adjust_crop = FALSE;
   g->lastx = g->lasty = -1.0f;
   g->crop_cx = g->crop_cy = 1.0f;
+
+  shadow_crop_box(p,g);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
