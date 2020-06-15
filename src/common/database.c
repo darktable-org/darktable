@@ -2875,13 +2875,80 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
   return db->lock_acquired;
 }
 
+int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
+{
+  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
+  int val = -1;
+  sqlite3_stmt *stmt;
+  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    val = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  return val;
+}
+
+#define ERRCHECK {if (err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'\n",err); sqlite3_free(err); err=NULL;}}
 void _dt_database_maintenance(const struct dt_database_t *db)
 {
-  sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
+  char* err = NULL;
+
+  const int main_pre_free_count = _get_pragma_val(db, "main.freelist_count");
+  const int main_page_size = _get_pragma_val(db, "main.page_size");
+  const int data_pre_free_count = _get_pragma_val(db, "data.freelist_count");
+  const int data_page_size = _get_pragma_val(db, "data.page_size");
+
+  const guint64 calc_pre_size = (main_pre_free_count*main_page_size) + (data_pre_free_count*data_page_size);
+
+  if(calc_pre_size == 0)
+  {
+    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance deemed unnecesary, performing only analyze.\n");
+    sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, &err);
+    ERRCHECK
+    sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, &err);
+    ERRCHECK
+    sqlite3_exec(db->handle, "ANALYZE", NULL, NULL, &err);
+    ERRCHECK
+    return;
+  }
+
+  sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, &err);
+  ERRCHECK
+  sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, &err);
+  ERRCHECK
+  sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, &err);
+  ERRCHECK
+  sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, &err);
+  ERRCHECK
+
+  // for some reason this is needed in some cases
+  // in case above performed vacuum+analyze properly, this is noop.
+  sqlite3_exec(db->handle, "VACUUM", NULL, NULL, &err);
+  ERRCHECK
+  sqlite3_exec(db->handle, "ANALYZE", NULL, NULL, &err);
+  ERRCHECK
+
+  const int main_post_free_count = _get_pragma_val(db, "main.freelist_count");
+  const int data_post_free_count = _get_pragma_val(db, "data.freelist_count");
+
+  const guint64 calc_post_size = (main_post_free_count*main_page_size) + (data_post_free_count*data_page_size);
+  const gint64 bytes_freed = calc_pre_size - calc_post_size;
+
+  dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance done, %" G_GINT64_FORMAT " bytes freed.\n", bytes_freed);
+
+  if(calc_post_size >= calc_pre_size)
+  {
+    dt_print(DT_DEBUG_SQL, "[db maintenance] paintenance problem. if no errors logged, it should work fine next time.\n");
+  }
+  else
+  {
+    
+  }
 }
+#undef ERRCHECK
 
 gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_time, const guint64 size)
 {
@@ -2924,22 +2991,6 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
     g_free(size_info);
 
     return shall_perform_maintenance;
-}
-
-int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
-{
-  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
-  int val = -1;
-  sqlite3_stmt *stmt;
-  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
-  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    val = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
-  g_free(query);
-
-  return val;
 }
 
 void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
@@ -3012,7 +3063,6 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
     if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
     {
       _dt_database_maintenance(db);
-      dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance done, %" G_GUINT64_FORMAT " bytes freed.\n", calc_size);
     }
   }
 }
