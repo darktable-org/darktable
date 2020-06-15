@@ -197,14 +197,12 @@ static int rating_member(lua_State *L)
       releasewriteimage(L, my_image);
       return luaL_error(L, "rating too high : %d", my_score);
     }
-    if(my_score == -1) my_score = 6;
     if(my_score < -1)
     {
       releasewriteimage(L, my_image);
       return luaL_error(L, "rating too low : %d", my_score);
     }
-    my_image->flags &= ~0x7;
-    my_image->flags |= my_score;
+    dt_image_set_xmp_rating(my_image, my_score);
     releasewriteimage(L, my_image);
     return 0;
   }
