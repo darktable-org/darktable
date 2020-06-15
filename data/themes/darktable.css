@@ -1841,9 +1841,13 @@ Details :
   background-color: @lighttable_bg_color;
 }
 
-#thumbtable_filemanager
+/* here we set the maximum size of GUI elements in thumbtable view to be in synch with the rest of the GUI */
+#thumbtable_filemanager,
+#thumbtable_filmstrip,
+#thumbtable_zoom,
+#culling
 {
-min-height: 2em;
+min-height: 1.47em;
 }
 
 #thumb_back

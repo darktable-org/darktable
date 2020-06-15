@@ -825,6 +825,8 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   g_signal_connect(G_OBJECT(table->widget), "button-press-event", G_CALLBACK(_event_button_press), table);
   g_signal_connect(G_OBJECT(table->widget), "motion-notify-event", G_CALLBACK(_event_motion_notify), table);
   g_signal_connect(G_OBJECT(table->widget), "button-release-event", G_CALLBACK(_event_button_release), table);
+  // set the size of icons and other elements
+  g_signal_connect(G_OBJECT(table->widget), "map", G_CALLBACK(dt_thumbtable_icons_register_size), table);
 
   // we register globals signals
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,

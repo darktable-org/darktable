@@ -1530,35 +1530,18 @@ static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, gpointer 
   gtk_style_context_remove_class(tablecontext, "dt_thumbtable_reorder");
 }
 
-static void _icons_register_size(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
+void dt_thumbtable_icons_register_size(GtkWidget *widget, gpointer user_data)
 {
-/*
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
 
-  // get the css geometry properties
-  GtkBorder margin, border, padding;
-  gtk_style_context_get_margin(context, state, &margin);
-  gtk_style_context_get_border(context, state, &border);
-  gtk_style_context_get_padding(context, state, &padding);
+  GValue value = G_VALUE_INIT;
+  gtk_style_context_get_property(context, "min-height", state, &value);
+  g_assert (G_VALUE_HOLDS_INT (&value));
+  darktable.gui->icon_size = g_value_get_int (&value);
 
-  // we first remove css margin border and padding from allocation
-  int width = allocation->width - margin.left - margin.right - border.left - border.right - padding.left - padding.right;
-
-  GtkStyleContext *ccontext = gtk_widget_get_style_context(DTGTK_BUTTON(widget)->canvas);
-  GtkBorder cmargin;
-  gtk_style_context_get_margin(ccontext, state, &cmargin);
-
-  // we remove the extra room for optical alignment
-  width = round((float)width * (1.0 - (cmargin.left + cmargin.right) / 100.0f));
-
-  // we store the icon size in order to keep in sync thumbtable overlays
-   *
-   */
-
-  darktable.gui->icon_size = 20;
+  g_value_unset(&value);
 }
-
 
 dt_thumbtable_t *dt_thumbtable_new()
 {
@@ -1603,8 +1586,8 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(G_OBJECT(table->widget), "button-press-event", G_CALLBACK(_event_button_press), table);
   g_signal_connect(G_OBJECT(table->widget), "motion-notify-event", G_CALLBACK(_event_motion_notify), table);
   g_signal_connect(G_OBJECT(table->widget), "button-release-event", G_CALLBACK(_event_button_release), table);
-
-  g_signal_connect(G_OBJECT(table->widget), "size-allocate", G_CALLBACK(_icons_register_size), table);
+  // set the size of icons and other elements
+  g_signal_connect(G_OBJECT(table->widget), "map", G_CALLBACK(dt_thumbtable_icons_register_size), table);
 
   // we register globals signals
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
