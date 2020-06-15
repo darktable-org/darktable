@@ -64,6 +64,13 @@ typedef struct dt_lib_t
       void (*set_sample_point)(struct dt_lib_module_t *self, float x, float y);
     } colorpicker;
 
+    /** Histogram processing hooks */
+    struct
+    {
+      struct dt_lib_module_t *module;
+      void (*process_8)(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height);
+      void (*process_f)(struct dt_lib_module_t *self, const float *const input, int width, int height);
+    } histogram;
   } proxy;
 } dt_lib_t;
 
