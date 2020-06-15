@@ -330,7 +330,15 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "FILE_EXTENSION"))
     result = g_strdup(params->data->file_ext);
   else if(has_prefix(variable, "SEQUENCE"))
-    result = g_strdup_printf("%.4d", params->sequence >= 0 ? params->sequence : params->data->sequence);
+  {
+    uint8_t nb_digit = 4;
+    if(g_ascii_isdigit(*variable[0]))
+    {
+      nb_digit = (uint8_t)*variable[0] & 0b1111;
+      (*variable) ++;
+    }
+    result = g_strdup_printf("%.*d", nb_digit, params->sequence >= 0 ? params->sequence : params->data->sequence);
+  }
   else if(has_prefix(variable, "USERNAME"))
     result = g_strdup(g_get_user_name());
   else if(has_prefix(variable, "HOME_FOLDER"))
