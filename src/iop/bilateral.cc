@@ -124,7 +124,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   // if rad <= 6 use naive version!
   const int rad = (int)(3.0 * fmaxf(sigma[0], sigma[1]) + 1.0);
-  if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL))
+  if(rad <= 6 && ((piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
     memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
