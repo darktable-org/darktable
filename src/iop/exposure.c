@@ -681,7 +681,7 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  float exposure = white2exposure(white);
+  const float exposure = white2exposure(white);
   if(p->exposure == exposure) return;
 
   p->exposure = exposure;
@@ -720,7 +720,7 @@ static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const flo
   }
   else
   {
-    float white = exposure2white(exposure);
+    const float white = exposure2white(exposure);
     exposure_set_white(self, white);
     autoexp_disable(self);
   }
@@ -826,13 +826,13 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
   else if(w == g->exposure)
   {
-    float white = exposure2white(p->exposure);
+    const float white = exposure2white(p->exposure);
     if(p->black >= white)
       exposure_set_black(self, white - 0.01);
   }
   else if(w == g->black)
   {
-    float white = exposure2white(p->exposure);
+    const float white = exposure2white(p->exposure);
     if(p->black >= white)
       exposure_set_white(self, p->black + 0.01);
   }
@@ -906,7 +906,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 3.0);
 
-  g->autoexpp = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+  g->autoexpp = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                 dt_bauhaus_slider_new_with_range(self, 0.0, 0.2, .001, 0.01, 3));
   gtk_widget_set_tooltip_text(g->autoexpp, _("percentage of bright values clipped out, toggle color picker to activate"));
   dt_bauhaus_slider_set_format(g->autoexpp, "%.3f%%");
