@@ -828,7 +828,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
-  dt_bauhaus_combobox_set(g->autoscale_ab, p->tonecurve_autoscale_ab);
+  // reorder first two enums, as per definition and introspection
+  dt_bauhaus_combobox_set(g->autoscale_ab, (p->tonecurve_autoscale_ab < 2 ? 1 - p->tonecurve_autoscale_ab : p->tonecurve_autoscale_ab));
 
   gui_changed(self, g->autoscale_ab, 0);
 
