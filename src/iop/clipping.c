@@ -1814,17 +1814,30 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   ++darktable.gui->reset;
 
-  dt_bauhaus_slider_set_soft_min(g->cw, p->cx + 0.10);
-  dt_bauhaus_slider_set_soft_max(g->cx, p->cw - 0.10);
-  dt_bauhaus_slider_set_soft_min(g->ch, p->cy + 0.10);
-  dt_bauhaus_slider_set_soft_max(g->cy, p->ch - 0.10);
+  if(w == g->cx)
+  {
+    dt_bauhaus_slider_set_soft_min(g->cw, p->cx + 0.10);
+    g->clip_w = g->clip_x + g->clip_w - p->cx;
+    g->clip_x = p->cx;
+  }
+  else if(w == g->cw)
+  {
+    dt_bauhaus_slider_set_soft_max(g->cx, p->cw - 0.10);
+    g->clip_w = p->cw - g->clip_x;
+  }
+  else if(w == g->cy)
+  {
+    dt_bauhaus_slider_set_soft_min(g->ch, p->cy + 0.10);
+    g->clip_h = g->clip_y + g->clip_h - p->cy;
+    g->clip_y = p->cy;
+  }
+  else if(w == g->ch)
+  {
+    dt_bauhaus_slider_set_soft_max(g->cy, p->ch - 0.10);
+    g->clip_h = p->ch - g->clip_y;
+  }
 
   --darktable.gui->reset;
-
-  g->clip_x = p->cx;
-  g->clip_w = fabsf(p->cw) - p->cx;
-  g->clip_y = p->cy;
-  g->clip_h = fabsf(p->ch) - p->cy;
 
   commit_box(self, g, p);
 
@@ -3108,21 +3121,17 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
           // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
           // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
           // from the sliders when the iop loses focus, at which time the final selected crop is applied.
-          float p_cx = points[0] / (float)piece->buf_out.width;
-          float p_cy = points[1] / (float)piece->buf_out.height;
-          float p_cw = copysignf(points[2] / (float)piece->buf_out.width, p->cw);
-          float p_ch = copysignf(points[3] / (float)piece->buf_out.height, p->ch);
 
           ++darktable.gui->reset;
 
-          dt_bauhaus_slider_set(g->cx, p_cx);
-          dt_bauhaus_slider_set_soft_min(g->cw, p_cx + 0.10);
-          dt_bauhaus_slider_set(g->cy, p_cy);
-          dt_bauhaus_slider_set_soft_min(g->ch, p_cy + 0.10);
-          dt_bauhaus_slider_set(g->cw, p_cw);
-          dt_bauhaus_slider_set_soft_max(g->cx, p_cw - 0.10);
-          dt_bauhaus_slider_set(g->ch, p_ch);
-          dt_bauhaus_slider_set_soft_max(g->cy, p_ch - 0.10);
+          dt_bauhaus_slider_set(g->cx, g->clip_x);
+          dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
+          dt_bauhaus_slider_set(g->cy, g->clip_y);
+          dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
+          dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
+          dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
+          dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
+          dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
 
           --darktable.gui->reset;
         }
