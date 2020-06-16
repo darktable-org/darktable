@@ -172,7 +172,20 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(generic_slider_int_callback), p + f->header.offset);
     }
 
-    dt_bauhaus_widget_set_label(slider, NULL, gettext(f->header.description));
+    if (*f->header.description)
+    {
+      // we do not want to support a context as it break all translations see #5498
+      // dt_bauhaus_widget_set_label(slider, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
+      dt_bauhaus_widget_set_label(slider, NULL, gettext(f->header.description));
+    }
+    else
+    {
+      str = dt_util_str_replace(f->header.field_name, "_", " ");
+    
+      dt_bauhaus_widget_set_label(slider, NULL, _(str));
+
+      g_free(str);
+    }
   }
   else
   {
@@ -203,7 +216,20 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
             f->header.type == DT_INTROSPECTION_TYPE_UINT ||
             f->header.type == DT_INTROSPECTION_TYPE_BOOL ))
   {
-    dt_bauhaus_widget_set_label(combobox, NULL, gettext(f->header.description));
+    if (*f->header.description)
+    {
+      // we do not want to support a context as it break all translations see #5498
+      // dt_bauhaus_widget_set_label(combobox, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
+      dt_bauhaus_widget_set_label(combobox, NULL, gettext(f->header.description));
+    }
+    else
+    {
+      str = dt_util_str_replace(f->header.field_name, "_", " ");
+    
+      dt_bauhaus_widget_set_label(combobox, NULL, _(str));
+
+      g_free(str);
+    }
 
     if(f->header.type == DT_INTROSPECTION_TYPE_BOOL)
     {
@@ -218,7 +244,9 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
       {
         for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values; iter && iter->name; iter++)
         {
-          dt_bauhaus_combobox_add_full(combobox, _(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, &iter->value, NULL, TRUE);
+          // we do not want to support a context as it break all translations see #5498
+          // dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "introspection description", iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, &iter->value, NULL, TRUE);
+          dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, &iter->value, NULL, TRUE);
         }
       }
 
@@ -246,10 +274,24 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   dt_introspection_field_t *f = self->so->get_f(param);
 
   GtkWidget *button;
+  gchar *str;
 
   if(f && f->header.type == DT_INTROSPECTION_TYPE_BOOL)
   {
-    button = gtk_check_button_new_with_label(gettext(f->header.description));
+    if (*f->header.description)
+    {
+      // we do not want to support a context as it break all translations see #5498
+      // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
+      button = gtk_check_button_new_with_label(gettext(f->header.description));
+    }
+    else
+    {
+      str = dt_util_str_replace(f->header.field_name, "_", " ");
+    
+      button = gtk_check_button_new_with_label(_(str));
+
+      g_free(str);
+    }
 
     dt_module_param_t *module_param = (dt_module_param_t *)g_malloc(sizeof(dt_module_param_t));
     module_param->module = self;
@@ -258,7 +300,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   }
   else
   {
-    gchar *str = g_strdup_printf("'%s' is not a bool/togglebutton parameter", param);
+    str = g_strdup_printf("'%s' is not a bool/togglebutton parameter", param);
 
     button = gtk_check_button_new_with_label(str);
 
