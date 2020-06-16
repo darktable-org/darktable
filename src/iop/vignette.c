@@ -29,6 +29,7 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -44,9 +45,9 @@ DT_MODULE_INTROSPECTION(4, dt_iop_vignette_params_t)
 
 typedef enum dt_iop_dither_t
 {
-  DITHER_OFF = 0,
-  DITHER_8BIT = 1,
-  DITHER_16BIT = 2
+  DITHER_OFF = 0,  // $DESCRIPTION: "off"
+  DITHER_8BIT = 1, // $DESCRIPTION: "8-bit output"
+  DITHER_16BIT = 2 // $DESCRIPTION: "16-bit output"
 } dt_iop_dither_t;
 
 typedef struct dt_iop_dvector_2d_t
@@ -57,8 +58,8 @@ typedef struct dt_iop_dvector_2d_t
 
 typedef struct dt_iop_fvector_2d_t
 {
-  float x;
-  float y;
+  float x; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "horizontal center"
+  float y; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "vertical center"
 } dt_iop_vector_2d_t;
 
 typedef struct dt_iop_vignette_params1_t
@@ -101,16 +102,16 @@ typedef struct dt_iop_vignette_params3_t
 
 typedef struct dt_iop_vignette_params_t
 {
-  float scale;               // 0 - 100 Inner radius, percent of largest image dimension
-  float falloff_scale;       // 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
-  float brightness;          // -1 - 1 Strength of brightness reduction
-  float saturation;          // -1 - 1 Strength of saturation reduction
+  float scale;               // $MIN: 0.0 $MAX: 200.0 $DEFAULT: 80.0 Inner radius, percent of largest image dimension
+  float falloff_scale;       // $MIN: 0.0 $MAX: 200.0 $DEFAULT: 50.0 $DESCRIPTION: "fall-off strength" 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
+  float brightness;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: -0.5 -1 - 1 Strength of brightness reduction
+  float saturation;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: -0.5 -1 - 1 Strength of saturation reduction
   dt_iop_vector_2d_t center; // Center of vignette
-  gboolean autoratio;        //
-  float whratio;             // 0-1 = width/height ratio, 1-2 = height/width ratio + 1
-  float shape;
-  int dithering;    // if and how to perform dithering
-  gboolean unbound; // whether the values should be clipped
+  gboolean autoratio;        // $DEFAULT: FALSE
+  float whratio;             // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "width/height ratio" 0-1 = width/height ratio, 1-2 = height/width ratio + 1
+  float shape;               // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0
+  dt_iop_dither_t dithering; // $DEFAULT: DITHER_OFF if and how to perform dithering
+  gboolean unbound;          // $DEFAULT: TRUE whether the values should be clipped
 } dt_iop_vignette_params_t;
 
 
@@ -947,95 +948,14 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-static void scale_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->scale = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void falloff_scale_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->falloff_scale = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void brightness_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->brightness = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void saturation_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->saturation = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void centerx_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->center.x = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void centery_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->center.y = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void shape_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->shape = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 static void autoratio_callback(GtkToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   p->autoratio = gtk_toggle_button_get_active(button);
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void whratio_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->whratio = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void dithering_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->dithering = (dt_iop_dither_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1105,83 +1025,34 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->dithering, p->dithering);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_vignette_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_vignette_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_vignette_params_t);
-  module->gui_data = NULL;
-  dt_iop_vignette_params_t tmp
-      = (dt_iop_vignette_params_t){ 80, 50, -0.5, -0.5, { 0, 0 }, FALSE, 1.0, 1.0, DITHER_OFF, TRUE };
-  memcpy(module->params, &tmp, sizeof(dt_iop_vignette_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_vignette_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_vignette_gui_data_t));
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  GtkWidget *hbox, *label1;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  g->scale = dt_bauhaus_slider_from_params(self, "scale");
+  g->falloff_scale = dt_bauhaus_slider_from_params(self, "falloff_scale");
+  g->brightness = dt_bauhaus_slider_from_params(self, "brightness");
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
+  g->center_x = dt_bauhaus_slider_from_params(self, "center.x");
+  g->center_y = dt_bauhaus_slider_from_params(self, "center.y");
+  g->shape = dt_bauhaus_slider_from_params(self, "shape");
 
-  label1 = dtgtk_reset_label_new(_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
-
-  g->scale = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 0.5, p->scale, 2);
-  g->falloff_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, p->falloff_scale, 2);
-  g->brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->brightness, 3);
-  g->saturation = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->saturation, 3);
-  g->center_x = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->center.x, 3);
-  g->center_y = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->center.y, 3);
-  g->shape = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.1, p->shape, 2);
-  g->whratio = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->shape, 3);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *label = dtgtk_reset_label_new(_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), TRUE, TRUE, 0);
   g->autoratio = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("automatic")));
-  g->dithering = dt_bauhaus_combobox_new(self);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
-  dt_bauhaus_combobox_add(g->dithering, _("off"));
-  dt_bauhaus_combobox_add(g->dithering, _("8-bit output"));
-  dt_bauhaus_combobox_add(g->dithering, _("16-bit output"));
+  g->whratio = dt_bauhaus_slider_from_params(self, "whratio");
+  g->dithering = dt_bauhaus_combobox_from_params(self, "dithering");
 
   dt_bauhaus_slider_set_format(g->scale, "%.02f%%");
   dt_bauhaus_slider_set_format(g->falloff_scale, "%.02f%%");
-  dt_bauhaus_widget_set_label(g->scale, NULL, _("scale"));
-  dt_bauhaus_widget_set_label(g->falloff_scale, NULL, _("fall-off strength"));
-  dt_bauhaus_widget_set_label(g->brightness, NULL, _("brightness"));
-  dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
-  dt_bauhaus_widget_set_label(g->center_x, NULL, _("horizontal center"));
-  dt_bauhaus_widget_set_label(g->center_y, NULL, _("vertical center"));
-  dt_bauhaus_widget_set_label(g->shape, NULL, _("shape"));
-  dt_bauhaus_widget_set_label(g->whratio, NULL, _("width/height ratio"));
-  dt_bauhaus_widget_set_label(g->dithering, NULL, _("dithering"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
-
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->falloff_scale, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->center_x, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->center_y, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->shape, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->whratio, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->dithering, TRUE, TRUE, 0);
-
   gtk_widget_set_tooltip_text(g->scale, _("the radii scale of vignette for start of fall-off"));
   gtk_widget_set_tooltip_text(g->falloff_scale, _("the radii scale of vignette for end of fall-off"));
   gtk_widget_set_tooltip_text(g->brightness, _("strength of effect on brightness"));
@@ -1194,22 +1065,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->whratio, _("width-to-height ratio"));
   gtk_widget_set_tooltip_text(g->dithering, _("add some level of random noise to prevent banding"));
 
-  g_signal_connect(G_OBJECT(g->scale), "value-changed", G_CALLBACK(scale_callback), self);
-  g_signal_connect(G_OBJECT(g->falloff_scale), "value-changed", G_CALLBACK(falloff_scale_callback), self);
-  g_signal_connect(G_OBJECT(g->brightness), "value-changed", G_CALLBACK(brightness_callback), self);
-  g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
-  g_signal_connect(G_OBJECT(g->center_x), "value-changed", G_CALLBACK(centerx_callback), self);
-  g_signal_connect(G_OBJECT(g->center_y), "value-changed", G_CALLBACK(centery_callback), self);
-  g_signal_connect(G_OBJECT(g->shape), "value-changed", G_CALLBACK(shape_callback), self);
   g_signal_connect(G_OBJECT(g->autoratio), "toggled", G_CALLBACK(autoratio_callback), self);
-  g_signal_connect(G_OBJECT(g->whratio), "value-changed", G_CALLBACK(whratio_callback), self);
-  g_signal_connect(G_OBJECT(g->dithering), "value-changed", G_CALLBACK(dithering_callback), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)

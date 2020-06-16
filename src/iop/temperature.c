@@ -1200,7 +1200,7 @@ static void temp_changed(dt_iop_module_t *self)
 static void tint_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   temp_changed(self);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_bauhaus_combobox_set(g->presets, 3);
@@ -1209,7 +1209,7 @@ static void tint_callback(GtkWidget *slider, gpointer user_data)
 static void temp_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   temp_changed(self);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_bauhaus_combobox_set(g->presets, 3);
@@ -1218,7 +1218,7 @@ static void temp_callback(GtkWidget *slider, gpointer user_data)
 static void rgb_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
   dt_iop_color_picker_reset(self, TRUE);
@@ -1239,7 +1239,7 @@ static void rgb_callback(GtkWidget *slider, gpointer user_data)
 
 static void apply_preset(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(self, TRUE);
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
@@ -1340,7 +1340,7 @@ static void finetune_changed(GtkWidget *widget, gpointer user_data)
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
 
   // capture gui color picked event.
   if(self->picked_color_max[0] < self->picked_color_min[0]) return;
@@ -1401,7 +1401,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->stack), FALSE);
@@ -1504,12 +1503,6 @@ void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
   gui_sliders_update(self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

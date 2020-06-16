@@ -29,6 +29,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -46,8 +47,8 @@ DT_MODULE_INTROSPECTION(2, dt_iop_velvia_params_t)
 
 typedef struct dt_iop_velvia_params_t
 {
-  float strength;
-  float bias;
+  float strength; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
+  float bias;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "mid-tones bias"
 } dt_iop_velvia_params_t;
 
 /* legacy version 1 params */
@@ -304,25 +305,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void strength_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
-  p->strength = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void bias_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
-  p->bias = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -354,56 +336,17 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->bias_scale, p->bias);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_velvia_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_velvia_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_velvia_params_t);
-  module->gui_data = NULL;
-  dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t){ 25, 1.0 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_velvia_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_velvia_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_velvia_gui_data_t));
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
-  dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  /* strength */
-  g->strength_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1, p->strength, 0);
+  g->strength_scale = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_format(g->strength_scale, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->strength_scale, NULL, _("strength"));
   gtk_widget_set_tooltip_text(g->strength_scale, _("the strength of saturation boost"));
-  g_signal_connect(G_OBJECT(g->strength_scale), "value-changed", G_CALLBACK(strength_callback), self);
 
-  /* bias */
-  g->bias_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, p->bias, 2);
-  dt_bauhaus_widget_set_label(g->bias_scale, NULL, _("mid-tones bias"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->strength_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bias_scale), TRUE, TRUE, 0);
+  g->bias_scale = dt_bauhaus_slider_from_params(self, "bias");
   gtk_widget_set_tooltip_text(g->bias_scale, _("how much to spare highlights and shadows"));
-  g_signal_connect(G_OBJECT(g->bias_scale), "value-changed", G_CALLBACK(bias_callback), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

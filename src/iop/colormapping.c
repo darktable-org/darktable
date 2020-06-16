@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/resetlabel.h"
@@ -78,20 +79,20 @@ typedef struct dt_iop_colormapping_flowback_t
   float2 var[MAXN];
   float weight[MAXN];
   // number of gaussians used.
-  int n;
+  int n; // $MIN: 1 $MAX: 5 $DEFAULT: 1 $DESCRIPTION: "number of clusters"
 } dt_iop_colormapping_flowback_t;
 
 typedef struct dt_iop_colormapping_params_t
 {
-  dt_iop_colormapping_flags_t flag;
+  dt_iop_colormapping_flags_t flag; // $DEFAULT: NEUTRAL
   // number of gaussians used.
-  int n;
+  int n; // $MIN: 1 $MAX: 5 $DEFAULT: 3 $DESCRIPTION: "number of clusters"
 
   // relative importance of color dominance vs. color proximity
-  float dominance;
+  float dominance; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "color dominance"
 
   // level of histogram equalization
-  float equalization;
+  float equalization; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "histogram equalization"
 
   // hist matching table for source image
   float source_ihist[HISTN];
@@ -794,46 +795,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #endif
 }
 
-
-static void clusters_changed(GtkWidget *slider, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(darktable.gui->reset) return;
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
 
-  int new = (int)dt_bauhaus_slider_get(slider);
-  if(new != p->n)
-  {
-    p->n = new;
-    memset(p->source_ihist, 0, sizeof(float) * HISTN);
-    memset(p->source_mean, 0, sizeof(float) * MAXN * 2);
-    memset(p->source_var, 0, sizeof(float) * MAXN * 2);
-    memset(p->source_weight, 0, sizeof(float) * MAXN);
-    memset(p->target_hist, 0, sizeof(int) * HISTN);
-    memset(p->target_mean, 0, sizeof(float) * MAXN * 2);
-    memset(p->target_var, 0, sizeof(float) * MAXN * 2);
-    memset(p->target_weight, 0, sizeof(float) * MAXN);
-    p->flag = NEUTRAL;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    dt_control_queue_redraw_widget(g->source_area);
-    dt_control_queue_redraw_widget(g->target_area);
-  }
-}
-
-static void dominance_changed(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  p->dominance = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void equalization_changed(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  p->equalization = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  memset(p->source_ihist, 0, sizeof(float) * HISTN);
+  memset(p->source_mean, 0, sizeof(float) * MAXN * 2);
+  memset(p->source_var, 0, sizeof(float) * MAXN * 2);
+  memset(p->source_weight, 0, sizeof(float) * MAXN);
+  memset(p->target_hist, 0, sizeof(int) * HISTN);
+  memset(p->target_mean, 0, sizeof(float) * MAXN * 2);
+  memset(p->target_var, 0, sizeof(float) * MAXN * 2);
+  memset(p->target_weight, 0, sizeof(float) * MAXN);
+  p->flag = NEUTRAL;
+  dt_control_queue_redraw_widget(g->source_area);
+  dt_control_queue_redraw_widget(g->target_area);
 }
 
 static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *self)
@@ -880,15 +857,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_control_queue_redraw_widget(self->widget);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_colormapping_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colormapping_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_colormapping_params_t);
-  module->gui_data = NULL;
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
@@ -897,14 +865,6 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_histogram = dt_opencl_create_kernel(program, "colormapping_histogram");
   gd->kernel_mapping = dt_opencl_create_kernel(program, "colormapping_mapping");
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -918,32 +878,24 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_colormapping_params_t *tmp = (dt_iop_colormapping_params_t *)malloc(sizeof(dt_iop_colormapping_params_t));
-
-  tmp->flag = NEUTRAL;
-  tmp->n = 3;
-  tmp->dominance = 100.f;
-  tmp->equalization = 50.0f;
+  dt_iop_colormapping_params_t *d = module->default_params;
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
-
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
-  if(module->dev->gui_attached && g && g->flowback_set)
-  {
-    memcpy(tmp->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
-    memcpy(tmp->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
-    memcpy(tmp->source_var, g->flowback.var, sizeof(float) * MAXN * 2);
-    memcpy(tmp->source_weight, g->flowback.weight, sizeof(float) * MAXN);
-    tmp->n = g->flowback.n;
-    tmp->flag = HAS_SOURCE;
+  if(module->dev)
+  { 
+    dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
+    if(module->dev->gui_attached && g && g->flowback_set)
+    {
+      memcpy(d->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
+      memcpy(d->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
+      memcpy(d->source_var, g->flowback.var, sizeof(float) * MAXN * 2);
+      memcpy(d->source_weight, g->flowback.weight, sizeof(float) * MAXN);
+      d->n = g->flowback.n;
+      d->flag = HAS_SOURCE;
+    }
   }
-  module->default_enabled = 0;
 
-end:
-  memcpy(module->default_params, tmp, sizeof(dt_iop_colormapping_params_t));
-  memcpy(module->params, tmp, sizeof(dt_iop_colormapping_params_t));
-  free(tmp);
+  memcpy(module->params, module->default_params, sizeof(dt_iop_colormapping_params_t));
 }
 
 
@@ -1100,7 +1052,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colormapping_gui_data_t));
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
 
   g->flag = NEUTRAL;
   g->flowback_set = 0;
@@ -1112,7 +1063,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_pthread_mutex_init(&g->lock, NULL);
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *source = gtk_label_new(_("source clusters:"));
@@ -1149,27 +1099,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_target_button_pressed), (gpointer)self);
 
-  g->clusters = dt_bauhaus_slider_new_with_range(self, 1.f, 5.f, 1.f, p->n, 0);
-  dt_bauhaus_widget_set_label(g->clusters, NULL, _("number of clusters"));
-  dt_bauhaus_slider_set_format(g->clusters, "%.0f");
+  g->clusters = dt_bauhaus_slider_from_params(self, "n");
   gtk_widget_set_tooltip_text(g->clusters, _("number of clusters to find in image. value change resets all clusters"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->clusters), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->clusters), "value-changed", G_CALLBACK(clusters_changed), (gpointer)self);
 
-  g->dominance = dt_bauhaus_slider_new_with_range(self, 0.f, 100.f, 2.f, p->dominance, 2);
-  dt_bauhaus_widget_set_label(g->dominance, NULL, _("color dominance"));
+  g->dominance = dt_bauhaus_slider_from_params(self, "dominance");
   gtk_widget_set_tooltip_text(g->dominance, _("how clusters are mapped. low values: based on color "
                                               "proximity, high values: based on color dominance"));
   dt_bauhaus_slider_set_format(g->dominance, "%.02f%%");
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dominance), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->dominance), "value-changed", G_CALLBACK(dominance_changed), self);
 
-  g->equalization = dt_bauhaus_slider_new_with_range(self, 0.f, 100.f, 2.f, p->equalization, 2);
-  dt_bauhaus_widget_set_label(g->equalization, NULL, _("histogram equalization"));
+  g->equalization = dt_bauhaus_slider_from_params(self, "equalization");
   gtk_widget_set_tooltip_text(g->equalization, _("level of histogram equalization"));
   dt_bauhaus_slider_set_format(g->equalization, "%.02f%%");
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->equalization), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->equalization), "value-changed", G_CALLBACK(equalization_changed), self);
 
   /* add signal handler for preview pipe finished: process clusters if requested */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,

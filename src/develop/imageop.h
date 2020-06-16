@@ -211,6 +211,7 @@ typedef struct dt_iop_module_so_t
   void (*gui_update)(struct dt_iop_module_t *self);
   void (*gui_init)(struct dt_iop_module_t *self);
   void (*color_picker_apply)(struct dt_iop_module_t *self, GtkWidget *picker, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*gui_changed)(struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
   void (*gui_cleanup)(struct dt_iop_module_t *self);
   void (*gui_post_expose)(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                           int32_t pointerx, int32_t pointery);
@@ -445,6 +446,8 @@ typedef struct dt_iop_module_t
   void (*gui_init)(struct dt_iop_module_t *self);
   /** apply color picker results */
   void (*color_picker_apply)(struct dt_iop_module_t *self, GtkWidget *picker, struct dt_dev_pixelpipe_iop_t *piece);
+  /** called by standard widget callbacks after value changed */
+  void (*gui_changed)(struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
   /** destroy widget. */
   void (*gui_cleanup)(struct dt_iop_module_t *self);
   /** optional method called after darkroom expose. */
@@ -604,6 +607,8 @@ GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module);
 
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);
+/** allocate and load default settings from introspection. */
+void dt_iop_default_init(dt_iop_module_t *module);
 /** loads default settings from database. */
 void dt_iop_load_default_params(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */

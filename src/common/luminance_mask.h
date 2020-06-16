@@ -50,13 +50,13 @@
 
 typedef enum dt_iop_luminance_mask_method_t
 {
-  DT_TONEEQ_MEAN = 0,
-  DT_TONEEQ_LIGHTNESS,
-  DT_TONEEQ_VALUE,
-  DT_TONEEQ_NORM_1,
-  DT_TONEEQ_NORM_2,
-  DT_TONEEQ_NORM_POWER,
-  DT_TONEEQ_GEOMEAN,
+  DT_TONEEQ_MEAN = 0,   // $DESCRIPTION: "RGB average"
+  DT_TONEEQ_LIGHTNESS,  // $DESCRIPTION: "HSL lightness"
+  DT_TONEEQ_VALUE,      // $DESCRIPTION: "HSV value / RGB max"
+  DT_TONEEQ_NORM_1,     // $DESCRIPTION: "RGB sum"
+  DT_TONEEQ_NORM_2,     // $DESCRIPTION: "RGB euclidean norm")
+  DT_TONEEQ_NORM_POWER, // $DESCRIPTION: "RGB power norm"
+  DT_TONEEQ_GEOMEAN,    // $DESCRIPTION: "RGB geometric mean"
   DT_TONEEQ_LAST
 } dt_iop_luminance_mask_method_t;
 

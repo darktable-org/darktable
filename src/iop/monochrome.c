@@ -26,6 +26,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/color_picker_proxy.h"
@@ -46,7 +47,10 @@ DT_MODULE_INTROSPECTION(2, dt_iop_monochrome_params_t)
 
 typedef struct dt_iop_monochrome_params_t
 {
-  float a, b, size, highlights;
+  float a; // $DEFAULT: 0.0
+  float b; // $DEFAULT: 0.0
+  float size; // $DEFAULT: 2.0
+  float highlights; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0
 } dt_iop_monochrome_params_t;
 
 typedef struct dt_iop_monochrome_data_t
@@ -357,26 +361,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_monochrome_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_monochrome_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_monochrome_params_t);
-  module->gui_data = NULL;
-  dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t){ 0., 0., 2., 0. };
-  memcpy(module->params, &tmp, sizeof(dt_iop_monochrome_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_monochrome_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_monochrome_data_t));
@@ -584,15 +568,6 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
   return TRUE;
 }
 
-static void highlights_callback(GtkWidget *w, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-  dt_iop_color_picker_reset(self, TRUE);
-  p->highlights = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_monochrome_gui_data_t));
@@ -601,7 +576,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->dragging = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag and scroll mouse wheel to adjust the virtual color filter"));
@@ -618,12 +593,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(dt_iop_monochrome_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
 
-  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
+  g->highlights = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                  dt_bauhaus_slider_from_params(self, "highlights"));
   gtk_widget_set_tooltip_text(g->highlights, _("how much to keep highlights"));
-  dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->highlights);
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;

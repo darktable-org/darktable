@@ -25,6 +25,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -40,19 +41,19 @@ DT_MODULE_INTROSPECTION(2, dt_iop_profilegamma_params_t)
 
 typedef enum dt_iop_profilegamma_mode_t
 {
-  PROFILEGAMMA_LOG = 0,
-  PROFILEGAMMA_GAMMA = 1
+  PROFILEGAMMA_LOG = 0,  // $DESCRIPTION: "logarithmic"
+  PROFILEGAMMA_GAMMA = 1 // $DESCRIPTION: "gamma"
 } dt_iop_profilegamma_mode_t;
 
 typedef struct dt_iop_profilegamma_params_t
 {
-  dt_iop_profilegamma_mode_t mode;
-  float linear;
-  float gamma;
-  float dynamic_range;
-  float grey_point;
-  float shadows_range;
-  float security_factor;
+  dt_iop_profilegamma_mode_t mode; // $DEFAULT: PROFILEGAMMA_LOG
+  float linear;          // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1
+  float gamma;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.45
+  float dynamic_range;   // $MIN: 0.01 $MAX: 32.0 $DEFAULT: 10.0
+  float grey_point;      // $MIN: 0.1 $MAX: 100.0 $DEFAULT: 18.0 $DESCRIPTION: "middle grey luma"
+  float shadows_range;   // $MIN: -16.0 $MAX: 16.0 $DEFAULT: -5.0 $DESCRIPTION: "black relative exposure"
+  float security_factor; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "safety factor"
 } dt_iop_profilegamma_params_t;
 
 typedef struct dt_iop_profilegamma_gui_data_t
@@ -384,7 +385,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 static void apply_auto_grey(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
@@ -400,7 +401,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
 
 static void apply_auto_black(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
@@ -422,7 +423,7 @@ static void apply_auto_black(dt_iop_module_t *self)
 
 static void apply_auto_dynamic_range(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
@@ -440,54 +441,6 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void linear_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  p->linear = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void gamma_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  p->gamma = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-
-  dt_iop_color_picker_reset(self, TRUE);
-
-  float previous = p->security_factor;
-  p->security_factor = dt_bauhaus_slider_get(slider);
-  float ratio = (p->security_factor - previous) / (previous + 100.0f);
-
-  float EVmin = p->shadows_range;
-  EVmin = EVmin + ratio * EVmin;
-
-  float EVmax = p->dynamic_range + p->shadows_range;
-  EVmax = EVmax + ratio * EVmax;
-
-  p->dynamic_range = EVmax - EVmin;
-  p->shadows_range = EVmin;
-
-  ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
-  dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
   --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -527,68 +480,41 @@ static void apply_autotune(dt_iop_module_t *self)
 }
 
 
-static void grey_point_callback(GtkWidget *slider, gpointer user_data)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-
-  dt_iop_color_picker_reset(self, TRUE);
-
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  p->grey_point = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void dynamic_range_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-
-  dt_iop_color_picker_reset(self, TRUE);
-
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  p->dynamic_range = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void shadows_range_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-
-  dt_iop_color_picker_reset(self, TRUE);
-
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  p->shadows_range = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
-static void mode_callback(GtkWidget *combo, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  p->mode = dt_bauhaus_combobox_get(combo);
 
-  dt_iop_color_picker_reset(self, TRUE);
-
-  switch(p->mode)
+  if(w == g->mode)
   {
-    case PROFILEGAMMA_LOG:
+    if(p->mode == PROFILEGAMMA_LOG)
+    {
       gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "log");
-      break;
-    case PROFILEGAMMA_GAMMA:
+    }
+    else
+    {
       gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "gamma");
-      break;
-    default:
-      p->mode = PROFILEGAMMA_LOG;
-      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "log");
-      break;
+    }
   }
+  else if(w == g->security_factor)
+  {
+    float prev = *(float *)previous;
+    float ratio = (p->security_factor - prev) / (prev + 100.0f);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+    float EVmin = p->shadows_range;
+    EVmin = EVmin + ratio * EVmin;
+
+    float EVmax = p->dynamic_range + p->shadows_range;
+    EVmax = EVmax + ratio * EVmax;
+
+    p->dynamic_range = EVmax - EVmin;
+    p->shadows_range = EVmin;
+
+    ++darktable.gui->reset;
+    dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
+    dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
+    --darktable.gui->reset;
+  }
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
@@ -720,40 +646,15 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  switch(p->mode)
-  {
-    case PROFILEGAMMA_LOG:
-      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "log");
-      break;
-    case PROFILEGAMMA_GAMMA:
-      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "gamma");
-      break;
-    default:
-      p->mode = PROFILEGAMMA_LOG;
-      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "log");
-      break;
-  }
-
   dt_bauhaus_combobox_set(g->mode, p->mode);
-  dt_bauhaus_slider_set(g->linear, p->linear);
-  dt_bauhaus_slider_set(g->gamma, p->gamma);
+  dt_bauhaus_slider_set_soft(g->linear, p->linear);
+  dt_bauhaus_slider_set_soft(g->gamma, p->gamma);
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
   dt_bauhaus_slider_set_soft(g->grey_point, p->grey_point);
   dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
   dt_bauhaus_slider_set_soft(g->security_factor, p->security_factor);
-}
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_profilegamma_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_profilegamma_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_profilegamma_params_t);
-  module->gui_data = NULL;
-  dt_iop_profilegamma_params_t tmp
-      = (dt_iop_profilegamma_params_t){ 0, 0.1, 0.45, 10., 18., -5., 0. };
-  memcpy(module->params, &tmp, sizeof(dt_iop_profilegamma_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_profilegamma_params_t));
+  gui_changed(self, g->mode, 0);
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -765,14 +666,6 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_profilegamma = dt_opencl_create_kernel(program, "profilegamma");
   gd->kernel_profilegamma_log = dt_opencl_create_kernel(program, "profilegamma_log");
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -789,119 +682,75 @@ void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_profilegamma_gui_data_t));
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  // mode choice
-  g->mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
-  dt_bauhaus_combobox_add(g->mode, _("logarithmic"));
-  dt_bauhaus_combobox_add(g->mode, _("gamma"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->mode, _("tone mapping method"));
-  g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
 
   // prepare the modes widgets stack
   g->mode_stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->mode_stack), FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode_stack, TRUE, TRUE, 0);
-
 
   /**** GAMMA MODE ***/
-  GtkWidget *vbox_gamma = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-  // linear slider
-  g->linear = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.0001, p->linear, 4);
-  dt_bauhaus_widget_set_label(g->linear, NULL, _("linear"));
-  gtk_box_pack_start(GTK_BOX(vbox_gamma), g->linear, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->linear, _("linear part"));
-  g_signal_connect(G_OBJECT(g->linear), "value-changed", G_CALLBACK(linear_callback), self);
 
-  // gamma slider
-  g->gamma = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.0001, p->gamma, 4);
-  dt_bauhaus_widget_set_label(g->gamma, NULL, _("gamma"));
-  gtk_box_pack_start(GTK_BOX(vbox_gamma), g->gamma, TRUE, TRUE, 0);
+  GtkWidget *vbox_gamma = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+
+  g->linear = dt_bauhaus_slider_from_params(self, "linear");
+  dt_bauhaus_slider_set_digits(g->linear, 4);
+  gtk_widget_set_tooltip_text(g->linear, _("linear part"));
+
+  g->gamma = dt_bauhaus_slider_from_params(self, "gamma");
+  dt_bauhaus_slider_set_digits(g->gamma, 4);
   gtk_widget_set_tooltip_text(g->gamma, _("gamma exponential factor"));
-  g_signal_connect(G_OBJECT(g->gamma), "value-changed", G_CALLBACK(gamma_callback), self);
 
   gtk_widget_show_all(vbox_gamma);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_gamma, "gamma");
 
-
   /**** LOG MODE ****/
 
-  GtkWidget *vbox_log = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  GtkWidget *vbox_log = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  // grey_point slider
-  g->grey_point = dt_bauhaus_slider_new_with_range(self, 0.1, 100., 0.5, p->grey_point, 2);
-  dt_bauhaus_widget_set_label(g->grey_point, NULL, _("middle grey luma"));
-  gtk_box_pack_start(GTK_BOX(vbox_log), g->grey_point, TRUE, TRUE, 0);
+  g->grey_point = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                  dt_bauhaus_slider_from_params(self, "grey_point"));
+  dt_bauhaus_slider_set_step(g->grey_point, 0.5);
   dt_bauhaus_slider_set_format(g->grey_point, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point, _("adjust to match the average luma of the subject"));
-  g_signal_connect(G_OBJECT(g->grey_point), "value-changed", G_CALLBACK(grey_point_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->grey_point);
 
-  // Shadows range slider
-  g->shadows_range = dt_bauhaus_slider_new_with_range(self, -16.0, -0.0, 0.1, p->shadows_range, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->shadows_range, -16., 16.0);
-  dt_bauhaus_widget_set_label(g->shadows_range, NULL, _("black relative exposure"));
-  gtk_box_pack_start(GTK_BOX(vbox_log), g->shadows_range, TRUE, TRUE, 0);
+  g->shadows_range = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                     dt_bauhaus_slider_from_params(self, "shadows_range"));
+  dt_bauhaus_slider_set_soft_max(g->shadows_range, 0.0);
   dt_bauhaus_slider_set_format(g->shadows_range, "%.2f EV");
   gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle grey and pure black\nthis is a reading a posemeter would give you on the scene"));
-  g_signal_connect(G_OBJECT(g->shadows_range), "value-changed", G_CALLBACK(shadows_range_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->shadows_range);
 
-  // Dynamic range slider
-  g->dynamic_range = dt_bauhaus_slider_new_with_range(self, 0.5, 16.0, 0.1, p->dynamic_range, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->dynamic_range, 0.01, 32.0);
-  dt_bauhaus_widget_set_label(g->dynamic_range, NULL, _("dynamic range"));
-  gtk_box_pack_start(GTK_BOX(vbox_log), g->dynamic_range, TRUE, TRUE, 0);
+  g->dynamic_range = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                     dt_bauhaus_slider_from_params(self, "dynamic_range"));
+  dt_bauhaus_slider_set_soft_range(g->dynamic_range, 0.5, 16.0);
   dt_bauhaus_slider_set_format(g->dynamic_range, "%.2f EV");
   gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a posemeter would give you on the scene"));
-  g_signal_connect(G_OBJECT(g->dynamic_range), "value-changed", G_CALLBACK(dynamic_range_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->dynamic_range);
 
-  // Security factor
   gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 0);
-  g->security_factor = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->security_factor, 2);
-  dt_bauhaus_widget_set_label(g->security_factor, NULL, _("safety factor"));
-  gtk_box_pack_start(GTK_BOX(vbox_log), g->security_factor, TRUE, TRUE, 0);
+
+  g->security_factor = dt_bauhaus_slider_from_params(self, "security_factor");
+  dt_bauhaus_slider_set_step(g->security_factor, 0.1);
   dt_bauhaus_slider_set_format(g->security_factor, "%.2f %%");
   gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is useful when noise perturbates the measurements"));
-  g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
 
-  // Auto tune slider
-  g->auto_button = dt_bauhaus_combobox_new(self);
+  g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                   dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->auto_button);
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->auto_button, TRUE, TRUE, 0);
-
+  
   gtk_widget_show_all(vbox_log);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_log, "log");
 
-  switch(p->mode)
-  {
-    case PROFILEGAMMA_LOG:
-      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "log");
-      break;
-    case PROFILEGAMMA_GAMMA:
-      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "gamma");
-      break;
-    default:
-      p->mode = PROFILEGAMMA_LOG;
-      gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "log");
-      break;
-  }
+  // start building top level widget
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
+  gtk_widget_set_tooltip_text(g->mode, _("tone mapping method"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), g->mode_stack, TRUE, TRUE, 0);
+
+  gui_changed(self, g->mode, 0);
 }
 
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
