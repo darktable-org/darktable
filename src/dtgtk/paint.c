@@ -2044,15 +2044,6 @@ void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   FINISH
 }
 
-
-
-
-
-
-
-
-
-
 void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 0, 0)
