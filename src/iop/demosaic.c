@@ -5028,6 +5028,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
   dt_bauhaus_slider_set_step(g->median_thrs, 0.001);
+  dt_bauhaus_slider_set_digits(g->median_thrs, 3);
   gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off.\n"
                                                 "set to 1.0 to ignore edges."));
 

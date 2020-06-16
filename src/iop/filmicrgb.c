@@ -2094,8 +2094,6 @@ void reload_defaults(dt_iop_module_t *module)
     d->black_point_source += 0.5f * exposure;
     d->white_point_source += 0.8f * exposure;
     d->output_power = logf(d->grey_point_target / 100.0f) / logf(-d->black_point_source / (d->white_point_source - d->black_point_source));
-
-    module->default_enabled = TRUE;
   }
 
 end:
@@ -2405,6 +2403,8 @@ void gui_init(dt_iop_module_t *self)
   
   g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
   dt_bauhaus_slider_set_soft_range(g->contrast, 1.0, 2.0);
+  dt_bauhaus_slider_set_digits(g->contrast, 3);
+  dt_bauhaus_slider_set_step(g->contrast, .01);
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve\n"
                                              "affects mostly the mid-tones"));
 
