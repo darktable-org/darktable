@@ -1170,8 +1170,9 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
     // if the scale has shapes inform it
     if(rt_scale_has_shapes(p, i))
     {
+      cairo_set_line_width(cr, 1);
       cairo_set_source_rgb(cr, .1, .8, 0);
-      cairo_rectangle(cr, box_w * i + inset, inset, box_w, 3.0f * lw);
+      cairo_rectangle(cr, box_w * i + inset + lw / 2.0f, inset, box_w - lw, 3.0f * lw);
       cairo_fill(cr);
     }
   }
