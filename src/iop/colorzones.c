@@ -703,6 +703,25 @@ void init_presets(dt_iop_module_so_t *self)
   }
   dt_gui_presets_add_generic(_("black & white film"), self->op, version, &p, sizeof(p), 1);
 
+  // neutral preset with just a set of nodes uniformly distributed along the hue axis
+#define DT_IOP_COLORZONES_BANDS_HSL 8
+  p.channel = DT_IOP_COLORZONES_h;
+  for(int k = 0; k < DT_IOP_COLORZONES_BANDS_HSL; k++)
+  {
+    p.curve[DT_IOP_COLORZONES_L][k].x = (float)k / DT_IOP_COLORZONES_BANDS_HSL;
+    p.curve[DT_IOP_COLORZONES_L][k].y = 0.5f;
+    p.curve[DT_IOP_COLORZONES_C][k].x = (float)k / DT_IOP_COLORZONES_BANDS_HSL;
+    p.curve[DT_IOP_COLORZONES_C][k].y = 0.5f;
+    p.curve[DT_IOP_COLORZONES_h][k].x = (float)k / DT_IOP_COLORZONES_BANDS_HSL;
+    p.curve[DT_IOP_COLORZONES_h][k].y = 0.5f;
+  }
+  for(int c = 0; c < 3; c++)
+  {
+    p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS_HSL;
+    p.curve_type[c] = MONOTONE_HERMITE;
+  }
+  dt_gui_presets_add_generic(_("HSL base setting"), self->op, version, &p, sizeof(p), 1);
+
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
