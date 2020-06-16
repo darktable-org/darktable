@@ -906,24 +906,17 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_colorchecker_params_t);
   module->gui_data = NULL;
-  dt_iop_colorchecker_params_t tmp;
-  tmp.num_patches = 24;
-  for(int k=0;k<tmp.num_patches;k++) tmp.source_L[k] = colorchecker_Lab[3*k+0];
-  for(int k=0;k<tmp.num_patches;k++) tmp.source_a[k] = colorchecker_Lab[3*k+1];
-  for(int k=0;k<tmp.num_patches;k++) tmp.source_b[k] = colorchecker_Lab[3*k+2];
-  for(int k=0;k<tmp.num_patches;k++) tmp.target_L[k] = colorchecker_Lab[3*k+0];
-  for(int k=0;k<tmp.num_patches;k++) tmp.target_a[k] = colorchecker_Lab[3*k+1];
-  for(int k=0;k<tmp.num_patches;k++) tmp.target_b[k] = colorchecker_Lab[3*k+2];
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorchecker_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorchecker_params_t));
-}
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  dt_iop_colorchecker_params_t *d = module->default_params;
+  d->num_patches = colorchecker_patches;
+  for(int k = 0; k < d->num_patches; k++)
+  {
+    d->source_L[k] = d->target_L[k] = colorchecker_Lab[3*k+0];
+    d->source_a[k] = d->target_a[k] = colorchecker_Lab[3*k+1];
+    d->source_b[k] = d->target_b[k] = colorchecker_Lab[3*k+2];
+  }
+
+  memcpy(module->params, module->default_params, sizeof(dt_iop_colorchecker_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1352,7 +1345,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // custom 24-patch widget in addition to combo box
   g->area = dtgtk_drawing_area_new_with_aspect_ratio(4.0/6.0);

@@ -73,8 +73,9 @@ typedef enum atrous_channel_t
 
 typedef struct dt_iop_atrous_params_t
 {
-  int32_t octaves;
-  float x[atrous_none][BANDS], y[atrous_none][BANDS];
+  int32_t octaves; // $DEFAULT: 3
+  float x[atrous_none][BANDS];
+  float y[atrous_none][BANDS]; // $DEFAULT: 0.5
 } dt_iop_atrous_params_t;
 
 typedef struct dt_iop_atrous_gui_data_t
@@ -971,22 +972,17 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_atrous_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_atrous_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_atrous_params_t);
-  module->gui_data = NULL;
-  dt_iop_atrous_params_t tmp;
-  tmp.octaves = 3;
+  dt_iop_default_init(module);
+
+  dt_iop_atrous_params_t *d = module->default_params;
+  
   for(int k = 0; k < BANDS; k++)
   {
-    tmp.y[atrous_L][k] = tmp.y[atrous_s][k] = tmp.y[atrous_c][k] = 0.5f;
-    tmp.x[atrous_L][k] = tmp.x[atrous_s][k] = tmp.x[atrous_c][k] = k / (BANDS - 1.0f);
-    tmp.y[atrous_Lt][k] = tmp.y[atrous_ct][k] = 0.0f;
-    tmp.x[atrous_Lt][k] = tmp.x[atrous_ct][k] = k / (BANDS - 1.0f);
+    d->y[atrous_Lt][k] = d->y[atrous_ct][k] = 0.0f;
+    for(int c = atrous_L; c <= atrous_ct; c++) d->x[c][k] = k / (BANDS - 1.0f);
   }
-  memcpy(module->params, &tmp, sizeof(dt_iop_atrous_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_atrous_params_t));
+
+  memcpy(module->params, module->default_params, sizeof(dt_iop_atrous_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -997,14 +993,6 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_decompose = dt_opencl_create_kernel(program, "eaw_decompose");
   gd->kernel_synthesize = dt_opencl_create_kernel(program, "eaw_synthesize");
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1832,7 +1820,7 @@ static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, g
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   c->channel = c->channel2 = (atrous_channel_t)page_num;
   gtk_widget_queue_draw(self->widget);
 }
@@ -1840,7 +1828,7 @@ static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, g
 static void mix_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
@@ -1872,31 +1860,23 @@ void gui_init(struct dt_iop_module_t *self)
   c->timeout_handle = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0 / BANDS;
+
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("luma")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("change lightness at each feature size"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("chroma")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("change color saturation at each feature size"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("edges")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
+  GtkWidget *tab_label = gtk_label_new(_("luma"));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("luma")));
+  gtk_widget_set_tooltip_text(tab_label, _("change lightness at each feature size"));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("chroma")));
+  gtk_widget_set_tooltip_text(tab_label, _("change color saturation at each feature size"));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("edges")));
+  gtk_widget_set_tooltip_text(tab_label, _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
 
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
 
@@ -1904,7 +1884,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // graph
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK

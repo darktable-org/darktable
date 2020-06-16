@@ -28,6 +28,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 
@@ -37,17 +38,19 @@ DT_MODULE_INTROSPECTION(2, dt_iop_basicadj_params_t)
 
 typedef struct dt_iop_basicadj_params_t
 {
-  float black_point;
-  float exposure;
-  float hlcompr;
-  float hlcomprthresh;
-  float contrast;
-  int preserve_colors;
-  float middle_grey;
-  float brightness;
-  float saturation;
-  float vibrance;
-  float clip;
+  float black_point;    /* $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
+                           $DESCRIPTION:"black level correction" */
+  float exposure;       // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
+  float hlcompr;        /* $MIN: 0 $MAX: 500.0 $DEFAULT: 0.0
+                           $DESCRIPTION:"highlight compression" */
+  float hlcomprthresh;  
+  float contrast;       // $MIN: -1.0 $MAX: 5.0 $DEFAULT: 0.0
+  dt_iop_rgb_norms_t preserve_colors; // $DEFAULT: DT_RGB_NORM_LUMINANCE
+  float middle_grey;    // $MIN: 0.05 $MAX: 100 $DEFAULT: 18.42
+  float brightness;     // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0
+  float saturation;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
+  float vibrance;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
+  float clip;           // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
 } dt_iop_basicadj_params_t;
 
 typedef struct dt_iop_basicadj_gui_data_t
@@ -201,129 +204,14 @@ static void _turn_selregion_picker_off(struct dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-static void _black_point_callback(GtkWidget *slider, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->black_point = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _exposure_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->exposure = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _hlcompr_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->hlcompr = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _contrast_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->contrast = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->preserve_colors = dt_bauhaus_combobox_get(widget);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _middle_grey_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->middle_grey = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _turn_select_region_off(self);
 }
 
 static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 {
   _turn_select_region_off(self);
-}
-
-static void _brightness_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->brightness = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _saturation_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->saturation = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _vibrance_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->vibrance = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _clip_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->clip = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
@@ -600,7 +488,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
 
@@ -703,30 +591,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_select_region), g->draw_selected_region);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_basicadj_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_basicadj_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_basicadj_params_t);
-  module->gui_data = NULL;
-
-  dt_iop_basicadj_params_t tmp = { 0 };
-  tmp.preserve_colors = DT_RGB_NORM_LUMINANCE;
-  tmp.middle_grey = 18.42f;
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_basicadj_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_basicadj_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   if(!in) _turn_select_region_off(self);
@@ -747,114 +611,74 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_basicadj_gui_data_t));
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->sl_black_point = dt_bauhaus_slider_new_with_range(self, -0.10, 0.10, .001, p->black_point, 4);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_black_point, -1.0, 1.0);
-  dt_bauhaus_widget_set_label(g->sl_black_point, NULL, _("black level correction"));
-  dt_bauhaus_slider_set_format(g->sl_black_point, "%.4f");
-  g_object_set(g->sl_black_point, "tooltip-text", _("adjust the black level to unclip negative RGB values.\n"
+  g->sl_black_point = dt_bauhaus_slider_from_params(self, "black_point");
+  dt_bauhaus_slider_set_soft_range(g->sl_black_point, -0.1, 0.1);
+  dt_bauhaus_slider_set_step(g->sl_black_point, .001);
+  gtk_widget_set_tooltip_text(g->sl_black_point, _("adjust the black level to unclip negative RGB values.\n"
                                                     "you should never use it to add more density in blacks!\n"
                                                     "if poorly set, it will clip near-black colors out of gamut\n"
-                                                    "by pushing RGB values into negatives"),
-               (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_black_point), "value-changed", G_CALLBACK(_black_point_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_black_point, TRUE, TRUE, 0);
+                                                    "by pushing RGB values into negatives"));
 
-  g->sl_exposure = dt_bauhaus_slider_new_with_range(self, -4.0, 4.0, .02, p->exposure, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_exposure, -18.0, 18.0);
-  dt_bauhaus_widget_set_label(g->sl_exposure, NULL, _("exposure"));
+  g->sl_exposure = dt_bauhaus_slider_from_params(self, "exposure");
+  dt_bauhaus_slider_set_soft_range(g->sl_exposure, -4.0, 4.0);
+  dt_bauhaus_slider_set_step(g->sl_exposure, .02);
   dt_bauhaus_slider_set_format(g->sl_exposure, _("%.2f EV"));
-  g_object_set(g->sl_exposure, "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_exposure), "value-changed", G_CALLBACK(_exposure_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->sl_exposure, _("adjust the exposure correction"));
 
-  g->sl_hlcompr = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->hlcompr, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_hlcompr, 0.0, 500.0);
-  dt_bauhaus_widget_set_label(g->sl_hlcompr, NULL, _("highlight compression"));
-  g_object_set(g->sl_hlcompr, "tooltip-text", _("highlight compression adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_hlcompr), "value-changed", G_CALLBACK(_hlcompr_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_hlcompr, TRUE, TRUE, 0);
+  g->sl_hlcompr = dt_bauhaus_slider_from_params(self, "hlcompr");
+  dt_bauhaus_slider_set_soft_max(g->sl_hlcompr, 100.0);
+  gtk_widget_set_tooltip_text(g->sl_hlcompr, _("highlight compression adjustment"));
 
-  g->sl_contrast = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->contrast, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_contrast, -1.0, 5.0);
-  dt_bauhaus_widget_set_label(g->sl_contrast, NULL, _("contrast"));
-  g_object_set(g->sl_contrast, "tooltip-text", _("contrast adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_contrast), "value-changed", G_CALLBACK(_contrast_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_contrast, TRUE, TRUE, 0);
+  g->sl_contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  dt_bauhaus_slider_set_soft_range(g->sl_contrast, -1.0, 1.0);
+  gtk_widget_set_tooltip_text(g->sl_contrast, _("contrast adjustment"));
 
-  g->cmb_preserve_colors = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_preserve_colors, NULL, _("preserve colors"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("none"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("max RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("average RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("sum RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("norm RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("basic power"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
+  g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors") ;
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
-  g_signal_connect(G_OBJECT(g->cmb_preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
 
-  g->sl_middle_grey = dt_bauhaus_slider_new_with_range(self, 0.05, 100.0, .5, p->middle_grey, 2);
-  dt_bauhaus_widget_set_label(g->sl_middle_grey, NULL, _("middle grey"));
+  g->sl_middle_grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                      dt_bauhaus_slider_from_params(self, "middle_grey"));
+  dt_bauhaus_slider_set_step(g->sl_middle_grey, .5);
   dt_bauhaus_slider_set_format(g->sl_middle_grey, "%.2f %%");
-  g_object_set(g->sl_middle_grey, "tooltip-text", _("middle grey adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_middle_grey), "value-changed", G_CALLBACK(_middle_grey_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_middle_grey, TRUE, TRUE, 0);
-
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->sl_middle_grey);
+  gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle grey adjustment"));
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 
-  g->sl_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->brightness, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_brightness, -4.0, 4.0);
-  dt_bauhaus_widget_set_label(g->sl_brightness, NULL, _("brightness"));
-  g_object_set(g->sl_brightness, "tooltip-text", _("brightness adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_brightness), "value-changed", G_CALLBACK(_brightness_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_brightness, TRUE, TRUE, 0);
+  g->sl_brightness = dt_bauhaus_slider_from_params(self, "brightness");
+  dt_bauhaus_slider_set_soft_range(g->sl_brightness, -1.0, 1.0);
+  gtk_widget_set_tooltip_text(g->sl_brightness,_("brightness adjustment"));
 
-  g->sl_saturation = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->saturation, 2);
-  dt_bauhaus_widget_set_label(g->sl_saturation, NULL, _("saturation"));
-  g_object_set(g->sl_saturation, "tooltip-text", _("saturation adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_saturation), "value-changed", G_CALLBACK(_saturation_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_saturation, TRUE, TRUE, 0);
+  g->sl_saturation = dt_bauhaus_slider_from_params(self, "saturation");
+  gtk_widget_set_tooltip_text(g->sl_saturation,_("saturation adjustment"));
 
-  g->sl_vibrance = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->vibrance, 2);
-  dt_bauhaus_widget_set_label(g->sl_vibrance, NULL, _("vibrance"));
-  g_object_set(g->sl_vibrance, "tooltip-text", _("vibrance adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_vibrance), "value-changed", G_CALLBACK(_vibrance_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_vibrance, TRUE, TRUE, 0);
-
+  g->sl_vibrance = dt_bauhaus_slider_from_params(self, "vibrance");
+  gtk_widget_set_tooltip_text(g->sl_vibrance, _("vibrance adjustment"));
+ 
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
 
   g->bt_auto_levels = gtk_button_new_with_label(_("auto"));
-  g_object_set(G_OBJECT(g->bt_auto_levels), "tooltip-text", _("apply auto exposure based on the entire image"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_auto_levels, _("apply auto exposure based on the entire image"));
   g_signal_connect(G_OBJECT(g->bt_auto_levels), "clicked", G_CALLBACK(_auto_levels_callback), self);
   gtk_widget_set_size_request(g->bt_auto_levels, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
 
   g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_select_region), "tooltip-text",
-               _("apply auto exposure based on a region defined by the user\n"
-                 "click and drag to draw the area\n"
-                 "right click to cancel"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_select_region,
+                              _("apply auto exposure based on a region defined by the user\n"
+                                "click and drag to draw the area\n"
+                                "right click to cancel"));
   g_signal_connect(G_OBJECT(g->bt_select_region), "toggled", G_CALLBACK(_select_region_toggled_callback), self);
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_select_region, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
 
-  g->sl_clip = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->clip, 3);
-  dt_bauhaus_widget_set_label(g->sl_clip, NULL, _("clip"));
-  g_object_set(g->sl_clip, "tooltip-text", _("adjusts clipping value for auto exposure calculation"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_clip), "value-changed", G_CALLBACK(_clip_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_clip, TRUE, TRUE, 0);
+  g->sl_clip = dt_bauhaus_slider_from_params(self, "clip");
+  gtk_widget_set_tooltip_text(g->sl_clip, _("adjusts clipping value for auto exposure calculation"));
 
   // add signal handler for preview pipe finish
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
