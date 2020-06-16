@@ -2002,12 +2002,10 @@ void gui_update(dt_iop_module_t *self)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
                                  (bd->masks_shown != DT_MASKS_EDIT_OFF) && (darktable.develop->gui_module == self));
-  // gtk_widget_set_sensitive(g->bt_copy_scale, TRUE);
   }
   else
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
-  //  gtk_widget_set_sensitive(g->bt_copy_scale, FALSE);
   }
 
   // update the gradient slider
@@ -2034,8 +2032,10 @@ void change_image(struct dt_iop_module_t *self)
     g->preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
 
     g->is_dragging = 0;
-    g->wdbar_mouse_x = -1;
-    g->wdbar_mouse_y = -1;
+    g->wdbar_mouse_x = g->wdbar_mouse_y = -1;
+    g->curr_scale = -1;
+    g->lower_cursor = g->upper_cursor = FALSE;
+    g->lower_margin = g->upper_margin = FALSE;
   }
 }
 
@@ -2055,7 +2055,7 @@ void gui_init(dt_iop_module_t *self)
   // shapes toolbar
   GtkWidget *hbox_shapes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *label = gtk_label_new(_("# shapes:"));
+  GtkWidget *label = gtk_label_new(_("shapes:"));
   gtk_box_pack_start(GTK_BOX(hbox_shapes), label, FALSE, TRUE, 0);
   g->label_form = GTK_LABEL(gtk_label_new("-1"));
   gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, DT_PIXEL_APPLY_DPI(5));
@@ -2140,7 +2140,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *grid_wd_labels = gtk_grid_new();
   gtk_grid_set_column_homogeneous(GTK_GRID(grid_wd_labels), FALSE);
 
-  GtkWidget *lbl_num_scales = gtk_label_new(_("# scales:"));
+  GtkWidget *lbl_num_scales = gtk_label_new(_("scales:"));
   gtk_widget_set_halign(lbl_num_scales, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid_wd_labels), lbl_num_scales, 0, 0, 1, 1);
 
