@@ -1215,7 +1215,7 @@ void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, g
 
 void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.5 * 0.9, 0.5, 0.5)
+  PREAMBLE(0.5 * 0.95, 0.5, 0.5)
 
   const float r = 1.;
   cairo_arc(cr, 0, 0, r, 0, 2.0f * M_PI);
