@@ -403,7 +403,8 @@ static void init_tab_general(GtkWidget *stack)
   gtk_grid_attach_next_to(GTK_GRID(grid), screen_ppd_overwrite, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(screen_ppd_overwrite, _("scale the thumbnails and previews resolutions for high DPI screens.\n"
                                                       "increase if thumbnails look blurry, decrease if lighttable is too slow.\n"
-                                                      "set to -1.0 to use the system-defined global scaling."));
+                                                      "set to -1.0 to use the system-defined global scaling.\n"
+                                                      "this needs a restart to apply changes."));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_ppd_overwrite), dt_conf_get_float("screen_ppd_overwrite"));
   g_signal_connect(G_OBJECT(screen_ppd_overwrite), "value_changed", G_CALLBACK(gui_scaling_changed_callback), 0);
 
@@ -417,7 +418,8 @@ static void init_tab_general(GtkWidget *stack)
   gtk_grid_attach_next_to(GTK_GRID(grid), screen_dpi_overwrite, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(screen_dpi_overwrite, _("adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
                                                       "increase for a magnified GUI, decrease to fit more content in window.\n"
-                                                      "set to -1.0 to use the system-defined global resolution."));
+                                                      "set to -1.0 to use the system-defined global resolution.\n"
+                                                      "this needs a restart to apply changes."));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_dpi_overwrite), dt_conf_get_float("screen_dpi_overwrite"));
   g_signal_connect(G_OBJECT(screen_dpi_overwrite), "value_changed", G_CALLBACK(dpi_scaling_changed_callback), 0);
 
@@ -486,6 +488,8 @@ static void init_tab_general(GtkWidget *stack)
 
 ///////////// end of gui and theme language selection
 
+#if 0
+// FIXME! this makes some systems hang forever. I don't reproduce.
 gboolean preferences_window_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
   // redraw the whole UI in case sizes have changed
@@ -498,7 +502,7 @@ gboolean preferences_window_deleted(GtkWidget *widget, GdkEvent *event, gpointer
   gtk_widget_hide(widget);
   return TRUE;
 }
-
+#endif
 
 void dt_gui_preferences_show()
 {
@@ -506,7 +510,11 @@ void dt_gui_preferences_show()
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     NULL, NULL);
+#if 0
+  // FIXME! this makes some systems hang forever. I don't reproduce.
   g_signal_connect(G_OBJECT(_preferences_dialog), "delete-event", G_CALLBACK(preferences_window_deleted), NULL);
+#endif
+    
   gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
