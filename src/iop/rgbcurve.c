@@ -1421,7 +1421,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_name(g->colorpicker, "keep-active");
   g->colorpicker_set_values = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker_set_values),
-                               dtgtk_cairo_paint_colorpicker_set_values, 
+                               dtgtk_cairo_paint_colorpicker_set_values,
                                CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
   gtk_widget_set_size_request(g->colorpicker_set_values, DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
   gtk_widget_set_tooltip_text(g->colorpicker_set_values, _("create a curve based on an area from the image\n"
@@ -1554,8 +1554,8 @@ void init(dt_iop_module_t *module)
 
   dt_iop_rgbcurve_params_t *d = module->default_params;
 
-  d->curve_nodes[0][1].x = d->curve_nodes[0][1].y = 
-  d->curve_nodes[1][1].x = d->curve_nodes[1][1].y = 
+  d->curve_nodes[0][1].x = d->curve_nodes[0][1].y =
+  d->curve_nodes[1][1].x = d->curve_nodes[1][1].y =
   d->curve_nodes[2][1].x = d->curve_nodes[2][1].y = 1.0;
 
   module->histogram_middle_grey = d->compensate_middle_grey;
@@ -1654,7 +1654,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)(piece->data);
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)p1;
 
-  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     piece->request_histogram |= (DT_REQUEST_ON);
   else
     piece->request_histogram &= ~(DT_REQUEST_ON);

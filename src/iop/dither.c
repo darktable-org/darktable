@@ -260,7 +260,7 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   _find_nearest_color *nearest_color = NULL;
   unsigned int levels = 1;
-  int bds = (piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
+  int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
 
   switch(data->dither_type)
   {
@@ -312,7 +312,8 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+      if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
+         || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
         nearest_color = NULL;
       break;
     case DITHER_RANDOM:
@@ -427,7 +428,7 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
 
   _find_nearest_color_sse *nearest_color = NULL;
   unsigned int levels = 1;
-  int bds = (piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
+  const int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
 
   switch(data->dither_type)
   {
@@ -479,7 +480,8 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+      if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
+         || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
         nearest_color = NULL;
       break;
     case DITHER_RANDOM:
