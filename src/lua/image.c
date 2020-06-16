@@ -182,9 +182,7 @@ static int rating_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    int score = my_image->flags & 0x7;
-    if(score > 6) score = 5;
-    if(score == 6) score = -1;
+    const int score = dt_image_get_xmp_rating(my_image);
 
     lua_pushinteger(L, score);
     releasereadimage(L, my_image);
@@ -199,14 +197,12 @@ static int rating_member(lua_State *L)
       releasewriteimage(L, my_image);
       return luaL_error(L, "rating too high : %d", my_score);
     }
-    if(my_score == -1) my_score = 6;
     if(my_score < -1)
     {
       releasewriteimage(L, my_image);
       return luaL_error(L, "rating too low : %d", my_score);
     }
-    my_image->flags &= ~0x7;
-    my_image->flags |= my_score;
+    dt_image_set_xmp_rating(my_image, my_score);
     releasewriteimage(L, my_image);
     return 0;
   }
