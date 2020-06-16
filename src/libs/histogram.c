@@ -74,7 +74,9 @@ const char *name(dt_lib_module_t *self)
 
 const char **views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"darkroom", "tethering", NULL};
+  static const char *v[] = {"darkroom", /*"tethering",*/ NULL};
+  /* histogram disabled on tethering mode for 3.2 release as not working,
+     see #4298 for discussion and resolution of this issue. */
   return v;
 }
 
