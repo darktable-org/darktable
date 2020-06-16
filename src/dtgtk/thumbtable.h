@@ -137,7 +137,7 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
 // change the timeout of the overlays block
 void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table, const int timeout);
 // sets max size of icons and other gui elelemnt
-void dt_thumbtable_icons_register_size(GtkWidget *widget, gpointer user_data);
+void dt_thumbtable_icons_register_size(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

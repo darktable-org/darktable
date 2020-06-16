@@ -1530,7 +1530,7 @@ static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, gpointer 
   gtk_style_context_remove_class(tablecontext, "dt_thumbtable_reorder");
 }
 
-void dt_thumbtable_icons_register_size(GtkWidget *widget, gpointer user_data)
+void dt_thumbtable_icons_register_size(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
 {
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -1587,7 +1587,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(G_OBJECT(table->widget), "motion-notify-event", G_CALLBACK(_event_motion_notify), table);
   g_signal_connect(G_OBJECT(table->widget), "button-release-event", G_CALLBACK(_event_button_release), table);
   // set the size of icons and other elements
-  g_signal_connect(G_OBJECT(table->widget), "map", G_CALLBACK(dt_thumbtable_icons_register_size), table);
+  g_signal_connect(G_OBJECT(table->widget), "size-allocate", G_CALLBACK(dt_thumbtable_icons_register_size), table);
 
   // we register globals signals
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
