@@ -3917,10 +3917,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
       g->lastx = pts[0] - pts[2];
       g->lasty = pts[1] - pts[3];
-      g->crop_cx = 0.5f * (p->cl + p->cr);
-      g->crop_cy = 0.5f * (p->ct + p->cb);
-      // copy current crop box into shadow variables
-      shadow_crop_box(p,g);
+      g->crop_cx = 0.5f * (g->cl + g->cr);
+      g->crop_cy = 0.5f * (g->ct + g->cb);
       return TRUE;
     }
     else
@@ -4000,14 +3998,12 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
+  dt_control_change_cursor(GDK_LEFT_PTR);
   if (g->adjust_crop)
   {
-    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-    commit_crop_box(p,g);
     // stop adjust crop
     g->adjust_crop = FALSE;
   }
-  dt_control_change_cursor(GDK_LEFT_PTR);
 
   // finalize the isbounding mode
   // if user has released the shift button in-between -> do nothing
@@ -4056,7 +4052,6 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   }
 
   // end of sweeping/isbounding mode
-  dt_control_change_cursor(GDK_LEFT_PTR);
   g->isselecting = g->isdeselecting = 0;
   g->isbounding = ASHIFT_BOUNDING_OFF;
   g->near_delta = 0;
@@ -4129,11 +4124,12 @@ static void rotation_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->rotation = dt_bauhaus_slider_get(slider);
-#ifdef ASHIFT_DEBUG
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+#ifdef ASHIFT_DEBUG
   model_probe(self, p, g->lastfit);
 #endif
   do_crop(self, p);
+  commit_crop_box(p,g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4143,11 +4139,12 @@ static void lensshift_v_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->lensshift_v = dt_bauhaus_slider_get(slider);
-#ifdef ASHIFT_DEBUG
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+#ifdef ASHIFT_DEBUG
   model_probe(self, p, g->lastfit);
 #endif
   do_crop(self, p);
+  commit_crop_box(p,g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4157,11 +4154,12 @@ static void lensshift_h_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->lensshift_h = dt_bauhaus_slider_get(slider);
-#ifdef ASHIFT_DEBUG
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+#ifdef ASHIFT_DEBUG
   model_probe(self, p, g->lastfit);
 #endif
   do_crop(self, p);
+  commit_crop_box(p,g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4171,11 +4169,12 @@ static void shear_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->shear = dt_bauhaus_slider_get(slider);
-#ifdef ASHIFT_DEBUG
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+#ifdef ASHIFT_DEBUG
   model_probe(self, p, g->lastfit);
 #endif
   do_crop(self, p);
+  commit_crop_box(p,g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4186,7 +4185,7 @@ static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   g->show_guides = dt_bauhaus_combobox_get(widget);
   dt_iop_request_focus(self);
-  dt_dev_reprocess_all(self->dev);
+  dt_control_queue_redraw_center();
 }
 
 static void cropmode_callback(GtkWidget *widget, gpointer user_data)
@@ -4202,7 +4201,9 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
   }
   do_crop(self, p);
+  swap_shadow_crop_box(p,g);	//temporarily update real crop box
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  swap_shadow_crop_box(p,g);	//restore p
 }
 
 static void mode_callback(GtkWidget *widget, gpointer user_data)
@@ -4231,6 +4232,7 @@ static void mode_callback(GtkWidget *widget, gpointer user_data)
   }
 
   do_crop(self, p);
+  commit_crop_box(p,g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4241,6 +4243,8 @@ static void f_length_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->f_length = dt_bauhaus_slider_get(slider);
   do_crop(self, p);
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  commit_crop_box(p,g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4251,6 +4255,8 @@ static void crop_factor_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->crop_factor = dt_bauhaus_slider_get(slider);
   do_crop(self, p);
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  commit_crop_box(p,g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4261,6 +4267,8 @@ static void orthocorr_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->orthocorr = dt_bauhaus_slider_get(slider);
   do_crop(self, p);
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  commit_crop_box(p,g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4271,6 +4279,8 @@ static void aspect_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   p->aspect = dt_bauhaus_slider_get(slider);
   do_crop(self, p);
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  commit_crop_box(p,g);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -4460,7 +4470,7 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
       enhance = ASHIFT_ENHANCE_NONE;
 
     dt_iop_request_focus(self);
-    dt_dev_reprocess_all(self->dev);
+    dt_control_queue_redraw_center();
 
     if(self->enabled)
     {
@@ -4812,7 +4822,19 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   if(self->enabled)
-    dt_dev_reprocess_all(self->dev);
+  {
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+    if (in)
+    {
+      shadow_crop_box(p,g);
+      dt_control_queue_redraw_center();
+    }
+    else
+    {
+      commit_crop_box(p,g);
+    }
+  }
 }
 
 static float log10_callback(GtkWidget *self, float inval, dt_bauhaus_callback_t dir)
