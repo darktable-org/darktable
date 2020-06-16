@@ -2779,7 +2779,6 @@ static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, cons
   printf("margins after crop adjustment: x %f, y %f, angle %f, crop area (%f %f %f %f), width %f, height %f\n",
          0.5f * (g->cl + g->cr), 0.5f * (g->ct + g->cb), alpha, g->cl, g->cr, g->ct, g->cb, wd, ht);
 #endif
-  dt_control_queue_redraw_center();
   return;
 }
 
@@ -3453,12 +3452,16 @@ static int call_distort_transform(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, s
   int ret = 0;
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   if(!piece) return ret;
-  if(piece->module == self && piece->enabled &&
+  if(piece->module == self && /*piece->enabled && */  //see note below
      !(dev->gui_module && dev->gui_module->operation_tags_filter() & piece->module->operation_tags()))
   {
     ret = piece->module->distort_transform(piece->module, piece, points, points_count);
   }
   return ret;
+  //NOTE: piece->enabled is FALSE for exactly the first mouse_moved event following a button_pressed event
+  //  when ASHIFT_CROP_ASPECT is active, which causes the first gui_post_expose call on starting to resize
+  //  the crop box to draw the center image without the crop overlay, resulting in an annoying visual glitch.
+  //  Removing the check appears to have no adverse effects and eliminates the glitch.
 }
 
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
@@ -3815,7 +3818,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   if (g->adjust_crop)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-    shadow_crop_box(p,g);
 
     float pts[4] = { pzx, pzy, 1.0f, 1.0f };
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
@@ -3830,6 +3832,11 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     swap_shadow_crop_box(p,g);  // restore p
     return TRUE;
   }
+
+  // if visibility of lines is switched off or no lines available, we would normally adjust the crop box
+  // but since g->adjust_crop was FALSE, we have nothing to do
+  if(g->lines_suppressed || g->lines == NULL)
+    return TRUE;
 
   // if in rectangle selecting mode adjust "near"-ness of lines according to
   // the rectangular selection
