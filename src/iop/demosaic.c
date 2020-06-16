@@ -2804,7 +2804,7 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
                                const dt_iop_roi_t *const roi_out)
 {
   int flags = 0;
-  switch (piece->pipe->type)
+  switch (piece->pipe->type & DT_DEV_PIXELPIPE_ANY)
   {
     case DT_DEV_PIXELPIPE_FULL:
     case DT_DEV_PIXELPIPE_PREVIEW2:
