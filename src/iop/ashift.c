@@ -2662,7 +2662,8 @@ failed:
 }
 
 // manually adjust crop area by shifting its center
-static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, const float newx, const float newy)
+static void crop_adjust(dt_iop_module_t *module, const dt_iop_ashift_params_t *const p,
+                        const float newx, const float newy)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -3827,9 +3828,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     const float newy = g->crop_cy + (pts[1] - pts[3]) - g->lasty;
 
     crop_adjust(self, p, newx, newy);
-    swap_shadow_crop_box(p,g);  // temporarily update the crop box in p
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    swap_shadow_crop_box(p,g);  // restore p
+    dt_control_queue_redraw_center();
     return TRUE;
   }
 
@@ -4003,6 +4002,10 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   {
     // stop adjust crop
     g->adjust_crop = FALSE;
+    dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+    swap_shadow_crop_box(p,g);  // temporarily update the crop box in p
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    swap_shadow_crop_box(p,g);  // restore p
   }
 
   // finalize the isbounding mode
@@ -4307,7 +4310,6 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       g->lastfit = fitaxis = ASHIFT_FIT_VERTICALLY;
 
     dt_iop_request_focus(self);
-    dt_dev_reprocess_all(self->dev);
 
     if(self->enabled)
     {
@@ -4331,7 +4333,7 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       p->toggle ^= 1;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
@@ -4360,7 +4362,6 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       g->lastfit = fitaxis = ASHIFT_FIT_HORIZONTALLY;
 
     dt_iop_request_focus(self);
-    dt_dev_reprocess_all(self->dev);
 
     if(self->enabled)
     {
@@ -4384,7 +4385,7 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
       p->toggle ^= 1;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
@@ -4415,7 +4416,6 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
       fitaxis = ASHIFT_FIT_BOTH_SHEAR;
 
     dt_iop_request_focus(self);
-    dt_dev_reprocess_all(self->dev);
 
     if(self->enabled)
     {
@@ -4439,7 +4439,7 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
       p->toggle ^= 1;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
@@ -4470,7 +4470,6 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
       enhance = ASHIFT_ENHANCE_NONE;
 
     dt_iop_request_focus(self);
-    dt_control_queue_redraw_center();
 
     if(self->enabled)
     {
@@ -4486,7 +4485,7 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
       p->toggle ^= 1;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE); // also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
