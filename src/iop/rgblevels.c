@@ -24,6 +24,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/accelerators.h"
@@ -46,14 +47,14 @@ typedef enum dt_iop_rgblevels_channel_t
 
 typedef enum dt_iop_rgblevels_autoscale_t
 {
-  DT_IOP_RGBLEVELS_LINKED_CHANNELS = 0,
-  DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS = 1
+  DT_IOP_RGBLEVELS_LINKED_CHANNELS = 0,     // $DESCRIPTION: "RGB, linked channels"
+  DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS = 1 // $DESCRIPTION: "RGB, independent channels"
 } dt_iop_rgblevels_autoscale_t;
 
 typedef struct dt_iop_rgblevels_params_t
 {
-  int autoscale; // (DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS, DT_IOP_RGBLEVELS_LINKED_CHANNELS)
-  int preserve_colors;
+  dt_iop_rgblevels_autoscale_t autoscale; // $DEFAULT: DT_IOP_RGBLEVELS_LINKED_CHANNELS $DESCRIPTION: "mode" (DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS, DT_IOP_RGBLEVELS_LINKED_CHANNELS)
+  dt_iop_rgb_norms_t preserve_colors;     // $DEFAULT: DT_RGB_NORM_LUMINANCE
   float levels[DT_IOP_RGBLEVELS_MAX_CHANNELS][3];
 } dt_iop_rgblevels_params_t;
 
@@ -726,34 +727,20 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
   dt_pthread_mutex_unlock(&g->lock);
 }
 
-static void _autoscale_callback(GtkWidget *widget, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(darktable.gui->reset) return;
   dt_iop_rgblevels_gui_data_t *g = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
 
   _turn_selregion_picker_off(self);
 
-  g->channel = DT_IOP_RGBLEVELS_R;
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), DT_IOP_RGBLEVELS_R);
-  p->autoscale = dt_bauhaus_combobox_get(widget);
+  if(w == g->cmb_autoscale)
+  {
+    g->channel = DT_IOP_RGBLEVELS_R;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
 
-  _rgblevels_show_hide_controls(p, g);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(self->widget);
-}
-
-static void _preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
-
-  _turn_selregion_picker_off(self);
-
-  p->preserve_colors = dt_bauhaus_combobox_get(widget);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+    _rgblevels_show_hide_controls(p, g);
+  }
 }
 
 static void _tab_switch_callback(GtkNotebook *notebook, GtkWidget *page, guint page_num, dt_iop_module_t *self)
@@ -907,30 +894,22 @@ void gui_reset(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-void reload_defaults(dt_iop_module_t *self)
-{
-  dt_iop_rgblevels_params_t tmp = {0};
-  tmp.autoscale = DT_IOP_RGBLEVELS_LINKED_CHANNELS;
-  tmp.preserve_colors = DT_RGB_NORM_LUMINANCE;
-  for(int c = 0; c < DT_IOP_RGBLEVELS_MAX_CHANNELS; c++)
-  {
-    tmp.levels[c][0] = RGBLEVELS_MIN;
-    tmp.levels[c][1] = RGBLEVELS_MID;
-    tmp.levels[c][2] = RGBLEVELS_MAX;
-  }
-
-  memcpy(self->params, &tmp, sizeof(dt_iop_rgblevels_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_rgblevels_params_t));
-}
-
 void init(dt_iop_module_t *self)
 {
-  self->params = calloc(1, sizeof(dt_iop_rgblevels_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_rgblevels_params_t));
-  self->default_enabled = 0;
+  dt_iop_default_init(self);
+
   self->request_histogram |= (DT_REQUEST_ON);
-  self->params_size = sizeof(dt_iop_rgblevels_params_t);
-  self->gui_data = NULL;
+
+  dt_iop_rgblevels_params_t *d = self->default_params;
+
+  for(int c = 0; c < DT_IOP_RGBLEVELS_MAX_CHANNELS; c++)
+  {
+    d->levels[c][0] = RGBLEVELS_MIN;
+    d->levels[c][1] = RGBLEVELS_MID;
+    d->levels[c][2] = RGBLEVELS_MAX;
+  }
+
+  memcpy(self->params, self->default_params, sizeof(dt_iop_rgblevels_params_t));
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -948,14 +927,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_levels);
   free(self->data);
   self->data = NULL;
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
 }
 
 void change_image(struct dt_iop_module_t *self)
@@ -982,35 +953,19 @@ void gui_init(dt_iop_module_t *self)
   c->dragging = 0;
   c->last_picked_color = -1;
 
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  c->cmb_autoscale = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->cmb_autoscale, NULL, _("mode"));
-  dt_bauhaus_combobox_add(c->cmb_autoscale, _("RGB, linked channels"));
-  dt_bauhaus_combobox_add(c->cmb_autoscale, _("RGB, independent channels"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->cmb_autoscale, TRUE, TRUE, 0);
+  c->cmb_autoscale = dt_bauhaus_combobox_from_params(self, "autoscale");
   gtk_widget_set_tooltip_text(c->cmb_autoscale, _("choose between linked and independent channels."));
-  g_signal_connect(G_OBJECT(c->cmb_autoscale), "value-changed", G_CALLBACK(_autoscale_callback), self);
 
   // tabs
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  R  ")));
-  gtk_widget_set_tooltip_text(
-      gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-      _("curve nodes for r channel"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  G  ")));
-  gtk_widget_set_tooltip_text(
-      gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-      _("curve nodes for g channel"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  B  ")));
-  gtk_widget_set_tooltip_text(
-      gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-      _("curve nodes for b channel"));
+  GtkWidget *tab_label;
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  R  ")));
+  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for r channel"));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  G  ")));
+  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for g channel"));
+  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  B  ")));
+  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for b channel"));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
@@ -1058,8 +1013,8 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *pick_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->blackpick), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->greypick), TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(pick_hbox), GTK_WIDGET(c->whitepick), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->greypick ), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->whitepick), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox_manual), pick_hbox, TRUE, TRUE, 0);
 
@@ -1067,11 +1022,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(c->bt_auto_levels, _("apply auto levels"));
 
   c->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(c->bt_select_region), "tooltip-text",
-               _("apply auto levels based on a region defined by the user\n"
-                 "click and drag to draw the area\n"
-                 "right click to cancel"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(c->bt_select_region,
+                              _("apply auto levels based on a region defined by the user\n"
+                                "click and drag to draw the area\n"
+                                "right click to cancel"));
 
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
   gtk_box_pack_start(GTK_BOX(autolevels_box), c->bt_auto_levels, TRUE, TRUE, 0);
@@ -1086,18 +1040,8 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->bt_auto_levels), "clicked", G_CALLBACK(_auto_levels_callback), self);
   g_signal_connect(G_OBJECT(c->bt_select_region), "toggled", G_CALLBACK(_select_region_toggled_callback), self);
 
-  c->cmb_preserve_colors = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->cmb_preserve_colors, NULL, _("preserve colors"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("none"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("max RGB"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("average RGB"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("sum RGB"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("norm RGB"));
-  dt_bauhaus_combobox_add(c->cmb_preserve_colors, _("basic power"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->cmb_preserve_colors, TRUE, TRUE, 0);
+  c->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
-  g_signal_connect(G_OBJECT(c->cmb_preserve_colors), "value-changed", G_CALLBACK(_preserve_colors_callback), self);
 
   // add signal handler for preview pipe finish
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,

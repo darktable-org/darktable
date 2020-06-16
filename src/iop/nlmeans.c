@@ -23,6 +23,7 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -49,10 +50,10 @@ typedef struct dt_iop_nlmeans_params_v1_t
 typedef struct dt_iop_nlmeans_params_t
 {
   // these are stored in db.
-  float radius;
-  float strength;
-  float luma;
-  float chroma;
+  float radius;   // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "patch size"
+  float strength; // $MIN: 0.0 $MAX: 100000.0 $DEFAULT: 50.0
+  float luma;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5
+  float chroma;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0
 } dt_iop_nlmeans_params_t;
 
 typedef struct dt_iop_nlmeans_gui_data_t
@@ -703,36 +704,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 }
 #endif
 
-/** this will be called to init new defaults if a new image is loaded from film strip mode. */
-void reload_defaults(dt_iop_module_t *module)
-{
-  // our module is disabled by default
-  module->default_enabled = 0;
-  // init defaults:
-  dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t){ 2.0f, 50.0f, 0.5f, 1.0f };
-  memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
-}
-
-/** init, cleanup, commit to pipeline */
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
-  // about the first thing to do in Lab space:
-  module->params_size = sizeof(dt_iop_nlmeans_params_t);
-  module->gui_data = NULL;
-  module->global_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 5; // nlmeans.cl, from programs.conf
@@ -783,41 +754,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static void radius_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->radius = (int)dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->strength = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-static void luma_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->luma = dt_bauhaus_slider_get(w) * (1.0f / 100.0f);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void chroma_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->chroma = dt_bauhaus_slider_get(w) * (1.0f / 100.0f);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-/** gui callbacks, these are needed. */
 void gui_update(dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
@@ -825,50 +761,33 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->luma, p->luma * 100.f);
-  dt_bauhaus_slider_set(g->chroma, p->chroma * 100.f);
+  dt_bauhaus_slider_set(g->luma, p->luma);
+  dt_bauhaus_slider_set(g->chroma, p->chroma);
 }
 
 void gui_init(dt_iop_module_t *self)
 {
-  // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_nlmeans_gui_data_t));
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-  g->radius = dt_bauhaus_slider_new_with_range(self, 1.0f, 4.0f, 1., 2.f, 0);
-  dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 10.0);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
-  dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.0f, 100000.0f);
-  g->luma = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 50.f, 0);
-  g->chroma = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 100.f, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->luma, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->chroma, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->radius, NULL, _("patch size"));
-  dt_bauhaus_slider_set_format(g->radius, "%.0f");
-  dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
-  dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->luma, NULL, _("luma"));
-  dt_bauhaus_slider_set_format(g->luma, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->chroma, NULL, _("chroma"));
-  dt_bauhaus_slider_set_format(g->chroma, "%.0f%%");
-  gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match"));
-  gtk_widget_set_tooltip_text(g->strength, _("strength of the effect"));
-  gtk_widget_set_tooltip_text(g->luma, _("how much to smooth brightness"));
-  gtk_widget_set_tooltip_text(g->chroma, _("how much to smooth colors"));
-  g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
-  g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
-  g_signal_connect(G_OBJECT(g->luma), "value-changed", G_CALLBACK(luma_callback), self);
-  g_signal_connect(G_OBJECT(g->chroma), "value-changed", G_CALLBACK(chroma_callback), self);
-}
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
-  self->gui_data = NULL;
+  g->radius = dt_bauhaus_slider_from_params(self, "radius");
+  dt_bauhaus_slider_set_soft_max(g->radius, 4.0f);
+  dt_bauhaus_slider_set_digits(g->radius, 0);
+  dt_bauhaus_slider_set_format(g->radius, "%.0f");
+  gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match"));
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  dt_bauhaus_slider_set_soft_max(g->strength, 100.0f);
+  dt_bauhaus_slider_set_digits(g->strength, 0);
+  dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->strength, _("strength of the effect"));
+  g->luma = dt_bauhaus_slider_from_params(self, "luma");
+  dt_bauhaus_slider_set_factor(g->luma, 100.0f);
+  dt_bauhaus_slider_set_format(g->luma, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->luma, _("how much to smooth brightness"));
+  g->chroma = dt_bauhaus_slider_from_params(self, "chroma");
+  dt_bauhaus_slider_set_factor(g->chroma, 100.0f);
+  dt_bauhaus_slider_set_format(g->chroma, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->chroma, _("how much to smooth colors"));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -26,6 +26,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -44,9 +45,9 @@ DT_MODULE_INTROSPECTION(1, dt_iop_colisa_params_t)
 
 typedef struct dt_iop_colisa_params_t
 {
-  float contrast;
-  float brightness;
-  float saturation;
+  float contrast;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
+  float brightness; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
+  float saturation; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
 } dt_iop_colisa_params_t;
 
 typedef struct dt_iop_colisa_gui_data_t
@@ -204,34 +205,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 
-static void contrast_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colisa_params_t *p = (dt_iop_colisa_params_t *)self->params;
-  p->contrast = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void brightness_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colisa_params_t *p = (dt_iop_colisa_params_t *)self->params;
-  p->brightness = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void saturation_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colisa_params_t *p = (dt_iop_colisa_params_t *)self->params;
-  p->saturation = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -326,17 +299,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->saturation, p->saturation);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_colisa_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colisa_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_colisa_params_t);
-  module->gui_data = NULL;
-  dt_iop_colisa_params_t tmp = (dt_iop_colisa_params_t){ 0, 0, 0 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_colisa_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colisa_params_t));
-}
 
 void init_global(dt_iop_module_so_t *module)
 {
@@ -347,14 +309,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_colisa = dt_opencl_create_kernel(program, "colisa");
 }
 
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
@@ -369,36 +323,14 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colisa_gui_data_t));
   dt_iop_colisa_gui_data_t *g = (dt_iop_colisa_gui_data_t *)self->gui_data;
-  dt_iop_colisa_params_t *p = (dt_iop_colisa_params_t *)self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  g->contrast = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->contrast, 2);
-  g->brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->brightness, 2);
-  g->saturation = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->saturation, 2);
-
-  dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
-  dt_bauhaus_widget_set_label(g->brightness, NULL, _("brightness"));
-  dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  g->brightness = dt_bauhaus_slider_from_params(self, "brightness");
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
 
   gtk_widget_set_tooltip_text(g->contrast, _("contrast adjustment"));
   gtk_widget_set_tooltip_text(g->brightness, _("brightness adjustment"));
   gtk_widget_set_tooltip_text(g->saturation, _("color saturation adjustment"));
-
-  g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
-  g_signal_connect(G_OBJECT(g->brightness), "value-changed", G_CALLBACK(brightness_callback), self);
-  g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
