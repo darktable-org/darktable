@@ -141,6 +141,8 @@ typedef struct dt_iop_retouch_gui_data_t
   gboolean is_dragging;
   gboolean upper_cursor; // mouse on merge from scale cursor
   gboolean lower_cursor; // mouse on num scales cursor
+  gboolean upper_margin; // mouse on the upper band
+  gboolean lower_margin; // mouse on the lower band
 
   GtkWidget *bt_display_wavelet_scale; // show decomposed scale
 
@@ -151,7 +153,6 @@ typedef struct dt_iop_retouch_gui_data_t
 
   GtkDarktableGradientSlider *preview_levels_gslider;
 
-  float lvlbar_mouse_x, lvlbar_mouse_y; //FIXME: needed ?
   GtkWidget *bt_auto_levels;
 
   GtkWidget *vbox_blur;
@@ -887,39 +888,6 @@ static void rt_colorpick_color_set_callback(GtkColorButton *widget, dt_iop_modul
 // wavelet decompose bar
 #define RT_WDBAR_INSET 0.2f
 
-static inline int rt_mouse_x_to_wdbar_box(const float mouse_x, const float width)
-{
-  return (mouse_x / (width / (float)RETOUCH_NO_SCALES));
-}
-
-static inline float rt_get_middle_wdbar_box(const float box_number, const float width)
-{
-  return (width / (float)RETOUCH_NO_SCALES) * box_number + (width / (float)RETOUCH_NO_SCALES) * .5f;
-}
-
-static inline int rt_mouse_over_bottom_wdbar(const float mouse_y, const float height)
-{
-  const float arrw = DT_PIXEL_APPLY_DPI(7.0f) * .5f;
-
-  return (height - arrw < mouse_y && height + arrw > mouse_y);
-}
-
-static inline int rt_mouse_over_top_wdbar(const float mouse_y)
-{
-  const float arrw = DT_PIXEL_APPLY_DPI(7.0f) * .5f;
-
-  return (-arrw < mouse_y && arrw > mouse_y);
-}
-
-// this assumes that the mouse is over the top/bottom (use rt_mouse_over_top_wdbar()/rt_mouse_over_bottom_wdbar())
-static inline int rt_mouse_over_arrow_wdbar(const float box_number, const float mouse_x, const float width)
-{
-  const float arrw = DT_PIXEL_APPLY_DPI(7.0f) * .5f;
-  const float middle = rt_get_middle_wdbar_box(box_number, width);
-
-  return (mouse_x > middle - arrw && mouse_x < middle + arrw);
-}
-
 static void rt_update_wd_bar_labels(dt_iop_retouch_params_t *p, dt_iop_retouch_gui_data_t *g)
 {
   char text[256];
@@ -1009,8 +977,10 @@ static gboolean rt_wdbar_leave_notify(GtkWidget *widget, GdkEventCrossing *event
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  g->wdbar_mouse_x = -1;
-  g->wdbar_mouse_y = -1;
+  g->wdbar_mouse_x = g->wdbar_mouse_y = -1;
+  g->curr_scale = -1;
+  g->lower_cursor = g->upper_cursor = FALSE;
+  g->lower_margin = g->upper_margin = FALSE;
 
   gtk_widget_queue_draw(g->wd_bar);
 
@@ -1023,51 +993,28 @@ static gboolean rt_wdbar_button_press(GtkWidget *widget, GdkEventButton *event, 
 
   dt_iop_request_focus(self);
 
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const int inset = round(0.2f * allocation.height);
-  const float width = allocation.width - 2 * inset;
-  const float height = allocation.height - 2 * inset;
+  const float box_w = gtk_widget_get_allocated_width(widget) / (float)RETOUCH_NO_SCALES;
 
   if(event->button == 1)
   {
-    // bottom slider
-    if(rt_mouse_over_bottom_wdbar(g->wdbar_mouse_y, height))
+    if(g->lower_margin) // bottom slider
     {
-      // is over the arrow?
-      if(rt_mouse_over_arrow_wdbar((float)p->num_scales, g->wdbar_mouse_x, width))
-      {
+      if(g->lower_cursor) // is over the arrow?
         g->is_dragging = DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM;
-      }
       else
-      {
-        const int num_scales = rt_mouse_x_to_wdbar_box(g->wdbar_mouse_x, width);
-        rt_num_scales_update(num_scales, self);
-      }
+        rt_num_scales_update(g->wdbar_mouse_x / box_w, self);
     }
-    // top slider
-    else if(rt_mouse_over_top_wdbar(g->wdbar_mouse_y))
+    else if(g->upper_margin) // top slider
     {
-      // is over the arrow?
-      if(rt_mouse_over_arrow_wdbar((float)p->merge_from_scale, g->wdbar_mouse_x, width))
-      {
+      if(g->upper_cursor) // is over the arrow?
         g->is_dragging = DT_IOP_RETOUCH_WDBAR_DRAG_TOP;
-      }
       else
-      {
-        const int merge_from_scale = rt_mouse_x_to_wdbar_box(g->wdbar_mouse_x, width);
-        rt_merge_from_scale_update(merge_from_scale, self);
-      }
+        rt_merge_from_scale_update(g->wdbar_mouse_x / box_w, self);
     }
-    else
-    {
-      const int curr_scale = rt_mouse_x_to_wdbar_box(g->wdbar_mouse_x, width);
-      rt_curr_scale_update(curr_scale, self);
-    }
+    else if (g->curr_scale >= 0)
+      rt_curr_scale_update(g->curr_scale, self);
   }
 
   return TRUE;
@@ -1076,17 +1023,16 @@ static gboolean rt_wdbar_button_press(GtkWidget *widget, GdkEventButton *event, 
 static gboolean rt_wdbar_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  if(event->button == 1)
-  {
-    g->is_dragging = 0;
-  }
+
+  if(event->button == 1) g->is_dragging = 0;
+
   return TRUE;
 }
 
 static gboolean rt_wdbar_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-   if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
- if(darktable.gui->reset) return TRUE;
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(darktable.gui->reset) return TRUE;
 
   dt_iop_request_focus(self);
 
@@ -1096,40 +1042,12 @@ static gboolean rt_wdbar_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_i
     dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
     dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-    const int inset = RT_WDBAR_INSET;
-
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    const float height = allocation.height - 2 * inset;
-
-    gboolean is_under_mouse = 0;
-
-    if(!is_under_mouse)
-    {
-      is_under_mouse = rt_mouse_over_bottom_wdbar(g->wdbar_mouse_y, height);
-      if(is_under_mouse)
-      {
-        const int num_scales = (p->num_scales - delta_y);
-        rt_num_scales_update(num_scales, self);
-      }
-    }
-
-    if(!is_under_mouse)
-    {
-      is_under_mouse = rt_mouse_over_top_wdbar(g->wdbar_mouse_y);
-      if(is_under_mouse)
-      {
-        const int merge_from_scale = (p->merge_from_scale - delta_y);
-        rt_merge_from_scale_update(merge_from_scale, self);
-      }
-    }
-
-    if(!is_under_mouse)
-    {
-      is_under_mouse = 1;
-      const int curr_scale = (p->curr_scale - delta_y);
-      rt_curr_scale_update(curr_scale, self);
-    }
+    if(g->lower_margin) // bottom slider
+      rt_num_scales_update(p->num_scales - delta_y, self);
+    else if(g->upper_margin) // top slider
+      rt_merge_from_scale_update(p->merge_from_scale - delta_y, self);
+    else if (g->curr_scale >= 0)
+      rt_curr_scale_update(p->curr_scale - delta_y, self);
   }
 
   return TRUE;
@@ -1143,32 +1061,30 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = round(RT_WDBAR_INSET * allocation.height);
-  const float width = allocation.width;
-  const float height = allocation.height;
-  const float box_w = width / (float)RETOUCH_NO_SCALES;
-  //const float box_h = height - 2 * inset;
+  const float box_w = allocation.width / (float)RETOUCH_NO_SCALES;
 
   /* record mouse position within control */
   //g->wdbar_mouse_x = CLAMP(event->x - inset, 0, width);
   //g->wdbar_mouse_y = CLAMP(event->y - inset, 0, height);
-  g->wdbar_mouse_x = CLAMP(event->x - inset, 0, width - inset);
+  g->wdbar_mouse_x = CLAMP(event->x - inset, 0, allocation.width - inset);
   g->wdbar_mouse_y = event->y;
 
-  g->curr_scale = -1;
+  g->curr_scale = g->wdbar_mouse_x / box_w;
   g->lower_cursor = g->upper_cursor = FALSE;
+  g->lower_margin = g->upper_margin = FALSE;
   if(g->wdbar_mouse_y <= inset)
   {
+    g->upper_margin = TRUE;
     float middle = box_w * (0.5f + (float)p->merge_from_scale);
     g->upper_cursor = (g->wdbar_mouse_x >= (middle - inset)) && (g->wdbar_mouse_x <= (middle + inset));
+    if (!(g->is_dragging)) g->curr_scale = -1;
   }
-  else if (g->wdbar_mouse_y < height - inset)
+  else if (g->wdbar_mouse_y >= allocation.height - inset)
   {
-    g->curr_scale = g->wdbar_mouse_x / box_w;
-  }
-  else
-  {
+    g->lower_margin = TRUE;
     float middle = box_w * (0.5f + (float)p->num_scales);
     g->lower_cursor = (g->wdbar_mouse_x >= (middle - inset)) && (g->wdbar_mouse_x <= (middle + inset));
+    if (!(g->is_dragging)) g->curr_scale = -1;
   }
 
   if(g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM)
@@ -1177,7 +1093,7 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   if(g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_TOP)
     rt_merge_from_scale_update(g->curr_scale, self);
 
-  gtk_widget_queue_draw(g->wd_bar); //FIXME: necessario ?
+  gtk_widget_queue_draw(g->wd_bar);
 
   return TRUE;
 }
@@ -1196,32 +1112,25 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
 {
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-  float middle;
-  //gboolean is_under_mouse;
 
+  float middle;
   const int first_scale_visible = (g->first_scale_visible > 0) ? g->first_scale_visible : RETOUCH_MAX_SCALES;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  float width = allocation.width;
-  float height = allocation.height;
 
-
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
   cairo_t *cr = cairo_create(cst);
 
   // clear background
   cairo_set_source_rgb(cr, .15, .15, .15);
   cairo_paint(cr);
-
-  // inner margin
-  const int inset = round(RT_WDBAR_INSET * height);
-  width -= 2.0f * inset;
-  height -= 2.0f * inset;
   cairo_save(cr);
 
-  const float box_w = width / (float)RETOUCH_NO_SCALES;
-  const float box_h = height;
+  // geometry
+  const int inset = round(RT_WDBAR_INSET * allocation.height);
+  const float box_w = (allocation.width - 2.0f * inset) / (float)RETOUCH_NO_SCALES;
+  const float box_h = allocation.height - 2.0f * inset;
   const float lw = DT_PIXEL_APPLY_DPI(1.0f);
 
   // render the boxes
@@ -1262,7 +1171,7 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
     if(rt_scale_has_shapes(p, i))
     {
       cairo_set_source_rgb(cr, .1, .8, 0);
-      cairo_rectangle(cr, box_w * i + inset, inset, box_w, 2.0f * lw);
+      cairo_rectangle(cr, box_w * i + inset, inset, box_w, 3.0f * lw);
       cairo_fill(cr);
     }
   }
@@ -1270,11 +1179,11 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
   cairo_restore(cr);
 
-  // red dot for the current scale
+  // cyan dot for the current scale
   if(p->curr_scale >= 0 && p->curr_scale < RETOUCH_NO_SCALES)
   {
     cairo_set_line_width(cr, lw);
-    cairo_set_source_rgb(cr, 0.8, 0, 0);
+    cairo_set_source_rgb(cr, 0.25, 0.88, 0.82);
     middle = box_w * (0.5f + (float)p->curr_scale);
     cairo_arc(cr, middle + inset, 0.5f * box_h + inset, 0.5f * inset, 0, 2.0f * M_PI);
     cairo_fill(cr);
@@ -1298,8 +1207,6 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
 
   // draw number of scales arrow (bottom arrow)
   middle = box_w * (0.5f + (float)p->num_scales);
-  //is_under_mouse = (g->wdbar_mouse_x >= (middle - inset) && g->wdbar_mouse_x <= (middle + inset));
-  //is_under_mouse &= (g->wdbar_mouse_y >= box_h && g->wdbar_mouse_y <= (box_h + inset));
   if(g->lower_cursor || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM)
     dtgtk_cairo_paint_solid_triangle(cr, middle, box_h, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_UP, NULL);
   else
@@ -1307,8 +1214,6 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
 
   // draw merge scales arrow (top arrow)
   middle = box_w * (0.5f + (float)p->merge_from_scale);
-  //is_under_mouse = (g->wdbar_mouse_x >= (middle - inset) && g->wdbar_mouse_x <= (middle + inset));
-  //is_under_mouse &= (g->wdbar_mouse_y >= 0 && g->wdbar_mouse_y <= inset);
   if(g->upper_cursor || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_TOP)
     dtgtk_cairo_paint_solid_triangle(cr, middle, 0, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_DOWN, NULL);
   else
@@ -2131,8 +2036,6 @@ void change_image(struct dt_iop_module_t *self)
     g->is_dragging = 0;
     g->wdbar_mouse_x = -1;
     g->wdbar_mouse_y = -1;
-    g->lvlbar_mouse_x = -1;
-    g->lvlbar_mouse_y = -1;
   }
 }
 
