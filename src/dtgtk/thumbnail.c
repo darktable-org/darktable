@@ -1068,8 +1068,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     }
 
     // the color labels
-    thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower,
-                                             CPF_DO_NOT_USE_BORDER | thumb->colorlabels, NULL);
+    thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower, thumb->colorlabels, NULL);
     gtk_widget_set_name(thumb->w_color, "thumb_colorlabels");
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
