@@ -635,29 +635,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   --darktable.gui->reset;
 }
 
-void reload_defaults(dt_iop_module_t *module)
-{
-  dt_iop_exposure_params_t *d = module->default_params;
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id == -1) return;
-
-  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage) &&
-     strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
-  {
-    // For scene-referred workflow, since filmic doesn't brighten as base curve does,
-    // we need an initial exposure boost. This might be too much in some cases but…
-    d->exposure = 1.0f;
-    module->default_enabled = TRUE;
-  }
-  else
-  {
-    module->default_enabled = FALSE;
-  }
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_exposure_params_t));
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // from programs.conf: basic.cl
