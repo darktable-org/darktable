@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-16 13:20-0500\n"
-"PO-Revision-Date: 2020-06-16 13:49-0500\n"
+"POT-Creation-Date: 2020-06-17 03:34-0500\n"
+"PO-Revision-Date: 2020-06-17 03:29-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -90,7 +90,7 @@ msgstr "específico"
 #: ../src/develop/blend_gui.c:2440 ../src/develop/blend_gui.c:2705
 #: ../src/develop/develop.c:2076 ../src/imageio/format/exr.cc:376
 #: ../src/imageio/format/j2k.c:661 ../src/iop/ashift.c:4711
-#: ../src/iop/demosaic.c:5035 ../src/libs/live_view.c:434
+#: ../src/iop/demosaic.c:5036 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "inactivo"
 
@@ -363,9 +363,9 @@ msgstr "colores saturados"
 #: ../build/src/iop/introspection_splittoning.c:73
 #: ../build/src/iop/introspection_splittoning.c:134
 #: ../build/src/iop/introspection_splittoning.c:142
-#: ../src/iop/channelmixer.c:443 ../src/iop/colorbalance.c:2183
-#: ../src/iop/colorbalance.c:2231 ../src/iop/colorbalance.c:2278
-#: ../src/iop/colorzones.c:2334
+#: ../src/iop/channelmixer.c:443 ../src/iop/colorbalance.c:2186
+#: ../src/iop/colorbalance.c:2234 ../src/iop/colorbalance.c:2281
+#: ../src/iop/colorzones.c:2353
 msgid "hue"
 msgstr "tono"
 
@@ -383,7 +383,7 @@ msgstr "modo de proceso"
 
 #: ../build/src/iop/introspection_colorzones.c:254
 #: ../src/iop/channelmixer.c:445 ../src/iop/colorchecker.c:1377
-#: ../src/iop/colorzones.c:2332
+#: ../src/iop/colorzones.c:2351
 msgid "lightness"
 msgstr "luminosidad"
 
@@ -392,9 +392,9 @@ msgstr "luminosidad"
 #: ../build/src/iop/introspection_splittoning.c:79
 #: ../build/src/iop/introspection_splittoning.c:138
 #: ../build/src/iop/introspection_splittoning.c:146
-#: ../src/iop/channelmixer.c:444 ../src/iop/colorbalance.c:2193
-#: ../src/iop/colorbalance.c:2241 ../src/iop/colorbalance.c:2288
-#: ../src/iop/colorchecker.c:1395 ../src/iop/colorzones.c:2333
+#: ../src/iop/channelmixer.c:444 ../src/iop/colorbalance.c:2196
+#: ../src/iop/colorbalance.c:2244 ../src/iop/colorbalance.c:2291
+#: ../src/iop/colorchecker.c:1395 ../src/iop/colorzones.c:2352
 msgid "saturation"
 msgstr "saturación"
 
@@ -782,7 +782,7 @@ msgid "drago"
 msgstr "Drago"
 
 #: ../build/src/iop/introspection_grain.c:57
-#: ../build/src/iop/introspection_grain.c:116 ../src/iop/bilat.c:422
+#: ../build/src/iop/introspection_grain.c:116 ../src/iop/bilat.c:423
 msgid "coarseness"
 msgstr "ruido"
 
@@ -792,7 +792,7 @@ msgid "method"
 msgstr "método"
 
 #: ../build/src/iop/introspection_highlights.c:80
-#: ../build/src/iop/introspection_highlights.c:139 ../src/iop/exposure.c:913
+#: ../build/src/iop/introspection_highlights.c:139 ../src/iop/exposure.c:890
 #: ../src/views/darkroom.c:2145
 msgid "clipping threshold"
 msgstr "umbral superior"
@@ -924,7 +924,7 @@ msgid "logarithmic"
 msgstr "logarítmico"
 
 #: ../build/src/iop/introspection_profile_gamma.c:184
-#: ../src/iop/colorbalance.c:2225
+#: ../src/iop/colorbalance.c:2228
 msgid "gamma"
 msgstr "gamma"
 
@@ -2807,7 +2807,7 @@ msgstr "orden de módulo"
 
 #: ../src/common/collection.c:1469 ../src/develop/lightroom.c:828
 #: ../src/iop/channelmixer.c:446 ../src/iop/channelmixer.c:457
-#: ../src/iop/colorbalance.c:2201 ../src/iop/temperature.c:1384
+#: ../src/iop/colorbalance.c:2204 ../src/iop/temperature.c:1384
 #: ../src/libs/collect.c:1598 ../src/views/darkroom.c:2407
 msgid "red"
 msgstr "rojo"
@@ -2820,7 +2820,7 @@ msgstr "amarillo"
 
 #: ../src/common/collection.c:1473 ../src/develop/lightroom.c:832
 #: ../src/iop/channelmixer.c:447 ../src/iop/channelmixer.c:463
-#: ../src/iop/colorbalance.c:2208 ../src/iop/temperature.c:1372
+#: ../src/iop/colorbalance.c:2211 ../src/iop/temperature.c:1372
 #: ../src/iop/temperature.c:1385 ../src/libs/collect.c:1598
 #: ../src/views/darkroom.c:2408
 msgid "green"
@@ -2828,7 +2828,7 @@ msgstr "verde"
 
 #: ../src/common/collection.c:1475 ../src/develop/lightroom.c:834
 #: ../src/iop/channelmixer.c:448 ../src/iop/channelmixer.c:469
-#: ../src/iop/colorbalance.c:2215 ../src/iop/temperature.c:1386
+#: ../src/iop/colorbalance.c:2218 ../src/iop/temperature.c:1386
 #: ../src/libs/collect.c:1598
 msgid "blue"
 msgstr "azul"
@@ -4212,7 +4212,7 @@ msgstr ""
 "* rango definido por marcadores inferiores: no hay mezcla\n"
 "* rango entre marcadores superiores/inferiores adyacentes: mezcla gradual"
 
-#: ../src/develop/blend_gui.c:1662 ../src/iop/colorzones.c:2343
+#: ../src/develop/blend_gui.c:1662 ../src/iop/colorzones.c:2362
 #: ../src/iop/rgbcurve.c:1420 ../src/iop/tonecurve.c:1279
 msgid ""
 "pick GUI color from image\n"
@@ -7545,7 +7545,7 @@ msgstr ""
 "cambia el borde de los halos para cada tamaño\n"
 "solo cambia los resultados de las pestañas de luma y crominancia"
 
-#: ../src/iop/atrous.c:1903 ../src/iop/colorzones.c:2399
+#: ../src/iop/atrous.c:1903 ../src/iop/colorzones.c:2418
 msgid "make effect stronger or weaker"
 msgstr "Hacer más suave o más intenso el efecto"
 
@@ -7637,7 +7637,7 @@ msgstr "similar a nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:289 ../src/iop/colorzones.c:2428
+#: ../src/iop/basecurve.c:289 ../src/iop/colorzones.c:2447
 #: ../src/iop/rgbcurve.c:1465 ../src/iop/tonecurve.c:1314
 msgid "cubic spline"
 msgstr "curva segmentaria cúbica"
@@ -7797,15 +7797,15 @@ msgstr ""
 "Si está mal configurado, recortará los colores casi negros de la gama\n"
 "forzando los valores RGB a los negativos."
 
-#: ../src/iop/basicadj.c:631 ../src/iop/exposure.c:850
-#: ../src/iop/exposure.c:906 ../src/iop/exposure.c:928
+#: ../src/iop/basicadj.c:631 ../src/iop/exposure.c:827
+#: ../src/iop/exposure.c:883 ../src/iop/exposure.c:905
 #: ../src/iop/graduatednd.c:1157 ../src/iop/relight.c:284
 #: ../src/iop/soften.c:682
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f EV"
 
-#: ../src/iop/basicadj.c:632 ../src/iop/exposure.c:905
+#: ../src/iop/basicadj.c:632 ../src/iop/exposure.c:882
 msgid "adjust the exposure correction"
 msgstr "Ajusta la corrección de exposición"
 
@@ -7912,42 +7912,42 @@ msgstr ""
 "Filtro usado para la mejora del contraste local. El bilateral es más rápido, "
 "pero puede derivar en anomalías alrededor de los bordes con ajustes extremos."
 
-#: ../src/iop/bilat.c:416
+#: ../src/iop/bilat.c:417
 msgid "changes the local contrast"
 msgstr "Cambia el contraste local"
 
-#: ../src/iop/bilat.c:423
+#: ../src/iop/bilat.c:424
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr ""
 "Tamaño de los elementos de los detalles locales (sigma espacial del filtro "
 "bilateral)"
 
-#: ../src/iop/bilat.c:429 ../src/iop/colorbalance.c:2101
+#: ../src/iop/bilat.c:430 ../src/iop/colorbalance.c:2104
 #: ../src/iop/filmic.c:1681
 msgid "contrast"
 msgstr "contraste"
 
-#: ../src/iop/bilat.c:430
+#: ../src/iop/bilat.c:431
 msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr "Diferencia L para detectar bordes (rango sigma del filtro bilateral)"
 
-#: ../src/iop/bilat.c:434 ../src/iop/splittoning.c:531
+#: ../src/iop/bilat.c:436 ../src/iop/splittoning.c:531
 msgid "highlights"
 msgstr "luces"
 
-#: ../src/iop/bilat.c:437
+#: ../src/iop/bilat.c:439
 msgid "changes the local contrast of highlights"
 msgstr "Cambia el contraste local de las luces"
 
-#: ../src/iop/bilat.c:441 ../src/iop/splittoning.c:529
+#: ../src/iop/bilat.c:444 ../src/iop/splittoning.c:529
 msgid "shadows"
 msgstr "sombras"
 
-#: ../src/iop/bilat.c:444
+#: ../src/iop/bilat.c:447
 msgid "changes the local contrast of shadows"
 msgstr "Cambia el contraste local de las sombras"
 
-#: ../src/iop/bilat.c:447
+#: ../src/iop/bilat.c:450
 msgid ""
 "defines what counts as midtones. lower for better dynamic range compression "
 "(reduce shadow and highlight contrast), increase for more powerful local "
@@ -8715,7 +8715,7 @@ msgstr "controles deslizantes de color"
 msgid "optimize luma from patches"
 msgstr "optimizar la luminosidad a partir de parches"
 
-#: ../src/iop/colorbalance.c:961 ../src/iop/colorbalance.c:2324
+#: ../src/iop/colorbalance.c:961 ../src/iop/colorbalance.c:2327
 msgid "optimize luma"
 msgstr "optimizar luminosidad"
 
@@ -8723,7 +8723,7 @@ msgstr "optimizar luminosidad"
 msgid "neutralize colors from patches"
 msgstr "neutraliza los colores desde los parches"
 
-#: ../src/iop/colorbalance.c:967 ../src/iop/colorbalance.c:2330
+#: ../src/iop/colorbalance.c:967 ../src/iop/colorbalance.c:2333
 msgid "neutralize colors"
 msgstr "neutralizar los colores"
 
@@ -8747,116 +8747,116 @@ msgstr "RGBL"
 msgid "master"
 msgstr "control principal"
 
-#: ../src/iop/colorbalance.c:2083
+#: ../src/iop/colorbalance.c:2084
 msgid "saturation correction before the color balance"
 msgstr "Corrección de saturación antes del balance de color"
 
-#: ../src/iop/colorbalance.c:2089
+#: ../src/iop/colorbalance.c:2091
 msgid "saturation correction after the color balance"
 msgstr "Corrección de saturación después del balance de color"
 
-#: ../src/iop/colorbalance.c:2094
+#: ../src/iop/colorbalance.c:2096
 msgid "adjust to match a neutral tone"
 msgstr "Ajustar para que coincida con un tono neutro"
 
-#: ../src/iop/colorbalance.c:2160 ../src/iop/colorbalance.c:2169
+#: ../src/iop/colorbalance.c:2163 ../src/iop/colorbalance.c:2172
 msgid "factor of "
 msgstr "factor de "
 
-#: ../src/iop/colorbalance.c:2161
+#: ../src/iop/colorbalance.c:2164
 msgid "factor"
 msgstr "factor"
 
 #. lift
-#: ../src/iop/colorbalance.c:2175
+#: ../src/iop/colorbalance.c:2178
 msgid "shadows : lift / offset"
 msgstr "sombras: realzar / atenuar"
 
-#: ../src/iop/colorbalance.c:2177
+#: ../src/iop/colorbalance.c:2180
 msgid "factor of lift"
 msgstr "Factor de realce"
 
-#: ../src/iop/colorbalance.c:2177
+#: ../src/iop/colorbalance.c:2180
 msgid "lift"
 msgstr "realce"
 
-#: ../src/iop/colorbalance.c:2186 ../src/iop/colorbalance.c:2234
-#: ../src/iop/colorbalance.c:2281
+#: ../src/iop/colorbalance.c:2189 ../src/iop/colorbalance.c:2237
+#: ../src/iop/colorbalance.c:2284
 msgid "select the hue"
 msgstr "Seleccionar el tono"
 
-#: ../src/iop/colorbalance.c:2196 ../src/iop/colorbalance.c:2244
-#: ../src/iop/colorbalance.c:2291
+#: ../src/iop/colorbalance.c:2199 ../src/iop/colorbalance.c:2247
+#: ../src/iop/colorbalance.c:2294
 msgid "select the saturation"
 msgstr "selecciona la saturación"
 
-#: ../src/iop/colorbalance.c:2201
+#: ../src/iop/colorbalance.c:2204
 msgid "factor of red for lift"
 msgstr "Factor de realce en rojo"
 
-#: ../src/iop/colorbalance.c:2208
+#: ../src/iop/colorbalance.c:2211
 msgid "factor of green for lift"
 msgstr "Factor de realce en verde"
 
-#: ../src/iop/colorbalance.c:2215
+#: ../src/iop/colorbalance.c:2218
 msgid "factor of blue for lift"
 msgstr "Factor de realce en azul"
 
 #. gamma
-#: ../src/iop/colorbalance.c:2223
+#: ../src/iop/colorbalance.c:2226
 msgid "mid-tones : gamma / power"
 msgstr "tonos medios: gamma / fuerza"
 
-#: ../src/iop/colorbalance.c:2225
+#: ../src/iop/colorbalance.c:2228
 msgid "factor of gamma"
 msgstr "Factor de gamma"
 
-#: ../src/iop/colorbalance.c:2248
+#: ../src/iop/colorbalance.c:2251
 msgid "factor of red for gamma"
 msgstr "Factor de gamma para rojo"
 
-#: ../src/iop/colorbalance.c:2255
+#: ../src/iop/colorbalance.c:2258
 msgid "factor of green for gamma"
 msgstr "Factor de gamma para verde"
 
-#: ../src/iop/colorbalance.c:2262
+#: ../src/iop/colorbalance.c:2265
 msgid "factor of blue for gamma"
 msgstr "Factor de gamma para azul"
 
 #. gain
-#: ../src/iop/colorbalance.c:2270
+#: ../src/iop/colorbalance.c:2273
 msgid "highlights : gain / slope"
 msgstr "luces: ascenso / descenso"
 
-#: ../src/iop/colorbalance.c:2272
+#: ../src/iop/colorbalance.c:2275
 msgid "factor of gain"
 msgstr "Factor de incremento"
 
-#: ../src/iop/colorbalance.c:2272
+#: ../src/iop/colorbalance.c:2275
 msgid "gain"
 msgstr "incremento"
 
-#: ../src/iop/colorbalance.c:2295
+#: ../src/iop/colorbalance.c:2298
 msgid "factor of red for gain"
 msgstr "Factor de incremento del rojo"
 
-#: ../src/iop/colorbalance.c:2302
+#: ../src/iop/colorbalance.c:2305
 msgid "factor of green for gain"
 msgstr "Factor de incremento del verde"
 
-#: ../src/iop/colorbalance.c:2309
+#: ../src/iop/colorbalance.c:2312
 msgid "factor of blue for gain"
 msgstr "Factor de incremento del azul"
 
-#: ../src/iop/colorbalance.c:2316
+#: ../src/iop/colorbalance.c:2319
 msgid "auto optimizers"
 msgstr "optimizadores automáticos"
 
-#: ../src/iop/colorbalance.c:2325
+#: ../src/iop/colorbalance.c:2328
 msgid "fit the whole histogram and center the average luma"
 msgstr "Ajustar todo el histograma y centrar la luminancia media"
 
-#: ../src/iop/colorbalance.c:2331
+#: ../src/iop/colorbalance.c:2334
 msgid "optimize the RGB curves to remove color casts"
 msgstr "Optimizar las curvas RGB para eliminar los tonos de color"
 
@@ -9397,12 +9397,16 @@ msgstr "tonos de piel naturales"
 msgid "black & white film"
 msgstr "película blanco y negro"
 
-#: ../src/iop/colorzones.c:2175 ../src/iop/retouch.c:1996
+#: ../src/iop/colorzones.c:723
+msgid "HSL base setting"
+msgstr "configuración básica HSL"
+
+#: ../src/iop/colorzones.c:2194 ../src/iop/retouch.c:1996
 #: ../src/iop/toneequal.c:1762
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "No se pueden mostrar máscaras cuando se muestra la de fusión"
 
-#: ../src/iop/colorzones.c:2350 ../src/iop/rgbcurve.c:1427
+#: ../src/iop/colorzones.c:2369 ../src/iop/rgbcurve.c:1427
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -9415,43 +9419,43 @@ msgstr ""
 "Use Mayús+Arrastre para crear una curva negativa"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2372
+#: ../src/iop/colorzones.c:2391
 msgid "edit by area"
 msgstr "editar por área"
 
-#: ../src/iop/colorzones.c:2374
+#: ../src/iop/colorzones.c:2393
 msgid "edit the curve nodes by area"
 msgstr "Editar los nodos de la curva por área"
 
-#: ../src/iop/colorzones.c:2381
+#: ../src/iop/colorzones.c:2400
 msgid "display selection"
 msgstr "selección de visualización"
 
-#: ../src/iop/colorzones.c:2391
+#: ../src/iop/colorzones.c:2410
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr ""
 "Elegir el criterio de selección, que corresponde a la abscisa en el gráfico"
 
-#: ../src/iop/colorzones.c:2394
+#: ../src/iop/colorzones.c:2413
 msgid "choose between a smoother or stronger effect"
 msgstr "Elegir entre un efecto más suave o más marcado."
 
-#: ../src/iop/colorzones.c:2427 ../src/iop/rgbcurve.c:1464
+#: ../src/iop/colorzones.c:2446 ../src/iop/rgbcurve.c:1464
 #: ../src/iop/tonecurve.c:1313
 msgid "interpolation method"
 msgstr "interpolación"
 
-#: ../src/iop/colorzones.c:2429 ../src/iop/rgbcurve.c:1466
+#: ../src/iop/colorzones.c:2448 ../src/iop/rgbcurve.c:1466
 #: ../src/iop/tonecurve.c:1315
 msgid "centripetal spline"
 msgstr "curva segmentaria centrípeta"
 
-#: ../src/iop/colorzones.c:2430 ../src/iop/rgbcurve.c:1467
+#: ../src/iop/colorzones.c:2449 ../src/iop/rgbcurve.c:1467
 #: ../src/iop/tonecurve.c:1316
 msgid "monotonic spline"
 msgstr "curva segmentaria monótona"
 
-#: ../src/iop/colorzones.c:2433 ../src/iop/rgbcurve.c:1470
+#: ../src/iop/colorzones.c:2452 ../src/iop/rgbcurve.c:1470
 #: ../src/iop/tonecurve.c:1318
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -9552,7 +9556,7 @@ msgstr "`%s' matriz de color no encontrada para la imagen 4bayer"
 msgid "demosaicing raw data method"
 msgstr "Método de interpolación cromática para imágenes en bruto"
 
-#: ../src/iop/demosaic.c:5031
+#: ../src/iop/demosaic.c:5032
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -9562,38 +9566,38 @@ msgstr ""
 "Poner en 0.0 para desactivar.\n"
 "Poner en 1.0 para ignorar bordes."
 
-#: ../src/iop/demosaic.c:5036
+#: ../src/iop/demosaic.c:5037
 msgid "one time"
 msgstr "una vez"
 
-#: ../src/iop/demosaic.c:5037
+#: ../src/iop/demosaic.c:5038
 msgid "two times"
 msgstr "dos veces"
 
-#: ../src/iop/demosaic.c:5038
+#: ../src/iop/demosaic.c:5039
 msgid "three times"
 msgstr "tres veces"
 
-#: ../src/iop/demosaic.c:5039
+#: ../src/iop/demosaic.c:5040
 msgid "four times"
 msgstr "cuatro veces"
 
-#: ../src/iop/demosaic.c:5040
+#: ../src/iop/demosaic.c:5041
 msgid "five times"
 msgstr "cinco veces"
 
 # Demosaicing -> Algoritmo de interpolación cromática.
-#: ../src/iop/demosaic.c:5041
+#: ../src/iop/demosaic.c:5042
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 "La cantidad de suavizado con medios pasos después de la interpolación "
 "cromática"
 
-#: ../src/iop/demosaic.c:5044
+#: ../src/iop/demosaic.c:5045
 msgid "green channels matching method"
 msgstr "Método de correspondencia para los canales verdes"
 
-#: ../src/iop/demosaic.c:5050
+#: ../src/iop/demosaic.c:5051
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -9990,12 +9994,12 @@ msgstr "basado en la escena (predefinido)"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "No se pudo obtener el búfer en bruto de la imagen `%s'"
 
-#: ../src/iop/exposure.c:594 ../src/iop/exposure.c:896
+#: ../src/iop/exposure.c:594 ../src/iop/exposure.c:873
 #, no-c-format
 msgid "compensate camera exposure (%+.1f EV)"
 msgstr "compensar la exposición de la cámara (%+.1f EV)"
 
-#: ../src/iop/exposure.c:900
+#: ../src/iop/exposure.c:877
 msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
@@ -10003,36 +10007,36 @@ msgstr ""
 "Elimina automáticamente la desviación de la exposición de la cámara.\n"
 "Es útil cuando la imagen se ha expuesto a la derecha."
 
-#: ../src/iop/exposure.c:911
+#: ../src/iop/exposure.c:888
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
 "Porcentaje del valor del brillo excluido, pulsar en el cuentagotas para "
 "activar"
 
-#: ../src/iop/exposure.c:924
+#: ../src/iop/exposure.c:901
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
 "Donde se medirá el histograma para remover el parpadeo (p.ej. 50% es mediano)"
 
-#: ../src/iop/exposure.c:930
+#: ../src/iop/exposure.c:907
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "El lugar del nivel de exposición en las fotos procesadas, debajo de la "
 "sobreexposición EV."
 
-#: ../src/iop/exposure.c:933
+#: ../src/iop/exposure.c:910
 msgid "computed EC: "
 msgstr "compensación de exposición calculada: "
 
 #. This gets filled in by process
-#: ../src/iop/exposure.c:935
+#: ../src/iop/exposure.c:912
 msgid "what exposure correction has actually been used"
 msgstr "Las correcciones de exposición que se han utilizado realmente"
 
-#: ../src/iop/exposure.c:952
+#: ../src/iop/exposure.c:929
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -10102,7 +10106,7 @@ msgstr ""
 # número de pasos entre el gris medio y el blanco puro.
 # esta es una lectura que un fotómetro te daría en la escena.
 # ajustar para evitar el recorte de altas luces
-#: ../src/iop/filmic.c:1640 ../src/iop/filmicrgb.c:2296
+#: ../src/iop/filmic.c:1640 ../src/iop/filmicrgb.c:2294
 msgid ""
 "number of stops between middle grey and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -10112,7 +10116,7 @@ msgstr ""
 "Esta es una lectura que un fotómetro te daría en la escena.\n"
 "Ajustar para evitar el recorte de luces"
 
-#: ../src/iop/filmic.c:1652 ../src/iop/filmicrgb.c:2305
+#: ../src/iop/filmic.c:1652 ../src/iop/filmicrgb.c:2303
 msgid ""
 "number of stops between middle grey and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -10132,7 +10136,7 @@ msgstr ""
 "Aumentar o reducir el rango dinámico calculado.\n"
 "Útil en combinación con \"niveles automáticos\"."
 
-#: ../src/iop/filmic.c:1669 ../src/iop/filmicrgb.c:2318
+#: ../src/iop/filmic.c:1669 ../src/iop/filmicrgb.c:2316
 #: ../src/iop/profile_gamma.c:736
 msgid "auto tune levels"
 msgstr "niveles automáticos"
@@ -10369,7 +10373,7 @@ msgstr ""
 msgid "filmic works only on RGB input"
 msgstr "Película sólo trabaja con una entrada RGB"
 
-#: ../src/iop/filmicrgb.c:2269
+#: ../src/iop/filmicrgb.c:2267
 msgid ""
 "read-only graph, use the parameters below to set the nodes\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -10381,11 +10385,11 @@ msgstr ""
 "La curva oscura es la curva de desaturación\n"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:2278
+#: ../src/iop/filmicrgb.c:2276
 msgid "scene"
 msgstr "escena"
 
-#: ../src/iop/filmicrgb.c:2287
+#: ../src/iop/filmicrgb.c:2285
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -10396,8 +10400,8 @@ msgstr ""
 "El valor aquí ingresado se reajustará para corresponder al 18.45%.\n"
 "Disminuya el valor para aumentar el brillo general."
 
-#: ../src/iop/filmicrgb.c:2295 ../src/iop/filmicrgb.c:2304
-#: ../src/iop/filmicrgb.c:2340 ../src/iop/filmicrgb.c:2349
+#: ../src/iop/filmicrgb.c:2293 ../src/iop/filmicrgb.c:2302
+#: ../src/iop/filmicrgb.c:2338 ../src/iop/filmicrgb.c:2347
 #: ../src/iop/toneequal.c:2955 ../src/iop/toneequal.c:2959
 #: ../src/iop/toneequal.c:2963 ../src/iop/toneequal.c:2967
 #: ../src/iop/toneequal.c:2971 ../src/iop/toneequal.c:2975
@@ -10407,7 +10411,7 @@ msgstr ""
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
 
-#: ../src/iop/filmicrgb.c:2313
+#: ../src/iop/filmicrgb.c:2311
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -10415,7 +10419,7 @@ msgstr ""
 "Ampliar o reducir simétricamente el rango dinámico calculado.\n"
 "Es útil para dar margen de seguridad a las luminancias extremas."
 
-#: ../src/iop/filmicrgb.c:2320
+#: ../src/iop/filmicrgb.c:2318
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -10432,15 +10436,15 @@ msgstr ""
 "por lo que es importante comprender esas estimaciones antes de usarlo."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:2329
+#: ../src/iop/filmicrgb.c:2327
 msgid "reconstruct"
 msgstr "reconstruir"
 
-#: ../src/iop/filmicrgb.c:2334
+#: ../src/iop/filmicrgb.c:2332
 msgid "highlights clipping"
 msgstr "recorte de luces"
 
-#: ../src/iop/filmicrgb.c:2341
+#: ../src/iop/filmicrgb.c:2339
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -10457,7 +10461,7 @@ msgstr ""
 "Disminuir para abarcar un área mayor.\n"
 "Aumentar para excluir un área mayor."
 
-#: ../src/iop/filmicrgb.c:2350
+#: ../src/iop/filmicrgb.c:2348
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -10467,15 +10471,15 @@ msgstr ""
 "Disminuir para hacer la transición más drástica y nítida.\n"
 "Aumentar para hacer la transición más suave y difuminada."
 
-#: ../src/iop/filmicrgb.c:2356
+#: ../src/iop/filmicrgb.c:2354
 msgid "display highlight reconstruction mask"
 msgstr "mostrar la máscara de reconstrucción de luces"
 
-#: ../src/iop/filmicrgb.c:2363
+#: ../src/iop/filmicrgb.c:2361
 msgid "balance"
 msgstr "balance"
 
-#: ../src/iop/filmicrgb.c:2370
+#: ../src/iop/filmicrgb.c:2368
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -10492,7 +10496,7 @@ msgstr ""
 "Aumentar si al menos un canal RGB no está recortado.\n"
 "Disminuir si todos los canales RGB están recortados en áreas amplias."
 
-#: ../src/iop/filmicrgb.c:2381
+#: ../src/iop/filmicrgb.c:2379
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -10509,7 +10513,7 @@ msgstr ""
 "Aumentar para obtener más detalles.\n"
 "Disminuir para obtener más difuminado."
 
-#: ../src/iop/filmicrgb.c:2393
+#: ../src/iop/filmicrgb.c:2391
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -10527,7 +10531,7 @@ msgstr ""
 "Disminuir si en las luces aparece un tono magenta o están fuera de gama."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:2401
+#: ../src/iop/filmicrgb.c:2399
 msgid "look"
 msgstr "apariencia"
 
