@@ -1908,7 +1908,7 @@ static void _create_library_schema(dt_database_t *db)
 {
   sqlite3_stmt *stmt;
   ////////////////////////////// db_info
-  sqlite3_exec(db->handle, "CREATE TABLE main.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE main.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
                NULL, NULL);
   sqlite3_prepare_v2(
       db->handle, "INSERT OR REPLACE INTO main.db_info (key, value) VALUES ('version', ?1)", -1, &stmt, NULL);
@@ -1916,7 +1916,7 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   ////////////////////////////// film_rolls
-  sqlite3_exec(db->handle,
+  DT_DEBUG_SQLITE3_EXEC(db->handle,
                "CREATE TABLE main.film_rolls "
                "(id INTEGER PRIMARY KEY, access_timestamp INTEGER, "
                //                        "folder VARCHAR(1024), external_drive VARCHAR(1024))", //
@@ -1924,9 +1924,9 @@ static void _create_library_schema(dt_database_t *db)
                //                        case to _upgrade_library_schema_step when adding this!
                "folder VARCHAR(1024) NOT NULL)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
   ////////////////////////////// images
-  sqlite3_exec(
+  DT_DEBUG_SQLITE3_EXEC(
       db->handle,
       "CREATE TABLE main.images (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER, "
       "width INTEGER, height INTEGER, filename VARCHAR, maker VARCHAR, model VARCHAR, "
@@ -1943,48 +1943,48 @@ static void _create_library_schema(dt_database_t *db)
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
       "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1)",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_filename_index ON images (filename)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.image_position_index ON images (position)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.images_filename_index ON images (filename)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.image_position_index ON images (position)", NULL, NULL, NULL);
 
   ////////////////////////////// selected_images
-  sqlite3_exec(db->handle, "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   ////////////////////////////// history
-  sqlite3_exec(
+  DT_DEBUG_SQLITE3_EXEC(
       db->handle,
       "CREATE TABLE main.history (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_index ON history (imgid)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.history_imgid_index ON history (imgid)", NULL, NULL, NULL);
   ////////////////////////////// masks history
-  sqlite3_exec(db->handle,
+  DT_DEBUG_SQLITE3_EXEC(db->handle,
                "CREATE TABLE main.masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
                "version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
                NULL, NULL, NULL);
 
-  sqlite3_exec(db->handle,
+  DT_DEBUG_SQLITE3_EXEC(db->handle,
       "CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid)",
       NULL, NULL, NULL);
 
   ////////////////////////////// tagged_images
-  sqlite3_exec(db->handle, "CREATE TABLE main.tagged_images (imgid INTEGER, tagid INTEGER, position INTEGER, "
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE main.tagged_images (imgid INTEGER, tagid INTEGER, position INTEGER, "
                            "PRIMARY KEY (imgid, tagid))", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_imgid_index ON selected_images (imgid)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_position_index ON selected_images (position)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.tagged_images_imgid_index ON selected_images (imgid)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.tagged_images_position_index ON selected_images (position)", NULL, NULL, NULL);
   ////////////////////////////// color_labels
-  sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
                NULL);
   ////////////////////////////// meta_data
-  sqlite3_exec(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX main.metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
 
-  sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
                "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB)",
                NULL, NULL, NULL);
 }
@@ -1994,7 +1994,7 @@ static void _create_data_schema(dt_database_t *db)
 {
   sqlite3_stmt *stmt;
   ////////////////////////////// db_info
-  sqlite3_exec(db->handle, "CREATE TABLE data.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE data.db_info (key VARCHAR PRIMARY KEY, value VARCHAR)", NULL,
                NULL, NULL);
   sqlite3_prepare_v2(
         db->handle, "INSERT OR REPLACE INTO data.db_info (key, value) VALUES ('version', ?1)", -1, &stmt, NULL);
@@ -2002,26 +2002,26 @@ static void _create_data_schema(dt_database_t *db)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   ////////////////////////////// tags
-  sqlite3_exec(db->handle, "CREATE TABLE data.tags (id INTEGER PRIMARY KEY, name VARCHAR, "
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE data.tags (id INTEGER PRIMARY KEY, name VARCHAR, "
                            "synonyms VARCHAR, flags INTEGER)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX data.tags_name_idx ON tags (name)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE UNIQUE INDEX data.tags_name_idx ON tags (name)", NULL, NULL, NULL);
   ////////////////////////////// styles
-  sqlite3_exec(db->handle, "CREATE TABLE data.styles (id INTEGER PRIMARY KEY, name VARCHAR, description VARCHAR, iop_list VARCHAR)",
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE data.styles (id INTEGER PRIMARY KEY, name VARCHAR, description VARCHAR, iop_list VARCHAR)",
                         NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX data.styles_name_index ON styles (name)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE INDEX data.styles_name_index ON styles (name)", NULL, NULL, NULL);
   ////////////////////////////// style_items
-  sqlite3_exec(
+  DT_DEBUG_SQLITE3_EXEC(
       db->handle,
       "CREATE TABLE data.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
       NULL, NULL, NULL);
-  sqlite3_exec(
+  DT_DEBUG_SQLITE3_EXEC(
       db->handle,
       "CREATE INDEX IF NOT EXISTS data.style_items_styleid_index ON style_items (styleid)",
       NULL, NULL, NULL);
   ////////////////////////////// presets
-  sqlite3_exec(db->handle, "CREATE TABLE data.presets (name VARCHAR, description VARCHAR, operation "
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE data.presets (name VARCHAR, description VARCHAR, operation "
                            "VARCHAR, op_version INTEGER, op_params BLOB, "
                            "enabled INTEGER, blendop_params BLOB, blendop_version INTEGER, "
                            "multi_priority INTEGER, multi_name VARCHAR(256), "
@@ -2031,7 +2031,7 @@ static void _create_data_schema(dt_database_t *db)
                            "focal_length_max REAL, writeprotect INTEGER, "
                            "autoapply INTEGER, filter INTEGER, def INTEGER, format INTEGER)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX data.presets_idx ON presets (name, operation, op_version)",
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE UNIQUE INDEX data.presets_idx ON presets (name, operation, op_version)",
                NULL, NULL, NULL);
 }
 
@@ -2039,39 +2039,39 @@ static void _create_data_schema(dt_database_t *db)
 // temporary stuff for some ops, need this for some reason with newer sqlite3:
 static void _create_memory_schema(dt_database_t *db)
 {
-  sqlite3_exec(db->handle, "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
-  sqlite3_exec(
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(
       db->handle,
       "CREATE TABLE memory.collected_images (rowid INTEGER PRIMARY KEY AUTOINCREMENT, imgid INTEGER)", NULL,
       NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE memory.taglist "
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE memory.taglist "
                            "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, count INTEGER)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE TABLE memory.darktable_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
-  sqlite3_exec(
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "CREATE TABLE memory.darktable_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(
       db->handle,
       "CREATE TABLE memory.history (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256) UNIQUE ON CONFLICT REPLACE, op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
       NULL, NULL, NULL);
-  sqlite3_exec(
+  DT_DEBUG_SQLITE3_EXEC(
       db->handle,
       "CREATE TABLE memory.undo_history (id INTEGER, imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
       NULL, NULL, NULL);
-  sqlite3_exec(
+  DT_DEBUG_SQLITE3_EXEC(
       db->handle,
       "CREATE TABLE memory.undo_masks_history (id INTEGER, imgid INTEGER, num INTEGER, formid INTEGER,"
       " form INTEGER, name VARCHAR(256), version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
       NULL, NULL, NULL);
-  sqlite3_exec(
+  DT_DEBUG_SQLITE3_EXEC(
       db->handle,
       "CREATE TABLE memory.undo_module_order (id INTEGER, imgid INTEGER, version INTEGER, iop_list VARCHAR)",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle,
+  DT_DEBUG_SQLITE3_EXEC(db->handle,
       "CREATE TABLE memory.darktable_iop_names (operation VARCHAR(256) PRIMARY KEY, name VARCHAR(256))",
       NULL, NULL, NULL);
 }
