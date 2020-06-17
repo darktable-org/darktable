@@ -417,7 +417,7 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
     }
     char *result = NULL;
 
-    sqlite3_exec(dt_database_get(darktable.db), query, NULL, NULL, &result);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, &result);
 
     g_free(query);
   }
