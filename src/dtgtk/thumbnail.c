@@ -1398,6 +1398,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_bottom_eb, margin_l + border_l);
     gtk_widget_set_margin_top(thumb->w_bottom, padding_t);
     gtk_widget_set_margin_start(thumb->w_bottom, padding_t);
+    gtk_widget_set_margin_end(thumb->w_bottom, padding_t);
 
     // reject icon
     gtk_widget_set_size_request(thumb->w_reject, icon_size, icon_size);
