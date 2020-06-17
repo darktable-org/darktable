@@ -2107,7 +2107,7 @@ static void _sanitize_db(dt_database_t *db)
   sqlite3_finalize(innerstmt);
 
   // make sure film_roll folders don't end in "/", that will result in empty entries in the collect module
-  sqlite3_exec(db->handle,
+  DT_DEBUG_SQLITE3_EXEC(db->handle,
                "UPDATE main.film_rolls SET folder = substr(folder, 1, length(folder) - 1) WHERE folder LIKE '%/'",
                NULL, NULL, NULL);
 
@@ -2596,8 +2596,8 @@ start:
         }
 
         // upgrade was successfull, time for some housekeeping
-        sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
-        sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
+        DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM data", NULL, NULL, NULL);
+        DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, NULL);
 
       }
       else if(db_version > CURRENT_DATABASE_VERSION_DATA)
@@ -2679,8 +2679,8 @@ start:
       }
 
       // upgrade was successfull, time for some housekeeping
-      sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
-      sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM main", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, NULL);
     }
     else if(db_version > CURRENT_DATABASE_VERSION_LIBRARY)
     {
@@ -2779,7 +2779,7 @@ start:
   dt_legacy_presets_create(db);
 
   // drop table settings -- we don't want old versions of dt to drop our tables
-  sqlite3_exec(db->handle, "drop table main.settings", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "drop table main.settings", NULL, NULL, NULL);
 
   // take care of potential bad data in the db.
   _sanitize_db(db);
@@ -3073,7 +3073,7 @@ void dt_database_optimize(const struct dt_database_t *db)
   // optimize should in most cases be no-op and have no noticeable downsides
   // this should be ran on every exit
   // see: https://www.sqlite.org/pragma.html#pragma_optimize
-  sqlite3_exec(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
 }
 
 
