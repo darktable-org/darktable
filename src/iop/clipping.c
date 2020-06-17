@@ -1321,9 +1321,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     if(in)
     {
-      // got focus. make it redraw in full and grab stuff to gui:
+      // got focus, grab stuff to gui:
       // need to get gui stuff for the first time for this image,
-      // and advice the pipe to redraw in full:
       g->clip_x = fmaxf(p->cx, 0.0f);
       g->clip_w = fminf(fabsf(p->cw) - p->cx, 1.0f);
       g->clip_y = fmaxf(p->cy, 0.0f);
@@ -1337,8 +1336,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       {
         g->old_width = g->old_height = -1;
       }
-      // make sure the cache is avoided:
-      dt_dev_reprocess_all(self->dev);
     }
     else
     {
