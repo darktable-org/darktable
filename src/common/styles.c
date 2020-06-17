@@ -98,9 +98,8 @@ void dt_style_item_free(gpointer data)
 static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                guint keyval, GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
   dt_styles_apply_to_list(data, imgs, FALSE);
-  g_list_free(imgs);
   return TRUE;
 }
 
@@ -599,9 +598,9 @@ void dt_styles_apply_to_list(const char *name, GList *list, gboolean duplicate)
 {
   gboolean selected = FALSE;
 
-  /* write current history changes so nothing gets lost, do that only in the darkroom as there is nothing to
-     be
-     save when in the lighttable (and it would write over current history stack) */
+  /* write current history changes so nothing gets lost,
+     do that only in the darkroom as there is nothing to be saved
+     when in the lighttable (and it would write over current history stack) */
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
 
@@ -613,15 +612,67 @@ void dt_styles_apply_to_list(const char *name, GList *list, gboolean duplicate)
   while(l)
   {
     const int imgid = GPOINTER_TO_INT(l->data);
-    if(mode == DT_STYLE_HISTORY_OVERWRITE)
-      dt_history_delete_on_image_ext(imgid, FALSE);
+    if(mode == DT_STYLE_HISTORY_OVERWRITE) dt_history_delete_on_image_ext(imgid, FALSE);
     dt_styles_apply_to_image(name, duplicate, imgid);
     selected = TRUE;
     l = g_list_next(l);
   }
   dt_undo_end_group(darktable.undo);
 
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
   if(!selected) dt_control_log(_("no image selected!"));
+  dt_control_log(_("style %s successfully applied!"), name);
+}
+
+void dt_multiple_styles_apply_to_list(GList *styles, GList *list, gboolean duplicate)
+{
+  /* write current history changes so nothing gets lost,
+     do that only in the darkroom as there is nothing to be saved
+     when in the lighttable (and it would write over current history stack) */
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
+
+  const guint styles_cnt = g_list_length(styles);
+  const guint images_cnt = g_list_length(list);
+
+  if(!styles_cnt && !images_cnt)
+  {
+    dt_control_log(_("no images nor styles selected!"));
+    return;
+  }
+  else if(!styles_cnt)
+  {
+    dt_control_log(_("no styles selected!"));
+    return;
+  }
+  else if(!images_cnt)
+  {
+    dt_control_log(_("no image selected!"));
+    return;
+  }
+
+  const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
+
+  /* for each selected image apply style */
+  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  GList *l = g_list_first(list);
+  while(l)
+  {
+    const int imgid = GPOINTER_TO_INT(l->data);
+    GList *style = NULL;
+    if(mode == DT_STYLE_HISTORY_OVERWRITE) dt_history_delete_on_image_ext(imgid, FALSE);
+    for (style = styles; style != NULL; style = style->next)
+    {
+      dt_styles_apply_to_image((char*)style->data, duplicate, imgid);
+    }
+    l = g_list_next(l);
+  }
+  dt_undo_end_group(darktable.undo);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+  dt_control_log(ngettext("style successfully applied!", "styles successfully applied!", styles_cnt));
 }
 
 void dt_styles_create_from_list(GList *list)
@@ -855,10 +906,10 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     guint tagid = 0;
     gchar ntag[512] = { 0 };
     g_snprintf(ntag, sizeof(ntag), "darktable|style|%s", name);
-    if(dt_tag_new(ntag, &tagid)) dt_tag_attach_from_gui(tagid, newimgid, FALSE, FALSE);
+    if(dt_tag_new(ntag, &tagid)) dt_tag_attach(tagid, newimgid, FALSE, FALSE);
     if(dt_tag_new("darktable|changed", &tagid))
     {
-      dt_tag_attach_from_gui(tagid, newimgid, FALSE, FALSE);
+      dt_tag_attach(tagid, newimgid, FALSE, FALSE);
       dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
     }
 

@@ -335,19 +335,15 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      cairo_rectangle(cr, -tb / 3, -tb / 3.0, wd + 2. * tb / 3., ht + 2. * tb / 3.);
+      cairo_rectangle(cr, -tb / 3., -tb / 3.0, wd + 2. * tb / 3., ht + 2. * tb / 3.);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
     }
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    if(closeup)
-      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
-    else
-      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
-
-    cairo_fill(cr);
+    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_paint(cr);
 
     if(darktable.gui->show_focus_peaking)
     {
@@ -388,7 +384,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      cairo_rectangle(cr, 2 * tb / 3, 2 * tb / 3.0, width - 4. * tb / 3., height - 4. * tb / 3.);
+      cairo_rectangle(cr, 2 * tb / 3., 2 * tb / 3.0, width - 4. * tb / 3., height - 4. * tb / 3.);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
     }
@@ -566,8 +562,14 @@ void expose(
     cairo_restore(cri);
   }
 
+  // display mask if we have a current module activated or if the masks manager module is expanded
+
+  const gboolean display_masks =
+    (dev->gui_module && dev->gui_module->enabled)
+    || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
+
   // execute module callback hook.
-  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && display_masks)
   {
     // The colorpicker bounding rectangle should only be displayed inside the visible image
     const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
@@ -641,8 +643,7 @@ void expose(
   }
   else
   {
-    // masks
-    if(dev->gui_module && dev->form_visible && dev->gui_module->enabled)
+    if(dev->form_visible && display_masks)
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
     // module
     if(dev->gui_module && dev->gui_module->gui_post_expose)
@@ -817,7 +818,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_write_history(dev);
 
   // be sure light table will update the thumbnail
-  if (!dt_history_hash_get_mipmap_sync(dev->image_storage.id))
+  if (!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_reset_final_size(dev->image_storage.id);
@@ -930,11 +931,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
         dt_iop_gui_set_expanded(module, FALSE, dt_conf_get_bool("darkroom/ui/single_module"));
         dt_iop_gui_update_blending(module);
       }
-
-      /* setup key accelerators */
-      module->accel_closures = NULL;
-      if(module->connect_key_accels) module->connect_key_accels(module);
-      dt_iop_connect_common_accels(module);
     }
     else
     {
@@ -1010,6 +1006,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // just make sure at this stage we have only history info into the undo, all automatic
   // tagging should be ignored.
   dt_undo_clear(darktable.undo, DT_UNDO_TAGS);
+
+  //connect iop accelerators
+  dt_iop_connect_accels_all();
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
@@ -1204,6 +1203,10 @@ static void _darkroom_ui_apply_style_activate_callback(gchar *name)
   /* apply style on image and reload*/
   dt_styles_apply_to_image(name, FALSE, darktable.develop->image_storage.id);
   dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+  // rebuild the accelerators (style might have changed order)
+  dt_iop_connect_accels_all();
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
@@ -2626,6 +2629,9 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
     module_src->dev->preview_pipe->cache_obsolete = 1;
     module_src->dev->preview2_pipe->cache_obsolete = 1;
 
+    // rebuild the accelerators
+    dt_iop_connect_accels_multi(module_src->so);
+
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
     // invalidate buffers and force redraw of darkroom
@@ -2755,14 +2761,6 @@ void enter(dt_view_t *self)
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
     }
 
-    /* setup key accelerators (only if not hidden) */
-    module->accel_closures = NULL;
-    if(module->so->state != dt_iop_state_HIDDEN)
-    {
-      if(module->connect_key_accels) module->connect_key_accels(module);
-      dt_iop_connect_common_accels(module);
-    }
-
     modules = g_list_previous(modules);
   }
   // make signals work again:
@@ -2826,6 +2824,9 @@ void enter(dt_view_t *self)
 
   // update accels_window
   darktable.view_manager->accels_window.prevent_refresh = FALSE;
+
+  //connect iop accelerators
+  dt_iop_connect_accels_all();
 }
 
 void leave(dt_view_t *self)
@@ -2879,7 +2880,7 @@ void leave(dt_view_t *self)
   }
 
   // be sure light table will regenerate the thumbnail:
-  if (!dt_history_hash_get_mipmap_sync(dev->image_storage.id))
+  if (!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_reset_final_size(dev->image_storage.id);
@@ -3467,6 +3468,13 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   if(key == accels->darkroom_preview.accel_key && state == accels->darkroom_preview.accel_mods)
   {
+    // hack to avoid triggering darkroom fullpreview if user enter the view with the key already pressed
+    if(!lib->full_preview
+       && (lib->preview_status == DT_DEV_PIXELPIPE_DIRTY || lib->preview_status == DT_DEV_PIXELPIPE_INVALID))
+    {
+      lib->full_preview = TRUE;
+    }
+
     if(!lib->full_preview)
     {
       lib->full_preview = TRUE;

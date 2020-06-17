@@ -25,6 +25,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
@@ -55,24 +56,24 @@ typedef __m128(_find_nearest_color_sse)(float *val, const float f, const float r
 
 typedef enum dt_iop_dither_type_t
 {
-  DITHER_RANDOM,
-  DITHER_FS1BIT,
-  DITHER_FS4BIT_GRAY,
-  DITHER_FS8BIT,
-  DITHER_FS16BIT,
-  DITHER_FSAUTO
+  DITHER_RANDOM,      // $DESCRIPTION: "random"
+  DITHER_FS1BIT,      // $DESCRIPTION: "floyd-steinberg 1-bit B&W"
+  DITHER_FS4BIT_GRAY, // $DESCRIPTION: "floyd-steinberg 4-bit gray")
+  DITHER_FS8BIT,      // $DESCRIPTION: "floyd-steinberg 8-bit RGB"
+  DITHER_FS16BIT,     // $DESCRIPTION: "floyd-steinberg 16-bit RGB"
+  DITHER_FSAUTO       // $DESCRIPTION: "floyd-steinberg auto"
 } dt_iop_dither_type_t;
 
 
 typedef struct dt_iop_dither_params_t
 {
-  dt_iop_dither_type_t dither_type;
+  dt_iop_dither_type_t dither_type; // $DEFAULT: DITHER_FSAUTO
   int palette; // reserved for future extensions
   struct
   {
     float radius;   // reserved for future extensions
-    float range[4]; // reserved for future extensions
-    float damping;
+    float range[4]; // reserved for future extensions {0,0,1,1}
+    float damping;  // $MIN: -200.0 $MAX: 0.0 $DEFAULT: -200.0
   } random;
 } dt_iop_dither_params_t;
 
@@ -259,7 +260,7 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   _find_nearest_color *nearest_color = NULL;
   unsigned int levels = 1;
-  int bds = (piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
+  int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
 
   switch(data->dither_type)
   {
@@ -311,7 +312,8 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+      if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
+         || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
         nearest_color = NULL;
       break;
     case DITHER_RANDOM:
@@ -426,7 +428,7 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
 
   _find_nearest_color_sse *nearest_color = NULL;
   unsigned int levels = 1;
-  int bds = (piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
+  const int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
 
   switch(data->dither_type)
   {
@@ -478,7 +480,8 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+      if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
+         || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
         nearest_color = NULL;
       break;
     case DITHER_RANDOM:
@@ -672,20 +675,15 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 }
 #endif
 
-static void method_callback(GtkWidget *widget, gpointer user_data)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
   dt_iop_dither_gui_data_t *g = (dt_iop_dither_gui_data_t *)self->gui_data;
-  p->dither_type = dt_bauhaus_combobox_get(widget);
 
-  if(p->dither_type == DITHER_RANDOM)
-    gtk_widget_show(GTK_WIDGET(g->random));
-  else
-    gtk_widget_hide(GTK_WIDGET(g->random));
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(w == g->dither_type)
+  {
+    gtk_widget_set_visible(g->random, p->dither_type == DITHER_RANDOM);
+  }
 }
 
 #if 0
@@ -693,28 +691,19 @@ static void
 radius_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
   p->random.radius = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 #endif
 
-static void damping_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
-  p->random.damping = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 #if 0
 static void
 range_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
   p->random.range[0] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 0);
   p->random.range[1] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 1);
@@ -766,52 +755,15 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_slider_set(g->damping, p->random.damping);
 
-  if(p->dither_type == DITHER_RANDOM)
-    gtk_widget_show(GTK_WIDGET(g->random));
-  else
-    gtk_widget_hide(GTK_WIDGET(g->random));
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_dither_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_dither_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_dither_params_t);
-  module->gui_data = NULL;
-  dt_iop_dither_params_t tmp
-      = (dt_iop_dither_params_t){ DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
-  memcpy(module->params, &tmp, sizeof(dt_iop_dither_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_dither_params_t));
-}
-
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
+  gtk_widget_set_visible(g->random, p->dither_type == DITHER_RANDOM);
+} 
 
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_dither_gui_data_t));
   dt_iop_dither_gui_data_t *g = (dt_iop_dither_gui_data_t *)self->gui_data;
-  dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-  g->random = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  g->dither_type = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_add(g->dither_type, _("random"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 1-bit B&W"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 4-bit gray"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 8-bit RGB"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 16-bit RGB"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg auto"));
-  dt_bauhaus_widget_set_label(g->dither_type, NULL, _("method"));
+  g->random = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
 #if 0
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 0.1, p->random.radius, 2);
@@ -834,9 +786,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(rlabel), GTK_WIDGET(g->range_label), FALSE, FALSE, 0);
 #endif
 
-  g->damping = dt_bauhaus_slider_new_with_range(self, -200.0, 0.0, 1.0, p->random.damping, 3);
+  g->damping = dt_bauhaus_slider_from_params(self, "random.damping");
+
   gtk_widget_set_tooltip_text(g->damping, _("damping level of random dither"));
-  dt_bauhaus_widget_set_label(g->damping, NULL, _("damping"));
+  dt_bauhaus_slider_set_digits(g->damping, 3);
   dt_bauhaus_slider_set_format(g->damping, "%.0fdB");
 
 #if 0
@@ -844,25 +797,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->random), rlabel, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->random), g->range, TRUE, TRUE, 0);
 #endif
-  gtk_box_pack_start(GTK_BOX(g->random), g->damping, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->dither_type, TRUE, TRUE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->dither_type = dt_bauhaus_combobox_from_params(self, "dither_type");
+
   gtk_box_pack_start(GTK_BOX(self->widget), g->random, TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(g->dither_type), "value-changed", G_CALLBACK(method_callback), self);
 #if 0
   g_signal_connect (G_OBJECT (g->radius), "value-changed",
                     G_CALLBACK (radius_callback), self);
   g_signal_connect (G_OBJECT (g->range), "value-changed",
                     G_CALLBACK (range_callback), self);
 #endif
-  g_signal_connect(G_OBJECT(g->damping), "value-changed", G_CALLBACK(damping_callback), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

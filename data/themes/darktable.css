@@ -85,8 +85,7 @@
 @define-color plugin_bg_color @grey_20;
 @define-color plugin_fg_color @grey_70;
 @define-color section_label @grey_60;
-@define-color plugin_label_color @grey_60;
-@define-color plugin_focus_color @grey_85;
+@define-color plugin_label_color @grey_65;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg @grey_15;
@@ -114,14 +113,14 @@
 @define-color field_fg @button_fg;
 @define-color field_active_bg @grey_25;
 @define-color field_active_fg @grey_75;
-@define-color field_selected_bg @button_checked_bg;
+@define-color field_selected_bg @grey_40;
 @define-color field_selected_fg @button_checked_fg;
 @define-color field_hover_bg @grey_45;
 @define-color field_hover_fg @grey_95;
 
 /* Tooltips and contextual helpers */
-@define-color tooltip_bg_color @grey_05;
-@define-color tooltip_fg_color @grey_70;
+@define-color tooltip_bg_color @grey_15;
+@define-color tooltip_fg_color @grey_65;
 @define-color really_dark_bg_color @grey_05;
 @define-color log_fg_color @grey_85;
 
@@ -134,13 +133,14 @@
 @define-color lighttable_bg_font_color @grey_75;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_30;
-@define-color thumbnail_bg_color @grey_40;
-@define-color thumbnail_fg_color @grey_60;
+@define-color thumbnail_font_color @grey_25;
+@define-color thumbnail_bg_color @grey_50;
+@define-color thumbnail_star_bg_color @grey_35;
+@define-color thumbnail_fg_color @grey_55;
 @define-color thumbnail_bg50_color @grey_100;
-@define-color thumbnail_infos_color @grey_65;
-@define-color thumbnail_selected_bg_color @grey_55;
-@define-color thumbnail_hover_bg_color @grey_85;
+@define-color thumbnail_selected_bg_color @grey_60;
+@define-color thumbnail_hover_bg_color @grey_80;
+@define-color thumbnail_hover_fg_color @grey_85;
 @define-color filmstrip_bg_color @darkroom_bg_color;
 @define-color thumbnail_localcopy_color @grey_75;
 
@@ -157,7 +157,6 @@
 @define-color inset_histogram alpha(@grey_65, 0.50);
 
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
-
 *
 {
   background-color: @bg_color;
@@ -213,8 +212,6 @@ stack,
 stack *,
 scrollbar,
 scrollbar *,
-eventbox,
-eventbox *,
 scale,
 scale *,
 button,
@@ -259,7 +256,6 @@ box *
 button,
 #add-color-button
 {
-  border-radius: 2px;
   padding: 2px;
   border: 1px solid @button_border;
   background-color: @button_bg;
@@ -268,25 +264,41 @@ button,
   font-family: sans-serif;
   min-height: 1em;
   min-width: 1em;
+  padding: 2px;
 }
 
-/* default extra margin for icons optical alignment */
+button:disabled,
+#add-color-button:disabled
+{
+  border: 1px solid shade(@button_border, 0.95);
+}
+
+/* Default extra margin for icons optical alignment */
 #button-canvas
 {
   margin: 5px; /* not real pixels, this is used as a percent extra space */
+}
+
+/* Set same settings on all those items */
+button,
+#add-color-button,
+#dt-icon,
+entry,
+textview
+{
+  border-radius: 3px;
 }
 
 /* Default text fields and text boxes */
 entry,
 textview
 {
-  border-radius: 2px;
   border: 0.5px solid @border_color;
   color: @field_fg;
   background-color: @field_bg;
   min-height: 0;
   min-width: 0;
-  padding: 2px;
+  padding: 0px;
 }
 
 entry
@@ -300,14 +312,17 @@ entry selection
 }
 
 /* Checkbox */
-checkbutton check,
-#lib-plugin-ui checkbutton check,
-#iop-plugin-ui checkbutton check,
-treeview check
+checkbutton check
 {
   background-color: @bauhaus_bg;
   color: @bauhaus_fg;
   border: 1px solid @border_color;
+}
+
+checkbutton check:checked
+{
+  background-color: @field_selected_bg;
+  color: @field_selected_fg;
 }
 
 /* Button to open/close the dropdown section, especially header ones */
@@ -412,6 +427,11 @@ overshoot.right
   margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
+#footer-toolbar #lib-label-colors #button-canvas
+{
+  margin: 16px; /* not real pixels, this is used as a percent extra space */
+}
+
 #dt-icon
 {
   border-radius: 2px;
@@ -446,7 +466,6 @@ overshoot.right
 }
 
 /* icon buttons in modules main body */
-
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
 #iop-plugin-ui-main #keep-active,
@@ -471,11 +490,8 @@ overshoot.right
   padding: 1px;
 }
 
-/* size of control-buttons */
-/* filter in collect images */
-/* filter in header toolbar */
-/* arrow in filmic */
-/* TODO: move this part to special items? */
+/* Size of control-buttons an duplicate module ones */
+  /* control-buttons are: filter in collect images, filter in header toolbar and arrow in filmic */
 #iop-plugin-ui-main #control-button,
 #lib-plugin-ui-main #control-button,
 #header-toolbar #control-button
@@ -486,9 +502,16 @@ overshoot.right
   margin: 0.15em;
 }
 
-#control-button #button-canvas
+#control-button #button-canvas,
+.duplicate-ui #button-canvas
 {
   margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
+/* Adjust add button in picker module */
+.picker-module button
+{
+  padding: 0 3px;
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -532,7 +555,7 @@ overshoot.right
   min-width: 1.15em;
   padding: 0.06em;
   border: 0;
-  margin: 0 1px 0 1px
+  margin: 0 1px;
 }
 
 #module-always-enabled-button /* button on always activated module */
@@ -546,8 +569,9 @@ overshoot.right
   margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
-/* gradient sliders */
-#gradient-slider
+/* Gradient sliders */
+.dt_gslider,
+.dt_gslider_multivalue
 {
   min-height: 1.7em;
   margin: 0;
@@ -592,9 +616,9 @@ overshoot.right
   font-size: 1.1em;
 }
 
-.dt_module_focus #iop-panel-label /* set focus mode */
+.dt_module_focus #iop-panel-label/* set focus mode */
 {
-  color: @plugin_focus_color;
+  color: shade(@plugin_label_color, 1.2);
 }
 
 /* Labels of controls sections in modules */
@@ -612,6 +636,11 @@ overshoot.right
 #lib-plugin-ui #section_label
 {
   margin: 12px 0 6px 0;
+}
+
+#iop-plugin-ui #section_label.section_label_top
+{
+  margin: 2px 0 6px 0;
 }
 
 /* Special modules: image infos, navigation and search ones */
@@ -784,19 +813,29 @@ menuitem > menu, /* sub-menu */
 menuitem arrow,
 tooltip,
 popover,
-#background_job_eventbox,
+#background_job_eventbox, /* background of export progress bar */
 combobox window,
 dialog combobox window
 {
+  opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
-  color: @tooltip_fg_color;
-  outline-style:none;
   border-radius: 4px;
   border: 0;
   outline-style: none;
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em;
+}
+
+tooltip
+{
+  border: 1px solid shade(@tooltip_bg_color, 1.5);
+  border-radius: 0;
+}
+
+tooltip label
+{
+  color: @tooltip_fg_color;
 }
 
 combobox label
@@ -847,7 +886,7 @@ notebook tabs,
 #modules-tabs,
 #blending-tabs
 {
-  background-color: @button_bg;
+  background-color: @button_border;
 }
 
 #modules-tabs #dt-toggle-button
@@ -869,10 +908,19 @@ notebook tabs,
   font-size: 0.8em;
   min-height: 1.55em;
   min-width: 1.55em;
-  padding: 0.2em;
+  padding: 0.45em;
+  margin: 0;
   border: 0;
 }
 
+/* Do not apply border-radius to group modules icons and masks icons */
+#modules-tabs #dt-toggle-button,
+#blending-tabs button
+{
+  border-radius: 0;
+}
+
+/* Set notebook tabs */
 notebook tab
 {
   border-bottom: 2px solid transparent;
@@ -1219,6 +1267,36 @@ treeview header label,
   margin: 0px;
 }
 
+/*------------
+  - Map view -
+  ------------*/
+
+/* Set how to display result list on find location module */
+#dt-map-location > *
+{
+margin: 2px;
+}
+
+#dt-map-location label
+{
+padding: 2px;
+}
+
+#dt-map-location
+{
+border-bottom: 1px solid @button_border;
+}
+
+#dt-map-location:hover
+{
+  background-color: @field_hover_bg;
+}
+
+#dt-map-location:hover label
+{
+  color: @field_hover_fg;
+}
+
 /*---------------
   - Other stuff -
   ---------------*/
@@ -1485,7 +1563,7 @@ notebook tab:hover label,
 #history-button-always-enabled:hover *,
 #history-button-default-enabled:hover *,
 #recent-collection-button:hover,
-#view_label:hover,
+#view_label:hover,button:checked image,
 #view_dropdown menuitem:hover,
 #view_dropdown .combo:hover *
 {
@@ -1538,13 +1616,14 @@ button:disabled,
 /* Treeviews and filechoosers states */
 treeview check /* set specific background color about check buttons in treeviews like copy/paste dialog window */
 {
-  background-color: @button_bg;
+  background-color: @field_selected_bg;
 }
 
 treeview:not(#lutname) *:hover:not(check),
 filechooser .sidebar :hover .sidebar-button,  /* set here specific button hover like eject button in filechooser sidebar */
 #import_metadata title:hover,
-#import_metadata title:hover *
+#import_metadata title:hover *,
+radiobutton:hover label  /* set hover effect on popover menu from star icon */
 {
   background-color: @field_hover_bg;
   color: @field_hover_fg;
@@ -1559,8 +1638,7 @@ filechooser *:active
 
 treeview *:selected:not(check),
 treeview *:checked:not(check),
-filechooser *:selected,
-filechooser *:checked
+filechooser *:selected
 {
   background-color: @field_selected_bg;
   color: @field_selected_fg;
@@ -1582,6 +1660,15 @@ treeview check:hover
 filechooser checkbutton:checked
 {
   background-color: transparent;
+}
+
+/* Adjust delete folder dialog window */
+treeview#delete-dialog,
+treeview#delete-dialog:selected
+{
+  background-color: shade(@bg_color, 0.9);
+  color: @field_active_fg;
+  padding-left: 1em;
 }
 
 /* Views links states in header */
@@ -1652,11 +1739,16 @@ entry:hover
   background-color: @field_hover_bg;
 }
 
-entry:checked,
 entry:active
 {
   color: @field_active_fg;
   background-color: @field_active_bg;
+}
+
+entry:checked
+{
+  color: @field_selected_fg;
+  background-color: @field_selected_bg;
 }
 
 entry:selected,
@@ -1750,7 +1842,7 @@ Details :
 
 #thumb_main:selected #thumb_back
 {
-  background-color: @thumbnail_selected_bg_color;
+  background-color: shade(@thumbnail_selected_bg_color, 1.05);
 }
 
 #thumb_main:hover #thumb_back
@@ -1820,6 +1912,17 @@ radiobutton radio
   padding: 0.25em;
 }
 
+spinbutton>button
+{
+  margin: 2px 1px;
+}
+
+#show-tooltip
+{
+  margin: 4px 0 0 4px;
+  border-top: 1px dashed @button_border;
+}
+
   /*** for following settings line, remember which popover mode name and related line on popover menu
   1) .dt_overlays_none
   2) .dt_overlays_hover
@@ -1838,12 +1941,12 @@ radiobutton radio
 #thumb_image
 {
   border: none;
-  margin : 3px; /* not real pixels, but percentage of the thumb size */
+  margin: 25px; /* not real pixels, but per thousand of the thumb size */
 }
 
 .dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
 {
-  margin: 3px;
+  margin: 20px;
 }
 
 #thumb_main:active #thumb_image
@@ -1851,7 +1954,7 @@ radiobutton radio
   border: 2px solid @plugin_bg_color;
 }
 
-#thumb_ext  /* adjust margin to align to group, audio... icons */
+#thumb_ext /* adjust margin to better align to group, audio... icons and match to near all thumbnails sizes */
 {
   margin-top: -1px;
 }
@@ -1879,14 +1982,16 @@ radiobutton radio
   border-right-width: 2px;
 }
 
-/* Set background on block infos in last overlay mode and culling/preview modes shown with mouse hover */
+/* Set background on thumbnails hover overlays */
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
-.dt_overlays_mixed #thumb_main:hover #thumb_bottom
+.dt_overlays_mixed #thumb_main:hover #thumb_bottom,
+.dt_overlays_hover #thumb_main:hover #thumb_bottom
 {
-  background-image: linear-gradient(0deg, rgba(220, 220, 220, 0.8) 0%, rgba(220, 220, 220, 0.8) 95%,rgba(220, 220, 220, 0) 100%);
+  background-image: linear-gradient(rgba(198, 198, 198, 0.7) 0%, rgba(198, 198, 198, 0.7) 90%,rgba(198, 198, 198, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
 }
 
-.dt_overlays_hover_block #thumb_image:hover #thumb_bottom  /* background of last overlay mode and culling/preview ones */
+/* Set background on block infos in last overlay mode and culling/preview modes shown with mouse hover */
+.dt_overlays_hover_block #thumb_image:hover #thumb_bottom
 {
   background-image: none;
   background-color: rgba(220, 220, 220, 0.8);
@@ -1895,47 +2000,28 @@ radiobutton radio
 /* Set text margins in bottom infos area */
 #thumb_bottom_label
 {
-  border : 5px solid transparent;
   color: transparent;
 }
 
 /*--------------------
-  - Thumbnails extension -
+  - Thumbnails infos -
   --------------------*/
 
-/* by default, the extension is hidden */
+/* By default, the extension is hidden */
 #thumb_ext
 {
   color: transparent;
   background-color: transparent;
 }
 
-/* and we show it for specific overlays */
+/* Set default color icons, extension name and text infos on thumbnails and block infos */
+.dt_thumb_btn,
+.dt_overlays_always_extended #thumb_bottom_label,
 .dt_overlays_always #thumb_ext,
 .dt_overlays_always_extended #thumb_ext,
 .dt_overlays_mixed #thumb_ext
 {
-  color: @thumbnail_infos_color;
-}
-.dt_overlays_hover #thumb_main:hover #thumb_ext,
-.dt_overlays_hover_extended #thumb_main:hover #thumb_ext,
-.dt_overlays_always #thumb_main:selected #thumb_ext,
-.dt_overlays_always_extended #thumb_main:selected #thumb_ext,
-.dt_overlays_mixed #thumb_main:selected #thumb_ext
-{
-  color: @thumbnail_font_color;
-}
-
-
-/*--------------------
-  - Thumbnails infos -
-  --------------------*/
-
-/* Set default color icons and text infos on thumbnails and block infos */
-.dt_thumb_btn,
-.dt_overlays_always_extended #thumb_bottom_label
-{
-  color: @thumbnail_infos_color;
+  color: shade(@thumbnail_font_color, 1.1);
 }
 
 /* Reset color icons to be hidden in following modes, including culling/preview overlays hover block*/
@@ -1949,7 +2035,13 @@ radiobutton radio
   background-color: transparent;
 }
 
-/* Set hover and selected color icons and text infos */
+/* Set hover and selected color icons, extension name and text infos */
+.dt_overlays_always #thumb_main:hover #thumb_ext,
+.dt_overlays_always #thumb_main:selected #thumb_ext,
+.dt_overlays_always_extended #thumb_main:hover #thumb_ext,
+.dt_overlays_always_extended #thumb_main:selected #thumb_ext,
+.dt_overlays_mixed #thumb_main:hover #thumb_ext,
+.dt_overlays_mixed #thumb_main:selected #thumb_ext,
 .dt_overlays_hover #thumb_main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb_main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom_label,
@@ -1994,16 +2086,13 @@ radiobutton radio
 .dt_overlays_always #thumb_star:active,
 .dt_overlays_always_extended #thumb_star:active,
 .dt_overlays_mixed #thumb_star:active,
-.dt_overlays_always #thumb_main:selected #thumb_star:active,
-.dt_overlays_always_extended #thumb_main:selected #thumb_star:active,
-.dt_overlays_mixed #thumb_main:selected #thumb_star:active,
 .dt_overlays_hover_block #thumb_image:hover #thumb_star:active
 {
   color: @thumbnail_selected_bg_color;
   background-color: @thumbnail_font_color;
 }
 
-/* Set star icon hover effect */
+/* Set stars icon hover effect */
 .dt_overlays_hover #thumb_main:hover #thumb_star:hover,
 .dt_overlays_hover_extended #thumb_main:hover #thumb_star:hover,
 .dt_overlays_always #thumb_main:hover #thumb_star:hover,
@@ -2011,15 +2100,11 @@ radiobutton radio
 .dt_overlays_mixed #thumb_main:hover #thumb_star:hover,
 .dt_overlays_hover_block #thumb_main:hover #thumb_star:hover
 {
-  color: @bauhaus_fg_hover;
-  background-color: @thumbnail_bg_color;
+  color: @thumbnail_hover_fg_color;
+  background-color: @thumbnail_star_bg_color;
 }
 
 /* Set hover group and audio effect */
-.dt_overlays_hover #thumb_main:hover #thumb_group:hover,
-.dt_overlays_hover #thumb_main:hover #thumb_audio:hover,
-.dt_overlays_hover_extended #thumb_main:hover #thumb_group:hover,
-.dt_overlays_hover_extended #thumb_main:hover #thumb_audio:hover,
 .dt_overlays_always #thumb_main:hover #thumb_group:hover,
 .dt_overlays_always #thumb_main:hover #thumb_audio:hover,
 .dt_overlays_always_extended #thumb_main:hover #thumb_group:hover,
@@ -2058,6 +2143,56 @@ radiobutton radio
   background-color: @thumbnail_localcopy_color;
 }
 
+/*---------------------------------------------------------
+  - Hide icons on all lighttable modes and duplicate ones -
+  ---------------------------------------------------------*/
+
+.dt_overlays_hover #thumb_main:hover #thumb_group,
+.dt_overlays_hover #thumb_main:hover #thumb_altered,
+.dt_overlays_hover #thumb_main:hover #thumb_audio,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_group,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_altered,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_audio,
+.dt_culling #thumb_ext,
+.dt_culling #thumb_main:selected #thumb_ext,
+.dt_culling #thumb_main:hover #thumb_ext,
+.dt_overlays_always#culling #thumb_altered,
+.dt_overlays_always#culling #thumb_audio,
+.dt_overlays_always#culling #thumb_group,
+.dt_overlays_always_extended#culling #thumb_altered,
+.dt_overlays_always_extended#culling #thumb_audio,
+.dt_overlays_always_extended#culling #thumb_group,
+.dt_preview #thumb_ext,
+.dt_preview #thumb_main:selected #thumb_ext,
+.dt_preview #thumb_main:hover #thumb_ext,
+.dt_overlays_always#preview #thumb_altered,
+.dt_overlays_always#preview #thumb_audio,
+.dt_overlays_always#preview #thumb_group,
+.dt_overlays_always_extended#preview #thumb_altered,
+.dt_overlays_always_extended#preview #thumb_audio,
+.dt_overlays_always_extended#preview #thumb_group,
+.duplicate-ui #thumb_main:hover #thumb_group,
+.duplicate-ui #thumb_main:hover #thumb_altered,
+.duplicate-ui #thumb_main:hover #thumb_audio,
+.duplicate-ui #thumb_altered,
+.duplicate-ui #thumb_audio,
+.duplicate-ui #thumb_group
+{
+  color: transparent;
+}
+
+.dt_overlays_always#preview #thumb_bottom > *
+{
+  padding-top: 3px;
+}
+
+/* Padding of overlays block hover on thumbnail overlay mode */
+.dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label
+{
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
 /*-----------------------------
   - Culling and preview modes -
   -----------------------------*/
@@ -2074,30 +2209,40 @@ radiobutton radio
   border: none;
 }
 
-.dt_culling #thumb_ext,
-.dt_culling #thumb_main:selected #thumb_ext,
-.dt_culling #thumb_main:hover #thumb_ext,
-.dt_preview #thumb_ext,
-.dt_preview #thumb_main:selected #thumb_ext,
-.dt_preview #thumb_main:hover #thumb_ext
-{
-  color: transparent;
-}
-
 /* Set image borders */
 .dt_preview #thumb_image
 {
-  margin : 1px;
+  margin : 10px;
 }
 .dt_culling #thumb_main:selected #thumb_image,
 .dt_preview #thumb_main:selected #thumb_image
 {
   border: 2px solid @plugin_bg_color;
 }
+
 .dt_culling #thumb_main:hover #thumb_image,
 .dt_preview #thumb_main:hover #thumb_image
 {
   border: 2px solid @thumbnail_hover_bg_color;
+}
+
+/* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
+.dt_overlays_always#culling #thumb_bottom,
+.dt_overlays_always_extended#culling #thumb_bottom,
+.dt_overlays_always#preview #thumb_bottom,
+.dt_overlays_always_extended#preview #thumb_bottom
+{
+  border-radius: 3px;
+  border-top: 1px solid @lighttable_bg_color;
+  background-image: linear-gradient(rgba(171, 171, 171, 0.2) 0%, rgba(171, 171, 171, 0.1) 5%, rgba(171, 171, 171, 0) 100%);
+}
+
+.dt_overlays_always#culling #thumb_main:hover #thumb_bottom,
+.dt_overlays_always_extended#culling #thumb_main:hover #thumb_bottom,
+.dt_overlays_always#preview #thumb_main:hover #thumb_bottom,
+.dt_overlays_always_extended#preview #thumb_main:hover #thumb_bottom
+{
+  background-image: linear-gradient(rgba(191, 191, 191, 0.4) 0%, rgba(191, 191, 191, 0.2) 5%, rgba(171, 171, 171, 0) 100%);
 }
 
 /* Set zoom info */
@@ -2123,14 +2268,9 @@ radiobutton radio
   background-color: rgba(20, 20, 20, 0.5);
 }
 
-/* Padding of overlays block hover on culling/preview and thumbnail overlay mode */
-.dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label
+/* Padding of overlays block hover on culling/preview */
+.dt_overlays_hover_block#culling #thumb_image:hover #thumb_bottom_label,
+.dt_overlays_hover_block#preview #thumb_image:hover #thumb_bottom_label
 {
-  padding-left: 6px;
-  padding-right: 6px;
-}
-
-.dt_overlays_hover_block #thumb_image:hover #thumb_colorlabels
-{
-  padding-right: 6px;
+  padding: 8px;
 }

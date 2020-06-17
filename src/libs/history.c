@@ -106,6 +106,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "compress history stack", d->compress_button);
 }
 
+#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -125,6 +126,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   d->compress_button = gtk_button_new_with_label(_("compress history stack"));
+  ellipsize_button(d->compress_button);
   gtk_widget_set_tooltip_text(d->compress_button, _("create a minimal history stack which produces the same image"));
   g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), self);
 
@@ -179,6 +181,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   /* create toggle button */
   GtkWidget *widget = gtk_toggle_button_new_with_label(label);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
+  ellipsize_button(widget);
 
   if(always_on)
   {
@@ -231,6 +234,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
 
   return hbox;
 }
+#undef ellipsize_button
 
 static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int multi_priority)
 {
@@ -807,6 +811,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   /* signal history changed */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+  dt_iop_connect_accels_all() ;
 }
 
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget, gpointer user_data)

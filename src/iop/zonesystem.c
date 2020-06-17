@@ -56,8 +56,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_zonesystem_params_t)
 /** gui params. */
 typedef struct dt_iop_zonesystem_params_t
 {
-  int size;
-  float zone[MAX_ZONE_SYSTEM_SIZE + 1];
+  int size; // $DEFAULT: 10
+  float zone[MAX_ZONE_SYSTEM_SIZE + 1]; // $DEFAULT: -1.0
 } dt_iop_zonesystem_params_t;
 
 /** and pixelpipe data is just the same */
@@ -178,7 +178,7 @@ static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
     dt_pthread_mutex_lock(&g->lock);
@@ -211,7 +211,9 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 
   /* if gui and have buffer lets gaussblur and fill buffer with zone indexes */
-  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && g && g->in_preview_buffer
+  if(self->dev->gui_attached
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
+     && g && g->in_preview_buffer
      && g->out_preview_buffer)
   {
     float Lmax[] = { 100.0f };
@@ -474,29 +476,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->zones));
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_zonesystem_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_zonesystem_params_t);
-  module->gui_data = NULL;
-  dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t){
-    10, { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }
-  };
-  memcpy(module->params, &tmp, sizeof(dt_iop_zonesystem_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_zonesystem_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
-
 static void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_data);
 
 static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self);
@@ -551,7 +530,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_pthread_mutex_init(&g->lock, NULL);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->preview = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
   g_signal_connect(G_OBJECT(g->preview), "size-allocate", G_CALLBACK(size_allocate_callback), self);

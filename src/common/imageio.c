@@ -1143,6 +1143,9 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   if((ret == DT_IMAGEIO_OK) && !was_bw && (img->flags & DT_IMAGE_MONOCHROME))
     dt_imageio_set_bw_tag(img);
 
+  img->p_width = img->width - img->crop_x - img->crop_width;
+  img->p_height = img->height - img->crop_y - img->crop_height;
+
   return ret;
 }
 

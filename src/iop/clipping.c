@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -61,11 +62,25 @@ typedef struct dt_iop_clipping_aspect_t
 
 typedef struct dt_iop_clipping_params_t
 {
-  float angle, cx, cy, cw, ch, k_h, k_v;
-  float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd;
+  float angle; // $MIN: -180.0 $MAX: 180.0
+  float cx;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "left"
+  float cy;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "top"
+  float cw;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "right"
+  float ch;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "bottom"
+  float k_h, k_v;
+  float kxa;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2
+  float kya;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2
+  float kxb;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.8
+  float kyb;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2
+  float kxc;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.8
+  float kyc;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.8
+  float kxd;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2
+  float kyd;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.8
   int k_type, k_sym;
-  int k_apply, crop_auto;
-  int ratio_n, ratio_d;
+  int k_apply;   // $DEFAULT: 0
+  gboolean crop_auto; // $DEFAULT: TRUE $DESCRIPTION: "automatic cropping"
+  int ratio_n;   // $DEFAULT: -1
+  int ratio_d;   // $DEFAULT: -1
 } dt_iop_clipping_params_t;
 
 typedef enum _grab_region_t
@@ -231,7 +246,7 @@ typedef struct dt_iop_clipping_gui_data_t
   float clip_max_x, clip_max_y, clip_max_w, clip_max_h;
   uint64_t clip_max_pipe_hash;
 
-  int k_selected, k_show, k_selected_segment;
+ int k_selected, k_show, k_selected_segment;
   gboolean k_drag;
 
   int cropping, straightening, applied;
@@ -308,7 +323,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_ALLOW_FAST_PIPE;
 }
 
 int operation_tags()
@@ -418,7 +433,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -483,7 +498,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -1352,13 +1367,28 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static float _ratio_get_aspect(dt_iop_module_t *self)
+static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
+  //retrieve full image dimensions to calculate aspect ratio if "original image" specified
+  const char *text = dt_bauhaus_combobox_get_text(combo);
+  if(text && !g_strcmp0(text,"original image"))
+  {
+    int proc_iwd = 0, proc_iht = 0;
+    dt_dev_get_processed_size(darktable.develop, &proc_iwd, &proc_iht);
+
+    if(!(proc_iwd > 0 && proc_iht > 0)) return 0.0f;
+
+    p->ratio_d = proc_iwd;
+    p->ratio_n = proc_iht;
+    if(proc_iwd >= proc_iht) return (float)proc_iwd / (float)proc_iht;
+    else  return (float)proc_iht / (float)proc_iwd;
+  }
+
   // we want to know the size of the actual buffer
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-  if(!piece) return 0;
+  if(!piece) return 0.0f;
 
   const int iwd = piece->buf_in.width, iht = piece->buf_in.height;
 
@@ -1477,7 +1507,7 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
   dt_dev_get_processed_size(darktable.develop, &iwd, &iht);
 
   // enforce aspect ratio.
-  float aspect = _ratio_get_aspect(self);
+  float aspect = _ratio_get_aspect(self, g->aspect_presets);
 
   // since one rarely changes between portrait and landscape by cropping,
   // long side of the crop box should match the long side of the image.
@@ -1487,7 +1517,10 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
   {
     // if only one side changed, force aspect by two adjacent in equal parts
     // 1 2 4 8 : x y w h
-    double clip_x = g->clip_x, clip_y = g->clip_y, clip_w = g->clip_w, clip_h = g->clip_h;
+    double clip_x = MAX(floor(iwd * g->clip_x) / (float)iwd, 0.0f);
+    double clip_y = MAX(floor(iht * g->clip_y) / (float)iht, 0.0f);
+    double clip_w = MIN(ceil(iwd * g->clip_w) / (float)iwd, 1.0f);
+    double clip_h = MIN(ceil(iht * g->clip_h) / (float)iht, 1.0f);
 
     // if we only modified one dim, respectively, we wanted these values:
     const double target_h = (double)iwd * g->clip_w / ((double)iht * aspect);
@@ -1535,7 +1568,6 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
       clip_w = clip_w + off;
       clip_x = clip_x - .5 * off;
     }
-
     // now fix outside boxes:
     if(clip_x < g->clip_max_x)
     {
@@ -1577,13 +1609,15 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
 void reload_defaults(dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
-  dt_iop_clipping_params_t tmp
-      = (dt_iop_clipping_params_t){ 0.0f, img->usercrop[1], img->usercrop[0], img->usercrop[3], img->usercrop[2],
-                                    0.0f, 0.0f, 0.2f, 0.2f, 0.8f, 0.2f,
-                                    0.8f, 0.8f, 0.2f, 0.8f, 0,    0,    FALSE, TRUE, -1,   -1 };
-  memcpy(self->params, &tmp, sizeof(dt_iop_clipping_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
-  self->default_enabled = 0;
+  
+  dt_iop_clipping_params_t *d = (dt_iop_clipping_params_t *)self->default_params;
+
+  d->cx = img->usercrop[1];
+  d->cy = img->usercrop[0];
+  d->cw = img->usercrop[3];
+  d->ch = img->usercrop[2];
+
+  memcpy(self->params, self->default_params, sizeof(dt_iop_clipping_params_t));
 }
 
 static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
@@ -1735,7 +1769,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
     p->ratio_n = n;
     dt_conf_set_int("plugins/darkroom/clipping/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/clipping/ratio_n", abs(p->ratio_n));
-    if(self->dt->gui->reset) return;
+    if(darktable.gui->reset) return;
     apply_box_aspect(self, GRAB_HORIZONTAL);
     dt_control_queue_redraw_center();
   }
@@ -1773,39 +1807,41 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   --darktable.gui->reset;
 }
 
-static void angle_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->angle = -dt_bauhaus_slider_get(slider);
-  commit_box(self, g, p);
-}
-
-static void cxywh_callback(GtkWidget *slider, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
   ++darktable.gui->reset;
 
-  p->cx = dt_bauhaus_slider_get(g->cx) / 100;
-  dt_bauhaus_slider_set_soft_max(g->cw, 100 - p->cx * 100);
-  p->cw = (100 - dt_bauhaus_slider_get(g->cw)) / 100;
-  dt_bauhaus_slider_set_soft_max(g->cx, p->cw * 100);
-  p->cy = dt_bauhaus_slider_get(g->cy) / 100;
-  dt_bauhaus_slider_set_soft_max(g->ch, 100 - p->cy * 100);
-  p->ch = (100 - dt_bauhaus_slider_get(g->ch)) / 100;
-  dt_bauhaus_slider_set_soft_max(g->cy, p->ch * 100);
+  if(w == g->cx)
+  {
+    dt_bauhaus_slider_set_soft_min(g->cw, p->cx + 0.10);
+    g->clip_w = g->clip_x + g->clip_w - p->cx;
+    g->clip_x = p->cx;
+  }
+  else if(w == g->cw)
+  {
+    dt_bauhaus_slider_set_soft_max(g->cx, p->cw - 0.10);
+    g->clip_w = p->cw - g->clip_x;
+  }
+  else if(w == g->cy)
+  {
+    dt_bauhaus_slider_set_soft_min(g->ch, p->cy + 0.10);
+    g->clip_h = g->clip_y + g->clip_h - p->cy;
+    g->clip_y = p->cy;
+  }
+  else if(w == g->ch)
+  {
+    dt_bauhaus_slider_set_soft_max(g->cy, p->ch - 0.10);
+    g->clip_h = p->ch - g->clip_y;
+  }
 
   --darktable.gui->reset;
 
-  g->clip_x = p->cx;
-  g->clip_w = fabsf(p->cw) - p->cx;
-  g->clip_y = p->cy;
-  g->clip_h = fabsf(p->ch) - p->cy;
-
   commit_box(self, g, p);
+
+  if(w == g->crop_auto) dt_control_queue_redraw_center();
 }
 
 void gui_reset(struct dt_iop_module_t *self)
@@ -1881,39 +1917,17 @@ static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_a
   keystone_type_changed(g->keystone_type, self);
 }
 
-static void _ratio_refresh_combo(dt_iop_module_t *self)
-{
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-
-  int combo_index = 0;
-  int index = 0;
-
-  for(GList *iter = g->aspect_list; iter; iter=g_list_next(iter))
-  {
-    dt_iop_clipping_aspect_t *aspect = (dt_iop_clipping_aspect_t *)iter->data;
-    if(aspect->d == p->ratio_d && aspect->n == p->ratio_n)
-    {
-      combo_index = index;
-      break;
-    }
-    index++;
-  }
-
-  dt_bauhaus_combobox_set(g->aspect_presets, combo_index);
-}
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
   /* update ui elements */
-  dt_bauhaus_slider_set(g->angle, -p->angle);
-  dt_bauhaus_slider_set(g->cx, p->cx*100);
-  dt_bauhaus_slider_set(g->cy, p->cy*100);
-  dt_bauhaus_slider_set(g->cw, 100-p->cw*100);
-  dt_bauhaus_slider_set(g->ch, 100-p->ch*100);
+  dt_bauhaus_slider_set(g->angle, p->angle);
+  dt_bauhaus_slider_set(g->cx, p->cx);
+  dt_bauhaus_slider_set(g->cy, p->cy);
+  dt_bauhaus_slider_set(g->cw, p->cw);
+  dt_bauhaus_slider_set(g->ch, p->ch);
   int hvflip = 0;
   if(p->cw < 0)
   {
@@ -1934,7 +1948,7 @@ void gui_update(struct dt_iop_module_t *self)
   //  set aspect ratio based on the current image, if not found let's default
   //  to free aspect.
 
-  if(p->ratio_d == -2 && p->ratio_n == -2) _ratio_get_aspect(self);
+  if(p->ratio_d == -2 && p->ratio_n == -2) _ratio_get_aspect(self, g->aspect_presets);
 
   if(p->ratio_d == -1 && p->ratio_n == -1)
   {
@@ -1942,7 +1956,22 @@ void gui_update(struct dt_iop_module_t *self)
     p->ratio_n = dt_conf_get_int("plugins/darkroom/clipping/ratio_n");
   }
 
-  _ratio_refresh_combo(self);
+  const int d = abs(p->ratio_d), n = p->ratio_n;
+
+  int act = -1;
+  int i = 0;
+  GList *iter = g->aspect_list;
+  while(iter != NULL)
+  {
+    const dt_iop_clipping_aspect_t *aspect = iter->data;
+    if((aspect->d == d) && (aspect->n == n))
+    {
+      act = i;
+      break;
+    }
+    i++;
+    iter = g_list_next(iter);
+  }
 
   // keystone :
   if(p->k_apply == 1) g->k_show = 2; // needed to initialise correctly the combobox
@@ -1957,7 +1986,19 @@ void gui_update(struct dt_iop_module_t *self)
     keystone_type_populate(self, FALSE, p->k_type);
   }
 
-  aspect_presets_changed(g->aspect_presets, self);
+  /* special handling the combobox when current act is already selected
+     callback is not called, let do it our self then..
+   */
+  if(act == -1)
+  {
+    char str[128];
+    snprintf(str, sizeof(str), "%d:%d %2.2f", p->ratio_d, p->ratio_n, (float)p->ratio_d / (float)p->ratio_n);
+    dt_bauhaus_combobox_set_text(g->aspect_presets, str);
+  }
+  if(dt_bauhaus_combobox_get(g->aspect_presets) == act)
+    aspect_presets_changed(g->aspect_presets, self);
+  else
+    dt_bauhaus_combobox_set(g->aspect_presets, act);
 
   // reset gui draw box to what we have in the parameters:
   g->applied = 1;
@@ -1969,27 +2010,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->crop_auto, p->crop_auto);
 }
 
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_clipping_data_t));
-  module->params = calloc(1, sizeof(dt_iop_clipping_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_clipping_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_clipping_params_t);
-  module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   const int flip = dt_bauhaus_combobox_get(widget);
@@ -2075,17 +2098,6 @@ static void guides_flip_changed(GtkWidget *combo, dt_iop_module_t *self)
   dt_control_queue_redraw_center();
 }
 
-static void crop_auto_changed(GtkWidget *combo, dt_iop_module_t *self)
-{
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-
-  if(dt_bauhaus_combobox_get(combo) == p->crop_auto) return; // no change
-  p->crop_auto = dt_bauhaus_combobox_get(combo);
-  commit_box(self, g, p);
-  dt_control_queue_redraw_center();
-}
-
 static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_clipping_aspect_t *b)
 {
   // want most square at the end, and the most non-square at the beginning
@@ -2121,7 +2133,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = calloc(1, sizeof(dt_iop_clipping_gui_data_t));
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
   g->aspect_list = NULL;
   g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
@@ -2139,21 +2150,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->k_selected = -1;
   g->old_width = g->old_height = -1;
 
-  // Init GTK notebook
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
-  GtkWidget *page1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page1, gtk_label_new(_("main")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, gtk_label_new(_("margins")));
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
-
-  dtgtk_justify_notebook_tabs(g->notebook);
-
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  GtkWidget *page1 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   g->hvflip = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->hvflip, NULL, _("flip"));
@@ -2165,40 +2162,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hvflip, _("mirror image horizontally and/or vertically"));
   gtk_box_pack_start(GTK_BOX(page1), g->hvflip, TRUE, TRUE, 0);
 
-  g->angle = dt_bauhaus_slider_new_with_range(self, -180.0, 180.0, 0.25, p->angle, 2);
-  dt_bauhaus_widget_set_label(g->angle, NULL, _("angle"));
+  g->angle = dt_bauhaus_slider_from_params(self, "angle");
+  dt_bauhaus_slider_set_step(g->angle, 0.25);
+  dt_bauhaus_slider_set_factor(g->angle, -1.0);
   dt_bauhaus_slider_set_format(g->angle, "%.02f°");
-  g_signal_connect(G_OBJECT(g->angle), "value-changed", G_CALLBACK(angle_callback), self);
   gtk_widget_set_tooltip_text(g->angle, _("right-click and drag a line on the image to drag a straight line"));
-  gtk_box_pack_start(GTK_BOX(page1), g->angle, TRUE, TRUE, 0);
-
-  g->cx = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cx, 2);
-  dt_bauhaus_widget_set_label(g->cx, NULL, _("left"));
-  dt_bauhaus_slider_set_format(g->cx, "%0.0f %%");
-  g_signal_connect(G_OBJECT(g->cx), "value-changed", G_CALLBACK(cxywh_callback), self);
-  gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
-  gtk_box_pack_start(GTK_BOX(page2), g->cx, FALSE, FALSE, 0);
-
-  g->cw = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cw, 2);
-  dt_bauhaus_widget_set_label(g->cw, NULL, _("right"));
-  dt_bauhaus_slider_set_format(g->cw, "%0.0f %%");
-  g_signal_connect(G_OBJECT(g->cw), "value-changed", G_CALLBACK(cxywh_callback), self);
-  gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
-  gtk_box_pack_start(GTK_BOX(page2), g->cw, FALSE, FALSE, 0);
-
-  g->cy = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cy, 2);
-  dt_bauhaus_widget_set_label(g->cy, NULL, _("top"));
-  dt_bauhaus_slider_set_format(g->cy, "%0.0f %%");
-  g_signal_connect(G_OBJECT(g->cy), "value-changed", G_CALLBACK(cxywh_callback), self);
-  gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
-  gtk_box_pack_start(GTK_BOX(page2), g->cy, FALSE, FALSE, 0);
-
-  g->ch = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->ch, 2);
-  dt_bauhaus_widget_set_label(g->ch, NULL, _("bottom"));
-  dt_bauhaus_slider_set_format(g->ch, "%0.0f %%");
-  g_signal_connect(G_OBJECT(g->ch), "value-changed", G_CALLBACK(cxywh_callback), self);
-  gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
-  gtk_box_pack_start(GTK_BOX(page2), g->ch, FALSE, FALSE, 2);
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->keystone_type, NULL, _("keystone"));
@@ -2210,13 +2178,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->keystone_type), "value-changed", G_CALLBACK(keystone_type_changed), self);
   gtk_box_pack_start(GTK_BOX(page1), g->keystone_type, TRUE, TRUE, 0);
 
-  g->crop_auto = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->crop_auto, NULL, _("automatic cropping"));
-  dt_bauhaus_combobox_add(g->crop_auto, _("no"));
-  dt_bauhaus_combobox_add(g->crop_auto, _("yes"));
+  g->crop_auto = dt_bauhaus_combobox_from_params(self, "crop_auto");
   gtk_widget_set_tooltip_text(g->crop_auto, _("automatically crop to avoid black edges"));
-  g_signal_connect(G_OBJECT(g->crop_auto), "value-changed", G_CALLBACK(crop_auto_changed), self);
-  gtk_box_pack_start(GTK_BOX(page1), g->crop_auto, TRUE, TRUE, 0);
 
   dt_iop_clipping_aspect_t aspects[] = { { _("freehand"), 0, 0 },
                                          { _("original image"), 1, 0 },
@@ -2379,6 +2342,39 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->flip_guides, dt_conf_get_int("plugins/darkroom/clipping/flip_guides"));
 
   guides_presets_set_visibility(g, guide);
+
+  GtkWidget *page2 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+
+  g->cx = dt_bauhaus_slider_from_params(self, "cx");
+  dt_bauhaus_slider_set_factor(g->cx, 100.0);
+  dt_bauhaus_slider_set_format(g->cx, "%0.f %%");
+  gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
+
+  g->cw = dt_bauhaus_slider_from_params(self, "cw");
+  dt_bauhaus_slider_set_factor(g->cw, -100.0);
+  dt_bauhaus_slider_set_offset(g->cw, 100.0);
+  dt_bauhaus_slider_set_format(g->cw, "%0.f %%");
+  gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
+
+  g->cy = dt_bauhaus_slider_from_params(self, "cy");
+  dt_bauhaus_slider_set_factor(g->cy, 100.0);
+  dt_bauhaus_slider_set_format(g->cy, "%0.f %%");
+  gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
+
+  g->ch = dt_bauhaus_slider_from_params(self, "ch");
+  dt_bauhaus_slider_set_factor(g->ch, -100.0);
+  dt_bauhaus_slider_set_offset(g->ch, 100.0);
+  dt_bauhaus_slider_set_format(g->ch, "%0.f %%");
+  gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
+
+  // Put notebook pages together
+  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  gtk_notebook_append_page(g->notebook, page1, gtk_label_new(_("main")));
+  gtk_notebook_append_page(g->notebook, page2, gtk_label_new(_("margins")));
+  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
+  dtgtk_justify_notebook_tabs(g->notebook);
+
+  self->widget = GTK_WIDGET(g->notebook);
 }
 
 static void free_aspect(gpointer data)
@@ -2494,11 +2490,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pzy += 0.5f;
   if(_iop_clipping_set_max_clip(self))
   {
-    cairo_set_dash(cr, &dashes, 0, 0);
     cairo_set_source_rgba(cr, .2, .2, .2, .8);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-    cairo_rectangle(cr, g->clip_max_x * wd - 1.0f, g->clip_max_y * ht - 1.0f, g->clip_max_w * wd + 1.0f,
-                    g->clip_max_h * ht + 1.0f);
+    cairo_rectangle(cr, g->clip_max_x * wd - pr_d, g->clip_max_y * ht - pr_d,
+                    g->clip_max_w * wd + 2.0 * pr_d, g->clip_max_h * ht + 2.0 * pr_d);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
     cairo_fill(cr);
   }
@@ -2538,8 +2533,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     // ensure that the rendered string remains visible within the window bounds
     double x1, y1, x2, y2;
     cairo_clip_extents(cr, &x1, &y1, &x2, &y2);
-    xp = CLAMPF(xp, x1 + 2 * margin, x2 - text_w - 2 * margin);
-    yp = CLAMPF(yp, y1 + 2 * margin, y2 - text_h - 2 * margin);
+    xp = CLAMPF(xp, x1 + 2.0 * margin, x2 - text_w - 2.0 * margin);
+    yp = CLAMPF(yp, y1 + 2.0 * margin, y2 - text_h - 2.0 * margin);
 
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
     gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
@@ -2578,7 +2573,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
   if(guide)
   {
-    guide->draw(cr, -cwidth / 2, -cheight / 2, cwidth, cheight, zoom_scale, guide->user_data);
+    guide->draw(cr, -cwidth / 2.0, -cheight / 2.0, cwidth, cheight, zoom_scale, guide->user_data);
     cairo_stroke_preserve(cr);
     cairo_set_dash(cr, &dashes, 0, 0);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
@@ -2849,7 +2844,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                                  ink.height + DT_PIXEL_APPLY_DPI(12) * pr_d,
                                  c[0] - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(4) * pr_d,
                                  c[1] - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(6) * pr_d);
-      cairo_move_to(cr, c[0] - ink.width / 2.0f, c[1] - 3.0 * ink.height / 4.0f);
+      cairo_move_to(cr, c[0] - ink.width / 2.0, c[1] - 3.0 * ink.height / 4.0);
       dt_draw_set_color_overlay(cr, 0.2, 0.9);
       pango_cairo_show_layout(cr, layout);
       pango_font_description_free(desc);
@@ -3122,17 +3117,21 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
         if(piece)
         {
-          p->cx = points[0] / (float)piece->buf_out.width;
-          p->cy = points[1] / (float)piece->buf_out.height;
-          p->cw = copysignf(points[2] / (float)piece->buf_out.width, p->cw);
-          p->ch = copysignf(points[3] / (float)piece->buf_out.height, p->ch);
+          // only update the sliders, not the dt_iop_clipping_params_t structure, so that the call to
+          // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
+          // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
+          // from the sliders when the iop loses focus, at which time the final selected crop is applied.
 
           ++darktable.gui->reset;
 
-          dt_bauhaus_slider_set(g->cx, p->cx*100);
-          dt_bauhaus_slider_set(g->cy, p->cy*100);
-          dt_bauhaus_slider_set(g->cw, 100-p->cw*100);
-          dt_bauhaus_slider_set(g->ch, 100-p->ch*100);
+          dt_bauhaus_slider_set(g->cx, g->clip_x);
+          dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
+          dt_bauhaus_slider_set(g->cy, g->clip_y);
+          dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
+          dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
+          dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
+          dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
+          dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
 
           --darktable.gui->reset;
         }
@@ -3282,7 +3281,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(a < -180.0) a += 360.0;
     if(a > 180.0) a -= 360.0;
 
-    dt_bauhaus_slider_set(g->angle, -a);
+    dt_bauhaus_slider_set(g->angle, a);
     dt_control_change_cursor(GDK_LEFT_PTR);
   }
   if(g->k_drag) g->k_drag = FALSE;

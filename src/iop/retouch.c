@@ -50,9 +50,6 @@ DT_MODULE_INTROSPECTION(1, dt_iop_retouch_params_t)
 typedef enum dt_iop_retouch_drag_types_t {
   DT_IOP_RETOUCH_WDBAR_DRAG_TOP = 1,
   DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM = 2,
-  DT_IOP_RETOUCH_LVLBAR_DRAG_LEFT = 3,
-  DT_IOP_RETOUCH_LVLBAR_DRAG_MIDDLE = 4,
-  DT_IOP_RETOUCH_LVLBAR_DRAG_RIGHT = 5
 } dt_iop_retouch_drag_types_t;
 
 typedef enum dt_iop_retouch_fill_modes_t {
@@ -148,7 +145,9 @@ typedef struct dt_iop_retouch_gui_data_t
   GtkWidget *bt_paste_scale;
 
   GtkWidget *vbox_preview_scale;
-  GtkWidget *preview_levels_bar;
+
+  GtkDarktableGradientSlider *preview_levels_gslider;
+
   float lvlbar_mouse_x, lvlbar_mouse_y;
   GtkWidget *bt_auto_levels;
 
@@ -1094,7 +1093,7 @@ static gboolean rt_add_shape(GtkWidget *widget, const int creation_continuous, d
 
 static void rt_colorpick_color_set_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 
   // turn off the other color picker
@@ -1569,291 +1568,40 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   return TRUE;
 }
 
-// preview levels bar
-
-#define RT_LVLBAR_INSET DT_PIXEL_APPLY_DPI(5)
-
-static float rt_mouse_x_to_levels(const float mouse_x, const float width)
+static float rt_gslider_scale_callback(GtkWidget *self, float inval, int dir)
 {
-  return (mouse_x * ((RETOUCH_PREVIEW_LVL_MAX - RETOUCH_PREVIEW_LVL_MIN) / width)) + RETOUCH_PREVIEW_LVL_MIN;
+  float outval;
+  switch(dir)
+  {
+    case GRADIENT_SLIDER_SET:
+      outval = (inval - RETOUCH_PREVIEW_LVL_MIN) / (RETOUCH_PREVIEW_LVL_MAX - RETOUCH_PREVIEW_LVL_MIN);
+      break;
+    case GRADIENT_SLIDER_GET:
+      outval = (RETOUCH_PREVIEW_LVL_MAX - RETOUCH_PREVIEW_LVL_MIN) * inval + RETOUCH_PREVIEW_LVL_MIN;
+      break;
+    default:
+      outval = inval;
+  }
+  return outval;
 }
 
-static float rt_levels_to_mouse_x(const float levels, const float width)
+
+static void rt_gslider_changed(GtkDarktableGradientSlider *gslider, dt_iop_module_t *self)
 {
-  return ((levels - RETOUCH_PREVIEW_LVL_MIN) * (width / (RETOUCH_PREVIEW_LVL_MAX - RETOUCH_PREVIEW_LVL_MIN)));
-}
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 
-static int rt_mouse_x_is_over_levels(const float mouse_x, const float levels, const float width)
-{
-  const float arrw = DT_PIXEL_APPLY_DPI(7.0f) * .5f;
-  const float middle = rt_levels_to_mouse_x(levels, width);
+  double dlevels[3];
 
-  return (mouse_x > middle - arrw && mouse_x < middle + arrw);
-}
-
-static int rt_mouse_x_to_levels_index(const float mouse_x, const float levels[3], const float width)
-{
-  int levels_index = -1;
-
-  const float mouse_x_left = rt_levels_to_mouse_x(levels[0], width);
-  const float mouse_x_middle = rt_levels_to_mouse_x(levels[1], width);
-  const float mouse_x_right = rt_levels_to_mouse_x(levels[2], width);
-
-  if(mouse_x <= mouse_x_left + (mouse_x_middle - mouse_x_left) / 2.f)
-    levels_index = 0;
-  else if(mouse_x <= mouse_x_middle + (mouse_x_right - mouse_x_middle) / 2.f)
-    levels_index = 1;
-  else
-    levels_index = 2;
-
-  return levels_index;
-}
-
-static void rt_preview_levels_update(const float levels[3], dt_iop_module_t *self)
-{
   if(darktable.gui->reset) return;
 
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
+  dtgtk_gradient_slider_multivalue_get_values(gslider, dlevels);
 
-  float levels_old[3] = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
-
-  p->preview_levels[0] = levels[0];
-  p->preview_levels[1] = levels[1];
-  p->preview_levels[2] = levels[2];
-
-  rt_clamp_minmax(levels_old, p->preview_levels);
-
-  gtk_widget_queue_draw(g->preview_levels_bar);
+  for (int i = 0; i < 3; i++) p->preview_levels[i] = dlevels[i];
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+
 }
 
-static gboolean rt_levelsbar_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
-{
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
-  g->lvlbar_mouse_x = -1;
-  g->lvlbar_mouse_y = -1;
-
-  gtk_widget_queue_draw(g->preview_levels_bar);
-
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return TRUE;
-
-  dt_iop_request_focus(self);
-
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
-  const int inset = RT_LVLBAR_INSET;
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const float width = allocation.width - 2 * inset;
-
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
-  {
-    // reset values
-    const float levels[3] = { RETOUCH_PREVIEW_LVL_MIN, 0.f, RETOUCH_PREVIEW_LVL_MAX };
-    rt_preview_levels_update(levels, self);
-  }
-  else if(event->button == 1)
-  {
-    // left slider
-    if(rt_mouse_x_is_over_levels(g->lvlbar_mouse_x, p->preview_levels[0], width))
-    {
-      g->is_dragging = DT_IOP_RETOUCH_LVLBAR_DRAG_LEFT;
-    }
-    // middle slider
-    else if(rt_mouse_x_is_over_levels(g->lvlbar_mouse_x, p->preview_levels[1], width))
-    {
-      g->is_dragging = DT_IOP_RETOUCH_LVLBAR_DRAG_MIDDLE;
-    }
-    // right slider
-    else if(rt_mouse_x_is_over_levels(g->lvlbar_mouse_x, p->preview_levels[2], width))
-    {
-      g->is_dragging = DT_IOP_RETOUCH_LVLBAR_DRAG_RIGHT;
-    }
-    else
-    {
-      const int lvl_idx = rt_mouse_x_to_levels_index(g->lvlbar_mouse_x, p->preview_levels, width);
-      if(lvl_idx >= 0)
-      {
-        float levels[3] = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
-        levels[lvl_idx] = rt_mouse_x_to_levels(g->lvlbar_mouse_x, width);
-        rt_preview_levels_update(levels, self);
-      }
-    }
-  }
-
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
-{
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  if(event->button == 1)
-  {
-    g->is_dragging = 0;
-  }
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return TRUE;
-
-  dt_iop_request_focus(self);
-
-  int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-  {
-    dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-    dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
-    const int inset = RT_LVLBAR_INSET;
-
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    const float width = allocation.width - 2 * inset;
-
-    const int lvl_idx = rt_mouse_x_to_levels_index(g->lvlbar_mouse_x, p->preview_levels, width);
-    if(lvl_idx >= 0)
-    {
-      float levels[3] = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
-      levels[lvl_idx]
-          = CLAMP(levels[lvl_idx] - (0.05 * delta_y), RETOUCH_PREVIEW_LVL_MIN, RETOUCH_PREVIEW_LVL_MAX);
-      rt_preview_levels_update(levels, self);
-    }
-  }
-
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
-{
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  const int inset = RT_LVLBAR_INSET;
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const float width = allocation.width - 2 * inset;
-  const float height = allocation.height - 2 * inset;
-
-  /* record mouse position within control */
-  g->lvlbar_mouse_x = CLAMP(event->x - inset, 0, width);
-  g->lvlbar_mouse_y = CLAMP(event->y - inset, 0, height);
-
-  float levels[3] = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
-
-  if(g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_LEFT)
-  {
-    levels[0] = rt_mouse_x_to_levels(g->lvlbar_mouse_x, width);
-    rt_preview_levels_update(levels, self);
-  }
-  else if(g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_MIDDLE)
-  {
-    levels[1] = rt_mouse_x_to_levels(g->lvlbar_mouse_x, width);
-    rt_preview_levels_update(levels, self);
-  }
-  else if(g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_RIGHT)
-  {
-    levels[2] = rt_mouse_x_to_levels(g->lvlbar_mouse_x, width);
-    rt_preview_levels_update(levels, self);
-  }
-
-  gtk_widget_queue_draw(g->preview_levels_bar);
-
-  return TRUE;
-}
-
-static gboolean rt_levelsbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
-{
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  const int inset = RT_LVLBAR_INSET;
-  const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
-
-  GdkRGBA color;
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get_color(context, gtk_widget_get_state_flags(widget), &color);
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  float width = allocation.width;
-  float height = allocation.height;
-
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
-
-  // translate and scale
-  width -= 2.f * inset;
-  height -= 2.f * inset;
-  cairo_save(cr);
-
-  // draw backgrownd
-  cairo_pattern_t *gradient = NULL;
-  gradient = cairo_pattern_create_linear(0, 0, width, height);
-  if(gradient != NULL)
-  {
-    cairo_pattern_add_color_stop_rgb(gradient, 0, 0., 0., 0.);
-    cairo_pattern_add_color_stop_rgb(gradient, 1, .5, .5, .5);
-
-    cairo_set_line_width(cr, 0.1);
-    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-    cairo_set_source(cr, gradient);
-    cairo_rectangle(cr, inset, inset - DT_PIXEL_APPLY_DPI(2), width, height + 2. * DT_PIXEL_APPLY_DPI(2));
-    cairo_fill(cr);
-    cairo_stroke(cr);
-    cairo_pattern_destroy(gradient);
-  }
-
-  cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
-  cairo_restore(cr);
-
-  /* render control points handles */
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-
-  // draw arrows
-  for(int i = 0; i < 3; i++)
-  {
-    const float levels_value = p->preview_levels[i];
-    const float middle = rt_levels_to_mouse_x(levels_value, width);
-    const gboolean is_under_mouse
-        = g->lvlbar_mouse_x >= 0.f && rt_mouse_x_to_levels_index(g->lvlbar_mouse_x, p->preview_levels, width) == i;
-    const int is_dragging = (g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_LEFT && i == 0)
-                            || (g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_MIDDLE && i == 1)
-                            || (g->is_dragging == DT_IOP_RETOUCH_LVLBAR_DRAG_RIGHT && i == 2);
-
-    cairo_move_to(cr, inset + middle, height + (2 * inset) - 1);
-    cairo_rel_line_to(cr, -arrw * .5f, 0);
-    cairo_rel_line_to(cr, arrw * .5f, -arrw);
-    cairo_rel_line_to(cr, arrw * .5f, arrw);
-    cairo_close_path(cr);
-
-    if(is_under_mouse || is_dragging)
-      cairo_fill(cr);
-    else
-      cairo_stroke(cr);
-  }
-
-  /* push mem surface into widget */
-  cairo_destroy(cr);
-  cairo_set_source_surface(crf, cst, 0, 0);
-  cairo_paint(crf);
-  cairo_surface_destroy(cst);
-
-  return TRUE;
-}
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1981,11 +1729,18 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
 
     dt_pthread_mutex_lock(&g->lock);
 
+    // update the gradient slider
+    double dlevels[3];
+    for(int i = 0; i < 3; i++) dlevels[i] = p->preview_levels[i];
+
+    ++darktable.gui->reset;
+    dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
+    --darktable.gui->reset;
+
     g->preview_auto_levels = 0;
 
     dt_pthread_mutex_unlock(&g->lock);
 
-    gtk_widget_queue_draw(GTK_WIDGET(g->preview_levels_bar));
   }
   else
   {
@@ -2269,7 +2024,7 @@ static void rt_suppress_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
 
 static void rt_blur_type_callback(GtkComboBox *combo, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 
   p->blur_type = dt_bauhaus_combobox_get((GtkWidget *)combo);
@@ -2307,7 +2062,7 @@ static void rt_blur_radius_callback(GtkWidget *slider, dt_iop_module_t *self)
 
 static void rt_fill_mode_callback(GtkComboBox *combo, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
 
   ++darktable.gui->reset;
 
@@ -2561,7 +2316,6 @@ void gui_update(dt_iop_module_t *self)
 
   // update the rest of the fields
   gtk_widget_queue_draw(GTK_WIDGET(g->wd_bar));
-  gtk_widget_queue_draw(GTK_WIDGET(g->preview_levels_bar));
 
   dt_bauhaus_combobox_set(g->cmb_blur_type, p->blur_type);
   dt_bauhaus_slider_set(g->sl_blur_radius, p->blur_radius);
@@ -2591,6 +2345,11 @@ void gui_update(dt_iop_module_t *self)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
   }
+
+  // update the gradient slider
+  double dlevels[3];
+  for(int i = 0; i < 3; i++) dlevels[i] = p->preview_levels[i];
+  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
 }
 
 void change_image(struct dt_iop_module_t *self)
@@ -2630,7 +2389,6 @@ void gui_init(dt_iop_module_t *self)
   change_image(self);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // shapes toolbar
   GtkWidget *hbox_shapes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2639,43 +2397,41 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox_shapes), label, FALSE, TRUE, 0);
   g->label_form = GTK_LABEL(gtk_label_new("-1"));
   gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, DT_PIXEL_APPLY_DPI(5));
-  g_object_set(G_OBJECT(hbox_shapes), "tooltip-text",
+  gtk_widget_set_tooltip_text(hbox_shapes,
                _("to add a shape select an algorithm and a shape type and click on the image.\n"
-                 "shapes are added to the current scale"),
-               (char *)NULL);
+                 "shapes are added to the current scale"));
 
   g->bt_edit_masks
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_edit_masks), "button-press-event", G_CALLBACK(rt_edit_masks_callback), self);
-  g_object_set(G_OBJECT(g->bt_edit_masks), "tooltip-text", _("show and edit shapes on the current scale"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_edit_masks, _("show and edit shapes on the current scale"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_edit_masks, FALSE, FALSE, 0);
 
   g->bt_brush
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_brush), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  g_object_set(G_OBJECT(g->bt_brush), "tooltip-text", _("add brush\nctrl+click to add multiple brush strokes"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_brush, _("add brush\nctrl+click to add multiple brush strokes"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_brush, FALSE, FALSE, 0);
 
   g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  g_object_set(G_OBJECT(g->bt_path), "tooltip-text", _("add path\nctrl+click to add multiple paths"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_path, _("add path\nctrl+click to add multiple paths"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_path, FALSE, FALSE, 0);
 
   g->bt_ellipse
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  g_object_set(G_OBJECT(g->bt_ellipse), "tooltip-text", _("add ellipse\nctrl+click to add multiple ellipses"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_ellipse, _("add ellipse\nctrl+click to add multiple ellipses"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_ellipse, FALSE, FALSE, 0);
 
   g->bt_circle
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  g_object_set(G_OBJECT(g->bt_circle), "tooltip-text", _("add circle\nctrl+click to add multiple circles"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_circle, _("add circle\nctrl+click to add multiple circles"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_circle, FALSE, FALSE, 0);
 
@@ -2687,28 +2443,28 @@ void gui_init(dt_iop_module_t *self)
 
   g->bt_fill
       = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_fill, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_fill), "tooltip-text", _("activates fill tool"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_fill, _("activates fill tool"));
   g_signal_connect(G_OBJECT(g->bt_fill), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_fill), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), FALSE);
 
   g->bt_blur
       = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_blur, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_blur), "tooltip-text", _("activates blur tool"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_blur, _("activates blur tool"));
   g_signal_connect(G_OBJECT(g->bt_blur), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_blur), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), FALSE);
 
   g->bt_heal
       = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_heal, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_heal), "tooltip-text", _("activates healing tool"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_heal, _("activates healing tool"));
   g_signal_connect(G_OBJECT(g->bt_heal), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_heal), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_heal), FALSE);
 
   g->bt_clone
       = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_clone, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_clone), "tooltip-text", _("activates cloning tool"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_clone, _("activates cloning tool"));
   g_signal_connect(G_OBJECT(g->bt_clone), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_clone), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_clone), FALSE);
@@ -2775,20 +2531,20 @@ void gui_init(dt_iop_module_t *self)
   // display & suppress masks
   g->bt_showmask
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_showmask), "tooltip-text", _("display masks"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_showmask, _("display masks"));
   g_signal_connect(G_OBJECT(g->bt_showmask), "toggled", G_CALLBACK(rt_showmask_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_showmask), FALSE);
 
   g->bt_suppress
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_suppress), "tooltip-text", _("temporarily switch off shapes"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_suppress, _("temporarily switch off shapes"));
   g_signal_connect(G_OBJECT(g->bt_suppress), "toggled", G_CALLBACK(rt_suppress_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_suppress), FALSE);
 
   // display final image/current scale
   g->bt_display_wavelet_scale = dtgtk_togglebutton_new(_retouch_cairo_paint_display_wavelet_scale,
                                                        CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_display_wavelet_scale), "tooltip-text", _("display wavelet scale"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_display_wavelet_scale, _("display wavelet scale"));
   g_signal_connect(G_OBJECT(g->bt_display_wavelet_scale), "toggled", G_CALLBACK(rt_display_wavelet_scale_callback),
                    self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_display_wavelet_scale), FALSE);
@@ -2796,14 +2552,13 @@ void gui_init(dt_iop_module_t *self)
   // copy/paste shapes
   g->bt_copy_scale
       = dtgtk_togglebutton_new(_retouch_cairo_paint_cut_forms, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_copy_scale), "tooltip-text", _("cut shapes from current scale"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_copy_scale, _("cut shapes from current scale"));
   g_signal_connect(G_OBJECT(g->bt_copy_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), FALSE);
 
   g->bt_paste_scale
       = dtgtk_togglebutton_new(_retouch_cairo_paint_paste_forms, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_paste_scale), "tooltip-text", _("paste cut shapes to current scale"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_paste_scale, _("paste cut shapes to current scale"));
   g_signal_connect(G_OBJECT(g->bt_paste_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), FALSE);
 
@@ -2831,34 +2586,34 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *prev_lvl = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  g->preview_levels_bar = gtk_drawing_area_new();
+  // gradient slider
+  #define NEUTRAL_GRAY 0.5
+  static const GdkRGBA _gradient_L[]
+      = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
+  g->preview_levels_gslider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(
+      dtgtk_gradient_slider_multivalue_new_with_color_and_name(_gradient_L[0], _gradient_L[1], 3, "preview-levels"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->preview_levels_gslider), _("adjust preview levels"));
+  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);
+  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
+  dtgtk_gradient_slider_multivalue_set_marker(g->preview_levels_gslider, GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 2);
+  (g->preview_levels_gslider)->scale_callback = rt_gslider_scale_callback;
+  double vdefault[3] = {RETOUCH_PREVIEW_LVL_MIN, (RETOUCH_PREVIEW_LVL_MIN + RETOUCH_PREVIEW_LVL_MAX) / 2.0, RETOUCH_PREVIEW_LVL_MAX};
+  dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, vdefault);
+  dtgtk_gradient_slider_multivalue_set_resetvalues(g->preview_levels_gslider, vdefault);
+  (g->preview_levels_gslider)->markers_type = PROPORTIONAL_MARKERS;
+  (g->preview_levels_gslider)->min_spacing = 0.05;
+  g_signal_connect(G_OBJECT(g->preview_levels_gslider), "value-changed", G_CALLBACK(rt_gslider_changed), self);
 
-  gtk_widget_set_tooltip_text(g->preview_levels_bar, _("adjust preview levels"));
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "draw", G_CALLBACK(rt_levelsbar_draw), self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "motion-notify-event", G_CALLBACK(rt_levelsbar_motion_notify),
-                   self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "leave-notify-event", G_CALLBACK(rt_levelsbar_leave_notify),
-                   self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "button-press-event", G_CALLBACK(rt_levelsbar_button_press),
-                   self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "button-release-event",
-                   G_CALLBACK(rt_levelsbar_button_release), self);
-  g_signal_connect(G_OBJECT(g->preview_levels_bar), "scroll-event", G_CALLBACK(rt_levelsbar_scrolled), self);
-  gtk_widget_add_events(GTK_WIDGET(g->preview_levels_bar), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                                               | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                               | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
-                                                               | GDK_SMOOTH_SCROLL_MASK);
-  gtk_widget_set_size_request(g->preview_levels_bar, -1, DT_PIXEL_APPLY_DPI(5));
-
+  // auto-levels button
   g->bt_auto_levels
       = dtgtk_togglebutton_new(_retouch_cairo_paint_auto_levels, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_auto_levels), "tooltip-text", _("auto levels"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_auto_levels, _("auto levels"));
   g_signal_connect(G_OBJECT(g->bt_auto_levels), "toggled", G_CALLBACK(rt_auto_levels_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_auto_levels), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_auto_levels), FALSE);
 
+  gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(prev_lvl), g->bt_auto_levels, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_bar), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), prev_lvl, TRUE, TRUE, 0);
 
@@ -2867,8 +2622,8 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *label1 = gtk_label_new(_("shape selected:"));
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), label1, FALSE, TRUE, 0);
   g->label_form_selected = GTK_LABEL(gtk_label_new("-1"));
-  g_object_set(G_OBJECT(hbox_shape_sel), "tooltip-text",
-               _("click on a shape to select it,\nto unselect click on an empty space"), (char *)NULL);
+  gtk_widget_set_tooltip_text(hbox_shape_sel,
+                              _("click on a shape to select it,\nto unselect click on an empty space"));
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), GTK_WIDGET(g->label_form_selected), FALSE, TRUE, 0);
 
   // fill properties
@@ -2878,7 +2633,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->cmb_fill_mode, NULL, _("fill mode"));
   dt_bauhaus_combobox_add(g->cmb_fill_mode, _("erase"));
   dt_bauhaus_combobox_add(g->cmb_fill_mode, _("color"));
-  g_object_set(g->cmb_fill_mode, "tooltip-text", _("erase the detail or fills with chosen color"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->cmb_fill_mode, _("erase the detail or fills with chosen color"));
   g_signal_connect(G_OBJECT(g->cmb_fill_mode), "value-changed", G_CALLBACK(rt_fill_mode_callback), self);
 
   // color for fill algorithm
@@ -2892,17 +2647,17 @@ void gui_init(dt_iop_module_t *self)
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select fill color"));
-  g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("select fill color"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->colorpick, _("select fill color"));
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(rt_colorpick_color_set_callback), self);
   gtk_box_pack_start(GTK_BOX(g->hbox_color_pick), GTK_WIDGET(g->colorpick), TRUE, TRUE, 0);
 
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, g->hbox_color_pick);
-  g_object_set(G_OBJECT(g->colorpicker), "tooltip-text", _("pick fill color from image"), (char *)NULL);
-  
+  gtk_widget_set_tooltip_text(g->colorpicker, _("pick fill color from image"));
+
   g->sl_fill_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .0005, .0, 4);
   dt_bauhaus_widget_set_label(g->sl_fill_brightness, _("brightness"), _("brightness"));
-  g_object_set(g->sl_fill_brightness, "tooltip-text",
-               _("adjusts color brightness to fine-tune it. works with erase as well"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->sl_fill_brightness,
+                              _("adjusts color brightness to fine-tune it. works with erase as well"));
   g_signal_connect(G_OBJECT(g->sl_fill_brightness), "value-changed", G_CALLBACK(rt_fill_brightness_callback), self);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_fill), GTK_WIDGET(g->cmb_fill_mode), TRUE, TRUE, 0);
@@ -2916,14 +2671,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->cmb_blur_type, NULL, _("blur type"));
   dt_bauhaus_combobox_add(g->cmb_blur_type, _("gaussian"));
   dt_bauhaus_combobox_add(g->cmb_blur_type, _("bilateral"));
-  g_object_set(g->cmb_blur_type, "tooltip-text", _("type for the blur algorithm"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->cmb_blur_type, _("type for the blur algorithm"));
   g_signal_connect(G_OBJECT(g->cmb_blur_type), "value-changed", G_CALLBACK(rt_blur_type_callback), self);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_blur), g->cmb_blur_type, TRUE, TRUE, 0);
 
   g->sl_blur_radius = dt_bauhaus_slider_new_with_range(self, 0.1, 200.0, 0.1, 10., 2);
   dt_bauhaus_widget_set_label(g->sl_blur_radius, _("blur radius"), _("blur radius"));
-  g_object_set(g->sl_blur_radius, "tooltip-text", _("radius of the selected blur type"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->sl_blur_radius, _("radius of the selected blur type"));
   g_signal_connect(G_OBJECT(g->sl_blur_radius), "value-changed", G_CALLBACK(rt_blur_radius_callback), self);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_blur), g->sl_blur_radius, TRUE, TRUE, 0);
@@ -2931,7 +2686,7 @@ void gui_init(dt_iop_module_t *self)
   // mask opacity
   g->sl_mask_opacity = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.05, 1., 3);
   dt_bauhaus_widget_set_label(g->sl_mask_opacity, _("mask opacity"), _("mask opacity"));
-  g_object_set(g->sl_mask_opacity, "tooltip-text", _("set the opacity on the selected shape"), (char *)NULL);
+  gtk_widget_set_tooltip_text(g->sl_mask_opacity, _("set the opacity on the selected shape"));
   g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed", G_CALLBACK(rt_mask_opacity_callback), self);
 
   // add all the controls to the iop
@@ -3805,7 +3560,6 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 }
 
 #undef RT_WDBAR_INSET
-#undef RT_LVLBAR_INSET
 
 #undef RETOUCH_NO_FORMS
 #undef RETOUCH_MAX_SCALES
@@ -4434,13 +4188,13 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   // init the decompose routine
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, ch, p->num_scales,
-                      (!display_wavelet_scale || piece->pipe->type != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
+                      (!display_wavelet_scale || (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
                       p->merge_from_scale, &usr_data,
                       roi_in->scale / piece->iscale, use_sse);
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && g && g->mask_display && self->dev->gui_attached
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g && g->mask_display && self->dev->gui_attached
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
     for(size_t j = 0; j < roi_rt->width * roi_rt->height * ch; j += ch) in_retouch[j + 3] = 0.f;
@@ -4450,7 +4204,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     usr_data.mask_display = 1;
   }
 
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     // check if the image support this number of scales
     if(gui_active)
@@ -4474,7 +4228,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   levels[2] = p->preview_levels[2];
 
   // process auto levels
-  if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     dt_pthread_mutex_lock(&g->lock);
     if(g->preview_auto_levels == 1 && !darktable.gui->reset)
@@ -5278,7 +5032,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // init the decompose routine
   dwt_p = dt_dwt_init_cl(devid, in_retouch, roi_rt->width, roi_rt->height, p->num_scales,
-                         (!display_wavelet_scale || piece->pipe->type != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
+                         (!display_wavelet_scale
+                          || (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
                          p->merge_from_scale, &usr_data,
                          roi_in->scale / piece->iscale);
   if(dwt_p == NULL)
@@ -5289,7 +5044,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   // check if this module should expose mask.
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && g && g->mask_display && self->dev->gui_attached
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g && g->mask_display && self->dev->gui_attached
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
     const int kernel = gd->kernel_retouch_clear_alpha;
@@ -5306,7 +5061,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     usr_data.mask_display = 1;
   }
 
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     // check if the image support this number of scales
     if(gui_active)
@@ -5331,7 +5086,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   levels[2] = p->preview_levels[2];
 
   // process auto levels
-  if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     dt_pthread_mutex_lock(&g->lock);
     if(g->preview_auto_levels == 1 && !darktable.gui->reset)

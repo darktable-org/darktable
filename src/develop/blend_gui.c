@@ -382,6 +382,12 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
   }
 
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+
+  if(dt_conf_get_bool("accel/prefer_unmasked"))
+  {
+    // rebuild the accelerators
+    dt_iop_connect_accels_multi(data->module->so);
+  }
 }
 
 
@@ -588,13 +594,13 @@ static int _blendop_blendif_disp_alternative_worker(GtkWidget *widget, dt_iop_mo
 
   if(newmode == 1)
   {
-    dtgtk_gradient_slider_set_scale_callback(slider, scale_callback);
+    dtgtk_gradient_slider_multivalue_set_scale_callback(slider, scale_callback);
     snprintf(text, sizeof(text), "%s%s", inout, label);
     gtk_label_set_text(head, text);
   }
   else
   {
-    dtgtk_gradient_slider_set_scale_callback(slider, NULL);
+    dtgtk_gradient_slider_multivalue_set_scale_callback(slider, NULL);
     snprintf(text, sizeof(text), "%s%s", inout, "");
     gtk_label_set_text(head, text);
   }
@@ -1350,7 +1356,7 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
 
   dt_control_key_accelerators_off(darktable.control);
   gtk_widget_grab_focus(widget);
-  return TRUE;
+  return FALSE;
 }
 
 
@@ -1391,7 +1397,7 @@ static gboolean _blendop_blendif_leave(GtkWidget *widget, GdkEventCrossing *even
   dt_pthread_mutex_unlock(&data->lock);
 
   if(!darktable.control->key_accelerators_on) dt_control_key_accelerators_on(darktable.control);
-  return TRUE;
+  return FALSE;
 }
 
 
@@ -1673,8 +1679,8 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(inv), FALSE, FALSE, 0);
 
-    bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
-    bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
+    bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_name(4, "blend-lower"));
+    bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_name(4, "blend-upper"));
 
     bd->lower_polarity
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);

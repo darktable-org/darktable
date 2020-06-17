@@ -242,9 +242,9 @@ int dt_collection_update(const dt_collection_t *collection)
                            rejected_check);
 
     if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.history WHERE imgid=mi.id)", and_operator(&and_term));
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash WHERE imgid=mi.id AND history_hash.imgid=id AND (basic_hash IS NULL OR current_hash != basic_hash) AND (auto_hash IS NULL OR current_hash != auto_hash))", and_operator(&and_term));
     else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      wq = dt_util_dstrcat(wq, " %s id NOT IN (SELECT imgid FROM main.history WHERE imgid=mi.id)", and_operator(&and_term));
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash WHERE imgid=mi.id AND history_hash.imgid=id AND (current_hash == basic_hash OR current_hash == auto_hash))", and_operator(&and_term));
 
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
@@ -1717,7 +1717,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
     {
       const int local_property = property;
-      char *colname;
+      char *colname = NULL;
       gchar *operator, *number1, *number2;
 
       dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);

@@ -134,14 +134,23 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
 
-    // FIXME: allow setting these via dt_conf system?
+    // Waveform buffer doesn't need to be coupled with the histogram
+    // widget size. The waveform is almost always scaled when
+    // drawn. Choose buffer dimensions which produces workable detail,
+    // don't use too much CPU/memory, and allow reasonable gradations
+    // of tone.
+
     // Don't use absurd amounts of memory, exceed width of DT_MIPMAP_F
     // (which will be darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
     // for mosaiced images), nor make it too slow to calculate
     // (regardless of ppd). Try to get enough detail for a (default)
-    // 350px panel, possibly 2x that on hidpi.
+    // 350px panel, possibly 2x that on hidpi.  The actual buffer
+    // width will vary with integral binning of image.
     dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
-    dev->histogram_waveform_height = dt_conf_get_int("histogram_height");
+    // 175 rows is the default histogram widget height. It's OK if the
+    // widget height changes from this, as the width will almost
+    // always be scaled, regardless.
+    dev->histogram_waveform_height = 175;
     // making the stride work for cairo muddles UI and underlying
     // data, and mipmap widths should already reasonable, but better
     // to be safe, and the histogram is for the sake of UI, after all
@@ -994,7 +1003,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   const int imgid = dev->image_storage.id;
   guint tagid = 0;
   dt_tag_new("darktable|changed", &tagid);
-  dt_tag_attach_from_gui(tagid, imgid, FALSE, FALSE);
+  const gboolean tag_change = dt_tag_attach(tagid, imgid, FALSE, FALSE);
 
   /* register export timestamp in cache */
   dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
@@ -1007,6 +1016,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   {
     /* signal that history has changed */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    if(tag_change) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
     /* redraw */
     dt_control_queue_redraw_center();
@@ -1374,6 +1384,22 @@ static int _dev_get_module_nb_records()
   return cnt;
 }
 
+void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int imgid)
+{
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+    dt_database_get(darktable.db),
+    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '')",
+    -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->op, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->default_params, module->params_size, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 {
   // NOTE: the presets/default iops will be *prepended* into the history.
@@ -1392,6 +1418,23 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   {
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
     return FALSE;
+  }
+
+  //add scene-referred workflow 
+  if(dt_image_is_matrix_correction_supported(image)
+     && strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
+  {
+    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+
+      if(!dt_history_check_module_exists(imgid, module->op)
+         && strcmp(module->op, "filmicrgb") == 0
+         && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
+      {
+        _dev_insert_module(dev, module, imgid);
+      }
+    }
   }
 
   // select all presets from one of the following table and add them into memory.history. Note that
@@ -1481,30 +1524,29 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   return TRUE;
 }
 
-void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int imgid)
-{
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-    dt_database_get(darktable.db),
-    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '')",
-    -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->op, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->default_params, module->params_size, SQLITE_TRANSIENT);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-}
-
 static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
 {
+  //start with those modules that cannot be disabled
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
     if(!dt_history_check_module_exists(imgid, module->op)
-       && module->default_enabled == 1
+       && module->default_enabled
+       && module->hide_enable_button
+       && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
+    {
+      _dev_insert_module(dev, module, imgid);
+    }
+  }
+  //now modules that can be disabled but are auto-on
+  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+
+    if(!dt_history_check_module_exists(imgid, module->op)
+       && module->default_enabled
+       && !module->hide_enable_button
        && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
     {
       _dev_insert_module(dev, module, imgid);
@@ -2057,8 +2099,7 @@ static dt_dev_proxy_exposure_t *find_last_exposure_instance(dt_develop_t *dev)
 {
   if(!dev->proxy.exposure) return NULL;
 
-  dev->proxy.exposure = g_list_sort(dev->proxy.exposure, dt_dev_exposure_hooks_sort);
-  dt_dev_proxy_exposure_t *instance = (dt_dev_proxy_exposure_t *)(g_list_last(dev->proxy.exposure)->data);
+  dt_dev_proxy_exposure_t *instance = (dt_dev_proxy_exposure_t *)(g_list_first(dev->proxy.exposure)->data);
 
   return instance;
 };
@@ -2154,6 +2195,12 @@ void dt_dev_modulegroups_switch(dt_develop_t *dev, dt_iop_module_t *module)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.switch_group && dev->first_load == FALSE)
     dev->proxy.modulegroups.switch_group(dev->proxy.modulegroups.module, module);
+}
+
+void dt_dev_modulegroups_update_visibility(dt_develop_t *dev)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.switch_group && dev->first_load == FALSE)
+    dev->proxy.modulegroups.update_visibility(dev->proxy.modulegroups.module);
 }
 
 void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev)

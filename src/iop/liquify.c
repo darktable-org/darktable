@@ -1218,7 +1218,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
     // of points.
 
     #ifdef _OPENMP
-    #pragma omp parallel for schedule (dynamic) default (shared)
+    #pragma omp parallel for schedule (static) default (shared)
     #endif
 
     for(int y = 0; y <  map_extent->height; y++)
@@ -3539,7 +3539,6 @@ void gui_init(dt_iop_module_t *module)
   g->node_index = 0;
 
   module->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(module->widget, dt_get_help_url(module->op));
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_tooltip_text(hbox, _("use a tool to add warps.\nright-click to remove a warp."));

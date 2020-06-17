@@ -26,6 +26,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -47,9 +48,9 @@ DT_MODULE_INTROSPECTION(3, dt_iop_colorreconstruct_params_t)
 
 typedef enum dt_iop_colorreconstruct_precedence_t
 {
-  COLORRECONSTRUCT_PRECEDENCE_NONE,             // same weighting factor for all pixels
-  COLORRECONSTRUCT_PRECEDENCE_CHROMA,           // use chromaticy as weighting factor -> prefers saturated colors
-  COLORRECONSTRUCT_PRECEDENCE_HUE               // use a specific hue as weighting factor
+  COLORRECONSTRUCT_PRECEDENCE_NONE,   // $DESCRIPTION: "none" same weighting factor for all pixels
+  COLORRECONSTRUCT_PRECEDENCE_CHROMA, // $DESCRIPTION: "saturated colors" use chromaticy as weighting factor -> prefers saturated colors
+  COLORRECONSTRUCT_PRECEDENCE_HUE     // $DESCRIPTION: "hue" use a specific hue as weighting factor
 } dt_iop_colorreconstruct_precedence_t;
 
 typedef struct dt_iop_colorreconstruct_params1_t
@@ -69,11 +70,11 @@ typedef struct dt_iop_colorreconstruct_params2_t
 
 typedef struct dt_iop_colorreconstruct_params_t
 {
-  float threshold;
-  float spatial;
-  float range;
-  float hue;
-  dt_iop_colorreconstruct_precedence_t precedence;
+  float threshold; // $MIN: 50.0 $MAX: 150.0 $DEFAULT: 100.0
+  float spatial;   // $MIN: 0.0 $MAX: 1000.0 $DEFAULT: 400.0 $DESCRIPTION: "spatial extent"
+  float range;     // $MIN: 0.0 $MAX: 50.0 $DEFAULT: 10.0 $DESCRIPTION: "range extent"
+  float hue;       // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.66
+  dt_iop_colorreconstruct_precedence_t precedence; // $DEFAULT: 0 COLORRECONSTRUCT_PRECEDENCE_NONE
 } dt_iop_colorreconstruct_params_t;
 
 typedef struct dt_iop_colorreconstruct_Lab_t
@@ -622,7 +623,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // of the preview pipe if needed. However, the grid of the preview pipeline is coarser and may lead
   // to other artifacts so we only want to use it when necessary. The threshold for data->spatial has been selected
   // arbitrarily.
-  if(sigma_s > DT_COLORRECONSTRUCT_SPATIAL_APPROX && self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(sigma_s > DT_COLORRECONSTRUCT_SPATIAL_APPROX
+     && self->dev->gui_attached
+     && g
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     // check how far we are zoomed-in
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
@@ -658,7 +662,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_colorreconstruct_bilateral_slice(b, in, out, data->threshold, roi_in, piece->iscale);
 
   // here is where we generate the canned bilateral grid of the preview pipe for later use
-  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_pthread_mutex_lock(&g->lock);
@@ -1075,7 +1079,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colorreconstruct_bilateral_frozen_t *can = NULL;
 
   // see process() for more details on how we transfer a bilateral grid from the preview to the full pipeline
-  if(sigma_s > DT_COLORRECONSTRUCT_SPATIAL_APPROX && self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(sigma_s > DT_COLORRECONSTRUCT_SPATIAL_APPROX
+     && self->dev->gui_attached
+     && g
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     // check how far we are zoomed-in
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
@@ -1113,7 +1120,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_iop_colorreconstruct_bilateral_slice_cl(b, dev_in, dev_out, d->threshold, roi_in, piece->iscale);
   if(err != CL_SUCCESS) goto error;
 
-  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_pthread_mutex_lock(&g->lock);
@@ -1193,62 +1200,14 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 }
 
 
-static void threshold_callback(GtkWidget *slider, gpointer user_data)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
-  p->threshold = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
-static void spatial_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
-  p->spatial = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void range_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
-  p->range = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void precedence_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
   dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
-  p->precedence = dt_bauhaus_combobox_get(widget);
-
-  switch(p->precedence)
+  if(w == g->precedence)
   {
-    case COLORRECONSTRUCT_PRECEDENCE_HUE:
-      gtk_widget_show(g->hue);
-      break;
-    default:
-      gtk_widget_hide(g->hue);
-      break;
+    gtk_widget_set_visible(g->hue, p->precedence == COLORRECONSTRUCT_PRECEDENCE_HUE);
   }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void hue_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
-  p->hue = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -1292,33 +1251,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->precedence, p->precedence);
   dt_bauhaus_slider_set(g->hue, p->hue);
 
-  switch(p->precedence)
-  {
-    case COLORRECONSTRUCT_PRECEDENCE_HUE:
-      gtk_widget_show(g->hue);
-      break;
-    default:
-      gtk_widget_hide(g->hue);
-      break;
-  }
+  gtk_widget_set_visible(g->hue, p->precedence == COLORRECONSTRUCT_PRECEDENCE_HUE);
 
   dt_pthread_mutex_lock(&g->lock);
   dt_iop_colorreconstruct_bilateral_dump(g->can);
   g->can = NULL;
   g->hash = 0;
   dt_pthread_mutex_unlock(&g->lock);
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_colorreconstruct_params_t);
-  module->gui_data = NULL;
-  dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 400.0f, 10.0f, 0.66f, COLORRECONSTRUCT_PRECEDENCE_NONE };
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorreconstruct_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorreconstruct_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1331,14 +1270,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_colorreconstruct_splat = dt_opencl_create_kernel(program, "colorreconstruction_splat");
   gd->kernel_colorreconstruct_blur_line = dt_opencl_create_kernel(program, "colorreconstruction_blur_line");
   gd->kernel_colorreconstruct_slice = dt_opencl_create_kernel(program, "colorreconstruction_slice");
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1363,63 +1294,32 @@ void gui_init(struct dt_iop_module_t *self)
   g->can = NULL;
   g->hash = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  g->threshold = dt_bauhaus_slider_new_with_range(self, 50.0f, 150.0f, 0.1f, p->threshold, 2);
-  g->spatial = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, 1.0f, p->spatial, 2);
-  g->range = dt_bauhaus_slider_new_with_range(self, 0.0f, 50.0f, 0.1f, p->range, 2);
-  g->precedence = dt_bauhaus_combobox_new(self);
-  g->hue = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.01f, 0.0f, 2, 0);
-
-  dt_bauhaus_widget_set_label(g->threshold, NULL, _("threshold"));
-  dt_bauhaus_widget_set_label(g->spatial, NULL, _("spatial extent"));
-  dt_bauhaus_widget_set_label(g->range, NULL, _("range extent"));
-  dt_bauhaus_widget_set_label(g->hue, NULL, _("hue"));
-
-  dt_bauhaus_widget_set_label(g->precedence, NULL, _("precedence"));
-  dt_bauhaus_combobox_add(g->precedence, _("none"));
-  dt_bauhaus_combobox_add(g->precedence, _("saturated colors"));
-  dt_bauhaus_combobox_add(g->precedence, _("hue"));
-
-  dt_bauhaus_slider_set_stop(g->hue, 0.0f, 1.0f, 0.0f, 0.0f);
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
+  dt_bauhaus_slider_set_step(g->threshold, 0.1f);
+  g->spatial = dt_bauhaus_slider_from_params(self, "spatial");
+  g->range = dt_bauhaus_slider_from_params(self, "range");
+  dt_bauhaus_slider_set_step(g->range, 0.1f);
+  g->precedence = dt_bauhaus_combobox_from_params(self, "precedence");
+  g->hue = dt_bauhaus_slider_from_params(self, "hue");
+//  dt_bauhaus_slider_set_feedback(g->hue, 0);
+  dt_bauhaus_slider_set_stop(g->hue, 0.0f,   1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.498f, 0.0f, 1.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.664f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.830f, 1.0f, 0.0f, 1.0f);
-  dt_bauhaus_slider_set_stop(g->hue, 1.0f, 1.0f, 0.0f, 0.0f);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->threshold, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->precedence, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->hue, TRUE, TRUE, 0);
+  dt_bauhaus_slider_set_stop(g->hue, 1.0f,   1.0f, 0.0f, 0.0f);
 
   gtk_widget_show_all(g->hue);
   gtk_widget_set_no_show_all(g->hue, TRUE);
 
-  switch(p->precedence)
-  {
-    case COLORRECONSTRUCT_PRECEDENCE_HUE:
-      gtk_widget_show(g->hue);
-      break;
-    default:
-      gtk_widget_hide(g->hue);
-      break;
-  }
+  gtk_widget_set_visible(g->hue, p->precedence == COLORRECONSTRUCT_PRECEDENCE_HUE);
 
   gtk_widget_set_tooltip_text(g->threshold, _("pixels with lightness values above this threshold are corrected"));
   gtk_widget_set_tooltip_text(g->spatial, _("how far to look for replacement colors in spatial dimensions"));
   gtk_widget_set_tooltip_text(g->range, _("how far to look for replacement colors in the luminance dimension"));
   gtk_widget_set_tooltip_text(g->precedence, _("if and how to give precedence to specific replacement colors"));
   gtk_widget_set_tooltip_text(g->hue, _("the hue tone which should be given precedence over other hue tones"));
-
-  g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
-  g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);
-  g_signal_connect(G_OBJECT(g->range), "value-changed", G_CALLBACK(range_callback), self);
-  g_signal_connect(G_OBJECT(g->precedence), "value-changed", G_CALLBACK(precedence_callback), self);
-  g_signal_connect(G_OBJECT(g->hue), "value-changed", G_CALLBACK(hue_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

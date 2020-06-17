@@ -1,6 +1,39 @@
 <?xml version="1.0"?>
 <!DOCTYPE dtconfiglist SYSTEM "darktableconfig.dtd">
 <dtconfiglist>
+  <dtconfig prefs="misc" section="accel">
+    <name>accel/prefer_expanded</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>prefer expanded instances</shortdescription>
+    <longdescription>if instances of the module are expanded, ignore collapsed instances</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="accel">
+    <name>accel/prefer_enabled</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>prefer enabled instances</shortdescription>
+    <longdescription>after applying the above rule, if instances of the module are active, ignore inactive instances</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="accel">
+    <name>accel/prefer_unmasked</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>prefer unmasked instances</shortdescription>
+    <longdescription>after applying the above rules, if instances of the module are unmasked, ignore masked instances</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="accel">
+    <name>accel/select_order</name>
+    <type>
+      <enum>
+        <option>first instance</option>
+        <option>last instance</option>
+      </enum>
+    </type>
+    <default>last instance</default>
+    <shortdescription>selection order</shortdescription>
+    <longdescription>after applying the above rules, apply the shortcut based on its position in the pixelpipe</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>bauhaus/scale</name>
     <type>float</type>
@@ -448,6 +481,18 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="lighttable">
+    <name>plugins/collect/filmroll_sort</name>
+    <type>
+      <enum>
+        <option>id</option>
+        <option>folder</option>
+      </enum>
+    </type>
+    <default>id</default>
+    <shortdescription>sort film rolls by</shortdescription>
+    <longdescription>sets the collections-list order for film rolls</longdescription>
+  </dtconfig>
+  <dtconfig prefs="lighttable">
     <name>plugins/collect/descending</name>
     <type>bool</type>
     <default>true</default>
@@ -697,6 +742,83 @@
     <type>int</type>
     <default>6</default>
     <shortdescription>overlays for full preview = block</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/0/0</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>tooltips for filemanager at size 0</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/0/1</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>tooltips for filemanager at size 1</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/0/2</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>tooltips for filemanager at size 2</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/1/0</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>tooltips for filmstrip at size 0</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/1/1</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>tooltips for filmstrip at size 1</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/1/2</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>tooltips for filmstrip at size 2</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/2/0</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>tooltips for zomable lighttable at size 0</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/2/1</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>tooltips for zomable lighttable at size 1</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/2/2</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>tooltips for zomable lighttable at size 2</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/culling/0</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>tooltips for culling</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tooltips/culling/1</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>tooltips for full preview</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -1246,6 +1368,13 @@
     <default>true</default>
     <shortdescription>ask before deleting a style</shortdescription>
     <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="security">
+    <name>plugins/lighttable/preset/ask_before_delete_preset</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>ask before deleting a preset</shortdescription>
+    <longdescription>will ask for confirmation before deleting or overwritting a preset</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/map/show_map_osd</name>
@@ -1884,6 +2013,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/histogram/height</name>
+    <type min="100" max="200">int</type>
+    <default>175</default>
+    <shortdescription>height of the histogram module</shortdescription>
+    <longdescription>height of the histogram module in the darkroom and tethering views</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
@@ -2073,13 +2209,6 @@
     <longdescription>this option allows to force a specific means of getting the current display profile. this is useful when one alternative gives wrong results</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>histogram_height</name>
-    <type min="100" max="200">int</type>
-    <default>175</default>
-    <shortdescription>height of the histogram module</shortdescription>
-    <longdescription>height of the histogram module in the darkroom and tethering views (needs a restart)</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>metadata/resolution</name>
     <type>int</type>
     <default>300</default>
@@ -2108,11 +2237,17 @@
     <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. need to restart darktable.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
-    <name>plugins/darkroom/basecurve/auto_apply</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>auto-apply basecurve</shortdescription>
-    <longdescription>use a basecurve by default (needs a restart)</longdescription>
+    <name>plugins/darkroom/workflow</name>
+    <type>
+      <enum>
+        <option>scene-referred</option>
+        <option>display-referred</option>
+        <option>none</option>
+      </enum>
+    </type>
+    <default>display-referred</default>
+    <shortdescription>auto-apply pixel workflow defaults</shortdescription>
+    <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve and the legacy module pipe order.\n(needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>

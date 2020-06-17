@@ -146,6 +146,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
 void dt_history_delete_on_image(int32_t imgid)
 {
   dt_history_delete_on_image_ext(imgid, TRUE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only)
@@ -991,9 +992,12 @@ void dt_history_compress_on_image(int32_t imgid)
   sqlite3_finalize(stmt);
 
   // compress masks history
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1 AND num "
-                                                             "NOT IN (SELECT MAX(num) FROM main.masks_history WHERE "
-                                                             "imgid = ?1 AND num < ?2)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.masks_history"
+                              " WHERE imgid = ?1 "
+                              "   AND num NOT IN (SELECT MAX(num)"
+                              "                   FROM main.masks_history"
+                              "                   WHERE imgid = ?1 AND num < ?2)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, my_history_end);
   sqlite3_step(stmt);
@@ -1045,6 +1049,9 @@ void dt_history_compress_on_image(int32_t imgid)
   }
   dt_unlock_image(imgid);
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
+
+  GList *imgs = g_list_append(NULL, GINT_TO_POINTER(imgid));
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgs);
 }
 
 int dt_history_compress_on_list(GList *imgs)
@@ -1427,7 +1434,7 @@ void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash)
   sqlite3_finalize(stmt);
 }
 
-const gboolean dt_history_hash_get_mipmap_sync(const int32_t imgid)
+const gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
 {
   gboolean status = FALSE;
   if(imgid == -1) return status;
@@ -1506,6 +1513,7 @@ gboolean dt_history_copy(int imgid)
   if(dt_dev_is_current_image(darktable.develop, imgid)) dt_dev_write_history(darktable.develop);
   return TRUE;
 }
+
 gboolean dt_history_copy_parts(int imgid)
 {
   if(dt_history_copy(imgid))
@@ -1517,6 +1525,7 @@ gboolean dt_history_copy_parts(int imgid)
   else
     return FALSE;
 }
+
 gboolean dt_history_paste_on_list(GList *list, gboolean undo)
 {
   if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
@@ -1594,6 +1603,8 @@ gboolean dt_history_delete_on_list(GList *list, gboolean undo)
 
     l = g_list_next(l);
   }
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   if(undo) dt_undo_end_group(darktable.undo);
   return TRUE;

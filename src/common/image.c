@@ -457,12 +457,12 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on(TRUE);
+    imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   if(group_on) dt_grouping_add_grouped_images(&imgs);
   dt_image_set_locations(imgs, geoloc, undo_on);
-  g_list_free(imgs);
+  if(imgid != -1) g_list_free(imgs);
 }
 
 void dt_image_reset_final_size(const int32_t imgid)
@@ -663,6 +663,24 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
   dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
                  dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+}
+
+/* About the image size ratio
+   It has been calculated from the exif data width&height, this is not exact as we crop
+   the sensor data in most cases for raws.
+   This is managed by
+   rawspeed - knowing about default crops
+   rawprepare - modify the defaults
+
+   The database does **not** hold the cropped width & height so we fill the data
+   when starting to develop.
+*/
+double dt_image_get_sensor_ratio(const struct dt_image_t *img)
+{
+  if(img->p_height >0)
+    return (double)img->p_width / (double)img->p_height;
+
+  return (double)img->width / (double)img->height;
 }
 
 void dt_image_set_raw_aspect_ratio(const int32_t imgid)
@@ -888,8 +906,9 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_finalize(stmt);
 
     // make sure that the duplicate doesn't have some magic darktable| tags
-    dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE);
-    dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE);
+    if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
+       || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
     /* unset change timestamp */
     dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
@@ -1002,6 +1021,11 @@ gboolean dt_image_altered(const uint32_t imgid)
   return status & DT_HISTORY_HASH_CURRENT;
 }
 
+gboolean dt_image_basic(const uint32_t imgid)
+{
+  dt_history_hash_t status = dt_history_hash_get_status(imgid);
+  return status & DT_HISTORY_HASH_BASIC;
+}
 
 GList* dt_image_find_duplicates(const char* filename)
 {
@@ -1403,7 +1427,7 @@ uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboole
 void dt_image_init(dt_image_t *img)
 {
   img->width = img->height = img->verified_size = 0;
-  img->final_width = img->final_height = 0;
+  img->final_width = img->final_height = img->p_width = img->p_height = 0;
   img->aspect_ratio = 0.f;
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
@@ -2137,9 +2161,8 @@ void dt_image_synch_xmp(const int selected)
   }
   else
   {
-    GList *imgs = dt_view_get_images_to_act_on(FALSE);
+    GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
     dt_image_synch_xmps(imgs);
-    g_list_free(imgs);
   }
 }
 
@@ -2325,6 +2348,24 @@ char *dt_image_get_text_path(const int32_t imgid)
   dt_image_full_path(imgid, image_path, sizeof(image_path), &from_cache);
 
   return dt_image_get_text_path_from_path(image_path);
+}
+
+float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
+{
+  // just check that pointers exist and are initialized
+  if((image_storage) && (image_storage->exif_exposure_bias))
+  {
+    // sanity checks because I don't trust exif tags too much
+    if(image_storage->exif_exposure_bias == NAN ||
+       image_storage->exif_exposure_bias != image_storage->exif_exposure_bias ||
+       isnan(image_storage->exif_exposure_bias) ||
+       CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f) != image_storage->exif_exposure_bias)
+      return 0.0f; // isnan
+    else
+      return CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f);
+  }
+  else
+    return 0.0f;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

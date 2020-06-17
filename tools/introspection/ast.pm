@@ -59,7 +59,9 @@ sub mark_for_translation
   my $GETTEXT_CONTEXT = "introspection description";
 
   my $result = "(char*)\"$string\"";
-  $result = "NC_(\"$GETTEXT_CONTEXT\", $result)" if($string ne "");
+  # we do not want to support a context as it break all translations see #5498
+  # $result = "NC_(\"$GETTEXT_CONTEXT\", $result)" if($string ne "");
+  $result = "N_($result)" if($string ne "");
 
   return $result;
 }

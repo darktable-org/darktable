@@ -68,24 +68,39 @@ static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe,
 
 static char *_pipe_type_to_str(int pipe_type)
 {
-  char *r;
+  const gboolean fast = (pipe_type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  char *r = NULL;
 
-  switch(pipe_type)
+  switch(pipe_type & DT_DEV_PIXELPIPE_ANY)
   {
     case DT_DEV_PIXELPIPE_PREVIEW:
-      r = "preview";
+      if(fast)
+        r = "preview/fast";
+      else
+        r = "preview";
       break;
     case DT_DEV_PIXELPIPE_PREVIEW2:
-      r = "preview2";
+      if(fast)
+        r = "preview2/fast";
+      else
+        r = "preview2";
       break;
     case DT_DEV_PIXELPIPE_FULL:
+      if(fast)
+      r = "full";
       r = "full";
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
-      r = "thumbnail";
+      if(fast)
+        r = "thumbnail/fast";
+      else
+        r = "thumbnail";
       break;
     case DT_DEV_PIXELPIPE_EXPORT:
-      r = "export";
+      if(fast)
+        r = "export/fast";
+      else
+        r = "export";
       break;
     default:
       r = "unknown";
@@ -96,7 +111,7 @@ static char *_pipe_type_to_str(int pipe_type)
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks)
 {
-  int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 2);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
   pipe->levels = levels;
   pipe->store_all_raster_masks = store_masks;
@@ -105,14 +120,14 @@ int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_
 
 int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 2);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 2);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
 int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 0);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
@@ -120,8 +135,7 @@ int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  int res = dt_dev_pixelpipe_init_cached(
-      pipe, 0, 5);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 5);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   return res;
 }
@@ -129,7 +143,7 @@ int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  int res = dt_dev_pixelpipe_init_cached(pipe, 0, 5);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 5);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
   return res;
 }
@@ -137,8 +151,7 @@ int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  int res = dt_dev_pixelpipe_init_cached(
-      pipe, 0, 5);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 5);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
@@ -501,7 +514,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   const int width = roi->width;
   const int height = roi->height;
   const dt_image_t image = darktable.develop->image_storage;
-  const int op_after_demosaic = dt_ioppr_is_iop_before(darktable.develop->preview_pipe->iop_order_list, 
+  const int op_after_demosaic = dt_ioppr_is_iop_before(darktable.develop->preview_pipe->iop_order_list,
                                                        module->op, "demosaic", 0);
 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
@@ -523,7 +536,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   }
 
   // transform back to current module coordinates
-  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->iop_order, 
+  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->iop_order,
                                ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_FORW_INCL
                                : DT_DEV_TRANSFORM_DIR_FORW_EXCL),fbox, 2);
 
@@ -1016,7 +1029,6 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   // waveform buffer is 128 (about smallest possible), bin_width is
   // 12, making max count of 10,800, still much smaller than uint16_t
   uint16_t *buf = calloc(waveform_width * waveform_height * 3, sizeof(uint16_t));
-  memset(waveform, 0, sizeof(uint8_t) * waveform_height * waveform_stride * 3);
 
   // 1.0 is at 8/9 of the height!
   const float _height = (float)(waveform_height - 1);
@@ -1135,6 +1147,14 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   *cl_mem_output = NULL;
   dt_iop_module_t *module = NULL;
   dt_dev_pixelpipe_iop_t *piece = NULL;
+
+  // if a module is active, check if this module allow a fast pipe run
+
+  if(darktable.develop && dev->gui_module && dev->gui_module->flags() & IOP_FLAGS_ALLOW_FAST_PIPE)
+    pipe->type |= DT_DEV_PIXELPIPE_FAST;
+  else
+    pipe->type &= ~DT_DEV_PIXELPIPE_FAST;
+
   if(modules)
   {
     module = (dt_iop_module_t *)modules->data;
@@ -1161,7 +1181,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   int cache_available = 0;
   uint64_t hash = 0;
   // do not get gamma from cache on preview pipe so we can compute the final histogram
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW || module == NULL || strcmp(module->op, "gamma") != 0)
+  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW || module == NULL || strcmp(module->op, "gamma") != 0)
   {
     hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, roi_out, pipe, pos);
     cache_available = dt_dev_pixelpipe_cache_available(&(pipe->cache), hash);
@@ -1298,7 +1318,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     }
 
     gboolean important = FALSE;
-    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
       important = (strcmp(module->op, "colorout") == 0);
     else
       important = (strcmp(module->op, "gamma") == 0);
@@ -1420,7 +1440,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       /* try to enter opencl path after checking some module specific pre-requisites */
       if(module->process_cl && piece->process_cl_ready
-         && !((pipe->type == DT_DEV_PIXELPIPE_PREVIEW || pipe->type == DT_DEV_PIXELPIPE_PREVIEW2)
+         && !(((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
+               || (pipe->type & DT_DEV_PIXELPIPE_PREVIEW2) == DT_DEV_PIXELPIPE_PREVIEW2)
               && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
          && (fits_on_device || piece->process_tiling_ready))
       {
@@ -1512,7 +1533,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
 
             if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-               && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+               && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
             {
               const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
               module->histogram = realloc(module->histogram, buf_size);
@@ -1610,7 +1631,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           }
 
           /* synchronization point for opencl pipe */
-          if(success_opencl && (!darktable.opencl->async_pixelpipe || pipe->type == DT_DEV_PIXELPIPE_EXPORT))
+          if(success_opencl && (!darktable.opencl->async_pixelpipe
+                                || (pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT))
             success_opencl = dt_opencl_finish(pipe->devid);
 
 
@@ -1680,7 +1702,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
             if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-               && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+               && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
             {
               const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
               module->histogram = realloc(module->histogram, buf_size);
@@ -1769,7 +1791,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           }
 
           /* synchronization point for opencl pipe */
-          if(success_opencl && (!darktable.opencl->async_pixelpipe || pipe->type == DT_DEV_PIXELPIPE_EXPORT))
+          if(success_opencl && (!darktable.opencl->async_pixelpipe
+                                || (pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT))
             success_opencl = dt_opencl_finish(pipe->devid);
 
           if(pipe->shutdown)
@@ -1809,8 +1832,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
              ((darktable.opencl->sync_cache == OPENCL_SYNC_ACTIVE_MODULE) && (module == darktable.develop->gui_module)))
           {
             /* write back input into cache for faster re-usal (not for export or thumbnails) */
-            if(cl_mem_input != NULL && pipe->type != DT_DEV_PIXELPIPE_EXPORT
-               && pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL)
+            if(cl_mem_input != NULL
+               && (pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT
+               && (pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) != DT_DEV_PIXELPIPE_THUMBNAIL)
             {
               cl_int err;
 
@@ -1916,7 +1940,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
             if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-               && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+               && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
             {
               const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
               module->histogram = realloc(module->histogram, buf_size);
@@ -2071,7 +2095,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
           if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-             && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+             && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
           {
             const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
             module->histogram = realloc(module->histogram, buf_size);
@@ -2189,7 +2213,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
         if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-           && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+           && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
         {
           const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
           module->histogram = realloc(module->histogram, buf_size);
@@ -2295,7 +2319,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
       if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-         && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+         && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
       {
         const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
         module->histogram = realloc(module->histogram, buf_size);
@@ -2604,7 +2628,7 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
     gamma = (dt_dev_pixelpipe_iop_t *)gammap->data;
   }
   if(gamma) gamma->enabled = 0;
-  int ret = dt_dev_pixelpipe_process(pipe, dev, x, y, width, height, scale);
+  const int ret = dt_dev_pixelpipe_process(pipe, dev, x, y, width, height, scale);
   if(gamma) gamma->enabled = 1;
   return ret;
 }
@@ -2801,9 +2825,9 @@ restart:
   pipe->backbuf_width = width;
   pipe->backbuf_height = height;
 
-  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW ||
-    pipe->type == DT_DEV_PIXELPIPE_FULL ||
-    pipe->type == DT_DEV_PIXELPIPE_PREVIEW2)
+  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
+     || (pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL
+     || (pipe->type & DT_DEV_PIXELPIPE_PREVIEW2) == DT_DEV_PIXELPIPE_PREVIEW2)
   {
     if(pipe->output_backbuf == NULL || pipe->output_backbuf_width != pipe->backbuf_width || pipe->output_backbuf_height != pipe->backbuf_height)
     {

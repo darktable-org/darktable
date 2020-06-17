@@ -102,16 +102,33 @@ static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
   // we change the overlay mode
   gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/%d/%d", table->mode, ns);
   dt_thumbnail_overlay_t over = dt_conf_get_int(txt);
-  dt_thumbtable_set_overlays_mode(table, over);
-
   g_free(txt);
+  txt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/%d/%d", table->mode, ns);
+  table->show_tooltips = dt_conf_get_bool(txt);
+  g_free(txt);
+
+  dt_thumbtable_set_overlays_mode(table, over);
 }
 
 // change the type of overlays that should be shown
 void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over)
 {
-  if(!table || over == table->overlays) return;
-  gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/%d/%d", table->mode, table->prefs_size);
+  if(!table) return;
+  // we ensure the tooltips change in any cases
+  gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/%d/%d", table->mode, table->prefs_size);
+  dt_conf_set_bool(txt, table->show_tooltips);
+  g_free(txt);
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    th->tooltip = table->show_tooltips;
+    dt_thumbnail_update_infos(th);
+    l = g_list_next(l);
+  }
+
+  if(over == table->overlays) return;
+  txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/%d/%d", table->mode, table->prefs_size);
   dt_conf_set_int(txt, over);
   g_free(txt);
   gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
@@ -131,7 +148,7 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
 
   // we need to change the overlay content if we pass from normal to extended overlays
   // this is not done on the fly with css to avoid computing extended msg for nothing and to reserve space if needed
-  GList *l = table->list;
+  l = table->list;
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -487,8 +504,9 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     {
       if(posy < table->view_height) // we don't load invisible thumbs
       {
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0), table->overlays, FALSE);
+        dt_thumbnail_t *thumb
+            = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
+                               sqlite3_column_int(stmt, 0), table->overlays, FALSE, table->show_tooltips);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -529,8 +547,9 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     {
       if(posy + table->thumb_size >= 0) // we don't load invisible thumbs
       {
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0), table->overlays, FALSE);
+        dt_thumbnail_t *thumb
+            = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
+                               sqlite3_column_int(stmt, 0), table->overlays, FALSE, table->show_tooltips);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -834,9 +853,9 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  gdouble delta;
+  int delta;
 
-  if(dt_gui_get_scroll_delta(e, &delta))
+  if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && (e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
     {
@@ -1402,7 +1421,7 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
-  table->drag_list = dt_view_get_images_to_act_on(FALSE);
+  table->drag_list = g_list_copy(dt_view_get_images_to_act_on(FALSE, TRUE));
 
   // if we are dragging a single image -> use the thumbnail of that image
   // otherwise use the generic d&d icon
@@ -1708,7 +1727,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       else
       {
         // we create a completly new thumb
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, nid, nrow, table->overlays, FALSE);
+        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, nid, nrow, table->overlays,
+                                                 FALSE, table->show_tooltips);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -1889,7 +1909,7 @@ gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const int imgid,
 static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on(FALSE);
+  GList *imgs = g_list_copy(dt_view_get_images_to_act_on(FALSE, TRUE));
   dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
@@ -1897,8 +1917,8 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
 static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on(FALSE);
-  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), FALSE);
+  GList *imgs = g_list_copy(dt_view_get_images_to_act_on(FALSE, TRUE));
+  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
@@ -1917,7 +1937,7 @@ static gboolean _accel_copy_parts(GtkAccelGroup *accel_group, GObject *accelerat
 static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = g_list_copy(dt_view_get_images_to_act_on(TRUE, TRUE));
   const gboolean ret = dt_history_paste_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
@@ -1925,7 +1945,7 @@ static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable,
 static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                    GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = g_list_copy(dt_view_get_images_to_act_on(TRUE, TRUE));
   const gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
@@ -1933,7 +1953,7 @@ static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *accelera
 static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                     GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = dt_view_get_images_to_act_on(TRUE);
+  GList *imgs = g_list_copy(dt_view_get_images_to_act_on(TRUE, TRUE));
   const gboolean ret = dt_history_delete_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
@@ -1951,6 +1971,7 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return TRUE;
 }
 static gboolean _accel_select_all(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
