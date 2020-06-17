@@ -1717,7 +1717,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
     {
       const int local_property = property;
-      char *colname;
+      char *colname = NULL;
       gchar *operator, *number1, *number2;
 
       dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
