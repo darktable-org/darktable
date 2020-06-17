@@ -309,6 +309,7 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhau
                                   gpointer data, void (*free_func)(void *data), gboolean sensitive);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *w, const char *text);
+gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *w, int value);
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos);
 void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos);
 void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,

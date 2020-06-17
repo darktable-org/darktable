@@ -79,11 +79,18 @@ static void generic_combobox_enum_callback(GtkWidget *combobox, int *field)
 
   int previous = *field;
 
-  int *combo_data = dt_bauhaus_combobox_get_data(combobox);
-  if(combo_data) 
-    *field = *combo_data;
-  else
-    *field = dt_bauhaus_combobox_get(combobox);
+  *field = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(combobox));
+
+  if(*field != previous) process_changed_value(NULL, combobox, &previous);
+}
+
+static void generic_combobox_int_callback(GtkWidget *combobox, int *field)
+{
+  if(darktable.gui->reset) return;
+
+  int previous = *field;
+
+  *field = dt_bauhaus_combobox_get(combobox);
 
   if(*field != previous) process_changed_value(NULL, combobox, &previous);
 }
@@ -245,12 +252,16 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
         for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values; iter && iter->name; iter++)
         {
           // we do not want to support a context as it break all translations see #5498
-          // dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "introspection description", iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, &iter->value, NULL, TRUE);
-          dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, &iter->value, NULL, TRUE);
+          // dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "introspection description", iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
+          dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
         }
-      }
 
-      g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_enum_callback), p + f->header.offset);
+        g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_enum_callback), p + f->header.offset);
+      }
+      else
+      {
+        g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_int_callback), p + f->header.offset);
+      }
     }
   }
   else

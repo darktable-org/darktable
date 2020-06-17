@@ -1215,6 +1215,24 @@ gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *widget, const char *text)
   return FALSE;
 }
 
+gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *widget, int value)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  int i = 0;
+  for(GList *iter = d->entries; iter; iter = g_list_next(iter), i++)
+  {
+    const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)iter->data;
+    if(GPOINTER_TO_INT(entry->data) == value)
+    {
+      dt_bauhaus_combobox_set(widget, i);
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 int dt_bauhaus_combobox_get(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);

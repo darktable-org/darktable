@@ -2485,8 +2485,8 @@ void gui_init(dt_iop_module_t *self)
 // TODO temporary workaround for introspection bug
 if(!dt_bauhaus_combobox_length(g->highlights))
 {
-  dt_bauhaus_combobox_add(g->highlights, _("hard"));
-  dt_bauhaus_combobox_add(g->highlights, _("soft"));
+  dt_bauhaus_combobox_add_full(g->highlights, _("hard"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(0), NULL, TRUE);
+  dt_bauhaus_combobox_add_full(g->highlights, _("soft"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(1), NULL, TRUE);
 }
   gtk_widget_set_tooltip_text(g->highlights, _("choose the desired curvature of the filmic spline in highlights.\n"
                                                "hard uses a high curvature resulting in more tonal compression.\n"
