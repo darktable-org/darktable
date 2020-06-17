@@ -1705,7 +1705,7 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
   }
   dt_pthread_mutex_unlock(&g->lock);
 
-  dt_dev_reprocess_all(self->dev);
+  dt_dev_reprocess_center(self->dev);
 }
 
 static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -1769,7 +1769,7 @@ static void rt_auto_levels_callback(GtkToggleButton *togglebutton, dt_iop_module
 
   gtk_toggle_button_set_active(togglebutton, FALSE);
 
-  dt_dev_reprocess_all(self->dev);
+  dt_dev_reprocess_center(self->dev);
 }
 
 static void rt_mask_opacity_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -2006,7 +2006,7 @@ static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
-  dt_dev_reprocess_all(module->dev);
+  dt_dev_reprocess_center(module->dev);
 }
 
 static void rt_suppress_callback(GtkToggleButton *togglebutton, dt_iop_module_t *module)
@@ -2019,7 +2019,7 @@ static void rt_suppress_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
-  dt_dev_reprocess_all(module->dev);
+  dt_dev_reprocess_center(module->dev);
 }
 
 static void rt_blur_type_callback(GtkComboBox *combo, dt_iop_module_t *self)
@@ -2245,8 +2245,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       dt_masks_set_edit_mode(self, DT_MASKS_EDIT_OFF);
     }
 
-    // if we are switching between display modes we have to reprocess all pipes
-    if(g->display_wavelet_scale || g->mask_display || g->suppress_mask) dt_dev_reprocess_all(self->dev);
+    // if we are switching between display modes we have to reprocess the main image
+    if(g->display_wavelet_scale || g->mask_display || g->suppress_mask) dt_dev_reprocess_center(self->dev);
   }
 }
 
