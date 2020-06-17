@@ -434,7 +434,6 @@ typedef struct dt_iop_ashift_gui_data_t
   float cr;	// shadow copy of dt_iop_ashift_data_t.cr
   float ct;	// shadow copy of dt_iop_ashift_data_t.ct
   float cb;	// shadow copy of dt_iop_ashift_data_t.cb
-  gboolean restore_shadow_crop;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -4130,29 +4129,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-
 #ifdef ASHIFT_DEBUG
   model_probe(self, p, g->lastfit);
 #endif
   do_crop(self, p);
-
-  if(w == g->cropmode)
-  {
-    if(g->lines != NULL && !g->lines_suppressed)
-    {
-      g->lines_suppressed = 1;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
-    }
-
-    swap_shadow_crop_box(p,g);	//temporarily update real crop box
-    g->restore_shadow_crop = TRUE;
-    // this will be restored by a callback to restore_shadow_crop_box_callback 
-    // _after_ the call to dt_dev_add_history_item in the default handler
-  }
-  else
-  {
-    commit_crop_box(p,g);
-  }
+  commit_crop_box(p,g);
   
   if(w == g->mode)
   {
@@ -4160,16 +4141,30 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-static void restore_shadow_crop_box_callback(GtkWidget *widget, gpointer user_data)
+static void cropmode_callback(GtkWidget *widget, gpointer user_data)
 {
+  if(darktable.gui->reset) return;
+
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  if(g->restore_shadow_crop)
+
+  p->cropmode = dt_bauhaus_combobox_get(widget);
+
+#ifdef ASHIFT_DEBUG
+  model_probe(self, p, g->lastfit);
+#endif
+  do_crop(self, p);
+
+  if(g->lines != NULL && !g->lines_suppressed)
   {
-    swap_shadow_crop_box(p,g);
-    g->restore_shadow_crop = FALSE;
+    g->lines_suppressed = 1;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
   }
+
+  swap_shadow_crop_box(p,g);	//temporarily update real crop box
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  swap_shadow_crop_box(p,g);
 }
 
 static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
@@ -4802,7 +4797,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
-  g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(restore_shadow_crop_box_callback), self);
+  if(!g_signal_handlers_disconnect_by_data(g->cropmode, &p->cropmode))
+    fprintf(stderr, "[ashift] error: default signal handler for cropmode could not be disconnected\n");
+  g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
 
