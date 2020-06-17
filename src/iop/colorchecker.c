@@ -951,11 +951,8 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
-    dt_dev_reprocess_all(self->dev);
     self->gui_update(self);
   }
-  else
-    dt_control_queue_redraw();
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 }
