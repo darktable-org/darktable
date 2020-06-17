@@ -1145,8 +1145,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
 
   img->p_width = img->width - img->crop_x - img->crop_width;
   img->p_height = img->height - img->crop_y - img->crop_height;
-  if(img->crop_x || img->crop_width || img->crop_y || img->crop_height)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 
   return ret;
 }
