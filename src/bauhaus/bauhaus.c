@@ -2240,7 +2240,7 @@ float dt_bauhaus_slider_get_step(GtkWidget *widget)
 
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-  return d->step;
+  return d->factor < 0 ? - d->step : d->step;
 }
 
 void dt_bauhaus_slider_set_feedback(GtkWidget *widget, int feedback)
