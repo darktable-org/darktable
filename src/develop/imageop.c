@@ -2253,9 +2253,14 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
   }
 
   const uint32_t current_group = dt_dev_modulegroups_get(module->dev);
+
   if(!dt_iop_shown_in_group(module, current_group))
   {
     dt_dev_modulegroups_switch(darktable.develop, module);
+  }
+  else
+  {
+    dt_dev_modulegroups_set(darktable.develop, current_group);
   }
 
   dt_iop_gui_set_expanded(module, !module->expanded, dt_conf_get_bool("darkroom/ui/single_module"));
