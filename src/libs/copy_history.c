@@ -45,7 +45,6 @@ typedef struct dt_lib_copy_history_t
   GtkWidget *copy_button, *delete_button, *load_button, *write_button;
   GtkWidget *copy_parts_button;
   GtkButton *compress_button;
-  guint timeout_handle;
 } dt_lib_copy_history_t;
 
 const char *name(dt_lib_module_t *self)
@@ -66,6 +65,7 @@ uint32_t container(dt_lib_module_t *self)
 
 static void _update(dt_lib_module_t *self)
 {
+  dt_lib_cancel_postponed_update(self);
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
@@ -86,22 +86,6 @@ static void _update(dt_lib_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), can_paste);
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), can_paste);
-
-  if(d->timeout_handle)
-  {
-    g_source_remove(d->timeout_handle);
-    d->timeout_handle = 0;
-  }
-}
-
-static gboolean _postponed_update(gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-
-  // timeout handle clearing is handled by update code
-  _update(self);
-
-  return FALSE;
 }
 
 static void write_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
@@ -297,16 +281,7 @@ static void _collection_updated_callback(gpointer instance, dt_collection_change
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
-  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
-
-  if(d->timeout_handle)
-  {
-    // here we're making sure the event fires at last hover
-    // and we won't have avalanche of events in the mean time.
-    g_source_remove(d->timeout_handle);
-  }
-  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
+  dt_lib_queue_postponed_update(self, _update);
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -324,8 +299,7 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
-
-  d->timeout_handle = 0;
+  self->timeout_handle = 0;
 
   self->widget = gtk_grid_new();
   GtkGrid *grid = GTK_GRID(self->widget);
@@ -419,12 +393,10 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_cancel_postponed_update(self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
-  if(d->timeout_handle)
-    g_source_remove(d->timeout_handle);
 
   free(self->data);
   self->data = NULL;
