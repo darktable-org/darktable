@@ -1933,6 +1933,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       // comboboxes change immediately
       darktable.bauhaus->change_active = 1;
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+      if(!d->num_labels) return;
       tmp.height = inner_height(tmp) * d->num_labels + 2 * INNER_PADDING;
       GtkAllocation allocation_w;
       gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
