@@ -720,6 +720,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS_HSL;
     p.curve_type[c] = MONOTONE_HERMITE;
   }
+#undef DT_IOP_COLORZONES_BANDS_HSL
   dt_gui_presets_add_generic(_("HSL base setting"), self->op, version, &p, sizeof(p), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
