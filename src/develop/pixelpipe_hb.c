@@ -1344,11 +1344,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     dt_pixelpipe_flow_t pixelpipe_flow = (PIXELPIPE_FLOW_NONE | PIXELPIPE_FLOW_HISTOGRAM_NONE);
 
-    // special case: user requests to see channel data in the parametric mask of a module. In that case
-    // we skip all modules manipulating pixel content and only process image distorting modules. Finally
-    // "gamma" is responsible to display channel data accordingly.
-    if(strcmp(module->op, "gamma") && (pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY) && !(module->operation_tags() & IOP_TAG_DISTORT) &&
-      (in_bpp == out_bpp) && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
+    // special case: user requests to see channel data in the parametric mask of a module, or the blending
+    // mask. In that case we skip all modules manipulating pixel content and only process image distorting
+    // modules. Finally "gamma" is responsible for displaying channel/mask data accordingly.
+    if(strcmp(module->op, "gamma") != 0
+       && (pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_ANY | DT_DEV_PIXELPIPE_DISPLAY_MASK))
+       && !(module->operation_tags() & IOP_TAG_DISTORT)
+       && (in_bpp == out_bpp) && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
     {
 #ifdef HAVE_OPENCL
       if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0 && (cl_mem_input != NULL))
