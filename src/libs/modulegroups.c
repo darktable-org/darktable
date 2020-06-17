@@ -579,13 +579,10 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
 
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)params->self->data;
 
-  const int group = _iop_get_group_order(params->group, params->group);
-
-  /* set current group or just update iop visibility*/
-  if(d->current != group && params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
+  /* set current group and update visibility */
+  if(params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[params->group]), TRUE);
-  else
-    _lib_modulegroups_update_iop_visibility(params->self);
+  _lib_modulegroups_update_iop_visibility(params->self);
 
   free(params);
   return FALSE;
@@ -648,11 +645,6 @@ static void _lib_modulegroups_search_text_focus(dt_lib_module_t *self)
 
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  /* do nothing if module is member of current group */
-  if(_lib_modulegroups_test_internal(self, d->current, dt_iop_get_group(module))) return;
-
   /* lets find the group which is not favorite/active pipe */
   for(int k = DT_MODULEGROUP_BASIC; k < DT_MODULEGROUP_SIZE; k++)
   {
