@@ -2881,6 +2881,7 @@ int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
   int val = -1;
   sqlite3_stmt *stmt;
   const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  __DT_DEBUG_ASSERT_WITH_QUERY__(rc, query);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
     val = sqlite3_column_int(stmt, 0);
@@ -2906,29 +2907,29 @@ void _dt_database_maintenance(const struct dt_database_t *db)
   if(calc_pre_size == 0)
   {
     dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance deemed unnecesary, performing only analyze.\n");
-    sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, &err);
+    DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, &err);
     ERRCHECK
-    sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, &err);
+    DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, &err);
     ERRCHECK
-    sqlite3_exec(db->handle, "ANALYZE", NULL, NULL, &err);
+    DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE", NULL, NULL, &err);
     ERRCHECK
     return;
   }
 
-  sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM data", NULL, NULL, &err);
   ERRCHECK
-  sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM main", NULL, NULL, &err);
   ERRCHECK
-  sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, &err);
   ERRCHECK
-  sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, &err);
   ERRCHECK
 
   // for some reason this is needed in some cases
   // in case above performed vacuum+analyze properly, this is noop.
-  sqlite3_exec(db->handle, "VACUUM", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM", NULL, NULL, &err);
   ERRCHECK
-  sqlite3_exec(db->handle, "ANALYZE", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE", NULL, NULL, &err);
   ERRCHECK
 
   const int main_post_free_count = _get_pragma_val(db, "main.freelist_count");
