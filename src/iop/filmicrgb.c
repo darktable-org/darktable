@@ -2482,12 +2482,6 @@ void gui_init(dt_iop_module_t *self)
 
   // Curve type
   g->highlights = dt_bauhaus_combobox_from_params(self, "highlights");
-// TODO temporary workaround for introspection bug
-if(!dt_bauhaus_combobox_length(g->highlights))
-{
-  dt_bauhaus_combobox_add(g->highlights, _("hard"));
-  dt_bauhaus_combobox_add(g->highlights, _("soft"));
-}
   gtk_widget_set_tooltip_text(g->highlights, _("choose the desired curvature of the filmic spline in highlights.\n"
                                                "hard uses a high curvature resulting in more tonal compression.\n"
                                                "soft uses a low curvature resulting in less tonal compression."));

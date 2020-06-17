@@ -991,7 +991,7 @@ sub get_introspection_code
   {
     $_linearisation_pos = $enum_arrays{$self->{name}};
   }
-  push(@assignments, "introspection_linear[$_linearisation_pos].Enum.values = f$_linearisation_pos;");
+  push(@assignments, "introspection_linear[$linearisation_pos].Enum.values = f$_linearisation_pos;");
 
   my $default = $declaration->get_default();
   $default = $self->get_default() unless(defined($default));
