@@ -384,52 +384,8 @@ static inline float strength(float value, float strength)
   return value + (value - 0.5f) * (strength / 100.0f);
 }
 
-void process_v3(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
-  const int ch = piece->colors;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(ch, i, o, roi_out) shared(d) schedule(static)
-#endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-  {
-    float *in = (float *)i + ch * k;
-    float *out = (float *)o + ch * k;
-    const float a = in[1], b = in[2];
-    const float h = fmodf(atan2f(b, a) + 2.0f * DT_M_PI_F, 2.0f * DT_M_PI_F) / (2.0f * DT_M_PI_F);
-    const float C = sqrtf(b * b + a * a);
-    float select = 0.0f;
-    float blend = 0.0f;
-    switch(d->channel)
-    {
-      case DT_IOP_COLORZONES_L:
-        select = fminf(1.0f, in[0] / 100.0f);
-        break;
-      case DT_IOP_COLORZONES_C:
-        select = fminf(1.0f, C / 128.0f);
-        break;
-      default:
-      case DT_IOP_COLORZONES_h:
-        select = h;
-        blend = powf(1.0f - C / 128.0f, 2.0f);
-        break;
-    }
-    const float Lm = (blend * .5f + (1.0f - blend) * lookup(d->lut[0], select)) - .5f;
-    const float hm = (blend * .5f + (1.0f - blend) * lookup(d->lut[2], select)) - .5f;
-    blend *= blend; // saturation isn't as prone to artifacts:
-    // const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
-    const float Cm = 2.0f * lookup(d->lut[1], select);
-    const float L = in[0] * powf(2.0f, 4.0f * Lm);
-    out[0] = L;
-    out[1] = cosf(2.0f * DT_M_PI_F * (h + hm)) * Cm * C;
-    out[2] = sinf(2.0f * DT_M_PI_F * (h + hm)) * Cm * C;
-    out[3] = in[3];
-  }
-}
-
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_display(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                     void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
@@ -437,58 +393,54 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
   const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
 
-  // display selection if requested
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g && g->display_mask && self->dev->gui_attached
-     && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
-  {
-    const dt_iop_colorzones_channel_t display_channel = g->channel;
+  const dt_iop_colorzones_channel_t display_channel = g->channel;
 
-    memcpy(ovoid, ivoid, roi_out->width * roi_out->height * ch * sizeof(float));
+  memcpy(ovoid, ivoid, roi_out->width * roi_out->height * ch * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)                                                           \
     dt_omp_firstprivate(normalize_C, ch, ivoid, ovoid, roi_out, display_channel) shared(d)
 #endif
-    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-    {
-      float *in = (float *)ivoid + ch * k;
-      float *out = (float *)ovoid + ch * k;
-
-      float LCh[3];
-
-      dt_Lab_2_LCH(in, LCh);
-
-      float select = 0.0f;
-      switch(d->channel)
-      {
-        case DT_IOP_COLORZONES_L:
-          select = LCh[0] * 0.01f;
-          break;
-        case DT_IOP_COLORZONES_C:
-          select = LCh[1] * normalize_C;
-          break;
-        case DT_IOP_COLORZONES_h:
-        default:
-          select = LCh[2];
-          break;
-      }
-      select = CLAMP(select, 0.f, 1.f);
-
-      out[3] = fabsf(lookup(d->lut[display_channel], select) - .5f) * 4.f;
-      out[3] = CLAMP(out[3], 0.f, 1.f);
-    }
-
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
-    piece->pipe->bypass_blendif = 1;
-
-    return;
-  }
-
-  if(d->mode == DT_IOP_COLORZONES_MODE_SMOOTH)
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    process_v3(self, piece, ivoid, ovoid, roi_in, roi_out);
-    return;
+    float *in = (float *)ivoid + ch * k;
+    float *out = (float *)ovoid + ch * k;
+
+    float LCh[3];
+
+    dt_Lab_2_LCH(in, LCh);
+
+    float select = 0.0f;
+    switch(d->channel)
+    {
+      case DT_IOP_COLORZONES_L:
+        select = LCh[0] * 0.01f;
+        break;
+      case DT_IOP_COLORZONES_C:
+        select = LCh[1] * normalize_C;
+        break;
+      case DT_IOP_COLORZONES_h:
+      default:
+        select = LCh[2];
+        break;
+    }
+    select = CLAMP(select, 0.f, 1.f);
+
+    out[3] = fabsf(lookup(d->lut[display_channel], select) - .5f) * 4.f;
+    out[3] = CLAMP(out[3], 0.f, 1.f);
   }
+
+  piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+  piece->pipe->bypass_blendif = 1;
+}
+
+void process_v1(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+
+  const int ch = piece->colors;
+  const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) dt_omp_firstprivate(normalize_C, ch, ivoid, ovoid, roi_out) shared(d)      \
@@ -527,6 +479,66 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     out[3] = in[3];
   }
+}
+
+void process_v3(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  const int ch = piece->colors;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) shared(d) schedule(static)
+#endif
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  {
+    float *in = (float *)ivoid + ch * k;
+    float *out = (float *)ovoid + ch * k;
+    const float a = in[1], b = in[2];
+    const float h = fmodf(atan2f(b, a) + 2.0f * DT_M_PI_F, 2.0f * DT_M_PI_F) / (2.0f * DT_M_PI_F);
+    const float C = sqrtf(b * b + a * a);
+    float select = 0.0f;
+    float blend = 0.0f;
+    switch(d->channel)
+    {
+      case DT_IOP_COLORZONES_L:
+        select = fminf(1.0f, in[0] / 100.0f);
+        break;
+      case DT_IOP_COLORZONES_C:
+        select = fminf(1.0f, C / 128.0f);
+        break;
+      default:
+      case DT_IOP_COLORZONES_h:
+        select = h;
+        blend = powf(1.0f - C / 128.0f, 2.0f);
+        break;
+    }
+    const float Lm = (blend * .5f + (1.0f - blend) * lookup(d->lut[0], select)) - .5f;
+    const float hm = (blend * .5f + (1.0f - blend) * lookup(d->lut[2], select)) - .5f;
+    blend *= blend; // saturation isn't as prone to artifacts:
+    // const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
+    const float Cm = 2.0f * lookup(d->lut[1], select);
+    const float L = in[0] * powf(2.0f, 4.0f * Lm);
+    out[0] = L;
+    out[1] = cosf(2.0f * DT_M_PI_F * (h + hm)) * Cm * C;
+    out[2] = sinf(2.0f * DT_M_PI_F * (h + hm)) * Cm * C;
+    out[3] = in[3];
+  }
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+
+  // display selection if requested
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g && g->display_mask && self->dev->gui_attached
+     && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
+    process_display(self, piece, ivoid, ovoid, roi_in, roi_out);
+  else if(d->mode == DT_IOP_COLORZONES_MODE_SMOOTH)
+    process_v3(self, piece, ivoid, ovoid, roi_in, roi_out);
+  else
+    process_v1(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
 #ifdef HAVE_OPENCL
@@ -704,23 +716,22 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("black & white film"), self->op, version, &p, sizeof(p), 1);
 
   // neutral preset with just a set of nodes uniformly distributed along the hue axis
-#define DT_IOP_COLORZONES_BANDS_HSL 8
+  const int colorzones_bands_hsl = 8;
   p.channel = DT_IOP_COLORZONES_h;
-  for(int k = 0; k < DT_IOP_COLORZONES_BANDS_HSL; k++)
+  for(int k = 0; k < colorzones_bands_hsl; k++)
   {
-    p.curve[DT_IOP_COLORZONES_L][k].x = (float)k / DT_IOP_COLORZONES_BANDS_HSL;
+    p.curve[DT_IOP_COLORZONES_L][k].x = (float)k / colorzones_bands_hsl;
     p.curve[DT_IOP_COLORZONES_L][k].y = 0.5f;
-    p.curve[DT_IOP_COLORZONES_C][k].x = (float)k / DT_IOP_COLORZONES_BANDS_HSL;
+    p.curve[DT_IOP_COLORZONES_C][k].x = (float)k / colorzones_bands_hsl;
     p.curve[DT_IOP_COLORZONES_C][k].y = 0.5f;
-    p.curve[DT_IOP_COLORZONES_h][k].x = (float)k / DT_IOP_COLORZONES_BANDS_HSL;
+    p.curve[DT_IOP_COLORZONES_h][k].x = (float)k / colorzones_bands_hsl;
     p.curve[DT_IOP_COLORZONES_h][k].y = 0.5f;
   }
   for(int c = 0; c < 3; c++)
   {
-    p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS_HSL;
+    p.curve_num_nodes[c] = colorzones_bands_hsl;
     p.curve_type[c] = MONOTONE_HERMITE;
   }
-#undef DT_IOP_COLORZONES_BANDS_HSL
   dt_gui_presets_add_generic(_("HSL base setting"), self->op, version, &p, sizeof(p), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
