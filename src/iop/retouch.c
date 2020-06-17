@@ -2180,7 +2180,7 @@ void gui_init(dt_iop_module_t *self)
                                                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                    | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
                                                    | GDK_SMOOTH_SCROLL_MASK);
-  gtk_widget_set_size_request(g->wd_bar, -1, DT_PIXEL_APPLY_DPI(40));
+  gtk_widget_set_size_request(g->wd_bar, -1, DT_PIXEL_APPLY_DPI(38));
 
   // toolbar display current scale / cut&paste / suppress&display masks
   GtkWidget *hbox_scale = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -2277,7 +2277,7 @@ void gui_init(dt_iop_module_t *self)
 
   // shapes selected (label)
   GtkWidget *hbox_shape_sel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *label1 = gtk_label_new(_("shape selected:"));
+  GtkWidget *label1 = gtk_label_new(_("shape selected: "));
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), label1, FALSE, TRUE, 0);
   g->label_form_selected = GTK_LABEL(gtk_label_new("-1"));
   gtk_widget_set_tooltip_text(hbox_shape_sel,
@@ -2362,7 +2362,7 @@ void gui_init(dt_iop_module_t *self)
 
   // wavelet decompose bar & labels
   gtk_box_pack_start(GTK_BOX(self->widget), grid_wd_labels, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->wd_bar, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->wd_bar, TRUE, TRUE, DT_PIXEL_APPLY_DPI(3));
 
   // preview scale & cut/paste scale
   gtk_box_pack_start(GTK_BOX(self->widget), hbox_scale, TRUE, TRUE, 0);
