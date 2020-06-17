@@ -1288,6 +1288,42 @@ dt_lib_module_t *dt_lib_get_module(const char *name)
   return NULL;
 }
 
+/* callback function for delayed update after user interaction */
+static gboolean _postponed_update(gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  self->timeout_handle = 0;
+  if (self->_postponed_update)
+    self->_postponed_update(self);
+
+  return FALSE; // cancel the timer
+}
+
+/** queue a delayed call of update function after user interaction */
+void dt_lib_queue_postponed_update(dt_lib_module_t *mod, void (*update_fn)(dt_lib_module_t *self))
+{
+  if(mod->timeout_handle)
+  {
+    // here we're making sure the event fires at last hover
+    // and we won't have avalanche of events in the mean time.
+    g_source_remove(mod->timeout_handle);
+  }
+  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
+  mod->_postponed_update = update_fn;
+  mod->timeout_handle = g_timeout_add(delay, _postponed_update, mod);
+}
+
+void dt_lib_cancel_postponed_update(dt_lib_module_t *mod)
+{
+  mod->_postponed_update = NULL;
+  if (mod->timeout_handle)
+  {
+    g_source_remove(mod->timeout_handle);
+    mod->timeout_handle = 0;
+  }
+}
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
