@@ -293,13 +293,13 @@ typedef struct dt_iop_ashift_params_t
   float lensshift_v; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (vertical)"
   float lensshift_h; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (horizontal)"
   float shear;       // $MIN: -SHEAR_RANGE_SOFT $MAX: SHEAR_RANGE_SOFT $DEFAULT: 0.0
-  float f_length;    // $MIN: 1.0 $MAX: 2000.0 $DEFAULT: 28.0 $DESCRIPTION: "focal length"
+  float f_length;    // $MIN: 1.0 $MAX: 2000.0 $DEFAULT: DEFAULT_F_LENGTH $DESCRIPTION: "focal length"
   float crop_factor; // $MIN: 0.5 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "crop factor"
   float orthocorr;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "lens dependence"
   float aspect;      // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "aspect adjust"
-  dt_iop_ashift_mode_t mode;     // $DESCRIPTION: "lens model"
-  int toggle;
-  dt_iop_ashift_crop_t cropmode; // $DESCRIPTION: "automatic cropping"
+  dt_iop_ashift_mode_t mode;     // $DEFAULT: ASHIFT_MODE_GENERIC $DESCRIPTION: "lens model"
+  int toggle;                    // $DEFAULT: 0
+  dt_iop_ashift_crop_t cropmode; // $DEFAULT: ASHIFT_CROP_OFF $DESCRIPTION: "automatic cropping"
   float cl;          // $DEFAULT: 0.0
   float cr;          // $DEFAULT: 1.0
   float ct;          // $DEFAULT: 0.0
@@ -434,6 +434,7 @@ typedef struct dt_iop_ashift_gui_data_t
   float cr;	// shadow copy of dt_iop_ashift_data_t.cr
   float ct;	// shadow copy of dt_iop_ashift_data_t.ct
   float cb;	// shadow copy of dt_iop_ashift_data_t.cb
+  gboolean restore_shadow_crop;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -4144,6 +4145,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     }
 
     swap_shadow_crop_box(p,g);	//temporarily update real crop box
+    g->restore_shadow_crop = TRUE;
     // this will be restored by a callback to restore_shadow_crop_box_callback 
     // _after_ the call to dt_dev_add_history_item in the default handler
   }
@@ -4163,7 +4165,11 @@ static void restore_shadow_crop_box_callback(GtkWidget *widget, gpointer user_da
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  swap_shadow_crop_box(p,g);
+  if(g->restore_shadow_crop)
+  {
+    swap_shadow_crop_box(p,g);
+    g->restore_shadow_crop = FALSE;
+  }
 }
 
 static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
@@ -4519,20 +4525,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   // copy crop box into shadow variables
   shadow_crop_box(p,g);
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_ashift_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_ashift_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_ashift_params_t);
-  module->gui_data = NULL;
-  dt_iop_ashift_params_t tmp = (dt_iop_ashift_params_t){ 0.0f, 0.0f, 0.0f, 0.0f, DEFAULT_F_LENGTH,
-                                1.0f, 100.0f, 1.0f, ASHIFT_MODE_GENERIC, 0, ASHIFT_CROP_OFF,
-                                0.0f, 1.0f, 0.0f, 1.0f };
-  memcpy(module->params, &tmp, sizeof(dt_iop_ashift_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_ashift_params_t));
 }
 
 void reload_defaults(dt_iop_module_t *module)
