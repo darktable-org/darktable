@@ -2042,8 +2042,6 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  const int bs = DT_PIXEL_APPLY_DPI(14);
-
   self->gui_data = malloc(sizeof(dt_iop_retouch_gui_data_t));
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
@@ -2108,28 +2106,24 @@ void gui_init(dt_iop_module_t *self)
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_fill, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_fill, _("activates fill tool"));
   g_signal_connect(G_OBJECT(g->bt_fill), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_fill), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), FALSE);
 
   g->bt_blur
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_blur, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_blur, _("activates blur tool"));
   g_signal_connect(G_OBJECT(g->bt_blur), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_blur), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), FALSE);
 
   g->bt_heal
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_heal, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_heal, _("activates healing tool"));
   g_signal_connect(G_OBJECT(g->bt_heal), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_heal), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_heal), FALSE);
 
   g->bt_clone
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_clone, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_clone, _("activates cloning tool"));
   g_signal_connect(G_OBJECT(g->bt_clone), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_clone), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_clone), FALSE);
 
   gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_blur, FALSE, FALSE, 0);
@@ -2274,7 +2268,6 @@ void gui_init(dt_iop_module_t *self)
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_auto_levels, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->bt_auto_levels, _("auto levels"));
   g_signal_connect(G_OBJECT(g->bt_auto_levels), "toggled", G_CALLBACK(rt_auto_levels_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_auto_levels), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_auto_levels), FALSE);
 
   gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 0);
