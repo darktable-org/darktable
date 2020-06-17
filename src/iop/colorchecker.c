@@ -953,6 +953,7 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
   {
     self->gui_update(self);
   }
+  dt_control_queue_redraw_center();
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 }
