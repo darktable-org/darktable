@@ -1222,7 +1222,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
         {
         const int local_property = property;
-        char *colname;
+        char *colname = NULL;
 
         switch(local_property)
         {
