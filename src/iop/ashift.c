@@ -4149,13 +4149,6 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  p->cropmode = dt_bauhaus_combobox_get(widget);
-
-#ifdef ASHIFT_DEBUG
-  model_probe(self, p, g->lastfit);
-#endif
-  do_crop(self, p);
-
   if(g->lines != NULL && !g->lines_suppressed)
   {
     g->lines_suppressed = 1;
@@ -4797,8 +4790,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
-  if(!g_signal_handlers_disconnect_by_data(g->cropmode, &p->cropmode))
-    fprintf(stderr, "[ashift] error: default signal handler for cropmode could not be disconnected\n");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
