@@ -2929,7 +2929,6 @@ void gui_reset(struct dt_iop_module_t *self)
   if(g == NULL) return;
   dt_iop_request_focus(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  dt_dev_reprocess_all(self->dev);
 
   // Redraw graph
   gtk_widget_queue_draw(self->widget);
