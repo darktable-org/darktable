@@ -147,7 +147,6 @@ typedef struct dt_iop_tonecurve_gui_data_t
   GtkNotebook *channel_tabs;
   GtkWidget *colorpicker;
   GtkWidget *interpolator;
-  GtkWidget *scale;
   tonecurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected;
@@ -206,10 +205,9 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "base of the logarithm"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale for graph"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "interpolation method"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color space"));
 }
 
@@ -217,10 +215,9 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "base of the logarithm", GTK_WIDGET(g->logbase));
+  dt_accel_connect_slider_iop(self, "graph scale", GTK_WIDGET(g->logbase));
   dt_accel_connect_combobox_iop(self, "interpolation method", GTK_WIDGET(g->interpolator));
   dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->preserve_colors));
-  dt_accel_connect_combobox_iop(self, "scale", GTK_WIDGET(g->scale));
   dt_accel_connect_combobox_iop(self, "color space", GTK_WIDGET(g->autoscale_ab));
 }
 
@@ -497,6 +494,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
+// I don't understand what this is doing here: manufacturer presets are in basecurve, 
+// this doesn't seem to appear in the module... ? Remove?
 static const struct
 {
   const char *name;
@@ -768,7 +767,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 static float eval_grey(float x)
 {
-  // estimate the log base to remap the grey x to 0.5
+  // "log base" is a combined scaling and offset change so that x->[0,1] with
+  // the left side of the histogram expanded (slider->right) or not (slider left, linear)
   return x;
 }
 
@@ -809,8 +809,7 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
   dt_bauhaus_combobox_set(g->preserve_colors, p->preserve_colors);
-
-  dt_bauhaus_combobox_set(g->scale, 0); // linear
+  dt_bauhaus_slider_set(g->logbase, 0);
   g->loglogscale = 0;
   g->semilog = 0;
 
@@ -860,23 +859,12 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
   dt_bauhaus_combobox_set(g->preserve_colors, p->preserve_colors);
-
-  if (dt_bauhaus_combobox_get(g->scale) != 0)
-  {
-    g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-    gtk_widget_set_visible(g->logbase, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_visible(g->logbase, FALSE);
-  }
-
+  g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   if(g->timeout_handle)
   {
     g_source_remove(g->timeout_handle);
     g->timeout_handle = 0;
   }
-
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -941,43 +929,13 @@ void cleanup(dt_iop_module_t *module)
   module->default_params = NULL;
 }
 
-static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  gtk_widget_set_visible(g->scale, TRUE);
-  switch(dt_bauhaus_combobox_get(widget))
-  {
-    case 0:
-    {
-      // x: linear
-      g->loglogscale = 0;
-      g->semilog = 0;
-      gtk_widget_set_visible(g->logbase, FALSE);
-      break;
-    }
-    case 1:
-    {
-      // x: log
-      g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-      g->semilog = 1;
-      gtk_widget_set_visible(g->logbase, TRUE);
-      break;
-    }
-  }
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
-}
-
 static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-
-  if (dt_bauhaus_combobox_get(g->scale) != 0)
-  {
-    g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  }
+  
+  g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -1048,19 +1006,6 @@ static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, g
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   c->channel = (tonecurve_channel_t)page_num;
-  if (c->channel == ch_L)
-  {
-    gtk_widget_set_visible(c->scale, TRUE);
-    if (c->loglogscale == 0 && c->semilog == 0)
-      gtk_widget_set_visible(c->logbase, FALSE);
-    else
-      gtk_widget_set_visible(c->logbase, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_visible(c->scale, FALSE);
-    gtk_widget_set_visible(c->logbase, FALSE);
-  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1078,7 +1023,7 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
 static float to_log(const float x, const float base, const int ch, const int semilog, const int is_ordinate)
 {
   // don't log-encode the a and b channels
-  if(base > 0.0f && base != 1.0f && ch == ch_L)
+  if(base > 0.0f && ch == ch_L)
   {
     if (semilog == 1 && is_ordinate == 1)
     {
@@ -1092,7 +1037,7 @@ static float to_log(const float x, const float base, const int ch, const int sem
     }
     else
     {
-      return logf(x * (base - 1.0f) + 1.0f) / logf(base);
+      return logf(x * base + 1.0f) / logf(base + 1.0f);
     }
   }
   else
@@ -1104,7 +1049,7 @@ static float to_log(const float x, const float base, const int ch, const int sem
 static float to_lin(const float x, const float base, const int ch, const int semilog, const int is_ordinate)
 {
   // don't log-encode the a and b channels
-  if(base > 0.0f && base != 1.0f && ch == ch_L)
+  if(base > 0.0f && ch == ch_L)
   {
     if (semilog == 1 && is_ordinate == 1)
     {
@@ -1118,7 +1063,7 @@ static float to_lin(const float x, const float base, const int ch, const int sem
     }
     else
     {
-      return (powf(base, x) - 1.0f) / (base - 1.0f);
+      return (powf(base + 1.0f, x) - 1.0f) / base;
     }
   }
   else
@@ -1235,7 +1180,8 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask)
+      != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   int ch = c->channel;
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
@@ -1393,7 +1339,7 @@ void gui_init(struct dt_iop_module_t *self)
     #define MONOTONE_HERMITE 2
   */
   c->interpolator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->interpolator, NULL, _("interpolation method"));
+  dt_bauhaus_widget_set_label(c->interpolator, NULL, _("interpolation by"));
   dt_bauhaus_combobox_add(c->interpolator, _("cubic spline"));
   dt_bauhaus_combobox_add(c->interpolator, _("centripetal spline"));
   dt_bauhaus_combobox_add(c->interpolator, _("monotonic spline"));
@@ -1416,27 +1362,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->preserve_colors, _("method to preserve colors when applying contrast"));
   g_signal_connect(G_OBJECT(c->preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
-
-  c->scale = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
-  dt_bauhaus_combobox_add(c->scale, _("linear"));
-  dt_bauhaus_combobox_add(c->scale, _("log"));
-  gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
-                                          "more precise control near the blacks"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
-
-
-  c->logbase = dt_bauhaus_slider_new_with_range(self, 2.0f, 64.f, 0.5f, 2.0f, 2);
-  dt_bauhaus_widget_set_label(c->logbase, NULL, _("base of the logarithm"));
+  c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0.5f, 0.0f, 2);
+  dt_bauhaus_widget_set_label(c->logbase, NULL, _("scale for graph"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
   c->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->area));
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->channel_tabs));
-
-  dt_bauhaus_combobox_set(c->scale, 0); // linear
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
