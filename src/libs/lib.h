@@ -83,6 +83,10 @@ typedef struct dt_lib_module_t
   GtkWidget *widget;
   /** expander containing the widget. */
   GtkWidget *expander;
+  /** callback for delayed update after user interaction */
+  void (*_postponed_update)(struct dt_lib_module_t *self);
+  /** ID of timer for delayed callback */
+  guint timeout_handle;
 
   /** version */
   int (*version)(void);
@@ -171,6 +175,11 @@ gchar *dt_lib_get_localized_name(const gchar *plugin_name);
 /** add or replace a preset for this operation. */
 void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params,
                         const int32_t params_size);
+
+/** queue a delayed call of update function after user interaction */
+void dt_lib_queue_postponed_update(dt_lib_module_t *mod, void (*update_fn)(dt_lib_module_t *self));
+/** cancel any previously-queued callback */
+void dt_lib_cancel_postponed_update(dt_lib_module_t *mod);
 
 /*
  * Proxy functions
