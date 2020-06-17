@@ -4194,12 +4194,13 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g && g->mask_display && self->dev->gui_attached
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g
+     && (g->mask_display || display_wavelet_scale) && self->dev->gui_attached
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
     for(size_t j = 0; j < roi_rt->width * roi_rt->height * ch; j += ch) in_retouch[j + 3] = 0.f;
 
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    piece->pipe->mask_display = g->mask_display ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     piece->pipe->bypass_blendif = 1;
     usr_data.mask_display = 1;
   }
