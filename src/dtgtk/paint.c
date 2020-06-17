@@ -444,7 +444,6 @@ void dtgtk_cairo_paint_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
 {
   PREAMBLE(1, 0, 0)
 
-  cairo_set_line_width(cr, 0.1);
   cairo_arc(cr, 0.5, 0.5, 0.1, 0, 6.2832);
   cairo_stroke(cr);
 
@@ -2048,7 +2047,6 @@ void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 0, 0)
 
-  cairo_set_line_width(cr, 0.1);
   cairo_arc(cr, 0.65, 0.35, 0.35, 0, 2 * M_PI);
   cairo_stroke(cr);
 
@@ -2090,7 +2088,6 @@ void dtgtk_cairo_paint_tool_fill(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   PREAMBLE(1.08, 0, 0)
 
-  cairo_set_line_width(cr, 0.1);
   cairo_move_to(cr, 0.1, 0.1);
   cairo_line_to(cr, 0.2, 0.1);
   cairo_line_to(cr, 0.2, 0.9);
@@ -2109,11 +2106,11 @@ void dtgtk_cairo_paint_tool_blur(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   PREAMBLE(1.1, 0, 0)
 
- cairo_set_line_width(cr, 0.1);
  cairo_move_to(cr, 0.5, 0.1);
  cairo_arc(cr, 0.5, 0.65, 0.28, -0.2 * M_PI, 1.2 * M_PI);
  cairo_close_path(cr);
  cairo_stroke(cr);
+ cairo_set_line_width(cr, 0.1);
  cairo_arc(cr, 0.5, 0.65, 0.13, 0.65 * M_PI, 1.2 * M_PI);
  cairo_stroke(cr);
 

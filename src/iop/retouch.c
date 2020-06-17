@@ -1064,8 +1064,6 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   const float box_w = allocation.width / (float)RETOUCH_NO_SCALES;
 
   /* record mouse position within control */
-  //g->wdbar_mouse_x = CLAMP(event->x - inset, 0, width);
-  //g->wdbar_mouse_y = CLAMP(event->y - inset, 0, height);
   g->wdbar_mouse_x = CLAMP(event->x - inset, 0, allocation.width - inset);
   g->wdbar_mouse_y = event->y;
 
@@ -1113,6 +1111,16 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 
+
+  GdkRGBA border      = {0.066, 0.066, 0.066, 1};
+  GdkRGBA original    = {.1, .1, .1, 1};
+  GdkRGBA inactive    = {.15, .15, .15, 1};
+  GdkRGBA active      = {.37, .37, .37, 1};
+  GdkRGBA merge_from  = {.5, .5, .5, 1};
+  GdkRGBA residual    = {.94, .94, .94, 1};
+  GdkRGBA shapes      = {.75, .5, .0, 1};
+  GdkRGBA color;
+
   float middle;
   const int first_scale_visible = (g->first_scale_visible > 0) ? g->first_scale_visible : RETOUCH_MAX_SCALES;
 
@@ -1123,7 +1131,7 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   cairo_t *cr = cairo_create(cst);
 
   // clear background
-  cairo_set_source_rgb(cr, .15, .15, .15);
+  gdk_cairo_set_source_rgba(cr, &inactive);
   cairo_paint(cr);
   cairo_save(cr);
 
@@ -1138,53 +1146,58 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   for(int i = 0; i < RETOUCH_NO_SCALES; i++)
   {
     // draw box background
-    cairo_rectangle(cr, box_w * i + inset, inset, box_w, box_h);
-
     if(i == 0)
-      cairo_set_source_rgb(cr, .1, .1, .1);
+      color = original;
     else if(i == p->num_scales + 1)
-      cairo_set_source_rgb(cr, .9, .9, .9);
+      color = residual;
     else if(i >= p->merge_from_scale && i <= p->num_scales && p->merge_from_scale > 0)
-      cairo_set_source_rgb(cr, .45, .45, .3);
+      color = merge_from;
     else if(i <= p->num_scales)
-      cairo_set_source_rgb(cr, .5, .5, .5);
+      color = active;
     else
-      cairo_set_source_rgb(cr, .15, .15, .15);
+      color = inactive;
 
+    gdk_cairo_set_source_rgba(cr, &color);
+    cairo_rectangle(cr, box_w * i + inset, inset, box_w, box_h);
     cairo_fill(cr);
 
     // if detail scale is visible at current zoom level inform it
     if(i >= first_scale_visible && i <= p->num_scales)
     {
-      cairo_set_source_rgb(cr, .5, .5, .5);
+      gdk_cairo_set_source_rgba(cr, &merge_from);
       cairo_rectangle(cr, box_w * i + inset, 0, box_w, 2.0f * lw);
       cairo_fill(cr);
     }
-
-    // draw a border
-    cairo_set_line_width(cr, lw);
-    cairo_set_source_rgb(cr, .0, .0, .0);
-    cairo_rectangle(cr, box_w * i + inset, inset, box_w, box_h);
-    cairo_stroke(cr);
 
     // if the scale has shapes inform it
     if(rt_scale_has_shapes(p, i))
     {
       cairo_set_line_width(cr, 1);
-      cairo_set_source_rgb(cr, .1, .8, 0);
-      cairo_rectangle(cr, box_w * i + inset + lw / 2.0f, inset, box_w - lw, 3.0f * lw);
+      gdk_cairo_set_source_rgba(cr, &shapes);
+      cairo_rectangle(cr, box_w * i + inset, inset, box_w, 3.0f * lw);
       cairo_fill(cr);
     }
+
+    // draw the border
+    cairo_set_line_width(cr, lw);
+    gdk_cairo_set_source_rgba(cr, &border);
+    cairo_rectangle(cr, box_w * i + inset, inset, box_w, box_h);
+    cairo_stroke(cr);
   }
 
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
   cairo_restore(cr);
 
-  // cyan dot for the current scale
+  // dot for the current scale
+  if(p->curr_scale >= p->merge_from_scale && p->curr_scale <= p->num_scales && p->merge_from_scale > 0)
+    color = active;
+  else
+    color = merge_from;
+
   if(p->curr_scale >= 0 && p->curr_scale < RETOUCH_NO_SCALES)
   {
     cairo_set_line_width(cr, lw);
-    cairo_set_source_rgb(cr, 0.25, 0.88, 0.82);
+    gdk_cairo_set_source_rgba(cr, &color);
     middle = box_w * (0.5f + (float)p->curr_scale);
     cairo_arc(cr, middle + inset, 0.5f * box_h + inset, 0.5f * inset, 0, 2.0f * M_PI);
     cairo_fill(cr);
@@ -1195,30 +1208,40 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   if(g->curr_scale >= 0)
   {
     cairo_set_line_width(cr, lw);
-    if(g->curr_scale == p->num_scales + 1)
-      cairo_set_source_rgb(cr, 0.25, 0.25, 0.25);
-    else
-      cairo_set_source_rgb(cr, 0.75, 0.75, 0.75);
+    if(g->curr_scale == p->num_scales + 1) color = inactive;
+    else color = residual;
+    gdk_cairo_set_source_rgba(cr, &color);
     cairo_rectangle(cr, box_w * g->curr_scale + inset + lw, inset + lw, box_w - 2.0f * lw, box_h - 2.0f * lw);
     cairo_stroke(cr);
   }
 
   /* render control points handles */
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6); //TODO: take color from style properties
 
   // draw number of scales arrow (bottom arrow)
   middle = box_w * (0.5f + (float)p->num_scales);
   if(g->lower_cursor || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM)
+  {
+    cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
     dtgtk_cairo_paint_solid_triangle(cr, middle, box_h, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_UP, NULL);
+  }
   else
+  {
+    cairo_set_source_rgb(cr, 0.54, 0.54, 0.54);
     dtgtk_cairo_paint_triangle(cr, middle, box_h, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_UP, NULL);
+  }
 
   // draw merge scales arrow (top arrow)
   middle = box_w * (0.5f + (float)p->merge_from_scale);
   if(g->upper_cursor || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_TOP)
+  {
+    cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
     dtgtk_cairo_paint_solid_triangle(cr, middle, 0, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_DOWN, NULL);
+  }
   else
+  {
+    cairo_set_source_rgb(cr, 0.54, 0.54, 0.54);
     dtgtk_cairo_paint_triangle(cr, middle, 0, 2.0 * inset, 2.0 * inset, CPF_DIRECTION_DOWN, NULL);
+  }
 
   /* push mem surface into widget */
   cairo_destroy(cr);
