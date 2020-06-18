@@ -59,7 +59,9 @@ sub mark_for_translation
   my $GETTEXT_CONTEXT = "introspection description";
 
   my $result = "(char*)\"$string\"";
-  $result = "NC_(\"$GETTEXT_CONTEXT\", $result)" if($string ne "");
+  # we do not want to support a context as it break all translations see #5498
+  # $result = "NC_(\"$GETTEXT_CONTEXT\", $result)" if($string ne "");
+  $result = "N_($result)" if($string ne "");
 
   return $result;
 }
@@ -989,7 +991,7 @@ sub get_introspection_code
   {
     $_linearisation_pos = $enum_arrays{$self->{name}};
   }
-  push(@assignments, "introspection_linear[$_linearisation_pos].Enum.values = f$_linearisation_pos;");
+  push(@assignments, "introspection_linear[$linearisation_pos].Enum.values = f$_linearisation_pos;");
 
   my $default = $declaration->get_default();
   $default = $self->get_default() unless(defined($default));

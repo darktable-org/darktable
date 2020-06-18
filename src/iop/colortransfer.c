@@ -338,7 +338,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(data->flag == ACQUIRE)
   {
-    if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     {
       // only get stuff from the preview pipe, rest stays untouched.
       int hist[HISTN];
@@ -705,14 +705,6 @@ void gui_init(struct dt_iop_module_t *self)
   }
   else gtk_widget_set_sensitive(GTK_WIDGET(g->apply_button), FALSE);
 #endif
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  //  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
-  //  cmsDeleteTransform(g->xform);
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

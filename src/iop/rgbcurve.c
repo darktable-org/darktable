@@ -25,6 +25,7 @@
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/presets.h"
@@ -51,25 +52,25 @@ typedef enum rgbcurve_channel_t
 
 typedef enum dt_iop_rgbcurve_autoscale_t
 {
-  DT_S_SCALE_AUTOMATIC_RGB = 0,
-  DT_S_SCALE_MANUAL_RGB = 1
+  DT_S_SCALE_AUTOMATIC_RGB = 0, // $DESCRIPTION: "RGB, linked channels"
+  DT_S_SCALE_MANUAL_RGB = 1     // $DESCRIPTION: "RGB, independent channels"
 } dt_iop_rgbcurve_autoscale_t;
 
 typedef struct dt_iop_rgbcurve_node_t
 {
-  float x;
-  float y;
+  float x; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0
+  float y; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0
 } dt_iop_rgbcurve_node_t;
 
 typedef struct dt_iop_rgbcurve_params_t
 {
   dt_iop_rgbcurve_node_t curve_nodes[DT_IOP_RGBCURVE_MAX_CHANNELS]
                                     [DT_IOP_RGBCURVE_MAXNODES]; // actual nodes for each curve
-  int curve_num_nodes[DT_IOP_RGBCURVE_MAX_CHANNELS];            // number of nodes per curve
-  int curve_type[DT_IOP_RGBCURVE_MAX_CHANNELS]; // curve type (CATMULL_ROM, MONOTONE_HERMITE, CUBIC_SPLINE)
-  int curve_autoscale;        // (DT_S_SCALE_MANUAL_RGB, DT_S_SCALE_AUTOMATIC_RGB)
-  int compensate_middle_grey; // scale the curve and histogram so middle gray is at .5
-  int preserve_colors;
+  int curve_num_nodes[DT_IOP_RGBCURVE_MAX_CHANNELS]; // $DEFAULT: 2 number of nodes per curve
+  int curve_type[DT_IOP_RGBCURVE_MAX_CHANNELS]; // $DEFAULT: MONOTONE_HERMITE (CATMULL_ROM, MONOTONE_HERMITE, CUBIC_SPLINE)
+  dt_iop_rgbcurve_autoscale_t curve_autoscale;  // $DEFAULT: DT_S_SCALE_AUTOMATIC_RGB $DESCRIPTION: "mode"
+  gboolean compensate_middle_grey; // $DEFAULT: 1 scale the curve and histogram so middle gray is at .5
+  dt_iop_rgb_norms_t preserve_colors; // $DEFAULT: DT_RGB_NORM_LUMINANCE
 } dt_iop_rgbcurve_params_t;
 
 typedef struct dt_iop_rgbcurve_gui_data_t
@@ -79,7 +80,6 @@ typedef struct dt_iop_rgbcurve_gui_data_t
   int minmax_curve_type[DT_IOP_RGBCURVE_MAX_CHANNELS];
   GtkBox *hbox;
   GtkDrawingArea *area;
-  GtkSizeGroup *sizegroup;
   GtkWidget *autoscale; // (DT_S_SCALE_MANUAL_RGB, DT_S_SCALE_AUTOMATIC_RGB)
   GtkNotebook *channel_tabs;
   GtkWidget *colorpicker;
@@ -314,20 +314,9 @@ static void picker_scale(const float *const in, float *out, dt_iop_rgbcurve_para
 
 static void _rgbcurve_show_hide_controls(dt_iop_rgbcurve_params_t *p, dt_iop_rgbcurve_gui_data_t *g)
 {
-  switch(p->curve_autoscale)
-  {
-    case DT_S_SCALE_MANUAL_RGB:
-      gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
-      break;
-    case DT_S_SCALE_AUTOMATIC_RGB:
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      break;
-  }
+  gtk_notebook_set_show_tabs(g->channel_tabs, p->curve_autoscale == DT_S_SCALE_MANUAL_RGB);
 
-  if(p->curve_autoscale == DT_S_SCALE_AUTOMATIC_RGB)
-    gtk_widget_set_visible(g->cmb_preserve_colors, TRUE);
-  else
-    gtk_widget_set_visible(g->cmb_preserve_colors, FALSE);
+  gtk_widget_set_visible(g->cmb_preserve_colors, p->curve_autoscale == DT_S_SCALE_AUTOMATIC_RGB);
 }
 
 static gboolean _is_identity(dt_iop_rgbcurve_params_t *p, rgbcurve_channel_t channel)
@@ -338,36 +327,60 @@ static gboolean _is_identity(dt_iop_rgbcurve_params_t *p, rgbcurve_channel_t cha
   return TRUE;
 }
 
-static void autoscale_callback(GtkWidget *widget, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(darktable.gui->reset) return;
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
-  const int combo = dt_bauhaus_combobox_get(widget);
 
-  g->channel = DT_IOP_RGBCURVE_R;
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), DT_IOP_RGBCURVE_R);
-  p->curve_autoscale = combo;
-
-  _rgbcurve_show_hide_controls(p, g);
-
-  // swithing to manual scale, if G and B not touched yet, just make them identical to global setting (R)
-  if(combo == DT_S_SCALE_MANUAL_RGB
-     && _is_identity(p, DT_IOP_RGBCURVE_G)
-     && _is_identity(p, DT_IOP_RGBCURVE_B))
+  if(w == g->autoscale)
   {
-    for(int k=0; k<DT_IOP_RGBCURVE_MAXNODES; k++)
-      p->curve_nodes[DT_IOP_RGBCURVE_G][k]
-        = p->curve_nodes[DT_IOP_RGBCURVE_B][k] = p->curve_nodes[DT_IOP_RGBCURVE_R][k];
+    g->channel = DT_IOP_RGBCURVE_R;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), DT_IOP_RGBCURVE_R);
 
-    p->curve_num_nodes[DT_IOP_RGBCURVE_G] = p->curve_num_nodes[DT_IOP_RGBCURVE_B]
-      = p->curve_num_nodes[DT_IOP_RGBCURVE_R];
-    p->curve_type[DT_IOP_RGBCURVE_G] = p->curve_type[DT_IOP_RGBCURVE_B]
-      = p->curve_type[DT_IOP_RGBCURVE_R];
+    _rgbcurve_show_hide_controls(p, g);
+
+    // swithing to manual scale, if G and B not touched yet, just make them identical to global setting (R)
+    if(p->curve_autoscale == DT_S_SCALE_MANUAL_RGB
+      && _is_identity(p, DT_IOP_RGBCURVE_G)
+      && _is_identity(p, DT_IOP_RGBCURVE_B))
+    {
+      for(int k=0; k<DT_IOP_RGBCURVE_MAXNODES; k++)
+        p->curve_nodes[DT_IOP_RGBCURVE_G][k]
+          = p->curve_nodes[DT_IOP_RGBCURVE_B][k] = p->curve_nodes[DT_IOP_RGBCURVE_R][k];
+
+      p->curve_num_nodes[DT_IOP_RGBCURVE_G] = p->curve_num_nodes[DT_IOP_RGBCURVE_B]
+        = p->curve_num_nodes[DT_IOP_RGBCURVE_R];
+      p->curve_type[DT_IOP_RGBCURVE_G] = p->curve_type[DT_IOP_RGBCURVE_B]
+        = p->curve_type[DT_IOP_RGBCURVE_R];
+    }
   }
+  else if(w == g->chk_compensate_middle_grey)
+  {
+    const dt_iop_order_iccprofile_info_t *const work_profile
+        = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
+    if(work_profile == NULL) return;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(self->widget);
+    for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
+    {
+      for(int k = 0; k < p->curve_num_nodes[ch]; k++)
+      {
+        if(p->compensate_middle_grey)
+        {
+          // we transform the curve nodes from the image colorspace to lab
+          p->curve_nodes[ch][k].x = dt_ioppr_compensate_middle_grey(p->curve_nodes[ch][k].x, work_profile);
+          p->curve_nodes[ch][k].y = dt_ioppr_compensate_middle_grey(p->curve_nodes[ch][k].y, work_profile);
+        }
+        else
+        {
+          // we transform the curve nodes from lab to the image colorspace
+          p->curve_nodes[ch][k].x = dt_ioppr_uncompensate_middle_grey(p->curve_nodes[ch][k].x, work_profile);
+          p->curve_nodes[ch][k].y = dt_ioppr_uncompensate_middle_grey(p->curve_nodes[ch][k].y, work_profile);
+        }
+      }
+    }
+
+    self->histogram_middle_grey = p->compensate_middle_grey;
+  }
 }
 
 static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -390,60 +403,6 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-}
-
-static void compensate_middle_grey_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
-  dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
-
-  const dt_iop_order_iccprofile_info_t *const work_profile
-      = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
-  if(work_profile == NULL) return;
-
-  const int compensate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-
-  if(compensate && !p->compensate_middle_grey)
-  {
-    // we transform the curve nodes from the image colorspace to lab
-    for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
-    {
-      for(int k = 0; k < p->curve_num_nodes[ch]; k++)
-      {
-        p->curve_nodes[ch][k].x = dt_ioppr_compensate_middle_grey(p->curve_nodes[ch][k].x, work_profile);
-        p->curve_nodes[ch][k].y = dt_ioppr_compensate_middle_grey(p->curve_nodes[ch][k].y, work_profile);
-      }
-    }
-  }
-  else if(!compensate && p->compensate_middle_grey)
-  {
-    // we transform the curve nodes from lab to the image colorspace
-    for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
-    {
-      for(int k = 0; k < p->curve_num_nodes[ch]; k++)
-      {
-        p->curve_nodes[ch][k].x = dt_ioppr_uncompensate_middle_grey(p->curve_nodes[ch][k].x, work_profile);
-        p->curve_nodes[ch][k].y = dt_ioppr_uncompensate_middle_grey(p->curve_nodes[ch][k].y, work_profile);
-      }
-    }
-  }
-
-  p->compensate_middle_grey = compensate;
-  self->histogram_middle_grey = compensate;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
-}
-
-static void preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
-
-  p->preserve_colors = dt_bauhaus_combobox_get(widget);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void tab_switch_callback(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
@@ -1436,42 +1395,25 @@ void gui_init(struct dt_iop_module_t *self)
   g->timeout_handle = 0;
   change_image(self);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  g->autoscale = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->autoscale, NULL, _("mode"));
-  dt_bauhaus_combobox_add(g->autoscale, _("RGB, linked channels"));
-  dt_bauhaus_combobox_add(g->autoscale, _("RGB, independent channels"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->autoscale, TRUE, TRUE, 0);
+  g->autoscale = dt_bauhaus_combobox_from_params(self, "curve_autoscale");
   gtk_widget_set_tooltip_text(g->autoscale, _("choose between linked and independent channels."));
-  g_signal_connect(G_OBJECT(g->autoscale), "value-changed", G_CALLBACK(autoscale_callback), self);
 
   // tabs
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  R  ")));
-  gtk_widget_set_tooltip_text(
-      gtk_notebook_get_tab_label(g->channel_tabs, gtk_notebook_get_nth_page(g->channel_tabs, -1)),
-      _("curve nodes for r channel"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  G  ")));
-  gtk_widget_set_tooltip_text(
-      gtk_notebook_get_tab_label(g->channel_tabs, gtk_notebook_get_nth_page(g->channel_tabs, -1)),
-      _("curve nodes for g channel"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  B  ")));
-  gtk_widget_set_tooltip_text(
-      gtk_notebook_get_tab_label(g->channel_tabs, gtk_notebook_get_nth_page(g->channel_tabs, -1)),
-      _("curve nodes for b channel"));
+  GtkWidget *tab_label;
+  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  R  ")));
+  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for r channel"));
+  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  G  ")));
+  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for g channel"));
+  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  B  ")));
+  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for b channel"));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs, g->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->channel_tabs), TRUE, TRUE, 0);
-
 
   // color pickers
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
@@ -1524,37 +1466,18 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->interpolator, _("centripetal spline"));
   dt_bauhaus_combobox_add(g->interpolator, _("monotonic spline"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->interpolator, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(
-      g->interpolator,
+  gtk_widget_set_tooltip_text(g->interpolator,
       _("change this method if you see oscillations or cusps in the curve\n"
         "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
         "- centripetal is better to avoids cusps and oscillations with close nodes but is less smooth\n"
         "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)\n"));
   g_signal_connect(G_OBJECT(g->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
 
-  g->chk_compensate_middle_grey = gtk_check_button_new_with_label(_("compensate middle grey"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_compensate_middle_grey), p->compensate_middle_grey);
+  g->chk_compensate_middle_grey = dt_bauhaus_toggle_from_params(self, "compensate_middle_grey");
   gtk_widget_set_tooltip_text(g->chk_compensate_middle_grey, _("compensate middle grey"));
-  g_signal_connect(G_OBJECT(g->chk_compensate_middle_grey), "toggled", G_CALLBACK(compensate_middle_grey_callback),
-                   self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->chk_compensate_middle_grey, TRUE, TRUE, 0);
 
-  g->cmb_preserve_colors = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_preserve_colors, NULL, _("preserve colors"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("none"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("max RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("average RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("sum RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("norm RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("basic power"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
+  g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
-  g_signal_connect(G_OBJECT(g->cmb_preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
-
-  g->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));
-  gtk_size_group_add_widget(g->sizegroup, GTK_WIDGET(g->area));
-  gtk_size_group_add_widget(g->sizegroup, GTK_WIDGET(g->channel_tabs));
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -1582,8 +1505,6 @@ void gui_update(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
-  // this one we need to unref manually. not so the initially unowned widgets.
-  g_object_unref(g->sizegroup);
 
   for(int k = 0; k < DT_IOP_RGBCURVE_MAX_CHANNELS; k++) dt_draw_curve_destroy(g->minmax_curve[k]);
 
@@ -1627,39 +1548,19 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_rgbcurve_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_rgbcurve_params_t));
+  dt_iop_default_init(module);
 
-  module->default_enabled = 0;
   module->request_histogram |= (DT_REQUEST_ON);
-  module->params_size = sizeof(dt_iop_rgbcurve_params_t);
-  module->gui_data = NULL;
 
-  dt_iop_rgbcurve_params_t tmp = (dt_iop_rgbcurve_params_t){
-    // three curves (r, g, b) with a number of nodes
-    .curve_nodes
-    = { { { 0.0, 0.0 }, { 1.0, 1.0 } }, { { 0.0, 0.0 }, { 1.0, 1.0 } }, { { 0.0, 0.0 }, { 1.0, 1.0 } } },
-    .curve_num_nodes = { 2, 2, 2 }, // number of nodes per curve
-    // .curve_type = { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
-    .curve_type = { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-    // .curve_type = { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
-    .curve_autoscale = DT_S_SCALE_AUTOMATIC_RGB, // autoscale
-    .compensate_middle_grey = 1,
-    .preserve_colors = DT_RGB_NORM_LUMINANCE
-  };
+  dt_iop_rgbcurve_params_t *d = module->default_params;
 
-  module->histogram_middle_grey = tmp.compensate_middle_grey;
+  d->curve_nodes[0][1].x = d->curve_nodes[0][1].y =
+  d->curve_nodes[1][1].x = d->curve_nodes[1][1].y =
+  d->curve_nodes[2][1].x = d->curve_nodes[2][1].y = 1.0;
 
-  memcpy(module->params, &tmp, sizeof(dt_iop_rgbcurve_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_rgbcurve_params_t));
-}
+  module->histogram_middle_grey = d->compensate_middle_grey;
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  memcpy(module->params, module->default_params, sizeof(dt_iop_rgbcurve_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1753,7 +1654,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)(piece->data);
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)p1;
 
-  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     piece->request_histogram |= (DT_REQUEST_ON);
   else
     piece->request_histogram &= ~(DT_REQUEST_ON);

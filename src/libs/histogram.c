@@ -74,7 +74,9 @@ const char *name(dt_lib_module_t *self)
 
 const char **views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"darkroom", "tethering", NULL};
+  static const char *v[] = {"darkroom", /*"tethering",*/ NULL};
+  /* histogram disabled on tethering mode for 3.2 release as not working,
+     see #4298 for discussion and resolution of this issue. */
   return v;
 }
 
@@ -135,7 +137,7 @@ static void _draw_type_toggle(cairo_t *cr, float x, float y, float width, float 
     case DT_DEV_SCOPE_HISTOGRAM:
       cairo_curve_to(cr, 0.3 * width, height - 2.0 * border, 0.3 * width, 2.0 * border,
                      0.5 * width, 2.0 * border);
-      cairo_curve_to(cr, 0.7 * width, 2.0 * border, 0.7 * width, height - 2.0 * border, 
+      cairo_curve_to(cr, 0.7 * width, 2.0 * border, 0.7 * width, height - 2.0 * border,
                      width - 2.0 * border, height - 2.0 * border);
       cairo_fill(cr);
       break;
@@ -828,7 +830,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
     case DT_DEV_SCOPE_N:
       g_assert_not_reached();
   }
-  dt_conf_set_string("plugins/darkroom/histogram/mode", 
+  dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_dev_scope_type_names[dev->scope_type]);
   dt_conf_set_string("plugins/darkroom/histogram/histogram",
                      dt_lib_histogram_histogram_type_names[dev->histogram_type]);

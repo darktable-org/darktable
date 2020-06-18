@@ -21,7 +21,6 @@
 #include "common/debug.h"
 #include "common/selection.h"
 #include "control/control.h"
-#include "dtgtk/thumbtable.h"
 #include "gui/gtk.h"
 #include "views/view.h"
 

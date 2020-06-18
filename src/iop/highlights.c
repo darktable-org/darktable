@@ -31,6 +31,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -44,16 +45,18 @@ DT_MODULE_INTROSPECTION(2, dt_iop_highlights_params_t)
 
 typedef enum dt_iop_highlights_mode_t
 {
-  DT_IOP_HIGHLIGHTS_CLIP = 0,
-  DT_IOP_HIGHLIGHTS_LCH = 1,
-  DT_IOP_HIGHLIGHTS_INPAINT = 2,
+  DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "clip highlights"
+  DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
+  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color" 
 } dt_iop_highlights_mode_t;
 
 typedef struct dt_iop_highlights_params_t
 {
-  dt_iop_highlights_mode_t mode;
-  float blendL, blendC, blendh; // unused
-  float clip;
+  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
+  float blendL; // unused $DEFAULT: 1.0
+  float blendC; // unused $DEFAULT: 0.0
+  float blendh; // unused $DEFAULT: 0.0
+  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -969,22 +972,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
-static void clip_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  p->clip = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void mode_changed(GtkWidget *combo, dt_iop_module_t *self)
-{
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  p->mode = dt_bauhaus_combobox_get(combo);
-  if(p->mode > DT_IOP_HIGHLIGHTS_INPAINT) p->mode = DT_IOP_HIGHLIGHTS_INPAINT;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1044,70 +1031,22 @@ void gui_update(struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_highlights_params_t tmp = (dt_iop_highlights_params_t){
-    .mode = DT_IOP_HIGHLIGHTS_CLIP, .blendL = 1.0, .blendC = 0.0, .blendh = 0.0, .clip = 1.0
-  };
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
-
-  // enable this per default if raw or sraw,
+  // enable this per default if raw or sraw, 
   module->default_enabled = dt_image_is_rawprepare_supported(&(module->dev->image_storage));
-
-end:
-  memcpy(module->params, &tmp, sizeof(dt_iop_highlights_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_highlights_params_t));
-}
-
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_highlights_data_t));
-  module->params = calloc(1, sizeof(dt_iop_highlights_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_highlights_params_t));
-  module->params_size = sizeof(dt_iop_highlights_params_t);
-  module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_highlights_gui_data_t));
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  g->mode = dt_bauhaus_combobox_new(self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->mode, NULL, _("method"));
-  dt_bauhaus_combobox_add(g->mode, _("clip highlights"));
-  dt_bauhaus_combobox_add(g->mode, _("reconstruct in LCh"));
-  dt_bauhaus_combobox_add(g->mode, _("reconstruct color"));
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("highlight reconstruction method"));
 
-  g->clip = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->clip, 3);
+  g->clip = dt_bauhaus_slider_from_params(self, "clip");
+  dt_bauhaus_slider_set_digits(g->clip, 3);
   gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold against "
                                          "magenta highlights (you shouldn't ever need to touch this)"));
-  dt_bauhaus_widget_set_label(g->clip, NULL, _("clipping threshold"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->clip, TRUE, TRUE, 0);
-
-
-  g_signal_connect(G_OBJECT(g->clip), "value-changed", G_CALLBACK(clip_callback), self);
-  g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_changed), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

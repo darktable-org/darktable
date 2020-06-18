@@ -2247,7 +2247,7 @@
     </type>
     <default>display-referred</default>
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
-    <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve and the legacy module pipe order. (needs a restart)</longdescription>
+    <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve and the legacy module pipe order.\n(needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>

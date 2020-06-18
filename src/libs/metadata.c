@@ -39,6 +39,7 @@ typedef struct dt_lib_metadata_t
 {
   int imgsel;
   GtkTextView *textview[DT_METADATA_NUMBER];
+  gulong lost_focus_handler[DT_METADATA_NUMBER];
   GtkWidget *swindow[DT_METADATA_NUMBER];
   GList *metadata_list[DT_METADATA_NUMBER];
   GtkGrid *metadata_grid;
@@ -137,15 +138,10 @@ static void _fill_text_view(const uint32_t i, const uint32_t count, dt_lib_modul
   _text_set_italic(d->textview[i], multi);
 }
 
-static void _update(dt_lib_module_t *self, gboolean early_bark_out)
+static void _update(dt_lib_module_t *self)
 {
-  //   early_bark_out = FALSE; // FIXME: when barking out early we don't update on ctrl-a/ctrl-shift-a. but
-  //   otherwise it's impossible to edit text
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  const int imgsel = dt_control_get_mouse_over_id();
-  if(early_bark_out && imgsel == d->imgsel) return;
-
-  d->imgsel = imgsel;
+  d->imgsel = dt_control_get_mouse_over_id();
 
   GList *metadata[DT_METADATA_NUMBER];
   uint32_t metadata_count[DT_METADATA_NUMBER];
@@ -214,35 +210,30 @@ static void _update(dt_lib_module_t *self, gboolean early_bark_out)
 static gboolean _postponed_update(gpointer data)
 {
   // timeout handle clearing is handled by update code
-  _update((dt_lib_module_t *)data, FALSE);
+  _update((dt_lib_module_t *)data);
 
   return FALSE;
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
-  _update(self, FALSE);
+  _update(self);
 }
 
 static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
                                         int next, dt_lib_module_t *self)
 {
-  _update(self, FALSE);
-}
-
-static gboolean _draw(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
-{
-  if(!dt_control_running()) return FALSE;
-  _update(self, TRUE);
-  return FALSE;
+  _update(self);
 }
 
 static void _clear_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  d->editing = FALSE;
   GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
   dt_metadata_clear(imgs, TRUE);
   dt_image_synch_xmps(imgs);
-  _update(self, FALSE);
+  _update(self);
 }
 
 static void _append_kv(GList **l, const gchar *key, const gchar *value)
@@ -254,7 +245,6 @@ static void _append_kv(GList **l, const gchar *key, const gchar *value)
 static void _write_metadata(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-
   d->editing = FALSE;
 
   gchar *metadata[DT_METADATA_NUMBER];
@@ -280,7 +270,7 @@ static void _write_metadata(dt_lib_module_t *self)
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
   dt_image_synch_xmps(imgs);
-  _update(self, FALSE);
+  _update(self);
 }
 
 static void _apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
@@ -315,7 +305,7 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
         event->keyval = GDK_KEY_Tab;
         break;
       case GDK_KEY_Escape:
-        _update(self, FALSE);
+        _update(self);
         gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
         d->editing = FALSE;
         break;
@@ -347,9 +337,16 @@ static gboolean _got_focus(GtkWidget *textview, dt_lib_module_t *self)
   return FALSE;
 }
 
+static gboolean _lost_focus(GtkWidget *textview, GdkEventFocus *event, dt_lib_module_t *self)
+{
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  d->editing = FALSE;
+  return FALSE;
+}
+
 void gui_reset(dt_lib_module_t *self)
 {
-  _update(self, FALSE);
+  _update(self);
 }
 
 int position()
@@ -394,9 +391,10 @@ static void _update_layout(dt_lib_module_t *self)
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  /* lets trigger an expose for a redraw of widget */
-
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  // if editing don't lose the current entry
+  if (d->editing) return;
+
   const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
 
   if(d->timeout_handle)
@@ -707,8 +705,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
-  g_signal_connect(self->widget, "draw", G_CALLBACK(_draw), self);
-
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     GtkWidget *label = gtk_label_new(_(dt_metadata_get_name_by_display_order(i)));
@@ -739,6 +735,7 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(textview, "key-press-event", G_CALLBACK(_key_pressed), self);
     g_signal_connect(G_OBJECT(textview), "button-press-event", G_CALLBACK(_click_on_textview), self);
     g_signal_connect(textview, "grab-focus", G_CALLBACK(_got_focus), self);
+    d->lost_focus_handler[i] = g_signal_connect(textview, "focus-out-event", G_CALLBACK(_lost_focus), self);
     g_signal_connect(G_OBJECT(swindow), "scroll-event", G_CALLBACK(_mouse_scroll), self);
     d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
@@ -795,8 +792,7 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_image_selection_changed_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
-
-  _update(self, FALSE);
+  _update(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -811,6 +807,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    g_signal_handler_disconnect(G_OBJECT(d->textview[i]), d->lost_focus_handler[i]);
     dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->textview[i]));
   }
   free(self->data);
@@ -970,7 +967,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   g_list_free(key_value);
 
   dt_image_synch_xmps(imgs);
-  _update(self, FALSE);
+  _update(self);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

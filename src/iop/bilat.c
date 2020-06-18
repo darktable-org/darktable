@@ -26,6 +26,7 @@
 #include "common/locallaplaciancl.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -40,18 +41,18 @@ DT_MODULE_INTROSPECTION(3, dt_iop_bilat_params_t)
 
 typedef enum dt_iop_bilat_mode_t
 {
-  s_mode_bilateral = 0,
-  s_mode_local_laplacian = 1,
+  s_mode_bilateral = 0,       // $DESCRIPTION: "bilateral grid"
+  s_mode_local_laplacian = 1, // $DESCRIPTION: "local laplacian filter"
 }
 dt_iop_bilat_mode_t;
 
 typedef struct dt_iop_bilat_params_t
 {
-  uint32_t mode;
-  float sigma_r;
-  float sigma_s;
-  float detail;
-  float midtone;
+  dt_iop_bilat_mode_t mode; // $DEFAULT: 1
+  float sigma_r; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5 highlights 100 & range
+  float sigma_s; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5 shadows 100 & spatial 1 100 50
+  float detail;  // $MIN: -1.0 $MAX: 4.0 $DEFAULT: 0.25
+  float midtone; // $MIN: 0.001 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "midtone range"
 }
 dt_iop_bilat_params_t;
 
@@ -353,100 +354,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
 }
 
-/** init, cleanup, commit to pipeline */
-void init(dt_iop_module_t *module)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  module->params = calloc(1, sizeof(dt_iop_bilat_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_bilat_params_t));
-  // our module is disabled by default
-  // by default:
-  module->default_enabled = 0;
-  // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->params_size = sizeof(dt_iop_bilat_params_t);
-  module->gui_data = NULL;
-  // init defaults:
-  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ s_mode_local_laplacian, 0.5, 0.5, 0.25, 0.5 };
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_bilat_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_bilat_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
-static void spatial_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  p->sigma_s = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void range_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  p->sigma_r = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void highlights_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  p->sigma_r = dt_bauhaus_slider_get(w)/100.0f;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void shadows_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  p->sigma_s = dt_bauhaus_slider_get(w)/100.0f;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void midtone_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_bilat_params_t *p = self->params;
-  p->midtone = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void detail_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  p->detail = (dt_bauhaus_slider_get(w)-100.0f)/100.0f;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  p->mode = dt_bauhaus_combobox_get(w);
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-  if(p->mode == s_mode_local_laplacian)
+  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
+  if(w == g->mode)
   {
-    gtk_widget_set_visible(g->highlights, TRUE);
-    gtk_widget_set_visible(g->shadows, TRUE);
-    gtk_widget_set_visible(g->midtone, TRUE);
-    gtk_widget_set_visible(g->range, FALSE);
-    gtk_widget_set_visible(g->spatial, FALSE);
-    dt_bauhaus_slider_set(g->highlights, 50.0f);
-    dt_bauhaus_slider_set(g->shadows, 50.0f);
-  }
-  else
-  {
-    gtk_widget_set_visible(g->highlights, FALSE);
-    gtk_widget_set_visible(g->shadows, FALSE);
-    gtk_widget_set_visible(g->midtone, FALSE);
-    gtk_widget_set_visible(g->range, TRUE);
-    gtk_widget_set_visible(g->spatial, TRUE);
+    gtk_widget_set_visible(g->highlights, p->mode == s_mode_local_laplacian);
+    dt_bauhaus_slider_set(g->highlights, 0.5f);
+    gtk_widget_set_visible(g->shadows, p->mode == s_mode_local_laplacian);
+    dt_bauhaus_slider_set(g->shadows, 0.5f);
+    gtk_widget_set_visible(g->midtone, p->mode == s_mode_local_laplacian);
+    gtk_widget_set_visible(g->range, p->mode != s_mode_local_laplacian);
     dt_bauhaus_slider_set(g->range, 20.0f);
+    gtk_widget_set_visible(g->spatial, p->mode != s_mode_local_laplacian);
     dt_bauhaus_slider_set(g->spatial, 50.0f);
   }
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 /** gui callbacks, these are needed. */
@@ -455,29 +378,26 @@ void gui_update(dt_iop_module_t *self)
   // let gui slider match current parameters:
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  dt_bauhaus_slider_set(g->detail, 100.0f*p->detail+100.0f);
+  dt_bauhaus_slider_set(g->detail, p->detail);
   dt_bauhaus_combobox_set(g->mode, p->mode);
+
   if(p->mode == s_mode_local_laplacian)
   {
-    dt_bauhaus_slider_set(g->shadows, p->sigma_s*100.0f);
-    dt_bauhaus_slider_set(g->highlights, p->sigma_r*100.0f);
+    dt_bauhaus_slider_set(g->highlights, p->sigma_r);
+    dt_bauhaus_slider_set(g->shadows, p->sigma_s);
     dt_bauhaus_slider_set(g->midtone, p->midtone);
-    gtk_widget_set_visible(g->range, FALSE);
-    gtk_widget_set_visible(g->spatial, FALSE);
-    gtk_widget_set_visible(g->highlights, TRUE);
-    gtk_widget_set_visible(g->shadows, TRUE);
-    gtk_widget_set_visible(g->midtone, TRUE);
   }
   else
   {
-    dt_bauhaus_slider_set(g->spatial, p->sigma_s);
     dt_bauhaus_slider_set(g->range, p->sigma_r);
-    gtk_widget_set_visible(g->range, TRUE);
-    gtk_widget_set_visible(g->spatial, TRUE);
-    gtk_widget_set_visible(g->highlights, FALSE);
-    gtk_widget_set_visible(g->shadows, FALSE);
-    gtk_widget_set_visible(g->midtone, FALSE);
+    dt_bauhaus_slider_set(g->spatial, p->sigma_s);
   }
+
+  gtk_widget_set_visible(g->highlights, p->mode == s_mode_local_laplacian);
+  gtk_widget_set_visible(g->shadows, p->mode == s_mode_local_laplacian);
+  gtk_widget_set_visible(g->midtone, p->mode == s_mode_local_laplacian);
+  gtk_widget_set_visible(g->range, p->mode != s_mode_local_laplacian);
+  gtk_widget_set_visible(g->spatial, p->mode != s_mode_local_laplacian);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -485,49 +405,48 @@ void gui_init(dt_iop_module_t *self)
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_bilat_gui_data_t));
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->mode, _("bilateral grid"));
-  dt_bauhaus_combobox_add(g->mode, _("local laplacian filter"));
-  dt_bauhaus_combobox_set_default(g->mode, s_mode_local_laplacian);
-  dt_bauhaus_combobox_set(g->mode, s_mode_local_laplacian);
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
-  g->detail = dt_bauhaus_slider_new_with_range(self, 0.0, 500.0, 1.0, 125.0, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
+  g->detail = dt_bauhaus_slider_from_params(self, "detail");
+  dt_bauhaus_slider_set_step(g->detail, 0.01);
+  dt_bauhaus_slider_set_factor(g->detail, 100);
+  dt_bauhaus_slider_set_offset(g->detail, 100);
   dt_bauhaus_slider_set_format(g->detail, "%.0f%%");
   gtk_widget_set_tooltip_text(g->detail, _("changes the local contrast"));
 
-  g->spatial = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
+  g->spatial = dt_bauhaus_slider_from_params(self, "sigma_s");
+  dt_bauhaus_slider_set_default(g->spatial, 50.0);
+  dt_bauhaus_slider_set_hard_min(g->spatial, 1.0);
+  dt_bauhaus_slider_set_digits(g->spatial, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, _("coarseness"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->spatial, _("feature size of local details (spatial sigma of bilateral filter)"));
 
-  g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 20, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
+  g->range = dt_bauhaus_slider_from_params(self, "sigma_r");
+  dt_bauhaus_slider_set_default(g->range, 20.0);
+  dt_bauhaus_slider_set_hard_min(g->range, 1.0);
+  dt_bauhaus_slider_set_digits(g->range, 0);
   dt_bauhaus_widget_set_label(g->range, NULL, _("contrast"));
   gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
-  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 50.0, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
+  g->highlights = dt_bauhaus_slider_from_params(self, "sigma_r");
+  dt_bauhaus_slider_set_hard_max(g->highlights, 2.0);
+  dt_bauhaus_slider_set_step(g->highlights, 0.01);
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
+  dt_bauhaus_slider_set_factor(g->highlights, 100);
   dt_bauhaus_slider_set_format(g->highlights, "%.0f%%");
   gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
 
-  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 50.0, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
+  g->shadows = dt_bauhaus_slider_from_params(self, "sigma_s");
+  dt_bauhaus_slider_set_hard_max(g->shadows, 2.0);
+  dt_bauhaus_slider_set_step(g->shadows, 0.01);
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadows"));
-  gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
+  dt_bauhaus_slider_set_factor(g->shadows, 100);
   dt_bauhaus_slider_set_format(g->shadows, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
 
-  g->midtone = dt_bauhaus_slider_new_with_range(self, 0.001, 1.0, 0.001, 0.5, 3);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->midtone, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->midtone, NULL, _("midtone range"));
+  g->midtone = dt_bauhaus_slider_from_params(self, "midtone");
   gtk_widget_set_tooltip_text(g->midtone, _("defines what counts as midtones. lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
 
   // work around multi-instance issue which calls show all a fair bit:
@@ -536,21 +455,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->midtone), "no-show-all", TRUE, NULL);
   g_object_set(G_OBJECT(g->range), "no-show-all", TRUE, NULL);
   g_object_set(G_OBJECT(g->spatial), "no-show-all", TRUE, NULL);
-
-  g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);
-  g_signal_connect(G_OBJECT(g->range), "value-changed", G_CALLBACK(range_callback), self);
-  g_signal_connect(G_OBJECT(g->detail), "value-changed", G_CALLBACK(detail_callback), self);
-  g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
-  g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
-  g_signal_connect(G_OBJECT(g->midtone), "value-changed", G_CALLBACK(midtone_callback), self);
-  g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

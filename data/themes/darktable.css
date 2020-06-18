@@ -119,7 +119,7 @@
 @define-color field_hover_fg @grey_95;
 
 /* Tooltips and contextual helpers */
-@define-color tooltip_bg_color @grey_05;
+@define-color tooltip_bg_color @grey_15;
 @define-color tooltip_fg_color @grey_65;
 @define-color really_dark_bg_color @grey_05;
 @define-color log_fg_color @grey_85;
@@ -817,14 +817,20 @@ popover,
 combobox window,
 dialog combobox window
 {
+  opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
-  outline-style:none;
   border-radius: 4px;
   border: 0;
   outline-style: none;
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em;
+}
+
+tooltip
+{
+  border: 1px solid shade(@tooltip_bg_color, 1.5);
+  border-radius: 0;
 }
 
 tooltip label
@@ -2180,6 +2186,13 @@ spinbutton>button
   padding-top: 3px;
 }
 
+/* Padding of overlays block hover on thumbnail overlay mode */
+.dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label
+{
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
 /*-----------------------------
   - Culling and preview modes -
   -----------------------------*/
@@ -2244,8 +2257,8 @@ spinbutton>button
 /* Set where overlays block infos start on the image */
 .dt_overlays_hover_block #thumb_bottom
 {
-  margin-top: 3px;  /* not real pixels, but percentage of the image size */
-  margin-left: 0px; /* not real pixels, but percentage of the image size */
+  margin-top: 30px;  /* not real pixels, but per thousand of the image size */
+  margin-left: 0px;  /* not real pixels, but per thousand of the image size */
 }
 
 /* Set background color of overlays block infos */
@@ -2253,16 +2266,4 @@ spinbutton>button
 {
   color: @bauhaus_fg_hover;
   background-color: rgba(20, 20, 20, 0.5);
-}
-
-/* Padding of overlays block hover on culling/preview and thumbnail overlay mode */
-.dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label
-{
-  padding-left: 6px;
-  padding-right: 6px;
-}
-
-.dt_overlays_hover_block #thumb_image:hover #thumb_colorlabels
-{
-  padding-right: 6px;
 }

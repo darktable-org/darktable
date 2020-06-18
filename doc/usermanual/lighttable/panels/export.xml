@@ -141,10 +141,10 @@
             </row>
             <row>
               <entry>
-                <code>$(SEQUENCE)</code>
+                <code>$(SEQUENCEn)</code>
               </entry>
               <entry>
-                a sequence number within export job
+                a sequence number within export job, 4 digits if n is not specified
               </entry>
             </row>
             <row>

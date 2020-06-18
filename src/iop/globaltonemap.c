@@ -26,6 +26,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -46,20 +47,20 @@ DT_MODULE_INTROSPECTION(3, dt_iop_global_tonemap_params_t)
 
 typedef enum _iop_operator_t
 {
-  OPERATOR_REINHARD,
-  OPERATOR_FILMIC,
-  OPERATOR_DRAGO
+  OPERATOR_REINHARD, // $DESCRIPTION: "reinhard"
+  OPERATOR_FILMIC,   // $DESCRIPTION: "filmic"
+  OPERATOR_DRAGO     // $DESCRIPTION: "drago"
 } _iop_operator_t;
 
 typedef struct dt_iop_global_tonemap_params_t
 {
-  _iop_operator_t operator;
+  _iop_operator_t operator; // $DEFAULT: OPERATOR_DRAGO
   struct
   {
-    float bias;
-    float max_light; // cd/m2
+    float bias;      // $MIN: 0.5 $MAX: 1 $DEFAULT: 0.85
+    float max_light; // cd/m2 $MIN: 1 $MAX: 500 $DEFAULT: 100.0 $DESCRIPTION: "target"
   } drago;
-  float detail;
+  float detail; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
 } dt_iop_global_tonemap_params_t;
 
 typedef struct dt_iop_global_tonemap_data_t
@@ -194,7 +195,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   // Drago needs the absolute Lmax value of the image. In pixelpipe FULL we can not reliably get this value
   // as the pixelpipe might only see part of the image (region of interest). Therefore we try to get lwmax from
   // the PREVIEW pixelpipe which luckily stores it for us.
-  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     dt_pthread_mutex_lock(&g->lock);
     const uint64_t hash = g->hash;
@@ -228,7 +229,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 
   // PREVIEW pixelpipe stores lwmax
-  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_pthread_mutex_lock(&g->lock);
@@ -365,7 +366,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     float tmp_lwmax = NAN;
 
     // see comments in process() about lwmax value
-    if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+    if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
     {
       dt_pthread_mutex_lock(&g->lock);
       const uint64_t hash = g->hash;
@@ -470,7 +471,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     parameters[2] = bl;
     parameters[3] = lwmax;
 
-    if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     {
       uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
       dt_pthread_mutex_lock(&g->lock);
@@ -614,52 +615,16 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-
-
-static void operator_callback(GtkWidget *combobox, gpointer user_data)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
-  p->operator= dt_bauhaus_combobox_get(combobox);
 
-  gtk_widget_set_visible(g->drago.bias, FALSE);
-  gtk_widget_set_visible(g->drago.max_light, FALSE);
-  /* show ui for selected operator */
-  if(p->operator== OPERATOR_DRAGO)
+  if(!w || w == g->operator)
   {
-    gtk_widget_set_visible(g->drago.bias, TRUE);
-    gtk_widget_set_visible(g->drago.max_light, TRUE);
+    gtk_widget_set_visible(g->drago.bias, p->operator == OPERATOR_DRAGO);
+    gtk_widget_set_visible(g->drago.max_light, p->operator == OPERATOR_DRAGO);
   }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _drago_bias_callback(GtkWidget *w, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
-  p->drago.bias = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _drago_max_light_callback(GtkWidget *w, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
-  p->drago.max_light = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void detail_callback(GtkWidget *w, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
-  p->detail = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -668,95 +633,40 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)module->params;
   dt_bauhaus_combobox_set(g->operator, p->operator);
-  gtk_widget_set_visible(g->drago.bias, FALSE);
-  gtk_widget_set_visible(g->drago.max_light, FALSE);
-  /* show ui for selected operator */
-  if(p->operator== OPERATOR_DRAGO)
-  {
-    gtk_widget_set_visible(g->drago.bias, TRUE);
-    gtk_widget_set_visible(g->drago.max_light, TRUE);
-  }
-
-  /* drago */
   dt_bauhaus_slider_set(g->drago.bias, p->drago.bias);
   dt_bauhaus_slider_set(g->drago.max_light, p->drago.max_light);
   dt_bauhaus_slider_set(g->detail, p->detail);
+
+  gui_changed(self, NULL, 0);
 
   dt_pthread_mutex_lock(&g->lock);
   g->lwmax = NAN;
   g->hash = 0;
   dt_pthread_mutex_unlock(&g->lock);
-
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_global_tonemap_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_global_tonemap_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_global_tonemap_params_t);
-  module->gui_data = NULL;
-  dt_iop_global_tonemap_params_t tmp
-      = (dt_iop_global_tonemap_params_t){ OPERATOR_DRAGO, { 0.85f, 100.0f }, 0.0f };
-  memcpy(module->params, &tmp, sizeof(dt_iop_global_tonemap_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_global_tonemap_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_global_tonemap_gui_data_t));
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->lwmax = NAN;
   g->hash = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  /* operator */
-  g->operator= dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->operator, NULL, _("operator"));
-
-  dt_bauhaus_combobox_add(g->operator, "reinhard");
-  dt_bauhaus_combobox_add(g->operator, "filmic");
-  dt_bauhaus_combobox_add(g->operator, "drago");
-
+  g->operator= dt_bauhaus_combobox_from_params(self, "operator");
   gtk_widget_set_tooltip_text(g->operator, _("the global tonemap operator"));
-  g_signal_connect(G_OBJECT(g->operator), "value-changed", G_CALLBACK(operator_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->operator), TRUE, TRUE, 0);
 
-  /* drago bias */
-  g->drago.bias = dt_bauhaus_slider_new_with_range(self, 0.5, 1.0, 0.05, p->drago.bias, 2);
-  dt_bauhaus_widget_set_label(g->drago.bias, NULL, _("bias"));
+  g->drago.bias = dt_bauhaus_slider_from_params(self, "drago.bias");
   gtk_widget_set_tooltip_text(g->drago.bias, _("the bias for tonemapper controls the linearity, "
                                                "the higher the more details in blacks"));
-  g_signal_connect(G_OBJECT(g->drago.bias), "value-changed", G_CALLBACK(_drago_bias_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->drago.bias, TRUE, TRUE, 0);
 
-
-  /* drago bias */
-  g->drago.max_light = dt_bauhaus_slider_new_with_range(self, 1, 500, 10, p->drago.max_light, 2);
-  dt_bauhaus_widget_set_label(g->drago.max_light, NULL, _("target"));
+  g->drago.max_light = dt_bauhaus_slider_from_params(self, "drago.max_light");
+  dt_bauhaus_slider_set_step(g->drago.max_light, 10);
   gtk_widget_set_tooltip_text(g->drago.max_light, _("the target light for tonemapper specified as cd/m2"));
-  g_signal_connect(G_OBJECT(g->drago.max_light), "value-changed", G_CALLBACK(_drago_max_light_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->drago.max_light, TRUE, TRUE, 0);
 
-  /* detail */
-  g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, 0.0, 3);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
-
-  g_signal_connect(G_OBJECT(g->detail), "value-changed", G_CALLBACK(detail_callback), self);
+  g->detail = dt_bauhaus_slider_from_params(self, "detail");
+  dt_bauhaus_slider_set_digits(g->detail, 3);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

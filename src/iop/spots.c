@@ -786,7 +786,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *label = gtk_label_new(_("number of strokes:"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
@@ -797,8 +797,7 @@ void gui_init(dt_iop_module_t *self)
   g->bt_edit_masks
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(g->bt_edit_masks), "button-press-event", G_CALLBACK(_edit_masks), self);
-  g_object_set(G_OBJECT(g->bt_edit_masks), "tooltip-text", _("show and edit shapes"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_edit_masks, _("show and edit shapes"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), g->bt_edit_masks, FALSE, FALSE, 0);
 
@@ -830,15 +829,6 @@ void gui_reset(struct dt_iop_module_t *self)
 {
   // hide the previous masks
   dt_masks_reset_form_gui();
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  // dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
-  // nothing else necessary, gtk will clean up the labels
-
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 void init_key_accels (dt_iop_module_so_t *module)

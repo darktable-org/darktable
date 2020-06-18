@@ -86,19 +86,18 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_NONE = 0,
 
   /** Flag for the iop module to be enabled/included by default when creating a style */
-  IOP_FLAGS_INCLUDE_IN_STYLES = 1 << 0,
-  IOP_FLAGS_SUPPORTS_BLENDING = 1 << 1, // Does provide blending modes
-  IOP_FLAGS_DEPRECATED = 1 << 2,
-  IOP_FLAGS_ALLOW_TILING = 1 << 4, // Does allow tile-wise processing (valid for CPU and GPU processing)
-  IOP_FLAGS_HIDDEN = 1 << 5,       // Hide the iop from userinterface
-  IOP_FLAGS_TILING_FULL_ROI
-  = 1 << 6, // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
-  IOP_FLAGS_ONE_INSTANCE = 1 << 7, // The module doesn't support multiple instances
-  IOP_FLAGS_PREVIEW_NON_OPENCL
-  = 1 << 8, // Preview pixelpipe of this module must not run on GPU but always on CPU
-  IOP_FLAGS_NO_HISTORY_STACK = 1 << 9, // This iop will never show up in the history stack
-  IOP_FLAGS_NO_MASKS = 1 << 10,         // The module doesn't support masks (used with SUPPORT_BLENDING)
-  IOP_FLAGS_FENCE = 1 << 11              // No module can be moved pass this one
+  IOP_FLAGS_INCLUDE_IN_STYLES  = 1 << 0,
+  IOP_FLAGS_SUPPORTS_BLENDING  = 1 << 1,  // Does provide blending modes
+  IOP_FLAGS_DEPRECATED         = 1 << 2,
+  IOP_FLAGS_ALLOW_TILING       = 1 << 4,  // Does allow tile-wise processing (valid for CPU and GPU processing)
+  IOP_FLAGS_HIDDEN             = 1 << 5,  // Hide the iop from userinterface
+  IOP_FLAGS_TILING_FULL_ROI    = 1 << 6,  // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
+  IOP_FLAGS_ONE_INSTANCE       = 1 << 7,  // The module doesn't support multiple instances
+  IOP_FLAGS_PREVIEW_NON_OPENCL = 1 << 8,  // Preview pixelpipe of this module must not run on GPU but always on CPU
+  IOP_FLAGS_NO_HISTORY_STACK   = 1 << 9,  // This iop will never show up in the history stack
+  IOP_FLAGS_NO_MASKS           = 1 << 10, // The module doesn't support masks (used with SUPPORT_BLENDING)
+  IOP_FLAGS_FENCE              = 1 << 11, // No module can be moved pass this one
+  IOP_FLAGS_ALLOW_FAST_PIPE    = 1 << 12  // Module can work with a fast pipe
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -209,6 +208,7 @@ typedef struct dt_iop_module_so_t
   void (*gui_update)(struct dt_iop_module_t *self);
   void (*gui_init)(struct dt_iop_module_t *self);
   void (*color_picker_apply)(struct dt_iop_module_t *self, GtkWidget *picker, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*gui_changed)(struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
   void (*gui_cleanup)(struct dt_iop_module_t *self);
   void (*gui_post_expose)(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                           int32_t pointerx, int32_t pointery);
@@ -443,6 +443,8 @@ typedef struct dt_iop_module_t
   void (*gui_init)(struct dt_iop_module_t *self);
   /** apply color picker results */
   void (*color_picker_apply)(struct dt_iop_module_t *self, GtkWidget *picker, struct dt_dev_pixelpipe_iop_t *piece);
+  /** called by standard widget callbacks after value changed */
+  void (*gui_changed)(struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
   /** destroy widget. */
   void (*gui_cleanup)(struct dt_iop_module_t *self);
   /** optional method called after darkroom expose. */
@@ -602,6 +604,8 @@ GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module);
 
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);
+/** allocate and load default settings from introspection. */
+void dt_iop_default_init(dt_iop_module_t *module);
 /** loads default settings from database. */
 void dt_iop_load_default_params(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
