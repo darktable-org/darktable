@@ -962,7 +962,7 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
   if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
   {
     // make sure any edition field loses the focus
-    gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
   }
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM && id < 1 && event->button == 1 && event->type == GDK_BUTTON_PRESS)
