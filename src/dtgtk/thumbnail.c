@@ -1314,10 +1314,10 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
 
     // reject icon
-    const int margin_b_icons = thumb->img_margin->bottom - icon_size * 0.125 - 1;
+    const int margin_b_icons = MAX(0, thumb->img_margin->bottom - icon_size * 0.125 - 1);
     gtk_widget_set_size_request(thumb->w_reject, icon_size, icon_size);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
-    int pos = MAX(thumb->img_margin->left - icon_size * 0.125, (width - 15.0 * r1) * 0.5 - 4 * 3.0 * r1);
+    int pos = MAX(0, MAX(thumb->img_margin->left - icon_size * 0.125, (width - 15.0 * r1) * 0.5 - 4 * 3.0 * r1));
     gtk_widget_set_margin_start(thumb->w_reject, pos);
     gtk_widget_set_margin_bottom(thumb->w_reject, margin_b_icons);
 
