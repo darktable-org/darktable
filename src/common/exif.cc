@@ -414,6 +414,9 @@ static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterat
 static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int version,
                                   bool use_default_rating)
 {
+  // as this can be called several times during the image lifetime, clean up first
+  GList *imgs = NULL;
+  imgs = g_list_append(imgs, GINT_TO_POINTER(img->id));
   try
   {
     Exiv2::XmpData::iterator pos;
@@ -424,6 +427,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     // why for they don't get passed to that function.
     if(version == -1 || version > 0)
     {
+      dt_metadata_clear(imgs, FALSE);
       for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       {
         const gchar *key = dt_metadata_get_key(i);
@@ -448,6 +452,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       dt_image_set_xmp_rating(img, stars);
     }
 
+    dt_colorlabels_remove_labels(img->id);
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
     {
       std::string label = pos->toString();
@@ -462,18 +467,20 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       else if(label == "Purple") // Is it really called like that in XMP files?
         dt_colorlabels_set_label(img->id, 4);
     }
-    if(FIND_XMP_TAG("Xmp.darktable.colorlabels"))
+    // if Xmp.xmp.label not managed from an external app use dt colors
+    else if(FIND_XMP_TAG("Xmp.darktable.colorlabels"))
     {
-      // TODO: store these in dc:subject or xmp:Label?
       // color labels
       const int cnt = pos->count();
-      dt_colorlabels_remove_labels(img->id);
       for(int i = 0; i < cnt; i++)
       {
         dt_colorlabels_set_label(img->id, pos->toLong(i));
       }
     }
 
+    GList *tags = NULL;
+    // preserve dt tags which are not saved in xmp file
+    dt_tag_set_tags(tags, imgs, TRUE, TRUE, FALSE);
     if(FIND_XMP_TAG("Xmp.lr.hierarchicalSubject"))
       _exif_import_tags(img, pos);
     else if(FIND_XMP_TAG("Xmp.dc.subject"))
@@ -545,10 +552,14 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       free(datetime);
     }
 
+    if(imgs) g_list_free(imgs);
+    imgs = NULL;
     return true;
   }
   catch(Exiv2::AnyError &e)
   {
+    if(imgs) g_list_free(imgs);
+    imgs = NULL;
     std::string s(e.what());
     std::cerr << "[exiv2 _exif_decode_xmp_data] " << img->filename << ": " << s << std::endl;
     return false;

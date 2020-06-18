@@ -188,6 +188,7 @@ typedef enum dt_view_image_over_t
 } dt_view_image_over_t;
 
 // get images to act on for gloabals change (via libs or accels)
+// no need to free the list - done internally
 const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gboolean force);
 // get the main image to act on during global changes (libs, accels)
 int dt_view_get_image_to_act_on();

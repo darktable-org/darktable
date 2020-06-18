@@ -457,12 +457,12 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = (GList *)dt_view_get_images_to_act_on(TRUE, TRUE);
+    imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   if(group_on) dt_grouping_add_grouped_images(&imgs);
   dt_image_set_locations(imgs, geoloc, undo_on);
-  if(imgid != -1) g_list_free(imgs);
+  g_list_free(imgs);
 }
 
 void dt_image_reset_final_size(const int32_t imgid)

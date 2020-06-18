@@ -1083,9 +1083,11 @@ static void _detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_li
     {
       _init_treeview(self, 1);
     }
-    if(res) _raise_signal_tag_changed(self);
-
-    if(res) dt_image_synch_xmps(affected_images);
+    if(res)
+    {
+      _raise_signal_tag_changed(self);
+      dt_image_synch_xmps(affected_images);
+    }
     g_list_free(affected_images);
   }
 }
@@ -1361,10 +1363,7 @@ static void _pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t
   }
   sqlite3_finalize(stmt);
 
-  // dt_tag_remove raises DT_SIGNAL_TAG_CHANGED. We don't want to reintialize the tree
-  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
   dt_tag_remove(tagid, TRUE);
-  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
   dt_control_log(_("tag %s removed"), tagname);
 
   GtkTreeIter store_iter;
@@ -2924,7 +2923,7 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
       _init_treeview(self, 1);
       gtk_widget_destroy(d->floating_tag_window);
       gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-      if(res) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+      if(res) _raise_signal_tag_changed(self);
 
       return TRUE;
     }
@@ -2948,10 +2947,9 @@ static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *accel
     const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
     const gboolean res = dt_tag_attach_string_list(d->last_tag, imgs, TRUE);
     if(res) dt_image_synch_xmps(imgs);
-
     _init_treeview(self, 0);
     _init_treeview(self, 1);
-    if(res) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    if(res) _raise_signal_tag_changed(self);
   }
   return TRUE;
 }

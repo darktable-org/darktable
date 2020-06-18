@@ -231,9 +231,6 @@ guint dt_tag_remove(const guint tagid, gboolean final)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-
-    /* raise signal of tags change to refresh keywords module */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
 
   return count;
@@ -287,8 +284,6 @@ guint dt_tag_remove_list(GList *tag_list)
     g_free(flatlist);
     tcount = tcount + count;
   }
-  /* raise signal of tags change to refresh keywords module */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return tcount;
 }
 
@@ -500,7 +495,6 @@ gboolean dt_tag_set_tags(const GList *tags, const GList *img, const gboolean ign
       dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, undo, _pop_undo, _tags_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
     return res;
   }
   return FALSE;
@@ -544,8 +538,6 @@ gboolean dt_tag_attach_string_list(const gchar *tags, const GList *img, const gb
         dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, undo, _pop_undo, _tags_undo_data_free);
         dt_undo_end_group(darktable.undo);
       }
-
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
     }
     g_list_free(tagl);
   }
@@ -581,13 +573,13 @@ gboolean dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = (GList *)dt_view_get_images_to_act_on(TRUE, TRUE);
+    imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   if(group_on) dt_grouping_add_grouped_images(&imgs);
 
   const gboolean res = dt_tag_detach_images(tagid, imgs, undo_on);
-  if(imgid != -1) g_list_free(imgs);
+  g_list_free(imgs);
   return res;
 }
 

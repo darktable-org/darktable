@@ -161,7 +161,8 @@ static int tag_delete(lua_State *L)
   }
   sqlite3_finalize(stmt);
 
-  dt_tag_remove(tagid, TRUE);
+  if(dt_tag_remove(tagid, TRUE))
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   GList *list_iter;
   if((list_iter = g_list_first(tagged_images)) != NULL)

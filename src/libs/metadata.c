@@ -232,6 +232,7 @@ static void _clear_button_clicked(GtkButton *button, dt_lib_module_t *self)
   d->editing = FALSE;
   const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
   dt_metadata_clear(imgs, TRUE);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
   _update(self);
 }
@@ -966,6 +967,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   g_list_free(key_value);
 
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
   _update(self);
   return 0;

@@ -548,7 +548,7 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
   {
     GList *imgs = NULL;
     if(imgid == -1)
-      imgs = (GList *)dt_view_get_images_to_act_on(TRUE, TRUE);
+      imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
     else
       imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if(imgs)
@@ -565,7 +565,7 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
       _metadata_execute(imgs, metadata, &undo, undo_on, DT_MA_ADD);
 
       g_list_free_full(metadata, g_free);
-      if(imgid != -1) g_list_free(imgs);
+      g_list_free(imgs);
       if(undo_on)
       {
         dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
@@ -652,7 +652,6 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
       dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 
     g_list_free_full(metadata, g_free);
   }
@@ -690,7 +689,6 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
       dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 
     g_list_free_full(metadata, g_free);
   }
@@ -713,7 +711,6 @@ void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboo
       dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
 }
 
