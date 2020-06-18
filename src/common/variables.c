@@ -390,7 +390,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     {
       do
       {
-        const char *lb = (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data))));
+        const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
         if(g_strcmp0(lb, "red") == 0)
         {
           txt = dt_util_dstrcat(txt, "<span foreground=\"#ee0000\">⚫ </span>");
