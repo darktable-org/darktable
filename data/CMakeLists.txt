@@ -105,6 +105,7 @@ if(${VALIDATE_JSON})
     COMMENT "Checking validity of noiseprofiles.json"
   )
 endif()
+FILE(COPY noiseprofiles.json DESTINATION "${DARKTABLE_DATADIR}")
 install(FILES noiseprofiles.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
 #
