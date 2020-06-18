@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-17 09:07-0300\n"
+"POT-Creation-Date: 2020-06-18 09:03-0300\n"
 "PO-Revision-Date: 2020-06-17 06:30-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
@@ -93,7 +93,7 @@ msgstr "específico"
 #: ../src/common/styles.c:1079 ../src/common/styles.c:1083
 #: ../src/develop/blend_gui.c:2440 ../src/develop/blend_gui.c:2705
 #: ../src/develop/develop.c:2076 ../src/imageio/format/exr.cc:376
-#: ../src/imageio/format/j2k.c:661 ../src/iop/ashift.c:4711
+#: ../src/imageio/format/j2k.c:661 ../src/iop/ashift.c:4788
 #: ../src/iop/demosaic.c:5036 ../src/libs/live_view.c:434
 msgid "off"
 msgstr "desligado"
@@ -122,9 +122,9 @@ msgstr "deslocamento de exposição"
 #: ../build/src/iop/introspection_rgbcurve.c:249
 #: ../build/src/iop/introspection_rgblevels.c:152
 #: ../build/src/iop/introspection_tonecurve.c:269 ../src/iop/basecurve.c:2145
-#: ../src/iop/clipping.c:1899 ../src/iop/clipping.c:2157
-#: ../src/iop/clipping.c:2173 ../src/iop/clipping.c:2308
-#: ../src/iop/clipping.c:2335 ../src/iop/lens.cc:2259 ../src/iop/retouch.c:578
+#: ../src/iop/clipping.c:1896 ../src/iop/clipping.c:2154
+#: ../src/iop/clipping.c:2170 ../src/iop/clipping.c:2305
+#: ../src/iop/clipping.c:2332 ../src/iop/lens.cc:2259 ../src/iop/retouch.c:578
 #: ../src/libs/collect.c:1697 ../src/libs/export.c:582
 #: ../src/libs/live_view.c:348 ../src/libs/live_view.c:373
 #: ../src/libs/live_view.c:382 ../src/libs/print_settings.c:1475
@@ -369,7 +369,7 @@ msgstr "cores saturadas"
 #: ../build/src/iop/introspection_splittoning.c:142
 #: ../src/iop/channelmixer.c:443 ../src/iop/colorbalance.c:2186
 #: ../src/iop/colorbalance.c:2234 ../src/iop/colorbalance.c:2281
-#: ../src/iop/colorzones.c:2353
+#: ../src/iop/colorzones.c:2354
 msgid "hue"
 msgstr "matiz"
 
@@ -386,8 +386,8 @@ msgid "process mode"
 msgstr "modo de processo"
 
 #: ../build/src/iop/introspection_colorzones.c:254
-#: ../src/iop/channelmixer.c:445 ../src/iop/colorchecker.c:1377
-#: ../src/iop/colorzones.c:2351
+#: ../src/iop/channelmixer.c:445 ../src/iop/colorchecker.c:1375
+#: ../src/iop/colorzones.c:2352
 msgid "lightness"
 msgstr "luminosidade"
 
@@ -398,7 +398,7 @@ msgstr "luminosidade"
 #: ../build/src/iop/introspection_splittoning.c:146
 #: ../src/iop/channelmixer.c:444 ../src/iop/colorbalance.c:2196
 #: ../src/iop/colorbalance.c:2244 ../src/iop/colorbalance.c:2291
-#: ../src/iop/colorchecker.c:1395 ../src/iop/colorzones.c:2352
+#: ../src/iop/colorchecker.c:1393 ../src/iop/colorzones.c:2353
 msgid "saturation"
 msgstr "saturação"
 
@@ -674,7 +674,7 @@ msgstr "dureza"
 
 #: ../build/src/iop/introspection_filmicrgb.c:276
 #: ../build/src/iop/introspection_filmicrgb.c:439 ../src/iop/filmic.c:1719
-#: ../src/iop/filmicrgb.c:2441 ../src/iop/filmicrgb.c:2591
+#: ../src/iop/filmicrgb.c:2441 ../src/iop/filmicrgb.c:2585
 msgid "extreme luminance saturation"
 msgstr "saturação para luminância extrema"
 
@@ -759,11 +759,11 @@ msgstr "v3 (2019)"
 msgid "v4 (2020)"
 msgstr "v4 (2020)"
 
-#: ../build/src/iop/introspection_filmicrgb.c:506 ../src/iop/filmicrgb.c:2488
+#: ../build/src/iop/introspection_filmicrgb.c:506
 msgid "hard"
 msgstr "dura"
 
-#: ../build/src/iop/introspection_filmicrgb.c:507 ../src/iop/filmicrgb.c:2489
+#: ../build/src/iop/introspection_filmicrgb.c:507
 msgid "soft"
 msgstr "suave"
 
@@ -868,7 +868,7 @@ msgid "soften with"
 msgstr "suavizar com"
 
 #: ../build/src/iop/introspection_lowpass.c:189
-#: ../build/src/iop/introspection_shadhi.c:267 ../src/iop/filmicrgb.c:2527
+#: ../build/src/iop/introspection_shadhi.c:267 ../src/iop/filmicrgb.c:2521
 #: ../src/iop/retouch.c:2672
 msgid "gaussian"
 msgstr "gaussiano"
@@ -2585,8 +2585,8 @@ msgstr "Imprimir suas imagens"
 #: ../src/iop/lut3d.c:1562 ../src/libs/collect.c:354
 #: ../src/libs/copy_history.c:116 ../src/libs/geotagging.c:474
 #: ../src/libs/import.c:555 ../src/libs/import.c:661 ../src/libs/lib.c:227
-#: ../src/libs/styles.c:367 ../src/libs/styles.c:392 ../src/libs/tagging.c:2215
-#: ../src/libs/tagging.c:2256
+#: ../src/libs/styles.c:367 ../src/libs/styles.c:392 ../src/libs/tagging.c:2227
+#: ../src/libs/tagging.c:2268
 msgid "_cancel"
 msgstr "_cancela"
 
@@ -3301,7 +3301,7 @@ msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 #: ../src/common/history.c:837 ../src/common/history.c:840
 #: ../src/common/history.c:856 ../src/common/styles.c:1079
 #: ../src/common/styles.c:1083 ../src/develop/blend_gui.c:2708
-#: ../src/develop/develop.c:2076 ../src/iop/ashift.c:4712
+#: ../src/develop/develop.c:2076 ../src/iop/ashift.c:4789
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "ligado"
@@ -4190,8 +4190,8 @@ msgstr ""
 "* faixa entre marcadores superiores/inferiores adjacentes: mesclar "
 "gradualmente"
 
-#: ../src/develop/blend_gui.c:1662 ../src/iop/colorzones.c:2362
-#: ../src/iop/rgbcurve.c:1420 ../src/iop/tonecurve.c:1279
+#: ../src/develop/blend_gui.c:1662 ../src/iop/colorzones.c:2363
+#: ../src/iop/rgbcurve.c:1420 ../src/iop/tonecurve.c:1280
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
@@ -4678,11 +4678,11 @@ msgid "move down"
 msgstr "mover para baixo"
 
 #: ../src/develop/imageop.c:1114 ../src/libs/image.c:169
-#: ../src/libs/tagging.c:1307 ../src/libs/tagging.c:1397
+#: ../src/libs/tagging.c:1319 ../src/libs/tagging.c:1409
 msgid "delete"
 msgstr "excluir"
 
-#: ../src/develop/imageop.c:1121 ../src/libs/tagging.c:1821
+#: ../src/develop/imageop.c:1121 ../src/libs/tagging.c:1833
 msgid "rename"
 msgstr "renomear"
 
@@ -4701,7 +4701,7 @@ msgstr "%s está desligado"
 #: ../src/gui/accelerators.c:1337 ../src/gui/import_metadata.c:162
 #: ../src/gui/presets.c:198 ../src/gui/presets.c:310 ../src/gui/presets.c:670
 #: ../src/iop/temperature.c:1464 ../src/libs/lib.c:338 ../src/libs/lib.c:375
-#: ../src/libs/lib.c:1228
+#: ../src/libs/lib.c:1231
 msgid "preset"
 msgstr "predefinição"
 
@@ -4744,13 +4744,13 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "click com botão do meio cria nova instância"
 
-#: ../src/develop/imageop.c:2099 ../src/libs/lib.c:1063
+#: ../src/develop/imageop.c:2099 ../src/libs/lib.c:1066
 msgid "reset parameters"
 msgstr "redefine parâmetros"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2107 ../src/gui/preferences.c:685
-#: ../src/libs/lib.c:1072
+#: ../src/libs/lib.c:1075
 msgid "presets"
 msgstr "predefinições"
 
@@ -5097,131 +5097,131 @@ msgid "fit"
 msgstr "ajustar"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2015
+#: ../src/dtgtk/thumbtable.c:2014
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "visões/miniaturas/sem estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2016
+#: ../src/dtgtk/thumbtable.c:2015
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "visões/miniaturas/1 estrela"
 
-#: ../src/dtgtk/thumbtable.c:2017
+#: ../src/dtgtk/thumbtable.c:2016
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "visões/miniaturas/2 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2018
+#: ../src/dtgtk/thumbtable.c:2017
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "visões/miniaturas/3 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2019
+#: ../src/dtgtk/thumbtable.c:2018
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "visões/miniaturas/4 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2020
+#: ../src/dtgtk/thumbtable.c:2019
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "visões/miniaturas/5 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2021
+#: ../src/dtgtk/thumbtable.c:2020
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "visões/miniaturas/rejeitada"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2024
+#: ../src/dtgtk/thumbtable.c:2023
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "visões/miniaturas/copiar história"
 
-#: ../src/dtgtk/thumbtable.c:2025
+#: ../src/dtgtk/thumbtable.c:2024
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "visões/miniaturas/copia parte da história"
 
-#: ../src/dtgtk/thumbtable.c:2027
+#: ../src/dtgtk/thumbtable.c:2026
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "visões/miniaturas/colar história"
 
-#: ../src/dtgtk/thumbtable.c:2028
+#: ../src/dtgtk/thumbtable.c:2027
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "visões/miniaturas/cola parte da história"
 
-#: ../src/dtgtk/thumbtable.c:2030
+#: ../src/dtgtk/thumbtable.c:2029
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "visões/miniaturas/descartar história"
 
-#: ../src/dtgtk/thumbtable.c:2032
+#: ../src/dtgtk/thumbtable.c:2031
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "visões/miniaturas/duplicar imagem"
 
-#: ../src/dtgtk/thumbtable.c:2033
+#: ../src/dtgtk/thumbtable.c:2032
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr ""
 "vistas/miniaturas/duplicar imagem original (sem as modificações feitas)"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2037
+#: ../src/dtgtk/thumbtable.c:2036
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "visões/miniaturas/cor vermelha"
 
-#: ../src/dtgtk/thumbtable.c:2038
+#: ../src/dtgtk/thumbtable.c:2037
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "visões/miniaturas/cor amarela"
 
-#: ../src/dtgtk/thumbtable.c:2039
+#: ../src/dtgtk/thumbtable.c:2038
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "visões/miniaturas/cor verde"
 
-#: ../src/dtgtk/thumbtable.c:2040
+#: ../src/dtgtk/thumbtable.c:2039
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "visões/miniaturas/cor azul"
 
-#: ../src/dtgtk/thumbtable.c:2041
+#: ../src/dtgtk/thumbtable.c:2040
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "visões/miniaturas/cor roxa"
 
-#: ../src/dtgtk/thumbtable.c:2042
+#: ../src/dtgtk/thumbtable.c:2041
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "visões/miniaturas/remover etiquetas de cor"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2045
+#: ../src/dtgtk/thumbtable.c:2044
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "visões/miniaturas/seleciona tudo"
 
-#: ../src/dtgtk/thumbtable.c:2046
+#: ../src/dtgtk/thumbtable.c:2045
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "visões/minuaturas/seleciona nenhuma"
 
-#: ../src/dtgtk/thumbtable.c:2048
+#: ../src/dtgtk/thumbtable.c:2047
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "visões/miniaturas/inverte seleção"
 
-#: ../src/dtgtk/thumbtable.c:2049
+#: ../src/dtgtk/thumbtable.c:2048
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "visões/miniaturas/seleciona rolo de filme"
 
-#: ../src/dtgtk/thumbtable.c:2050
+#: ../src/dtgtk/thumbtable.c:2049
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "visões/miniaturas/seleciona não modificadas"
@@ -5529,7 +5529,7 @@ msgstr "%s %s / %s"
 msgid "%s / %s"
 msgstr "%s / %s"
 
-#: ../src/gui/accelerators.c:663 ../src/libs/tagging.c:2186
+#: ../src/gui/accelerators.c:663 ../src/libs/tagging.c:2198
 #, c-format
 msgid "%s"
 msgstr "%s"
@@ -5547,10 +5547,10 @@ msgid "reset value to default"
 msgstr "redefinir ao valor padrão"
 
 #: ../src/gui/camera_import_dialog.c:219 ../src/libs/export_metadata.c:269
-#: ../src/libs/geotagging.c:420 ../src/libs/metadata.c:461
-#: ../src/libs/tagging.c:1307 ../src/libs/tagging.c:1397
-#: ../src/libs/tagging.c:1478 ../src/libs/tagging.c:1603
-#: ../src/libs/tagging.c:1821
+#: ../src/libs/geotagging.c:420 ../src/libs/metadata.c:459
+#: ../src/libs/tagging.c:1319 ../src/libs/tagging.c:1409
+#: ../src/libs/tagging.c:1490 ../src/libs/tagging.c:1615
+#: ../src/libs/tagging.c:1833
 msgid "cancel"
 msgstr "cancela"
 
@@ -7133,133 +7133,133 @@ msgstr ""
 "a entrada é preferencialmente RGB linear,\n"
 "a saída é RGB linear."
 
-#: ../src/iop/ashift.c:530 ../src/iop/graduatednd.c:164
+#: ../src/iop/ashift.c:534 ../src/iop/graduatednd.c:164
 #: ../src/iop/watermark.c:312
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotação"
 
-#: ../src/iop/ashift.c:531
+#: ../src/iop/ashift.c:535
 msgctxt "accel"
 msgid "lens shift (v)"
 msgstr "desvio de lente (v)"
 
-#: ../src/iop/ashift.c:532
+#: ../src/iop/ashift.c:536
 msgctxt "accel"
 msgid "lens shift (h)"
 msgstr "desvio de lente (h)"
 
-#: ../src/iop/ashift.c:533
+#: ../src/iop/ashift.c:537
 msgctxt "accel"
 msgid "shear"
 msgstr "cisalhamento"
 
-#: ../src/iop/ashift.c:534
+#: ../src/iop/ashift.c:538
 msgctxt "accel"
 msgid "focal length"
 msgstr "distância focal"
 
-#: ../src/iop/ashift.c:535
+#: ../src/iop/ashift.c:539
 msgctxt "accel"
 msgid "crop factor"
 msgstr "fator de corte (crop)"
 
-#: ../src/iop/ashift.c:536
+#: ../src/iop/ashift.c:540
 msgctxt "accel"
 msgid "aspect adjust"
 msgstr "ajuste de proporção"
 
-#: ../src/iop/ashift.c:537
+#: ../src/iop/ashift.c:541
 msgctxt "accel"
 msgid "guides"
 msgstr "guias"
 
-#: ../src/iop/ashift.c:538 ../src/iop/clipping.c:3476
+#: ../src/iop/ashift.c:542 ../src/iop/clipping.c:3473
 msgctxt "accel"
 msgid "automatic cropping"
 msgstr "corte automático"
 
-#: ../src/iop/ashift.c:539 ../src/iop/lens.cc:180
+#: ../src/iop/ashift.c:543 ../src/iop/lens.cc:180
 msgctxt "accel"
 msgid "lens model"
 msgstr "modelo da lente"
 
-#: ../src/iop/ashift.c:2624
+#: ../src/iop/ashift.c:2662
 msgid "automatic cropping failed"
 msgstr "corte automático falhou"
 
-#: ../src/iop/ashift.c:2766
+#: ../src/iop/ashift.c:2804
 msgid "data pending - please repeat"
 msgstr "dados pendentes - por favor repita"
 
-#: ../src/iop/ashift.c:2772
+#: ../src/iop/ashift.c:2810
 msgid "could not detect structural data in image"
 msgstr "não foi possível detectar dados estruturais na imagem"
 
-#: ../src/iop/ashift.c:2783
+#: ../src/iop/ashift.c:2821
 msgid "could not run outlier removal"
 msgstr "não foi possível executar a remoção"
 
-#: ../src/iop/ashift.c:2837
+#: ../src/iop/ashift.c:2875
 msgid "not enough structure for automatic correction"
 msgstr "não há estrutura suficiente para correção automática"
 
-#: ../src/iop/ashift.c:2842
+#: ../src/iop/ashift.c:2880
 msgid "automatic correction failed, please correct manually"
 msgstr "a correção automática falhou, faça manualmente"
 
-#: ../src/iop/ashift.c:4493 ../src/iop/ashift.c:4494 ../src/iop/ashift.c:4599
-#: ../src/iop/ashift.c:4600
+#: ../src/iop/ashift.c:4556 ../src/iop/ashift.c:4557 ../src/iop/ashift.c:4662
+#: ../src/iop/ashift.c:4663
 #, c-format
 msgid "lens shift (%s)"
 msgstr "deslocamento da lente (%s)"
 
-#: ../src/iop/ashift.c:4493 ../src/iop/ashift.c:4494 ../src/iop/ashift.c:4599
-#: ../src/iop/ashift.c:4600 ../src/iop/clipping.c:1901
-#: ../src/iop/clipping.c:2158 ../src/iop/clipping.c:2175
+#: ../src/iop/ashift.c:4556 ../src/iop/ashift.c:4557 ../src/iop/ashift.c:4662
+#: ../src/iop/ashift.c:4663 ../src/iop/clipping.c:1898
+#: ../src/iop/clipping.c:2155 ../src/iop/clipping.c:2172
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../src/iop/ashift.c:4493 ../src/iop/ashift.c:4494 ../src/iop/ashift.c:4599
-#: ../src/iop/ashift.c:4600 ../src/iop/clipping.c:1900
-#: ../src/iop/clipping.c:2159 ../src/iop/clipping.c:2174
+#: ../src/iop/ashift.c:4556 ../src/iop/ashift.c:4557 ../src/iop/ashift.c:4662
+#: ../src/iop/ashift.c:4663 ../src/iop/clipping.c:1897
+#: ../src/iop/clipping.c:2156 ../src/iop/clipping.c:2171
 msgid "vertical"
 msgstr "vertical"
 
-#: ../src/iop/ashift.c:4710 ../src/iop/clipping.c:2301
+#: ../src/iop/ashift.c:4787 ../src/iop/clipping.c:2298
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "guias"
 
-#: ../src/iop/ashift.c:4750
+#: ../src/iop/ashift.c:4828
 msgid "automatic fit"
 msgstr "ajuste automático"
 
-#: ../src/iop/ashift.c:4766
+#: ../src/iop/ashift.c:4844
 msgid "get structure"
 msgstr "obter estrutura"
 
-#: ../src/iop/ashift.c:4784
+#: ../src/iop/ashift.c:4862
 msgid "rotate image"
 msgstr "rotacionar imagem"
 
-#: ../src/iop/ashift.c:4785 ../src/iop/ashift.c:4786
+#: ../src/iop/ashift.c:4863 ../src/iop/ashift.c:4864
 msgid "apply lens shift correction in one direction"
 msgstr "aplicar correção de deslocamento de lente em somente uma direção"
 
-#: ../src/iop/ashift.c:4787
+#: ../src/iop/ashift.c:4865
 msgid "shear the image along one diagonal"
 msgstr "inclina a imagem por uma diagonal"
 
-#: ../src/iop/ashift.c:4788
+#: ../src/iop/ashift.c:4866
 msgid "display guide lines overlay"
 msgstr "mostrar linhas guia para auxiliar na composição da sua fotografia"
 
-#: ../src/iop/ashift.c:4789 ../src/iop/clipping.c:2182
+#: ../src/iop/ashift.c:4867 ../src/iop/clipping.c:2179
 msgid "automatically crop to avoid black edges"
 msgstr "cortar automaticamente para evitar bordas pretas"
 
-#: ../src/iop/ashift.c:4790
+#: ../src/iop/ashift.c:4868
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -7267,13 +7267,13 @@ msgstr ""
 "modelo de lente da correção de perspectiva: genérico ou de acordo com a "
 "distância focal"
 
-#: ../src/iop/ashift.c:4792
+#: ../src/iop/ashift.c:4870
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "distância focal da lente, valor default ajustado a partir dos dados exif, se "
 "disponíveis"
 
-#: ../src/iop/ashift.c:4794
+#: ../src/iop/ashift.c:4872
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -7281,7 +7281,7 @@ msgstr ""
 "fator de crop do sensor da câmera, o valor default é definido a partir dos "
 "dados exif se disponíveis, ajuste manual é usualmente necessário"
 
-#: ../src/iop/ashift.c:4797
+#: ../src/iop/ashift.c:4875
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -7289,12 +7289,12 @@ msgstr ""
 "o nível de correção dependente de lente, ajuste para o máximo para completa "
 "dependência da lente, e zero para o caso genérico"
 
-#: ../src/iop/ashift.c:4799
+#: ../src/iop/ashift.c:4877
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "ajustar aspecto da imagem mudando escala horizontalmente e verticalmente"
 
-#: ../src/iop/ashift.c:4800
+#: ../src/iop/ashift.c:4878
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -7304,7 +7304,7 @@ msgstr ""
 "ctrl-click para ajustar apenas rotação\n"
 "shift-click para ajustar somente correção de lente"
 
-#: ../src/iop/ashift.c:4803
+#: ../src/iop/ashift.c:4881
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -7314,7 +7314,7 @@ msgstr ""
 "ctrl-click para ajustar apenas rotação\n"
 "shift-click para ajustar somente correção de lente"
 
-#: ../src/iop/ashift.c:4806
+#: ../src/iop/ashift.c:4884
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -7327,7 +7327,7 @@ msgstr ""
 "shift-click para ajustar somente correção de lente\n"
 "ctrl-shift-click para ajustar somente rotação e correção de lente"
 
-#: ../src/iop/ashift.c:4812
+#: ../src/iop/ashift.c:4890
 msgid ""
 "analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -7339,30 +7339,30 @@ msgstr ""
 "shift-click para melhoria adicional de detalhes\n"
 "ctrl-shift-click para uma combinação dos dois métodos"
 
-#: ../src/iop/ashift.c:4816
+#: ../src/iop/ashift.c:4894
 msgid "remove line structure information"
 msgstr "remover informação de estrutura de linhas"
 
-#: ../src/iop/ashift.c:4817
+#: ../src/iop/ashift.c:4895
 msgid "toggle visibility of structure lines"
 msgstr "alterna a visibilidade das linhas estruturais"
 
-#: ../src/iop/ashift.c:4854
+#: ../src/iop/ashift.c:4932
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s no segmento] selecionar segmento"
 
-#: ../src/iop/ashift.c:4859
+#: ../src/iop/ashift.c:4937
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s no segmento] deselecionar segmento"
 
-#: ../src/iop/ashift.c:4865
+#: ../src/iop/ashift.c:4943
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] selecionar todos os segmentos de uma zona"
 
-#: ../src/iop/ashift.c:4871
+#: ../src/iop/ashift.c:4949
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] de-selecionar todos os segmentos de uma zona"
@@ -7516,7 +7516,7 @@ msgstr ""
 "mudar halos das bordas em cada tamanho de característica\n"
 "só muda resultado das abas de luma e croma"
 
-#: ../src/iop/atrous.c:1903 ../src/iop/colorzones.c:2418
+#: ../src/iop/atrous.c:1903 ../src/iop/colorzones.c:2419
 msgid "make effect stronger or weaker"
 msgstr "torna efeito mais forte ou fraco"
 
@@ -7608,8 +7608,8 @@ msgstr "similar a nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:289 ../src/iop/colorzones.c:2447
-#: ../src/iop/rgbcurve.c:1465 ../src/iop/tonecurve.c:1314
+#: ../src/iop/basecurve.c:289 ../src/iop/colorzones.c:2448
+#: ../src/iop/rgbcurve.c:1465 ../src/iop/tonecurve.c:1315
 msgid "cubic spline"
 msgstr "spline cúbica"
 
@@ -7635,17 +7635,17 @@ msgstr ""
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscissa: entrada, ordenada: saída. trabalha nos canais RGB"
 
-#: ../src/iop/basecurve.c:2133 ../src/iop/tonecurve.c:1328
+#: ../src/iop/basecurve.c:2133 ../src/iop/tonecurve.c:1329
 msgid "scale"
 msgstr "escala"
 
 #. centripetal spline
 #: ../src/iop/basecurve.c:2134 ../src/iop/filmic.c:1736
-#: ../src/iop/tonecurve.c:1329
+#: ../src/iop/tonecurve.c:1330
 msgid "linear"
 msgstr "linear"
 
-#: ../src/iop/basecurve.c:2136 ../src/iop/tonecurve.c:1331
+#: ../src/iop/basecurve.c:2136 ../src/iop/tonecurve.c:1332
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -7655,7 +7655,7 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:2142 ../src/iop/basicadj.c:643
 #: ../src/iop/rgbcurve.c:1480 ../src/iop/rgblevels.c:1044
-#: ../src/iop/tonecurve.c:1325
+#: ../src/iop/tonecurve.c:1326
 msgid "method to preserve colors when applying contrast"
 msgstr "método para preservar cores quando aplicar contraste"
 
@@ -8089,7 +8089,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:855 ../src/iop/clipping.c:2196
+#: ../src/iop/borders.c:855 ../src/iop/clipping.c:2193
 msgid "golden cut"
 msgstr "proporção áurea"
 
@@ -8109,7 +8109,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:860 ../src/iop/clipping.c:2186
+#: ../src/iop/borders.c:860 ../src/iop/clipping.c:2183
 msgid "square"
 msgstr "quadrado"
 
@@ -8145,7 +8145,7 @@ msgstr "2/3"
 msgid "size of the border in percent of the full image"
 msgstr "tamanho da borda em percentagem da imagem inteira"
 
-#: ../src/iop/borders.c:923 ../src/iop/clipping.c:2283
+#: ../src/iop/borders.c:923 ../src/iop/clipping.c:2280
 msgid "aspect"
 msgstr "proporção"
 
@@ -8369,131 +8369,131 @@ msgstr "força do efeito"
 msgid "crop and rotate"
 msgstr "cortar e girar"
 
-#: ../src/iop/clipping.c:1646
+#: ../src/iop/clipping.c:1643
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "formato da proporção inválido. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:1663
+#: ../src/iop/clipping.c:1660
 msgid "invalid ratio format. it should be non zero"
 msgstr "formato da proporção inválido. deveria ser diferente de zero"
 
-#: ../src/iop/clipping.c:1902 ../src/iop/clipping.c:2176
+#: ../src/iop/clipping.c:1899 ../src/iop/clipping.c:2173
 msgid "full"
 msgstr "completo"
 
-#: ../src/iop/clipping.c:1903
+#: ../src/iop/clipping.c:1900
 msgid "old system"
 msgstr "sistema antigo"
 
-#: ../src/iop/clipping.c:1904
+#: ../src/iop/clipping.c:1901
 msgid "correction applied"
 msgstr "correção aplicada"
 
-#: ../src/iop/clipping.c:2156 ../src/libs/live_view.c:372
+#: ../src/iop/clipping.c:2153 ../src/libs/live_view.c:372
 msgid "flip"
 msgstr "espelhar"
 
-#: ../src/iop/clipping.c:2160 ../src/iop/clipping.c:2338
+#: ../src/iop/clipping.c:2157 ../src/iop/clipping.c:2335
 #: ../src/iop/colorbalance.c:2065 ../src/libs/live_view.c:376
 msgid "both"
 msgstr "ambos"
 
-#: ../src/iop/clipping.c:2162
+#: ../src/iop/clipping.c:2159
 msgid "mirror image horizontally and/or vertically"
 msgstr "espelhar imagem horizontalmente e/ou verticalmente"
 
-#: ../src/iop/clipping.c:2169
+#: ../src/iop/clipping.c:2166
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "clique botão direito e arraste uma linha na imagem para arrastar uma linha "
 "reta"
 
-#: ../src/iop/clipping.c:2172
+#: ../src/iop/clipping.c:2169
 msgid "keystone"
 msgstr "distorção de perspectiva"
 
-#: ../src/iop/clipping.c:2177
+#: ../src/iop/clipping.c:2174
 msgid "set perspective correction for your image"
 msgstr "defina correção de perspectiva para sua imagem"
 
-#: ../src/iop/clipping.c:2184
+#: ../src/iop/clipping.c:2181
 msgid "freehand"
 msgstr "mão livre"
 
-#: ../src/iop/clipping.c:2185
+#: ../src/iop/clipping.c:2182
 msgid "original image"
 msgstr "imagem original"
 
-#: ../src/iop/clipping.c:2187
+#: ../src/iop/clipping.c:2184
 msgid "10:8 in print"
 msgstr "10:8 em impressão"
 
-#: ../src/iop/clipping.c:2188
+#: ../src/iop/clipping.c:2185
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2189
+#: ../src/iop/clipping.c:2186
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2190
+#: ../src/iop/clipping.c:2187
 msgid "8.5x11, letter"
 msgstr "8.5x11, carta"
 
-#: ../src/iop/clipping.c:2191
+#: ../src/iop/clipping.c:2188
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2192
+#: ../src/iop/clipping.c:2189
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2193
+#: ../src/iop/clipping.c:2190
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2194
+#: ../src/iop/clipping.c:2191
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2195
+#: ../src/iop/clipping.c:2192
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2197
+#: ../src/iop/clipping.c:2194
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2198
+#: ../src/iop/clipping.c:2195
 msgid "widescreen"
 msgstr "widescreen"
 
-#: ../src/iop/clipping.c:2199
+#: ../src/iop/clipping.c:2196
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2200
+#: ../src/iop/clipping.c:2197
 msgid "cinemascope"
 msgstr "cinemascópio"
 
-#: ../src/iop/clipping.c:2201
+#: ../src/iop/clipping.c:2198
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2202
+#: ../src/iop/clipping.c:2199
 msgid "anamorphic"
 msgstr "anamórfico"
 
-#: ../src/iop/clipping.c:2203
+#: ../src/iop/clipping.c:2200
 msgid "3:1, panorama"
 msgstr "3:1, panorâmica"
 
-#: ../src/iop/clipping.c:2235 ../src/iop/clipping.c:2247
+#: ../src/iop/clipping.c:2232 ../src/iop/clipping.c:2244
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "formato da proporção inválido para `%s'. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:2294
+#: ../src/iop/clipping.c:2291
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -8501,108 +8501,108 @@ msgstr ""
 "escolher o aspecto\n"
 "a lista é ordenada: do mais quadrado ao menos quadrado"
 
-#: ../src/iop/clipping.c:2330 ../src/libs/live_view.c:368
+#: ../src/iop/clipping.c:2327 ../src/libs/live_view.c:368
 msgid "display guide lines to help compose your photograph"
 msgstr "mostrar linhas guia para auxiliar na composição da sua fotografia"
 
-#: ../src/iop/clipping.c:2334 ../src/iop/clipping.c:2339
+#: ../src/iop/clipping.c:2331 ../src/iop/clipping.c:2336
 #: ../src/libs/live_view.c:377
 msgid "flip guides"
 msgstr "espelhar guias"
 
-#: ../src/iop/clipping.c:2336 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:2333 ../src/libs/live_view.c:374
 msgid "horizontally"
 msgstr "horizontalmente"
 
-#: ../src/iop/clipping.c:2337 ../src/libs/live_view.c:375
+#: ../src/iop/clipping.c:2334 ../src/libs/live_view.c:375
 msgid "vertically"
 msgstr "verticalmente"
 
-#: ../src/iop/clipping.c:2351
+#: ../src/iop/clipping.c:2348
 msgid "the left margin cannot overlap with the right margin"
 msgstr "a margem esquerda não pode sobrepor a margem direita"
 
-#: ../src/iop/clipping.c:2357
+#: ../src/iop/clipping.c:2354
 msgid "the right margin cannot overlap with the left margin"
 msgstr "a margem direita não pode sobrepor a margem esquerda"
 
-#: ../src/iop/clipping.c:2362
+#: ../src/iop/clipping.c:2359
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "a margem superior não pode sobrepor a margem inferior"
 
-#: ../src/iop/clipping.c:2368
+#: ../src/iop/clipping.c:2365
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "a margem inferior não pode sobrepor a margem superior"
 
-#: ../src/iop/clipping.c:2372
+#: ../src/iop/clipping.c:2369
 msgid "main"
 msgstr "principal"
 
-#: ../src/iop/clipping.c:2373
+#: ../src/iop/clipping.c:2370
 msgid "margins"
 msgstr "margens"
 
-#: ../src/iop/clipping.c:3466
+#: ../src/iop/clipping.c:3463
 msgctxt "accel"
 msgid "commit"
 msgstr "finalizar"
 
-#: ../src/iop/clipping.c:3467
+#: ../src/iop/clipping.c:3464
 msgctxt "accel"
 msgid "angle"
 msgstr "ângulo"
 
-#: ../src/iop/clipping.c:3468
+#: ../src/iop/clipping.c:3465
 msgctxt "accel"
 msgid "left"
 msgstr "esquerda"
 
-#: ../src/iop/clipping.c:3469
+#: ../src/iop/clipping.c:3466
 msgctxt "accel"
 msgid "top"
 msgstr "superior"
 
-#: ../src/iop/clipping.c:3470
+#: ../src/iop/clipping.c:3467
 msgctxt "accel"
 msgid "right"
 msgstr "direita"
 
-#: ../src/iop/clipping.c:3471
+#: ../src/iop/clipping.c:3468
 msgctxt "accel"
 msgid "bottom"
 msgstr "inferior"
 
-#: ../src/iop/clipping.c:3472
+#: ../src/iop/clipping.c:3469
 msgctxt "accel"
 msgid "aspect ratio"
 msgstr "ajuste de aspecto"
 
-#: ../src/iop/clipping.c:3473
+#: ../src/iop/clipping.c:3470
 msgctxt "accel"
 msgid "guide lines"
 msgstr "linhas-guia"
 
-#: ../src/iop/clipping.c:3474
+#: ../src/iop/clipping.c:3471
 msgctxt "accel"
 msgid "flip"
 msgstr "espelhar simetricamente"
 
-#: ../src/iop/clipping.c:3475
+#: ../src/iop/clipping.c:3472
 msgctxt "accel"
 msgid "keystone"
 msgstr "distorção de perspectiva"
 
-#: ../src/iop/clipping.c:3506
+#: ../src/iop/clipping.c:3503
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s em bordas] cortar"
 
-#: ../src/iop/clipping.c:3512
+#: ../src/iop/clipping.c:3509
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s em bordas] cortar mantendo aspecto"
 
-#: ../src/iop/clipping.c:3517
+#: ../src/iop/clipping.c:3514
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] definir/rotacionar horizonte"
@@ -8879,12 +8879,12 @@ msgstr "emulação de Fuji Provia"
 msgid "Fuji Velvia emulation"
 msgstr "emulação de Fuji Velvia"
 
-#: ../src/iop/colorchecker.c:865 ../src/iop/colorchecker.c:1369
+#: ../src/iop/colorchecker.c:865 ../src/iop/colorchecker.c:1367
 #, c-format
 msgid "patch #%d"
 msgstr "patch #%d"
 
-#: ../src/iop/colorchecker.c:1240
+#: ../src/iop/colorchecker.c:1238
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -8901,43 +8901,43 @@ msgstr ""
 "click direito para remover patch\n"
 "shift-click enquanto escolhe cor para substituir patch"
 
-#: ../src/iop/colorchecker.c:1364
+#: ../src/iop/colorchecker.c:1362
 msgid "patch"
 msgstr "patch"
 
-#: ../src/iop/colorchecker.c:1365
+#: ../src/iop/colorchecker.c:1363
 msgid "color checker patch"
 msgstr "patch da tabela de cores"
 
-#: ../src/iop/colorchecker.c:1376
+#: ../src/iop/colorchecker.c:1374
 msgid "lightness offset"
 msgstr "deslocamento de luminosidade"
 
-#: ../src/iop/colorchecker.c:1380
+#: ../src/iop/colorchecker.c:1378
 msgid "chroma offset green/red"
 msgstr "deslocamento de croma verde/vermelho"
 
-#: ../src/iop/colorchecker.c:1381
+#: ../src/iop/colorchecker.c:1379
 msgid "green/red"
 msgstr "verde/vermelho"
 
-#: ../src/iop/colorchecker.c:1387
+#: ../src/iop/colorchecker.c:1385
 msgid "chroma offset blue/yellow"
 msgstr "deslocamento de croma azul/amarelo"
 
-#: ../src/iop/colorchecker.c:1388
+#: ../src/iop/colorchecker.c:1386
 msgid "blue/yellow"
 msgstr "azul/amarelo"
 
-#: ../src/iop/colorchecker.c:1394
+#: ../src/iop/colorchecker.c:1392
 msgid "saturation offset"
 msgstr "saturação"
 
-#: ../src/iop/colorchecker.c:1399
+#: ../src/iop/colorchecker.c:1397
 msgid "target color"
 msgstr "cor alvo"
 
-#: ../src/iop/colorchecker.c:1400
+#: ../src/iop/colorchecker.c:1398
 msgid ""
 "control target color of the patches via relative offsets or via absolute Lab "
 "values"
@@ -8945,11 +8945,11 @@ msgstr ""
 "controlar cor alvo dos patches via deslocamento relativo ou via valores Lab "
 "absolutos"
 
-#: ../src/iop/colorchecker.c:1401
+#: ../src/iop/colorchecker.c:1399
 msgid "relative"
 msgstr "relativo"
 
-#: ../src/iop/colorchecker.c:1402
+#: ../src/iop/colorchecker.c:1400
 msgid "absolute"
 msgstr "absoluto"
 
@@ -9282,7 +9282,7 @@ msgctxt "accel"
 msgid "acquire"
 msgstr "aquisição"
 
-#: ../src/iop/colortransfer.c:124 ../src/libs/metadata.c:552
+#: ../src/iop/colortransfer.c:124 ../src/libs/metadata.c:550
 msgctxt "accel"
 msgid "apply"
 msgstr "aplicar"
@@ -9310,7 +9310,7 @@ msgid "analyze this image"
 msgstr "analisar esta imagem"
 
 #. apply button
-#: ../src/iop/colortransfer.c:696 ../src/libs/metadata.c:772
+#: ../src/iop/colortransfer.c:696 ../src/libs/metadata.c:769
 #: ../src/libs/styles.c:636
 msgid "apply"
 msgstr "aplicar"
@@ -9359,17 +9359,17 @@ msgstr "tons de pele natural"
 msgid "black & white film"
 msgstr "filme preto & branco"
 
-#: ../src/iop/colorzones.c:723
+#: ../src/iop/colorzones.c:724
 msgid "HSL base setting"
 msgstr "configuração de base HSL"
 
-#: ../src/iop/colorzones.c:2194 ../src/iop/retouch.c:1996
+#: ../src/iop/colorzones.c:2195 ../src/iop/retouch.c:1996
 #: ../src/iop/toneequal.c:1762
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "não é possível mostrar máscaras quando a máscara de mesclagem é mostrada"
 
-#: ../src/iop/colorzones.c:2369 ../src/iop/rgbcurve.c:1427
+#: ../src/iop/colorzones.c:2370 ../src/iop/rgbcurve.c:1427
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -9382,43 +9382,43 @@ msgstr ""
 "shift+arraste para criar uma curva negativa"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2391
+#: ../src/iop/colorzones.c:2392
 msgid "edit by area"
 msgstr "editar por área"
 
-#: ../src/iop/colorzones.c:2393
+#: ../src/iop/colorzones.c:2394
 msgid "edit the curve nodes by area"
 msgstr "editar os nós da curva pela área"
 
-#: ../src/iop/colorzones.c:2400
+#: ../src/iop/colorzones.c:2401
 msgid "display selection"
 msgstr "mostra seleção"
 
-#: ../src/iop/colorzones.c:2410
+#: ../src/iop/colorzones.c:2411
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "escolher o critério de seleção, será a abscissa no gráfico"
 
-#: ../src/iop/colorzones.c:2413
+#: ../src/iop/colorzones.c:2414
 msgid "choose between a smoother or stronger effect"
 msgstr "escolha entre um efeito mais suave ou mais forte"
 
-#: ../src/iop/colorzones.c:2446 ../src/iop/rgbcurve.c:1464
-#: ../src/iop/tonecurve.c:1313
+#: ../src/iop/colorzones.c:2447 ../src/iop/rgbcurve.c:1464
+#: ../src/iop/tonecurve.c:1314
 msgid "interpolation method"
 msgstr "modo de interpolação"
 
-#: ../src/iop/colorzones.c:2448 ../src/iop/rgbcurve.c:1466
-#: ../src/iop/tonecurve.c:1315
+#: ../src/iop/colorzones.c:2449 ../src/iop/rgbcurve.c:1466
+#: ../src/iop/tonecurve.c:1316
 msgid "centripetal spline"
 msgstr "spline centrípeta"
 
-#: ../src/iop/colorzones.c:2449 ../src/iop/rgbcurve.c:1467
-#: ../src/iop/tonecurve.c:1316
+#: ../src/iop/colorzones.c:2450 ../src/iop/rgbcurve.c:1467
+#: ../src/iop/tonecurve.c:1317
 msgid "monotonic spline"
 msgstr "spline monotônica"
 
-#: ../src/iop/colorzones.c:2452 ../src/iop/rgbcurve.c:1470
-#: ../src/iop/tonecurve.c:1318
+#: ../src/iop/colorzones.c:2453 ../src/iop/rgbcurve.c:1470
+#: ../src/iop/tonecurve.c:1319
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
 "- cubic spline is better to produce smooth curves but oscillates when nodes "
@@ -10349,11 +10349,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:2293 ../src/iop/filmicrgb.c:2302
 #: ../src/iop/filmicrgb.c:2338 ../src/iop/filmicrgb.c:2347
-#: ../src/iop/toneequal.c:2955 ../src/iop/toneequal.c:2959
-#: ../src/iop/toneequal.c:2963 ../src/iop/toneequal.c:2967
-#: ../src/iop/toneequal.c:2971 ../src/iop/toneequal.c:2975
-#: ../src/iop/toneequal.c:2979 ../src/iop/toneequal.c:2983
-#: ../src/iop/toneequal.c:2987 ../src/libs/metadata_view.c:499
+#: ../src/iop/toneequal.c:2954 ../src/iop/toneequal.c:2958
+#: ../src/iop/toneequal.c:2962 ../src/iop/toneequal.c:2966
+#: ../src/iop/toneequal.c:2970 ../src/iop/toneequal.c:2974
+#: ../src/iop/toneequal.c:2978 ../src/iop/toneequal.c:2982
+#: ../src/iop/toneequal.c:2986 ../src/libs/metadata_view.c:499
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -10517,7 +10517,7 @@ msgstr ""
 "especificamente em luminâncias extremas\n"
 "aumente se sombras e/ou realces estão subsaturados."
 
-#: ../src/iop/filmicrgb.c:2443 ../src/iop/filmicrgb.c:2593
+#: ../src/iop/filmicrgb.c:2443 ../src/iop/filmicrgb.c:2587
 msgid "middle tones saturation"
 msgstr "saturação de meios-tons"
 
@@ -10549,7 +10549,7 @@ msgstr ""
 "pode produzir cores supersaturadas e reforçar aberrações cromáticas da "
 "lente.\n"
 
-#: ../src/iop/filmicrgb.c:2491
+#: ../src/iop/filmicrgb.c:2485
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -10559,7 +10559,7 @@ msgstr ""
 "dura usa uma curvatura resultando em mais compressão tonal.\n"
 "suave usa uma curvatura resultando em menos compressão tonal"
 
-#: ../src/iop/filmicrgb.c:2496
+#: ../src/iop/filmicrgb.c:2490
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -10569,7 +10569,7 @@ msgstr ""
 "dura usa uma curvatura resultando em mais compressão tonal.\n"
 "suave usa uma curvatura resultando em menos compressão tonal."
 
-#: ../src/iop/filmicrgb.c:2501
+#: ../src/iop/filmicrgb.c:2495
 #, c-format
 msgid ""
 "enable to input custom middle-grey values.\n"
@@ -10582,7 +10582,7 @@ msgstr ""
 "ao invés disso, ajuste a exposição global no módulo exposição.\n"
 "desabilite para usar o padrão de 18.45 %% de cinza médio."
 
-#: ../src/iop/filmicrgb.c:2507
+#: ../src/iop/filmicrgb.c:2501
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -10594,7 +10594,7 @@ msgstr ""
 "isto mantém o cinza médio na linha da identidade e melhora o ajusta rápido.\n"
 "desabilite se quiser controle manual."
 
-#: ../src/iop/filmicrgb.c:2512
+#: ../src/iop/filmicrgb.c:2506
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -10606,7 +10606,7 @@ msgstr ""
 "isto será mais lento, mas resultará em realces mais neutros.\n"
 "também ajuda em casos difíceis de realces magenta."
 
-#: ../src/iop/filmicrgb.c:2519
+#: ../src/iop/filmicrgb.c:2513
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -10618,15 +10618,15 @@ msgstr ""
 "quando a imagem é muito ruidosa,\n"
 "e os realces se misturam com o resto da imagem."
 
-#: ../src/iop/filmicrgb.c:2526
+#: ../src/iop/filmicrgb.c:2520
 msgid "uniform"
 msgstr "uniforme"
 
-#: ../src/iop/filmicrgb.c:2528
+#: ../src/iop/filmicrgb.c:2522
 msgid "poissonian"
 msgstr "Poissoniano"
 
-#: ../src/iop/filmicrgb.c:2529
+#: ../src/iop/filmicrgb.c:2523
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -12891,7 +12891,7 @@ msgctxt "accel"
 msgid "color space"
 msgstr "espaço de cor"
 
-#: ../src/iop/tonecurve.c:1256
+#: ../src/iop/tonecurve.c:1257
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -12902,35 +12902,35 @@ msgstr ""
 "dados da curva L. auto XYZ é similar mas se aplica a mudanças de saturação "
 "no espaço XYZ."
 
-#: ../src/iop/tonecurve.c:1265
+#: ../src/iop/tonecurve.c:1266
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:1266
+#: ../src/iop/tonecurve.c:1267
 msgid "tonecurve for L channel"
 msgstr "curva de tom para canal L"
 
-#: ../src/iop/tonecurve.c:1267
+#: ../src/iop/tonecurve.c:1268
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:1268
+#: ../src/iop/tonecurve.c:1269
 msgid "tonecurve for a channel"
 msgstr "curva de tom para canal a"
 
-#: ../src/iop/tonecurve.c:1269
+#: ../src/iop/tonecurve.c:1270
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:1270
+#: ../src/iop/tonecurve.c:1271
 msgid "tonecurve for b channel"
 msgstr "curva de tom para canal b"
 
-#: ../src/iop/tonecurve.c:1330
+#: ../src/iop/tonecurve.c:1331
 msgid "log"
 msgstr "logarítmico"
 
-#: ../src/iop/tonecurve.c:1338
+#: ../src/iop/tonecurve.c:1339
 msgid "base of the logarithm"
 msgstr "base do logaritmo"
 
@@ -13083,59 +13083,59 @@ msgstr "alguns parâmetros estão fora dos limites"
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:2952
+#: ../src/iop/toneequal.c:2951
 msgid "simple"
 msgstr "simples"
 
-#: ../src/iop/toneequal.c:2956
+#: ../src/iop/toneequal.c:2955
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:2960
+#: ../src/iop/toneequal.c:2959
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:2964
+#: ../src/iop/toneequal.c:2963
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:2968
+#: ../src/iop/toneequal.c:2967
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:2972
+#: ../src/iop/toneequal.c:2971
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:2976
+#: ../src/iop/toneequal.c:2975
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:2980
+#: ../src/iop/toneequal.c:2979
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:2984
+#: ../src/iop/toneequal.c:2983
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:2988
+#: ../src/iop/toneequal.c:2987
 msgid "+0 EV"
 msgstr "+0 EV"
 
-#: ../src/iop/toneequal.c:2993
+#: ../src/iop/toneequal.c:2992
 msgid "advanced"
 msgstr "avançado"
 
-#: ../src/iop/toneequal.c:3008
+#: ../src/iop/toneequal.c:3007
 msgid "double-click to reset the curve"
 msgstr "clique duplo para redefinir curva"
 
-#: ../src/iop/toneequal.c:3015
+#: ../src/iop/toneequal.c:3014
 msgid "curve smoothing"
 msgstr "suavização de curva"
 
-#: ../src/iop/toneequal.c:3016
+#: ../src/iop/toneequal.c:3015
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -13147,11 +13147,11 @@ msgstr ""
 "valores negativos evitarão oscilações e tem comportamento mais robusto\n"
 "mas podem produzir transições de tons brutais e danificar o contraste local."
 
-#: ../src/iop/toneequal.c:3026
+#: ../src/iop/toneequal.c:3025
 msgid "masking"
 msgstr "máscaras"
 
-#: ../src/iop/toneequal.c:3030
+#: ../src/iop/toneequal.c:3029
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -13159,11 +13159,11 @@ msgstr ""
 "pré-visualiza a máscara e escolhe o estimador que te dá o\n"
 "maior contraste entre áreas a aclarar e áreas a escurecer"
 
-#: ../src/iop/toneequal.c:3034
+#: ../src/iop/toneequal.c:3033
 msgid "preserve details"
 msgstr "preservar detalhes"
 
-#: ../src/iop/toneequal.c:3035
+#: ../src/iop/toneequal.c:3034
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -13175,7 +13175,7 @@ msgstr ""
 "'filtro guiado' só afeta contraste global e tenta preservar contraste local\n"
 "'filtro de média guiado' é a média geométrica dos dois métodos"
 
-#: ../src/iop/toneequal.c:3041
+#: ../src/iop/toneequal.c:3040
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -13183,7 +13183,7 @@ msgstr ""
 "número de passos do filtro guiado a aplicar\n"
 "ajuda a dispersão das bordas do filtro, mas é lento"
 
-#: ../src/iop/toneequal.c:3047
+#: ../src/iop/toneequal.c:3046
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -13193,7 +13193,7 @@ msgstr ""
 "atenção: valores altos deste parâmetro podem fazer a pré-visualização\n"
 "do darkroom muito mais lenta se o módulo de redução de ruído é usado."
 
-#: ../src/iop/toneequal.c:3054
+#: ../src/iop/toneequal.c:3053
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -13207,11 +13207,11 @@ msgstr ""
 "valores baixos dão gradientes mais suaves e melhor suavização\n"
 "mas podem levar a arestas imprecisas e halos"
 
-#: ../src/iop/toneequal.c:3060
+#: ../src/iop/toneequal.c:3059
 msgid "mask post-processing"
 msgstr "pós-processamento de máscara"
 
-#: ../src/iop/toneequal.c:3066
+#: ../src/iop/toneequal.c:3065
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -13221,7 +13221,7 @@ msgstr ""
 "a linha central mostra a média. as barras laranja aparecem nos extremos se "
 "houver corte."
 
-#: ../src/iop/toneequal.c:3072
+#: ../src/iop/toneequal.c:3071
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -13232,7 +13232,7 @@ msgstr ""
 "para produzir áreas mais suaves quando valores altos de enevoamento são "
 "usados"
 
-#: ../src/iop/toneequal.c:3079
+#: ../src/iop/toneequal.c:3078
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -13242,7 +13242,7 @@ msgstr ""
 "para melhor controle da correção de exposição com os nós disponíveis.\n"
 "o contagotas ajustará automaticamente a exposição média em -4EV."
 
-#: ../src/iop/toneequal.c:3089
+#: ../src/iop/toneequal.c:3088
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -13254,7 +13254,7 @@ msgstr ""
 "isto permite espalhar o histograma de exposição sobre mais canais\n"
 "para um controle melhor da correção de exposição."
 
-#: ../src/iop/toneequal.c:3106 ../src/iop/toneequal.c:3110
+#: ../src/iop/toneequal.c:3105 ../src/iop/toneequal.c:3109
 msgid "display exposure mask"
 msgstr "mostrar máscara de exposição"
 
@@ -14173,8 +14173,8 @@ msgstr "tipo"
 msgid "edit metadata exportation"
 msgstr "modificar exportação de metadados"
 
-#: ../src/libs/export_metadata.c:269 ../src/libs/metadata.c:461
-#: ../src/libs/tagging.c:1478 ../src/libs/tagging.c:1603
+#: ../src/libs/export_metadata.c:269 ../src/libs/metadata.c:459
+#: ../src/libs/tagging.c:1490 ../src/libs/tagging.c:1615
 msgid "save"
 msgstr "salvar"
 
@@ -14191,8 +14191,8 @@ msgid "export exif metadata"
 msgstr "exportar metadados exif"
 
 #: ../src/libs/export_metadata.c:289 ../src/libs/image.c:418
-#: ../src/libs/image.c:556 ../src/libs/metadata.c:466
-#: ../src/libs/metadata.c:653
+#: ../src/libs/image.c:556 ../src/libs/metadata.c:464
+#: ../src/libs/metadata.c:651
 msgid "metadata"
 msgstr "metadados"
 
@@ -14670,7 +14670,7 @@ msgstr "cola"
 msgid "paste selected metadata on selected images"
 msgstr "escrever metadados para imagens selecionadas"
 
-#: ../src/libs/image.c:578 ../src/libs/metadata.c:765
+#: ../src/libs/image.c:578 ../src/libs/metadata.c:762
 msgid "clear"
 msgstr "remover"
 
@@ -15165,23 +15165,23 @@ msgstr "limpar formas não usadas"
 msgid "created shapes"
 msgstr "formas criadas"
 
-#: ../src/libs/metadata.c:56
+#: ../src/libs/metadata.c:57
 msgid "metadata editor"
 msgstr "editor de metadados"
 
-#: ../src/libs/metadata.c:94 ../src/libs/metadata.c:130
+#: ../src/libs/metadata.c:95 ../src/libs/metadata.c:131
 msgid "<leave unchanged>"
 msgstr "<deixar sem modificações>"
 
-#: ../src/libs/metadata.c:460
+#: ../src/libs/metadata.c:458
 msgid "metadata settings"
 msgstr "configurações de metadados"
 
-#: ../src/libs/metadata.c:468
+#: ../src/libs/metadata.c:466
 msgid "hidden"
 msgstr "oculto"
 
-#: ../src/libs/metadata.c:471
+#: ../src/libs/metadata.c:469
 msgid ""
 "tick if the corresponding metadata is of no interest for you\n"
 "it will be hidden from metadata editor, collection, image information and "
@@ -15193,27 +15193,27 @@ msgstr ""
 "módulo de importação\n"
 "também não será exportado"
 
-#: ../src/libs/metadata.c:474 ../src/libs/tagging.c:1508
-#: ../src/libs/tagging.c:1647
+#: ../src/libs/metadata.c:472 ../src/libs/tagging.c:1520
+#: ../src/libs/tagging.c:1659
 msgid "private"
 msgstr "privado"
 
-#: ../src/libs/metadata.c:477
+#: ../src/libs/metadata.c:475
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 "escolha se quiser manter esta informação privada (não exportada com a imagem)"
 
-#: ../src/libs/metadata.c:551
+#: ../src/libs/metadata.c:549
 msgctxt "accel"
 msgid "clear"
 msgstr "remover"
 
-#: ../src/libs/metadata.c:615
+#: ../src/libs/metadata.c:613
 msgid "metadata list"
 msgstr "lista de metadados"
 
-#: ../src/libs/metadata.c:718
+#: ../src/libs/metadata.c:714
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -15229,72 +15229,72 @@ msgstr ""
 "neste caso, clique-direito dá possibilidade de escolher qual.\n"
 "pressione esc para sair da janela pop-up"
 
-#: ../src/libs/metadata.c:767
+#: ../src/libs/metadata.c:764
 msgid "remove metadata from selected images"
 msgstr "remover metadados para imagens selecionadas"
 
-#: ../src/libs/metadata.c:774
+#: ../src/libs/metadata.c:771
 msgid "write metadata for selected images"
 msgstr "escrever metadados para imagens selecionadas"
 
-#: ../src/libs/metadata.c:782
+#: ../src/libs/metadata.c:779
 msgid "configure metadata"
 msgstr "configurar metadados"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:836
+#: ../src/libs/metadata.c:833
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:836
+#: ../src/libs/metadata.c:833
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC-BY)"
 
-#: ../src/libs/metadata.c:837
+#: ../src/libs/metadata.c:834
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:837
+#: ../src/libs/metadata.c:834
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:838
+#: ../src/libs/metadata.c:835
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:838
+#: ../src/libs/metadata.c:835
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 
-#: ../src/libs/metadata.c:839
+#: ../src/libs/metadata.c:836
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:839
+#: ../src/libs/metadata.c:836
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:840
+#: ../src/libs/metadata.c:837
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:841
+#: ../src/libs/metadata.c:838
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:842
+#: ../src/libs/metadata.c:839
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:843
+#: ../src/libs/metadata.c:840
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:844
+#: ../src/libs/metadata.c:841
 msgid "all rights reserved"
 msgstr "todos direitos reservados"
 
-#: ../src/libs/metadata.c:844
+#: ../src/libs/metadata.c:841
 msgid "all rights reserved."
 msgstr "todos direitos reservados."
 
@@ -16051,7 +16051,7 @@ msgid "removes the selected styles in list above"
 msgstr "exclui os estilos selecionados na lista acima"
 
 #. import button
-#: ../src/libs/styles.c:622 ../src/libs/tagging.c:2804
+#: ../src/libs/styles.c:622 ../src/libs/tagging.c:2816
 msgctxt "verb"
 msgid "import..."
 msgstr "importar..."
@@ -16101,21 +16101,21 @@ msgstr "repetir última etiqueta"
 msgid "attach tag to all"
 msgstr "anexa etiqueta a todas as imagens"
 
-#: ../src/libs/tagging.c:1183 ../src/libs/tagging.c:2005
+#: ../src/libs/tagging.c:1183 ../src/libs/tagging.c:2017
 msgid "detach tag"
 msgstr "remover etiqueta"
 
-#: ../src/libs/tagging.c:1306
+#: ../src/libs/tagging.c:1318
 msgid "delete tag?"
 msgstr "excluir etiqueta?"
 
-#: ../src/libs/tagging.c:1313 ../src/libs/tagging.c:1403
-#: ../src/libs/tagging.c:1609
+#: ../src/libs/tagging.c:1325 ../src/libs/tagging.c:1415
+#: ../src/libs/tagging.c:1621
 #, c-format
 msgid "tag: %s "
 msgstr "etiqueta: %s "
 
-#: ../src/libs/tagging.c:1320
+#: ../src/libs/tagging.c:1332
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -16130,77 +16130,77 @@ msgstr[1] ""
 "você realmente deseja excluir a etiqueta `%s'?\n"
 "%d imagens atribuidas a esta etiqueta!"
 
-#: ../src/libs/tagging.c:1356
+#: ../src/libs/tagging.c:1368
 #, c-format
 msgid "tag %s removed"
 msgstr "etiqueta %s removida"
 
-#: ../src/libs/tagging.c:1396 ../src/libs/tagging.c:2021
+#: ../src/libs/tagging.c:1408 ../src/libs/tagging.c:2033
 msgid "delete path"
 msgstr "excluir caminho"
 
-#: ../src/libs/tagging.c:1410
+#: ../src/libs/tagging.c:1422
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "<u>%d</u> etiquta será removida."
 msgstr[1] "<u>%d</u> etiquta serão removidas."
 
-#: ../src/libs/tagging.c:1415 ../src/libs/tagging.c:1621
-#: ../src/libs/tagging.c:1839
+#: ../src/libs/tagging.c:1427 ../src/libs/tagging.c:1633
+#: ../src/libs/tagging.c:1851
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> imagem será atualizada"
 msgstr[1] "<u>%d</u> imagens serão atualizadas "
 
-#: ../src/libs/tagging.c:1441
+#: ../src/libs/tagging.c:1453
 #, c-format
 msgid "%d tags removed"
 msgstr "%d etiquetas removidas"
 
-#: ../src/libs/tagging.c:1477
+#: ../src/libs/tagging.c:1489
 msgid "create tag"
 msgstr "criar etiqueta"
 
-#: ../src/libs/tagging.c:1487 ../src/libs/tagging.c:1629
+#: ../src/libs/tagging.c:1499 ../src/libs/tagging.c:1641
 msgid "name: "
 msgstr "nome: "
 
-#: ../src/libs/tagging.c:1499
+#: ../src/libs/tagging.c:1511
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "adicionar a: \"%s\" "
 
-#: ../src/libs/tagging.c:1505 ../src/libs/tagging.c:1644
+#: ../src/libs/tagging.c:1517 ../src/libs/tagging.c:1656
 msgid "category"
 msgstr "categoria"
 
-#: ../src/libs/tagging.c:1514 ../src/libs/tagging.c:1653
+#: ../src/libs/tagging.c:1526 ../src/libs/tagging.c:1665
 msgid "synonyms: "
 msgstr "sinônimos: "
 
-#: ../src/libs/tagging.c:1531 ../src/libs/tagging.c:1675
-#: ../src/libs/tagging.c:1861
+#: ../src/libs/tagging.c:1543 ../src/libs/tagging.c:1687
+#: ../src/libs/tagging.c:1873
 msgid "empty tag is not allowed, aborting"
 msgstr "etiqueta vazia não permitido, abortando"
 
-#: ../src/libs/tagging.c:1542
+#: ../src/libs/tagging.c:1554
 msgid "tag name already exists. aborting."
 msgstr "etiqueta já existe. abortando."
 
-#: ../src/libs/tagging.c:1602
+#: ../src/libs/tagging.c:1614
 msgid "edit tag"
 msgstr "editar etiqueta"
 
-#: ../src/libs/tagging.c:1616 ../src/libs/tagging.c:1834
+#: ../src/libs/tagging.c:1628 ../src/libs/tagging.c:1846
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> etiqueta será atualizada."
 msgstr[1] "<u>%d</u> etiquetas serão atualizadas."
 
-#: ../src/libs/tagging.c:1677
+#: ../src/libs/tagging.c:1689
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -16208,100 +16208,100 @@ msgstr ""
 "caracter '|' não é permitido para renomear etiqueta.\n"
 "para modificar a hierarquia use renomear caminho. Abortando."
 
-#: ../src/libs/tagging.c:1716
+#: ../src/libs/tagging.c:1728
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "pelo menos um nome de etiqueta ('%s') já existe, abortando"
 
-#: ../src/libs/tagging.c:1820
+#: ../src/libs/tagging.c:1832
 msgid "rename path?"
 msgstr "renomear caminho?"
 
-#: ../src/libs/tagging.c:1827
+#: ../src/libs/tagging.c:1839
 #, c-format
 msgid "selected path: %s "
 msgstr "caminho selecionado: %s "
 
-#: ../src/libs/tagging.c:1863
+#: ../src/libs/tagging.c:1875
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' em local incorreto, etiqueta vazio não permitido, abortando"
 
-#: ../src/libs/tagging.c:1889
+#: ../src/libs/tagging.c:1901
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "pelo menos um etiqueta ('%s') já existe, abortando."
 
-#: ../src/libs/tagging.c:2001
+#: ../src/libs/tagging.c:2013
 msgid "attach tag"
 msgstr "anexar etiqueta"
 
-#: ../src/libs/tagging.c:2016
+#: ../src/libs/tagging.c:2028
 msgid "delete tag"
 msgstr "excluir etiqueta"
 
-#: ../src/libs/tagging.c:2027
+#: ../src/libs/tagging.c:2039
 msgid "create tag..."
 msgstr "criar..."
 
-#: ../src/libs/tagging.c:2031
+#: ../src/libs/tagging.c:2043
 msgid "edit tag..."
 msgstr "editar etiqueta..."
 
-#: ../src/libs/tagging.c:2040
+#: ../src/libs/tagging.c:2052
 msgid "rename path..."
 msgstr "renomear caminho..."
 
-#: ../src/libs/tagging.c:2047
+#: ../src/libs/tagging.c:2059
 msgid "copy to entry"
 msgstr "copia para entrada de dados"
 
-#: ../src/libs/tagging.c:2064
+#: ../src/libs/tagging.c:2076
 msgid "go to tag collection"
 msgstr "ir a coleção de etiquetas"
 
-#: ../src/libs/tagging.c:2070
+#: ../src/libs/tagging.c:2082
 msgid "go back to work"
 msgstr "voltar ao trabalho"
 
-#: ../src/libs/tagging.c:2187
+#: ../src/libs/tagging.c:2199
 msgid "(private)"
 msgstr "(privado)"
 
-#: ../src/libs/tagging.c:2213
+#: ../src/libs/tagging.c:2225
 msgid "Select a keyword file"
 msgstr "Selecione um arquivo de palavras-chave"
 
-#: ../src/libs/tagging.c:2216
+#: ../src/libs/tagging.c:2228
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/libs/tagging.c:2230
+#: ../src/libs/tagging.c:2242
 msgid "error importing tags"
 msgstr "erro importando etiquetas"
 
-#: ../src/libs/tagging.c:2232
+#: ../src/libs/tagging.c:2244
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd etiquetas importadas"
 
-#: ../src/libs/tagging.c:2254
+#: ../src/libs/tagging.c:2266
 msgid "Select file to export to"
 msgstr "Selecione arquivo para exportar"
 
-#: ../src/libs/tagging.c:2257
+#: ../src/libs/tagging.c:2269
 msgid "_export"
 msgstr "_exportar"
 
-#: ../src/libs/tagging.c:2272
+#: ../src/libs/tagging.c:2284
 msgid "error exporting tags"
 msgstr "erro exportando etiquetas"
 
-#: ../src/libs/tagging.c:2274
+#: ../src/libs/tagging.c:2286
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd etiquetas exportadas"
 
-#: ../src/libs/tagging.c:2654
+#: ../src/libs/tagging.c:2666
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -16313,43 +16313,43 @@ msgstr ""
 "clique-direito para outras ações em etiquetas anexadas,\n"
 "ctrl-rola para mudar o tamanho da janela"
 
-#: ../src/libs/tagging.c:2666
+#: ../src/libs/tagging.c:2678
 msgid "attach"
 msgstr "anexar"
 
-#: ../src/libs/tagging.c:2669
+#: ../src/libs/tagging.c:2681
 msgid "attach tag to all selected images"
 msgstr "anexa etiqueta as imagens selecionadas"
 
-#: ../src/libs/tagging.c:2674
+#: ../src/libs/tagging.c:2686
 msgid "detach"
 msgstr "remover"
 
-#: ../src/libs/tagging.c:2677
+#: ../src/libs/tagging.c:2689
 msgid "detach tag from all selected images"
 msgstr "remove etiqueta das imagens selecionadas"
 
-#: ../src/libs/tagging.c:2684
+#: ../src/libs/tagging.c:2696
 msgid "toggle list with / without hierarchy"
 msgstr "liga/desliga lista com / sem hierarquia"
 
-#: ../src/libs/tagging.c:2692
+#: ../src/libs/tagging.c:2704
 msgid "toggle sort by name or by count"
 msgstr "escolhe ordenar por nome ou contagem"
 
-#: ../src/libs/tagging.c:2702
+#: ../src/libs/tagging.c:2714
 msgid "toggle show or not darktable tags"
 msgstr "liga/desliga mostrar etiquetas darktable"
 
-#: ../src/libs/tagging.c:2718
+#: ../src/libs/tagging.c:2730
 msgid "enter tag name"
 msgstr "entre nome da etiqueta"
 
-#: ../src/libs/tagging.c:2728
+#: ../src/libs/tagging.c:2740
 msgid "clear entry"
 msgstr "limpar texto"
 
-#: ../src/libs/tagging.c:2780
+#: ../src/libs/tagging.c:2792
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -16361,11 +16361,11 @@ msgstr ""
 "clique-direito para outras ações na etiqueta selecionada,\n"
 "ctrol-rolar para mudar o tamanho da janela"
 
-#: ../src/libs/tagging.c:2796
+#: ../src/libs/tagging.c:2808
 msgid "new"
 msgstr "novo"
 
-#: ../src/libs/tagging.c:2799
+#: ../src/libs/tagging.c:2811
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -16373,29 +16373,29 @@ msgstr ""
 "criar nova etiqueta com o\n"
 "nome entrado"
 
-#: ../src/libs/tagging.c:2807
+#: ../src/libs/tagging.c:2819
 msgid "import tags from a Lightroom keyword file"
 msgstr "importar etiquetas de um arquivo de palavras-chave do Lightroom"
 
-#: ../src/libs/tagging.c:2812
+#: ../src/libs/tagging.c:2824
 msgctxt "verb"
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/libs/tagging.c:2815
+#: ../src/libs/tagging.c:2827
 msgid "export all tags to a Lightroom keyword file"
 msgstr ""
 "exportar todas as etiquetas para um arquivo de palavras-chave do Lightroom"
 
-#: ../src/libs/tagging.c:2822
+#: ../src/libs/tagging.c:2834
 msgid "toggle list / tree view"
 msgstr "liga/desliga visualização em árvore"
 
-#: ../src/libs/tagging.c:2830
+#: ../src/libs/tagging.c:2842
 msgid "toggle list with / without suggestion"
 msgstr "liga/desliga lista com / sem sugestão"
 
-#: ../src/libs/tagging.c:2953
+#: ../src/libs/tagging.c:2965
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
