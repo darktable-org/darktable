@@ -1345,12 +1345,6 @@ cell:selected
   margin: 0 0 8px 0;
 }
 
-/* Set mask button shown color */
-#show_mask_button
-{
-  color: #ffff00;
-}
-
 /* Set specific padding for export module spinbutton */
 #export-max-size spinbutton
 {
