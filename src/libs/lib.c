@@ -865,10 +865,10 @@ static void popup_callback(GtkButton *button, GdkEventButton *event, dt_lib_modu
   GdkGravity widget_gravity, menu_gravity;
   widget_gravity = GDK_GRAVITY_SOUTH_EAST;
   menu_gravity = GDK_GRAVITY_NORTH_EAST;
+  GtkWidget *w = module->presets_button;
+  if(module->expander) w = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
 
-  gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
-                           dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), widget_gravity,
-                           menu_gravity, NULL);
+  gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu, w, widget_gravity, menu_gravity, NULL);
 #else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,
                  gtk_get_current_event_time());
@@ -1054,6 +1054,11 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* check if module is expandable */
   if(!module->expandable(module))
   {
+    if(module->presets_button)
+    {
+      // if presets btn has been loaded to be shown outside expander
+      g_signal_connect(G_OBJECT(module->presets_button), "button-press-event", G_CALLBACK(popup_callback), module);
+    }
     module->expander = NULL;
     return NULL;
   }
