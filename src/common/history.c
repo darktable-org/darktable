@@ -183,11 +183,11 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
   return 0;
 }
 
-int dt_history_load_and_apply_on_list(gchar *filename, GList *list)
+int dt_history_load_and_apply_on_list(gchar *filename, const GList *list)
 {
   int res = 0;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  GList *l = list;
+  GList *l = (GList *)list;
   while(l)
   {
     const int imgid = GPOINTER_TO_INT(l->data);
@@ -1054,12 +1054,12 @@ void dt_history_compress_on_image(int32_t imgid)
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgs);
 }
 
-int dt_history_compress_on_list(GList *imgs)
+int dt_history_compress_on_list(const GList *imgs)
 {
   int uncompressed=0;
 
   // Get the list of selected images
-  GList *l = g_list_first(imgs);
+  GList *l = g_list_first((GList *)imgs);
   while(l)
   {
     const int imgid = GPOINTER_TO_INT(l->data);
@@ -1526,17 +1526,17 @@ gboolean dt_history_copy_parts(int imgid)
     return FALSE;
 }
 
-gboolean dt_history_paste_on_list(GList *list, gboolean undo)
+gboolean dt_history_paste_on_list(const GList *list, gboolean undo)
 {
   if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
-  if(g_list_length(list) < 1) return FALSE;
+  if(g_list_length((GList *)list) < 1) return FALSE;
 
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
   gboolean merge = FALSE;
   if(mode == 0) merge = TRUE;
 
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  GList *l = list;
+  GList *l = (GList *)list;
   while(l)
   {
     const int dest = GPOINTER_TO_INT(l->data);
@@ -1548,10 +1548,10 @@ gboolean dt_history_paste_on_list(GList *list, gboolean undo)
   return TRUE;
 }
 
-gboolean dt_history_paste_parts_on_list(GList *list, gboolean undo)
+gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
 {
   if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
-  if(g_list_length(list) < 1) return FALSE;
+  if(g_list_length((GList *)list) < 1) return FALSE;
 
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
   gboolean merge = FALSE;
@@ -1563,7 +1563,7 @@ gboolean dt_history_paste_parts_on_list(GList *list, gboolean undo)
   if(res == GTK_RESPONSE_CANCEL) return FALSE;
 
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  GList *l = list;
+  GList *l = (GList *)list;
   while(l)
   {
     const int dest = GPOINTER_TO_INT(l->data);
@@ -1575,13 +1575,13 @@ gboolean dt_history_paste_parts_on_list(GList *list, gboolean undo)
   return TRUE;
 }
 
-gboolean dt_history_delete_on_list(GList *list, gboolean undo)
+gboolean dt_history_delete_on_list(const GList *list, gboolean undo)
 {
-  if(g_list_length(list) < 1) return FALSE;
+  if(g_list_length((GList *)list) < 1) return FALSE;
 
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
-  GList *l = list;
+  GList *l = (GList *)list;
   while(l)
   {
     const int imgid = GPOINTER_TO_INT(l->data);

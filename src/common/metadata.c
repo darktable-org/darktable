@@ -548,7 +548,7 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
   {
     GList *imgs = NULL;
     if(imgid == -1)
-      imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
+      imgs = (GList *)dt_view_get_images_to_act_on(TRUE, TRUE);
     else
       imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if(imgs)
@@ -613,7 +613,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
   }
 }
 
-void dt_metadata_set_list(GList *imgs, GList *key_value, const gboolean undo_on)
+void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean undo_on)
 {
   GList *metadata = NULL;
   GList *kv = key_value;
@@ -658,7 +658,7 @@ void dt_metadata_set_list(GList *imgs, GList *key_value, const gboolean undo_on)
   }
 }
 
-void dt_metadata_clear(GList *imgs, const gboolean undo_on)
+void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
 {
   // do not clear internal or hidden metadata
   GList *metadata = NULL;
