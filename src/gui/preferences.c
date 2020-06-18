@@ -1288,7 +1288,6 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
     else
     {
       // we ask for confirmation
-      GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
       gchar *accel_txt
           = gtk_accelerator_get_label(gdk_keyval_to_lower(event->keyval), event_mods);
       gchar txt[512] = { 0 };
@@ -1297,7 +1296,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
       else
         g_strlcpy(txt, accel_conflict->translated_path, sizeof(txt));
       GtkWidget *dialog = gtk_message_dialog_new(
-          GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        GTK_WINDOW(_preferences_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
           _("%s accel is already mapped to\n%s.\ndo you want to replace it ?"), accel_txt, txt);
       g_free(accel_txt);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1390,10 +1389,10 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
     {
       sqlite3_stmt *stmt;
 
-      GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-      GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                 GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                                 _("do you really want to delete the preset `%s'?"), name);
+      GtkWidget *dialog = gtk_message_dialog_new
+        (GTK_WINDOW(_preferences_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+         GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+         _("do you really want to delete the preset `%s'?"), name);
 #ifdef GDK_WINDOWING_QUARTZ
       dt_osx_disallow_fullscreen(dialog);
 #endif
