@@ -1387,59 +1387,81 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     int w = 0;
     int h = 0;
     pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
-    gtk_widget_set_size_request(thumb->w_bottom_eb, CLAMP(w, 25 * r1, width), 6.75 * r1 + h);
+    // for the position, we use css margin and use it as per thousand (and not pixels)
+    GtkBorder *margins = gtk_border_new();
+    GtkBorder *borders = gtk_border_new();
+    GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_bottom_eb);
+    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_bottom_eb);
+    GtkStateFlags statei = gtk_widget_get_state_flags(thumb->w_image);
+    GtkStyleContext *contexti = gtk_widget_get_style_context(thumb->w_image);
+    gtk_style_context_get_margin(context, state, margins);
+    gtk_style_context_get_border(contexti, statei, borders);
+    const int padding = r1;
+    const int padding_t = 0.8 * r1; // reduced to compensate label top margin applied by gtk
+    const int margin_t = height * margins->top / 1000;
+    const int margin_l = width * margins->left / 1000;
+    const int border_t = borders->top;
+    const int border_l = borders->left;
+    const float icon_size = 3.0 * r1;
+    const float icon_size2 = 2.0 * r1;
+    const int line2 = padding_t + h + padding - icon_size / 8.0 + margin_t + border_t;
+    const int line3 = line2 + icon_size - icon_size / 8.0 + padding - icon_size / 8.0;
+    gtk_border_free(margins);
+    gtk_border_free(borders);
+
+    const int min_width = 2.0 * padding - icon_size / 4.0 + 2 * r1 + 7 * icon_size;
+    gtk_widget_set_size_request(thumb->w_bottom_eb, CLAMP(w + padding_t * 2.0, min_width, width),
+                                line3 - margin_t - border_t + icon_size2 + padding);
 
     gtk_label_set_xalign(GTK_LABEL(thumb->w_bottom), 0);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_START);
-    // for the position, we use css margin and use it as percentage (and not pixels)
-    GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_bottom_eb);
-    GtkBorder *margins = gtk_border_new();
-    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_bottom_eb);
-    gtk_style_context_get_margin(context, state, margins);
-    gtk_widget_set_margin_top(thumb->w_bottom_eb, height * margins->top / 100);
-    gtk_widget_set_margin_start(thumb->w_bottom_eb, width * margins->left / 100);
-    const int line2 = height * margins->top / 100 + h + r1;
-    const int line3 = line2 + 3.0 * r1;
-    gtk_border_free(margins);
+
+    gtk_widget_set_margin_top(thumb->w_bottom_eb, margin_t + border_t);
+    gtk_widget_set_margin_start(thumb->w_bottom_eb, margin_l + border_l);
+    gtk_widget_set_margin_top(thumb->w_bottom, padding_t);
+    gtk_widget_set_margin_start(thumb->w_bottom, padding_t);
+    gtk_widget_set_margin_end(thumb->w_bottom, padding_t);
 
     // reject icon
-    gtk_widget_set_size_request(thumb->w_reject, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_size_request(thumb->w_reject, icon_size, icon_size);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_START);
-    gtk_widget_set_margin_start(thumb->w_reject, r1);
+    gtk_widget_set_margin_start(thumb->w_reject, padding - icon_size / 8.0 + border_l);
     gtk_widget_set_margin_top(thumb->w_reject, line2);
     // stars
     for(int i = 0; i < MAX_STARS; i++)
     {
-      gtk_widget_set_size_request(thumb->w_stars[i], 3.0 * r1, 3.0 * r1);
+      gtk_widget_set_size_request(thumb->w_stars[i], icon_size, icon_size);
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_START);
       gtk_widget_set_margin_top(thumb->w_stars[i], line2);
-      gtk_widget_set_margin_start(thumb->w_stars[i], 2.0 * r1 + (i + 1) * 3.0 * r1);
+      gtk_widget_set_margin_start(thumb->w_stars[i],
+                                  padding - icon_size / 8.0 + border_l + r1 + (i + 1) * 3.0 * r1);
     }
     // the color labels
-    gtk_widget_set_size_request(thumb->w_color, 3.0 * r1, 3.0 * r1);
+    gtk_widget_set_size_request(thumb->w_color, icon_size, icon_size);
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_color, line2);
-    gtk_widget_set_margin_start(thumb->w_color, 3.0 * r1 + (MAX_STARS + 1) * 3.0 * r1);
+    gtk_widget_set_margin_start(thumb->w_color,
+                                padding - icon_size / 8.0 + border_l + 2.0 * r1 + (MAX_STARS + 1) * 3.0 * r1);
     // the local copy indicator
-    gtk_widget_set_size_request(thumb->w_local_copy, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_size_request(thumb->w_local_copy, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_altered, line3);
     gtk_widget_set_margin_start(thumb->w_altered, 10.0 * r1);
     // the altered icon
-    gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_size_request(thumb->w_altered, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_altered, line3);
     gtk_widget_set_margin_start(thumb->w_altered, 7.0 * r1);
     // the group bouton
-    gtk_widget_set_size_request(thumb->w_group, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_size_request(thumb->w_group, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_group, line3);
     gtk_widget_set_margin_start(thumb->w_group, 4.0 * r1);
     // the sound icon
-    gtk_widget_set_size_request(thumb->w_audio, 2.0 * r1, 2.0 * r1);
+    gtk_widget_set_size_request(thumb->w_audio, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_START);
     gtk_widget_set_margin_top(thumb->w_audio, line3);
     gtk_widget_set_margin_start(thumb->w_audio, r1);
