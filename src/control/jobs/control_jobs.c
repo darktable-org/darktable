@@ -179,7 +179,7 @@ static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback ex
   }
   if(progress_type != PROGRESS_NONE)
     dt_control_job_add_progress(job, _(message), progress_type == PROGRESS_CANCELLABLE);
-  params->index = g_list_copy(dt_view_get_images_to_act_on(only_visible, TRUE));
+  params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(only_visible, TRUE));
 
   dt_control_job_set_params(job, params, dt_control_image_enumerator_cleanup);
 
@@ -1377,7 +1377,7 @@ static dt_job_t *dt_control_gpx_apply_job_create(const gchar *filename, int32_t 
   if(filmid != -1)
     dt_control_image_enumerator_job_film_init(params, filmid);
   else
-    params->index = g_list_copy(dt_view_get_images_to_act_on(TRUE, TRUE));
+    params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
 
   dt_control_gpx_apply_t *data = params->data;
   data->filename = g_strdup(filename);
@@ -1843,7 +1843,7 @@ static dt_job_t *dt_control_time_offset_job_create(const long int offset, int im
   if(imgid != -1)
     params->index = g_list_append(params->index, GINT_TO_POINTER(imgid));
   else
-    params->index = g_list_copy(dt_view_get_images_to_act_on(TRUE, TRUE));
+    params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
 
   dt_control_time_offset_t *data = params->data;
   data->offset = offset;

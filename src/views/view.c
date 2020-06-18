@@ -757,7 +757,7 @@ static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboo
 }
 
 // get the list of images to act on during global changes (libs, accels)
-GList *dt_view_get_images_to_act_on(gboolean only_visible, gboolean force)
+const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gboolean force)
 {
   /** Here's how it works
    *
