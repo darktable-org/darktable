@@ -35,6 +35,14 @@ DT_MODULE(1)
 
 #include "modulegroups.h"
 
+typedef struct dt_lib_modulegroups_group_t
+{
+  gchar *name;
+  // icon
+  // default
+  GList *modules;
+} dt_lib_modulegroups_group_t;
+
 typedef struct dt_lib_modulegroups_t
 {
   uint32_t current;
@@ -42,6 +50,8 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *text_entry;
   GtkWidget *hbox_buttons;
   GtkWidget *hbox_search_box;
+
+  GList *groups;
 } dt_lib_modulegroups_t;
 
 typedef enum dt_lib_modulegroup_iop_visibility_type_t
@@ -688,9 +698,67 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
   return DT_MODULEGROUP_NONE;
 }
 
+static gchar *_preset_to_string(GList *groups)
+{
+  gchar *res = NULL;
+  GList *l = groups;
+  while(l)
+  {
+    dt_lib_modulegroups_group_t *g = (dt_lib_modulegroups_group_t *)l->data;
+    if(res) res = dt_util_dstrcat(res, "ꬹ");
+    res = dt_util_dstrcat(res, "%s", g->name);
+    GList *ll = g->modules;
+    while(ll)
+    {
+      gchar *m = (gchar *)ll->data;
+      res = dt_util_dstrcat(res, "|%s", m);
+      ll = g_list_next(ll);
+    }
+    l = g_list_next(l);
+  }
+
+  return res;
+}
+
+static GList *_preset_from_string(gchar *txt)
+{
+  GList *res = NULL;
+
+  gchar **gr = g_strsplit(txt, "ꬹ", -1);
+  for(int i = 0; i < g_strv_length(gr); i++)
+  {
+    gchar *tx = gr[i];
+    if(tx)
+    {
+      gchar **gr2 = g_strsplit(tx, "|", -1);
+      const int nb = g_strv_length(gr2);
+      if(nb > 0)
+      {
+        dt_lib_modulegroups_group_t *group
+            = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
+        group->name = gr2[0];
+        for(int j = 1; j < nb; j++)
+        {
+          group->modules = g_list_append(group->modules, g_strdup(gr2[j]));
+        }
+        res = g_list_append(res, group);
+      }
+      g_strfreev(gr2);
+    }
+  }
+  g_strfreev(gr);
+
+  return res;
+}
+
 void init_presets(dt_lib_module_t *self)
 {
-  //
+  gchar *tx = "test|ashift|filmicrgb|exposureꬹcoucou|clipping|vignette|watermarkꬹtruc|clipping|filmicrgb|"
+              "tonecurve|temperature";
+  dt_lib_presets_add("a_moi", self->plugin_name, self->version(), tx, sizeof(tx));
+
+  gchar *tx2 = "test|filmicrgbꬹtruc|clipping|filmicrgb";
+  dt_lib_presets_add("a_toi", self->plugin_name, self->version(), tx2, sizeof(tx2));
 }
 
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
@@ -701,12 +769,19 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
-  return NULL;
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  gchar *tx = _preset_to_string(d->groups);
+  *size = sizeof(tx);
+  return tx;
 }
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
-  return 1;
+  if(!params) return 1;
+
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  d->groups = _preset_from_string((char *)params);
+  return 0;
 }
 
 #undef PADDING
