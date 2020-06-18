@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -259,6 +260,11 @@ void gui_init(dt_lib_module_t *self)
   {
     gtk_box_pack_start(GTK_BOX(br), d->buttons[k], TRUE, TRUE, 0);
   }
+
+  // we load now the presets btn
+  self->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(self->presets_button, _("presets"));
+  gtk_box_pack_start(GTK_BOX(br), self->presets_button, FALSE, FALSE, 0);
 
   /* search box */
   GtkWidget *label = gtk_label_new(_("search module"));
@@ -680,6 +686,27 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
       return k;
   }
   return DT_MODULEGROUP_NONE;
+}
+
+void init_presets(dt_lib_module_t *self)
+{
+  //
+}
+
+void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
+                    const int old_version, int *new_version, size_t *new_size)
+{
+  return NULL;
+}
+
+void *get_params(dt_lib_module_t *self, int *size)
+{
+  return NULL;
+}
+
+int set_params(dt_lib_module_t *self, const void *params, int size)
+{
+  return 1;
 }
 
 #undef PADDING
