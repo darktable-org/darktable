@@ -162,6 +162,19 @@ static gboolean _text_entry_icon_press_callback(GtkEntry *entry, GtkEntryIconPos
   return TRUE;
 }
 
+static gboolean _text_entry_key_press_callback(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+
+  if(event->keyval == GDK_KEY_Escape)
+  {
+    gtk_entry_set_text(GTK_ENTRY(widget), "");
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 void view_leave(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
 {
   if(!strcmp(old_view->module_name, "darkroom"))
@@ -258,6 +271,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(d->text_entry, GDK_KEY_PRESS_MASK);
   g_signal_connect(G_OBJECT(d->text_entry), "changed", G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "icon-press", G_CALLBACK(_text_entry_icon_press_callback), self);
+  g_signal_connect(G_OBJECT(d->text_entry), "key-press-event", G_CALLBACK(_text_entry_key_press_callback), self);
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), d->text_entry, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_icon_from_icon_name(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, "edit-clear");
