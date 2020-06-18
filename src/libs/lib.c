@@ -958,6 +958,9 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
     }
 
+    //ensure that any gtkentry fields lose focus
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+
     return TRUE;
   }
   else if(e->button == 2)
