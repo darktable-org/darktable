@@ -457,7 +457,7 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
+    imgs = (GList *)dt_view_get_images_to_act_on(TRUE, TRUE);
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
   if(group_on) dt_grouping_add_grouped_images(&imgs);
@@ -2161,7 +2161,7 @@ void dt_image_synch_xmp(const int selected)
   }
   else
   {
-    GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
+    const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
     dt_image_synch_xmps(imgs);
   }
 }
