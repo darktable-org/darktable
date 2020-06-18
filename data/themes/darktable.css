@@ -2257,8 +2257,8 @@ spinbutton>button
 /* Set where overlays block infos start on the image */
 .dt_overlays_hover_block #thumb_bottom
 {
-  margin-top: 3px;  /* not real pixels, but percentage of the image size */
-  margin-left: 0px; /* not real pixels, but percentage of the image size */
+  margin-top: 30px;  /* not real pixels, but per thousand of the image size */
+  margin-left: 0px;  /* not real pixels, but per thousand of the image size */
 }
 
 /* Set background color of overlays block infos */
@@ -2266,11 +2266,4 @@ spinbutton>button
 {
   color: @bauhaus_fg_hover;
   background-color: rgba(20, 20, 20, 0.5);
-}
-
-/* Padding of overlays block hover on culling/preview */
-.dt_overlays_hover_block#culling #thumb_image:hover #thumb_bottom_label,
-.dt_overlays_hover_block#preview #thumb_image:hover #thumb_bottom_label
-{
-  padding: 8px;
 }
