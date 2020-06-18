@@ -1352,6 +1352,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
        && !(module->operation_tags() & IOP_TAG_DISTORT)
        && (in_bpp == out_bpp) && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
     {
+      // since we're not actually running the module, the output format is the same as the input format
+      **out_format = pipe->dsc = piece->dsc_out = piece->dsc_in;
+
 #ifdef HAVE_OPENCL
       if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0 && (cl_mem_input != NULL))
       {
