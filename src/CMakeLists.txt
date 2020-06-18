@@ -9,6 +9,7 @@ include(CheckCSourceCompiles)
 #
 FILE(GLOB SOURCE_FILES
   "bauhaus/bauhaus.c"
+  "common/atomic.c"
   "common/bilateral.c"
   "common/bilateralcl.c"
   "common/cache.c"
