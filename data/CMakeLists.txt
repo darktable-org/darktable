@@ -26,6 +26,7 @@ if(USE_LUA)
 #
 # lua system scripts
 #
+FILE(COPY lua luarc DESTINATION "${DARKTABLE_DATADIR}")
 install(DIRECTORY "lua" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 install(FILES luarc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 endif(USE_LUA)

@@ -88,8 +88,8 @@ cmake_print_variables(CMAKE_INSTALL_BINDIR_ABS)
 file(RELATIVE_PATH REL_BIN_TO_LIB ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_LIBDIR_CMAKE_PATH}/darktable")
 file(RELATIVE_PATH REL_BIN_TO_DATADIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_DATADIR_CMAKE_PATH}/darktable")
 file(RELATIVE_PATH REL_BIN_TO_LOCALEDIR ${CMAKE_INSTALL_BINDIR_ABS} "${CMAKE_INSTALL_LOCALEDIR_CMAKE_PATH}")
-# cmake_print_variables(REL_BIN_TO_LIB) # ../lib
-# cmake_print_variables(REL_BIN_TO_DATADIR) # ../share
+# cmake_print_variables(REL_BIN_TO_LIB) # ../lib/darktable
+# cmake_print_variables(REL_BIN_TO_DATADIR) # ../share/darktable
 # cmake_print_variables(REL_BIN_TO_LOCALEDIR) # ../share/locale
 # MESSAGE("*******")
 set(DARKTABLE_BINDIR    "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
