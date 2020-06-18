@@ -2152,9 +2152,9 @@ void gui_init(dt_iop_module_t *self)
 //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 #endif
 
-#define ADD_FACTOR(which)                                                                                         \
+#define ADD_FACTOR(which, span)                                                                                   \
   g->which##_factor = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,                                             \
-                      dt_bauhaus_slider_new_with_range_and_feedback(self, -50.0, 50.0, 0.5,                       \
+                      dt_bauhaus_slider_new_with_range_and_feedback(self, -span, span, span / 100.0f,             \
                                                               (p->which[CHANNEL_FACTOR] - 1.0f) * 100.0f, 2, 0)); \
   dt_bauhaus_slider_enable_soft_boundaries(g->which##_factor, -100.0, 100.0);                                     \
   dt_bauhaus_slider_set_format(g->which##_factor, "%.2f %%");                                                     \
@@ -2165,8 +2165,8 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->which##_factor), "value-changed", G_CALLBACK(which##_factor_callback), self);      \
   gtk_box_pack_start(GTK_BOX(self->widget), g->which##_factor, TRUE, TRUE, 0);                                    
 
-#define ADD_CHANNEL(which, c, n, N)                                                                               \
-  g->which##_##c = dt_bauhaus_slider_new_with_range_and_feedback(self, -0.5, 0.5, 0.0005,                         \
+#define ADD_CHANNEL(which, c, n, N, span)                                                                         \
+  g->which##_##c = dt_bauhaus_slider_new_with_range_and_feedback(self, -span, span, span / 100.0f,                \
                                                                  p->which[CHANNEL_##N] - 1.0f, 5, 0);             \
   dt_bauhaus_slider_enable_soft_boundaries(g->which##_##c, -1.0, 1.0);                                            \
   gtk_widget_set_tooltip_text(g->which##_##c, _("factor of " #n " for " #which));                                 \
