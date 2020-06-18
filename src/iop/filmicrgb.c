@@ -1461,7 +1461,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   if(!run_fast && recover_highlights && mask && reconstructed)
   {
     float *const restrict inpainted =  dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
-    inpaint_noise(in, mask, inpainted, data->noise_level / (scale * scale), data->reconstruct_threshold, data->noise_distribution,
+    inpaint_noise(in, mask, inpainted, data->noise_level / scale, data->reconstruct_threshold, data->noise_distribution,
                   roi_out->width * roi_out->height * ch, ch);
     const gint success_1 = reconstruct_highlights(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, ch, data, piece, roi_in, roi_out);
     gint success_2 = TRUE;
