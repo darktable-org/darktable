@@ -872,7 +872,7 @@ schedule(static) aligned(luminance, out, in:64) collapse(3)
     for(size_t j = 0; j < out_width; ++j)
       for(size_t c = 0; c < ch; ++c)
       {
-        // normalize the mask intensity between -8 EV and 0 EV for clarity, 
+        // normalize the mask intensity between -8 EV and 0 EV for clarity,
         // and add a "gamma" 2.0 for better legibility in shadows
         const float intensity = sqrtf(fminf(fmaxf(luminance[(i + offset_y) * in_width  + (j + offset_x)] - 0.00390625f, 0.f) / 0.99609375f, 1.f));
         out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]
@@ -1096,6 +1096,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   const int radius = (int)((diameter - 1.0f) / ( 2.0f));
   d->radius = radius;
 
+  /*
   // Enlarge the preview roi with padding if needed
   if(self->dev->gui_attached && sanity_check(self))
   {
@@ -1110,6 +1111,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     roi_in->width = roir - roi_in->x;
     roi_in->height = roib - roi_in->y;
   }
+  */
 }
 
 
