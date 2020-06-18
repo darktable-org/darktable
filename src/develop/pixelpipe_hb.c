@@ -1855,6 +1855,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
           if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out, module, piece, &tiling, &pixelpipe_flow))
             return 1;
+          dt_pthread_mutex_lock(&pipe->busy_mutex);
         }
 
         if(pipe->shutdown)
@@ -1902,9 +1903,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
         if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out, module, piece, &tiling, &pixelpipe_flow))
           return 1;
+        dt_pthread_mutex_lock(&pipe->busy_mutex);
       }
 
       /* input is still only on GPU? Let's invalidate CPU input buffer then */
@@ -1915,15 +1916,15 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       /* opencl is not inited or not enabled or we got no resource/device -> everything runs on cpu */
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
       if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out, module, piece, &tiling, &pixelpipe_flow))
         return 1;
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }
 #else // HAVE_OPENCL
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
     if (pixelpipe_process_on_CPU(pipe, dev, input, &roi_in, input_format, output, out_format, roi_out, module, piece, &tiling, &pixelpipe_flow))
       return 1;
+    dt_pthread_mutex_lock(&pipe->busy_mutex);
 #endif // HAVE_OPENCL
 
     char histogram_log[32] = "";
