@@ -880,6 +880,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->exposure = dt_bauhaus_slider_from_params(self, "exposure");
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
+  dt_bauhaus_slider_set_step(g->exposure, 0.02);
+  dt_bauhaus_slider_set_digits(g->exposure, 3);
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 3.0);
 
