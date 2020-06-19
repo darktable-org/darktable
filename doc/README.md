@@ -21,7 +21,7 @@ Optionally, you might need for special features:
  - `gphoto2` (for camera support, recommended)
  - `flickcurl` (for Flickr support)
  - SDL, SDL-image and Mesa OpenGL (to build darktable-viewer)
- - `osm-gps-map` and `libsoup` for geo tagging view
+ - `osm-gps-map` for geo tagging view
  - `lensfun` (lens distortion plugin)
  - OpenEXR for HDR export
  - `libsecret` for storing passwords
