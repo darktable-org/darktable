@@ -1053,7 +1053,8 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     else
-      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), (darktable.gui->filter_image == CAIRO_FILTER_FAST)
+      ? CAIRO_FILTER_GOOD : darktable.gui->filter_image) ;
 
     cairo_paint(cr);
     /* from focus_peaking.h

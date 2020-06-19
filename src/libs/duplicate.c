@@ -299,7 +299,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_rectangle(cri, 0, 0, wd, ht);
     cairo_clip_preserve(cri);
     cairo_set_source_surface(cri, d->preview_surf, dx, dy);
-    cairo_pattern_set_filter(cairo_get_source(cri), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cri), (darktable.gui->filter_image == CAIRO_FILTER_FAST)
+      ? CAIRO_FILTER_GOOD : darktable.gui->filter_image) ;
     cairo_paint(cri);
 
     cairo_restore(cri);
