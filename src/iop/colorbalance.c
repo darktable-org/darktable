@@ -2227,7 +2227,7 @@ void gui_init(dt_iop_module_t *self)
 
   static const char *gamma_messages[] = { N_("factor of gamma"), N_("gamma") };
   (void)gamma_messages;
-  ADD_FACTOR(gamma, 20.0f)
+  ADD_FACTOR(gamma, 50.0f)
 
   g->hue_gamma = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
                  dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 360.0f, 1.0f, 0.0f, 2, 0));
@@ -2250,21 +2250,21 @@ void gui_init(dt_iop_module_t *self)
 
   static const char *gamma_red_messages[] = { N_("factor of red for gamma") };
   (void)gamma_red_messages;
-  ADD_CHANNEL(gamma, r, red, RED, 0.2f)
+  ADD_CHANNEL(gamma, r, red, RED, 0.5f)
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.0, 0.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_r, 1.0, 1.0, 0.0, 0.0);
 
   static const char *gamma_green_messages[] = { N_("factor of green for gamma") };
   (void)gamma_green_messages;
-  ADD_CHANNEL(gamma, g, green, GREEN, 0.2f)
+  ADD_CHANNEL(gamma, g, green, GREEN, 0.5f)
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.0, 1.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_g, 1.0, 0.0, 1.0, 0.0);
 
   static const char *gamma_blue_messages[] = { N_("factor of blue for gamma") };
   (void)gamma_blue_messages;
-  ADD_CHANNEL(gamma, b, blue, BLUE, 0.2f)
+  ADD_CHANNEL(gamma, b, blue, BLUE, 0.5f)
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.0, 1.0, 1.0, 0.0);
   dt_bauhaus_slider_set_stop(g->gamma_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->gamma_b, 1.0, 0.0, 0.0, 1.0);
@@ -2285,7 +2285,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue_gain, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->hue_gain), "value-changed", G_CALLBACK(hue_gain_callback), self);
 
-  g->sat_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 50.0f, 0.5f, 0.0f, 2, 0);
+  g->sat_gain = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 25.0f, 0.25f, 0.0f, 2, 0);
   dt_bauhaus_slider_set_format(g->sat_gain, "%.2f %%");
   dt_bauhaus_slider_enable_soft_boundaries(g->sat_gain, 0.0f, 100.0f);
   dt_bauhaus_widget_set_label(g->sat_gain, NULL, _("saturation"));
