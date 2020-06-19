@@ -1514,10 +1514,10 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
   {
     // if only one side changed, force aspect by two adjacent in equal parts
     // 1 2 4 8 : x y w h
-    double clip_x = MAX(floor(iwd * g->clip_x) / (float)iwd, 0.0f);
-    double clip_y = MAX(floor(iht * g->clip_y) / (float)iht, 0.0f);
-    double clip_w = MIN(ceil(iwd * g->clip_w) / (float)iwd, 1.0f);
-    double clip_h = MIN(ceil(iht * g->clip_h) / (float)iht, 1.0f);
+    double clip_x = MAX(iwd * g->clip_x / (float)iwd, 0.0f);
+    double clip_y = MAX(iht * g->clip_y / (float)iht, 0.0f);
+    double clip_w = MIN(iwd * g->clip_w / (float)iwd, 1.0f);
+    double clip_h = MIN(iht * g->clip_h / (float)iht, 1.0f);
 
     // if we only modified one dim, respectively, we wanted these values:
     const double target_h = (double)iwd * g->clip_w / ((double)iht * aspect);
