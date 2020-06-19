@@ -234,7 +234,7 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   cairo_fill (cr);
 
   cairo_surface_t *surf = NULL;
-  const int res = dt_view_image_get_surface(prt->image_id, iwidth, iheight, &surf);
+  const int res = dt_view_image_get_surface(prt->image_id, iwidth, iheight, &surf, TRUE);
   if(res)
   {
     // if the image is missing, we reload it again
