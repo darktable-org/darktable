@@ -2746,6 +2746,38 @@ int dt_iop_count_instances(dt_iop_module_so_t *module)
   return inst_count;
 }
 
+static gboolean _postponed_history_update(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t*)data;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  self->timeout_handle = 0;
+  return FALSE; //cancel the timer
+}
+
+/** queue a delayed call of the add_history function after user interaction, to capture parameter updates (but not */
+/** too often). */
+void dt_iop_queue_history_update(dt_iop_module_t *module)
+{
+  if (module->timeout_handle)
+  {
+    // we already queued an update, but we don't want to have the update happen until the timeout expires
+    // without any activity, so cancel the queued callback
+    g_source_remove(module->timeout_handle);
+  }
+  // adaptively set the timeout to 150% of the average time the past several pixelpipe runs took
+  const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
+  module->timeout_handle = g_timeout_add(delay, _postponed_history_update, module);
+}
+
+void dt_iop_cancel_history_update(dt_iop_module_t *module)
+{
+  if (module->timeout_handle)
+  {
+    g_source_remove(module->timeout_handle);
+    module->timeout_handle = 0;
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
