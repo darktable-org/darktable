@@ -251,7 +251,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   int res = 0;
   if(d->preview_id != d->imgid || d->preview_zoom != nz * zoom_ratio || !d->preview_surf)
   {
-    res = dt_view_image_get_surface(d->imgid, img_wd * nz, img_ht * nz, &d->preview_surf);
+    res = dt_view_image_get_surface(d->imgid, img_wd * nz, img_ht * nz, &d->preview_surf, TRUE);
 
     if(!res)
     {
