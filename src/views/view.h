@@ -195,7 +195,7 @@ int dt_view_get_image_to_act_on();
 /** returns an uppercase string of file extension **plus** some flag information **/
 char* dt_view_extend_modes_str(const char * name, const int is_hdr, const int is_bw);
 /** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
-int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface);
+int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality);
 
 
 /** Set the selection bit to a given value for the specified image */
