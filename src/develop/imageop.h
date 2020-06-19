@@ -331,8 +331,6 @@ typedef struct dt_iop_module_t
   dt_iop_colorspace_type_t histogram_cst;
   /** scale the histogram so the middle grey is at .5 */
   int histogram_middle_grey;
-  /** reference for dlopened libs. */
-  darktable_t *dt;
   /** the module is used in this develop module. */
   struct dt_develop_t *dev;
   /** non zero if this node should be processed. */
