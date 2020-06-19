@@ -288,7 +288,7 @@ include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
 list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
-# used to launch a tiny http server, used by facebook exporter
+# used to launch a tiny http server, which could be used by OAuth services
 find_package(LibSoup2)
 if(LibSoup2_FOUND)
   include_directories(SYSTEM ${LibSoup2_INCLUDE_DIRS})

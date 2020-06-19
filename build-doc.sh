@@ -18,7 +18,7 @@
 #
 ################
 # sudo pacman -S base-devel cmake intltool lensfun curl exiv2 lcms2 librsvg libxslt sqlite pugixml
-# sudo pacman -S openexr libwebp flickcurl graphicsmagick libcups libsoup libgphoto2 sdl mesa-libgl dbus-glib osm-gps-map
+# sudo pacman -S openexr libwebp graphicsmagick libcups libsoup libgphoto2 sdl mesa-libgl dbus-glib osm-gps-map
 # sudo pacman -S jdk10-openjdk gnome-doc-utils fop imagemagick extra/docbook-xml extra/docbook-xsl po4a
 #
 # cd ~/aur
