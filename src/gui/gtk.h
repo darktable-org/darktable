@@ -376,6 +376,9 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link);
 // load a CSS theme
 void dt_gui_load_theme(const char *theme);
 
+// reload GUI scalings
+void dt_configure_ppd_dpi(dt_gui_gtk_t *gui);
+
 //translate key press events to remove any modifiers used to produce the keyval
 // for example when the shift key is used to create the asterisk character
 guint dt_gui_translated_key_state(GdkEventKey *event);
