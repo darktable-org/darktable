@@ -218,8 +218,9 @@ static void _overlays_show_popup(dt_lib_module_t *self)
   if(thumbs_state)
   {
     // we write the label with the size categorie
-    gchar *txt = dt_util_dstrcat(NULL, "%s %d", _("thumbnails overlays for size"),
-                                 dt_ui_thumbtable(darktable.gui->ui)->prefs_size);
+    gchar *txt = dt_util_dstrcat(NULL, "%s %d (%d %s)", _("thumbnails overlays for size"),
+                                 dt_ui_thumbtable(darktable.gui->ui)->prefs_size,
+                                 dt_ui_thumbtable(darktable.gui->ui)->thumb_size, _("px"));
     gtk_label_set_text(GTK_LABEL(d->over_label), txt);
     g_free(txt);
 
