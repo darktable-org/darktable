@@ -205,17 +205,13 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   }
   else if(has_prefix(variable, "EXIF_EXPOSURE"))
   {
-    /* use raw numbers for infos jobcode, else regular special character exposure str */
+    result = dt_util_format_exposure(params->data->exif_exposure);
+    // for job other than info (export) we strip the slash char
     if(g_strcmp0(params->jobcode, "infos") != 0)
     {
-      if(nearbyintf(params->data->exif_exposure) == params->data->exif_exposure)
-        result = g_strdup_printf("%.0f", params->data->exif_exposure);
-      else
-        result = g_strdup_printf("%.1f", params->data->exif_exposure);
-    }
-    else
-    {
-      result = dt_util_format_exposure(params->data->exif_exposure);
+      gchar *res = dt_util_str_replace(result, "/", "_");
+      g_free(result);
+      result = res;
     }
   }
   else if(has_prefix(variable, "EXIF_APERTURE"))
