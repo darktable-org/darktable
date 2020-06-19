@@ -448,7 +448,6 @@ error:
 
 int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
-  module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
   module->header = NULL;
@@ -1545,8 +1544,6 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
     free(module);
     return 1;
   }
-  module->global_data = module_so->data;
-  module->so = module_so;
   dt_iop_reload_defaults(module);
   return 0;
 }

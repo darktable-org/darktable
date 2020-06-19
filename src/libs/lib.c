@@ -566,7 +566,6 @@ static int _lib_default_expandable(dt_lib_module_t *self)
 static int dt_lib_load_module(void *m, const char *libname, const char *plugin_name)
 {
   dt_lib_module_t *module = (dt_lib_module_t *)m;
-  module->dt = &darktable;
   module->widget = NULL;
   module->expander = NULL;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));

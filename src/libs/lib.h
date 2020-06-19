@@ -85,8 +85,6 @@ typedef struct dt_lib_module_t
 
   /** opened module. */
   GModule *module;
-  /** reference for dlopened libs. */
-  darktable_t *dt;
   /** other stuff that may be needed by the module, not only in gui mode. */
   void *data;
   /** string identifying this operation. */

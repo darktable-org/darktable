@@ -1577,7 +1577,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 static void btn_toggled(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
 
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 

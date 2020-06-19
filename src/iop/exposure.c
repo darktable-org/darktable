@@ -749,12 +749,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   exposure_set_white(self, white);
 }
 
-static void autoexpp_callback(GtkWidget *slider, gpointer user_data)
+static void autoexpp_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  if(darktable.gui->reset) return;
 
-  if(self->dt->gui->reset) return;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE ||
      !dt_bauhaus_widget_get_quad_active(g->autoexpp) ||
      self->picked_color_max[0] < 0.0f) return;

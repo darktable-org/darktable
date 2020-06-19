@@ -164,7 +164,6 @@ static void view_leave_wrapper(struct dt_lib_module_t *self,struct dt_view_t *ol
 
 static dt_lib_module_t ref_lib = {
   .module = NULL,
-  .dt = &darktable,
   .data = NULL,
   .plugin_name ={ 0 },
   .widget = NULL,
