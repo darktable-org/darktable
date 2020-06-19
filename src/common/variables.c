@@ -385,7 +385,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     escape = FALSE;
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
     res = g_list_first(res);
-    gchar *txt = NULL;
     if(res != NULL)
     {
       do
@@ -393,31 +392,63 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
         const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
         if(g_strcmp0(lb, "red") == 0)
         {
-          txt = dt_util_dstrcat(txt, "<span foreground=\"#ee0000\">⚫ </span>");
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">⚫ </span>");
         }
         else if(g_strcmp0(lb, "yellow") == 0)
         {
-          txt = dt_util_dstrcat(txt, "<span foreground=\"#eeee00\">⚫ </span>");
+          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">⚫ </span>");
         }
         else if(g_strcmp0(lb, "green") == 0)
         {
-          txt = dt_util_dstrcat(txt, "<span foreground=\"#00ee00\">⚫ </span>");
+          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">⚫ </span>");
         }
         else if(g_strcmp0(lb, "blue") == 0)
         {
-          txt = dt_util_dstrcat(txt, "<span foreground=\"#0000ee\">⚫ </span>");
+          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">⚫ </span>");
         }
         else if(g_strcmp0(lb, "purple") == 0)
         {
-          txt = dt_util_dstrcat(txt, "<span foreground=\"#ee00ee\">⚫ </span>");
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">⚫ </span>");
         }
       } while((res = g_list_next(res)) != NULL);
-      result = g_strdup(txt);
-      g_free(txt);
     }
     g_list_free(res);
   }
-  else if(has_prefix(variable, "LABELS") || has_prefix(variable, "LABELS_ICONS"))
+  else if(has_prefix(variable, "LABELS_COLORICONS") && g_strcmp0(params->jobcode, "infos") == 0)
+  {
+    escape = FALSE;
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      do
+      {
+        const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
+        if(g_strcmp0(lb, "red") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">🔴 </span>");
+        }
+        else if(g_strcmp0(lb, "yellow") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">🟡 </span>");
+        }
+        else if(g_strcmp0(lb, "green") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">🟢 </span>");
+        }
+        else if(g_strcmp0(lb, "blue") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">🔵 </span>");
+        }
+        else if(g_strcmp0(lb, "purple") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">🟣 </span>");
+        }
+      } while((res = g_list_next(res)) != NULL);
+    }
+    g_list_free(res);
+  }
+  else if(has_prefix(variable, "LABELS") || has_prefix(variable, "LABELS_ICONS") || has_prefix(variable, "LABELS_COLORICONS"))
   {
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
     // only use the first/last label?
