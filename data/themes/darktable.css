@@ -548,6 +548,7 @@ overshoot.right
 #module-instance-button,
 #module-enable-button,
 #module-collapse-button,
+#module-always-enabled-button,
 #module-always-disabled-button
 {
   /* background-color: transparent; this doesn't work */
@@ -556,12 +557,6 @@ overshoot.right
   padding: 0.06em;
   border: 0;
   margin: 0 1px;
-}
-
-#module-always-enabled-button /* button on always activated module */
-{
-  color: @plugin_label_color;
-  border: 0;
 }
 
 #module-header #button-canvas
@@ -610,7 +605,7 @@ overshoot.right
   background-color: @bg_color;
   color: @plugin_label_color;
   border:0;
-  padding: 0 2px 2px 0.5em;
+  padding: 0 2px 2px 0.45em;
   font-weight: normal;
   font-family: sans-serif;
   font-size: 1.1em;
