@@ -423,7 +423,7 @@ static void init_tab_general(GtkWidget *stack)
   gtk_grid_attach_next_to(GTK_GRID(grid), screen_dpi_overwrite, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(screen_dpi_overwrite, _("adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
                                                       "increase for a magnified GUI, decrease to fit more content in window.\n"
-                                                      "set to -1.0 to use the system-defined global resolution.\n"
+                                                      "set to -1 to use the system-defined global resolution.\n"
                                                       "default is 96 DPI on most systems.\n"
                                                       "this needs a restart to apply changes."));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_dpi_overwrite), dt_conf_get_float("screen_dpi_overwrite"));
