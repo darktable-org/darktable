@@ -97,7 +97,6 @@ typedef struct dt_iop_atrous_gui_data_t
   float band_max;
   float sample[MAX_NUM_SCALES];
   int num_samples;
-  int timeout_handle;
 } dt_iop_atrous_gui_data_t;
 
 typedef struct dt_iop_atrous_global_data_t
@@ -1322,13 +1321,8 @@ static void reset_mix(dt_iop_module_t *self)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   reset_mix(self);
-  if(c->timeout_handle)
-  {
-    g_source_remove(c->timeout_handle);
-    c->timeout_handle = 0;
-  }
+  dt_iop_cancel_history_update(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1652,17 +1646,6 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   return TRUE;
 }
 
-static gboolean postponed_value_change(gpointer data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)data;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  c->timeout_handle = 0;
-
-  return FALSE;
-}
-
 static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1696,10 +1679,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
       get_params(p, c->channel2, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
-
-    if(!c->timeout_handle)
-      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
+    dt_iop_queue_history_update(self, FALSE);
   }
   else if(event->y > height)
   {
@@ -1857,7 +1837,7 @@ void gui_init(struct dt_iop_module_t *self)
   for(int k = 0; k < BANDS; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
-  c->timeout_handle = 0;
+  self->timeout_handle = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0 / BANDS;
 
@@ -1910,7 +1890,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", c->channel);
   dt_draw_curve_destroy(c->minmax_curve);
-  if(c->timeout_handle) g_source_remove(c->timeout_handle);
+  dt_iop_cancel_history_update(self);
   free(self->gui_data);
   self->gui_data = NULL;
 }

@@ -677,7 +677,7 @@ dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 
 /** queue a delayed call to dt_dev_add_history_item to capture module parameters */
-void dt_iop_queue_history_update(dt_iop_module_t *module);
+void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior);
 /** cancel any previously-queued history update */
 void dt_iop_cancel_history_update(dt_iop_module_t *module);
 
