@@ -50,6 +50,13 @@ typedef struct dt_accel_dynamic_t
 
 } dt_accel_dynamic_t;
 
+typedef enum dt_accel_iop_slider_scale_t
+{
+  DT_IOP_PRECISION_NORMAL = 0,
+  DT_IOP_PRECISION_FINE = 1,
+  DT_IOP_PRECISION_COARSE = 2
+} dt_accel_iop_slider_scale_t;
+
 // Accel path string building functions
 void dt_accel_path_global(char *s, size_t n, const char *path);
 void dt_accel_path_view(char *s, size_t n, char *module, const char *path);
@@ -127,6 +134,9 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_path);
 
 // UX miscellaneous functions
 void dt_accel_widget_toast(GtkWidget *widget);
+
+// Get the scale multiplier for adjusting sliders with shortcuts
+float dt_accel_get_slider_scale_multiplier();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

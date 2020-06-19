@@ -3298,11 +3298,12 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     {
       float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
       float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
+      float multiplier = dt_accel_get_slider_scale_multiplier();
 
       if(up)
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step);
+        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step * multiplier);
       else
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step);
+        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step * multiplier);
     }
     else
     {
@@ -3569,6 +3570,23 @@ static gboolean search_callback(GtkAccelGroup *accel_group, GObject *acceleratab
   return TRUE;
 }
 
+static gboolean change_slider_accel_precision(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  const int curr_precision = dt_conf_get_int("accel/slider_precision");
+  const int new_precision = curr_precision + 1 == 3 ? 0 : curr_precision + 1;
+  dt_conf_set_int("accel/slider_precision", new_precision);
+
+  if(new_precision == DT_IOP_PRECISION_FINE)
+    dt_toast_log(_("keyboard shortcut slider precision: fine"));
+  else if(new_precision == DT_IOP_PRECISION_NORMAL)
+    dt_toast_log(_("keyboard shortcut slider precision: normal"));
+  else
+    dt_toast_log(_("keyboard shortcut slider precision: coarse"));
+
+  return TRUE;
+}
+
 static gboolean zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
@@ -3661,6 +3679,9 @@ void init_key_accels(dt_view_t *self)
 
   // set focus to the search modules text box
   dt_accel_register_view(self, NC_("accel", "search modules"), 0, 0);
+
+  // change the precision for adjusting sliders with keyboard shortcuts
+  dt_accel_register_view(self, NC_("accel", "change keyboard shortcut slider precision"), 0, 0);
 }
 
 static gboolean _darkroom_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -3765,6 +3786,10 @@ void connect_key_accels(dt_view_t *self)
   // search modules
   closure = g_cclosure_new(G_CALLBACK(search_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "search modules", closure);
+
+  // change the precision for adjusting sliders with keyboard shortcuts
+  closure = g_cclosure_new(G_CALLBACK(change_slider_accel_precision), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "change keyboard shortcut slider precision", closure);
 
   // dynamics accels
   dt_dynamic_accel_get_valid_list();
