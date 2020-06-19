@@ -933,7 +933,7 @@ int dt_view_get_image_to_act_on()
   return ret;
 }
 
-int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface)
+int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality)
 {
   // if surface not null, clean it up
   if(*surface && cairo_surface_get_reference_count(*surface) > 0) cairo_surface_destroy(*surface);
@@ -1053,7 +1053,8 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     else
-      cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), ((darktable.gui->filter_image == CAIRO_FILTER_FAST) && quality)
+      ? CAIRO_FILTER_GOOD : darktable.gui->filter_image) ;
 
     cairo_paint(cr);
     /* from focus_peaking.h

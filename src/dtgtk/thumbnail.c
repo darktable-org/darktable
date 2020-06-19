@@ -378,11 +378,11 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
-        res = dt_view_image_get_surface(thumb->imgid, image_w * thumb->zoom, image_h * thumb->zoom, &img_surf);
+        res = dt_view_image_get_surface(thumb->imgid, image_w * thumb->zoom, image_h * thumb->zoom, &img_surf, FALSE);
       }
       else
       {
-        res = dt_view_image_get_surface(thumb->imgid, image_w, image_h, &img_surf);
+        res = dt_view_image_get_surface(thumb->imgid, image_w, image_h, &img_surf, FALSE);
       }
 
       if(res)
