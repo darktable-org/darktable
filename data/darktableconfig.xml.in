@@ -35,6 +35,12 @@
     <longdescription>after applying the above rules, apply the shortcut based on its position in the pixelpipe</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>accel/slider_precision</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>keyboard shortcut slider precision</shortdescription>
+  </dtconfig>
+  <dtconfig>
     <name>bauhaus/scale</name>
     <type>float</type>
     <default>1.4</default>
