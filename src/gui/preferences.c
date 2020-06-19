@@ -205,14 +205,18 @@ static void font_size_changed_callback(GtkWidget *widget, gpointer user_data)
 
 static void gui_scaling_changed_callback(GtkWidget *widget, gpointer user_data)
 {
-  dt_conf_set_float("screen_ppd_overwrite", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+  float ppd = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  if(ppd > 0.0) ppd = fmax(0.5, ppd); // else <= 0 -> use system default
+  dt_conf_set_float("screen_ppd_overwrite", ppd);
   dt_configure_ppd_dpi(darktable.gui);
   dt_bauhaus_load_theme();
 }
 
 static void dpi_scaling_changed_callback(GtkWidget *widget, gpointer user_data)
 {
-  dt_conf_set_float("screen_dpi_overwrite", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+  float dpi = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  if(dpi > 0.0) dpi = fmax(64, dpi); // else <= 0 -> use system default
+  dt_conf_set_float("screen_dpi_overwrite", dpi);
   dt_configure_ppd_dpi(darktable.gui);
   dt_bauhaus_load_theme();
 }
@@ -404,6 +408,7 @@ static void init_tab_general(GtkWidget *stack)
   gtk_widget_set_tooltip_text(screen_ppd_overwrite, _("scale the thumbnails and previews resolutions for high DPI screens.\n"
                                                       "increase if thumbnails look blurry, decrease if lighttable is too slow.\n"
                                                       "set to -1.0 to use the system-defined global scaling.\n"
+                                                      "default is 1.0 on most systems, or 2.0 when using resolutions above 1920×1080 px.\n"
                                                       "this needs a restart to apply changes."));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_ppd_overwrite), dt_conf_get_float("screen_ppd_overwrite"));
   g_signal_connect(G_OBJECT(screen_ppd_overwrite), "value_changed", G_CALLBACK(gui_scaling_changed_callback), 0);
@@ -419,6 +424,7 @@ static void init_tab_general(GtkWidget *stack)
   gtk_widget_set_tooltip_text(screen_dpi_overwrite, _("adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
                                                       "increase for a magnified GUI, decrease to fit more content in window.\n"
                                                       "set to -1.0 to use the system-defined global resolution.\n"
+                                                      "default is 96 DPI on most systems.\n"
                                                       "this needs a restart to apply changes."));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_dpi_overwrite), dt_conf_get_float("screen_dpi_overwrite"));
   g_signal_connect(G_OBJECT(screen_dpi_overwrite), "value_changed", G_CALLBACK(dpi_scaling_changed_callback), 0);
@@ -514,7 +520,7 @@ void dt_gui_preferences_show()
   // FIXME! this makes some systems hang forever. I don't reproduce.
   g_signal_connect(G_OBJECT(_preferences_dialog), "delete-event", G_CALLBACK(preferences_window_deleted), NULL);
 #endif
-    
+
   gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
