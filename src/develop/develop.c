@@ -2566,7 +2566,7 @@ int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const d
 
   for(int n = 0; n < nloop; n++)
   {
-    if(pipe->shutdown)
+    if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;  // stop waiting if pipe shuts down
 
     uint64_t probehash;
@@ -2664,7 +2664,7 @@ int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
 
   for(int n = 0; n < nloop; n++)
   {
-    if(pipe->shutdown)
+    if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;  // stop waiting if pipe shuts down
 
     uint64_t probehash;
