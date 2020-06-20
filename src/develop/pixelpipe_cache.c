@@ -123,6 +123,23 @@ uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *
   return hash;
 }
 
+uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpipe_t *pipe, int module)
+{
+  // find the last enabled module prior to the specified one, then get its hash
+  GList *pieces = pipe->nodes;
+  int last = -1;
+  for(int k = 1; k < module && pieces; k++)
+  {
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+    dt_develop_t *dev = piece->module->dev;
+    if (piece->enabled &&
+        !(dev->gui_module && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())))
+      last = k;
+    pieces = g_list_next(pieces);
+  }
+  return last>=0 ? dt_dev_pixelpipe_cache_basichash(imgid, pipe, last) : -1;
+}
+
 void dt_dev_pixelpipe_cache_fullhash(int imgid, const dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, int module,
                                      uint64_t *basichash, uint64_t *fullhash)
 {
