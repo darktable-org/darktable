@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-19 18:19+0200\n"
-"PO-Revision-Date: 2020-06-19 18:31+0200\n"
+"POT-Creation-Date: 2020-06-20 12:59+0200\n"
+"PO-Revision-Date: 2020-06-20 13:02+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -362,8 +362,8 @@ msgstr "couleurs saturées"
 #: ../build/src/iop/introspection_splittoning.c:73
 #: ../build/src/iop/introspection_splittoning.c:134
 #: ../build/src/iop/introspection_splittoning.c:142
-#: ../src/iop/channelmixer.c:443 ../src/iop/colorbalance.c:2186
-#: ../src/iop/colorbalance.c:2234 ../src/iop/colorbalance.c:2281
+#: ../src/iop/channelmixer.c:443 ../src/iop/colorbalance.c:2190
+#: ../src/iop/colorbalance.c:2238 ../src/iop/colorbalance.c:2285
 #: ../src/iop/colorzones.c:2354
 msgid "hue"
 msgstr "teinte"
@@ -391,8 +391,8 @@ msgstr "clarté"
 #: ../build/src/iop/introspection_splittoning.c:79
 #: ../build/src/iop/introspection_splittoning.c:138
 #: ../build/src/iop/introspection_splittoning.c:146
-#: ../src/iop/channelmixer.c:444 ../src/iop/colorbalance.c:2196
-#: ../src/iop/colorbalance.c:2244 ../src/iop/colorbalance.c:2291
+#: ../src/iop/channelmixer.c:444 ../src/iop/colorbalance.c:2200
+#: ../src/iop/colorbalance.c:2248 ../src/iop/colorbalance.c:2295
 #: ../src/iop/colorchecker.c:1393 ../src/iop/colorzones.c:2353
 msgid "saturation"
 msgstr "saturation"
@@ -725,7 +725,7 @@ msgstr "contraste hautes lumières"
 
 #: ../build/src/iop/introspection_filmicrgb.c:493
 #: ../build/src/iop/introspection_toneequal.c:360 ../src/common/darktable.c:820
-#: ../src/common/variables.c:524 ../src/imageio/format/pdf.c:670
+#: ../src/common/variables.c:520 ../src/imageio/format/pdf.c:670
 #: ../src/imageio/format/pdf.c:695 ../src/libs/export.c:692
 #: ../src/libs/export.c:698 ../src/libs/export.c:705
 #: ../src/libs/metadata_view.c:288
@@ -790,7 +790,7 @@ msgid "method"
 msgstr "méthode"
 
 #: ../build/src/iop/introspection_highlights.c:80
-#: ../build/src/iop/introspection_highlights.c:139 ../src/iop/exposure.c:890
+#: ../build/src/iop/introspection_highlights.c:139 ../src/iop/exposure.c:892
 #: ../src/views/darkroom.c:2145
 msgid "clipping threshold"
 msgstr "seuil de troncature"
@@ -922,7 +922,7 @@ msgid "logarithmic"
 msgstr "logarithmique"
 
 #: ../build/src/iop/introspection_profile_gamma.c:184
-#: ../src/iop/colorbalance.c:2228
+#: ../src/iop/colorbalance.c:2232
 msgid "gamma"
 msgstr "gamma"
 
@@ -2791,7 +2791,7 @@ msgstr "ordre des modules"
 
 #: ../src/common/collection.c:1469 ../src/develop/lightroom.c:828
 #: ../src/iop/channelmixer.c:446 ../src/iop/channelmixer.c:457
-#: ../src/iop/colorbalance.c:2204 ../src/iop/temperature.c:1384
+#: ../src/iop/colorbalance.c:2208 ../src/iop/temperature.c:1384
 #: ../src/libs/collect.c:1598 ../src/views/darkroom.c:2407
 msgid "red"
 msgstr "rouge"
@@ -2804,7 +2804,7 @@ msgstr "jaune"
 
 #: ../src/common/collection.c:1473 ../src/develop/lightroom.c:832
 #: ../src/iop/channelmixer.c:447 ../src/iop/channelmixer.c:463
-#: ../src/iop/colorbalance.c:2211 ../src/iop/temperature.c:1372
+#: ../src/iop/colorbalance.c:2215 ../src/iop/temperature.c:1372
 #: ../src/iop/temperature.c:1385 ../src/libs/collect.c:1598
 #: ../src/views/darkroom.c:2408
 msgid "green"
@@ -2812,7 +2812,7 @@ msgstr "vert"
 
 #: ../src/common/collection.c:1475 ../src/develop/lightroom.c:834
 #: ../src/iop/channelmixer.c:448 ../src/iop/channelmixer.c:469
-#: ../src/iop/colorbalance.c:2218 ../src/iop/temperature.c:1386
+#: ../src/iop/colorbalance.c:2222 ../src/iop/temperature.c:1386
 #: ../src/libs/collect.c:1598
 msgid "blue"
 msgstr "bleu"
@@ -3048,7 +3048,7 @@ msgstr ""
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
 #: ../src/common/darktable.c:820 ../src/common/database.c:2988
-#: ../src/common/variables.c:522 ../src/imageio/format/pdf.c:671
+#: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:693
 #: ../src/libs/export.c:699 ../src/libs/export.c:706
 #: ../src/libs/metadata_view.c:288
@@ -4706,9 +4706,9 @@ msgstr "%s est activé"
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1503 ../src/gui/accelerators.c:1013
-#: ../src/gui/accelerators.c:1097 ../src/gui/accelerators.c:1312
-#: ../src/gui/accelerators.c:1337 ../src/gui/import_metadata.c:162
+#: ../src/develop/imageop.c:1503 ../src/gui/accelerators.c:1031
+#: ../src/gui/accelerators.c:1115 ../src/gui/accelerators.c:1330
+#: ../src/gui/accelerators.c:1355 ../src/gui/import_metadata.c:162
 #: ../src/gui/presets.c:198 ../src/gui/presets.c:310 ../src/gui/presets.c:670
 #: ../src/iop/temperature.c:1464 ../src/libs/lib.c:338 ../src/libs/lib.c:375
 #: ../src/libs/lib.c:1231
@@ -5459,8 +5459,8 @@ msgstr "vues"
 #: ../src/gui/accelerators.c:282 ../src/gui/accelerators.c:284
 #: ../src/gui/accelerators.c:295 ../src/gui/accelerators.c:297
 #: ../src/gui/accelerators.c:308 ../src/gui/accelerators.c:310
-#: ../src/gui/accelerators.c:756 ../src/gui/accelerators.c:765
-#: ../src/gui/accelerators.c:774
+#: ../src/gui/accelerators.c:774 ../src/gui/accelerators.c:783
+#: ../src/gui/accelerators.c:792
 msgctxt "accel"
 msgid "image operations"
 msgstr "chambre noire"
@@ -5493,7 +5493,7 @@ msgstr "modifier"
 
 #: ../src/gui/accelerators.c:62 ../src/gui/accelerators.c:113
 #: ../src/gui/accelerators.c:309 ../src/gui/accelerators.c:311
-#: ../src/gui/accelerators.c:775
+#: ../src/gui/accelerators.c:793
 msgctxt "accel"
 msgid "dynamic"
 msgstr "dynamique"
@@ -5504,13 +5504,13 @@ msgid "lua"
 msgstr "lua"
 
 #: ../src/gui/accelerators.c:283 ../src/gui/accelerators.c:285
-#: ../src/gui/accelerators.c:757
+#: ../src/gui/accelerators.c:775
 msgctxt "accel"
 msgid "next"
 msgstr "suivant"
 
 #: ../src/gui/accelerators.c:296 ../src/gui/accelerators.c:298
-#: ../src/gui/accelerators.c:766
+#: ../src/gui/accelerators.c:784
 msgctxt "accel"
 msgid "previous"
 msgstr "précédent"
@@ -5545,7 +5545,7 @@ msgstr "%s / %s"
 msgid "%s"
 msgstr "%s"
 
-#: ../src/gui/accelerators.c:1080 ../src/libs/lib.c:429
+#: ../src/gui/accelerators.c:1098 ../src/libs/lib.c:429
 msgid "deleting preset for obsolete module"
 msgstr "suppression du pré-réglages pour le module obsolète"
 
@@ -6222,7 +6222,7 @@ msgstr "contrôles et texte DPI"
 msgid ""
 "adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
 "increase for a magnified GUI, decrease to fit more content in window.\n"
-"set to -1.0 to use the system-defined global resolution.\n"
+"set to -1 to use the system-defined global resolution.\n"
 "default is 96 DPI on most systems.\n"
 "this needs a restart to apply changes."
 msgstr ""
@@ -6230,7 +6230,7 @@ msgstr ""
 "contrôles, boutons, labels, etc.\n"
 "augmenter pour agrandir l'interface, diminuer pour placer plus de contenu "
 "dans la fenêtre.\n"
-"mettre à -1.0 pour utiliser la résolution par défaut du système.\n"
+"mettre à -1 pour utiliser la résolution par défaut du système.\n"
 "la valeur par défaut est 96 DPI sur la plupart des systèmes.\n"
 "nécessite un redémarrage."
 
@@ -7829,7 +7829,7 @@ msgstr ""
 "en poussant les valeurs RVB négativement."
 
 #: ../src/iop/basicadj.c:631 ../src/iop/exposure.c:827
-#: ../src/iop/exposure.c:883 ../src/iop/exposure.c:905
+#: ../src/iop/exposure.c:885 ../src/iop/exposure.c:907
 #: ../src/iop/graduatednd.c:1157 ../src/iop/relight.c:284
 #: ../src/iop/soften.c:682
 #, c-format
@@ -7950,7 +7950,7 @@ msgstr "change le contraste local"
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
 
-#: ../src/iop/bilat.c:430 ../src/iop/colorbalance.c:2104
+#: ../src/iop/bilat.c:430 ../src/iop/colorbalance.c:2108
 #: ../src/iop/filmic.c:1681
 msgid "contrast"
 msgstr "contraste"
@@ -8747,7 +8747,7 @@ msgstr "contrôle des couleurs"
 msgid "optimize luma from patches"
 msgstr "optimiser luma à partir des patchs"
 
-#: ../src/iop/colorbalance.c:961 ../src/iop/colorbalance.c:2327
+#: ../src/iop/colorbalance.c:961 ../src/iop/colorbalance.c:2331
 msgid "optimize luma"
 msgstr "optimiser luma"
 
@@ -8755,7 +8755,7 @@ msgstr "optimiser luma"
 msgid "neutralize colors from patches"
 msgstr "neutraliser les couleurs à partir des patchs"
 
-#: ../src/iop/colorbalance.c:967 ../src/iop/colorbalance.c:2333
+#: ../src/iop/colorbalance.c:967 ../src/iop/colorbalance.c:2337
 msgid "neutralize colors"
 msgstr "neutraliser les couleurs"
 
@@ -8779,116 +8779,116 @@ msgstr "RVBL"
 msgid "master"
 msgstr "maître"
 
-#: ../src/iop/colorbalance.c:2084
+#: ../src/iop/colorbalance.c:2085
 msgid "saturation correction before the color balance"
 msgstr "correction de la saturation avant la balance des couleurs"
 
-#: ../src/iop/colorbalance.c:2091
+#: ../src/iop/colorbalance.c:2093
 msgid "saturation correction after the color balance"
 msgstr "correction de la saturation après la balance des couleurs"
 
-#: ../src/iop/colorbalance.c:2096
+#: ../src/iop/colorbalance.c:2099
 msgid "adjust to match a neutral tone"
 msgstr "ajuste pour des tons neutres"
 
-#: ../src/iop/colorbalance.c:2163 ../src/iop/colorbalance.c:2172
+#: ../src/iop/colorbalance.c:2167 ../src/iop/colorbalance.c:2176
 msgid "factor of "
 msgstr "facteur de "
 
-#: ../src/iop/colorbalance.c:2164
+#: ../src/iop/colorbalance.c:2168
 msgid "factor"
 msgstr "facteur"
 
 #. lift
-#: ../src/iop/colorbalance.c:2178
+#: ../src/iop/colorbalance.c:2182
 msgid "shadows : lift / offset"
 msgstr "ombres : lift / offset"
 
-#: ../src/iop/colorbalance.c:2180
+#: ../src/iop/colorbalance.c:2184
 msgid "factor of lift"
 msgstr "facteur de lift"
 
-#: ../src/iop/colorbalance.c:2180
+#: ../src/iop/colorbalance.c:2184
 msgid "lift"
 msgstr "lift"
 
-#: ../src/iop/colorbalance.c:2189 ../src/iop/colorbalance.c:2237
-#: ../src/iop/colorbalance.c:2284
+#: ../src/iop/colorbalance.c:2193 ../src/iop/colorbalance.c:2241
+#: ../src/iop/colorbalance.c:2288
 msgid "select the hue"
 msgstr "sélectionne la teinte"
 
-#: ../src/iop/colorbalance.c:2199 ../src/iop/colorbalance.c:2247
-#: ../src/iop/colorbalance.c:2294
+#: ../src/iop/colorbalance.c:2203 ../src/iop/colorbalance.c:2251
+#: ../src/iop/colorbalance.c:2298
 msgid "select the saturation"
 msgstr "sélectionne la saturation"
 
-#: ../src/iop/colorbalance.c:2204
+#: ../src/iop/colorbalance.c:2208
 msgid "factor of red for lift"
 msgstr "facteur rouge du lift"
 
-#: ../src/iop/colorbalance.c:2211
+#: ../src/iop/colorbalance.c:2215
 msgid "factor of green for lift"
 msgstr "facteur vert du lift"
 
-#: ../src/iop/colorbalance.c:2218
+#: ../src/iop/colorbalance.c:2222
 msgid "factor of blue for lift"
 msgstr "facteur bleu du lift"
 
 #. gamma
-#: ../src/iop/colorbalance.c:2226
+#: ../src/iop/colorbalance.c:2230
 msgid "mid-tones : gamma / power"
 msgstr "tons moyens : gamma / power"
 
-#: ../src/iop/colorbalance.c:2228
+#: ../src/iop/colorbalance.c:2232
 msgid "factor of gamma"
 msgstr "facteur gamma"
 
-#: ../src/iop/colorbalance.c:2251
+#: ../src/iop/colorbalance.c:2255
 msgid "factor of red for gamma"
 msgstr "facteur rouge du gamma"
 
-#: ../src/iop/colorbalance.c:2258
+#: ../src/iop/colorbalance.c:2262
 msgid "factor of green for gamma"
 msgstr "facteur vert du gamma"
 
-#: ../src/iop/colorbalance.c:2265
+#: ../src/iop/colorbalance.c:2269
 msgid "factor of blue for gamma"
 msgstr "facteur bleu du gamma"
 
 #. gain
-#: ../src/iop/colorbalance.c:2273
+#: ../src/iop/colorbalance.c:2277
 msgid "highlights : gain / slope"
 msgstr "hautes lumières : gain / slope"
 
-#: ../src/iop/colorbalance.c:2275
+#: ../src/iop/colorbalance.c:2279
 msgid "factor of gain"
 msgstr "facteur du gain"
 
-#: ../src/iop/colorbalance.c:2275
+#: ../src/iop/colorbalance.c:2279
 msgid "gain"
 msgstr "gain"
 
-#: ../src/iop/colorbalance.c:2298
+#: ../src/iop/colorbalance.c:2302
 msgid "factor of red for gain"
 msgstr "facteur rouge du gain"
 
-#: ../src/iop/colorbalance.c:2305
+#: ../src/iop/colorbalance.c:2309
 msgid "factor of green for gain"
 msgstr "facteur vert du gain"
 
-#: ../src/iop/colorbalance.c:2312
+#: ../src/iop/colorbalance.c:2316
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
-#: ../src/iop/colorbalance.c:2319
+#: ../src/iop/colorbalance.c:2323
 msgid "auto optimizers"
 msgstr "optimiseurs automatiques"
 
-#: ../src/iop/colorbalance.c:2328
+#: ../src/iop/colorbalance.c:2332
 msgid "fit the whole histogram and center the average luma"
 msgstr "ajuste l'histogramme et centre la luminosité moyenne"
 
-#: ../src/iop/colorbalance.c:2334
+#: ../src/iop/colorbalance.c:2338
 msgid "optimize the RGB curves to remove color casts"
 msgstr "optimise les courbes RVB et supprime les dérives de couleur"
 
@@ -10036,35 +10036,35 @@ msgstr ""
 "supprime la compensation d'exposition du boîtier automatiquement\n"
 "utile lors d'une exposition à droite de l'image."
 
-#: ../src/iop/exposure.c:888
+#: ../src/iop/exposure.c:890
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
 "pourcentage de valeurs hautes tronquées, utiliser la pipette pour définir"
 
-#: ../src/iop/exposure.c:901
+#: ../src/iop/exposure.c:903
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
 "où dans l'histogramme mesurer pour le deflicking, E.g. 50% est la médiane"
 
-#: ../src/iop/exposure.c:907
+#: ../src/iop/exposure.c:909
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "où placer le niveau d'exposition pour l'image développée, IL en dessous de "
 "la surexposition."
 
-#: ../src/iop/exposure.c:910
+#: ../src/iop/exposure.c:912
 msgid "computed EC: "
 msgstr "CE calculée : "
 
 #. This gets filled in by process
-#: ../src/iop/exposure.c:912
+#: ../src/iop/exposure.c:914
 msgid "what exposure correction has actually been used"
 msgstr "la correction d'exposition réellement utilisée"
 
-#: ../src/iop/exposure.c:929
+#: ../src/iop/exposure.c:931
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -14260,7 +14260,7 @@ msgstr "modification de l'exportation des métadonnées"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1439 ../src/libs/styles.c:74
-#: ../src/views/darkroom.c:3613
+#: ../src/views/darkroom.c:3631
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -17188,177 +17188,195 @@ msgstr "gris"
 msgid "set overlay color"
 msgstr "sélectionne la couleur pour les superpositions"
 
+#: ../src/views/darkroom.c:3581
+msgid "keyboard shortcut slider precision: fine"
+msgstr "précision raccourcis clavier des réglettes : fine"
+
+#: ../src/views/darkroom.c:3583
+msgid "keyboard shortcut slider precision: normal"
+msgstr "précision raccourcis clavier des réglettes : standard"
+
+#: ../src/views/darkroom.c:3585
+msgid "keyboard shortcut slider precision: coarse"
+msgstr "précision raccourcis clavier des réglettes : grossière"
+
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3604
+#: ../src/views/darkroom.c:3622
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:3605
+#: ../src/views/darkroom.c:3623
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:3606
+#: ../src/views/darkroom.c:3624
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3609 ../src/views/lighttable.c:868
+#: ../src/views/darkroom.c:3627 ../src/views/lighttable.c:868
 msgctxt "accel"
 msgid "zoom in"
 msgstr "zoom"
 
-#: ../src/views/darkroom.c:3610 ../src/views/lighttable.c:870
+#: ../src/views/darkroom.c:3628 ../src/views/lighttable.c:870
 msgctxt "accel"
 msgid "zoom out"
 msgstr "dézoom"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3616
+#: ../src/views/darkroom.c:3634
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:3617
+#: ../src/views/darkroom.c:3635
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3620
+#: ../src/views/darkroom.c:3638
 msgctxt "accel"
 msgid "color assessment"
 msgstr "évaluation des couleurs"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3623
+#: ../src/views/darkroom.c:3641
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3626
+#: ../src/views/darkroom.c:3644
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3629
+#: ../src/views/darkroom.c:3647
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "changer la couleur des superpositions"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3632
+#: ../src/views/darkroom.c:3650
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3635
+#: ../src/views/darkroom.c:3653
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. toggle visability of drawn masks for current gui module
-#: ../src/views/darkroom.c:3638
+#: ../src/views/darkroom.c:3656
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "afficher les masques dessinés"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3641
+#: ../src/views/darkroom.c:3659
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:3642
+#: ../src/views/darkroom.c:3660
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3645
+#: ../src/views/darkroom.c:3663
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:3646
+#: ../src/views/darkroom.c:3664
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3649
+#: ../src/views/darkroom.c:3667
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:3650
+#: ../src/views/darkroom.c:3668
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3653
+#: ../src/views/darkroom.c:3671
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3656 ../src/views/lighttable.c:860
+#: ../src/views/darkroom.c:3674 ../src/views/lighttable.c:860
 #: ../src/views/map.c:918
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3657 ../src/views/lighttable.c:861
+#: ../src/views/darkroom.c:3675 ../src/views/lighttable.c:861
 #: ../src/views/map.c:919
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3660
+#: ../src/views/darkroom.c:3678
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3663
+#: ../src/views/darkroom.c:3681
 msgctxt "accel"
 msgid "search modules"
 msgstr "rechercher module"
 
-#: ../src/views/darkroom.c:3781
+#. change the precision for adjusting sliders with keyboard shortcuts
+#: ../src/views/darkroom.c:3684
+msgctxt "accel"
+msgid "change keyboard shortcut slider precision"
+msgstr "changer la précision des raccourcis clavier des réglettes"
+
+#: ../src/views/darkroom.c:3806
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3786 ../src/views/lighttable.c:1044
+#: ../src/views/darkroom.c:3811 ../src/views/lighttable.c:1044
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
-#: ../src/views/darkroom.c:3792
+#: ../src/views/darkroom.c:3817
 msgid "unbounded zoom in the image"
 msgstr "zoom sans limites dans l'image"
 
-#: ../src/views/darkroom.c:3797
+#: ../src/views/darkroom.c:3822
 msgid "zoom to 100% 200% and back"
 msgstr "zoom à 100% 200% en cycle"
 
-#: ../src/views/darkroom.c:3803
+#: ../src/views/darkroom.c:3828
 msgid "[modules] expand module without closing others"
 msgstr "[modules] déplie le module sans replier les autres"
 
-#: ../src/views/darkroom.c:3809
+#: ../src/views/darkroom.c:3834
 msgid "[modules] change module position in pipe"
 msgstr "[modules] change la position du module dans le flux"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4523 ../src/views/darkroom.c:4541
+#: ../src/views/darkroom.c:4548 ../src/views/darkroom.c:4566
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualisation chambre noire"
 
