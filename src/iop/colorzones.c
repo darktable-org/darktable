@@ -1292,39 +1292,52 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
     p = *(dt_iop_colorzones_params_t *)self->params;
     dt_iop_colorzones_get_params(&p, c, c->channel, c->mouse_x, 1., c->mouse_radius);
-    if(p.channel == DT_IOP_COLORZONES_h && p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
-      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][bands - 2].y);
-    else
-      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][0].y);
-    for(int k = 0; k < bands; k++)
-      dt_draw_curve_set_point(c->minmax_curve[ch], k + 1, p.curve[ch][k].x, p.curve[ch][k].y);
-    if(p.channel == DT_IOP_COLORZONES_h && p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
-      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][1].y);
-    else
-      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][bands - 1].y);
     if(p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
+    {
+      if(p.channel == DT_IOP_COLORZONES_h)
+        dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][bands - 2].y);
+      else
+        dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][0].y);
+      for(int k = 0; k < bands; k++)
+        dt_draw_curve_set_point(c->minmax_curve[ch], k + 1, p.curve[ch][k].x, p.curve[ch][k].y);
+      if(p.channel == DT_IOP_COLORZONES_h)
+        dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][1].y);
+      else
+        dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][bands - 1].y);
       dt_draw_curve_calc_values(c->minmax_curve[ch], 0.f, 1.f, DT_IOP_COLORZONES_RES, NULL, c->draw_min_ys);
+    }
     else
+    {
+      for(int k = 0; k < bands; k++)
+        dt_draw_curve_set_point(c->minmax_curve[ch], k, p.curve[ch][k].x, p.curve[ch][k].y);
       dt_draw_curve_calc_values_V2(c->minmax_curve[ch], 0.f, 1.f, DT_IOP_COLORZONES_RES, NULL, c->draw_min_ys,
                                    p.channel == DT_IOP_COLORZONES_h);
+    }
 
     p = *(dt_iop_colorzones_params_t *)self->params;
     dt_iop_colorzones_get_params(&p, c, c->channel, c->mouse_x, .0, c->mouse_radius);
-    if(p.channel == DT_IOP_COLORZONES_h && p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
-      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][bands - 2].y);
-    else
-      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][0].y);
-    for(int k = 0; k < bands; k++)
-      dt_draw_curve_set_point(c->minmax_curve[ch], k + 1, p.curve[ch][k].x, p.curve[ch][k].y);
-    if(p.channel == DT_IOP_COLORZONES_h && p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
-      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][1].y);
-    else
-      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][bands - 1].y);
     if(p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
+    {
+      if(p.channel == DT_IOP_COLORZONES_h)
+        dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][bands - 2].y);
+      else
+        dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][0].y);
+      for(int k = 0; k < bands; k++)
+        dt_draw_curve_set_point(c->minmax_curve[ch], k + 1, p.curve[ch][k].x, p.curve[ch][k].y);
+      if(p.channel == DT_IOP_COLORZONES_h)
+        dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][1].y);
+      else
+        dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][bands - 1].y);
       dt_draw_curve_calc_values(c->minmax_curve[ch], 0.f, 1.f, DT_IOP_COLORZONES_RES, NULL, c->draw_max_ys);
+    }
     else
+    {
+      for(int k = 0; k < bands; k++)
+        dt_draw_curve_set_point(c->minmax_curve[ch], k, p.curve[ch][k].x, p.curve[ch][k].y);
       dt_draw_curve_calc_values_V2(c->minmax_curve[ch], 0.f, 1.f, DT_IOP_COLORZONES_RES, NULL, c->draw_max_ys,
                                    p.channel == DT_IOP_COLORZONES_h);
+    }
+
     // restore params values
     p = *(dt_iop_colorzones_params_t *)self->params;
 
