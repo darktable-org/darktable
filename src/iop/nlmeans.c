@@ -772,6 +772,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_max(g->radius, 4.0f);
+  dt_bauhaus_slider_set_step(g->radius, 1.0f);
   dt_bauhaus_slider_set_digits(g->radius, 0);
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match"));
