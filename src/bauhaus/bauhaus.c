@@ -2325,9 +2325,9 @@ void dt_bauhaus_slider_set_soft(GtkWidget *widget, float pos)
 static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
 {
   dt_bauhaus_slider_data_t *d = &w->data.slider;
+  float rpos = CLAMP(pos, 0.0f, 1.0f);
   if(d->digits == 0)
   {
-    float rpos = CLAMP(pos, 0.0f, 1.0f);
     rpos = d->curve(GTK_WIDGET(w), rpos, DT_BAUHAUS_GET);
     rpos = d->min + (d->max - d->min) * rpos;
     const float base = powf(10.0f, d->digits);
@@ -2337,7 +2337,7 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   }
   else
   {
-    d->pos = pos;
+    d->pos = rpos;
   }
   gtk_widget_queue_draw(GTK_WIDGET(w));
   d->is_changed = 1;
