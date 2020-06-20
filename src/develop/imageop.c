@@ -2746,6 +2746,58 @@ int dt_iop_count_instances(dt_iop_module_so_t *module)
   return inst_count;
 }
 
+void dt_iop_refresh_center(dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+  dt_develop_t *dev = module->dev;
+  if (dev && dev->gui_attached)
+  {
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+    // invalidate the pixelpipe cache except for the output of the prior module
+    uint64_t hash = dt_dev_pixelpipe_cache_basichash(dev->pipe->image.id, dev->pipe, module->iop_order);
+    dt_dev_pixelpipe_cache_flush_all_but(&dev->pipe->cache, hash);
+
+    dt_control_queue_redraw_center();
+  }
+}
+
+void dt_iop_refresh_preview(dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+  dt_develop_t *dev = module->dev;
+  if (dev && dev->gui_attached)
+  {
+    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+    // invalidate the pixelpipe cache except for the output of the prior module
+    uint64_t hash = dt_dev_pixelpipe_cache_basichash(dev->pipe->image.id, dev->preview_pipe, module->iop_order);
+    dt_dev_pixelpipe_cache_flush_all_but(&dev->preview_pipe->cache, hash);
+
+    dt_control_queue_redraw();
+  }
+}
+
+void dt_iop_refresh_preview2(dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+  dt_develop_t *dev = module->dev;
+  if (dev && dev->gui_attached)
+  {
+    dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH;
+    // invalidate the pixelpipe cache except for the output of the prior module
+    uint64_t hash = dt_dev_pixelpipe_cache_basichash(dev->pipe->image.id, dev->preview2_pipe, module->iop_order);
+    dt_dev_pixelpipe_cache_flush_all_but(&dev->preview2_pipe->cache, hash);
+
+    dt_control_queue_redraw();
+  }
+}
+
+void dt_iop_refresh_all(dt_iop_module_t *module)
+{
+  dt_iop_refresh_preview(module);
+  dt_iop_refresh_center(module);
+  dt_iop_refresh_preview2(module);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
