@@ -61,6 +61,8 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const struct dt_iop_roi_t *roi,
 /** return both of the above hashes */
 void dt_dev_pixelpipe_cache_fullhash(int imgid, const dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, int module,
                                      uint64_t *basichash, uint64_t *fullhash);
+/** get the basichash for the last enabled module prior to the specified one */
+uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpipe_t *pipe, int module);
 
 /** returns the float data buffer for the given hash from the cache. if the hash does not match any
   * cache line, the least recently used cache line will be cleared and an empty buffer is returned
