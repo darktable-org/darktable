@@ -157,10 +157,8 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   // set module active if not yet the case
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
 
-  const uint32_t state = e != NULL
-                        ? e->state
-                        : gdk_keymap_get_modifier_state(gdk_keymap_get_for_display(gdk_display_get_default()));
-  gboolean ctrl_key_pressed = (state & gtk_accelerator_get_default_mod_mask()) == GDK_CONTROL_MASK;
+  const GdkModifierType state = e != NULL ? e->state : dt_key_modifier_state();
+  const gboolean ctrl_key_pressed = (state == GDK_CONTROL_MASK);
   dt_iop_color_picker_kind_t kind = self->kind;
 
   if (module->picker != self || (ctrl_key_pressed && kind == DT_COLOR_PICKER_POINT_AREA))
