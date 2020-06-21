@@ -1146,10 +1146,8 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     float picker_values[4];
     GtkDarktableGradientSlider *slider;
 
-    int lower_upper;
-    guint state = gdk_keymap_get_modifier_state(gdk_keymap_get_for_display(gdk_display_get_default()));
-    GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-    if((state & modifiers) == GDK_CONTROL_MASK) // flat=0, lower=-1, upper=1
+    int lower_upper; // lower=0, upper=1
+    if(dt_key_modifier_state() == GDK_CONTROL_MASK) 
     {
       lower_upper = 1;
       raw_mean = module->picked_output_color;
