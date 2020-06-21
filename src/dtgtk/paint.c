@@ -673,9 +673,11 @@ void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, gint x, gint y, gint w, gin
 {
   PREAMBLE(0.95, 0, 0)
 
-  _gradient_arc(cr, 0.125, 16, 0.5, 0.5, 0.5, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.3, 0.9);
+  if(flags & CPF_PRELIGHT)
+    _gradient_arc(cr, 0.125, 16, 0.5, 0.5, 0.5, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.8, 0.2);
+  else
+    _gradient_arc(cr, 0.125, 16, 0.5, 0.5, 0.5, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.3, 0.9);
 
-  cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
   // draw one tick up right
   cairo_move_to(cr, 1, 0.2);
   cairo_line_to(cr, 1.2, 0.2);
@@ -695,9 +697,12 @@ void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, g
 {
   PREAMBLE(1.05, -0.1, -0.05)
 
-  _gradient_arc(cr, 0.125, 16, 0.75, 0.6, 0.4, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.3, 0.9);
+  cairo_save(cr);
+  if(flags & CPF_PRELIGHT)
+    _gradient_arc(cr, 0.125, 16, 0.75, 0.6, 0.4, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.8, 0.2);
+  else
+    _gradient_arc(cr, 0.125, 16, 0.75, 0.6, 0.4, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.3, 0.9);
 
-  cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
   // draw one tick up right
   cairo_move_to(cr, 1.2, 0.35);
   cairo_line_to(cr, 1.35, 0.35);
@@ -708,8 +713,8 @@ void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, g
   cairo_line_to(cr, 1.4, 0.6);
   cairo_line_to(cr, 1.4, 0.8);
   cairo_fill(cr);
+  cairo_restore(cr);
 
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   cairo_scale(cr, 0.8, 0.8);
   cairo_translate(cr, -0.05, -0.05);
   // draw the body of the pencil (filled)
@@ -739,12 +744,11 @@ void dtgtk_cairo_paint_masks_raster(cairo_t *cr, gint x, gint y, gint w, gint h,
 
   for(int i = 0; i < 4; i++)
     for(int j = 0; j < 4; j++)
-    {
-      double color = (i + j) % 2 ? 0.2 : 0.9;
-      cairo_set_source_rgb(cr, color, color, color);
-      cairo_rectangle(cr, i / 4.0, j / 4.0, 1.0 / 4.0, 1.0 / 4.0);
-      cairo_fill(cr);
-    }
+      if((i + j) % 2)
+      {
+        cairo_rectangle(cr, i / 4.0, j / 4.0, 1.0 / 4.0, 1.0 / 4.0);
+        cairo_fill(cr);
+      }
 
   FINISH
 }
