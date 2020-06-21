@@ -3296,9 +3296,13 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
     if(w->type == DT_BAUHAUS_SLIDER)
     {
-      float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
-      float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
+      float value = dt_bauhaus_slider_get(widget);
+      float step = dt_bauhaus_slider_get_step(widget);
       float multiplier = dt_accel_get_slider_scale_multiplier();
+
+      const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget));
+      if(fabsf(step*multiplier) < min_visible) 
+        multiplier = min_visible / fabsf(step);
 
       if(up)
         dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step * multiplier);
