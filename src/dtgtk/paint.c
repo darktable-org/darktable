@@ -646,7 +646,7 @@ void dtgtk_cairo_paint_masks_drawn(cairo_t *cr, gint x, gint y, gint w, gint h, 
 /** draws an arc with a B&W gradient following the arc path.
  *  nb_steps must be adjusted depending on the displayed size of the element, 16 is fine for small buttons*/
 void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double y_center, double radius,
-                   double angle_from, double angle_to, double color_from, double color_to)
+                   double angle_from, double angle_to, double color_from, double color_to, double alpha)
 {
   cairo_set_line_width(cr, lw);
 
@@ -662,7 +662,7 @@ void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double
   for(int i = 0; i < nb_steps; i++)
   {
     double color = color_from + i * (color_to - color_from) / nb_steps;
-    cairo_set_source_rgb(cr, color, color, color);
+    cairo_set_source_rgba(cr, color, color, color, alpha);
     cairo_arc(cr, x_center, y_center, radius, portions[i], portions[i + 1]);
     cairo_stroke(cr);
   }
@@ -673,10 +673,13 @@ void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, gint x, gint y, gint w, gin
 {
   PREAMBLE(0.95, 0, 0)
 
-  if(flags & CPF_PRELIGHT)
-    _gradient_arc(cr, 0.125, 16, 0.5, 0.5, 0.5, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.8, 0.2);
-  else
-    _gradient_arc(cr, 0.125, 16, 0.5, 0.5, 0.5, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.3, 0.9);
+  cairo_pattern_t *p = cairo_get_source (cr);
+  double r, g, b, a;
+  double start;
+  cairo_pattern_get_rgba (p, &r, &g, &b, &a);
+
+  start = ((flags & CPF_PRELIGHT) && (r < 0.5)) ? 0.8 :  r / 4.0;
+   _gradient_arc(cr, 0.125, 16, 0.5, 0.5, 0.5, -M_PI / 3.0, M_PI + M_PI / 3.0, start, r, a);
 
   // draw one tick up right
   cairo_move_to(cr, 1, 0.2);
@@ -697,11 +700,14 @@ void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, g
 {
   PREAMBLE(1.05, -0.1, -0.05)
 
+  cairo_pattern_t *p = cairo_get_source (cr);
+  double r, g, b, a;
+  double start;
+  cairo_pattern_get_rgba (p, &r, &g, &b, &a);
+
+  start = ((flags & CPF_PRELIGHT) && (r < 0.5)) ? 0.8 :  r / 4.0;
   cairo_save(cr);
-  if(flags & CPF_PRELIGHT)
-    _gradient_arc(cr, 0.125, 16, 0.75, 0.6, 0.4, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.8, 0.2);
-  else
-    _gradient_arc(cr, 0.125, 16, 0.75, 0.6, 0.4, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.3, 0.9);
+  _gradient_arc(cr, 0.125, 16, 0.75, 0.6, 0.4, -M_PI / 3.0, M_PI + M_PI / 3.0, start, r, a);
 
   // draw one tick up right
   cairo_move_to(cr, 1.2, 0.35);
