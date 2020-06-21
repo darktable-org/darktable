@@ -2887,6 +2887,14 @@ void dt_gui_load_theme(const char *theme)
   }
 }
 
+GdkModifierType dt_key_modifier_state()
+{
+  guint state = 0;
+  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  gdk_device_get_state(gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(window))), window, NULL, &state);
+  return state & gtk_accelerator_get_default_mod_mask();
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
