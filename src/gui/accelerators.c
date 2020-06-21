@@ -694,6 +694,10 @@ static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group, GOb
   float step = dt_bauhaus_slider_get_step(slider);
   float multiplier = dt_accel_get_slider_scale_multiplier();
 
+  const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(slider));
+  if(fabsf(step*multiplier) < min_visible) 
+    multiplier = min_visible / fabsf(step);
+
   dt_bauhaus_slider_set(slider, value + step * multiplier);
 
   g_signal_emit_by_name(G_OBJECT(slider), "value-changed");
@@ -710,6 +714,10 @@ static gboolean bauhaus_slider_decrease_callback(GtkAccelGroup *accel_group, GOb
   float value = dt_bauhaus_slider_get(slider);
   float step = dt_bauhaus_slider_get_step(slider);
   float multiplier = dt_accel_get_slider_scale_multiplier();
+
+  const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(slider));
+  if(fabsf(step*multiplier) < min_visible) 
+    multiplier = min_visible / fabsf(step);
 
   dt_bauhaus_slider_set(slider, value - step * multiplier);
 

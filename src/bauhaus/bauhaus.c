@@ -1988,6 +1988,10 @@ static gboolean dt_bauhaus_slider_add_delta_internal(GtkWidget *widget, float de
     multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
   }
 
+  const float min_visible = powf(10.0f, -d->digits) / (d->max - d->min);
+  if(fabsf(delta*multiplier) < min_visible) 
+    multiplier = min_visible / fabsf(delta);
+
   delta *= multiplier;
 
   if(w->module) dt_iop_request_focus(w->module);
