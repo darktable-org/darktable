@@ -2753,7 +2753,7 @@ void dt_iop_refresh_center(dt_iop_module_t *module)
   if (dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module->iop_order);
+    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->pipe->cache, hash);
     dt_dev_invalidate(dev);
     dt_control_queue_redraw_center();
@@ -2767,7 +2767,7 @@ void dt_iop_refresh_preview(dt_iop_module_t *module)
   if (dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module->iop_order);
+    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview_pipe->cache, hash);
     dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
@@ -2781,7 +2781,7 @@ void dt_iop_refresh_preview2(dt_iop_module_t *module)
   if (dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module->iop_order);
+    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview2_pipe->cache, hash);
     dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
