@@ -106,6 +106,19 @@
     <shortdescription>maximum width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>ui/cairo_filter</name>
+    <type>
+      <enum>
+	<option>fast</option>
+	<option>good</option>
+	<option>best</option>
+      </enum>
+    </type>
+    <default>fast</default>
+    <shortdescription>speed/quality trade-off for drawing images</shortdescription>
+    <longdescription>fast (default) - high-performance, similar to nearest neighbor filter; good - reasonable-performance, similar to bilinear (linear interpolation in two dimensions); best - highest-quality available, performance may not be suitable for interactive use. sets Cairo image scaling filter. (needs a restart)</longdescription>
+  </dtconfig>
   <dtconfig prefs="otherviews" section="slideshow">
     <name>slideshow_delay</name>
     <type>int</type>
