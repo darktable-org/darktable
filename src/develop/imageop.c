@@ -2758,25 +2758,20 @@ static gboolean _postponed_history_update(gpointer data)
 /** too often). */
 void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior)
 {
-  if (module->timeout_handle)
+  if (module->timeout_handle && extend_prior)
   {
-    if (extend_prior)
-    {
-      // we already queued an update, but we don't want to have the update happen until the timeout expires
-      // without any activity, so cancel the queued callback
-      g_source_remove(module->timeout_handle);
-    }
-    else
-    {
-      // let the existing event happen as scheduled
-      return;
-    }
+    // we already queued an update, but we don't want to have the update happen until the timeout expires
+    // without any activity, so cancel the queued callback
+    g_source_remove(module->timeout_handle);
   }
-  // adaptively set the timeout to 150% of the average time the past several pixelpipe runs took, clamped
-  //   to keep updates from appearing to be too sluggish (though early iops such as rawdenoise may have
-  //   multiple very slow iops following them, leading to >1000ms processing times)
-  const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1200);
-  module->timeout_handle = g_timeout_add(delay, _postponed_history_update, module);
+  if (!module->timeout_handle || extend_prior)
+  {
+    // adaptively set the timeout to 150% of the average time the past several pixelpipe runs took, clamped
+    //   to keep updates from appearing to be too sluggish (though early iops such as rawdenoise may have
+    //   multiple very slow iops following them, leading to >1000ms processing times)
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1200);
+    module->timeout_handle = g_timeout_add(delay, _postponed_history_update, module);
+  }
 }
 
 void dt_iop_cancel_history_update(dt_iop_module_t *module)
