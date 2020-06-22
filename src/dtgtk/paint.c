@@ -483,7 +483,7 @@ void dtgtk_cairo_paint_masks_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 
 void dtgtk_cairo_paint_masks_circle(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1.10, 0, 0)
+  PREAMBLE(1.1, 0, 0)
 
   cairo_arc(cr, 0.5, 0.5, 0.4, 0, 6.2832);
   cairo_stroke(cr);
@@ -566,37 +566,36 @@ void dtgtk_cairo_paint_masks_brush_and_inverse(cairo_t *cr, gint x, gint y, gint
   cairo_fill(cr);
 
   cairo_move_to(cr, -0.05, 1.0);
-  cairo_arc_negative(cr, 0.25, 0.82, 0.18, 0.5 * M_PI, 1.12 * M_PI);
-  cairo_arc(cr, -0.32, 0.69, 0.41, 0.06 * M_PI, 0.26 * M_PI);
+  cairo_arc_negative(cr, 0.25, 0.85, 0.15, 0.5 * M_PI, 1.12 * M_PI);
+  cairo_arc(cr, -0.236, 0.72, 0.35, 0.08 * M_PI, 0.26 * M_PI);
   cairo_close_path(cr);
   cairo_fill(cr);
 
   cairo_set_line_width(cr, 0.01);
-  cairo_arc(cr, 0.98, 0.0, 0.06, 1.2 * M_PI, 0.2 * M_PI);
-  cairo_arc(cr, 0.51, 0.61, 0.12, 0.2 * M_PI, 1.2 * M_PI);
+  cairo_arc(cr, 0.98, 0.0, 0.055, 1.2 * M_PI, 0.2 * M_PI);
+  cairo_arc(cr, 0.48, 0.72, 0.09, 0.2 * M_PI, 1.2 * M_PI);
   cairo_close_path(cr);
   cairo_stroke(cr);
-
 
   FINISH
 }
 
 void dtgtk_cairo_paint_masks_brush(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.95, 0., 0.)
+  PREAMBLE(0.90, 0., 0.)
 
   cairo_move_to(cr, -0.05, 1.0);
-  cairo_arc_negative(cr, 0.25, 0.82, 0.18, 0.5 * M_PI, 1.12 * M_PI);
-  cairo_arc(cr, -0.32, 0.69, 0.41, 0.06 * M_PI, 0.26 * M_PI);
+  cairo_arc_negative(cr, 0.25, 0.85, 0.15, 0.5 * M_PI, 1.12 * M_PI);
+  cairo_arc(cr, -0.236, 0.72, 0.35, 0.08 * M_PI, 0.26 * M_PI);
   cairo_close_path(cr);
   cairo_stroke(cr);
   cairo_move_to(cr, 0, 1);
-  cairo_arc_negative(cr, 0.25, 0.77, 0.13, 0.4 * M_PI, 1.9 * M_PI);
+  cairo_arc_negative(cr, 0.20, 0.80, 0.10, 0.4 * M_PI, 1.9 * M_PI);
   cairo_stroke(cr);
 
   cairo_set_line_width(cr, 0.01);
-  cairo_arc(cr, 0.98, 0.0, 0.06, 1.2 * M_PI, 0.2 * M_PI);
-  cairo_arc(cr, 0.51, 0.61, 0.12, 0.2 * M_PI, 1.2 * M_PI);
+  cairo_arc(cr, 0.98, 0.0, 0.055, 1.2 * M_PI, 0.2 * M_PI);
+  cairo_arc(cr, 0.48, 0.72, 0.09, 0.2 * M_PI, 1.2 * M_PI);
   cairo_close_path(cr);
   cairo_fill(cr);
 
@@ -728,8 +727,8 @@ void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, g
   // main cylinder
   cairo_move_to(cr, 1.0, 1.0);
   cairo_line_to(cr, 0.9, 0.7);
-  cairo_line_to(cr, 0.3, 0.1);
-  cairo_line_to(cr, 0.1, 0.3);
+  cairo_line_to(cr, 0.2, 0.0);
+  cairo_line_to(cr, 0.0, 0.2);
   cairo_line_to(cr, 0.7, 0.9);
   cairo_line_to(cr, 1.0, 1.0);
   cairo_stroke(cr);
