@@ -2123,9 +2123,9 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int vi
   }
 }
 
-static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
+static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)
 {
-  if(rowid < 1) return FALSE;
+  if(rowid < 1) rowid = 1;
   if(!table->list || g_list_length(table->list) == 0) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
@@ -2315,7 +2315,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
     newrowid = baserowid - 1;
   else if(move == DT_THUMBTABLE_MOVE_RIGHT && baserowid < maxrowid)
     newrowid = baserowid + 1;
-  else if(move == DT_THUMBTABLE_MOVE_UP && baserowid - table->thumbs_per_row >= 1)
+  else if(move == DT_THUMBTABLE_MOVE_UP && baserowid >= 2)
     newrowid = baserowid - table->thumbs_per_row;
   else if(move == DT_THUMBTABLE_MOVE_DOWN && baserowid + table->thumbs_per_row <= maxrowid)
     newrowid = baserowid + table->thumbs_per_row;
@@ -2323,7 +2323,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   else if(move == DT_THUMBTABLE_MOVE_PAGEUP)
   {
     newrowid = baserowid - table->thumbs_per_row * (table->rows - 1);
-    while(newrowid < 1) newrowid += table->thumbs_per_row;
+    while(newrowid < 2 - table->thumbs_per_row) newrowid += table->thumbs_per_row;
   }
   else if(move == DT_THUMBTABLE_MOVE_PAGEDOWN)
   {
@@ -2340,7 +2340,6 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
 
   // change image_over
   const int imgid = _thumb_get_imgid(newrowid);
-  if(imgid < 1) return FALSE;
 
   dt_control_set_mouse_over_id(imgid);
 
@@ -2348,7 +2347,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   _filemanager_ensure_rowid_visibility(table, newrowid);
 
   // if needed, we set the selection
-  if(select) dt_selection_select_range(darktable.selection, imgid);
+  if(select && imgid > 0) dt_selection_select_range(darktable.selection, imgid);
   return TRUE;
 }
 static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, const gboolean select)
