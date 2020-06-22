@@ -1115,10 +1115,10 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   GdkRGBA border      = {0.066, 0.066, 0.066, 1};
   GdkRGBA original    = {.1, .1, .1, 1};
   GdkRGBA inactive    = {.15, .15, .15, 1};
-  GdkRGBA active      = {.37, .37, .37, 1};
-  GdkRGBA merge_from  = {.5, .5, .5, 1};
-  GdkRGBA residual    = {.94, .94, .94, 1};
-  GdkRGBA shapes      = {.75, .5, .0, 1};
+  GdkRGBA active      = {.3, .3, .3, 1};
+  GdkRGBA merge_from  = {.45, .45, .45, 1};
+  GdkRGBA residual    = {.65, .65, .65, 1};
+  GdkRGBA shapes      = {.95, .65, .0, 1};
   GdkRGBA color;
 
   float middle;
@@ -1174,7 +1174,7 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
     {
       cairo_set_line_width(cr, 1);
       gdk_cairo_set_source_rgba(cr, &shapes);
-      cairo_rectangle(cr, box_w * i + inset, inset, box_w, 3.0f * lw);
+      cairo_rectangle(cr, box_w * i + inset, inset, box_w, 4.0f * lw);
       cairo_fill(cr);
     }
 
