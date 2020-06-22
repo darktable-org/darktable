@@ -103,7 +103,7 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   g_return_val_if_fail(GTK_IS_WIDGET(body), NULL);
 
   expander
-      = g_object_new(dtgtk_expander_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, "spacing", 3, NULL);
+      = g_object_new(dtgtk_expander_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, "spacing", 0, NULL);
   expander->expanded = -1;
   expander->header = header;
   expander->body = body;
