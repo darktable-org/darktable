@@ -994,8 +994,10 @@ static gboolean rt_wdbar_button_press(GtkWidget *widget, GdkEventButton *event, 
   dt_iop_request_focus(self);
 
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-
-  const float box_w = gtk_widget_get_allocated_width(widget) / (float)RETOUCH_NO_SCALES;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  const int inset = round(RT_WDBAR_INSET * allocation.height);
+  const float box_w = (allocation.width - 2.0f * inset) / (float)RETOUCH_NO_SCALES;
 
   if(event->button == 1)
   {
@@ -1061,10 +1063,10 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = round(RT_WDBAR_INSET * allocation.height);
-  const float box_w = allocation.width / (float)RETOUCH_NO_SCALES;
+  const float box_w = (allocation.width - 2.0f * inset) / (float)RETOUCH_NO_SCALES;
 
   /* record mouse position within control */
-  g->wdbar_mouse_x = CLAMP(event->x - inset, 0, allocation.width - inset);
+  g->wdbar_mouse_x = CLAMP(event->x - inset, 0, allocation.width - 2.0f * inset - 1.0);
   g->wdbar_mouse_y = event->y;
 
   g->curr_scale = g->wdbar_mouse_x / box_w;
