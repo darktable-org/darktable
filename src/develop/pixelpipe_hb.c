@@ -927,85 +927,6 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
   if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
 }
 
-static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const input, const dt_iop_roi_t *roi_in)
-{
-  float *img_tmp = NULL;
-
-  dt_dev_histogram_collection_params_t histogram_params = { 0 };
-  const dt_iop_colorspace_type_t cst = iop_cs_rgb;
-  dt_dev_histogram_stats_t histogram_stats = { .bins_count = 256, .ch = 4, .pixels = 0 };
-  uint32_t histogram_max[4] = { 0 };
-  dt_histogram_roi_t histogram_roi = { .width = roi_in->width, .height = roi_in->height,
-                                      .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0 };
-
-  // Constraining the area if the colorpicker is active in area mode
-  if(dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
-     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-     && darktable.lib->proxy.colorpicker.restrict_histogram)
-  {
-    if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
-    {
-      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[0] * roi_in->width));
-      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[1] * roi_in->height));
-      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[2] * roi_in->width));
-      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[3] * roi_in->height));
-    }
-    else
-    {
-      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
-      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
-      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
-      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
-    }
-  }
-
-  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-  gchar *histogram_filename = NULL;
-  gchar _histogram_filename[1] = { 0 };
-
-  dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
-  if(histogram_filename == NULL) histogram_filename = _histogram_filename;
-
-  if((histogram_type != darktable.color_profiles->display_type)
-     || (histogram_type == DT_COLORSPACE_FILE
-         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
-  {
-    img_tmp = dt_alloc_align(64, roi_in->width * roi_in->height * 4 * sizeof(float));
-
-    const dt_iop_order_iccprofile_info_t *const profile_info_from
-        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                            darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
-    const dt_iop_order_iccprofile_info_t *const profile_info_to
-        = dt_ioppr_add_profile_info_to_list(dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
-
-    dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, roi_in->width, roi_in->height, profile_info_from,
-                                            profile_info_to, "final histogram");
-  }
-
-  dt_times_t start_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
-
-  dev->histogram_max = 0;
-  memset(dev->histogram, 0, sizeof(uint32_t) * 4 * 256);
-
-  histogram_params.roi = &histogram_roi;
-  histogram_params.bins_count = 256;
-  histogram_params.mul = histogram_params.bins_count - 1;
-
-  dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, (img_tmp) ? img_tmp: input, &dev->histogram, FALSE, NULL);
-  dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &dev->histogram, histogram_max);
-  dev->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
-
-  if(img_tmp) dt_free_align(img_tmp);
-
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_times_t end_time = { 0 };
-    dt_get_times(&end_time);
-    fprintf(stderr, "final histogram took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
-}
-
 // returns 1 if blend process need the module default colorspace
 static int _transform_for_blend(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int cst_in, const int cst_out)
 {
@@ -2466,38 +2387,19 @@ post_process_collect_info:
       // in the pixelpipe and has a "process" call, why not treat it
       // as an iop? Granted, other views such as tether may also
       // benefit via a histogram.
-      // FIXME: input may not be available, so we use the output from gamma
-      // this may lead to some rounding errors
       if(input == NULL)
       {
-        float *input_tmp = (float *)dt_alloc_align(64, roi_out->width * roi_out->height * 4 * sizeof(float));
-        const uint8_t *const pixel = (uint8_t *)*output;
-
-        const int imgsize = roi_out->height * roi_out->width * 4;
-        for(int i = 0; i < imgsize; i += 4)
-        {
-          for(int c = 0; c < 3; c++) input_tmp[i + c] = ((float)pixel[i + (2 - c)]) * (1.0f / 255.0f);
-          input_tmp[i + 3] = 0.0f;
-        }
-
-        _pixelpipe_final_histogram(dev, (const float *const)input_tmp, roi_out);
-
-        dt_free_align(input_tmp);
+        // input may not be available, so we use the output from gamma
+        // this may lead to some rounding errors
+        // FIXME: under what circumstances would input not be available?
         darktable.lib->proxy.histogram.process_8(darktable.lib->proxy.histogram.module, (uint8_t *)*output, roi_out->width, roi_out->height);
       }
       else
       {
-        _pixelpipe_final_histogram(dev, (const float *const)input, &roi_in);
         darktable.lib->proxy.histogram.process_f(darktable.lib->proxy.histogram.module, (const float *const)input, roi_in.width, roi_in.height);
       }
-
-      // FIXME:  can move these unlocks outside of conditional as it'll happen regardless
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }
-    else
-    {
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-    }
+    dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
 
   return 0;
