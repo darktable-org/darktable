@@ -1006,117 +1006,6 @@ static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const inp
   }
 }
 
-static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *const input, const dt_iop_roi_t *roi_in)
-{
-  dt_times_t start_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
-
-  const int waveform_height = dev->histogram_waveform_height;
-  const int waveform_stride = dev->histogram_waveform_stride;
-  uint8_t *const waveform = dev->histogram_waveform;
-  // Use integral sized bins for columns, as otherwise they will be
-  // unequal and have banding. Rely on GUI to smoothly do horizontal
-  // scaling.
-  // Note that histogram_waveform_stride is pre-initialized/hardcoded,
-  // but histogram_waveform_width varies, depending on preview image
-  // width and # of bins.
-  const int bin_width = ceilf(roi_in->width / (float)waveform_stride);
-  const int waveform_width = ceilf(roi_in->width / (float)bin_width);
-  dev->histogram_waveform_width = waveform_width;
-
-  // max input size should be 1440x900, and with a bin_width of 1,
-  // that makes a maximum possible count of 900 in buf, while even if
-  // waveform buffer is 128 (about smallest possible), bin_width is
-  // 12, making max count of 10,800, still much smaller than uint16_t
-  uint16_t *buf = calloc(waveform_width * waveform_height * 3, sizeof(uint16_t));
-
-  // 1.0 is at 8/9 of the height!
-  const float _height = (float)(waveform_height - 1);
-
-  // count the colors into buf ...
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(roi_in, bin_width, _height, waveform_width, input, buf) \
-  schedule(static)
-#endif
-  for(int in_y = 0; in_y < roi_in->height; in_y++)
-  {
-    for(int in_x = 0; in_x < roi_in->width; in_x++)
-    {
-      const float *const in = input + 4 * (in_y*roi_in->width + in_x);
-      const int out_x = in_x / bin_width;
-      for(int k = 0; k < 3; k++)
-      {
-        const float v = 1.0f - (8.0f / 9.0f) * in[2 - k];
-        // flipped from dt's CLAMPS so as to treat NaN's as 0 (NaN compares false)
-        const int out_y = (v < 1.0f ? (v > 0.0f ? v : 0.0f) : 1.0f) * _height;
-        __sync_add_and_fetch(buf + (out_x + waveform_width * out_y) * 3 + k, 1);
-      }
-    }
-  }
-
-  // TODO: Find a nicer function to map buf -> image than just clipping
-  //         float factor[3];
-  //         for(int k = 0; k < 3; k++)
-  //           factor[k] = 255.0 / (float)(maxcol[k] - mincol[k]); // leave some clipping
-
-  // ... and scale that into a nice image. putting the pixels into the image directly gets too
-  // saturated/clips.
-
-  // new scale factor to do about the same as the old one for 1MP views, but scale to hidpi
-  const float scale = 0.5 * 1e6f/(roi_in->height*roi_in->width) *
-    (waveform_width*waveform_height) / (350.0f*233.)
-    / 255.0f; // normalization to 0..1 for gamma correction
-  const float gamma = 1.0 / 1.5; // TODO make this settable from the gui?
-  //uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
-  // even bin_width 12 and height 900 image gives 10,800 byte cache, more normal will ~1K
-  const int cache_size = (roi_in->height * bin_width) + 1;
-  uint8_t *cache = (uint8_t *)calloc(cache_size, sizeof(uint8_t));
-
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale, gamma) \
-  schedule(static) collapse(2)
-#endif
-  for(int k = 0; k < 3; k++)
-  {
-    for(int out_y = 0; out_y < waveform_height; out_y++)
-    {
-      const uint16_t *const in = buf + (waveform_width * out_y) * 3 + k;
-      uint8_t *const out = waveform + (waveform_stride * (waveform_height * k + out_y));
-      for(int out_x = 0; out_x < waveform_width; out_x++)
-      {
-        //mincol[k] = MIN(mincol[k], in[k]);
-        //maxcol[k] = MAX(maxcol[k], in[k]);
-        const uint16_t v = in[out_x * 3];
-        // cache XORd result so common casees cached and cache misses are quick to find
-        if(!cache[v])
-        {
-          // multiple threads may be writing to cache[v], but as
-          // they're writing the same value, don't declare omp atomic
-          cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) ^ 1;
-        }
-        out[out_x] = cache[v] ^ 1;
-        //               if(in[k] == 0)
-        //                 out[k] = 0;
-        //               else
-        //                 out[k] = (float)(in[k] - mincol[k]) * factor[k];
-      }
-    }
-  }
-  //printf("mincol %d,%d,%d maxcol %d,%d,%d\n", mincol[0], mincol[1], mincol[2], maxcol[0], maxcol[1], maxcol[2]);
-
-  free(cache);
-  free(buf);
-
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_times_t end_time = { 0 };
-    dt_get_times(&end_time);
-    fprintf(stderr, "final histogram waveform took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
-}
-
 // returns 1 if blend process need the module default colorspace
 static int _transform_for_blend(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int cst_in, const int cst_out)
 {
@@ -2590,16 +2479,12 @@ post_process_collect_info:
         _pixelpipe_final_histogram(dev, (const float *const)input_tmp, roi_out);
 
         dt_free_align(input_tmp);
+        darktable.lib->proxy.histogram.process_8(darktable.lib->proxy.histogram.module, (uint8_t *)*output, roi_out->width, roi_out->height);
       }
       else
-        _pixelpipe_final_histogram(dev, (const float *const)input, &roi_in);
-
-      // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
-      // issues when putting colors into the bins.
-      // FIXME: is above comment true now that waveform is scaled via Cairo?
-      if(input && dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
       {
-        _pixelpipe_final_histogram_waveform(dev, (const float *const )input, &roi_in);
+        _pixelpipe_final_histogram(dev, (const float *const)input, &roi_in);
+        darktable.lib->proxy.histogram.process_f(darktable.lib->proxy.histogram.module, (const float *const)input, roi_in.width, roi_in.height);
       }
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);

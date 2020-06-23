@@ -57,17 +57,29 @@ const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] =
 
 typedef struct dt_lib_histogram_t
 {
+  // waveform histogram buffer and dimensions
+  uint8_t *waveform;
+  uint32_t waveform_width, waveform_height, waveform_stride;
+  // FIXME: have separate mutex for each histogram, or just one for all histogram processing work?
+  dt_pthread_mutex_t waveform_mutex;
+  // current exposure params
+  // FIXME: do need to cache this here?
   float exposure, black;
+  // mouse state
   int32_t dragging;
   int32_t button_down_x, button_down_y;
+  // depends on mouse positon
   dt_lib_histogram_highlight_t highlight;
+  // state set by buttens
   dt_lib_histogram_waveform_type_t waveform_type;
   gboolean red, green, blue;
+  // button locations
   float type_x, mode_x, red_x, green_x, blue_x;
   float button_w, button_h, button_y, button_spacing;
   /** The current image activated in tether view, either latest tethered shoot
     or manually picked from filmstrip view...
   */
+  // FIXME: need this?
   int32_t tether_image_id;
 } dt_lib_histogram_t;
 
@@ -101,14 +113,140 @@ int position()
 }
 
 
+static void _pixelpipe_final_histogram_waveform(dt_lib_module_t *self, const float *const input, int width, int height)
+{
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+
+  dt_times_t start_time = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+
+  const int waveform_height = d->waveform_height;
+  const int waveform_stride = d->waveform_stride;
+  uint8_t *const waveform = d->waveform;
+  // Use integral sized bins for columns, as otherwise they will be
+  // unequal and have banding. Rely on draw to smoothly do horizontal
+  // scaling.
+  // Note that waveform_stride is pre-initialized/hardcoded,
+  // but waveform_width varies, depending on preview image
+  // width and # of bins.
+  const int bin_width = ceilf(width / (float)waveform_stride);
+  const int waveform_width = ceilf(width / (float)bin_width);
+
+  // max input size should be 1440x900, and with a bin_width of 1,
+  // that makes a maximum possible count of 900 in buf, while even if
+  // waveform buffer is 128 (about smallest possible), bin_width is
+  // 12, making max count of 10,800, still much smaller than uint16_t
+  uint16_t *buf = calloc(waveform_width * waveform_height * 3, sizeof(uint16_t));
+
+  // 1.0 is at 8/9 of the height!
+  const float _height = (float)(waveform_height - 1);
+
+  // count the colors into buf ...
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(bin_width, _height, waveform_width, input, buf, width, height) \
+  schedule(static)
+#endif
+  for(int in_y = 0; in_y < height; in_y++)
+  {
+    for(int in_x = 0; in_x < width; in_x++)
+    {
+      const float *const in = input + 4 * (in_y*width + in_x);
+      const int out_x = in_x / bin_width;
+      for(int k = 0; k < 3; k++)
+      {
+        const float v = 1.0f - (8.0f / 9.0f) * in[2 - k];
+        // flipped from dt's CLAMPS so as to treat NaN's as 0 (NaN compares false)
+        const int out_y = (v < 1.0f ? (v > 0.0f ? v : 0.0f) : 1.0f) * _height;
+        __sync_add_and_fetch(buf + (out_x + waveform_width * out_y) * 3 + k, 1);
+      }
+    }
+  }
+
+  // TODO: Find a nicer function to map buf -> image than just clipping
+  //         float factor[3];
+  //         for(int k = 0; k < 3; k++)
+  //           factor[k] = 255.0 / (float)(maxcol[k] - mincol[k]); // leave some clipping
+
+  // ... and scale that into a nice image. putting the pixels into the image directly gets too
+  // saturated/clips.
+
+  // new scale factor to do about the same as the old one for 1MP views, but scale to hidpi
+  const float scale = 0.5 * 1e6f/(height*width) *
+    (waveform_width*waveform_height) / (350.0f*233.)
+    / 255.0f; // normalization to 0..1 for gamma correction
+  const float gamma = 1.0 / 1.5; // TODO make this settable from the gui?
+  //uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
+  // even bin_width 12 and height 900 image gives 10,800 byte cache, more normal will ~1K
+  const int cache_size = (height * bin_width) + 1;
+  uint8_t *cache = (uint8_t *)calloc(cache_size, sizeof(uint8_t));
+  dt_pthread_mutex_lock(&d->waveform_mutex);
+
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale, gamma) \
+  schedule(static) collapse(2)
+#endif
+  for(int k = 0; k < 3; k++)
+  {
+    for(int out_y = 0; out_y < waveform_height; out_y++)
+    {
+      const uint16_t *const in = buf + (waveform_width * out_y) * 3 + k;
+      uint8_t *const out = waveform + (waveform_stride * (waveform_height * k + out_y));
+      for(int out_x = 0; out_x < waveform_width; out_x++)
+      {
+        //mincol[k] = MIN(mincol[k], in[k]);
+        //maxcol[k] = MAX(maxcol[k], in[k]);
+        const uint16_t v = in[out_x * 3];
+        // cache XORd result so common casees cached and cache misses are quick to find
+        if(!cache[v])
+        {
+          // multiple threads may be writing to cache[v], but as
+          // they're writing the same value, don't declare omp atomic
+          cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) ^ 1;
+        }
+        out[out_x] = cache[v] ^ 1;
+        //               if(in[k] == 0)
+        //                 out[k] = 0;
+        //               else
+        //                 out[k] = (float)(in[k] - mincol[k]) * factor[k];
+      }
+    }
+  }
+  //printf("mincol %d,%d,%d maxcol %d,%d,%d\n", mincol[0], mincol[1], mincol[2], maxcol[0], maxcol[1], maxcol[2]);
+  d->waveform_width = waveform_width;
+  dt_pthread_mutex_unlock(&d->waveform_mutex);
+
+  free(cache);
+  free(buf);
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_times_t end_time = { 0 };
+    dt_get_times(&end_time);
+    fprintf(stderr, "final histogram waveform took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+  }
+}
+
+// FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
 static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height)
 {
   printf("[histogram] dt_lib_histogram_process_8\n");
 }
 
+// FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
 static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, const float *const input, int width, int height)
 {
   printf("[histogram] dt_lib_histogram_process_f\n");
+
+  // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
+  // issues when putting colors into the bins.
+  // FIXME: is above comment true now that waveform is scaled via Cairo?
+  if(darktable.develop->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  {
+    _pixelpipe_final_histogram_waveform(self, input, width, height);
+  }
+  // FIXME: should raise a signal -- or dt_control_queue_redraw_widget() -- when done, rather than waiting for pixelpipe/tether to signal?
 }
 
 static void _lib_histogram_preview_change_callback(gpointer instance, gpointer user_data)
@@ -329,24 +467,22 @@ static void _lib_histogram_draw_histogram(cairo_t *cr, int width, int height, co
   free(hist);
 }
 
-static void _lib_histogram_draw_waveform(cairo_t *cr, int width, int height, const uint8_t mask[3])
+static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
-  dt_develop_t *dev = darktable.develop;
-
-  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
-  const int wf_width = dev->histogram_waveform_width;
-  const int wf_height = dev->histogram_waveform_height;
-  const gint wf_stride = dev->histogram_waveform_stride;
+  dt_pthread_mutex_lock(&d->waveform_mutex);
+  const int wf_width = d->waveform_width;
+  const int wf_height = d->waveform_height;
+  const gint wf_stride = d->waveform_stride;
   uint8_t *wav = malloc(sizeof(uint8_t) * wf_height * wf_stride * 4);
   if(wav)
   {
-    const uint8_t *const wf_buf = dev->histogram_waveform;
+    const uint8_t *const wf_buf = d->waveform;
     for(int y = 0; y < wf_height; y++)
       for(int x = 0; x < wf_width; x++)
         for(int k = 0; k < 3; k++)
           wav[4 * (y * wf_stride + x) + k] = wf_buf[wf_stride * (y + k * wf_height) + x] * mask[2-k];
   }
-  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&d->waveform_mutex);
   if(wav == NULL) return;
 
   // NOTE: The nice way to do this would be to draw each color channel
@@ -367,18 +503,16 @@ static void _lib_histogram_draw_waveform(cairo_t *cr, int width, int height, con
   free(wav);
 }
 
-static void _lib_histogram_draw_rgb_parade(cairo_t *cr, int width, int height, const uint8_t mask[3])
+static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
-  dt_develop_t *dev = darktable.develop;
-
-  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
-  const int wf_width = dev->histogram_waveform_width;
-  const int wf_height = dev->histogram_waveform_height;
-  const gint wf_stride = dev->histogram_waveform_stride;
+  dt_pthread_mutex_lock(&d->waveform_mutex);
+  const int wf_width = d->waveform_width;
+  const int wf_height = d->waveform_height;
+  const gint wf_stride = d->waveform_stride;
   const size_t histsize = sizeof(uint8_t) * wf_height * wf_stride * 3;
   uint8_t *wav = malloc(histsize);
-  if(wav) memcpy(wav, dev->histogram_waveform, histsize);
-  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+  if(wav) memcpy(wav, d->waveform, histsize);
+  dt_pthread_mutex_unlock(&d->waveform_mutex);
   if(wav == NULL) return;
 
   // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
@@ -470,9 +604,9 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
         break;
       case DT_DEV_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
-          _lib_histogram_draw_waveform(cr, width, height, mask);
+          _lib_histogram_draw_waveform(d, cr, width, height, mask);
         else
-          _lib_histogram_draw_rgb_parade(cr, width, height, mask);
+          _lib_histogram_draw_rgb_parade(d, cr, width, height, mask);
         break;
       case DT_DEV_SCOPE_N:
         g_assert_not_reached();
@@ -982,7 +1116,29 @@ void gui_init(dt_lib_module_t *self)
   g_free(waveform_type);
 
   // FIXME: pull in conf that was used in develop before
-  // FIXME: init buffers that were used in develop before
+  // FIXME: init histogram buffer that was used in develop.c:128 before
+
+  // Waveform buffer doesn't need to be coupled with the histogram
+  // widget size. The waveform is almost always scaled when
+  // drawn. Choose buffer dimensions which produces workable detail,
+  // don't use too much CPU/memory, and allow reasonable gradations
+  // of tone.
+
+  dt_pthread_mutex_init(&d->waveform_mutex, NULL);
+  // Don't use absurd amounts of memory, exceed width of DT_MIPMAP_F
+  // (which will be darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
+  // for mosaiced images), nor make it too slow to calculate
+  // (regardless of ppd). Try to get enough detail for a (default)
+  // 350px panel, possibly 2x that on hidpi.  The actual buffer
+  // width will vary with integral binning of image.
+  d->waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
+  // 175 rows is the default histogram widget height. It's OK if the
+  // widget height changes from this, as the width will almost
+  // always be scaled. 175 rows is reasonable CPU usage and represents
+  // plenty of tonal gradation.
+  d->waveform_height = 175;
+  d->waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
+  d->waveform = calloc(d->waveform_height * d->waveform_stride * 3, sizeof(uint8_t));
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
@@ -1024,6 +1180,12 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+
+  dt_pthread_mutex_destroy(&d->waveform_mutex);
+  // FIXME: free the regular histogram
+  free(d->waveform);
+
   g_free(self->data);
   self->data = NULL;
 }
