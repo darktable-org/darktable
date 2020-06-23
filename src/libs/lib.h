@@ -67,12 +67,11 @@ typedef struct dt_lib_t
     /** Histogram processing hooks */
     struct
     {
-      // FIXME: do ned to store histogram_max here?
       struct dt_lib_module_t *module;
-      // FIXME: do these need to return histogram_max? or another callback to return that? or store it in proxy?
-      // FIXME: need a function to return is_linear or a flag here about that
       void (*process_8)(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height);
       void (*process_f)(struct dt_lib_module_t *self, const float *const input, int width, int height);
+      // FIXME: should this be a function or just a boolean which histogram lib keeps updated?
+      gboolean is_linear;
     } histogram;
   } proxy;
 } dt_lib_t;
