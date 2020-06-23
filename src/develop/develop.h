@@ -197,8 +197,6 @@ typedef struct dt_develop_t
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  uint8_t *histogram_waveform;
-  uint32_t histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
   dt_dev_scope_type_t scope_type;
   dt_dev_histogram_type_t histogram_type;
 
