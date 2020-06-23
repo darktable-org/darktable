@@ -1246,11 +1246,10 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  float rawstop = d->curve(widget, stop, DT_BAUHAUS_SET);
   // need to replace stop?
   for(int k = 0; k < d->grad_cnt; k++)
   {
-    if(d->grad_pos[k] == rawstop)
+    if(d->grad_pos[k] == stop)
     {
       d->grad_col[k][0] = r;
       d->grad_col[k][1] = g;
@@ -1262,7 +1261,7 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
   if(d->grad_cnt < DT_BAUHAUS_SLIDER_MAX_STOPS)
   {
     int k = d->grad_cnt++;
-    d->grad_pos[k] = rawstop;
+    d->grad_pos[k] = stop;
     d->grad_col[k][0] = r;
     d->grad_col[k][1] = g;
     d->grad_col[k][2] = b;
