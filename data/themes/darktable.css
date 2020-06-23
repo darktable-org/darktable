@@ -1948,6 +1948,15 @@ spinbutton>button
 {
   border-top: 2.5px solid @border_color;
 }
+/* Set top cursor on active image in filmstrip */
+#thumb_cursor
+{
+  color: transparent;
+}
+#thumb_main:active #thumb_cursor
+{
+  color: @border_color;
+}
 
 /*---------------
   - Bottom area -
@@ -2191,9 +2200,11 @@ spinbutton>button
 .dt_culling #thumb_back,
 .dt_culling #thumb_main:selected #thumb_back,
 .dt_culling #thumb_main:hover #thumb_back,
+.dt_culling #thumb_main:active #thumb_back,
 .dt_preview #thumb_back,
 .dt_preview #thumb_main:selected #thumb_back,
-.dt_preview #thumb_main:hover #thumb_back
+.dt_preview #thumb_main:hover #thumb_back,
+.dt_preview #thumb_main:active #thumb_back
 {
   background-color: transparent;
   border: none;

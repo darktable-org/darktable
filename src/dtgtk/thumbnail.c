@@ -252,6 +252,26 @@ static void _thumb_write_extension(dt_thumbnail_t *thumb)
   g_free(ext2);
 }
 
+static gboolean _event_cursor_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+  if(!user_data || !widget) return TRUE;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+
+  GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_cursor);
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_cursor);
+  GdkRGBA col;
+  gtk_style_context_get_color(context, state, &col);
+
+  cairo_set_source_rgba(cr, col.red, col.green, col.blue, col.alpha);
+  cairo_line_to(cr, gtk_widget_get_allocated_width(widget), 0);
+  cairo_line_to(cr, gtk_widget_get_allocated_width(widget) / 2, gtk_widget_get_allocated_height(widget));
+  cairo_line_to(cr, 0, 0);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+
+  return TRUE;
+}
+
 static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!user_data) return TRUE;
@@ -516,6 +536,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   gtk_widget_show(thumb->w_bottom_eb);
   gtk_widget_show(thumb->w_reject);
   gtk_widget_show(thumb->w_ext);
+  gtk_widget_show(thumb->w_cursor);
   for(int i = 0; i < MAX_STARS; i++) gtk_widget_show(thumb->w_stars[i]);
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
@@ -1036,6 +1057,14 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image_box);
     _thumb_retrieve_margins(thumb);
 
+    // triangle to indicate current image(s) in filmstrip
+    thumb->w_cursor = gtk_drawing_area_new();
+    gtk_widget_set_name(thumb->w_cursor, "thumb_cursor");
+    gtk_widget_set_valign(thumb->w_cursor, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_cursor, GTK_ALIGN_CENTER);
+    g_signal_connect(G_OBJECT(thumb->w_cursor), "draw", G_CALLBACK(_event_cursor_draw), thumb);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_cursor);
+
     // determine the overlays parents
     GtkWidget *overlays_parent = thumb->w_main;
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) overlays_parent = thumb->w_image_box;
@@ -1363,6 +1392,9 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_audio, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_audio, thumb->img_margin->right + 5.0 * r1);
+
+    // the filmstrip cursor
+    gtk_widget_set_size_request(thumb->w_cursor, 6.0 * r1, 1.5 * r1);
   }
   else
   {
