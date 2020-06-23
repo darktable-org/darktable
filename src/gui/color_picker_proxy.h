@@ -37,8 +37,8 @@ typedef enum _iop_color_picker_kind_t
   DT_COLOR_PICKER_POINT_AREA // allow the user to select between point and area
 } dt_iop_color_picker_kind_t;
 
-//* reset current color picker and/or blend color picker, and if update is TRUE also call update proxy */
-void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean update);
+//* reset current color picker if not keep-active or not keep */
+void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep);
 
 /* sets the picker colorspace */
 void dt_iop_color_picker_set_cst(dt_iop_module_t *module, const dt_iop_colorspace_type_t picker_cst);

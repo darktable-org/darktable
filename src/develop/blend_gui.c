@@ -372,7 +372,7 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
   else if(data->blendif_inited)
   {
     /* switch off color picker */
-    dt_iop_color_picker_reset(data->module, TRUE);
+    dt_iop_color_picker_reset(data->module, FALSE);
 
     gtk_widget_hide(GTK_WIDGET(data->blendif_box));
   }
@@ -478,7 +478,7 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
 
-  dt_iop_color_picker_reset(data->module, TRUE);
+  dt_iop_color_picker_reset(data->module, FALSE);
 
   dt_pthread_mutex_lock(&data->lock);
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
@@ -965,7 +965,7 @@ static void _blendop_blendif_reset(GtkButton *button, dt_iop_module_t *module)
   memcpy(module->blend_params->blendif_parameters, module->default_blendop_params->blendif_parameters,
          4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
 
-  dt_iop_color_picker_reset(module, TRUE);
+  dt_iop_color_picker_reset(module, FALSE);
   dt_iop_gui_update_blendif(module);
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
@@ -1030,7 +1030,7 @@ static int _blendop_masks_add_shape(GtkWidget *widget, dt_iop_module_t *self, gb
 
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
-  dt_iop_color_picker_reset(self, TRUE);
+  dt_iop_color_picker_reset(self, FALSE);
   bd->masks_shown = DT_MASKS_EDIT_FULL;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
@@ -1070,7 +1070,7 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
     ++darktable.gui->reset;
 
     dt_iop_request_focus(self);
-    dt_iop_color_picker_reset(self, TRUE);
+    dt_iop_color_picker_reset(self, FALSE);
 
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, self->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
@@ -2272,7 +2272,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   else if(bd->blendif_inited)
   {
     /* switch off color picker */
-    dt_iop_color_picker_reset(module, TRUE);
+    dt_iop_color_picker_reset(module, FALSE);
 
     gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
   }
