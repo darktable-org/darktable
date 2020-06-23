@@ -480,9 +480,17 @@ void gui_update(struct dt_iop_module_t *self)
 }
 
 static inline void gui_init_section(struct dt_iop_module_t *self, char *section, GtkWidget *slider_box, 
-                                              GtkWidget *hue, GtkWidget *saturation, GtkWidget **picker)
+                                              GtkWidget *hue, GtkWidget *saturation, GtkWidget **picker, gboolean top)
 {
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(section), FALSE, FALSE, 0);
+  GtkWidget *label = dt_ui_section_label_new(section);
+
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
+    gtk_style_context_add_class(context, "section_label_top");
+  }
+
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
   dt_bauhaus_slider_set_feedback(hue, 0);
   dt_bauhaus_slider_set_stop(hue, 0.0f  , 1.0f, 0.0f, 0.0f);
@@ -526,9 +534,9 @@ void gui_init(struct dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  gui_init_section(self, _("shadows"), shadows_box, g->shadow_hue_gslider, g->shadow_sat_gslider, &g->shadow_colorpick);
+  gui_init_section(self, _("shadows"), shadows_box, g->shadow_hue_gslider, g->shadow_sat_gslider, &g->shadow_colorpick, TRUE);
 
-  gui_init_section(self, _("highlights"), highlights_box, g->highlight_hue_gslider, g->highlight_sat_gslider, &g->highlight_colorpick);
+  gui_init_section(self, _("highlights"), highlights_box, g->highlight_hue_gslider, g->highlight_sat_gslider, &g->highlight_colorpick, FALSE);
 
   // Additional parameters
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 0);
