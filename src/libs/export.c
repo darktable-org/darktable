@@ -611,6 +611,8 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label;
 
   label = dt_ui_section_label_new(_("storage options"));
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
+  gtk_style_context_add_class(context, "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
   dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
 
