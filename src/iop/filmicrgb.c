@@ -1750,7 +1750,8 @@ static void show_mask_callback(GtkWidget *slider, gpointer user_data)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
   g->show_mask = !(g->show_mask);
-  dt_bauhaus_widget_set_quad_active(g->reconstruct_feather, g->show_mask);
+  dt_bauhaus_widget_set_quad_active(g->show_highlight_mask, g->show_mask);
+  dt_bauhaus_widget_set_quad_toggle(g->show_highlight_mask, g->show_mask);
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -2011,6 +2012,19 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 }
 
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+
+  if(!in)
+  {
+    //lost focus - hide the mask
+    g->show_mask = FALSE;
+    dt_bauhaus_widget_set_quad_toggle(g->show_highlight_mask, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->show_highlight_mask, FALSE);
+    dt_dev_reprocess_center(self->dev);
+  }
+}
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_filmicrgb_data_t));
