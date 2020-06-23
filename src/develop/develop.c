@@ -47,8 +47,6 @@
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
-const gchar *dt_dev_scope_type_names[DT_DEV_SCOPE_N] = { "histogram", "waveform" };
-
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
@@ -77,27 +75,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dt_pthread_mutex_init(&dev->pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview_pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview2_pipe_mutex, NULL);
+  // FIXME: bring to lib/histogram.c
   dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
-  gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
-  if(g_strcmp0(mode, "histogram") == 0)
-    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
-  else if(g_strcmp0(mode, "waveform") == 0)
-    dev->scope_type = DT_DEV_SCOPE_WAVEFORM;
-  else if(g_strcmp0(mode, "linear") == 0)
-  { // update legacy conf
-    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
-    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
-    dt_conf_set_string("plugins/darkroom/histogram/histogram","linear");
-  }
-  else if(g_strcmp0(mode, "logarithmic") == 0)
-  { // update legacy conf
-    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
-    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
-    dt_conf_set_string("plugins/darkroom/histogram/histogram","logarithmic");
-  }
-  g_free(mode);
+  // FIXME: bring to lib/histogram.c
   gchar *histogram_type = dt_conf_get_string("plugins/darkroom/histogram/histogram");
   if(g_strcmp0(histogram_type, "linear") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;

@@ -2462,6 +2462,10 @@ post_process_collect_info:
     }
     if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
+      // Since histogram is being treated as the second-to-last link
+      // in the pixelpipe and has a "process" call, why not treat it
+      // as an iop? Granted, other views such as tether may also
+      // benefit via a histogram.
       // FIXME: input may not be available, so we use the output from gamma
       // this may lead to some rounding errors
       if(input == NULL)
@@ -2487,6 +2491,7 @@ post_process_collect_info:
         darktable.lib->proxy.histogram.process_f(darktable.lib->proxy.histogram.module, (const float *const)input, roi_in.width, roi_in.height);
       }
 
+      // FIXME:  can move these unlocks outside of conditional as it'll happen regardless
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }
     else
