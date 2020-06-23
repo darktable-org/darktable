@@ -305,12 +305,12 @@ static inline void update_balance_slider_colors(
   if(shadow_hue != -1)
   {
     hsl2rgb(rgb, shadow_hue, 1.0, 0.5);
-    dt_bauhaus_slider_set_stop(slider, 0.0, rgb[0], rgb[1], rgb[2]);
+    dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
   }
   if(highlight_hue != -1)
   {
     hsl2rgb(rgb, highlight_hue, 1.0, 0.5);
-    dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
+    dt_bauhaus_slider_set_stop(slider, 0.0, rgb[0], rgb[1], rgb[2]);
   }
 
   gtk_widget_queue_draw(GTK_WIDGET(slider));
