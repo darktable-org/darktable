@@ -76,13 +76,6 @@ typedef enum dt_dev_rawoverexposed_colorscheme_t {
   DT_DEV_RAWOVEREXPOSED_BLACK = 3
 } dt_dev_rawoverexposed_colorscheme_t;
 
-typedef enum dt_dev_histogram_type_t
-{
-  DT_DEV_HISTOGRAM_LOGARITHMIC = 0,
-  DT_DEV_HISTOGRAM_LINEAR,
-  DT_DEV_HISTOGRAM_N // needs to be the last one
-} dt_dev_histogram_type_t;
-
 typedef enum dt_dev_transform_direction_t
 {
   DT_DEV_TRANSFORM_DIR_ALL = 0,
@@ -186,9 +179,8 @@ typedef struct dt_develop_t
   GList *allprofile_info;
 
   // histogram for display.
-  uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
-  uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  dt_dev_histogram_type_t histogram_type;
+  uint32_t *histogram_pre_tonecurve, *histogram_pre_levels;
+  uint32_t histogram_pre_tonecurve_max, histogram_pre_levels_max;
 
   // list of forms iop can use for masks or whatever
   GList *forms;

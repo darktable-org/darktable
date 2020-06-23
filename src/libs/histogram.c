@@ -20,6 +20,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/histogram.h"
 #include "common/image_cache.h"
 #include "common/math.h"
 #include "control/conf.h"
@@ -52,6 +53,13 @@ typedef enum dt_lib_histogram_scope_type_t
   DT_LIB_HISTOGRAM_SCOPE_N // needs to be the last one
 } dt_lib_histogram_scope_type_t;
 
+typedef enum dt_lib_histogram_type_t
+{
+  DT_LIB_HISTOGRAM_LOGARITHMIC = 0,
+  DT_LIB_HISTOGRAM_LINEAR,
+  DT_LIB_HISTOGRAM_N // needs to be the last one
+} dt_lib_histogram_type_t;
+
 typedef enum dt_lib_histogram_waveform_type_t
 {
   DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID = 0,
@@ -60,11 +68,14 @@ typedef enum dt_lib_histogram_waveform_type_t
 } dt_lib_histogram_waveform_type_t;
 
 const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { "histogram", "waveform" };
-const gchar *dt_lib_histogram_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear" };
+const gchar *dt_lib_histogram_histogram_type_names[DT_LIB_HISTOGRAM_N] = { "logarithmic", "linear" };
 const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] = { "overlaid", "parade" };
 
 typedef struct dt_lib_histogram_t
 {
+  // histogram for display
+  uint32_t *histogram;
+  uint32_t histogram_max;
   // waveform histogram buffer and dimensions
   uint8_t *waveform;
   uint32_t waveform_width, waveform_height, waveform_stride;
@@ -80,6 +91,7 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_highlight_t highlight;
   // state set by buttens
   dt_lib_histogram_scope_type_t scope_type;
+  dt_lib_histogram_type_t histogram_type;
   dt_lib_histogram_waveform_type_t waveform_type;
   gboolean red, green, blue;
   // button locations
@@ -121,6 +133,96 @@ int position()
   return 1001;
 }
 
+
+static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height)
+{
+  // FIXME: probably don't need htis
+  dt_develop_t *dev = darktable.develop;
+  float *img_tmp = NULL;
+
+  dt_dev_histogram_collection_params_t histogram_params = { 0 };
+  const dt_iop_colorspace_type_t cst = iop_cs_rgb;
+  dt_dev_histogram_stats_t histogram_stats = { .bins_count = 256, .ch = 4, .pixels = 0 };
+  uint32_t histogram_max[4] = { 0 };
+  dt_histogram_roi_t histogram_roi = { .width = width, .height = height,
+                                      .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0 };
+
+  // Constraining the area if the colorpicker is active in area mode
+  // FIXME: this is never true
+  // FIXME: if we do allow roi, then the process_[f8] functions will need to take roi as a param, and this work of determining roi would happen in pixelpipe -- or the color_picker_box/point would move from dev->gui_module to darktable.lib->proxy.histogram
+#if 0
+  if(dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
+     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+     && darktable.lib->proxy.colorpicker.restrict_histogram)
+  {
+    printf("[_lib_histogram_process_histogram] restrict histogram is true\n");
+    if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
+    {
+      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[0] * roi_in->width));
+      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[1] * roi_in->height));
+      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[2] * roi_in->width));
+      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[3] * roi_in->height));
+    }
+    else
+    {
+      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
+      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
+      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
+      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
+    }
+  }
+#endif
+
+  // FIXME: histogram_type is confusing as it could also refer to whether it is a linear/logarithmic histogram -- fix this doubling
+  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
+  gchar *histogram_filename = NULL;
+  gchar _histogram_filename[1] = { 0 };
+
+  dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
+  if(histogram_filename == NULL) histogram_filename = _histogram_filename;
+
+  // FIXME: this assumes the image is in display colorprofile, is this true both before and after gamma?
+  if((histogram_type != darktable.color_profiles->display_type)
+     || (histogram_type == DT_COLORSPACE_FILE
+         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+  {
+    img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
+
+    const dt_iop_order_iccprofile_info_t *const profile_info_from
+        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
+                                            darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
+    const dt_iop_order_iccprofile_info_t *const profile_info_to
+        = dt_ioppr_add_profile_info_to_list(dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
+
+    dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, width, height, profile_info_from,
+                                            profile_info_to, "final histogram");
+  }
+
+  dt_times_t start_time = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+
+  // FIXME: put histogram_max in lib proxy
+  d->histogram_max = 0;
+  memset(d->histogram, 0, sizeof(uint32_t) * 4 * 256);
+
+  histogram_params.roi = &histogram_roi;
+  histogram_params.bins_count = 256;
+  histogram_params.mul = histogram_params.bins_count - 1;
+
+  dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, (img_tmp) ? img_tmp: input, &d->histogram, FALSE, NULL);
+  dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &d->histogram, histogram_max);
+  // FIXME: recalculate this based on if it's logarithmic of linear, so that iops won't have to
+  d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
+
+  if(img_tmp) dt_free_align(img_tmp);
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_times_t end_time = { 0 };
+    dt_get_times(&end_time);
+    fprintf(stderr, "final histogram took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+  }
+}
 
 static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *const input, int width, int height)
 {
@@ -239,6 +341,33 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height)
 {
   printf("[histogram] dt_lib_histogram_process_8\n");
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+
+  // FIXME: what is the colorspace of the input (really the output of gamma)?
+  float *input_tmp = (float *)dt_alloc_align(64, width * height * 4 * sizeof(float));
+  const uint8_t *const pixel = input;
+
+  const int imgsize = height * width * 4;
+  for(int i = 0; i < imgsize; i += 4)
+  {
+    for(int c = 0; c < 3; c++) input_tmp[i + c] = ((float)pixel[i + (2 - c)]) * (1.0f / 255.0f);
+    input_tmp[i + 3] = 0.0f;
+  }
+
+  // this makes horizontal banding artifacts due to rounding issues
+  // when putting colors into the bins, but is still meaningful and is
+  // better than no output
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+    _lib_histogram_process_waveform(d, input_tmp, width, height);
+
+  // FIXME: can we make a reasonable waveform histogram from the 8-bit data? try it
+  //if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM)
+  //{
+  // FIXME: for now always making histogram, but if waveform can calculate histogram_max -- or doesn't need it -- don't need to call regular histogram process when only waveform is active
+  _lib_histogram_process_histogram(d, input_tmp, width, height);
+  //}
+
+  dt_free_align(input_tmp);
 }
 
 // FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
@@ -247,14 +376,24 @@ static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, const float
   printf("[histogram] dt_lib_histogram_process_f\n");
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
+  // FIXME: for now always making histogram, but if waveform can calculate histogram_max -- or doesn't need it -- don't need to call regular histogram process when only waveform is active
+  _lib_histogram_process_histogram(d, input, width, height);
+
   // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
   // issues when putting colors into the bins.
   // FIXME: is above comment true now that waveform is scaled via Cairo?
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+  switch(d->scope_type)
   {
-    _lib_histogram_process_waveform(d, input, width, height);
+    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+      // FIXME: can waveform calculate histogram_max? does it need it? if so don't need to call regular histogram process when only waveform is active
+      //_lib_histogram_process_histogram(d, input, width, height);
+      break;
+    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
+      _lib_histogram_process_waveform(d, input, width, height);
+      break;
+    case DT_LIB_HISTOGRAM_SCOPE_N:
+      g_assert_not_reached();
   }
-  // FIXME: can waveform calculate histogram_max? if so don't need to call regular histogram process when only waveform is active
   // FIXME: should raise a signal -- or dt_control_queue_redraw_widget() -- when done, rather than waiting for pixelpipe/tether to signal?
 }
 
@@ -370,11 +509,11 @@ static void _draw_histogram_mode_toggle(cairo_t *cr, float x, float y, float wid
   cairo_move_to(cr, 2.0 * border, height - 2.0 * border);
   switch(mode)
   {
-    case DT_DEV_HISTOGRAM_LINEAR:
+    case DT_LIB_HISTOGRAM_LINEAR:
       cairo_line_to(cr, width - 2.0 * border, 2.0 * border);
       cairo_stroke(cr);
       break;
-    case DT_DEV_HISTOGRAM_LOGARITHMIC:
+    case DT_LIB_HISTOGRAM_LOGARITHMIC:
       cairo_curve_to(cr, 2.0 * border, 0.33 * height, 0.66 * width, 2.0 * border, width - 2.0 * border,
                      2.0 * border);
       cairo_stroke(cr);
@@ -444,22 +583,24 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   return TRUE;
 }
 
-static void _lib_histogram_draw_histogram(cairo_t *cr, int width, int height, const uint8_t mask[3])
+static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
   dt_develop_t *dev = darktable.develop;
 
+  if(!d->histogram_max) return;
+  // FIXME: mutex can be "histogram_mutex"
   dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  // FIXME: don't have to hardcode this anymore, it can at least be a DEFINE
   const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
   // FIXME: does this need to be aligned?
   uint32_t *hist = malloc(histsize);
-  if(hist) memcpy(hist, dev->histogram, histsize);
+  if(hist) memcpy(hist, d->histogram, histsize);
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-
   if(hist == NULL) return;
-  if(!dev->histogram_max) return;
 
-  const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
-                                                                        : logf(1.0 + dev->histogram_max);
+  // FIXME: pre-adjust hist_max based on histogram_type?
+  const float hist_max = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
+                                                                      : logf(1.0 + d->histogram_max);
   cairo_translate(cr, 0, height);
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -468,7 +609,7 @@ static void _lib_histogram_draw_histogram(cairo_t *cr, int width, int height, co
     if(mask[k])
     {
       cairo_set_source_rgba(cr, k == 0 ? 1. : 0., k == 1 ? 1. : 0., k == 2 ? 1. : 0., 0.5);
-      dt_draw_histogram_8(cr, hist, 4, k, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+      dt_draw_histogram_8(cr, hist, 4, k, d->histogram_type == DT_LIB_HISTOGRAM_LINEAR);
     }
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
@@ -609,7 +750,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     switch(d->scope_type)
     {
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        _lib_histogram_draw_histogram(cr, width, height, mask);
+        _lib_histogram_draw_histogram(d, cr, width, height, mask);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
@@ -630,7 +771,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     switch(d->scope_type)
     {
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        _draw_histogram_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, dev->histogram_type);
+        _draw_histogram_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->histogram_type);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->waveform_type);
@@ -719,12 +860,12 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
       switch(d->scope_type)
       {
         case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-          switch(dev->histogram_type)
+          switch(d->histogram_type)
           {
-            case DT_DEV_HISTOGRAM_LOGARITHMIC:
+            case DT_LIB_HISTOGRAM_LOGARITHMIC:
               gtk_widget_set_tooltip_text(widget, _("set mode to linear"));
               break;
-            case DT_DEV_HISTOGRAM_LINEAR:
+            case DT_LIB_HISTOGRAM_LINEAR:
               gtk_widget_set_tooltip_text(widget, _("set mode to logarithmic"));
               break;
             default:
@@ -826,7 +967,7 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       dt_conf_set_string("plugins/darkroom/histogram/mode",
                          dt_lib_histogram_scope_type_names[d->scope_type]);
       // we need to reprocess the preview pipe
-      // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform histogram
+      // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform histogram -- or if don't need it for waveform
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
       {
         dt_dev_process_preview(dev);
@@ -837,9 +978,11 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       switch(d->scope_type)
       {
         case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-          dev->histogram_type = (dev->histogram_type + 1) % DT_DEV_HISTOGRAM_N;
+          d->histogram_type = (d->histogram_type + 1) % DT_LIB_HISTOGRAM_N;
           dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                             dt_lib_histogram_histogram_type_names[dev->histogram_type]);
+                             dt_lib_histogram_histogram_type_names[d->histogram_type]);
+          // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
+          darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
           break;
         case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
           d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
@@ -980,10 +1123,10 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      dev->histogram_type = (dev->histogram_type + 1);
-      if(dev->histogram_type == DT_DEV_HISTOGRAM_N)
+      d->histogram_type = (d->histogram_type + 1);
+      if(d->histogram_type == DT_LIB_HISTOGRAM_N)
       {
-        dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+        d->histogram_type = DT_LIB_HISTOGRAM_LOGARITHMIC;
         d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
         d->scope_type = DT_LIB_HISTOGRAM_SCOPE_WAVEFORM;
       }
@@ -992,7 +1135,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
       d->waveform_type = (d->waveform_type + 1);
       if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_N)
       {
-        dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+        d->histogram_type = DT_LIB_HISTOGRAM_LOGARITHMIC;
         d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
         d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
       }
@@ -1003,9 +1146,11 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
   dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                     dt_lib_histogram_histogram_type_names[dev->histogram_type]);
+                     dt_lib_histogram_histogram_type_names[d->histogram_type]);
   dt_conf_set_string("plugins/darkroom/histogram/waveform",
                      dt_lib_histogram_waveform_type_names[d->waveform_type]);
+  // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
+  darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
 
   if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
   {
@@ -1027,7 +1172,7 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
   // we need to reprocess the preview pipe
-  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform
+  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform -- or don't need it
   if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
   {
     dt_dev_process_preview(darktable.develop);
@@ -1042,14 +1187,15 @@ static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  dt_develop_t *dev = darktable.develop;
 
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      dev->histogram_type = (dev->histogram_type + 1) % DT_DEV_HISTOGRAM_N;
+      d->histogram_type = (d->histogram_type + 1) % DT_LIB_HISTOGRAM_N;
       dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                         dt_lib_histogram_histogram_type_names[dev->histogram_type]);
+                         dt_lib_histogram_histogram_type_names[d->histogram_type]);
+      darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
+      // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
@@ -1059,7 +1205,7 @@ static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
-  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform
+  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform -- or don't need it
   if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
   {
     dt_dev_process_preview(dev);
@@ -1137,6 +1283,14 @@ void gui_init(dt_lib_module_t *self)
   }
   g_free(mode);
 
+  // FIXME: s/histogram_type/histogram_mode/?
+  gchar *histogram_type = dt_conf_get_string("plugins/darkroom/histogram/histogram");
+  if(g_strcmp0(histogram_type, "linear") == 0)
+    d->histogram_type = DT_LIB_HISTOGRAM_LINEAR;
+  else if(g_strcmp0(histogram_type, "logarithmic") == 0)
+    d->histogram_type = DT_LIB_HISTOGRAM_LOGARITHMIC;
+  g_free(histogram_type);
+
   gchar *waveform_type = dt_conf_get_string("plugins/darkroom/histogram/waveform");
   if(g_strcmp0(waveform_type, "overlaid") == 0)
     d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
@@ -1145,7 +1299,12 @@ void gui_init(dt_lib_module_t *self)
   g_free(waveform_type);
 
   // FIXME: pull in conf that was used in develop before
-  // FIXME: init histogram buffer that was used in develop.c:128 before
+  // FIXME: don't have to hardcode this anymore, it can at least be a DEFINE
+  d->histogram = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
+
+  // this was set to -1 in dt_dev_init(), which doesn't make sense as it is a uint32_t
+  // here it should already be 0 via g_malloc0
+  //d->histogram_max = 0;
 
   // Waveform buffer doesn't need to be coupled with the histogram
   // widget size. The waveform is almost always scaled when
@@ -1175,6 +1334,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.histogram.module = self;
   darktable.lib->proxy.histogram.process_8 = dt_lib_histogram_process_8;
   darktable.lib->proxy.histogram.process_f = dt_lib_histogram_process_f;
+  darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
 
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
@@ -1212,7 +1372,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   dt_pthread_mutex_destroy(&d->waveform_mutex);
-  // FIXME: free the regular histogram
+  free(d->histogram);
   free(d->waveform);
 
   g_free(self->data);

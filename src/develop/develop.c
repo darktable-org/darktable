@@ -75,17 +75,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dt_pthread_mutex_init(&dev->pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview_pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview2_pipe_mutex, NULL);
-  // FIXME: bring to lib/histogram.c
-  dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
-  // FIXME: bring to lib/histogram.c
-  gchar *histogram_type = dt_conf_get_string("plugins/darkroom/histogram/histogram");
-  if(g_strcmp0(histogram_type, "linear") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(histogram_type, "logarithmic") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
-  g_free(histogram_type);
   gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
   dev->preview_downsampling =
     (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
@@ -107,12 +98,10 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
     dt_dev_pixelpipe_init_preview2(dev->preview2_pipe);
 
-    dev->histogram = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
 
     // FIXME: these are uint32_t, setting to -1 is confusing
-    dev->histogram_max = -1;
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
   }
@@ -197,7 +186,6 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dev->allprofile_info = g_list_delete_link(dev->allprofile_info, dev->allprofile_info);
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);
-  free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
 
