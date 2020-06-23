@@ -45,6 +45,13 @@ typedef enum dt_lib_histogram_highlight_t
   DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE,
 } dt_lib_histogram_highlight_t;
 
+typedef enum dt_lib_histogram_scope_type_t
+{
+  DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM = 0,
+  DT_LIB_HISTOGRAM_SCOPE_WAVEFORM,
+  DT_LIB_HISTOGRAM_SCOPE_N // needs to be the last one
+} dt_lib_histogram_scope_type_t;
+
 typedef enum dt_lib_histogram_waveform_type_t
 {
   DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID = 0,
@@ -52,6 +59,7 @@ typedef enum dt_lib_histogram_waveform_type_t
   DT_LIB_HISTOGRAM_WAVEFORM_N // needs to be the last one
 } dt_lib_histogram_waveform_type_t;
 
+const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { "histogram", "waveform" };
 const gchar *dt_lib_histogram_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear" };
 const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] = { "overlaid", "parade" };
 
@@ -71,6 +79,7 @@ typedef struct dt_lib_histogram_t
   // depends on mouse positon
   dt_lib_histogram_highlight_t highlight;
   // state set by buttens
+  dt_lib_histogram_scope_type_t scope_type;
   dt_lib_histogram_waveform_type_t waveform_type;
   gboolean red, green, blue;
   // button locations
@@ -113,10 +122,8 @@ int position()
 }
 
 
-static void _pixelpipe_final_histogram_waveform(dt_lib_module_t *self, const float *const input, int width, int height)
+static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *const input, int width, int height)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
@@ -238,14 +245,16 @@ static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, const uint8
 static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, const float *const input, int width, int height)
 {
   printf("[histogram] dt_lib_histogram_process_f\n");
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
   // issues when putting colors into the bins.
   // FIXME: is above comment true now that waveform is scaled via Cairo?
-  if(darktable.develop->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
   {
-    _pixelpipe_final_histogram_waveform(self, input, width, height);
+    _lib_histogram_process_waveform(d, input, width, height);
   }
+  // FIXME: can waveform calculate histogram_max? if so don't need to call regular histogram process when only waveform is active
   // FIXME: should raise a signal -- or dt_control_queue_redraw_widget() -- when done, rather than waiting for pixelpipe/tether to signal?
 }
 
@@ -299,14 +308,14 @@ static void _draw_type_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_move_to(cr, 2.0 * border, height - 2.0 * border);
   switch(type)
   {
-    case DT_DEV_SCOPE_HISTOGRAM:
+    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
       cairo_curve_to(cr, 0.3 * width, height - 2.0 * border, 0.3 * width, 2.0 * border,
                      0.5 * width, 2.0 * border);
       cairo_curve_to(cr, 0.7 * width, 2.0 * border, 0.7 * width, height - 2.0 * border,
                      width - 2.0 * border, height - 2.0 * border);
       cairo_fill(cr);
       break;
-    case DT_DEV_SCOPE_WAVEFORM:
+    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
     {
       cairo_pattern_t *pattern;
       pattern = cairo_pattern_create_linear(0.0, 1.5 * border, 0.0, height - 3.0 * border);
@@ -568,7 +577,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
   {
     cairo_set_source_rgb(cr, .5, .5, .5);
-    if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
       cairo_rectangle(cr, 0, 7.0/9.0 * height, width, height);
     else
       cairo_rectangle(cr, 0, 0, 0.2 * width, height);
@@ -577,7 +586,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
   {
     cairo_set_source_rgb(cr, .5, .5, .5);
-    if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
       cairo_rectangle(cr, 0, 0, width, 7.0/9.0 * height);
     else
       cairo_rectangle(cr, 0.2 * width, 0, width, height);
@@ -587,7 +596,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   // draw grid
   set_color(cr, darktable.bauhaus->graph_grid);
 
-  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
     dt_draw_waveform_lines(cr, 0, 0, width, height);
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
@@ -597,18 +606,18 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   {
     cairo_save(cr);
     uint8_t mask[3] = { d->red, d->green, d->blue };
-    switch(dev->scope_type)
+    switch(d->scope_type)
     {
-      case DT_DEV_SCOPE_HISTOGRAM:
+      case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
         _lib_histogram_draw_histogram(cr, width, height, mask);
         break;
-      case DT_DEV_SCOPE_WAVEFORM:
+      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
           _lib_histogram_draw_waveform(d, cr, width, height, mask);
         else
           _lib_histogram_draw_rgb_parade(d, cr, width, height, mask);
         break;
-      case DT_DEV_SCOPE_N:
+      case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
     }
     cairo_restore(cr);
@@ -617,16 +626,16 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   // buttons to control the display of the histogram: linear/log, r, g, b
   if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
-    _draw_type_toggle(cr, d->type_x, d->button_y, d->button_w, d->button_h, dev->scope_type);
-    switch(dev->scope_type)
+    _draw_type_toggle(cr, d->type_x, d->button_y, d->button_w, d->button_h, d->scope_type);
+    switch(d->scope_type)
     {
-      case DT_DEV_SCOPE_HISTOGRAM:
+      case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
         _draw_histogram_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, dev->histogram_type);
         break;
-      case DT_DEV_SCOPE_WAVEFORM:
+      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->waveform_type);
         break;
-      case DT_DEV_SCOPE_N:
+      case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
     }
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.33);
@@ -661,10 +670,10 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   gtk_widget_get_allocation(widget, &allocation);
   if(d->dragging)
   {
-    const float diff = dev->scope_type == DT_DEV_SCOPE_WAVEFORM ? d->button_down_y - event->y
-                                                                : event->x - d->button_down_x;
-    const int range = dev->scope_type == DT_DEV_SCOPE_WAVEFORM ? allocation.height
-                                                               : allocation.width;
+    const float diff = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? d->button_down_y - event->y
+                                                                        : event->x - d->button_down_x;
+    const int range = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? allocation.height
+                                                                       : allocation.width;
     if (d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
       const float exposure = d->exposure + diff * 4.0f / (float)range;
@@ -692,24 +701,24 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     else if(x > d->type_x && x < d->type_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE;
-      switch(dev->scope_type)
+      switch(d->scope_type)
       {
-        case DT_DEV_SCOPE_HISTOGRAM:
+        case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
           gtk_widget_set_tooltip_text(widget, _("set mode to waveform"));
           break;
-        case DT_DEV_SCOPE_WAVEFORM:
+        case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
           gtk_widget_set_tooltip_text(widget, _("set mode to histogram"));
           break;
-        case DT_DEV_SCOPE_N:
+        case DT_LIB_HISTOGRAM_SCOPE_N:
           g_assert_not_reached();
       }
     }
     else if(x > d->mode_x && x < d->mode_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_MODE;
-      switch(dev->scope_type)
+      switch(d->scope_type)
       {
-        case DT_DEV_SCOPE_HISTOGRAM:
+        case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
           switch(dev->histogram_type)
           {
             case DT_DEV_HISTOGRAM_LOGARITHMIC:
@@ -722,7 +731,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
               g_assert_not_reached();
           }
           break;
-        case DT_DEV_SCOPE_WAVEFORM:
+        case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
           switch(d->waveform_type)
           {
             case DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID:
@@ -735,7 +744,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
               g_assert_not_reached();
           }
           break;
-        case DT_DEV_SCOPE_N:
+        case DT_LIB_HISTOGRAM_SCOPE_N:
           g_assert_not_reached();
       }
     }
@@ -755,8 +764,8 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE;
       gtk_widget_set_tooltip_text(widget, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
     }
-    else if((posx < 0.2f && dev->scope_type == DT_DEV_SCOPE_HISTOGRAM) ||
-            (posy > 7.0f/9.0f && dev->scope_type == DT_DEV_SCOPE_WAVEFORM))
+    else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
+            (posy > 7.0f/9.0f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM))
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
       gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets\nctrl+scroll to change display height"));
@@ -813,31 +822,31 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
   {
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE)
     {
-      dev->scope_type = (dev->scope_type + 1) % DT_DEV_SCOPE_N;
+      d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
       dt_conf_set_string("plugins/darkroom/histogram/mode",
-                         dt_dev_scope_type_names[dev->scope_type]);
+                         dt_lib_histogram_scope_type_names[d->scope_type]);
       // we need to reprocess the preview pipe
-      // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well
-      if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+      // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform histogram
+      if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
       {
         dt_dev_process_preview(dev);
       }
     }
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_MODE)
     {
-      switch(dev->scope_type)
+      switch(d->scope_type)
       {
-        case DT_DEV_SCOPE_HISTOGRAM:
+        case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
           dev->histogram_type = (dev->histogram_type + 1) % DT_DEV_HISTOGRAM_N;
           dt_conf_set_string("plugins/darkroom/histogram/histogram",
                              dt_lib_histogram_histogram_type_names[dev->histogram_type]);
           break;
-        case DT_DEV_SCOPE_WAVEFORM:
+        case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
           d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
           dt_conf_set_string("plugins/darkroom/histogram/waveform",
                              dt_lib_histogram_waveform_type_names[d->waveform_type]);
           break;
-        case DT_DEV_SCOPE_N:
+        case DT_LIB_HISTOGRAM_SCOPE_N:
           g_assert_not_reached();
       }
     }
@@ -968,37 +977,37 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
 
   // The cycle order is Hist log -> Lin -> Waveform -> parade (update logic on more scopes)
 
-  switch(dev->scope_type)
+  switch(d->scope_type)
   {
-    case DT_DEV_SCOPE_HISTOGRAM:
+    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
       dev->histogram_type = (dev->histogram_type + 1);
       if(dev->histogram_type == DT_DEV_HISTOGRAM_N)
       {
         dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
         d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
-        dev->scope_type = DT_DEV_SCOPE_WAVEFORM;
+        d->scope_type = DT_LIB_HISTOGRAM_SCOPE_WAVEFORM;
       }
       break;
-    case DT_DEV_SCOPE_WAVEFORM:
+    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       d->waveform_type = (d->waveform_type + 1);
       if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_N)
       {
         dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
         d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
-        dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
+        d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
       }
       break;
-    case DT_DEV_SCOPE_N:
+    case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
   dt_conf_set_string("plugins/darkroom/histogram/mode",
-                     dt_dev_scope_type_names[dev->scope_type]);
+                     dt_lib_histogram_scope_type_names[d->scope_type]);
   dt_conf_set_string("plugins/darkroom/histogram/histogram",
                      dt_lib_histogram_histogram_type_names[dev->histogram_type]);
   dt_conf_set_string("plugins/darkroom/histogram/waveform",
                      dt_lib_histogram_waveform_type_names[d->waveform_type]);
 
-  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
   {
     dt_dev_process_preview(dev);
   }
@@ -1013,15 +1022,15 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
                                                 GdkModifierType modifier, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_develop_t *dev = darktable.develop;
-  dev->scope_type = (dev->scope_type + 1) % DT_DEV_SCOPE_N;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/mode",
-                     dt_dev_scope_type_names[dev->scope_type]);
+                     dt_lib_histogram_scope_type_names[d->scope_type]);
   // we need to reprocess the preview pipe
-  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well
-  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
   {
-    dt_dev_process_preview(dev);
+    dt_dev_process_preview(darktable.develop);
   }
   dt_control_queue_redraw_widget(self->widget);
   return TRUE;
@@ -1035,22 +1044,23 @@ static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_develop_t *dev = darktable.develop;
 
-  switch(dev->scope_type)
+  switch(d->scope_type)
   {
-    case DT_DEV_SCOPE_HISTOGRAM:
+    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
       dev->histogram_type = (dev->histogram_type + 1) % DT_DEV_HISTOGRAM_N;
       dt_conf_set_string("plugins/darkroom/histogram/histogram",
                          dt_lib_histogram_histogram_type_names[dev->histogram_type]);
       break;
-    case DT_DEV_SCOPE_WAVEFORM:
+    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
       dt_conf_set_string("plugins/darkroom/histogram/waveform",
                          dt_lib_histogram_waveform_type_names[d->waveform_type]);
       break;
-    case DT_DEV_SCOPE_N:
+    case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
-  if(dev->scope_type == DT_DEV_SCOPE_WAVEFORM)
+  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
   {
     dt_dev_process_preview(dev);
   }
@@ -1107,6 +1117,25 @@ void gui_init(dt_lib_module_t *self)
   d->red = dt_conf_get_bool("plugins/darkroom/histogram/show_red");
   d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
   d->blue = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
+
+  gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
+  if(g_strcmp0(mode, "histogram") == 0)
+    d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
+  else if(g_strcmp0(mode, "waveform") == 0)
+    d->scope_type = DT_LIB_HISTOGRAM_SCOPE_WAVEFORM;
+  else if(g_strcmp0(mode, "linear") == 0)
+  { // update legacy conf
+    d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
+    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
+    dt_conf_set_string("plugins/darkroom/histogram/histogram","linear");
+  }
+  else if(g_strcmp0(mode, "logarithmic") == 0)
+  { // update legacy conf
+    d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
+    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
+    dt_conf_set_string("plugins/darkroom/histogram/histogram","logarithmic");
+  }
+  g_free(mode);
 
   gchar *waveform_type = dt_conf_get_string("plugins/darkroom/histogram/waveform");
   if(g_strcmp0(waveform_type, "overlaid") == 0)
