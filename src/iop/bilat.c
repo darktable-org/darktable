@@ -358,17 +358,35 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  if(w == g->mode)
+  if(w == g->highlights || w == g->shadows || w == g->midtone)
+  {
+    dt_bauhaus_combobox_set(g->mode, s_mode_local_laplacian);
+  }
+  else if(w == g->range || w == g->spatial)
+  {
+    dt_bauhaus_combobox_set(g->mode, s_mode_bilateral);
+  }
+  else if(w == g->mode)
+  {
+    if(p->mode == s_mode_local_laplacian)
+    {
+      p->sigma_r = dt_bauhaus_slider_get(g->highlights);
+      p->sigma_s = dt_bauhaus_slider_get(g->shadows);
+    }
+    else
+    {
+      p->sigma_r = dt_bauhaus_slider_get(g->range);
+      p->sigma_s = dt_bauhaus_slider_get(g->spatial);
+    }
+  }
+
+  if(!w || w == g->mode)
   {
     gtk_widget_set_visible(g->highlights, p->mode == s_mode_local_laplacian);
-    dt_bauhaus_slider_set(g->highlights, 0.5f);
     gtk_widget_set_visible(g->shadows, p->mode == s_mode_local_laplacian);
-    dt_bauhaus_slider_set(g->shadows, 0.5f);
     gtk_widget_set_visible(g->midtone, p->mode == s_mode_local_laplacian);
     gtk_widget_set_visible(g->range, p->mode != s_mode_local_laplacian);
-    dt_bauhaus_slider_set(g->range, 20.0f);
     gtk_widget_set_visible(g->spatial, p->mode != s_mode_local_laplacian);
-    dt_bauhaus_slider_set(g->spatial, 50.0f);
   }
 }
 
@@ -386,18 +404,19 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_slider_set(g->highlights, p->sigma_r);
     dt_bauhaus_slider_set(g->shadows, p->sigma_s);
     dt_bauhaus_slider_set(g->midtone, p->midtone);
+    dt_bauhaus_slider_set(g->range, 20.0f);
+    dt_bauhaus_slider_set(g->spatial, 50.0f);
   }
   else
   {
     dt_bauhaus_slider_set(g->range, p->sigma_r);
     dt_bauhaus_slider_set(g->spatial, p->sigma_s);
+    dt_bauhaus_slider_set(g->midtone, p->midtone);
+    dt_bauhaus_slider_set(g->highlights, 0.5f);
+    dt_bauhaus_slider_set(g->shadows, 0.5f);
   }
 
-  gtk_widget_set_visible(g->highlights, p->mode == s_mode_local_laplacian);
-  gtk_widget_set_visible(g->shadows, p->mode == s_mode_local_laplacian);
-  gtk_widget_set_visible(g->midtone, p->mode == s_mode_local_laplacian);
-  gtk_widget_set_visible(g->range, p->mode != s_mode_local_laplacian);
-  gtk_widget_set_visible(g->spatial, p->mode != s_mode_local_laplacian);
+  gui_changed(self, NULL, NULL);
 }
 
 void gui_init(dt_iop_module_t *self)
