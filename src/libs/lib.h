@@ -67,7 +67,9 @@ typedef struct dt_lib_t
     /** Histogram processing hooks */
     struct
     {
+      // FIXME: do ned to store histogram_max here?
       struct dt_lib_module_t *module;
+      // FIXME: do these need to return histogram_max?
       void (*process_8)(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height);
       void (*process_f)(struct dt_lib_module_t *self, const float *const input, int width, int height);
     } histogram;
