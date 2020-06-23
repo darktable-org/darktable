@@ -2272,6 +2272,13 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   g->has_focus = in;
   dt_pthread_mutex_unlock(&g->lock);
   switch_cursors(self);
+  if(!in)
+  {
+    //lost focus - stop showing mask
+    g->mask_display = FALSE;
+    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), FALSE);
+    dt_dev_reprocess_center(self->dev);
+  }
 }
 
 
