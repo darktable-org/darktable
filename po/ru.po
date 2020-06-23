@@ -15798,9 +15798,9 @@ msgstr "Импорт"
 #, c-format
 msgid "do you really want to remove %d style?"
 msgid_plural "do you really want to remove %d styles?"
-msgstr[0] "Вы действительно хотите удалить «%s» стиль?"
-msgstr[1] "Вы действительно хотите удалить «%s» стиля?"
-msgstr[2] "Вы действительно хотите удалить «%s» стиля?"
+msgstr[0] "Вы действительно хотите удалить «%d» стиль?"
+msgstr[1] "Вы действительно хотите удалить «%d» стиля?"
+msgstr[2] "Вы действительно хотите удалить «%d» стиля?"
 
 #: ../src/libs/styles.c:333
 msgid "remove style?"
