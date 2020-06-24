@@ -321,12 +321,9 @@ static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer
 
     dt_iop_so_gui_set_state(module, (module->state + 1) % dt_iop_state_LAST);
 
-    if(module->state == dt_iop_state_FAVORITE)
-      dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
-
     update_selection(self);
 
-    // rebuild the accelerators 
+    // rebuild the accelerators
     dt_iop_connect_accels_multi(module);
   }
 }
