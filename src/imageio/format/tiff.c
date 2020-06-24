@@ -45,6 +45,7 @@ typedef struct dt_imageio_tiff_t
   int bpp;
   int compress;
   int compresslevel;
+  int shortfile;
   TIFF *handle;
 } dt_imageio_tiff_t;
 
@@ -53,6 +54,7 @@ typedef struct dt_imageio_tiff_gui_t
   GtkWidget *bpp;
   GtkWidget *compress;
   GtkWidget *compresslevel;
+  GtkWidget *shortfiles;
 } dt_imageio_tiff_gui_t;
 
 
@@ -164,7 +166,12 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
    Exporting using masks currently does not support grayscale images.
 */
   int layers = 3;  // default are rgb images
-  if((d->global.height > 4) && (d->global.width > 4) && (n_pages == 1))
+
+  int shortmode = 0;
+  if(dt_conf_key_exists("plugins/imageio/format/tiff/shortfile")) 
+    shortmode = dt_conf_get_int("plugins/imageio/format/tiff/shortfile");
+
+  if((d->global.height > 4) && (d->global.width > 4) && (n_pages == 1) && shortmode)
   {
     layers = 1;    // let's now assume a grayscale  
     if(d->bpp == 32)
@@ -657,6 +664,14 @@ void *get_params(dt_imageio_module_format_t *self)
     if(d->compresslevel < 0 || d->compresslevel > 9) d->compresslevel = 5;
   }
 
+  // TIFF shortfile
+  if(!dt_conf_key_exists("plugins/imageio/format/tiff/shortfile"))
+    d->shortfile = 0;
+  else
+  {
+    d->shortfile = dt_conf_get_int("plugins/imageio/format/tiff/shortfile");
+  }
+
   return d;
 }
 
@@ -682,6 +697,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
 
   dt_bauhaus_slider_set(g->compresslevel, d->compresslevel);
 
+  dt_bauhaus_combobox_set(g->shortfiles, d->shortfile);
   return 0;
 }
 
@@ -731,6 +747,12 @@ static void bpp_combobox_changed(GtkWidget *widget, gpointer user_data)
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", 8);
 }
 
+static void shortfile_combobox_changed(GtkWidget *widget, gpointer user_data)
+{
+  const int mode = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/imageio/format/tiff/shortfile", mode);
+}
+
 static void compress_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
   const int compress = dt_bauhaus_combobox_get(widget);
@@ -767,6 +789,10 @@ void gui_init(dt_imageio_module_format_t *self)
   const int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
 
   const int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+
+  int shortmode = 0;
+  if(dt_conf_key_exists("plugins/imageio/format/tiff/shortfile")) 
+    shortmode = dt_conf_get_int("plugins/imageio/format/tiff/shortfile");
 
   // TIFF compression level might actually be zero!
   int compresslevel = 5;
@@ -811,6 +837,15 @@ void gui_init(dt_imageio_module_format_t *self)
 
   if(compress == 0)
     gtk_widget_set_sensitive(gui->compresslevel, FALSE);
+
+  // shortfile option combo box
+  gui->shortfiles = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->shortfiles, NULL, _("b&w image"));
+  dt_bauhaus_combobox_add(gui->shortfiles, _("write rgb colors"));
+  dt_bauhaus_combobox_add(gui->shortfiles, _("write grayscale"));
+  dt_bauhaus_combobox_set(gui->shortfiles, shortmode);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->shortfiles, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->shortfiles), "value-changed", G_CALLBACK(shortfile_combobox_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
