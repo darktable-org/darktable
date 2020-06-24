@@ -191,6 +191,9 @@ void dt_lib_queue_postponed_update(dt_lib_module_t *mod, void (*update_fn)(dt_li
 /** cancel any previously-queued callback */
 void dt_lib_cancel_postponed_update(dt_lib_module_t *mod);
 
+// apply a preset to the given module
+gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_version);
+
 /*
  * Proxy functions
  */
