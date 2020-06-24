@@ -2446,10 +2446,7 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
 
   if(!dt_iop_shown_in_group(module, current_group))
   {
-    if(dt_iop_shown_in_group(module, DT_MODULEGROUP_FAVORITES))
-      dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
-    else
-      dt_dev_modulegroups_switch(darktable.develop, module);
+    dt_dev_modulegroups_switch(darktable.develop, module);
   }
   else
   {

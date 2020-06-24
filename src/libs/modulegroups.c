@@ -653,8 +653,9 @@ static void _lib_modulegroups_search_text_focus(dt_lib_module_t *self)
 
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)
 {
-  /* lets find the group which is not favorite/active pipe */
-  for(int k = DT_MODULEGROUP_BASIC; k < DT_MODULEGROUP_SIZE; k++)
+  /* lets find the group which is not active pipe */
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  for(int k = 1; k <= g_list_length(d->groups); k++)
   {
     if(_lib_modulegroups_test(self, k, module))
     {
@@ -730,7 +731,7 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx));
 
   gchar *tx2 = "test|filmicrgbꬹtruc|clipping|filmicrgb";
-  dt_lib_presets_add(_("a_toi"), self->plugin_name, self->version(), tx2, strlen(tx2));
+  dt_lib_presets_add(_("test"), self->plugin_name, self->version(), tx2, strlen(tx2));
 }
 
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
