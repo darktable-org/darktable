@@ -1769,6 +1769,7 @@ Hierachy :
       #thumb_back                                                    (GtkEventBox -- thumbnail background)
       #thumb_ext                                                     (GtkLabel -- thumbnail extension)
       #thumb_image                                                   (GtkDrawingArea -- thumbnail image)
+      #thumb_cursor                                                  (GtkDrawingArea -- top triangle to show active images in filmstrip)
       #thumb_bottom                                                  (GtkEventBox -- background of the bottom infos area)
         #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
       #thumb_reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
