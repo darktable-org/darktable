@@ -225,7 +225,7 @@ typedef struct dt_develop_t
       /* get current module group */
       uint32_t (*get)(struct dt_lib_module_t *self);
       /* test if iop group flags matches modulegroup */
-      gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
+      gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, struct dt_iop_module_t *module);
       /* switch to modulegroup */
       void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
       /* update modulegroup visibility */
@@ -413,7 +413,7 @@ void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */
 uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
 /** test if iop group flags matches modulegroup */
-gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group);
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, struct dt_iop_module_t *module);
 /** reorder the module list */
 void dt_dev_reorder_gui_module_list(dt_develop_t *dev);
 
