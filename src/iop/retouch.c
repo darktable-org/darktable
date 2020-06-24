@@ -1120,6 +1120,7 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   GdkRGBA active      = {.35, .35, .35, 1};
   GdkRGBA merge_from  = {.5, .5, .5, 1};
   GdkRGBA residual    = {.8, .8, .8, 1};
+  GdkRGBA shapes      = {.75, .5, .0, 1};
   GdkRGBA color;
 
   float middle;
@@ -1176,8 +1177,8 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
     if(rt_scale_has_shapes(p, i))
     {
       cairo_set_line_width(cr, lw);
-      gdk_cairo_set_source_rgba(cr, &merge_from);
-      cairo_rectangle(cr, box_w * i + inset + lw / 2.0f, allocation.height - bh, box_w - lw, bh);
+      gdk_cairo_set_source_rgba(cr, &shapes);
+      cairo_rectangle(cr, box_w * i + inset + lw / 2.0f, allocation.height - sh, box_w - lw, bh);
       cairo_fill(cr);
     }
 
@@ -1225,12 +1226,12 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   if(g->lower_cursor || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM)
   {
     cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
-    dtgtk_cairo_paint_solid_triangle(cr, middle, box_h + bh, mk, mk, CPF_DIRECTION_UP, NULL);
+    dtgtk_cairo_paint_solid_triangle(cr, middle, box_h + 2.0f + bh, mk, mk, CPF_DIRECTION_UP, NULL);
   }
   else
   {
     cairo_set_source_rgb(cr, 0.54, 0.54, 0.54);
-    dtgtk_cairo_paint_triangle(cr, middle, box_h + bh, mk, mk, CPF_DIRECTION_UP, NULL);
+    dtgtk_cairo_paint_triangle(cr, middle, box_h + 2.0f * bh, mk, mk, CPF_DIRECTION_UP, NULL);
   }
 
   // draw merge scales arrow (top arrow)
