@@ -1063,7 +1063,7 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = round(RT_WDBAR_INSET * allocation.height);
   const float box_w = (allocation.width - 2.0f * inset) / (float)RETOUCH_NO_SCALES;
-  const float sh = 2.0f * lw + inset;
+  const float sh = 3.0f * lw + inset;
 
 
   /* record mouse position within control */
@@ -1140,8 +1140,7 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   // geometry
   const int inset = round(RT_WDBAR_INSET * allocation.height);
   const int mk = 2 * inset;
-  const float bh = 2.0f * lw;
-  const float sh = bh + inset;
+  const float sh = 3.0f * lw + inset;
   const float box_w = (allocation.width - 2.0f * inset) / (float)RETOUCH_NO_SCALES;
   const float box_h = allocation.height - 2.0f * sh;
 
@@ -1169,7 +1168,7 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
     if(i >= first_scale_visible && i <= p->num_scales)
     {
       gdk_cairo_set_source_rgba(cr, &merge_from);
-      cairo_rectangle(cr, box_w * i + inset, 0, box_w, bh);
+      cairo_rectangle(cr, box_w * i + inset, lw, box_w, 2.0f * lw);
       cairo_fill(cr);
     }
 
@@ -1178,7 +1177,7 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
     {
       cairo_set_line_width(cr, lw);
       gdk_cairo_set_source_rgba(cr, &shapes);
-      cairo_rectangle(cr, box_w * i + inset + lw / 2.0f, allocation.height - sh, box_w - lw, bh);
+      cairo_rectangle(cr, box_w * i + inset + lw / 2.0f, allocation.height - sh, box_w - lw, 2.0f * lw);
       cairo_fill(cr);
     }
 
@@ -1226,12 +1225,12 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   if(g->lower_cursor || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_BOTTOM)
   {
     cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
-    dtgtk_cairo_paint_solid_triangle(cr, middle, box_h + 2.0f + bh, mk, mk, CPF_DIRECTION_UP, NULL);
+    dtgtk_cairo_paint_solid_triangle(cr, middle, box_h + 5.0f * lw, mk, mk, CPF_DIRECTION_UP, NULL);
   }
   else
   {
     cairo_set_source_rgb(cr, 0.54, 0.54, 0.54);
-    dtgtk_cairo_paint_triangle(cr, middle, box_h + 2.0f * bh, mk, mk, CPF_DIRECTION_UP, NULL);
+    dtgtk_cairo_paint_triangle(cr, middle, box_h + 5.0f * lw, mk, mk, CPF_DIRECTION_UP, NULL);
   }
 
   // draw merge scales arrow (top arrow)
@@ -1239,12 +1238,12 @@ static gboolean rt_wdbar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *
   if(g->upper_cursor || g->is_dragging == DT_IOP_RETOUCH_WDBAR_DRAG_TOP)
   {
     cairo_set_source_rgb(cr, 0.67, 0.67, 0.67);
-    dtgtk_cairo_paint_solid_triangle(cr, middle, bh, mk, mk, CPF_DIRECTION_DOWN, NULL);
+    dtgtk_cairo_paint_solid_triangle(cr, middle, 3.0f * lw, mk, mk, CPF_DIRECTION_DOWN, NULL);
   }
   else
   {
     cairo_set_source_rgb(cr, 0.54, 0.54, 0.54);
-    dtgtk_cairo_paint_triangle(cr, middle, bh, mk, mk, CPF_DIRECTION_DOWN, NULL);
+    dtgtk_cairo_paint_triangle(cr, middle, 3.0f * lw, mk, mk, CPF_DIRECTION_DOWN, NULL);
   }
 
   /* push mem surface into widget */
@@ -2208,7 +2207,7 @@ void gui_init(dt_iop_module_t *self)
                                                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                    | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
                                                    | GDK_SMOOTH_SCROLL_MASK);
-  gtk_widget_set_size_request(g->wd_bar, -1, DT_PIXEL_APPLY_DPI(38));
+  gtk_widget_set_size_request(g->wd_bar, -1, DT_PIXEL_APPLY_DPI(40));
 
   // toolbar display current scale / cut&paste / suppress&display masks
   GtkWidget *hbox_scale = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
