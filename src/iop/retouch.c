@@ -2194,8 +2194,9 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text(g->wd_bar, _("top slider adjusts where the merge scales start\n"
                                            "bottom slider adjusts the number of scales\n"
-                                           "red box indicates the current scale\n"
-                                           "green line indicates that the scale has shapes on it"));
+                                           "dot indicates the current scale\n"
+                                           "top line indicates that the scale is visible at current zoom level\n"
+                                           "bottom line indicates that the scale has shapes on it"));
   g_signal_connect(G_OBJECT(g->wd_bar), "draw", G_CALLBACK(rt_wdbar_draw), self);
   g_signal_connect(G_OBJECT(g->wd_bar), "motion-notify-event", G_CALLBACK(rt_wdbar_motion_notify), self);
   g_signal_connect(G_OBJECT(g->wd_bar), "leave-notify-event", G_CALLBACK(rt_wdbar_leave_notify), self);
