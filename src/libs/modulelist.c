@@ -381,8 +381,8 @@ void init_presets(dt_lib_module_t *self)
   int len;
   char *params_none = gen_params(0, &len, NULL);
   char *params_all = gen_params(1, &len, NULL);
-  dt_lib_presets_add(_("subset: no module"), self->plugin_name, self->version(), params_none, len);
-  dt_lib_presets_add(_("subset: all modules"), self->plugin_name, self->version(), params_all, len);
+  dt_lib_presets_add(_("subset: no module"), self->plugin_name, self->version(), params_none, len, TRUE);
+  dt_lib_presets_add(_("subset: all modules"), self->plugin_name, self->version(), params_all, len, TRUE);
 
   /* The modules that are activated by default in the initial configuration:
    * minimum toolkit to quickely edit 90% of pictures from start to finish
@@ -397,7 +397,7 @@ void init_presets(dt_lib_module_t *self)
                                     "|colorin|colorbalance"                  // colors
                                     "|sharpen|bilat|");                      // local contrast / sharpness
 
-  dt_lib_presets_add(_("subset: default modules"), self->plugin_name, self->version(), params, len);
+  dt_lib_presets_add(_("subset: default modules"), self->plugin_name, self->version(), params, len, TRUE);
 
   free(params);
   params = gen_params(1, &len, // default modules
@@ -413,7 +413,7 @@ void init_presets(dt_lib_module_t *self)
                               "|atrous"                                               // sharpness
                               "|cacorrect|defringe|colorreconstruction|");            // image reconstruction
 
-  dt_lib_presets_add(_("workspace: all-purpose"), self->plugin_name, self->version(), params, len);
+  dt_lib_presets_add(_("workspace: all-purpose"), self->plugin_name, self->version(), params, len, TRUE);
 
   free(params);
   params = gen_params(1, &len, // default modules
@@ -432,7 +432,7 @@ void init_presets(dt_lib_module_t *self)
                               "|rgbcurves"                                            // colors
                               "|graduatednd|zonesystem|tonemap|shadhi|");             // HDR reconstruction - tones
 
-  dt_lib_presets_add(_("workspace: landscape & HDR"), self->plugin_name, self->version(), params, len);
+  dt_lib_presets_add(_("workspace: landscape & HDR"), self->plugin_name, self->version(), params, len, TRUE);
 
   free(params);
   params = gen_params(1, &len,
@@ -451,7 +451,7 @@ void init_presets(dt_lib_module_t *self)
                               // workspace addings
                               "|ashift|retouch|");                                     // perspective and spot removal
 
-  dt_lib_presets_add(_("workspace: architecture & streets"), self->plugin_name, self->version(), params, len);
+  dt_lib_presets_add(_("workspace: architecture & streets"), self->plugin_name, self->version(), params, len, TRUE);
 
   free(params);
   params = gen_params(1, &len,
@@ -471,7 +471,7 @@ void init_presets(dt_lib_module_t *self)
                               "|rgbcurves"                                            // colors
                               "|retouch|liquify|soften|");                            // skin retouch
 
-  dt_lib_presets_add(_("workspace: portrait & beauty"), self->plugin_name, self->version(), params, len);
+  dt_lib_presets_add(_("workspace: portrait & beauty"), self->plugin_name, self->version(), params, len, TRUE);
 
   free(params);
   params = gen_params(1, &len,
@@ -490,7 +490,7 @@ void init_presets(dt_lib_module_t *self)
                               // workspace addings
                               "|bilateral|hotpixels|");                               // extra denoising methods
 
-  dt_lib_presets_add(_("workspace: lowlight & high ISO"), self->plugin_name, self->version(), params, len);
+  dt_lib_presets_add(_("workspace: lowlight & high ISO"), self->plugin_name, self->version(), params, len, TRUE);
 
   free(params);
   params = gen_params(1, &len,
@@ -498,7 +498,7 @@ void init_presets(dt_lib_module_t *self)
                         "|vignette|relight|lowlight|bloom|soften|colisa|monochrome"
                         "|watermark|border|grain|colorcontrast|");
 
-  dt_lib_presets_add(_("subset: creative modules only"), self->plugin_name, self->version(), params, len);
+  dt_lib_presets_add(_("subset: creative modules only"), self->plugin_name, self->version(), params, len, TRUE);
 
   free(params);
   params = gen_params(1, &len,
@@ -508,7 +508,7 @@ void init_presets(dt_lib_module_t *self)
                         "|denoiseprofile|bilateral|hotpixels|rawdenoise|nlmeans"    // denoising
                         "|dither|profile_gamma|invert|scalepixels|rotatepixels|colorchecker|");
 
-  dt_lib_presets_add(_("subset: technical modules only"), self->plugin_name, self->version(), params, len);
+  dt_lib_presets_add(_("subset: technical modules only"), self->plugin_name, self->version(), params, len, TRUE);
 
 
   free(params_none);

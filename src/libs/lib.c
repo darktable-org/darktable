@@ -362,6 +362,11 @@ static void menuitem_edit_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *mi
   edit_preset(NULL, minfo);
 }
 
+static void menuitem_manage_presets(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
+{
+  if(minfo->module->manage_presets) minfo->module->manage_presets(minfo->module);
+}
+
 static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
   sqlite3_stmt *stmt;
@@ -538,7 +543,13 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   if(cnt > 0) gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
   // FIXME: this doesn't seem to work.
-  if(active_preset >= 0)
+  if(minfo->module->manage_presets)
+  {
+    mi = gtk_menu_item_new_with_label(_("manage presets.."));
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_manage_presets), minfo);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+  }
+  else if(active_preset >= 0)
   {
     if(!writeprotect)
     {
@@ -1168,7 +1179,7 @@ void dt_lib_cleanup(dt_lib_t *lib)
 }
 
 void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params,
-                        const int32_t params_size)
+                        const int32_t params_size, gboolean readonly)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1191,12 +1202,13 @@ void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t
       " VALUES "
       "  (?1, '', ?2, ?3, ?4, NULL, 0, 1, '%', "
       "   '%', '%', 0, 340282346638528859812000000000000000000, 0, 10000000, 0, 100000000, 0,"
-      "   1000, 1, 0, 0, 0, 0)",
+      "   1000, ?5, 0, 0, 0, 0)",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, params, params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, readonly);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
