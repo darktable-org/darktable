@@ -116,6 +116,8 @@ static void _preview_quit(dt_view_t *self)
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                        TRUE); // always on, visibility is driven by panel state
+
+    dt_culling_update_active_images_list(lib->culling);
   }
   else
   {
@@ -544,6 +546,11 @@ void enter(dt_view_t *self)
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                        TRUE); // always on, visibility is driven by panel state
+
+    if(lib->preview_state)
+      dt_culling_update_active_images_list(lib->preview);
+    else
+      dt_culling_update_active_images_list(lib->culling);
   }
   else
   {
