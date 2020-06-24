@@ -201,7 +201,6 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
-  // FIXME: put histogram_max in lib proxy
   d->histogram_max = 0;
   memset(d->histogram, 0, sizeof(uint32_t) * 4 * 256);
 
@@ -354,18 +353,20 @@ static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, const uint8
     input_tmp[i + 3] = 0.0f;
   }
 
-  // this makes horizontal banding artifacts due to rounding issues
-  // when putting colors into the bins, but is still meaningful and is
-  // better than no output
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-    _lib_histogram_process_waveform(d, input_tmp, width, height);
-
-  // FIXME: can we make a reasonable waveform histogram from the 8-bit data? try it
-  //if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM)
-  //{
-  // FIXME: for now always making histogram, but if waveform can calculate histogram_max -- or doesn't need it -- don't need to call regular histogram process when only waveform is active
-  _lib_histogram_process_histogram(d, input_tmp, width, height);
-  //}
+  switch(d->scope_type)
+  {
+    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+      _lib_histogram_process_histogram(d, input_tmp, width, height);
+      break;
+    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
+      // this makes horizontal banding artifacts due to rounding issues
+      // when putting colors into the bins, but is still meaningful and is
+      // better than no output
+      _lib_histogram_process_waveform(d, input_tmp, width, height);
+      break;
+    case DT_LIB_HISTOGRAM_SCOPE_N:
+      g_assert_not_reached();
+  }
 
   dt_free_align(input_tmp);
 }
@@ -376,17 +377,10 @@ static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, const float
   printf("[histogram] dt_lib_histogram_process_f\n");
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
-  // FIXME: for now always making histogram, but if waveform can calculate histogram_max -- or doesn't need it -- don't need to call regular histogram process when only waveform is active
-  _lib_histogram_process_histogram(d, input, width, height);
-
-  // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
-  // issues when putting colors into the bins.
-  // FIXME: is above comment true now that waveform is scaled via Cairo?
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      // FIXME: can waveform calculate histogram_max? does it need it? if so don't need to call regular histogram process when only waveform is active
-      //_lib_histogram_process_histogram(d, input, width, height);
+      _lib_histogram_process_histogram(d, input, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       _lib_histogram_process_waveform(d, input, width, height);
@@ -967,11 +961,8 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       dt_conf_set_string("plugins/darkroom/histogram/mode",
                          dt_lib_histogram_scope_type_names[d->scope_type]);
       // we need to reprocess the preview pipe
-      // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform histogram -- or if don't need it for waveform
-      if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-      {
-        dt_dev_process_preview(dev);
-      }
+      // FIXME: if in tether mode, then do something else
+      dt_dev_process_preview(dev);
     }
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_MODE)
     {
@@ -1120,6 +1111,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
 
   // The cycle order is Hist log -> Lin -> Waveform -> parade (update logic on more scopes)
 
+  dt_lib_histogram_scope_type_t old_scope = d->scope_type;
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
@@ -1152,8 +1144,9 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
   darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
 
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+  if(d->scope_type != old_scope)
   {
+    // FIXME: if in tether mode, do something else
     dt_dev_process_preview(dev);
   }
 
@@ -1172,11 +1165,9 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
   // we need to reprocess the preview pipe
-  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform -- or don't need it
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-  {
-    dt_dev_process_preview(darktable.develop);
-  }
+  // FIXME: if in tether mode, do something else
+  dt_dev_process_preview(darktable.develop);
+  // FIXME: this may be automatically called by pixelpipe
   dt_control_queue_redraw_widget(self->widget);
   return TRUE;
 }
@@ -1204,11 +1195,6 @@ static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
-  }
-  // FIXME: can we only make the regular histogram if we're drawing it? if so then reprocess the preview pipe when switch to that as well -- can do this when calculate histogram_max in waveform -- or don't need it
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-  {
-    dt_dev_process_preview(dev);
   }
   dt_control_queue_redraw_widget(self->widget);
   return TRUE;
