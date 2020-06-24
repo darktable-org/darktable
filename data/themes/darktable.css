@@ -1947,7 +1947,7 @@ spinbutton>button
 /* Set top margin on active image in filmstrip */
 #thumb_main:active #thumb_back
 {
-  border-top: 2.5px solid @border_color;
+  border-top: 1.5px solid @border_color;
 }
 /* Set top cursor on active image in filmstrip */
 #thumb_cursor
