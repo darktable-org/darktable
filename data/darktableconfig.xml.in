@@ -2374,6 +2374,13 @@
     <longdescription>this is mainly useful for debugging and to add new camera support.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/modulegroups_preset</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>preset use for defining iop layout</shortdescription>
+    <longdescription>preset use for defining iop layout</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/map/geotagging_search_url</name>
     <type>string</type>
     <default>https://nominatim.openstreetmap.org/search/%s?format=xml&amp;limit=%d&amp;polygon_text=1</default>

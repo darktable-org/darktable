@@ -403,10 +403,9 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
   g_free(name);
 }
 
-static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
+gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_version)
 {
-  // apply preset via set_params
-  char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+  gboolean ret = TRUE;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
@@ -414,9 +413,9 @@ static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
       " FROM data.presets"
       " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
       -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, pn, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module_version);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, preset, -1, SQLITE_TRANSIENT);
 
   int res = 0;
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -430,7 +429,7 @@ static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
       while(it)
       {
         dt_lib_module_t *module = (dt_lib_module_t *)it->data;
-        if(!strncmp(module->plugin_name, minfo->plugin_name, 128))
+        if(!strncmp(module->plugin_name, module_name, 128))
         {
           res = module->set_params(module, blob, length);
           break;
@@ -439,8 +438,10 @@ static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
       }
     }
 
-    if(!writeprotect) dt_gui_store_last_preset(pn);
+    if(!writeprotect) dt_gui_store_last_preset(preset);
   }
+  else
+    ret = FALSE;
   sqlite3_finalize(stmt);
   if(res)
   {
@@ -449,12 +450,20 @@ static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
                                 "DELETE FROM data.presets"
                                 " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
                                 -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, pn, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module_version);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, preset, -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+  return ret;
+}
+
+static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
+{
+  // apply preset via set_params
+  char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+  dt_lib_presets_apply(pn, minfo->plugin_name, minfo->version);
 }
 
 static void free_module_info(GtkWidget *widget, gpointer user_data)

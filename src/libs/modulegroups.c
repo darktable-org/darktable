@@ -38,7 +38,8 @@ DT_MODULE(1)
 typedef struct dt_lib_modulegroups_group_t
 {
   gchar *name;
-  // icon
+  GtkWidget *button;
+  gchar *icon;
   // default
   GList *modules;
 } dt_lib_modulegroups_group_t;
@@ -49,6 +50,8 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *buttons[DT_MODULEGROUP_SIZE];
   GtkWidget *text_entry;
   GtkWidget *hbox_buttons;
+  GtkWidget *active_btn;
+  GtkWidget *hbox_groups;
   GtkWidget *hbox_search_box;
 
   GList *groups;
@@ -201,6 +204,58 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
   {
     dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
     dt_gui_key_accel_block_on_focus_connect(d->text_entry);
+
+    // and we initialize the buttons too
+    gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
+    if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
+      dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+    g_free(preset);
+  }
+}
+
+static DTGTKCairoPaintIconFunc _buttons_get_icon_fct(gchar *icon)
+{
+  if(g_strcmp0(icon, "active") == 0)
+    return dtgtk_cairo_paint_modulegroup_active;
+  else if(g_strcmp0(icon, "favorites") == 0)
+    return dtgtk_cairo_paint_modulegroup_favorites;
+  else if(g_strcmp0(icon, "tone") == 0)
+    return dtgtk_cairo_paint_modulegroup_tone;
+  else if(g_strcmp0(icon, "color") == 0)
+    return dtgtk_cairo_paint_modulegroup_color;
+  else if(g_strcmp0(icon, "correct") == 0)
+    return dtgtk_cairo_paint_modulegroup_correct;
+  else if(g_strcmp0(icon, "effect") == 0)
+    return dtgtk_cairo_paint_modulegroup_effect;
+
+  return dtgtk_cairo_paint_modulegroup_basic;
+}
+
+static void _buttons_update(dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // first, we destroy all existing buttons except active one an preset one
+  GList *l = gtk_container_get_children(GTK_CONTAINER(d->hbox_groups));
+  if(l) l = g_list_next(l);
+  while(l)
+  {
+    GtkWidget *bt = (GtkWidget *)l->data;
+    gtk_widget_destroy(bt);
+    l = g_list_next(l);
+  }
+
+  // then we repopulate the bow with new buttons
+  l = d->groups;
+  while(l)
+  {
+    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
+    GtkWidget *bt = dtgtk_togglebutton_new(_buttons_get_icon_fct(gr->icon), CPF_STYLE_FLAT, NULL);
+    g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
+    gr->button = bt;
+    gtk_box_pack_start(GTK_BOX(d->hbox_groups), bt, TRUE, TRUE, 0);
+    gtk_widget_show(bt);
+    l = g_list_next(l);
   }
 }
 
@@ -219,62 +274,20 @@ void gui_init(dt_lib_module_t *self)
   d->hbox_buttons = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->hbox_search_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  /* active */
-  d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf, NULL);
-  g_signal_connect(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
-                   self);
-  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], _("show only active modules"));
+  // groups
+  d->hbox_groups = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(d->hbox_buttons), d->hbox_groups, TRUE, TRUE, 0);
 
-  /* favorites */
-  d->buttons[DT_MODULEGROUP_FAVORITES] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_favorites, pf, NULL);
-  g_signal_connect(d->buttons[DT_MODULEGROUP_FAVORITES], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
-                   self);
-  gtk_widget_set_tooltip_text(d->buttons[DT_MODULEGROUP_FAVORITES],
-                              _("show only your favourite modules (selected in `more modules' below)"));
-
-  /* basic */
-  int g_index = _iop_get_group_order(DT_MODULEGROUP_BASIC, DT_MODULEGROUP_BASIC);
-  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basic, pf, NULL);
-  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[g_index], _("basic group"));
-
-  /* tone */
-  g_index = _iop_get_group_order(DT_MODULEGROUP_TONE, DT_MODULEGROUP_TONE);
-  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_tone, pf, NULL);
-  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[g_index], _("tone group"));
-
-  /* color */
-  g_index = _iop_get_group_order(DT_MODULEGROUP_COLOR, DT_MODULEGROUP_COLOR);
-  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_color, pf, NULL);
-  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[g_index], _("color group"));
-
-  /* correct */
-  g_index = _iop_get_group_order(DT_MODULEGROUP_CORRECT, DT_MODULEGROUP_CORRECT);
-  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_correct, pf, NULL);
-  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[g_index], _("correction group"));
-
-  /* effect */
-  g_index = _iop_get_group_order(DT_MODULEGROUP_EFFECT, DT_MODULEGROUP_EFFECT);
-  d->buttons[g_index] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_effect, pf, NULL);
-  g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->buttons[g_index], _("effects group"));
-
-  /*
-   * layout button row
-   */
-  GtkWidget *br = d->hbox_buttons;
-  for(int k = 0; k < DT_MODULEGROUP_SIZE; k++)
-  {
-    gtk_box_pack_start(GTK_BOX(br), d->buttons[k], TRUE, TRUE, 0);
-  }
+  // active group button
+  d->active_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf, NULL);
+  g_signal_connect(d->active_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
+  gtk_widget_set_tooltip_text(d->active_btn, _("show only active modules"));
+  gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->active_btn, TRUE, TRUE, 0);
 
   // we load now the presets btn
   self->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(self->presets_button, _("presets"));
-  gtk_box_pack_start(GTK_BOX(br), self->presets_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->hbox_buttons), self->presets_button, FALSE, FALSE, 0);
 
   /* search box */
   GtkWidget *label = gtk_label_new(_("search module"));
@@ -736,7 +749,7 @@ static GList *_preset_from_string(gchar *txt)
       {
         dt_lib_modulegroups_group_t *group
             = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
-        group->name = gr2[0];
+        group->name = g_strdup(gr2[0]);
         for(int j = 1; j < nb; j++)
         {
           group->modules = g_list_append(group->modules, g_strdup(gr2[j]));
@@ -755,10 +768,10 @@ void init_presets(dt_lib_module_t *self)
 {
   gchar *tx = "test|ashift|filmicrgb|exposureꬹcoucou|clipping|vignette|watermarkꬹtruc|clipping|filmicrgb|"
               "tonecurve|temperature";
-  dt_lib_presets_add("a_moi", self->plugin_name, self->version(), tx, sizeof(tx));
+  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx));
 
   gchar *tx2 = "test|filmicrgbꬹtruc|clipping|filmicrgb";
-  dt_lib_presets_add("a_toi", self->plugin_name, self->version(), tx2, sizeof(tx2));
+  dt_lib_presets_add(_("a_toi"), self->plugin_name, self->version(), tx2, strlen(tx2));
 }
 
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
@@ -780,7 +793,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(!params) return 1;
 
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  // TODO : cleanup existing groups
   d->groups = _preset_from_string((char *)params);
+  _buttons_update(self);
   return 0;
 }
 
