@@ -1425,8 +1425,15 @@ cell:selected
 /* Module in darkroom left panel */
 #color-picker-area
 {
-  min-height: 9em;
-  min-width: 9em;
+  min-height: 7em;
+  min-width: 7em;
+}
+.picker-module combobox,
+.picker-module combobox button
+{
+  padding-top: 0;
+  padding-bottom: 0;
+  border: 0;
 }
 
 #live-sample
