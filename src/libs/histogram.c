@@ -73,6 +73,11 @@ const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] =
 
 typedef struct dt_lib_histogram_t
 {
+  // current image is the view -- useful for non-darkroom
+  // FIXME: just call dt_view_get_image_to_act_on() when needed?
+  int32_t view_image_id;
+  // what image this histogram is of -- for keeping it up to date
+  int32_t histogram_image_id;
   // histogram for display
   uint32_t *histogram;
   uint32_t histogram_max;
@@ -89,7 +94,7 @@ typedef struct dt_lib_histogram_t
   int32_t button_down_x, button_down_y;
   // depends on mouse positon
   dt_lib_histogram_highlight_t highlight;
-  // state set by buttens
+  // state set by buttons
   dt_lib_histogram_scope_type_t scope_type;
   dt_lib_histogram_type_t histogram_type;
   dt_lib_histogram_waveform_type_t waveform_type;
@@ -97,11 +102,6 @@ typedef struct dt_lib_histogram_t
   // button locations
   float type_x, mode_x, red_x, green_x, blue_x;
   float button_w, button_h, button_y, button_spacing;
-  /** The current image activated in tether view, either latest tethered shoot
-    or manually picked from filmstrip view...
-  */
-  // FIXME: need this?
-  int32_t tether_image_id;
 } dt_lib_histogram_t;
 
 const char *name(dt_lib_module_t *self)
@@ -388,25 +388,33 @@ static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, const float
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
-  // FIXME: should raise a signal -- or dt_control_queue_redraw_widget() -- when done, rather than waiting for pixelpipe/tether to signal?
 }
 
-static void _lib_histogram_preview_change_callback(gpointer instance, gpointer user_data)
+static void _lib_histogram_reprocess(dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_control_queue_redraw_widget(self->widget);
-}
-
-static void _lib_histogram_mipmap_change_callback(gpointer instance, int imgid, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view(cv) == DT_VIEW_DARKROOM)
+  {
+    dt_dev_process_preview(darktable.develop);
+  }
+  else
+  {
+    dt_mipmap_buffer_t buf;
+    // FIXME: should this be best effort or blocking?
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, d->view_image_id, DT_MIPMAP_4, DT_MIPMAP_BLOCKING, 'r');
+    // FIXME: dt_image_cache_get() instead?
 
-  d->tether_image_id = imgid;
+    if (buf.size != DT_MIPMAP_NONE)
+    {
+      // FIXME: this buf has a colorspace, pass that in to the histogram
+      dt_lib_histogram_process_8(self, buf.buf, buf.width, buf.height);
+    }
 
-  dt_control_queue_redraw_widget(self->widget);
-  // FIXME: the trick here would be either to construct a pixelpipe to process the current image then run dt_dev_process_preview() or to get the cached data a make a histogram on it
-  //dt_dev_process_preview(dev);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_control_queue_redraw_widget(self->widget);
+  }
+  d->histogram_image_id = d->view_image_id;
 }
 
 static void _draw_color_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state)
@@ -737,7 +745,9 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // draw scope
-  if(dev->image_storage.id == dev->preview_pipe->output_imgid)
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  // FIXME: if keep track of current image ID in darkroom, could simplify this
+  if(d->view_image_id == d->histogram_image_id)
   {
     cairo_save(cr);
     uint8_t mask[3] = { d->red, d->green, d->blue };
@@ -795,15 +805,16 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_develop_t *dev = darktable.develop;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  const gboolean darkroom_view = cv->view(cv) == DT_VIEW_DARKROOM;
 
   /* check if exposure hooks are available */
-  const gboolean hooks_available = dt_dev_exposure_hooks_available(dev);
-
-  if(!hooks_available) return TRUE;
+  const gboolean hooks_available = darkroom_view && dt_dev_exposure_hooks_available(dev);
+  if(darkroom_view && !hooks_available) return TRUE;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(d->dragging)
+  if(darkroom_view && d->dragging)
   {
     const float diff = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? d->button_down_y - event->y
                                                                         : event->x - d->button_down_x;
@@ -942,13 +953,14 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_develop_t *dev = darktable.develop;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  const gboolean darkroom_view = cv->view(cv) == DT_VIEW_DARKROOM;
 
   /* check if exposure hooks are available */
-  const gboolean hooks_available = dt_dev_exposure_hooks_available(dev);
+  const gboolean hooks_available = darkroom_view && dt_dev_exposure_hooks_available(dev);
+  if(darkroom_view && !hooks_available) return TRUE;
 
-  if(!hooks_available) return TRUE;
-
-  if(event->type == GDK_2BUTTON_PRESS &&
+  if(event->type == GDK_2BUTTON_PRESS && darkroom_view &&
      (d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT || d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE))
   {
     dt_dev_exposure_reset_defaults(dev);
@@ -960,9 +972,7 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
       dt_conf_set_string("plugins/darkroom/histogram/mode",
                          dt_lib_histogram_scope_type_names[d->scope_type]);
-      // we need to reprocess the preview pipe
-      // FIXME: if in tether mode, then do something else
-      dt_dev_process_preview(dev);
+      _lib_histogram_reprocess(self);
     }
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_MODE)
     {
@@ -1028,6 +1038,9 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_develop_t *dev = darktable.develop;
+
+  const gboolean hooks_available = dt_dev_exposure_hooks_available(dev);
+  if(!hooks_available) return TRUE;
 
   const float ce = dt_dev_exposure_get_exposure(dev);
   const float cb = dt_dev_exposure_get_black(dev);
@@ -1107,7 +1120,6 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  dt_develop_t *dev = darktable.develop;
 
   // The cycle order is Hist log -> Lin -> Waveform -> parade (update logic on more scopes)
 
@@ -1146,11 +1158,14 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
 
   if(d->scope_type != old_scope)
   {
-    // FIXME: if in tether mode, do something else
-    dt_dev_process_preview(dev);
+    // different scope, calculate its buffer from the image
+    _lib_histogram_reprocess(self);
   }
-
-  dt_control_queue_redraw_widget(self->widget);
+  else
+  {
+    // still update appearance
+    dt_control_queue_redraw_widget(self->widget);
+  }
 
   return TRUE;
 }
@@ -1164,11 +1179,7 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
   d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
-  // we need to reprocess the preview pipe
-  // FIXME: if in tether mode, do something else
-  dt_dev_process_preview(darktable.develop);
-  // FIXME: this may be automatically called by pixelpipe
-  dt_control_queue_redraw_widget(self->widget);
+  _lib_histogram_reprocess(self);
   return TRUE;
 }
 
@@ -1200,44 +1211,87 @@ static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
+static void _lib_histogram_mipmap_callback(gpointer instance, int imgid, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+
+  if(imgid == d->view_image_id)
+  {
+    _lib_histogram_reprocess(self);
+  }
+}
+
+static void _lib_histogram_thumbtable_callback(gpointer instance, int imgid, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  d->view_image_id = imgid;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  // FIXME: hack -- if there already is a mipmap, we don't get mipmap_callback, hence need to reprocess here
+  // FIXME: make a different callback in darkroom view that skips this?
+  if(cv->view(cv) != DT_VIEW_DARKROOM)
+    _lib_histogram_reprocess(self);
+}
+
+static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_module_t *self)
+{
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  d->histogram_image_id = darktable.develop->preview_pipe->output_imgid;
+  // preview pipe has already called histogram's process routine with
+  // the high quality pre-gamma image, but now that we know the image
+  // ID -- so that can verify that the histogram is of the current
+  // image -- we can show the new histogram
+  // FIXME: we could display the histogram sooner if the process routine was told the image ID and could update it
+  gtk_widget_queue_draw(self->widget);
+}
+
 void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
 {
-  // in darkroom the histogram is generated in the preview pipe, but
-  // in tethering mode there is no preview and the histogram is
-  // generated from the mipmap in the main view
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  // FIXME: we actually don't need to reset this if going straight from darkroom to print, as the image ID hasn't changed
+  d->histogram_image_id = -1;
 
-  // FIXME: can activate these both in gui_init()?
+  // user activated a new image via the filmstrip or user entered this
+  // mode which activates an image
+  // FIXME: why not catch DT_SIGNAL_ACTIVE_IMAGES_CHANGE -- which no one now catches!
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                            G_CALLBACK(_lib_histogram_thumbtable_callback), self);
+
+  // FIXME: do have to do this on current view?
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
-    dt_control_signal_connect(darktable.signals,
-                              DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                              G_CALLBACK(_lib_histogram_preview_change_callback), self);
+    d->view_image_id = darktable.develop->image_storage.id;
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                              G_CALLBACK(_lib_histogram_preview_updated_callback), self);
   }
-  // FIXME: should be tether
-  else if(new_view->view(new_view) == DT_VIEW_PRINT)
+  else
   {
+    // FIXME: is this the right way to set this?
+    d->view_image_id = dt_view_get_image_to_act_on();
+
+    // an updated mipmap, perhaps from an imported image
+    // FIXME: if the image is imported from camera, does the develop pixelpipe do some work and call process?
     dt_control_signal_connect(darktable.signals,
                               DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                              G_CALLBACK(_lib_histogram_mipmap_change_callback), self);
+                              G_CALLBACK(_lib_histogram_mipmap_callback),
+                              self);
+    // force histogram reprocess as if there is already a cached mipmap, the signal won't call for the initial image
+    _lib_histogram_reprocess(self);
   }
 }
 
 void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-
-  /* disconnect callback from signal */
-  // FIXME: do have to differentiate which to deactivate?
-  if(new_view && new_view->view(new_view) == DT_VIEW_DARKROOM)
-  {
-    dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_histogram_preview_change_callback), self);
-  }
-  // FIXME: should be tether
-  else if(new_view && new_view->view(new_view) == DT_VIEW_PRINT)
-  {
-    dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_histogram_mipmap_change_callback), self);
-    d->tether_image_id = -1;
-  }
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_lib_histogram_preview_updated_callback),
+                               self);
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_lib_histogram_thumbtable_callback),
+                               self);
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_lib_histogram_mipmap_callback),
+                               self);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1310,9 +1364,12 @@ void gui_init(dt_lib_module_t *self)
   // widget height changes from this, as the width will almost
   // always be scaled. 175 rows is reasonable CPU usage and represents
   // plenty of tonal gradation.
-  d->waveform_height = 175;
+  d->waveform_height = 256; // matches # of bins in regular histogram
   d->waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   d->waveform = calloc(d->waveform_height * d->waveform_stride * 3, sizeof(uint8_t));
+
+  d->view_image_id = -1;
+  d->histogram_image_id = -1;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
