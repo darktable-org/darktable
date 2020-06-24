@@ -82,7 +82,7 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self);
 /* modulegroups proxy test function.
    tests if iop module group flags matches modulegroup.
 */
-static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
+static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, dt_iop_module_t *module);
 /* modulegroups proxy switch group function.
    sets the active group which module belongs too.
 */
@@ -356,28 +356,25 @@ static void _lib_modulegroups_viewchanged_callback(gpointer instance, dt_view_t 
 {
 }
 
-static gboolean _lib_modulegroups_test_internal(dt_lib_module_t *self, uint32_t group, uint32_t iop_group)
+static gint _iop_compare(gconstpointer a, gconstpointer b)
 {
-  if(iop_group & IOP_SPECIAL_GROUP_ACTIVE_PIPE && group == DT_MODULEGROUP_ACTIVE_PIPE)
-    return TRUE;
-  else if(iop_group & IOP_SPECIAL_GROUP_USER_DEFINED && group == DT_MODULEGROUP_FAVORITES)
-    return TRUE;
-  else if(iop_group & IOP_GROUP_BASIC && group == DT_MODULEGROUP_BASIC)
-    return TRUE;
-  else if(iop_group & IOP_GROUP_TONE && group == DT_MODULEGROUP_TONE)
-    return TRUE;
-  else if(iop_group & IOP_GROUP_COLOR && group == DT_MODULEGROUP_COLOR)
-    return TRUE;
-  else if(iop_group & IOP_GROUP_CORRECT && group == DT_MODULEGROUP_CORRECT)
-    return TRUE;
-  else if(iop_group & IOP_GROUP_EFFECT && group == DT_MODULEGROUP_EFFECT)
-    return TRUE;
+  return g_strcmp0((gchar *)a, (gchar *)b);
+}
+static gboolean _lib_modulegroups_test_internal(dt_lib_module_t *self, uint32_t group, dt_iop_module_t *module)
+{
+  if(group == DT_MODULEGROUP_ACTIVE_PIPE) return module->enabled;
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, group - 1);
+  if(gr)
+  {
+    return (g_list_find_custom(gr->modules, module->so->op, _iop_compare) != NULL);
+  }
   return FALSE;
 }
 
-static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group)
+static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, dt_iop_module_t *module)
 {
-  return _lib_modulegroups_test_internal(self, group, iop_group);
+  return _lib_modulegroups_test_internal(self, group, module);
 }
 
 static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
@@ -494,21 +491,6 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         }
         break;
 
-        case DT_MODULEGROUP_FAVORITES:
-        {
-          if((module->so->state == dt_iop_state_FAVORITE)
-             && (!(module->flags() & IOP_FLAGS_DEPRECATED)))
-          {
-            if(w) gtk_widget_show(w);
-          }
-          else
-          {
-            if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
-            if(w) gtk_widget_hide(w);
-          }
-        }
-        break;
-
         case DT_MODULEGROUP_NONE:
         {
           /* show all except hidden ones */
@@ -527,8 +509,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         default:
         {
-          if(_lib_modulegroups_test_internal(self, d->current, dt_iop_get_group(module))
-             && module->so->state != dt_iop_state_HIDDEN
+          if(_lib_modulegroups_test_internal(self, d->current, module) && module->so->state != dt_iop_state_HIDDEN
              && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
           {
             if(w) gtk_widget_show(w);
@@ -675,7 +656,7 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
   /* lets find the group which is not favorite/active pipe */
   for(int k = DT_MODULEGROUP_BASIC; k < DT_MODULEGROUP_SIZE; k++)
   {
-    if(_lib_modulegroups_test(self, k, dt_iop_get_group(module)))
+    if(_lib_modulegroups_test(self, k, module))
     {
       _lib_modulegroups_set(self, k);
       return;

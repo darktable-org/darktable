@@ -1224,17 +1224,9 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
 
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 {
-  uint32_t additional_flags = 0;
-
   if(group == DT_MODULEGROUP_NONE) return TRUE;
 
-  /* add special group flag for module in active pipe */
-  if(module->enabled) additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
-
-  /* add special group flag for favorite */
-  if(module->so->state == dt_iop_state_FAVORITE) additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
-
-  return dt_dev_modulegroups_test(module->dev, group, dt_iop_get_group(module) | additional_flags);
+  return dt_dev_modulegroups_test(module->dev, group, module);
 }
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
