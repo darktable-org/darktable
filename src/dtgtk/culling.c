@@ -1404,6 +1404,26 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   return TRUE;
 }
 
+void dt_culling_update_active_images_list(dt_culling_t *table)
+{
+  // we erase the list of active images
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+
+  // and we effectively move and resize thumbs
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+    // we update the active images list
+    darktable.view_manager->active_images
+        = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(thumb->imgid));
+    l = g_list_next(l);
+  }
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+}
+
 // recreate the list of thumb if needed and recomputes sizes and positions if needed
 void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
 {
