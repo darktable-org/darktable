@@ -1769,6 +1769,7 @@ Hierachy :
       #thumb_back                                                    (GtkEventBox -- thumbnail background)
       #thumb_ext                                                     (GtkLabel -- thumbnail extension)
       #thumb_image                                                   (GtkDrawingArea -- thumbnail image)
+      #thumb_cursor                                                  (GtkDrawingArea -- top triangle to show active images in filmstrip)
       #thumb_bottom                                                  (GtkEventBox -- background of the bottom infos area)
         #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
       #thumb_reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
@@ -1946,7 +1947,16 @@ spinbutton>button
 /* Set top margin on active image in filmstrip */
 #thumb_main:active #thumb_back
 {
-  border-top: 2.5px solid @border_color;
+  border-top: 1.5px solid @border_color;
+}
+/* Set top cursor on active image in filmstrip */
+#thumb_cursor
+{
+  color: transparent;
+}
+#thumb_main:active #thumb_cursor
+{
+  color: @border_color;
 }
 
 /*---------------
@@ -2191,9 +2201,11 @@ spinbutton>button
 .dt_culling #thumb_back,
 .dt_culling #thumb_main:selected #thumb_back,
 .dt_culling #thumb_main:hover #thumb_back,
+.dt_culling #thumb_main:active #thumb_back,
 .dt_preview #thumb_back,
 .dt_preview #thumb_main:selected #thumb_back,
-.dt_preview #thumb_main:hover #thumb_back
+.dt_preview #thumb_main:hover #thumb_back,
+.dt_preview #thumb_main:active #thumb_back
 {
   background-color: transparent;
   border: none;
