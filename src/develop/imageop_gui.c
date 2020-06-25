@@ -53,7 +53,7 @@ static inline void process_changed_value(dt_iop_module_t *self, GtkWidget *widge
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void generic_slider_float_callback(GtkWidget *slider, float *field)
+void dt_iop_slider_float_callback(GtkWidget *slider, float *field)
 {
   if(darktable.gui->reset) return;
 
@@ -63,7 +63,7 @@ static void generic_slider_float_callback(GtkWidget *slider, float *field)
   if (*field != previous) process_changed_value(NULL, slider, &previous);
 }
 
-static void generic_slider_int_callback(GtkWidget *slider, int *field)
+void dt_iop_slider_int_callback(GtkWidget *slider, int *field)
 {
   if(darktable.gui->reset) return;
 
@@ -73,7 +73,7 @@ static void generic_slider_int_callback(GtkWidget *slider, int *field)
   if(*field != previous) process_changed_value(NULL, slider, &previous);
 }
 
-static void generic_combobox_enum_callback(GtkWidget *combobox, int *field)
+void dt_iop_combobox_enum_callback(GtkWidget *combobox, int *field)
 {
   if(darktable.gui->reset) return;
 
@@ -84,7 +84,7 @@ static void generic_combobox_enum_callback(GtkWidget *combobox, int *field)
   if(*field != previous) process_changed_value(NULL, combobox, &previous);
 }
 
-static void generic_combobox_int_callback(GtkWidget *combobox, int *field)
+void dt_iop_combobox_int_callback(GtkWidget *combobox, int *field)
 {
   if(darktable.gui->reset) return;
 
@@ -95,7 +95,7 @@ static void generic_combobox_int_callback(GtkWidget *combobox, int *field)
   if(*field != previous) process_changed_value(NULL, combobox, &previous);
 }
 
-static void generic_combobox_bool_callback(GtkWidget *combobox, gboolean *field)
+void dt_iop_combobox_bool_callback(GtkWidget *combobox, gboolean *field)
 {
   if(darktable.gui->reset) return;
 
@@ -105,7 +105,7 @@ static void generic_combobox_bool_callback(GtkWidget *combobox, gboolean *field)
   if(*field != previous) process_changed_value(NULL, combobox, &previous);
 }
 
-static void generic_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *data)
+static void _iop_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *data)
 {
   if(darktable.gui->reset) return;
 
@@ -176,7 +176,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       }
 
       g_signal_connect(G_OBJECT(slider), "value-changed", 
-                       G_CALLBACK(generic_slider_float_callback), 
+                       G_CALLBACK(dt_iop_slider_float_callback), 
                        p + f->header.offset + param_index * sizeof(float));
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_INT)
@@ -188,7 +188,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 
       g_signal_connect(G_OBJECT(slider), "value-changed", 
-                       G_CALLBACK(generic_slider_int_callback), 
+                       G_CALLBACK(dt_iop_slider_int_callback), 
                        p + f->header.offset + param_index * sizeof(int));
     }
 
@@ -256,7 +256,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
       dt_bauhaus_combobox_add(combobox, _("no"));
       dt_bauhaus_combobox_add(combobox, _("yes"));
 
-      g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_bool_callback), p + f->header.offset);
+      g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(dt_iop_combobox_bool_callback), p + f->header.offset);
     }
     else
     {
@@ -269,11 +269,11 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
           dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
         }
 
-        g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_enum_callback), p + f->header.offset);
+        g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(dt_iop_combobox_enum_callback), p + f->header.offset);
       }
       else
       {
-        g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_int_callback), p + f->header.offset);
+        g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(dt_iop_combobox_int_callback), p + f->header.offset);
       }
     }
   }
@@ -320,7 +320,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     dt_module_param_t *module_param = (dt_module_param_t *)g_malloc(sizeof(dt_module_param_t));
     module_param->module = self;
     module_param->param = p + f->header.offset;
-    g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(generic_toggle_callback), module_param, (GClosureNotify)g_free, 0);
+    g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
   }
   else
   {

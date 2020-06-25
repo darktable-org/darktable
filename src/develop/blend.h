@@ -359,7 +359,7 @@ typedef struct dt_iop_gui_blendif_colorstop_t
 typedef struct dt_iop_blend_mode_t
 {
   char name[128];
-  unsigned int mode;
+  dt_develop_blend_mode_t mode;
 } dt_iop_blend_mode_t;
 
 
@@ -376,13 +376,8 @@ typedef struct dt_iop_gui_blend_data_t
   int raster_inited;
   dt_iop_colorspace_type_t csp;
   dt_iop_module_t *module;
-  GList *blend_modes;
   GList *masks_modes;
   GList *masks_modes_toggles;
-  GList *masks_combine;
-  GList *masks_invert;
-  GList *masks_feathering_guide;
-  GList *blend_modes_all;
   GtkWidget *iopw;
   GtkBox *top_box;
   GtkBox *bottom_box;
