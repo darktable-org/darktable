@@ -1477,7 +1477,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
   bd->blendif_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   // add event box so that one can click into the area to get help for parametric masks
   GtkWidget* event_box = gtk_event_box_new();
-  dt_gui_add_help_link(GTK_WIDGET(event_box), "parametric_mask.html");
+  dt_gui_add_help_link(GTK_WIDGET(event_box), "blending.html#parametric_mask");
   gtk_container_add(GTK_CONTAINER(blendw), event_box);
 
   /* create and add blendif support if module supports it */
@@ -1824,7 +1824,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
   bd->masks_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   // add event box so that one can click into the area to get help for drawn masks
   GtkWidget* event_box = gtk_event_box_new();
-  dt_gui_add_help_link(GTK_WIDGET(event_box), "drawn_mask.html");
+  dt_gui_add_help_link(GTK_WIDGET(event_box), "blending.html#drawn_mask");
   gtk_container_add(GTK_CONTAINER(blendw), event_box);
 
   /* create and add masks support if module supports it */
@@ -2034,7 +2034,7 @@ void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
   bd->raster_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   // add event box so that one can click into the area to get help for drawn masks
   GtkWidget* event_box = gtk_event_box_new();
-//  dt_gui_add_help_link(GTK_WIDGET(event_box), "raster_mask.html");
+  dt_gui_add_help_link(GTK_WIDGET(event_box), "blending.html#raster_mask");
   gtk_container_add(GTK_CONTAINER(blendw), event_box);
 
   /* create and add raster support if module supports it (it's coupled to masks at the moment) */
@@ -2664,7 +2664,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_combobox_set(bd->blend_modes_combo, 0);
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_blend_mode_callback), bd);
-    dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo), "blending_operators.html");
+    dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo), "blending.html#blending_operators");
 
 
     bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);
@@ -2812,7 +2812,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->contrast_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), hbox, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->bottom_box), TRUE, TRUE, 0);
-    dt_gui_add_help_link(GTK_WIDGET(bd->bottom_box), "combined_masks.html");
+    dt_gui_add_help_link(GTK_WIDGET(bd->bottom_box), "blending.html#combined_masks");
 
     gtk_widget_set_name(GTK_WIDGET(bd->top_box), "blending-box");
     gtk_widget_set_name(GTK_WIDGET(bd->masks_box), "blending-box");
