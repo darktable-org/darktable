@@ -1370,17 +1370,17 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
 
   //retrieve full image dimensions to calculate aspect ratio if "original image" specified
   const char *text = dt_bauhaus_combobox_get_text(combo);
-  if(text && !g_strcmp0(text,"original image"))
+  if(text && !g_strcmp0(text,_("original image")))
   {
     int proc_iwd = 0, proc_iht = 0;
     dt_dev_get_processed_size(darktable.develop, &proc_iwd, &proc_iht);
 
     if(!(proc_iwd > 0 && proc_iht > 0)) return 0.0f;
 
-    p->ratio_d = proc_iwd;
-    p->ratio_n = proc_iht;
-    if(proc_iwd >= proc_iht) return (float)proc_iwd / (float)proc_iht;
-    else  return (float)proc_iht / (float)proc_iwd;
+    if((p->ratio_d > 0 && proc_iwd > proc_iht) || (p->ratio_d < 0 && proc_iwd < proc_iht))
+      return (float)proc_iwd / (float)proc_iht;
+    else
+      return (float)proc_iht / (float)proc_iwd;
   }
 
   // we want to know the size of the actual buffer
