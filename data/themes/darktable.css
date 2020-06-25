@@ -809,7 +809,6 @@ menuitem > menu, /* sub-menu */
 menuitem arrow,
 tooltip,
 popover,
-#background_job_eventbox, /* background of export progress bar */
 combobox window,
 dialog combobox window
 {
@@ -1299,27 +1298,33 @@ border-bottom: 1px solid @button_border;
 /*** Some tags below inherit from properties above ; so avoid moving that part ***/
 
 /* Progress bar on bottom left side when exporting, importing, etc... */
-progressbar *
+#background_job_eventbox /* background of export progress bar */
 {
-  background-color: @text_color;
+  background-color: @plugin_bg_color;
 }
 
-progressbar
+#background_job_eventbox label
 {
-  background-color: @really_dark_bg_color;
+  margin: 1px 4px;
+}
+
+#background_job_eventbox #dt-button
+{
+  border: 0;
+}
+
+progressbar *
+{
+  background-color: @selected_bg_color;
+  border-radius: 0;
 }
 
 progressbar progress
 {
-  background-color: @fg_color;
+  background-color: @darkroom_bg_color;
+  border-radius: 4px;
 }
 
-/* Combobox inner margins in main panels */
-#lib-plugin-ui combobox,
-#iop-plugin-ui combobox
-{
-  margin: 2px 0;
-}
 
 /* Checkbutton check state */
 #lib-plugin-ui checkbutton check,
