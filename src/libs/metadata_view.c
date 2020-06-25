@@ -51,10 +51,6 @@ enum
   md_internal_version,
   md_internal_fullpath,
   md_internal_local_copy,
-  md_internal_import_timestamp,
-  md_internal_change_timestamp,
-  md_internal_export_timestamp,
-  md_internal_print_timestamp,
 #if SHOW_FLAGS
   md_internal_flags,
 #endif
@@ -89,6 +85,12 @@ enum
   md_tag_names,
   md_categories,
 
+  /* timestamps */
+  md_internal_import_timestamp,
+  md_internal_change_timestamp,
+  md_internal_export_timestamp,
+  md_internal_print_timestamp,
+
   /* entries, do not touch! */
   md_size
 };
@@ -106,10 +108,6 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_internal_version] = _("version");
   _md_labels[md_internal_fullpath] = _("full path");
   _md_labels[md_internal_local_copy] = _("local copy");
-  _md_labels[md_internal_import_timestamp] = _("import timestamp");
-  _md_labels[md_internal_change_timestamp] = _("change timestamp");
-  _md_labels[md_internal_export_timestamp] = _("export timestamp");
-  _md_labels[md_internal_print_timestamp] = _("print timestamp");
 #if SHOW_FLAGS
   _md_labels[md_internal_flags] = _("flags");
 #endif
@@ -147,6 +145,13 @@ static void _lib_metatdata_view_init_labels()
   /* tags */
   _md_labels[md_tag_names] = _("tags");
   _md_labels[md_categories] = _("categories");
+
+  /* timestamps */
+  _md_labels[md_internal_import_timestamp] = _("import timestamp");
+  _md_labels[md_internal_change_timestamp] = _("change timestamp");
+  _md_labels[md_internal_export_timestamp] = _("export timestamp");
+  _md_labels[md_internal_print_timestamp] = _("print timestamp");
+
 }
 
 typedef struct dt_lib_metadata_view_t
@@ -288,44 +293,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     g_strlcpy(value, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"), sizeof(value));
     _metadata_update_value(d->metadata[md_internal_local_copy], value);
 
-    if (img->import_timestamp >=0)
-    {
-      char datetime[200];
-      // just %c is too long and includes a time zone that we don't know from exif
-      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->import_timestamp));
-      _metadata_update_value(d->metadata[md_internal_import_timestamp], datetime);
-    }
-    else
-      _metadata_update_value(d->metadata[md_internal_import_timestamp], "-");
-
-    if (img->change_timestamp >=0)
-    {
-      char datetime[200];
-      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->change_timestamp));
-      _metadata_update_value(d->metadata[md_internal_change_timestamp], datetime);
-    }
-    else
-      _metadata_update_value(d->metadata[md_internal_change_timestamp], "-");
-
-    if (img->export_timestamp >=0)
-    {
-      char datetime[200];
-      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->export_timestamp));
-      _metadata_update_value(d->metadata[md_internal_export_timestamp], datetime);
-    }
-    else
-      _metadata_update_value(d->metadata[md_internal_export_timestamp], "-");
-
-    if (img->print_timestamp >=0)
-    {
-      char datetime[200];
-      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->print_timestamp));
-      _metadata_update_value(d->metadata[md_internal_print_timestamp], datetime);
-    }
-    else
-      _metadata_update_value(d->metadata[md_internal_print_timestamp], "-");
-
-    // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
 
     // the bits of the flags
 #if SHOW_FLAGS
@@ -702,6 +669,47 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     g_free(tagstring);
     g_free(categoriesstring);
     dt_tag_free_result(&tags);
+
+    /* timestamps */
+    if (img->import_timestamp >=0)
+    {
+      char datetime[200];
+      // just %c is too long and includes a time zone that we don't know from exif
+      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->import_timestamp));
+      _metadata_update_value(d->metadata[md_internal_import_timestamp], datetime);
+    }
+    else
+      _metadata_update_value(d->metadata[md_internal_import_timestamp], "-");
+
+    if (img->change_timestamp >=0)
+    {
+      char datetime[200];
+      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->change_timestamp));
+      _metadata_update_value(d->metadata[md_internal_change_timestamp], datetime);
+    }
+    else
+      _metadata_update_value(d->metadata[md_internal_change_timestamp], "-");
+
+    if (img->export_timestamp >=0)
+    {
+      char datetime[200];
+      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->export_timestamp));
+      _metadata_update_value(d->metadata[md_internal_export_timestamp], datetime);
+    }
+    else
+      _metadata_update_value(d->metadata[md_internal_export_timestamp], "-");
+
+    if (img->print_timestamp >=0)
+    {
+      char datetime[200];
+      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->print_timestamp));
+      _metadata_update_value(d->metadata[md_internal_print_timestamp], datetime);
+    }
+    else
+      _metadata_update_value(d->metadata[md_internal_print_timestamp], "-");
+
+    // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
+
 
     /* release img */
     dt_image_cache_read_release(darktable.image_cache, img);
