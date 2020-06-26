@@ -771,6 +771,99 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   return 0;
 }
 
+static void _manage_duplicate_preset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
+  dt_lib_presets_duplicate(preset, self->plugin_name, self->version());
+
+  // reload the window
+  GtkWidget *w = gtk_widget_get_toplevel(widget);
+  gtk_widget_destroy(w);
+  manage_presets(self);
+}
+static void _manage_delete_preset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
+  dt_lib_presets_remove(preset, self->plugin_name, self->version());
+
+  // reload the window
+  GtkWidget *w = gtk_widget_get_toplevel(widget);
+  gtk_widget_destroy(w);
+  manage_presets(self);
+}
+static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+}
+
+static void _manage_show_window(dt_lib_module_t *self)
+{
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(window);
+#endif
+  gtk_widget_set_name(window, "modulegroups_manager");
+
+  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *lb = gtk_list_box_new();
+
+  gtk_box_pack_start(GTK_BOX(vb), gtk_label_new(_("manage module layout presets")), FALSE, TRUE, 0);
+
+  sqlite3_stmt *stmt;
+  // order: get shipped defaults first
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name, writeprotect, description FROM data.presets WHERE "
+                              "operation=?1 AND op_version=?2 ORDER BY writeprotect DESC, name, rowid",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int ro = sqlite3_column_int(stmt, 1);
+    const char *name = (char *)sqlite3_column_text(stmt, 0);
+    GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *lbl = gtk_label_new(name);
+    gtk_box_pack_start(GTK_BOX(hb), lbl, TRUE, TRUE, 0);
+    GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(btn, _("duplicate this preset"));
+    g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
+    g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_duplicate_preset), self);
+    gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
+    btn = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(btn, _("edit this preset"));
+    g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
+    if(!ro) g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_edit_preset), self);
+    if(ro) gtk_widget_set_sensitive(btn, FALSE);
+    gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
+    btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(btn, _("delete this preset"));
+    g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
+    if(!ro) g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_delete_preset), self);
+    if(ro) gtk_widget_set_sensitive(btn, FALSE);
+    gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
+
+    gtk_container_add(GTK_CONTAINER(lb), hb);
+  }
+  sqlite3_finalize(stmt);
+
+  gtk_box_pack_start(GTK_BOX(vb), lb, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(window), vb);
+
+  gtk_window_set_default_size(GTK_WINDOW(window), 300, 400);
+  gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
+  gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
+
+  gtk_window_set_gravity(GTK_WINDOW(window), GDK_GRAVITY_STATIC);
+  gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
+  gtk_widget_show_all(window);
+}
+
+
+void manage_presets(dt_lib_module_t *self)
+{
+  _manage_show_window(self);
+}
 #undef PADDING
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
