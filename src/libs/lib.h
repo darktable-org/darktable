@@ -194,6 +194,11 @@ void dt_lib_cancel_postponed_update(dt_lib_module_t *mod);
 
 // apply a preset to the given module
 gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_version);
+// duplicate a preset
+gchar *dt_lib_presets_duplicate(gchar *preset, gchar *module_name, int module_version);
+// remove a preset
+void dt_lib_presets_remove(gchar *preset, gchar *module_name, int module_version);
+
 
 /*
  * Proxy functions
