@@ -113,10 +113,10 @@ void dt_accel_connect_locals_iop(dt_iop_module_t *module);
 void dt_accel_connect_preset_iop(dt_iop_module_t *so, const gchar *path);
 void dt_accel_connect_preset_lib(dt_lib_module_t *so, const gchar *path);
 void dt_accel_connect_lua(const gchar *path, GClosure *closure);
-void dt_accel_connect_manual(GSList *list, const gchar *full_path, GClosure *closure);
+void dt_accel_connect_manual(GSList **list_ptr, const gchar *full_path, GClosure *closure);
 
 // Disconnect function
-void dt_accel_disconnect_list(GSList *accels);
+void dt_accel_disconnect_list(GSList **accels_ptr);
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module);
 void dt_accel_cleanup_locals_iop(dt_iop_module_t *module);
 
