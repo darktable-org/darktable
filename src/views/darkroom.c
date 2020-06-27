@@ -716,7 +716,7 @@ int try_enter(dt_view_t *self)
 
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 {
-  dt_accel_disconnect_list(module->accel_closures);
+  dt_accel_disconnect_list(&module->accel_closures);
   dt_accel_cleanup_locals_iop(module);
 }
 
@@ -885,9 +885,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       dev->iop = g_list_remove_link(dev->iop, g_list_nth(dev->iop, i));
 
       // we cleanup the module
-      dt_accel_disconnect_list(module->accel_closures);
+      dt_accel_disconnect_list(&module->accel_closures);
       dt_accel_cleanup_locals_iop(module);
-      module->accel_closures = NULL;
       dt_iop_cleanup_module(module);
       free(module);
     }
