@@ -96,6 +96,8 @@ static void _lib_modulegroups_search_text_focus(dt_lib_module_t *self);
 static void _lib_modulegroups_viewchanged_callback(gpointer instance, dt_view_t *old_view,
                                                    dt_view_t *new_view, gpointer data);
 
+static void _manage_update_presets_list(dt_lib_module_t *self, GtkWidget *vb);
+
 const char *name(dt_lib_module_t *self)
 {
   return _("modulegroups");
@@ -194,7 +196,6 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
 
     // and we initialize the buttons too
     gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
-    printf("load %s\n", preset);
     if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
       dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
     g_free(preset);
@@ -709,6 +710,7 @@ static gchar *_preset_to_string(GList *groups)
 static GList *_preset_from_string(gchar *txt)
 {
   GList *res = NULL;
+  if(!txt) return res;
 
   gchar **gr = g_strsplit(txt, "ꬹ", -1);
   for(int i = 0; i < g_strv_length(gr); i++)
@@ -820,10 +822,10 @@ static void _manage_duplicate_preset(GtkWidget *widget, GdkEventButton *event, d
   dt_lib_presets_duplicate(preset, self->plugin_name, self->version());
 
   // reload the window
-  GtkWidget *w = gtk_widget_get_toplevel(widget);
-  gtk_widget_destroy(w);
-  manage_presets(self);
+  GtkWidget *vb = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "presets_vbox");
+  _manage_update_presets_list(self, vb);
 }
+
 static void _manage_delete_preset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
@@ -848,9 +850,8 @@ static void _manage_delete_preset(GtkWidget *widget, GdkEventButton *event, dt_l
   {
     dt_lib_presets_remove(preset, self->plugin_name, self->version());
 
-    // reload the window
-    gtk_widget_destroy(w);
-    manage_presets(self);
+    // remove the line
+    gtk_widget_destroy(gtk_widget_get_parent(widget));
   }
 }
 
@@ -1058,19 +1059,18 @@ static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib
   gtk_widget_destroy(gtk_widget_get_toplevel(widget));
 }
 
-static void _manage_show_window(dt_lib_module_t *self)
+static void _manage_update_presets_list(dt_lib_module_t *self, GtkWidget *vb)
 {
-  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(window);
-#endif
-  gtk_widget_set_name(window, "modulegroups_manager");
+  // we first remove all existing entries from the box
+  GList *lw = gtk_container_get_children(GTK_CONTAINER(vb));
+  while(lw)
+  {
+    GtkWidget *w = (GtkWidget *)lw->data;
+    gtk_widget_destroy(w);
+    lw = g_list_next(lw);
+  }
 
-  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *lb = gtk_list_box_new();
-
-  gtk_box_pack_start(GTK_BOX(vb), gtk_label_new(_("manage module layout presets")), FALSE, TRUE, 0);
-
+  // and we repopulate it
   sqlite3_stmt *stmt;
   // order: get shipped defaults first
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1090,6 +1090,7 @@ static void _manage_show_window(dt_lib_module_t *self)
     GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(btn, _("duplicate this preset"));
     g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
+    g_object_set_data(G_OBJECT(btn), "presets_vbox", vb);
     g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_duplicate_preset), self);
     gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
     btn = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
@@ -1105,11 +1106,68 @@ static void _manage_show_window(dt_lib_module_t *self)
     if(ro) gtk_widget_set_sensitive(btn, FALSE);
     gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
 
-    gtk_container_add(GTK_CONTAINER(lb), hb);
+    gtk_box_pack_start(GTK_BOX(vb), hb, FALSE, TRUE, 0);
   }
   sqlite3_finalize(stmt);
+  gtk_widget_show_all(vb);
+}
 
-  gtk_box_pack_start(GTK_BOX(vb), lb, TRUE, TRUE, 0);
+static void _manage_add_preset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  // find the new name
+  sqlite3_stmt *stmt;
+  int i = 0;
+  gboolean ko = TRUE;
+  while(ko)
+  {
+    i++;
+    gchar *tx = dt_util_dstrcat(NULL, "new_%d", i);
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "SELECT name FROM data.presets WHERE operation = ?1 AND op_version = ?2 AND name = ?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, tx, -1, SQLITE_TRANSIENT);
+    if(sqlite3_step(stmt) != SQLITE_ROW) ko = FALSE;
+    sqlite3_finalize(stmt);
+    g_free(tx);
+  }
+  gchar *nname = dt_util_dstrcat(NULL, "new_%d", i);
+
+  // and create a new empty preset
+  dt_lib_presets_add(nname, self->plugin_name, self->version(), "", 0, FALSE);
+
+  GtkWidget *vb = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "presets_vbox");
+  _manage_update_presets_list(self, vb);
+}
+
+static void _manage_show_window(dt_lib_module_t *self)
+{
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(window);
+#endif
+  gtk_widget_set_name(window, "modulegroups_manager");
+
+  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  gtk_box_pack_start(GTK_BOX(vb), gtk_label_new(_("manage module layout presets")), FALSE, TRUE, 0);
+
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+  GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  _manage_update_presets_list(self, vb2);
+
+  gtk_container_add(GTK_CONTAINER(sw), vb2);
+  gtk_box_pack_start(GTK_BOX(vb), sw, TRUE, TRUE, 0);
+
+  GtkWidget *bt = gtk_button_new();
+  gtk_button_set_label(GTK_BUTTON(bt), _("new preset"));
+  g_object_set_data(G_OBJECT(bt), "presets_vbox", vb2);
+  g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_add_preset), self);
+  gtk_box_pack_start(GTK_BOX(vb), bt, FALSE, TRUE, 0);
+
   gtk_container_add(GTK_CONTAINER(window), vb);
 
   gtk_window_set_default_size(GTK_WINDOW(window), 300, 400);
