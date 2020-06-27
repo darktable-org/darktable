@@ -497,6 +497,9 @@ gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_vers
         dt_lib_module_t *module = (dt_lib_module_t *)it->data;
         if(!strncmp(module->plugin_name, module_name, 128))
         {
+          gchar *tx = dt_util_dstrcat(NULL, "plugins/darkroom/%s/last_preset", module_name);
+          dt_conf_set_string(tx, preset);
+          g_free(tx);
           res = module->set_params(module, blob, length);
           break;
         }
