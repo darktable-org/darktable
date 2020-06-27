@@ -109,7 +109,7 @@ typedef struct dt_iop_vignette_params_t
   dt_iop_vector_2d_t center; // Center of vignette
   gboolean autoratio;        // $DEFAULT: FALSE
   float whratio;             // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "width/height ratio" 0-1 = width/height ratio, 1-2 = height/width ratio + 1
-  float shape;               // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0
+  float shape;               // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "shape"
   dt_iop_dither_t dithering; // $DEFAULT: DITHER_OFF if and how to perform dithering
   gboolean unbound;          // $DEFAULT: TRUE whether the values should be clipped
 } dt_iop_vignette_params_t;
