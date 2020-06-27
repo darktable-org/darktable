@@ -525,6 +525,24 @@ gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_vers
   return ret;
 }
 
+void dt_lib_presets_update(gchar *preset, gchar *module_name, int module_version, const gchar *newname,
+                           const gchar *desc, const void *params, const int32_t params_size)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE data.presets SET name = ?1, description = ?2, op_params = ?3 WHERE "
+                              "operation = ?4 AND op_version = ?5 AND name = ?6",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, newname, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, desc, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, params, params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, module_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, module_version);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, preset, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
   // apply preset via set_params
