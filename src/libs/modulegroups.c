@@ -509,7 +509,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         default:
         {
-          if(_lib_modulegroups_test_internal(self, d->current, module) && module->so->state != dt_iop_state_HIDDEN
+          if(_lib_modulegroups_test_internal(self, d->current, module)
              && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
           {
             if(w) gtk_widget_show(w);
@@ -748,14 +748,9 @@ void *get_params(dt_lib_module_t *self, int *size)
   return tx;
 }
 
-int set_params(dt_lib_module_t *self, const void *params, int size)
+static void _manage_cleanup_groups(GList *groups)
 {
-  if(!params) return 1;
-
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  // cleanup existing groups
-  GList *l = d->groups;
+  GList *l = groups;
   while(l)
   {
     dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
@@ -764,7 +759,18 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     g_list_free_full(gr->modules, g_free);
     l = g_list_next(l);
   }
-  g_list_free_full(d->groups, g_free);
+  g_list_free_full(groups, g_free);
+  groups = NULL;
+}
+
+int set_params(dt_lib_module_t *self, const void *params, int size)
+{
+  if(!params) return 1;
+
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // cleanup existing groups
+  _manage_cleanup_groups(d->groups);
 
   d->groups = _preset_from_string((char *)params);
   _buttons_update(self);
@@ -828,6 +834,30 @@ static void _manage_delete_preset(GtkWidget *widget, GdkEventButton *event, dt_l
     gtk_widget_destroy(w);
     manage_presets(self);
   }
+}
+
+static void _manage_editor_save(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  // get all the values
+  GList *groups = (GList *)g_object_get_data(G_OBJECT(widget), "groups");
+  GtkWidget *tb = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "name_entry");
+  char *old_name = (char *)g_object_get_data(G_OBJECT(widget), "old_name");
+  gchar *params = _preset_to_string(groups);
+  const gchar *newname = gtk_entry_get_text(GTK_ENTRY(tb));
+
+  // update the preset in the database
+  dt_lib_presets_update(old_name, self->plugin_name, self->version(), newname, "", params, strlen(params));
+
+  // cleanup
+  _manage_cleanup_groups(groups);
+  gtk_widget_destroy(gtk_widget_get_toplevel(widget));
+}
+
+static void _manage_editor_close(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  GList *groups = (GList *)g_object_get_data(G_OBJECT(widget), "groups");
+  _manage_cleanup_groups(groups);
+  gtk_widget_destroy(gtk_widget_get_toplevel(widget));
 }
 
 static void _manage_remove_module(GtkWidget *widget, GdkEventButton *event, GList **modules)
@@ -897,7 +927,7 @@ static void _manage_add_module(GtkWidget *widget, GList **modules)
 
 static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
+  char *preset = g_strdup((char *)g_object_get_data(G_OBJECT(widget), "preset_name"));
 
   // get all presets groups
   GList *groups = NULL;
@@ -931,10 +961,10 @@ static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hb1), gtk_label_new(_("preset name : ")), FALSE, TRUE, 0);
-  GtkWidget *tb = gtk_entry_new();
-  gtk_widget_set_tooltip_text(tb, _("preset name"));
-  gtk_entry_set_text(GTK_ENTRY(tb), preset);
-  gtk_box_pack_start(GTK_BOX(hb1), tb, FALSE, TRUE, 0);
+  GtkWidget *tb0 = gtk_entry_new();
+  gtk_widget_set_tooltip_text(tb0, _("preset name"));
+  gtk_entry_set_text(GTK_ENTRY(tb0), preset);
+  gtk_box_pack_start(GTK_BOX(hb1), tb0, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(vb), gtk_label_new(_("module groups")), FALSE, TRUE, 0);
@@ -950,7 +980,7 @@ static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib
     GtkWidget *btn = dtgtk_button_new(_buttons_get_icon_fct(gr->icon), CPF_DO_NOT_USE_BORDER, NULL);
     // TODO : popup to change icon
     gtk_box_pack_start(GTK_BOX(hb2), btn, FALSE, TRUE, 0);
-    tb = gtk_entry_new();
+    GtkWidget *tb = gtk_entry_new();
     gtk_widget_set_tooltip_text(tb, _("group name"));
     gtk_entry_set_text(GTK_ENTRY(tb), gr->name);
     gtk_box_pack_start(GTK_BOX(hb2), tb, FALSE, TRUE, 0);
@@ -980,9 +1010,15 @@ static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib
   hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *bt = gtk_button_new();
   gtk_button_set_label(GTK_BUTTON(bt), _("cancel"));
+  g_object_set_data(G_OBJECT(bt), "groups", groups);
+  g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_close), self);
   gtk_box_pack_start(GTK_BOX(hb1), bt, FALSE, TRUE, 0);
   bt = gtk_button_new();
   gtk_button_set_label(GTK_BUTTON(bt), _("save"));
+  g_object_set_data(G_OBJECT(bt), "groups", groups);
+  g_object_set_data(G_OBJECT(bt), "name_entry", tb0);
+  g_object_set_data(G_OBJECT(bt), "old_name", preset);
+  g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_save), self);
   gtk_box_pack_start(GTK_BOX(hb1), bt, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
@@ -996,6 +1032,7 @@ static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib
   gtk_window_set_gravity(GTK_WINDOW(window), GDK_GRAVITY_STATIC);
   gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_show_all(window);
+  gtk_widget_destroy(gtk_widget_get_toplevel(widget));
 }
 
 static void _manage_show_window(dt_lib_module_t *self)
