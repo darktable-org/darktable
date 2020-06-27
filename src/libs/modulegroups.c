@@ -829,6 +829,7 @@ static void _manage_delete_preset(GtkWidget *widget, GdkEventButton *event, dt_l
     manage_presets(self);
   }
 }
+
 static void _manage_remove_module(GtkWidget *widget, GdkEventButton *event, GList **modules)
 {
   char *module = (char *)g_object_get_data(G_OBJECT(widget), "module_name");
@@ -840,11 +841,60 @@ static void _manage_remove_module(GtkWidget *widget, GdkEventButton *event, GLis
     {
       g_free(l->data);
       *modules = g_list_delete_link(*modules, l);
+      gtk_widget_destroy(gtk_widget_get_parent(widget));
       break;
     }
     l = g_list_next(l);
   }
 }
+
+static void _manage_update_modules_list(GList **modules, GtkWidget *vb)
+{
+  // first, we remove all existing modules
+  GList *lw = gtk_container_get_children(GTK_CONTAINER(vb));
+  while(lw)
+  {
+    GtkWidget *w = (GtkWidget *)lw->data;
+    gtk_widget_destroy(w);
+    lw = g_list_next(lw);
+  }
+
+  // and we add the ones from the list
+  GList *modules2 = g_list_last(darktable.iop);
+  while(modules2)
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules2->data);
+    if(g_list_find_custom(*modules, module->op, _iop_compare))
+    {
+      GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(module->name()), FALSE, TRUE, 0);
+      GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_DO_NOT_USE_BORDER, NULL);
+      gtk_widget_set_tooltip_text(btn, _("remove this module"));
+      g_object_set_data(G_OBJECT(btn), "module_name", module->op);
+      g_object_set_data(G_OBJECT(btn), "modules_vbox", vb);
+      g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_remove_module), modules);
+      gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(vb), hb, FALSE, TRUE, 0);
+    }
+    modules2 = g_list_previous(modules2);
+  }
+  gtk_widget_show_all(vb);
+}
+
+static void _manage_add_module(GtkWidget *widget, GList **modules)
+{
+  const char *module = gtk_combo_box_get_active_id(GTK_COMBO_BOX(widget));
+  if(g_strcmp0(module, "") == 0) return;
+
+  if(!g_list_find_custom(*modules, module, _iop_compare))
+  {
+    *modules = g_list_append(*modules, g_strdup(module));
+    GtkWidget *vb = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "modules_vbox");
+    _manage_update_modules_list(modules, vb);
+    gtk_combo_box_set_active_id(GTK_COMBO_BOX(widget), "");
+  }
+}
+
 static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
@@ -907,30 +957,19 @@ static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib
     gtk_box_pack_start(GTK_BOX(vb2), hb2, FALSE, TRUE, 0);
 
     // combo box to add new module
+    GtkWidget *vb3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *combo = _manage_get_iop_combo(self, gr->modules);
     gtk_combo_box_set_active_id(GTK_COMBO_BOX(combo), "");
+    g_object_set_data(G_OBJECT(combo), "modules_vbox", vb3);
+    g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(_manage_add_module), &gr->modules);
     gtk_box_pack_start(GTK_BOX(vb2), combo, FALSE, TRUE, 0);
 
     // choosen modules
-    GtkWidget *lb = gtk_list_box_new();
-    GList *modules = g_list_last(darktable.iop);
-    while(modules)
-    {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
-      if(g_list_find_custom(gr->modules, module->op, _iop_compare))
-      {
-        hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(module->name()), FALSE, TRUE, 0);
-        btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_DO_NOT_USE_BORDER, NULL);
-        gtk_widget_set_tooltip_text(btn, _("remove this module"));
-        g_object_set_data(G_OBJECT(btn), "module_name", module->op);
-        g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_remove_module), gr->modules);
-        gtk_box_pack_end(GTK_BOX(hb2), btn, FALSE, TRUE, 0);
-        gtk_container_add(GTK_CONTAINER(lb), hb2);
-      }
-      modules = g_list_previous(modules);
-    }
-    gtk_box_pack_start(GTK_BOX(vb2), lb, FALSE, TRUE, 0);
+    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+    _manage_update_modules_list(&gr->modules, vb3);
+    gtk_container_add(GTK_CONTAINER(sw), vb3);
+    gtk_box_pack_start(GTK_BOX(vb2), sw, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hb1), vb2, FALSE, TRUE, 5);
     l = g_list_next(l);
   }
