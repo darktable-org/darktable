@@ -194,6 +194,7 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
 
     // and we initialize the buttons too
     gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
+    printf("load %s\n", preset);
     if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
       dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
     g_free(preset);
@@ -232,7 +233,7 @@ static void _buttons_update(dt_lib_module_t *self)
     l = g_list_next(l);
   }
 
-  // then we repopulate the bow with new buttons
+  // then we repopulate the box with new buttons
   l = d->groups;
   while(l)
   {
@@ -243,6 +244,18 @@ static void _buttons_update(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(d->hbox_groups), bt, TRUE, TRUE, 0);
     gtk_widget_show(bt);
     l = g_list_next(l);
+  }
+
+  // last, if d->current still valid, we select it otherwise the first one
+  int cur = d->current;
+  d->current = -1;
+  if(cur > g_list_length(d->groups)) cur = 0;
+  if(cur == 0)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
+  else
+  {
+    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, cur - 1);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gr->button), TRUE);
   }
 }
 
@@ -744,7 +757,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   gchar *tx = _preset_to_string(d->groups);
-  *size = sizeof(tx);
+  *size = strlen(tx);
   return tx;
 }
 
@@ -773,6 +786,11 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   _manage_cleanup_groups(d->groups);
 
   d->groups = _preset_from_string((char *)params);
+
+  gchar *tx = dt_util_dstrcat(NULL, "plugins/darkroom/%s/last_preset", self->plugin_name);
+  dt_conf_set_string("plugins/darkroom/modulegroups_preset", dt_conf_get_string(tx));
+  g_free(tx);
+
   _buttons_update(self);
   return 0;
 }
@@ -851,6 +869,11 @@ static void _manage_editor_save(GtkWidget *widget, GdkEventButton *event, dt_lib
   // cleanup
   _manage_cleanup_groups(groups);
   gtk_widget_destroy(gtk_widget_get_toplevel(widget));
+
+  // update groups
+  gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
+  if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
+    dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
 }
 
 static void _manage_editor_close(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
