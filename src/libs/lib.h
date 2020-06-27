@@ -198,6 +198,9 @@ gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_vers
 gchar *dt_lib_presets_duplicate(gchar *preset, gchar *module_name, int module_version);
 // remove a preset
 void dt_lib_presets_remove(gchar *preset, gchar *module_name, int module_version);
+// update a preset
+void dt_lib_presets_update(gchar *preset, gchar *module_name, int module_version, const gchar *newname,
+                           const gchar *desc, const void *params, const int32_t params_size);
 
 
 /*
