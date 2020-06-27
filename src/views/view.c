@@ -322,8 +322,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
           if(plugin->view_leave) plugin->view_leave(plugin, old_view, NULL);
           plugin->gui_cleanup(plugin);
           plugin->data = NULL;
-          dt_accel_disconnect_list(plugin->accel_closures);
-          plugin->accel_closures = NULL;
+          dt_accel_disconnect_list(&plugin->accel_closures);
           plugin->widget = NULL;
         }
       }
@@ -353,8 +352,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   {
     /* leave current view */
     if(old_view->leave) old_view->leave(old_view);
-    dt_accel_disconnect_list(old_view->accel_closures);
-    old_view->accel_closures = NULL;
+    dt_accel_disconnect_list(&old_view->accel_closures);
 
     /* iterator plugins and cleanup plugins in current view */
     for(GList *iter = darktable.lib->plugins; iter; iter = g_list_next(iter))
@@ -365,8 +363,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       if(dt_lib_is_visible_in_view(plugin, old_view))
       {
         if(plugin->view_leave) plugin->view_leave(plugin, old_view, new_view);
-        dt_accel_disconnect_list(plugin->accel_closures);
-        plugin->accel_closures = NULL;
+        dt_accel_disconnect_list(&plugin->accel_closures);
       }
     }
 

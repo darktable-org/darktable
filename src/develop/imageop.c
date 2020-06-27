@@ -2679,11 +2679,7 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
     if(accel_mod_curr == accel_mod_new) return;
 
     //remove accelerators from current module
-    if(accel_mod_curr)
-    {
-      dt_accel_disconnect_list(accel_mod_curr->accel_closures);
-      accel_mod_curr->accel_closures = NULL;
-    }
+    if(accel_mod_curr) dt_accel_disconnect_list(&accel_mod_curr->accel_closures);
 
     //attach accelerators to new module
     if(accel_mod_new)

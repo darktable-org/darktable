@@ -534,14 +534,14 @@ void dt_accel_connect_lua(const gchar *path, GClosure *closure)
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
 }
 
-void dt_accel_connect_manual(GSList *list, const gchar *full_path, GClosure *closure)
+void dt_accel_connect_manual(GSList **list_ptr, const gchar *full_path, GClosure *closure)
 {
   gchar accel_path[256];
   dt_accel_path_manual(accel_path, sizeof(accel_path), full_path);
   dt_accel_t *accel = _lookup_accel(accel_path);
   accel->closure = closure;
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
-  list = g_slist_prepend(list, accel);
+  *list_ptr = g_slist_prepend(*list_ptr, accel);
 }
 
 static gboolean _press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -922,14 +922,16 @@ void dt_accel_connect_locals_iop(dt_iop_module_t *module)
   module->local_closures_connected = TRUE;
 }
 
-void dt_accel_disconnect_list(GSList *list)
+void dt_accel_disconnect_list(GSList **list_ptr)
 {
+  GSList *list = *list_ptr;
   while(list)
   {
     dt_accel_t *accel = (dt_accel_t *)list->data;
     if(accel) gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
     list = g_slist_delete_link(list, list);
   }
+  *list_ptr = NULL;
 }
 
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
