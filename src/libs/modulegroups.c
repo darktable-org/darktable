@@ -949,6 +949,51 @@ static void _manage_add_module(GtkWidget *widget, GList **modules)
   }
 }
 
+static void _manage_editor_add_group(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  GList **groups = (GList **)g_object_get_data(G_OBJECT(widget), "groups");
+  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
+  gr->name = _("new");
+  *groups = g_list_append(*groups, gr);
+
+  // we update the group list : remove the button, add the vb and put the button back
+  g_object_ref(widget);
+  GtkWidget *hb = gtk_widget_get_parent(widget);
+  gtk_container_remove(GTK_CONTAINER(hb), widget);
+
+  GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  // line to edit the group
+  GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *btn = dtgtk_button_new(_buttons_get_icon_fct(gr->icon), CPF_DO_NOT_USE_BORDER, NULL);
+  // TODO : popup to change icon
+  gtk_box_pack_start(GTK_BOX(hb2), btn, FALSE, TRUE, 0);
+  GtkWidget *tb = gtk_entry_new();
+  gtk_widget_set_tooltip_text(tb, _("group name"));
+  gtk_entry_set_text(GTK_ENTRY(tb), gr->name);
+  gtk_box_pack_start(GTK_BOX(hb2), tb, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vb2), hb2, FALSE, TRUE, 0);
+
+  // combo box to add new module
+  GtkWidget *vb3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *combo = _manage_get_iop_combo(self, gr->modules);
+  gtk_combo_box_set_active_id(GTK_COMBO_BOX(combo), "");
+  g_object_set_data(G_OBJECT(combo), "modules_vbox", vb3);
+  g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(_manage_add_module), &gr->modules);
+  gtk_box_pack_start(GTK_BOX(vb2), combo, FALSE, TRUE, 0);
+
+  // choosen modules
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+  gtk_container_add(GTK_CONTAINER(sw), vb3);
+  gtk_box_pack_start(GTK_BOX(vb2), sw, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), vb2, FALSE, TRUE, 5);
+
+  gtk_box_pack_start(GTK_BOX(hb), widget, FALSE, FALSE, 0);
+  g_object_unref(widget);
+
+  gtk_widget_show_all(hb);
+}
+
 static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   char *preset = g_strdup((char *)g_object_get_data(G_OBJECT(widget), "preset_name"));
@@ -1028,11 +1073,17 @@ static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib
     l = g_list_next(l);
   }
 
+  GtkWidget *bt = gtk_button_new();
+  gtk_button_set_label(GTK_BUTTON(bt), _("new group"));
+  g_object_set_data(G_OBJECT(bt), "groups", &groups);
+  g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_add_group), self);
+  gtk_box_pack_start(GTK_BOX(hb1), bt, FALSE, FALSE, 0);
+
   gtk_box_pack_start(GTK_BOX(vb), hb1, TRUE, TRUE, 0);
 
   // save and cancel buttons
   hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *bt = gtk_button_new();
+  bt = gtk_button_new();
   gtk_button_set_label(GTK_BUTTON(bt), _("cancel"));
   g_object_set_data(G_OBJECT(bt), "groups", groups);
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_close), self);
