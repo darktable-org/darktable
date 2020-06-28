@@ -68,11 +68,15 @@ typedef struct dt_lib_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*process_8)(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height,
+      // FIXME: combine these into a process() which takes *void data and a flag on 8bpp vs. float
+      void (*process_8)(struct dt_lib_module_t *self, int32_t image_id, gboolean is_preview,
+                        const uint8_t *const input, int width, int height,
                         dt_colorspaces_color_profile_type_t color_type, char *color_filename);
-      void (*process_f)(struct dt_lib_module_t *self, const float *const input, int width, int height,
+      void (*process_f)(struct dt_lib_module_t *self, int32_t image_id, gboolean is_preview,
+                        const float *const input, int width, int height,
                         dt_colorspaces_color_profile_type_t color_type, char *color_filename);
       // FIXME: should this be a function or just a boolean which histogram lib keeps updated?
+      // FIXME: should this be a darktable-level value, set by lib/histogram.c and noticed by iops?
       gboolean is_linear;
     } histogram;
   } proxy;
