@@ -706,7 +706,7 @@ static gchar *_preset_to_string(GList *groups)
     }
     l = g_list_next(l);
   }
-
+  if(!res) res = g_strdup(" ");
   return res;
 }
 
@@ -750,7 +750,7 @@ void init_presets(dt_lib_module_t *self)
               "tonecurve|temperature";
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
-  gchar *tx2 = "test|color|filmicrgbꬹtruc|favourites|clipping|filmicrgb";
+  gchar *tx2 = "test|color|filmicrgbꬹtruc|favorites|clipping|filmicrgb";
   dt_lib_presets_add(_("test"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
 }
 
@@ -1161,7 +1161,8 @@ static void _manage_editor_add_group(GtkWidget *widget, GdkEventButton *event, d
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
-  gr->name = _("new");
+  gr->name = g_strdup(_("new"));
+  gr->icon = g_strdup("basic");
   d->edit_groups = g_list_append(d->edit_groups, gr);
 
   // we update the group list : remove the button, add the vb and put the button back
@@ -1344,7 +1345,7 @@ static void _manage_add_preset(GtkWidget *widget, GdkEventButton *event, dt_lib_
   gchar *nname = dt_util_dstrcat(NULL, "new_%d", i);
 
   // and create a new empty preset
-  dt_lib_presets_add(nname, self->plugin_name, self->version(), "", 0, FALSE);
+  dt_lib_presets_add(nname, self->plugin_name, self->version(), " ", 1, FALSE);
 
   GtkWidget *vb = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "presets_vbox");
   _manage_update_presets_list(self, vb);
