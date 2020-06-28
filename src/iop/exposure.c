@@ -834,7 +834,10 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   }
   dt_pthread_mutex_unlock(&g->lock);
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return FALSE;
+  // if color-picker active and is the one in the main module (not blending ones)
+
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE
+    || !dt_bauhaus_widget_get_quad_active(g->autoexpp)) return FALSE;
 
   if(self->picked_color_max[0] < 0.0f) return FALSE;
 
