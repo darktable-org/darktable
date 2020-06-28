@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "dtgtk/button.h"
+#include "dtgtk/icon.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -695,7 +696,7 @@ static gchar *_preset_to_string(GList *groups)
   {
     dt_lib_modulegroups_group_t *g = (dt_lib_modulegroups_group_t *)l->data;
     if(res) res = dt_util_dstrcat(res, "ꬹ");
-    res = dt_util_dstrcat(res, "%s", g->name);
+    res = dt_util_dstrcat(res, "%s|%s", g->name, g->icon);
     GList *ll = g->modules;
     while(ll)
     {
@@ -722,12 +723,13 @@ static GList *_preset_from_string(gchar *txt)
     {
       gchar **gr2 = g_strsplit(tx, "|", -1);
       const int nb = g_strv_length(gr2);
-      if(nb > 0)
+      if(nb > 1)
       {
         dt_lib_modulegroups_group_t *group
             = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
         group->name = g_strdup(gr2[0]);
-        for(int j = 1; j < nb; j++)
+        group->icon = g_strdup(gr2[1]);
+        for(int j = 2; j < nb; j++)
         {
           group->modules = g_list_append(group->modules, g_strdup(gr2[j]));
         }
@@ -743,11 +745,12 @@ static GList *_preset_from_string(gchar *txt)
 
 void init_presets(dt_lib_module_t *self)
 {
-  gchar *tx = "test|ashift|filmicrgb|exposureꬹcoucou|clipping|vignette|watermarkꬹtruc|clipping|filmicrgb|"
+  gchar *tx = "test|basic|ashift|filmicrgb|exposureꬹcoucou|tone|clipping|vignette|watermarkꬹtruc|effect|"
+              "clipping|filmicrgb|"
               "tonecurve|temperature";
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
-  gchar *tx2 = "test|filmicrgbꬹtruc|clipping|filmicrgb";
+  gchar *tx2 = "test|color|filmicrgbꬹtruc|favourites|clipping|filmicrgb";
   dt_lib_presets_add(_("test"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
 }
 
@@ -765,9 +768,9 @@ void *get_params(dt_lib_module_t *self, int *size)
   return tx;
 }
 
-static void _manage_cleanup_groups(GList *groups)
+static void _manage_cleanup_groups(GList **groups)
 {
-  GList *l = groups;
+  GList *l = *groups;
   while(l)
   {
     dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
@@ -776,8 +779,8 @@ static void _manage_cleanup_groups(GList *groups)
     g_list_free_full(gr->modules, g_free);
     l = g_list_next(l);
   }
-  g_list_free_full(groups, g_free);
-  groups = NULL;
+  g_list_free_full(*groups, g_free);
+  *groups = NULL;
 }
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
@@ -787,7 +790,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
   // cleanup existing groups
-  _manage_cleanup_groups(d->groups);
+  _manage_cleanup_groups(&d->groups);
 
   d->groups = _preset_from_string((char *)params);
 
@@ -870,7 +873,7 @@ static void _manage_editor_save(GtkWidget *widget, GdkEventButton *event, dt_lib
   dt_lib_presets_update(old_name, self->plugin_name, self->version(), newname, "", params, strlen(params));
 
   // cleanup
-  _manage_cleanup_groups(d->edit_groups);
+  _manage_cleanup_groups(&d->edit_groups);
   gtk_widget_destroy(gtk_widget_get_toplevel(widget));
 
   // update groups
@@ -882,7 +885,7 @@ static void _manage_editor_save(GtkWidget *widget, GdkEventButton *event, dt_lib
 static void _manage_editor_close(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  _manage_cleanup_groups(d->edit_groups);
+  _manage_cleanup_groups(&d->edit_groups);
   gtk_widget_destroy(gtk_widget_get_toplevel(widget));
 }
 
@@ -1000,13 +1003,116 @@ static void _manage_editor_group_remove(GtkWidget *widget, GdkEventButton *event
   gtk_widget_destroy(vb);
 }
 
+static void _manage_editor_group_icon_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  GtkWidget *pop = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "popover");
+  gtk_widget_show_all(pop);
+}
+
+static void _manage_editor_group_icon_changed(GtkWidget *widget, GdkEventButton *event,
+                                              dt_lib_modulegroups_group_t *gr)
+{
+  char *ic = (char *)g_object_get_data(G_OBJECT(widget), "ic_name");
+  g_free(gr->icon);
+  gr->icon = g_strdup(ic);
+  GtkWidget *pop = gtk_widget_get_parent(gtk_widget_get_parent(widget));
+  GtkWidget *btn = gtk_popover_get_relative_to(GTK_POPOVER(pop));
+  dtgtk_button_set_paint(DTGTK_BUTTON(btn), _buttons_get_icon_fct(ic), CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT,
+                         NULL);
+  gtk_popover_popdown(GTK_POPOVER(pop));
+}
+
+static GtkWidget *_manage_editor_group_icon_get_popup(GtkWidget *btn, dt_lib_modulegroups_group_t *gr)
+{
+  GtkWidget *pop = gtk_popover_new(btn);
+  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  GtkWidget *eb, *hb, *ic;
+  eb = gtk_event_box_new();
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_basic, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("basic icon")), TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(eb), "ic_name", "basic");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
+
+  eb = gtk_event_box_new();
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_active, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("active icon")), TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(eb), "ic_name", "active");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
+
+  eb = gtk_event_box_new();
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_color, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("color icon")), TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(eb), "ic_name", "color");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
+
+  eb = gtk_event_box_new();
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_correct, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("correct icon")), TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(eb), "ic_name", "correct");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
+
+  eb = gtk_event_box_new();
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_effect, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("effect icon")), TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(eb), "ic_name", "effect");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
+
+  eb = gtk_event_box_new();
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_favorites, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("favorites icon")), TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(eb), "ic_name", "favorites");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
+
+  eb = gtk_event_box_new();
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_tone, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("tone icon")), TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(eb), "ic_name", "tone");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
+
+  gtk_container_add(GTK_CONTAINER(pop), vb);
+  g_object_set_data(G_OBJECT(btn), "popover", pop);
+  return pop;
+}
+
 static GtkWidget *_manage_editor_get_group_box(dt_lib_module_t *self, dt_lib_modulegroups_group_t *gr)
 {
   GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   // line to edit the group
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *btn = dtgtk_button_new(_buttons_get_icon_fct(gr->icon), CPF_DO_NOT_USE_BORDER, NULL);
-  // TODO : popup to change icon
+  gtk_widget_set_tooltip_text(btn, _("group icon"));
+  _manage_editor_group_icon_get_popup(btn, gr);
+  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_group_icon_popup), self);
+  g_object_set_data(G_OBJECT(btn), "group", gr);
   gtk_box_pack_start(GTK_BOX(hb2), btn, FALSE, TRUE, 0);
   GtkWidget *tb = gtk_entry_new();
   gtk_widget_set_tooltip_text(tb, _("group name"));
@@ -1078,7 +1184,7 @@ static void _manage_edit_preset(GtkWidget *widget, GdkEventButton *event, dt_lib
   char *preset = g_strdup((char *)g_object_get_data(G_OBJECT(widget), "preset_name"));
 
   // get all presets groups
-  _manage_cleanup_groups(d->edit_groups);
+  if(d->edit_groups) _manage_cleanup_groups(&d->edit_groups);
   d->edit_groups = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
