@@ -134,9 +134,9 @@ int position()
 }
 
 
-static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height)
+static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height,
+                                             dt_colorspaces_color_profile_type_t color_type, char *color_filename)
 {
-  // FIXME: probably don't need htis
   dt_develop_t *dev = darktable.develop;
   float *img_tmp = NULL;
 
@@ -173,24 +173,26 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   }
 #endif
 
+  // assume that non-color-managed input is a thumbnail where cache_color_managed is false
+  if(color_type == DT_COLORSPACE_NONE) color_type = DT_COLORSPACE_DISPLAY;
+
   // FIXME: histogram_type is confusing as it could also refer to whether it is a linear/logarithmic histogram -- fix this doubling
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
   gchar *histogram_filename = NULL;
   gchar _histogram_filename[1] = { 0 };
 
+  // FIXME: instead of passing in the input color profile, we could know that it was display in case in pixelpipe and dt_mipmap_cache_get_colorspace() if from a mipmap
   dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
 
-  // FIXME: this assumes the image is in display colorprofile, is this true both before and after gamma?
-  if((histogram_type != darktable.color_profiles->display_type)
+  if((histogram_type != color_type)
      || (histogram_type == DT_COLORSPACE_FILE
-         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+         && strcmp(histogram_filename, color_filename)))
   {
     img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
 
     const dt_iop_order_iccprofile_info_t *const profile_info_from
-        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                            darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
+        = dt_ioppr_add_profile_info_to_list(dev, color_type, color_filename, INTENT_PERCEPTUAL);
     const dt_iop_order_iccprofile_info_t *const profile_info_to
         = dt_ioppr_add_profile_info_to_list(dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
 
@@ -337,7 +339,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 }
 
 // FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
-static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height)
+static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height,
+                                       dt_colorspaces_color_profile_type_t color_type, char *color_filename)
 {
   printf("[histogram] dt_lib_histogram_process_8\n");
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
@@ -356,7 +359,7 @@ static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, const uint8
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input_tmp, width, height);
+      _lib_histogram_process_histogram(d, input_tmp, width, height, color_type, color_filename);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       // this makes horizontal banding artifacts due to rounding issues
@@ -372,7 +375,8 @@ static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, const uint8
 }
 
 // FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
-static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, const float *const input, int width, int height)
+static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, const float *const input, int width, int height,
+                                       dt_colorspaces_color_profile_type_t color_type, char *color_filename)
 {
   printf("[histogram] dt_lib_histogram_process_f\n");
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
@@ -380,7 +384,7 @@ static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, const float
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input, width, height);
+      _lib_histogram_process_histogram(d, input, width, height, color_type, color_filename);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       _lib_histogram_process_waveform(d, input, width, height);
@@ -402,13 +406,15 @@ static void _lib_histogram_reprocess(dt_lib_module_t *self)
   {
     dt_mipmap_buffer_t buf;
     // FIXME: should this be best effort or blocking?
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, d->view_image_id, DT_MIPMAP_4, DT_MIPMAP_BLOCKING, 'r');
+    // FIXME: best effort this will trigger the pixelpipe, especially if the image is newly imported via tether (in which case pixelpipe would work as well) and then we can get the float data
+    // FIXME: with MIPMAP level do we need?
+    // FIXME: what would a MIPMAP_F or MIPMAP_FULL be?
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, d->view_image_id, DT_MIPMAP_8, DT_MIPMAP_BLOCKING, 'r');
     // FIXME: dt_image_cache_get() instead?
 
-    if (buf.size != DT_MIPMAP_NONE)
+    if(buf.size != DT_MIPMAP_NONE)
     {
-      // FIXME: this buf has a colorspace, pass that in to the histogram
-      dt_lib_histogram_process_8(self, buf.buf, buf.width, buf.height);
+      dt_lib_histogram_process_8(self, buf.buf, buf.width, buf.height, buf.color_space, "");
     }
 
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);

@@ -68,8 +68,10 @@ typedef struct dt_lib_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*process_8)(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height);
-      void (*process_f)(struct dt_lib_module_t *self, const float *const input, int width, int height);
+      void (*process_8)(struct dt_lib_module_t *self, const uint8_t *const input, int width, int height,
+                        dt_colorspaces_color_profile_type_t color_type, char *color_filename);
+      void (*process_f)(struct dt_lib_module_t *self, const float *const input, int width, int height,
+                        dt_colorspaces_color_profile_type_t color_type, char *color_filename);
       // FIXME: should this be a function or just a boolean which histogram lib keeps updated?
       gboolean is_linear;
     } histogram;
