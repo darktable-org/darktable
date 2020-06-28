@@ -36,7 +36,8 @@ DT_MODULE(1)
 
 typedef enum dt_lib_histogram_highlight_t
 {
-  DT_LIB_HISTOGRAM_HIGHLIGHT_NONE = 0,
+  DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET = 0,
+  DT_LIB_HISTOGRAM_HIGHLIGHT_IN_WIDGET,
   DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT,
   DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE,
   DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE,
@@ -775,7 +776,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   }
 
   // buttons to control the display of the histogram: linear/log, r, g, b
-  if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+  if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET)
   {
     _draw_type_toggle(cr, d->type_x, d->button_y, d->button_w, d->button_h, d->scope_type);
     switch(d->scope_type)
@@ -820,7 +821,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(darkroom_view && d->dragging)
+  if(d->dragging)
   {
     const float diff = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? d->button_down_y - event->y
                                                                         : event->x - d->button_down_x;
@@ -847,7 +848,9 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 
     // FIXME: rather than roll button code from scratch, take advantage of bauhaus/gtk button code?
     if(posx < 0.0f || posx > 1.0f || posy < 0.0f || posy > 1.0f)
-      ;
+    {
+      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET;
+    }
     // FIXME: simplify this, check for y position, and if it's in range, check for x, and set highlight, and depending on that draw tooltip
     // FIXME: or alternately use copy_path_flat(), append_path(p), in_fill() and keep around the rectangles for each button
     else if(x > d->type_x && x < d->type_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
@@ -916,16 +919,22 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE;
       gtk_widget_set_tooltip_text(widget, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
     }
-    else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
-            (posy > 7.0f/9.0f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM))
+    else if(darkroom_view &&
+            ((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
+             (posy > 7.0f/9.0f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)))
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
       gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets\nctrl+scroll to change display height"));
     }
-    else
+    else if(darkroom_view)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
       gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
+    }
+    else
+    {
+      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_IN_WIDGET;
+      gtk_widget_set_tooltip_text(widget, _("ctrl+scroll to change display height"));
     }
     if(prior_highlight != d->highlight)
     {
@@ -1099,7 +1108,7 @@ static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEvent
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   d->dragging = 0;
-  d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
+  d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET;
   dt_control_change_cursor(GDK_LEFT_PTR);
   gtk_widget_queue_draw(widget);
   return TRUE;
