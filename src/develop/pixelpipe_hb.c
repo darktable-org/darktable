@@ -2392,11 +2392,11 @@ post_process_collect_info:
         // input may not be available, so we use the output from gamma
         // this may lead to some rounding errors
         // FIXME: under what circumstances would input not be available?
-        darktable.lib->proxy.histogram.process_8(darktable.lib->proxy.histogram.module, (uint8_t *)*output, roi_out->width, roi_out->height);
+        darktable.lib->proxy.histogram.process_8(darktable.lib->proxy.histogram.module, (uint8_t *)*output, roi_out->width, roi_out->height, darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
       }
       else
       {
-        darktable.lib->proxy.histogram.process_f(darktable.lib->proxy.histogram.module, (const float *const)input, roi_in.width, roi_in.height);
+        darktable.lib->proxy.histogram.process_f(darktable.lib->proxy.histogram.module, (const float *const)input, roi_in.width, roi_in.height, darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
       }
     }
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
