@@ -1864,23 +1864,11 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-  GtkWidget *tab_label = gtk_label_new(_("luma"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("luma")));
-  gtk_widget_set_tooltip_text(tab_label, _("change lightness at each feature size"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("chroma")));
-  gtk_widget_set_tooltip_text(tab_label, _("change color saturation at each feature size"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("edges")));
-  gtk_widget_set_tooltip_text(tab_label, _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
-
+  dt_ui_notebook_page(c->channel_tabs, _("luma"), _("change lightness at each feature size"));
+  dt_ui_notebook_page(c->channel_tabs, _("chroma"), _("change color saturation at each feature size"));
+  dt_ui_notebook_page(c->channel_tabs, _("edges"), _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
-
-  dtgtk_justify_notebook_tabs(c->channel_tabs);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
   // graph
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));

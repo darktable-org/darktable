@@ -1397,22 +1397,15 @@ void gui_init(struct dt_iop_module_t *self)
   g->autoscale = dt_bauhaus_combobox_from_params(self, "curve_autoscale");
   gtk_widget_set_tooltip_text(g->autoscale, _("choose between linked and independent channels."));
 
-  // tabs
-  g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-  GtkWidget *tab_label;
-  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  R  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for r channel"));
-  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  G  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for g channel"));
-  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  B  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for b channel"));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs, g->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
-
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+  g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+  dt_ui_notebook_page(g->channel_tabs, _("R"), _("curve nodes for r channel"));
+  dt_ui_notebook_page(g->channel_tabs, _("G"), _("curve nodes for g channel"));
+  dt_ui_notebook_page(g->channel_tabs, _("B"), _("curve nodes for b channel"));
+  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch_callback), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->channel_tabs), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
 
   // color pickers
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
@@ -1431,8 +1424,6 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch_callback), self);
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->area), TRUE, TRUE, 0);

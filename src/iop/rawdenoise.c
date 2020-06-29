@@ -955,12 +955,11 @@ void gui_init(dt_iop_module_t *self)
   c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("all")));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("R")));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("G")));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("B")));
+  dt_ui_notebook_page(c->channel_tabs, _("all"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, _("R"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, _("G"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, _("B"), NULL);
 
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
 

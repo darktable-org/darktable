@@ -1258,34 +1258,23 @@ void gui_init(struct dt_iop_module_t *self)
                                                  "then adjusted based on L curve data. auto XYZ is similar "
                                                  "but applies the saturation changes in XYZ space."));
 
-  // tabs
-  c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-  GtkWidget *tab_label;
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  L  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("tonecurve for L channel"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  a  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("tonecurve for a channel"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  b  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("tonecurve for b channel"));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
-
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+  c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+  dt_ui_notebook_page(c->channel_tabs, _("L"), _("tonecurve for L channel"));
+  dt_ui_notebook_page(c->channel_tabs, _("a"), _("tonecurve for a channel"));
+  dt_ui_notebook_page(c->channel_tabs, _("b"), _("tonecurve for b channel"));
+  g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
 
   c->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
   gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   // FIXME: that tooltip goes in the way of the numbers when you hover a node to get a reading
   //gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("double click to reset curve"));
