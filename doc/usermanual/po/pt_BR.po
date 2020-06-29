@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
-"POT-Creation-Date: 2020-06-27 17:46-0300\n"
+"POT-Creation-Date: 2020-07-07 08:01-0300\n"
 "PO-Revision-Date: 2020-06-28 05:12-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
@@ -4667,7 +4667,9 @@ msgstr "instalador de scripts lua"
 msgid ""
 "This panel provides an interface for installing the darktable lua scripts. "
 "The first time it is run, instructions are displayed."
-msgstr "Este peinel provê uma interface para instalar scripts Lua para o darktable. Na primeira vez que é executado, instruções são mostradas."
+msgstr ""
+"Este painel provê uma interface para instalar scripts Lua para o darktable. "
+"Na primeira vez que é executado, instruções são mostradas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3631(entry)
 msgid "Panel appearance after the first run."
@@ -4691,13 +4693,20 @@ msgid ""
 "using git. The git executable must be installed and in the user's path. "
 "After the scripts are installed, the script manager module starts, providing "
 "a point and click interface for managing the lua scripts."
-msgstr "Instala scripts Lua para o darktable clonando o respositório dos scripts usando a ferramenta git. O executável git deve estar instalado, e disponível no caminho (path) do usuário. Depois que os scripts são instalados, o módulo gerenciador de scripts inicia, provendo uma interface gráfica para gerenciar scripts Lua."
+msgstr ""
+"Instala scripts Lua para o darktable clonando o respositório dos scripts "
+"usando a ferramenta git. O executável git deve estar instalado, e disponível "
+"no caminho (path) do usuário. Depois que os scripts são instalados, o módulo "
+"gerenciador de scripts inicia, provendo uma interface gráfica para gerenciar "
+"scripts Lua."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3664(para)
 msgid ""
 "The next time darktable starts, this module wont be active since the scripts "
 "are installed."
-msgstr "Na próxima vez que o darktable iniciar, este módulo não estará ativo porque os scripts estarão instalados."
+msgstr ""
+"Na próxima vez que o darktable iniciar, este módulo não estará ativo porque "
+"os scripts estarão instalados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3672(title)
 msgid "remind me later"
@@ -4705,7 +4714,8 @@ msgstr "lembre-me depois"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3674(para)
 msgid "This module will reappear every 5th time darktable is restarted."
-msgstr "Este módulo reaparecerá a cada quinta vez que o darktable for reiniciado."
+msgstr ""
+"Este módulo reaparecerá a cada quinta vez que o darktable for reiniciado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3682(title)
 msgid "don't show again"
@@ -4716,7 +4726,11 @@ msgid ""
 "When darktable is restarted this module will no longer be active. If the "
 "user changes their mind and wants to use the module they can go to settings-"
 "&gt;lua options and uncheck the \"install scripts dont show again\" checkbox."
-msgstr "Quando o darktable for reiniciado este módulo não estará mais ativo. Se mudar de idéia e quiser usar novamente o módulo, vá a condigurações-&gt;opções de lua e desmarque a checkbox \"instalar scripts não mostrar novamente\"."
+msgstr ""
+"Quando o darktable for reiniciado este módulo não estará mais ativo. Se "
+"mudar de idéia e quiser usar novamente o módulo, vá a condigurações-&gt;"
+"opções de lua e desmarque a checkbox \"instalar scripts não mostrar novamente"
+"\"."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3696(title)
 msgid "execute"
@@ -6412,7 +6426,9 @@ msgstr "$(SEQUENCEn)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5201(entry)
 msgid "a sequence number within export job, 4 digits if n is not specified"
-msgstr "um número sequencial dentro da tarefa de exportação; 4 dígitos se n não for especificado"
+msgstr ""
+"um número sequencial dentro da tarefa de exportação; 4 dígitos se n não for "
+"especificado"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5207(code)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21878(entry)
