@@ -44,6 +44,8 @@ typedef struct dt_lib_duplicate_t
   gboolean busy;
   int cur_final_width;
   int cur_final_height;
+  int32_t preview_width;
+  int32_t preview_height;
   gboolean allow_zoom;
 
   cairo_surface_t *preview_surf;
@@ -249,8 +251,12 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
   // if not cached, load or reload a mipmap
   int res = 0;
-  if(d->preview_id != d->imgid || d->preview_zoom != nz * zoom_ratio || !d->preview_surf)
+  if(d->preview_id != d->imgid || d->preview_zoom != nz * zoom_ratio || !d->preview_surf 
+      || d->preview_width != width || d->preview_height != height)
   {
+    d->preview_width = width;
+    d->preview_height = height;
+
     res = dt_view_image_get_surface(d->imgid, img_wd * nz, img_ht * nz, &d->preview_surf, TRUE);
 
     if(!res)
@@ -487,6 +493,8 @@ void gui_init(dt_lib_module_t *self)
   d->imgid = 0;
   d->preview_surf = NULL;
   d->preview_zoom = 1.0;
+  d->preview_width = 0;
+  d->preview_height = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkStyleContext *context = gtk_widget_get_style_context(self->widget);
