@@ -2992,8 +2992,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Simple view
 
-  GtkWidget *page1 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_notebook_append_page(g->notebook, page1, gtk_label_new(_("simple")));
+  self->widget = dt_ui_notebook_page(g->notebook, _("simple"), NULL);
 
   g->noise = dt_bauhaus_slider_from_params(self, "noise");
   dt_bauhaus_slider_set_step(g->noise, .05);
@@ -3042,11 +3041,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Advanced view
 
-  GtkWidget *page2 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_notebook_append_page(g->notebook, page2, gtk_label_new(_("advanced")));
+  self->widget = dt_ui_notebook_page(g->notebook, _("advanced"), NULL);
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
-  gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                  | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
@@ -3070,13 +3068,12 @@ void gui_init(struct dt_iop_module_t *self)
                                               "but the curve might become oscillatory in some settings.\n"
                                               "negative values will avoid oscillations and behave more robustly\n"
                                               "but may produce brutal tone transitions and damage local contrast."));
-  gtk_box_pack_start(GTK_BOX(page2), g->smoothing, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->smoothing, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->smoothing), "value-changed", G_CALLBACK(smoothing_callback), self);
 
   // Masking options
 
-  GtkWidget *page3 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_notebook_append_page(g->notebook, page3, gtk_label_new(_("masking")));
+  self->widget = dt_ui_notebook_page(g->notebook, _("masking"), NULL);
 
   g->method = dt_bauhaus_combobox_from_params(self, "method");
   dt_bauhaus_combobox_remove_at(g->method, DT_TONEEQ_LAST);
@@ -3110,10 +3107,10 @@ void gui_init(struct dt_iop_module_t *self)
                                                "lower values give smoother gradients and better smoothing\n"
                                                "but may lead to inaccurate edges taping and halos"));
 
-  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("mask post-processing")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask post-processing")), FALSE, FALSE, 0);
 
   g->bar = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.05));
-  gtk_box_pack_start(GTK_BOX(page3), GTK_WIDGET(g->bar), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bar), FALSE, FALSE, 0);
   gtk_widget_set_can_focus(GTK_WIDGET(g->bar), TRUE);
   g_signal_connect(G_OBJECT(g->bar), "draw", G_CALLBACK(dt_iop_toneequalizer_bar_draw), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->bar), _("mask histogram span between the first and last deciles.\n"
@@ -3151,8 +3148,6 @@ void gui_init(struct dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
-  dtgtk_justify_notebook_tabs(g->notebook);
   g_signal_connect(G_OBJECT(g->notebook), "button-press-event", G_CALLBACK(notebook_button_press), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 

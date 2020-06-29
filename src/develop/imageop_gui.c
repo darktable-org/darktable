@@ -306,7 +306,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
   dt_introspection_field_t *f = self->so->get_f(param);
 
-  GtkWidget *button;
+  GtkWidget *button, *label;
   gchar *str;
 
   if(f && f->header.type == DT_INTROSPECTION_TYPE_BOOL)
@@ -315,17 +315,20 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     {
       // we do not want to support a context as it break all translations see #5498
       // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
-      button = gtk_check_button_new_with_label(gettext(f->header.description));
+      label = gtk_label_new(gettext(f->header.description));
     }
     else
     {
       str = dt_util_str_replace(f->header.field_name, "_", " ");
     
-      button = gtk_check_button_new_with_label(_(str));
+      label = gtk_label_new(_(str));
 
       g_free(str);
     }
 
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+    button = gtk_check_button_new();
+    gtk_container_add(GTK_CONTAINER(button), label);
     dt_module_param_t *module_param = (dt_module_param_t *)g_malloc(sizeof(dt_module_param_t));
     module_param->module = self;
     module_param->param = p + f->header.offset;
