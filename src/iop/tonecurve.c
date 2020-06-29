@@ -1546,7 +1546,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     }
 
     cairo_move_to(cr, 0, height);
-    if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+    if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)))
     {
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
