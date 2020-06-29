@@ -628,8 +628,8 @@ void gui_update(struct dt_iop_module_t *self)
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   // switch off auto exposure when we lose focus (switching images etc)
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
   --darktable.gui->reset;
@@ -834,7 +834,10 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   }
   dt_pthread_mutex_unlock(&g->lock);
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return FALSE;
+  // if color-picker active and is the one in the main module (not blending ones)
+
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE
+    || !dt_bauhaus_widget_get_quad_active(g->autoexpp)) return FALSE;
 
   if(self->picked_color_max[0] < 0.0f) return FALSE;
 
