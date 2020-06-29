@@ -2290,10 +2290,7 @@ void gui_init(dt_iop_module_t *self)
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
 
   // Page SCENE
-  GtkWidget *label = gtk_label_new(_("scene"));
-  GtkWidget *page1 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_notebook_append_page(g->notebook, page1, label);
+  self->widget = dt_ui_notebook_page(g->notebook, _("scene"), NULL);
 
   g->grey_point_source = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                          dt_bauhaus_slider_from_params(self, "grey_point_source"));
@@ -2329,27 +2326,24 @@ void gui_init(dt_iop_module_t *self)
                                                     "useful to give a safety margin to extreme luminances."));
 
   // Auto tune slider
-  g->auto_button = dt_bauhaus_combobox_new(self);
+  g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+                   dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->auto_button);
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
                                                 "works better for landscapes and evenly-lit pictures\n"
                                                 "but fails for high-keys, low-keys and high-ISO pictures.\n"
                                                 "this is not an artificial intelligence, but a simple guess.\n"
                                                 "ensure you understand its assumptions before using it."));
-  gtk_box_pack_start(GTK_BOX(page1), g->auto_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, FALSE, FALSE, 0);
 
   // Page RECONSTRUCT
-  label = gtk_label_new(_("reconstruct"));
-  GtkWidget *page5 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_notebook_append_page(g->notebook, page5, label);
+  self->widget = dt_ui_notebook_page(g->notebook, _("reconstruct"), NULL);
 
-  label = dt_ui_section_label_new(_("highlights clipping"));
+  GtkWidget *label = dt_ui_section_label_new(_("highlights clipping"));
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
   gtk_style_context_add_class(context, "section_label_top");
-  gtk_box_pack_start(GTK_BOX(page5), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
   g->reconstruct_threshold = dt_bauhaus_slider_from_params(self, "reconstruct_threshold");
   dt_bauhaus_slider_set_format(g->reconstruct_threshold, _("%+.2f EV"));
@@ -2373,10 +2367,10 @@ void gui_init(dt_iop_module_t *self)
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->show_highlight_mask, TRUE);
   g_signal_connect(G_OBJECT(g->show_highlight_mask), "quad-pressed", G_CALLBACK(show_mask_callback), self);
-  gtk_box_pack_start(GTK_BOX(page5), g->show_highlight_mask, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->show_highlight_mask, FALSE, FALSE, 0);
 
   label = dt_ui_section_label_new(_("balance"));
-  gtk_box_pack_start(GTK_BOX(page5), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
   g->reconstruct_structure_vs_texture = dt_bauhaus_slider_from_params(self, "reconstruct_structure_vs_texture");
   dt_bauhaus_slider_set_step(g->reconstruct_structure_vs_texture, 0.1);
@@ -2413,10 +2407,7 @@ void gui_init(dt_iop_module_t *self)
                                                               "decrease if you see magenta or out-of-gamut highlights."));
 
   // Page LOOK
-  label = gtk_label_new(_("look"));
-  GtkWidget *page2 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_notebook_append_page(g->notebook, page2, label);
+  self->widget = dt_ui_notebook_page(g->notebook, _("look"), NULL);
 
   g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
   dt_bauhaus_slider_set_soft_range(g->contrast, 1.0, 2.0);
@@ -2460,10 +2451,7 @@ void gui_init(dt_iop_module_t *self)
     dt_bauhaus_widget_set_label(g->saturation, NULL, _("middle tones saturation"));
 
   // Page DISPLAY
-  label = gtk_label_new(_("display"));
-  GtkWidget *page3 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_notebook_append_page(g->notebook, page3, label);
+  self->widget = dt_ui_notebook_page(g->notebook, _("display"), NULL);
 
   // Black slider
   g->black_point_target = dt_bauhaus_slider_from_params(self, "black_point_target");
@@ -2482,10 +2470,7 @@ void gui_init(dt_iop_module_t *self)
                                                        "this should be 100%\nexcept if you want a faded look"));
 
   // Page OPTIONS
-  label = gtk_label_new(_("options"));
-  GtkWidget *page4 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_notebook_append_page(g->notebook, page4, label);
+  self->widget = dt_ui_notebook_page(g->notebook, _("options"), NULL);
 
   // Color science
   g->version = dt_bauhaus_combobox_from_params(self, "version");
@@ -2545,8 +2530,6 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
-  dtgtk_justify_notebook_tabs(g->notebook);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)

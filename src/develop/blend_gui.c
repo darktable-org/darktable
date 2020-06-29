@@ -300,27 +300,27 @@ static inline int _blendif_print_digits_ab(float value)
 
 static void _blendif_scale_print_L(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.*f", _blendif_print_digits_default(value), value * 100.0f);
+  snprintf(string, n, "%-5.*f", _blendif_print_digits_default(value), value * 100.0f);
 }
 
 static void _blendif_scale_print_ab(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.*f", _blendif_print_digits_ab(value * 256.0f - 128.0f), value * 256.0f - 128.0f);
+  snprintf(string, n, "%-5.*f", _blendif_print_digits_ab(value * 256.0f - 128.0f), value * 256.0f - 128.0f);
 }
 
 static void _blendif_scale_print_rgb(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.*f", _blendif_print_digits_default(value), value * 255.0f);
+  snprintf(string, n, "%-5.*f", _blendif_print_digits_default(value), value * 255.0f);
 }
 
 static void _blendif_scale_print_hue(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.0f", value * 360.0f);
+  snprintf(string, n, "%-5.0f", value * 360.0f);
 }
 
 static void _blendif_scale_print_default(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.*f", _blendif_print_digits_default(value), value * 100.0f);
+  snprintf(string, n, "%-5.*f", _blendif_print_digits_default(value), value * 100.0f);
 }
 
 static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gui_blend_data_t *data)
@@ -1502,11 +1502,11 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
   /* create and add blendif support if module supports it */
   if(bd->blendif_support)
   {
-    char *Lab_labels[] = { "  L  ", "  a  ", "  b  ", " C ", " h " };
+    char *Lab_labels[] = { "L", "a", "b", "C", "h" };
     char *Lab_tooltips[]
         = { _("sliders for L channel"), _("sliders for a channel"), _("sliders for b channel"),
             _("sliders for chroma channel (of LCh)"), _("sliders for hue channel (of LCh)") };
-    char *rgb_labels[] = { _(" g "), _(" R "), _(" G "), _(" B "), _(" H "), _(" S "), _(" L ") };
+    char *rgb_labels[] = { _("g"), _("R"), _("G"), _("B"), _("H"), _("S"), _("L") };
     char *rgb_tooltips[]
         = { _("sliders for gray value"), _("sliders for red channel"), _("sliders for green channel"),
             _("sliders for blue channel"), _("sliders for hue channel (of HSL)"),
@@ -1649,31 +1649,33 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
                        // here
     }
 
+    GtkWidget *section = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *uplabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *lowlabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *upslider = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *lowslider = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *notebook = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+    gtk_box_pack_start(GTK_BOX(section), dt_ui_section_label_new(_("parametric mask")), TRUE, TRUE, 0);
+
+    GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(res, _("reset blend mask settings"));
+    gtk_box_pack_end(GTK_BOX(section), GTK_WIDGET(res), FALSE, FALSE, 0);
 
     bd->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
     for(int ch = 0; ch < maxchannels; ch++)
     {
-      gtk_notebook_append_page(GTK_NOTEBOOK(bd->channel_tabs),
-                               GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                               gtk_label_new(labels[ch]));
-      gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(bd->channel_tabs,
-                                                             gtk_notebook_get_nth_page(bd->channel_tabs, -1)),
-                                  tooltips[ch]);
+      dt_ui_notebook_page(bd->channel_tabs, labels[ch], tooltips[ch]);
     }
 
     gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(bd->channel_tabs, bd->tab)));
     gtk_notebook_set_current_page(GTK_NOTEBOOK(bd->channel_tabs), bd->tab);
     gtk_notebook_set_scrollable(bd->channel_tabs, TRUE);
+    // gtk_notebook_popup_enable(bd->channel_tabs); // leads to crashes
 
-    gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(bd->channel_tabs), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(bd->channel_tabs), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(header), gtk_grid_new(), TRUE, TRUE, 0);
 
     bd->colorpicker = dt_color_picker_new(module, DT_COLOR_PICKER_POINT_AREA, header);
     gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
@@ -1687,13 +1689,8 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
                                                               "drag to use the input image\n"
                                                               "ctrl+drag to use the output image"));
 
-    GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
-    gtk_widget_set_tooltip_text(res, _("reset blend mask settings"));
-
     GtkWidget *inv = dtgtk_button_new(dtgtk_cairo_paint_invert, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(inv, _("invert all channel's polarities"));
-
-    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(inv), FALSE, FALSE, 0);
 
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_name(4, "blend-lower"));
@@ -1715,24 +1712,28 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
 
     bd->upper_head = GTK_LABEL(gtk_label_new(_("output")));
+    gtk_label_set_ellipsize(GTK_LABEL(bd->upper_head), PANGO_ELLIPSIZE_END);
     bd->upper_picker_label = GTK_LABEL(gtk_label_new(""));
+    gtk_label_set_ellipsize(GTK_LABEL(bd->upper_picker_label), PANGO_ELLIPSIZE_END);
     gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_head), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_picker_label), TRUE, TRUE, 0);
     for(int k = 0; k < 4; k++)
     {
       bd->upper_label[k] = GTK_LABEL(gtk_label_new(NULL));
-      gtk_label_set_width_chars(bd->upper_label[k], 5);
+      gtk_label_set_ellipsize(GTK_LABEL(bd->upper_label[k]), PANGO_ELLIPSIZE_END);
       gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_label[k]), FALSE, FALSE, 0);
     }
 
     bd->lower_head = GTK_LABEL(gtk_label_new(_("input")));
+    gtk_label_set_ellipsize(GTK_LABEL(bd->lower_head), PANGO_ELLIPSIZE_END);
     bd->lower_picker_label = GTK_LABEL(gtk_label_new(""));
+    gtk_label_set_ellipsize(GTK_LABEL(bd->lower_picker_label), PANGO_ELLIPSIZE_END);
     gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_head), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_picker_label), TRUE, TRUE, 0);
     for(int k = 0; k < 4; k++)
     {
       bd->lower_label[k] = GTK_LABEL(gtk_label_new(NULL));
-      gtk_label_set_width_chars(bd->lower_label[k], 5);
+      gtk_label_set_ellipsize(GTK_LABEL(bd->lower_label[k]), PANGO_ELLIPSIZE_END);
       gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
     }
 
@@ -1773,7 +1774,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     g_signal_connect(G_OBJECT(bd->upper_polarity), "toggled", G_CALLBACK(_blendop_blendif_polarity_callback),
                      bd);
 
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), dt_ui_section_label_new(_("parametric mask")), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(section), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(upslider), TRUE, FALSE, 0);

@@ -956,32 +956,15 @@ void gui_init(dt_iop_module_t *self)
   c->cmb_autoscale = dt_bauhaus_combobox_from_params(self, "autoscale");
   gtk_widget_set_tooltip_text(c->cmb_autoscale, _("choose between linked and independent channels."));
 
-  // tabs
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-  GtkWidget *tab_label;
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  R  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for r channel"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  G  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for g channel"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  B  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for b channel"));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
-
-  GtkWidget *notebook = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
-
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(notebook), TRUE, TRUE, 0);
-
+  dt_ui_notebook_page(c->channel_tabs, _("R"), _("curve nodes for r channel"));
+  dt_ui_notebook_page(c->channel_tabs, _("G"), _("curve nodes for g channel"));
+  dt_ui_notebook_page(c->channel_tabs, _("B"), _("curve nodes for b channel"));
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(_tab_switch_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
-  GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("drag handles to set black, gray, and white points. "
                                                     "operates on L channel."));
@@ -1016,7 +999,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->greypick ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->whitepick), TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(vbox_manual), pick_hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), pick_hbox, TRUE, TRUE, 0);
 
   c->bt_auto_levels = gtk_button_new_with_label(_("auto"));
   gtk_widget_set_tooltip_text(c->bt_auto_levels, _("apply auto levels"));
@@ -1031,11 +1014,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(autolevels_box), c->bt_auto_levels, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(autolevels_box), c->bt_select_region, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(vbox_manual), autolevels_box, TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox_manual, TRUE, TRUE, 0);
-
-  gtk_widget_show_all(vbox_manual);
+  gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(c->bt_auto_levels), "clicked", G_CALLBACK(_auto_levels_callback), self);
   g_signal_connect(G_OBJECT(c->bt_select_region), "toggled", G_CALLBACK(_select_region_toggled_callback), self);
