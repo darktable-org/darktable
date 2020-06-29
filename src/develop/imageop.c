@@ -893,8 +893,12 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   /* initialize gui if iop have one defined */
   if(!dt_iop_is_hidden(module))
   {
+    // make sure gui_init and reload defaults is called safely
+    ++darktable.gui->reset;   
     module->gui_init(module);
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
+    --darktable.gui->reset;   
+
     if(copy_params)
     {
       memcpy(module->params, base->params, module->params_size);
