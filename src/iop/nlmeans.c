@@ -51,9 +51,9 @@ typedef struct dt_iop_nlmeans_params_t
 {
   // these are stored in db.
   float radius;   // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "patch size"
-  float strength; // $MIN: 0.0 $MAX: 100000.0 $DEFAULT: 50.0
-  float luma;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5
-  float chroma;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0
+  float strength; // $MIN: 0.0 $MAX: 100000.0 $DEFAULT: 50.0 $DESCRIPTION: "strength"
+  float luma;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "luma"
+  float chroma;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "chroma"
 } dt_iop_nlmeans_params_t;
 
 typedef struct dt_iop_nlmeans_gui_data_t
