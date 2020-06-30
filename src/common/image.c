@@ -905,15 +905,8 @@ int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newvers
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    // make sure that the duplicate doesn't have some magic darktable| tags
-    if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
-       || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
-    /* unset change timestamp */
-    dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
-
     // set version of new entry and max_version of all involved duplicates (with same film_id and filename)
+    // this needs to happen before we do anything with the image cache, as version isn't updated through the cache
     const int32_t version = (newversion != -1) ? newversion : max_version + 1;
     max_version = (newversion != -1) ? MAX(max_version, newversion) : max_version + 1;
 
@@ -932,6 +925,14 @@ int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newvers
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, filename, -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    // make sure that the duplicate doesn't have some magic darktable| tags
+    if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
+       || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+    /* unset change timestamp */
+    dt_image_cache_unset_change_timestamp(darktable.image_cache, newid);
 
     g_free(filename);
   }
