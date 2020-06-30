@@ -1148,8 +1148,8 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
   g_list_free_full(files, g_free);
 }
 
-static uint32_t dt_image_import_internal(const int32_t film_id, const char *filename,
-                                         gboolean override_ignore_jpegs, gboolean lua_locking)
+static uint32_t _image_import_internal(const int32_t film_id, const char *filename,
+                                       gboolean override_ignore_jpegs, gboolean lua_locking)
 {
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename
@@ -1424,12 +1424,12 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
 
 uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
+  return _image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
 }
 
 uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
+  return _image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
 }
 
 void dt_image_init(dt_image_t *img)
