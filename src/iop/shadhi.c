@@ -465,7 +465,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
       float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
       float href = copysignf(
-          fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
+                  fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
 
       float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
@@ -473,8 +473,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       shadows2 -= 1.0f;
 
       ta[0] = la * (1.0 - optrans)
-              + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb) : doublemax * la
-                                                                                           * lb) * optrans;
+              + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb)
+                              : doublemax * sign(la) * fabs(la * lb))
+                    * optrans;
 
       ta[0] = (flags & UNBOUND_SHADOWS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
 

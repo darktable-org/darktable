@@ -282,7 +282,7 @@ overlay(const float4 in_a, const float4 in_b, const float opacity, const float t
     float optrans = chunk * transform;
     opacity2 -= 1.0f;
 
-    a.x = la * (1.0f - optrans) + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : doublemax * la * lb) * optrans;
+    a.x = la * (1.0f - optrans) + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : doublemax * sign(la) * fabs(la * lb)) * optrans;
     a.x = unbound.x ? a.x : clamp(a.x, lmin, lmax);
 
     a.y = a.y * (1.0f - optrans) + (a.y + b.y) * (a.x*lref * ccorrect + (1.0f - a.x)*href * (1.0f - ccorrect)) * optrans;
