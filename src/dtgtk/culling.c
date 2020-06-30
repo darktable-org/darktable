@@ -427,9 +427,9 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_culling_t *table = (dt_culling_t *)user_data;
-  gdouble delta;
+  int delta;
 
-  if(dt_gui_get_scroll_delta(e, &delta))
+  if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
     if((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
     {
