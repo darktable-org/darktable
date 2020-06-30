@@ -1116,6 +1116,7 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
     }
 
     int newid = id;
+    int grpid = -1;
 
     if(!count_xmps_processed)
     {
@@ -1131,8 +1132,14 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
     }
     else
     {
-      //create a new duplicate based on the passed-in id
-      newid = dt_image_duplicate_with_version(id, version);
+      // create a new duplicate based on the passed-in id. Note that we do not call
+      // dt_image_duplicate_with_version() as this version also set the group which
+      // is using DT_IMAGE_CACHE_SAFE and so will write the .XMP. But we must avoid
+      // this has the xmp for the duplicate is read just below.
+      newid = _image_duplicate_with_version(id, version);
+      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
+      grpid = img->group_id;
+      dt_image_cache_read_release(darktable.image_cache, img);
     }
     // make sure newid is not selected
     dt_selection_clear(darktable.selection);
@@ -1140,6 +1147,13 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
     (void)dt_exif_xmp_read(img, xmpfilename, 0);
     img->version = version;
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+
+    if(grpid != -1)
+    {
+      // now it is safe to set the duplicate group-id
+      dt_grouping_add_to_group(grpid, newid);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    }
 
     count_xmps_processed++;
     file_iter = g_list_next(file_iter);
