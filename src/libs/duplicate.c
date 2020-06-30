@@ -257,7 +257,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     d->preview_width = width;
     d->preview_height = height;
 
-    res = dt_view_image_get_surface(d->imgid, img_wd * nz, img_ht * nz, &d->preview_surf, TRUE);
+    res = dt_view_image_get_surface(d->imgid, ceilf(img_wd * nz), ceilf(img_ht * nz), &d->preview_surf, TRUE);
 
     if(!res)
     {
@@ -283,9 +283,9 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     // move coordinates according to margin
     const float wd = dev->pipe->output_backbuf_width / darktable.gui->ppd;
     const float ht = dev->pipe->output_backbuf_height / darktable.gui->ppd;
-    const float margin_left = ceilf(.5f * (width - wd));
-    const float margin_top = ceilf(.5f * (height - ht));
-    cairo_translate(cri, margin_left, margin_top);
+    const float margin_left = .5f * (width - wd);
+    const float margin_top = .5f * (height - ht);
+    cairo_translate(cri, ceilf(margin_left), ceilf(margin_top));
 
     if(dev->iso_12646.enabled)
     {
@@ -298,8 +298,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     // compute the surface pixel shift to match reference image FIXME!
     const float zoom_y = dt_control_get_dev_zoom_y();
     const float zoom_x = dt_control_get_dev_zoom_x();
-    const float dx = -floorf(zoom_x * (img_wd) * nz + img_wd * nz / 2. - width / 2.) - margin_left;
-    const float dy = -floorf(zoom_y * (img_ht) * nz + img_ht * nz / 2. - height/ 2.) - margin_top;
+    const float dx = -floorf(zoom_x * (img_wd) * nz + img_wd * nz / 2. - width / 2. + margin_left);
+    const float dy = -floorf(zoom_y * (img_ht) * nz + img_ht * nz / 2. - height/ 2. + margin_top);
 
     // finally, draw the image
     cairo_rectangle(cri, 0, 0, wd, ht);
