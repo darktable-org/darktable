@@ -2390,7 +2390,7 @@ void gui_init(struct dt_iop_module_t *self)
                    (gpointer)self);
 
   // scale
-  g->scale = dt_bauhaus_slider_from_params(self,"scale");
+  g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
   dt_bauhaus_slider_set_step(g->scale, 0.005);
   dt_bauhaus_slider_set_digits(g->scale, 3);
   dt_bauhaus_widget_set_quad_paint(g->scale, dtgtk_cairo_paint_refresh, 0, NULL);

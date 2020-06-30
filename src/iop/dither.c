@@ -73,7 +73,7 @@ typedef struct dt_iop_dither_params_t
   {
     float radius;   // reserved for future extensions
     float range[4]; // reserved for future extensions {0,0,1,1}
-    float damping;  // $MIN: -200.0 $MAX: 0.0 $DEFAULT: -200.0
+    float damping;  // $MIN: -200.0 $MAX: 0.0 $DEFAULT: -200.0 $DESCRIPTION: "damping"
   } random;
 } dt_iop_dither_params_t;
 
