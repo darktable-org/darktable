@@ -3551,7 +3551,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 </variablelist>
 </section>
 
-<section status="draft" id="darktable_database_move_image">
+<section status="final" id="darktable_database_move_image">
 <title>darktable.database.move_image</title>
 <indexterm>
 <primary>Lua API</primary>
@@ -3560,7 +3560,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <synopsis>function( 
 	<emphasis><link linkend="darktable_database_move_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
 	<emphasis><link linkend="darktable_database_move_image_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>,
-	<emphasis><link linkend="darktable_database_move_image_newname">newname</link></emphasis> : string
+	[<emphasis><link linkend="darktable_database_move_image_newname">newname</link></emphasis> : string]
 )</synopsis>
 <para>Physically moves an image (and all its duplicates) to another film, and/or renames the image file.</para>
 <para>This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film and rename them as specified.</para>
@@ -3587,7 +3587,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 </variablelist>
 </section>
 
-<section status="draft" id="darktable_database_copy_image">
+<section status="final" id="darktable_database_copy_image">
 <title>darktable.database.copy_image</title>
 <indexterm>
 <primary>Lua API</primary>
@@ -3596,7 +3596,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <synopsis>function( 
 	<emphasis><link linkend="darktable_database_copy_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
 	<emphasis><link linkend="darktable_database_copy_image_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>,
-	<emphasis><link linkend="darktable_database_copy_image_newname">newname</link></emphasis> : string
+	[<emphasis><link linkend="darktable_database_copy_image_newname">newname</link></emphasis> : string]
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Physically copies an image to another film.</para>
 <para>This will copy the image file and the related XMP to the directory of the new film and rename them as specified.</para>
