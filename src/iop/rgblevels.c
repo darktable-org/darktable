@@ -54,7 +54,7 @@ typedef enum dt_iop_rgblevels_autoscale_t
 typedef struct dt_iop_rgblevels_params_t
 {
   dt_iop_rgblevels_autoscale_t autoscale; // $DEFAULT: DT_IOP_RGBLEVELS_LINKED_CHANNELS $DESCRIPTION: "mode" (DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS, DT_IOP_RGBLEVELS_LINKED_CHANNELS)
-  dt_iop_rgb_norms_t preserve_colors;     // $DEFAULT: DT_RGB_NORM_LUMINANCE
+  dt_iop_rgb_norms_t preserve_colors;     // $DEFAULT: DT_RGB_NORM_LUMINANCE $DESCRIPTION: "preserve colors"
   float levels[DT_IOP_RGBLEVELS_MAX_CHANNELS][3];
 } dt_iop_rgblevels_params_t;
 

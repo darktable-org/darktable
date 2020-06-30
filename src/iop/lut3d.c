@@ -1749,7 +1749,7 @@ void gui_init(dt_iop_module_t *self)
   g->colorspace = dt_bauhaus_combobox_from_params(self, "colorspace");
   gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied"));
 
-  g->interpolation = dt_bauhaus_combobox_from_params(self, "interpolation");
+  g->interpolation = dt_bauhaus_combobox_from_params(self, N_("interpolation"));
   gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method"));
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED,

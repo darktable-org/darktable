@@ -541,7 +541,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Additional parameters
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 0);
 
-  g->balance_scale = dt_bauhaus_slider_from_params(self, "balance");
+  g->balance_scale = dt_bauhaus_slider_from_params(self, N_("balance"));
   dt_bauhaus_slider_set_feedback(g->balance_scale, 0);
   dt_bauhaus_slider_set_step(g->balance_scale, 0.001);
   dt_bauhaus_slider_set_digits(g->balance_scale, 4);
@@ -552,7 +552,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->balance_scale, 1.0f, 0.5f, 0.5f, 0.5f);
   gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of split-toning"));
 
-  g->compress_scale = dt_bauhaus_slider_from_params(self, "compress");
+  g->compress_scale = dt_bauhaus_slider_from_params(self, N_("compress"));
   dt_bauhaus_slider_set_format(g->compress_scale, "%.2f%%");
   gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve midtones"));
 }

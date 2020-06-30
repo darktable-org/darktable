@@ -50,7 +50,7 @@ typedef struct dt_iop_profilegamma_params_t
   dt_iop_profilegamma_mode_t mode; // $DEFAULT: PROFILEGAMMA_LOG
   float linear;          // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1
   float gamma;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.45
-  float dynamic_range;   // $MIN: 0.01 $MAX: 32.0 $DEFAULT: 10.0
+  float dynamic_range;   // $MIN: 0.01 $MAX: 32.0 $DEFAULT: 10.0 $DESCRIPTION: "dynamic range"
   float grey_point;      // $MIN: 0.1 $MAX: 100.0 $DEFAULT: 18.0 $DESCRIPTION: "middle grey luma"
   float shadows_range;   // $MIN: -16.0 $MAX: 16.0 $DEFAULT: -5.0 $DESCRIPTION: "black relative exposure"
   float security_factor; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "safety factor"
@@ -691,11 +691,11 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *vbox_gamma = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->linear = dt_bauhaus_slider_from_params(self, "linear");
+  g->linear = dt_bauhaus_slider_from_params(self, N_("linear"));
   dt_bauhaus_slider_set_digits(g->linear, 4);
   gtk_widget_set_tooltip_text(g->linear, _("linear part"));
 
-  g->gamma = dt_bauhaus_slider_from_params(self, "gamma");
+  g->gamma = dt_bauhaus_slider_from_params(self, N_("gamma"));
   dt_bauhaus_slider_set_digits(g->gamma, 4);
   gtk_widget_set_tooltip_text(g->gamma, _("gamma exponential factor"));
 
@@ -743,7 +743,7 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
   gtk_widget_set_tooltip_text(g->mode, _("tone mapping method"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode_stack, TRUE, TRUE, 0);
