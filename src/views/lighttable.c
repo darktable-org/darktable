@@ -228,6 +228,8 @@ static void _lighttable_check_layout(dt_view_t *self)
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                        TRUE); // always on, visibility is driven by panel state
     dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->culling->offset_imgid, TRUE);
+    dt_culling_update_active_images_list(lib->culling);
   }
   else
   {
