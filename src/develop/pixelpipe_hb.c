@@ -2381,27 +2381,13 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
-    // In darkroom view, send preview pipe data to generate a
-    // histogram.  In tether view, the hope is that the thumbnail used
-    // to create the main view image will serve the same purpose.  As
-    // darkroom view also generates thumbnails, potentially not for
-    // the current image, pass a flag to differentiate these. There
-    // doesn't seem to be a good way to keep histogram lib apprised of
-    // current image in darkroom mode, as by the time this is updated,
-    // this step in the pixelpipe has passed.  It does work to pass
-    // image ID so that non-darkroom can know if it needs this
-    // thumbnail.
-    // FIXME: in tether mode, histogram should generate all types of scopes, as a refresh will be from the 8-bit cache
-    // FIXME: would histogram be better off just calling export to generate high quality floating point image of right resolution?
+    // We send lib/histogram.c data from any preview pipe, regardless
+    // of gui_attached.  The only users of a preview pixelipe are
+    // darkroom view and the ad hoc pixelipe in tether view.
     if((strcmp(module->op, "gamma") == 0) &&
-       ((dev->gui_attached && !dev->gui_leaving && pipe == dev->preview_pipe) ||
-        ((pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)))
+       (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW &&
+       !(dev->gui_attached && dev->gui_leaving))
     {
-      const dt_colorspaces_color_profile_type_t color_type =
-        (pipe == dev->preview_pipe) ? darktable.color_profiles->display_type :
-                                      dt_mipmap_cache_get_colorspace();
-      char *color_filename =
-        (pipe == dev->preview_pipe) ? darktable.color_profiles->display_filename  : "";
       // Since histogram is being treated as the second-to-last link
       // in the pixelpipe and has a "process" call, why not treat it
       // as an iop? Granted, other views such as tether may also
@@ -2411,17 +2397,13 @@ post_process_collect_info:
         // input may not be available, so we use the output from gamma
         // this may lead to some rounding errors
         // FIXME: under what circumstances would input not be available?
-        darktable.lib->proxy.histogram.process_8(darktable.lib->proxy.histogram.module,
-                                                 pipe->image.id, (pipe == dev->preview_pipe),
-                                                 (uint8_t *)*output, roi_out->width, roi_out->height,
-                                                 color_type, color_filename);
+        darktable.lib->proxy.histogram.process_8(darktable.lib->proxy.histogram.module, pipe->image.id,
+                                                 (uint8_t *)*output, roi_out->width, roi_out->height);
       }
       else
       {
-        darktable.lib->proxy.histogram.process_f(darktable.lib->proxy.histogram.module,
-                                                 pipe->image.id, (pipe == dev->preview_pipe),
-                                                 (const float *const)input, roi_in.width, roi_in.height,
-                                                 color_type, color_filename);
+        darktable.lib->proxy.histogram.process_f(darktable.lib->proxy.histogram.module, pipe->image.id,
+                                                 (const float *const)input, roi_in.width, roi_in.height);
       }
     }
     dt_pthread_mutex_unlock(&pipe->busy_mutex);

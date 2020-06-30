@@ -79,8 +79,6 @@ typedef struct dt_lib_histogram_t
   // what image this histogram is of -- for keeping it up to date
   // outside of darkroom view
   int32_t histogram_image_id;
-  // resolution of mipmap input -- only need to track one dimension as these images are not being edited
-  int32_t input_width;
   // histogram for display
   uint32_t *histogram;
   uint32_t histogram_max;
@@ -138,8 +136,7 @@ int position()
 }
 
 
-static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height,
-                                             dt_colorspaces_color_profile_type_t color_type, char *color_filename)
+static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height)
 {
   dt_develop_t *dev = darktable.develop;
   float *img_tmp = NULL;
@@ -176,26 +173,25 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   }
 #endif
 
-  // assume that non-color-managed input is a thumbnail where cache_color_managed is false
-  if(color_type == DT_COLORSPACE_NONE) color_type = DT_COLORSPACE_DISPLAY;
-
   // FIXME: histogram_type is confusing as it could also refer to whether it is a linear/logarithmic histogram -- fix this doubling
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
   gchar *histogram_filename = NULL;
   gchar _histogram_filename[1] = { 0 };
 
-  // FIXME: instead of passing in the input color profile, we could know that it was display in case in pixelpipe and dt_mipmap_cache_get_colorspace() if from a mipmap
+  // FIXME: could just call dt_ioppr_get_histogram_profile_info() and call dt_ioppr_add_profile_info_to_list() for display profile and compare these results?
   dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
+  // FIXME: do need to test this for null?
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
 
-  if((histogram_type != color_type)
+  if((histogram_type != darktable.color_profiles->display_type)
      || (histogram_type == DT_COLORSPACE_FILE
-         && strcmp(histogram_filename, color_filename)))
+         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
   {
     img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
 
     const dt_iop_order_iccprofile_info_t *const profile_info_from
-        = dt_ioppr_add_profile_info_to_list(dev, color_type, color_filename, INTENT_PERCEPTUAL);
+        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
+                                            darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
     const dt_iop_order_iccprofile_info_t *const profile_info_to
         = dt_ioppr_add_profile_info_to_list(dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
 
@@ -342,20 +338,18 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 }
 
 // FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
-static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, int32_t image_id, gboolean is_preview,
-                                       const uint8_t *const input, int width, int height,
-                                       dt_colorspaces_color_profile_type_t color_type, char *color_filename)
+static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, int32_t image_id,
+                                       const uint8_t *const input, int width, int height)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  // process if incoming from pixelpipe in darkroom view, or if are
-  // outside of darkroom view and this is a thumbnial which increases
-  // detail for histogram of the current image
-  if(d->view_image_id != -1 && !is_preview)
+  printf("dt_lib_histogram_process_8: img %d viewing %d\n", image_id, d->view_image_id);
+  if(d->view_image_id != -1)
   {
-    if(image_id != d->view_image_id || d->input_width > width) return;
+    // FIXME: need this check?
+    if(image_id != d->view_image_id) return;
     d->histogram_image_id = image_id;
-    d->input_width = width;
   }
+  printf("dt_lib_histogram_process_8 procesing\n");
 
   float *input_tmp = (float *)dt_alloc_align(64, width * height * 4 * sizeof(float));
   const uint8_t *const pixel = input;
@@ -370,7 +364,7 @@ static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, int32_t ima
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input_tmp, width, height, color_type, color_filename);
+      _lib_histogram_process_histogram(d, input_tmp, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       // this makes horizontal banding artifacts due to rounding issues
@@ -386,26 +380,24 @@ static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, int32_t ima
 }
 
 // FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
-static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, int32_t image_id, gboolean is_preview,
-                                       const float *const input, int width, int height,
-                                       dt_colorspaces_color_profile_type_t color_type, char *color_filename)
+static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, int32_t image_id,
+                                       const float *const input, int width, int height)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  printf("dt_lib_histogram_process_f: img %d viewing %d\n", image_id, d->view_image_id);
 
-  // process if incoming from pixelpipe in darkroom view, or if are
-  // outside of darkroom view and this is a thumbnial which increases
-  // detail for histogram of the current image
-  if(d->view_image_id != -1 && !is_preview)
+  if(d->view_image_id != -1)
   {
-    if(image_id != d->view_image_id || d->input_width > width) return;
+    // FIXME: need this check?
+    if(image_id != d->view_image_id) return;
     d->histogram_image_id = image_id;
-    d->input_width = width;
   }
+  printf("dt_lib_histogram_process_f procesing\n");
 
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input, width, height, color_type, color_filename);
+      _lib_histogram_process_histogram(d, input, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       _lib_histogram_process_waveform(d, input, width, height);
@@ -428,25 +420,59 @@ static void _lib_histogram_reprocess(dt_lib_module_t *self)
   }
   else
   {
+    // FIXME: even if not in darkroom mode, develop preview pixelpipe should still be active, can set it to the right image and it'll pass gamma results in to histogram process? henec won't need to build up and break down a preview pipe
+    // FIXME: can keep the same develop/pixelpipe structures running so long as are in tether view?
+    dt_develop_t dev;
     dt_mipmap_buffer_t buf;
-    d->input_width = 0;
-    // FIXME: this works as blocking, but will it work as best effort?
-    // FIXME: best effort this will trigger the pixelpipe, especially if the image is newly imported via tether (in which case pixelpipe would work as well) and then we can get the float data
-    // using DT_MIPMAP_3, as that should be approx. the resolution of a MIPMAP_F which is the darkroom preview size
-    // FIXME: what would a MIPMAP_F or MIPMAP_FULL be?
-    // FIXME: should process routines reject higher quality data, as it might be too slow to process?
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, d->view_image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
+    dt_dev_init(&dev, 0);
+    dt_dev_load_image(&dev, d->view_image_id);
 
-    // FIXME: in some cases, we'll have the data right from the pixelpipe, and it won't be 8-bit clamped -- in that case don't process the 8-bit data
-    // FIXME: we really only want to force the pixelpipe to evaluate and get the data from a "tap" from the pixelpipe, we don't ever want the resulting mipmap
-    if(buf.size != DT_MIPMAP_NONE)
+    // FIXME: instead call dt_dev_process_preview(dev) with dev set up properly with a preview_pipe? -- this will be async
+    // FIXME: or call from dt_dev_process_preview_job()?
+
+    //dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+    // FIXME: probably only need F, as this is preview quality processing
+    // FIXME: can do this before dt_dev_init() so if it fails, we don't have to unbuild dev
+    // FIXME: use dev->image_storage.id as the image id?
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, d->view_image_id, DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');
+
+    // FIXME: need this?
+    //const dt_image_t *img = &dev.image_storage;
+
+    if(!buf.buf || !buf.width || !buf.height)
     {
-      // 8 bit histogram will be clipped, so won't see overexposed pixels in waveform
-      // FIXME: this data also has red/blue channels flipped compared to what comes out of the pixelpipe!
-      dt_lib_histogram_process_8(self, d->view_image_id, FALSE, buf.buf, buf.width, buf.height, buf.color_space, "");
+      dt_dev_cleanup(&dev);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      //dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+      return;
     }
 
+    dt_dev_pixelpipe_t pipe;
+    int res = dt_dev_pixelpipe_init_preview(&pipe);
+
+    if(res)
+    {
+      dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);
+
+      dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+      dt_dev_pixelpipe_synch_all(&pipe, &dev);
+      dt_dev_pixelpipe_flush_caches(&pipe);
+      dev.preview_loading = FALSE;
+
+      dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
+                                      &pipe.processed_height);
+
+      printf("reprocess calling pixelpipe for %d\n", d->view_image_id);
+      dt_dev_pixelpipe_process(&pipe, &dev, 0, 0,
+                               pipe.processed_width * dev.preview_downsampling,
+                               pipe.processed_height * dev.preview_downsampling, dev.preview_downsampling);
+
+      dt_dev_pixelpipe_cleanup(&pipe);
+    }
+    dt_dev_cleanup(&dev);
+    //dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
     dt_control_queue_redraw_widget(self->widget);
   }
 }
@@ -625,6 +651,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
 
   if(!d->histogram_max) return;
   // FIXME: mutex can be "histogram_mutex"
+  // FIXME: if are working outside of darkroom view, this is meaningless
   dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
   // FIXME: don't have to hardcode this anymore, it can at least be a DEFINE
   const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
@@ -654,6 +681,8 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
+  // FIXME: mutex can be "histogram_mutex"
+  // FIXME: if are working outside of darkroom view, this is meaningless
   dt_pthread_mutex_lock(&d->waveform_mutex);
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
@@ -781,6 +810,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   // finished, in other views we know the current image so we can
   // check if our histogram is current
   if((d->view_image_id == -1 && dev->image_storage.id == dev->preview_pipe->output_imgid) ||
+     // FIXME: if keep our preview pipe around, we can compare d->view_image_id to its output_imgid and not track histogram_id at all?
      (d->view_image_id == d->histogram_image_id))
   {
     cairo_save(cr);
@@ -1267,7 +1297,6 @@ static void _lib_histogram_thumbtable_callback(gpointer instance, int imgid, gpo
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   d->view_image_id = imgid;
-  d->input_width = 0;
   // FIXME: hack -- if there already is a mipmap, we don't get mipmap_callback, hence need to reprocess here
   _lib_histogram_reprocess(self);
 }
@@ -1284,7 +1313,6 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   d->histogram_image_id = -1;
-  d->input_width = 0;
 
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
