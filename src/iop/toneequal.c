@@ -1577,10 +1577,10 @@ void gui_update(struct dt_iop_module_t *self)
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  if(w == g->method     || 
-     w == g->blending   || 
-     w == g->feathering || 
-     w == g->iterations || 
+  if(w == g->method     ||
+     w == g->blending   ||
+     w == g->feathering ||
+     w == g->iterations ||
      w == g->quantization)
   {
     invalidate_luminance_cache(self);
