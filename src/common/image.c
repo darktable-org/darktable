@@ -785,7 +785,7 @@ int32_t dt_image_duplicate(const int32_t imgid)
 }
 
 
-int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
+int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
 {
   sqlite3_stmt *stmt;
   int32_t newid = -1;
@@ -934,7 +934,15 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_finalize(stmt);
 
     g_free(filename);
+  }
+  return newid;
+}
 
+int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
+{
+  const int32_t newid = _image_duplicate_with_version(imgid, newversion);
+  if(newid != -1)
+  {
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     const int grpid = img->group_id;
     dt_image_cache_read_release(darktable.image_cache, img);
