@@ -2054,7 +2054,7 @@ void gui_init(dt_iop_module_t *self)
   }
 
   // mode choice
-  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
   gtk_widget_set_tooltip_text(g->mode, _("color-grading mapping method"));
 
   // control choice
@@ -2098,7 +2098,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->grey, .5);
   gtk_widget_set_tooltip_text(g->grey, _("adjust to match a neutral tone"));
 
-  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
   dt_bauhaus_slider_set_soft_range(g->contrast, 0.5f, 1.5f);
   dt_bauhaus_slider_set_digits(g->contrast, 4);
   dt_bauhaus_slider_set_step(g->contrast, .005);

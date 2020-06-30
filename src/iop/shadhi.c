@@ -728,12 +728,12 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_shadhi_gui_data_t));
   dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
 
-  g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
-  g->highlights = dt_bauhaus_slider_from_params(self, "highlights");
+  g->shadows = dt_bauhaus_slider_from_params(self, N_("shadows"));
+  g->highlights = dt_bauhaus_slider_from_params(self, N_("highlights"));
   g->whitepoint = dt_bauhaus_slider_from_params(self, "whitepoint");
   g->shadhi_algo = dt_bauhaus_combobox_from_params(self, "shadhi_algo");
-  g->radius = dt_bauhaus_slider_from_params(self, "radius");
-  g->compress = dt_bauhaus_slider_from_params(self, "compress");
+  g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
+  g->compress = dt_bauhaus_slider_from_params(self, N_("compress"));
   dt_bauhaus_slider_set_format(g->compress, "%.02f%%");
   g->shadows_ccorrect = dt_bauhaus_slider_from_params(self, "shadows_ccorrect");
   dt_bauhaus_slider_set_format(g->shadows_ccorrect, "%.02f%%");

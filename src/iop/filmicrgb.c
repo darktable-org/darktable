@@ -2418,7 +2418,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_notebook_append_page(g->notebook, page2, label);
 
-  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
   dt_bauhaus_slider_set_soft_range(g->contrast, 1.0, 2.0);
   dt_bauhaus_slider_set_digits(g->contrast, 3);
   dt_bauhaus_slider_set_step(g->contrast, .01);
@@ -2432,7 +2432,7 @@ void gui_init(dt_iop_module_t *self)
                                                  "increase to make highlights brighter and less compressed.\n"
                                                  "decrease to mute highlights."));
 
-  g->latitude = dt_bauhaus_slider_from_params(self, "latitude");
+  g->latitude = dt_bauhaus_slider_from_params(self, N_("latitude"));
   dt_bauhaus_slider_set_soft_range(g->latitude, 5.0, 50.0);
   dt_bauhaus_slider_set_format(g->latitude, "%.2f %%");
   gtk_widget_set_tooltip_text(g->latitude, _("width of the linear domain in the middle of the curve,\n"

@@ -425,10 +425,10 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_bilat_gui_data_t));
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
 
-  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
-  g->detail = dt_bauhaus_slider_from_params(self, "detail");
+  g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));
   dt_bauhaus_slider_set_step(g->detail, 0.01);
   dt_bauhaus_slider_set_factor(g->detail, 100);
   dt_bauhaus_slider_set_offset(g->detail, 100);

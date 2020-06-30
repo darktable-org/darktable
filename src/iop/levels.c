@@ -687,17 +687,17 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *vbox_automatic = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
-  c->percentile_black = dt_bauhaus_slider_from_params(self, "black");
+  c->percentile_black = dt_bauhaus_slider_from_params(self, N_("black"));
   gtk_widget_set_tooltip_text(c->percentile_black, _("black percentile"));
   dt_bauhaus_slider_set_format(c->percentile_black, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_black, 0.1);
 
-  c->percentile_grey = dt_bauhaus_slider_from_params(self,"gray"); 
+  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray")); 
   gtk_widget_set_tooltip_text(c->percentile_grey, _("gray percentile"));
   dt_bauhaus_slider_set_format(c->percentile_grey, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_grey, 0.1);
 
-  c->percentile_white = dt_bauhaus_slider_from_params(self, "white");
+  c->percentile_white = dt_bauhaus_slider_from_params(self, N_("white"));
   gtk_widget_set_tooltip_text(c->percentile_white, _("white percentile"));
   dt_bauhaus_slider_set_format(c->percentile_white, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_white, 0.1);
@@ -707,7 +707,7 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
-  c->mode = dt_bauhaus_combobox_from_params(self, "mode");
+  c->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
  
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 

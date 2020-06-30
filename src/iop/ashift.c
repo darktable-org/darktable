@@ -4768,7 +4768,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   shadow_crop_box(p,g);
 
-  g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
+  g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 

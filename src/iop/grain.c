@@ -68,7 +68,7 @@ typedef struct dt_iop_grain_params_t
                           $DEFAULT: 1600.0/GRAIN_SCALE_FACTOR 
                           $DESCRIPTION: "coarseness" */
   float strength;      // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
-  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0
+  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "midtones bias"
 } dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
@@ -589,7 +589,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->scale, _("%.0f ISO"));
   gtk_widget_set_tooltip_text(g->scale, _("the grain size (~ISO of the film)"));
 
-  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
   gtk_widget_set_tooltip_text(g->strength, _("the strength of applied grain"));
 

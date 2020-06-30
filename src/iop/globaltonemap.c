@@ -57,7 +57,7 @@ typedef struct dt_iop_global_tonemap_params_t
   _iop_operator_t operator; // $DEFAULT: OPERATOR_DRAGO
   struct
   {
-    float bias;      // $MIN: 0.5 $MAX: 1 $DEFAULT: 0.85
+    float bias;      // $MIN: 0.5 $MAX: 1 $DEFAULT: 0.85 $DESCRIPTION: "bias"
     float max_light; // cd/m2 $MIN: 1 $MAX: 500 $DEFAULT: 100.0 $DESCRIPTION: "target"
   } drago;
   float detail; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
@@ -654,7 +654,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->lwmax = NAN;
   g->hash = 0;
 
-  g->operator= dt_bauhaus_combobox_from_params(self, "operator");
+  g->operator= dt_bauhaus_combobox_from_params(self, N_("operator"));
   gtk_widget_set_tooltip_text(g->operator, _("the global tonemap operator"));
 
   g->drago.bias = dt_bauhaus_slider_from_params(self, "drago.bias");
@@ -665,7 +665,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->drago.max_light, 10);
   gtk_widget_set_tooltip_text(g->drago.max_light, _("the target light for tonemapper specified as cd/m2"));
 
-  g->detail = dt_bauhaus_slider_from_params(self, "detail");
+  g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));
   dt_bauhaus_slider_set_digits(g->detail, 3);
 }
 
