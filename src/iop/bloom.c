@@ -482,15 +482,15 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_bloom_gui_data_t));
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
 
-  g->size = dt_bauhaus_slider_from_params(self, "size");
+  g->size = dt_bauhaus_slider_from_params(self, N_("size"));
   dt_bauhaus_slider_set_format(g->size, "%.0f%%");
   gtk_widget_set_tooltip_text(g->size, _("the size of bloom"));
 
-  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
+  g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
   dt_bauhaus_slider_set_format(g->threshold, "%.0f%%");
   gtk_widget_set_tooltip_text(g->threshold, _("the threshold of light"));
 
-  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
   gtk_widget_set_tooltip_text(g->strength, _("the strength of bloom"));
 }

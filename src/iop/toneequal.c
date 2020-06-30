@@ -3036,7 +3036,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->method, _("preview the mask and chose the estimator that gives you the\n"
                                            "higher contrast between areas to dodge and areas to burn"));
 
-  g->details = dt_bauhaus_combobox_from_params(self, "details");
+  g->details = dt_bauhaus_combobox_from_params(self, N_("details"));
   dt_bauhaus_widget_set_label(g->details, NULL, _("preserve details"));
   gtk_widget_set_tooltip_text(g->details, _("'no' affects global and local contrast (safe if you only add contrast)\n"
                                             "'guided filter' only affects global contrast and tries to preserve local contrast\n"

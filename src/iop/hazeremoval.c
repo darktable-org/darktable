@@ -202,10 +202,10 @@ void gui_init(dt_iop_module_t *self)
   g->A0[2] = NAN;
   g->hash = 0;
 
-  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
 
-  g->distance = dt_bauhaus_slider_from_params(self, "distance");
+  g->distance = dt_bauhaus_slider_from_params(self, N_("distance"));
   dt_bauhaus_slider_set_step(g->distance, 0.005);
   dt_bauhaus_slider_set_digits(g->distance, 3);
   gtk_widget_set_tooltip_text(g->distance, _("limit haze removal up to a specific spatial depth"));

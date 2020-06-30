@@ -69,8 +69,8 @@ typedef struct dt_iop_basecurve_params_t
   float exposure_stops;   /* number of stops between fusion images
                              $MIN: 0.01 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure shift" */
   float exposure_bias;    /* whether to do exposure-fusion with over or under-exposure
-                             $MIN: -1.0 $MAX: 1.0 $DEFAULT: 1.0 */
-  dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE */
+                             $MIN: -1.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure bias" */
+  dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE $DESCRIPTION: "preserve colors" */
 } dt_iop_basecurve_params_t;
 
 typedef struct dt_iop_basecurve_params5_t

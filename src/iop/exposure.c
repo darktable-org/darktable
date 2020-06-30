@@ -881,7 +881,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                              "this is useful if you exposed the image to the right."));
   gtk_box_pack_start(GTK_BOX(vbox_manual), g->compensate_exposure_bias, TRUE, TRUE, 0);
 
-  g->exposure = dt_bauhaus_slider_from_params(self, "exposure");
+  g->exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
   dt_bauhaus_slider_set_step(g->exposure, 0.02);
   dt_bauhaus_slider_set_digits(g->exposure, 3);
@@ -926,7 +926,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode_stack), TRUE, TRUE, 0);
 
