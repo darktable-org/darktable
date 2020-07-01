@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-30 21:36+0200\n"
-"PO-Revision-Date: 2020-07-01 00:19+0200\n"
+"POT-Creation-Date: 2020-07-01 23:01+0200\n"
+"PO-Revision-Date: 2020-07-01 23:30+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -671,7 +671,6 @@ msgstr "Ziel-Wert"
 
 #: ../build/src/iop/introspection_exposure.c:168
 #: ../build/src/iop/introspection_levels.c:160
-#, fuzzy
 msgid "manual"
 msgstr "manuell"
 
@@ -699,29 +698,23 @@ msgstr "weiß relative Belichtung"
 
 #: ../build/src/iop/introspection_filmicrgb.c:210
 #: ../build/src/iop/introspection_filmicrgb.c:395
-#, fuzzy
 msgid "transition"
-msgstr "Sättigung"
+msgstr "Übergang"
 
 #: ../build/src/iop/introspection_filmicrgb.c:216
 #: ../build/src/iop/introspection_filmicrgb.c:399
-#, fuzzy
 msgid "bloom/reconstruct"
-msgstr "Farbrekonstruktion"
+msgstr "Ausblühen/Rekonstruktion"
 
-# Was auch immer Farbdetails sein mögen
 #: ../build/src/iop/introspection_filmicrgb.c:222
 #: ../build/src/iop/introspection_filmicrgb.c:403
-#, fuzzy
 msgid "grey/colorful details"
-msgstr "Farbdetails verstärken"
+msgstr "graue/farbige Details"
 
-# etwas zu frei übersetzt?
 #: ../build/src/iop/introspection_filmicrgb.c:228
 #: ../build/src/iop/introspection_filmicrgb.c:407
-#, fuzzy
 msgid "structure/texture"
-msgstr "Strukturen finden"
+msgstr "Struktur/Textur"
 
 #: ../build/src/iop/introspection_filmicrgb.c:234
 #: ../build/src/iop/introspection_filmicrgb.c:411
@@ -763,9 +756,8 @@ msgstr "Schatten/Spitzlichter-Balance"
 
 #: ../build/src/iop/introspection_filmicrgb.c:288
 #: ../build/src/iop/introspection_filmicrgb.c:447
-#, fuzzy
 msgid "add noise in highlights"
-msgstr "Schatten und Spitzlichter"
+msgstr "Rauschen in den Spitzlichtern hinzufügen"
 
 #: ../build/src/iop/introspection_filmicrgb.c:294
 #: ../build/src/iop/introspection_filmicrgb.c:451
@@ -774,44 +766,38 @@ msgstr "Chrominanz erhalten"
 
 #: ../build/src/iop/introspection_filmicrgb.c:300
 #: ../build/src/iop/introspection_filmicrgb.c:455
-#, fuzzy
 msgid "color science"
-msgstr "Farbzusammenstellung"
+msgstr "Farbwissenschaft"
 
 #: ../build/src/iop/introspection_filmicrgb.c:306
 #: ../build/src/iop/introspection_filmicrgb.c:459
-#, fuzzy
 msgid "auto adjust hardness"
-msgstr "ziehen, um die Härte anzupassen (Zentrum)"
+msgstr "Härte automatisch anpassen"
 
 #: ../build/src/iop/introspection_filmicrgb.c:312
 #: ../build/src/iop/introspection_filmicrgb.c:463
 msgid "use custom middle-grey values"
-msgstr ""
+msgstr "nutzerdefinierten Wert für mittleres Grau nutzen"
 
 #: ../build/src/iop/introspection_filmicrgb.c:318
 #: ../build/src/iop/introspection_filmicrgb.c:467
-#, fuzzy
 msgid "iterations of high-quality reconstruction"
-msgstr "Spitzlicht-Rekonstruktion"
+msgstr "Iterationen der Spitzlicht-Rekonstruktion"
 
 #: ../build/src/iop/introspection_filmicrgb.c:324
 #: ../build/src/iop/introspection_filmicrgb.c:471
-#, fuzzy
 msgid "type of noise"
-msgstr "entrauschen"
+msgstr "Art des Rauschens"
 
 #: ../build/src/iop/introspection_filmicrgb.c:330
 #: ../build/src/iop/introspection_filmicrgb.c:475
-#, fuzzy
 msgid "contrast in shadows"
-msgstr "Schatten korrigieren"
+msgstr "Kontrast in den Schatten"
 
 #: ../build/src/iop/introspection_filmicrgb.c:336
 #: ../build/src/iop/introspection_filmicrgb.c:479
-#, fuzzy
 msgid "contrast in highlights"
-msgstr "Spitzlichter korrigieren"
+msgstr "Kontrast in den Spitzlichtern"
 
 #: ../build/src/iop/introspection_filmicrgb.c:493
 #: ../build/src/iop/introspection_toneequal.c:360 ../src/common/darktable.c:820
@@ -835,26 +821,24 @@ msgstr "RGB-Stärke-Standard"
 #: ../build/src/iop/introspection_filmicrgb.c:497
 #: ../build/src/iop/introspection_toneequal.c:370
 msgid "RGB euclidean norm"
-msgstr "Euklidische Normierung der RGB Werte"
+msgstr "Euklidische Norm der RGB-Werte"
 
 #: ../build/src/iop/introspection_filmicrgb.c:501
 msgid "v3 (2019)"
-msgstr ""
+msgstr "V3 (2019)"
 
 #: ../build/src/iop/introspection_filmicrgb.c:502
 msgid "v4 (2020)"
-msgstr ""
+msgstr "V4 (2020)"
 
 #: ../build/src/iop/introspection_filmicrgb.c:506
-#, fuzzy
 msgid "hard"
-msgstr "Härte"
+msgstr "hart"
 
 # nicht schön
 #: ../build/src/iop/introspection_filmicrgb.c:507
-#, fuzzy
 msgid "soft"
-msgstr "Weichzeichnen"
+msgstr "weich"
 
 #: ../build/src/iop/introspection_globaltonemap.c:60
 #: ../build/src/iop/introspection_globaltonemap.c:125
@@ -867,9 +851,8 @@ msgid "target"
 msgstr "Ziel"
 
 #: ../build/src/iop/introspection_globaltonemap.c:151
-#, fuzzy
 msgid "reinhard"
-msgstr "Härte"
+msgstr "Reinhard"
 
 #: ../build/src/iop/introspection_globaltonemap.c:152 ../src/iop/filmic.c:163
 msgid "filmic"
@@ -877,7 +860,7 @@ msgstr "filmisch"
 
 #: ../build/src/iop/introspection_globaltonemap.c:153
 msgid "drago"
-msgstr ""
+msgstr "Drago"
 
 #: ../build/src/iop/introspection_graduatednd.c:63
 #: ../build/src/iop/introspection_graduatednd.c:136
@@ -1138,13 +1121,13 @@ msgstr "Maskenquantisierung"
 
 #: ../build/src/iop/introspection_toneequal.c:211
 #: ../build/src/iop/introspection_toneequal.c:330
-msgid "mask exposure compensation"
-msgstr "Maskenbelichtungskompensation"
+msgid "mask contrast compensation"
+msgstr "Maskenkontrastkompensation"
 
 #: ../build/src/iop/introspection_toneequal.c:217
 #: ../build/src/iop/introspection_toneequal.c:334
-msgid "mask contrast compensation"
-msgstr "Maskenkontrastkompensation"
+msgid "mask exposure compensation"
+msgstr "Maskenbelichtungskompensation"
 
 # wtf?
 #: ../build/src/iop/introspection_toneequal.c:229
@@ -3437,53 +3420,53 @@ msgstr ""
 msgid "orphaned image"
 msgstr "verwaistes Bild"
 
-#: ../src/common/image.c:1638
+#: ../src/common/image.c:1660
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "auf lokale Kopie „%s” kann nicht zugegriffen werden."
 
-#: ../src/common/image.c:1645
+#: ../src/common/image.c:1667
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "lokale Kopie „%s” kann nicht erzeugt werden."
 
-#: ../src/common/image.c:1652
+#: ../src/common/image.c:1674
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Fehler beim Verschieben lokaler Kopie „%s” auf „%s”"
 
-#: ../src/common/image.c:1668
+#: ../src/common/image.c:1690
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Fehler beim Verschieben „%s”: Datei nicht gefunden"
 
-#: ../src/common/image.c:1678
+#: ../src/common/image.c:1700
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Fehler beim Verschieben „%s” auf „%s”: Datei existiert bereits"
 
-#: ../src/common/image.c:1682
+#: ../src/common/image.c:1704
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Fehler beim Verschieben „%s” auf „%s”"
 
-#: ../src/common/image.c:1961
+#: ../src/common/image.c:1983
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht erzeugt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:1975
+#: ../src/common/image.c:1997
 msgid "cannot create local copy."
 msgstr "lokale Kopie kann nicht erzeugt werden."
 
-#: ../src/common/image.c:2047 ../src/control/jobs/control_jobs.c:664
+#: ../src/common/image.c:2069 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht entfernt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:2227
+#: ../src/common/image.c:2249
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -5153,9 +5136,9 @@ msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: Maske hat unpassende Version: %d != %d"
 
 #: ../src/develop/masks/masks.c:1731 ../src/develop/masks/masks.c:2415
-#, fuzzy, c-format
+#, c-format
 msgid "opacity: %d%%"
-msgstr "Deckkraft"
+msgstr "Deckkraft: %d%%"
 
 #: ../src/develop/masks/masks.c:2161 ../src/libs/masks.c:1053
 msgid "add existing shape"
@@ -5184,18 +5167,16 @@ msgstr ""
 "Kachelung für Modul „%s” fehlgeschlagen. Die Ausgabe könnte fehlerhaft sein."
 
 #: ../src/dtgtk/culling.c:230
-#, fuzzy
 msgid "you have reached the start of your selection"
-msgstr "Anfang der Sammlung erreicht"
+msgstr "Anfang der Auswahl erreicht"
 
 #: ../src/dtgtk/culling.c:239
 msgid "you have reached the start of your collection"
 msgstr "Anfang der Sammlung erreicht"
 
 #: ../src/dtgtk/culling.c:282
-#, fuzzy
 msgid "you have reached the end of your selection"
-msgstr "Ende der Sammlung erreicht"
+msgstr "Ende der Auswahl erreicht"
 
 #: ../src/dtgtk/culling.c:306
 msgid "you have reached the end of your collection"
@@ -5772,12 +5753,11 @@ msgstr "Zum Überschreiben des Datums bitte als Format YYYY-MM-DD benutzen"
 
 #: ../src/gui/gtk.c:287
 msgid "tooltips off"
-msgstr ""
+msgstr "Kurzinfos aus"
 
 #: ../src/gui/gtk.c:289
-#, fuzzy
 msgid "tooltips on"
-msgstr "zeige beide"
+msgstr "Kurzinfos an"
 
 #: ../src/gui/gtk.c:294
 msgid ""
@@ -7331,31 +7311,26 @@ msgid "shear"
 msgstr "Scherung"
 
 #: ../src/iop/ashift.c:538
-#, fuzzy
 msgctxt "accel"
 msgid "focal length"
 msgstr "Brennweite"
 
 #: ../src/iop/ashift.c:539
-#, fuzzy
 msgctxt "accel"
 msgid "crop factor"
 msgstr "Crop-Faktor"
 
 #: ../src/iop/ashift.c:540
-#, fuzzy
 msgctxt "accel"
 msgid "aspect adjust"
 msgstr "Seitenverhältnis anpassen"
 
 #: ../src/iop/ashift.c:541
-#, fuzzy
 msgctxt "accel"
 msgid "guides"
 msgstr "Hilfslinien"
 
 #: ../src/iop/ashift.c:542 ../src/iop/clipping.c:3477
-#, fuzzy
 msgctxt "accel"
 msgid "automatic cropping"
 msgstr "automatisch Zuschneiden"
@@ -8001,9 +7976,8 @@ msgid "saturation adjustment"
 msgstr "Farbsättigungsanpassung"
 
 #: ../src/iop/basicadj.c:661
-#, fuzzy
 msgid "vibrance adjustment"
-msgstr "grundlegende Anpassungen"
+msgstr "Lebendigkeitsanpassung"
 
 #: ../src/iop/basicadj.c:666
 msgid "apply auto exposure based on the entire image"
@@ -10799,9 +10773,9 @@ msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
-"v3 entspricht der Entsättigungsmethode aus darktable 3.0.\n"
-"v4 ist eine neuere Entsättigungsmethode basierend auf der spektralen "
-"Reinheit des Lichts?"
+"V3 entspricht der Entsättigungsmethode aus darktable 3.0.\n"
+"V4 ist eine neuere Entsättigungsmethode basierend auf der spektralen "
+"Reinheit des Lichts."
 
 #: ../src/iop/filmicrgb.c:2496
 msgid ""
@@ -10960,10 +10934,9 @@ msgid "rotate 90 degrees CW"
 msgstr "um 90° im Uhrzeigersinn drehen"
 
 #: ../src/iop/gamma.c:43
-#, fuzzy
 msgctxt "modulename"
 msgid "display encoding"
-msgstr "Auswahl anzeigen"
+msgstr "Ausgabekodierung"
 
 #: ../src/iop/globaltonemap.c:103
 msgid "global tonemap"
