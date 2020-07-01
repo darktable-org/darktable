@@ -29,6 +29,7 @@
 #include "common/opencl.h"
 #include "develop/blend.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/masks.h"
 #include "iop/iop_api.h"
 #include "dtgtk/drawingarea.h"
@@ -53,34 +54,34 @@ typedef enum dt_iop_retouch_drag_types_t {
 } dt_iop_retouch_drag_types_t;
 
 typedef enum dt_iop_retouch_fill_modes_t {
-  DT_IOP_RETOUCH_FILL_ERASE = 0,
-  DT_IOP_RETOUCH_FILL_COLOR = 1
+  DT_IOP_RETOUCH_FILL_ERASE = 0, // $DESCRIPTION: "erase"
+  DT_IOP_RETOUCH_FILL_COLOR = 1  // $DESCRIPTION: "color"
 } dt_iop_retouch_fill_modes_t;
 
 typedef enum dt_iop_retouch_blur_types_t {
-  DT_IOP_RETOUCH_BLUR_GAUSSIAN = 0,
-  DT_IOP_RETOUCH_BLUR_BILATERAL = 1
+  DT_IOP_RETOUCH_BLUR_GAUSSIAN = 0, // $DESCRIPTION: "gaussian"
+  DT_IOP_RETOUCH_BLUR_BILATERAL = 1 // $DESCRIPTION: "bilateral"
 } dt_iop_retouch_blur_types_t;
 
 typedef enum dt_iop_retouch_algo_type_t {
-  DT_IOP_RETOUCH_CLONE = 1,
-  DT_IOP_RETOUCH_HEAL = 2,
-  DT_IOP_RETOUCH_BLUR = 3,
-  DT_IOP_RETOUCH_FILL = 4
+  DT_IOP_RETOUCH_CLONE = 1, // $DESCRIPTION: "clone"
+  DT_IOP_RETOUCH_HEAL = 2,  // $DESCRIPTION: "heal"
+  DT_IOP_RETOUCH_BLUR = 3,  // $DESCRIPTION: "blur"
+  DT_IOP_RETOUCH_FILL = 4   // $DESCRIPTION: "fill"
 } dt_iop_retouch_algo_type_t;
 
 typedef struct dt_iop_retouch_form_data_t
 {
   int formid; // from masks, form->formid
   int scale;  // 0==original image; 1..RETOUCH_MAX_SCALES==scale; RETOUCH_MAX_SCALES+1==residual
-  dt_iop_retouch_algo_type_t algorithm; // clone, heal, blur, fill
+  dt_iop_retouch_algo_type_t algorithm;  // clone, heal, blur, fill
 
-  int blur_type;     // gaussian, bilateral
-  float blur_radius; // radius for blur algorithm
+  dt_iop_retouch_blur_types_t blur_type; // gaussian, bilateral
+  float blur_radius;                     // radius for blur algorithm
 
-  int fill_mode;         // mode for fill algorithm, erase or fill with color
-  float fill_color[3];   // color for fill algorithm
-  float fill_brightness; // value to be added to the color
+  dt_iop_retouch_fill_modes_t fill_mode; // mode for fill algorithm, erase or fill with color
+  float fill_color[3];                   // color for fill algorithm
+  float fill_brightness;                 // value to be added to the color
 } dt_iop_retouch_form_data_t;
 
 typedef struct retouch_user_data_t
@@ -97,20 +98,20 @@ typedef struct dt_iop_retouch_params_t
 {
   dt_iop_retouch_form_data_t rt_forms[RETOUCH_NO_FORMS]; // array of masks index and additional data
 
-  dt_iop_retouch_algo_type_t algorithm; // clone, heal, blur, fill
+  dt_iop_retouch_algo_type_t algorithm; // $DEFAULT: DT_IOP_RETOUCH_HEAL clone, heal, blur, fill
 
-  int num_scales; // number of wavelets scales
-  int curr_scale; // current wavelet scale
-  int merge_from_scale;
+  int num_scales;       // $DEFAULT: 0 number of wavelets scales
+  int curr_scale;       // $DEFAULT: 0 current wavelet scale
+  int merge_from_scale; // $DEFAULT: 0
 
   float preview_levels[3];
 
-  int blur_type;     // gaussian, bilateral
-  float blur_radius; // radius for blur algorithm
+  dt_iop_retouch_blur_types_t blur_type; // $DEFAULT: DT_IOP_RETOUCH_BLUR_GAUSSIAN $DESCRIPTION: "blur type" gaussian, bilateral
+  float blur_radius; // $MIN: 0.1 $MAX: 200.0 $DEFAULT: 10.0 $DESCRIPTION: "blur radius" radius for blur algorithm
 
-  int fill_mode;         // mode for fill algorithm, erase or fill with color
-  float fill_color[3];   // color for fill algorithm
-  float fill_brightness; // value to be added to the color
+  dt_iop_retouch_fill_modes_t fill_mode; // $DEFAULT: DT_IOP_RETOUCH_FILL_ERASE $DESCRIPTION: "fill mode" mode for fill algorithm, erase or fill with color
+  float fill_color[3];   // $DEFAULT: 0.0 color for fill algorithm
+  float fill_brightness; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "brightness" value to be added to the color
 } dt_iop_retouch_params_t;
 
 typedef struct dt_iop_retouch_gui_data_t
@@ -993,7 +994,7 @@ static void rt_clamp_minmax(float levels_old[3], float levels_new[3])
   }
 }
 
-static int rt_shape_is_beign_added(dt_iop_module_t *self, const int shape_type)
+static int rt_shape_is_being_added(dt_iop_module_t *self, const int shape_type)
 {
   int being_added = 0;
 
@@ -2022,88 +2023,34 @@ static void rt_suppress_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
   dt_dev_reprocess_center(module->dev);
 }
 
-static void rt_blur_type_callback(GtkComboBox *combo, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(darktable.gui->reset) return;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  p->blur_type = dt_bauhaus_combobox_get((GtkWidget *)combo);
-
-  const int index = rt_get_selected_shape_index(p);
-  if(index >= 0)
-  {
-    if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_BLUR)
-    {
-      p->rt_forms[index].blur_type = p->blur_type;
-    }
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void rt_blur_radius_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  p->blur_radius = dt_bauhaus_slider_get(slider);
-
-  const int index = rt_get_selected_shape_index(p);
-  if(index >= 0)
-  {
-    if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_BLUR)
-    {
-      p->rt_forms[index].blur_radius = p->blur_radius;
-    }
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void rt_fill_mode_callback(GtkComboBox *combo, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-
-  ++darktable.gui->reset;
-
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  p->fill_mode = dt_bauhaus_combobox_get((GtkWidget *)combo);
-
-  const int index = rt_get_selected_shape_index(p);
-  if(index >= 0)
+  if(w == g->cmb_fill_mode)
   {
-    if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
+    ++darktable.gui->reset;
+    rt_show_hide_controls(self, g, p, g);
+    --darktable.gui->reset;
+  }
+  else
+  {
+    const int index = rt_get_selected_shape_index(p);
+    if(index >= 0)
     {
-      p->rt_forms[index].fill_mode = p->fill_mode;
+      if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_BLUR)
+      {
+        p->rt_forms[index].blur_type = p->blur_type;
+        p->rt_forms[index].blur_radius = p->blur_radius;
+      }
+      else if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
+      {
+        p->rt_forms[index].fill_mode = p->fill_mode;
+        p->rt_forms[index].fill_brightness = p->fill_brightness;
+      }
     }
   }
-
-  rt_show_hide_controls(self, g, p, g);
-
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void rt_fill_brightness_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  p->fill_brightness = dt_bauhaus_slider_get(slider);
-
-  const int index = rt_get_selected_shape_index(p);
-  if(index >= 0)
-  {
-    if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
-    {
-      p->rt_forms[index].fill_brightness = p->fill_brightness;
-    }
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2124,43 +2071,15 @@ void masks_selection_changed(struct dt_iop_module_t *self, const int form_select
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_retouch_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_retouch_params_t));
-  // our module is disabled by default
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_retouch_params_t);
-  module->gui_data = NULL;
+  dt_iop_default_init(module);
 
-  // init defaults:
-  dt_iop_retouch_params_t tmp;
-  memset(&tmp, 0, sizeof(tmp));
+  dt_iop_retouch_params_t *d = module->default_params;
+  
+  d->preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
+  d->preview_levels[1] = 0.f;
+  d->preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
 
-  tmp.algorithm = DT_IOP_RETOUCH_HEAL;
-  tmp.num_scales = 0;
-  tmp.curr_scale = 0;
-  tmp.merge_from_scale = 0;
-
-  tmp.preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
-  tmp.preview_levels[1] = 0.f;
-  tmp.preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
-
-  tmp.blur_type = DT_IOP_RETOUCH_BLUR_GAUSSIAN;
-  tmp.blur_radius = 10.0f;
-
-  tmp.fill_mode = DT_IOP_RETOUCH_FILL_ERASE;
-  tmp.fill_color[0] = tmp.fill_color[1] = tmp.fill_color[2] = 0.f;
-  tmp.fill_brightness = 0.f;
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_retouch_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_retouch_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  memcpy(module->params, module->default_params, sizeof(dt_iop_retouch_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -2309,10 +2228,10 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), p->algorithm == DT_IOP_RETOUCH_FILL);
 
   // enable/disable shapes toolbar
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_beign_added(self, DT_MASKS_CIRCLE));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_beign_added(self, DT_MASKS_PATH));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_beign_added(self, DT_MASKS_ELLIPSE));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_beign_added(self, DT_MASKS_BRUSH));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_being_added(self, DT_MASKS_CIRCLE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_being_added(self, DT_MASKS_PATH));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_being_added(self, DT_MASKS_ELLIPSE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_being_added(self, DT_MASKS_BRUSH));
 
   // update the rest of the fields
   gtk_widget_queue_draw(GTK_WIDGET(g->wd_bar));
@@ -2387,8 +2306,6 @@ void gui_init(dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
-
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // shapes toolbar
   GtkWidget *hbox_shapes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2627,14 +2544,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), GTK_WIDGET(g->label_form_selected), FALSE, TRUE, 0);
 
   // fill properties
-  g->vbox_fill = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  g->vbox_fill = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  g->cmb_fill_mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_fill_mode, NULL, _("fill mode"));
-  dt_bauhaus_combobox_add(g->cmb_fill_mode, _("erase"));
-  dt_bauhaus_combobox_add(g->cmb_fill_mode, _("color"));
+  g->cmb_fill_mode = dt_bauhaus_combobox_from_params(self, "fill_mode");
   gtk_widget_set_tooltip_text(g->cmb_fill_mode, _("erase the detail or fills with chosen color"));
-  g_signal_connect(G_OBJECT(g->cmb_fill_mode), "value-changed", G_CALLBACK(rt_fill_mode_callback), self);
 
   // color for fill algorithm
   GdkRGBA color
@@ -2654,34 +2567,22 @@ void gui_init(dt_iop_module_t *self)
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, g->hbox_color_pick);
   gtk_widget_set_tooltip_text(g->colorpicker, _("pick fill color from image"));
 
-  g->sl_fill_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .0005, .0, 4);
-  dt_bauhaus_widget_set_label(g->sl_fill_brightness, _("brightness"), _("brightness"));
+  gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->hbox_color_pick, TRUE, TRUE, 0);
+
+  g->sl_fill_brightness = dt_bauhaus_slider_from_params(self, "fill_brightness");
+  dt_bauhaus_slider_set_digits(g->sl_fill_brightness, 4);
   gtk_widget_set_tooltip_text(g->sl_fill_brightness,
                               _("adjusts color brightness to fine-tune it. works with erase as well"));
-  g_signal_connect(G_OBJECT(g->sl_fill_brightness), "value-changed", G_CALLBACK(rt_fill_brightness_callback), self);
-
-  gtk_box_pack_start(GTK_BOX(g->vbox_fill), GTK_WIDGET(g->cmb_fill_mode), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->hbox_color_pick, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->sl_fill_brightness, TRUE, TRUE, 0);
 
   // blur properties
-  g->vbox_blur = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  g->vbox_blur = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
-  g->cmb_blur_type = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_blur_type, NULL, _("blur type"));
-  dt_bauhaus_combobox_add(g->cmb_blur_type, _("gaussian"));
-  dt_bauhaus_combobox_add(g->cmb_blur_type, _("bilateral"));
+  g->cmb_blur_type = dt_bauhaus_combobox_from_params(self, "blur_type");
   gtk_widget_set_tooltip_text(g->cmb_blur_type, _("type for the blur algorithm"));
-  g_signal_connect(G_OBJECT(g->cmb_blur_type), "value-changed", G_CALLBACK(rt_blur_type_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(g->vbox_blur), g->cmb_blur_type, TRUE, TRUE, 0);
-
-  g->sl_blur_radius = dt_bauhaus_slider_new_with_range(self, 0.1, 200.0, 0.1, 10., 2);
-  dt_bauhaus_widget_set_label(g->sl_blur_radius, _("blur radius"), _("blur radius"));
+  g->sl_blur_radius = dt_bauhaus_slider_from_params(self, "blur_radius");
+  dt_bauhaus_slider_set_step(g->sl_blur_radius, 0.1);
   gtk_widget_set_tooltip_text(g->sl_blur_radius, _("radius of the selected blur type"));
-  g_signal_connect(G_OBJECT(g->sl_blur_radius), "value-changed", G_CALLBACK(rt_blur_radius_callback), self);
-
-  gtk_box_pack_start(GTK_BOX(g->vbox_blur), g->sl_blur_radius, TRUE, TRUE, 0);
 
   // mask opacity
   g->sl_mask_opacity = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.05, 1., 3);
@@ -2689,7 +2590,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->sl_mask_opacity, _("set the opacity on the selected shape"));
   g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed", G_CALLBACK(rt_mask_opacity_callback), self);
 
-  // add all the controls to the iop
+  // start building top level widget
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
   GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
 
@@ -3084,7 +2987,7 @@ static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *accel
 
   rt_add_shape(GTK_WIDGET(g->bt_circle), FALSE, module);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_beign_added(module, DT_MASKS_CIRCLE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_being_added(module, DT_MASKS_CIRCLE));
 
   --darktable.gui->reset;
 
@@ -3101,7 +3004,7 @@ static gboolean _add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acce
 
   rt_add_shape(GTK_WIDGET(g->bt_ellipse), FALSE, module);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_beign_added(module, DT_MASKS_ELLIPSE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_being_added(module, DT_MASKS_ELLIPSE));
 
   --darktable.gui->reset;
 
@@ -3118,7 +3021,7 @@ static gboolean _add_brush_key_accel(GtkAccelGroup *accel_group, GObject *accele
 
   rt_add_shape(GTK_WIDGET(g->bt_brush), FALSE, module);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_beign_added(module, DT_MASKS_BRUSH));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_being_added(module, DT_MASKS_BRUSH));
 
   --darktable.gui->reset;
 
@@ -3135,7 +3038,7 @@ static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceler
 
   rt_add_shape(GTK_WIDGET(g->bt_path), FALSE, module);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_beign_added(module, DT_MASKS_PATH));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_being_added(module, DT_MASKS_PATH));
 
   --darktable.gui->reset;
 
@@ -3152,7 +3055,7 @@ static gboolean _continuous_add_circle_key_accel(GtkAccelGroup *accel_group, GOb
 
   rt_add_shape(GTK_WIDGET(g->bt_circle), TRUE, module);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_beign_added(module, DT_MASKS_CIRCLE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_being_added(module, DT_MASKS_CIRCLE));
 
   --darktable.gui->reset;
 
@@ -3169,7 +3072,7 @@ static gboolean _continuous_add_ellipse_key_accel(GtkAccelGroup *accel_group, GO
 
   rt_add_shape(GTK_WIDGET(g->bt_ellipse), TRUE, module);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_beign_added(module, DT_MASKS_ELLIPSE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_being_added(module, DT_MASKS_ELLIPSE));
 
   --darktable.gui->reset;
 
@@ -3186,7 +3089,7 @@ static gboolean _continuous_add_brush_key_accel(GtkAccelGroup *accel_group, GObj
 
   rt_add_shape(GTK_WIDGET(g->bt_brush), TRUE, module);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_beign_added(module, DT_MASKS_BRUSH));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_being_added(module, DT_MASKS_BRUSH));
 
   --darktable.gui->reset;
 
@@ -3203,7 +3106,7 @@ static gboolean _continuous_add_path_key_accel(GtkAccelGroup *accel_group, GObje
 
   rt_add_shape(GTK_WIDGET(g->bt_path), TRUE, module);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_beign_added(module, DT_MASKS_PATH));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_being_added(module, DT_MASKS_PATH));
 
   --darktable.gui->reset;
 
