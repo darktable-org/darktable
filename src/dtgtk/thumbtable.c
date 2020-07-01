@@ -2134,14 +2134,16 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
 
   if(first->rowid > rowid)
   {
-    if(_move(table, 0, table->thumb_size, TRUE))
+    const int rows = MAX(1,(first->rowid-rowid)/table->thumbs_per_row);
+    if(_move(table, 0, rows*table->thumb_size, TRUE))
       return _filemanager_ensure_rowid_visibility(table, rowid);
     else
       return FALSE;
   }
   else if(last->rowid < rowid)
   {
-    if(_move(table, 0, -table->thumb_size, TRUE))
+    const int rows = MAX(1,(rowid-last->rowid)/table->thumbs_per_row);
+    if(_move(table, 0, -rows*table->thumb_size, TRUE))
       return _filemanager_ensure_rowid_visibility(table, rowid);
     else
       return FALSE;
