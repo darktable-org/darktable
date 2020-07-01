@@ -745,13 +745,16 @@ static GList *_preset_from_string(gchar *txt)
 
 void init_presets(dt_lib_module_t *self)
 {
-  gchar *tx = "test|basic|ashift|filmicrgb|exposureꬹcoucou|tone|clipping|vignette|watermarkꬹtruc|effect|"
-              "clipping|filmicrgb|"
-              "tonecurve|temperature";
+  gchar *tx = "technical|basic|colorin|hazeremoval|filmicrgb|clipping|flip|lens|exposure|denoiseprofile|demosaic|highlights"
+              "ꬹgrading|color|rgblevels|colorbalance|toneequal|temperature"
+              "ꬹeffect|effect|sharpen|bilat";
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
-  gchar *tx2 = "test|color|filmicrgbꬹtruc|favorites|clipping|filmicrgb";
-  dt_lib_presets_add(_("test"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
+  gchar *tx2 = "base|basic|basecurve|toneequal|clipping|flip|exposure|demosaic|highlights|temperature|filmicrgb"
+               "ꬹtone|tone|rgblevels|bilat"
+               "ꬹcolor|color|colorbalance|colorin"
+               "ꬹcorrect|correct|sharpen|hazeremoval|lens|denoiseprofile";
+  dt_lib_presets_add(_("3.0 layout"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
 }
 
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
