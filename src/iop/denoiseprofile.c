@@ -4342,7 +4342,7 @@ void gui_init(dt_iop_module_t *self)
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_soft_max(g->strength, 4.0f);
   dt_bauhaus_slider_set_digits(g->strength, 3);
-  dt_bauhaus_slider_set_step(g->strength, 0.5f);
+  dt_bauhaus_slider_set_step(g->strength, 0.05f);
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
   dt_bauhaus_slider_set_step(g->shadows, 0.05f);
   g->bias = dt_bauhaus_slider_from_params(self, "bias");
