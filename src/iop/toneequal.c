@@ -2278,6 +2278,14 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     g->mask_display = FALSE;
     dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), FALSE);
     dt_dev_reprocess_center(self->dev);
+    dt_control_hinter_message(darktable.control, "");
+  }
+  else
+  {
+    dt_control_hinter_message(darktable.control,
+                              "scroll over image to change tone exposure by 0.25 EV\n"
+                              "shift+scroll to change by 1 EV, and ctrl+scroll to change by 0.1 EV\n"
+                              "A+scroll to zoom");
   }
 }
 
