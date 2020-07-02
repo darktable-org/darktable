@@ -1825,6 +1825,11 @@ static void switch_cursors(struct dt_iop_module_t *self)
     // if pipe is clean and idle and cursor is on preview,
     // hide GTK cursor because we display our custom one
     dt_control_change_cursor(GDK_BLANK_CURSOR);
+    dt_control_hinter_message(darktable.control,
+                  "scroll over image to change tone exposure by 0.25 EV\n"
+                  "shift+scroll to change by 1 EV, and ctrl+scroll to change by 0.1 EV\n"
+                  "A+scroll to zoom");
+
     dt_control_queue_redraw_center();
   }
   else if(!g->cursor_valid)
@@ -1844,6 +1849,7 @@ static void switch_cursors(struct dt_iop_module_t *self)
     GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
     gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
     g_object_unref(cursor);
+
   }
 }
 
