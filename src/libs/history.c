@@ -30,6 +30,7 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "common/history.h"
+#include <complex.h>
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -685,6 +686,148 @@ static void _lib_history_will_change_callback(gpointer instance, GList *history,
   lib->record_history_level += 1;
 }
 
+static gchar *_lib_history_change_text(dt_introspection_field_t *field, const char *d, dt_iop_params_t *params, dt_iop_params_t *oldpar)
+{
+  dt_iop_params_t *p = params + field->header.offset;
+  dt_iop_params_t *o = oldpar + field->header.offset;
+
+  switch(field->header.type)
+  {
+  case DT_INTROSPECTION_TYPE_STRUCT:
+  case DT_INTROSPECTION_TYPE_UNION:
+    {
+      gchar **change_parts = g_malloc0_n(field->Struct.entries + 1, sizeof(char*));
+      int num_parts = 0;
+
+      for(int i = 0; i < field->Struct.entries; i++)
+      {
+        dt_introspection_field_t *entry = field->Struct.fields[i];
+
+        gchar *description = _(*entry->header.description ? 
+                                entry->header.description : 
+                                entry->header.field_name);
+
+        if(d) description = g_strdup_printf("%s.%s", d, description);
+
+        if((change_parts[num_parts] = _lib_history_change_text(entry, description, params, oldpar)))
+          num_parts++;
+
+        if(d) g_free(description);
+      }
+
+      gchar *struct_text = num_parts ? g_strjoinv("\n", change_parts) : NULL;
+      g_strfreev(change_parts);
+
+      return struct_text;
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_ARRAY:
+    if(field->Array.type == DT_INTROSPECTION_TYPE_CHAR)
+    {
+      if(strncmp((char*)o, (char*)p, field->Array.count))
+        return g_strdup_printf("%s: \"%s\" \u2192 \"%s\"", d, (char*)o, (char*)p);
+    }
+    else
+    {
+      const int max_elements = 4;
+      gchar **change_parts = g_malloc0_n(max_elements + 2, sizeof(char*));
+      int num_parts = 0;
+
+      for(int i = 0, item_offset = 0; i < field->Array.count; i++, item_offset += field->Array.field->header.size)
+      {
+        char *description = g_strdup_printf("%s[%d]", d, i);
+
+        if((change_parts[num_parts] = _lib_history_change_text(field->Array.field, description, params + item_offset, oldpar + item_offset)))
+          num_parts++;
+
+        g_free(description);
+
+        if(num_parts == max_elements + 1)
+        {
+          g_free(change_parts[max_elements]);
+          change_parts[max_elements] = g_strdup("\u22EF"); // ellipsis
+          break;
+        }
+      }
+
+      gchar *array_text = num_parts ? g_strjoinv("\n", change_parts) : NULL;
+      g_strfreev(change_parts);
+
+      return array_text;
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_FLOAT:
+    if(*(float*)o != *(float*)p)
+      return g_strdup_printf("%s: %.4f \u2192 %.4f", d, *(float*)o, *(float*)p);
+    break;
+  case DT_INTROSPECTION_TYPE_INT:
+    if(*(int*)o != *(int*)p)
+      return g_strdup_printf("%s: %d \u2192 %d", d, *(int*)o, *(int*)p);
+    break;
+  case DT_INTROSPECTION_TYPE_UINT:
+    if(*(unsigned int*)o != *(unsigned int*)p)
+      return g_strdup_printf("%s: %u \u2192 %u", d, *(unsigned int*)o, *(unsigned int*)p);
+    break;
+  case DT_INTROSPECTION_TYPE_USHORT:
+    if(*(unsigned short int*)o != *(unsigned short int*)p)
+      return g_strdup_printf("%s: %hu \u2192 %hu", d, *(unsigned short int*)o, *(unsigned short int*)p);
+    break;
+  case DT_INTROSPECTION_TYPE_INT8:
+    if(*(uint8_t*)o != *(uint8_t*)p)
+      return g_strdup_printf("%s: %d \u2192 %d", d, *(uint8_t*)o, *(uint8_t*)p);
+    break;
+  case DT_INTROSPECTION_TYPE_CHAR:
+    if(*(char*)o != *(char*)p)
+      return g_strdup_printf("%s: '%c' \u2192 '%c'", d, *(char *)o, *(char *)p);
+    break;
+  case DT_INTROSPECTION_TYPE_FLOATCOMPLEX:
+    if(*(float complex*)o != *(float complex*)p)
+      return g_strdup_printf("%s: %.4f + %.4fi \u2192 %.4f + %.4fi", d, 
+                             creal(*(float complex*)o), cimag(*(float complex*)o), 
+                             creal(*(float complex*)p), cimag(*(float complex*)p));
+    break;
+  case DT_INTROSPECTION_TYPE_ENUM:
+    if(*(int*)o != *(int*)p)
+    {
+      const char *old_str = N_("unknown"), *new_str = N_("unknown");
+      for(dt_introspection_type_enum_tuple_t *i = field->Enum.values; i && i->name; i++)
+      {
+        if(i->value == *(int*)o)
+        {
+          old_str = i->description;
+          if(!*old_str) old_str = i->name;
+        }
+        if(i->value == *(int*)p) 
+        {
+          new_str = i->description;
+          if(!*new_str) new_str = i->name;
+        }
+      }
+
+      return g_strdup_printf("%s: %s \u2192 %s", d, _(old_str), _(new_str));
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_BOOL:
+    if(*(gboolean*)o != *(gboolean*)p)
+    {
+      char *old_str = *(gboolean*)o ? "on" : "off";
+      char *new_str = *(gboolean*)p ? "on" : "off";
+      return g_strdup_printf("%s: %s \u2192 %s", d, _(old_str), _(new_str));
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_OPAQUE:
+    {
+      // TODO: special case float2
+    }
+    break;
+  default:
+    fprintf(stderr, "unsupported introspection type \"%s\" encountered in _lib_history_change_text (field %s)\n", field->header.type_name, field->header.field_name);
+    break;
+  }
+
+  return NULL;
+}
+
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -741,6 +884,85 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
                                  hitem->module->flags() & IOP_FLAGS_DEPRECATED);
 
     g_free(label);
+
+    dt_iop_params_t *old_params = hitem->module->default_params;
+    dt_develop_blend_params_t *old_blend = hitem->module->default_blendop_params;
+
+    GList *find_old = g_list_first(darktable.develop->history);
+    while(find_old != history)
+    {
+      const dt_dev_history_item_t *hiprev = (dt_dev_history_item_t *)(find_old->data);
+
+      if(hiprev->module == hitem->module)
+      {
+        old_params = hiprev->params;
+        old_blend = hiprev->blend_params;
+      }
+
+      find_old = g_list_next(find_old);
+    }
+
+    gchar **change_parts = g_malloc0_n(sizeof(dt_develop_blend_params_t) / (sizeof(float)) + 3, sizeof(char*));
+
+    change_parts[0] = _lib_history_change_text(hitem->module->so->get_introspection()->field, NULL,
+                                               hitem->params, old_params);
+    int num_parts = change_parts[0] ? 1 : 0;
+
+    #define add_blend_history_change(field, format, label)                                       \
+      if(hitem->blend_params->field != old_blend->field)                                         \
+        change_parts[num_parts++] = g_strdup_printf("%s: " format " \u2192 " format, _(label),   \
+                                                    old_blend->field, hitem->blend_params->field);
+
+    #define add_blend_history_change_enum(field, label, list)                                    \
+      if(hitem->blend_params->field != old_blend->field)                                         \
+      {                                                                                          \
+        const char *old_str = NULL, *new_str = NULL;                                             \
+        for(const dt_develop_name_value_t *i = list; *i->name; i++)                              \
+        {                                                                                        \
+          if(i->value == old_blend->field) old_str = i->name;                                    \
+          if(i->value == hitem->blend_params->field) new_str = i->name;                          \
+        }                                                                                        \
+                                                                                                 \
+        change_parts[num_parts++] = (!old_str || !new_str)                                       \
+                                  ? g_strdup_printf("%s: %d \u2192 %d", _(label),                \
+                                                    old_blend->field, hitem->blend_params->field)\
+                                  : g_strdup_printf("%s: %s \u2192 %s", _(label),                \
+                                                    _(g_dpgettext2(NULL, "blendmode", old_str)), \
+                                                    _(g_dpgettext2(NULL, "blendmode", new_str)));\
+      }
+
+    add_blend_history_change_enum(mask_mode, "mask mode", dt_develop_mask_mode_names);
+    add_blend_history_change_enum(blend_mode, "blend mode", dt_develop_blend_mode_names);
+    add_blend_history_change(opacity, "%.4f", "mask opacity");
+    add_blend_history_change_enum(mask_combine, "combine masks", dt_develop_combine_masks_names);
+    add_blend_history_change(mask_id, "%d", "mask_id");
+    add_blend_history_change_enum(blendif, "blendif", dt_develop_blendif_names_rgb);
+    add_blend_history_change(feathering_radius, "%.4f", "feathering radius");
+    add_blend_history_change_enum(feathering_guide, "feathering guide", dt_develop_feathering_guide_names);
+    add_blend_history_change(blur_radius, "%.4f", "mask blur");
+    add_blend_history_change(contrast, "%.4f", "mask contrast");
+    add_blend_history_change(brightness, "%.4f", "brightness");
+    add_blend_history_change(raster_mask_instance, "%d", "raster_mask_instance");
+    add_blend_history_change(raster_mask_id, "%d", "raster_mask_id");
+    add_blend_history_change_enum(raster_mask_invert, "invert mask", dt_develop_invert_mask_names);
+    
+    const dt_develop_name_value_t *b = dt_develop_blendif_names_rgb;
+    if(hitem->module->blend_colorspace(hitem->module, NULL, NULL) == iop_cs_Lab) b = dt_develop_blendif_names_lab;
+    while(*b->name)
+    {
+      float *of = &old_blend->blendif_parameters[4 * b->value];
+      float *nf = &hitem->blend_params->blendif_parameters[4 * b->value];
+      if(memcmp(of, nf, 4 * sizeof(float)))
+        change_parts[num_parts++] = g_strdup_printf("blendif[%s]: %.0f|%.0f-%.0f|%.0f \u2192 %.0f|%.0f-%.0f|%.0f",
+              b->name, of[0]*100, of[1]*100, of[2]*100, of[3]*100, nf[0]*100, nf[1]*100, nf[2]*100, nf[3]*100);
+      b++;
+    }
+
+    gchar *tooltip = g_strjoinv("\n", change_parts);
+    g_strfreev(change_parts);
+
+    gtk_widget_set_tooltip_text(widget, tooltip);
+    g_free(tooltip);
 
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
     gtk_box_reorder_child(GTK_BOX(d->history_box), widget, 0);
