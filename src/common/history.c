@@ -1557,21 +1557,34 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
   gboolean merge = FALSE;
   if(mode == 0) merge = TRUE;
 
+  // at the time the dialog is started, some signals are sent and this in turn call
+  // back dt_view_get_images_to_act_on() which free list and create a new one.
+
+  GList *l_copy = g_list_copy((GList *)list);
+
   // we launch the dialog
   const int res = dt_gui_hist_dialog_new(&(darktable.view_manager->copy_paste),
                                          darktable.view_manager->copy_paste.copied_imageid, FALSE);
-  if(res == GTK_RESPONSE_CANCEL) return FALSE;
+
+  if(res != GTK_RESPONSE_OK)
+  {
+    g_list_free(l_copy);
+    return FALSE;
+  }
 
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  GList *l = (GList *)list;
+  GList *l = l_copy;
   while(l)
   {
     const int dest = GPOINTER_TO_INT(l->data);
     dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid, dest, merge,
-                                       darktable.view_manager->copy_paste.selops, darktable.view_manager->copy_paste.copy_iop_order);
+                                       darktable.view_manager->copy_paste.selops,
+                                       darktable.view_manager->copy_paste.copy_iop_order);
     l = g_list_next(l);
   }
   if(undo) dt_undo_end_group(darktable.undo);
+
+  g_list_free(l_copy);
   return TRUE;
 }
 
