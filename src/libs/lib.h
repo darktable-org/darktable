@@ -69,10 +69,8 @@ typedef struct dt_lib_t
     {
       struct dt_lib_module_t *module;
       // FIXME: combine these into a process() which takes *void data and a flag on 8bpp vs. float
-      void (*process_8)(struct dt_lib_module_t *self, int32_t image_id,
-                        const uint8_t *const input, int width, int height);
-      void (*process_f)(struct dt_lib_module_t *self, int32_t image_id,
-                        const float *const input, int width, int height);
+      void (*process)(struct dt_lib_module_t *self, int32_t image_id,
+                      const void *const input, int width, int height, gboolean is_8bit);
       // FIXME: should this be a function or just a boolean which histogram lib keeps updated?
       // FIXME: should this be a darktable-level value, set by lib/histogram.c and noticed by iops?
       gboolean is_linear;

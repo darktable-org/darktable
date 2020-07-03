@@ -338,73 +338,51 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 }
 
 // FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
-static void dt_lib_histogram_process_8(struct dt_lib_module_t *self, int32_t image_id,
-                                       const uint8_t *const input, int width, int height)
+static void dt_lib_histogram_process(struct dt_lib_module_t *self, int32_t image_id,
+                                     const void *const input, int width, int height, gboolean is_8bit)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  printf("dt_lib_histogram_process_8: img %d viewing %d\n", image_id, d->view_image_id);
   if(d->view_image_id != -1)
   {
     // FIXME: need this check?
     if(image_id != d->view_image_id) return;
     d->histogram_image_id = image_id;
   }
-  printf("dt_lib_histogram_process_8 procesing\n");
 
-  float *input_tmp = (float *)dt_alloc_align(64, width * height * 4 * sizeof(float));
-  const uint8_t *const pixel = input;
-
-  const int imgsize = height * width * 4;
-  for(int i = 0; i < imgsize; i += 4)
+  float *input_f = NULL;
+  if(is_8bit)
   {
-    for(int c = 0; c < 3; c++) input_tmp[i + c] = ((float)pixel[i + (2 - c)]) * (1.0f / 255.0f);
-    input_tmp[i + 3] = 0.0f;
+    const uint8_t *const pixel = (uint8_t *)input;
+    const int imgsize = height * width * 4;
+    input_f = dt_alloc_align(64, width * height * 4 * sizeof(float));
+    if(!input_f) return;
+    for(int i = 0; i < imgsize; i += 4)
+    {
+      for(int c = 0; c < 3; c++) input_f[i + c] = ((float)pixel[i + (2 - c)]) * (1.0f / 255.0f);
+      input_f[i + 3] = 0.0f;
+    }
+  }
+  else
+  {
+    input_f = (float *const)input;
   }
 
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input_tmp, width, height);
+      _lib_histogram_process_histogram(d, input_f, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       // this makes horizontal banding artifacts due to rounding issues
       // when putting colors into the bins, but is still meaningful and is
       // better than no output
-      _lib_histogram_process_waveform(d, input_tmp, width, height);
+      _lib_histogram_process_waveform(d, input_f, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
 
-  dt_free_align(input_tmp);
-}
-
-// FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
-static void dt_lib_histogram_process_f(struct dt_lib_module_t *self, int32_t image_id,
-                                       const float *const input, int width, int height)
-{
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  printf("dt_lib_histogram_process_f: img %d viewing %d\n", image_id, d->view_image_id);
-
-  if(d->view_image_id != -1)
-  {
-    // FIXME: need this check?
-    if(image_id != d->view_image_id) return;
-    d->histogram_image_id = image_id;
-  }
-  printf("dt_lib_histogram_process_f procesing\n");
-
-  switch(d->scope_type)
-  {
-    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input, width, height);
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      _lib_histogram_process_waveform(d, input, width, height);
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_N:
-      g_assert_not_reached();
-  }
+  if(is_8bit) dt_free_align(input_f);
 }
 
 static void _lib_histogram_reprocess(dt_lib_module_t *self)
@@ -420,8 +398,11 @@ static void _lib_histogram_reprocess(dt_lib_module_t *self)
   }
   else
   {
+    // FIXME: why does this run fives times when choose an image in print view?
     // FIXME: even if not in darkroom mode, develop preview pixelpipe should still be active, can set it to the right image and it'll pass gamma results in to histogram process? henec won't need to build up and break down a preview pipe
     // FIXME: can keep the same develop/pixelpipe structures running so long as are in tether view?
+    // FIXME: unlke dt_dev_process_preview(), this runs in the current thread -- should it be ba background job?
+    // FIXME: this code is very similar to dt_dev_process_preview_job(), if we could keep structures around, we could use that
     dt_develop_t dev;
     dt_mipmap_buffer_t buf;
     dt_dev_init(&dev, 0);
@@ -431,10 +412,8 @@ static void _lib_histogram_reprocess(dt_lib_module_t *self)
     // FIXME: or call from dt_dev_process_preview_job()?
 
     //dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
-    // FIXME: probably only need F, as this is preview quality processing
     // FIXME: can do this before dt_dev_init() so if it fails, we don't have to unbuild dev
-    // FIXME: use dev->image_storage.id as the image id?
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, d->view_image_id, DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, dev.image_storage.id, DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');
 
     // FIXME: need this?
     //const dt_image_t *img = &dev.image_storage;
@@ -448,9 +427,7 @@ static void _lib_histogram_reprocess(dt_lib_module_t *self)
     }
 
     dt_dev_pixelpipe_t pipe;
-    int res = dt_dev_pixelpipe_init_preview(&pipe);
-
-    if(res)
+    if(dt_dev_pixelpipe_init_preview(&pipe))
     {
       dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);
 
@@ -1435,8 +1412,7 @@ void gui_init(dt_lib_module_t *self)
   // provide data for a histogram
   // FIXME: do need to pass self, or can wrap a callback as a lambda
   darktable.lib->proxy.histogram.module = self;
-  darktable.lib->proxy.histogram.process_8 = dt_lib_histogram_process_8;
-  darktable.lib->proxy.histogram.process_f = dt_lib_histogram_process_f;
+  darktable.lib->proxy.histogram.process = dt_lib_histogram_process;
   darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
 
   /* create drawingarea */
