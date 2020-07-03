@@ -1826,8 +1826,9 @@ static void switch_cursors(struct dt_iop_module_t *self)
     // hide GTK cursor because we display our custom one
     dt_control_change_cursor(GDK_BLANK_CURSOR);
     dt_control_hinter_message(darktable.control,
-                              "scroll over image to change tone exposure by 0.25 EV\n"
-                              "shift+scroll to change by 1 EV, and ctrl+scroll to change by 0.1 EV");
+                              "scroll over image to change tone exposure\n"
+                              "shift+scroll to change in large steps\n"
+                              "ctrl+scroll to change in small steps");
 
     dt_control_queue_redraw_center();
   }
@@ -2287,8 +2288,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   else
   {
     dt_control_hinter_message(darktable.control,
-                              "scroll over image to change tone exposure by 0.25 EV\n"
-                              "shift+scroll to change by 1 EV, and ctrl+scroll to change by 0.1 EV");
+                              "scroll over image to change tone exposure\n"
+                              "shift+scroll to change in large steps\n"
+                              "ctrl+scroll to change in small steps");
   }
 }
 
