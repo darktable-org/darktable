@@ -1825,10 +1825,9 @@ static void switch_cursors(struct dt_iop_module_t *self)
     // if pipe is clean and idle and cursor is on preview,
     // hide GTK cursor because we display our custom one
     dt_control_change_cursor(GDK_BLANK_CURSOR);
-    dt_control_hinter_message(darktable.control,
-                              "scroll over image to change tone exposure\n"
-                              "shift+scroll to change in large steps\n"
-                              "ctrl+scroll to change in small steps");
+    dt_control_hinter_message(darktable.control, "scroll over image to change tone exposure\n"
+                                                 "shift+scroll to change in large steps\n"
+                                                 "ctrl+scroll to change in small steps");
 
     dt_control_queue_redraw_center();
   }
@@ -2287,10 +2286,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
   else
   {
-    dt_control_hinter_message(darktable.control,
-                              "scroll over image to change tone exposure\n"
-                              "shift+scroll to change in large steps\n"
-                              "ctrl+scroll to change in small steps");
+    dt_control_hinter_message(darktable.control, "scroll over image to change tone exposure\n"
+                                                 "shift+scroll to change in large steps\n"
+                                                 "ctrl+scroll to change in small steps");
   }
 }
 
@@ -2893,6 +2891,31 @@ static gboolean notebook_button_press(GtkWidget *widget, GdkEventButton *event, 
   dt_iop_color_picker_reset(self, TRUE);
 
   return 0;
+}
+
+GSList *mouse_actions(struct dt_iop_module_t *self)
+{
+  GSList *lm = NULL;
+  dt_mouse_action_t *a = NULL;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_snprintf(a->name, sizeof(a->name), _("[%s over image] change tone exposure"), self->name());
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_snprintf(a->name, sizeof(a->name), _("[%s over image] change tone exposure in large steps"), self->name());
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_CONTROL_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_snprintf(a->name, sizeof(a->name), _("[%s over image] change tone exposure in small steps"), self->name());
+  lm = g_slist_append(lm, a);
+
+  return lm;
 }
 
 /**
