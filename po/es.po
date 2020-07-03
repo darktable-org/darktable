@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-30 15:30-0500\n"
-"PO-Revision-Date: 2020-06-30 15:36-0500\n"
+"POT-Creation-Date: 2020-07-03 13:50-0500\n"
+"PO-Revision-Date: 2020-07-03 02:03-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1112,13 +1112,13 @@ msgstr "cuantificación de máscara"
 
 #: ../build/src/iop/introspection_toneequal.c:211
 #: ../build/src/iop/introspection_toneequal.c:330
-msgid "mask exposure compensation"
-msgstr "nivelación de exposición"
+msgid "mask contrast compensation"
+msgstr "nivelación de contraste"
 
 #: ../build/src/iop/introspection_toneequal.c:217
 #: ../build/src/iop/introspection_toneequal.c:334
-msgid "mask contrast compensation"
-msgstr "nivelación de contraste"
+msgid "mask exposure compensation"
+msgstr "nivelación de exposición"
 
 #: ../build/src/iop/introspection_toneequal.c:229
 #: ../build/src/iop/introspection_toneequal.c:342
@@ -2624,7 +2624,8 @@ msgstr "Directorio base para el patrón de nombres"
 
 #: ../build/src/preferences_gen.h:4587 ../build/src/preferences_gen.h:4612
 msgid "part of full import path for an import session"
-msgstr "parte de la ruta completa para importar una sesión"
+msgstr ""
+"Parte de la ruta de importación completa para una sesión de importación"
 
 #: ../build/src/preferences_gen.h:4595
 msgid "sub directory naming pattern"
@@ -3456,52 +3457,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr "imágenes huérfanas"
 
-#: ../src/common/image.c:1638
+#: ../src/common/image.c:1661
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "No se puede acceder a la copia local `%s'"
 
-#: ../src/common/image.c:1645
+#: ../src/common/image.c:1668
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "No se puede escribir la copia local `%s'"
 
-#: ../src/common/image.c:1652
+#: ../src/common/image.c:1675
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Error al mover la copia local `%s' -> `%s'"
 
-#: ../src/common/image.c:1668
+#: ../src/common/image.c:1691
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Error al mover `%s': no se encuentra el archivo"
 
-#: ../src/common/image.c:1678
+#: ../src/common/image.c:1701
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Error al mover `%s' -> `%s': el archivo ya existe"
 
-#: ../src/common/image.c:1682
+#: ../src/common/image.c:1705
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Error al mover `%s' -> `%s'"
 
-#: ../src/common/image.c:1961
+#: ../src/common/image.c:1984
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "la copia local no se puede crear cuando el archivo original no es accesible."
 
-#: ../src/common/image.c:1975
+#: ../src/common/image.c:1998
 msgid "cannot create local copy."
 msgstr "no se puede crear una copia local."
 
-#: ../src/common/image.c:2047 ../src/control/jobs/control_jobs.c:664
+#: ../src/common/image.c:2070 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "la copia local no se puede eliminar el archivo original cuando no es "
 "accesible."
 
-#: ../src/common/image.c:2227
+#: ../src/common/image.c:2250
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -9414,21 +9415,21 @@ msgstr "salida"
 #: ../src/iop/colorout.c:881 ../src/libs/export.c:744
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2259 ../src/views/darkroom.c:2267
-#: ../src/views/lighttable.c:1390 ../src/views/lighttable.c:1398
+#: ../src/views/lighttable.c:1392 ../src/views/lighttable.c:1400
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:882 ../src/libs/export.c:745
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2260 ../src/views/darkroom.c:2268
-#: ../src/views/lighttable.c:1391 ../src/views/lighttable.c:1399
+#: ../src/views/lighttable.c:1393 ../src/views/lighttable.c:1401
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
 #: ../src/iop/colorout.c:883 ../src/libs/export.c:746
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2261 ../src/views/darkroom.c:2269
-#: ../src/views/lighttable.c:1392 ../src/views/lighttable.c:1400
+#: ../src/views/lighttable.c:1394 ../src/views/lighttable.c:1402
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturación"
@@ -9436,7 +9437,7 @@ msgstr "saturación"
 #: ../src/iop/colorout.c:884 ../src/libs/export.c:747
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2262 ../src/views/darkroom.c:2270
-#: ../src/views/lighttable.c:1393 ../src/views/lighttable.c:1401
+#: ../src/views/lighttable.c:1395 ../src/views/lighttable.c:1403
 msgid "absolute colorimetric"
 msgstr "colorimétrico absoluto"
 
@@ -15372,15 +15373,15 @@ msgstr "luminosidad HSL"
 
 #: ../src/libs/live_view.c:427
 msgid "mode of the overlay"
-msgstr "modo de superposición"
+msgstr "Modo de superposición"
 
 #: ../src/libs/live_view.c:433
 msgid "split line"
-msgstr "línea de corte"
+msgstr "línea divisoria"
 
 #: ../src/libs/live_view.c:436
 msgid "only draw part of the overlay"
-msgstr "solo mostrar parte de la superposición"
+msgstr "Sólo mostrar parte de la superposición"
 
 #: ../src/libs/location.c:97
 msgid "find location"
@@ -17260,19 +17261,19 @@ msgstr ""
 "Activa la revisión de gama\n"
 "Pulse botón derecho las para opciones del perfil"
 
-#: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1388
+#: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1390
 msgid "display intent"
 msgstr "salida en pantalla"
 
-#: ../src/views/darkroom.c:2265 ../src/views/lighttable.c:1396
+#: ../src/views/darkroom.c:2265 ../src/views/lighttable.c:1398
 msgid "preview display intent"
 msgstr "vista previa de salida en pantalla"
 
-#: ../src/views/darkroom.c:2285 ../src/views/lighttable.c:1404
+#: ../src/views/darkroom.c:2285 ../src/views/lighttable.c:1406
 msgid "display profile"
 msgstr "perfil (pantalla)"
 
-#: ../src/views/darkroom.c:2286 ../src/views/lighttable.c:1408
+#: ../src/views/darkroom.c:2286 ../src/views/lighttable.c:1410
 msgid "preview display profile"
 msgstr "vista previa del perfil (pantalla)"
 
@@ -17280,12 +17281,12 @@ msgstr "vista previa del perfil (pantalla)"
 msgid "histogram profile"
 msgstr "perfil del histograma"
 
-#: ../src/views/darkroom.c:2341 ../src/views/lighttable.c:1438
+#: ../src/views/darkroom.c:2341 ../src/views/lighttable.c:1440
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "mostrar perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2344 ../src/views/lighttable.c:1441
+#: ../src/views/darkroom.c:2344 ../src/views/lighttable.c:1443
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "vista previa: mostrar perfiles ICC en %s o %s"
@@ -17346,12 +17347,12 @@ msgstr "ampliar imagen a ventana"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3630 ../src/views/lighttable.c:875
+#: ../src/views/darkroom.c:3630 ../src/views/lighttable.c:877
 msgctxt "accel"
 msgid "zoom in"
 msgstr "acercar"
 
-#: ../src/views/darkroom.c:3631 ../src/views/lighttable.c:877
+#: ../src/views/darkroom.c:3631 ../src/views/lighttable.c:879
 msgctxt "accel"
 msgid "zoom out"
 msgstr "alejar"
@@ -17449,13 +17450,13 @@ msgid "full preview"
 msgstr "vista previa completa"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3677 ../src/views/lighttable.c:867
+#: ../src/views/darkroom.c:3677 ../src/views/lighttable.c:869
 #: ../src/views/map.c:918
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
-#: ../src/views/darkroom.c:3678 ../src/views/lighttable.c:868
+#: ../src/views/darkroom.c:3678 ../src/views/lighttable.c:870
 #: ../src/views/map.c:919
 msgctxt "accel"
 msgid "redo"
@@ -17483,7 +17484,7 @@ msgstr "Cambiar la precisión del control deslizante con un atajo de teclado"
 msgid "switch to lighttable"
 msgstr "cambiar a mesa de luz"
 
-#: ../src/views/darkroom.c:3814 ../src/views/lighttable.c:1051
+#: ../src/views/darkroom.c:3814 ../src/views/lighttable.c:1053
 msgid "zoom in the image"
 msgstr "ampliar la imagen"
 
@@ -17512,225 +17513,225 @@ msgstr "darktable: vista previa del cuarto oscuro"
 msgid "good knight"
 msgstr "buen caballero"
 
-#: ../src/views/lighttable.c:426 ../src/views/slideshow.c:376
+#: ../src/views/lighttable.c:428 ../src/views/slideshow.c:376
 msgid "there are no images in this collection"
 msgstr "sin imágenes en la colección presente"
 
-#: ../src/views/lighttable.c:430
+#: ../src/views/lighttable.c:432
 msgid "if you have not imported any images yet"
 msgstr "si aún no se ha importado alguna imagen"
 
-#: ../src/views/lighttable.c:434
+#: ../src/views/lighttable.c:436
 msgid "you can do so in the import module"
 msgstr "puede hacerse con el módulo importar"
 
-#: ../src/views/lighttable.c:442
+#: ../src/views/lighttable.c:444
 msgid "try to relax the filter settings in the top panel"
 msgstr "pruebe con condiciones de filtro más flexibles, en el panel superior"
 
-#: ../src/views/lighttable.c:451
+#: ../src/views/lighttable.c:453
 msgid "or add images in the collection module in the left panel"
 msgstr "o agregue imágenes con el módulo de recolección en el panel izquierdo"
 
 #. movement keys
-#: ../src/views/lighttable.c:835
+#: ../src/views/lighttable.c:837
 msgctxt "accel"
 msgid "move page up"
 msgstr "retroceder una página"
 
-#: ../src/views/lighttable.c:836
+#: ../src/views/lighttable.c:838
 msgctxt "accel"
 msgid "move page down"
 msgstr "avanzar una página"
 
-#: ../src/views/lighttable.c:837
+#: ../src/views/lighttable.c:839
 msgctxt "accel"
 msgid "move up"
 msgstr "subir"
 
-#: ../src/views/lighttable.c:838
+#: ../src/views/lighttable.c:840
 msgctxt "accel"
 msgid "move down"
 msgstr "bajar"
 
-#: ../src/views/lighttable.c:839
+#: ../src/views/lighttable.c:841
 msgctxt "accel"
 msgid "move left"
 msgstr "ir a la izquierda"
 
-#: ../src/views/lighttable.c:840
+#: ../src/views/lighttable.c:842
 msgctxt "accel"
 msgid "move right"
 msgstr "ir a la derecha"
 
-#: ../src/views/lighttable.c:841
+#: ../src/views/lighttable.c:843
 msgctxt "accel"
 msgid "move start"
 msgstr "ir al inicio"
 
-#: ../src/views/lighttable.c:842
+#: ../src/views/lighttable.c:844
 msgctxt "accel"
 msgid "move end"
 msgstr "ir al final"
 
 #. movement keys with selection
-#: ../src/views/lighttable.c:845
+#: ../src/views/lighttable.c:847
 msgctxt "accel"
 msgid "move page up and select"
 msgstr "retroceder la página y seleccionar"
 
-#: ../src/views/lighttable.c:846
+#: ../src/views/lighttable.c:848
 msgctxt "accel"
 msgid "move page down and select"
 msgstr "avanzar la página y seleccionar"
 
-#: ../src/views/lighttable.c:847
+#: ../src/views/lighttable.c:849
 msgctxt "accel"
 msgid "move up and select"
 msgstr "subir y seleccionar"
 
-#: ../src/views/lighttable.c:848
+#: ../src/views/lighttable.c:850
 msgctxt "accel"
 msgid "move down and select"
 msgstr "bajar y seleccionar"
 
-#: ../src/views/lighttable.c:849
+#: ../src/views/lighttable.c:851
 msgctxt "accel"
 msgid "move left and select"
 msgstr "ir a la izquierda y seleccionar"
 
-#: ../src/views/lighttable.c:850
+#: ../src/views/lighttable.c:852
 msgctxt "accel"
 msgid "move right and select"
 msgstr "ir a la derecha y seleccionar"
 
-#: ../src/views/lighttable.c:851
+#: ../src/views/lighttable.c:853
 msgctxt "accel"
 msgid "move start and select"
 msgstr "ir al inicio y seleccionar"
 
-#: ../src/views/lighttable.c:852
+#: ../src/views/lighttable.c:854
 msgctxt "accel"
 msgid "move end and select"
 msgstr "ir al final y seleccionar"
 
-#: ../src/views/lighttable.c:854
+#: ../src/views/lighttable.c:856
 msgctxt "accel"
 msgid "align images to grid"
 msgstr "alinear imágenes a la cuadrícula"
 
-#: ../src/views/lighttable.c:855
+#: ../src/views/lighttable.c:857
 msgctxt "accel"
 msgid "reset first image offset"
 msgstr "reajustar el primer desplazamiento de la primera imagen"
 
-#: ../src/views/lighttable.c:856
+#: ../src/views/lighttable.c:858
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "selección de imagen activa"
 
-#: ../src/views/lighttable.c:857
+#: ../src/views/lighttable.c:859
 msgctxt "accel"
 msgid "select single image"
 msgstr "selección de imagen única"
 
 #. Preview key
-#: ../src/views/lighttable.c:860
+#: ../src/views/lighttable.c:862
 msgctxt "accel"
 msgid "preview"
 msgstr "vista previa rápida"
 
-#: ../src/views/lighttable.c:861
+#: ../src/views/lighttable.c:863
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "vista previa rápida con detección de enfoque"
 
-#: ../src/views/lighttable.c:862
+#: ../src/views/lighttable.c:864
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "vista previa fija"
 
-#: ../src/views/lighttable.c:863
+#: ../src/views/lighttable.c:865
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "vista previa fija con detección de enfoque"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:871
+#: ../src/views/lighttable.c:873
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "vista previa al 100%"
 
-#: ../src/views/lighttable.c:872
+#: ../src/views/lighttable.c:874
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "vista previa del ajuste del zoom"
 
-#: ../src/views/lighttable.c:876
+#: ../src/views/lighttable.c:878
 msgctxt "accel"
 msgid "zoom max"
 msgstr "zoom máximo"
 
-#: ../src/views/lighttable.c:878
+#: ../src/views/lighttable.c:880
 msgctxt "accel"
 msgid "zoom min"
 msgstr "zoom mínimo"
 
-#: ../src/views/lighttable.c:1038
+#: ../src/views/lighttable.c:1040
 msgid "open image in darkroom"
 msgstr "abrir imagen en el cuarto oscuro"
 
-#: ../src/views/lighttable.c:1045
+#: ../src/views/lighttable.c:1047
 msgid "switch to next/previous image"
 msgstr "cambiar a la imagen siguiente/anterior"
 
-#: ../src/views/lighttable.c:1057 ../src/views/lighttable.c:1115
+#: ../src/views/lighttable.c:1059 ../src/views/lighttable.c:1117
 #, no-c-format
 msgid "zoom to 100% and back"
 msgstr "ampliar a 100% y a 200% cíclicamente"
 
-#: ../src/views/lighttable.c:1064 ../src/views/lighttable.c:1086
+#: ../src/views/lighttable.c:1066 ../src/views/lighttable.c:1088
 msgid "scroll the collection"
 msgstr "navegar por la colección"
 
-#: ../src/views/lighttable.c:1070
+#: ../src/views/lighttable.c:1072
 msgid "change number of images per row"
 msgstr "cambiar el número de imágenes por fila"
 
-#: ../src/views/lighttable.c:1078
+#: ../src/views/lighttable.c:1080
 msgid "change image order"
 msgstr "cambiar el orden de las imágenes"
 
-#: ../src/views/lighttable.c:1092
+#: ../src/views/lighttable.c:1094
 msgid "zoom all the images"
 msgstr "ampliar a la vez todas las imágenes"
 
-#: ../src/views/lighttable.c:1097
+#: ../src/views/lighttable.c:1099
 msgid "pan inside all the images"
 msgstr "desplazar a la vez todas las imágenes"
 
-#: ../src/views/lighttable.c:1103
+#: ../src/views/lighttable.c:1105
 msgid "zoom current image"
 msgstr "ampliar la imagen designada"
 
-#: ../src/views/lighttable.c:1109
+#: ../src/views/lighttable.c:1111
 msgid "pan inside current image"
 msgstr "desplazarse por la imagen designada"
 
-#: ../src/views/lighttable.c:1122
+#: ../src/views/lighttable.c:1124
 #, no-c-format
 msgid "zoom current image to 100% and back"
 msgstr "ampliar a 100% y a 200% cíclicamente"
 
-#: ../src/views/lighttable.c:1129
+#: ../src/views/lighttable.c:1131
 msgid "zoom the main view"
 msgstr "ampliar la vista principal"
 
-#: ../src/views/lighttable.c:1134
+#: ../src/views/lighttable.c:1136
 msgid "pan inside the main view"
 msgstr "desplazarse por el área de la vista principal"
 
-#: ../src/views/lighttable.c:1365
+#: ../src/views/lighttable.c:1367
 msgid "set display profile"
 msgstr "ajustar perfil de pantalla"
 
