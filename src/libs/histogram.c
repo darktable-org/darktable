@@ -80,12 +80,10 @@ typedef struct dt_lib_histogram_t
   // waveform histogram buffer and dimensions
   uint8_t *waveform;
   uint32_t waveform_width, waveform_height, waveform_stride;
-  // FIXME: have separate mutex for each histogram, or just one for all histogram processing work?
-  dt_pthread_mutex_t waveform_mutex;
   // pixelpipe for current image when not in darkroom view
   dt_develop_t *dev;
-  // current exposure params
-  // FIXME: do need to cache this here?
+  gboolean can_change_iops;
+  // exposure params on mouse down
   float exposure, black;
   // mouse state
   int32_t dragging;
@@ -135,8 +133,6 @@ int position()
 
 static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height)
 {
-  // FIXME: should be d->dev for non-darkroom pixelpipe
-  dt_develop_t *dev = darktable.develop;
   float *img_tmp = NULL;
 
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
@@ -150,23 +146,23 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   // FIXME: if we do allow roi, then dt_lib_histogram_process() will need to take roi as a param, and this work of determining roi would happen in pixelpipe -- or the color_picker_box/point would move from dev->gui_module to darktable.lib->proxy.histogram
 #if 0
   // FIXME: this is never true
-  if(dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
-     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+  if(d->dev->gui_module && !strcmp(d->dev->gui_module->op, "colorout")
+     && d->dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
     if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
     {
-      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[0] * roi_in->width));
-      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[1] * roi_in->height));
-      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[2] * roi_in->width));
-      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[3] * roi_in->height));
+      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, d->dev->gui_module->color_picker_box[0] * roi_in->width));
+      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, d->dev->gui_module->color_picker_box[1] * roi_in->height));
+      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, d->dev->gui_module->color_picker_box[2] * roi_in->width));
+      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, d->dev->gui_module->color_picker_box[3] * roi_in->height));
     }
     else
     {
-      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
-      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
-      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
-      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
+      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, d->dev->gui_module->color_picker_point[0] * roi_in->width));
+      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, d->dev->gui_module->color_picker_point[1] * roi_in->height));
+      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, d->dev->gui_module->color_picker_point[0] * roi_in->width));
+      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, d->dev->gui_module->color_picker_point[1] * roi_in->height));
     }
   }
 #endif
@@ -188,10 +184,10 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
     img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
 
     const dt_iop_order_iccprofile_info_t *const profile_info_from
-        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
+        = dt_ioppr_add_profile_info_to_list(d->dev, darktable.color_profiles->display_type,
                                             darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
     const dt_iop_order_iccprofile_info_t *const profile_info_to
-        = dt_ioppr_add_profile_info_to_list(dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
+        = dt_ioppr_add_profile_info_to_list(d->dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
 
     dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, width, height, profile_info_from,
                                             profile_info_to, "final histogram");
@@ -287,7 +283,6 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   // even bin_width 12 and height 900 image gives 10,800 byte cache, more normal will ~1K
   const int cache_size = (height * bin_width) + 1;
   uint8_t *cache = (uint8_t *)calloc(cache_size, sizeof(uint8_t));
-  dt_pthread_mutex_lock(&d->waveform_mutex);
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
@@ -322,7 +317,6 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   }
   //printf("mincol %d,%d,%d maxcol %d,%d,%d\n", mincol[0], mincol[1], mincol[2], maxcol[0], maxcol[1], maxcol[2]);
   d->waveform_width = waveform_width;
-  dt_pthread_mutex_unlock(&d->waveform_mutex);
 
   free(cache);
   free(buf);
@@ -335,7 +329,6 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   }
 }
 
-// FIXME: do need to pass in self, or can just fetch it from darktable.lib->proxy.histogram.self?
 static void dt_lib_histogram_process(struct dt_lib_module_t *self,
                                      const void *const input, int width, int height, gboolean is_8bit)
 // FIXME: instead of is_8bit is there a mask declared which lets us know bit depth & float/int?
@@ -376,17 +369,6 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self,
   }
 
   if(is_8bit) dt_free_align(input_f);
-}
-
-// FIXME: eliminate this function if it only call dt_dev_process_preview(), in which case d->dev becomes a pointer alloc'd in _lib_histogram_load_image() and freed in _lib_histogram_thumbtable_callback() and view_leave()
-static void _lib_histogram_reprocess(dt_lib_histogram_t *d)
-{
-  // run preview pixelpipe, which will send the resulting image to
-  // dt_lib_histogram_process(), and raise
-  // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED when the pipe is
-  // complete, to prompt a redraw of the histogram widget
-  // FIXME: d->dev || darktable.develop
-  dt_dev_process_preview(d->dev ? d->dev : darktable.develop);
 }
 
 static void _draw_color_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state)
@@ -559,18 +541,14 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
 
 static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
-  // FIXME: should be d->dev for non-darkroom pixelpipe
-  dt_develop_t *dev = darktable.develop;
-
   if(!d->histogram_max) return;
-  // FIXME: mutex can be "histogram_mutex"
-  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  dt_pthread_mutex_lock(&d->dev->preview_pipe_mutex);
   // FIXME: don't have to hardcode this anymore, it can at least be a DEFINE
   const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
   // FIXME: does this need to be aligned?
   uint32_t *hist = malloc(histsize);
   if(hist) memcpy(hist, d->histogram, histsize);
-  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&d->dev->preview_pipe_mutex);
   if(hist == NULL) return;
 
   // FIXME: pre-adjust hist_max based on histogram_type?
@@ -593,9 +571,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
-  // FIXME: mutex can be "histogram_mutex"
-  // FIXME: if are working outside of darkroom view, this is meaningless
-  dt_pthread_mutex_lock(&d->waveform_mutex);
+  dt_pthread_mutex_lock(&d->dev->preview_pipe_mutex);
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   const gint wf_stride = d->waveform_stride;
@@ -608,7 +584,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int
         for(int k = 0; k < 3; k++)
           wav[4 * (y * wf_stride + x) + k] = wf_buf[wf_stride * (y + k * wf_height) + x] * mask[2-k];
   }
-  dt_pthread_mutex_unlock(&d->waveform_mutex);
+  dt_pthread_mutex_unlock(&d->dev->preview_pipe_mutex);
   if(wav == NULL) return;
 
   // NOTE: The nice way to do this would be to draw each color channel
@@ -631,14 +607,14 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
-  dt_pthread_mutex_lock(&d->waveform_mutex);
+  dt_pthread_mutex_lock(&d->dev->preview_pipe_mutex);
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   const gint wf_stride = d->waveform_stride;
   const size_t histsize = sizeof(uint8_t) * wf_height * wf_stride * 3;
   uint8_t *wav = malloc(histsize);
   if(wav) memcpy(wav, d->waveform, histsize);
-  dt_pthread_mutex_unlock(&d->waveform_mutex);
+  dt_pthread_mutex_unlock(&d->dev->preview_pipe_mutex);
   if(wav == NULL) return;
 
   // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
@@ -669,8 +645,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  // FIXME: should be d->dev for non-darkroom pixelpipe
-  dt_develop_t *dev = darktable.develop;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -722,9 +696,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   // draw scope if in darkroom view so long as preview pipe is
   // finished, in other views we know the current image so we can
   // check if our histogram is current
-  // FIXME: can simplify this when dev is darktable.develop or d->dev;
-  if((!d->dev && dev->image_storage.id == dev->preview_pipe->output_imgid) ||
-     (d->dev && d->dev->image_storage.id == d->dev->preview_pipe->output_imgid))
+  if(d->dev->image_storage.id == d->dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
     uint8_t mask[3] = { d->red, d->green, d->blue };
@@ -781,13 +753,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  // FIXME: should be d->dev for non-darkroom pixelpipe, if this is even needed
-  dt_develop_t *dev = darktable.develop;
-
-  /* check if exposure hooks are available */
-  // FIXME: should really add a flag, such as d->can_change_iops, rather than test d->dev
-  const gboolean hooks_available = !d->dev && dt_dev_exposure_hooks_available(dev);
-  if(!d->dev && !hooks_available) return TRUE;
+  const gboolean hooks_available = d->can_change_iops && dt_dev_exposure_hooks_available(d->dev);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -797,15 +763,15 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
                                                                         : event->x - d->button_down_x;
     const int range = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? allocation.height
                                                                        : allocation.width;
-    if (d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+    if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
       const float exposure = d->exposure + diff * 4.0f / (float)range;
-      dt_dev_exposure_set_exposure(dev, exposure);
+      dt_dev_exposure_set_exposure(d->dev, exposure);
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
     {
       const float black = d->black - diff * .1f / (float)range;
-      dt_dev_exposure_set_black(dev, black);
+      dt_dev_exposure_set_black(d->dev, black);
     }
   }
   else
@@ -889,16 +855,14 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE;
       gtk_widget_set_tooltip_text(widget, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
     }
-    // FIXME: should really add a flag, such as d->can_change_iops, rather than test d->dev
-    else if(!d->dev &&
+    else if(hooks_available &&
             ((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
              (posy > 7.0f/9.0f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)))
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
       gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets\nctrl+scroll to change display height"));
     }
-    // FIXME: should really add a flag, such as d->can_change_iops, rather than test d->dev
-    else if(!d->dev)
+    else if(hooks_available)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
       gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
@@ -939,27 +903,24 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  // FIXME: should be d->dev for non-darkroom pixelpipe, if this is even needed
-  dt_develop_t *dev = darktable.develop;
 
-  /* check if exposure hooks are available */
-  // FIXME: should really add a flag, such as d->can_change_iops, rather than test d->dev
-  const gboolean hooks_available = !d->dev && dt_dev_exposure_hooks_available(dev);
-  if(!d->dev && !hooks_available) return TRUE;
+  const gboolean hooks_available = d->can_change_iops && dt_dev_exposure_hooks_available(d->dev);
 
-  if(event->type == GDK_2BUTTON_PRESS && !d->dev &&
+  if(event->type == GDK_2BUTTON_PRESS && hooks_available &&
      (d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT || d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE))
   {
-    dt_dev_exposure_reset_defaults(dev);
+    dt_dev_exposure_reset_defaults(d->dev);
   }
   else
   {
+    // FIXME: this handles repeated-click events in buttons weirdly, as it confuses them with doubleclicks
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE)
     {
       d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
       dt_conf_set_string("plugins/darkroom/histogram/mode",
                          dt_lib_histogram_scope_type_names[d->scope_type]);
-      _lib_histogram_reprocess(d);
+      // generate data for changed scope and trigger widget redraw
+      dt_dev_process_preview(d->dev);
     }
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_MODE)
     {
@@ -996,20 +957,13 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       d->blue = !d->blue;
       dt_conf_set_bool("plugins/darkroom/histogram/show_blue", d->blue);
     }
-    else
+    else if(hooks_available)
     {
       d->dragging = 1;
-
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-      {
-        d->exposure = dt_dev_exposure_get_exposure(dev);
-      }
-
+        d->exposure = dt_dev_exposure_get_exposure(d->dev);
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE)
-      {
-        d->black = dt_dev_exposure_get_black(dev);
-      }
-
+        d->black = dt_dev_exposure_get_black(d->dev);
       d->button_down_x = event->x;
       d->button_down_y = event->y;
     }
@@ -1024,15 +978,6 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  // FIXME: should be d->dev for non-darkroom pixelpipe, if this is even needed
-  dt_develop_t *dev = darktable.develop;
-
-  // FIXME: should really add a flag, such as d->can_change_iops, rather than test d->dev
-  const gboolean hooks_available = dt_dev_exposure_hooks_available(dev);
-  if(!hooks_available) return TRUE;
-
-  const float ce = dt_dev_exposure_get_exposure(dev);
-  const float cb = dt_dev_exposure_get_black(dev);
 
   int delta_y;
   // note are using unit rather than smooth scroll events, as
@@ -1047,13 +992,18 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
       dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
       gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
     }
-    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+    else if(d->can_change_iops && dt_dev_exposure_hooks_available(d->dev))
     {
-      dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
-    }
-    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-    {
-      dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
+      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+      {
+        const float ce = dt_dev_exposure_get_exposure(d->dev);
+        dt_dev_exposure_set_exposure(d->dev, ce - 0.15f * delta_y);
+      }
+      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+      {
+        const float cb = dt_dev_exposure_get_black(d->dev);
+        dt_dev_exposure_set_black(d->dev, cb + 0.001f * delta_y);
+      }
     }
   }
 
@@ -1148,7 +1098,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   if(d->scope_type != old_scope)
   {
     // different scope, calculate its buffer from the image
-    _lib_histogram_reprocess(d);
+    dt_dev_process_preview(d->dev);
   }
   else
   {
@@ -1168,7 +1118,7 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
   d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
-  _lib_histogram_reprocess(d);
+  dt_dev_process_preview(d->dev);
   return TRUE;
 }
 
@@ -1205,36 +1155,42 @@ static void _lib_histogram_mipmap_callback(gpointer instance, int imgid, gpointe
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
-  // FIXME: do we need to catch this? is there a better signal to catch an imported image? is this why reprocess gets called so much?
-  // FIXME: if d->dev is sometimes darktable.develop, then we'll need something else hacky to test for non-darkroom view, except that this callback is only enabled non-darkroom view, so it's actually a moot point
-  if(d->dev && imgid == d->dev->image_storage.id)
+  // Either the center view is now loaded, hence we can run the
+  // preview pipe if needed, or some random thumbtable image
+  // updated. Differentiate these, and only run preview pipe if it is
+  // not yet up to date.
+  // FIXME: can the center view call just also request a preview from its pixelpipe?
+  if(imgid == d->dev->image_storage.id && d->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY)
   {
-    _lib_histogram_reprocess(d);
+    dt_dev_process_preview(d->dev);
   }
 }
 
 static void _lib_histogram_load_image(dt_lib_histogram_t *d, int imgid)
 {
-  // FIXME: does this need to be a function or can it just be inline in callback and view_enter?
-  // NOTE: this is making a gui_attached pixelpipe so that
-  // dt_dev_process_preview_job can find the preview pixelpipe --
-  // alternately we could just assign some variables and have eaier initializaiton
+  // NOTE: this is making a gui_attached pixelpipe with some unneeded
+  // paraphernalia so that dt_dev_process_preview_job can find the
+  // preview pixelpipe
+  // FIXME: could use dt_imageio_export_with_flags() if we added a way for it to create a preview pipe
   dt_dev_init(d->dev, TRUE);
   dt_dev_load_image(d->dev, imgid);
   // don't wait for the full pixelpipe to complete
   d->dev->image_loading = FALSE;
-  // FIXME: could just call dt_dev_process_preview(d->dev), in which case if we set d->dev to darktable.develop in darkroom mode, we could lose _lib_histogram_reprocess()
-  _lib_histogram_reprocess(d);
+  // run preview pixelpipe, which will send the resulting image to
+  // dt_lib_histogram_process(), and raise
+  // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED when the pipe is
+  // complete, to prompt a redraw of the histogram widget
+  dt_dev_process_preview(d->dev);
 }
 
 static void _lib_histogram_thumbtable_callback(gpointer instance, int imgid, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  // user has changed the image -- it would be nice to keep around the
-  // pixelpipe and call dt_dev_change_image() but there seem to be all
-  // sorts of wrinkles with history stack and such, so just create a
-  // new pixelpipe for the new image
+  // user has choosen a different image -- it would be nice to keep
+  // around the pixelpipe and call dt_dev_change_image() but there
+  // seem to be all sorts of wrinkles with history stack and such, so
+  // just create a new pixelpipe for the new image
   dt_dev_cleanup(d->dev);
   _lib_histogram_load_image(d, imgid);
 }
@@ -1252,9 +1208,13 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_lib_histogram_preview_updated_callback), self);
-  // FIXME: could intead track DT_SIGNAL_DEVELOP_IMAGE_CHANGED, DT_SIGNAL_DEVELOP_INITIALIZE, and DT_SIGNAL_COLLECTION_CHANGED which would let us keep track of current image in darkroom view?
 
-  if(new_view->view(new_view) != DT_VIEW_DARKROOM)
+  if(new_view->view(new_view) == DT_VIEW_DARKROOM)
+  {
+    d->dev = darktable.develop;
+    d->can_change_iops = TRUE;
+  }
+  else
   {
     // user activated a new image via the filmstrip or user entered this
     // view which activates an image
@@ -1262,18 +1222,14 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
                               G_CALLBACK(_lib_histogram_thumbtable_callback), self);
 
     d->dev = malloc(sizeof(dt_develop_t));
-    // FIXME: is this the right way to get the current image?
+    d->can_change_iops = FALSE;
     // FIXME: in tether, is there initially a selected image? if not handle no histogram on view enter
     _lib_histogram_load_image(d, dt_view_get_image_to_act_on());
-#if 1
-    // FIXME: this is a hack which makes changing images in print view refresh a new histogram, but makes way too many calls to process the preview
-    // FIXME: do we need to catch this? is there a better signal to catch an imported image? is this why reprocess gets called so much?
-    // an updated mipmap, perhaps from an imported image
+    // an updated mipmap, perhaps when the center view image is ready
     dt_control_signal_connect(darktable.signals,
                               DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                               G_CALLBACK(_lib_histogram_mipmap_callback),
                               self);
-#endif
   }
 }
 
@@ -1282,8 +1238,11 @@ void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   if(d->dev)
   {
-    dt_dev_cleanup(d->dev);
-    free(d->dev);
+    if(d->dev != darktable.develop)
+    {
+      dt_dev_cleanup(d->dev);
+      free(d->dev);
+    }
     d->dev = NULL;
   }
 
@@ -1344,10 +1303,7 @@ void gui_init(dt_lib_module_t *self)
 
   // FIXME: don't have to hardcode this anymore, it can at least be a DEFINE
   d->histogram = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
-
-  // this was set to -1 in dt_dev_init(), which doesn't make sense as it is a uint32_t
-  // here it should already be 0 via g_malloc0
-  //d->histogram_max = 0;
+  d->histogram_max = 0;
 
   // Waveform buffer doesn't need to be coupled with the histogram
   // widget size. The waveform is almost always scaled when
@@ -1355,7 +1311,6 @@ void gui_init(dt_lib_module_t *self)
   // don't use too much CPU/memory, and allow reasonable gradations
   // of tone.
 
-  dt_pthread_mutex_init(&d->waveform_mutex, NULL);
   // Don't use absurd amounts of memory, exceed width of DT_MIPMAP_F
   // (which will be darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
   // for mosaiced images), nor make it too slow to calculate
@@ -1364,14 +1319,16 @@ void gui_init(dt_lib_module_t *self)
   // width will vary with integral binning of image.
   d->waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
   // 175 rows is the default histogram widget height. It's OK if the
-  // widget height changes from this, as the width will almost
-  // always be scaled. 175 rows is reasonable CPU usage and represents
-  // plenty of tonal gradation.
-  d->waveform_height = 256; // matches # of bins in regular histogram
+  // widget height changes from this, as the width will almost always
+  // be scaled. 175 rows is reasonable CPU usage and represents plenty
+  // of tonal gradation. 256 would match the # of bins in a regular
+  // histogram.
+  d->waveform_height = 175;
   d->waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   d->waveform = calloc(d->waveform_height * d->waveform_stride * 3, sizeof(uint8_t));
 
   d->dev = NULL;
+  d->can_change_iops = FALSE;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
@@ -1415,7 +1372,6 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
-  dt_pthread_mutex_destroy(&d->waveform_mutex);
   free(d->histogram);
   free(d->waveform);
 
