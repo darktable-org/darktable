@@ -2381,13 +2381,7 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
-    // We send lib/histogram.c data from any preview pipe, regardless
-    // of gui_attached.  The only users of a preview pixelipe are
-    // darkroom view and the ad hoc pixelipe in tether view.
-    // FIXME: bring this back to code in master even though this is correct, just to minimize changes
-    if((strcmp(module->op, "gamma") == 0) &&
-       (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW &&
-       !(dev->gui_attached && dev->gui_leaving))
+    if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
       // Since histogram is being treated as the second-to-last link
       // in the pixelpipe and has a "process" call, why not treat it
