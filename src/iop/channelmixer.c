@@ -450,21 +450,24 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->output_channel, CHANNEL_RED);
 
   g_signal_connect(G_OBJECT(g->output_channel), "value-changed", G_CALLBACK(output_callback), self);
+  
+  const float low_lim = dt_conf_get_float("channel_mixer_lower_limit");
+  const float up_lim = dt_conf_get_float("channel_mixer_upper_limit");
 
   /* red */
-  g->scale_red = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED], 3);
+  g->scale_red = dt_bauhaus_slider_new_with_range(self, low_lim, up_lim, 0.01, p->red[CHANNEL_RED], 2);
   gtk_widget_set_tooltip_text(g->scale_red, _("amount of red channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale_red, NULL, _("red"));
   g_signal_connect(G_OBJECT(g->scale_red), "value-changed", G_CALLBACK(red_callback), self);
 
   /* green */
-  g->scale_green = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED], 3);
+  g->scale_green = dt_bauhaus_slider_new_with_range(self, low_lim, up_lim, 0.01, p->green[CHANNEL_RED], 2);
   gtk_widget_set_tooltip_text(g->scale_green, _("amount of green channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale_green, NULL, _("green"));
   g_signal_connect(G_OBJECT(g->scale_green), "value-changed", G_CALLBACK(green_callback), self);
 
   /* blue */
-  g->scale_blue = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED], 3);
+  g->scale_blue = dt_bauhaus_slider_new_with_range(self, low_lim, up_lim, 0.01, p->blue[CHANNEL_RED], 2);
   gtk_widget_set_tooltip_text(g->scale_blue, _("amount of blue channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale_blue, NULL, _("blue"));
   g_signal_connect(G_OBJECT(g->scale_blue), "value-changed", G_CALLBACK(blue_callback), self);

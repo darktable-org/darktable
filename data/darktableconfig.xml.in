@@ -970,6 +970,20 @@
     <shortdescription>show search module text entry</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig prefs="darkroom">
+    <name>channel_mixer_lower_limit</name>
+    <type min="-2.0" max="0.0" digits="1">float</type>
+    <default>-0.5</default>
+    <shortdescription>lower bound for channel mixer sliders</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="darkroom">
+    <name>channel_mixer_upper_limit</name>
+    <type min="0.5" max="2.0" digits="1">float</type>
+    <default>1.0</default>
+    <shortdescription>upper bound for channel mixer sliders</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
     <type>int</type>
