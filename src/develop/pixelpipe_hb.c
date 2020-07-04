@@ -2384,6 +2384,7 @@ post_process_collect_info:
     // We send lib/histogram.c data from any preview pipe, regardless
     // of gui_attached.  The only users of a preview pixelipe are
     // darkroom view and the ad hoc pixelipe in tether view.
+    // FIXME: bring this back to code in master even though this is correct, just to minimize changes
     if((strcmp(module->op, "gamma") == 0) &&
        (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW &&
        !(dev->gui_attached && dev->gui_leaving))
@@ -2397,12 +2398,12 @@ post_process_collect_info:
         // input may not be available, so we use the output from gamma
         // this may lead to some rounding errors
         // FIXME: under what circumstances would input not be available?
-        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, pipe->image.id,
+        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
                                                *output, roi_out->width, roi_out->height, TRUE);
       }
       else
       {
-        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, pipe->image.id,
+        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
                                                input, roi_in.width, roi_in.height, FALSE);
       }
     }
