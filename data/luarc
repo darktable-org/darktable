@@ -88,20 +88,21 @@ if _scripts_install.dt.configuration.has_gui then
       -- _scripts_install.dt.print_log("scripts not installed")
       _scripts_install.widgets = {}
 
-      -- check for a luarc file and move it
-      _scripts_install.p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
-      for line in _scripts_install.p:lines() do 
-        if string.match(line, "^luarc$") then
-          if _scripts_install.dt.configuration.running_os == "windows" then
-            os.execute("rename " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
-          else
-            os.execute("mv " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
+        -- check for a luarc file and move it
+      function _scripts_install.backup_luarc()
+        local p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
+        for line in p:lines() do 
+          if string.match(line, "^luarc$") then
+            if _scripts_install.dt.configuration.running_os == "windows" then
+              os.execute("rename " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
+            else
+              os.execute("mv " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
+            end
           end
         end
+        p:close()
       end
-      _scripts_install.p:close()
 
-      -- scripts directory not found, so ask if they want them installed
       function _scripts_install.minimize_lib()
         --hide the library
         _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = false
@@ -158,6 +159,7 @@ if _scripts_install.dt.configuration.has_gui then
             _scripts_install.require_string = "'" .. _scripts_install.require_string .. "'"
           end
           
+          _scripts_install.backup_luarc()
           _scripts_install.dt.print(_("lua scripts installing"))
           os.execute("\"" .. _scripts_install.git_bin .. "\" " .. "clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.dt.configuration.config_dir .. "/lua")
           os.execute("echo " .. _scripts_install.require_string .. " > " .. _scripts_install.dt.configuration.config_dir .. "/luarc")
