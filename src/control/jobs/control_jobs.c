@@ -1191,7 +1191,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     dt_exif_read(img, sourcefile);
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
 
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
 
