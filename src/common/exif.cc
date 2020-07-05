@@ -412,7 +412,7 @@ static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterat
 // there is no need to pass xmpData
 // version = -1 -> version ignored
 static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int version,
-                                  bool use_default_rating)
+                                  bool exif_read)
 {
   // as this can be called several times during the image lifetime, clean up first
   GList *imgs = NULL;
@@ -427,7 +427,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     // why for they don't get passed to that function.
     if(version == -1 || version > 0)
     {
-      dt_metadata_clear(imgs, FALSE);
+      if(!exif_read) dt_metadata_clear(imgs, FALSE);
       for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       {
         const gchar *key = dt_metadata_get_key(i);
@@ -452,7 +452,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       dt_image_set_xmp_rating(img, stars);
     }
 
-    dt_colorlabels_remove_labels(img->id);
+    if(!exif_read) dt_colorlabels_remove_labels(img->id);
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
     {
       std::string label = pos->toString();
@@ -480,7 +480,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
 
     GList *tags = NULL;
     // preserve dt tags which are not saved in xmp file
-    dt_tag_set_tags(tags, imgs, TRUE, TRUE, FALSE);
+    if(!exif_read) dt_tag_set_tags(tags, imgs, TRUE, TRUE, FALSE);
     if(FIND_XMP_TAG("Xmp.lr.hierarchicalSubject"))
       _exif_import_tags(img, pos);
     else if(FIND_XMP_TAG("Xmp.dc.subject"))
