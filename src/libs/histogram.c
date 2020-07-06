@@ -32,6 +32,8 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
+#define HISTOGRAM_BINS 256
+
 DT_MODULE(1)
 
 typedef enum dt_lib_histogram_highlight_t
@@ -133,7 +135,7 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
 
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = iop_cs_rgb;
-  dt_dev_histogram_stats_t histogram_stats = { .bins_count = 256, .ch = 4, .pixels = 0 };
+  dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0 };
   uint32_t histogram_max[4] = { 0 };
   dt_histogram_roi_t histogram_roi = { .width = width, .height = height,
                                       .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0 };
@@ -192,10 +194,10 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
   d->histogram_max = 0;
-  memset(d->histogram, 0, sizeof(uint32_t) * 4 * 256);
+  memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
 
   histogram_params.roi = &histogram_roi;
-  histogram_params.bins_count = 256;
+  histogram_params.bins_count = HISTOGRAM_BINS;
   histogram_params.mul = histogram_params.bins_count - 1;
 
   dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, (img_tmp) ? img_tmp: input, &d->histogram, FALSE, NULL);
@@ -555,8 +557,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
   if(!d->histogram_max) return;
   dt_pthread_mutex_t *mutex = _lib_histogram_active_mutex(d);
   dt_pthread_mutex_lock(mutex);
-  // FIXME: don't have to hardcode this anymore, it can at least be a DEFINE
-  const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
+  const size_t histsize = HISTOGRAM_BINS * 4 * sizeof(uint32_t);
   // FIXME: does this need to be aligned?
   uint32_t *hist = malloc(histsize);
   if(hist) memcpy(hist, d->histogram, histsize);
@@ -1317,8 +1318,7 @@ void gui_init(dt_lib_module_t *self)
     d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_PARADE;
   g_free(waveform_type);
 
-  // FIXME: don't have to hardcode this anymore, it can at least be a DEFINE
-  d->histogram = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
+  d->histogram = (uint32_t *)calloc(4 * HISTOGRAM_BINS, sizeof(uint32_t));
   d->histogram_max = 0;
 
   // Waveform buffer doesn't need to be coupled with the histogram
