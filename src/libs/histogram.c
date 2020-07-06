@@ -107,11 +107,7 @@ const char *name(dt_lib_module_t *self)
 
 const char **views(dt_lib_module_t *self)
 {
-  // FIXME: print is only for testing, remove once it's clear that tethering works
-  static const char *v[] = {"darkroom", "tethering", "print", NULL};
-  /* re-enable tether as its histogram may not display
-     leave print view histogram on for now for sake of testing
-     see #4298 for discussion and resolution of this issue. */
+  static const char *v[] = {"darkroom", "tethering", NULL};
   return v;
 }
 
@@ -328,8 +324,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   }
 }
 
-static void dt_lib_histogram_process(struct dt_lib_module_t *self,
-                                     const void *const input, int width, int height, gboolean is_8bit)
+static void dt_lib_histogram_process(struct dt_lib_module_t *self, const void *const input,
+                                     int width, int height, int stride, gboolean is_8bit)
 // FIXME: instead of is_8bit is there a mask declared which lets us know bit depth & float/int?
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
@@ -337,18 +333,23 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self,
   float *input_f = NULL;
   if(is_8bit)
   {
-    const uint8_t *const pixel = (uint8_t *)input;
-    const int imgsize = height * width * 4;
+    // FIXME: make 8-bit/float helper functions for binning each type of scope rather than do this alloc/work here?
     input_f = dt_alloc_align(64, width * height * 4 * sizeof(float));
     if(!input_f) return;
-    for(int i = 0; i < imgsize; i += 4)
+    for(int y = 0; y < height; y++)
     {
-      for(int c = 0; c < 3; c++) input_f[i + c] = ((float)pixel[i + (2 - c)]) * (1.0f / 255.0f);
-      input_f[i + 3] = 0.0f;
+      const uint8_t *const p = ((uint8_t *)input) + y * stride;
+      float *const o = input_f + y * width * 4;
+      for(int x = 0; x < width; x++)
+      {
+        for(int c = 0; c < 3; c++) o[x * 4 + c] = ((float)p[x * 4 + (2 - c)]) * (1.0f / 255.0f);
+        input_f[x * 4 + 3] = 0.0f;
+      }
     }
   }
   else
   {
+    // FIXME: we ignore stride, as we know how it is set from pixelpipe
     input_f = (float *const)input;
   }
 
@@ -538,16 +539,28 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   return TRUE;
 }
 
+static dt_pthread_mutex_t *_lib_histogram_active_mutex(dt_lib_histogram_t *d)
+{
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view(cv) == DT_VIEW_TETHERING)
+  {
+    dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
+    if(cam && cam->is_live_viewing) return(&cam->live_view_pixbuf_mutex);
+  }
+  return(&d->dev->preview_pipe_mutex);
+}
+
 static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
   if(!d->histogram_max) return;
-  dt_pthread_mutex_lock(&d->dev->preview_pipe_mutex);
+  dt_pthread_mutex_t *mutex = _lib_histogram_active_mutex(d);
+  dt_pthread_mutex_lock(mutex);
   // FIXME: don't have to hardcode this anymore, it can at least be a DEFINE
   const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
   // FIXME: does this need to be aligned?
   uint32_t *hist = malloc(histsize);
   if(hist) memcpy(hist, d->histogram, histsize);
-  dt_pthread_mutex_unlock(&d->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(mutex);
   if(hist == NULL) return;
 
   // FIXME: pre-adjust hist_max based on histogram_scale?
@@ -570,7 +583,8 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
-  dt_pthread_mutex_lock(&d->dev->preview_pipe_mutex);
+  dt_pthread_mutex_t *mutex = _lib_histogram_active_mutex(d);
+  dt_pthread_mutex_lock(mutex);
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   const gint wf_stride = d->waveform_stride;
@@ -583,7 +597,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int
         for(int k = 0; k < 3; k++)
           wav[4 * (y * wf_stride + x) + k] = wf_buf[wf_stride * (y + k * wf_height) + x] * mask[2-k];
   }
-  dt_pthread_mutex_unlock(&d->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(mutex);
   if(wav == NULL) return;
 
   // NOTE: The nice way to do this would be to draw each color channel
@@ -606,14 +620,15 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
-  dt_pthread_mutex_lock(&d->dev->preview_pipe_mutex);
+  dt_pthread_mutex_t *mutex = _lib_histogram_active_mutex(d);
+  dt_pthread_mutex_lock(mutex);
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   const gint wf_stride = d->waveform_stride;
   const size_t histsize = sizeof(uint8_t) * wf_height * wf_stride * 3;
   uint8_t *wav = malloc(histsize);
   if(wav) memcpy(wav, d->waveform, histsize);
-  dt_pthread_mutex_unlock(&d->dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(mutex);
   if(wav == NULL) return;
 
   // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
@@ -692,9 +707,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
-  // draw scope if in darkroom view so long as preview pipe is
-  // finished, in other views we know the current image so we can
-  // check if our histogram is current
+  // draw scope so long as preview pipe is finished
+  // FIXME: for live view, this will generally be true, but isn't pertinent -- instead have process() receive a flag if this is a live view histogram, in which case always draw it? or have a is_live_view() func. used in this conditional, in determining mutex to use, and if to queue a redraw when process() complets?
   if(d->dev->image_storage.id == d->dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
@@ -878,7 +892,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
         dt_control_change_cursor(GDK_HAND1);
       else
         dt_control_change_cursor(GDK_LEFT_PTR);
-      gtk_widget_queue_draw(widget);
+      dt_control_queue_redraw_widget(widget);
     }
   }
   gint x, y; // notify gtk for motion_hint.
@@ -1033,7 +1047,7 @@ static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEvent
   d->dragging = 0;
   d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET;
   dt_control_change_cursor(GDK_LEFT_PTR);
-  gtk_widget_queue_draw(widget);
+  dt_control_queue_redraw_widget(widget);
   return TRUE;
 }
 
@@ -1097,6 +1111,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   if(d->scope_type != old_scope)
   {
     // different scope, calculate its buffer from the image
+    // FIXME: shouldn't need to do this if in live view mode
     dt_dev_process_preview(d->dev);
   }
   else
@@ -1117,6 +1132,7 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
   d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
+  // FIXME: shouldn't need to do this if in live view mode
   dt_dev_process_preview(d->dev);
   return TRUE;
 }
@@ -1159,6 +1175,7 @@ static void _lib_histogram_mipmap_callback(gpointer instance, int imgid, gpointe
   // updated. Differentiate these, and only run preview pipe if it is
   // not yet up to date.
   // FIXME: can the center view call just also request a preview from its pixelpipe?
+  // FIXME: shouldn't need to do this if in live view mode
   if(imgid == d->dev->image_storage.id && d->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY)
   {
     dt_dev_process_preview(d->dev);
@@ -1198,7 +1215,7 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
 {
   // preview pipe has already given process() the high quality
   // pre-gamma image. Now that preview pipe is complete, draw it
-  gtk_widget_queue_draw(self->widget);
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
@@ -1221,6 +1238,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
                               G_CALLBACK(_lib_histogram_thumbtable_callback), self);
 
     d->dev = malloc(sizeof(dt_develop_t));
+    // FIXME: flag when in tether view so it's easy to test if in live view mode?
     d->can_change_iops = FALSE;
     // FIXME: in tether, is there initially a selected image? if not handle no histogram on view enter
     _lib_histogram_load_image(d, dt_view_get_image_to_act_on());
