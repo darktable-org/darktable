@@ -2273,7 +2273,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>auto-apply per camera basecurve presets</shortdescription>
-    <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs a restart)</longdescription>
+    <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs a restart).\nthis option is taken into account when the \"auto-apply pixel workflow defaults\" is set to \"none\"</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
     <name>plugins/darkroom/sharpen/auto_apply</name>
