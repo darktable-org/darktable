@@ -945,14 +945,6 @@ int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newvers
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    // make sure that the duplicate doesn't have some magic darktable| tags
-    if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
-       || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
-    /* unset change timestamp */
-    dt_image_cache_unset_change_timestamp(darktable.image_cache, newid);
-
     g_free(filename);
   }
   return newid;
@@ -963,6 +955,14 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
   const int32_t newid = _image_duplicate_with_version(imgid, newversion);
   if(newid != -1)
   {
+    // make sure that the duplicate doesn't have some magic darktable| tags
+    if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
+       || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+    /* unset change timestamp */
+    dt_image_cache_unset_change_timestamp(darktable.image_cache, newid);
+
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     const int grpid = img->group_id;
     dt_image_cache_read_release(darktable.image_cache, img);
@@ -971,6 +971,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       darktable.gui->expanded_group_id = grpid;
     }
     dt_grouping_add_to_group(grpid, newid);
+
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   }
   return newid;
