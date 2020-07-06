@@ -54,12 +54,12 @@ typedef enum dt_lib_histogram_scope_type_t
   DT_LIB_HISTOGRAM_SCOPE_N // needs to be the last one
 } dt_lib_histogram_scope_type_t;
 
-typedef enum dt_lib_histogram_type_t
+typedef enum dt_lib_histogram_scale_t
 {
   DT_LIB_HISTOGRAM_LOGARITHMIC = 0,
   DT_LIB_HISTOGRAM_LINEAR,
   DT_LIB_HISTOGRAM_N // needs to be the last one
-} dt_lib_histogram_type_t;
+} dt_lib_histogram_scale_t;
 
 typedef enum dt_lib_histogram_waveform_type_t
 {
@@ -69,7 +69,7 @@ typedef enum dt_lib_histogram_waveform_type_t
 } dt_lib_histogram_waveform_type_t;
 
 const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { "histogram", "waveform" };
-const gchar *dt_lib_histogram_histogram_type_names[DT_LIB_HISTOGRAM_N] = { "logarithmic", "linear" };
+const gchar *dt_lib_histogram_histogram_scale_names[DT_LIB_HISTOGRAM_N] = { "logarithmic", "linear" };
 const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] = { "overlaid", "parade" };
 
 typedef struct dt_lib_histogram_t
@@ -92,7 +92,7 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_highlight_t highlight;
   // state set by buttons
   dt_lib_histogram_scope_type_t scope_type;
-  dt_lib_histogram_type_t histogram_type;
+  dt_lib_histogram_scale_t histogram_scale;
   dt_lib_histogram_waveform_type_t waveform_type;
   gboolean red, green, blue;
   // button locations
@@ -167,7 +167,6 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   }
 #endif
 
-  // FIXME: histogram_type is confusing as it could also refer to whether it is a linear/logarithmic histogram -- fix this doubling
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
   gchar *histogram_filename = NULL;
   gchar _histogram_filename[1] = { 0 };
@@ -446,7 +445,7 @@ static void _draw_type_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_restore(cr);
 }
 
-static void _draw_histogram_mode_toggle(cairo_t *cr, float x, float y, float width, float height, int mode)
+static void _draw_histogram_scale_toggle(cairo_t *cr, float x, float y, float width, float height, int mode)
 {
   cairo_save(cr);
   cairo_translate(cr, x, y);
@@ -551,9 +550,9 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
   dt_pthread_mutex_unlock(&d->dev->preview_pipe_mutex);
   if(hist == NULL) return;
 
-  // FIXME: pre-adjust hist_max based on histogram_type?
-  const float hist_max = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
-                                                                      : logf(1.0 + d->histogram_max);
+  // FIXME: pre-adjust hist_max based on histogram_scale?
+  const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
+                                                                       : logf(1.0 + d->histogram_max);
   cairo_translate(cr, 0, height);
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -562,7 +561,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
     if(mask[k])
     {
       cairo_set_source_rgba(cr, k == 0 ? 1. : 0., k == 1 ? 1. : 0., k == 2 ? 1. : 0., 0.5);
-      dt_draw_histogram_8(cr, hist, 4, k, d->histogram_type == DT_LIB_HISTOGRAM_LINEAR);
+      dt_draw_histogram_8(cr, hist, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
@@ -724,7 +723,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     switch(d->scope_type)
     {
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        _draw_histogram_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->histogram_type);
+        _draw_histogram_scale_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->histogram_scale);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->waveform_type);
@@ -810,13 +809,13 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
       switch(d->scope_type)
       {
         case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-          switch(d->histogram_type)
+          switch(d->histogram_scale)
           {
             case DT_LIB_HISTOGRAM_LOGARITHMIC:
-              gtk_widget_set_tooltip_text(widget, _("set mode to linear"));
+              gtk_widget_set_tooltip_text(widget, _("set scale to linear"));
               break;
             case DT_LIB_HISTOGRAM_LINEAR:
-              gtk_widget_set_tooltip_text(widget, _("set mode to logarithmic"));
+              gtk_widget_set_tooltip_text(widget, _("set scale to logarithmic"));
               break;
             default:
               g_assert_not_reached();
@@ -927,11 +926,11 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       switch(d->scope_type)
       {
         case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-          d->histogram_type = (d->histogram_type + 1) % DT_LIB_HISTOGRAM_N;
+          d->histogram_scale = (d->histogram_scale + 1) % DT_LIB_HISTOGRAM_N;
           dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                             dt_lib_histogram_histogram_type_names[d->histogram_type]);
+                             dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
           // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
-          darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
+          darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
           break;
         case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
           d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
@@ -1066,10 +1065,10 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      d->histogram_type = (d->histogram_type + 1);
-      if(d->histogram_type == DT_LIB_HISTOGRAM_N)
+      d->histogram_scale = (d->histogram_scale + 1);
+      if(d->histogram_scale == DT_LIB_HISTOGRAM_N)
       {
-        d->histogram_type = DT_LIB_HISTOGRAM_LOGARITHMIC;
+        d->histogram_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
         d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
         d->scope_type = DT_LIB_HISTOGRAM_SCOPE_WAVEFORM;
       }
@@ -1078,7 +1077,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
       d->waveform_type = (d->waveform_type + 1);
       if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_N)
       {
-        d->histogram_type = DT_LIB_HISTOGRAM_LOGARITHMIC;
+        d->histogram_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
         d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
         d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
       }
@@ -1089,11 +1088,11 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
   dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                     dt_lib_histogram_histogram_type_names[d->histogram_type]);
+                     dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
   dt_conf_set_string("plugins/darkroom/histogram/waveform",
                      dt_lib_histogram_waveform_type_names[d->waveform_type]);
   // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
-  darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
+  darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
 
   if(d->scope_type != old_scope)
   {
@@ -1132,10 +1131,10 @@ static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      d->histogram_type = (d->histogram_type + 1) % DT_LIB_HISTOGRAM_N;
+      d->histogram_scale = (d->histogram_scale + 1) % DT_LIB_HISTOGRAM_N;
       dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                         dt_lib_histogram_histogram_type_names[d->histogram_type]);
-      darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
+                         dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
+      darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
       // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
@@ -1286,13 +1285,12 @@ void gui_init(dt_lib_module_t *self)
   }
   g_free(mode);
 
-  // FIXME: s/histogram_type/histogram_mode/?
-  gchar *histogram_type = dt_conf_get_string("plugins/darkroom/histogram/histogram");
-  if(g_strcmp0(histogram_type, "linear") == 0)
-    d->histogram_type = DT_LIB_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(histogram_type, "logarithmic") == 0)
-    d->histogram_type = DT_LIB_HISTOGRAM_LOGARITHMIC;
-  g_free(histogram_type);
+  gchar *histogram_scale = dt_conf_get_string("plugins/darkroom/histogram/histogram");
+  if(g_strcmp0(histogram_scale, "linear") == 0)
+    d->histogram_scale = DT_LIB_HISTOGRAM_LINEAR;
+  else if(g_strcmp0(histogram_scale, "logarithmic") == 0)
+    d->histogram_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
+  g_free(histogram_scale);
 
   gchar *waveform_type = dt_conf_get_string("plugins/darkroom/histogram/waveform");
   if(g_strcmp0(waveform_type, "overlaid") == 0)
@@ -1335,7 +1333,7 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: do need to pass self, or can wrap a callback as a lambda
   darktable.lib->proxy.histogram.module = self;
   darktable.lib->proxy.histogram.process = dt_lib_histogram_process;
-  darktable.lib->proxy.histogram.is_linear = d->histogram_type == DT_LIB_HISTOGRAM_LINEAR;
+  darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
 
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
