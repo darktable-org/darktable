@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-30 19:15+0200\n"
-"PO-Revision-Date: 2020-06-30 19:15+0200\n"
+"POT-Creation-Date: 2020-07-06 13:40+0200\n"
+"PO-Revision-Date: 2020-07-06 13:43+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1109,13 +1109,13 @@ msgstr "quantification masque"
 
 #: ../build/src/iop/introspection_toneequal.c:211
 #: ../build/src/iop/introspection_toneequal.c:330
-msgid "mask exposure compensation"
-msgstr "compensation exposition masque"
+msgid "mask contrast compensation"
+msgstr "compensation contraste masque"
 
 #: ../build/src/iop/introspection_toneequal.c:217
 #: ../build/src/iop/introspection_toneequal.c:334
-msgid "mask contrast compensation"
-msgstr "compensation contraste masque"
+msgid "mask exposure compensation"
+msgstr "compensation exposition masque"
 
 #: ../build/src/iop/introspection_toneequal.c:229
 #: ../build/src/iop/introspection_toneequal.c:342
@@ -1222,7 +1222,7 @@ msgstr "échelle sur"
 
 #. close the file before adding exif data
 #: ../build/src/iop/introspection_watermark.c:285
-#: ../src/imageio/format/tiff.c:317 ../src/iop/borders.c:850
+#: ../src/imageio/format/tiff.c:324 ../src/iop/borders.c:850
 msgid "image"
 msgstr "image"
 
@@ -3439,52 +3439,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1638
+#: ../src/common/image.c:1680
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "accès à la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1645
+#: ../src/common/image.c:1687
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "création de la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1652
+#: ../src/common/image.c:1694
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
-#: ../src/common/image.c:1668
+#: ../src/common/image.c:1710
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erreur de déplacement « %s » : le fichier n'existe pas"
 
-#: ../src/common/image.c:1678
+#: ../src/common/image.c:1720
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erreur de déplacement « %s » → « %s » : le fichier existe"
 
-#: ../src/common/image.c:1682
+#: ../src/common/image.c:1724
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erreur lors du déplacement « %s » → « %s »"
 
-#: ../src/common/image.c:1961
+#: ../src/common/image.c:2021
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1975
+#: ../src/common/image.c:2035
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:2047 ../src/control/jobs/control_jobs.c:664
+#: ../src/common/image.c:2107 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible."
 
-#: ../src/common/image.c:2227
+#: ../src/common/image.c:2287
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -6776,12 +6776,12 @@ msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bits)"
 
 #: ../src/imageio/format/pdf.c:79 ../src/imageio/format/png.c:526
-#: ../src/imageio/format/tiff.c:781
+#: ../src/imageio/format/tiff.c:807
 msgid "8 bit"
 msgstr "8 bits"
 
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:527
-#: ../src/imageio/format/tiff.c:782
+#: ../src/imageio/format/tiff.c:808
 msgid "16 bit"
 msgstr "16 bits"
 
@@ -6904,7 +6904,7 @@ msgid "images can be tagged with their icc profile"
 msgstr "le profil icc à embarquer dans les images"
 
 #: ../src/imageio/format/pdf.c:705 ../src/imageio/format/png.c:525
-#: ../src/imageio/format/tiff.c:780
+#: ../src/imageio/format/tiff.c:806
 msgid "bit depth"
 msgstr "bits"
 
@@ -6913,15 +6913,15 @@ msgid "bits per channel of the embedded images"
 msgstr "nombre de bit pour les images embarquées"
 
 #: ../src/imageio/format/pdf.c:721 ../src/imageio/format/png.c:539
-#: ../src/imageio/format/tiff.c:795
+#: ../src/imageio/format/tiff.c:821
 msgid "compression"
 msgstr "dégradé"
 
-#: ../src/imageio/format/pdf.c:722 ../src/imageio/format/tiff.c:796
+#: ../src/imageio/format/pdf.c:722 ../src/imageio/format/tiff.c:822
 msgid "uncompressed"
 msgstr "non compressé"
 
-#: ../src/imageio/format/pdf.c:723 ../src/imageio/format/tiff.c:797
+#: ../src/imageio/format/pdf.c:723 ../src/imageio/format/tiff.c:823
 msgid "deflate"
 msgstr "deflate"
 
@@ -6973,29 +6973,41 @@ msgstr "PNG (8/16-bits)"
 msgid "PPM (16-bit)"
 msgstr "PPM (16-bits)"
 
-#: ../src/imageio/format/tiff.c:225
+#: ../src/imageio/format/tiff.c:232
 msgid "will export as a grayscale image"
 msgstr "exportera une image en noir et blanc"
 
-#: ../src/imageio/format/tiff.c:719
+#: ../src/imageio/format/tiff.c:735
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32-bits)"
 
-#: ../src/imageio/format/tiff.c:783
+#: ../src/imageio/format/tiff.c:809
 msgid "32 bit (float)"
 msgstr "32 bits (flottant)"
 
-#: ../src/imageio/format/tiff.c:798
+#: ../src/imageio/format/tiff.c:824
 msgid "deflate with predictor"
 msgstr "deflate avec prédiction"
 
-#: ../src/imageio/format/tiff.c:799
+#: ../src/imageio/format/tiff.c:825
 msgid "deflate with predictor (float)"
 msgstr "deflate avec prédiction (flottant)"
 
-#: ../src/imageio/format/tiff.c:805
+#: ../src/imageio/format/tiff.c:831
 msgid "compression level"
 msgstr "compression"
+
+#: ../src/imageio/format/tiff.c:843
+msgid "b&w image"
+msgstr "image n&b"
+
+#: ../src/imageio/format/tiff.c:844
+msgid "write rgb colors"
+msgstr "couleur rgb"
+
+#: ../src/imageio/format/tiff.c:845
+msgid "write grayscale"
+msgstr "échelle de gris"
 
 #: ../src/imageio/format/webp.c:288
 msgid "WebP (8-bit)"
@@ -9398,21 +9410,21 @@ msgstr "rendu (sortie)"
 #: ../src/iop/colorout.c:881 ../src/libs/export.c:744
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2259 ../src/views/darkroom.c:2267
-#: ../src/views/lighttable.c:1390 ../src/views/lighttable.c:1398
+#: ../src/views/lighttable.c:1392 ../src/views/lighttable.c:1400
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:882 ../src/libs/export.c:745
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2260 ../src/views/darkroom.c:2268
-#: ../src/views/lighttable.c:1391 ../src/views/lighttable.c:1399
+#: ../src/views/lighttable.c:1393 ../src/views/lighttable.c:1401
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:883 ../src/libs/export.c:746
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2261 ../src/views/darkroom.c:2269
-#: ../src/views/lighttable.c:1392 ../src/views/lighttable.c:1400
+#: ../src/views/lighttable.c:1394 ../src/views/lighttable.c:1402
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
@@ -9420,7 +9432,7 @@ msgstr "saturation"
 #: ../src/iop/colorout.c:884 ../src/libs/export.c:747
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2262 ../src/views/darkroom.c:2270
-#: ../src/views/lighttable.c:1393 ../src/views/lighttable.c:1401
+#: ../src/views/lighttable.c:1395 ../src/views/lighttable.c:1403
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -10568,11 +10580,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:2310 ../src/iop/filmicrgb.c:2319
 #: ../src/iop/filmicrgb.c:2355 ../src/iop/filmicrgb.c:2364
-#: ../src/iop/toneequal.c:2961 ../src/iop/toneequal.c:2965
-#: ../src/iop/toneequal.c:2969 ../src/iop/toneequal.c:2973
-#: ../src/iop/toneequal.c:2977 ../src/iop/toneequal.c:2981
-#: ../src/iop/toneequal.c:2985 ../src/iop/toneequal.c:2989
-#: ../src/iop/toneequal.c:2993 ../src/libs/metadata_view.c:499
+#: ../src/iop/toneequal.c:2997 ../src/iop/toneequal.c:3001
+#: ../src/iop/toneequal.c:3005 ../src/iop/toneequal.c:3009
+#: ../src/iop/toneequal.c:3013 ../src/iop/toneequal.c:3017
+#: ../src/iop/toneequal.c:3021 ../src/iop/toneequal.c:3025
+#: ../src/iop/toneequal.c:3029 ../src/libs/metadata_view.c:499
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f IL"
@@ -13331,7 +13343,7 @@ msgstr ""
 "les données entrée/sortie de l'égaliseur de don ne sont pas correctement "
 "alignées, reporter le bug aux développeurs"
 
-#: ../src/iop/toneequal.c:1614 ../src/iop/toneequal.c:1968
+#: ../src/iop/toneequal.c:1614 ../src/iop/toneequal.c:1972
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "l'interpolation est instable, diminuer le lissage de la courbe"
 
@@ -13339,69 +13351,84 @@ msgstr "l'interpolation est instable, diminuer le lissage de la courbe"
 msgid "wait for the preview to finish recomputing"
 msgstr "attendez que la pré-visualisation soit mise à jour"
 
-#: ../src/iop/toneequal.c:1973
+#: ../src/iop/toneequal.c:1977
 msgid "some parameters are out-of-bounds"
 msgstr "certains paramètres sont hors bornes"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2247
+#: ../src/iop/toneequal.c:2251
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f IL"
 
-#: ../src/iop/toneequal.c:2958
+#: ../src/iop/toneequal.c:2903
+#, c-format
+msgid "[%s over image] change tone exposure"
+msgstr "[%s sur l'image] changer exposition tonalité"
+
+#: ../src/iop/toneequal.c:2909
+#, c-format
+msgid "[%s over image] change tone exposure in large steps"
+msgstr "[%s sur l'image] changer exposition tonalité (grossièrement)"
+
+#: ../src/iop/toneequal.c:2915
+#, c-format
+msgid "[%s over image] change tone exposure in small steps"
+msgstr "[%s sur l'image] changer exposition tonalité (finement)"
+
+#: ../src/iop/toneequal.c:2994
 msgid "simple"
 msgstr "simple"
 
-#: ../src/iop/toneequal.c:2962
+#: ../src/iop/toneequal.c:2998
 msgid "-8 EV"
 msgstr "-8 IL"
 
-#: ../src/iop/toneequal.c:2966
+#: ../src/iop/toneequal.c:3002
 msgid "-7 EV"
 msgstr "-7 IL"
 
-#: ../src/iop/toneequal.c:2970
+#: ../src/iop/toneequal.c:3006
 msgid "-6 EV"
 msgstr "-6 IL"
 
-#: ../src/iop/toneequal.c:2974
+#: ../src/iop/toneequal.c:3010
 msgid "-5 EV"
 msgstr "-5 IL"
 
-#: ../src/iop/toneequal.c:2978
+#: ../src/iop/toneequal.c:3014
 msgid "-4 EV"
 msgstr "-4 IL"
 
-#: ../src/iop/toneequal.c:2982
+#: ../src/iop/toneequal.c:3018
 msgid "-3 EV"
 msgstr "-3 IL"
 
-#: ../src/iop/toneequal.c:2986
+#: ../src/iop/toneequal.c:3022
 msgid "-2 EV"
 msgstr "-2 IL"
 
-#: ../src/iop/toneequal.c:2990
+#: ../src/iop/toneequal.c:3026
 msgid "-1 EV"
 msgstr "-1 IL"
 
-#: ../src/iop/toneequal.c:2994
+#: ../src/iop/toneequal.c:3030
 msgid "+0 EV"
 msgstr "+0 IL"
 
-#: ../src/iop/toneequal.c:2999
+#: ../src/iop/toneequal.c:3035
 msgid "advanced"
 msgstr "avancé"
 
-#: ../src/iop/toneequal.c:3014
+#: ../src/iop/toneequal.c:3050
 msgid "double-click to reset the curve"
 msgstr "double-cliquer pour réinitialiser la courbe"
 
-#: ../src/iop/toneequal.c:3021
+#: ../src/iop/toneequal.c:3057
 msgid "curve smoothing"
 msgstr "lissage de la courbe"
 
-#: ../src/iop/toneequal.c:3022
+#: ../src/iop/toneequal.c:3058
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -13415,11 +13442,11 @@ msgstr ""
 "mais les transitions seront plus brutales et le contraste local sera "
 "endommagé."
 
-#: ../src/iop/toneequal.c:3032
+#: ../src/iop/toneequal.c:3068
 msgid "masking"
 msgstr "masque"
 
-#: ../src/iop/toneequal.c:3036
+#: ../src/iop/toneequal.c:3072
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -13428,15 +13455,15 @@ msgstr ""
 "contraste le plus important entre les zones à éclaircir et les zones à "
 "assombrir"
 
-#: ../src/iop/toneequal.c:3039
+#: ../src/iop/toneequal.c:3075
 msgid "details"
 msgstr "détail"
 
-#: ../src/iop/toneequal.c:3040
+#: ../src/iop/toneequal.c:3076
 msgid "preserve details"
 msgstr "préserver détails"
 
-#: ../src/iop/toneequal.c:3041
+#: ../src/iop/toneequal.c:3077
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -13449,7 +13476,7 @@ msgstr ""
 "préserver le contraste local\n"
 "'filtre guidé moyen' est une moyenne des deux méthodes"
 
-#: ../src/iop/toneequal.c:3047
+#: ../src/iop/toneequal.c:3083
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -13457,7 +13484,7 @@ msgstr ""
 "nombre de passe du filtre guidé à appliquer\n"
 "aide à diffuser les bords du filtre mais dégrade les performances"
 
-#: ../src/iop/toneequal.c:3053
+#: ../src/iop/toneequal.c:3089
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -13467,7 +13494,7 @@ msgstr ""
 "attention : une grande valeur peut ralentir conséquemment la\n"
 "prévisualisation si le module de réduction du bruit par profil est utilisé."
 
-#: ../src/iop/toneequal.c:3060
+#: ../src/iop/toneequal.c:3096
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -13482,11 +13509,11 @@ msgstr ""
 "adoucissement\n"
 "mais peut alors créer des bords peu précis et des halos"
 
-#: ../src/iop/toneequal.c:3066
+#: ../src/iop/toneequal.c:3102
 msgid "mask post-processing"
 msgstr "post-traitement masque"
 
-#: ../src/iop/toneequal.c:3072
+#: ../src/iop/toneequal.c:3108
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -13496,7 +13523,7 @@ msgstr ""
 "la ligne centrale montre la moyenne. des bars oranges apparaissent aux "
 "extrémités si troncatures."
 
-#: ../src/iop/toneequal.c:3078
+#: ../src/iop/toneequal.c:3114
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -13507,7 +13534,7 @@ msgstr ""
 " à produire des zones plus lisse lors de l'utilisation de grandes valeurs "
 "d'adoucissement"
 
-#: ../src/iop/toneequal.c:3085
+#: ../src/iop/toneequal.c:3121
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -13518,7 +13545,7 @@ msgstr ""
 "pour un meilleur contrôle de la correction d'exposition.\n"
 "la pipette ajustera automatiquement l'exposition moyenne à -4 IL."
 
-#: ../src/iop/toneequal.c:3095
+#: ../src/iop/toneequal.c:3131
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -13530,7 +13557,7 @@ msgstr ""
 "ceci permet d'étaler l'histogramme d'exposition à travers plus de canaux\n"
 "pour un meilleur contrôle de la correction d'exposition."
 
-#: ../src/iop/toneequal.c:3112 ../src/iop/toneequal.c:3116
+#: ../src/iop/toneequal.c:3148 ../src/iop/toneequal.c:3152
 msgid "display exposure mask"
 msgstr "affiche le masque d'exposition"
 
@@ -14291,19 +14318,19 @@ msgctxt "accel"
 msgid "write sidecar files"
 msgstr "sauver en xmp"
 
-#: ../src/libs/duplicate.c:58
+#: ../src/libs/duplicate.c:60
 msgid "duplicate manager"
 msgstr "gestion des clones"
 
-#: ../src/libs/duplicate.c:502
+#: ../src/libs/duplicate.c:510
 msgid "existing duplicates"
 msgstr "clones existants"
 
-#: ../src/libs/duplicate.c:505
+#: ../src/libs/duplicate.c:513
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "créer un clone vierge"
 
-#: ../src/libs/duplicate.c:509
+#: ../src/libs/duplicate.c:517
 msgid "create a duplicate of the image with same history stack"
 msgstr "créer un clone avec le même historique"
 
@@ -17291,19 +17318,19 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1388
+#: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1390
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:2265 ../src/views/lighttable.c:1396
+#: ../src/views/darkroom.c:2265 ../src/views/lighttable.c:1398
 msgid "preview display intent"
 msgstr "rendu (écran secondaire)"
 
-#: ../src/views/darkroom.c:2285 ../src/views/lighttable.c:1404
+#: ../src/views/darkroom.c:2285 ../src/views/lighttable.c:1406
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:2286 ../src/views/lighttable.c:1408
+#: ../src/views/darkroom.c:2286 ../src/views/lighttable.c:1410
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
@@ -17311,12 +17338,12 @@ msgstr "profil (écran secondaire)"
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:2341 ../src/views/lighttable.c:1438
+#: ../src/views/darkroom.c:2341 ../src/views/lighttable.c:1440
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2344 ../src/views/lighttable.c:1441
+#: ../src/views/darkroom.c:2344 ../src/views/lighttable.c:1443
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
@@ -17377,12 +17404,12 @@ msgstr "zoom ajusté"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3630 ../src/views/lighttable.c:875
+#: ../src/views/darkroom.c:3630 ../src/views/lighttable.c:877
 msgctxt "accel"
 msgid "zoom in"
 msgstr "zoom"
 
-#: ../src/views/darkroom.c:3631 ../src/views/lighttable.c:877
+#: ../src/views/darkroom.c:3631 ../src/views/lighttable.c:879
 msgctxt "accel"
 msgid "zoom out"
 msgstr "dézoom"
@@ -17480,13 +17507,13 @@ msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3677 ../src/views/lighttable.c:867
+#: ../src/views/darkroom.c:3677 ../src/views/lighttable.c:869
 #: ../src/views/map.c:918
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3678 ../src/views/lighttable.c:868
+#: ../src/views/darkroom.c:3678 ../src/views/lighttable.c:870
 #: ../src/views/map.c:919
 msgctxt "accel"
 msgid "redo"
@@ -17514,7 +17541,7 @@ msgstr "changer la précision des raccourcis clavier des réglettes"
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3814 ../src/views/lighttable.c:1051
+#: ../src/views/darkroom.c:3814 ../src/views/lighttable.c:1053
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
@@ -17543,228 +17570,228 @@ msgstr "darktable - pré-visualisation chambre noire"
 msgid "good knight"
 msgstr "bon chevalier"
 
-#: ../src/views/lighttable.c:426 ../src/views/slideshow.c:376
+#: ../src/views/lighttable.c:428 ../src/views/slideshow.c:376
 msgid "there are no images in this collection"
 msgstr "il n'y a pas d'images dans cette collection"
 
-#: ../src/views/lighttable.c:430
+#: ../src/views/lighttable.c:432
 msgid "if you have not imported any images yet"
 msgstr "si vous n'avez pas encore importé d'images"
 
-#: ../src/views/lighttable.c:434
+#: ../src/views/lighttable.c:436
 msgid "you can do so in the import module"
 msgstr "vous pouvez le faire dans le module « importer »"
 
-#: ../src/views/lighttable.c:442
+#: ../src/views/lighttable.c:444
 msgid "try to relax the filter settings in the top panel"
 msgstr "vous pouvez modifier le filtre de notation dans le panneau supérieur"
 
-#: ../src/views/lighttable.c:451
+#: ../src/views/lighttable.c:453
 msgid "or add images in the collection module in the left panel"
 msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #. movement keys
-#: ../src/views/lighttable.c:835
+#: ../src/views/lighttable.c:837
 msgctxt "accel"
 msgid "move page up"
 msgstr "monter d'une page"
 
-#: ../src/views/lighttable.c:836
+#: ../src/views/lighttable.c:838
 msgctxt "accel"
 msgid "move page down"
 msgstr "descendre d'une page"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/views/lighttable.c:837
+#: ../src/views/lighttable.c:839
 msgctxt "accel"
 msgid "move up"
 msgstr "monter"
 
-#: ../src/views/lighttable.c:838
+#: ../src/views/lighttable.c:840
 msgctxt "accel"
 msgid "move down"
 msgstr "descendre"
 
-#: ../src/views/lighttable.c:839
+#: ../src/views/lighttable.c:841
 msgctxt "accel"
 msgid "move left"
 msgstr "à gauche"
 
-#: ../src/views/lighttable.c:840
+#: ../src/views/lighttable.c:842
 msgctxt "accel"
 msgid "move right"
 msgstr "à droite"
 
-#: ../src/views/lighttable.c:841
+#: ../src/views/lighttable.c:843
 msgctxt "accel"
 msgid "move start"
 msgstr "aller au début"
 
-#: ../src/views/lighttable.c:842
+#: ../src/views/lighttable.c:844
 msgctxt "accel"
 msgid "move end"
 msgstr "aller à la fin"
 
 #. movement keys with selection
-#: ../src/views/lighttable.c:845
+#: ../src/views/lighttable.c:847
 msgctxt "accel"
 msgid "move page up and select"
 msgstr "monter d'une page et sélectionner"
 
-#: ../src/views/lighttable.c:846
+#: ../src/views/lighttable.c:848
 msgctxt "accel"
 msgid "move page down and select"
 msgstr "descendre d'une page et sélectionner"
 
-#: ../src/views/lighttable.c:847
+#: ../src/views/lighttable.c:849
 msgctxt "accel"
 msgid "move up and select"
 msgstr "monter et sélectionner"
 
-#: ../src/views/lighttable.c:848
+#: ../src/views/lighttable.c:850
 msgctxt "accel"
 msgid "move down and select"
 msgstr "descendre et sélectionner"
 
-#: ../src/views/lighttable.c:849
+#: ../src/views/lighttable.c:851
 msgctxt "accel"
 msgid "move left and select"
 msgstr "à gauche et sélectionner"
 
-#: ../src/views/lighttable.c:850
+#: ../src/views/lighttable.c:852
 msgctxt "accel"
 msgid "move right and select"
 msgstr "à droite et sélectionner"
 
-#: ../src/views/lighttable.c:851
+#: ../src/views/lighttable.c:853
 msgctxt "accel"
 msgid "move start and select"
 msgstr "aller au début et sélectionner"
 
-#: ../src/views/lighttable.c:852
+#: ../src/views/lighttable.c:854
 msgctxt "accel"
 msgid "move end and select"
 msgstr "aller à la fin et sélectionner"
 
-#: ../src/views/lighttable.c:854
+#: ../src/views/lighttable.c:856
 msgctxt "accel"
 msgid "align images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:855
+#: ../src/views/lighttable.c:857
 msgctxt "accel"
 msgid "reset first image offset"
 msgstr "repositionner première image"
 
-#: ../src/views/lighttable.c:856
+#: ../src/views/lighttable.c:858
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:857
+#: ../src/views/lighttable.c:859
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:860
+#: ../src/views/lighttable.c:862
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:861
+#: ../src/views/lighttable.c:863
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:862
+#: ../src/views/lighttable.c:864
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:863
+#: ../src/views/lighttable.c:865
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:871
+#: ../src/views/lighttable.c:873
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "zoom image 100%"
 
-#: ../src/views/lighttable.c:872
+#: ../src/views/lighttable.c:874
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zoom image ajustée"
 
-#: ../src/views/lighttable.c:876
+#: ../src/views/lighttable.c:878
 msgctxt "accel"
 msgid "zoom max"
 msgstr "zoom maxi"
 
-#: ../src/views/lighttable.c:878
+#: ../src/views/lighttable.c:880
 msgctxt "accel"
 msgid "zoom min"
 msgstr "zoom mini"
 
-#: ../src/views/lighttable.c:1038
+#: ../src/views/lighttable.c:1040
 msgid "open image in darkroom"
 msgstr "ouvrir l'image dans la chambre noire"
 
-#: ../src/views/lighttable.c:1045
+#: ../src/views/lighttable.c:1047
 msgid "switch to next/previous image"
 msgstr "passer à l'image suivante/précédente"
 
-#: ../src/views/lighttable.c:1057 ../src/views/lighttable.c:1115
+#: ../src/views/lighttable.c:1059 ../src/views/lighttable.c:1117
 #, no-c-format
 msgid "zoom to 100% and back"
 msgstr "zoom à 100% et retour vers ajusté"
 
-#: ../src/views/lighttable.c:1064 ../src/views/lighttable.c:1086
+#: ../src/views/lighttable.c:1066 ../src/views/lighttable.c:1088
 msgid "scroll the collection"
 msgstr "défiler la collection"
 
-#: ../src/views/lighttable.c:1070
+#: ../src/views/lighttable.c:1072
 msgid "change number of images per row"
 msgstr "changer le nombre d'image par ligne"
 
-#: ../src/views/lighttable.c:1078
+#: ../src/views/lighttable.c:1080
 msgid "change image order"
 msgstr "changer l'ordre des images"
 
-#: ../src/views/lighttable.c:1092
+#: ../src/views/lighttable.c:1094
 msgid "zoom all the images"
 msgstr "zoom toutes les images"
 
-#: ../src/views/lighttable.c:1097
+#: ../src/views/lighttable.c:1099
 msgid "pan inside all the images"
 msgstr "déplacer toutes les images"
 
-#: ../src/views/lighttable.c:1103
+#: ../src/views/lighttable.c:1105
 msgid "zoom current image"
 msgstr "zoom image"
 
-#: ../src/views/lighttable.c:1109
+#: ../src/views/lighttable.c:1111
 msgid "pan inside current image"
 msgstr "déplacer l'image"
 
-#: ../src/views/lighttable.c:1122
+#: ../src/views/lighttable.c:1124
 #, no-c-format
 msgid "zoom current image to 100% and back"
 msgstr "zoom sur l'image actuelle à 100% et retour vers ajusté"
 
-#: ../src/views/lighttable.c:1129
+#: ../src/views/lighttable.c:1131
 msgid "zoom the main view"
 msgstr "zoom vue principale"
 
-#: ../src/views/lighttable.c:1134
+#: ../src/views/lighttable.c:1136
 msgid "pan inside the main view"
 msgstr "déplacer la vue principale"
 
-#: ../src/views/lighttable.c:1365
+#: ../src/views/lighttable.c:1367
 msgid "set display profile"
 msgstr "profil (écran)"
 
@@ -18623,9 +18650,6 @@ msgstr "action"
 #~ msgctxt "accel"
 #~ msgid "compression"
 #~ msgstr "dégradé"
-
-#~ msgid "[%s on line] change compression"
-#~ msgstr "[%s sur ligne] changer la compression"
 
 #~ msgctxt "accel"
 #~ msgid "auto scale"
