@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-03 13:50-0500\n"
-"PO-Revision-Date: 2020-07-03 02:03-0500\n"
+"POT-Creation-Date: 2020-07-06 15:05-0500\n"
+"PO-Revision-Date: 2020-07-07 00:02-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -635,7 +635,7 @@ msgstr "aleatorio"
 
 #: ../build/src/iop/introspection_dither.c:180
 msgid "floyd-steinberg 1-bit B&W"
-msgstr "Floyd-Steinberg 1 bit B&N"
+msgstr "Floyd-Steinberg 1 bit B/N"
 
 #: ../build/src/iop/introspection_dither.c:181
 msgid "floyd-steinberg 4-bit gray"
@@ -1225,7 +1225,7 @@ msgstr "proporcional a"
 
 #. close the file before adding exif data
 #: ../build/src/iop/introspection_watermark.c:285
-#: ../src/imageio/format/tiff.c:317 ../src/iop/borders.c:850
+#: ../src/imageio/format/tiff.c:324 ../src/iop/borders.c:850
 msgid "image"
 msgstr "imagen"
 
@@ -3457,52 +3457,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr "imágenes huérfanas"
 
-#: ../src/common/image.c:1661
+#: ../src/common/image.c:1681
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "No se puede acceder a la copia local `%s'"
 
-#: ../src/common/image.c:1668
+#: ../src/common/image.c:1688
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "No se puede escribir la copia local `%s'"
 
-#: ../src/common/image.c:1675
+#: ../src/common/image.c:1695
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Error al mover la copia local `%s' -> `%s'"
 
-#: ../src/common/image.c:1691
+#: ../src/common/image.c:1711
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Error al mover `%s': no se encuentra el archivo"
 
-#: ../src/common/image.c:1701
+#: ../src/common/image.c:1721
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Error al mover `%s' -> `%s': el archivo ya existe"
 
-#: ../src/common/image.c:1705
+#: ../src/common/image.c:1725
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Error al mover `%s' -> `%s'"
 
-#: ../src/common/image.c:1984
+#: ../src/common/image.c:2022
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "la copia local no se puede crear cuando el archivo original no es accesible."
 
-#: ../src/common/image.c:1998
+#: ../src/common/image.c:2036
 msgid "cannot create local copy."
 msgstr "no se puede crear una copia local."
 
-#: ../src/common/image.c:2070 ../src/control/jobs/control_jobs.c:664
+#: ../src/common/image.c:2108 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "la copia local no se puede eliminar el archivo original cuando no es "
 "accesible."
 
-#: ../src/common/image.c:2250
+#: ../src/common/image.c:2288
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -6793,12 +6793,12 @@ msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
 
 #: ../src/imageio/format/pdf.c:79 ../src/imageio/format/png.c:526
-#: ../src/imageio/format/tiff.c:781
+#: ../src/imageio/format/tiff.c:807
 msgid "8 bit"
 msgstr "8 bit"
 
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:527
-#: ../src/imageio/format/tiff.c:782
+#: ../src/imageio/format/tiff.c:808
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -6921,7 +6921,7 @@ msgid "images can be tagged with their icc profile"
 msgstr "Las imágenes pueden ser etiquetadas con su perfil icc"
 
 #: ../src/imageio/format/pdf.c:705 ../src/imageio/format/png.c:525
-#: ../src/imageio/format/tiff.c:780
+#: ../src/imageio/format/tiff.c:806
 msgid "bit depth"
 msgstr "profundidad de bit"
 
@@ -6930,15 +6930,15 @@ msgid "bits per channel of the embedded images"
 msgstr "Bits por canal de las imágenes incrustadas"
 
 #: ../src/imageio/format/pdf.c:721 ../src/imageio/format/png.c:539
-#: ../src/imageio/format/tiff.c:795
+#: ../src/imageio/format/tiff.c:821
 msgid "compression"
 msgstr "compresión"
 
-#: ../src/imageio/format/pdf.c:722 ../src/imageio/format/tiff.c:796
+#: ../src/imageio/format/pdf.c:722 ../src/imageio/format/tiff.c:822
 msgid "uncompressed"
 msgstr "sin comprimir"
 
-#: ../src/imageio/format/pdf.c:723 ../src/imageio/format/tiff.c:797
+#: ../src/imageio/format/pdf.c:723 ../src/imageio/format/tiff.c:823
 msgid "deflate"
 msgstr "deflación"
 
@@ -6990,29 +6990,41 @@ msgstr "PNG (8/16-bit)"
 msgid "PPM (16-bit)"
 msgstr "PPM (16-bit)"
 
-#: ../src/imageio/format/tiff.c:225
+#: ../src/imageio/format/tiff.c:232
 msgid "will export as a grayscale image"
 msgstr "Se exportará como una imagen en escala de grises"
 
-#: ../src/imageio/format/tiff.c:719
+#: ../src/imageio/format/tiff.c:735
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32-bit)"
 
-#: ../src/imageio/format/tiff.c:783
+#: ../src/imageio/format/tiff.c:809
 msgid "32 bit (float)"
 msgstr "32 bit (flotante)"
 
-#: ../src/imageio/format/tiff.c:798
+#: ../src/imageio/format/tiff.c:824
 msgid "deflate with predictor"
 msgstr "deflación con predicción"
 
-#: ../src/imageio/format/tiff.c:799
+#: ../src/imageio/format/tiff.c:825
 msgid "deflate with predictor (float)"
 msgstr "deflación con predicción (flotante)"
 
-#: ../src/imageio/format/tiff.c:805
+#: ../src/imageio/format/tiff.c:831
 msgid "compression level"
 msgstr "nivel de compresión"
+
+#: ../src/imageio/format/tiff.c:843
+msgid "b&w image"
+msgstr "imagen en b/n"
+
+#: ../src/imageio/format/tiff.c:844
+msgid "write rgb colors"
+msgstr "colores rgb"
+
+#: ../src/imageio/format/tiff.c:845
+msgid "write grayscale"
+msgstr "escala de grises"
 
 #: ../src/imageio/format/webp.c:288
 msgid "WebP (8-bit)"
@@ -10590,11 +10602,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:2310 ../src/iop/filmicrgb.c:2319
 #: ../src/iop/filmicrgb.c:2355 ../src/iop/filmicrgb.c:2364
-#: ../src/iop/toneequal.c:2961 ../src/iop/toneequal.c:2965
-#: ../src/iop/toneequal.c:2969 ../src/iop/toneequal.c:2973
-#: ../src/iop/toneequal.c:2977 ../src/iop/toneequal.c:2981
-#: ../src/iop/toneequal.c:2985 ../src/iop/toneequal.c:2989
-#: ../src/iop/toneequal.c:2993 ../src/libs/metadata_view.c:499
+#: ../src/iop/toneequal.c:2997 ../src/iop/toneequal.c:3001
+#: ../src/iop/toneequal.c:3005 ../src/iop/toneequal.c:3009
+#: ../src/iop/toneequal.c:3013 ../src/iop/toneequal.c:3017
+#: ../src/iop/toneequal.c:3021 ../src/iop/toneequal.c:3025
+#: ../src/iop/toneequal.c:3029 ../src/libs/metadata_view.c:499
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -13362,7 +13374,7 @@ msgstr ""
 "El búfer de entrada/salida del ecualizador de tono está mal alineado, "
 "informe del error a los desarrolladores"
 
-#: ../src/iop/toneequal.c:1614 ../src/iop/toneequal.c:1968
+#: ../src/iop/toneequal.c:1614 ../src/iop/toneequal.c:1972
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "La interpolación es inestable, disminuya el suavizado de la curva"
 
@@ -13370,69 +13382,84 @@ msgstr "La interpolación es inestable, disminuya el suavizado de la curva"
 msgid "wait for the preview to finish recomputing"
 msgstr "Espere a que la vista previa termine de recalcular"
 
-#: ../src/iop/toneequal.c:1973
+#: ../src/iop/toneequal.c:1977
 msgid "some parameters are out-of-bounds"
 msgstr "Algunos parámetros están fuera de los límites"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2247
+#: ../src/iop/toneequal.c:2251
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:2958
+#: ../src/iop/toneequal.c:2903
+#, c-format
+msgid "[%s over image] change tone exposure"
+msgstr "[%s sobre la imagen] cambiar la exposición del tono"
+
+#: ../src/iop/toneequal.c:2909
+#, c-format
+msgid "[%s over image] change tone exposure in large steps"
+msgstr "[%s sobre la imagen] cambiar la exposición del tono en incrementos grandes"
+
+#: ../src/iop/toneequal.c:2915
+#, c-format
+msgid "[%s over image] change tone exposure in small steps"
+msgstr "[%s sobre la imagen] cambiar la exposición del tono en incrementos pequeños"
+
+#: ../src/iop/toneequal.c:2994
 msgid "simple"
 msgstr "sencillo"
 
-#: ../src/iop/toneequal.c:2962
+#: ../src/iop/toneequal.c:2998
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:2966
+#: ../src/iop/toneequal.c:3002
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:2970
+#: ../src/iop/toneequal.c:3006
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:2974
+#: ../src/iop/toneequal.c:3010
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:2978
+#: ../src/iop/toneequal.c:3014
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:2982
+#: ../src/iop/toneequal.c:3018
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:2986
+#: ../src/iop/toneequal.c:3022
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:2990
+#: ../src/iop/toneequal.c:3026
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:2994
+#: ../src/iop/toneequal.c:3030
 msgid "+0 EV"
 msgstr "+0 EV"
 
-#: ../src/iop/toneequal.c:2999
+#: ../src/iop/toneequal.c:3035
 msgid "advanced"
 msgstr "avanzado"
 
-#: ../src/iop/toneequal.c:3014
+#: ../src/iop/toneequal.c:3050
 msgid "double-click to reset the curve"
 msgstr "Doble clic para restablecer la curva"
 
-#: ../src/iop/toneequal.c:3021
+#: ../src/iop/toneequal.c:3057
 msgid "curve smoothing"
 msgstr "suavizado de curva"
 
-#: ../src/iop/toneequal.c:3022
+#: ../src/iop/toneequal.c:3058
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -13446,11 +13473,11 @@ msgstr ""
 "pero puede producir transiciones de tonos abruptas y dañar el contraste "
 "local."
 
-#: ../src/iop/toneequal.c:3032
+#: ../src/iop/toneequal.c:3068
 msgid "masking"
 msgstr "máscaras"
 
-#: ../src/iop/toneequal.c:3036
+#: ../src/iop/toneequal.c:3072
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -13458,15 +13485,15 @@ msgstr ""
 "Previsualice la máscara y elija el estimador que le proporcione\n"
 "mayor contraste entre las áreas a aclarar y las áreas a oscurecer"
 
-#: ../src/iop/toneequal.c:3039
+#: ../src/iop/toneequal.c:3075
 msgid "details"
 msgstr "detalle"
 
-#: ../src/iop/toneequal.c:3040
+#: ../src/iop/toneequal.c:3076
 msgid "preserve details"
 msgstr "preservar los detalles"
 
-#: ../src/iop/toneequal.c:3041
+#: ../src/iop/toneequal.c:3077
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -13479,7 +13506,7 @@ msgstr ""
 "contraste local\n"
 "Filtro guiado promediado: es una media geométrica de ambos métodos"
 
-#: ../src/iop/toneequal.c:3047
+#: ../src/iop/toneequal.c:3083
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -13487,7 +13514,7 @@ msgstr ""
 "Número de pasadas del filtro guiado para aplicar\n"
 "Ayuda a difuminar los bordes del filtro a expensas de la velocidad"
 
-#: ../src/iop/toneequal.c:3053
+#: ../src/iop/toneequal.c:3089
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -13499,7 +13526,7 @@ msgstr ""
 "oscuro \n"
 "sea mucho más lenta si se usa la reducción de ruido perfilado."
 
-#: ../src/iop/toneequal.c:3060
+#: ../src/iop/toneequal.c:3096
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -13514,11 +13541,11 @@ msgstr ""
 "Con valores inferiores, se dan gradientes más lisos y mejor suavizado,\n"
 "pero pueden darse bordes imprecisos y halos"
 
-#: ../src/iop/toneequal.c:3066
+#: ../src/iop/toneequal.c:3102
 msgid "mask post-processing"
 msgstr "postprocesado de máscara"
 
-#: ../src/iop/toneequal.c:3072
+#: ../src/iop/toneequal.c:3108
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -13528,7 +13555,7 @@ msgstr ""
 "La línea central muestra el promedio. Aparecerán barras naranjas en los "
 "extremos si se produce un recorte."
 
-#: ../src/iop/toneequal.c:3078
+#: ../src/iop/toneequal.c:3114
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -13540,7 +13567,7 @@ msgstr ""
 "Cuando se usan valores de difuminado altos, produce áreas lisas por "
 "segmentos "
 
-#: ../src/iop/toneequal.c:3085
+#: ../src/iop/toneequal.c:3121
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -13552,7 +13579,7 @@ msgstr ""
 "disponibles.\n"
 "El cuentagotas ajustará automáticamente la exposición promedio a -4 EV."
 
-#: ../src/iop/toneequal.c:3095
+#: ../src/iop/toneequal.c:3131
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -13564,7 +13591,7 @@ msgstr ""
 "Permite extender el histograma de exposición a más canales.\n"
 "Ofrece un mejor control sobre la corrección de exposición."
 
-#: ../src/iop/toneequal.c:3112 ../src/iop/toneequal.c:3116
+#: ../src/iop/toneequal.c:3148 ../src/iop/toneequal.c:3152
 msgid "display exposure mask"
 msgstr "mostrar la máscara de exposición"
 
@@ -13937,7 +13964,7 @@ msgid ""
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
-"Número de incrementos por toma. Los incrememtos son configurables en la "
+"Número de incrementos por toma. Los incrementos son configurables en la "
 "cámara y normalmente son tres incrementos por paso.\n"
 "Es decir, 3 incrementos son 1 EV de exposición de diferencia entre disparos."
 
@@ -18446,9 +18473,6 @@ msgstr "Acción"
 #~ msgctxt "accel"
 #~ msgid "compression"
 #~ msgstr "compresión"
-
-#~ msgid "[%s on line] change compression"
-#~ msgstr "[%s sobre la línea] cambiar compresión"
 
 #~ msgid "3D lut (cube)"
 #~ msgstr "lut 3D (cube)"
