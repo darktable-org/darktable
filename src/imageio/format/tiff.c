@@ -129,7 +129,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_NONE);
     TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
   }
-  else if(d->compress >= 2)
+  else if(d->compress == 2)
   {
     TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
     if(d->bpp == 32)
@@ -390,7 +390,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
           TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_NONE);
           TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
         }
-        else if(d->compress >= 2)
+        else if(d->compress == 2)
         {
           TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
           if(d->bpp == 32)
@@ -586,7 +586,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     g_strlcpy(n->global.style, o->style, sizeof(o->style));
     n->global.style_append = FALSE;
     n->bpp = o->bpp;
-    n->compress = o->compress;
+    n->compress = o->compress == 3 ? 2 : o->compress;  // drop redundant float case
     n->compresslevel = 6;
     n->handle = o->handle;
     *new_size = self->params_size(self);
@@ -615,7 +615,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     g_strlcpy(n->global.style, o->style, sizeof(o->style));
     n->global.style_append = o->style_append;
     n->bpp = o->bpp;
-    n->compress = o->compress;
+    n->compress = o->compress == 3 ? 2 : o->compress;  // drop redundant float case
     n->compresslevel = 6;
     n->handle = o->handle;
     *new_size = self->params_size(self);
@@ -634,7 +634,12 @@ void *get_params(dt_imageio_module_format_t *self)
     d->bpp = 32;
   else
     d->bpp = 8;
+
+  // Drop redundant float case from existing config
+  // TODO: Move to legacy eventually
   d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  if(d->compress == 3)
+    d->compress = 2;
 
   // TIFF compression level might actually be zero, handle this
   if(!dt_conf_key_exists("plugins/imageio/format/tiff/compresslevel"))
@@ -754,7 +759,11 @@ void gui_init(dt_imageio_module_format_t *self)
 
   const int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
 
-  const int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  // Drop redundant float case from existing config
+  // TODO: Move to legacy eventually
+  int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  if(compress == 3)
+    compress = 2;
 
   // TIFF compression level might actually be zero!
   int compresslevel = 6;
@@ -784,7 +793,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(gui->compress, _("uncompressed"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor"));
-  dt_bauhaus_combobox_set(gui->compress, compress);
+  dt_bauhaus_combobox_set(gui->compress, compress); 
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
 
   // Compression level slider
