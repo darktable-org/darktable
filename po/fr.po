@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-06 13:40+0200\n"
-"PO-Revision-Date: 2020-07-06 13:43+0200\n"
+"POT-Creation-Date: 2020-07-07 18:49+0200\n"
+"PO-Revision-Date: 2020-07-07 18:54+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1963,10 +1963,18 @@ msgstr "applique le pré-réglage de la courbe de base pour le boîtier"
 #: ../build/src/preferences_gen.h:3224
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
-"one if there is one available (needs a restart)"
+"one if there is one available (needs a restart).\n"
+"this option is taken into account when the \"auto-apply pixel workflow "
+"defaults\" is set to \"display-referred\".\n"
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
+"\" should be set to \"none\""
 msgstr ""
-"par défaut utilise la courbe de base pour le boîtier à la place de celle "
-"générique du fabricant si une est disponible (nécessite un redémarrage)"
+"utilise la courbe de base spécifique au boîtier à la place de celle "
+"générique à la marque si disponible (nécessite un redémarrage).\n"
+"cette option est utilisée uniquement lorsque l'option \"flux de travail par "
+"défaut\" est positionnée à \"relatif à l'affichage\".\n"
+"pour ne pas utiliser de courbe de base par défaut, l'option \"flux de "
+"travail par défaut\" doit être positionnée à \"aucun\"."
 
 #: ../build/src/preferences_gen.h:3232
 msgid "auto-apply sharpen"
@@ -3439,52 +3447,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1680
+#: ../src/common/image.c:1681
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "accès à la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1687
+#: ../src/common/image.c:1688
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "création de la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1694
+#: ../src/common/image.c:1695
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
-#: ../src/common/image.c:1710
+#: ../src/common/image.c:1711
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erreur de déplacement « %s » : le fichier n'existe pas"
 
-#: ../src/common/image.c:1720
+#: ../src/common/image.c:1721
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erreur de déplacement « %s » → « %s » : le fichier existe"
 
-#: ../src/common/image.c:1724
+#: ../src/common/image.c:1725
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erreur lors du déplacement « %s » → « %s »"
 
-#: ../src/common/image.c:2021
+#: ../src/common/image.c:2022
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:2035
+#: ../src/common/image.c:2036
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:2107 ../src/control/jobs/control_jobs.c:664
+#: ../src/common/image.c:2108 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible."
 
-#: ../src/common/image.c:2287
+#: ../src/common/image.c:2288
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -14322,15 +14330,15 @@ msgstr "sauver en xmp"
 msgid "duplicate manager"
 msgstr "gestion des clones"
 
-#: ../src/libs/duplicate.c:510
+#: ../src/libs/duplicate.c:535
 msgid "existing duplicates"
 msgstr "clones existants"
 
-#: ../src/libs/duplicate.c:513
+#: ../src/libs/duplicate.c:538
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "créer un clone vierge"
 
-#: ../src/libs/duplicate.c:517
+#: ../src/libs/duplicate.c:542
 msgid "create a duplicate of the image with same history stack"
 msgstr "créer un clone avec le même historique"
 
@@ -17922,6 +17930,13 @@ msgstr "raccourci"
 #: ../src/views/view.c:1622
 msgid "Action"
 msgstr "action"
+
+#~ msgid ""
+#~ "use the per-camera basecurve by default instead of the generic "
+#~ "manufacturer one if there is one available (needs a restart)"
+#~ msgstr ""
+#~ "par défaut utilise la courbe de base pour le boîtier à la place de celle "
+#~ "générique du fabricant si une est disponible (nécessite un redémarrage)"
 
 #, fuzzy
 #~ msgctxt "introspection description"
