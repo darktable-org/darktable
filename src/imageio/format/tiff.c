@@ -229,7 +229,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
 
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, NULL));
   TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
   int resolution = dt_conf_get_int("metadata/resolution");
@@ -416,7 +416,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)w);
         TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)h);
         TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-        TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
         TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
 #ifdef MASKS_USE_SAME_FORMAT
@@ -424,6 +423,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)(d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT));
         TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+        TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, NULL));
 
         free(rowdata);
         const size_t _rowsize = (w * 3) * d->bpp / 8;
@@ -494,6 +494,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)32);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)SAMPLEFORMAT_IEEEFP);
         TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
+        TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, NULL));
 
         for(int y = 0; y < h; y++)
         {
