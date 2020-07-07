@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-06 15:05-0500\n"
-"PO-Revision-Date: 2020-07-07 00:02-0500\n"
+"POT-Creation-Date: 2020-07-07 12:26-0500\n"
+"PO-Revision-Date: 2020-07-07 13:16-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1954,7 +1954,7 @@ msgstr "basado en la pantalla"
 #: ../build/src/preferences_gen.h:3182 ../build/src/preferences_gen.h:4298
 msgctxt "preferences"
 msgid "none"
-msgstr "Ninguna"
+msgstr "ninguno"
 
 #: ../build/src/preferences_gen.h:3203
 msgid ""
@@ -1978,11 +1978,18 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3224
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
-"one if there is one available (needs a restart)"
+"one if there is one available (needs a restart).\n"
+"this option is taken into account when the \"auto-apply pixel workflow "
+"defaults\" is set to \"display-referred\".\n"
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
+"\" should be set to \"none\""
 msgstr ""
-"Utilice los preajustes de la curva base de la cámara por defecto en vez de "
-"los genéricos de los fabricantes si es que hay uno disponible (necesita "
-"reiniciarse)"
+"Por defecto, utilizar la curva base de la cámara correspondiente (si hay una "
+"disponible), en lugar de la genérica del fabricante (necesita reiniciarse).\n"
+"Esta opción se incluye cuando en \"Flujo de trabajo por defecto\" se elige "
+"\"basado en la pantalla\".\n"
+"Para evitar la aplicación automática de la curva base, la opción de \"Flujo "
+"de trabajo por defecto\" deberá ser \"ninguno\"."
 
 #: ../build/src/preferences_gen.h:3232
 msgid "auto-apply sharpen"
@@ -13400,12 +13407,14 @@ msgstr "[%s sobre la imagen] cambiar la exposición del tono"
 #: ../src/iop/toneequal.c:2909
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
-msgstr "[%s sobre la imagen] cambiar la exposición del tono en incrementos grandes"
+msgstr ""
+"[%s sobre la imagen] cambiar la exposición del tono en incrementos grandes"
 
 #: ../src/iop/toneequal.c:2915
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
-msgstr "[%s sobre la imagen] cambiar la exposición del tono en incrementos pequeños"
+msgstr ""
+"[%s sobre la imagen] cambiar la exposición del tono en incrementos pequeños"
 
 #: ../src/iop/toneequal.c:2994
 msgid "simple"
@@ -14342,15 +14351,15 @@ msgstr "escribir archivo xmp"
 msgid "duplicate manager"
 msgstr "administrador de duplicado"
 
-#: ../src/libs/duplicate.c:510
+#: ../src/libs/duplicate.c:535
 msgid "existing duplicates"
 msgstr "duplicados existentes"
 
-#: ../src/libs/duplicate.c:513
+#: ../src/libs/duplicate.c:538
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Crear un duplicado 'virgen' de la imagen (sin ningún revelado)"
 
-#: ../src/libs/duplicate.c:517
+#: ../src/libs/duplicate.c:542
 msgid "create a duplicate of the image with same history stack"
 msgstr "Crear un duplicado de la imagen con la misma  historia"
 
@@ -17892,6 +17901,14 @@ msgstr "Atajos del teclado"
 #: ../src/views/view.c:1622
 msgid "Action"
 msgstr "Acción"
+
+#~ msgid ""
+#~ "use the per-camera basecurve by default instead of the generic "
+#~ "manufacturer one if there is one available (needs a restart)"
+#~ msgstr ""
+#~ "Utilice los preajustes de la curva base de la cámara por defecto en vez "
+#~ "de los genéricos de los fabricantes si es que hay uno disponible "
+#~ "(necesita reiniciarse)"
 
 #~ msgid "precedence"
 #~ msgstr "prioridad"
