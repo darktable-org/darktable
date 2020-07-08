@@ -2996,38 +2996,47 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_notebook_append_page(g->notebook, page1, gtk_label_new(_("simple")));
 
   g->noise = dt_bauhaus_slider_from_params(self, "noise");
+  dt_bauhaus_slider_set_step(g->noise, .05);
   dt_bauhaus_slider_set_format(g->noise, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->noise, NULL, _("-8 EV"));
 
   g->ultra_deep_blacks = dt_bauhaus_slider_from_params(self, "ultra_deep_blacks");
+  dt_bauhaus_slider_set_step(g->ultra_deep_blacks, .05);
   dt_bauhaus_slider_set_format(g->ultra_deep_blacks, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->ultra_deep_blacks, NULL, _("-7 EV"));
 
   g->deep_blacks = dt_bauhaus_slider_from_params(self, "deep_blacks");
+  dt_bauhaus_slider_set_step(g->deep_blacks, .05);
   dt_bauhaus_slider_set_format(g->deep_blacks, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->deep_blacks, NULL, _("-6 EV"));
 
   g->blacks = dt_bauhaus_slider_from_params(self, "blacks");
+  dt_bauhaus_slider_set_step(g->blacks, .05);
   dt_bauhaus_slider_set_format(g->blacks, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->blacks, NULL, _("-5 EV"));
 
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
+  dt_bauhaus_slider_set_step(g->shadows, .05);
   dt_bauhaus_slider_set_format(g->shadows, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("-4 EV"));
 
   g->midtones = dt_bauhaus_slider_from_params(self, "midtones");
+  dt_bauhaus_slider_set_step(g->midtones, .05);
   dt_bauhaus_slider_set_format(g->midtones, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->midtones, NULL, _("-3 EV"));
 
   g->highlights = dt_bauhaus_slider_from_params(self, "highlights");
+  dt_bauhaus_slider_set_step(g->highlights, .05);
   dt_bauhaus_slider_set_format(g->highlights, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("-2 EV"));
 
   g->whites = dt_bauhaus_slider_from_params(self, "whites");
+  dt_bauhaus_slider_set_step(g->whites, .05);
   dt_bauhaus_slider_set_format(g->whites, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->whites, NULL, _("-1 EV"));
 
   g->speculars = dt_bauhaus_slider_from_params(self, "speculars");
+  dt_bauhaus_slider_set_step(g->speculars, .05);
   dt_bauhaus_slider_set_format(g->speculars, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->speculars, NULL, _("+0 EV"));
 
@@ -3112,6 +3121,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g->quantization = dt_bauhaus_slider_from_params(self, "quantization");
+  dt_bauhaus_slider_set_step(g->quantization, 0.25);
   dt_bauhaus_slider_set_format(g->quantization, "%+.2f EV");
   gtk_widget_set_tooltip_text(g->quantization, _("0 disables the quantization.\n"
                                                  "higher values posterize the luminance mask to help the guiding\n"
