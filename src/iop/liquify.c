@@ -3589,6 +3589,16 @@ void gui_init(dt_iop_module_t *module)
                                                               "ctrl+click: linear, grow, and shrink");
 }
 
+void gui_reset(dt_iop_module_t *self)
+{
+  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) self->gui_data;
+
+  gtk_toggle_button_set_active(g->btn_point_tool, FALSE);
+  gtk_toggle_button_set_active(g->btn_line_tool,  FALSE);
+  gtk_toggle_button_set_active(g->btn_curve_tool, FALSE);
+  gtk_toggle_button_set_active(g->btn_node_tool,  FALSE);
+}
+
 void gui_cleanup(dt_iop_module_t *module)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
