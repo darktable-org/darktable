@@ -915,6 +915,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_factor(g->size, 100);
+  dt_bauhaus_slider_set_digits(g->size, 4);
   dt_bauhaus_slider_set_format(g->size, "%.2f %%");
   gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
 
@@ -961,12 +962,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->frame_size = dt_bauhaus_slider_from_params(self, "frame_size");
   dt_bauhaus_slider_set_factor(g->frame_size, 100);
   dt_bauhaus_slider_set_step(g->frame_size, 0.005);
+  dt_bauhaus_slider_set_digits(g->frame_size, 4);
   dt_bauhaus_slider_set_format(g->frame_size, "%.2f %%");
   gtk_widget_set_tooltip_text(g->frame_size, _("size of the frame line in percent of min border width"));
 
   g->frame_offset = dt_bauhaus_slider_from_params(self, "frame_offset");
   dt_bauhaus_slider_set_factor(g->frame_offset, 100);
   dt_bauhaus_slider_set_step(g->frame_size, 0.005);
+  dt_bauhaus_slider_set_digits(g->frame_offset, 4);
   dt_bauhaus_slider_set_format(g->frame_offset, "%.2f %%");
   gtk_widget_set_tooltip_text(g->frame_offset, _("offset of the frame line beginning on picture side"));
 

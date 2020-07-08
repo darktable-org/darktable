@@ -2347,22 +2347,26 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *page2 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
+  dt_bauhaus_slider_set_digits(g->cx, 4);
   dt_bauhaus_slider_set_factor(g->cx, 100.0);
   dt_bauhaus_slider_set_format(g->cx, "%0.f %%");
   gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
 
   g->cw = dt_bauhaus_slider_from_params(self, "cw");
+  dt_bauhaus_slider_set_digits(g->cw, 4);
   dt_bauhaus_slider_set_factor(g->cw, -100.0);
   dt_bauhaus_slider_set_offset(g->cw, 100.0);
   dt_bauhaus_slider_set_format(g->cw, "%0.f %%");
   gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
 
   g->cy = dt_bauhaus_slider_from_params(self, "cy");
+  dt_bauhaus_slider_set_digits(g->cy, 4);
   dt_bauhaus_slider_set_factor(g->cy, 100.0);
   dt_bauhaus_slider_set_format(g->cy, "%0.f %%");
   gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
 
   g->ch = dt_bauhaus_slider_from_params(self, "ch");
+  dt_bauhaus_slider_set_digits(g->ch, 4);
   dt_bauhaus_slider_set_factor(g->ch, -100.0);
   dt_bauhaus_slider_set_offset(g->ch, 100.0);
   dt_bauhaus_slider_set_format(g->ch, "%0.f %%");
