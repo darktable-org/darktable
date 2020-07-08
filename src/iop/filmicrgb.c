@@ -2297,7 +2297,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->grey_point_source = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                          dt_bauhaus_slider_from_params(self, "grey_point_source"));
-  dt_bauhaus_slider_set_soft_range(g->grey_point_source, .1, .36);
+  dt_bauhaus_slider_set_soft_range(g->grey_point_source, .1, 36.0);
   dt_bauhaus_slider_set_format(g->grey_point_source, "%.2f %%");
   gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the image's subject.\n"
                                                       "the value entered here will then be remapped to 18.45%.\n"
