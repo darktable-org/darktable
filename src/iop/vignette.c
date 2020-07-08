@@ -1049,6 +1049,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->whratio = dt_bauhaus_slider_from_params(self, "whratio");
   g->dithering = dt_bauhaus_combobox_from_params(self, N_("dithering"));
 
+  dt_bauhaus_slider_set_digits(g->brightness, 3);
+  dt_bauhaus_slider_set_digits(g->saturation, 3);
+  dt_bauhaus_slider_set_digits(g->center_x, 3);
+  dt_bauhaus_slider_set_digits(g->center_y, 3);
+  dt_bauhaus_slider_set_digits(g->whratio, 3);
+
   dt_bauhaus_slider_set_format(g->scale, "%.02f%%");
   dt_bauhaus_slider_set_format(g->falloff_scale, "%.02f%%");
 

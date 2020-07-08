@@ -462,6 +462,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
 
   g->midtone = dt_bauhaus_slider_from_params(self, "midtone");
+  dt_bauhaus_slider_set_digits(g->midtone, 3);
   gtk_widget_set_tooltip_text(g->midtone, _("defines what counts as midtones. lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
 
   // work around multi-instance issue which calls show all a fair bit:

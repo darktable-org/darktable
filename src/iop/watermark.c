@@ -1503,9 +1503,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   // x/y offset
   g->x_offset = dt_bauhaus_slider_from_params(self, "xoffset");
-  dt_bauhaus_slider_set_format(g->x_offset, "%.3f");
+  dt_bauhaus_slider_set_digits(g->x_offset, 3);
   g->y_offset = dt_bauhaus_slider_from_params(self, "yoffset");
-  dt_bauhaus_slider_set_format(g->y_offset, "%.3f");
+  dt_bauhaus_slider_set_digits(g->y_offset, 3);
 
   // Let's add some tooltips and hook up some signals...
   gtk_widget_set_tooltip_text(g->opacity, _("the opacity of the watermark"));
