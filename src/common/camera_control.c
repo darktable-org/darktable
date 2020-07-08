@@ -486,6 +486,7 @@ static void *dt_camctl_camera_get_live_view(void *data)
 
   int frames = 0;
   double capture_time = dt_get_wtime();
+  int fps = dt_conf_get_int("plugins/capture/camera/live_view_fps");
 
   while(cam->is_live_viewing == TRUE)
   {
@@ -510,8 +511,8 @@ static void *dt_camctl_camera_get_live_view(void *data)
     job->type = _JOB_TYPE_EXECUTE_LIVE_VIEW;
     _camera_add_job(camctl, cam, job);
 
-    g_usleep((1.0 / 15) * G_USEC_PER_SEC); // never update faster than 15 FPS. going too fast will result in
-                                           // too many redraws without a real benefit
+    g_usleep((1.0 / fps) * G_USEC_PER_SEC); // going too fast will result in
+                                            // too many redraws without a real benefit
   }
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view thread stopped\n");
   return NULL;
