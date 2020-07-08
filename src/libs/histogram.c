@@ -85,6 +85,7 @@ typedef struct dt_lib_histogram_t
   // pixelpipe for current image when not in darkroom view
   dt_develop_t *dev;
   gboolean can_change_iops;
+  gboolean is_live_view;
   // exposure params on mouse down
   float exposure, black;
   // mouse state
@@ -165,29 +166,34 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   }
 #endif
 
-  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-  gchar *histogram_filename = NULL;
-  gchar _histogram_filename[1] = { 0 };
-
-  // FIXME: could just call dt_ioppr_get_histogram_profile_info() and call dt_ioppr_add_profile_info_to_list() for display profile and compare these results?
-  dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
-  // FIXME: do need to test this for null?
-  if(histogram_filename == NULL) histogram_filename = _histogram_filename;
-
-  if((histogram_type != darktable.color_profiles->display_type)
-     || (histogram_type == DT_COLORSPACE_FILE
-         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+  // If in live view mode, calculate in preview's colorspace, as we
+  // don't know anything about its profile
+  if(d->dev && !d->is_live_view)
   {
-    img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
+    dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
+    gchar *histogram_filename = NULL;
+    gchar _histogram_filename[1] = { 0 };
 
-    const dt_iop_order_iccprofile_info_t *const profile_info_from
-        = dt_ioppr_add_profile_info_to_list(d->dev, darktable.color_profiles->display_type,
-                                            darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
-    const dt_iop_order_iccprofile_info_t *const profile_info_to
-        = dt_ioppr_add_profile_info_to_list(d->dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
+    // FIXME: could just call dt_ioppr_get_histogram_profile_info() and call dt_ioppr_add_profile_info_to_list() for display profile and compare these results?
+    dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
+    // FIXME: do need to test this for null?
+    if(histogram_filename == NULL) histogram_filename = _histogram_filename;
 
-    dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, width, height, profile_info_from,
-                                            profile_info_to, "final histogram");
+    if((histogram_type != darktable.color_profiles->display_type)
+       || (histogram_type == DT_COLORSPACE_FILE
+           && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+    {
+      img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
+
+      const dt_iop_order_iccprofile_info_t *const profile_info_from
+          = dt_ioppr_add_profile_info_to_list(d->dev, darktable.color_profiles->display_type,
+                                              darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
+      const dt_iop_order_iccprofile_info_t *const profile_info_to
+          = dt_ioppr_add_profile_info_to_list(d->dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
+
+      dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, width, height, profile_info_from,
+                                              profile_info_to, "final histogram");
+    }
   }
 
   dt_times_t start_time = { 0 };
@@ -327,7 +333,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 }
 
 static void dt_lib_histogram_process(struct dt_lib_module_t *self, const void *const input,
-                                     int width, int height, int stride, gboolean is_8bit)
+                                     int width, int height, int stride,
+                                     gboolean is_8bit, gboolean is_live_view)
 // FIXME: instead of is_8bit is there a mask declared which lets us know bit depth & float/int?
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
@@ -371,6 +378,12 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const void *c
   }
 
   if(is_8bit) dt_free_align(input_f);
+
+  d->is_live_view = is_live_view;
+  // hacky: normally the histogram knows to redraw itself when the
+  // preview pipe completes, but live view data comes in from tether
+  // expose, so we have to issue a redraw request directly
+  if(is_live_view) dt_control_queue_redraw_widget(self->widget);
 }
 
 static void _draw_color_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state)
@@ -543,11 +556,10 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
 
 static dt_pthread_mutex_t *_lib_histogram_active_mutex(dt_lib_histogram_t *d)
 {
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view(cv) == DT_VIEW_TETHERING)
+  if(d->is_live_view)
   {
     dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
-    if(cam && cam->is_live_viewing) return(&cam->live_view_pixbuf_mutex);
+    return(&cam->live_view_pixbuf_mutex);
   }
   return(&d->dev->preview_pipe_mutex);
 }
@@ -708,9 +720,11 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
-  // draw scope so long as preview pipe is finished
-  // FIXME: for live view, this will generally be true, but isn't pertinent -- instead have process() receive a flag if this is a live view histogram, in which case always draw it? or have a is_live_view() func. used in this conditional, in determining mutex to use, and if to queue a redraw when process() complets?
-  if(d->dev->image_storage.id == d->dev->preview_pipe->output_imgid)
+  // draw scope so long as preview pipe is finished -- or if we have
+  // received a live view preview
+  // FIXME: there should really be a mutex here, or else we may have switched in/out of live view before we do the draw
+  if(d->is_live_view ||
+     (d->dev && d->dev->image_storage.id == d->dev->preview_pipe->output_imgid))
   {
     cairo_save(cr);
     uint8_t mask[3] = { d->red, d->green, d->blue };
@@ -1185,6 +1199,10 @@ static void _lib_histogram_mipmap_callback(gpointer instance, int imgid, gpointe
 
 static void _lib_histogram_load_image(dt_lib_histogram_t *d, int imgid)
 {
+  // in tether view there may not be an initially selected image
+  if(imgid == -1) return;
+
+  if(!d->dev) d->dev = malloc(sizeof(dt_develop_t));
   // NOTE: this is making a gui_attached pixelpipe with some unneeded
   // paraphernalia so that dt_dev_process_preview_job can find the
   // preview pixelpipe
@@ -1238,10 +1256,8 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                               G_CALLBACK(_lib_histogram_thumbtable_callback), self);
 
-    d->dev = malloc(sizeof(dt_develop_t));
     // FIXME: flag when in tether view so it's easy to test if in live view mode?
     d->can_change_iops = FALSE;
-    // FIXME: in tether, is there initially a selected image? if not handle no histogram on view enter
     _lib_histogram_load_image(d, dt_view_get_image_to_act_on());
     // an updated mipmap, perhaps when the center view image is ready
     dt_control_signal_connect(darktable.signals,
@@ -1345,6 +1361,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->dev = NULL;
   d->can_change_iops = FALSE;
+  d->is_live_view = FALSE;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram

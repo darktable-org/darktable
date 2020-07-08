@@ -211,6 +211,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                   // scale to fit canvas
       cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                        // origin back to corner
 
+      // FIXME: color manage? the live view is probably in either sRGB or Adobe RGB, but it is displayed in the display color profile
       gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
       cairo_paint(cr);
 
@@ -220,12 +221,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
                                              gdk_pixbuf_get_width(cam->live_view_pixbuf),
                                              gdk_pixbuf_get_height(cam->live_view_pixbuf),
                                              gdk_pixbuf_get_rowstride(cam->live_view_pixbuf),
-                                             TRUE);
-      // hacky: normally the histogram knows to redraw itself when the
-      // preview pipe completes, but we have to tell it to redraw when
-      // the data is being sent in otherwise
-      dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
-      // FIXME: when live view mode is turned off, we should refresh histogram to the one from the stored image
+                                             TRUE, TRUE);
       // FIXME: what is the resolution of the preview? should we limit the frame rate of histogram update?
     }
     dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
