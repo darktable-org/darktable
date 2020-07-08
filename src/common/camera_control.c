@@ -335,6 +335,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       {
         // everything worked
         GError *error = NULL;
+        // FIXME: does gphoto2 or the camera tag the JPEG with a profile? if so it would be nice to store this, as this would allow for color managing the preview display and its histogram
         GdkPixbufLoader *loader = gdk_pixbuf_loader_new_with_mime_type(
             "image/jpeg", &error); // there were cases where GDKPixbufLoader failed to recognize the JPEG
         if(error)
