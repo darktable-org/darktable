@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-07 12:26-0500\n"
-"PO-Revision-Date: 2020-07-07 13:16-0500\n"
+"POT-Creation-Date: 2020-07-07 17:36-0500\n"
+"PO-Revision-Date: 2020-07-08 00:29-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -10609,11 +10609,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:2310 ../src/iop/filmicrgb.c:2319
 #: ../src/iop/filmicrgb.c:2355 ../src/iop/filmicrgb.c:2364
-#: ../src/iop/toneequal.c:2997 ../src/iop/toneequal.c:3001
-#: ../src/iop/toneequal.c:3005 ../src/iop/toneequal.c:3009
-#: ../src/iop/toneequal.c:3013 ../src/iop/toneequal.c:3017
-#: ../src/iop/toneequal.c:3021 ../src/iop/toneequal.c:3025
-#: ../src/iop/toneequal.c:3029 ../src/libs/metadata_view.c:499
+#: ../src/iop/toneequal.c:2999 ../src/iop/toneequal.c:3003
+#: ../src/iop/toneequal.c:3007 ../src/iop/toneequal.c:3011
+#: ../src/iop/toneequal.c:3015 ../src/iop/toneequal.c:3019
+#: ../src/iop/toneequal.c:3023 ../src/iop/toneequal.c:3027
+#: ../src/iop/toneequal.c:3031 ../src/libs/metadata_view.c:499
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -13381,7 +13381,7 @@ msgstr ""
 "El búfer de entrada/salida del ecualizador de tono está mal alineado, "
 "informe del error a los desarrolladores"
 
-#: ../src/iop/toneequal.c:1614 ../src/iop/toneequal.c:1972
+#: ../src/iop/toneequal.c:1614 ../src/iop/toneequal.c:1973
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "La interpolación es inestable, disminuya el suavizado de la curva"
 
@@ -13389,86 +13389,96 @@ msgstr "La interpolación es inestable, disminuya el suavizado de la curva"
 msgid "wait for the preview to finish recomputing"
 msgstr "Espere a que la vista previa termine de recalcular"
 
-#: ../src/iop/toneequal.c:1977
+#: ../src/iop/toneequal.c:1829 ../src/iop/toneequal.c:2291
+msgid ""
+"scroll over image to change tone exposure\n"
+"shift+scroll to change in large steps\n"
+"ctrl+scroll to change in small steps"
+msgstr ""
+"Use desplazamiento sobre la imagen para cambiar la exposición tonal\n"
+"Mayús+Desplazamiento para cambiar en incrementos grandes\n"
+"Ctrl+Desplazamiento para cambiar en incrementos pequeños"
+
+#: ../src/iop/toneequal.c:1978
 msgid "some parameters are out-of-bounds"
 msgstr "Algunos parámetros están fuera de los límites"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2251
+#: ../src/iop/toneequal.c:2252
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:2903
+#: ../src/iop/toneequal.c:2905
 #, c-format
 msgid "[%s over image] change tone exposure"
-msgstr "[%s sobre la imagen] cambiar la exposición del tono"
+msgstr "[%s sobre la imagen] cambiar la exposición tonal"
 
-#: ../src/iop/toneequal.c:2909
+#: ../src/iop/toneequal.c:2911
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr ""
-"[%s sobre la imagen] cambiar la exposición del tono en incrementos grandes"
+"[%s sobre la imagen] cambiar la exposición tonal en incrementos grandes"
 
-#: ../src/iop/toneequal.c:2915
+#: ../src/iop/toneequal.c:2917
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr ""
-"[%s sobre la imagen] cambiar la exposición del tono en incrementos pequeños"
+"[%s sobre la imagen] cambiar la exposición tonal en incrementos pequeños"
 
-#: ../src/iop/toneequal.c:2994
+#: ../src/iop/toneequal.c:2996
 msgid "simple"
 msgstr "sencillo"
 
-#: ../src/iop/toneequal.c:2998
+#: ../src/iop/toneequal.c:3000
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3002
+#: ../src/iop/toneequal.c:3004
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3006
+#: ../src/iop/toneequal.c:3008
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3010
+#: ../src/iop/toneequal.c:3012
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3014
+#: ../src/iop/toneequal.c:3016
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3018
+#: ../src/iop/toneequal.c:3020
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3022
+#: ../src/iop/toneequal.c:3024
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3026
+#: ../src/iop/toneequal.c:3028
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3030
+#: ../src/iop/toneequal.c:3032
 msgid "+0 EV"
 msgstr "+0 EV"
 
-#: ../src/iop/toneequal.c:3035
+#: ../src/iop/toneequal.c:3037
 msgid "advanced"
 msgstr "avanzado"
 
-#: ../src/iop/toneequal.c:3050
+#: ../src/iop/toneequal.c:3052
 msgid "double-click to reset the curve"
 msgstr "Doble clic para restablecer la curva"
 
-#: ../src/iop/toneequal.c:3057
+#: ../src/iop/toneequal.c:3059
 msgid "curve smoothing"
 msgstr "suavizado de curva"
 
-#: ../src/iop/toneequal.c:3058
+#: ../src/iop/toneequal.c:3060
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -13482,11 +13492,11 @@ msgstr ""
 "pero puede producir transiciones de tonos abruptas y dañar el contraste "
 "local."
 
-#: ../src/iop/toneequal.c:3068
+#: ../src/iop/toneequal.c:3070
 msgid "masking"
 msgstr "máscaras"
 
-#: ../src/iop/toneequal.c:3072
+#: ../src/iop/toneequal.c:3074
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -13494,15 +13504,15 @@ msgstr ""
 "Previsualice la máscara y elija el estimador que le proporcione\n"
 "mayor contraste entre las áreas a aclarar y las áreas a oscurecer"
 
-#: ../src/iop/toneequal.c:3075
+#: ../src/iop/toneequal.c:3077
 msgid "details"
 msgstr "detalle"
 
-#: ../src/iop/toneequal.c:3076
+#: ../src/iop/toneequal.c:3078
 msgid "preserve details"
 msgstr "preservar los detalles"
 
-#: ../src/iop/toneequal.c:3077
+#: ../src/iop/toneequal.c:3079
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -13515,7 +13525,7 @@ msgstr ""
 "contraste local\n"
 "Filtro guiado promediado: es una media geométrica de ambos métodos"
 
-#: ../src/iop/toneequal.c:3083
+#: ../src/iop/toneequal.c:3085
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -13523,7 +13533,7 @@ msgstr ""
 "Número de pasadas del filtro guiado para aplicar\n"
 "Ayuda a difuminar los bordes del filtro a expensas de la velocidad"
 
-#: ../src/iop/toneequal.c:3089
+#: ../src/iop/toneequal.c:3091
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -13535,7 +13545,7 @@ msgstr ""
 "oscuro \n"
 "sea mucho más lenta si se usa la reducción de ruido perfilado."
 
-#: ../src/iop/toneequal.c:3096
+#: ../src/iop/toneequal.c:3098
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -13550,11 +13560,11 @@ msgstr ""
 "Con valores inferiores, se dan gradientes más lisos y mejor suavizado,\n"
 "pero pueden darse bordes imprecisos y halos"
 
-#: ../src/iop/toneequal.c:3102
+#: ../src/iop/toneequal.c:3104
 msgid "mask post-processing"
 msgstr "postprocesado de máscara"
 
-#: ../src/iop/toneequal.c:3108
+#: ../src/iop/toneequal.c:3110
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -13564,7 +13574,7 @@ msgstr ""
 "La línea central muestra el promedio. Aparecerán barras naranjas en los "
 "extremos si se produce un recorte."
 
-#: ../src/iop/toneequal.c:3114
+#: ../src/iop/toneequal.c:3116
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -13576,7 +13586,7 @@ msgstr ""
 "Cuando se usan valores de difuminado altos, produce áreas lisas por "
 "segmentos "
 
-#: ../src/iop/toneequal.c:3121
+#: ../src/iop/toneequal.c:3123
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -13588,7 +13598,7 @@ msgstr ""
 "disponibles.\n"
 "El cuentagotas ajustará automáticamente la exposición promedio a -4 EV."
 
-#: ../src/iop/toneequal.c:3131
+#: ../src/iop/toneequal.c:3133
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -13600,7 +13610,7 @@ msgstr ""
 "Permite extender el histograma de exposición a más canales.\n"
 "Ofrece un mejor control sobre la corrección de exposición."
 
-#: ../src/iop/toneequal.c:3148 ../src/iop/toneequal.c:3152
+#: ../src/iop/toneequal.c:3150 ../src/iop/toneequal.c:3154
 msgid "display exposure mask"
 msgstr "mostrar la máscara de exposición"
 
