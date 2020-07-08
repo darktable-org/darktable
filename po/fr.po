@@ -14647,7 +14647,7 @@ msgstr ""
 "fichier exporté\n"
 "si la formule est « = », le métadonnée est exportée même si l'export des "
 "métadonnées est désactivé\n"
-"sinon la métadonnée correspondante est calculé et inclus dans le fichier "
+"sinon la métadonnée correspondante est calculée et incluse dans le fichier "
 "exporté\n"
 "cliquer sur une cellule pour éditer. les variables supportées sont :\n"
 
