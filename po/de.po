@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-01 23:01+0200\n"
-"PO-Revision-Date: 2020-07-01 23:30+0200\n"
+"POT-Creation-Date: 2020-07-07 23:41+0200\n"
+"PO-Revision-Date: 2020-07-09 21:00+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1235,7 +1235,7 @@ msgstr "Skalierung nach"
 
 #. close the file before adding exif data
 #: ../build/src/iop/introspection_watermark.c:285
-#: ../src/imageio/format/tiff.c:317 ../src/iop/borders.c:850
+#: ../src/imageio/format/tiff.c:324 ../src/iop/borders.c:850
 msgid "image"
 msgstr "Bild"
 
@@ -1377,21 +1377,18 @@ msgstr ""
 "werden sollen, beginnend von rechts."
 
 #: ../build/src/preferences_gen.h:1984
-#, fuzzy
 msgid "sort film rolls by"
-msgstr "Filmrolle auswählen"
+msgstr "Filmrolle sortieren nach"
 
 #: ../build/src/preferences_gen.h:1995 ../build/src/preferences_gen.h:2018
-#, fuzzy
 msgctxt "preferences"
 msgid "id"
 msgstr "ID"
 
 #: ../build/src/preferences_gen.h:2000
-#, fuzzy
 msgctxt "preferences"
 msgid "folder"
-msgstr "Verzeichnisse"
+msgstr "Verzeichnis"
 
 #: ../build/src/preferences_gen.h:2021
 msgid "sets the collections-list order for film rolls"
@@ -1786,32 +1783,33 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2822
 msgid "reduce resolution of preview image"
-msgstr ""
+msgstr "Auflösung des Vorschaubildes reduzieren"
 
 #: ../build/src/preferences_gen.h:2833 ../build/src/preferences_gen.h:2866
-#, fuzzy
 msgctxt "preferences"
 msgid "original"
-msgstr "Original"
+msgstr "Originalgröße"
 
 #: ../build/src/preferences_gen.h:2838
 msgctxt "preferences"
 msgid "to 1/2"
-msgstr ""
+msgstr "auf die Hälfte"
 
 #: ../build/src/preferences_gen.h:2843
 msgctxt "preferences"
 msgid "to 1/3"
-msgstr ""
+msgstr "auf ein Drittel"
 
 #: ../build/src/preferences_gen.h:2848
 msgctxt "preferences"
 msgid "to 1/4"
-msgstr ""
+msgstr "auf ein Viertel"
 
 #: ../build/src/preferences_gen.h:2869
 msgid "decrease to speed up preview rendering, may hinder accurate masking"
 msgstr ""
+"Verringern, um die Berechnung des Vorschaubildes zu beschleunigen. Dies kann "
+"zu weniger genaue Maskierungen führen."
 
 #: ../build/src/preferences_gen.h:2896
 msgid "other views"
@@ -1884,7 +1882,7 @@ msgstr "Bearbeitung"
 
 #: ../build/src/preferences_gen.h:3059
 msgid "always use LittleCMS 2 to apply output color profile"
-msgstr "Benutze immer LittleCMS 2, um das Ausgabefarbprofil anzuwenden"
+msgstr "benutze immer LittleCMS 2, um das Ausgabefarbprofil anzuwenden"
 
 #: ../build/src/preferences_gen.h:3072
 msgid "this is slower than the default."
@@ -1946,18 +1944,17 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3161
 msgid "auto-apply pixel workflow defaults"
-msgstr ""
+msgstr "Arbeitsablauf-spezifische Einstellungen automatisch anwenden"
 
 #: ../build/src/preferences_gen.h:3172
 msgctxt "preferences"
 msgid "scene-referred"
-msgstr ""
+msgstr "auf Aufnahme bezogene Bearbeitung"
 
 #: ../build/src/preferences_gen.h:3177 ../build/src/preferences_gen.h:3200
-#, fuzzy
 msgctxt "preferences"
 msgid "display-referred"
-msgstr "Anzeigeprofil"
+msgstr "auf Anzeige bezogene Bearbeitung"
 
 #: ../build/src/preferences_gen.h:3182 ../build/src/preferences_gen.h:4298
 msgctxt "preferences"
@@ -1972,6 +1969,12 @@ msgid ""
 "curve and the legacy module pipe order.\n"
 "(needs a restart)"
 msgstr ""
+"Eine auf die Aufnahme bezogene Bearbeitung basiert auf Modulen, die in einem "
+"linearen Farbraum arbeiten. Hierfür werden die Module „Filmic” und "
+"„Belichtung” automatisch angewandt. Eine auf die Anzeige bezogene "
+"Bearbeitung basiert auf Modulen, die im Lab Farbraum arbeiten. Hierfür wird "
+"das Modul „Basiskurve” automatisch angewandt und eine veraltete "
+"Modulreihenfolge eingestellt. (Bei Änderung Neustart erforderlich.)"
 
 #: ../build/src/preferences_gen.h:3211
 msgid "auto-apply per camera basecurve presets"
@@ -1980,10 +1983,12 @@ msgstr "kameraspezifische Basiskurven automatisch anwenden"
 #: ../build/src/preferences_gen.h:3224
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
-"one if there is one available (needs a restart)"
+"one if there is one available (needs a restart).\n"
+"this option is taken into account when the \"auto-apply pixel workflow "
+"defaults\" is set to \"display-referred\".\n"
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
+"\" should be set to \"none\""
 msgstr ""
-"Benutze standardmäßig die kameraspezifische Basiskurve, falls verfügbar, "
-"anstatt die generischen Herstellerkurven. Bei Änderung Neustart erforderlich."
 
 #: ../build/src/preferences_gen.h:3232
 msgid "auto-apply sharpen"
@@ -2027,7 +2032,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3317
 msgid "send files to trash when erasing images"
-msgstr "Benutze den Papierkorb beim Löschen"
+msgstr "benutze den Papierkorb beim Löschen"
 
 #: ../build/src/preferences_gen.h:3330
 msgid ""
@@ -2505,16 +2510,14 @@ msgid "selection order"
 msgstr "Rahmenfarbe wählen"
 
 #: ../build/src/preferences_gen.h:4220
-#, fuzzy
 msgctxt "preferences"
 msgid "first instance"
-msgstr "Fokus-Entfernung"
+msgstr "erste Instanz"
 
 #: ../build/src/preferences_gen.h:4225 ../build/src/preferences_gen.h:4243
-#, fuzzy
 msgctxt "preferences"
 msgid "last instance"
-msgstr "Instanz duplizieren"
+msgstr "letzte Instanz"
 
 #: ../build/src/preferences_gen.h:4246
 msgid ""
@@ -3420,53 +3423,53 @@ msgstr ""
 msgid "orphaned image"
 msgstr "verwaistes Bild"
 
-#: ../src/common/image.c:1660
+#: ../src/common/image.c:1681
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "auf lokale Kopie „%s” kann nicht zugegriffen werden."
 
-#: ../src/common/image.c:1667
+#: ../src/common/image.c:1688
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "lokale Kopie „%s” kann nicht erzeugt werden."
 
-#: ../src/common/image.c:1674
+#: ../src/common/image.c:1695
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Fehler beim Verschieben lokaler Kopie „%s” auf „%s”"
 
-#: ../src/common/image.c:1690
+#: ../src/common/image.c:1711
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Fehler beim Verschieben „%s”: Datei nicht gefunden"
 
-#: ../src/common/image.c:1700
+#: ../src/common/image.c:1721
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Fehler beim Verschieben „%s” auf „%s”: Datei existiert bereits"
 
-#: ../src/common/image.c:1704
+#: ../src/common/image.c:1725
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Fehler beim Verschieben „%s” auf „%s”"
 
-#: ../src/common/image.c:1983
+#: ../src/common/image.c:2022
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht erzeugt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:1997
+#: ../src/common/image.c:2036
 msgid "cannot create local copy."
 msgstr "lokale Kopie kann nicht erzeugt werden."
 
-#: ../src/common/image.c:2069 ../src/control/jobs/control_jobs.c:664
+#: ../src/common/image.c:2108 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "lokale Kopie kann nicht entfernt werden, wenn die Originaldatei nicht "
 "zugänglich ist."
 
-#: ../src/common/image.c:2249
+#: ../src/common/image.c:2288
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -6311,7 +6314,7 @@ msgstr "Schriftgröße in Punkten"
 
 #: ../src/gui/preferences.c:401
 msgid "GUI thumbs and previews DPI scaling factor"
-msgstr ""
+msgstr "Skalierungsfaktor für Miniaturansichten und Vorschaubilder"
 
 #: ../src/gui/preferences.c:408
 msgid ""
@@ -6322,10 +6325,16 @@ msgid ""
 "1920×1080 px.\n"
 "this needs a restart to apply changes."
 msgstr ""
+"Skaliert die Miniaturansichten und Vorschaubilder für hochauflösenden "
+"Bildschirme. Vergrößern, wenn Miniaturansichten unscharf aussehen, "
+"verringern, wenn das Leuchttisch-Modul zu langsam ist. Der Wert -1,0 "
+"entspricht der Standardskalierung des Systems. Dieser Skalierungswert ist "
+"auf den meisten Systemen 1,0, bzw. 2,0 wenn die Auflösung größer über "
+"1920×1080 Pixel liegt."
 
 #: ../src/gui/preferences.c:417
 msgid "GUI controls and text DPI"
-msgstr ""
+msgstr "Skalierungsfaktor für grafischer Nutzerelemente und Text"
 
 #: ../src/gui/preferences.c:424
 msgid ""
@@ -6335,6 +6344,11 @@ msgid ""
 "default is 96 DPI on most systems.\n"
 "this needs a restart to apply changes."
 msgstr ""
+"Auflösung in Punkte je Zoll (DPI) grafischer Nutzerelemente, Knöpfe, "
+"Beschriftungen usw. Wert anheben, um die Benutzeroberfläche zu vergrößern, "
+"verringern, um mehr Inhalt im Anwendungsfenster darstellen zu können. Der "
+"Wert -1.0entspricht der Standardauflösung des Systems. Dieser Auflösung "
+"beträgt auf den meisten Systemen 96DPI. Bei Änderung Neustart erforderlich."
 
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:433
@@ -6405,10 +6419,9 @@ msgstr "Belegung"
 
 #. Adding the search button
 #: ../src/gui/preferences.c:904
-#, fuzzy
 msgctxt "preferences"
 msgid "search"
-msgstr "Suchradius"
+msgstr "Suche"
 
 #: ../src/gui/preferences.c:905
 msgid ""
@@ -6775,12 +6788,12 @@ msgid "JPEG (8-bit)"
 msgstr "JPEG (8 Bit)"
 
 #: ../src/imageio/format/pdf.c:79 ../src/imageio/format/png.c:526
-#: ../src/imageio/format/tiff.c:781
+#: ../src/imageio/format/tiff.c:807
 msgid "8 bit"
 msgstr "8 Bit"
 
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:527
-#: ../src/imageio/format/tiff.c:782
+#: ../src/imageio/format/tiff.c:808
 msgid "16 bit"
 msgstr "16 Bit"
 
@@ -6903,7 +6916,7 @@ msgid "images can be tagged with their icc profile"
 msgstr "Bilder können mit ihrem ICC-Profil versehen werden"
 
 #: ../src/imageio/format/pdf.c:705 ../src/imageio/format/png.c:525
-#: ../src/imageio/format/tiff.c:780
+#: ../src/imageio/format/tiff.c:806
 msgid "bit depth"
 msgstr "Farbtiefe"
 
@@ -6912,15 +6925,15 @@ msgid "bits per channel of the embedded images"
 msgstr "Bit pro Farbkanal der eingebetteten Bilder"
 
 #: ../src/imageio/format/pdf.c:721 ../src/imageio/format/png.c:539
-#: ../src/imageio/format/tiff.c:795
+#: ../src/imageio/format/tiff.c:821
 msgid "compression"
 msgstr "Kompression"
 
-#: ../src/imageio/format/pdf.c:722 ../src/imageio/format/tiff.c:796
+#: ../src/imageio/format/pdf.c:722 ../src/imageio/format/tiff.c:822
 msgid "uncompressed"
 msgstr "unkomprimiert"
 
-#: ../src/imageio/format/pdf.c:723 ../src/imageio/format/tiff.c:797
+#: ../src/imageio/format/pdf.c:723 ../src/imageio/format/tiff.c:823
 msgid "deflate"
 msgstr "Deflate"
 
@@ -6972,30 +6985,48 @@ msgstr "PNG (8/16 Bit)"
 msgid "PPM (16-bit)"
 msgstr "PPM (16 Bit)"
 
-#: ../src/imageio/format/tiff.c:225
+#: ../src/imageio/format/tiff.c:232
 msgid "will export as a grayscale image"
 msgstr ""
 
-#: ../src/imageio/format/tiff.c:719
+#: ../src/imageio/format/tiff.c:735
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32 Bit)"
 
-#: ../src/imageio/format/tiff.c:783
+#: ../src/imageio/format/tiff.c:809
 msgid "32 bit (float)"
 msgstr "32 Bit (Fließkomma)"
 
-#: ../src/imageio/format/tiff.c:798
+#: ../src/imageio/format/tiff.c:824
 msgid "deflate with predictor"
 msgstr "Deflate mit Predictor"
 
 # Adobe übersetzt das als "Predictor", habe dazu sonst nichts gefunden
-#: ../src/imageio/format/tiff.c:799
+#: ../src/imageio/format/tiff.c:825
 msgid "deflate with predictor (float)"
 msgstr "Deflate mit Predictor (Fließkomma)"
 
-#: ../src/imageio/format/tiff.c:805
+#: ../src/imageio/format/tiff.c:831
 msgid "compression level"
 msgstr "Kompressionsstärke"
+
+#: ../src/imageio/format/tiff.c:843
+#, fuzzy
+#| msgid "image"
+msgid "b&w image"
+msgstr "Bild"
+
+#: ../src/imageio/format/tiff.c:844
+#, fuzzy
+#| msgid "preserve colors"
+msgid "write rgb colors"
+msgstr "erhalte Farben"
+
+#: ../src/imageio/format/tiff.c:845
+#, fuzzy
+#| msgid "write sidecar files"
+msgid "write grayscale"
+msgstr "XMP schreiben"
 
 #: ../src/imageio/format/webp.c:288
 msgid "WebP (8-bit)"
@@ -9404,21 +9435,21 @@ msgstr "Ausgabevorsatz"
 #: ../src/iop/colorout.c:881 ../src/libs/export.c:744
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2259 ../src/views/darkroom.c:2267
-#: ../src/views/lighttable.c:1390 ../src/views/lighttable.c:1398
+#: ../src/views/lighttable.c:1392 ../src/views/lighttable.c:1400
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
 #: ../src/iop/colorout.c:882 ../src/libs/export.c:745
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2260 ../src/views/darkroom.c:2268
-#: ../src/views/lighttable.c:1391 ../src/views/lighttable.c:1399
+#: ../src/views/lighttable.c:1393 ../src/views/lighttable.c:1401
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
 #: ../src/iop/colorout.c:883 ../src/libs/export.c:746
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2261 ../src/views/darkroom.c:2269
-#: ../src/views/lighttable.c:1392 ../src/views/lighttable.c:1400
+#: ../src/views/lighttable.c:1394 ../src/views/lighttable.c:1402
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
@@ -9426,7 +9457,7 @@ msgstr "Sättigung"
 #: ../src/iop/colorout.c:884 ../src/libs/export.c:747
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2262 ../src/views/darkroom.c:2270
-#: ../src/views/lighttable.c:1393 ../src/views/lighttable.c:1401
+#: ../src/views/lighttable.c:1395 ../src/views/lighttable.c:1403
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
@@ -10585,11 +10616,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:2310 ../src/iop/filmicrgb.c:2319
 #: ../src/iop/filmicrgb.c:2355 ../src/iop/filmicrgb.c:2364
-#: ../src/iop/toneequal.c:2961 ../src/iop/toneequal.c:2965
-#: ../src/iop/toneequal.c:2969 ../src/iop/toneequal.c:2973
-#: ../src/iop/toneequal.c:2977 ../src/iop/toneequal.c:2981
-#: ../src/iop/toneequal.c:2985 ../src/iop/toneequal.c:2989
-#: ../src/iop/toneequal.c:2993 ../src/libs/metadata_view.c:499
+#: ../src/iop/toneequal.c:2999 ../src/iop/toneequal.c:3003
+#: ../src/iop/toneequal.c:3007 ../src/iop/toneequal.c:3011
+#: ../src/iop/toneequal.c:3015 ../src/iop/toneequal.c:3019
+#: ../src/iop/toneequal.c:3023 ../src/iop/toneequal.c:3027
+#: ../src/iop/toneequal.c:3031 ../src/libs/metadata_view.c:499
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -13406,7 +13437,7 @@ msgstr ""
 "Ein-/Ausgabepuffer des Tonwert-Equalizer ist schlecht ausgerichtet, bitte "
 "melden Sie den Fehler an die Entwickler."
 
-#: ../src/iop/toneequal.c:1614 ../src/iop/toneequal.c:1968
+#: ../src/iop/toneequal.c:1614 ../src/iop/toneequal.c:1973
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "Die Interpolation ist instabil, verringern Sie die Kurvenglättung."
 
@@ -13414,69 +13445,97 @@ msgstr "Die Interpolation ist instabil, verringern Sie die Kurvenglättung."
 msgid "wait for the preview to finish recomputing"
 msgstr "Warten auf Vorschau, bis die Neuberechnung abgeschlossen ist"
 
-#: ../src/iop/toneequal.c:1973
+#: ../src/iop/toneequal.c:1829 ../src/iop/toneequal.c:2291
+#, fuzzy
+msgid ""
+"scroll over image to change tone exposure\n"
+"shift+scroll to change in large steps\n"
+"ctrl+scroll to change in small steps"
+msgstr ""
+"Klick zum Hinzufügen einer Linie\n"
+"scrollen, um Größe ändern\n"
+"Shift+scrollen, um die Stärke zu ändern – Strg+scrollen, um die Richtung zu "
+"ändern"
+
+#: ../src/iop/toneequal.c:1978
 msgid "some parameters are out-of-bounds"
 msgstr "Einige Parameter sind außerhalb der Grenzen"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2247
+#: ../src/iop/toneequal.c:2252
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:2958
+#: ../src/iop/toneequal.c:2905
+#, fuzzy, c-format
+#| msgid "[%s on line] change compression"
+msgid "[%s over image] change tone exposure"
+msgstr "[%s on line] Kompression ändern"
+
+#: ../src/iop/toneequal.c:2911
+#, c-format
+msgid "[%s over image] change tone exposure in large steps"
+msgstr ""
+
+#: ../src/iop/toneequal.c:2917
+#, c-format
+msgid "[%s over image] change tone exposure in small steps"
+msgstr ""
+
+#: ../src/iop/toneequal.c:2996
 msgid "simple"
 msgstr "einfach"
 
-#: ../src/iop/toneequal.c:2962
+#: ../src/iop/toneequal.c:3000
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:2966
+#: ../src/iop/toneequal.c:3004
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:2970
+#: ../src/iop/toneequal.c:3008
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:2974
+#: ../src/iop/toneequal.c:3012
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:2978
+#: ../src/iop/toneequal.c:3016
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:2982
+#: ../src/iop/toneequal.c:3020
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:2986
+#: ../src/iop/toneequal.c:3024
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:2990
+#: ../src/iop/toneequal.c:3028
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:2994
+#: ../src/iop/toneequal.c:3032
 msgid "+0 EV"
 msgstr "+0 EV"
 
-#: ../src/iop/toneequal.c:2999
+#: ../src/iop/toneequal.c:3037
 msgid "advanced"
 msgstr "erweitert"
 
-#: ../src/iop/toneequal.c:3014
+#: ../src/iop/toneequal.c:3052
 msgid "double-click to reset the curve"
 msgstr "Doppelklick setzt Kurve zurück"
 
-#: ../src/iop/toneequal.c:3021
+#: ../src/iop/toneequal.c:3059
 msgid "curve smoothing"
 msgstr "Kurvenglättung"
 
-#: ../src/iop/toneequal.c:3022
+#: ../src/iop/toneequal.c:3060
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -13489,11 +13548,11 @@ msgstr ""
 "können aber zu harten Farbübergängen führen und den lokalen Kontrast "
 "beeinträchtigen."
 
-#: ../src/iop/toneequal.c:3032
+#: ../src/iop/toneequal.c:3070
 msgid "masking"
 msgstr "Maskierung"
 
-#: ../src/iop/toneequal.c:3036
+#: ../src/iop/toneequal.c:3074
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -13501,16 +13560,16 @@ msgstr ""
 "Vorschau der Maske und Auswahl der Schätzfunktion, ergibt einen\n"
 "höheren Kontrast zwischen den zu vermeidenden und ausgebrannten Bereichen."
 
-#: ../src/iop/toneequal.c:3039
+#: ../src/iop/toneequal.c:3077
 #, fuzzy
 msgid "details"
 msgstr "Detail"
 
-#: ../src/iop/toneequal.c:3040
+#: ../src/iop/toneequal.c:3078
 msgid "preserve details"
 msgstr "Details erhalten"
 
-#: ../src/iop/toneequal.c:3041
+#: ../src/iop/toneequal.c:3079
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -13523,7 +13582,7 @@ msgstr ""
 "lokalen Kontrast zu erhalten\n"
 "'gemittelte geführte Filter' ist ein geometrisches Mittel beider Verfahren."
 
-#: ../src/iop/toneequal.c:3047
+#: ../src/iop/toneequal.c:3085
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -13531,7 +13590,7 @@ msgstr ""
 "Anzahl der Durchgänge des geführten Filters hilft, die Kanten auf Kosten der "
 "Geschwindigkeit zu streuen"
 
-#: ../src/iop/toneequal.c:3053
+#: ../src/iop/toneequal.c:3091
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -13541,7 +13600,7 @@ msgstr ""
 "Warnung: Große Werte dieses Parameters können die Vorschau in der "
 "Dunkelkammer verlangsamen, wenn das Entrauschen (Profil) verwendet wird."
 
-#: ../src/iop/toneequal.c:3060
+#: ../src/iop/toneequal.c:3098
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -13555,11 +13614,11 @@ msgstr ""
 "Niedrigere Werte ergeben weichere Gradienten und eine bessere Glättung,\n"
 "kann aber zu ungenauen Rändern und Halos führen."
 
-#: ../src/iop/toneequal.c:3066
+#: ../src/iop/toneequal.c:3104
 msgid "mask post-processing"
 msgstr "Maskennachbearbeitung"
 
-#: ../src/iop/toneequal.c:3072
+#: ../src/iop/toneequal.c:3110
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -13569,7 +13628,7 @@ msgstr ""
 "Mittellinie zeigt den Mittelwert an. Orangefarbene Balken erscheinen bei "
 "Extrema, wenn es zu Beschneidungen kommt."
 
-#: ../src/iop/toneequal.c:3078
+#: ../src/iop/toneequal.c:3116
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -13580,7 +13639,7 @@ msgstr ""
 "von Stückweisen glatte Bereichen bei Verwendung hoher Ausblend-Werten zu "
 "unterstützen."
 
-#: ../src/iop/toneequal.c:3085
+#: ../src/iop/toneequal.c:3123
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -13592,7 +13651,7 @@ msgstr ""
 "steuern.\n"
 "Der Picker passt die durchschnittliche Belichtung bei -4EV automatisch an."
 
-#: ../src/iop/toneequal.c:3095
+#: ../src/iop/toneequal.c:3133
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -13604,7 +13663,7 @@ msgstr ""
 "Dies ermöglicht eine Streuung des Belichtungshistogramms auf\n"
 "mehrere Kanäle zur besseren Kontrolle der Belichtungskorrektur."
 
-#: ../src/iop/toneequal.c:3112 ../src/iop/toneequal.c:3116
+#: ../src/iop/toneequal.c:3150 ../src/iop/toneequal.c:3154
 msgid "display exposure mask"
 msgstr "Belichtungsmasken anzeigen"
 
@@ -14369,16 +14428,16 @@ msgstr "XMP-Begleitdateien schreiben"
 msgid "duplicate manager"
 msgstr "Duplikat-Manager"
 
-#: ../src/libs/duplicate.c:510
+#: ../src/libs/duplicate.c:535
 msgid "existing duplicates"
 msgstr "Existierenden Duplikate"
 
-#: ../src/libs/duplicate.c:513
+#: ../src/libs/duplicate.c:538
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr ""
 "Erstellt ein „jungfräuliches” Duplikat des Bildes ohne jegliche Entwicklung"
 
-#: ../src/libs/duplicate.c:517
+#: ../src/libs/duplicate.c:542
 msgid "create a duplicate of the image with same history stack"
 msgstr "Erstellt ein Duplikat des Bildes mit dem gleichen Verlaufsstapel"
 
@@ -17352,19 +17411,19 @@ msgstr ""
 "Gamutüberprüfung,\n"
 "Rechtsklick für Einstellungen"
 
-#: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1388
+#: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1390
 msgid "display intent"
 msgstr "Anzeigevorsatz"
 
-#: ../src/views/darkroom.c:2265 ../src/views/lighttable.c:1396
+#: ../src/views/darkroom.c:2265 ../src/views/lighttable.c:1398
 msgid "preview display intent"
 msgstr "Vorschau des Anzeigevorsatz"
 
-#: ../src/views/darkroom.c:2285 ../src/views/lighttable.c:1404
+#: ../src/views/darkroom.c:2285 ../src/views/lighttable.c:1406
 msgid "display profile"
 msgstr "Anzeigeprofil"
 
-#: ../src/views/darkroom.c:2286 ../src/views/lighttable.c:1408
+#: ../src/views/darkroom.c:2286 ../src/views/lighttable.c:1410
 msgid "preview display profile"
 msgstr "Vorschau des Bildschirmprofil"
 
@@ -17372,12 +17431,12 @@ msgstr "Vorschau des Bildschirmprofil"
 msgid "histogram profile"
 msgstr "Histogrammprofil"
 
-#: ../src/views/darkroom.c:2341 ../src/views/lighttable.c:1438
+#: ../src/views/darkroom.c:2341 ../src/views/lighttable.c:1440
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "Anzeige-ICC-Profile in %s oder %s"
 
-#: ../src/views/darkroom.c:2344 ../src/views/lighttable.c:1441
+#: ../src/views/darkroom.c:2344 ../src/views/lighttable.c:1443
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "Vorschau der Anzeige-ICC-Profile in %s oder %s"
@@ -17439,12 +17498,12 @@ msgstr "Ansicht einpassen"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3630 ../src/views/lighttable.c:875
+#: ../src/views/darkroom.c:3630 ../src/views/lighttable.c:877
 msgctxt "accel"
 msgid "zoom in"
 msgstr "heranzoomen"
 
-#: ../src/views/darkroom.c:3631 ../src/views/lighttable.c:877
+#: ../src/views/darkroom.c:3631 ../src/views/lighttable.c:879
 msgctxt "accel"
 msgid "zoom out"
 msgstr "herauszoomen"
@@ -17542,13 +17601,13 @@ msgid "full preview"
 msgstr "Kurzvorschau"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3677 ../src/views/lighttable.c:867
+#: ../src/views/darkroom.c:3677 ../src/views/lighttable.c:869
 #: ../src/views/map.c:918
 msgctxt "accel"
 msgid "undo"
 msgstr "rückgängig"
 
-#: ../src/views/darkroom.c:3678 ../src/views/lighttable.c:868
+#: ../src/views/darkroom.c:3678 ../src/views/lighttable.c:870
 #: ../src/views/map.c:919
 msgctxt "accel"
 msgid "redo"
@@ -17576,7 +17635,7 @@ msgstr ""
 msgid "switch to lighttable"
 msgstr "zum Leuchttisch wechseln"
 
-#: ../src/views/darkroom.c:3814 ../src/views/lighttable.c:1051
+#: ../src/views/darkroom.c:3814 ../src/views/lighttable.c:1053
 msgid "zoom in the image"
 msgstr "im Bild zoomen"
 
@@ -17586,7 +17645,7 @@ msgstr "im Bild unbegrenzt Zoomen"
 
 #: ../src/views/darkroom.c:3825
 msgid "zoom to 100% 200% and back"
-msgstr "Zoom auf 100%, 200% und zurück"
+msgstr "auf zoomen 100%, 200% und zurück"
 
 #: ../src/views/darkroom.c:3831
 msgid "[modules] expand module without closing others"
@@ -17605,227 +17664,227 @@ msgstr "darktable - Dunkelkammer Vorschau"
 msgid "good knight"
 msgstr "Good Knight"
 
-#: ../src/views/lighttable.c:426 ../src/views/slideshow.c:376
+#: ../src/views/lighttable.c:428 ../src/views/slideshow.c:376
 msgid "there are no images in this collection"
 msgstr "Diese Sammlung enthält keine Bilder"
 
-#: ../src/views/lighttable.c:430
+#: ../src/views/lighttable.c:432
 msgid "if you have not imported any images yet"
 msgstr "Falls noch keine Bilder importiert wurden"
 
-#: ../src/views/lighttable.c:434
+#: ../src/views/lighttable.c:436
 msgid "you can do so in the import module"
 msgstr "Kann im Import-Modul erfolgen"
 
-#: ../src/views/lighttable.c:442
+#: ../src/views/lighttable.c:444
 msgid "try to relax the filter settings in the top panel"
 msgstr "Filterregeln in der oberen Leiste anpassen"
 
-#: ../src/views/lighttable.c:451
+#: ../src/views/lighttable.c:453
 msgid "or add images in the collection module in the left panel"
 msgstr "oder Bilder links im Sammlungs-Plugin hinzufügen"
 
 #. movement keys
-#: ../src/views/lighttable.c:835
+#: ../src/views/lighttable.c:837
 msgctxt "accel"
 msgid "move page up"
 msgstr "um eine Seite nach oben navigieren"
 
-#: ../src/views/lighttable.c:836
+#: ../src/views/lighttable.c:838
 msgctxt "accel"
 msgid "move page down"
 msgstr "um eine Seite nach unten navigieren"
 
-#: ../src/views/lighttable.c:837
+#: ../src/views/lighttable.c:839
 msgctxt "accel"
 msgid "move up"
 msgstr "nach oben navigieren"
 
-#: ../src/views/lighttable.c:838
+#: ../src/views/lighttable.c:840
 msgctxt "accel"
 msgid "move down"
 msgstr "nach unten navigieren"
 
-#: ../src/views/lighttable.c:839
+#: ../src/views/lighttable.c:841
 msgctxt "accel"
 msgid "move left"
 msgstr "nach links navigieren"
 
-#: ../src/views/lighttable.c:840
+#: ../src/views/lighttable.c:842
 msgctxt "accel"
 msgid "move right"
 msgstr "nach rechts navigieren"
 
-#: ../src/views/lighttable.c:841
+#: ../src/views/lighttable.c:843
 msgctxt "accel"
 msgid "move start"
 msgstr "zum Anfang navigieren"
 
-#: ../src/views/lighttable.c:842
+#: ../src/views/lighttable.c:844
 msgctxt "accel"
 msgid "move end"
 msgstr "zum Ende navigieren"
 
 #. movement keys with selection
-#: ../src/views/lighttable.c:845
+#: ../src/views/lighttable.c:847
 msgctxt "accel"
 msgid "move page up and select"
 msgstr "um eine Seite nach oben navigieren und auswählen"
 
-#: ../src/views/lighttable.c:846
+#: ../src/views/lighttable.c:848
 msgctxt "accel"
 msgid "move page down and select"
 msgstr "um eine Seite nach unten navigieren und auswählen"
 
-#: ../src/views/lighttable.c:847
+#: ../src/views/lighttable.c:849
 msgctxt "accel"
 msgid "move up and select"
 msgstr "nach oben navigieren und auswählen"
 
-#: ../src/views/lighttable.c:848
+#: ../src/views/lighttable.c:850
 msgctxt "accel"
 msgid "move down and select"
 msgstr "nach unten navigieren und auswählen"
 
 # besser "Bedienfeld"?
-#: ../src/views/lighttable.c:849
+#: ../src/views/lighttable.c:851
 msgctxt "accel"
 msgid "move left and select"
 msgstr "nach links navigieren und auswählen"
 
-#: ../src/views/lighttable.c:850
+#: ../src/views/lighttable.c:852
 msgctxt "accel"
 msgid "move right and select"
 msgstr "nach rechts navigieren und auswählen"
 
-#: ../src/views/lighttable.c:851
+#: ../src/views/lighttable.c:853
 msgctxt "accel"
 msgid "move start and select"
 msgstr "zum Anfang navigieren und auswählen"
 
-#: ../src/views/lighttable.c:852
+#: ../src/views/lighttable.c:854
 msgctxt "accel"
 msgid "move end and select"
 msgstr "zum Ende navigieren und auswählen"
 
-#: ../src/views/lighttable.c:854
+#: ../src/views/lighttable.c:856
 msgctxt "accel"
 msgid "align images to grid"
 msgstr "Bilder am Raster ausrichten"
 
-#: ../src/views/lighttable.c:855
+#: ../src/views/lighttable.c:857
 #, fuzzy
 msgctxt "accel"
 msgid "reset first image offset"
 msgstr "Zeitversatz"
 
-#: ../src/views/lighttable.c:856
+#: ../src/views/lighttable.c:858
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "Bild aus- oder abwählen"
 
-#: ../src/views/lighttable.c:857
+#: ../src/views/lighttable.c:859
 msgctxt "accel"
 msgid "select single image"
 msgstr "einzelnes Bild auswählen"
 
 #. Preview key
-#: ../src/views/lighttable.c:860
+#: ../src/views/lighttable.c:862
 msgctxt "accel"
 msgid "preview"
 msgstr "Kurzvorschau"
 
-#: ../src/views/lighttable.c:861
+#: ../src/views/lighttable.c:863
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "Kurzvorschau mit Fokuserkennung"
 
-#: ../src/views/lighttable.c:862
+#: ../src/views/lighttable.c:864
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "Vorschau"
 
-#: ../src/views/lighttable.c:863
+#: ../src/views/lighttable.c:865
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "Vorschau mit Fokuserkennung"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:871
+#: ../src/views/lighttable.c:873
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "Vorschau-Zoom 100%"
 
-#: ../src/views/lighttable.c:872
+#: ../src/views/lighttable.c:874
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "Vorschau einpassen"
 
-#: ../src/views/lighttable.c:876
+#: ../src/views/lighttable.c:878
 msgctxt "accel"
 msgid "zoom max"
 msgstr "maximaler Zoom"
 
-#: ../src/views/lighttable.c:878
+#: ../src/views/lighttable.c:880
 msgctxt "accel"
 msgid "zoom min"
 msgstr "minimaler Zoom"
 
-#: ../src/views/lighttable.c:1038
+#: ../src/views/lighttable.c:1040
 msgid "open image in darkroom"
 msgstr "Bild in der Dunkelkammer öffnen"
 
-#: ../src/views/lighttable.c:1045
+#: ../src/views/lighttable.c:1047
 msgid "switch to next/previous image"
 msgstr "Zum nächsten/vorherigen Bild wechseln"
 
-#: ../src/views/lighttable.c:1057 ../src/views/lighttable.c:1115
-#, fuzzy, no-c-format
+#: ../src/views/lighttable.c:1059 ../src/views/lighttable.c:1117
+#, no-c-format
 msgid "zoom to 100% and back"
-msgstr "Zoom auf 100%, 200% und zurück"
+msgstr "auf 100% zoomen und zurück"
 
-#: ../src/views/lighttable.c:1064 ../src/views/lighttable.c:1086
+#: ../src/views/lighttable.c:1066 ../src/views/lighttable.c:1088
 msgid "scroll the collection"
 msgstr "Sammlung durchblättern"
 
-#: ../src/views/lighttable.c:1070
+#: ../src/views/lighttable.c:1072
 msgid "change number of images per row"
 msgstr "Anzahl der Bilder pro Zeile ändern"
 
-#: ../src/views/lighttable.c:1078
+#: ../src/views/lighttable.c:1080
 msgid "change image order"
 msgstr "Bildreihenfolge ändern"
 
-#: ../src/views/lighttable.c:1092
+#: ../src/views/lighttable.c:1094
 msgid "zoom all the images"
 msgstr "Alle Bilder skalieren"
 
-#: ../src/views/lighttable.c:1097
+#: ../src/views/lighttable.c:1099
 msgid "pan inside all the images"
 msgstr "Innerhalb aller Bilder verschieben"
 
-#: ../src/views/lighttable.c:1103
+#: ../src/views/lighttable.c:1105
 msgid "zoom current image"
 msgstr "Aktuelles bild skalieren"
 
-#: ../src/views/lighttable.c:1109
+#: ../src/views/lighttable.c:1111
 msgid "pan inside current image"
 msgstr "Innerhalb des aktuellen Bild verschieben"
 
-#: ../src/views/lighttable.c:1122
-#, fuzzy, no-c-format
+#: ../src/views/lighttable.c:1124
+#, no-c-format
 msgid "zoom current image to 100% and back"
-msgstr "Zoom auf 100%, 200% und zurück"
+msgstr "aktuelles Bild auf 100% zoomen und zurück"
 
-#: ../src/views/lighttable.c:1129
+#: ../src/views/lighttable.c:1131
 msgid "zoom the main view"
 msgstr "Hauptansicht skalieren"
 
-#: ../src/views/lighttable.c:1134
+#: ../src/views/lighttable.c:1136
 msgid "pan inside the main view"
 msgstr "Innerhalb der Hauptansicht verschieben"
 
-#: ../src/views/lighttable.c:1365
+#: ../src/views/lighttable.c:1367
 msgid "set display profile"
 msgstr "Anzeigeprofil setzen"
 
@@ -17959,6 +18018,14 @@ msgstr "Beschleunigung"
 #: ../src/views/view.c:1622
 msgid "Action"
 msgstr "Aktion"
+
+#~ msgid ""
+#~ "use the per-camera basecurve by default instead of the generic "
+#~ "manufacturer one if there is one available (needs a restart)"
+#~ msgstr ""
+#~ "Benutze standardmäßig die kameraspezifische Basiskurve, falls verfügbar, "
+#~ "anstatt die generischen Herstellerkurven. Bei Änderung Neustart "
+#~ "erforderlich."
 
 #~ msgid "precedence"
 #~ msgstr "Priorität"
@@ -18363,9 +18430,6 @@ msgstr "Aktion"
 #~ msgctxt "accel"
 #~ msgid "compression"
 #~ msgstr "Kompression"
-
-#~ msgid "[%s on line] change compression"
-#~ msgstr "[%s on line] Kompression ändern"
 
 #~ msgctxt "accel"
 #~ msgid "auto scale"
