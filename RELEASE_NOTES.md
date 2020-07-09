@@ -228,7 +228,7 @@ making a backup is strongly advised.
   display a message when the limit is reached.
 
 - Delay histogram display until the image is fully loaded and so the
-  corresponding histogram is ready. Darktable was displaying the
+  corresponding histogram is ready. darktable was displaying the
   previously computed histogram for a short period of time.
 
 - Properly update the XMP when doing undo/redo actions.
