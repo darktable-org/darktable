@@ -1417,7 +1417,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
            "        AND (format = 0 OR format&?11!=0)"
            "        AND operation NOT IN"
-           "            ('ioporder', 'modulelist', 'metadata', 'export', 'tagging', 'collect', '%s'))"
+           "            ('ioporder', 'metadata', 'export', 'tagging', 'collect', '%s'))"
            "  OR (name = ?12)"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            preset_table[legacy],
