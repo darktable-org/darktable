@@ -82,6 +82,7 @@ typedef struct dt_iop_temperature_gui_data_t
   int preset_num[50];
   double daylight_wb[4];
   double mod_coeff[4];
+  double mod_temp, mod_tint;
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
 } dt_iop_temperature_gui_data_t;
 
@@ -780,6 +781,8 @@ void gui_update(struct dt_iop_module_t *self)
 
   gui_sliders_update(self);
   for(int k = 0; k < 4; k++) g->mod_coeff[k] = p->coeffs[k];
+  g->mod_temp = TempK;
+  g->mod_tint = tint;
 
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera"));
@@ -1190,6 +1193,8 @@ static void temp_tint_callback(GtkWidget *slider, gpointer user_data)
   coeffs[3] /= coeffs[1];
   coeffs[1] = 1.0;
   for(int c = 0; c < 4; c++) p->coeffs[c] = g->mod_coeff[c] = coeffs[c];
+  g->mod_temp = TempK;
+  g->mod_tint = tint;
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
@@ -1199,10 +1204,7 @@ static void temp_tint_callback(GtkWidget *slider, gpointer user_data)
   --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
-  // setting to "user setting" preset may muck with temp/tint, as they
-  // are set there from RGB coeffs, hence only do this as necessary
-  if(dt_bauhaus_combobox_get(g->presets) != 3)
-    dt_bauhaus_combobox_set(g->presets, 3);
+  dt_bauhaus_combobox_set(g->presets, 3);
 }
 
 static void rgb_callback(GtkWidget *slider, gpointer user_data)
@@ -1223,6 +1225,9 @@ static void rgb_callback(GtkWidget *slider, gpointer user_data)
     p->coeffs[3] = g->mod_coeff[3] = value;
 
   gui_update_from_coeffs(self);
+  g->mod_temp = dt_bauhaus_slider_get(g->scale_k);
+  g->mod_tint = dt_bauhaus_slider_get(g->scale_tint);
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   dt_bauhaus_combobox_set(g->presets, 3);
 }
@@ -1310,7 +1315,23 @@ static void apply_preset(dt_iop_module_t *self)
     break;
   }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  gui_update_from_coeffs(self);
+  if(pos == 3)
+  {
+    // keep temp/tint as the user set them, rather than recalculating
+    // them from RGB coeffs which could cause them to wander
+    ++darktable.gui->reset;
+    dt_bauhaus_slider_set(g->scale_k, g->mod_temp);
+    dt_bauhaus_slider_set(g->scale_tint, g->mod_tint);
+    dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
+    dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
+    dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
+    dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
+    --darktable.gui->reset;
+  }
+  else
+  {
+    gui_update_from_coeffs(self);
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
