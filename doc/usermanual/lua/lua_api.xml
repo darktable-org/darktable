@@ -28,7 +28,7 @@
 <primary>Lua API</primary>
 <secondary>print</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_print_message">message</link></emphasis> : string
 )</synopsis>
 <para>Will print a string to the darktable control log (the long overlaid window that appears over the main panel).</para>
@@ -49,7 +49,7 @@
 <primary>Lua API</primary>
 <secondary>print_log</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_print_log_message">message</link></emphasis> : string
 )</synopsis>
 <para>This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.</para>
@@ -70,7 +70,7 @@
 <primary>Lua API</primary>
 <secondary>print_error</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_print_error_message">message</link></emphasis> : string
 )</synopsis>
 <para>This function is similar to<link linkend="darktable_print_log">darktable.print_log</link> but adds an ERROR prefix for clarity.</para>
@@ -91,9 +91,9 @@
 <primary>Lua API</primary>
 <secondary>register_event</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_register_event_event_type">event_type</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_register_event_callback">callback</link></emphasis> : function, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_register_event_event_type">event_type</link></emphasis> : string,
+	<emphasis><link linkend="darktable_register_event_callback">callback</link></emphasis> : function,
 	<emphasis><link linkend="darktable_register_event____">...</link></emphasis> : variable
 )</synopsis>
 <para>This function registers a callback to be called when a given event happens.</para>
@@ -127,13 +127,13 @@
 <primary>Lua API</primary>
 <secondary>register_storage</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_register_storage_plugin_name">plugin_name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_register_storage_name">name</link></emphasis> : string, 
-	[<emphasis><link linkend="darktable_register_storage_store">store</link></emphasis> : function], 
-	[<emphasis><link linkend="darktable_register_storage_finalize">finalize</link></emphasis> : function], 
-	[<emphasis><link linkend="darktable_register_storage_supported">supported</link></emphasis> : function], 
-	[<emphasis><link linkend="darktable_register_storage_initialize">initialize</link></emphasis> : function], 
+<synopsis>function(
+	<emphasis><link linkend="darktable_register_storage_plugin_name">plugin_name</link></emphasis> : string,
+	<emphasis><link linkend="darktable_register_storage_name">name</link></emphasis> : string,
+	[<emphasis><link linkend="darktable_register_storage_store">store</link></emphasis> : function],
+	[<emphasis><link linkend="darktable_register_storage_finalize">finalize</link></emphasis> : function],
+	[<emphasis><link linkend="darktable_register_storage_supported">supported</link></emphasis> : function],
+	[<emphasis><link linkend="darktable_register_storage_initialize">initialize</link></emphasis> : function],
 	[<emphasis><link linkend="darktable_register_storage_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>]
 )</synopsis>
 <para>This function will add a new storage implemented in Lua.</para>
@@ -153,14 +153,14 @@
 </listitem></varlistentry>
 
 <varlistentry id="darktable_register_storage_store"><term>[store]</term><listitem>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_register_storage_store_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>, 
-	<emphasis><link linkend="darktable_register_storage_store_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	<emphasis><link linkend="darktable_register_storage_store_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>, 
-	<emphasis><link linkend="darktable_register_storage_store_filename">filename</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_register_storage_store_number">number</link></emphasis> : integer, 
-	<emphasis><link linkend="darktable_register_storage_store_total">total</link></emphasis> : integer, 
-	<emphasis><link linkend="darktable_register_storage_store_high_quality">high_quality</link></emphasis> : boolean, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_register_storage_store_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>,
+	<emphasis><link linkend="darktable_register_storage_store_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>,
+	<emphasis><link linkend="darktable_register_storage_store_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>,
+	<emphasis><link linkend="darktable_register_storage_store_filename">filename</link></emphasis> : string,
+	<emphasis><link linkend="darktable_register_storage_store_number">number</link></emphasis> : integer,
+	<emphasis><link linkend="darktable_register_storage_store_total">total</link></emphasis> : integer,
+	<emphasis><link linkend="darktable_register_storage_store_high_quality">high_quality</link></emphasis> : boolean,
 	<emphasis><link linkend="darktable_register_storage_store_extra_data">extra_data</link></emphasis> : table
 )</synopsis>
 <para>This function is called once for each exported image. Images can be exported in parallel but the calls to this function will be serialized.</para>
@@ -218,9 +218,9 @@
 </listitem></varlistentry>
 
 <varlistentry id="darktable_register_storage_finalize"><term>[finalize]</term><listitem>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_register_storage_finalize_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>, 
-	<emphasis><link linkend="darktable_register_storage_finalize_image_table">image_table</link></emphasis> : table, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_register_storage_finalize_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>,
+	<emphasis><link linkend="darktable_register_storage_finalize_image_table">image_table</link></emphasis> : table,
 	<emphasis><link linkend="darktable_register_storage_finalize_extra_data">extra_data</link></emphasis> : table
 )</synopsis>
 <para>This function is called once all images are processed and all store calls are finished.</para>
@@ -248,8 +248,8 @@
 </listitem></varlistentry>
 
 <varlistentry id="darktable_register_storage_supported"><term>[supported]</term><listitem>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_register_storage_supported_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_register_storage_supported_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>,
 	<emphasis><link linkend="darktable_register_storage_supported_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>
 ) : boolean</synopsis>
 <para>A function called to check if a given image format is supported by the Lua storage; this is used to build the dropdown format list for the GUI.</para>
@@ -279,11 +279,11 @@
 </listitem></varlistentry>
 
 <varlistentry id="darktable_register_storage_initialize"><term>[initialize]</term><listitem>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_register_storage_initialize_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>, 
-	<emphasis><link linkend="darktable_register_storage_initialize_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>, 
-	<emphasis><link linkend="darktable_register_storage_initialize_images">images</link></emphasis> : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	<emphasis><link linkend="darktable_register_storage_initialize_high_quality">high_quality</link></emphasis> : boolean, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_register_storage_initialize_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>,
+	<emphasis><link linkend="darktable_register_storage_initialize_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>,
+	<emphasis><link linkend="darktable_register_storage_initialize_images">images</link></emphasis> : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>,
+	<emphasis><link linkend="darktable_register_storage_initialize_high_quality">high_quality</link></emphasis> : boolean,
 	<emphasis><link linkend="darktable_register_storage_initialize_extra_data">extra_data</link></emphasis> : table
 ) : table or nil</synopsis>
 <para>A function called before storage happens</para>
@@ -347,7 +347,7 @@
 <primary>Lua API</primary>
 <secondary>register_lib</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_register_lib_plugin_name">plugin_name</link></emphasis> : string,
 	<emphasis><link linkend="darktable_register_lib_name">name</link></emphasis> : string,
 	<emphasis><link linkend="darktable_register_lib_expandable">expandable</link></emphasis> : boolean,
@@ -397,8 +397,8 @@
 </listitem></varlistentry>
 
 <varlistentry id="darktable_register_lib_view_enter"><term>view_enter</term><listitem>
-<synopsis>self:function( 
-	<emphasis><link linkend="darktable_register_lib_view_enter_old_view">old_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>, 
+<synopsis>self:function(
+	<emphasis><link linkend="darktable_register_lib_view_enter_old_view">old_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>,
 	<emphasis><link linkend="darktable_register_lib_view_enter_new_view">new_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>
 )</synopsis>
 <para>A callback called when a view displaying the lib is entered</para>
@@ -426,8 +426,8 @@
 </listitem></varlistentry>
 
 <varlistentry id="darktable_register_lib_view_leave"><term>view_leave</term><listitem>
-<synopsis>self:function( 
-	<emphasis><link linkend="darktable_register_lib_view_leave_old_view">old_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>, 
+<synopsis>self:function(
+	<emphasis><link linkend="darktable_register_lib_view_leave_old_view">old_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>,
 	<emphasis><link linkend="darktable_register_lib_view_leave_new_view">new_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>
 )</synopsis>
 <para>A callback called when leaving a view displaying the lib</para>
@@ -482,7 +482,7 @@
 <primary>Lua API</primary>
 <secondary>new</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_films_new_directory">directory</link></emphasis> : string
 ) : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
 <para>Creates a new empty film</para>
@@ -522,7 +522,7 @@
 <primary>Lua API</primary>
 <secondary>new_format</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_new_format_type">type</link></emphasis> : string
 ) : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></synopsis>
 <para>Creates a new format object to export images</para>
@@ -562,7 +562,7 @@
 <primary>Lua API</primary>
 <secondary>new_storage</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_new_storage_type">type</link></emphasis> : string
 ) : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
 <para>Creates a new storage object to export images</para>
@@ -597,8 +597,8 @@
 <primary>Lua API</primary>
 <secondary>new_widget</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_new_widget_type">type</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_new_widget_type">type</link></emphasis> : string,
 	<emphasis><link linkend="darktable_new_widget____">...</link></emphasis> : variable
 ) : <link linkend="types_lua_widget">types.lua_widget</link></synopsis>
 <para>Creates a new widget object to display in the UI</para>
@@ -680,7 +680,7 @@
 <primary>Lua API</primary>
 <secondary>selection</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_selection_selection">selection</link></emphasis> : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>]
 ) : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Allows to change the set of selected images.</para>
@@ -718,7 +718,7 @@
 <primary>Lua API</primary>
 <secondary>current_view</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_current_view_view">view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>]
 ) : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link></synopsis>
 <para>Allows to change the current view.</para>
@@ -746,7 +746,7 @@
 <primary>Lua API</primary>
 <secondary>panel_visible</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_panel_visible_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
 ) : boolean</synopsis>
 <para>Determines if the specified panel is visible.</para>
@@ -774,7 +774,7 @@
 <primary>Lua API</primary>
 <secondary>panel_hide</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_panel_hide_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
 )</synopsis>
 <para>Hides the specified panel.</para>
@@ -795,7 +795,7 @@
 <primary>Lua API</primary>
 <secondary>panel_show</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_panel_show_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
 )</synopsis>
 <para>Shows the specified panel.</para>
@@ -816,7 +816,7 @@
 <primary>Lua API</primary>
 <secondary>panel_hide_all</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 )</synopsis>
 <para>Hide all panels.</para>
 
@@ -828,7 +828,7 @@
 <primary>Lua API</primary>
 <secondary>panel_show_all</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 )</synopsis>
 <para>Show all panels.</para>
 
@@ -840,7 +840,7 @@
 <primary>Lua API</primary>
 <secondary>panel_get_size</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_panel_get_size_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
 )int</synopsis>
 <para>Gets the size in pixels of the specified panel.  This only works for the left, right, and bottom panels.</para>
@@ -861,7 +861,7 @@
 <primary>Lua API</primary>
 <secondary>panel_set_size</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_panel_set_size_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
 	<emphasis><link linkend="darktable_gui_panel_set_size_size">size</link></emphasis> : int
 )</synopsis>
@@ -888,9 +888,9 @@
 <primary>Lua API</primary>
 <secondary>create_job</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gui_create_job_text">text</link></emphasis> : string, 
-	[<emphasis><link linkend="darktable_gui_create_job_percentage">percentage</link></emphasis> : boolean], 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gui_create_job_text">text</link></emphasis> : string,
+	[<emphasis><link linkend="darktable_gui_create_job_percentage">percentage</link></emphasis> : boolean],
 	[<emphasis><link linkend="darktable_gui_create_job_cancel_callback">cancel_callback</link></emphasis> : function]
 ) : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link></synopsis>
 <para>Create a new progress_bar displayed in <link linkend="darktable_gui_libs_backgroundjobs">darktable.gui.libs.backgroundjobs</link></para>
@@ -909,7 +909,7 @@
 </listitem></varlistentry>
 
 <varlistentry id="darktable_gui_create_job_cancel_callback"><term>[cancel_callback]</term><listitem>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_create_job_cancel_callback_job">job</link></emphasis> : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link>
 )</synopsis>
 <para>A function called when the cancel button for that job is pressed</para>
@@ -1053,7 +1053,7 @@
 <primary>Lua API</primary>
 <secondary>display_image</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_views_darkroom_display_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>]
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Display an image in darkroom view.</para>
@@ -1102,7 +1102,7 @@
 <primary>Lua API</primary>
 <secondary>is_image_visible</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_views_lighttable_is_image_visible_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Check if the image is visible in lighttable view.  The lighttable must be in file manager or zoomable mode.</para>
@@ -1129,7 +1129,7 @@
 <primary>Lua API</primary>
 <secondary>set_image_visible</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_views_lighttable_set_image_visible_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Set the image visible in lighttable view.  The lighttable must be in file manager or zoomable mode.</para>
@@ -1327,7 +1327,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>take_snapshot</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 )</synopsis>
 <para>Take a snapshot of the current image and add it to the UI</para>
 <para>The snapshot file will be generated at the next redraw of the main window</para>
@@ -1374,7 +1374,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>filter</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_libs_collect_filter_rules">rules</link></emphasis> : array of<link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link>]
 ) : array of<link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
 <para>Allows to get or change the list of visible images</para>
@@ -1412,7 +1412,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>new_rule</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 ) : <link linkend="types_dt_lib_collect_params_rule_t">types.dt_lib_collect_params_rule_t</link></synopsis>
 <para>Returns a newly created rule object</para>
 
@@ -1454,7 +1454,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>register_widget</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_libs_import_register_widget_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
 <para>Add a widget in the option expander of the import dialog</para>
@@ -1517,8 +1517,8 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>register_info</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_name">name</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_name">name</link></emphasis> : string,
 	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback">callback</link></emphasis> : function
 )</synopsis>
 <para>Register a function providing extra info to display in the widget</para>
@@ -1531,7 +1531,7 @@ end</programlisting></para>
 </listitem></varlistentry>
 
 <varlistentry id="darktable_gui_libs_metadata_view_register_info_callback"><term>callback</term><listitem>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gui_libs_metadata_view_register_info_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : string</synopsis>
 <para>The function providing the info</para>
@@ -1586,27 +1586,6 @@ end</programlisting></para>
 <secondary>hinter</secondary>
 </indexterm>
 <para>The small line of text at the top of the UI showing the number of selected images</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lua_lib_t">types.dt_lua_lib_t</link></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
-<section status="final" id="darktable_gui_libs_modulelist">
-<title>darktable.gui.libs.modulelist</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>modulelist</secondary>
-</indexterm>
-<para>The window allowing to set modules as visible/hidden/favorite</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -1836,7 +1815,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>sort</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_libs_filter_sort_sort">sort</link></emphasis> : <link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link>]
 ) : <link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link></synopsis>
 <para>Change the collection sort field.</para>
@@ -1864,7 +1843,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>sort_order</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_libs_filter_sort_order_order">order</link></emphasis> : <link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link>]
 ) : <link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link></synopsis>
 <para>Change the collection sort order.</para>
@@ -1892,7 +1871,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>rating</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_libs_filter_rating_rating">rating</link></emphasis> : <link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link>]
 ) : <link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link></synopsis>
 <para>Change the collection rating filter.</para>
@@ -1920,7 +1899,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>rating_comparator</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_libs_filter_rating_comparator_comparator">comparator</link></emphasis> : <link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link>]
 ) : <link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link></synopsis>
 <para>Change the collection filter comparison field.</para>
@@ -1990,9 +1969,9 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>register_selection</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gui_libs_select_register_selection_label">label</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback">callback</link></emphasis> : function, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_label">label</link></emphasis> : string,
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback">callback</link></emphasis> : function,
 	[<emphasis><link linkend="darktable_gui_libs_select_register_selection_tooltip">tooltip</link></emphasis> : string]
 )</synopsis>
 <para>Add a new button and call a callback when it is clicked</para>
@@ -2005,8 +1984,8 @@ end</programlisting></para>
 </listitem></varlistentry>
 
 <varlistentry id="darktable_gui_libs_select_register_selection_callback"><term>callback</term><listitem>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback_event">event</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback_event">event</link></emphasis> : string,
 	<emphasis><link linkend="darktable_gui_libs_select_register_selection_callback_images">images</link></emphasis> : table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The function to call when the button is pressed</para>
@@ -2092,7 +2071,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>layout</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_libs_lighttable_mode_layout_layout">layout</link></emphasis> : <link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link>]
 ) : <link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link></synopsis>
 <para>Allows to change the lighttable layout.</para>
@@ -2120,7 +2099,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>zoom_level</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	[<emphasis><link linkend="darktable_gui_libs_lighttable_mode_zoom_level_level">level</link></emphasis> : number]
 ) : number</synopsis>
 <para>Change the lighttable zoom level.</para>
@@ -2190,9 +2169,9 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>register_action</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gui_libs_image_register_action_label">label</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback">callback</link></emphasis> : function, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_label">label</link></emphasis> : string,
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback">callback</link></emphasis> : function,
 	[<emphasis><link linkend="darktable_gui_libs_image_register_action_tooltip">tooltip</link></emphasis> : string]
 )</synopsis>
 <para>Add a new button and call a callback when it is clicked</para>
@@ -2205,8 +2184,8 @@ end</programlisting></para>
 </listitem></varlistentry>
 
 <varlistentry id="darktable_gui_libs_image_register_action_callback"><term>callback</term><listitem>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback_event">event</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback_event">event</link></emphasis> : string,
 	<emphasis><link linkend="darktable_gui_libs_image_register_action_callback_images">images</link></emphasis> : table of<link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>The function to call when the button is pressed</para>
@@ -2594,9 +2573,9 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>register_guide</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_guides_register_guide_name">name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_guides_register_guide_draw_callback">draw_callback</link></emphasis> : function, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_guides_register_guide_name">name</link></emphasis> : string,
+	<emphasis><link linkend="darktable_guides_register_guide_draw_callback">draw_callback</link></emphasis> : function,
 	[<emphasis><link linkend="darktable_guides_register_guide_gui_callback">gui_callback</link></emphasis> : function]
 )</synopsis>
 <para>Register a new guide.</para>
@@ -2609,12 +2588,12 @@ end</programlisting></para>
 </listitem></varlistentry>
 
 <varlistentry id="darktable_guides_register_guide_draw_callback"><term>draw_callback</term><listitem>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_cr">cr</link></emphasis> : <link linkend="types_dt_lua_cairo_t">types.dt_lua_cairo_t</link>, 
-	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_x">x</link></emphasis> : float, 
-	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_y">y</link></emphasis> : float, 
-	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_width">width</link></emphasis> : float, 
-	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_height">height</link></emphasis> : float, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_cr">cr</link></emphasis> : <link linkend="types_dt_lua_cairo_t">types.dt_lua_cairo_t</link>,
+	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_x">x</link></emphasis> : float,
+	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_y">y</link></emphasis> : float,
+	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_width">width</link></emphasis> : float,
+	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_height">height</link></emphasis> : float,
 	<emphasis><link linkend="darktable_guides_register_guide_draw_callback_zoom_scale">zoom_scale</link></emphasis> : float
 )</synopsis>
 <para>The function to call to draw the guide lines. The drawn lines will be stroked by darktable.</para>
@@ -2696,7 +2675,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>create</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_tags_create_name">name</link></emphasis> : string
 )</synopsis>
 <para>Creates a new tag and return it. If the tag exists return the existing tag.</para>
@@ -2717,7 +2696,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>find</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_tags_find_name">name</link></emphasis> : string
 ) : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>Returns the tag object or nil if the tag doesn't exist.</para>
@@ -2745,7 +2724,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>delete</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_tags_delete_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>
 )</synopsis>
 <para>Deletes the tag object, detaching it from all images.</para>
@@ -2766,8 +2745,8 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>attach</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_tags_attach_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_tags_attach_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>,
 	<emphasis><link linkend="darktable_tags_attach_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Attach a tag to an image; the order of the parameters can be reversed.</para>
@@ -2794,8 +2773,8 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>detach</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_tags_detach_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_tags_detach_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>,
 	<emphasis><link linkend="darktable_tags_detach_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Detach a tag from an image; the order of the parameters can be reversed.</para>
@@ -2822,7 +2801,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>get_tags</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_tags_get_tags_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : table of <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>Gets all tags attached to an image.</para>
@@ -2850,7 +2829,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>get_tagged_images</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_tags_get_tagged_images_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>
 ) : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Gets all images with the attached tag.</para>
@@ -3021,8 +3000,8 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>check_version</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_configuration_check_version_module_name">module_name</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_configuration_check_version_module_name">module_name</link></emphasis> : string,
 	<emphasis><link linkend="darktable_configuration_check_version____">...</link></emphasis> : table...
 )</synopsis>
 <para>Check that a module is compatible with the running version of darktable</para>
@@ -3070,18 +3049,18 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>register</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_preferences_register_script">script</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_preferences_register_name">name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_preferences_register_type">type</link></emphasis> : <link linkend="types_lua_pref_type">types.lua_pref_type</link>, 
-	<emphasis><link linkend="darktable_preferences_register_label">label</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_preferences_register_tooltip">tooltip</link></emphasis> : string, 
-	[<emphasis><link linkend="darktable_preferences_register_default">default</link></emphasis> : depends on type], 
-	[<emphasis><link linkend="darktable_preferences_register_min">min</link></emphasis> : int or float], 
-	[<emphasis><link linkend="darktable_preferences_register_max">max</link></emphasis> : int or float], 
-	[<emphasis><link linkend="darktable_preferences_register_step">step</link></emphasis> : float], 
-	[<emphasis><link linkend="darktable_preferences_register_values">values</link></emphasis> : string...], 
-	[<emphasis><link linkend="darktable_preferences_register_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>], 
+<synopsis>function(
+	<emphasis><link linkend="darktable_preferences_register_script">script</link></emphasis> : string,
+	<emphasis><link linkend="darktable_preferences_register_name">name</link></emphasis> : string,
+	<emphasis><link linkend="darktable_preferences_register_type">type</link></emphasis> : <link linkend="types_lua_pref_type">types.lua_pref_type</link>,
+	<emphasis><link linkend="darktable_preferences_register_label">label</link></emphasis> : string,
+	<emphasis><link linkend="darktable_preferences_register_tooltip">tooltip</link></emphasis> : string,
+	[<emphasis><link linkend="darktable_preferences_register_default">default</link></emphasis> : depends on type],
+	[<emphasis><link linkend="darktable_preferences_register_min">min</link></emphasis> : int or float],
+	[<emphasis><link linkend="darktable_preferences_register_max">max</link></emphasis> : int or float],
+	[<emphasis><link linkend="darktable_preferences_register_step">step</link></emphasis> : float],
+	[<emphasis><link linkend="darktable_preferences_register_values">values</link></emphasis> : string...],
+	[<emphasis><link linkend="darktable_preferences_register_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>],
 	[<emphasis><link linkend="darktable_preferences_register_set_callback">set_callback</link></emphasis> : function]
 )</synopsis>
 <para>Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).</para>
@@ -3155,7 +3134,7 @@ end</programlisting></para>
 </listitem></varlistentry>
 
 <varlistentry id="darktable_preferences_register_set_callback"><term>[set_callback]</term><listitem>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_preferences_register_set_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
 <para>A function called when the widget needs to be updated from the preference</para>
@@ -3179,9 +3158,9 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>read</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_preferences_read_script">script</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_preferences_read_name">name</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_preferences_read_script">script</link></emphasis> : string,
+	<emphasis><link linkend="darktable_preferences_read_name">name</link></emphasis> : string,
 	<emphasis><link linkend="darktable_preferences_read_type">type</link></emphasis> : <link linkend="types_lua_pref_type">types.lua_pref_type</link>
 ) : depends on type</synopsis>
 <para>Reads a value from a Lua preference.</para>
@@ -3221,10 +3200,10 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>write</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_preferences_write_script">script</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_preferences_write_name">name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_preferences_write_type">type</link></emphasis> : <link linkend="types_lua_pref_type">types.lua_pref_type</link>, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_preferences_write_script">script</link></emphasis> : string,
+	<emphasis><link linkend="darktable_preferences_write_name">name</link></emphasis> : string,
+	<emphasis><link linkend="darktable_preferences_write_type">type</link></emphasis> : <link linkend="types_lua_pref_type">types.lua_pref_type</link>,
 	<emphasis><link linkend="darktable_preferences_write_value">value</link></emphasis> : depends on type
 )</synopsis>
 <para>Writes a value to a Lua preference.</para>
@@ -3284,9 +3263,9 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>create</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_styles_create_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	<emphasis><link linkend="darktable_styles_create_name">name</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_styles_create_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>,
+	<emphasis><link linkend="darktable_styles_create_name">name</link></emphasis> : string,
 	<emphasis><link linkend="darktable_styles_create_description">description</link></emphasis> : string
 ) : <link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
 <para>Create a new style based on an image.</para>
@@ -3326,7 +3305,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>delete</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_styles_delete_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>
 )</synopsis>
 <para>Deletes an existing style.</para>
@@ -3347,9 +3326,9 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>duplicate</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_styles_duplicate_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>, 
-	<emphasis><link linkend="darktable_styles_duplicate_name">name</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_styles_duplicate_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>,
+	<emphasis><link linkend="darktable_styles_duplicate_name">name</link></emphasis> : string,
 	<emphasis><link linkend="darktable_styles_duplicate_description">description</link></emphasis> : string
 ) : <link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
 <para>Create a new style based on an existing style.</para>
@@ -3389,8 +3368,8 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>apply</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_styles_apply_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_styles_apply_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>,
 	<emphasis><link linkend="darktable_styles_apply_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Apply a style to an image. The order of parameters can be inverted.</para>
@@ -3417,7 +3396,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>import</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_styles_import_filename">filename</link></emphasis> : string
 )</synopsis>
 <para>Import a style from an external .dtstyle file</para>
@@ -3438,9 +3417,9 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>export</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_styles_export_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>, 
-	<emphasis><link linkend="darktable_styles_export_directory">directory</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_styles_export_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>,
+	<emphasis><link linkend="darktable_styles_export_directory">directory</link></emphasis> : string,
 	<emphasis><link linkend="darktable_styles_export_overwrite">overwrite</link></emphasis> : boolean
 )</synopsis>
 <para>Export a style to an external .dtstyle file</para>
@@ -3494,7 +3473,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>duplicate</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_database_duplicate_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Creates a duplicate of an image and returns it.</para>
@@ -3522,7 +3501,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>import</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_database_import_location">location</link></emphasis> : string
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Imports new images into the database.</para>
@@ -3557,8 +3536,8 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>move_image</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_database_move_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_database_move_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>,
 	<emphasis><link linkend="darktable_database_move_image_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>,
 	[<emphasis><link linkend="darktable_database_move_image_newname">newname</link></emphasis> : string]
 )</synopsis>
@@ -3593,8 +3572,8 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>copy_image</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_database_copy_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_database_copy_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>,
 	<emphasis><link linkend="darktable_database_copy_image_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>,
 	[<emphasis><link linkend="darktable_database_copy_image_newname">newname</link></emphasis> : string]
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -3690,8 +3669,8 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>dispatch</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_control_dispatch_function">function</link></emphasis> : function, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_control_dispatch_function">function</link></emphasis> : function,
 	<emphasis><link linkend="darktable_control_dispatch____">...</link></emphasis> : anything
 )</synopsis>
 <para>Runs a function in the background. This function will be run at a later point, after luarc has finished running. If you do a loop in such a function, please check <link linkend="darktable_control_ending">darktable.control.ending</link> in your loop to finish the function when DT exits</para>
@@ -3718,7 +3697,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>sleep</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_control_sleep_delay">delay</link></emphasis> : int
 )</synopsis>
 <para>Suspends execution while not blocking darktable</para>
@@ -3739,7 +3718,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>execute</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_control_execute_command">command</link></emphasis> : string
 ) : int</synopsis>
 <para>Run a command in a shell while not blocking darktable</para>
@@ -3767,7 +3746,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>read</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_control_read_file">file</link></emphasis> : file
 )</synopsis>
 <para>Block until a file is readable while not blocking darktable</para>
@@ -3800,7 +3779,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>gettext</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_gettext_gettext_msgid">msgid</link></emphasis> : string
 ) : string</synopsis>
 <para>Translate a string using the darktable textdomain</para>
@@ -3828,8 +3807,8 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>dgettext</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gettext_dgettext_domainname">domainname</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gettext_dgettext_domainname">domainname</link></emphasis> : string,
 	<emphasis><link linkend="darktable_gettext_dgettext_msgid">msgid</link></emphasis> : string
 ) : string</synopsis>
 <para>Translate a string using the specified textdomain</para>
@@ -3863,9 +3842,9 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>ngettext</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gettext_ngettext_msgid">msgid</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_gettext_ngettext_msgid_plural">msgid_plural</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gettext_ngettext_msgid">msgid</link></emphasis> : string,
+	<emphasis><link linkend="darktable_gettext_ngettext_msgid_plural">msgid_plural</link></emphasis> : string,
 	<emphasis><link linkend="darktable_gettext_ngettext_n">n</link></emphasis> : int
 ) : string</synopsis>
 <para>Translate a string depending on the number of objects using the darktable textdomain</para>
@@ -3905,10 +3884,10 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>dngettext</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gettext_dngettext_domainname">domainname</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_gettext_dngettext_msgid">msgid</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_gettext_dngettext_msgid_plural">msgid_plural</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gettext_dngettext_domainname">domainname</link></emphasis> : string,
+	<emphasis><link linkend="darktable_gettext_dngettext_msgid">msgid</link></emphasis> : string,
+	<emphasis><link linkend="darktable_gettext_dngettext_msgid_plural">msgid_plural</link></emphasis> : string,
 	<emphasis><link linkend="darktable_gettext_dngettext_n">n</link></emphasis> : int
 ) : string</synopsis>
 <para>Translate a string depending on the number of objects using the specified textdomain</para>
@@ -3954,8 +3933,8 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>bindtextdomain</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_gettext_bindtextdomain_domainname">domainname</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="darktable_gettext_bindtextdomain_domainname">domainname</link></emphasis> : string,
 	<emphasis><link linkend="darktable_gettext_bindtextdomain_dirname">dirname</link></emphasis> : string
 )</synopsis>
 <para>Tell gettext where to find the .mo file translating messages for a particular domain</para>
@@ -3996,9 +3975,9 @@ require "darktable.debug"
 <primary>Lua API</primary>
 <secondary>dump</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_debug_dump_object">object</link></emphasis> : anything, 
-	[<emphasis><link linkend="darktable_debug_dump_name">name</link></emphasis> : string], 
+<synopsis>function(
+	<emphasis><link linkend="darktable_debug_dump_object">object</link></emphasis> : anything,
+	[<emphasis><link linkend="darktable_debug_dump_name">name</link></emphasis> : string],
 	[<emphasis><link linkend="darktable_debug_dump_known">known</link></emphasis> : table]
 ) : string</synopsis>
 <para>This will return a string describing everything Lua knows about an object, used to know what an object is.
@@ -4074,7 +4053,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>type</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="darktable_debug_type_object">object</link></emphasis> : anything
 ) : string</synopsis>
 <para>Similar to the system function type() but it will return the real type instead of "userdata" for darktable specific objects.</para>
@@ -4877,7 +4856,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>reset</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 )</synopsis>
 <para>Removes all processing from the image, resetting it back to its original state</para>
 
@@ -4897,7 +4876,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>delete</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 )</synopsis>
 <para>Removes an image from the database</para>
 
@@ -4917,7 +4896,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>group_with</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 	[<emphasis><link linkend="types_dt_lua_image_t_group_with_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>]
 )</synopsis>
 <para>Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.</para>
@@ -4944,7 +4923,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>make_group_leader</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 )</synopsis>
 <para>Makes the image the leader of its group.</para>
 
@@ -4964,7 +4943,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>get_group_members</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 ) : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Returns a table containing all <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link> of the group. The group leader is both at a numeric key and at the "leader" special key (so you probably want to use ipairs to iterate through that table).</para>
 
@@ -5023,7 +5002,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>drop_cache</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 )</synopsis>
 <para>drops the cached version of this image.</para>
 <para>This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail</para>
@@ -5142,9 +5121,9 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
 </indexterm>
-<synopsis>self:function( 
-	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_filename">filename</link></emphasis> : string, 
+<synopsis>self:function(
+	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>,
+	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_filename">filename</link></emphasis> : string,
 	[<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_allow_upscale">allow_upscale</link></emphasis> : boolean]
 ) : boolean</synopsis>
 <para>Exports an image to a file. This is a blocking operation that will not return until the image is exported.</para>
@@ -6069,7 +6048,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 	<emphasis><link linkend="types_dt_imageio_module_storage_t_supports_format_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>
 ) : boolean</synopsis>
 <para>Checks if a format is supported by this storage.</para>
@@ -6405,7 +6384,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>delete</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 	[<emphasis><link linkend="types_dt_lua_film_t_delete_force">force</link></emphasis> : Boolean]
 )</synopsis>
 <para>Removes the film from the database.</para>
@@ -6767,7 +6746,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>reset</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 )</synopsis>
 <para>A function to reset the lib to its default values</para>
 <para>This function will do nothing if the lib is not visible or can't be reset</para>
@@ -6918,7 +6897,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>select</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 )</synopsis>
 <para>Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot</para>
 
@@ -7560,7 +7539,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>save</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 )</synopsis>
 <para>Save the state of the drawing context.</para>
 
@@ -7580,7 +7559,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>restore</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 )</synopsis>
 <para>Restore a previously saved state.</para>
 
@@ -7600,8 +7579,8 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>move_to</secondary>
 </indexterm>
-<synopsis>self:function( 
-	<emphasis><link linkend="types_dt_lua_cairo_t_move_to_x">x</link></emphasis> : float, 
+<synopsis>self:function(
+	<emphasis><link linkend="types_dt_lua_cairo_t_move_to_x">x</link></emphasis> : float,
 	<emphasis><link linkend="types_dt_lua_cairo_t_move_to_y">y</link></emphasis> : float
 )</synopsis>
 <para>Begin a new sub-path.</para>
@@ -7634,8 +7613,8 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>line_to</secondary>
 </indexterm>
-<synopsis>self:function( 
-	<emphasis><link linkend="types_dt_lua_cairo_t_line_to_x">x</link></emphasis> : float, 
+<synopsis>self:function(
+	<emphasis><link linkend="types_dt_lua_cairo_t_line_to_x">x</link></emphasis> : float,
 	<emphasis><link linkend="types_dt_lua_cairo_t_line_to_y">y</link></emphasis> : float
 )</synopsis>
 <para>Add a line to the path.</para>
@@ -7668,10 +7647,10 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>rectangle</secondary>
 </indexterm>
-<synopsis>self:function( 
-	<emphasis><link linkend="types_dt_lua_cairo_t_rectangle_x">x</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_rectangle_y">y</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_rectangle_width">width</link></emphasis> : float, 
+<synopsis>self:function(
+	<emphasis><link linkend="types_dt_lua_cairo_t_rectangle_x">x</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_rectangle_y">y</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_rectangle_width">width</link></emphasis> : float,
 	<emphasis><link linkend="types_dt_lua_cairo_t_rectangle_height">height</link></emphasis> : float
 )</synopsis>
 <para>Add a closed sub-path rectangle.</para>
@@ -7716,11 +7695,11 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>arc</secondary>
 </indexterm>
-<synopsis>self:function( 
-	<emphasis><link linkend="types_dt_lua_cairo_t_arc_x">x</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_arc_y">y</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_arc_radius">radius</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_arc_angle1">angle1</link></emphasis> : float, 
+<synopsis>self:function(
+	<emphasis><link linkend="types_dt_lua_cairo_t_arc_x">x</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_arc_y">y</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_arc_radius">radius</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_arc_angle1">angle1</link></emphasis> : float,
 	<emphasis><link linkend="types_dt_lua_cairo_t_arc_angle2">angle2</link></emphasis> : float
 )</synopsis>
 <para>Add a circular arc.</para>
@@ -7771,11 +7750,11 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>arc_negative</secondary>
 </indexterm>
-<synopsis>self:function( 
-	<emphasis><link linkend="types_dt_lua_cairo_t_arc_negative_x">x</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_arc_negative_y">y</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_arc_negative_radius">radius</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_arc_negative_angle1">angle1</link></emphasis> : float, 
+<synopsis>self:function(
+	<emphasis><link linkend="types_dt_lua_cairo_t_arc_negative_x">x</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_arc_negative_y">y</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_arc_negative_radius">radius</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_arc_negative_angle1">angle1</link></emphasis> : float,
 	<emphasis><link linkend="types_dt_lua_cairo_t_arc_negative_angle2">angle2</link></emphasis> : float
 )</synopsis>
 <para>Add a circular arc. It only differs in the direction from <link linkend="types_dt_lua_cairo_t_arc">types.dt_lua_cairo_t.arc</link>.</para>
@@ -7826,7 +7805,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>rotate</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 	<emphasis><link linkend="types_dt_lua_cairo_t_rotate_angle">angle</link></emphasis> : float
 )</synopsis>
 <para>Add a rotation to the transformation matrix.</para>
@@ -7853,8 +7832,8 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>scale</secondary>
 </indexterm>
-<synopsis>self:function( 
-	<emphasis><link linkend="types_dt_lua_cairo_t_scale_x">x</link></emphasis> : float, 
+<synopsis>self:function(
+	<emphasis><link linkend="types_dt_lua_cairo_t_scale_x">x</link></emphasis> : float,
 	<emphasis><link linkend="types_dt_lua_cairo_t_scale_y">y</link></emphasis> : float
 )</synopsis>
 <para>Add a scaling to the transformation matrix.</para>
@@ -7887,8 +7866,8 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>translate</secondary>
 </indexterm>
-<synopsis>self:function( 
-	<emphasis><link linkend="types_dt_lua_cairo_t_translate_x">x</link></emphasis> : float, 
+<synopsis>self:function(
+	<emphasis><link linkend="types_dt_lua_cairo_t_translate_x">x</link></emphasis> : float,
 	<emphasis><link linkend="types_dt_lua_cairo_t_translate_y">y</link></emphasis> : float
 )</synopsis>
 <para>Add a translation to the transformation matrix.</para>
@@ -7921,7 +7900,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>new_sub_path</secondary>
 </indexterm>
-<synopsis>self:function( 
+<synopsis>self:function(
 )</synopsis>
 <para>Begin a new sub-path.</para>
 
@@ -7941,10 +7920,10 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>draw_line</secondary>
 </indexterm>
-<synopsis>self:function( 
-	<emphasis><link linkend="types_dt_lua_cairo_t_draw_line_x_start">x_start</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_draw_line_y_start">y_start</link></emphasis> : float, 
-	<emphasis><link linkend="types_dt_lua_cairo_t_draw_line_x_end">x_end</link></emphasis> : float, 
+<synopsis>self:function(
+	<emphasis><link linkend="types_dt_lua_cairo_t_draw_line_x_start">x_start</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_draw_line_y_start">y_start</link></emphasis> : float,
+	<emphasis><link linkend="types_dt_lua_cairo_t_draw_line_x_end">x_end</link></emphasis> : float,
 	<emphasis><link linkend="types_dt_lua_cairo_t_draw_line_y_end">y_end</link></emphasis> : float
 )</synopsis>
 <para>Helper function to draw a line with a given start and end.</para>
@@ -8122,7 +8101,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>reset_callback</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="types_lua_widget_reset_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
 <para>A function to call when the widget needs to reset itself</para>
@@ -8154,7 +8133,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>As a function</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="types_lua_widget___call_attributes">attributes</link></emphasis> : table
 ) : <link linkend="types_lua_widget">types.lua_widget</link></synopsis>
 <para>Using a lua widget as a function Allows to set multiple attributes of that widget at once. This is mainly used to create UI elements in a more readable way</para>
@@ -8337,7 +8316,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>clicked_callback</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="types_lua_check_button_clicked_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
 <para>A function to call on button click</para>
@@ -8576,7 +8555,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>clicked_callback</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="types_lua_button_clicked_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
 <para>A function to call on button click</para>
@@ -8969,7 +8948,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>changed_callback</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="types_lua_combobox_changed_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
 <para>A function to call when the value field changes (character entered or value selected)</para>
@@ -9125,7 +9104,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>changed_callback</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="types_lua_file_chooser_button_changed_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
 <para>A function to call when the value field changes (character entered or value selected)</para>
@@ -9656,11 +9635,11 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="events_intermediate-export-image_callback_event">event</link></emphasis> : string, 
-	<emphasis><link linkend="events_intermediate-export-image_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	<emphasis><link linkend="events_intermediate-export-image_callback_filename">filename</link></emphasis> : string, 
-	<emphasis><link linkend="events_intermediate-export-image_callback_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>, 
+<synopsis>function(
+	<emphasis><link linkend="events_intermediate-export-image_callback_event">event</link></emphasis> : string,
+	<emphasis><link linkend="events_intermediate-export-image_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>,
+	<emphasis><link linkend="events_intermediate-export-image_callback_filename">filename</link></emphasis> : string,
+	<emphasis><link linkend="events_intermediate-export-image_callback_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>,
 	<emphasis><link linkend="events_intermediate-export-image_callback_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>
 )</synopsis>
 <para></para>
@@ -9728,8 +9707,8 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="events_post-import-image_callback_event">event</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="events_post-import-image_callback_event">event</link></emphasis> : string,
 	<emphasis><link linkend="events_post-import-image_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para></para>
@@ -9783,8 +9762,8 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="events_shortcut_callback_event">event</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="events_shortcut_callback_event">event</link></emphasis> : string,
 	<emphasis><link linkend="events_shortcut_callback_shortcut">shortcut</link></emphasis> : string
 )</synopsis>
 <para></para>
@@ -9841,8 +9820,8 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="events_post-import-film_callback_event">event</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="events_post-import-film_callback_event">event</link></emphasis> : string,
 	<emphasis><link linkend="events_post-import-film_callback_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>
 )</synopsis>
 <para></para>
@@ -9890,9 +9869,9 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="events_view-changed_callback_event">event</link></emphasis> : string, 
-	<emphasis><link linkend="events_view-changed_callback_old_view">old_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>, 
+<synopsis>function(
+	<emphasis><link linkend="events_view-changed_callback_event">event</link></emphasis> : string,
+	<emphasis><link linkend="events_view-changed_callback_old_view">old_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>,
 	<emphasis><link linkend="events_view-changed_callback_new_view">new_view</link></emphasis> : <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link>
 )</synopsis>
 <para></para>
@@ -9946,7 +9925,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="events_global_toolbox-grouping_toggle_callback_toggle">toggle</link></emphasis> : boolean
 )</synopsis>
 <para></para>
@@ -9988,7 +9967,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 	<emphasis><link linkend="events_global_toolbox-overlay_toggle_callback_toggle">toggle</link></emphasis> : boolean
 )</synopsis>
 <para></para>
@@ -10030,8 +10009,8 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="events_mouse-over-image-changed_callback_event">event</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="events_mouse-over-image-changed_callback_event">event</link></emphasis> : string,
 	<emphasis><link linkend="events_mouse-over-image-changed_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para></para>
@@ -10079,7 +10058,7 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
+<synopsis>function(
 )</synopsis>
 <para></para>
 
@@ -10114,8 +10093,8 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="events_pre-import_callback_event">event</link></emphasis> : string, 
+<synopsis>function(
+	<emphasis><link linkend="events_pre-import_callback_event">event</link></emphasis> : string,
 	<emphasis><link linkend="events_pre-import_callback_images">images</link></emphasis> : table of string
 )</synopsis>
 <para></para>

@@ -26,7 +26,6 @@
 *,
 #lib-plugin-ui,
 #iop-plugin-ui,
-#lib-modulelist,
 #bauhaus-popup,
 #modules-tabs,
 #left,
@@ -76,18 +75,18 @@ box *
                  "Segoe UI Light", "Segoe UI",              /* Windows 10 default */
                  "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
                  "Ubuntu Light", "Ubuntu",                  /* Ubuntu default */
-                 "Cantarell",                               /* Gnome default */ 
+                 "Cantarell",                               /* Gnome default */
                  sans-serif;                                /* default default */
 }
 
 button,
 #section_label
 {
-    font-family: "Roboto Medium", "Roboto", 
+    font-family: "Roboto Medium", "Roboto",
                  "Segoe UI Semibold", "Segoe UI",
                  "SF Pro Display Medium", "SF Pro Display",
                  "Ubuntu Medium", "Ubuntu",
-                 "Cantarell", 
+                 "Cantarell",
                   sans-serif;
 }
 
@@ -98,7 +97,7 @@ button,
                  "Segoe UI Condensed", "Segoe UI",
                  "SF Pro Display", "SF Pro Display",
                  "Ubuntu Condensed", "Ubuntu",
-                 "Cantarell", 
+                 "Cantarell",
                  sans-serif;
 }
 
@@ -107,10 +106,10 @@ notebook tabs,
 #blending-tabs,
 tooltip label
 {
-    font-family: "Roboto", 
-                 "Segoe UI", 
-                 "SF Pro Text", 
+    font-family: "Roboto",
+                 "Segoe UI",
+                 "SF Pro Text",
                  "Ubuntu",
-                 "Cantarell", 
+                 "Cantarell",
                   sans-serif;
 }

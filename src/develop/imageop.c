@@ -2658,10 +2658,6 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool(option, TRUE);
   }
-
-  dt_view_manager_t *vm = darktable.view_manager;
-  if(vm->proxy.more_module.module) vm->proxy.more_module.update(vm->proxy.more_module.module);
-  // dt_view_manager_reset(vm);
 }
 
 void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)

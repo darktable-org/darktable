@@ -177,7 +177,6 @@
 /* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
 #lib-plugin-ui,
 #iop-plugin-ui,
-#lib-modulelist,
 #modules-tabs,
 #left,
 #right,
