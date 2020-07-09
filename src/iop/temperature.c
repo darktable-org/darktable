@@ -1168,8 +1168,11 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   --darktable.gui->reset;
 }
 
-static void temp_changed(dt_iop_module_t *self)
+static void temp_tint_callback(GtkWidget *slider, gpointer user_data)
 {
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
 
@@ -1200,20 +1203,6 @@ static void temp_changed(dt_iop_module_t *self)
   // are set there from RGB coeffs, hence only do this as necessary
   if(dt_bauhaus_combobox_get(g->presets) != 3)
     dt_bauhaus_combobox_set(g->presets, 3);
-}
-
-static void tint_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  temp_changed(self);
-}
-
-static void temp_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  temp_changed(self);
 }
 
 static void rgb_callback(GtkWidget *slider, gpointer user_data)
@@ -1490,8 +1479,8 @@ void gui_init(struct dt_iop_module_t *self)
   
   self->gui_update(self);
 
-  g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(tint_callback), self);
-  g_signal_connect(G_OBJECT(g->scale_k), "value-changed", G_CALLBACK(temp_callback), self);
+  g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(temp_tint_callback), self);
+  g_signal_connect(G_OBJECT(g->scale_k), "value-changed", G_CALLBACK(temp_tint_callback), self);
   g_signal_connect(G_OBJECT(g->scale_r), "value-changed", G_CALLBACK(rgb_callback), self);
   g_signal_connect(G_OBJECT(g->scale_g), "value-changed", G_CALLBACK(rgb_callback), self);
   g_signal_connect(G_OBJECT(g->scale_b), "value-changed", G_CALLBACK(rgb_callback), self);
