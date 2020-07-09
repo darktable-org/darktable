@@ -1195,6 +1195,11 @@ static void temp_changed(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_g2, p->coeffs[3]);
   --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  // setting to "user setting" preset may muck with temp/tint, as they
+  // are set there from RGB coeffs, hence only do this as necessary
+  if(dt_bauhaus_combobox_get(g->presets) != 3)
+    dt_bauhaus_combobox_set(g->presets, 3);
 }
 
 static void tint_callback(GtkWidget *slider, gpointer user_data)
@@ -1202,8 +1207,6 @@ static void tint_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   temp_changed(self);
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_bauhaus_combobox_set(g->presets, 3);
 }
 
 static void temp_callback(GtkWidget *slider, gpointer user_data)
@@ -1211,8 +1214,6 @@ static void temp_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   temp_changed(self);
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_bauhaus_combobox_set(g->presets, 3);
 }
 
 static void rgb_callback(GtkWidget *slider, gpointer user_data)
