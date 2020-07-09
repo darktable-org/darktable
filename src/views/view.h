@@ -337,13 +337,6 @@ typedef struct dt_view_manager_t
       uint32_t (*get_selected_imgid)(const dt_view_t *view);
     } tethering;
 
-    /* more module window proxy */
-    struct
-    {
-      struct dt_lib_module_t *module;
-      void (*update)(struct dt_lib_module_t *);
-    } more_module;
-
     /* timeline module proxy */
     struct
     {
