@@ -103,7 +103,7 @@ GList *dt_control_crawler_run()
       struct stat statbuf;
       // on Windows the encoding might not be UTF8
       gchar *xmp_path_locale = g_locale_from_utf8(xmp_path, -1, NULL, NULL, NULL);
-      const int stat_res = stat(xmp_path, &statbuf);
+      const int stat_res = stat(xmp_path_locale, &statbuf);
       g_free(xmp_path_locale);
       if(stat_res == -1) continue; // TODO: shall we report these?
 
