@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-12 19:01+0200\n"
+"PO-Revision-Date: 2020-07-12 21:51+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1392,7 +1392,7 @@ msgstr "Verzeichnis"
 
 #: ../build/src/preferences_gen.h:2021
 msgid "sets the collections-list order for film rolls"
-msgstr ""
+msgstr "Bestimmt die Sortierung der Bilder einer Filmrolle."
 
 #: ../build/src/preferences_gen.h:2029
 msgid "sort collection recent to older"
@@ -4217,11 +4217,11 @@ msgstr "Ausgabe"
 
 #: ../src/develop/blend_gui.c:614
 msgid " (zoom)"
-msgstr ""
+msgstr " (Zoom)"
 
 #: ../src/develop/blend_gui.c:619
 msgid " (log)"
-msgstr ""
+msgstr " (logarithmisch)"
 
 #: ../src/develop/blend_gui.c:1488
 msgid "sliders for L channel"
@@ -4363,6 +4363,10 @@ msgid ""
 "double click to reset. press 'a' to toggle available slider modes.\n"
 "press 'c' to toggle view of channel data. press 'm' to toggle mask view."
 msgstr ""
+"Doppelklick, um Einstellungen zurückzusetzen. „a” drücken, um Modus des "
+"Schiebereglers zu ändern, „c” drücken, um Anzeige des Farbkanals ein- oder "
+"auszuschalten, bzw. „m” drücken, um die Anzeige der Maske ein- oder "
+"auszuschalten."
 
 #: ../src/develop/blend_gui.c:1757 ../src/develop/blend_gui.c:2462
 msgid "parametric mask"
@@ -4406,6 +4410,8 @@ msgid ""
 "add gradient\n"
 "ctrl+click to add multiple gradients"
 msgstr ""
+"Verlauf hinzufügen. Mit Strg + Mausklick können mehrere Verläufe erstellt "
+"werden."
 
 #: ../src/develop/blend_gui.c:1878 ../src/iop/retouch.c:2420
 #: ../src/iop/spots.c:806
@@ -4413,6 +4419,7 @@ msgid ""
 "add path\n"
 "ctrl+click to add multiple paths"
 msgstr ""
+"Pfad hinzufügen. Mit Strg + Mausklick können mehrere Pfade erstellt werden."
 
 #: ../src/develop/blend_gui.c:1887 ../src/iop/retouch.c:2427
 #: ../src/iop/spots.c:813
@@ -4420,6 +4427,8 @@ msgid ""
 "add ellipse\n"
 "ctrl+click to add multiple ellipses"
 msgstr ""
+"Ellipse hinzufügen. Mit Strg + Mausklick können mehrere Ellipsen erstellt "
+"werden."
 
 #: ../src/develop/blend_gui.c:1896 ../src/iop/retouch.c:2434
 #: ../src/iop/spots.c:820
@@ -4427,6 +4436,7 @@ msgid ""
 "add circle\n"
 "ctrl+click to add multiple circles"
 msgstr ""
+"Kreis hinzufügen. Mit Strg + Mausklick können mehrere Kreise erstellt werden."
 
 #: ../src/develop/blend_gui.c:1905 ../src/iop/retouch.c:2414
 #, fuzzy
@@ -6373,6 +6383,8 @@ msgstr "ausgewähltes Design durch CSS-Anweisungen anpassen"
 #: ../src/gui/preferences.c:441
 msgid "modify theme with CSS keyed below (saved to user.css)"
 msgstr ""
+"Das Thema durch CSS-Anweisungen im unten stehenden Eingabefeld anpassen. "
+"Wird in „user.css” gespeichert."
 
 #: ../src/gui/preferences.c:461
 msgctxt "usercss"
@@ -6443,6 +6455,8 @@ msgid ""
 "click or press enter to search\n"
 "click or press enter again to cycle through results"
 msgstr ""
+"Klicken oder Eingabe drücken, um zu suchen. Nochmals klicken oder Eingabe "
+"drücken, um durch die Suchergebnisse zu iterieren."
 
 #. export button
 #: ../src/gui/preferences.c:925 ../src/libs/styles.c:629
@@ -14870,25 +14884,23 @@ msgid "click to show blue channel"
 msgstr "klicken, um den Blau-Kanal anzuzeigen"
 
 #: ../src/libs/histogram.c:601
-#, fuzzy
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
-"ziehen, um den Schwarzpunkt zu ändern,\n"
-"Doppelklick zum Zurücksetzen"
+"Ziehen, um den Schwarzpunkt zu ändern, Doppelklick zum Zurücksetzen. Strg + "
+"Scrollen ändert die Höhe des Histogramms."
 
 #. connect callbacks
 #: ../src/libs/histogram.c:606 ../src/libs/histogram.c:927
-#, fuzzy
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
-"ziehen, um die Belichtung zu ändern,\n"
-"Doppelklick zum Zurücksetzen"
+"Ziehen, um die Belichtung zu ändern, Doppelklick zum Zurücksetzen. Strg + "
+"Scrollen ändert die Höhe des Histogramms."
 
 #: ../src/libs/histogram.c:963
 #, fuzzy
@@ -15347,9 +15359,8 @@ msgid "current order"
 msgstr "aktuelle Sortierung"
 
 #: ../src/libs/ioporder.c:206
-#, fuzzy
 msgid "v3.0 (default)"
-msgstr "(Standard)"
+msgstr "V3.0 (Standard)"
 
 #: ../src/libs/lib.c:225
 #, c-format
@@ -17272,9 +17283,8 @@ msgstr "Softproof"
 
 #. fail :(
 #: ../src/views/darkroom.c:694 ../src/views/print.c:300
-#, fuzzy
 msgid "no image to open !"
-msgstr "Kein Bild ausgewählt!"
+msgstr "Kein Bild geöffnet!"
 
 #: ../src/views/darkroom.c:1192
 msgid "no userdefined presets for favorite modules were found"
@@ -17478,9 +17488,8 @@ msgid "overlay color"
 msgstr "Überlagerungsfarbe"
 
 #: ../src/views/darkroom.c:2412
-#, fuzzy
 msgid "set overlay color"
-msgstr "Rahmenfarbe wählen"
+msgstr "Überlagerungsfarbe wählen"
 
 #: ../src/views/darkroom.c:3584
 msgid "keyboard shortcut slider precision: fine"
