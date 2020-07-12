@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-09 21:00+0200\n"
+"PO-Revision-Date: 2020-07-12 19:01+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1959,7 +1959,7 @@ msgstr "auf Anzeige bezogene Bearbeitung"
 #: ../build/src/preferences_gen.h:3182 ../build/src/preferences_gen.h:4298
 msgctxt "preferences"
 msgid "none"
-msgstr "keins"
+msgstr "keines"
 
 #: ../build/src/preferences_gen.h:3203
 msgid ""
@@ -1974,7 +1974,7 @@ msgstr ""
 "„Belichtung” automatisch angewandt. Eine auf die Anzeige bezogene "
 "Bearbeitung basiert auf Modulen, die im Lab Farbraum arbeiten. Hierfür wird "
 "das Modul „Basiskurve” automatisch angewandt und eine veraltete "
-"Modulreihenfolge eingestellt. (Bei Änderung Neustart erforderlich.)"
+"Modulreihenfolge eingestellt. Bei Änderung Neustart erforderlich."
 
 #: ../build/src/preferences_gen.h:3211
 msgid "auto-apply per camera basecurve presets"
@@ -1989,6 +1989,13 @@ msgid ""
 "to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
 "\" should be set to \"none\""
 msgstr ""
+"Falls vorhanden standardmäßig die kamera-spezifische Basiskurve statt der "
+"generischen Basiskurve des Kameraherstellers verwenden. Bei Änderung "
+"Neustart erforderlich. Diese Option wird nur berücksichtigt, wenn unter "
+"„Arbeitsablauf-spezifische Einstellungen automatisch anwenden” die Option "
+"„auf Anzeige bezogene Bearbeitung” gewählt wurde. Um die automatische "
+"Anwendung einer Basiskurve gänzlich zu unterbinden, ist „keines” unter "
+"„Arbeitsablauf-spezifische Einstellungen automatisch anwenden” auszuwählen."
 
 #: ../build/src/preferences_gen.h:3232
 msgid "auto-apply sharpen"
@@ -2072,20 +2079,20 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3401
 msgid "ask before deleting a tag"
-msgstr "vor dem Löschen eines Tags nachfragen"
+msgstr "fragen, bevor ein Tag gelöscht wird"
 
 #: ../build/src/preferences_gen.h:3421
 msgid "ask before deleting a style"
-msgstr "vor dem Löschen eines Stils nachfragen"
+msgstr "fragen, bevor ein Stil gelöscht wird"
 
 #: ../build/src/preferences_gen.h:3441
-#, fuzzy
 msgid "ask before deleting a preset"
-msgstr "vor dem Löschen eines Stils nachfragen"
+msgstr "fragen, bevor eine Modul-Voreinstellung gelöscht wird"
 
 #: ../build/src/preferences_gen.h:3454
 msgid "will ask for confirmation before deleting or overwritting a preset"
 msgstr ""
+"Nachfragen, bevor eine Modul-Voreinstellung gelöscht oder geändert wird."
 
 #: ../build/src/preferences_gen.h:3481
 msgid "cpu / gpu / memory"
@@ -2422,7 +2429,7 @@ msgid ""
 msgstr ""
 "Diese Option erlaubt es, eine bestimmte Methode zum Ermitteln des "
 "Anzeigenprofils festzulegen. Dies ist hilfreich, wenn eine der Alternativen "
-"falsche Ergebnisse liefert"
+"falsche Ergebnisse liefert."
 
 #. tags
 #: ../build/src/preferences_gen.h:4086 ../src/develop/lightroom.c:1510
@@ -2464,7 +2471,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4136
 msgid "keyboard shortcuts with multiple instances"
-msgstr ""
+msgstr "Tastenkombinationen für Multi-Instanz-Module"
 
 #: ../build/src/preferences_gen.h:4142
 msgid ""
@@ -2472,42 +2479,48 @@ msgid ""
 "that are applied (in order) to decide which module instance keyboard "
 "shortcuts will be applied to"
 msgstr ""
+"Diese Einstellungen beeinflussen die Regeln, nach denen Tastenkombinationen "
+"auf die Moduleinstellungen angewandt werden, wenn mehrere Instanzen eines "
+"Moduls vorhanden sind."
 
 #: ../build/src/preferences_gen.h:4146
-#, fuzzy
 msgid "prefer expanded instances"
-msgstr "Voreinstellungen"
+msgstr "ausgeklappte Modulinstanzen bevorzugen"
 
 #: ../build/src/preferences_gen.h:4159
 msgid "if instances of the module are expanded, ignore collapsed instances"
 msgstr ""
+"Wenn Instanzen des Moduls ausgeklappt sind, ignoriere eingeklappte "
+"Modulinstanzen."
 
 #: ../build/src/preferences_gen.h:4167
-#, fuzzy
 msgid "prefer enabled instances"
-msgstr "Voreinstellungen"
+msgstr "aktive Modulinstanzen bevorzugen"
 
 #: ../build/src/preferences_gen.h:4180
 msgid ""
 "after applying the above rule, if instances of the module are active, ignore "
 "inactive instances"
 msgstr ""
+"Nachdem obige Regel angewandt wurde: Wenn Instanzen des Moduls aktiv sind, "
+"ignoriere inaktive Modulinstanzen."
 
 #: ../build/src/preferences_gen.h:4188
-#, fuzzy
 msgid "prefer unmasked instances"
-msgstr "Voreinstellungen"
+msgstr "Modulinstanzen mit lokalen Masken bevorzugen"
 
 #: ../build/src/preferences_gen.h:4201
 msgid ""
 "after applying the above rules, if instances of the module are unmasked, "
 "ignore masked instances"
 msgstr ""
+"Nachdem obige Regeln angewandt wurden: Wenn Instanzen des Moduls keine "
+"lokale Masken verwenden, ignoriere Modulinstanzen, die lokale Masken "
+"verwenden."
 
 #: ../build/src/preferences_gen.h:4209
-#, fuzzy
 msgid "selection order"
-msgstr "Rahmenfarbe wählen"
+msgstr "Reihenfolge"
 
 #: ../build/src/preferences_gen.h:4220
 msgctxt "preferences"
@@ -2524,6 +2537,8 @@ msgid ""
 "after applying the above rules, apply the shortcut based on its position in "
 "the pixelpipe"
 msgstr ""
+"Nachdem obige Regeln angewandt wurden: Wende die Tastenkombination auf "
+"Module gemäß ihrer Position im Bearbeitungsstapel an."
 
 #. char *italic = g_strdup_printf("<i>%s</i>", _("other"));
 #. italic
@@ -2558,7 +2573,7 @@ msgstr "KWallet"
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr ""
-"Speicher-Backend für Passwörter: automatisch, keins, libsecret, KWallet"
+"Speicher-Backend für Passwörter: automatisch, keines, libsecret, KWallet"
 
 #: ../build/src/preferences_gen.h:4339
 msgid "executable for playing audio files"
@@ -6402,7 +6417,7 @@ msgstr "auto"
 #: ../src/gui/preferences.c:814 ../src/gui/preferences.c:920
 msgctxt "preferences"
 msgid "import..."
-msgstr "importieren..."
+msgstr "importieren"
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:855
@@ -6507,7 +6522,7 @@ msgstr "Beschreibung für weitere Information"
 
 #: ../src/gui/preferences.c:1742 ../src/gui/presets.c:418
 msgid "auto apply this preset to matching images"
-msgstr "Diese Voreinstellung automatisch auf passende Bilder anwenden"
+msgstr "Diese Voreinstellung automatisch auf passende Bilder anwenden."
 
 #: ../src/gui/preferences.c:1745 ../src/gui/presets.c:421
 msgid "only show this preset for matching images"
@@ -17244,9 +17259,8 @@ msgid "lua options"
 msgstr "Lua-Optionen"
 
 #: ../src/views/darkroom.c:439
-#, fuzzy
 msgid "loading image"
-msgstr "%d Bild verschieben"
+msgstr "lade Bild"
 
 #: ../src/views/darkroom.c:656
 msgid "gamut check"
