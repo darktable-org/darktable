@@ -68,7 +68,7 @@ static void usage(const char *progname)
   fprintf(stderr, "   --export_masks <0|1|false|true>, default: false\n");
   fprintf(stderr, "   --style <style name>\n");
   fprintf(stderr, "   --style-overwrite\n");
-  fprintf(stderr, "   --apply-custom-presets <0|1|false|true>, default: true\n");
+  fprintf(stderr, "   --apply-custom-presets <0|1|false|true>, default: true, disable for multiple instances\n");
   fprintf(stderr, "   --verbose\n");
   fprintf(stderr, "   --help,-h\n");
   fprintf(stderr, "   --version\n");
