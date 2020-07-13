@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-12 21:51+0200\n"
+"PO-Revision-Date: 2020-07-13 21:49+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -3529,9 +3529,8 @@ msgstr ""
 "Import-Sitzungs-Einstellungen überprüfen."
 
 #: ../src/common/iop_order.c:58
-#, fuzzy
 msgid "custom"
-msgstr "benutzerdefinierte Sortierung"
+msgstr "benutzerdefiniert"
 
 #: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:201
 msgid "legacy"
@@ -4903,7 +4902,7 @@ msgstr ""
 
 #: ../src/develop/imageop.c:2408
 msgid "ERROR"
-msgstr ""
+msgstr "Fehler"
 
 #: ../src/develop/lightroom.c:1077
 msgid "cannot find lightroom XMP!"
@@ -5471,7 +5470,7 @@ msgstr "Hochtemperatur-Quecksilberdampflampe fluoreszierend"
 #. On Some Panasonic
 #: ../src/external/wb_presets.c:70
 msgid "D55"
-msgstr ""
+msgstr "D55"
 
 #: ../src/external/wb_presets.c:72
 msgid "flash"
@@ -6554,20 +6553,20 @@ msgstr ""
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr ""
-"Zeichenkette, auf die das Modell passen muss (‚%‘ als Platzhalter benutzen)"
+"Zeichenkette, auf die das Modell passen muss („%” als Platzhalter benutzen)"
 
 #: ../src/gui/preferences.c:1769 ../src/gui/presets.c:444
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr ""
-"Zeichenkette, auf die der Hersteller passen muss (‚%‘ als Platzhalter "
+"Zeichenkette, auf die der Hersteller passen muss („%” als Platzhalter "
 "benutzen)"
 
 #: ../src/gui/preferences.c:1777 ../src/gui/presets.c:451
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr ""
-"Zeichenkette, auf die das Objektiv passen muss (‚%‘ als Platzhalter benutzen)"
+"Zeichenkette, auf die das Objektiv passen muss („%” als Platzhalter benutzen)"
 
 #: ../src/gui/preferences.c:1787 ../src/gui/presets.c:461
 msgid "minimum ISO value"
@@ -6575,7 +6574,7 @@ msgstr "Mindest-ISO-Wert"
 
 #: ../src/gui/preferences.c:1790 ../src/gui/presets.c:464
 msgid "maximum ISO value"
-msgstr "Maximum-ISO-Wert"
+msgstr "Maximal-ISO-Wert"
 
 #: ../src/gui/preferences.c:1801 ../src/gui/presets.c:475
 msgid "minimum exposure time"
@@ -6583,7 +6582,7 @@ msgstr "Mindest-Belichtungszeit"
 
 #: ../src/gui/preferences.c:1802 ../src/gui/presets.c:476
 msgid "maximum exposure time"
-msgstr "Maximum-Belichtungszeit"
+msgstr "Maximal-Belichtungszeit"
 
 #: ../src/gui/preferences.c:1816 ../src/gui/presets.c:490
 msgid "minimum aperture value"
@@ -6591,7 +6590,7 @@ msgstr "Mindest-Blendenwert"
 
 #: ../src/gui/preferences.c:1817 ../src/gui/presets.c:491
 msgid "maximum aperture value"
-msgstr "Maximum-Blendenwert"
+msgstr "Maximal-Blendenwert"
 
 #: ../src/gui/preferences.c:1832 ../src/gui/presets.c:507
 msgid "minimum focal length"
@@ -6599,7 +6598,7 @@ msgstr "Mindest-Brennweite"
 
 #: ../src/gui/preferences.c:1833 ../src/gui/presets.c:508
 msgid "maximum focal length"
-msgstr "Maximum-Brennweite"
+msgstr "Maximal-Brennweite"
 
 #. raw/hdr/ldr
 #: ../src/gui/preferences.c:1842 ../src/gui/presets.c:514
@@ -6615,7 +6614,7 @@ msgstr "als Ausgabeziel _wählen"
 #: ../src/gui/preferences.c:1960
 #, c-format
 msgid "preset %s was successfully saved"
-msgstr "Voreinstellung „%s” wurde erfolgreich gespeichert"
+msgstr "Voreinstellung „%s” wurde erfolgreich gespeichert."
 
 #. then show edit dialog
 #: ../src/gui/presets.c:225 ../src/gui/presets.c:663 ../src/gui/presets.c:670
@@ -6623,11 +6622,11 @@ msgstr "Voreinstellung „%s” wurde erfolgreich gespeichert"
 #: ../src/libs/lib.c:330 ../src/libs/lib.c:338 ../src/libs/lib.c:340
 #: ../src/libs/lib.c:342
 msgid "new preset"
-msgstr "Neue Voreinstellung"
+msgstr "neue Voreinstellung"
 
 #: ../src/gui/presets.c:231
 msgid "please give preset a name"
-msgstr "Geben Sie der Voreinstellung einen Namen"
+msgstr "Geben Sie der Voreinstellung einen Namen."
 
 #: ../src/gui/presets.c:236
 msgid "unnamed preset"
@@ -6678,7 +6677,7 @@ msgstr "Diese Voreinstellung löschen"
 
 #: ../src/gui/presets.c:978 ../src/libs/lib.c:526
 msgid "store new preset.."
-msgstr "Neue Voreinstellung speichern.."
+msgstr "neue Voreinstellung speichern"
 
 #: ../src/gui/presets.c:984 ../src/libs/lib.c:538
 msgid "update preset"
@@ -7016,7 +7015,7 @@ msgstr "PPM (16 Bit)"
 
 #: ../src/imageio/format/tiff.c:232
 msgid "will export as a grayscale image"
-msgstr ""
+msgstr "Export als Graustufenbild"
 
 #: ../src/imageio/format/tiff.c:735
 msgid "TIFF (8/16/32-bit)"
@@ -7028,34 +7027,28 @@ msgstr "32 Bit (Fließkomma)"
 
 #: ../src/imageio/format/tiff.c:824
 msgid "deflate with predictor"
-msgstr "Deflate mit Predictor"
+msgstr "Deflate mit Prädiktor"
 
 # Adobe übersetzt das als "Predictor", habe dazu sonst nichts gefunden
 #: ../src/imageio/format/tiff.c:825
 msgid "deflate with predictor (float)"
-msgstr "Deflate mit Predictor (Fließkomma)"
+msgstr "Deflate mit Prädiktor (Fließkomma)"
 
 #: ../src/imageio/format/tiff.c:831
 msgid "compression level"
 msgstr "Kompressionsstärke"
 
 #: ../src/imageio/format/tiff.c:843
-#, fuzzy
-#| msgid "image"
 msgid "b&w image"
-msgstr "Bild"
+msgstr "Graustufenbild"
 
 #: ../src/imageio/format/tiff.c:844
-#, fuzzy
-#| msgid "preserve colors"
 msgid "write rgb colors"
-msgstr "erhalte Farben"
+msgstr "als RGB-Farbbild"
 
 #: ../src/imageio/format/tiff.c:845
-#, fuzzy
-#| msgid "write sidecar files"
 msgid "write grayscale"
-msgstr "XMP schreiben"
+msgstr "als Graustufenbild"
 
 #: ../src/imageio/format/webp.c:288
 msgid "WebP (8-bit)"
@@ -7995,9 +7988,9 @@ msgstr ""
 #: ../src/iop/exposure.c:888 ../src/iop/exposure.c:910
 #: ../src/iop/graduatednd.c:1157 ../src/iop/relight.c:284
 #: ../src/iop/soften.c:682
-#, fuzzy, c-format
+#, c-format
 msgid "%.2f EV"
-msgstr "%+.2f EV"
+msgstr "%.2f EV"
 
 #: ../src/iop/basicadj.c:633 ../src/iop/exposure.c:885
 msgid "adjust the exposure correction"
@@ -8372,9 +8365,8 @@ msgid "constant border"
 msgstr "konstanter Rahmen"
 
 #: ../src/iop/borders.c:862 ../src/iop/borders.c:888 ../src/iop/borders.c:894
-#, fuzzy
 msgid "custom..."
-msgstr "benutzerdefinierte Sortierung"
+msgstr "benutzerdefiniert"
 
 #: ../src/iop/borders.c:883 ../src/iop/borders.c:889
 msgid "center"
@@ -8409,9 +8401,8 @@ msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr "Seitenverhältnis wählen oder Rechtsklick zum Eintippen (b:h)"
 
 #: ../src/iop/borders.c:929
-#, fuzzy
 msgid "set the custom aspect ratio"
-msgstr "Seitenverhältnis setzen (b:h)"
+msgstr "Seitenverhältnis manuell setzen"
 
 #: ../src/iop/borders.c:935
 msgid "aspect ratio orientation of the image with border"
@@ -8426,9 +8417,8 @@ msgstr ""
 "Eintippen (y:h)"
 
 #: ../src/iop/borders.c:946
-#, fuzzy
 msgid "custom horizontal position"
-msgstr "horizontale Position"
+msgstr "benutzerdefinierte horizontale Position"
 
 #: ../src/iop/borders.c:953
 msgid ""
@@ -8439,9 +8429,8 @@ msgstr ""
 "Eintippen (x:b)"
 
 #: ../src/iop/borders.c:957
-#, fuzzy
 msgid "custom vertical position"
-msgstr "vertikale Position"
+msgstr "benutzerdefinierte vertikale Position"
 
 #: ../src/iop/borders.c:965
 msgid "size of the frame line in percent of min border width"
@@ -8637,9 +8626,8 @@ msgid "invalid ratio format. it should be \"number:number\""
 msgstr "Ungültiges Seitenverhältnis. Es sollte „Zahl:Zahl“ sein"
 
 #: ../src/iop/clipping.c:1660
-#, fuzzy
 msgid "invalid ratio format. it should be non zero"
-msgstr "Ungültiges Seitenverhältnis. Es sollte „Zahl:Zahl“ sein"
+msgstr "Ungültiges Seitenverhältnis. Es sollte ungleich null sein."
 
 #: ../src/iop/clipping.c:1903 ../src/iop/clipping.c:2177
 msgid "full"
@@ -9149,7 +9137,7 @@ msgid "patch #%d"
 msgstr "Feld #%d"
 
 #: ../src/iop/colorchecker.c:1238
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
 "altered patches are marked with an outline\n"
@@ -9159,11 +9147,10 @@ msgid ""
 "shift+click while color picking to replace patch"
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
-"geänderte Felder sind mit einer Umrandung markiert\n"
-"Klick zum Auswählen\n"
-"Doppelklick zum Zurücksetzen\n"
-"Rechtsklick zum Löschen des Felds\n"
-"Umschalt-Klick während die Pipette aktiv ist zum Ersetzen des Felds"
+"Geänderte Felder sind mit einer Umrandung markiert. Klick zum Auswählen. "
+"Doppelklick zum Zurücksetzen. Rechtsklick zum Löschen des Felds. Umschalt-"
+"Taste drücken während Farbwahl mittels Pipette, um die Farbe des Feldes zu "
+"ersetzen."
 
 #: ../src/iop/colorchecker.c:1362
 msgid "patch"
@@ -9256,13 +9243,13 @@ msgid "cooling filter"
 msgstr "kühlender Filter"
 
 #: ../src/iop/colorcorrection.c:252
-#, fuzzy
 msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"Linie für Teiltonung ziehen. Hell steht für Spitzlichter, dunkel für "
-"Schatten. Die Sättigung kann mit dem Mausrad geändert werden."
+"Linie für Teiltonung ziehen. Helles Ende bestimmt die Tonung der "
+"Spitzlichter, das dunkle die Tonung der Schatten. Die Sättigung kann mit dem "
+"Mausrad angepasst werden."
 
 #: ../src/iop/colorcorrection.c:272
 msgid "set the global saturation"
@@ -9638,9 +9625,8 @@ msgid "black & white film"
 msgstr "Schwarz-Weiß-Film"
 
 #: ../src/iop/colorzones.c:724
-#, fuzzy
 msgid "HSL base setting"
-msgstr "Bildeinstellungen"
+msgstr "HSL-Grundeinstellung"
 
 #: ../src/iop/colorzones.c:2208 ../src/iop/retouch.c:1996
 #: ../src/iop/toneequal.c:1762
@@ -13109,9 +13095,8 @@ msgid "properties"
 msgstr "Eigenschaften"
 
 #: ../src/iop/splittoning.c:553
-#, fuzzy
 msgid "the balance of center of split-toning"
-msgstr "Mittelpunkt der Teiltonung ausgleichen"
+msgstr "Teiltonung in den Schatten oder Spitzlichtern konzentrieren."
 
 #: ../src/iop/splittoning.c:557
 msgid ""
