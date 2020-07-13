@@ -1303,9 +1303,12 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 
     // get the new rowid of the new offset image
     const int nrow = _thumb_get_rowid(newid);
-    const gboolean offset_changed = (nrow != table->offset);
-    table->offset_imgid = newid;
-    table->offset = nrow;
+    const gboolean offset_changed = (MAX(1, nrow) != table->offset);
+    if(nrow >= 1)
+      table->offset_imgid = newid;
+    else
+      table->offset_imgid = _thumb_get_imgid(1);
+    table->offset = MAX(1, nrow);
     if(offset_changed) dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
 
     dt_thumbtable_full_redraw(table, TRUE);
