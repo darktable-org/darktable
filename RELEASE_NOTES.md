@@ -8,9 +8,9 @@ github, but only our tar.xz. the checksums are:
 ```
 $ sha256sum darktable-3.2.0.tar.xz
 ??? darktable-3.2.0.tar.xz
-$ sha256sum darktable-3.0.0.dmg
+$ sha256sum darktable-3.2.0.dmg
 ??? darktable-3.2.0.dmg
-$ sha256sum darktable-3.0.0.exe
+$ sha256sum darktable-3.2.0.exe
 ??? darktable-3.2.0.exe
 ```
 
