@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-13 21:49+0200\n"
+"PO-Revision-Date: 2020-07-15 00:24+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -7341,6 +7341,10 @@ msgid ""
 "takes preferably a linear RGB input,\n"
 "outputs linear RGB."
 msgstr ""
+"Verformt die Perspektive, kann zur automatischen Korrektur perspektivischer "
+"Verzerrungen oder auch für kreative Zwecke genutzt werden. Modul arbeitet in "
+"RGB-Darstellung, Eingabe vorzugsweise in linearer RGB-Darstellung, Ausgabe "
+"in linearer RGB-Darstellung."
 
 #: ../src/iop/ashift.c:534 ../src/iop/graduatednd.c:164
 #: ../src/iop/watermark.c:312
@@ -7596,6 +7600,9 @@ msgid ""
 "takes preferably a linear RGB input,\n"
 "outputs almost linear RGB."
 msgstr ""
+"Verstärkt oder reduziert lokalen Kontrast. Für korrigierende oder kreative "
+"Zwecke. Modul arbeitet im Lab-Farbraum, Eingabe vorzugsweise in linearer RGB-"
+"Darstellung, Ausgabe in quasi-linearer RGB-Darstellung."
 
 #: ../src/iop/atrous.c:148 ../src/iop/colorzones.c:159 ../src/iop/soften.c:108
 msgctxt "accel"
@@ -7842,6 +7849,10 @@ msgid ""
 "takes preferably a linear RGB input,\n"
 "outputs non-linear RGB."
 msgstr ""
+"Wendet eine Ausgabetransformation basierend auf dem Stil des "
+"Kameraherstellers an. Für korrigierende Zwecke, um das Bild für die Anzeige "
+"aufzubereiten. Modul arbeitet in RGB-Darstellung, Eingabe vorzugsweise in "
+"linearer RGB-Darstellung, Ausgabe in nicht-linearer RGB-Darstellung."
 
 #: ../src/iop/basecurve.c:2128
 msgid "abscissa: input, ordinate: output. works on RGB channels"
@@ -7916,6 +7927,9 @@ msgid ""
 "takes preferably a linear RGB input,\n"
 "outputs non-linear RGB."
 msgstr ""
+"Wendet grundlegende Anpassungen an. Für korrigierende oder kreative Zwecke. "
+"Modul arbeitet im RGB-Darstellung, Eingabe vorzugsweise in linearer RGB-"
+"Darstellung, Ausgabe in nicht-linearer RGB-Darstellung."
 
 #: ../src/iop/basicadj.c:164
 #, fuzzy
@@ -8068,6 +8082,9 @@ msgid ""
 "takes any RGB input,\n"
 "outputs non-linear RGB."
 msgstr ""
+"Verändert selektiv lokalen und globalen Kontrast. Für korrigierende oder "
+"kreative Zwecke. Modul arbeitet im Lab-Farbraum, Eingabe beliebiger RGB-"
+"Darstellung, Ausgabe in nicht-linearer RGB-Darstellung."
 
 #: ../src/iop/bilat.c:124 ../src/iop/globaltonemap.c:125
 #, fuzzy
@@ -8216,6 +8233,10 @@ msgid ""
 "takes preferably a linear RGB input,\n"
 "outputs non-linear RGB."
 msgstr ""
+"Ahmt den Orton-Effekt nach und erzeugt einen verträumtes, glühendes "
+"Aussehen. Für kreative Zwecke. Modul arbeitet im Lab-Farbraum, Eingabe "
+"vorzugsweise in linearer RGB-Darstellung, Ausgabe in nicht-linearer RGB-"
+"Darstellung."
 
 #: ../src/iop/bloom.c:105 ../src/iop/soften.c:105
 msgctxt "accel"
@@ -8880,6 +8901,10 @@ msgid ""
 "takes preferably a linear RGB input,\n"
 "outputs possibly non-linear RGB, depending on settings."
 msgstr ""
+"Modifiziert Farbe, Helligkeit und Kontrast. Für korrigierende oder kreative "
+"Zwecke. Modul arbeitet im RGB-Darstellung, Eingabe vorzugsweise in linearer "
+"RGB-Darstellung, Ausgabe in linearer oder nicht-linearer RGB-Darstellung, je "
+"nach Einstellungen."
 
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:267
@@ -10027,6 +10052,10 @@ msgid ""
 "while Y0U0V0 combine the channels to\n"
 "denoise chroma and luma separately."
 msgstr ""
+"Die vom Algorithmus genutzte Farbdarstellung. Mit „Y0U0V0” werden die RGB-"
+"Kanäle so gemischt, dass Farbrauschen und Helligkeitsrauschen getrennt "
+"beeinflusst werden können, während bei „RGB” die RGB-Kanäle separiert "
+"bleiben."
 
 #: ../src/iop/denoiseprofile.c:4384
 msgid ""
@@ -11845,11 +11874,15 @@ msgstr "ungültiger Grad PNG-Datei %d %d"
 #: ../src/iop/lut3d.c:523
 msgid "this darktable build is not compatible with compressed clut"
 msgstr ""
+"Dieser darktable-Build ist nicht kompatibel zu komprimierten Color-Lookup-"
+"Tables."
 
 #: ../src/iop/lut3d.c:540 ../src/iop/lut3d.c:785 ../src/iop/lut3d.c:889
 #, c-format
 msgid "error - lut 3D size %d exceeds the maximum supported"
 msgstr ""
+"Fehler: Größe „%d” der Color-Lookup-Table überschreitet die unterstützte "
+"Maximalgröße."
 
 #: ../src/iop/lut3d.c:552
 #, fuzzy
@@ -11868,7 +11901,7 @@ msgstr "Fehler: konnte keinen Puffer für PNG-LUT-Datei reservieren"
 #: ../src/iop/lut3d.c:740
 #, c-format
 msgid "error - invalid cube file: %s"
-msgstr "Fehler: ungültige Cube-Datei: %s"
+msgstr "Fehler: ungültige Cube-Datei: „%s”"
 
 #: ../src/iop/lut3d.c:754
 msgid "DOMAIN MIN <> 0.0 is not supported"
@@ -11905,6 +11938,8 @@ msgstr "Fehler: Cube-LUT-Zeilenzahl nicht korrekt"
 #, c-format
 msgid "warning - cube lut %d out of range values [0,1]"
 msgstr ""
+"Warnung: Wert „%d” in Color-Lookup-Table außerhalb des erlaubten "
+"Wertebereichs."
 
 #: ../src/iop/lut3d.c:868
 #, fuzzy, c-format
@@ -11914,7 +11949,7 @@ msgstr "Fehler: ungültige Cube-Datei: %s"
 #: ../src/iop/lut3d.c:897
 #, c-format
 msgid "error - the maximum shaper lut value %d is too low"
-msgstr ""
+msgstr "Fehler: Maximalwert „%d” der Former-Color-Lookup-Table ist zu klein."
 
 #: ../src/iop/lut3d.c:947
 msgid "error - cube lut lines number is not correct"
@@ -11923,6 +11958,8 @@ msgstr "Fehler: Cube-LUT-Zeilenzahl nicht korrekt"
 #: ../src/iop/lut3d.c:963
 msgid "error - the maximum lut value does not match any valid bit depth"
 msgstr ""
+"Fehler: Maximalwert der Color-Lookup-Table passt zu keiner erlaubten "
+"Bittiefe."
 
 #: ../src/iop/lut3d.c:1556
 msgid "Lut root folder not defined"
@@ -11939,10 +11976,11 @@ msgstr "Auswählen"
 #: ../src/iop/lut3d.c:1583
 msgid "hald cluts (png), 3D lut (cube or 3dl) or gmic compressed lut (gmz)"
 msgstr ""
+"Hald CLUT (png), 3D LUT (cube oder 3dl) oder komprimierte G'MIC-LUT (gmz)"
 
 #: ../src/iop/lut3d.c:1585
 msgid "hald cluts (png) or 3D lut (cube or 3dl)"
-msgstr ""
+msgstr "Hald CLUT (png) oder 3D LUT (cube oder 3dl)"
 
 #: ../src/iop/lut3d.c:1594 ../src/libs/copy_history.c:131
 #: ../src/libs/geotagging.c:496 ../src/libs/import.c:586
