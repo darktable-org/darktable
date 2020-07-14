@@ -28,7 +28,7 @@ making a backup is strongly advised.
 
 ## The Big Ones
 
-- A full rewrite of of lighttable has been done. This gives again a
+- A full rewrite of the lighttable has been done. This gives again a
   big performance jump and will allow smooth interaction for any
   screen resolution. At the same time the filmstrip has been reworked.
 
@@ -346,7 +346,7 @@ making a backup is strongly advised.
 
 - An integration test suite has been added. This will ensure better
   quality and keeping old edits intact. This is an important tool for
-  developers to ensure a rework of of module for performance reason
+  developers to ensure a rework of a module for performance reason
   for example does not change visually the image.
 
 ## Lua
