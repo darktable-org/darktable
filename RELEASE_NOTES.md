@@ -105,13 +105,15 @@ making a backup is strongly advised.
   touches all areas of darktable like masks, guided filter, liquify
   controls, crop & rotate, lens and perspective corrections...
 
-- Clarify the two possible work flows. We had a preference for
+- Clarify the three possible work-flows. We had a preference for
   applying or not the base curve. Many questions was raised about the
-  intention. The new preference introduce tow work-flow:
+  intention. The new preference introduces three work-flows:
 
   display-referred : use base-curve
 
   scene-referred   : use filmic and exposure compensation (new default)
+
+  none             : use neither base-curve nor filmic
 
 - Filmic RGB goes to v4 with highlight recovery integrated.
 
