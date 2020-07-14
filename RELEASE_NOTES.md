@@ -41,7 +41,7 @@ making a backup is strongly advised.
   Location modules to better fit into the new UI and most of the icons
   to be more visually balanced.
 
-  This new lightttable version should be prepared for 8K screen resolution.
+  This new lighttable version should be prepared for 8K screen resolution.
 
   There is many overlay kind possible on thumbs. Different overlay
   information can be selected depending on the thumb size on the
@@ -56,7 +56,7 @@ making a backup is strongly advised.
   darktable a very professional look at this time. This also continues
   the goal to make every single aspect of the UI themable using CSS.
 
-- Also the lightttable has been made more visually living by
+- Also the lighttable has been made more visually living by
   highlighting the buttons only when the context makes the action
   possible. This give a better user experience.
 
