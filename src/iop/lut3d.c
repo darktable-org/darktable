@@ -670,14 +670,15 @@ double dt_atof(const char *str)
 
 // return max 3 tokens from the line (separator = ' ' and token length = 50)
 // if nb tokens > 3, the 3rd one captures the last input
-uint8_t parse_cube_line(char *line, char *token)
+uint8_t parse_cube_line(char *line, char (*token)[50])
 {
-  uint8_t i, c;
-  i = c = 0;
-  char *t = token;
+  const int max_token_len = 50;
+  uint8_t i = 0;
+  uint8_t c = 0;
+  char *t = &token[0][0];
   char *l = line;
 
-  while (*l != 0 && i < 50)
+  while (*l != 0 && i < max_token_len)
   {
     if (*l == '#' || *l == '\n' || *l == '\r')
     { // end of useful part of the line
@@ -700,7 +701,7 @@ uint8_t parse_cube_line(char *line, char *token)
         *t = 0;
         c++;
         i = 0;
-        t = token + (50 * (c > 2 ? 2 : c));
+        t = &token[c > 2 ? 2 : c][0];
       }
     }
     else
@@ -718,6 +719,9 @@ uint8_t parse_cube_line(char *line, char *token)
       return c;
     }
   }
+  token[0][max_token_len - 1] = 0;
+  token[1][max_token_len - 1] = 0;
+  token[2][max_token_len - 1] = 0;
   return c;
 }
 
@@ -742,7 +746,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   }
   while ((read = getline(&line, &len, cube_file)) != -1)
   {
-    const uint8_t nb_token = parse_cube_line(line, &token[0][0]);
+    const uint8_t nb_token = parse_cube_line(line, token);
     if (nb_token)
     {
       if (token[0][0] == 'T') continue;
@@ -870,7 +874,7 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
   }
   while ((read = getline(&line, &len, cube_file)) != -1)
   {
-    const uint8_t nb_token = parse_cube_line(line, &token[0][0]);
+    const uint8_t nb_token = parse_cube_line(line, token);
     if (nb_token)
     {
       if (!level)
@@ -938,6 +942,8 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
             max_value = value;
         }
         i++;
+        if (i * 3 > buf_size)
+          break;
       }
     }
   }
