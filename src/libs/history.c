@@ -498,7 +498,9 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
 
       if(!dt_iop_is_hidden(module))
       {
+        ++darktable.gui->reset;
         module->gui_init(module);
+        --darktable.gui->reset;
       }
 
       // adjust the multi_name of the new module
