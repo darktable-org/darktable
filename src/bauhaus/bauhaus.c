@@ -2043,7 +2043,9 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   gdouble delta_y;
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   gtk_widget_grab_focus(widget);
 
   if(dt_gui_get_scroll_delta(event, &delta_y))
@@ -2088,7 +2090,9 @@ static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *ev
   int delta_y;
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   gtk_widget_grab_focus(widget);
 
