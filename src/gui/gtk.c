@@ -493,6 +493,28 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
   return TRUE;
 }
 
+gboolean dt_gui_ignore_scroll(GdkEventScroll *event)
+{
+  const gboolean ignore_without_mods = dt_conf_get_bool("darkroom/ui/sidebar_scroll_default");
+  const GdkModifierType mods_pressed = (event->state & gtk_accelerator_get_default_mod_mask());
+
+  if(mods_pressed == 0)
+  {
+    return ignore_without_mods;
+  }
+  else
+  {
+    if(mods_pressed == darktable.gui->sidebar_scroll_mask)
+    {
+      if(!ignore_without_mods) return TRUE;
+
+      event->state &= ~darktable.gui->sidebar_scroll_mask;
+    }
+
+    return FALSE;
+  }
+}
+
 gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y)
 {
   gboolean handled = FALSE;
