@@ -124,7 +124,7 @@ making a backup is strongly advised.
   line on the horizon for example. This can also be used to artistic
   goals.
 
-- Add support for AVIF file format (>= 0.7)
+- Add support for AVIF file format (requires [libavif](https://github.com/AOMediaCodec/libavif) >= 0.7)
 
 - Collect module has two new filters: module and module order.
 
