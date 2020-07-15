@@ -1124,8 +1124,10 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     {
       if(!dt_iop_is_hidden(module) && !module->expander)
       {
+        ++darktable.gui->reset;
         module->gui_init(module);
         dt_iop_reload_defaults(module);
+        --darktable.gui->reset;
 
         /* add module to right panel */
         GtkWidget *expander = dt_iop_gui_get_expander(module);
