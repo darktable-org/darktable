@@ -456,7 +456,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         { N_("avif"), 'a'},
       };
 
-      int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
+      const int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
       value[12] = loaders[loader].flag;
       char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders[loader].tooltip));
       tooltip_parts[next_tooltip_part++] = loader_tooltip;
@@ -797,16 +797,14 @@ void gui_init(dt_lib_module_t *self)
 
   d->scrolled_window = GTK_WIDGET(scrolled_window);
   self->widget = d->scrolled_window;
-  
+
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
-  
+
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->scrolled_window), DT_PIXEL_APPLY_DPI(300));
-  gint height = dt_conf_get_int("plugins/lighttable/metadata_view/windowheight");
+  const gint height = dt_conf_get_int("plugins/lighttable/metadata_view/windowheight");
   gtk_widget_set_size_request(d->scrolled_window, -1, DT_PIXEL_APPLY_DPI(height));
-
-//   GtkWidget *last = NULL;
 
   /* initialize the metadata name/value labels */
   for(int k = 0; k < md_size; k++)
