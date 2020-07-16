@@ -218,6 +218,7 @@ static void _metadata_update_value_end(GtkLabel *label, const char *value)
   const gchar *str = validated ? value : NODATA_STRING;
   gtk_label_set_text(GTK_LABEL(label), str);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
 }
 
@@ -809,22 +810,21 @@ void gui_init(dt_lib_module_t *self)
   /* initialize the metadata name/value labels */
   for(int k = 0; k < md_size; k++)
   {
-    GtkWidget *evb = gtk_event_box_new();
-    gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
     d->name[k] = name;
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
+    gtk_widget_set_name(GTK_WIDGET(d->metadata[k]), "brightbg");
     gtk_label_set_selectable(d->metadata[k], TRUE);
-    gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(d->metadata[k]));
+    gtk_label_set_xalign (d->metadata[k], 0.0f);
     if(k == md_internal_filmroll)
     {
       // film roll jump to:
-      g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
+      g_signal_connect(G_OBJECT(GTK_WIDGET(d->metadata[k])), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
     }
     gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
-    gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_START);
+    gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(name), 0, k, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(child_grid_window), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(GTK_WIDGET(d->metadata[k])), 1, k, 1, 1);
   }
 
   /* lets signup for mouse over image change signals */
@@ -946,16 +946,15 @@ static int lua_register_info(lua_State *L)
     lua_pop(L,1);
   }
   {
-    GtkWidget *evb = gtk_event_box_new();
-    gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(key));
     GtkLabel *value = GTK_LABEL(gtk_label_new("-"));
+    gtk_widget_set_name(GTK_WIDGET(value), "brightbg");
     gtk_label_set_selectable(value, TRUE);
-    gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(value));
     gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
-    gtk_widget_set_halign(GTK_WIDGET(value), GTK_ALIGN_START);
+    gtk_widget_set_halign(GTK_WIDGET(value), GTK_ALIGN_FILL);
+    gtk_label_set_xalign (value, 0.0f);
     gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(name), NULL, GTK_POS_BOTTOM, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(value), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
     gtk_widget_show_all(self->widget);
     {
       lua_getfield(L,-1,"widgets");
