@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-15 00:24+0200\n"
+"PO-Revision-Date: 2020-07-17 23:34+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -122,7 +122,7 @@ msgstr "Belichtungsanpassung"
 #: ../build/src/iop/introspection_basecurve.c:239
 #: ../src/libs/metadata_view.c:123
 msgid "exposure bias"
-msgstr "Belichtungstendenz"
+msgstr "Belichtungskorreektur"
 
 #: ../build/src/iop/introspection_basecurve.c:152
 #: ../build/src/iop/introspection_basecurve.c:243
@@ -591,7 +591,7 @@ msgstr "zentrales Pixelgewicht (Details)"
 #: ../build/src/iop/introspection_denoiseprofile.c:167
 #: ../build/src/iop/introspection_denoiseprofile.c:328
 msgid "adjust autoset parameters"
-msgstr "Einstellen der Autoset-Parameter"
+msgstr "Autoset-Parameter einstellen"
 
 #: ../build/src/iop/introspection_denoiseprofile.c:239
 #: ../build/src/iop/introspection_denoiseprofile.c:376
@@ -2824,7 +2824,7 @@ msgstr ""
 #: ../src/cli/main.c:387
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr "unbekannte Datei-Erweiterung '.%s'"
+msgstr "unbekannte Datei-Erweiterung „.%s”"
 
 #: ../src/cli/main.c:396
 msgid "failed to get parameters from format module, aborting export ..."
@@ -3042,14 +3042,12 @@ msgid "gamma Rec709 RGB"
 msgstr "Gamma Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1430
-#, fuzzy
 msgid "PQ Rec2020 RGB"
-msgstr "lineares Rec2020-RGB"
+msgstr "PQ Rec2020 RGB"
 
 #: ../src/common/colorspaces.c:1435
-#, fuzzy
 msgid "HLG Rec2020 RGB"
-msgstr "lineares Rec2020-RGB"
+msgstr "HLG Rec2020 RGB"
 
 #: ../src/common/colorspaces.c:1440
 msgid "PQ P3 RGB"
@@ -3061,7 +3059,7 @@ msgstr ""
 
 #: ../src/common/colorspaces.c:1450
 msgid "linear prophoto RGB"
-msgstr "lineares prophoto RGB"
+msgstr "lineares ProPhoto RGB"
 
 #: ../src/common/colorspaces.c:1455 ../src/common/colorspaces.c:1610
 msgid "linear XYZ"
@@ -3109,14 +3107,12 @@ msgid "BRG (experimental)"
 msgstr "BRG (experimentell)"
 
 #: ../src/common/colorspaces.c:1640
-#, fuzzy
 msgid "gamma22 Rec709"
 msgstr "Gamma Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1642
-#, fuzzy
 msgid "ProPhoto RGB"
-msgstr "lineares prophoto-RGB"
+msgstr "ProPhoto RGB"
 
 #: ../src/common/colorspaces.c:1644
 msgid "PQ Rec2020"
@@ -3405,7 +3401,7 @@ msgstr ""
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "Es muss erst der Verlauf eines Bildes kopiert werden, bevor er auf ein "
-"anderes Bild angewandt werden kann"
+"anderes Bild angewandt werden kann."
 
 #: ../src/common/history.c:837 ../src/common/history.c:840
 #: ../src/common/history.c:856 ../src/common/styles.c:1079
@@ -4409,7 +4405,7 @@ msgid ""
 "add gradient\n"
 "ctrl+click to add multiple gradients"
 msgstr ""
-"Verlauf hinzufügen. Mit Strg + Mausklick können mehrere Verläufe erstellt "
+"Verlauf hinzufügen. Mit Strg+Mausklick können mehrere Verläufe erstellt "
 "werden."
 
 #: ../src/develop/blend_gui.c:1878 ../src/iop/retouch.c:2420
@@ -4418,7 +4414,7 @@ msgid ""
 "add path\n"
 "ctrl+click to add multiple paths"
 msgstr ""
-"Pfad hinzufügen. Mit Strg + Mausklick können mehrere Pfade erstellt werden."
+"Pfad hinzufügen. Mit Strg+Mausklick können mehrere Pfade erstellt werden."
 
 #: ../src/develop/blend_gui.c:1887 ../src/iop/retouch.c:2427
 #: ../src/iop/spots.c:813
@@ -4426,7 +4422,7 @@ msgid ""
 "add ellipse\n"
 "ctrl+click to add multiple ellipses"
 msgstr ""
-"Ellipse hinzufügen. Mit Strg + Mausklick können mehrere Ellipsen erstellt "
+"Ellipse hinzufügen. Mit Strg+Mausklick können mehrere Ellipsen erstellt "
 "werden."
 
 #: ../src/develop/blend_gui.c:1896 ../src/iop/retouch.c:2434
@@ -4435,7 +4431,7 @@ msgid ""
 "add circle\n"
 "ctrl+click to add multiple circles"
 msgstr ""
-"Kreis hinzufügen. Mit Strg + Mausklick können mehrere Kreise erstellt werden."
+"Kreis hinzufügen. Mit Strg+Mausklick können mehrere Kreise erstellt werden."
 
 #: ../src/develop/blend_gui.c:1905 ../src/iop/retouch.c:2414
 #, fuzzy
@@ -4730,7 +4726,7 @@ msgstr "Eingangsbild"
 #: ../src/develop/blend_gui.c:2728
 msgid "choose to guide mask by input or output image"
 msgstr ""
-"Legt fest, durch welches Bild die kantensensitive Anapssung der Maske "
+"Legt fest, durch welches Bild die kantensensitive Anpassung der Maske "
 "erfolgt."
 
 #: ../src/develop/blend_gui.c:2734
@@ -5215,7 +5211,6 @@ msgid "zooming is limited to %d images"
 msgstr "Zoom ist auf %d Bilder beschränkt"
 
 #: ../src/dtgtk/culling.c:922
-#, fuzzy
 msgid "no image selected !"
 msgstr "Kein Bild ausgewählt!"
 
@@ -7751,16 +7746,14 @@ msgstr "Skalierung"
 #: ../src/iop/basecurve.c:204 ../src/iop/basicadj.c:173
 #: ../src/iop/rgbcurve.c:140 ../src/iop/rgblevels.c:121
 #: ../src/iop/tonecurve.c:216
-#, fuzzy
 msgctxt "accel"
 msgid "preserve colors"
 msgstr "erhalte Farben"
 
 #: ../src/iop/basecurve.c:205
-#, fuzzy
 msgctxt "accel"
 msgid "exposure fusion"
-msgstr "Belichtungsanpassung"
+msgstr "Belichtungsfusion"
 
 #: ../src/iop/basecurve.c:217
 msgid "neutral"
@@ -7932,7 +7925,6 @@ msgstr ""
 "Darstellung, Ausgabe in nicht-linearer RGB-Darstellung."
 
 #: ../src/iop/basicadj.c:164
-#, fuzzy
 msgctxt "accel"
 msgid "black level correction"
 msgstr "Schwarzwert-Anpassung"
@@ -7943,7 +7935,6 @@ msgid "exposure"
 msgstr "Belichtung"
 
 #: ../src/iop/basicadj.c:166
-#, fuzzy
 msgctxt "accel"
 msgid "highlight compression"
 msgstr "Spitzlichtkompression"
@@ -7956,7 +7947,6 @@ msgid "contrast"
 msgstr "Kontrast"
 
 #: ../src/iop/basicadj.c:168
-#, fuzzy
 msgctxt "accel"
 msgid "middle grey"
 msgstr "mittelgrau"
@@ -7981,10 +7971,9 @@ msgid "vibrance"
 msgstr "Lebendigkeit"
 
 #: ../src/iop/basicadj.c:172
-#, fuzzy
 msgctxt "accel"
 msgid "clip"
-msgstr "schneiden"
+msgstr "abschneiden"
 
 #: ../src/iop/basicadj.c:624
 msgid ""
@@ -8087,7 +8076,6 @@ msgstr ""
 "Darstellung, Ausgabe in nicht-linearer RGB-Darstellung."
 
 #: ../src/iop/bilat.c:124 ../src/iop/globaltonemap.c:125
-#, fuzzy
 msgctxt "accel"
 msgid "detail"
 msgstr "Detail"
@@ -8109,10 +8097,9 @@ msgid "shadows"
 msgstr "Schatten"
 
 #: ../src/iop/bilat.c:129
-#, fuzzy
 msgctxt "accel"
 msgid "midtone range"
-msgstr "Mittenbereich"
+msgstr "Mitten"
 
 #: ../src/iop/bilat.c:130 ../src/iop/colorbalance.c:297
 #: ../src/iop/denoiseprofile.c:614 ../src/iop/exposure.c:138
@@ -8299,7 +8286,6 @@ msgid "frame line size"
 msgstr "Größe der Rahmenlinie"
 
 #: ../src/iop/borders.c:205
-#, fuzzy
 msgctxt "accel"
 msgid "frame line offset"
 msgstr "Versatz der Rahmenlinie"
@@ -8310,25 +8296,21 @@ msgid "pick frame line color from image"
 msgstr "Rahmenlinien-Farbe aus dem Bild übernehmen"
 
 #: ../src/iop/borders.c:207
-#, fuzzy
 msgctxt "accel"
 msgid "aspect"
 msgstr "Format"
 
 #: ../src/iop/borders.c:208
-#, fuzzy
 msgctxt "accel"
 msgid "orientation"
 msgstr "Drehung"
 
 #: ../src/iop/borders.c:209
-#, fuzzy
 msgctxt "accel"
 msgid "horizontal position"
 msgstr "horizontale Position"
 
 #: ../src/iop/borders.c:210
-#, fuzzy
 msgctxt "accel"
 msgid "vertical position"
 msgstr "vertikale Position"
@@ -8519,7 +8501,6 @@ msgid "channel mixer"
 msgstr "Kanalmixer"
 
 #: ../src/iop/channelmixer.c:135
-#, fuzzy
 msgctxt "accel"
 msgid "destination"
 msgstr "Ziel"
@@ -9111,19 +9092,16 @@ msgid "lightness"
 msgstr "Helligkeit"
 
 #: ../src/iop/colorchecker.c:135
-#, fuzzy
 msgctxt "accel"
 msgid "green-red"
 msgstr "Grün / Rot"
 
 #: ../src/iop/colorchecker.c:136
-#, fuzzy
 msgctxt "accel"
 msgid "blue-yellow"
 msgstr "Blau / Gelb"
 
 #: ../src/iop/colorchecker.c:138
-#, fuzzy
 msgctxt "accel"
 msgid "target color"
 msgstr "Zielfarbe"
@@ -9376,20 +9354,17 @@ msgid "color mapping"
 msgstr "Farbtransfer"
 
 #: ../src/iop/colormapping.c:166
-#, fuzzy
 msgctxt "accel"
 msgid "number of clusters"
-msgstr "Anzahl Bereiche"
+msgstr "Anzahl der Cluster"
 
 # wtf?
 #: ../src/iop/colormapping.c:167
-#, fuzzy
 msgctxt "accel"
 msgid "color dominance"
-msgstr "Farb-Dominanz"
+msgstr "Farbdominanz"
 
 #: ../src/iop/colormapping.c:168
-#, fuzzy
 msgctxt "accel"
 msgid "histogram equalization"
 msgstr "Histogramm-Angleichung"
@@ -9452,7 +9427,6 @@ msgid "output color profile"
 msgstr "Ausgabefarbprofil"
 
 #: ../src/iop/colorout.c:123
-#, fuzzy
 msgctxt "accel"
 msgid "export profile"
 msgstr "Exportprofil"
@@ -9521,7 +9495,6 @@ msgid "range extent"
 msgstr "Werte-Ausdehnung"
 
 #: ../src/iop/colorreconstruction.c:183
-#, fuzzy
 msgctxt "accel"
 msgid "precedence"
 msgstr "Priorität"
@@ -9610,21 +9583,18 @@ msgid "color zones"
 msgstr "Farbbereiche"
 
 #: ../src/iop/colorzones.c:160
-#, fuzzy
 msgctxt "accel"
 msgid "select by"
 msgstr "Auswahl nach"
 
 # keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
 #: ../src/iop/colorzones.c:161
-#, fuzzy
 msgctxt "accel"
 msgid "process mode"
 msgstr "Modus"
 
 #: ../src/iop/colorzones.c:162 ../src/iop/rgbcurve.c:139
 #: ../src/iop/tonecurve.c:215
-#, fuzzy
 msgctxt "accel"
 msgid "interpolation method"
 msgstr "Interpolationsverfahren"
@@ -9732,13 +9702,11 @@ msgid "defringe"
 msgstr "Farbsaum-Entfernung"
 
 #: ../src/iop/defringe.c:115
-#, fuzzy
 msgctxt "accel"
 msgid "edge detection radius"
 msgstr "Kantenerkennungsradius"
 
 #: ../src/iop/defringe.c:117
-#, fuzzy
 msgctxt "accel"
 msgid "operation mode"
 msgstr "Modus"
@@ -9860,40 +9828,34 @@ msgid "denoise (profiled)"
 msgstr "Entrauschen (Profil)"
 
 #: ../src/iop/denoiseprofile.c:607
-#, fuzzy
 msgctxt "accel"
 msgid "adjust autoset parameters"
-msgstr "Einstellen der Autoset-Parameter"
+msgstr "Autoset-Parameter einstellen"
 
 #: ../src/iop/denoiseprofile.c:608
-#, fuzzy
 msgctxt "accel"
 msgid "preserve shadows"
 msgstr "Schatten erhalten"
 
 #: ../src/iop/denoiseprofile.c:609
-#, fuzzy
 msgctxt "accel"
 msgid "bias correction"
 msgstr "Bias-Korrektur"
 
 #: ../src/iop/denoiseprofile.c:610 ../src/iop/nlmeans.c:118
-#, fuzzy
 msgctxt "accel"
 msgid "patch size"
 msgstr "Blockgröße"
 
 #: ../src/iop/denoiseprofile.c:611
-#, fuzzy
 msgctxt "accel"
 msgid "search radius"
 msgstr "Suchradius"
 
 #: ../src/iop/denoiseprofile.c:612
-#, fuzzy
 msgctxt "accel"
 msgid "scattering"
-msgstr "Tethering"
+msgstr "Streuung"
 
 #: ../src/iop/denoiseprofile.c:613
 #, fuzzy
@@ -13151,6 +13113,8 @@ msgstr "Fleckenentfernung"
 #: ../src/iop/spots.c:178
 msgid "spot module is limited to 64 shapes. please add a new instance !"
 msgstr ""
+"Das Fleckenentfernungsmodul ist auf 64 Formen beschränkt. Bitte eine neue "
+"Modulinstanz hinzufügen."
 
 #: ../src/iop/spots.c:791
 msgid "number of strokes:"
@@ -13464,7 +13428,7 @@ msgstr "komprimiert Schatten/Spitzlichter: stark"
 
 #: ../src/iop/toneequal.c:510
 msgid "relight : fill-in"
-msgstr "aufhellen : ausfüllen"
+msgstr "aufhellen: ausfüllen"
 
 #: ../src/iop/toneequal.c:561
 msgid ""
@@ -13511,7 +13475,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:1978
 msgid "some parameters are out-of-bounds"
-msgstr "Einige Parameter sind außerhalb der Grenzen"
+msgstr "Einige Parameter sind außerhalb der zulässigen Grenzen."
 
 #. Build text object
 #: ../src/iop/toneequal.c:2252
@@ -13520,20 +13484,19 @@ msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
 #: ../src/iop/toneequal.c:2905
-#, fuzzy, c-format
-#| msgid "[%s on line] change compression"
+#, c-format
 msgid "[%s over image] change tone exposure"
-msgstr "[%s on line] Kompression ändern"
+msgstr "[%s über Bild] selektive Belichtungsänderung"
 
 #: ../src/iop/toneequal.c:2911
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
-msgstr ""
+msgstr "[%s über Bild] selektive Belichtungsänderung in großen Schritten"
 
 #: ../src/iop/toneequal.c:2917
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
-msgstr ""
+msgstr "[%s über Bild] selektive Belichtungsänderung in kleinen Schritten"
 
 #: ../src/iop/toneequal.c:2996
 msgid "simple"
@@ -13594,11 +13557,10 @@ msgid ""
 "negative values will avoid oscillations and behave more robustly\n"
 "but may produce brutal tone transitions and damage local contrast."
 msgstr ""
-"Positive Werte erzeugen dynamischere Farbübergänge,\n"
-"aber die Kurve kann in einigen Einstellungen schwingen.\n"
-"Negative Werte vermeiden Schwingungen und verhalten sich robuster,\n"
-"können aber zu harten Farbübergängen führen und den lokalen Kontrast "
-"beeinträchtigen."
+"Positive Werte erzeugen dynamischere Farbübergänge, aber die Kurve kann in "
+"einigen Einstellungen schwingen. Negative Werte vermeiden Schwingungen und "
+"verhalten sich robuster, können aber zu harten Farbübergängen führen und den "
+"lokalen Kontrast beeinträchtigen."
 
 #: ../src/iop/toneequal.c:3070
 msgid "masking"
@@ -13628,11 +13590,11 @@ msgid ""
 "contrast\n"
 "'averaged guided filter' is a geometric mean of both methods"
 msgstr ""
-"'Nein' beeinflusst den globalen und lokalen Kontrast (sicher, wenn nur der "
-"Kontrast hinzugefügt wird)\n"
-"'geführter Filter' beeinflusst nur den globalen Kontrast und versucht, den "
-"lokalen Kontrast zu erhalten\n"
-"'gemittelte geführte Filter' ist ein geometrisches Mittel beider Verfahren."
+"„Nein” beeinflusst den globalen und lokalen Kontrast (sicher, wenn nur der "
+"Kontrast hinzugefügt wird).\n"
+"„geführter Filter” beeinflusst nur den globalen Kontrast und versucht, den "
+"lokalen Kontrast zu erhalten.\n"
+"„gemittelter geführter Filter” ist ein geometrisches Mittel beider Verfahren."
 
 #: ../src/iop/toneequal.c:3085
 msgid ""
@@ -13640,7 +13602,7 @@ msgid ""
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
 "Anzahl der Durchgänge des geführten Filters hilft, die Kanten auf Kosten der "
-"Geschwindigkeit zu streuen"
+"Geschwindigkeit zu streuen."
 
 #: ../src/iop/toneequal.c:3091
 msgid ""
@@ -13661,10 +13623,10 @@ msgid ""
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
 "Genauigkeit des Ausblenden:\n"
-"Höhere Werte bewirken, dass die Maske den Kanten genauer folgt,\n"
-"kann aber den Effekt der Glättung aufheben.\n"
-"Niedrigere Werte ergeben weichere Gradienten und eine bessere Glättung,\n"
-"kann aber zu ungenauen Rändern und Halos führen."
+"Höhere Werte bewirken, dass die Maske den Kanten genauer folgt, kann aber "
+"den Effekt der Glättung aufheben. Niedrigere Werte ergeben weichere "
+"Gradienten und eine bessere Glättung, kann aber zu ungenauen Rändern und "
+"Halos führen."
 
 #: ../src/iop/toneequal.c:3104
 msgid "mask post-processing"
@@ -13686,10 +13648,9 @@ msgid ""
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
-"0 deaktiviert die Quantisierung.\n"
-"Höhere Werte verdeutlichen die Luminanz-Maske, um beim Erzeugen\n"
-"von Stückweisen glatte Bereichen bei Verwendung hoher Ausblend-Werten zu "
-"unterstützen."
+"0 deaktiviert die Quantisierung. Höhere Werte verdeutlichen die Luminanz-"
+"Maske, um beim Erzeugen von Stückweisen glatte Bereichen bei Verwendung "
+"hoher Ausblend-Werten zu unterstützen."
 
 #: ../src/iop/toneequal.c:3123
 msgid ""
@@ -13710,10 +13671,10 @@ msgid ""
 "this allows to spread the exposure histogram over more channels\n"
 "for a better control of the exposure correction."
 msgstr ""
-"Hiermit wird der Mittelwertbildung des geführten Filters\n"
-"entgegengewirkt und der Maskenkontrast um -4EV erweitert.\n"
-"Dies ermöglicht eine Streuung des Belichtungshistogramms auf\n"
-"mehrere Kanäle zur besseren Kontrolle der Belichtungskorrektur."
+"Hiermit wird der Mittelwertbildung des geführten Filters entgegengewirkt und "
+"der Maskenkontrast um -4EV erweitert. Dies ermöglicht eine Streuung des "
+"Belichtungshistogramms auf mehrere Kanäle zur besseren Kontrolle der "
+"Belichtungskorrektur."
 
 #: ../src/iop/toneequal.c:3150 ../src/iop/toneequal.c:3154
 msgid "display exposure mask"
@@ -14912,8 +14873,8 @@ msgid ""
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
-"Ziehen, um den Schwarzpunkt zu ändern, Doppelklick zum Zurücksetzen. Strg + "
-"Scrollen ändert die Höhe des Histogramms."
+"Ziehen, um den Schwarzpunkt zu ändern, Doppelklick zum Zurücksetzen. Strg"
+"+Scrollen ändert die Höhe des Histogramms."
 
 #. connect callbacks
 #: ../src/libs/histogram.c:606 ../src/libs/histogram.c:927
@@ -14922,8 +14883,8 @@ msgid ""
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
-"Ziehen, um die Belichtung zu ändern, Doppelklick zum Zurücksetzen. Strg + "
-"Scrollen ändert die Höhe des Histogramms."
+"Ziehen, um die Belichtung zu ändern, Doppelklick zum Zurücksetzen. Strg"
+"+Scrollen ändert die Höhe des Histogramms."
 
 #: ../src/libs/histogram.c:963
 #, fuzzy
