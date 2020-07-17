@@ -18,6 +18,7 @@
 #pragma once
 
 #include "common/fast_guided_filter.h"
+#include "develop/openmp_maths.h"
 
 #ifdef _OPENMP
 #pragma omp declare simd
@@ -35,14 +36,6 @@ static inline uint8_t float_to_uint8(const float i)
   return (uint8_t)(i * 255.0f);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float sqf(const float x)
-{
-  // square
-  return x * x;
-}
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(image:64) uniform(image)
