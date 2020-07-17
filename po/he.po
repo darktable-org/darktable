@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-17 00:46+0300\n"
-"PO-Revision-Date: 2020-07-17 00:59+0300\n"
-"Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
+"POT-Creation-Date: 2020-07-17 17:18+0300\n"
+"PO-Revision-Date: 2020-07-17 17:47+0300\n"
+"Last-Translator: Shlomi Alon-Braitbart <shlomi@librem.one>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
@@ -999,7 +999,7 @@ msgstr "מרחב צבע לאפליקציה"
 
 #: ../build/src/iop/introspection_lut3d.c:202
 msgid "Adobe RGB"
-msgstr "Adobe RGB"
+msgstr ""
 
 #: ../build/src/iop/introspection_lut3d.c:203
 #, fuzzy
@@ -1807,7 +1807,7 @@ msgstr "ל 1/4"
 
 #: ../build/src/preferences_gen.h:2869
 msgid "decrease to speed up preview rendering, may hinder accurate masking"
-msgstr ""
+msgstr "הפחת לזרוז הפקת תצוגה מקדימה, עלול לגרום לחוסר דיוק במיסוך"
 
 #: ../build/src/preferences_gen.h:2896
 #, fuzzy
@@ -1938,12 +1938,12 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3161
 msgid "auto-apply pixel workflow defaults"
-msgstr ""
+msgstr "יישם אוטומטית ברירות מחדל על מהלך עיבוד פיקסל"
 
 #: ../build/src/preferences_gen.h:3172
 msgctxt "preferences"
 msgid "scene-referred"
-msgstr ""
+msgstr "מוכוון סצנה"
 
 #: ../build/src/preferences_gen.h:3177 ../build/src/preferences_gen.h:3200
 #, fuzzy
@@ -1964,6 +1964,11 @@ msgid ""
 "curve and the legacy module pipe order.\n"
 "(needs a restart)"
 msgstr ""
+
+"תהליך 'מוכוון סצנה' מבוסס על מודולים לינארים ויישם אוטומטית filmic וחשיפה,\n"
+"תהליך 'מוכוון תצוגה' מבוסס על מודולי Lab ויישם אוטומטית עקום בסיס ואת סדר "
+"הפעולות בצנרת מודול לגסי.\n"
+"(דורש אתחול)"
 
 #: ../build/src/preferences_gen.h:3211
 msgid "auto-apply per camera basecurve presets"
@@ -2237,7 +2242,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3780
 msgctxt "preferences"
 msgid "on startup"
-msgstr ""
+msgstr "באתחול"
 
 #: ../build/src/preferences_gen.h:3785 ../build/src/preferences_gen.h:3823
 #, fuzzy
@@ -2254,17 +2259,17 @@ msgstr "הראה גם וגם"
 #: ../build/src/preferences_gen.h:3795
 msgctxt "preferences"
 msgid "on startup (don't ask)"
-msgstr ""
+msgstr "באתחול (אל תשאל)"
 
 #: ../build/src/preferences_gen.h:3800
 msgctxt "preferences"
 msgid "on close (don't ask)"
-msgstr ""
+msgstr "בסגירה (אל תשאל)"
 
 #: ../build/src/preferences_gen.h:3805
 msgctxt "preferences"
 msgid "on both (don't ask)"
-msgstr ""
+msgstr "בשניהם (אל תשאל)"
 
 #: ../build/src/preferences_gen.h:3826
 msgid ""
@@ -2274,13 +2279,13 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3834
 msgid "database fragmentation ratio threshold"
-msgstr ""
+msgstr "סף יחס פרגמנטציה של מסד נתונים"
 
 #: ../build/src/preferences_gen.h:3856
 msgid ""
 "fragmentation ratio above which to ask or carry out automatically database "
 "maintenance"
-msgstr ""
+msgstr "יחס פרגמנטציה שמעליו לשאול או לבצע אוטומטית פעולות תחזוקה למסד הנתונים"
 
 #: ../build/src/preferences_gen.h:3864
 msgid "xmp"
@@ -2421,7 +2426,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4136
 msgid "keyboard shortcuts with multiple instances"
-msgstr ""
+msgstr "קיצורי מקלדת עם פעולות מרובות"
 
 #: ../build/src/preferences_gen.h:4142
 msgid ""
@@ -2570,6 +2575,7 @@ msgstr "הכנס תגיות מופרדות בפסיק בעת ייבוא"
 #: ../build/src/preferences_gen.h:4531
 msgid "initial import rating"
 msgstr "דירוג ראשוני בייבוא"
+
 
 #: ../build/src/preferences_gen.h:4554
 msgid "initial star rating for all images when importing a filmroll"
@@ -2992,11 +2998,11 @@ msgstr "linear Rec2020 RGB"
 
 #: ../src/common/colorspaces.c:1440
 msgid "PQ P3 RGB"
-msgstr ""
+msgstr "PQ P3 RGB"
 
 #: ../src/common/colorspaces.c:1445
 msgid "HLG P3 RGB"
-msgstr ""
+msgstr "HLG P3 RGB"
 
 #: ../src/common/colorspaces.c:1450
 msgid "linear prophoto RGB"
@@ -3059,19 +3065,19 @@ msgstr "lin prophoto RGB"
 
 #: ../src/common/colorspaces.c:1644
 msgid "PQ Rec2020"
-msgstr ""
+msgstr "PQ Rec2020"
 
 #: ../src/common/colorspaces.c:1646
 msgid "HLG Rec2020"
-msgstr ""
+msgstr "HLG Rec2020"
 
 #: ../src/common/colorspaces.c:1648
 msgid "PQ P3"
-msgstr ""
+msgstr "PQ P3"
 
 #: ../src/common/colorspaces.c:1650
 msgid "HLG P3"
-msgstr ""
+msgstr "HLG P3"
 
 #: ../src/common/cups_print.c:423
 #, c-format
@@ -3459,7 +3465,7 @@ msgstr "legal"
 
 #: ../src/common/iop_order.c:60 ../src/libs/ioporder.c:189
 msgid "v3.0"
-msgstr ""
+msgstr "v3.0"
 
 #: ../src/common/iop_profile.c:82
 #, c-format
@@ -5546,12 +5552,12 @@ msgstr "%s: %s"
 #: ../src/gui/accelerators.c:659
 #, c-format
 msgid "%s %s / %s"
-msgstr ""
+msgstr "%s %s / %s"
 
 #: ../src/gui/accelerators.c:661
 #, c-format
 msgid "%s / %s"
-msgstr ""
+msgstr "%s / %s"
 
 #: ../src/gui/accelerators.c:663 ../src/libs/tagging.c:2197
 #, c-format
