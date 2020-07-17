@@ -218,6 +218,7 @@ static void _metadata_update_value_end(GtkLabel *label, const char *value)
   const gchar *str = validated ? value : NODATA_STRING;
   gtk_label_set_text(GTK_LABEL(label), str);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
 }
 
@@ -456,7 +457,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         { N_("avif"), 'a'},
       };
 
-      int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
+      const int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
       value[12] = loaders[loader].flag;
       char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders[loader].tooltip));
       tooltip_parts[next_tooltip_part++] = loader_tooltip;
@@ -797,36 +798,33 @@ void gui_init(dt_lib_module_t *self)
 
   d->scrolled_window = GTK_WIDGET(scrolled_window);
   self->widget = d->scrolled_window;
-  
+
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
-  
+
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->scrolled_window), DT_PIXEL_APPLY_DPI(300));
-  gint height = dt_conf_get_int("plugins/lighttable/metadata_view/windowheight");
+  const gint height = dt_conf_get_int("plugins/lighttable/metadata_view/windowheight");
   gtk_widget_set_size_request(d->scrolled_window, -1, DT_PIXEL_APPLY_DPI(height));
-
-//   GtkWidget *last = NULL;
 
   /* initialize the metadata name/value labels */
   for(int k = 0; k < md_size; k++)
   {
-    GtkWidget *evb = gtk_event_box_new();
-    gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
     d->name[k] = name;
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
+    gtk_widget_set_name(GTK_WIDGET(d->metadata[k]), "brightbg");
     gtk_label_set_selectable(d->metadata[k], TRUE);
-    gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(d->metadata[k]));
+    gtk_label_set_xalign (d->metadata[k], 0.0f);
     if(k == md_internal_filmroll)
     {
       // film roll jump to:
-      g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
+      g_signal_connect(G_OBJECT(GTK_WIDGET(d->metadata[k])), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
     }
     gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
-    gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_START);
+    gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_FILL);
     gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(name), 0, k, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(child_grid_window), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(GTK_WIDGET(d->metadata[k])), 1, k, 1, 1);
   }
 
   /* lets signup for mouse over image change signals */
@@ -948,16 +946,15 @@ static int lua_register_info(lua_State *L)
     lua_pop(L,1);
   }
   {
-    GtkWidget *evb = gtk_event_box_new();
-    gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(key));
     GtkLabel *value = GTK_LABEL(gtk_label_new("-"));
+    gtk_widget_set_name(GTK_WIDGET(value), "brightbg");
     gtk_label_set_selectable(value, TRUE);
-    gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(value));
     gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
-    gtk_widget_set_halign(GTK_WIDGET(value), GTK_ALIGN_START);
+    gtk_widget_set_halign(GTK_WIDGET(value), GTK_ALIGN_FILL);
+    gtk_label_set_xalign (value, 0.0f);
     gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(name), NULL, GTK_POS_BOTTOM, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(value), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
     gtk_widget_show_all(self->widget);
     {
       lua_getfield(L,-1,"widgets");
