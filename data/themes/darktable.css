@@ -1325,6 +1325,13 @@ progressbar progress
   border-radius: 4px;
 }
 
+/* Be sure to have minimum width allowed for infos on images infos module if reducing panel width */
+#brightbg
+{
+  min-width: 80px;
+  padding-left: 2px;
+  padding-bottom: 1px;
+}
 
 /* Checkbutton check state */
 #lib-plugin-ui checkbutton check,
