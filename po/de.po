@@ -1,19 +1,19 @@
-# Pierre Metzner <openhab.doc@web.de>, 2018, 2019.
+# Pierre Metzner <openhab.doc@web.de>, 2018, 2019, 2020.
 # Christian Kanzian <christian.kanzian@gmx.at>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-17 23:34+0200\n"
-"Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
+"PO-Revision-Date: 2020-07-18 08:14+0200\n"
+"Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Lokalize 20.04.1\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -503,9 +503,8 @@ msgstr "Farbglättung"
 
 #: ../build/src/iop/introspection_demosaic.c:85
 #: ../build/src/iop/introspection_demosaic.c:146
-#, fuzzy
 msgid "demosaicing method"
-msgstr "Methode zum Entrastern der Rohdaten"
+msgstr "Methode zum Entrastern"
 
 #: ../build/src/iop/introspection_demosaic.c:164
 msgid "disabled"
@@ -876,9 +875,8 @@ msgstr "Drehung"
 
 #: ../build/src/iop/introspection_graduatednd.c:81
 #: ../build/src/iop/introspection_graduatednd.c:148
-#, fuzzy
 msgid "offset"
-msgstr "X-Versatz"
+msgstr "Versatz"
 
 #: ../build/src/iop/introspection_grain.c:58
 #: ../build/src/iop/introspection_grain.c:117 ../src/iop/bilat.c:441
@@ -1524,7 +1522,7 @@ msgstr "nur ein einzelnes Leuchttisch-Modul ausklappen"
 #: ../build/src/preferences_gen.h:2268
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
-"Diese Option schaltet das Verhalten von Umschalt-Klicks in der Leuchttisch-"
+"Diese Option schaltet das Verhalten von Umschalt+Klick in der Leuchttisch-"
 "Ansicht um."
 
 #: ../build/src/preferences_gen.h:2276
@@ -1718,7 +1716,7 @@ msgstr "nur ein einzelnes Dunkelkammer-Modul ausklappen"
 #: ../build/src/preferences_gen.h:2671
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
-"Diese Option schaltet das Verhalten von Umschalt-Klicks in der Dunkelkammer-"
+"Diese Option schaltet das Verhalten von Umschalt+Klick in der Dunkelkammer-"
 "Ansicht um."
 
 #: ../build/src/preferences_gen.h:2679
@@ -2761,18 +2759,16 @@ msgid "unknown option for --hq"
 msgstr "Unbekannte Option für --hq"
 
 #: ../src/cli/main.c:157
-#, fuzzy
 msgid "unknown option for --export_masks"
-msgstr "Unbekannte Option für --upscale"
+msgstr "Unbekannte Option für --export_masks"
 
 #: ../src/cli/main.c:173
 msgid "unknown option for --upscale"
 msgstr "Unbekannte Option für --upscale"
 
 #: ../src/cli/main.c:198
-#, fuzzy
 msgid "unknown option for --apply-custom-presets"
-msgstr "Unbekannte Option für --upscale"
+msgstr "Unbekannte Option für --apply-custom-presets"
 
 #: ../src/cli/main.c:253
 #, c-format
@@ -2971,9 +2967,8 @@ msgid "basic"
 msgstr "Basis"
 
 #: ../src/common/collection.c:1493 ../src/libs/collect.c:1545
-#, fuzzy
 msgid "auto applied"
-msgstr "automatisch skalieren"
+msgstr "automatisch anwenden"
 
 #: ../src/common/collection.c:1495 ../src/libs/collect.c:1545
 msgid "altered"
@@ -2993,9 +2988,8 @@ msgid "group leaders"
 msgstr "Gruppenführer"
 
 #: ../src/common/collection.c:1788 ../src/libs/collect.c:1733
-#, fuzzy
 msgid "not defined"
-msgstr "ungeändert"
+msgstr "nicht definiert"
 
 #: ../src/common/collection.c:2035
 #, c-format
@@ -3333,7 +3327,6 @@ msgid "delete database"
 msgstr "Datenbank löschen"
 
 #: ../src/common/database.c:2965
-#, fuzzy
 msgid "click later to be asked on next startup"
 msgstr "zum Starten den Login-Knopf drücken"
 
@@ -3363,9 +3356,8 @@ msgid "darktable - schema maintenance"
 msgstr "darktable - Datenbank Wartung"
 
 #: ../src/common/database.c:2988
-#, fuzzy
 msgid "later"
-msgstr "bilateral"
+msgstr "später"
 
 #: ../src/common/fast_guided_filter.h:488
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -3692,25 +3684,22 @@ msgid "no image selected!"
 msgstr "Kein Bild ausgewählt!"
 
 #: ../src/common/styles.c:625
-#, fuzzy, c-format
+#, c-format
 msgid "style %s successfully applied!"
-msgstr "Stil „%s” erfolgreich gespeichert"
+msgstr "Stil „%s” erfolgreich angewendet!"
 
 #: ../src/common/styles.c:641
-#, fuzzy
 msgid "no images nor styles selected!"
-msgstr "Kein Bild ausgewählt!"
+msgstr "Kein Bild oder Stil ausgewählt!"
 
 #: ../src/common/styles.c:646
-#, fuzzy
 msgid "no styles selected!"
-msgstr "Kein Bild ausgewählt!"
+msgstr "Kein Stil ausgewählt!"
 
 #: ../src/common/styles.c:675
-#, fuzzy
 msgid "style successfully applied!"
 msgid_plural "styles successfully applied!"
-msgstr[0] "Stil „%s” erfolgreich gespeichert"
+msgstr[0] "Stil erfolgreich angewendet!"
 msgstr[1] "Stil „%s” erfolgreich gespeichert"
 
 #: ../src/common/styles.c:746
@@ -3751,9 +3740,9 @@ msgid "working..."
 msgstr "arbeite ..."
 
 #: ../src/control/control.c:720
-#, fuzzy, c-format
+#, c-format
 msgid "scroll to change <b>%s</b> of %s %s module"
-msgstr "scrollen, um <b>%s</b> des Moduls %s zu ändern"
+msgstr "scrollen um <b>%s</b> des %s %s Moduls zu ändern"
 
 #: ../src/control/crawler.c:353 ../src/libs/select.c:39
 msgid "select"
@@ -3784,9 +3773,8 @@ msgid "select all"
 msgstr "alles auswählen"
 
 #: ../src/control/crawler.c:398
-#, fuzzy
 msgid "update database from selected xmp files"
-msgstr "ausgewählte XMP-Dateien überschreiben"
+msgstr "Datenbank anhand ausgewählten XMP-Dateien aktualisieren"
 
 #: ../src/control/crawler.c:399
 msgid "overwrite selected xmp files"
@@ -4016,11 +4004,10 @@ msgid "remove images"
 msgstr "Bilder entfernen"
 
 #: ../src/control/jobs/control_jobs.c:1436
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to remove %d image from the collection?"
 msgid_plural "do you really want to remove %d images from the collection?"
-msgstr[0] ""
-"Soll wirklich %d ausgewähltes Bild aus der Sammlung entfernt werden?"
+msgstr[0] "Soll %d Bild aus der Sammlung entfernt werden?"
 msgstr[1] ""
 "Sollen wirklich %d ausgewählte Bilder aus der Sammlung entfernt werden?"
 
@@ -4035,21 +4022,18 @@ msgid "delete images"
 msgstr "Bilder löschen"
 
 #: ../src/control/jobs/control_jobs.c:1479
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to send %d image to trash?"
 msgid_plural "do you really want to send %d images to trash?"
-msgstr[0] ""
-"Soll wirklich %d ausgewähltes Bild in den Papierkorb verschoben werden?"
+msgstr[0] "Soll %d Bild in den Papierkorb verschoben werden?"
 msgstr[1] ""
 "Soll wirklich %d ausgewähltes Bild in den Papierkorb verschoben werden?"
 
 #: ../src/control/jobs/control_jobs.c:1481
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
-msgstr[0] ""
-"Soll wirklich %d ausgewähltes Bild physisch von der Festplatte gelöscht "
-"werden?"
+msgstr[0] "Soll %d Bild physisch von der Festplatte gelöscht werden?"
 msgstr[1] ""
 "Soll wirklich %d ausgewähltes Bild physisch von der Festplatte gelöscht "
 "werden?"
@@ -4065,17 +4049,13 @@ msgid "delete images?"
 msgstr "Bilder löschen?"
 
 #: ../src/control/jobs/control_jobs.c:1520
-#, fuzzy
 msgid "do you really want to send selected image to trash?"
-msgstr ""
-"Soll wirklich %d ausgewähltes Bild in den Papierkorb verschoben werden?"
+msgstr "sollen die ausgewählten Bild in den Papierkorb verschoben werden?"
 
 #: ../src/control/jobs/control_jobs.c:1521
-#, fuzzy
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
-"Soll wirklich %d ausgewähltes Bild physisch von der Festplatte gelöscht "
-"werden?"
+"sollen die ausgewählten Bilder physisch von der Festplatte gelöscht werden?"
 
 #: ../src/control/jobs/control_jobs.c:1544
 msgid "move images"
@@ -4087,7 +4067,7 @@ msgid "_select as destination"
 msgstr "als Ziel _wählen"
 
 #: ../src/control/jobs/control_jobs.c:1577
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
 "(all duplicates will be moved along)"
@@ -4095,7 +4075,7 @@ msgid_plural ""
 "do you really want to physically move %d images to %s?\n"
 "(all duplicates will be moved along)"
 msgstr[0] ""
-"Soll das %d ausgewählte Bild wirklich physisch nach %s verschoben werden?\n"
+"sollen %d Bilder physisch nach %s verschoben werden?\n"
 "(alle nicht ausgewählten Duplikate werden auch verschoben)"
 msgstr[1] ""
 "Sollen die %d ausgewählten Bilder wirklich physisch nach %s verschoben "
@@ -4113,11 +4093,10 @@ msgid "copy images"
 msgstr "Bilder kopieren"
 
 #: ../src/control/jobs/control_jobs.c:1640
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
-msgstr[0] ""
-"Soll das %d ausgewählte Bild wirklich physisch nach %s kopiert werden?"
+msgstr[0] "Soll das %d Bild physisch nach %s kopiert werden?"
 msgstr[1] ""
 "Sollen die %d ausgewählten Bilder wirklich physisch nach %s kopiert werden?"
 
@@ -6645,14 +6624,13 @@ msgid "name of the preset"
 msgstr "Name der Voreinstellung"
 
 #: ../src/gui/presets.c:625 ../src/libs/lib.c:283
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to update the preset `%s'?"
-msgstr "Soll die Voreinstellung „%s” wirklich gelöscht werden?"
+msgstr "Soll die Voreinstellung „%s” aktualisiert werden?"
 
 #: ../src/gui/presets.c:629 ../src/libs/lib.c:287
-#, fuzzy
 msgid "update preset?"
-msgstr "aktualisiere Voreinstellung"
+msgstr "Voreinstellung aktualisieren?"
 
 #: ../src/gui/presets.c:920 ../src/gui/presets.c:933
 msgid "(default)"
@@ -7505,29 +7483,26 @@ msgstr ""
 "anpassen"
 
 #: ../src/iop/ashift.c:4878
-#, fuzzy
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
 "automatisch die vertikale perspektivische Verzerrung korrigieren\n"
-"Strg-Klick um nur die Drehung anzupassen\n"
-"Umschalt-Klick um nur die Objektivverschiebung anzupassen"
+"Strg+Klick um nur die Drehung anzupassen\n"
+"Umschalt+Klick um nur die Objektivverschiebung anzupassen"
 
 #: ../src/iop/ashift.c:4881
-#, fuzzy
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
 "automatisch die horizontale perspektivische Verzerrung korrigieren\n"
-"Strg-Klick, um nur die Drehung anzupassen\n"
-"Umschalt-Klick, um nur die Objektivverschiebung anzupassen"
+"Strg+Klick, um nur die Drehung anzupassen\n"
+"Umschalt+Klick, um nur die Objektivverschiebung anzupassen"
 
 #: ../src/iop/ashift.c:4884
-#, fuzzy
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -7535,15 +7510,14 @@ msgid ""
 "shift+click to only fit lens shift\n"
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
-"automatisch die vertikale und horizontale perspektivische Verzerrung "
-"korrigieren; passt Drehung, Verschiebung in beide Richtungen und Scherung "
-"an\n"
-"Strg-Klick, um nur die Drehung anzupassen\n"
-"Umschalt-Klick, um nur die Objektivverschiebung anzupassen\n"
-"Strg-Umschalt-Klick, um nur Drehung und Objektivverschiebung anzupassen"
+"automatisch die vertikale und horizontale perspektivische Verzerrung"
+" korrigieren; "
+"passt Drehung, Verschiebung in beide Richtungen und Scherung an\n"
+"Strg+Klick, um nur die Drehung anzupassen\n"
+"Umschalt+Klick, um nur die Objektivverschiebung anzupassen\n"
+"Strg+Umschalt+Klick, um nur Drehung und Objektivverschiebung anzupassen"
 
 #: ../src/iop/ashift.c:4890
-#, fuzzy
 msgid ""
 "analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -7551,9 +7525,9 @@ msgid ""
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
 "analysiere Linienstrukturen im Bild\n"
-"Strg-Klick für eine zusätzliche Kanten-Verbesserung\n"
-"Umschalt-Klick für eine zusätzliche Detail-Verbesserung\n"
-"Strg-Umschalt-Klick für eine Kombination beider Methoden"
+"Strg+Klick für eine zusätzliche Kanten-Verbesserung\n"
+"Umschalt+Klick für eine zusätzliche Detail-Verbesserung\n"
+"Strg+Umschalt+Klick für eine Kombination beider Methoden"
 
 #: ../src/iop/ashift.c:4894
 msgid "remove line structure information"
@@ -11617,7 +11591,7 @@ msgid ""
 "right-click to remove a warp."
 msgstr ""
 "Werkzeug auswählen, um Verformung hinzuzufügen\n"
-"Rechts-Klick entfernt eine Verformung"
+"Rechtsklick entfernt eine Verformung"
 
 #: ../src/iop/liquify.c:3547
 msgid "warps|nodes count:"
@@ -11640,13 +11614,12 @@ msgid "node tool: edit, add and delete nodes"
 msgstr "Knotenwerkzeug: Knoten bearbeiten, hinzufügen und löschen"
 
 #: ../src/iop/liquify.c:3578
-#, fuzzy
 msgid ""
 "ctrl+click: add node - right click: remove path\n"
 "ctrl+alt+click: toggle line/curve"
 msgstr ""
-"Strg-Klick: Knoten hinzufügen – Rechtsklick: Pfad löschen\n"
-"Strg-Alt-Klick: Gerade/Kurve umschalten"
+"Strg+Klick: Knoten hinzufügen – Rechtsklick: Pfad löschen\n"
+"Strg+Alt+Klick: Gerade/Kurve umschalten"
 
 #: ../src/iop/liquify.c:3580
 #, fuzzy
@@ -11675,13 +11648,12 @@ msgid "drag to adjust hardness (feather)"
 msgstr "ziehen, um die Härte anzupassen (Rand)"
 
 #: ../src/iop/liquify.c:3588
-#, fuzzy
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click: linear, grow, and shrink"
 msgstr ""
 "ziehen, um die Stärke der Verformung anzupassen\n"
-"Strg-Klick: linear, vergrößern, verkleinern"
+"Strg+Klick: linear, vergrößern, verkleinern"
 
 #: ../src/iop/liquify.c:3606
 msgctxt "accel"
@@ -13948,6 +13920,7 @@ msgid "zone system"
 msgstr "Zonensystem"
 
 #: ../src/iop/zonesystem.c:543
+#, fuzzy
 msgid ""
 "lightness zones\n"
 "use mouse scrollwheel to change the number of zones\n"
