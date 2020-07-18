@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-17 17:18+0300\n"
-"PO-Revision-Date: 2020-07-18 20:51+0300\n"
+"PO-Revision-Date: 2020-07-18 21:58+0300\n"
 "Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
@@ -273,9 +273,8 @@ msgstr "הסחה לקו המסגרת"
 
 #: ../build/src/iop/introspection_clipping.c:142
 #: ../build/src/iop/introspection_clipping.c:303
-#, fuzzy
 msgid "left"
-msgstr "שמאלי עליון"
+msgstr "שמאלי"
 
 #: ../build/src/iop/introspection_clipping.c:148
 #: ../build/src/iop/introspection_clipping.c:307
@@ -284,15 +283,13 @@ msgstr "עליון"
 
 #: ../build/src/iop/introspection_clipping.c:154
 #: ../build/src/iop/introspection_clipping.c:311
-#, fuzzy
 msgid "right"
-msgstr "זכויות"
+msgstr "ימין"
 
 #: ../build/src/iop/introspection_clipping.c:160
 #: ../build/src/iop/introspection_clipping.c:315
-#, fuzzy
 msgid "bottom"
-msgstr "תחתית"
+msgstr "תחתון"
 
 #: ../build/src/iop/introspection_colorbalance.c:114
 #: ../build/src/iop/introspection_colorbalance.c:203
@@ -673,7 +670,6 @@ msgstr "רמת יעד"
 
 #: ../build/src/iop/introspection_exposure.c:168
 #: ../build/src/iop/introspection_levels.c:160
-#, fuzzy
 msgid "manual"
 msgstr "ידני"
 
@@ -701,9 +697,8 @@ msgstr "חשיפה יחסית ללבן"
 
 #: ../build/src/iop/introspection_filmicrgb.c:210
 #: ../build/src/iop/introspection_filmicrgb.c:395
-#, fuzzy
 msgid "transition"
-msgstr "רוויה"
+msgstr "מעבר"
 
 #: ../build/src/iop/introspection_filmicrgb.c:216
 #: ../build/src/iop/introspection_filmicrgb.c:399
@@ -10719,7 +10714,7 @@ msgid ""
 msgstr ""
 "אקוויולנטי לאיכות נייר באנלוגי.\n"
 "הגבר להבהרת פרטים בהירים ופחות דחוסים.\n"
-"הפחת להשתקת פרטים בהירים"
+"הפחת להשתקת פרטים בהירים."
 
 #: ../src/iop/filmicrgb.c:2438
 msgid ""
@@ -10767,7 +10762,7 @@ msgid ""
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
 "גרסה v3 היא שיטת דיסטורציה של darktable 3.0, זהה לאיזון צבע.\n"
-"גרסה v4 היא דיסטורציה חדשה יותר, מבוססת טוהר ספקטרלי של אור. "
+"גרסה v4 היא דיסטורציה חדשה יותר, מבוססת טוהר ספקטרלי של אור."
 
 #: ../src/iop/filmicrgb.c:2496
 msgid ""
@@ -10785,6 +10780,9 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
+"בחר את העקמומיות הרצויה עבור filmic spline בפרטים הבהירים.\n"
+"קשה משתמש בעקמומיות חזקה המתבטאת ביותר דחיסה טונלית.\n"
+"רך משתמש בעקמומיות חלשה המתבטאת בפחות דחיסה טונלית."
 
 #: ../src/iop/filmicrgb.c:2507
 msgid ""
@@ -10792,6 +10790,9 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
+"בחר את העקמומיות הרצויה עבור filmic spline בצללים.\n"
+"קשה משתמש בעקמומיות חזקה המתבטאת ביותר דחיסה טונלית.\n"
+"רך משתמש בעקמומיות חלשה המתבטאת בפחות דחיסה טונלית."
 
 #: ../src/iop/filmicrgb.c:2512
 #, c-format
@@ -10801,6 +10802,10 @@ msgid ""
 "fix the global exposure in the exposure module instead.\n"
 "disable to use standard 18.45 %% middle grey."
 msgstr ""
+"הפעל להכנסת גווני אפור בינוני מותאמים אישית.\n"
+"לא מומלץ באופן כללי.\n"
+"תקן את החשיפה הגלובלית במודול החשיפה במקום.\n"
+"נטרל על מנת להשתמש בגווני אפור בינוני סטנדרטיים 18.45 %%."
 
 #: ../src/iop/filmicrgb.c:2518
 msgid ""
@@ -10809,6 +10814,9 @@ msgid ""
 "this keeps the middle grey on the identity line and improves fast tuning.\n"
 "disable if you want a manual control."
 msgstr ""
+"הפעל על מנת לקבוע אוטומטית את קושי המראה כתלות בנקודות הלבן ובשחור בסצנה.\n"
+"זה מאפשר לשמור על האפור הבינוני על קו היחידה ומשפר כוונון מהיר.\n"
+"נטרל ברצונך שליטה ידנית."
 
 #: ../src/iop/filmicrgb.c:2523
 msgid ""
@@ -11070,7 +11078,7 @@ msgstr "הסחה של טונים בינוניים"
 #: ../src/iop/grain.c:589
 #, c-format
 msgid "%.0f ISO"
-msgstr ""
+msgstr "%.0f ISO"
 
 #: ../src/iop/grain.c:590
 msgid "the grain size (~ISO of the film)"
