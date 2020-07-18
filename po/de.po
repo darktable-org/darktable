@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-18 08:14+0200\n"
+"PO-Revision-Date: 2020-07-19 18:30+0200\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Lokalize 20.04.1\n"
+"X-Generator: Poedit 2.3\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -963,7 +963,7 @@ msgstr "Blauverschiebung"
 #: ../build/src/iop/introspection_shadhi.c:160
 #: ../build/src/iop/introspection_shadhi.c:247
 msgid "soften with"
-msgstr "Weichzeichnen mit"
+msgstr "weichzeichnen mit"
 
 #: ../build/src/iop/introspection_lowpass.c:189
 #: ../build/src/iop/introspection_shadhi.c:267 ../src/iop/filmicrgb.c:2538
@@ -1229,7 +1229,7 @@ msgstr "Y-Versatz"
 #: ../build/src/iop/introspection_watermark.c:124
 #: ../build/src/iop/introspection_watermark.c:239
 msgid "scale on"
-msgstr "Skalierung nach"
+msgstr "Skalierung entsprechend"
 
 #. close the file before adding exif data
 #: ../build/src/iop/introspection_watermark.c:285
@@ -7510,9 +7510,9 @@ msgid ""
 "shift+click to only fit lens shift\n"
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
-"automatisch die vertikale und horizontale perspektivische Verzerrung"
-" korrigieren; "
-"passt Drehung, Verschiebung in beide Richtungen und Scherung an\n"
+"automatisch die vertikale und horizontale perspektivische Verzerrung "
+"korrigieren; passt Drehung, Verschiebung in beide Richtungen und Scherung "
+"an\n"
 "Strg+Klick, um nur die Drehung anzupassen\n"
 "Umschalt+Klick, um nur die Objektivverschiebung anzupassen\n"
 "Strg+Umschalt+Klick, um nur Drehung und Objektivverschiebung anzupassen"
@@ -9604,17 +9604,16 @@ msgstr ""
 "Kann Maske nicht anzeigen, solange die Maske zum Überblenden aktiviert ist"
 
 #: ../src/iop/colorzones.c:2382 ../src/iop/rgbcurve.c:1426
-#, fuzzy
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
 "ctrl+drag to create a positive curve\n"
 "shift+drag to create a negative curve"
 msgstr ""
-"Kurve basierend auf einem Bereich des Bildes erstellen\n"
-"Klick, um eine flache Kurve zu erstellen\n"
-"Strg+Klick, um eine positive Kurve zu erstellen\n"
-"Umschalttaste+Klick, um eine negative Kurve zu erstellen"
+"Kurve basierend auf einem Bildausschnitt erstellen. Mit der Maus rechteckige "
+"Auswahl definieren, um eine flache Kurve zu erstellen. Auswahl bei "
+"gedrückter Strg-Taste erstellt eine positive Kurve. Auswahl bei gedrückter "
+"Umschalttaste-Taste erstellt eine negative Kurve."
 
 #. edit by area
 #: ../src/iop/colorzones.c:2404
@@ -9832,7 +9831,6 @@ msgid "scattering"
 msgstr "Streuung"
 
 #: ../src/iop/denoiseprofile.c:613
-#, fuzzy
 msgctxt "accel"
 msgid "central pixel weight"
 msgstr "zentrales Pixelgewicht (Details)"
@@ -9972,14 +9970,14 @@ msgid "profile used for variance stabilization"
 msgstr "Benutztes Profil zur Stabilisierung der Streuung"
 
 #: ../src/iop/denoiseprofile.c:4377
-#, fuzzy
 msgid ""
 "method used in the denoising core.\n"
 "non-local means works best for `lightness' blending,\n"
 "wavelets work best for `color' blending"
 msgstr ""
-"Methode, die intern verwandt wird. Nicht-lokales Mittel funktioniert am "
-"besten für Überblendung ‚Helligkeit‘, Wavelets sind für ‚Farbe‘ am besten"
+"Verwendete Methode zur Rauschreduktion. „Nicht-lokales Mittel” funktioniert "
+"am besten in Kombination mit dem Überblendmodus „Helligkeit”. Für die "
+"Methode „Wavelets” ist der Überblendmodus „Farbe” am besten geeignet."
 
 #: ../src/iop/denoiseprofile.c:4380
 msgid ""
@@ -10001,7 +9999,7 @@ msgid ""
 "if details are oversmoothed, reduce this value or increase the details "
 "slider."
 msgstr ""
-"Radius der übereinstimmenden Patches.\n"
+"Radius der übereinstimmenden Blöcke.\n"
 "Erhöhen für mehr Schärfe an starken Kanten und besseres Entrauschen von "
 "glatten Flächen.\n"
 "Wenn Details überglättet sind, reduzieren Sie diesen Wert oder erhöhen Sie "
@@ -10013,18 +10011,18 @@ msgid ""
 "increase for better denoising performance, but watch the long runtimes! "
 "large radii can be very slow. you have been warned"
 msgstr ""
-"Nur für den Notfall: Radius der Nachbarschaft, in der nach Patches gesucht "
-"werden soll. Erhöht die Leistung einer besseren Rauschreduzierung, aber "
-"verusacht langen Laufzeiten! Große Radien können sehr langsam sein."
+"Nur für den Notfall: Radius der Nachbarschaft, in der nach Blöcken gesucht "
+"werden soll. Eine Vergrößerung der Blockgröße führt zu einer besseren "
+"Rauschentfernung aber verusacht auch längere Laufzeiten. Große Radien können "
+"zu einer sehr langsamen Bearbeitung führen."
 
 #: ../src/iop/denoiseprofile.c:4390
-#, fuzzy
 msgid ""
 "scattering of the neighbourhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
 "does not affect execution time."
 msgstr ""
-"Bereich in der Nachbarschaft in welchem nach Blöcken gesucht wird. Für eine "
+"Streuung der Nachbarschaft, in welcher nach Blöcken gesucht wird. Für eine "
 "bessere Reduktion von grobem Rauschen erhöhen. Hat keine Auswirkungen auf "
 "die Ausführungsdauer."
 
@@ -10057,15 +10055,13 @@ msgstr ""
 "Dies kann bei unterbelichteten Bildern passieren."
 
 #: ../src/iop/denoiseprofile.c:4402
-#, fuzzy
 msgid ""
 "finetune shadows denoising.\n"
 "decrease to denoise more aggressively\n"
 "dark areas of the image."
 msgstr ""
-"Finetune Schattenentrauschen.\n"
-"Verringern des Wertes, um dunkle Bereiche\n"
-"des Bildes aggressivere zu entrauschen.\n"
+"Feineinstellung Entrauschen der Schatten. Verringerung des Wertes bewirkt "
+"ein aggressiveres Entrauschen der dunklen Bildbereiche."
 
 #: ../src/iop/denoiseprofile.c:4405
 msgid ""
@@ -10175,13 +10171,13 @@ msgstr "Ziel-Wert"
 msgid "magic lantern defaults"
 msgstr "Magic Lantern-Standard"
 
+# Translation rather lengthly.
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #: ../src/iop/exposure.c:282 ../src/iop/exposure.c:291
 #: ../src/iop/exposure.c:293
-#, fuzzy
 msgid "scene-referred default"
-msgstr "Standard entfernen"
+msgstr "Vorgabewerte für auf Aufnahme bezogene Bearbeitung"
 
 #: ../src/iop/exposure.c:311 ../src/iop/rawoverexposed.c:172
 #: ../src/iop/rawoverexposed.c:288
@@ -10954,13 +10950,11 @@ msgid "global tonemap"
 msgstr "Globales Tonemapping"
 
 #: ../src/iop/globaltonemap.c:123
-#, fuzzy
 msgctxt "accel"
 msgid "bias"
 msgstr "Bias"
 
 #: ../src/iop/globaltonemap.c:124
-#, fuzzy
 msgctxt "accel"
 msgid "target"
 msgstr "Ziel"
@@ -10968,7 +10962,6 @@ msgstr "Ziel"
 # Ugh ...
 # Die Operatoren sollten auch übersetzt werden!
 #: ../src/iop/globaltonemap.c:126
-#, fuzzy
 msgctxt "accel"
 msgid "operator"
 msgstr "Operator"
@@ -11165,7 +11158,6 @@ msgid "highlight reconstruction"
 msgstr "Spitzlicht-Rekonstruktion"
 
 #: ../src/iop/highlights.c:101
-#, fuzzy
 msgctxt "accel"
 msgid "clipping threshold"
 msgstr "Abschneide-Schwellwert"
@@ -11296,13 +11288,11 @@ msgid "select corrections"
 msgstr "Korrekturen auswählen"
 
 #: ../src/iop/lens.cc:183
-#, fuzzy
 msgctxt "accel"
 msgid "corrections"
 msgstr "Korrekturen"
 
 #: ../src/iop/lens.cc:184
-#, fuzzy
 msgctxt "accel"
 msgid "geometry"
 msgstr "Geometrie"
@@ -11480,13 +11470,11 @@ msgid "levels"
 msgstr "Werte"
 
 #: ../src/iop/levels.c:131
-#, fuzzy
 msgctxt "accel"
 msgid "gray"
 msgstr "Grau"
 
 #: ../src/iop/levels.c:132
-#, fuzzy
 msgctxt "accel"
 msgid "white"
 msgstr "Weiß"
@@ -11774,13 +11762,11 @@ msgid "lut 3D"
 msgstr "3D LUT"
 
 #: ../src/iop/lut3d.c:152
-#, fuzzy
 msgctxt "accel"
 msgid "application color space"
 msgstr "Anwendungsfarbraum"
 
 #: ../src/iop/lut3d.c:153
-#, fuzzy
 msgctxt "accel"
 msgid "interpolation"
 msgstr "Interpolationsverfahren"
@@ -12316,19 +12302,16 @@ msgid "dynamic range"
 msgstr "Dynamikbereich"
 
 #: ../src/iop/profile_gamma.c:118
-#, fuzzy
 msgctxt "accel"
 msgid "middle grey luma"
 msgstr "mittel graue Luminanz"
 
 #: ../src/iop/profile_gamma.c:119
-#, fuzzy
 msgctxt "accel"
 msgid "black relative exposure"
 msgstr "schwarz relative Belichtung"
 
 #: ../src/iop/profile_gamma.c:120
-#, fuzzy
 msgctxt "accel"
 msgid "safety factor"
 msgstr "Sicherheitsfaktor"
@@ -12754,10 +12737,9 @@ msgid "continuous add brush"
 msgstr "endlos Pinsel hinzufügen"
 
 #: ../src/iop/retouch.c:3074 ../src/iop/spots.c:842
-#, fuzzy
 msgctxt "accel"
 msgid "show or hide shapes"
-msgstr "Flecken anzeigen/verstecken"
+msgstr "Flecken anzeigen/verbergen"
 
 #: ../src/iop/retouch.c:4215 ../src/iop/retouch.c:5072
 #, c-format
@@ -12902,10 +12884,9 @@ msgstr "Farbkorrektur der Spitzlichter"
 
 # nicht schön
 #: ../src/iop/shadhi.c:284
-#, fuzzy
 msgctxt "accel"
 msgid "soften with"
-msgstr "Weichzeichnen mit"
+msgstr "weichzeichnen mit"
 
 #: ../src/iop/shadhi.c:736 ../src/iop/splittoning.c:555
 msgid "compress"
@@ -13007,28 +12988,24 @@ msgid "pick secondary color"
 msgstr "Zweite Farbe wählen"
 
 #: ../src/iop/splittoning.c:105
-#, fuzzy
 msgctxt "accel"
 msgid "shadows-hue"
-msgstr "Schatten"
+msgstr "Farbton der Schatten"
 
 #: ../src/iop/splittoning.c:106
-#, fuzzy
 msgctxt "accel"
 msgid "shadows-saturation"
-msgstr "HSL-Sättigung"
+msgstr "Sättigung der Schatten"
 
 #: ../src/iop/splittoning.c:107
-#, fuzzy
 msgctxt "accel"
 msgid "highlights-hue"
-msgstr "Spitzlichter"
+msgstr "Farbton der Spitzlichter"
 
 #: ../src/iop/splittoning.c:108
-#, fuzzy
 msgctxt "accel"
 msgid "highlights-saturation"
-msgstr "Spitzlicht-Rekonstruktion"
+msgstr "Sättigung der Spitzlichter"
 
 #: ../src/iop/splittoning.c:109
 msgctxt "accel"
@@ -13138,7 +13115,6 @@ msgid "temperature"
 msgstr "Farbtemperatur"
 
 #: ../src/iop/temperature.c:213
-#, fuzzy
 msgctxt "accel"
 msgid "presets"
 msgstr "Voreinstellungen"
@@ -13235,13 +13211,11 @@ msgid "tone curve"
 msgstr "Farbkurve"
 
 #: ../src/iop/tonecurve.c:214
-#, fuzzy
 msgctxt "accel"
 msgid "base of the logarithm"
 msgstr "Basis des Logarithmus"
 
 #: ../src/iop/tonecurve.c:218
-#, fuzzy
 msgctxt "accel"
 msgid "color space"
 msgstr "Farbraum"
@@ -13340,7 +13314,6 @@ msgid "smoothing diameter"
 msgstr "Glättungsdurchmesser"
 
 #: ../src/iop/toneequal.c:325
-#, fuzzy
 msgctxt "accel"
 msgid "edges refinement or feathering"
 msgstr "Kanten verbessern/ausblenden"
@@ -13362,13 +13335,11 @@ msgstr "Maskenkontrastkompensation"
 
 # wtf?
 #: ../src/iop/toneequal.c:329
-#, fuzzy
 msgctxt "accel"
 msgid "luminance estimator"
 msgstr "Luminanz-Schätzer"
 
 #: ../src/iop/toneequal.c:330
-#, fuzzy
 msgctxt "accel"
 msgid "preserve details"
 msgstr "Details erhalten"
@@ -13818,16 +13789,14 @@ msgstr "Y-Versatz"
 
 # nicht so wirklich schön
 #: ../src/iop/watermark.c:315
-#, fuzzy
 msgctxt "accel"
 msgid "marker"
-msgstr "Zeichen"
+msgstr "Wasserzeichen"
 
 #: ../src/iop/watermark.c:316
-#, fuzzy
 msgctxt "accel"
 msgid "scale on"
-msgstr "Skalierung nach"
+msgstr "Skalierung entsprechend"
 
 #: ../src/iop/watermark.c:1394
 msgid "content"
@@ -13836,7 +13805,7 @@ msgstr "Inhalt"
 # nicht so wirklich schön
 #: ../src/iop/watermark.c:1410
 msgid "marker"
-msgstr "Zeichen"
+msgstr "Wasserzeichen"
 
 #: ../src/iop/watermark.c:1413
 #, c-format
@@ -13920,17 +13889,15 @@ msgid "zone system"
 msgstr "Zonensystem"
 
 #: ../src/iop/zonesystem.c:543
-#, fuzzy
 msgid ""
 "lightness zones\n"
 "use mouse scrollwheel to change the number of zones\n"
 "left-click on a border to create a marker\n"
 "right-click on a marker to delete it"
 msgstr ""
-"Helligkeitsbereiche\n"
-"Anzahl der Zonen kann mit dem Mausrad geändert werden\n"
-"Links-Klick auf eine Grenze setzt eine Markierung\n"
-"Rechts-Klick auf eine Markierung löscht diese"
+"Helligkeitszonen. Die Anzahl der Zonen kann mit dem Mausrad geändert werden. "
+"Links-Klick auf eine Grenze setzt eine Markierung. Rechts-Klick auf eine "
+"Markierung löscht diese."
 
 #: ../src/libs/backgroundjobs.c:52
 msgid "background jobs"
