@@ -1720,8 +1720,8 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
       // simplify the fraction with binary GCD - https://en.wikipedia.org/wiki/Greatest_common_divisor
       // search g and d such that g is odd and gcd(nn, dd) = g × 2^d
       int e = 0;
-      int nn = n;
-      int dd = d;
+      int nn = abs(n);
+      int dd = abs(d);
       while((nn % 2 == 0) && (dd % 2 == 0))
       {
         nn /= 2;
@@ -1798,7 +1798,8 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   {
     // we got a custom ratio
     char str[128];
-    snprintf(str, sizeof(str), "%d:%d %2.2f", p->ratio_d, p->ratio_n, (float)p->ratio_d / (float)p->ratio_n);
+    snprintf(str, sizeof(str), "%d:%d %2.2f",
+             abs(p->ratio_d), abs(p->ratio_n), (float)abs(p->ratio_d) / (float)abs(p->ratio_n));
     dt_bauhaus_combobox_set_text(g->aspect_presets, str);
   }
   else if(dt_bauhaus_combobox_get(g->aspect_presets) != act)
