@@ -1994,7 +1994,8 @@ void gui_update(struct dt_iop_module_t *self)
   if(act == -1)
   {
     char str[128];
-    snprintf(str, sizeof(str), "%d:%d %2.2f", p->ratio_d, p->ratio_n, (float)p->ratio_d / (float)p->ratio_n);
+    snprintf(str, sizeof(str), "%d:%d %2.2f",
+             abs(p->ratio_d), abs(p->ratio_n), (float)abs(p->ratio_d) / (float)abs(p->ratio_n));
     dt_bauhaus_combobox_set_text(g->aspect_presets, str);
   }
   if(dt_bauhaus_combobox_get(g->aspect_presets) == act)
