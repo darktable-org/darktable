@@ -1621,7 +1621,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  int which = dt_bauhaus_combobox_get(combo);
+  const int which = dt_bauhaus_combobox_get(combo);
   int d = abs(p->ratio_d), n = p->ratio_n;
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which < 0)
@@ -1858,7 +1858,7 @@ static void keystone_type_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  int which = dt_bauhaus_combobox_get(combo);
+  const int which = dt_bauhaus_combobox_get(combo);
   if((which == 5) || (which == 4 && p->k_h == 0 && p->k_v == 0))
   {
     // if the keystone is applied,autocrop must be disabled !
