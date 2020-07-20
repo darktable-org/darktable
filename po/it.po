@@ -1,19 +1,20 @@
 # Germano Massullo <germano.massullo@gmail.com>, 2018.
-# mmardegan <11093569+mmardegan@users.noreply.github.com>, 2019.
+# mmardegan <11093569+mmardegan@users.noreply.github.com>, 2019, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-15 13:58+0200\n"
-"Last-Translator: Maurizio Paglia <maurizio.paglia@dana.com>\n"
-"Language-Team: Italian <kde-i18n-it@kde.org>\n"
+"PO-Revision-Date: 2020-07-16 23:38+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
+"Language-Team: Italian <>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.3.1\n"
+"X-Generator: Lokalize 20.04.1\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -5250,7 +5251,6 @@ msgid "current"
 msgstr "Corrente"
 
 #: ../src/dtgtk/thumbnail.c:91 ../src/dtgtk/thumbnail.c:97
-#, fuzzy
 msgid "leader"
 msgstr "Leader"
 
@@ -11988,7 +11988,6 @@ msgid "D min red component"
 msgstr "Componente rosso D min"
 
 #: ../src/iop/negadoctor.c:1050
-#, fuzzy
 #| msgid "film roll"
 msgid "film stock"
 msgstr "Rullino"
