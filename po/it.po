@@ -5,15 +5,16 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-20 09:47+0200\n"
-"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
-"Language-Team: Italian <kde-i18n-it@kde.org>\n"
+"PO-Revision-Date: 2020-07-21 00:09+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
+"Language-Team: Italian <>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Lokalize 20.04.1\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -10775,6 +10776,9 @@ msgid ""
 "increase to make highlights brighter and less compressed.\n"
 "decrease to mute highlights."
 msgstr ""
+"Equivalente alla qualità della carta in analogico.\n"
+"Aumenta per rendere più luminose le alteluci e meno compresse.\n"
+"Riduci per ammorbidire le alteluci."
 
 #: ../src/iop/filmicrgb.c:2438
 msgid ""
@@ -12157,6 +12161,10 @@ msgid ""
 "the highlights illuminant white balance will help\n"
 "recovering the global white balance in difficult cases."
 msgstr ""
+"Correggi la dominante di colore nelle ombre affinché i neri siano\n"
+"realmente acromatici. Impostare questo valore prima\n"
+"delle illuminanti delle alteluci di bilanciamento del bianco aiuterà\n"
+"a recuperare il bilanciamento del bianco globale nei casi difficili."
 
 #: ../src/iop/negadoctor.c:1174
 msgid "shadows green offset"
@@ -12172,22 +12180,19 @@ msgid "highlights white balance"
 msgstr "Bilanciamento del bianco delle alteluci"
 
 #: ../src/iop/negadoctor.c:1201
-#, fuzzy
 #| msgid "select color of film material"
 msgid "select color of illuminant from a swatch"
-msgstr "Seleziona il colore del supporto della pellicola"
+msgstr "Seleziona il colore dell'illuminante da un campione"
 
 #: ../src/iop/negadoctor.c:1206
-#, fuzzy
 #| msgid "pick fill color from image"
 msgid "pick illuminant color from image"
-msgstr "Preleva il colore di riempimento dall'immagine"
+msgstr "Preleva il colore dell'illuminante dall'immagine"
 
 #: ../src/iop/negadoctor.c:1211
-#, fuzzy
 #| msgid "luminance Y"
 msgid "illuminant red gain"
-msgstr "Luminanza Y"
+msgstr "Illuminante di guadagno rosso"
 
 #: ../src/iop/negadoctor.c:1212 ../src/iop/negadoctor.c:1221
 #: ../src/iop/negadoctor.c:1230
@@ -12197,14 +12202,18 @@ msgid ""
 "the shadows color cast will help\n"
 "recovering the global white balance in difficult cases."
 msgstr ""
+"Correggi il colore dell'illuminante affinché i bianchi siano\n"
+"realmente acromatici. Impostare questo valore dopo\n"
+"le dominanti di colore nelle ombre aiuterà\n"
+"a recuperare il bilanciamento del bianco globale nei casi difficili."
 
 #: ../src/iop/negadoctor.c:1220
 msgid "illuminant green gain"
-msgstr ""
+msgstr "Illuminante di guadagno verde"
 
 #: ../src/iop/negadoctor.c:1229
 msgid "illuminant blue gain"
-msgstr ""
+msgstr "Illuminante di guadagno blu"
 
 #. print corrections
 #: ../src/iop/negadoctor.c:1238
@@ -12240,7 +12249,7 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:1259
 msgid "paper gloss (specular highlights)"
-msgstr ""
+msgstr "Carta lucida (alteluci speculari)"
 
 #: ../src/iop/negadoctor.c:1261
 msgid ""
@@ -14760,10 +14769,9 @@ msgid "histogram"
 msgstr "Istogramma"
 
 #: ../src/libs/histogram.c:537 ../src/libs/histogram.c:571
-#, fuzzy
 #| msgid "set histogram mode to waveform"
 msgid "set mode to waveform"
-msgstr "Imposta la modalità di istogramma a forma d'onda"
+msgstr "Imposta la modalità alla forma d'onda"
 
 #: ../src/libs/histogram.c:540
 msgid "set mode to histogram"
@@ -14778,11 +14786,10 @@ msgid "set mode to logarithmic"
 msgstr "Imposta la modalità a Logaritmica"
 
 #: ../src/libs/histogram.c:568
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "reset module parameters"
 msgid "set mode to RGB parade"
-msgstr "Ripristina i parametri del modulo"
+msgstr "Imposta la modalità alla parata RGB"
 
 #: ../src/libs/histogram.c:584
 msgid "click to hide red channel"
@@ -16904,7 +16911,7 @@ msgstr "Preferenze"
 #. we write the label with the size categorie
 #: ../src/libs/tools/global_toolbox.c:221
 msgid "thumbnails overlays for size"
-msgstr ""
+msgstr "Anteprime delle sovraimpressioni dal formato"
 
 #: ../src/libs/tools/global_toolbox.c:223
 msgid "px"
@@ -16924,23 +16931,20 @@ msgid "timeout only available for block overlay"
 msgstr ""
 
 #: ../src/libs/tools/global_toolbox.c:283
-#, fuzzy
 #| msgid "hide image overlays"
 msgid "culling overlays"
-msgstr "Nascondi sovrapposizioni immagine"
+msgstr "Selezione sovraimpressioni"
 
 #: ../src/libs/tools/global_toolbox.c:285
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "show overlays"
 msgid "preview overlays"
-msgstr "Mostra sovrapposizioni"
+msgstr "Mostra sovraimpressioni"
 
 #: ../src/libs/tools/global_toolbox.c:341
-#, fuzzy
 #| msgid "not available"
 msgid "overlays not available here..."
-msgstr "Non disponibile"
+msgstr "Sovraimpressioni non disponibili qui..."
 
 #: ../src/libs/tools/global_toolbox.c:384
 #: ../src/libs/tools/global_toolbox.c:522
@@ -16960,10 +16964,9 @@ msgstr ""
 
 #: ../src/libs/tools/global_toolbox.c:412
 #: ../src/libs/tools/global_toolbox.c:456
-#, fuzzy
 #| msgid "overlay mode"
 msgid "overlay mode for size"
-msgstr "Modalità sovrapposizione"
+msgstr "Modalità sovraimpressione dal formato"
 
 #: ../src/libs/tools/global_toolbox.c:415
 #: ../src/libs/tools/global_toolbox.c:459
