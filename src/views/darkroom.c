@@ -2500,7 +2500,7 @@ static void _on_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer 
 
       GdkPixbuf *pixbuf = gdk_pixbuf_get_from_window(window, allocation_w.x, allocation_w.y,
                                                      allocation_w.width, allocation_w.height);
-      gtk_drag_set_icon_pixbuf(context, pixbuf, allocation_w.width / 2, 0);
+      gtk_drag_set_icon_pixbuf(context, pixbuf, allocation_w.width / 2, allocation_w.height / 2);
     }
   }
 }
@@ -2544,8 +2544,29 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
       can_moved = dt_ioppr_check_can_move_before_iop(darktable.develop->iop, module_src, module_dest);
   }
 
+  GList *modules = g_list_last(darktable.develop->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->expander)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
+      gtk_style_context_remove_class(context, "iop_drop_after");
+      gtk_style_context_remove_class(context, "iop_drop_before");
+    }
+
+    modules = g_list_previous(modules);
+  }
+
   if(can_moved)
   {
+    GtkStyleContext *context = gtk_widget_get_style_context(module_dest->expander);
+    if(module_src->iop_order < module_dest->iop_order)
+      gtk_style_context_add_class(context, "iop_drop_after");
+    else
+      gtk_style_context_add_class(context, "iop_drop_before");
+
     gdk_drag_status(dc, GDK_ACTION_COPY, time);
     GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
     if(w) gtk_drag_unhighlight(w);
@@ -2600,6 +2621,21 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
       fprintf(stderr, "[_on_drag_data_received] can't find destination module\n");
   }
 
+  GList *modules = g_list_last(darktable.develop->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->expander)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
+      gtk_style_context_remove_class(context, "iop_drop_after");
+      gtk_style_context_remove_class(context, "iop_drop_before");
+    }
+
+    modules = g_list_previous(modules);
+  }
+
   gtk_drag_finish(dc, TRUE, FALSE, time);
 
   if(moved)
@@ -2640,6 +2676,21 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
 
 static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
 {
+  GList *modules = g_list_last(darktable.develop->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->expander)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
+      gtk_style_context_remove_class(context, "iop_drop_after");
+      gtk_style_context_remove_class(context, "iop_drop_before");
+    }
+
+    modules = g_list_previous(modules);
+  }
+
   GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
   if(w)
   {

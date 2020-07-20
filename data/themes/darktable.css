@@ -1779,6 +1779,17 @@ scale contents trough slider:hover
   background-color: @scroll_bar_active;
 }
 
+.iop_drop_before
+{
+   border: 2px solid @plugin_bg_color;
+   border-bottom: 2.8em solid @plugin_bg_color;
+}
+
+.iop_drop_after
+{
+   border: 2px solid @plugin_bg_color;
+   border-top: 2.8em solid @plugin_bg_color;
+}
 
 /*** --- Thumbtable css part ---
 
