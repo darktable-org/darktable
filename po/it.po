@@ -5,16 +5,15 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-16 23:38+0200\n"
-"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
-"\n"
-"Language-Team: Italian <>\n"
+"PO-Revision-Date: 2020-07-20 09:47+0200\n"
+"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
+"Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Lokalize 20.04.1\n"
+"X-Generator: Poedit 2.3\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -763,10 +762,8 @@ msgstr "Preserva crominanza"
 
 #: ../build/src/iop/introspection_filmicrgb.c:300
 #: ../build/src/iop/introspection_filmicrgb.c:455
-#, fuzzy
-#| msgid "color scheme"
 msgid "color science"
-msgstr "Combinazione colori"
+msgstr "Gestione colore"
 
 #: ../build/src/iop/introspection_filmicrgb.c:306
 #: ../build/src/iop/introspection_filmicrgb.c:459
@@ -1877,7 +1874,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3056
 msgid "processing"
-msgstr "elaborazione"
+msgstr "Elaborazione"
 
 #: ../build/src/preferences_gen.h:3059
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -10217,10 +10214,8 @@ msgstr "Default Magic Lantern"
 #. we need an initial exposure boost. This might be too much in some cases but…
 #: ../src/iop/exposure.c:282 ../src/iop/exposure.c:291
 #: ../src/iop/exposure.c:293
-#, fuzzy
-#| msgid "remove default"
 msgid "scene-referred default"
-msgstr "supprimer les valeurs par défaut"
+msgstr "Valori predefiniti riferiti alla scena"
 
 #: ../src/iop/exposure.c:311 ../src/iop/rawoverexposed.c:172
 #: ../src/iop/rawoverexposed.c:288
@@ -10691,6 +10686,12 @@ msgid ""
 "decrease to include more areas,\n"
 "increase to exclude more areas."
 msgstr ""
+"Imposta la soglia di esposizione fino alla\n"
+"quale ricostruire le alte luci bruciate.\n"
+"I valori sono relativi al punto di bianco della scena.\n"
+"0 EV significa che la soglia è uguale al punto di bianco.\n"
+"Diminuire questo valore per includere un'area maggiore\n"
+"aumentarlo per escludere delle aree."
 
 #: ../src/iop/filmicrgb.c:2365
 msgid ""
@@ -10721,6 +10722,12 @@ msgid ""
 "increase if at least one RGB channel is not clipped.\n"
 "decrease if all RGB channels are clipped over large areas."
 msgstr ""
+"Decidere la strategia di ricostruzione da usare,\n"
+"se tentare di creare un passaggio colore morbido\n"
+"oppure cercare di recuperare i dettagli.\n"
+"0% è un uguale mix di entrambi.\n"
+"Aumentare il valore se avete almeno un canale RGB non tagliato.\n"
+"Diminuirlo se tutti i canali RGB sono tagliati in aree ben visibili."
 
 #: ../src/iop/filmicrgb.c:2396
 #, no-c-format
@@ -10732,6 +10739,12 @@ msgid ""
 "increase if you want more details.\n"
 "decrease if you want more blur."
 msgstr ""
+"Decidere la strategia di ricostruzione da usare,\n"
+"se sfocare le alte luci come fa la pellicola,\n"
+"o tentare di recuperare i dettagli.\n"
+"0% è un uguale mix dei due.\n"
+"Aumentare il valore per guadagnare dettaglio.\n"
+"Diminuirlo per sfocare."
 
 #: ../src/iop/filmicrgb.c:2408
 #, no-c-format
@@ -10743,6 +10756,13 @@ msgid ""
 "increase if you want more color.\n"
 "decrease if you see magenta or out-of-gamut highlights."
 msgstr ""
+"Decidere la strategia di ricostruzione da usare,\n"
+"se recuperare le alte luci monocromatiche\n"
+"oppure le alte luci colorate.\n"
+"0% è un uguale mix dei due.\n"
+"Aumentare il valore se si vuole più colore.\n"
+"Diminuirlo se vedete comparire dei magenta o delle\n"
+"alte luci fuori gamma."
 
 #. Page LOOK
 #: ../src/iop/filmicrgb.c:2416
@@ -10823,6 +10843,9 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
+"Selezionare la curvatura desiderata per le alteluci.\n"
+"Dura utilizza una curva secca per comprimere maggiormente i toni.\n"
+"Soffice usa una curva morbida e la compressione dei toni è inferiore."
 
 #: ../src/iop/filmicrgb.c:2507
 msgid ""
@@ -10830,6 +10853,9 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
+"Selezionare la curvatura desiderata per le ombre.\n"
+"Dura utilizza una curva secca per comprimere maggiormente i toni.\n"
+"Soffice usa una curva morbida e la compressione dei toni è inferiore."
 
 #: ../src/iop/filmicrgb.c:2512
 #, c-format
@@ -10839,6 +10865,11 @@ msgid ""
 "fix the global exposure in the exposure module instead.\n"
 "disable to use standard 18.45 %% middle grey."
 msgstr ""
+"Permette l'inserimento di un valore del grigio medio personalizzato.\n"
+"In generale questo non è raccomandato.\n"
+"E' consigliabile regolare l'esposizione generale con il modulo "
+"'esposizione'.\n"
+"Disabilitare per usare il valore di grigio medio standard 18,45 %%"
 
 #: ../src/iop/filmicrgb.c:2518
 msgid ""
@@ -10847,6 +10878,11 @@ msgid ""
 "this keeps the middle grey on the identity line and improves fast tuning.\n"
 "disable if you want a manual control."
 msgstr ""
+"Abilitare per auto-regolare il contrasto in base al punto di nero e di "
+"bianco della scena.\n"
+"In questo modo il grigio medio rimane sulla curva e la regolazione è più "
+"rapida.\n"
+"Disabilitare se volete regolarlo manualmente."
 
 #: ../src/iop/filmicrgb.c:2523
 msgid ""
@@ -10855,6 +10891,11 @@ msgid ""
 "this will be slower but will yield more neutral highlights.\n"
 "it also helps with difficult cases of magenta highlights."
 msgstr ""
+"Effettua più passaggi per la ricostruzione cromatica.\n"
+"Più iterazioni significano maggior propagazione del colore dai pixel "
+"adiacenti.\n"
+"L'operazione sarà più lenta ma le alte luci risulteranno più naturali.\n"
+"Utile anche per limitare la comparsa di magenta nelle alte luci."
 
 #: ../src/iop/filmicrgb.c:2530
 msgid ""
@@ -10863,6 +10904,11 @@ msgid ""
 "when the picture is noisy overall,\n"
 "so they blend with the rest of the picture."
 msgstr ""
+"Aggiunge rumore statistico nella ricostruzione delle alte luci.\n"
+"Questo evita che le alte luci appaiano troppo piatte\n"
+"mentre il resto dell'immagine contiene del rumore.\n"
+"In questo modo le varie \n"
+"aree sono ben bilanciate."
 
 #: ../src/iop/filmicrgb.c:2537
 msgid "uniform"
@@ -11988,9 +12034,8 @@ msgid "D min red component"
 msgstr "Componente rosso D min"
 
 #: ../src/iop/negadoctor.c:1050
-#| msgid "film roll"
 msgid "film stock"
-msgstr "Rullino"
+msgstr "Pellicole"
 
 #: ../src/iop/negadoctor.c:1051
 msgid "black and white"
@@ -12034,6 +12079,10 @@ msgid ""
 "the chemical fog produced while developing the film,\n"
 "and the scanner white balance."
 msgstr ""
+"Regola il colore e la tonalità della base trasparente della pellicola.\n"
+"Questo valore varia in base al materiale della pellicola stessa,\n"
+"della nebbia chimica che si produce durante lo sviluppo,\n"
+"e del bilanciamento del bianco dello scanner."
 
 #: ../src/iop/negadoctor.c:1102
 msgid "D min green component"
@@ -12058,6 +12107,12 @@ msgid ""
 "this value depends on the film specifications, the developing process,\n"
 "the dynamic range of the scene and the scanner exposure settings."
 msgstr ""
+"Densità massima della pellicola, corrispondente al bianco dopo "
+"l'inversione.\n"
+"Questo valore dipende dalle specifiche della pellicola, dal processo di "
+"sviluppo,\n"
+"dalla gamma dinamica della scena e dalle impostazioni relative "
+"all'esposizione dello scanner."
 
 #: ../src/iop/negadoctor.c:1134
 msgid "scanner exposure settings"
@@ -12165,12 +12220,12 @@ msgid ""
 "correct the density of black after the inversion,\n"
 "to adjust the global contrast while avoiding clipping shadows."
 msgstr ""
+"Corregge la densità dei neri dopo l'inversione,\n"
+"per sistemare il contrasto globale evitando la chiusura delle ombre."
 
 #: ../src/iop/negadoctor.c:1250
-#, fuzzy
-#| msgid "target gamma"
 msgid "paper grade (gamma)"
-msgstr "Obiettivo gamma"
+msgstr "Gradazione carta (gamma)"
 
 #: ../src/iop/negadoctor.c:1252
 msgid ""
@@ -12178,6 +12233,10 @@ msgid ""
 "equivalent to applying a gamma. it compensates the film D max\n"
 "and recovers the contrast. use a high grade for high D max."
 msgstr ""
+"Seleziona la gradazione della carta virtuale, che è esattamente\n"
+"come applicare una gamma. In questo modo si compensa il D max\n"
+"della pellicola e si recupera contrasto. Utilizzare una\n"
+"gradazione alta per un D max alto."
 
 #: ../src/iop/negadoctor.c:1259
 msgid "paper gloss (specular highlights)"
@@ -12203,6 +12262,8 @@ msgid ""
 "correct the printing exposure after inversion to adjust\n"
 "the global contrast and avoid clipping highlights."
 msgstr ""
+"Corregge l'esposizione della stampa dopo l'inversione per sistemare\n"
+"il contrasto globale ed evitare di tagliare le alte luci."
 
 #: ../src/iop/nlmeans.c:82
 msgid "denoise (non-local means)"
@@ -13350,20 +13411,14 @@ msgstr ""
 "Devo attendere che sia terminata l'anteprima per terminare l'elaborazione"
 
 #: ../src/iop/toneequal.c:1829 ../src/iop/toneequal.c:2291
-#, fuzzy
-#| msgid ""
-#| "click to add line\n"
-#| "scroll to change size\n"
-#| "shift+scroll to change strength - ctrl+scroll to change direction"
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll to change in large steps\n"
 "ctrl+scroll to change in small steps"
 msgstr ""
-"Click per aggiungere una linea\n"
-"Rotella mouse per modificare la dimensione\n"
-"Maiusc+(rotella mouse) per modificare la durezza\n"
-"Ctrl+(rotella mouse) per modificare la direzione"
+"Rotella del mouse sopra l'immagine per modificare il tono dell'esposizione\n"
+"Maiusc+(rotella mouse) per modificare rapidamente\n"
+"Ctrl+(rotella mouse) per modificare finemente."
 
 #: ../src/iop/toneequal.c:1978
 msgid "some parameters are out-of-bounds"
@@ -14711,23 +14766,16 @@ msgid "set mode to waveform"
 msgstr "Imposta la modalità di istogramma a forma d'onda"
 
 #: ../src/libs/histogram.c:540
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "hide histogram"
 msgid "set mode to histogram"
-msgstr "Nascondi istogramma"
+msgstr "Imposta la modalità ad Istogramma"
 
 #: ../src/libs/histogram.c:555
-#, fuzzy
-#| msgid "set histogram mode to linear"
 msgid "set mode to linear"
-msgstr "Imposta la modalità di istogramma lineare"
+msgstr "Imposta la modalità a Lineare"
 
 #: ../src/libs/histogram.c:558
-#, fuzzy
-#| msgid "set histogram mode to logarithmic"
 msgid "set mode to logarithmic"
-msgstr "Imposta la modalità di istogramma logaritmico"
+msgstr "Imposta la modalità a Logaritmica"
 
 #: ../src/libs/histogram.c:568
 #, fuzzy
@@ -14761,31 +14809,25 @@ msgid "click to show blue channel"
 msgstr "Click per visualizzare il canale blu"
 
 #: ../src/libs/histogram.c:601
-#, fuzzy
-#| msgid ""
-#| "drag to change black point,\n"
-#| "doubleclick resets"
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 "Trascina per cambiare il punto di nero,\n"
-"doppio click per ripristinare"
+"doppio click per ripristinare\n"
+"Ctrl+(rotella mouse) per modificare l'altezza dello schermo"
 
 #. connect callbacks
 #: ../src/libs/histogram.c:606 ../src/libs/histogram.c:927
-#, fuzzy
-#| msgid ""
-#| "drag to change exposure,\n"
-#| "doubleclick resets"
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 "Trascina per cambiare l'esposizione,\n"
-"doppio click per ripristinare"
+"doppio click per ripristinare\n"
+"Ctrl+(rotella mouse) per modificare l'altezza dello schermo"
 
 #: ../src/libs/histogram.c:963
 msgctxt "accel"
@@ -14800,38 +14842,32 @@ msgstr "Nascondi istogramma"
 #: ../src/libs/histogram.c:965
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
-msgstr ""
+msgstr "Istogramma/sfoglia modalità istogramma"
 
 #: ../src/libs/histogram.c:966
-#, fuzzy
-#| msgid "set histogram mode to linear"
 msgctxt "accel"
 msgid "cycle histogram modes"
-msgstr "Imposta la modalità di istogramma lineare"
+msgstr "Sfoglia modalità istogramma"
 
 #: ../src/libs/histogram.c:967
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
-msgstr ""
+msgstr "Istogramma/cambia modalità istogramma"
 
 #: ../src/libs/histogram.c:968
-#, fuzzy
-#| msgid "set histogram mode to linear"
 msgctxt "accel"
 msgid "switch histogram mode"
-msgstr "Imposta la modalità di istogramma lineare"
+msgstr "Cambia modalità istogramma"
 
 #: ../src/libs/histogram.c:969
 msgctxt "accel"
 msgid "histogram/switch histogram type"
-msgstr ""
+msgstr "Istogramma/Cambia tipo di istogramma"
 
 #: ../src/libs/histogram.c:970
-#, fuzzy
-#| msgid "histogram profile"
 msgctxt "accel"
 msgid "switch histogram type"
-msgstr "Profilo istogramma"
+msgstr "Cambia tipo di istogramma"
 
 #: ../src/libs/history.c:95
 msgctxt "accel"
@@ -16302,12 +16338,9 @@ msgid "take snapshot"
 msgstr "Scatta un'istantanea"
 
 #: ../src/libs/snapshots.c:106
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "take snapshot"
 msgctxt "accel"
 msgid "toggle last snapshot"
-msgstr "Scatta un'istantanea"
+msgstr "Torna all'ultima istantanea"
 
 #: ../src/libs/snapshots.c:131
 msgctxt "snapshot sign"
@@ -16398,16 +16431,12 @@ msgid "edit..."
 msgstr "Modifica..."
 
 #: ../src/libs/styles.c:611
-#, fuzzy
-#| msgid "edit the selected style in list above"
 msgid "edit the selected styles in list above"
-msgstr "Modifica lo stile selezionato nella lista superiore"
+msgstr "Modifica lo stile selezionato nella lista qui sopra"
 
 #: ../src/libs/styles.c:618
-#, fuzzy
-#| msgid "deletes the selected style in list above"
 msgid "removes the selected styles in list above"
-msgstr "Elimina lo stile selezionato nella lista superiore"
+msgstr "Elimina lo stile selezionato nella lista qui sopra"
 
 #. import button
 #: ../src/libs/styles.c:622 ../src/libs/tagging.c:2815
@@ -16416,22 +16445,17 @@ msgid "import..."
 msgstr "Importa..."
 
 #: ../src/libs/styles.c:624
-#, fuzzy
-#| msgid "import style from a style file"
 msgid "import styles from a style files"
-msgstr "Importa uno stile da un file stile"
+msgstr "Importa uno stile da un file"
 
 #: ../src/libs/styles.c:631
-#, fuzzy
-#| msgid "export the selected style into a style file"
 msgid "export the selected styles into a style files"
-msgstr "Esporta lo stile selezionato in un file stile"
+msgstr "Esporta lo stile selezionato in un file"
 
 #: ../src/libs/styles.c:639
-#, fuzzy
-#| msgid "edit the selected style in list above"
 msgid "apply the selected styles in list above to selected images"
-msgstr "Modifica lo stile selezionato nella lista superiore"
+msgstr ""
+"Modifica lo stile selezionato nella lista qui sopra alle immagini selezionate"
 
 #: ../src/libs/tagging.c:95
 msgid "tagging"
@@ -16931,6 +16955,8 @@ msgstr "Nascondi immagini raggruppate"
 #: ../src/libs/tools/global_toolbox.c:393
 msgid "click to change the type of overlays shown on thumbnails"
 msgstr ""
+"Fai click per modificare il tipo di sovrimpressione da visualizzare sulle "
+"anteprime"
 
 #: ../src/libs/tools/global_toolbox.c:412
 #: ../src/libs/tools/global_toolbox.c:456
@@ -16941,39 +16967,30 @@ msgstr "Modalità sovrapposizione"
 
 #: ../src/libs/tools/global_toolbox.c:415
 #: ../src/libs/tools/global_toolbox.c:459
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "show overlays"
 msgid "no overlays"
-msgstr "Mostra sovrapposizioni"
+msgstr "Nessuna sovrimpressione"
 
 #: ../src/libs/tools/global_toolbox.c:419
-#, fuzzy
-#| msgid "overlay mode"
 msgid "overlays on mouse hover"
-msgstr "Modalità sovrapposizione"
+msgstr "Sovrimpressioni al passaggio del mouse"
 
 #: ../src/libs/tools/global_toolbox.c:423
 msgid "extended overlays on mouse hover"
-msgstr ""
+msgstr "Sovrimpressioni estese al passaggio del mouse"
 
 #: ../src/libs/tools/global_toolbox.c:426
 #: ../src/libs/tools/global_toolbox.c:463
-#, fuzzy
-#| msgid "hide image overlays"
 msgid "permanent overlays"
-msgstr "Nascondi sovrapposizioni immagine"
+msgstr "Sovrimpressioni permanenti"
 
 #: ../src/libs/tools/global_toolbox.c:430
 #: ../src/libs/tools/global_toolbox.c:467
-#, fuzzy
-#| msgid "enable extended thumb overlay"
 msgid "permanent extended overlays"
-msgstr "Abilita visione estesa dati aggiuntivi"
+msgstr "Sovrimpressioni estese permanenti"
 
 #: ../src/libs/tools/global_toolbox.c:434
 msgid "permanent overlays extended on mouse hover"
-msgstr ""
+msgstr "Sovrimpressioni estese permanenti al passaggio del mouse"
 
 #: ../src/libs/tools/global_toolbox.c:439
 #: ../src/libs/tools/global_toolbox.c:472
@@ -17028,37 +17045,41 @@ msgstr "Preferenze"
 #: ../src/libs/tools/global_toolbox.c:703
 msgctxt "accel"
 msgid "thumbnail overlays/no overlays"
-msgstr ""
+msgstr "Sovrimpressione anteprime/nessuna sovrimpressione"
 
 #: ../src/libs/tools/global_toolbox.c:704
 msgctxt "accel"
 msgid "thumbnail overlays/overlays on mouse hover"
-msgstr ""
+msgstr "Sovrimpressione anteprime/sovrimpressione al passaggio del mouse"
 
 #: ../src/libs/tools/global_toolbox.c:705
 msgctxt "accel"
 msgid "thumbnail overlays/extended overlays on mouse hover"
 msgstr ""
+"Sovrimpressione anteprime/sovrimpressione estesa al passaggio del mouse"
 
 #: ../src/libs/tools/global_toolbox.c:706
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays"
-msgstr ""
+msgstr "Sovrimpressione anteprime/sovrimpressione permanente"
 
 #: ../src/libs/tools/global_toolbox.c:707
 msgctxt "accel"
 msgid "thumbnail overlays/permanent extended overlays"
-msgstr ""
+msgstr "Sovrimpressione anteprime/sovrimpressione estesa permanente"
 
 #: ../src/libs/tools/global_toolbox.c:708
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays extended on mouse hover"
 msgstr ""
+"Sovrimpressione anteprime/sovrimpressione estesa permanente al passaggio del "
+"mouse"
 
 #: ../src/libs/tools/global_toolbox.c:709
 msgctxt "accel"
 msgid "thumbnail overlays/overlays block on mouse hover"
 msgstr ""
+"Sovrimpressione anteprime/Blocca sovrimpressione al passaggio del mouse"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
@@ -17358,6 +17379,8 @@ msgid ""
 "set the color of lines that overlay the image (drawn masks, crop and rotate "
 "guides etc.)"
 msgstr ""
+"Imposta il colore delle linee di disegno (maschere disegnate, guide per "
+"ritaglio e rotazione, ecc.)"
 
 #: ../src/views/darkroom.c:2404
 msgid "overlay color"
@@ -17438,11 +17461,9 @@ msgstr "Sovraesposizione"
 
 #. cycle overlay colors
 #: ../src/views/darkroom.c:3650
-#, fuzzy
-#| msgid "select border color"
 msgctxt "accel"
 msgid "cycle overlay colors"
-msgstr "Scegli colore per il bordo"
+msgstr "Sfoglia colori sovrimpressione"
 
 #. toggle softproofing
 #: ../src/views/darkroom.c:3653
@@ -17955,14 +17976,12 @@ msgstr "Azione"
 #~ "Se disponibile, usa la curva base per la fotocamera anziché quella "
 #~ "generica (riavvio necessario)"
 
-#, c-format
 #~ msgid "%s/%s: %s"
 #~ msgstr "%s/%s: %s"
 
 #~ msgid "date"
 #~ msgstr "Data"
 
-#, c-format
 #~ msgid ""
 #~ "an error has occurred while trying to open the database from\n"
 #~ "\n"
@@ -17979,13 +17998,11 @@ msgstr "Azione"
 #~ msgid "darktable - error locking database"
 #~ msgstr "darktable - errore nel bloccare il database"
 
-#, c-format
 #~ msgid "do you really want to send %d selected image to trash?"
 #~ msgid_plural "do you really want to send %d selected images to trash?"
 #~ msgstr[0] "Vuoi veramente cestinare la %d foto selezionata?"
 #~ msgstr[1] "Vuoi veramente cestinare le %d foto selezionate?"
 
-#, c-format
 #~ msgid "do you really want to physically delete %d selected image from disk?"
 #~ msgid_plural ""
 #~ "do you really want to physically delete %d selected images from disk?"
@@ -18066,13 +18083,11 @@ msgstr "Azione"
 #~ msgid "show image overlays"
 #~ msgstr "Mostra sovrapposizioni immagine"
 
-#, c-format
 #~ msgid "you have reached the start of your selection (%d image)"
 #~ msgid_plural "you have reached the start of your selection (%d images)"
 #~ msgstr[0] "Hai raggiunto l'inizio della tua selezione (%d immagine)"
 #~ msgstr[1] "Hai raggiunto l'inizio della tua selezione (%d immagini)"
 
-#, c-format
 #~ msgid "you have reached the end of your selection (%d image)"
 #~ msgid_plural "you have reached the end of your selection (%d images)"
 #~ msgstr[0] "Hai raggiunto la fine della tua selezione (%d immagine)"
