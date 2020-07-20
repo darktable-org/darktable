@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-21 00:09+0200\n"
+"PO-Revision-Date: 2020-07-21 00:25+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <>\n"
@@ -12257,6 +12257,9 @@ msgid ""
 "to avoid clipping while pushing the exposure for midtones.\n"
 "this somewhat reproduces the behaviour of matte paper."
 msgstr ""
+"Comprimi gradualmente le alteluci speculari passa questo valore\n"
+"per evitare tagli mentre si spinge l'esposizione dai mezzitoni.\n"
+"Questo riproduce più o meno l'effetto della carta opaca."
 
 #: ../src/iop/negadoctor.c:1266
 msgid "virtual print emulation"
@@ -16924,11 +16927,14 @@ msgid ""
 "image\n"
 "set -1 to never hide the overlay"
 msgstr ""
+"Ritardo prima che il blocco della sovraimpressone sia nascosta dopo ogni"
+" movimento del mouse sull'immagine\n"
+"Imposta -1 per non nascondere mai la sovraimpressione"
 
 #: ../src/libs/tools/global_toolbox.c:260
 #: ../src/libs/tools/global_toolbox.c:323
 msgid "timeout only available for block overlay"
-msgstr ""
+msgstr "Conto alla rovescia disponibile solo dal blocco sovraimpressione"
 
 #: ../src/libs/tools/global_toolbox.c:283
 #| msgid "hide image overlays"
@@ -16998,7 +17004,7 @@ msgstr "Sovrimpressioni estese permanenti al passaggio del mouse"
 #: ../src/libs/tools/global_toolbox.c:439
 #: ../src/libs/tools/global_toolbox.c:472
 msgid "overlays block on mouse hover during (s) "
-msgstr ""
+msgstr "Blocco sovraimpressioni durante il passaggio del mouse (s) "
 
 #: ../src/libs/tools/global_toolbox.c:446
 #: ../src/libs/tools/global_toolbox.c:479
