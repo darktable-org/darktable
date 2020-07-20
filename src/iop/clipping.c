@@ -1617,6 +1617,37 @@ void reload_defaults(dt_iop_module_t *self)
   memcpy(self->params, self->default_params, sizeof(dt_iop_clipping_params_t));
 }
 
+static void _float_to_fract(const char *num, int *n, int *d)
+{
+  char tnum[100];
+  gboolean sep_found = FALSE;
+  char *p = (char *)num;
+  int k = 0;
+
+  *d = 1;
+
+  while(*p)
+  {
+    if(sep_found) *d *= 10;
+
+    // look for decimal sep
+    if((*p == ',') || (*p == '.'))
+    {
+      sep_found = TRUE;
+    }
+    else
+    {
+      tnum[k++] = *p;
+    }
+
+    p++;
+  }
+
+  tnum[k] = '\0';
+
+  *n = atoi(tnum);
+}
+
 static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -1650,68 +1681,16 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
       else
       {
         // find the closest fraction from the input ratio
-        const float rr = atof(text);
-        int dd = ceilf(rr);
-        int nn = floor(rr);
+        int nn = 0, dd = 0;
+        _float_to_fract(text, &nn, &dd);
 
         // some sanity check
-        if(dd == 0)
+        if(dd == 0 || nn == 0)
         {
           dt_control_log(_("invalid ratio format. it should be non zero"));
           dt_bauhaus_combobox_set(combo, 0);
           return;
         }
-
-        // find the superior and inferior rational bounds for rr
-        // such that frac_inf < rr < frac_sup
-        // with frac_inf = frac_inf_top / frac_inf_bot
-        // and frac_sup = frac_sup_top / frac_sup_bot
-        int frac_sup_top = dd * dd;
-        int frac_sup_bot = dd;
-
-        int frac_inf_top = nn * dd;
-        int frac_inf_bot = dd;
-
-        int not_found = TRUE;
-        int count = 0;
-
-        while(not_found && count < 16)
-        {
-          ++count;
-          float mediant = (float)(frac_sup_top + frac_inf_top) / (float)(frac_sup_bot + frac_inf_bot);
-          //fprintf(stdout, "mediant: %f\n", mediant);
-
-          if(mediant > rr)
-          {
-            // frac_inf < input < mediant
-            frac_sup_top = frac_sup_top + frac_inf_top;
-            frac_sup_bot = frac_sup_bot + frac_inf_bot;
-            frac_inf_top *= 2;
-            frac_inf_bot *= 2;
-          }
-          else if(mediant < rr)
-          {
-            // mediant < input < frac_sup
-            frac_inf_top = frac_sup_top + frac_inf_top;
-            frac_inf_bot = frac_sup_bot + frac_inf_bot;
-            frac_sup_top *= 2;
-            frac_sup_bot *= 2;
-          }
-          else
-          {
-            // mediant == input, we found our candidate
-            not_found = FALSE;
-          }
-        }
-
-        /* debug
-        fprintf(stdout, "%i / %i (%f) < input < %i / %i (%f)\n", frac_inf_top, frac_inf_bot, (float)frac_inf_top / (float)frac_inf_bot,
-                                                                 frac_sup_top, frac_sup_bot, (float)frac_sup_top / (float)frac_sup_bot );
-        */
-
-        // output the mediant - it's either the exact result or the closest approximation
-        dd = frac_sup_bot + frac_inf_bot;
-        nn = frac_sup_top + frac_inf_top;
 
         d = MAX(dd, nn);
         n = MIN(dd, nn);
