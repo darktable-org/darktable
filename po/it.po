@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-17 18:12+0200\n"
+"PO-Revision-Date: 2020-07-20 09:47+0200\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -1874,7 +1874,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3056
 msgid "processing"
-msgstr "elaborazione"
+msgstr "Elaborazione"
 
 #: ../build/src/preferences_gen.h:3059
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -10687,6 +10687,12 @@ msgid ""
 "decrease to include more areas,\n"
 "increase to exclude more areas."
 msgstr ""
+"Imposta la soglia di esposizione fino alla\n"
+"quale ricostruire le alte luci bruciate.\n"
+"I valori sono relativi al punto di bianco della scena.\n"
+"0 EV significa che la soglia è uguale al punto di bianco.\n"
+"Diminuire questo valore per includere un'area maggiore\n"
+"aumentarlo per escludere delle aree."
 
 #: ../src/iop/filmicrgb.c:2365
 msgid ""
@@ -10717,6 +10723,12 @@ msgid ""
 "increase if at least one RGB channel is not clipped.\n"
 "decrease if all RGB channels are clipped over large areas."
 msgstr ""
+"Decidere la strategia di ricostruzione da usare,\n"
+"se tentare di creare un passaggio colore morbido\n"
+"oppure cercare di recuperare i dettagli.\n"
+"0% è un uguale mix di entrambi.\n"
+"Aumentare il valore se avete almeno un canale RGB non tagliato.\n"
+"Diminuirlo se tutti i canali RGB sono tagliati in aree ben visibili."
 
 #: ../src/iop/filmicrgb.c:2396
 #, no-c-format
@@ -10728,6 +10740,12 @@ msgid ""
 "increase if you want more details.\n"
 "decrease if you want more blur."
 msgstr ""
+"Decidere la strategia di ricostruzione da usare,\n"
+"se sfocare le alte luci come fa la pellicola,\n"
+"o tentare di recuperare i dettagli.\n"
+"0% è un uguale mix dei due.\n"
+"Aumentare il valore per guadagnare dettaglio.\n"
+"Diminuirlo per sfocare."
 
 #: ../src/iop/filmicrgb.c:2408
 #, no-c-format
@@ -10739,6 +10757,13 @@ msgid ""
 "increase if you want more color.\n"
 "decrease if you see magenta or out-of-gamut highlights."
 msgstr ""
+"Decidere la strategia di ricostruzione da usare,\n"
+"se recuperare le alte luci monocromatiche\n"
+"oppure le alte luci colorate.\n"
+"0% è un uguale mix dei due.\n"
+"Aumentare il valore se si vuole più colore.\n"
+"Diminuirlo se vedete comparire dei magenta o delle\n"
+"alte luci fuori gamma."
 
 #. Page LOOK
 #: ../src/iop/filmicrgb.c:2416
@@ -10819,6 +10844,9 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
+"Selezionare la curvatura desiderata per le alteluci.\n"
+"Dura utilizza una curva secca per comprimere maggiormente i toni.\n"
+"Soffice usa una curva morbida e la compressione dei toni è inferiore."
 
 #: ../src/iop/filmicrgb.c:2507
 msgid ""
@@ -10826,6 +10854,9 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
+"Selezionare la curvatura desiderata per le ombre.\n"
+"Dura utilizza una curva secca per comprimere maggiormente i toni.\n"
+"Soffice usa una curva morbida e la compressione dei toni è inferiore."
 
 #: ../src/iop/filmicrgb.c:2512
 #, c-format
@@ -10835,6 +10866,11 @@ msgid ""
 "fix the global exposure in the exposure module instead.\n"
 "disable to use standard 18.45 %% middle grey."
 msgstr ""
+"Permette l'inserimento di un valore del grigio medio personalizzato.\n"
+"In generale questo non è raccomandato.\n"
+"E' consigliabile regolare l'esposizione generale con il modulo "
+"'esposizione'.\n"
+"Disabilitare per usare il valore di grigio medio standard 18,45 %%"
 
 #: ../src/iop/filmicrgb.c:2518
 msgid ""
@@ -10843,6 +10879,11 @@ msgid ""
 "this keeps the middle grey on the identity line and improves fast tuning.\n"
 "disable if you want a manual control."
 msgstr ""
+"Abilitare per auto-regolare il contrasto in base al punto di nero e di "
+"bianco della scena.\n"
+"In questo modo il grigio medio rimane sulla curva e la regolazione è più "
+"rapida.\n"
+"Disabilitare se volete regolarlo manualmente."
 
 #: ../src/iop/filmicrgb.c:2523
 msgid ""
@@ -10851,6 +10892,11 @@ msgid ""
 "this will be slower but will yield more neutral highlights.\n"
 "it also helps with difficult cases of magenta highlights."
 msgstr ""
+"Effettua più passaggi per la ricostruzione cromatica.\n"
+"Più iterazioni significano maggior propagazione del colore dai pixel "
+"adiacenti.\n"
+"L'operazione sarà più lenta ma le alte luci risulteranno più naturali.\n"
+"Utile anche per limitare la comparsa di magenta nelle alte luci."
 
 #: ../src/iop/filmicrgb.c:2530
 msgid ""
@@ -10859,6 +10905,11 @@ msgid ""
 "when the picture is noisy overall,\n"
 "so they blend with the rest of the picture."
 msgstr ""
+"Aggiunge rumore statistico nella ricostruzione delle alte luci.\n"
+"Questo evita che le alte luci appaiano troppo piatte\n"
+"mentre il resto dell'immagine contiene del rumore.\n"
+"In questo modo le varie \n"
+"aree sono ben bilanciate."
 
 #: ../src/iop/filmicrgb.c:2537
 msgid "uniform"
@@ -11985,9 +12036,8 @@ msgstr "Componente rosso D min"
 
 #: ../src/iop/negadoctor.c:1050
 #, fuzzy
-#| msgid "film roll"
 msgid "film stock"
-msgstr "Rullino"
+msgstr "Pellicole"
 
 #: ../src/iop/negadoctor.c:1051
 msgid "black and white"
@@ -12059,6 +12109,12 @@ msgid ""
 "this value depends on the film specifications, the developing process,\n"
 "the dynamic range of the scene and the scanner exposure settings."
 msgstr ""
+"Densità massima della pellicola, corrispondente al bianco dopo "
+"l'inversione.\n"
+"Questo valore dipende dalle specifiche della pellicola, dal processo di "
+"sviluppo,\n"
+"dalla gamma dinamica della scena e dalle impostazioni relative "
+"all'esposizione dello scanner."
 
 #: ../src/iop/negadoctor.c:1134
 msgid "scanner exposure settings"
@@ -12170,10 +12226,8 @@ msgstr ""
 "per sistemare il contrasto globale evitando la chiusura delle ombre."
 
 #: ../src/iop/negadoctor.c:1250
-#, fuzzy
-#| msgid "target gamma"
 msgid "paper grade (gamma)"
-msgstr "Obiettivo gamma"
+msgstr "Gradazione carta (gamma)"
 
 #: ../src/iop/negadoctor.c:1252
 msgid ""
@@ -12181,6 +12235,10 @@ msgid ""
 "equivalent to applying a gamma. it compensates the film D max\n"
 "and recovers the contrast. use a high grade for high D max."
 msgstr ""
+"Seleziona la gradazione della carta virtuale, che è esattamente\n"
+"come applicare una gamma. In questo modo si compensa il D max\n"
+"della pellicola e si recupera contrasto. Utilizzare una\n"
+"gradazione alta per un D max alto."
 
 #: ../src/iop/negadoctor.c:1259
 msgid "paper gloss (specular highlights)"
