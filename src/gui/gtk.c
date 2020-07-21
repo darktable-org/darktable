@@ -934,8 +934,6 @@ void dt_gui_gtk_quit()
   gtk_style_context_add_class(context, "dt_gui_quit");
   gtk_window_set_title(GTK_WINDOW(win), _("closing darktable..."));
 
-  // don't minimize or hide main window, it'll be hiden by gtk
-
   // Write out windows dimension
   dt_gui_gtk_write_config();
 
@@ -948,6 +946,9 @@ void dt_gui_gtk_quit()
   g_signal_handlers_block_by_func(widget, draw_borders, GINT_TO_POINTER(2));
   widget = darktable.gui->widgets.bottom_border;
   g_signal_handlers_block_by_func(widget, draw_borders, GINT_TO_POINTER(3));
+
+  // hide main window
+  gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
 }
 
 gboolean dt_gui_quit_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
