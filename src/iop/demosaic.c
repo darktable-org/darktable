@@ -153,9 +153,14 @@ typedef struct dt_iop_demosaic_data_t
   double CAM_to_RGB[3][4];
 } dt_iop_demosaic_data_t;
 
-void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                       float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                       const uint32_t filters);
+// Implemented on amaze_demosaic_RT.cc
+void amaze_demosaic_RT(
+    dt_dev_pixelpipe_iop_t *piece,
+    const float *const in,
+    float *out,
+    const dt_iop_roi_t *const roi_in,
+    const dt_iop_roi_t *const roi_out,
+    const uint32_t filters);
 
 
 const char *name()
@@ -275,63 +280,7 @@ static const char* method2string(dt_iop_demosaic_method_t method)
 static void pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi, const uint32_t filters,
                          const int num_passes, const float threshold)
 {
-#if 1
   memcpy(out, in, (size_t)roi->width * roi->height * sizeof(float));
-#else
-  // colors:
-  const float thrsc = 2 * threshold;
-  for(int pass = 0; pass < num_passes; pass++)
-  {
-    for(int c = 0; c < 3; c += 2)
-    {
-      int rows = 3;
-      if(FC(rows, 3, filters) != c && FC(rows, 4, filters) != c) rows++;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(rows, c, out) schedule(static)
-#endif
-      for(int row = rows; row < roi->height - 3; row += 2)
-      {
-        float med[9];
-        int col = 3;
-        if(FC(row, col, filters) != c) col++;
-        float *pixo = out + (size_t)roi->width * row + col;
-        const float *pixi = in + (size_t)roi->width * row + col;
-        for(; col < roi->width - 3; col += 2)
-        {
-          int cnt = 0;
-          for(int k = 0, i = -2 * roi->width; i <= 2 * roi->width; i += 2 * roi->width)
-          {
-            for(int j = i - 2; j <= i + 2; j += 2)
-            {
-              if(fabsf(pixi[j] - pixi[0]) < thrsc)
-              {
-                med[k++] = pixi[j];
-                cnt++;
-              }
-              else
-                med[k++] = 64.0f + pixi[j];
-            }
-          }
-          for(int i = 0; i < 8; i++)
-            for(int ii = i + 1; ii < 9; ii++)
-              if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-#if 0
-          // cnt == 1 and no small edge in greens.
-          if(fabsf(pixi[-roi->width] - pixi[+roi->width]) + fabsf(pixi[-1] - pixi[+1])
-              + fabsf(pixi[-roi->width] - pixi[+1]) + fabsf(pixi[-1] - pixi[+roi->width])
-              + fabsf(pixi[+roi->width] - pixi[+1]) + fabsf(pixi[-1] - pixi[-roi->width])
-              > 0.06)
-            pixo[0] = med[(cnt-1)/2];
-          else
-#endif
-          pixo[0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]);
-          pixo += 2;
-          pixi += 2;
-        }
-      }
-    }
-  }
-#endif
 
   // now green:
   const int lim[5] = { 0, 1, 2, 1, 0 };
@@ -2955,7 +2904,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         demosaic_ppg(tmp, in, &roo, &roi, piece->pipe->dsc.filters,
                      data->median_thrs); // wanted ppg or zoomed out a lot and quality is limited to 1
       else
-        amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, piece->pipe->dsc.filters);
+        amaze_demosaic_RT(piece, in, tmp, &roi, &roo, piece->pipe->dsc.filters);
 
       if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
     }
@@ -4992,7 +4941,7 @@ void reload_defaults(dt_iop_module_t *module)
     module->default_enabled = 0;
   }
 
-  if(module->dev->image_storage.buf_dsc.filters == 9u) 
+  if(module->dev->image_storage.buf_dsc.filters == 9u)
     d->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   memcpy(module->params, module->default_params, sizeof(dt_iop_demosaic_params_t));
