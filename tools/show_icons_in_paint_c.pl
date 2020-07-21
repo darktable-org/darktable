@@ -144,7 +144,7 @@ print TESTC <<EOF;
 EOF
 
 # compile & run the .c file
-system("gcc `pkg-config --cflags --libs gtk+-2.0` -lm -std=c99 -I$srcdir -o $tempdir/test $tempdir/test.c $srcdir/dtgtk/paint.c");
+system("gcc `pkg-config --cflags --libs gtk+-3.0 json-glib-1.0` -lm -std=c99 -I$srcdir -o $tempdir/test $tempdir/test.c $srcdir/dtgtk/paint.c");
 system("$tempdir/test");
 
 print "show_icons_in_paint_c.png created in the current directory\n";

@@ -73,8 +73,7 @@ void dtgtk_cairo_paint_switch_off(cairo_t *cr, gint x, gint y, gint w, gint h, g
 void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a plusminus icon */
 void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Same as dtgtk_cairo_paint_plusminus, but render as a plus even
- * when CFP_ACTIVE is disabled. */
+/** Same as dtgtk_cairo_paint_plusminus, but render as a plus even when CFP_ACTIVE is disabled. */
 void dtgtk_cairo_paint_plus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a double arrow up/down */
 void dtgtk_cairo_paint_sorting(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
@@ -212,14 +211,18 @@ void dtgtk_cairo_paint_masks_path(cairo_t *cr, gint x, gint y, gint w, gint h, g
 /** Paint a brush icon for masks*/
 
 // FLO
+
+/** paint an uniform mask icon */
 void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a drawn mask icon */
 void dtgtk_cairo_paint_masks_drawn(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a parametric mask icon */
 void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags,
-                                                  void *data);
+/** paint a combined drawn&parametric mask icon */
+void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a raster mask icon */
 void dtgtk_cairo_paint_masks_raster(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-
-
+/** paint a mask brush icon */
 void dtgtk_cairo_paint_masks_brush(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a vertical gradient icon for masks selection*/
 void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
