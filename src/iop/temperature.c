@@ -1993,7 +1993,7 @@ void gui_init(struct dt_iop_module_t *self)
   // create color picker to be able to send its signal when spot selected
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   g->btn_asshot = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-  g->btn_user = dtgtk_togglebutton_new(dtgtk_cairo_paint_star, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+  g->btn_user = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_drawn, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
   g->btn_d65 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
   gtk_grid_attach(grid, g->colorpicker, 1, 1, 1, 1);
   gtk_grid_attach(grid, g->btn_asshot, 2, 1, 1, 1);
