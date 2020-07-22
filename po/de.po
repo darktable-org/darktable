@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-19 18:30+0200\n"
+"PO-Revision-Date: 2020-07-22 22:47+0200\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -11534,40 +11534,33 @@ msgid "liquify"
 msgstr "Verflüssigen"
 
 #: ../src/iop/liquify.c:3476
-#, fuzzy
 msgid ""
 "click and drag to add point\n"
 "scroll to change size\n"
 "shift+scroll to change strength - ctrl+scroll to change direction"
 msgstr ""
-"Klick und ziehen, um Punkt hinzufügen\n"
-"scrollen, um Größe zu ändern\n"
-"Shift+scrollen, um die Stärke zu ändern – Strg+scrollen, um die Richtung zu "
-"ändern"
+"Klick und ziehen fügt Punkt hinzu. Scrollen, um die Größe zu ändern. "
+"Umschalt+scrollen, um die Stärke zu ändern, Strg+scrollen, um die Richtung "
+"zu ändern."
 
 #: ../src/iop/liquify.c:3480
-#, fuzzy
 msgid ""
 "click to add line\n"
 "scroll to change size\n"
 "shift+scroll to change strength - ctrl+scroll to change direction"
 msgstr ""
-"Klick zum Hinzufügen einer Linie\n"
-"scrollen, um Größe ändern\n"
-"Shift+scrollen, um die Stärke zu ändern – Strg+scrollen, um die Richtung zu "
-"ändern"
+"Mausklick fügt eine Linie hinzu. Scrollen, um die Größe zu ändern. Umschalt"
+"+scrollen, um die Stärke zu ändern. Strg+scrollen, um die Richtung zu ändern."
 
 #: ../src/iop/liquify.c:3484
-#, fuzzy
 msgid ""
 "click to add curve\n"
 "scroll to change size\n"
 "shift+scroll to change strength - ctrl+scroll to change direction"
 msgstr ""
-"Klick zu hinzufügen einer Kurve\n"
-"scrollen zum Ändern der Größe\n"
-"Shift+scrollen, um die Stärke zu ändern – Strg+scrollen um die Richtung zu "
-"ändern"
+"Mausklick fügt eine Kurve hinzu. Scrollen, um die Größe zu ändern. Umschalt"
+"+scrollen, um die Stärke zu ändern. Strg+scrollen, um die Richtung zu "
+"ändern."
 
 #: ../src/iop/liquify.c:3487
 msgid "click to edit nodes"
@@ -11610,14 +11603,13 @@ msgstr ""
 "Strg+Alt+Klick: Gerade/Kurve umschalten"
 
 #: ../src/iop/liquify.c:3580
-#, fuzzy
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-"klicken und ziehen zum Bewegen – Klick: ein-/ausblenden der Ausblend-Regler\n"
-"Strg+Klick: auto weichzeichnen, spitz, glatt, symmetrisch – Rechtsklick zum "
-"Entfernen"
+"Klicken und ziehen zum Verschieben. Mausklick: zeigen/verbergen der Ausblend-"
+"Regler. Strg+Klick: automatisches Weichzeichnen, spitz, glatt, symmetrisch. "
+"Rechtsklick zum Entfernen."
 
 #: ../src/iop/liquify.c:3583 ../src/iop/liquify.c:3584
 msgid "drag to change shape of path"
@@ -11772,14 +11764,13 @@ msgid "interpolation"
 msgstr "Interpolationsverfahren"
 
 #: ../src/iop/lut3d.c:470
-#, fuzzy
 msgid "error allocating buffer for gmz lut"
-msgstr "Fehler: konnte keinen Puffer für PNG-LUT-Datei reservieren"
+msgstr "Fehler: Konnte keinen Puffer für GMZ-LUT-Datei reservieren."
 
 #: ../src/iop/lut3d.c:496
-#, fuzzy, c-format
+#, c-format
 msgid "invalid png file %s"
-msgstr "ungültiger Grad PNG-Datei %d %d"
+msgstr "ungültige PNG-Datei „%s”"
 
 #: ../src/iop/lut3d.c:504
 #, c-format
@@ -11805,9 +11796,8 @@ msgstr ""
 "Maximalgröße."
 
 #: ../src/iop/lut3d.c:552
-#, fuzzy
 msgid "error allocating buffer for png lut"
-msgstr "Fehler: konnte keinen Puffer für PNG-LUT-Datei reservieren"
+msgstr "Fehler: Konnte keinen Puffer für PNG-LUT-Datei reservieren."
 
 #: ../src/iop/lut3d.c:560
 #, c-format
@@ -11832,9 +11822,8 @@ msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMAIN MAX ≠ 1.0 nicht unterstützt"
 
 #: ../src/iop/lut3d.c:774
-#, fuzzy
 msgid "[1D cube lut is not supported"
-msgstr "1D-Cube-LUTs nicht unterstützt"
+msgstr "1d-Cube-LUTs nicht unterstützt"
 
 #: ../src/iop/lut3d.c:796 ../src/iop/lut3d.c:908
 msgid "error - allocating buffer for cube lut"
@@ -11845,14 +11834,14 @@ msgid "error - cube lut size is not defined"
 msgstr "Fehler: Cube-LUT-Größe nicht definiert"
 
 #: ../src/iop/lut3d.c:818
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube lut invalid number line %d"
-msgstr "Fehler: Cube-LUT-Zeilenzahl nicht korrekt"
+msgstr "Fehler: Cube-LUT-Zeilenzahl %d nicht korrekt"
 
 #: ../src/iop/lut3d.c:834
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube lut lines number %d is not correct, should be %d"
-msgstr "Fehler: Cube-LUT-Zeilenzahl nicht korrekt"
+msgstr "Fehler: Cube-LUT-Zeilenzahl %d nicht korrekt, sollte %d sein."
 
 #: ../src/iop/lut3d.c:844
 #, c-format
@@ -11862,9 +11851,9 @@ msgstr ""
 "Wertebereichs."
 
 #: ../src/iop/lut3d.c:868
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid 3dl file: %s"
-msgstr "Fehler: ungültige Cube-Datei: %s"
+msgstr "Fehler: Ungültige 3DL-Datei „%s”"
 
 #: ../src/iop/lut3d.c:897
 #, c-format
@@ -11913,59 +11902,49 @@ msgid "Select file outside Lut root folder is not allowed"
 msgstr "Dateiauswahl außerhalb des LUT-Verzeichnisses nicht erlaubt"
 
 #: ../src/iop/lut3d.c:1688
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed lut) file "
 "CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
-"Der Dateipfad (relativ zum LUT-Verzeichnis) wird im Bild mitgespeichert "
-"(nicht die LUT-Daten selbst).\n"
-"Achtung: Das LUT-Verzeichnis muss in „Voreinstellungen/zentrale Optionen/"
-"Verschieden” festgelegt werden, bevor eine LUT-Datei gewählt werden kann."
+"Eine Hald CLUT (png), eine 3D LUT (cube oder 3dl) oder eine komprimierte "
+"G'MIC-LUT (gmz) auswählen. Achtung: Das LUT-Verzeichnis muss in "
+"„Voreinstellungen/Bearbeitung/3D-LUT-Verzeichnis” festgelegt werden, bevor "
+"eine LUT-Datei ausgewählt werden kann."
 
 #: ../src/iop/lut3d.c:1692
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D lut folder must be "
 "set in preferences/core options/miscellaneous before choosing the lut file"
 msgstr ""
-"Der Dateipfad (relativ zum LUT-Verzeichnis) wird im Bild mitgespeichert "
-"(nicht die LUT-Daten selbst).\n"
-"Achtung: Das LUT-Verzeichnis muss in „Voreinstellungen/zentrale Optionen/"
-"Verschieden” festgelegt werden, bevor eine LUT-Datei gewählt werden kann."
+"Eine Hald CLUT (png) oder eine 3D LUT (cube oder 3dl) auswählen. Achtung: "
+"Das LUT-Verzeichnis muss in „Voreinstellungen/Bearbeitung/3D-LUT-"
+"Verzeichnis” festgelegt werden, bevor eine LUT-Datei ausgewählt werden kann."
 
 #: ../src/iop/lut3d.c:1703
-#, fuzzy
 msgid ""
 "the file path (relative to lut folder) is saved with image along with the "
 "lut data if it's a compressed lut (gmz)"
 msgstr ""
-"Der Dateipfad (relativ zum LUT-Verzeichnis) wird im Bild mitgespeichert "
-"(nicht die LUT-Daten selbst).\n"
-"Achtung: Das LUT-Verzeichnis muss in „Voreinstellungen/zentrale Optionen/"
-"Verschieden” festgelegt werden, bevor eine LUT-Datei gewählt werden kann."
+"Der Dateipfad (relativ zum LUT-Verzeichnis) wird im Bild mitgespeichert, "
+"zusammen mit der LUT selbst, falls es sich um eine komprimierte G'MIC-LUT "
+"(gmz) handelt."
 
 #: ../src/iop/lut3d.c:1706
-#, fuzzy
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)"
 msgstr ""
 "Der Dateipfad (relativ zum LUT-Verzeichnis) wird im Bild mitgespeichert "
-"(nicht die LUT-Daten selbst).\n"
-"Achtung: Das LUT-Verzeichnis muss in „Voreinstellungen/zentrale Optionen/"
-"Verschieden” festgelegt werden, bevor eine LUT-Datei gewählt werden kann."
+"(nicht die LUT-Daten selbst)."
 
 #: ../src/iop/lut3d.c:1715
-#, fuzzy
 msgid "enter lut name"
-msgstr "Tag eingeben"
+msgstr "LUT-Namen eingeben"
 
 #: ../src/iop/lut3d.c:1737
-#, fuzzy
 msgid "select the LUT"
-msgstr "Farbton auswählen"
+msgstr "LUT auswählen"
 
 #: ../src/iop/lut3d.c:1750
 msgid "select the color space in which the LUT has to be applied"
