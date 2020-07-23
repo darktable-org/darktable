@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-22 22:47+0200\n"
+"PO-Revision-Date: 2020-07-23 22:57+0200\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -3045,11 +3045,11 @@ msgstr "HLG Rec2020 RGB"
 
 #: ../src/common/colorspaces.c:1440
 msgid "PQ P3 RGB"
-msgstr ""
+msgstr "PQ P3 RGB"
 
 #: ../src/common/colorspaces.c:1445
 msgid "HLG P3 RGB"
-msgstr ""
+msgstr "HLG P3 RGB"
 
 #: ../src/common/colorspaces.c:1450
 msgid "linear prophoto RGB"
@@ -3110,19 +3110,19 @@ msgstr "ProPhoto RGB"
 
 #: ../src/common/colorspaces.c:1644
 msgid "PQ Rec2020"
-msgstr ""
+msgstr "PQ Rec2020"
 
 #: ../src/common/colorspaces.c:1646
 msgid "HLG Rec2020"
-msgstr ""
+msgstr "HLG Rec2020"
 
 #: ../src/common/colorspaces.c:1648
 msgid "PQ P3"
-msgstr ""
+msgstr "PQ P3"
 
 #: ../src/common/colorspaces.c:1650
 msgid "HLG P3"
-msgstr ""
+msgstr "HLG P3"
 
 #: ../src/common/cups_print.c:423
 #, c-format
@@ -4309,15 +4309,14 @@ msgstr ""
 "mit Strg-Mausklick Bereich auswählen, um GUI-Farbe aus dem Bild zu übernehmen"
 
 #: ../src/develop/blend_gui.c:1667
-#, fuzzy
 msgid ""
 "set the range based on an area from the image\n"
 "drag to use the input image\n"
 "ctrl+drag to use the output image"
 msgstr ""
-"Setzt den Bereich basierend auf einen Bildausschnitt.\n"
-"Klicken+Ziehen, um das Eingabebild zu verwenden.\n"
-"Strg+Klick+Ziehen, um das Ausgabebild zu verwenden."
+"Setzt den Bereich basierend auf einen Bildausschnitt. Bildausschnitt durch "
+"Klicken+Ziehen auswählen, um dazu das Eingabebild zu verwenden. Strg+Klick"
+"+Ziehen, um das Ausgabebild zu verwenden."
 
 #: ../src/develop/blend_gui.c:1672
 msgid "reset blend mask settings"
@@ -4413,11 +4412,12 @@ msgstr ""
 "Kreis hinzufügen. Mit Strg+Mausklick können mehrere Kreise erstellt werden."
 
 #: ../src/develop/blend_gui.c:1905 ../src/iop/retouch.c:2414
-#, fuzzy
 msgid ""
 "add brush\n"
 "ctrl+click to add multiple brush strokes"
-msgstr "Strg+Klick um einen spitzen Knoten hinzuzufügen"
+msgstr ""
+"Pinselstrich hinzufügen. Mit Strg+Mausklick können spitze Knoten erstellt "
+"werden."
 
 #: ../src/develop/blend_gui.c:2046 ../src/develop/blend_gui.c:2483
 msgid "raster mask"
@@ -4834,10 +4834,9 @@ msgstr "Modul aktivieren"
 
 # keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
 #: ../src/develop/imageop.c:1534
-#, fuzzy
 msgctxt "accel"
 msgid "focus module"
-msgstr "Fokussierung"
+msgstr "Eingabefokus auf Modul lenken"
 
 #: ../src/develop/imageop.c:1536 ../src/libs/lib.c:640
 msgctxt "accel"
@@ -4953,9 +4952,8 @@ msgid "[GRADIENT creation] set rotation"
 msgstr "[GRADIENT creation] Drehrichtung einstellen"
 
 #: ../src/develop/masks/masks.c:231
-#, fuzzy
 msgid "[GRADIENT] change curvature"
-msgstr "[GRADIENT] Deckkraft ändern"
+msgstr "[GRADIENT] Krümmung ändern"
 
 #: ../src/develop/masks/masks.c:237
 msgid "[GRADIENT] change compression"
@@ -5437,9 +5435,8 @@ msgstr "Hochtemperatur-Quecksilberdampflampe fluoreszierend"
 # too long?
 #. Found in Nikon Coolpix P1000
 #: ../src/external/wb_presets.c:68
-#, fuzzy
 msgid "high temp. mercury-vapor"
-msgstr "Hochtemperatur-Quecksilberdampflampe fluoreszierend"
+msgstr "Hochtemperatur-Quecksilberdampflampe"
 
 #. On Some Panasonic
 #: ../src/external/wb_presets.c:70
@@ -5621,14 +5618,13 @@ msgstr "Lua"
 #: ../src/gui/accelerators.c:783
 msgctxt "accel"
 msgid "next"
-msgstr ""
+msgstr "nächster"
 
 #: ../src/gui/accelerators.c:296 ../src/gui/accelerators.c:298
 #: ../src/gui/accelerators.c:792
-#, fuzzy
 msgctxt "accel"
 msgid "previous"
-msgstr "Kurzvorschau"
+msgstr "vorheriger"
 
 #: ../src/gui/accelerators.c:650
 #, c-format
@@ -5859,10 +5855,9 @@ msgid "toggle filmstrip and timeline"
 msgstr "Filmstreifen bzw. Zeitleiste ein- oder ausblenden"
 
 #: ../src/gui/gtk.c:1372
-#, fuzzy
 msgctxt "accel"
 msgid "toggle top toolbar"
-msgstr "oberes Feld umschalten"
+msgstr "oberes Bedienfeld ein- oder ausblenden"
 
 #: ../src/gui/gtk.c:1376
 msgctxt "accel"
@@ -5870,16 +5865,14 @@ msgid "toggle bottom toolbar"
 msgstr "unteres Bedienfeld ein- oder ausblenden"
 
 #: ../src/gui/gtk.c:1380
-#, fuzzy
 msgctxt "accel"
 msgid "toggle all top panels"
-msgstr "oberes Feld umschalten"
+msgstr "alle oberen Bedienfelder ein- oder ausblenden"
 
 #: ../src/gui/gtk.c:1384
-#, fuzzy
 msgctxt "accel"
 msgid "toggle all bottom panels"
-msgstr "unteres Feld umschalten"
+msgstr "alle unteren Bedienfelder ein- oder ausblenden"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1389
@@ -5903,7 +5896,7 @@ msgstr "zeige Beschleunigungsfenster"
 #: ../src/gui/gtk.c:1403
 msgctxt "accel"
 msgid "toggle tooltip visibility"
-msgstr ""
+msgstr "Kurzinfo ein- oder ausblenden"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
@@ -11539,9 +11532,8 @@ msgid ""
 "scroll to change size\n"
 "shift+scroll to change strength - ctrl+scroll to change direction"
 msgstr ""
-"Klick und ziehen fügt Punkt hinzu. Scrollen, um die Größe zu ändern. "
-"Umschalt+scrollen, um die Stärke zu ändern, Strg+scrollen, um die Richtung "
-"zu ändern."
+"Klick und ziehen fügt Punkt hinzu. Scrollen, um die Größe zu ändern. Umschalt"
+"+scrollen, um die Stärke zu ändern. Strg+scrollen, um die Richtung zu ändern."
 
 #: ../src/iop/liquify.c:3480
 msgid ""
@@ -11559,8 +11551,7 @@ msgid ""
 "shift+scroll to change strength - ctrl+scroll to change direction"
 msgstr ""
 "Mausklick fügt eine Kurve hinzu. Scrollen, um die Größe zu ändern. Umschalt"
-"+scrollen, um die Stärke zu ändern. Strg+scrollen, um die Richtung zu "
-"ändern."
+"+scrollen, um die Stärke zu ändern. Strg+scrollen, um die Richtung zu ändern."
 
 #: ../src/iop/liquify.c:3487
 msgid "click to edit nodes"
@@ -14806,10 +14797,9 @@ msgstr ""
 "+Scrollen ändert die Höhe des Histogramms."
 
 #: ../src/libs/histogram.c:963
-#, fuzzy
 msgctxt "accel"
 msgid "histogram/hide histogram"
-msgstr "Histogramm verbergen"
+msgstr "Histogramm/Histogramm verbergen"
 
 #: ../src/libs/histogram.c:964
 msgctxt "accel"
@@ -14819,35 +14809,32 @@ msgstr "Histogramm verbergen"
 #: ../src/libs/histogram.c:965
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
-msgstr ""
+msgstr "Histogramm/Histogramm-Modi zyklisch wechseln"
 
 #: ../src/libs/histogram.c:966
-#, fuzzy
 msgctxt "accel"
 msgid "cycle histogram modes"
-msgstr "Histogramm-Quelle"
+msgstr "Histogramm-Modi zyklisch wechseln"
 
 #: ../src/libs/histogram.c:967
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
-msgstr ""
+msgstr "Histogramm/Histogramm-Modus umschalten"
 
 #: ../src/libs/histogram.c:968
-#, fuzzy
 msgctxt "accel"
 msgid "switch histogram mode"
-msgstr "Histogramm-Quelle"
+msgstr "Histogramm-Modus umschalten"
 
 #: ../src/libs/histogram.c:969
 msgctxt "accel"
 msgid "histogram/switch histogram type"
-msgstr ""
+msgstr "Histogramm/Histogramm-Typ umschalten"
 
 #: ../src/libs/histogram.c:970
-#, fuzzy
 msgctxt "accel"
 msgid "switch histogram type"
-msgstr "Histogrammprofil"
+msgstr "Histogramm-Typ umschalten"
 
 #: ../src/libs/history.c:95
 msgctxt "accel"
@@ -16321,15 +16308,14 @@ msgid "take snapshot"
 msgstr "Snapshot erstellen"
 
 #: ../src/libs/snapshots.c:106
-#, fuzzy
 msgctxt "accel"
 msgid "toggle last snapshot"
-msgstr "Snapshot erstellen"
+msgstr "letzten Snapshot ein- oder ausschalten"
 
 #: ../src/libs/snapshots.c:131
 msgctxt "snapshot sign"
 msgid "S"
-msgstr ""
+msgstr "S"
 
 #. create take snapshot button
 #: ../src/libs/snapshots.c:382
@@ -16456,17 +16442,17 @@ msgstr "Verschlagwortung"
 #: ../src/libs/tagging.c:120
 msgctxt "accel"
 msgid "attach"
-msgstr "Anhängen"
+msgstr "anhängen"
 
 #: ../src/libs/tagging.c:121
 msgctxt "accel"
 msgid "detach"
-msgstr "Entfernen"
+msgstr "entfernen"
 
 #: ../src/libs/tagging.c:122
 msgctxt "accel"
 msgid "new"
-msgstr "Neu"
+msgstr "neu"
 
 #: ../src/libs/tagging.c:123
 msgctxt "accel"
