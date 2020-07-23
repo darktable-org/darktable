@@ -129,10 +129,17 @@ making a backup is strongly advised.
 
 - Collect module has two new filters: module and module order.
 
-  The former make it possible to filter pictures based on the
+  The former makes it possible to filter pictures based on the
   activated modules in the history. The latter can be used to filter
   based on the pipe version (legacy up to 2.6 releases or v3.0
   starting with 3.0 release).
+
+- Tag in Collect module keeps track of the selected images order.
+
+  When tag is at the first level of Collect module, any change
+  on the images order is kept along with the selected tag.
+  This allows to associate a specific order to every images (tag)
+  collection.
 
 - A full rewrite of the pipe ordering has been done. It is now
   possible to change the order of the pipe using a new module giving
