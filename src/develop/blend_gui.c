@@ -2483,7 +2483,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                      G_CALLBACK(_blendop_masks_invert_callback), bd);
 
     bd->masks_feathering_guide_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_feathering_guide_combo, _("feathering guide"), _("feathering guide"));
+    dt_bauhaus_widget_set_label(bd->masks_feathering_guide_combo, _("blend"), _("feathering guide"));
     dt_bauhaus_combobox_add_full(bd->masks_feathering_guide_combo, _("output image"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, 
                                  GUINT_TO_POINTER(DEVELOP_MASK_GUIDE_OUT), NULL, TRUE);
     dt_bauhaus_combobox_add_full(bd->masks_feathering_guide_combo, _("input image"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, 
