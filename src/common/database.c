@@ -2596,8 +2596,8 @@ start:
         }
 
         // upgrade was successfull, time for some housekeeping
-        DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM data", NULL, NULL, NULL);
-        DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, NULL);
+        sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
+        sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
 
       }
       else if(db_version > CURRENT_DATABASE_VERSION_DATA)
@@ -2679,8 +2679,8 @@ start:
       }
 
       // upgrade was successfull, time for some housekeeping
-      DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM main", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, NULL);
+      sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
+      sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
     }
     else if(db_version > CURRENT_DATABASE_VERSION_LIBRARY)
     {
@@ -2779,7 +2779,7 @@ start:
   dt_legacy_presets_create(db);
 
   // drop table settings -- we don't want old versions of dt to drop our tables
-  DT_DEBUG_SQLITE3_EXEC(db->handle, "drop table main.settings", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "drop table main.settings", NULL, NULL, NULL);
 
   // take care of potential bad data in the db.
   _sanitize_db(db);
