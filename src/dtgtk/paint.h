@@ -51,7 +51,7 @@ void dtgtk_cairo_paint_empty(cairo_t *cr, gint x, int y, gint w, gint h, gint fl
 void dtgtk_cairo_paint_triangle(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
 /** Paint a solid triangle left/right/up/down */
 void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
-/** Paint a arrow left or right */
+/** Paint an arrow left or right */
 void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a solid arrow left/right/up/down */
 void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
@@ -59,7 +59,7 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
 void dtgtk_cairo_paint_store(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a reset icon */
 void dtgtk_cairo_paint_reset(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint a reset icon */
+/** Paint a preset icon - similar to hamburger menu */
 void dtgtk_cairo_paint_presets(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a flip icon */
 void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
@@ -73,8 +73,7 @@ void dtgtk_cairo_paint_switch_off(cairo_t *cr, gint x, gint y, gint w, gint h, g
 void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a plusminus icon */
 void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Same as dtgtk_cairo_paint_plusminus, but render as a plus even
- * when CFP_ACTIVE is disabled. */
+/** Same as dtgtk_cairo_paint_plusminus, but render as a plus even when CFP_ACTIVE is disabled. */
 void dtgtk_cairo_paint_plus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a double arrow up/down */
 void dtgtk_cairo_paint_sorting(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
@@ -86,13 +85,13 @@ void dtgtk_cairo_paint_minus_simple(cairo_t *cr, gint x, gint y, gint w, gint h,
 void dtgtk_cairo_paint_multiply_small(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a treelist icon */
 void dtgtk_cairo_paint_treelist(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint a invert icon */
+/** Paint an invert icon */
 void dtgtk_cairo_paint_invert(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a color rect icon */
 void dtgtk_cairo_paint_color(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint a eye icon */
+/** Paint an eye icon */
 void dtgtk_cairo_paint_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint a eye icon which is crossed out if toggled */
+/** Paint an eye icon which is crossed out if toggled */
 void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a timer icon */
 void dtgtk_cairo_paint_timer(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
@@ -122,17 +121,17 @@ void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an audio icon on thumbs */
 void dtgtk_cairo_paint_audio(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint an colorlabel "flower" icon on thumbs */
+/** Paint a colorlabel "flower" icon on thumbs */
 void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a color picker icon - a pipette for bigger buttons */
 void dtgtk_cairo_paint_colorpicker(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** paint a color picker icon with a plues sign */
+/** paint a color picker icon with a plus sign */
 void dtgtk_cairo_paint_colorpicker_set_values(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a display mask icon */
 void dtgtk_cairo_paint_showmask(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** paint alignment icon */
+/** paint an alignment icon */
 void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** paint styles icon */
+/** paint a styles icon */
 void dtgtk_cairo_paint_styles(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint the ? help label **/
 void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
@@ -199,7 +198,7 @@ void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, g
 /** paint the pin for map thumbnails */
 void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
-/** Paint a eye icon for masks*/
+/** Paint an eye icon for masks*/
 void dtgtk_cairo_paint_masks_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a circle icon for masks*/
 void dtgtk_cairo_paint_masks_circle(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
@@ -212,14 +211,18 @@ void dtgtk_cairo_paint_masks_path(cairo_t *cr, gint x, gint y, gint w, gint h, g
 /** Paint a brush icon for masks*/
 
 // FLO
+
+/** paint an uniform mask icon */
 void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a drawn mask icon */
 void dtgtk_cairo_paint_masks_drawn(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a parametric mask icon */
 void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags,
-                                                  void *data);
+/** paint a combined drawn&parametric mask icon */
+void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a raster mask icon */
 void dtgtk_cairo_paint_masks_raster(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-
-
+/** paint a mask brush icon */
 void dtgtk_cairo_paint_masks_brush(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a vertical gradient icon for masks selection*/
 void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
@@ -227,15 +230,15 @@ void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, gint x, gint y, gint w, g
 void dtgtk_cairo_paint_masks_brush_and_inverse(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a multi-path icon for masks*/
 void dtgtk_cairo_paint_masks_multi(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint a inverse icon for masks*/
+/** Paint an inverse icon for masks*/
 void dtgtk_cairo_paint_masks_inverse(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint a op union icon for masks*/
+/** Paint an op union icon for masks*/
 void dtgtk_cairo_paint_masks_union(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint a op intersection icon for masks*/
+/** Paint an op intersection icon for masks*/
 void dtgtk_cairo_paint_masks_intersection(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint a op difference icon for masks*/
+/** Paint an op difference icon for masks*/
 void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint a op exclusion icon for masks*/
+/** Paint an op exclusion icon for masks*/
 void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a used icon for masks*/
 void dtgtk_cairo_paint_masks_used(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
