@@ -299,23 +299,50 @@ static gboolean toggle_tooltip_visibility(GtkAccelGroup *accel_group, GObject *a
 
   return TRUE;
 }
-static gboolean _focuspeaking_switch_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+
+static inline void update_focus_peaking_button()
+{
+  // read focus peaking global state and update toggle button accordingly
+  dt_pthread_mutex_lock(&darktable.gui->mutex);
+  const gboolean state = darktable.gui->show_focus_peaking;
+  dt_pthread_mutex_unlock(&darktable.gui->mutex);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(darktable.gui->focus_peaking_button), state);
+}
+
+
+static gboolean focuspeaking_switch_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                guint keyval, GdkModifierType modifier, gpointer data)
 {
-  // Set focus peaking hidden by default
-  gint visible = FALSE;
+  // keyboard method
+  dt_pthread_mutex_lock(&darktable.gui->mutex);
+  const gboolean state = !(darktable.gui->show_focus_peaking);
+  dt_pthread_mutex_unlock(&darktable.gui->mutex);
 
-  // Get the current parameter if defined
-  if(dt_conf_key_exists("ui/show_focus_peaking")) visible = dt_conf_get_bool("ui/show_focus_peaking");
+  // this will trigger focuspeaking_switch_button_callback() below, through the toggle_button callback,
+  // which will do the state toggling internally according to the button state we set here.
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(darktable.gui->focus_peaking_button), state);
 
-  // Inverse the current parameter and save it
-  visible = !visible;
-  dt_conf_set_bool("ui/show_focus_peaking", visible);
-  darktable.gui->show_focus_peaking = visible;
+  return TRUE;
+}
+
+static void focuspeaking_switch_button_callback(GtkWidget *button, gpointer user_data)
+{
+  // button method
+  dt_pthread_mutex_lock(&darktable.gui->mutex);
+  const gboolean state_memory = darktable.gui->show_focus_peaking;
+  dt_pthread_mutex_unlock(&darktable.gui->mutex);
+
+  const gboolean state_new = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+
+  if(state_memory == state_new) return; // nothing to change, bypass
+
+  dt_pthread_mutex_lock(&darktable.gui->mutex);
+  darktable.gui->show_focus_peaking = state_new;
+  dt_pthread_mutex_unlock(&darktable.gui->mutex);
 
   // we inform that all thumbnails need to be redraw
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, -1);
-  return TRUE;
 }
 
 static gchar *_panels_get_view_path(char *suffix)
@@ -832,6 +859,8 @@ static gboolean scrollbar_release_event(GtkWidget *widget, gpointer user_data)
 
 int dt_gui_gtk_load_config()
 {
+  dt_pthread_mutex_lock(&darktable.gui->mutex);
+
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   int width = dt_conf_get_int("ui_last/window_w");
   int height = dt_conf_get_int("ui_last/window_h");
@@ -851,11 +880,21 @@ int dt_gui_gtk_load_config()
     else
       gtk_window_unmaximize(GTK_WINDOW(widget));
   }
+
+  if(dt_conf_key_exists("ui/show_focus_peaking"))
+    darktable.gui->show_focus_peaking = dt_conf_get_bool("ui/show_focus_peaking");
+  else
+    darktable.gui->show_focus_peaking = FALSE;
+
+  dt_pthread_mutex_unlock(&darktable.gui->mutex);
+
   return 0;
 }
 
 int dt_gui_gtk_write_config()
 {
+  dt_pthread_mutex_lock(&darktable.gui->mutex);
+
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -869,6 +908,9 @@ int dt_gui_gtk_write_config()
                    (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_MAXIMIZED));
   dt_conf_set_bool("ui_last/fullscreen",
                    (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN));
+  dt_conf_set_bool("ui/show_focus_peaking", darktable.gui->show_focus_peaking);
+
+  dt_pthread_mutex_unlock(&darktable.gui->mutex);
 
   return 0;
 }
@@ -1388,7 +1430,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // toggle focus peaking everywhere
   dt_accel_register_global(NC_("accel", "toggle focus peaking"), GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_connect_global("toggle focus peaking",
-                          g_cclosure_new(G_CALLBACK(_focuspeaking_switch_key_accel_callback), NULL, NULL));
+                          g_cclosure_new(G_CALLBACK(focuspeaking_switch_key_accel_callback), NULL, NULL));
 
   // View-switch
   dt_accel_register_global(NC_("accel", "switch view"), GDK_KEY_period, 0);
@@ -1444,6 +1486,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_control_change_cursor(GDK_LEFT_PTR);
 
   dt_iop_color_picker_init();
+
+  // create focus-peaking button
+  darktable.gui->focus_peaking_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_focus_peaking, CPF_STYLE_FLAT, NULL);
+  g_signal_connect(G_OBJECT(darktable.gui->focus_peaking_button), "toggled", G_CALLBACK(focuspeaking_switch_button_callback), NULL);
+  gtk_widget_set_tooltip_text(darktable.gui->focus_peaking_button, _("enable focus-peaking mode"));
+  update_focus_peaking_button();
 
   return 0;
 }

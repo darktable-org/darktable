@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
+#include "common/focus_peaking.h"
 #include "common/grouping.h"
 #include "common/history.h"
 #include "common/image_cache.h"
@@ -563,6 +564,11 @@ void enter(dt_view_t *self)
 
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
+
+  /* re-attach global focus peaking button in toolbox */
+  ++darktable.gui->reset;
+  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button, DT_VIEW_LIGHTTABLE);
+  --darktable.gui->reset;
 }
 
 static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int32_t mouse_over_id)
@@ -1361,6 +1367,10 @@ void gui_init(dt_view_t *self)
                               gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                               gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
+
+  /* add the global focus peaking button in toolbox */
+  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button, DT_VIEW_LIGHTTABLE);
+
   // create display profile button
   GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT,
                                                      NULL);
