@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/darktable.h"
+#include "common/dtpthread.h"
 
 #include <gtk/gtk.h>
 #include <stdint.h>
@@ -110,6 +111,7 @@ typedef struct dt_gui_gtk_t
 
   gboolean show_overlays;
   gboolean show_focus_peaking;
+  GtkWidget *focus_peaking_button;
 
   double dpi, dpi_factor, ppd;
 
@@ -124,6 +126,8 @@ typedef struct dt_gui_gtk_t
   guint sidebar_scroll_mask;
 
   cairo_filter_t filter_image;
+
+  dt_pthread_mutex_t mutex;
 } dt_gui_gtk_t;
 
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))

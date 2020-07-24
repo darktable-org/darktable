@@ -927,6 +927,58 @@ void dtgtk_cairo_paint_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
+void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // stigmometer aka split focusing screen aka Dodin's prism
+  cairo_arc(cr, 0.5, 0.5, 0.2, 0, 2. * M_PI);
+  cairo_move_to(cr, 0.3, 0.5);
+  cairo_line_to(cr, 0.7, 0.5);
+  cairo_stroke(cr);
+
+  // corners
+  const double center = 0.5;
+  const double width = 1.;
+  const double height = width * 2. / 3.;
+  const double offset_h = height / 2.;
+  const double offset_w = width / 2.;
+
+  const double tick_length = 0.1;
+
+  const double left = center - offset_w;
+  const double right = center + offset_w;
+  const double top = center - offset_h;
+  const double bottom = center + offset_h;
+
+  /// north west
+  cairo_move_to(cr, left + tick_length, top);
+  cairo_line_to(cr, left,               top);
+  cairo_line_to(cr, left,               top + tick_length);
+  cairo_stroke(cr);
+
+  // south west
+  cairo_move_to(cr, left,               bottom - tick_length);
+  cairo_line_to(cr, left,               bottom);
+  cairo_line_to(cr, left + tick_length, bottom);
+  cairo_stroke(cr);
+
+  // south east
+  cairo_move_to(cr, right - tick_length, bottom);
+  cairo_line_to(cr, right,               bottom);
+  cairo_line_to(cr, right,               bottom - tick_length);
+  cairo_stroke(cr);
+
+  // north east
+  cairo_move_to(cr, right,               top + tick_length);
+  cairo_line_to(cr, right,               top);
+  cairo_line_to(cr, right - tick_length, top);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   gdouble sw = 0.6;
