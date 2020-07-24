@@ -2076,6 +2076,9 @@ void gui_init(dt_view_t *self)
 
   const int dialog_width = 350;
 
+  /* add the global focus peaking button in toolbox */
+  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button, DT_VIEW_DARKROOM);
+
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
@@ -2762,6 +2765,10 @@ void enter(dt_view_t *self)
 
     modules = g_list_previous(modules);
   }
+
+  /* re-attach global focus peaking button in toolbox */
+  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button, DT_VIEW_DARKROOM);
+
   // make signals work again:
   --darktable.gui->reset;
 
@@ -3300,7 +3307,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       float multiplier = dt_accel_get_slider_scale_multiplier();
 
       const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget));
-      if(fabsf(step*multiplier) < min_visible) 
+      if(fabsf(step*multiplier) < min_visible)
         multiplier = min_visible / fabsf(step);
 
       if(up)
