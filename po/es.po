@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-23 01:30-0500\n"
-"PO-Revision-Date: 2020-07-23 01:21-0500\n"
+"POT-Creation-Date: 2020-07-23 15:56-0500\n"
+"PO-Revision-Date: 2020-07-23 20:30-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1487,7 +1487,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2213
 msgid "use single-click in the collect panel"
-msgstr "Pulse un solo clic en el panel de colecciones"
+msgstr "Utilizar la pulsación simple en el panel de colecciones"
 
 #: ../build/src/preferences_gen.h:2226
 msgid ""
@@ -1495,8 +1495,8 @@ msgid ""
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
 "Active esta opción para usar un solo clic al elegir un elemento del panel de "
-"colección. Como consecuencia, puede hacer rangos de selecciones por tiempo "
-"y  con valores numéricos"
+"colección. Como consecuencia, puede hacer rangos de selecciones por tiempo y "
+"con valores numéricos"
 
 #: ../build/src/preferences_gen.h:2234
 msgid "overlay txt sidecar over zoomed images"
@@ -1782,22 +1782,22 @@ msgstr "Reducir la resolución de la imagen de previsualización"
 #: ../build/src/preferences_gen.h:2833 ../build/src/preferences_gen.h:2866
 msgctxt "preferences"
 msgid "original"
-msgstr "original"
+msgstr "Original"
 
 #: ../build/src/preferences_gen.h:2838
 msgctxt "preferences"
 msgid "to 1/2"
-msgstr "reducir a 1/2"
+msgstr "Reducir a 1/2"
 
 #: ../build/src/preferences_gen.h:2843
 msgctxt "preferences"
 msgid "to 1/3"
-msgstr "reducir a 1/3"
+msgstr "Reducir a 1/3"
 
 #: ../build/src/preferences_gen.h:2848
 msgctxt "preferences"
 msgid "to 1/4"
-msgstr "reducir a 1/4"
+msgstr "Reducir a 1/4"
 
 #: ../build/src/preferences_gen.h:2869
 msgid "decrease to speed up preview rendering, may hinder accurate masking"
@@ -1807,11 +1807,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2896
 msgid "other views"
-msgstr "Otras vistas"
+msgstr "otras vistas"
 
 #: ../build/src/preferences_gen.h:2899
 msgid "map / geolocalisation"
-msgstr "Mapa / Geolocalización"
+msgstr "mapa / geolocalización"
 
 #: ../build/src/preferences_gen.h:2907
 msgid "only draw images on map that are currently collected and filtered"
@@ -1873,7 +1873,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3056
 msgid "processing"
-msgstr "Procesamiento"
+msgstr "procesamiento"
 
 #: ../build/src/preferences_gen.h:3059
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -1944,17 +1944,17 @@ msgstr "Flujo de trabajo por defecto"
 #: ../build/src/preferences_gen.h:3172
 msgctxt "preferences"
 msgid "scene-referred"
-msgstr "basado en la escena"
+msgstr "Basado en la escena"
 
 #: ../build/src/preferences_gen.h:3177 ../build/src/preferences_gen.h:3200
 msgctxt "preferences"
 msgid "display-referred"
-msgstr "basado en la pantalla"
+msgstr "Basado en la pantalla"
 
 #: ../build/src/preferences_gen.h:3182 ../build/src/preferences_gen.h:4298
 msgctxt "preferences"
 msgid "none"
-msgstr "ninguno"
+msgstr "Ninguno"
 
 #: ../build/src/preferences_gen.h:3203
 msgid ""
@@ -2222,7 +2222,7 @@ msgstr "Perfil de programación de OpenCL"
 #: ../src/gui/preferences.c:913
 msgctxt "preferences"
 msgid "default"
-msgstr "por defecto"
+msgstr "Por defecto"
 
 #: ../build/src/preferences_gen.h:3692
 msgctxt "preferences"
@@ -2252,11 +2252,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3753
 msgid "storage"
-msgstr "Almacenamiento"
+msgstr "almacenamiento"
 
 #: ../build/src/preferences_gen.h:3756
 msgid "database"
-msgstr "Base de datos"
+msgstr "base de datos"
 
 #: ../build/src/preferences_gen.h:3764
 msgid "check for database maintenance"
@@ -2365,7 +2365,7 @@ msgstr "miscelánea"
 
 #: ../build/src/preferences_gen.h:3986
 msgid "interface"
-msgstr "Interfaz"
+msgstr "interfaz"
 
 #: ../build/src/preferences_gen.h:3994
 msgid "mouse wheel scrolls modules side panel by default"
@@ -2461,7 +2461,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4136
 msgid "keyboard shortcuts with multiple instances"
-msgstr "Atajos de teclado con múltiples instancias de módulo"
+msgstr "atajos de teclado con múltiples instancias de módulo"
 
 #: ../build/src/preferences_gen.h:4142
 msgid ""
@@ -2513,12 +2513,12 @@ msgstr "Elegir orden"
 #: ../build/src/preferences_gen.h:4220
 msgctxt "preferences"
 msgid "first instance"
-msgstr "primera instancia"
+msgstr "Primera instancia"
 
 #: ../build/src/preferences_gen.h:4225 ../build/src/preferences_gen.h:4243
 msgctxt "preferences"
 msgid "last instance"
-msgstr "última instancia"
+msgstr "Última instancia"
 
 #: ../build/src/preferences_gen.h:4246
 msgid ""
@@ -2623,7 +2623,7 @@ msgstr "Puntuación inicial para todas las imágenes al importar carretes"
 
 #: ../build/src/preferences_gen.h:4562
 msgid "session options"
-msgstr "Opciones de la sesión"
+msgstr "opciones de la sesión"
 
 #: ../build/src/preferences_gen.h:4570
 msgid "base directory naming pattern"
@@ -4890,7 +4890,7 @@ msgstr "reiniciar parámetros"
 #: ../src/develop/imageop.c:2111 ../src/gui/preferences.c:754
 #: ../src/libs/lib.c:1075
 msgid "presets"
-msgstr "Preajustes"
+msgstr "preajustes"
 
 #: ../src/develop/imageop.c:2113
 msgid ""
@@ -5631,7 +5631,7 @@ msgstr "dinámico"
 #: ../src/gui/accelerators.c:67 ../src/gui/accelerators.c:119
 msgctxt "accel"
 msgid "lua"
-msgstr "lua"
+msgstr "Lua"
 
 #: ../src/gui/accelerators.c:283 ../src/gui/accelerators.c:285
 #: ../src/gui/accelerators.c:783
@@ -6389,12 +6389,12 @@ msgid ""
 "/* Enter CSS theme tweaks here */\n"
 "\n"
 msgstr ""
-"/* Ingrese las modificaciones al tema CSS aquí */\n"
+"/* Incorpore las modificaciones al tema CSS aquí */\n"
 "\n"
 
 #: ../src/gui/preferences.c:516
 msgid "darktable preferences"
-msgstr "preferencias de darktable"
+msgstr "Preferencias de darktable"
 
 #. exif
 #: ../src/gui/preferences.c:776 ../src/gui/preferences.c:1762
@@ -6421,7 +6421,7 @@ msgstr "importar..."
 #. Adding the outer container
 #: ../src/gui/preferences.c:855
 msgid "shortcuts"
-msgstr "Atajos de teclado"
+msgstr "atajos de teclado"
 
 #: ../src/gui/preferences.c:866
 msgid "shortcut"
@@ -7409,7 +7409,7 @@ msgstr "La corrección automática falló. Corrija manualmente"
 #: ../src/iop/ashift.c:4663
 #, c-format
 msgid "lens shift (%s)"
-msgstr "desplazamiento de lente (%s)"
+msgstr "desplazamiento %s"
 
 #: ../src/iop/ashift.c:4556 ../src/iop/ashift.c:4557 ../src/iop/ashift.c:4662
 #: ../src/iop/ashift.c:4663 ../src/iop/clipping.c:1882
@@ -14134,8 +14134,8 @@ msgstr "añadir muestra"
 #: ../src/libs/colorpicker.c:389
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr ""
-"pasar por encima para resaltar la muestra sobre el lienzo, hacer clic para "
-"tomar"
+"La muestra se resalta en el lienzo al pasar el cursor. \n"
+"Pulse para bloquear la muestra."
 
 #: ../src/libs/colorpicker.c:405
 msgid "X"
@@ -16775,7 +16775,7 @@ msgid ""
 "toggle red label\n"
 "of selected images"
 msgstr ""
-"poner/quitar marca roja\n"
+"Poner/quitar marca roja\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:73
@@ -16783,7 +16783,7 @@ msgid ""
 "toggle yellow label\n"
 "of selected images"
 msgstr ""
-"poner/quitar marca amarilla\n"
+"Poner/quitar marca amarilla\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:74
@@ -16791,7 +16791,7 @@ msgid ""
 "toggle green label\n"
 "of selected images"
 msgstr ""
-"poner/quitar marca verde\n"
+"Poner/quitar marca verde\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:75
@@ -16799,7 +16799,7 @@ msgid ""
 "toggle blue label\n"
 "of selected images"
 msgstr ""
-"poner/quitar marca azul\n"
+"Poner/quitar marca azul\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:76
@@ -16807,12 +16807,12 @@ msgid ""
 "toggle purple label\n"
 "of selected images"
 msgstr ""
-"poner/quitar marca púrpura\n"
+"Poner/quitar marca púrpura\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:77
 msgid "clear all labels of selected images"
-msgstr "quitar todas las marcas de las imágenes seleccionadas"
+msgstr "Quitar todas las marcas de las imágenes seleccionadas"
 
 #: ../src/libs/tools/darktable.c:61
 msgid "darktable"
@@ -16973,12 +16973,12 @@ msgstr "superposición ampliada permanente al pasar el ratón"
 #: ../src/libs/tools/global_toolbox.c:472
 msgid "overlays block on mouse hover during (s) "
 msgstr ""
-"Duración del bloqueo de la información superpuesta al pasar el ratón (s)"
+"duración del bloqueo de la información superpuesta al pasar el ratón (s)"
 
 #: ../src/libs/tools/global_toolbox.c:446
 #: ../src/libs/tools/global_toolbox.c:479
 msgid "show tooltip"
-msgstr "Mostrar descripción de herramienta emergente"
+msgstr "activar la descripción emergente"
 
 #: ../src/libs/tools/global_toolbox.c:490
 msgid "enable this, then click on a control element to see its online help"
@@ -17141,7 +17141,7 @@ msgstr "doble clic para restablecer a `%f'"
 
 #: ../src/lua/preferences.c:800
 msgid "lua options"
-msgstr "opciones de lua"
+msgstr "opciones de Lua"
 
 #: ../src/views/darkroom.c:439
 msgid "loading image"
