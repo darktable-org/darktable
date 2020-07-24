@@ -121,6 +121,44 @@ const dt_develop_name_value_t dt_develop_invert_mask_names[]
         { N_("on"), DEVELOP_COMBINE_INV },
         { "", 0 } };
 
+const dt_develop_name_value_t dt_develop_blendif_names_rgb[]
+    = { { N_("GRAY in"), DEVELOP_BLENDIF_GRAY_in },
+        { N_("RED in"), DEVELOP_BLENDIF_RED_in },
+        { N_("GREEN in"), DEVELOP_BLENDIF_GREEN_in },
+        { N_("BLUE in"), DEVELOP_BLENDIF_BLUE_in },
+
+        { N_("GRAY out"), DEVELOP_BLENDIF_GRAY_out },
+        { N_("RED out"), DEVELOP_BLENDIF_RED_out },
+        { N_("GREEN out"), DEVELOP_BLENDIF_GREEN_out },
+        { N_("BLUE out"), DEVELOP_BLENDIF_BLUE_out },
+
+        { N_("H in"), DEVELOP_BLENDIF_H_in },
+        { N_("S in"), DEVELOP_BLENDIF_S_in },
+        { N_("l in"), DEVELOP_BLENDIF_l_in },
+
+        { N_("H out"), DEVELOP_BLENDIF_H_out },
+        { N_("S out"), DEVELOP_BLENDIF_S_out },
+        { N_("l out"), DEVELOP_BLENDIF_l_out },
+
+        { "", 0 } };
+
+const dt_develop_name_value_t dt_develop_blendif_names_lab[]
+    = { { N_("L in"), DEVELOP_BLENDIF_L_in },
+        { N_("A in"), DEVELOP_BLENDIF_A_in },
+        { N_("B in"), DEVELOP_BLENDIF_B_in },
+
+        { N_("L out"), DEVELOP_BLENDIF_L_out },
+        { N_("A out"), DEVELOP_BLENDIF_A_out },
+        { N_("B out"), DEVELOP_BLENDIF_B_out },
+
+        { N_("C in"), DEVELOP_BLENDIF_C_in },
+        { N_("h in"), DEVELOP_BLENDIF_h_in },
+
+        { N_("C out"), DEVELOP_BLENDIF_C_out },
+        { N_("h out"), DEVELOP_BLENDIF_h_out },
+
+        { "", 0 } };
+
 static const dt_iop_gui_blendif_colorstop_t _gradient_L[]
     = { { 0.0f,   { 0, 0, 0, 1.0 } },
         { 0.125f, { NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, 1.0 } },
