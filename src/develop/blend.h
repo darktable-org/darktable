@@ -366,7 +366,8 @@ extern const dt_develop_name_value_t dt_develop_mask_mode_names[];
 extern const dt_develop_name_value_t dt_develop_combine_masks_names[];
 extern const dt_develop_name_value_t dt_develop_feathering_guide_names[];
 extern const dt_develop_name_value_t dt_develop_invert_mask_names[];
-
+extern const dt_develop_name_value_t dt_develop_blendif_names_rgb[];
+extern const dt_develop_name_value_t dt_develop_blendif_names_lab[];
 
 #define DEVELOP_MASKS_NB_SHAPES 5
 
