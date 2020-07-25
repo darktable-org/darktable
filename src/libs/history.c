@@ -1077,7 +1077,7 @@ static void _lib_history_truncate(gboolean compress)
   const int32_t imgid = darktable.develop->image_storage.id;
   if(!imgid) return;
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                           dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
                           dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
@@ -1116,7 +1116,7 @@ static void _lib_history_truncate(gboolean compress)
   sqlite3_finalize(stmt);
 
   dt_dev_reload_history_items(darktable.develop);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 
@@ -1163,7 +1163,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   reset = 0;
   if(darktable.gui->reset) return;
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                           dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
                           dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
@@ -1173,7 +1173,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   // set the module list order
   dt_dev_reorder_gui_module_list(darktable.develop);
   /* signal history changed */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
   dt_iop_connect_accels_all();
 }

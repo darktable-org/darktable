@@ -1027,7 +1027,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     dt_lua_unlock();
 #endif
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
                             format_params, storage, storage_params);
   }
 

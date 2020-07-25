@@ -299,7 +299,7 @@ static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_dat
       list = g_list_next(list);
     }
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
 }
 

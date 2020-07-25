@@ -140,7 +140,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
     dt_collection_deserialize(collect);
   }
   dt_film_remove_empty();
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
   dt_control_queue_redraw_center();
   return 0;
@@ -516,7 +516,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
   // refresh the thumbtable view
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_append(NULL, GINT_TO_POINTER(imageid)));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
 
 end:
@@ -547,7 +547,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     const double fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -693,7 +693,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   }
   dt_film_remove_empty();
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
 
   return 0;
@@ -1010,7 +1010,7 @@ delete_next_file:
   g_list_free(list);
   dt_film_remove_empty();
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -1168,8 +1168,8 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   }
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
-  if(tag_change) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -1193,7 +1193,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
     dt_exif_read(img, sourcefile);
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
 
     t = g_list_next(t);
     const double fraction = 1.0 / total;

@@ -265,9 +265,9 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
 
   // only redraw at the end, to not spam the cpu with exposure events
   dt_control_queue_redraw_center();
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film->id);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film->id);
 
   // FIXME: maybe refactor into function and call it?
   if(cfr && cfr->dir)

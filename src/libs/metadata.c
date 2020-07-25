@@ -231,8 +231,8 @@ static void _write_metadata(dt_lib_module_t *self)
   }
   g_list_free(key_value);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
   dt_image_synch_xmps(imgs);
   _update(self);
@@ -494,7 +494,7 @@ static void _config_button_clicked(GtkButton *button, dt_lib_module_t *self)
       }
     }
     if(meta_signal)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
                               meta_remove ? DT_METADATA_SIGNAL_HIDDEN : DT_METADATA_SIGNAL_SHOWN);
   }
 //  update_layout(self);

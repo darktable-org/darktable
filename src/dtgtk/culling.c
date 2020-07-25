@@ -1504,7 +1504,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     l = g_list_next(l);
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // if the selection should follow active images
   if(table->selection_sync)

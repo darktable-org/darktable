@@ -44,7 +44,7 @@ static void _selection_raise_signal()
   // discard cached images_to_act_on list
   darktable.view_manager->act_on.ok = FALSE;
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 }
 
 /* updates the internal collection of an selection */

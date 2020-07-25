@@ -557,7 +557,7 @@ static void _raise_signal_tag_changed(dt_lib_module_t *self)
     // raises change only for other modules
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
     dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
     dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   }
