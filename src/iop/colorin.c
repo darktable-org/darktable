@@ -448,7 +448,7 @@ static void profile_changed(GtkWidget *widget, gpointer user_data)
       memcpy(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
 
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_INPUT);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_INPUT);
       return;
     }
     prof = g_list_next(prof);
@@ -496,7 +496,7 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_WORK);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_WORK);
 
     // we need to rebuild the pipe so the profile take effect
     self->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
