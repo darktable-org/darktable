@@ -207,7 +207,7 @@ The master branch contains the latest version of the source code and is intended
 * for beta-testers to chase bugs, 
 * for users willing to sacrifice stability for new features without waiting for next release.
 
-The master branch comes with no garanty of stability, might corrupt your database and XMP files, 
+The master branch comes with no guarantee of stability, might corrupt your database and XMP files, 
 might result in loss of data and edits history, and temporarily break compatibility with previous versions and commits.
 
 How dangerous is it ? Most of the time, it is fairly stable. As any rolling-release kind of deployment, bugs appear more often
