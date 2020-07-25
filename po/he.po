@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-17 17:18+0300\n"
-"PO-Revision-Date: 2020-07-21 23:32+0300\n"
+"PO-Revision-Date: 2020-07-25 19:07+0300\n"
 "Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
@@ -5745,10 +5745,9 @@ msgstr "מתג את כל הפאנלים התחתונים"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1389
-#, fuzzy
 msgctxt "accel"
 msgid "toggle focus peaking"
-msgstr "מתג פאנל עליון"
+msgstr "מתג שיא פוקוס"
 
 #. View-switch
 #: ../src/gui/gtk.c:1394
@@ -5808,9 +5807,8 @@ msgstr ""
 "$(VERSION_IF_MULTI) - כמו $(VERSION) רק עם מחרוזת ריקה בהינתן גרסה אחת בלבד"
 
 #: ../src/gui/gtkentry.c:190
-#, fuzzy
 msgid "$(VERSION_NAME) - version name from metadata"
-msgstr "$(DESCRIPTION) - תיאור מתוך מטה נתונים"
+msgstr "$(VERSION_NAME) - שם גרסה מתוך מטה נתונים"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
@@ -5877,39 +5875,32 @@ msgid "$(EXIF_ISO) - ISO value"
 msgstr "ערך ISO כ - (EXIF_ISO)$"
 
 #: ../src/gui/gtkentry.c:207
-#, fuzzy
 msgid "$(EXIF_EXPOSURE) - EXIF exposure"
-msgstr "מתוך EXIF שעה - (EXIF_HOUR)$"
+msgstr "$(EXIF_EXPOSURE) - EXIF חשיפה"
 
 #: ../src/gui/gtkentry.c:208
-#, fuzzy
 msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
-msgstr "מתוך EXIF שעה - (EXIF_HOUR)$"
+msgstr "מתוך EXIF הסחת חשיפה - $(EXIF_EXPOSURE_BIAS)"
 
 #: ../src/gui/gtkentry.c:209
-#, fuzzy
 msgid "$(EXIF_APERTURE) - EXIF aperture"
-msgstr "מתוך EXIF שנה - (EXIF_YEAR)$"
+msgstr "מתוך EXIF מפתח - $(EXIF_APERTURE)"
 
 #: ../src/gui/gtkentry.c:210
-#, fuzzy
 msgid "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
-msgstr "מתוך EXIF חודש - (EXIF_MONTH)$"
+msgstr "מתוך EXIF אורך מוקד - $(EXIF_FOCAL_LENGTH)"
 
 #: ../src/gui/gtkentry.c:211
-#, fuzzy
 msgid "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
-msgstr "מתוך EXIF דקה - (EXIF_MINUTE)$"
+msgstr "מתוך EXIF מרחק מוקד - $(EXIF_FOCUS_DISTANCE)"
 
 #: ../src/gui/gtkentry.c:212
-#, fuzzy
 msgid "$(LONGITUDE) - longitude"
-msgstr "חודש - (MONTH)$"
+msgstr "קו אורך - $(LONGITUDE)"
 
 #: ../src/gui/gtkentry.c:213
-#, fuzzy
 msgid "$(LATITUDE) - latitude"
-msgstr "דקה - (MINUTE)$"
+msgstr "קו רוחב - $(LATITUDE)"
 
 #: ../src/gui/gtkentry.c:214
 msgid "$(ELEVATION) - elevation"
@@ -5932,9 +5923,8 @@ msgid "$(MODEL) - camera model"
 msgstr "מודל מצלמה - (MODEL)$"
 
 #: ../src/gui/gtkentry.c:219
-#, fuzzy
 msgid "$(LENS) - lens"
-msgstr "תוויות צבע - (LABELS)$"
+msgstr "עדשה - $(LENS)"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(TITLE) - title from metadata"
@@ -6060,14 +6050,12 @@ msgid "golden mean"
 msgstr "ממוצע הזהב"
 
 #: ../src/gui/hist_dialog.c:185
-#, fuzzy
 msgid "select parts to copy"
-msgstr "בחר חלקים"
+msgstr "בחר חלקים להעתקה"
 
 #: ../src/gui/hist_dialog.c:185
-#, fuzzy
 msgid "select parts to paste"
-msgstr "בחר חלקים"
+msgstr "בחר חלקים להדבקה"
 
 #: ../src/gui/hist_dialog.c:188 ../src/gui/styles_dialog.c:358
 msgid "select _all"
@@ -6094,9 +6082,8 @@ msgstr "פריט"
 
 #: ../src/gui/hist_dialog.c:240 ../src/gui/styles_dialog.c:475
 #: ../src/gui/styles_dialog.c:517
-#, fuzzy
 msgid "modules order"
-msgstr "מודולים"
+msgstr "סדר מודולים"
 
 #: ../src/gui/hist_dialog.c:268
 msgid "can't copy history out of unaltered image"
@@ -6112,14 +6099,12 @@ msgid "apply some metadata to all newly imported images."
 msgstr "יישם חלק מהמטא-נתונים לכל התמונות החדשות שמיובאות."
 
 #: ../src/gui/import_metadata.c:165
-#, fuzzy
 msgid "metadata to be applied per default"
-msgstr "הכנסת היוצר בעת ייבוא"
+msgstr "מטא-נתונים ליישום כברירת מחדל"
 
 #: ../src/gui/import_metadata.c:175
-#, fuzzy
 msgid "to be imported"
-msgstr "יובא %s"
+msgstr "לייבוא"
 
 #: ../src/gui/import_metadata.c:177
 msgid ""
@@ -6176,9 +6161,8 @@ msgid "use system font size"
 msgstr "השתמש בגודל גופן מערכת"
 
 #: ../src/gui/preferences.c:389 ../src/gui/preferences.c:396
-#, fuzzy
 msgid "font size in points"
-msgstr "הסח נקודת לבן"
+msgstr "גודל גופן בנקודות"
 
 #: ../src/gui/preferences.c:401
 msgid "GUI thumbs and previews DPI scaling factor"
@@ -6286,10 +6270,9 @@ msgstr "כריכה"
 
 #. Adding the search button
 #: ../src/gui/preferences.c:904
-#, fuzzy
 msgctxt "preferences"
 msgid "search"
-msgstr "רדיוס חיפוש"
+msgstr "חיפוש"
 
 #: ../src/gui/preferences.c:905
 msgid ""
@@ -6489,14 +6472,13 @@ msgid "name of the preset"
 msgstr "שם הפריסט"
 
 #: ../src/gui/presets.c:625 ../src/libs/lib.c:283
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to update the preset `%s'?"
-msgstr "האם את/ה בטוח/ה שברצונך למחוק את פריסט `%s'?"
+msgstr "האם אתה בטוח שברצונך לעדכן את פריסט `%s'?"
 
 #: ../src/gui/presets.c:629 ../src/libs/lib.c:287
-#, fuzzy
 msgid "update preset?"
-msgstr "עדכן פריסט"
+msgstr "עדכן פריסט?"
 
 #: ../src/gui/presets.c:920 ../src/gui/presets.c:933
 msgid "(default)"
@@ -6875,19 +6857,16 @@ msgid "compression level"
 msgstr "רמת דחיסה"
 
 #: ../src/imageio/format/tiff.c:843
-#, fuzzy
 msgid "b&w image"
-msgstr "תמונה"
+msgstr "תמונה שחור לבן"
 
 #: ../src/imageio/format/tiff.c:844
-#, fuzzy
 msgid "write rgb colors"
-msgstr "שמר צבעים"
+msgstr "רשום צבעים rgb"
 
 #: ../src/imageio/format/tiff.c:845
-#, fuzzy
 msgid "write grayscale"
-msgstr "כתוב קובץ נלווה"
+msgstr "רשום גווני אפור"
 
 #: ../src/imageio/format/webp.c:288
 msgid "WebP (8-bit)"
@@ -7206,31 +7185,26 @@ msgid "shear"
 msgstr "גזור"
 
 #: ../src/iop/ashift.c:538
-#, fuzzy
 msgctxt "accel"
 msgid "focal length"
 msgstr "אורך מוקד"
 
 #: ../src/iop/ashift.c:539
-#, fuzzy
 msgctxt "accel"
 msgid "crop factor"
 msgstr "מקדם חיתוך"
 
 #: ../src/iop/ashift.c:540
-#, fuzzy
 msgctxt "accel"
 msgid "aspect adjust"
-msgstr "כיוון הבט"
+msgstr "כיוון יחס"
 
 #: ../src/iop/ashift.c:541
-#, fuzzy
 msgctxt "accel"
 msgid "guides"
 msgstr "מנחים"
 
 #: ../src/iop/ashift.c:542 ../src/iop/clipping.c:3481
-#, fuzzy
 msgctxt "accel"
 msgid "automatic cropping"
 msgstr "חיתוך אוטומטי"
@@ -7346,29 +7320,26 @@ msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr "כוון יחס גובה רוחב של התמונה על ידי הגדלה או הקטנה אופקית ואנכית"
 
 #: ../src/iop/ashift.c:4878
-#, fuzzy
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
 "תקן אוטומטית עבור עיוות פרספקטיבה אנכי\n"
-"קליק-ctrl להתאים רק סיבוב\n"
-"קליק-shift להתאים רק הסחת עדשה"
+"קליק+ctrl להתאים רק סיבוב\n"
+"קליק+shift להתאים רק הסחת עדשה"
 
 #: ../src/iop/ashift.c:4881
-#, fuzzy
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
 "תקן אוטומטית עבור עיוות פרספקטיבה אופקי\n"
-"קליק-ctrl להתאים רק סיבוב\n"
-"קליק-shift להתאים רק הסחת עדשה"
+"קליק+ctrl להתאים רק סיבוב\n"
+"קליק+shift להתאים רק הסחת עדשה"
 
 #: ../src/iop/ashift.c:4884
-#, fuzzy
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -7378,12 +7349,11 @@ msgid ""
 msgstr ""
 "תקן אוטומטית עבור עיוות פרספקטיבה אופקי ואנכי; מתאים סיבוב, הסחת עדשה בשני "
 "הכיוונים, וגזירה\n"
-"קליק-ctrl להתאים רק סיבוב\n"
-"קליק-shift להתאים רק הסחת עדשה\n"
-"קליק-ctrl-shift להתאים רק סיבוב והסחת עדשה"
+"קליק+ctrl להתאים רק סיבוב\n"
+"קליק+shift להתאים רק הסחת עדשה\n"
+"קליק+ctrl+shift להתאים רק סיבוב והסחת עדשה"
 
 #: ../src/iop/ashift.c:4890
-#, fuzzy
 msgid ""
 "analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -7391,9 +7361,9 @@ msgid ""
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
 "נתח מבנה קו בתמונה\n"
-"קליק-ctrl להדגשת גבולות נוספת\n"
-"קליק-shift לחיזוק פרטים נוסף\n"
-"קליק-ctrl-shift לשילוב שתי השיטות"
+"קליק+ctrl להדגשת גבולות נוספת\n"
+"קליק+shift לחיזוק פרטים נוסף\n"
+"קליק+ctrl+shift לשילוב שתי השיטות"
 
 #: ../src/iop/ashift.c:4894
 msgid "remove line structure information"
@@ -7586,16 +7556,14 @@ msgstr "שנה גודל"
 #: ../src/iop/basecurve.c:204 ../src/iop/basicadj.c:173
 #: ../src/iop/rgbcurve.c:140 ../src/iop/rgblevels.c:121
 #: ../src/iop/tonecurve.c:216
-#, fuzzy
 msgctxt "accel"
 msgid "preserve colors"
 msgstr "שמר צבעים"
 
 #: ../src/iop/basecurve.c:205
-#, fuzzy
 msgctxt "accel"
 msgid "exposure fusion"
-msgstr "הסחת חשיפה"
+msgstr "מיזוג חשיפה"
 
 #: ../src/iop/basecurve.c:217
 msgid "neutral"
@@ -7764,7 +7732,6 @@ msgstr ""
 "מייצא RGB לא לינארי."
 
 #: ../src/iop/basicadj.c:164
-#, fuzzy
 msgctxt "accel"
 msgid "black level correction"
 msgstr "תיקון רמת שחור"
@@ -7775,7 +7742,6 @@ msgid "exposure"
 msgstr "חשיפה"
 
 #: ../src/iop/basicadj.c:166
-#, fuzzy
 msgctxt "accel"
 msgid "highlight compression"
 msgstr "דחיסת פרטים בהירים"
@@ -7788,7 +7754,6 @@ msgid "contrast"
 msgstr "ניגודיות"
 
 #: ../src/iop/basicadj.c:168
-#, fuzzy
 msgctxt "accel"
 msgid "middle grey"
 msgstr "אפור בינוני"
@@ -7813,7 +7778,6 @@ msgid "vibrance"
 msgstr "וויברנס"
 
 #: ../src/iop/basicadj.c:172
-#, fuzzy
 msgctxt "accel"
 msgid "clip"
 msgstr "חתוך"
@@ -7875,9 +7839,8 @@ msgid "saturation adjustment"
 msgstr "כוונון רווית צבע"
 
 #: ../src/iop/basicadj.c:662
-#, fuzzy
 msgid "vibrance adjustment"
-msgstr "כוונון בסיסי"
+msgstr "כוונון וויברנס"
 
 #: ../src/iop/basicadj.c:667
 msgid "apply auto exposure based on the entire image"
@@ -7920,10 +7883,9 @@ msgstr ""
 "מייצא RGB לא לינארי."
 
 #: ../src/iop/bilat.c:124 ../src/iop/globaltonemap.c:125
-#, fuzzy
 msgctxt "accel"
 msgid "detail"
-msgstr "פירוט"
+msgstr "פרטים"
 
 #: ../src/iop/bilat.c:125 ../src/iop/grain.c:440
 msgctxt "accel"
@@ -7942,7 +7904,6 @@ msgid "shadows"
 msgstr "צללים"
 
 #: ../src/iop/bilat.c:129
-#, fuzzy
 msgctxt "accel"
 msgid "midtone range"
 msgstr "טווח טונים בינוניים"
@@ -8128,7 +8089,6 @@ msgid "frame line size"
 msgstr "גודל קו המסגרת"
 
 #: ../src/iop/borders.c:205
-#, fuzzy
 msgctxt "accel"
 msgid "frame line offset"
 msgstr "הסחה לקו המסגרת"
@@ -8139,28 +8099,24 @@ msgid "pick frame line color from image"
 msgstr "בחר צבע קו המסגרת מתוך התמונה"
 
 #: ../src/iop/borders.c:207
-#, fuzzy
 msgctxt "accel"
 msgid "aspect"
-msgstr "כיוון"
+msgstr "הבט"
 
 #: ../src/iop/borders.c:208
-#, fuzzy
 msgctxt "accel"
 msgid "orientation"
 msgstr "אוריינטציה"
 
 #: ../src/iop/borders.c:209
-#, fuzzy
 msgctxt "accel"
 msgid "horizontal position"
-msgstr "מצב אופקי"
+msgstr "מיקום אופקי"
 
 #: ../src/iop/borders.c:210
-#, fuzzy
 msgctxt "accel"
 msgid "vertical position"
-msgstr "מצב אנכי"
+msgstr "מיקום אנכי"
 
 #: ../src/iop/borders.c:609
 msgid "15:10 postcard white"
@@ -8215,9 +8171,8 @@ msgid "constant border"
 msgstr "מסגרת אחידה"
 
 #: ../src/iop/borders.c:862 ../src/iop/borders.c:888 ../src/iop/borders.c:894
-#, fuzzy
 msgid "custom..."
-msgstr "סידור מותאם"
+msgstr "סידור מותאם..."
 
 #: ../src/iop/borders.c:883 ../src/iop/borders.c:889
 msgid "center"
@@ -8252,9 +8207,8 @@ msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr "בחר יחס גובה רוחב או הקלק על כפתור ימני והקלד כרצונך (w:h)"
 
 #: ../src/iop/borders.c:930
-#, fuzzy
 msgid "set the custom aspect ratio"
-msgstr "בחר את הרוויה"
+msgstr "קבע יחס רוחב גובה מותאם אישית"
 
 #: ../src/iop/borders.c:936
 msgid "aspect ratio orientation of the image with border"
@@ -8269,9 +8223,8 @@ msgstr ""
 "h)"
 
 #: ../src/iop/borders.c:947
-#, fuzzy
 msgid "custom horizontal position"
-msgstr "מצב אופקי"
+msgstr "מצב אופקי מותאם אישית"
 
 #: ../src/iop/borders.c:954
 msgid ""
@@ -8281,9 +8234,8 @@ msgstr ""
 "בחר את יחס המיקום האנכי יחסית לקו השמאלי או הקלק כפתור ימני והכנס ידנית (x:w)"
 
 #: ../src/iop/borders.c:958
-#, fuzzy
 msgid "custom vertical position"
-msgstr "מצב אנכי"
+msgstr "מצב אנכי מותאם אישית"
 
 #: ../src/iop/borders.c:967
 msgid "size of the frame line in percent of min border width"
@@ -8347,7 +8299,6 @@ msgid "channel mixer"
 msgstr "מערבב ערוצים"
 
 #: ../src/iop/channelmixer.c:135
-#, fuzzy
 msgctxt "accel"
 msgid "destination"
 msgstr "יעד"
@@ -8471,9 +8422,8 @@ msgid "invalid ratio format. it should be \"number:number\""
 msgstr "פורמט יחס לא חוקי. נדרש \"מספר:מספר\""
 
 #: ../src/iop/clipping.c:1660
-#, fuzzy
 msgid "invalid ratio format. it should be non zero"
-msgstr "פורמט יחס לא חוקי. נדרש \"מספר:מספר\""
+msgstr "פורמט יחס לא חוקי. חייב להיות שונה מאפס"
 
 #: ../src/iop/clipping.c:1903 ../src/iop/clipping.c:2177
 msgid "full"
@@ -8635,9 +8585,8 @@ msgid "main"
 msgstr "ראשי"
 
 #: ../src/iop/clipping.c:2378
-#, fuzzy
 msgid "margins"
-msgstr "רווח עליון"
+msgstr "שוליים"
 
 #: ../src/iop/clipping.c:3471
 msgctxt "accel"
@@ -8650,10 +8599,9 @@ msgid "angle"
 msgstr "זווית"
 
 #: ../src/iop/clipping.c:3473
-#, fuzzy
 msgctxt "accel"
 msgid "left"
-msgstr "שמאלי עליון"
+msgstr "שמאל"
 
 #: ../src/iop/clipping.c:3474
 msgctxt "accel"
@@ -8661,37 +8609,31 @@ msgid "top"
 msgstr "עליון"
 
 #: ../src/iop/clipping.c:3475
-#, fuzzy
 msgctxt "accel"
 msgid "right"
-msgstr "זכויות"
+msgstr "ימין"
 
 #: ../src/iop/clipping.c:3476
-#, fuzzy
 msgctxt "accel"
 msgid "bottom"
 msgstr "תחתית"
 
 #: ../src/iop/clipping.c:3477
-#, fuzzy
 msgctxt "accel"
 msgid "aspect ratio"
 msgstr "יחס רוחב גובה"
 
 #: ../src/iop/clipping.c:3478
-#, fuzzy
 msgctxt "accel"
 msgid "guide lines"
-msgstr "מנחים"
+msgstr "קווים מנחים"
 
 #: ../src/iop/clipping.c:3479
-#, fuzzy
 msgctxt "accel"
 msgid "flip"
 msgstr "הפוך"
 
 #: ../src/iop/clipping.c:3480
-#, fuzzy
 msgctxt "accel"
 msgid "keystone"
 msgstr "keystone"
@@ -8763,22 +8705,19 @@ msgid "similar to Kodachrome"
 msgstr "בדומה ל Kodachrome"
 
 #: ../src/iop/colorbalance.c:293
-#, fuzzy
 msgctxt "accel"
 msgid "input saturation"
 msgstr "רווית קלט"
 
 #: ../src/iop/colorbalance.c:294
-#, fuzzy
 msgctxt "accel"
 msgid "output saturation"
 msgstr "רווית פלט"
 
 #: ../src/iop/colorbalance.c:295
-#, fuzzy
 msgctxt "accel"
 msgid "contrast fulcrum"
-msgstr "ניגודיות נקודת סמך"
+msgstr "נקודת סמך לניגודיות"
 
 #: ../src/iop/colorbalance.c:298
 msgctxt "accel"
@@ -8944,19 +8883,16 @@ msgid "lightness"
 msgstr "בהירות"
 
 #: ../src/iop/colorchecker.c:135
-#, fuzzy
 msgctxt "accel"
 msgid "green-red"
-msgstr "ירוק/אדום"
+msgstr "ירוק-אדום"
 
 #: ../src/iop/colorchecker.c:136
-#, fuzzy
 msgctxt "accel"
 msgid "blue-yellow"
-msgstr "כחול/צהוב"
+msgstr "כחול-צהוב"
 
 #: ../src/iop/colorchecker.c:138
-#, fuzzy
 msgctxt "accel"
 msgid "target color"
 msgstr "צבע יעד"
@@ -8995,7 +8931,7 @@ msgid "patch #%d"
 msgstr "טלאי #%d"
 
 #: ../src/iop/colorchecker.c:1238
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
 "altered patches are marked with an outline\n"
@@ -9009,7 +8945,7 @@ msgstr ""
 "לחץ לבחירה\n"
 "לחיצה כפולה לאתחול\n"
 "לחיצה ימנית למחיקת טלאי\n"
-"קליק-shift בזמן בחירת צבע להחלפת טלאי"
+"קליק+shift בזמן בחירת צבע להחלפת טלאי"
 
 #: ../src/iop/colorchecker.c:1362
 msgid "patch"
@@ -9100,12 +9036,11 @@ msgid "cooling filter"
 msgstr "מסנן קר"
 
 #: ../src/iop/colorcorrection.c:252
-#, fuzzy
 msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"גרור את הקו לפיצול התאמות. בהיר עבור טונים בהירים, חשוך עבור צללים. השתמש "
+"גרור את הקו לפיצול טונים. בהיר עבור פרטים בהירים, חשוך עבור צללים. השתמש "
 "בגלגל העכבר לשינוי הרוויה."
 
 #: ../src/iop/colorcorrection.c:272
@@ -9117,19 +9052,16 @@ msgid "input color profile"
 msgstr "קלט פרופיל צבע"
 
 #: ../src/iop/colorin.c:163
-#, fuzzy
 msgctxt "accel"
 msgid "input profile"
 msgstr "פרופיל קלט"
 
 #: ../src/iop/colorin.c:164
-#, fuzzy
 msgctxt "accel"
 msgid "working profile"
 msgstr "פרופיל עבודה"
 
 #: ../src/iop/colorin.c:165
-#, fuzzy
 msgctxt "accel"
 msgid "gamut clipping"
 msgstr "חיתוך מכלול צבע"
@@ -9208,19 +9140,16 @@ msgid "color mapping"
 msgstr "מיפוי צבע"
 
 #: ../src/iop/colormapping.c:166
-#, fuzzy
 msgctxt "accel"
 msgid "number of clusters"
 msgstr "מספר אשכולות"
 
 #: ../src/iop/colormapping.c:167
-#, fuzzy
 msgctxt "accel"
 msgid "color dominance"
 msgstr "דומיננטיות צבע"
 
 #: ../src/iop/colormapping.c:168
-#, fuzzy
 msgctxt "accel"
 msgid "histogram equalization"
 msgstr "איזון היסטוגרמה"
@@ -9280,10 +9209,9 @@ msgid "output color profile"
 msgstr "פרופיל צבע לפלט"
 
 #: ../src/iop/colorout.c:123
-#, fuzzy
 msgctxt "accel"
 msgid "export profile"
-msgstr "פרופיל פלט"
+msgstr "ייצא פרופיל"
 
 #: ../src/iop/colorout.c:678
 msgid "missing output profile has been replaced by sRGB!"
@@ -9349,7 +9277,6 @@ msgid "range extent"
 msgstr "היקף טווח"
 
 #: ../src/iop/colorreconstruction.c:183
-#, fuzzy
 msgctxt "accel"
 msgid "precedence"
 msgstr "עדיפות"
@@ -9436,20 +9363,17 @@ msgid "color zones"
 msgstr "אזורי צבע"
 
 #: ../src/iop/colorzones.c:160
-#, fuzzy
 msgctxt "accel"
 msgid "select by"
 msgstr "בחר לפי"
 
 #: ../src/iop/colorzones.c:161
-#, fuzzy
 msgctxt "accel"
 msgid "process mode"
 msgstr "מצב עיבוד"
 
 #: ../src/iop/colorzones.c:162 ../src/iop/rgbcurve.c:139
 #: ../src/iop/tonecurve.c:215
-#, fuzzy
 msgctxt "accel"
 msgid "interpolation method"
 msgstr "שיטת אנטרפולציה"
@@ -9475,9 +9399,8 @@ msgid "black & white film"
 msgstr "פילם שחור לבן"
 
 #: ../src/iop/colorzones.c:724
-#, fuzzy
 msgid "HSL base setting"
-msgstr "הגדרות תמונה"
+msgstr "הגדרות בסיס HSL"
 
 #: ../src/iop/colorzones.c:2208 ../src/iop/retouch.c:1996
 #: ../src/iop/toneequal.c:1762
@@ -9485,7 +9408,6 @@ msgid "cannot display masks when the blending mask is displayed"
 msgstr "לא ניתן להציג מסיכות בזמן שמסיכת הערבוב מוצגת"
 
 #: ../src/iop/colorzones.c:2382 ../src/iop/rgbcurve.c:1426
-#, fuzzy
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -9493,9 +9415,9 @@ msgid ""
 "shift+drag to create a negative curve"
 msgstr ""
 "יצירת עקום המבוסס על שטח מהתמונה\n"
-"קליק ליצירת עקות שטוח\n"
-"קליק+ctrl ליצירת עקום חיובי\n"
-"קליק+shift ליצירת עקום שלילי"
+"גרור ליצירת עקות שטוח\n"
+"גרור+ctrl ליצירת עקום חיובי\n"
+"גרור+shift ליצירת עקום שלילי"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2404
@@ -9555,13 +9477,11 @@ msgid "defringe"
 msgstr "דה-פרינג'"
 
 #: ../src/iop/defringe.c:115
-#, fuzzy
 msgctxt "accel"
 msgid "edge detection radius"
 msgstr "רדיוס גילוי קצוות"
 
 #: ../src/iop/defringe.c:117
-#, fuzzy
 msgctxt "accel"
 msgid "operation mode"
 msgstr "מצב עבודה"
@@ -9603,10 +9523,9 @@ msgid "edge threshold"
 msgstr "סף קצה"
 
 #: ../src/iop/demosaic.c:184
-#, fuzzy
 msgctxt "accel"
 msgid "method (bayer)"
-msgstr "שיטה"
+msgstr "שיטה (bayer)"
 
 #: ../src/iop/demosaic.c:185
 msgctxt "accel"
@@ -9614,13 +9533,11 @@ msgid "method (xtrans)"
 msgstr "שיטה (xtrans)"
 
 #: ../src/iop/demosaic.c:186
-#, fuzzy
 msgctxt "accel"
 msgid "color smoothing"
 msgstr "החלקת צבע"
 
 #: ../src/iop/demosaic.c:187
-#, fuzzy
 msgctxt "accel"
 msgid "match greens"
 msgstr "התאם ירוקים"
@@ -9685,46 +9602,39 @@ msgid "denoise (profiled)"
 msgstr "סילוק רעש (עם פרופיל)"
 
 #: ../src/iop/denoiseprofile.c:607
-#, fuzzy
 msgctxt "accel"
 msgid "adjust autoset parameters"
 msgstr "כוונן פרמטרים אוטומטיים"
 
 #: ../src/iop/denoiseprofile.c:608
-#, fuzzy
 msgctxt "accel"
 msgid "preserve shadows"
 msgstr "שמר צללים"
 
 #: ../src/iop/denoiseprofile.c:609
-#, fuzzy
 msgctxt "accel"
 msgid "bias correction"
 msgstr "תיקון הסחה"
 
 #: ../src/iop/denoiseprofile.c:610 ../src/iop/nlmeans.c:118
-#, fuzzy
 msgctxt "accel"
 msgid "patch size"
 msgstr "גודל טלאי"
 
 #: ../src/iop/denoiseprofile.c:611
-#, fuzzy
 msgctxt "accel"
 msgid "search radius"
 msgstr "רדיוס חיפוש"
 
 #: ../src/iop/denoiseprofile.c:612
-#, fuzzy
 msgctxt "accel"
 msgid "scattering"
-msgstr "קשירה"
+msgstr "פיזור"
 
 #: ../src/iop/denoiseprofile.c:613
-#, fuzzy
 msgctxt "accel"
 msgid "central pixel weight"
-msgstr "משקל פיקסל מרכזי (פרטים)"
+msgstr "משקל פיקסל מרכזי"
 
 #: ../src/iop/denoiseprofile.c:3353
 #, c-format
@@ -9861,14 +9771,14 @@ msgid "profile used for variance stabilization"
 msgstr "פרופיל בו השתמשו לייצוב השונות"
 
 #: ../src/iop/denoiseprofile.c:4377
-#, fuzzy
 msgid ""
 "method used in the denoising core.\n"
 "non-local means works best for `lightness' blending,\n"
 "wavelets work best for `color' blending"
 msgstr ""
-"שיטות בהם משתמשים בלב תהליך סילוק הרעש. שיטת non-local מתאימה ביותר עבור "
-"ערבוב `בהירות', wavelets מתאימה ביותר לערבוב `צבע'"
+"שיטות בהם משתמשים בלב תהליך סילוק הרעש.\n"
+"שיטת non-local מתאימה ביותר עבור ערבוב `בהירות',\n"
+"שיטת wavelets מתאימה ביותר לערבוב `צבע'"
 
 #: ../src/iop/denoiseprofile.c:4380
 msgid ""
@@ -9905,14 +9815,14 @@ msgstr ""
 "ראה הוזהרת"
 
 #: ../src/iop/denoiseprofile.c:4390
-#, fuzzy
 msgid ""
 "scattering of the neighbourhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
 "does not affect execution time."
 msgstr ""
-"פיזור הסביבה לחיפוש טלאים. הגבר לסילוק יעיל יותר של רעש גרעון גס. לא משפיע "
-"על זמן הפעולה."
+"פיזור הסביבה לחיפוש טלאים.\n"
+"הגבר לסילוק יעיל יותר של רעש גרעון גס.\n"
+"לא משפיע על זמן הפעולה."
 
 #: ../src/iop/denoiseprofile.c:4393
 msgid ""
@@ -9942,7 +9852,6 @@ msgstr ""
 "מצב זה עלול לקרות אם התמונה בחשיפת חסר."
 
 #: ../src/iop/denoiseprofile.c:4402
-#, fuzzy
 msgid ""
 "finetune shadows denoising.\n"
 "decrease to denoise more aggressively\n"
@@ -9950,7 +9859,7 @@ msgid ""
 msgstr ""
 "כוונון עדין של סינון רעש בצללים.\n"
 "הפחת לסילוק אגרסיבי יותר של\n"
-"אזורים חשוכים בתמונה.\n"
+"אזורים חשוכים בתמונה."
 
 #: ../src/iop/denoiseprofile.c:4405
 msgid ""
@@ -9979,7 +9888,6 @@ msgid "dithering"
 msgstr "מיזוג"
 
 #: ../src/iop/dither.c:124 ../src/iop/highlights.c:102
-#, fuzzy
 msgctxt "accel"
 msgid "method"
 msgstr "שיטה"
@@ -10405,41 +10313,35 @@ msgid "extreme luminance saturation"
 msgstr "רווית לומיננס קיצוני"
 
 #: ../src/iop/filmicrgb.c:395
-#, fuzzy
 msgctxt "accel"
 msgid "target black luminance"
 msgstr "בהירות מטרה של שחור"
 
 #: ../src/iop/filmicrgb.c:396
-#, fuzzy
 msgctxt "accel"
 msgid "target middle grey"
 msgstr "יעד רמות אפור בינוניות"
 
 #: ../src/iop/filmicrgb.c:397
-#, fuzzy
 msgctxt "accel"
 msgid "target white luminance"
 msgstr "יעד לומיננס לבן"
 
 #: ../src/iop/filmicrgb.c:398
-#, fuzzy
 msgctxt "accel"
 msgid "target power transfer function"
-msgstr "target power transfer function"
+msgstr "יעד פונקציית תמסורת של הספק"
 
 #: ../src/iop/filmicrgb.c:399
-#, fuzzy
 msgctxt "accel"
 msgid "preserve chrominance"
 msgstr "שמר chrominance"
 
 #: ../src/iop/filmicrgb.c:1042
-#, fuzzy
 msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
-msgstr "פירוק צ'ולסקי כשל בהקצאת זיכרון, בדוק את הגדרות ה RAM"
+msgstr "שחזור פרטים בהירים של filmic כשל בהקצאת זיכרון, בדוק הגדרות RAM"
 
 #: ../src/iop/filmicrgb.c:1419
 msgid "filmic works only on RGB input"
@@ -10507,14 +10409,12 @@ msgstr ""
 
 #. Page RECONSTRUCT
 #: ../src/iop/filmicrgb.c:2344
-#, fuzzy
 msgid "reconstruct"
-msgstr "שחזר צבע"
+msgstr "שחזר"
 
 #: ../src/iop/filmicrgb.c:2349
-#, fuzzy
 msgid "highlights clipping"
-msgstr "דחיסת פרטים בהירים"
+msgstr "חיתוך פרטים בהירים"
 
 #: ../src/iop/filmicrgb.c:2356
 msgid ""
@@ -10543,9 +10443,8 @@ msgstr ""
 "הגבר כדי להפוך את המעבר לרך ומטושטש יותר."
 
 #: ../src/iop/filmicrgb.c:2371
-#, fuzzy
 msgid "display highlight reconstruction mask"
-msgstr "שחזור פרטים בהירים"
+msgstr "הצג מסיכת שחזור פרטים בהירים"
 
 #: ../src/iop/filmicrgb.c:2378 ../src/iop/splittoning.c:544
 msgid "balance"
@@ -10642,9 +10541,8 @@ msgstr ""
 "הגבר אם הצללים ו/או הפרטים הבהירים אינם רווים מספיק."
 
 #: ../src/iop/filmicrgb.c:2460 ../src/iop/filmicrgb.c:2604
-#, fuzzy
 msgid "middle tones saturation"
-msgstr "בחר את הרוויה"
+msgstr "רווית טונים בינוניים"
 
 #. Page DISPLAY
 #: ../src/iop/filmicrgb.c:2463
@@ -10653,9 +10551,8 @@ msgstr "הצג"
 
 #. Page OPTIONS
 #: ../src/iop/filmicrgb.c:2485
-#, fuzzy
 msgid "options"
-msgstr "אפשרויות ממשק גראפי"
+msgstr "אפשרויות"
 
 #: ../src/iop/filmicrgb.c:2492
 msgid ""
@@ -10744,14 +10641,12 @@ msgstr ""
 "כך שיש השתלבות עם יתר התמונה."
 
 #: ../src/iop/filmicrgb.c:2537
-#, fuzzy
 msgid "uniform"
 msgstr "באופן אחיד"
 
 #: ../src/iop/filmicrgb.c:2539
-#, fuzzy
 msgid "poissonian"
-msgstr "פואסוני פשוט"
+msgstr "פואסוני"
 
 #: ../src/iop/filmicrgb.c:2540
 msgid ""
@@ -10817,29 +10712,25 @@ msgid "rotate 90 degrees CW"
 msgstr "סובב 90 מעלות עם כיוון השעון"
 
 #: ../src/iop/gamma.c:43
-#, fuzzy
 msgctxt "modulename"
 msgid "display encoding"
-msgstr "הצג בחירה"
+msgstr "הצג קידוד"
 
 #: ../src/iop/globaltonemap.c:103
 msgid "global tonemap"
 msgstr "מיפוי טונים גלובלי"
 
 #: ../src/iop/globaltonemap.c:123
-#, fuzzy
 msgctxt "accel"
 msgid "bias"
-msgstr "הטייה"
+msgstr "הסחה"
 
 #: ../src/iop/globaltonemap.c:124
-#, fuzzy
 msgctxt "accel"
 msgid "target"
 msgstr "יעד"
 
 #: ../src/iop/globaltonemap.c:126
-#, fuzzy
 msgctxt "accel"
 msgid "operator"
 msgstr "אופרטור"
@@ -10926,22 +10817,21 @@ msgid "density"
 msgstr "צפיפות"
 
 #: ../src/iop/graduatednd.c:163
-#, fuzzy
 msgctxt "accel"
 msgid "hardness"
-msgstr "חדות"
+msgstr "קשיחות"
 
 #: ../src/iop/graduatednd.c:1158
 msgid "the density in EV for the filter"
 msgstr "הצפיפות ב EV של הפילטר"
 
 #: ../src/iop/graduatednd.c:1163
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "hardness of graduation:\n"
 "0% = soft, 100% = hard"
 msgstr ""
-"דחיסה עבור השתנות:\n"
+"קשיחות המעברים:\n"
 "0% = רך, 100% = קשה"
 
 #: ../src/iop/graduatednd.c:1167
@@ -10972,19 +10862,18 @@ msgid "[%s on line] change density"
 msgstr "[%s על קו] שנה צפיפות"
 
 #: ../src/iop/graduatednd.c:1215
-#, fuzzy, c-format
+#, c-format
 msgid "[%s on line] change hardness"
-msgstr "[%s על קו] שנה צפיפות"
+msgstr "[%s על קו] שנה קשיחות"
 
 #: ../src/iop/grain.c:420
 msgid "grain"
 msgstr "גירעון"
 
 #: ../src/iop/grain.c:442
-#, fuzzy
 msgctxt "accel"
 msgid "midtones bias"
-msgstr "הסחה של טונים בינוניים"
+msgstr "הסחת טונים בינוניים"
 
 #: ../src/iop/grain.c:589
 #, c-format
@@ -11013,7 +10902,6 @@ msgid "haze removal"
 msgstr "הסרת ערפול"
 
 #: ../src/iop/hazeremoval.c:123
-#, fuzzy
 msgctxt "accel"
 msgid "distance"
 msgstr "מרחק"
@@ -11035,7 +10923,6 @@ msgid "highlight reconstruction"
 msgstr "שחזור פרטים בהירים"
 
 #: ../src/iop/highlights.c:101
-#, fuzzy
 msgctxt "accel"
 msgid "clipping threshold"
 msgstr "סף חיתוך"
@@ -11164,13 +11051,11 @@ msgid "select corrections"
 msgstr "בחר תיקונים"
 
 #: ../src/iop/lens.cc:183
-#, fuzzy
 msgctxt "accel"
 msgid "corrections"
 msgstr "תיקונים"
 
 #: ../src/iop/lens.cc:184
-#, fuzzy
 msgctxt "accel"
 msgid "geometry"
 msgstr "גאומטריה"
@@ -11348,13 +11233,11 @@ msgid "levels"
 msgstr "רמות"
 
 #: ../src/iop/levels.c:131
-#, fuzzy
 msgctxt "accel"
 msgid "gray"
 msgstr "אפור"
 
 #: ../src/iop/levels.c:132
-#, fuzzy
 msgctxt "accel"
 msgid "white"
 msgstr "לבן"
@@ -11409,7 +11292,6 @@ msgid "liquify"
 msgstr "נזל"
 
 #: ../src/iop/liquify.c:3476
-#, fuzzy
 msgid ""
 "click and drag to add point\n"
 "scroll to change size\n"
@@ -11417,10 +11299,9 @@ msgid ""
 msgstr ""
 "הקלק וגרור להוספת נקודה\n"
 "גלול לשינוי גודל\n"
-"גלול-shift לשינוי חוזק - ctrl-גלול לשינוי כיוון"
+"גלול+shift לשינוי חוזק - ctrl+גלול לשינוי כיוון"
 
 #: ../src/iop/liquify.c:3480
-#, fuzzy
 msgid ""
 "click to add line\n"
 "scroll to change size\n"
@@ -11428,10 +11309,9 @@ msgid ""
 msgstr ""
 "הקלק להוסיף קו\n"
 "גלול לשנות גודל\n"
-"גלול-shift לשנוי חוזק - ctrl-גלול לשנות כיוון"
+"גלול+shift לשנוי חוזק - ctrl+גלול לשנות כיוון"
 
 #: ../src/iop/liquify.c:3484
-#, fuzzy
 msgid ""
 "click to add curve\n"
 "scroll to change size\n"
@@ -11439,7 +11319,7 @@ msgid ""
 msgstr ""
 "הקלק להוסיף עקומה\n"
 "גלול לשנות גודל\n"
-"גלול-shift לשנוי חוזק - ctrl-גלול לשנות כיוון"
+"גלול+shift לשנוי חוזק - ctrl+גלול לשנות כיוון"
 
 #: ../src/iop/liquify.c:3487
 msgid "click to edit nodes"
@@ -11474,22 +11354,20 @@ msgid "node tool: edit, add and delete nodes"
 msgstr "מכחול צמתים: ערוך, הוסף ומחק צמתים"
 
 #: ../src/iop/liquify.c:3578
-#, fuzzy
 msgid ""
 "ctrl+click: add node - right click: remove path\n"
 "ctrl+alt+click: toggle line/curve"
 msgstr ""
-"קליק-ctrl: הוסף צומת - קליק ימני: הסרת נתיב\n"
-"קליק-alt-ctrl: מתג קו/עקום"
+"קליק+ctrl: הוסף צומת - קליק ימני: הסרת נתיב\n"
+"קליק+alt+ctrl: מתג קו/עקום"
 
 #: ../src/iop/liquify.c:3580
-#, fuzzy
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
 "הקלק וגרור להזיז - קליק: הצג/החבא פקדי נגיעת נוצה\n"
-"קליק-ctrl: סימטרי, חלק, חרמש, החלקה אוטומטית - קליק ימני להסרה"
+"קליק+ctrl: סימטרי, חלק, חרמש, החלקה אוטומטית - קליק ימני להסרה"
 
 #: ../src/iop/liquify.c:3583 ../src/iop/liquify.c:3584
 msgid "drag to change shape of path"
@@ -11508,13 +11386,12 @@ msgid "drag to adjust hardness (feather)"
 msgstr "גרור לכוונון קשיחות (נוצה)"
 
 #: ../src/iop/liquify.c:3588
-#, fuzzy
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click: linear, grow, and shrink"
 msgstr ""
 "גרור לכוונון עצמת פיתול\n"
-"קליק-ctrl : לינארי, הרחב, וכווץ"
+"קליק+ctrl : לינארי, הרחב, וכווץ"
 
 #: ../src/iop/liquify.c:3616
 msgctxt "accel"
@@ -11635,26 +11512,23 @@ msgid "lut 3D"
 msgstr "lut 3D"
 
 #: ../src/iop/lut3d.c:152
-#, fuzzy
 msgctxt "accel"
 msgid "application color space"
 msgstr "מרחב צבע לאפליקציה"
 
 #: ../src/iop/lut3d.c:153
-#, fuzzy
 msgctxt "accel"
 msgid "interpolation"
 msgstr "אינטרפולציה"
 
 #: ../src/iop/lut3d.c:470
-#, fuzzy
 msgid "error allocating buffer for gmz lut"
-msgstr "שגיאה - הקצאת זיכרון לטובת png lut"
+msgstr "שגיאה בהקצאת זיכרון לטובת gmz lut"
 
 #: ../src/iop/lut3d.c:496
-#, fuzzy, c-format
+#, c-format
 msgid "invalid png file %s"
-msgstr "רמה לא חוקית עבור קובץ png %d %d"
+msgstr "קובץ png לא חוקי %s"
 
 #: ../src/iop/lut3d.c:504
 #, c-format
@@ -11676,9 +11550,8 @@ msgid "error - lut 3D size %d exceeds the maximum supported"
 msgstr "שגיאה - גודל lut 3D %d חורג מהמקסימום הנתמך"
 
 #: ../src/iop/lut3d.c:552
-#, fuzzy
 msgid "error allocating buffer for png lut"
-msgstr "שגיאה - הקצאת זיכרון לטובת png lut"
+msgstr "שגיאה בהקצאת זיכרון לטובת png lut"
 
 #: ../src/iop/lut3d.c:560
 #, c-format
@@ -11703,9 +11576,8 @@ msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMAIN MAX <> 1.0 לא נתמך"
 
 #: ../src/iop/lut3d.c:778
-#, fuzzy
 msgid "[1D cube lut is not supported"
-msgstr "1D cube lut לא נתמך"
+msgstr "[1D cube lut לא נתמך"
 
 #: ../src/iop/lut3d.c:800 ../src/iop/lut3d.c:912
 msgid "error - allocating buffer for cube lut"
@@ -11716,14 +11588,14 @@ msgid "error - cube lut size is not defined"
 msgstr "שגיאה - גודל cube lut לא מוגדר"
 
 #: ../src/iop/lut3d.c:822
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube lut invalid number line %d"
-msgstr "שגיאה - מספר שורות cube lut לא נכון"
+msgstr "שגיאה - מספר שורה cube lut לא חוקי %d"
 
 #: ../src/iop/lut3d.c:838
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube lut lines number %d is not correct, should be %d"
-msgstr "שגיאה - מספר שורות cube lut לא נכון"
+msgstr "שגיאה - מספר שורות lut %d לא נכון, צריך להיות %d"
 
 #: ../src/iop/lut3d.c:848
 #, c-format
@@ -11731,9 +11603,9 @@ msgid "warning - cube lut %d out of range values [0,1]"
 msgstr "אזהרה - lut קובי %d ערכים מחוץ לתחום [0,1]"
 
 #: ../src/iop/lut3d.c:872
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid 3dl file: %s"
-msgstr "שגיאה: קובץ cube לא חוקי %s"
+msgstr "שגיאה: קובץ 3dl לא חוקי %s"
 
 #: ../src/iop/lut3d.c:901
 #, c-format
@@ -11779,55 +11651,44 @@ msgid "Select file outside Lut root folder is not allowed"
 msgstr "בחירת קובץ מחוץ לתיקיית השורש של Lut אסורה"
 
 #: ../src/iop/lut3d.c:1694
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed lut) file "
 "CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
-"הנתיב לקובץ (יחסית לתיקיית ה lut) נשמר עם התמונה (ולא נתוני ה lut עצמם)\n"
-"זהירות: תיקיית ה lut חייבת להיות קבועה ב העדפות/אפשרויות ליבה/שונות לפני "
-"בחירת קובץ ה lut"
+"בחר קובץ png (haldclut), cube, 3dl, או gmz (דחוס lut) זהירות: קובץ lut תלת "
+"מימדי חייב להיקבע ב העדפות/ליבה אפשרויות/שונות לפני בחירת קובץ lut"
 
 #: ../src/iop/lut3d.c:1698
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D lut folder must be "
 "set in preferences/core options/miscellaneous before choosing the lut file"
 msgstr ""
-"הנתיב לקובץ (יחסית לתיקיית ה lut) נשמר עם התמונה (ולא נתוני ה lut עצמם)\n"
-"זהירות: תיקיית ה lut חייבת להיות קבועה ב העדפות/אפשרויות ליבה/שונות לפני "
-"בחירת קובץ ה lut"
+"בחר קובץ png (haldclut), cube, 3dl, זהירות: קובץ lut תלת מימדי חייב להיקבע ב "
+"העדפות/ליבה אפשרויות/שונות לפני בחירת קובץ lut"
 
 #: ../src/iop/lut3d.c:1709
-#, fuzzy
 msgid ""
 "the file path (relative to lut folder) is saved with image along with the "
 "lut data if it's a compressed lut (gmz)"
 msgstr ""
-"הנתיב לקובץ (יחסית לתיקיית ה lut) נשמר עם התמונה (ולא נתוני ה lut עצמם)\n"
-"זהירות: תיקיית ה lut חייבת להיות קבועה ב העדפות/אפשרויות ליבה/שונות לפני "
-"בחירת קובץ ה lut"
+"הנתיב לקובץ (יחסית לתיקיית ה lut) נשמר עם התמונה יחד עם נתוני ה lut במידה "
+"וזה lut דחוס (gmz)"
 
 #: ../src/iop/lut3d.c:1712
-#, fuzzy
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)"
 msgstr ""
-"הנתיב לקובץ (יחסית לתיקיית ה lut) נשמר עם התמונה (ולא נתוני ה lut עצמם)\n"
-"זהירות: תיקיית ה lut חייבת להיות קבועה ב העדפות/אפשרויות ליבה/שונות לפני "
-"בחירת קובץ ה lut"
+"הנתיב לקובץ (יחסית לתיקיית ה lut) נשמר עם התמונה (ולא נתוני ה lut עצמם)"
 
 #: ../src/iop/lut3d.c:1721
-#, fuzzy
 msgid "enter lut name"
-msgstr "הכנס שם לתג"
+msgstr "הכנס שם לlut"
 
 #: ../src/iop/lut3d.c:1743
-#, fuzzy
 msgid "select the LUT"
-msgstr "בחר את הגוון"
+msgstr "בחר את ה LUT"
 
 #: ../src/iop/lut3d.c:1756
 msgid "select the color space in which the LUT has to be applied"
@@ -11862,36 +11723,30 @@ msgid "how much to keep highlights"
 msgstr "באיזו מידה לשמר פרטים בהירים"
 
 #: ../src/iop/negadoctor.c:192
-#, fuzzy
 msgid "negadoctor"
-msgstr "מקדם"
+msgstr "negadoctor"
 
 #: ../src/iop/negadoctor.c:421
-#, fuzzy
 msgid "color film"
-msgstr "צבע כחול"
+msgstr "פילם צבעוני"
 
 #: ../src/iop/negadoctor.c:435
-#, fuzzy
 msgid "black and white film"
 msgstr "פילם שחור לבן"
 
 #: ../src/iop/negadoctor.c:495
-#, fuzzy
 msgid "D min"
-msgstr "זום מינימלי"
+msgstr "D min"
 
 #: ../src/iop/negadoctor.c:501 ../src/iop/negadoctor.c:1092
 msgid "D min red component"
 msgstr "D מינימום רכיב אדום"
 
 #: ../src/iop/negadoctor.c:1050
-#, fuzzy
 msgid "film stock"
-msgstr "גליל פילם"
+msgstr "סוג פילם"
 
 #: ../src/iop/negadoctor.c:1051
-#, fuzzy
 msgid "black and white"
 msgstr "שחור לבן"
 
@@ -11901,30 +11756,25 @@ msgid "color"
 msgstr "צבע"
 
 #: ../src/iop/negadoctor.c:1055
-#, fuzzy
 msgid "toggle on or off the color controls"
-msgstr "מתג בקרי פאנל מתקפלים"
+msgstr "מתג בקרי צבע"
 
 #: ../src/iop/negadoctor.c:1062
-#, fuzzy
 msgid "film properties"
-msgstr "תכונות"
+msgstr "תכונות פילם"
 
 #: ../src/iop/negadoctor.c:1064
-#, fuzzy
 msgid "print properties"
-msgstr "תכונות"
+msgstr "תכונות הדפסה"
 
 #. Dmin
 #: ../src/iop/negadoctor.c:1073
-#, fuzzy
 msgid "color of the film base"
 msgstr "צבע חומר הפילם"
 
 #: ../src/iop/negadoctor.c:1081
-#, fuzzy
 msgid "select color of film material from a swatch"
-msgstr "בחר צבע חומר הפילם"
+msgstr "בחר צבע חומר הפילם מתוך swatch"
 
 #: ../src/iop/negadoctor.c:1086
 msgid "pick color of film material from image"
@@ -11953,14 +11803,12 @@ msgstr "D מינימום רכיב כחול"
 
 #. D max and scanner bias
 #: ../src/iop/negadoctor.c:1122
-#, fuzzy
 msgid "dynamic range of the film"
-msgstr "תחום דינאמי"
+msgstr "תחום דינאמי של הפילם"
 
 #: ../src/iop/negadoctor.c:1126
-#, fuzzy
 msgid "D max"
-msgstr "זום מקסימלי"
+msgstr "D max"
 
 #: ../src/iop/negadoctor.c:1128
 msgid ""
@@ -11973,14 +11821,12 @@ msgstr ""
 "התחום הדינמי של הסצנה והגדרות החשיפה של הסורק."
 
 #: ../src/iop/negadoctor.c:1134
-#, fuzzy
 msgid "scanner exposure settings"
-msgstr "הגדרות מצלמה"
+msgstr "הגדרות חשיפה לסורק"
 
 #: ../src/iop/negadoctor.c:1138
-#, fuzzy
 msgid "scan exposure bias"
-msgstr "הטיית חשיפה"
+msgstr "הסחת חשיפה לסורק"
 
 #: ../src/iop/negadoctor.c:1140
 msgid ""
@@ -11992,24 +11838,20 @@ msgstr ""
 
 #. WB shadows
 #: ../src/iop/negadoctor.c:1146
-#, fuzzy
 msgid "shadows color cast"
-msgstr "כוונון צבע בצללים"
+msgstr "הטלת צבע בצללים"
 
 #: ../src/iop/negadoctor.c:1155
-#, fuzzy
 msgid "select color of shadows from a swatch"
-msgstr "בחר צבע חומר הפילם"
+msgstr "בחר צבע לצללים מתוך ה swatch"
 
 #: ../src/iop/negadoctor.c:1160
-#, fuzzy
 msgid "pick shadows color from image"
-msgstr "בחר צבע מהתמונה"
+msgstr "בחר צבע לצללים מהתמונה"
 
 #: ../src/iop/negadoctor.c:1165
-#, fuzzy
 msgid "shadows red offset"
-msgstr "צללים: הרם / הסט"
+msgstr "הסחת אדום בצללים"
 
 #: ../src/iop/negadoctor.c:1166 ../src/iop/negadoctor.c:1175
 #: ../src/iop/negadoctor.c:1184
@@ -12025,35 +11867,29 @@ msgstr ""
 "לשחזר את את איזון הלבן הגלובלי במקרים קשים."
 
 #: ../src/iop/negadoctor.c:1174
-#, fuzzy
 msgid "shadows green offset"
-msgstr "צללים: הרם / הסט"
+msgstr "הסחת ירוק בצללים"
 
 #: ../src/iop/negadoctor.c:1183
-#, fuzzy
 msgid "shadows blue offset"
-msgstr "צללים: הרם / הסט"
+msgstr "הסחת כחול בצללים"
 
 #. WB highlights
 #: ../src/iop/negadoctor.c:1192
-#, fuzzy
 msgid "highlights white balance"
-msgstr "איזון צללים/ בהירים"
+msgstr "איזון לבן בבהירים"
 
 #: ../src/iop/negadoctor.c:1201
-#, fuzzy
 msgid "select color of illuminant from a swatch"
-msgstr "בחר צבע חומר הפילם"
+msgstr "בחר צבע מקור האור מתוך swatch"
 
 #: ../src/iop/negadoctor.c:1206
-#, fuzzy
 msgid "pick illuminant color from image"
-msgstr "בחר צבע מילוי מהתמונה"
+msgstr "בחר צבע מקור האור מתוך התמונה"
 
 #: ../src/iop/negadoctor.c:1211
-#, fuzzy
 msgid "illuminant red gain"
-msgstr "לומיננס Y"
+msgstr "הגבר אדום של מקור האור"
 
 #: ../src/iop/negadoctor.c:1212 ../src/iop/negadoctor.c:1221
 #: ../src/iop/negadoctor.c:1230
@@ -12078,14 +11914,12 @@ msgstr "הגבר כחול במקור התאורה"
 
 #. print corrections
 #: ../src/iop/negadoctor.c:1238
-#, fuzzy
 msgid "virtual paper properties"
-msgstr "תכונות נוספות"
+msgstr "תכונות ניר ווירטואלי"
 
 #: ../src/iop/negadoctor.c:1242
-#, fuzzy
 msgid "paper black (density correction)"
-msgstr "תיקון רמת שחור"
+msgstr "רמת שחור של הניר (תיקון צפיפות)"
 
 #: ../src/iop/negadoctor.c:1244
 msgid ""
@@ -12096,9 +11930,8 @@ msgstr ""
 "להמנע מחיתוך צללים בכוונון הקונטרסט הגלובלי."
 
 #: ../src/iop/negadoctor.c:1250
-#, fuzzy
 msgid "paper grade (gamma)"
-msgstr "יעד גאמה"
+msgstr "דרגת ניר (גאמה)"
 
 #: ../src/iop/negadoctor.c:1252
 msgid ""
@@ -12125,14 +11958,12 @@ msgstr ""
 "זה מייצר מחדש במידת מה התנהגות של ניר מט."
 
 #: ../src/iop/negadoctor.c:1266
-#, fuzzy
 msgid "virtual print emulation"
-msgstr "אמולציית Fuji Provia"
+msgstr "אמולציית הדפסה ווירטואלית"
 
 #: ../src/iop/negadoctor.c:1270
-#, fuzzy
 msgid "print exposure adjustment"
-msgstr "כוונון בהירות"
+msgstr "כוונון בהירות הדפסה"
 
 #: ../src/iop/negadoctor.c:1272
 msgid ""
@@ -12192,22 +12023,19 @@ msgid "dynamic range"
 msgstr "תחום דינאמי"
 
 #: ../src/iop/profile_gamma.c:118
-#, fuzzy
 msgctxt "accel"
 msgid "middle grey luma"
 msgstr "לומה לאפור בינוני"
 
 #: ../src/iop/profile_gamma.c:119
-#, fuzzy
 msgctxt "accel"
 msgid "black relative exposure"
 msgstr "חשיפה יחסית לשחור"
 
 #: ../src/iop/profile_gamma.c:120
-#, fuzzy
 msgctxt "accel"
 msgid "safety factor"
-msgstr "מקדם ביטחון"
+msgstr "מקדם בטיחות"
 
 #: ../src/iop/profile_gamma.c:149
 msgid "16 EV dynamic range (generic)"
@@ -12620,10 +12448,9 @@ msgid "continuous add brush"
 msgstr "הוספה רציפה של מברשת"
 
 #: ../src/iop/retouch.c:3074 ../src/iop/spots.c:842
-#, fuzzy
 msgctxt "accel"
 msgid "show or hide shapes"
-msgstr "הצג או החבא כתם"
+msgstr "הצג או החבא צורות"
 
 #: ../src/iop/retouch.c:4215 ../src/iop/retouch.c:5072
 #, c-format
@@ -12764,7 +12591,6 @@ msgid "highlights color correction"
 msgstr "תיקון צבע בפרטים הבהירים"
 
 #: ../src/iop/shadhi.c:284
-#, fuzzy
 msgctxt "accel"
 msgid "soften with"
 msgstr "רכך עם"
@@ -12854,9 +12680,8 @@ msgid "the mix of effect"
 msgstr "ערבוב האפקט"
 
 #: ../src/iop/splittoning.c:82
-#, fuzzy
 msgid "split-toning"
-msgstr "פצל טונינג"
+msgstr "split-toning"
 
 #: ../src/iop/splittoning.c:102
 msgctxt "accel"
@@ -12869,28 +12694,24 @@ msgid "pick secondary color"
 msgstr "בחר צבע משני"
 
 #: ../src/iop/splittoning.c:105
-#, fuzzy
 msgctxt "accel"
 msgid "shadows-hue"
-msgstr "צללים"
+msgstr "צללים-גוון"
 
 #: ../src/iop/splittoning.c:106
-#, fuzzy
 msgctxt "accel"
 msgid "shadows-saturation"
-msgstr "רוויה"
+msgstr "צללים-רוויה"
 
 #: ../src/iop/splittoning.c:107
-#, fuzzy
 msgctxt "accel"
 msgid "highlights-hue"
-msgstr "פרטים בהירים"
+msgstr "בהירים-גוון"
 
 #: ../src/iop/splittoning.c:108
-#, fuzzy
 msgctxt "accel"
 msgid "highlights-saturation"
-msgstr "שחזור פרטים בהירים"
+msgstr "בהירים-רוויה"
 
 #: ../src/iop/splittoning.c:109
 msgctxt "accel"
@@ -12929,7 +12750,6 @@ msgid "properties"
 msgstr "תכונות"
 
 #: ../src/iop/splittoning.c:553
-#, fuzzy
 msgid "the balance of center of split-toning"
 msgstr "איזון מרכז פיצול הטונים"
 
@@ -12964,9 +12784,8 @@ msgstr ""
 "הקלק ימנית להסרת הצורה."
 
 #: ../src/iop/spots.c:800
-#, fuzzy
 msgid "show and edit shapes"
-msgstr "הצג וערוך אלמנטים במסיכה"
+msgstr "הצג וערוך צורות"
 
 #: ../src/iop/spots.c:836
 msgctxt "accel"
@@ -12999,7 +12818,6 @@ msgid "temperature"
 msgstr "טמפרטורה"
 
 #: ../src/iop/temperature.c:213
-#, fuzzy
 msgctxt "accel"
 msgid "presets"
 msgstr "פריסטים"
@@ -13035,10 +12853,9 @@ msgid "spot"
 msgstr "כתם"
 
 #: ../src/iop/temperature.c:788
-#, fuzzy
 msgctxt "white balance"
 msgid "user modified"
-msgstr "מודול חיפוש"
+msgstr "שונה על ידי משתמש"
 
 #: ../src/iop/temperature.c:965
 #, c-format
@@ -13096,13 +12913,11 @@ msgid "tone curve"
 msgstr "עקום טון"
 
 #: ../src/iop/tonecurve.c:214
-#, fuzzy
 msgctxt "accel"
 msgid "base of the logarithm"
 msgstr "בסיס הלוגריתם"
 
 #: ../src/iop/tonecurve.c:218
-#, fuzzy
 msgctxt "accel"
 msgid "color space"
 msgstr "מרחב צבע"
@@ -13219,13 +13034,11 @@ msgid "mask contrast compensation"
 msgstr "דחיסת ניגודיות של מסיכה"
 
 #: ../src/iop/toneequal.c:329
-#, fuzzy
 msgctxt "accel"
 msgid "luminance estimator"
 msgstr "מעריך לומיננס"
 
 #: ../src/iop/toneequal.c:330
-#, fuzzy
 msgctxt "accel"
 msgid "preserve details"
 msgstr "שמר פרטים"
@@ -13286,15 +13099,14 @@ msgid "wait for the preview to finish recomputing"
 msgstr "המתן עד שחישוב התצוגה המקדימה יסתיים"
 
 #: ../src/iop/toneequal.c:1829 ../src/iop/toneequal.c:2291
-#, fuzzy
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll to change in large steps\n"
 "ctrl+scroll to change in small steps"
 msgstr ""
-"הקלק להוסיף קו\n"
-"גלול לשנות גודל\n"
-"גלול-shift לשנוי חוזק - ctrl-גלול לשנות כיוון"
+"גלול מעל התמונה לשינוי חשיפת טון\n"
+"גלול+shift לשנות בקפיצות גדולות\n"
+"גלול+ctrl לשנות בקפיצות קטנות"
 
 #: ../src/iop/toneequal.c:1978
 msgid "some parameters are out-of-bounds"
@@ -13307,9 +13119,9 @@ msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
 #: ../src/iop/toneequal.c:2905
-#, fuzzy, c-format
+#, c-format
 msgid "[%s over image] change tone exposure"
-msgstr "[%s על קו] שנה דחיסה"
+msgstr "[%s על תמונה] שנה חשיפת טון"
 
 #: ../src/iop/toneequal.c:2911
 #, c-format
@@ -13398,9 +13210,8 @@ msgstr ""
 "קונטרסט גבוהה יותר בין שטחים להחשכה ושטחים לשריפה"
 
 #: ../src/iop/toneequal.c:3086
-#, fuzzy
 msgid "details"
-msgstr "פירוט"
+msgstr "פרטים"
 
 #: ../src/iop/toneequal.c:3087
 msgid "preserve details"
@@ -13658,13 +13469,11 @@ msgid "y offset"
 msgstr "הסחה ב y"
 
 #: ../src/iop/watermark.c:315
-#, fuzzy
 msgctxt "accel"
 msgid "marker"
 msgstr "סמן"
 
 #: ../src/iop/watermark.c:316
-#, fuzzy
 msgctxt "accel"
 msgid "scale on"
 msgstr "משקול דלוק"
@@ -13966,9 +13775,9 @@ msgstr ""
 "בפורמט: YYYY:MM:DD HH:MM:SS (רק חלק השנה מחייב)"
 
 #: ../src/libs/collect.c:2003
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "type your query, use `%' as wildcard and `,' to separate values"
-msgstr "הקלד חיפוש, השתמש ב `%' כווילדכארד"
+msgstr "הקלד חיפוש, השתמש ב `%' כקלף משוגע ו `,' להפריד ערכים"
 
 #: ../src/libs/collect.c:2008 ../src/libs/collect.c:2577
 #, no-c-format
@@ -14316,9 +14125,8 @@ msgid "do high quality resampling during export"
 msgstr "בצע דגימה מחדש באיכות גבוהה במהלך הייצוא"
 
 #: ../src/libs/export.c:706
-#, fuzzy
 msgid "store masks"
-msgstr "מסיכת רסטר"
+msgstr "אחסן מסיכות"
 
 #: ../src/libs/export.c:709
 msgid "store masks as layers in exported images. only works for some formats."
@@ -14384,9 +14192,8 @@ msgid "done"
 msgstr "בוצע"
 
 #: ../src/libs/export_metadata.c:170
-#, fuzzy
 msgid "list filter"
-msgstr "מסנן קר"
+msgstr "מסנן רשימה"
 
 #: ../src/libs/export_metadata.c:181
 msgid ""
@@ -14396,9 +14203,8 @@ msgstr ""
 "רשימה של תגים זמינים. הקלק על כפתור 'הוסף' או הקלק כפול על תג להוספת הנבחר"
 
 #: ../src/libs/export_metadata.c:187
-#, fuzzy
 msgid "type"
-msgstr "סוג טשטוש"
+msgstr "סוג"
 
 #: ../src/libs/export_metadata.c:268
 msgid "edit metadata exportation"
@@ -14608,29 +14414,24 @@ msgid "histogram"
 msgstr "היסטוגרמה"
 
 #: ../src/libs/histogram.c:537 ../src/libs/histogram.c:571
-#, fuzzy
 msgid "set mode to waveform"
-msgstr "קבע מצב היסטוגרמה לצורת גל"
+msgstr "קבע מצב לצורת גל"
 
 #: ../src/libs/histogram.c:540
-#, fuzzy
 msgid "set mode to histogram"
-msgstr "החבא היסטוגרמה"
+msgstr "קבע מצב להיסטוגרמה"
 
 #: ../src/libs/histogram.c:555
-#, fuzzy
 msgid "set mode to linear"
-msgstr "קבע מצב היסטוגרמה ללינארי"
+msgstr "קבע מצב ללינארי"
 
 #: ../src/libs/histogram.c:558
-#, fuzzy
 msgid "set mode to logarithmic"
-msgstr "קבע מצב היסטוגרמה ללוגריתמי"
+msgstr "קבע מצב ללוגריתמי"
 
 #: ../src/libs/histogram.c:568
-#, fuzzy
 msgid "set mode to RGB parade"
-msgstr "אתחל את הפרמרטרים של המודול"
+msgstr "קבע מצב למצעד RGB"
 
 #: ../src/libs/histogram.c:584
 msgid "click to hide red channel"
@@ -14657,31 +14458,30 @@ msgid "click to show blue channel"
 msgstr "הקלק להראות ערוץ כחול"
 
 #: ../src/libs/histogram.c:601
-#, fuzzy
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 "גרור לשינוי נקודה שחורה,\n"
-"הקלקה כפולה לאתחול"
+"הקלקה כפולה לאתחול\n"
+"גלול+ctrl לשינוי גובה התצוגה"
 
 #. connect callbacks
 #: ../src/libs/histogram.c:606 ../src/libs/histogram.c:927
-#, fuzzy
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 "גרור לשנות חשיפה,\n"
-"קליק כפול מאתחל"
+"קליק כפול מאתחל\n"
+"גלול+ctrl לשינוי גובה התצוגה"
 
 #: ../src/libs/histogram.c:963
-#, fuzzy
 msgctxt "accel"
 msgid "histogram/hide histogram"
-msgstr "החבא היסטוגרמה"
+msgstr "היסטוגרמה/החבא היסטוגרמה"
 
 #: ../src/libs/histogram.c:964
 msgctxt "accel"
@@ -14694,10 +14494,9 @@ msgid "histogram/cycle histogram modes"
 msgstr "היסטוגרמה/דפדף מצבי היסטוגרמה"
 
 #: ../src/libs/histogram.c:966
-#, fuzzy
 msgctxt "accel"
 msgid "cycle histogram modes"
-msgstr "קבע מצב היסטוגרמה ללינארי"
+msgstr "גלול מצבי היסטוגרמה"
 
 #: ../src/libs/histogram.c:967
 msgctxt "accel"
@@ -14705,10 +14504,9 @@ msgid "histogram/switch histogram mode"
 msgstr "היסטוגרמה/החלף מצב היסטוגרמה"
 
 #: ../src/libs/histogram.c:968
-#, fuzzy
 msgctxt "accel"
 msgid "switch histogram mode"
-msgstr "קבע מצב היסטוגרמה ללינארי"
+msgstr "החלף מצבי היסטוגרמה"
 
 #: ../src/libs/histogram.c:969
 msgctxt "accel"
@@ -14716,10 +14514,9 @@ msgid "histogram/switch histogram type"
 msgstr "היסטוגרמה/החלף סוג היסטוגרמה"
 
 #: ../src/libs/histogram.c:970
-#, fuzzy
 msgctxt "accel"
 msgid "switch histogram type"
-msgstr "פרופיל היסטוגרמה"
+msgstr "החלף סוג היסטוגרמה"
 
 #: ../src/libs/history.c:95
 msgctxt "accel"
@@ -14745,19 +14542,16 @@ msgid "create a style from the current history stack"
 msgstr "צור סגנון ממחסנית היסטוריה נוכחית"
 
 #: ../src/libs/history.c:192
-#, fuzzy
 msgid "always-on module"
-msgstr "הראה מודול"
+msgstr "מודול תמיד-מופעל"
 
 #: ../src/libs/history.c:200
-#, fuzzy
 msgid "default enabled module"
-msgstr "אפשר מודול"
+msgstr "מודול מאופשר כברירת מחדל"
 
 #: ../src/libs/history.c:208
-#, fuzzy
 msgid "deprecated module"
-msgstr "מודול חיפוש"
+msgstr "מודול זנוח"
 
 #: ../src/libs/history.c:679 ../src/libs/snapshots.c:459
 msgid "original"
@@ -14869,24 +14663,20 @@ msgid "ratings"
 msgstr "דירוגים"
 
 #: ../src/libs/image.c:533
-#, fuzzy
 msgid "select ratings metadata"
-msgstr "בחר שיטת אינטרפולציה"
+msgstr "בחר דירוג מטא-נתונים"
 
 #: ../src/libs/image.c:538
-#, fuzzy
 msgid "colors"
-msgstr "צבע"
+msgstr "צבעים"
 
 #: ../src/libs/image.c:540
-#, fuzzy
 msgid "select colors metadata"
-msgstr "בחר צבע חומר הפילם"
+msgstr "בחר צבעים מטא-נתונים"
 
 #: ../src/libs/image.c:547
-#, fuzzy
 msgid "select tags metadata"
-msgstr "בחר תג"
+msgstr "בחר תגיות מטא-נתונים"
 
 #: ../src/libs/image.c:554
 msgid "select geo tags metadata"
@@ -14901,33 +14691,28 @@ msgid "set the (first) selected image as source of metadata"
 msgstr "קבע את התמונה הנבחרת (הראשונה) כמקור למטא-נתונים"
 
 #: ../src/libs/image.c:574
-#, fuzzy
 msgid "paste"
-msgstr "העתק"
+msgstr "הדבק"
 
 #: ../src/libs/image.c:577
-#, fuzzy
 msgid "paste selected metadata on selected images"
-msgstr "כתוב מטא-נתונים עבור תמונות נבחרות"
+msgstr "הדבק מטא-נתונים נבחרים על תמונות נבחרות"
 
 #: ../src/libs/image.c:581 ../src/libs/metadata.c:763
 msgid "clear"
 msgstr "נקה"
 
 #: ../src/libs/image.c:584
-#, fuzzy
 msgid "clear selected metadata on selected images"
-msgstr "כתוב מטא-נתונים עבור תמונות נבחרות"
+msgstr "נקה מטא-נתונים נבחרים עבור תמונות נבחרות"
 
 #: ../src/libs/image.c:590
-#, fuzzy
 msgid "merge"
-msgstr "מזג מ:"
+msgstr "מזג"
 
 #: ../src/libs/image.c:592
-#, fuzzy
 msgid "how to handle existing metadata"
-msgstr "כיצד לטפל בהיסטוריה הקיימת"
+msgstr "כיצד לטפל במטא-נתונים קיימים"
 
 #: ../src/libs/image.c:600
 msgid "update image information to match changes to file"
@@ -14994,28 +14779,24 @@ msgid "refresh exif"
 msgstr "רענן exif"
 
 #: ../src/libs/image.c:658
-#, fuzzy
 msgctxt "accel"
 msgid "copy metadata"
-msgstr "מטא-נתונים"
+msgstr "העתק מטא-נתונים"
 
 #: ../src/libs/image.c:659
-#, fuzzy
 msgctxt "accel"
 msgid "replace metadata"
-msgstr "מחק תגית מטא נתונים"
+msgstr "החלף מטא-נתונים"
 
 #: ../src/libs/image.c:660
-#, fuzzy
 msgctxt "accel"
 msgid "paste metadata"
-msgstr "מטא-נתונים"
+msgstr "הדבק מטא-נתונים"
 
 #: ../src/libs/image.c:661
-#, fuzzy
 msgctxt "accel"
 msgid "clear metadata"
-msgstr "מטא-נתונים"
+msgstr "נקה מטא-נתונים"
 
 #. Grouping keys
 #: ../src/libs/image.c:663
@@ -15078,12 +14859,10 @@ msgstr "אפשרויות ייבוא"
 
 #. recursive opening.
 #: ../src/libs/import.c:382
-#, fuzzy
 msgid "import folders recursively"
 msgstr "ייבא תיקיות רקורסיבית"
 
 #: ../src/libs/import.c:384
-#, fuzzy
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr "ייבא תת תיקיות רקורסיבית. כל תיקיה לתוך גליל פילם חדש."
 
@@ -15096,7 +14875,6 @@ msgid "file has unknown format!"
 msgstr "לקובץ פורמט לא מזוהה!"
 
 #: ../src/libs/import.c:661
-#, fuzzy
 msgid "import folder"
 msgstr "ייבא תיקיה"
 
@@ -15128,14 +14906,12 @@ msgid "scan for newly attached devices"
 msgstr "סרוק להתקנים שרק עתה חוברו"
 
 #: ../src/libs/ioporder.c:149
-#, fuzzy
 msgid "current order"
-msgstr "נוכחי:"
+msgstr "סדר נוכחי"
 
 #: ../src/libs/ioporder.c:206
-#, fuzzy
 msgid "v3.0 (default)"
-msgstr "(ברירת מחדל)"
+msgstr "v3.0 (ברירת מחדל)"
 
 #: ../src/libs/lib.c:225
 #, c-format
@@ -15387,7 +15163,6 @@ msgid "group the forms"
 msgstr "קבץ את הצורות"
 
 #: ../src/libs/masks.c:1150
-#, fuzzy
 msgid "use inverted shape"
 msgstr "השתמש בצורה הפוכה"
 
@@ -15424,12 +15199,10 @@ msgid "<leave unchanged>"
 msgstr "<השאר ללא שינוי>"
 
 #: ../src/libs/metadata.c:459
-#, fuzzy
 msgid "metadata settings"
-msgstr "לפי הגדרות מטא נתונים"
+msgstr "הגדרות מטא-נתונים"
 
 #: ../src/libs/metadata.c:467
-#, fuzzy
 msgid "hidden"
 msgstr "חבוי"
 
@@ -15460,9 +15233,8 @@ msgid "clear"
 msgstr "נקה"
 
 #: ../src/libs/metadata.c:614
-#, fuzzy
 msgid "metadata list"
-msgstr "עורך מטא-נתונים"
+msgstr "רשימת מטא-נתונים"
 
 #: ../src/libs/metadata.c:715
 msgid ""
@@ -15489,9 +15261,8 @@ msgid "write metadata for selected images"
 msgstr "כתוב מטא-נתונים עבור תמונות נבחרות"
 
 #: ../src/libs/metadata.c:780
-#, fuzzy
 msgid "configure metadata"
-msgstr "ייצא מטא נתונים exif"
+msgstr "עצב מטא-נתונים"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:834
@@ -16193,10 +15964,9 @@ msgid "take snapshot"
 msgstr "צלם"
 
 #: ../src/libs/snapshots.c:106
-#, fuzzy
 msgctxt "accel"
 msgid "toggle last snapshot"
-msgstr "צלם"
+msgstr "מתג צילום אחרון"
 
 #: ../src/libs/snapshots.c:131
 msgctxt "snapshot sign"
@@ -16219,7 +15989,6 @@ msgid "styles"
 msgstr "סגנונות"
 
 #: ../src/libs/styles.c:73
-#, fuzzy
 msgctxt "accel"
 msgid "remove"
 msgstr "הסר"
@@ -16230,18 +15999,17 @@ msgid "import"
 msgstr "ייבא"
 
 #: ../src/libs/styles.c:327
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to remove %d style?"
 msgid_plural "do you really want to remove %d styles?"
-msgstr[0] "האם באמת ברצונך למחוק את סגנון `%s'?"
-msgstr[1] "האם באמת ברצונך למחוק את סגנון `%s'?"
+msgstr[0] "האם באמת ברצונך למחוק סגנון %d ?"
+msgstr[1] "האם באמת ברצונך למחוק סגנונות %d ?"
 
 #: ../src/libs/styles.c:333
-#, fuzzy
 msgid "remove style?"
 msgid_plural "remove styles?"
 msgstr[0] "מחק סגנון?"
-msgstr[1] "מחק סגנון?"
+msgstr[1] "מחק סגנונות?"
 
 #: ../src/libs/styles.c:392
 msgid "select style"
@@ -16286,14 +16054,12 @@ msgid "edit..."
 msgstr "ערוך..."
 
 #: ../src/libs/styles.c:611
-#, fuzzy
 msgid "edit the selected styles in list above"
-msgstr "ערוך את הסגנון הנבחר מהרשימה למעלה"
+msgstr "ערוך את הסגנונות הנבחרים מהרשימה למעלה"
 
 #: ../src/libs/styles.c:618
-#, fuzzy
 msgid "removes the selected styles in list above"
-msgstr "מחק את הסגנון הנבחר מהרשימה למעלה"
+msgstr "מוחק את הסגנונות הנבחרים מהרשימה למעלה"
 
 #. import button
 #: ../src/libs/styles.c:622 ../src/libs/tagging.c:2815
@@ -16302,19 +16068,16 @@ msgid "import..."
 msgstr "ייבא..."
 
 #: ../src/libs/styles.c:624
-#, fuzzy
 msgid "import styles from a style files"
-msgstr "ייבא סגנון מתוך קובץ סגנון"
+msgstr "ייבא סגנונות מתוך קבצי סגנון"
 
 #: ../src/libs/styles.c:631
-#, fuzzy
 msgid "export the selected styles into a style files"
-msgstr "ייצא את הסגנון הנבחר לקובץ סגנון"
+msgstr "ייצא את הסגנונות הנבחרים לקבצי סגנון"
 
 #: ../src/libs/styles.c:639
-#, fuzzy
 msgid "apply the selected styles in list above to selected images"
-msgstr "ערוך את הסגנון הנבחר מהרשימה למעלה"
+msgstr "יישם את הסגנונות הנבחרים מהרשימה למעלה לתמונות הנבחרות"
 
 #: ../src/libs/tagging.c:95
 msgid "tagging"
@@ -16341,10 +16104,9 @@ msgid "tag"
 msgstr "תג"
 
 #: ../src/libs/tagging.c:124
-#, fuzzy
 msgctxt "accel"
 msgid "redo last tag"
-msgstr "צור תג"
+msgstr "יישם מחדש תג אחרון"
 
 #: ../src/libs/tagging.c:1177
 msgid "attach tag to all"
@@ -16385,9 +16147,8 @@ msgid "tag %s removed"
 msgstr "תג %s הוסר"
 
 #: ../src/libs/tagging.c:1407 ../src/libs/tagging.c:2032
-#, fuzzy
 msgid "delete path"
-msgstr "מחק תג"
+msgstr "מחק נתיב"
 
 #: ../src/libs/tagging.c:1421
 #, c-format
@@ -16772,9 +16533,8 @@ msgid "thumbnails overlays for size"
 msgstr "מזער כיסויים לגודל"
 
 #: ../src/libs/tools/global_toolbox.c:223
-#, fuzzy
 msgid "px"
-msgstr "x"
+msgstr "px"
 
 #: ../src/libs/tools/global_toolbox.c:255
 #: ../src/libs/tools/global_toolbox.c:318
@@ -16792,19 +16552,16 @@ msgid "timeout only available for block overlay"
 msgstr "פסק זמן זמין רק לבלוק כיסוי"
 
 #: ../src/libs/tools/global_toolbox.c:283
-#, fuzzy
 msgid "culling overlays"
-msgstr "החבא את ציפויי התמונה"
+msgstr "ברור ציפויים"
 
 #: ../src/libs/tools/global_toolbox.c:285
-#, fuzzy
 msgid "preview overlays"
-msgstr "הצג ציפויים"
+msgstr "תצוגה מקדימה לציפויים"
 
 #: ../src/libs/tools/global_toolbox.c:341
-#, fuzzy
 msgid "overlays not available here..."
-msgstr "לא זמין"
+msgstr "ציפויים לא זמינים כאן..."
 
 #: ../src/libs/tools/global_toolbox.c:384
 #: ../src/libs/tools/global_toolbox.c:522
@@ -16822,20 +16579,17 @@ msgstr "הקלק לשינוי סוג הכיסויים הנראים בתמונו�
 
 #: ../src/libs/tools/global_toolbox.c:412
 #: ../src/libs/tools/global_toolbox.c:456
-#, fuzzy
 msgid "overlay mode for size"
-msgstr "מצב ציפוי"
+msgstr "מצב ציפוי לגודל"
 
 #: ../src/libs/tools/global_toolbox.c:415
 #: ../src/libs/tools/global_toolbox.c:459
-#, fuzzy
 msgid "no overlays"
-msgstr "הצג ציפויים"
+msgstr "אין ציפויים"
 
 #: ../src/libs/tools/global_toolbox.c:419
-#, fuzzy
 msgid "overlays on mouse hover"
-msgstr "מצב ציפוי"
+msgstr "ציפויים בריחוף עכבר"
 
 #: ../src/libs/tools/global_toolbox.c:423
 msgid "extended overlays on mouse hover"
@@ -16843,15 +16597,13 @@ msgstr "פתח כיסויים בריחוף עכבר"
 
 #: ../src/libs/tools/global_toolbox.c:426
 #: ../src/libs/tools/global_toolbox.c:463
-#, fuzzy
 msgid "permanent overlays"
-msgstr "החבא את ציפויי התמונה"
+msgstr "ציפויים קבועים"
 
 #: ../src/libs/tools/global_toolbox.c:430
 #: ../src/libs/tools/global_toolbox.c:467
-#, fuzzy
 msgid "permanent extended overlays"
-msgstr "אפשר כיסוי מורחב של תמונות מקדימות"
+msgstr "ציפויים קבועים מורחבים"
 
 #: ../src/libs/tools/global_toolbox.c:434
 msgid "permanent overlays extended on mouse hover"
@@ -16864,9 +16616,8 @@ msgstr "בלוק כיסויים בריחוף עכבר תוך (s) "
 
 #: ../src/libs/tools/global_toolbox.c:446
 #: ../src/libs/tools/global_toolbox.c:479
-#, fuzzy
 msgid "show tooltip"
-msgstr "הראה גם וגם"
+msgstr "הראה חלוניות מידע"
 
 #: ../src/libs/tools/global_toolbox.c:490
 msgid "enable this, then click on a control element to see its online help"
@@ -16889,9 +16640,8 @@ msgid "help url opened in web browser"
 msgstr "כתובת url לעזרה נפתחה בדפדפן"
 
 #: ../src/libs/tools/global_toolbox.c:647
-#, fuzzy
 msgid "error while opening help url in web browser"
-msgstr "כתובת url לעזרה נפתחה בדפדפן"
+msgstr "שגיאה בפתיחת כתובת url לעזרה בדפדפן"
 
 #: ../src/libs/tools/global_toolbox.c:658
 msgid "there is no help available for this element"
@@ -17031,9 +16781,8 @@ msgid "lua options"
 msgstr "אפשרויות lua"
 
 #: ../src/views/darkroom.c:439
-#, fuzzy
 msgid "loading image"
-msgstr "מעביר תמונה %d"
+msgstr "טוען תמונה"
 
 #: ../src/views/darkroom.c:656
 msgid "gamut check"
@@ -17045,9 +16794,8 @@ msgstr "הדמיית הדפסה"
 
 #. fail :(
 #: ../src/views/darkroom.c:694 ../src/views/print.c:300
-#, fuzzy
 msgid "no image to open !"
-msgstr "לא נבחרו תמונות!"
+msgstr "אין תמונה לפתוח !"
 
 #: ../src/views/darkroom.c:1192
 msgid "no userdefined presets for favorite modules were found"
@@ -17245,14 +16993,12 @@ msgstr ""
 "וכו'.)"
 
 #: ../src/views/darkroom.c:2404
-#, fuzzy
 msgid "overlay color"
-msgstr "מצב ציפוי"
+msgstr "צבע ציפוי"
 
 #: ../src/views/darkroom.c:2412
-#, fuzzy
 msgid "set overlay color"
-msgstr "בחר צבע מסגרת"
+msgstr "קבע צבע ציפוי"
 
 #: ../src/views/darkroom.c:3584
 msgid "keyboard shortcut slider precision: fine"
@@ -17307,10 +17053,9 @@ msgstr "תמונה אחורה"
 
 #. toggle ISO 12646 color assessment condition
 #: ../src/views/darkroom.c:3641
-#, fuzzy
 msgctxt "accel"
 msgid "color assessment"
-msgstr "תוכנית צבע"
+msgstr "הערכת צבע"
 
 #. toggle raw overexposure indication
 #: ../src/views/darkroom.c:3644
@@ -17326,10 +17071,9 @@ msgstr "חשיפת יתר"
 
 #. cycle overlay colors
 #: ../src/views/darkroom.c:3650
-#, fuzzy
 msgctxt "accel"
 msgid "cycle overlay colors"
-msgstr "בחר צבע מסגרת"
+msgstr "גלול צבעי ציפוי"
 
 #. toggle softproofing
 #: ../src/views/darkroom.c:3653
@@ -17345,10 +17089,9 @@ msgstr "בדיקת מכלול צבע"
 
 #. toggle visability of drawn masks for current gui module
 #: ../src/views/darkroom.c:3659
-#, fuzzy
 msgctxt "accel"
 msgid "show drawn masks"
-msgstr "מסיכה מצויירת"
+msgstr "הראה מסיכות מצוירות"
 
 #. brush size +/-
 #: ../src/views/darkroom.c:3662
@@ -17475,40 +17218,34 @@ msgstr "או הוסף תמונות במודול האיסוף בפאנל השמא
 
 #. movement keys
 #: ../src/views/lighttable.c:837
-#, fuzzy
 msgctxt "accel"
 msgid "move page up"
-msgstr "הזז מעלה"
+msgstr "הזז דף מעלה"
 
 #: ../src/views/lighttable.c:838
-#, fuzzy
 msgctxt "accel"
 msgid "move page down"
-msgstr "הזז מטה"
+msgstr "הזז דף מטה"
 
 #: ../src/views/lighttable.c:839
-#, fuzzy
 msgctxt "accel"
 msgid "move up"
 msgstr "הזז מעלה"
 
 #: ../src/views/lighttable.c:840
-#, fuzzy
 msgctxt "accel"
 msgid "move down"
 msgstr "הזז מטה"
 
 #: ../src/views/lighttable.c:841
-#, fuzzy
 msgctxt "accel"
 msgid "move left"
-msgstr "שמאלי עליון"
+msgstr "הזז שמאלה"
 
 #: ../src/views/lighttable.c:842
-#, fuzzy
 msgctxt "accel"
 msgid "move right"
-msgstr "ימני עליון"
+msgstr "הזז ימינה"
 
 #: ../src/views/lighttable.c:843
 msgctxt "accel"
@@ -17516,10 +17253,9 @@ msgid "move start"
 msgstr "העבר התחל"
 
 #: ../src/views/lighttable.c:844
-#, fuzzy
 msgctxt "accel"
 msgid "move end"
-msgstr "הזז מטה"
+msgstr "הזז לסוף"
 
 #. movement keys with selection
 #: ../src/views/lighttable.c:847
@@ -17538,28 +17274,24 @@ msgid "move up and select"
 msgstr "העבר למעלה ובחר"
 
 #: ../src/views/lighttable.c:850
-#, fuzzy
 msgctxt "accel"
 msgid "move down and select"
-msgstr "הזז מטה"
+msgstr "הזז מטה ובחר"
 
 #: ../src/views/lighttable.c:851
-#, fuzzy
 msgctxt "accel"
 msgid "move left and select"
-msgstr "מתג פאנל שמאלי"
+msgstr "הזז שמאלה ובחר"
 
 #: ../src/views/lighttable.c:852
-#, fuzzy
 msgctxt "accel"
 msgid "move right and select"
-msgstr "מתג פאנל ימני"
+msgstr "הזז ימינה ובחר"
 
 #: ../src/views/lighttable.c:853
-#, fuzzy
 msgctxt "accel"
 msgid "move start and select"
-msgstr "התחל ועצור"
+msgstr "הזז להתחלה ובחר"
 
 #: ../src/views/lighttable.c:854
 msgctxt "accel"
@@ -17567,16 +17299,14 @@ msgid "move end and select"
 msgstr "העבר סוף ובחר"
 
 #: ../src/views/lighttable.c:856
-#, fuzzy
 msgctxt "accel"
 msgid "align images to grid"
-msgstr "ישר מחדש תמונות לרשת"
+msgstr "ישר תמונות לרשת"
 
 #: ../src/views/lighttable.c:857
-#, fuzzy
 msgctxt "accel"
 msgid "reset first image offset"
-msgstr "הסחת זמן"
+msgstr "אתחל הסחת תמונה ראשונה"
 
 #: ../src/views/lighttable.c:858
 msgctxt "accel"
@@ -17639,9 +17369,9 @@ msgid "switch to next/previous image"
 msgstr "עבור לתמונה הבאה/קודמת"
 
 #: ../src/views/lighttable.c:1059 ../src/views/lighttable.c:1117
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "zoom to 100% and back"
-msgstr "זום ל 100% 200% וחזרה"
+msgstr "זום ל 100% וחזרה"
 
 #: ../src/views/lighttable.c:1066 ../src/views/lighttable.c:1088
 msgid "scroll the collection"
@@ -17672,9 +17402,9 @@ msgid "pan inside current image"
 msgstr "הזז בתמונה הנוכחית"
 
 #: ../src/views/lighttable.c:1124
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "zoom current image to 100% and back"
-msgstr "זום ל 100% 200% וחזרה"
+msgstr "זום תמונה נוכחית ל 100% וחזרה"
 
 #: ../src/views/lighttable.c:1131
 msgid "zoom the main view"
