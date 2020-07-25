@@ -97,7 +97,7 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
   dt_history_delete_on_image(newid);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
@@ -106,7 +106,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
   if (newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid,newid,FALSE,NULL, TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
@@ -128,7 +128,7 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
         if(l2)
         {
           dt_thumbnail_t *th2 = (dt_thumbnail_t *)l2->data;
-          dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, th2->imgid);
+          DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, th2->imgid);
           break;
         }
       }
@@ -175,7 +175,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
     else if(event->type == GDK_2BUTTON_PRESS)
     {
       // let's switch to the new image
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
     }
   }
 }

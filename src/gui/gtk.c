@@ -342,7 +342,7 @@ static void focuspeaking_switch_button_callback(GtkWidget *button, gpointer user
   dt_pthread_mutex_unlock(&darktable.gui->mutex);
 
   // we inform that all thumbnails need to be redraw
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, -1);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, -1);
 }
 
 static gchar *_panels_get_view_path(char *suffix)

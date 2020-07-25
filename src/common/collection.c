@@ -2025,7 +2025,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   if(!collection->clone)
   {
     dt_collection_memory_update();
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, query_change, list, next);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, query_change, list, next);
   }
 }
 
@@ -2123,7 +2123,7 @@ static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_d
   if(!collection->clone)
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD, NULL, -1);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD, NULL, -1);
   }
 }
 

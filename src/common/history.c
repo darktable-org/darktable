@@ -125,7 +125,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
 
   // signal that the mipmap need to be updated
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 
   dt_unlock_image(imgid);
 
@@ -181,7 +181,7 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
   }
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
   return 0;
 }
 
@@ -786,7 +786,7 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
     dt_image_reset_aspect_ratio(dest_imgid, FALSE);
 
   // signal that the mipmap need to be updated
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
 
   dt_unlock_image_pair(imgid,dest_imgid);
 

@@ -595,7 +595,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   darktable.view_manager->active_images = NULL;
   darktable.view_manager->active_images
       = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(lib->preview->offset_imgid));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
@@ -613,7 +613,7 @@ void leave(dt_view_t *self)
   {
     g_slist_free(darktable.view_manager->active_images);
     darktable.view_manager->active_images = NULL;
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
   }
 
   // we hide culling and preview too
@@ -1241,7 +1241,7 @@ end:
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
     dt_colorspaces_update_display_transforms();
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
     dt_control_queue_redraw_center();
   }
@@ -1282,7 +1282,7 @@ end:
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
     dt_colorspaces_update_display2_transforms();
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_DISPLAY2);
     dt_control_queue_redraw_center();
   }

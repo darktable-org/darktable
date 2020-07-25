@@ -969,7 +969,7 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
           && event->type == GDK_BUTTON_PRESS
           && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0)
   {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
   }
 
   if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
@@ -1803,7 +1803,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       }
       g_slist_free(darktable.view_manager->active_images);
       darktable.view_manager->active_images = NULL;
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
     }
 
     // if we force the redraw, we ensure selection is updated

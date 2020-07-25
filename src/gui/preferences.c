@@ -635,7 +635,7 @@ void dt_gui_preferences_show()
     darktable.control->accel_remap_path = NULL;
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
 }
 
 static void cairo_destroy_from_pixbuf(guchar *pixels, gpointer data)

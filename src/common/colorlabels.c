@@ -190,7 +190,7 @@ void dt_colorlabels_set_labels(const GList *img, const int labels, const gboolea
       dt_undo_end_group(darktable.undo);
     }
     dt_collection_hint_message(darktable.collection);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
 }
 
