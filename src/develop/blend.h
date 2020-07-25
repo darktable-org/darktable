@@ -355,12 +355,17 @@ typedef struct dt_iop_gui_blendif_colorstop_t
 } dt_iop_gui_blendif_colorstop_t;
 
 
-/** container to deal with deprecated blend modes in gui */
-typedef struct dt_iop_blend_mode_t
+typedef struct dt_iop_blend_name_value_t
 {
-  char name[128];
-  dt_develop_blend_mode_t mode;
-} dt_iop_blend_mode_t;
+  char name[25];
+  int value;
+} dt_develop_name_value_t;
+
+extern const dt_develop_name_value_t dt_develop_blend_mode_names[];
+extern const dt_develop_name_value_t dt_develop_mask_mode_names[];
+extern const dt_develop_name_value_t dt_develop_combine_masks_names[];
+extern const dt_develop_name_value_t dt_develop_feathering_guide_names[];
+extern const dt_develop_name_value_t dt_develop_invert_mask_names[];
 
 
 #define DEVELOP_MASKS_NB_SHAPES 5
