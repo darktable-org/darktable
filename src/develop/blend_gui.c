@@ -493,9 +493,13 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
     label = data->lower_label;
   }
 
-  float *parameters = &(bp->blendif_parameters[4 * ch]);
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) &&
+     !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values)))
+  {
+    dt_iop_color_picker_reset(data->module, FALSE);
+  }
 
-  dt_iop_color_picker_reset(data->module, FALSE);
+  float *parameters = &(bp->blendif_parameters[4 * ch]);
 
   dt_pthread_mutex_lock(&data->lock);
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
