@@ -18,6 +18,7 @@
 # cache = vmesni pomnilnik
 # chroma = barvitost
 # chrominance = barvnost ?
+# clipping = obrez
 # clut = color lookup table = tabela iskanja barv
 # color dodge = barvna slabitev
 # crop factor = faktor obrezave xxx
@@ -32,8 +33,8 @@
 # dynamic range = dinamični razpon
 # equisolid angle = enakomerni kot xxx https://en.wikipedia.org/wiki/Fisheye_lens
 # exposure = osvetlitev, ekspozicija
-# feathering = perje ?
-# focal range
+# feathering = mehčanje robov s peresom
+# focal range = goriščni razpon (območje ostrine)
 # fringe = barvna napaka roba
 # fuze = varovalka
 # gamut = barvni razpon
@@ -46,6 +47,7 @@
 # luminance = svetlost
 # LUT - lookup table = tabela iskanja
 # lut = spajkanje, spoj
+# magenta = magenta
 # patch = zaplata
 # posemeter = svetlomer
 # scroll = pomik
@@ -56,14 +58,16 @@
 # warp = zvitek, izkrivljenje, popačenje, osnova (pri tkanju)
 #
 # ne pozabi na Style Guide Slovenian (sl) https://mozilla-l10n.github.io/styleguides/sl/
+# in Barvni geslovnik revije Grafičar http://www.graficar.si/index.php/geslovniki/18-barvni-geslovnik
 #
+# useful suggestions: Igor Lapajne <ilapajne.zrc-sazu.si>
 # Matjaž Jeran <matjaz.jeran@amis.net>, 2015-2019, 2020.
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 3.0.0rc1~git44.9534ab08d\n"
+"Project-Id-Version: darktable 3.1.0+2497-g5e79abff2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-12 11:22+0200\n"
+"PO-Revision-Date: 2020-07-26 12:55+0200\n"
 "Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
@@ -115,7 +119,7 @@ msgstr "goriščna razdalja"
 #: ../build/src/iop/introspection_ashift.c:144
 #: ../build/src/iop/introspection_ashift.c:261
 msgid "crop factor"
-msgstr "faktor izreza"
+msgstr "faktor obreza"
 
 #: ../build/src/iop/introspection_ashift.c:150
 #: ../build/src/iop/introspection_ashift.c:265
@@ -265,7 +269,7 @@ msgstr "osnovna moč"
 #: ../build/src/iop/introspection_exposure.c:67
 #: ../build/src/iop/introspection_exposure.c:138
 msgid "black level correction"
-msgstr "popravek nivoja črne"
+msgstr "popravek nivoja črnine"
 
 #: ../build/src/iop/introspection_basicadj.c:104
 #: ../build/src/iop/introspection_basicadj.c:203
@@ -382,7 +386,7 @@ msgstr "dvig, gama, prirast (sRGB)"
 #: ../build/src/iop/introspection_colorcontrast.c:54
 #: ../build/src/iop/introspection_colorcontrast.c:121
 msgid "green vs magenta"
-msgstr "zelena proti vijolični"
+msgstr "zelena proti magenti"
 
 #: ../build/src/iop/introspection_colorcontrast.c:66
 #: ../build/src/iop/introspection_colorcontrast.c:129
@@ -392,7 +396,7 @@ msgstr "modra proti rumeni"
 #: ../build/src/iop/introspection_colorin.c:149
 #: ../build/src/iop/introspection_colorin.c:232
 msgid "gamut clipping"
-msgstr "pridobivanje barvnega razpona"
+msgstr "obrezovanje barvnega razpona"
 
 #: ../build/src/iop/introspection_colorin.c:302
 #: ../build/src/iop/introspection_lut3d.c:201 ../src/common/colorspaces.c:1602
@@ -756,7 +760,7 @@ msgstr "relativna osvetlitev črne"
 #: ../build/src/iop/introspection_filmicrgb.c:198
 #: ../build/src/iop/introspection_filmicrgb.c:387 ../src/iop/filmic.c:1637
 msgid "white relative exposure"
-msgstr "relativna osvetlitev bele"
+msgstr "relativna osvetlitev beline"
 
 #: ../build/src/iop/introspection_filmicrgb.c:210
 #: ../build/src/iop/introspection_filmicrgb.c:395
@@ -1189,7 +1193,7 @@ msgstr "premer glajenja"
 #: ../build/src/iop/introspection_toneequal.c:199
 #: ../build/src/iop/introspection_toneequal.c:322
 msgid "edges refinement/feathering"
-msgstr "izboljšanje/obdelava robov"
+msgstr "izboljšanje/mehčanje robov s peresi"
 
 #: ../build/src/iop/introspection_toneequal.c:205
 #: ../build/src/iop/introspection_toneequal.c:326
@@ -4909,7 +4913,7 @@ msgstr "uveljavi masko v normalnem ali preobrnjenem načinu"
 
 #: ../src/develop/blend_gui.c:2716
 msgid "feathering guide"
-msgstr "vodilo glajenja"
+msgstr "vodilo mehčanja s peresom"
 
 #: ../src/develop/blend_gui.c:2718
 msgid "output image"
@@ -4925,11 +4929,11 @@ msgstr "izberite vodilno masko vhodne ali izhodne slike"
 
 #: ../src/develop/blend_gui.c:2734
 msgid "feathering radius"
-msgstr "radij glajenja"
+msgstr "radij mehčanja s peresom"
 
 #: ../src/develop/blend_gui.c:2736
 msgid "spatial radius of feathering"
-msgstr "prostorski krog glajenja"
+msgstr "prostorski krog mehčanja s peresom"
 
 #: ../src/develop/blend_gui.c:2742
 msgid "mask blur"
@@ -5193,7 +5197,7 @@ msgstr "[ELLIPSE] spremeni prosojnost"
 
 #: ../src/develop/masks/masks.c:262
 msgid "[ELLIPSE] switch feathering mode"
-msgstr "[ELLIPSE] preklopi način rabe peresa"
+msgstr "[ELLIPSE] preklopi način rabe mehčanja"
 
 #: ../src/develop/masks/masks.c:268
 msgid "[ELLIPSE] rotate shape"
@@ -5225,7 +5229,7 @@ msgstr "[CIRCLE] spremeni prosojnost"
 
 #: ../src/develop/masks/masks.c:311
 msgid "[CIRCLE] change feather size"
-msgstr "[CIRCLE] spremeni velikost peresa"
+msgstr "[CIRCLE] spremeni velikost peresa mehčanja"
 
 #: ../src/develop/masks/masks.c:346
 msgid "ctrl+click to add a sharp node"
@@ -5297,7 +5301,7 @@ msgid ""
 "shift+click to switch feathering mode, ctrl+click to rotate\n"
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
 msgstr ""
-"shift+klik za preklop rabe peresa, ctrl+klik za rotacijo\n"
+"shift+klik za preklop rabe mehčanja, ctrl+klik za rotacijo\n"
 "shift+scroll za določanje velikosti peresa, ctrl+scroll za določanje "
 "neprosojnosti oblike (%d%%),"
 
@@ -8257,7 +8261,7 @@ msgid ""
 "by pushing RGB values into negatives"
 msgstr ""
 "prilagodi nivoje črnine za odstranjevanje negativnih vrednosti RGB.\n"
-"nikoli ne uporabljajte tega za več gostote v črninah\n"
+"nikoli ne uporabljajte tega za več gostote v črninah,\n"
 "če je slabo nastavljeno, bo izrezal barve blizu črne iz barvnega razpona\n"
 "tako da bo porinil vrednosti RGV v negativno stran"
 
@@ -8328,7 +8332,7 @@ msgstr "klip"
 
 #: ../src/iop/basicadj.c:682
 msgid "adjusts clipping value for auto exposure calculation"
-msgstr "prilagodi vrednost klipa za avtomatski izračun osvetlitve"
+msgstr "prilagodi vrednost obrezovanja za avtomatski izračun osvetlitve"
 
 #: ../src/iop/bilat.c:93 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -9518,7 +9522,7 @@ msgstr "barvni kontrast"
 #: ../src/iop/colorcontrast.c:126
 msgctxt "accel"
 msgid "green vs magenta"
-msgstr "zelena proti vijolični"
+msgstr "zelena proti magenti"
 
 #: ../src/iop/colorcontrast.c:127
 msgctxt "accel"
@@ -9584,7 +9588,7 @@ msgstr "delovni profil"
 #| msgid "gamut clipping"
 msgctxt "accel"
 msgid "gamut clipping"
-msgstr "izrez gamuta"
+msgstr "obrezovanje barvnega razpona"
 
 #: ../src/iop/colorin.c:494
 #, c-format
@@ -10587,11 +10591,10 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives."
 msgstr ""
-"prilagodi nivo črne za popravek izreza negativnih vrednosti RGB.\n"
-"nikoli ne smete uporabiti za dodajanje večje gostote črnin!\n"
-"če je nivo določen slabo, bo izrezal skoraj črne odtenke izven barvnega "
-"razpona\n"
-"tako da bo porinil vrednosti RGB med negativne."
+"prilagodi nivo črnine za popravek izreza negativnih vrednosti RGB.\n"
+"nikoli ne smete uporabiti za dodajanje večje gostote črnin! če je\n"
+"nivo določen slabo, bo izrezal skoraj črne odtenke izven barvnega\n"
+"razpona, tako da bo porinil vrednosti RGB med negativne."
 
 #: ../src/iop/filmic.c:300
 msgid "09 EV (low-key)"
@@ -10653,7 +10656,7 @@ msgid ""
 msgstr ""
 "število stopenj med srednje sivo in čisto belo.\n"
 "to vrednost bi dal tudi svetlomer na sceni.\n"
-"prilagodi tako, da se izogneš izrezu bleščav"
+"prilagodi tako, da se izognete obrezovanju bleščav"
 
 #: ../src/iop/filmic.c:1652 ../src/iop/filmicrgb.c:2320
 msgid ""
@@ -10694,7 +10697,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1676
 msgid "filmic S curve"
-msgstr "filmična S krivulja"
+msgstr "filmska S krivulja"
 
 #: ../src/iop/filmic.c:1683 ../src/iop/filmicrgb.c:2425
 msgid ""
@@ -10844,7 +10847,7 @@ msgstr "filmski rgb"
 #: ../src/iop/filmicrgb.c:387
 msgctxt "accel"
 msgid "white exposure"
-msgstr "osvetlitev bele"
+msgstr "osvetlitev beline"
 
 #: ../src/iop/filmicrgb.c:388
 msgctxt "accel"
@@ -10918,7 +10921,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:1419
 msgid "filmic works only on RGB input"
-msgstr "filmično deluje samo v RGB vhodu"
+msgstr "filmsko deluje samo v RGB vhodu"
 
 #: ../src/iop/filmicrgb.c:2284
 msgid ""
@@ -10990,7 +10993,7 @@ msgstr "obnovi"
 #: ../src/iop/filmicrgb.c:2349
 #| msgid "highlight compression"
 msgid "highlights clipping"
-msgstr "omejevanje bleščav"
+msgstr "obrezovanje bleščav"
 
 #: ../src/iop/filmicrgb.c:2356
 msgid ""
@@ -11002,11 +11005,11 @@ msgid ""
 "increase to exclude more areas."
 msgstr ""
 "nastavi prag osvetlitve, na katerem\n"
-"izrezani poudarki se rekonstruirajo.\n"
+"se obnovijo obrezani poudarki.\n"
 "vrednosti so relativne glede na belo točko prizora.\n"
 "0 EV pomeni, da je prag enak beli točki prizora.\n"
 "zmanjšanje vključi več področij,\n"
-"povečanje pa izključiti več območij."
+"povečanje pa izključi več območij."
 
 #: ../src/iop/filmicrgb.c:2365
 msgid ""
@@ -11076,7 +11079,7 @@ msgstr ""
 "ali poskušate obnoviti barvite bleščave.\n"
 "0% je enaka kombinacija obeh.\n"
 "povečajte, če želite več barve.\n"
-"zmanjšajte, če opazite magento ali bleščave izven gamuta."
+"zmanjšajte, če opazite magento ali bleščave izven barvnega razpona."
 
 #. Page LOOK
 #: ../src/iop/filmicrgb.c:2416
@@ -11522,7 +11525,7 @@ msgstr "rekonstrukcija bleščav"
 #| msgid "clipping threshold"
 msgctxt "accel"
 msgid "clipping threshold"
-msgstr "prag obreze"
+msgstr "prag obrezovanja"
 
 #: ../src/iop/highlights.c:1044
 msgid "highlight reconstruction method"
@@ -11533,7 +11536,7 @@ msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
 msgstr ""
-"ročno prilagajanje praga izločanja vijolične (tega ne bi smeli nikoli zares "
+"ročno prilagajanje praga obrezovanja magente (tega ne bi smeli nikoli zares "
 "potrebovati)"
 
 #: ../src/iop/highpass.c:75
@@ -11990,7 +11993,7 @@ msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-"klikni in povleci za pomik - klik: prikaži/skrij kontrolo peresa\n"
+"klikni in povleci za pomik - klik: prikaži/skrij kontrolo mehčanja\n"
 "ctrl-klik: avtomatsko glajenje, stikanje krivulj, glajenje, simetrično -desni "
 "klik za odstranitev"
 
@@ -12627,7 +12630,7 @@ msgid ""
 "to adjust the global contrast while avoiding clipping shadows."
 msgstr ""
 "popravi gostoto črnine po inverziji,\n"
-"za prilagajanje globalnega kontrasta, obenem pa se izogne obrezovanju senc."
+"za prilagajanje globalnega kontrasta, obenem pa v izogib obrezovanju senc."
 
 #: ../src/iop/negadoctor.c:1250
 #| msgid "target gamma"
@@ -12655,7 +12658,7 @@ msgid ""
 "this somewhat reproduces the behaviour of matte paper."
 msgstr ""
 "postopoma stisnite odsevne bleščave mimo te vrednosti\n"
-"da se izognete striženju ob povečevanju osvetlitev srednjih tonov.\n"
+"da se izognete obrezovanju ob povečevanju osvetlitev srednjih tonov.\n"
 "to približno odraža obnašanje mat papirja."
 
 #: ../src/iop/negadoctor.c:1266
@@ -12674,7 +12677,7 @@ msgid ""
 "the global contrast and avoid clipping highlights."
 msgstr ""
 "popravi osvetlitev tiskanja po inverziji, za prilagoditev\n"
-"globalnega kontrasta in izogibanje izrezov bleščav."
+"globalnega kontrasta v izogib obrezovanja bleščav."
 
 #: ../src/iop/nlmeans.c:82
 msgid "denoise (non-local means)"
@@ -13590,7 +13593,7 @@ msgstr "iz kamere nisem uspel prebrati podatkov o ravnotežju beline iz '%s'!"
 
 #: ../src/iop/temperature.c:1373 ../src/views/darkroom.c:2410
 msgid "magenta"
-msgstr "vijolična"
+msgstr "magenta"
 
 #: ../src/iop/temperature.c:1374 ../src/views/darkroom.c:2409
 msgid "cyan"
@@ -13740,7 +13743,7 @@ msgstr "premer glajenja"
 #: ../src/iop/toneequal.c:325
 msgctxt "accel"
 msgid "edges refinement or feathering"
-msgstr "glajenje robov ali"
+msgstr "glajenje robov ali mehčanje"
 
 #: ../src/iop/toneequal.c:326
 msgctxt "accel"
@@ -13993,7 +13996,7 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
-"natančnost obdelovanja perja:\n"
+"natančnost mehčanja s perjem:\n"
 "višje vrednosti silijo masko, da bolj natančno sledi robovom\n"
 "vendar lahko izniči učinek glajenja\n"
 "nižje vrednosti dajejo bolj gladke naklone in boljše glajenje\n"
@@ -14009,7 +14012,7 @@ msgid ""
 "the central line shows the average. orange bars appear at extrema if clipping "
 "occurs."
 msgstr ""
-"maskiranje obsega histograma med prvin in zadnjim decilom.\n"
+"maskiranje obsega histograma med prvim in zadnjim decilom.\n"
 "osrednja krivulja prikazuje povprečje, oranžen stolpec se prikaže ob skrajnih "
 "vrednostih, če pride do obrezovanja."
 
@@ -14021,8 +14024,8 @@ msgid ""
 msgstr ""
 "0 onemogoči kvantizacijo.\n"
 "višje vrednosti posterizirajo masko svetilnosti in pomagajo voditi\n"
-"izdelavo mestoma gladkih območij, kadar uporabljamo visoke vrednosti "
-"obdelovanja s peresi"
+"izdelavo mestoma gladkih območij, kadar uporabljamo visoke vrednosti mehčanja "
+"s peresi"
 
 #: ../src/iop/toneequal.c:3123
 msgid ""
@@ -14174,12 +14177,13 @@ msgstr "dodaj raven slučajnega šuma, da preprečimo pojav pasov"
 #: ../src/iop/vignette.c:1078
 #, c-format
 msgid "[%s on node] change vignette/feather size"
-msgstr "[%s on node] spremeni velikost vinjete/peresa"
+msgstr "[%s on node] spremeni velikost vinjete/peresa mehčanja"
 
 #: ../src/iop/vignette.c:1084
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
-msgstr "[%s on node] spremeni velikost vinjete/peresa a ohranjaj razmerje"
+msgstr ""
+"[%s on node] spremeni velikost vinjete/peresa mehčanja, a ohranjaj razmerje"
 
 #: ../src/iop/vignette.c:1090
 #, c-format
@@ -14463,7 +14467,7 @@ msgstr "ČB"
 
 #: ../src/libs/collect.c:117
 msgid "collect images"
-msgstr "zbiraj slike"
+msgstr "zberi slike"
 
 #: ../src/libs/collect.c:354
 msgid "search filmroll"
@@ -14797,7 +14801,7 @@ msgstr "naloži priklopne datoteke"
 #: ../src/libs/copy_history.c:447
 msgctxt "accel"
 msgid "write sidecar files"
-msgstr "zapiši priklopne datoteke."
+msgstr "zapiši priklopne datoteke"
 
 #: ../src/libs/duplicate.c:60
 msgid "duplicate manager"
@@ -15764,12 +15768,12 @@ msgstr "prezrcali vodoravno"
 #: ../src/libs/live_view.c:169
 msgctxt "accel"
 msgid "move focus point in (big steps)"
-msgstr "preseli točko ostrenja (veliki koraki)"
+msgstr "premakni točko ostrenja (veliki koraki)"
 
 #: ../src/libs/live_view.c:170
 msgctxt "accel"
 msgid "move focus point in (small steps)"
-msgstr "preseli točko ostrenja (majhni koraki)"
+msgstr "premakni točko ostrenja (majhni koraki)"
 
 #: ../src/libs/live_view.c:171
 msgctxt "accel"
@@ -17346,7 +17350,7 @@ msgstr "copyright (c) avtorji 2009-%s"
 
 #: ../src/libs/tools/darktable.c:256
 msgid "organize and develop images from digital cameras"
-msgstr "organizira in razvije slike digitalnih kamer"
+msgstr "organizira in razvija slike digitalnih kamer"
 
 #: ../src/libs/tools/darktable.c:271
 msgid "translator-credits"
@@ -17486,7 +17490,7 @@ msgstr "stalne prekrivne plasti razširjene ob miški nad"
 
 #: ../src/libs/tools/global_toolbox.c:439 ../src/libs/tools/global_toolbox.c:472
 msgid "overlays block on mouse hover during (s) "
-msgstr "blok prekrivnih plasti ob miški nad traja (s)"
+msgstr "blok prekrivnih plasti ob miški nad traja (s) "
 
 #: ../src/libs/tools/global_toolbox.c:446 ../src/libs/tools/global_toolbox.c:479
 #| msgctxt "preferences"
@@ -17771,7 +17775,7 @@ msgid ""
 msgstr ""
 "prag, kaj se bo štelo za preosvetljeno\n"
 "1.0 - nivo beline\n"
-"0.0 - nivo črne"
+"0.0 - nivo črnine"
 
 #: ../src/views/darkroom.c:2157
 msgid ""
@@ -17822,7 +17826,7 @@ msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
-"preklapljaj preverjanje barvnega obsega\n"
+"preklapljaj preverjanje barvnega razpona\n"
 "desni klik za nastavitve profila"
 
 #: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1390
@@ -17970,7 +17974,7 @@ msgstr "preizkusni odtis"
 #: ../src/views/darkroom.c:3656
 msgctxt "accel"
 msgid "gamut check"
-msgstr "kontrola barvnega obsega"
+msgstr "kontrola barvnega razpona"
 
 #. toggle visability of drawn masks for current gui module
 #: ../src/views/darkroom.c:3659
@@ -18232,7 +18236,7 @@ msgstr "predogled"
 #: ../src/views/lighttable.c:863
 msgctxt "accel"
 msgid "preview with focus detection"
-msgstr "predogled z detekcijo goriščnice"
+msgstr "predogled z detekcijo goriščne razdalje"
 
 #: ../src/views/lighttable.c:864
 msgctxt "accel"
