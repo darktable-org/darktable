@@ -56,10 +56,23 @@
 	      </para>
 
 	      <para>
-		For the purposes of speed, the histogram is calculated from the the image
+		It is possible to assign keyboard shortcuts to cycle through or switch histogram
+		mode/type. Separate shortcuts can be set for the darkroom and tethering
+		views. By default, none of these shortcuts are associated with keys.
+	      </para>
+
+	      <para>
+		The histogram is currently disabled in tethering view, pending a code fix.
+	      </para>
+
+	      <para>
+		For the purposes of speed, the scopes are calculated from the image
 		preview. This is the image which is displayed in the navigation panel (see <xref
 		linkend="navigation"/>), rather than the higher quality developed image which is
-		displayed in the center view.
+		displayed in the center view. The preview is calculated at a lower resolution
+		and may use shortcuts to bypass time-consuming image processing steps. Hence
+		scopes may not represent fine detail in the image, and may deviate in other ways
+		from the final developed image.
 	      </para>
             </entry>
             <entry>
@@ -120,17 +133,17 @@
 	      <para>
 		The leftmost button of the panel is a toggle which flips to a waveform
 		scope. This scope includes spatial data about the image. The y-axis represents
-		the distribution of pixels by lightness for each channel. The x-axis represents
-		the proportional distribution of this data across the x-axis of the image. The
-		lightness of each point of the waveform represents the quantity of pixels with
-		the given lightness at that horizontal position in the image.
+		the distribution of pixels by lightness for each channel. The scope's x-axis
+		represents the distribution of this data across the x-axis of the image. The
+		lightness of each point of the waveform represents the quantity of pixels
+		represented at that scope position.
 	      </para>
 
 	      <para>
 		The thick dotted horizontal line at the top of the waveform histogram represents
-		100% lightness. Hence, any channel which displays above that line may be
-		overexposed in the resulting image. The thinner dotted horizontal line
-		represents 50% lightness. The bottom of the scope represents 0% lightness.
+		100% lightness. Hence, any channel which displays above that line may be clipped
+		in the resulting image. The thinner dotted horizontal line represents 50%
+		lightness. The bottom of the scope represents 0% lightness.
 	      </para>
 
 	      <para>
@@ -174,8 +187,8 @@
 
 	      <para>
 		The RGB parade can be useful for matching the intensities of the red, green, and
-		blue channels. It can also help with understanding the differences between each
-		channel.
+		blue channels. It can also help with understanding the differences between and
+		individual qualities of each channel.
 	      </para>
             </entry>
             <entry>
@@ -211,8 +224,9 @@
     </para>
 
     <para>
-      Double-clicking in the histogram resets the exposure module's parameters to their
-      defaults.
+      Scrolling in the appropriate area -- rather than dragging -- will also adjust exposure and
+      black point. Double-clicking in the histogram resets the exposure module's parameters to
+      their defaults.
     </para>
   </sect3>
 
@@ -222,14 +236,14 @@
 
     <para>
       For the regular histogram, the image data is converted to the <emphasis>histogram
-      profile</emphasis> before the histogram is calculated. You can control this profile by
+      profile</emphasis> before the histogram is calculated. You can choose this profile by
       right-clicking on the <emphasis>softproofing</emphasis> or <emphasis>gamut
       checking</emphasis> icons in the bottom panel (see <xref
-      linkend="darkroom_bottom_panel"/>).
+      linkend="darkroom_bottom_panel"/>) then selecting the profile of interest.
     </para>
 
     <para>
-      Besides choosing a specific colorspace, you can also choose to use the <emphasis>work
+      Besides choosing a specific colorspace, you can also choose the <emphasis>work
       profile</emphasis>, <emphasis>export profile</emphasis>, <emphasis>softproof
       profile</emphasis>, or <emphasis>display profile</emphasis>.
     </para>
@@ -237,8 +251,9 @@
     <para>
       In the case of the waveform and RGB parade scopes, the colorspace depends on the
       <programlisting>cache_color_managed</programlisting> configuration variable. In its
-      default (<emphasis>true</emphasis>) setting, these scopes are calculated in the AdobeRGB
-      (compatible) colorspace. Otherwise, they are calculated in the display colorspace.
+      default (<emphasis>true</emphasis>) setting, these scopes are calculated in the
+      <quote>Adobe RGB (compatible)</quote> colorspace. Otherwise, they are calculated in the
+      display colorspace.
     </para>
   </sect3>
 </sect2>
