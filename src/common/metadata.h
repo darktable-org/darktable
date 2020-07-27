@@ -88,6 +88,9 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey);
 /** return the type of the metadata keyid */
 const int dt_metadata_get_type(const uint32_t keyid);
 
+/** init metadata flags */
+void dt_metadata_init();
+
 /** Set metadata for a specific image, or all selected for id == -1. */
 void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on); // duplicate.c, lua/image.c
 

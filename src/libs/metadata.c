@@ -68,28 +68,6 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-void init(dt_lib_module_t *self)
-{
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const int type = dt_metadata_get_type(i);
-    const char *name = (gchar *)dt_metadata_get_name(i);
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
-    if(!dt_conf_key_exists(setting))
-    {
-      // per default should be imported
-      uint32_t flag = DT_METADATA_FLAG_IMPORTED;
-      if(type == DT_METADATA_TYPE_OPTIONAL)
-      {
-        // per default this one should be hidden
-        flag |= DT_METADATA_FLAG_HIDDEN;
-      }
-      dt_conf_set_int(setting, flag);
-    }
-    g_free(setting);
-  }
-}
-
 static gboolean _is_leave_unchanged(const char *text)
 {
   return g_strcmp0(text, _("<leave unchanged>")) == 0;

@@ -995,6 +995,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // set up the list of exiv2 metadata
   dt_exif_set_exiv2_taglist();
 
+  // init metadata flags
+  dt_metadata_init();
+
   if(init_gui)
   {
 #ifdef HAVE_GPHOTO2
