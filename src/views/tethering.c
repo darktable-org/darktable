@@ -510,12 +510,12 @@ void enter(dt_view_t *self)
   }
 
   /* connect signal for mipmap update for a redraw */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_capture_mipmaps_updated_signal_callback), (gpointer)self);
 
 
   /* connect signal for fimlstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
 
   // register listener

@@ -253,10 +253,17 @@ void dt_control_signal_block_by_func(const struct dt_control_signal_t *ctlsig, G
 /* unblocks a callback */
 void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data);
 
-#define DT_DEBUG_CONTROL_SIGNAL_RAISE(ctlsig, signal, ...)                                                                   \
-  {                                                                                                                          \
-    dt_print(DT_DEBUG_SIGNAL, "[signal] %s:%d, function %s(): raise signal %s\n", __FILE__, __LINE__, __FUNCTION__, #signal);\
-    dt_control_signal_raise(ctlsig, signal, ##__VA_ARGS__);                                                                  \
+#define DT_DEBUG_CONTROL_SIGNAL_RAISE(ctlsig, signal, ...)                                                                       \
+  {                                                                                                                              \
+    dt_print(DT_DEBUG_SIGNAL, "[signal] %s:%d, function %s(): raise signal %s\n", __FILE__, __LINE__, __FUNCTION__, #signal);    \
+    dt_control_signal_raise(ctlsig, signal, ##__VA_ARGS__);                                                                      \
+  }
+
+#define DT_DEBUG_CONTROL_SIGNAL_CONNECT(ctlsig, signal, cb, user_data)                                                           \
+  {                                                                                                                              \
+    dt_print(DT_DEBUG_SIGNAL, "[signal] %s:%d, function: %s() connect handler %s to signal %s\n", __FILE__, __LINE__,            \
+             __FUNCTION__, #cb, #signal);                                                                                        \
+    dt_control_signal_connect(ctlsig, signal, cb, user_data);                                                                    \
   }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
