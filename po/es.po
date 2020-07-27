@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-23 15:56-0500\n"
-"PO-Revision-Date: 2020-07-23 20:30-0500\n"
+"POT-Creation-Date: 2020-07-26 13:53-0500\n"
+"PO-Revision-Date: 2020-07-26 21:10-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -121,7 +121,7 @@ msgstr "ajuste de exposición"
 #: ../build/src/iop/introspection_basecurve.c:239
 #: ../src/libs/metadata_view.c:123
 msgid "exposure bias"
-msgstr "desviación de exposición"
+msgstr "compensación"
 
 #: ../build/src/iop/introspection_basecurve.c:152
 #: ../build/src/iop/introspection_basecurve.c:243
@@ -2839,27 +2839,27 @@ msgstr "etiqueta"
 
 #: ../src/common/collection.c:678
 msgid "date taken"
-msgstr "fecha de la toma"
+msgstr "fecha (día)"
 
 #: ../src/common/collection.c:679
 msgid "date-time taken"
-msgstr "fecha/hora de la toma"
+msgstr "fecha (día y hora)"
 
 #: ../src/common/collection.c:680 ../src/libs/metadata_view.c:109
 msgid "import timestamp"
-msgstr "importar la marca de tiempo"
+msgstr "fecha (importado)"
 
 #: ../src/common/collection.c:681 ../src/libs/metadata_view.c:110
 msgid "change timestamp"
-msgstr "cambiar la marca de tiempo"
+msgstr "fecha (edición)"
 
 #: ../src/common/collection.c:682 ../src/libs/metadata_view.c:111
 msgid "export timestamp"
-msgstr "exportar la marca de tiempo"
+msgstr "fecha (exportado)"
 
 #: ../src/common/collection.c:683 ../src/libs/metadata_view.c:112
 msgid "print timestamp"
-msgstr "imprimir la marca de tiempo"
+msgstr "fecha (impresión)"
 
 #: ../src/common/collection.c:684 ../src/libs/history.c:74
 msgid "history"
@@ -3604,7 +3604,7 @@ msgstr "notas"
 
 #: ../src/common/metadata.c:52
 msgid "version name"
-msgstr "número de versión"
+msgstr "versión"
 
 #: ../src/common/noiseprofiles.c:26
 msgid "generic poissonian"
@@ -5749,7 +5749,7 @@ msgstr ""
 
 #: ../src/gui/camera_import_dialog.c:316 ../src/libs/image.c:420
 msgid "images"
-msgstr "Imágenes"
+msgstr "imágenes"
 
 #: ../src/gui/camera_import_dialog.c:317
 msgid "settings"
@@ -5959,7 +5959,7 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(VERSION_NAME) - version name from metadata"
-msgstr "$(VERSION_NAME) - número de versión desde los metadatos"
+msgstr "$(VERSION_NAME) - nombre de la versión desde los metadatos"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
@@ -11595,7 +11595,7 @@ msgstr ""
 
 #: ../src/iop/liquify.c:3547
 msgid "warps|nodes count:"
-msgstr "Deformaciones|cuenta de nodos:"
+msgstr "deformaciones|cuenta de nodos:"
 
 #: ../src/iop/liquify.c:3556
 msgid "point tool: draw points"
@@ -12013,7 +12013,7 @@ msgstr "D. mín. componente rojo"
 
 #: ../src/iop/negadoctor.c:1050
 msgid "film stock"
-msgstr "película celuloide"
+msgstr "película fotográfica"
 
 #: ../src/iop/negadoctor.c:1051
 msgid "black and white"
@@ -12026,28 +12026,28 @@ msgstr "color"
 
 #: ../src/iop/negadoctor.c:1055
 msgid "toggle on or off the color controls"
-msgstr "activar o desactivar los controles de color"
+msgstr "Activa o desactiva los controles de color"
 
 #: ../src/iop/negadoctor.c:1062
 msgid "film properties"
-msgstr "propiedades de la película"
+msgstr "propiedades"
 
 #: ../src/iop/negadoctor.c:1064
 msgid "print properties"
-msgstr "propiedades de la impresión"
+msgstr "impresión"
 
 #. Dmin
 #: ../src/iop/negadoctor.c:1073
 msgid "color of the film base"
-msgstr "color de la película base"
+msgstr "color de la base"
 
 #: ../src/iop/negadoctor.c:1081
 msgid "select color of film material from a swatch"
-msgstr "seleccionar el color del material de la película desde una muestra"
+msgstr "Seleccionar el color desde una muestra del material de la película"
 
 #: ../src/iop/negadoctor.c:1086
 msgid "pick color of film material from image"
-msgstr "seleccionar color de la película desde la imagen"
+msgstr "Seleccionar el color del material de la película desde la imagen"
 
 #: ../src/iop/negadoctor.c:1093 ../src/iop/negadoctor.c:1103
 #: ../src/iop/negadoctor.c:1113
@@ -12059,8 +12059,8 @@ msgid ""
 msgstr ""
 "Ajusta el color y la sombra de la base transparente de la película.\n"
 "Este valor depende del material de la película, \n"
-"los vapores químicos producidos durante el revelado de la película,\n"
-"y el balance de blancos del escáner."
+"de los vapores químicos producidos durante el revelado de la película,\n"
+"y del balance de blancos del escáner."
 
 #: ../src/iop/negadoctor.c:1102
 msgid "D min green component"
@@ -12111,7 +12111,7 @@ msgstr ""
 #. WB shadows
 #: ../src/iop/negadoctor.c:1146
 msgid "shadows color cast"
-msgstr "dominante de color de las sombras"
+msgstr "dominante de color en las sombras"
 
 #: ../src/iop/negadoctor.c:1155
 msgid "select color of shadows from a swatch"
@@ -12149,7 +12149,7 @@ msgstr "equilibrio de azul en sombras"
 #. WB highlights
 #: ../src/iop/negadoctor.c:1192
 msgid "highlights white balance"
-msgstr "balance de blancos de las luces"
+msgstr "balance de blancos en las luces"
 
 #: ../src/iop/negadoctor.c:1201
 msgid "select color of illuminant from a swatch"
@@ -12495,7 +12495,7 @@ msgstr "Activar herramienta para elegir la luz promedio de la imagen"
 #: ../src/iop/relight.c:301 ../src/libs/metadata_view.c:128
 #: ../src/libs/print_settings.c:1310
 msgid "width"
-msgstr "amplitud"
+msgstr "anchura"
 
 #: ../src/iop/relight.c:304
 msgid "width of fill-light area defined in zones"
@@ -15691,15 +15691,15 @@ msgstr "fecha/hora"
 
 #: ../src/libs/metadata_view.c:129 ../src/libs/print_settings.c:1314
 msgid "height"
-msgstr "alto"
+msgstr "altura"
 
 #: ../src/libs/metadata_view.c:131
 msgid "export width"
-msgstr "ancho de exportación"
+msgstr "ancho (exportado)"
 
 #: ../src/libs/metadata_view.c:132
 msgid "export height"
-msgstr "altura de exportación"
+msgstr "alto (exportado)"
 
 #: ../src/libs/metadata_view.c:144
 msgid "longitude"
