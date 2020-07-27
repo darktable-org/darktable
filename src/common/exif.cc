@@ -2719,8 +2719,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     if(!history_only)
     {
       // otherwise we ignore title, description, ... from non-dt xmp files :(
-      size_t ns_pos = image->xmpPacket().find("xmlns:darktable=\"http://darktable.sf.net/\"");
-      bool is_a_dt_xmp = (ns_pos != std::string::npos);
+      const size_t ns_pos = image->xmpPacket().find("xmlns:darktable=\"http://darktable.sf.net/\"");
+      const bool is_a_dt_xmp = (ns_pos != std::string::npos);
       _exif_decode_xmp_data(img, xmpData, is_a_dt_xmp ? version : -1, false);
     }
 
