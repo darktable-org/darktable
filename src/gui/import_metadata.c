@@ -174,7 +174,10 @@ void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
 
   label = gtk_label_new(_("to be imported"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(label),
-                              _("selected metadata are imported from image and override the default value"));
+                              _("selected metadata are imported from image and override the default value"
+                                "\n this drives also the \'look for updated xmp files\' and \'load sidecar file\' actions"
+                                "\n CAUTION: not selected metadata are cleaned up when xmp file is udpated"
+                              ));
   gtk_grid_attach_next_to(GTK_GRID(grid), label, presets, GTK_POS_RIGHT, 1, 1);
 
   // grid content
