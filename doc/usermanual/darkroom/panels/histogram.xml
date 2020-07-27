@@ -49,23 +49,6 @@
 	      </para>
 
 	      <para>
-		When the mouse is over the histogram panel, scrolling while holding down the
-		<emphasis>Ctrl</emphasis> key will change the height of the panel. You can
-		hide/show the histogram entirely with a keyboard shortcut. The default shortcut
-		is <emphasis>Shift+Ctrl+H</emphasis>.
-	      </para>
-
-	      <para>
-		It is possible to assign keyboard shortcuts to cycle through or switch histogram
-		mode/type. Separate shortcuts can be set for the darkroom and tethering
-		views. By default, none of these shortcuts are associated with keys.
-	      </para>
-
-	      <para>
-		The histogram is currently disabled in tethering view, pending a code fix.
-	      </para>
-
-	      <para>
 		For the purposes of speed, the scopes are calculated from the image
 		preview. This is the image which is displayed in the navigation panel (see <xref
 		linkend="navigation"/>), rather than the higher quality developed image which is
