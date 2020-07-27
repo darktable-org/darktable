@@ -730,27 +730,27 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
     else
     {
       const int max_elements = 4;
-      gchar **change_parts = g_malloc0_n(max_elements + 2, sizeof(char*));
+      gchar **change_parts = g_malloc0_n(max_elements + 1, sizeof(char*));
       int num_parts = 0;
 
       for(int i = 0, item_offset = 0; i < field->Array.count; i++, item_offset += field->Array.field->header.size)
       {
         char *description = g_strdup_printf("%s[%d]", d, i);
-
-        if((change_parts[num_parts] = _lib_history_change_text(field->Array.field, description, params + item_offset, oldpar + item_offset)))
-          num_parts++;
-
+        char *element_text = _lib_history_change_text(field->Array.field, description, params + item_offset, oldpar + item_offset);
         g_free(description);
 
-        if(num_parts == max_elements + 1)
-        {
-          g_free(change_parts[max_elements]);
-          change_parts[max_elements] = g_strdup("\u22EF"); // ellipsis
-          break;
-        }
+        if(element_text && ++num_parts <= max_elements)
+          change_parts[num_parts - 1] = element_text;
+        else
+          g_free(element_text);
       }
 
-      gchar *array_text = num_parts ? g_strjoinv("\n", change_parts) : NULL;
+      gchar *array_text = NULL;
+      if(num_parts > max_elements)
+        array_text = g_strdup_printf("%s: %d changes", d, num_parts);
+      else if(num_parts > 0)
+        array_text = g_strjoinv("\n", change_parts);
+
       g_strfreev(change_parts);
 
       return array_text;
