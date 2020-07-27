@@ -1496,7 +1496,7 @@ void gui_init(dt_lib_module_t *self)
   /* initialize view manager proxy */
   darktable.view_manager->proxy.timeline.module = self;
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_lib_timeline_collection_changed), (gpointer)self);
 }
 

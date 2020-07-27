@@ -2839,13 +2839,13 @@ void gui_init(dt_lib_module_t *self)
   else d->completion = NULL;
 
   /* connect to mouse over id */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_lib_tagging_redraw_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_lib_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
   d->collection = g_malloc(4096);

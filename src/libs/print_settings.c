@@ -1090,13 +1090,13 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 {
   // user activated a new image via the filmstrip or user entered view
   // mode which activates an image: get image_id and orientation
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_print_settings_activate_or_update_callback), self);
 
   // when an updated mipmap, we may have new orientation information
   // about the current image. This updates the image_id as well and
   // zeros out dimensions, but there should be no harm in that
-  dt_control_signal_connect(darktable.signals,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
                             DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_print_settings_activate_or_update_callback),
                             self);

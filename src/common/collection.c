@@ -88,16 +88,16 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
 
   /* connect to all the signals that might indicate that the count of images matching the collection changed
    */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_dt_collection_recount_callback_1), collection);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED,
                             G_CALLBACK(_dt_collection_recount_callback_1), collection);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED,
                             G_CALLBACK(_dt_collection_recount_callback_1), collection);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_IMPORT,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_IMPORT,
                             G_CALLBACK(_dt_collection_recount_callback_2), collection);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
                             G_CALLBACK(_dt_collection_filmroll_imported_callback), collection);
   return collection;
 }

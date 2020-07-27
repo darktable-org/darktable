@@ -816,7 +816,7 @@ void gui_init(dt_lib_module_t *self)
   d->camctl_listener.control_status = _camctl_camera_control_status_callback;
   d->camctl_listener.camera_disconnected = _camctl_camera_disconnected_callback;
   dt_camctl_register_listener(darktable.camctl, &d->camctl_listener);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
                             self);
 #endif
 #ifdef USE_LUA

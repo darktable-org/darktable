@@ -239,7 +239,7 @@ static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t
 
 void dt_iop_color_picker_init(void)
 {
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY,
                             G_CALLBACK(_iop_color_picker_signal_callback), NULL);
 }
 

@@ -333,11 +333,11 @@ void enter(dt_view_t *self)
     dt_view_active_images_add(prt->image_id, TRUE);
   }
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_print_mipmaps_updated_signal_callback),
                             (gpointer)self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_print_filmstrip_activate_callback), self);
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));

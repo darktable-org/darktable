@@ -128,7 +128,7 @@ const dt_selection_t *dt_selection_new()
 
   /* setup signal handler for darktable collection update
    to update the internal collection of the selection */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_selection_update_collection), (gpointer)s);
 
   return s;

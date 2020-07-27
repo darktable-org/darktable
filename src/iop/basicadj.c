@@ -684,10 +684,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->sl_clip, _("adjusts clipping value for auto exposure calculation"));
 
   // add signal handler for preview pipe finish
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
   // and profile change
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_signal_profile_user_changed), self);
 }
 

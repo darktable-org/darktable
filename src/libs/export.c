@@ -679,7 +679,7 @@ void gui_init(dt_lib_module_t *self)
   } while((it = g_list_next(it)));
 
   // postponed so we can do the two steps in one loop
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
                             G_CALLBACK(on_storage_list_changed), self);
   g_signal_connect(G_OBJECT(d->storage), "value-changed", G_CALLBACK(storage_changed), (gpointer)d);
 
@@ -828,7 +828,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_callback_bool),
                    (gpointer)CONFIG_PREFIX "style_append");
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
                             G_CALLBACK(_lib_export_styles_changed_callback), self);
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -859,11 +859,11 @@ void gui_init(dt_lib_module_t *self)
 
   d->metadata_export = NULL;
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
   self->gui_reset(self);

@@ -168,11 +168,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(self->widget);
 
   /* connect to history change signal for updating the history view */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             G_CALLBACK(_lib_history_will_change_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
                             G_CALLBACK(_lib_history_change_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE,
                             G_CALLBACK(_lib_history_module_remove_callback), self);
 }
 

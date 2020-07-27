@@ -470,10 +470,10 @@ void init(dt_view_t *self)
 
 #endif // USE_LUA
   /* connect collection changed signal */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_view_map_collection_changed), (gpointer)self);
   /* connect preference changed signal */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                             G_CALLBACK(_view_map_check_preference_changed), (gpointer)self);
 }
 
@@ -875,7 +875,7 @@ void enter(dt_view_t *self)
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
 
   /* connect signal for filmstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_map_filmstrip_activate_callback), self);
 
   /* scroll filmstrip to the first selected image */

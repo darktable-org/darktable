@@ -157,7 +157,7 @@ void gui_init(dt_lib_module_t *self)
   if(model) g_object_unref(model);
 
   /* connect callback to view change signal */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
                             G_CALLBACK(_lib_viewswitcher_view_changed_callback), self);
 }
 

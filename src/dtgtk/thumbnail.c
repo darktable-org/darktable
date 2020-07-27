@@ -1002,17 +1002,17 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event", G_CALLBACK(_event_main_release), thumb);
 
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
                               G_CALLBACK(_dt_active_images_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                               G_CALLBACK(_dt_selection_changed_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                               G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                               G_CALLBACK(_dt_preview_updated_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
                               G_CALLBACK(_dt_image_info_changed_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                               G_CALLBACK(_dt_collection_changed_callback), thumb);
 
     // the background
