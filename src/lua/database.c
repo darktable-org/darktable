@@ -280,7 +280,7 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "post-import-film");
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(on_film_imported),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(on_film_imported),
                             NULL);
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);

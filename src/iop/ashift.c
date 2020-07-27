@@ -4906,7 +4906,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   /* add signal handler for preview pipe finish to redraw the overlay */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(process_after_preview_callback), self);
 }
 
