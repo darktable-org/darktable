@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-26 13:53-0500\n"
-"PO-Revision-Date: 2020-07-26 16:00-0500\n"
+"PO-Revision-Date: 2020-07-26 21:10-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -121,7 +121,7 @@ msgstr "ajuste de exposición"
 #: ../build/src/iop/introspection_basecurve.c:239
 #: ../src/libs/metadata_view.c:123
 msgid "exposure bias"
-msgstr "desviación de exposición"
+msgstr "compensación"
 
 #: ../build/src/iop/introspection_basecurve.c:152
 #: ../build/src/iop/introspection_basecurve.c:243
@@ -2839,27 +2839,27 @@ msgstr "etiqueta"
 
 #: ../src/common/collection.c:678
 msgid "date taken"
-msgstr "fecha de la toma"
+msgstr "fecha (día)"
 
 #: ../src/common/collection.c:679
 msgid "date-time taken"
-msgstr "fecha/hora de la toma"
+msgstr "fecha (día y hora)"
 
 #: ../src/common/collection.c:680 ../src/libs/metadata_view.c:109
 msgid "import timestamp"
-msgstr "importar la marca de tiempo"
+msgstr "fecha (importado)"
 
 #: ../src/common/collection.c:681 ../src/libs/metadata_view.c:110
 msgid "change timestamp"
-msgstr "cambiar la marca de tiempo"
+msgstr "fecha (edición)"
 
 #: ../src/common/collection.c:682 ../src/libs/metadata_view.c:111
 msgid "export timestamp"
-msgstr "exportar la marca de tiempo"
+msgstr "fecha (exportado)"
 
 #: ../src/common/collection.c:683 ../src/libs/metadata_view.c:112
 msgid "print timestamp"
-msgstr "imprimir la marca de tiempo"
+msgstr "fecha (impresión)"
 
 #: ../src/common/collection.c:684 ../src/libs/history.c:74
 msgid "history"
@@ -3604,7 +3604,7 @@ msgstr "notas"
 
 #: ../src/common/metadata.c:52
 msgid "version name"
-msgstr "número de versión"
+msgstr "versión"
 
 #: ../src/common/noiseprofiles.c:26
 msgid "generic poissonian"
@@ -5749,7 +5749,7 @@ msgstr ""
 
 #: ../src/gui/camera_import_dialog.c:316 ../src/libs/image.c:420
 msgid "images"
-msgstr "Imágenes"
+msgstr "imágenes"
 
 #: ../src/gui/camera_import_dialog.c:317
 msgid "settings"
@@ -5959,7 +5959,7 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(VERSION_NAME) - version name from metadata"
-msgstr "$(VERSION_NAME) - número de versión desde los metadatos"
+msgstr "$(VERSION_NAME) - nombre de la versión desde los metadatos"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
@@ -12495,7 +12495,7 @@ msgstr "Activar herramienta para elegir la luz promedio de la imagen"
 #: ../src/iop/relight.c:301 ../src/libs/metadata_view.c:128
 #: ../src/libs/print_settings.c:1310
 msgid "width"
-msgstr "amplitud"
+msgstr "anchura"
 
 #: ../src/iop/relight.c:304
 msgid "width of fill-light area defined in zones"
@@ -15691,15 +15691,15 @@ msgstr "fecha/hora"
 
 #: ../src/libs/metadata_view.c:129 ../src/libs/print_settings.c:1314
 msgid "height"
-msgstr "alto"
+msgstr "altura"
 
 #: ../src/libs/metadata_view.c:131
 msgid "export width"
-msgstr "ancho de exportación"
+msgstr "ancho (exportado)"
 
 #: ../src/libs/metadata_view.c:132
 msgid "export height"
-msgstr "altura de exportación"
+msgstr "alto (exportado)"
 
 #: ../src/libs/metadata_view.c:144
 msgid "longitude"
