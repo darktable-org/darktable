@@ -28,55 +28,56 @@ making a backup is strongly advised.
 
 ## The Big Ones
 
-- A full rewrite of the lighttable has been done. This gives again a
-  big performance jump and will allow smooth interaction for any
+- A full rewrite of the lighttable has been undertaken. This gives again a
+  big performance improvement and will allow smooth interaction at any
   screen resolution. At the same time the filmstrip has been reworked.
 
   It is important to note that this speed improvement is really
-  noticeable in the zoomable lighttable view.
+  noticeable, particularly in the zoomable lighttable view.
 
   The culling view has also been rewritten from scratch.
 
-  Some other parts have been reworked like the Color Picker or
-  Location modules to better fit into the new UI and most of the icons
-  to be more visually balanced.
-
   This new lighttable version should be prepared for 8K screen resolution.
 
-  There is many overlay kind possible on thumbs. Different overlay
+  Many types of overlay are now possible on lighttable thumbs. Different overlay
   information can be selected depending on the thumb size on the
-  lighttable. The different sizes can be set in the preferences. So we
+  lighttable. The different sizes can be set in the preferences, so we
   can have no overlay at all for small thumbs and full overlay when
   large thumbs are displayed. This is fully configurable.
 
   Likewise, the tooltip information when hovering the thumbs can be
   activated/deactivated based on the thumbs size.
 
+- The lighttable modules have been made more visually living by
+  highlighting the buttons only when the context makes the action
+  possible. This give a better user experience.
+
 - A complete overhaul of the CSS has also been done. This gives
   darktable a very professional look at this time. This also continues
   the goal to make every single aspect of the UI themable using CSS.
 
-- Also the lighttable has been made more visually living by
-  highlighting the buttons only when the context makes the action
-  possible. This give a better user experience.
+- Some other parts have been reworked such as the Color Picker and
+  Location modules to better fit into the new UI, and most of the icons
+  have been altered so as to be more visually balanced.
 
 - The preference dialog has been fully reviewed and reorganized to
-  propose a better look and at the same time requiring less
+  propose a better look and at the same time require less
   scrolling. It is also possible to add some CSS rules directly into
-  the preference dialog to tweak darktable's look. It is also possible
+  the preference dialog to tweak darktable's look as well as
   to directly control the font size and DPI values from the general
   preference tab.
 
-  Also a search field on shortcuts tab has been added to help you find
-  shortcut you want to customize.
+  A search field has also been added to the shortcuts tab to help you find
+  the keyboard shortcut you want to customize.
 
 - The new module negadoctor has been added to help inverting negative
   films.
 
 - A new histogram display called RGB Parade has been added. At the
-  same time the histogram module height can now be adjusted.
+  same time the histogram module height can now be adjusted with 
+  <kbd>Ctrl+Scroll</kbd>.
 
-- The metadata feature has been turned generic internally and has got new
+- The metadata feature has been made generic internally and has new
   features. The user can now select the information he wants to see in the
   metadata editor. This selection is automatically mirrored in collection
   and image information modules.
@@ -84,7 +85,7 @@ making a backup is strongly advised.
   Along with a new "notes" field, all the fields are multiline
   <kbd>Ctrl+Enter</kbd>, sizable <kbd>Ctrl+Scroll</kbd> and can be set
   as private (not exported). Metadata collection filters have an entry
-  "not defined". At import time it is possible to avoid to import
+  "not defined". At import time it is possible to choose not to import
   some metadata.
 
 - Image change detection has been made more reliable. This affects
@@ -105,17 +106,17 @@ making a backup is strongly advised.
   touches all areas of darktable like masks, guided filter, liquify
   controls, crop & rotate, lens and perspective corrections...
 
-- Clarify the three possible work-flows. We had a preference for
-  applying or not the base curve. Many questions was raised about the
-  intention. The new preference introduces three work-flows:
+- Clarify the three possible workflows. Previous version had a preference 
+  to choose whether to auto-apply the base curve module. Many questions were 
+  raised about the intention. The new preference introduces three workflows:
 
-  display-referred : use base-curve
+  display-referred : use base-curve module
 
-  scene-referred   : use filmic and exposure compensation (new default)
+  scene-referred   : use filmic and exposure modules (new default)
 
   none             : use neither base-curve nor filmic
 
-- Filmic RGB goes to v4 with highlight recovery integrated.
+- Filmic RGB goes to v4 (new color science) with integrated highlight recovery.
 
 ## New Features And Changes
 
@@ -124,20 +125,27 @@ making a backup is strongly advised.
   line on the horizon for example. This can also be used to artistic
   goals.
 
-- Add support for AVIF file format (>= 0.7)
+- Add support for AVIF file format (requires [libavif](https://github.com/AOMediaCodec/libavif) >= 0.7)
 
 - Collect module has two new filters: module and module order.
 
-  The former make it possible to filter pictures based on the
-  activated modules in the history. The later can be used to filter
+  The former makes it possible to filter pictures based on the
+  activated modules in the history. The latter can be used to filter
   based on the pipe version (legacy up to 2.6 releases or v3.0
   starting with 3.0 release).
+
+- Tag in Collect module keeps track of the selected images order.
+
+  When tag is at the first level of Collect module, any change
+  on the images order is kept along with the selected tag.
+  This allows to associate a specific order to every images (tag)
+  collection.
 
 - A full rewrite of the pipe ordering has been done. It is now
   possible to change the order of the pipe using a new module giving
   access to the legacy order (order used up to 2.6 releases) and the
   v3.0 order introduced with darktable 3.0 on Dec 2019. It is also
-  possible to create order presets which can be freely applied.
+  possible to create module order presets which can be freely applied.
 
   Note that the copy / paste of multi-instances when they have been
   reordered in a way that some other modules are separating them will
@@ -153,39 +161,39 @@ making a backup is strongly advised.
   will be the ground for proposing different strategies when applying
   styles.
 
-- The retouch module has a new accel "show or hide shapes" which can
-  be mapped to a key for quickly show or hide shapes. This comes in
+- The retouch module has a new keyboard shortcut "show or hide shapes" which can
+  be mapped to a key to quickly show or hide shapes. This is in
   addition to the right-click on the image which does the same action.
 
-- The spot removal module accel to show-hide shapes has been renamed
+- The spot removal module keyboard shortcut to show-hide shapes has been renamed
   to "show or hide shapes" for clarity and to be consistent with
-  the new accel in the retouch module.
+  the new keyboard shortcut in the retouch module.
 
 - It is possible to change the color of all overlays (shapes, guides,
-  etc), in darkroom. This may come handy on some images where the gray
-  guides where barely visible. The possible colors are now : Grey,
+  etc), in the darkroom. This may come handy on some images where the gray
+  guides were barely visible. The possible colors are now: Grey,
   Red, Green, Yellow, Cyan, Magenta. The colors can be cycled through
-  using the <kdb>Ctrl+O</kdb> key.
+  using <kbd>Ctrl+O</kbd>.
 
-- In crop & rotate module, the pan movements can be restricted
+- In the crop & rotate module, the pan movements can be restricted
   vertically or horizontally using the <kbd>Shift</kbd> or
   <kbd>Control</kbd> respectively.
 
 - The crop & rotate module now allows format ratios to be entered as
   a float number.
 
-- When using a snapshot view, a flag to clearly show the position of the
-  snapshot has been added.
+- When using a snapshot view, a flag has been added to clearly show the 
+  position of the snapshot.
 
 - Improve the falloff and radius of the vignette to 200% for better
   control.
 
 - Add a user-defined mode in the white-balance module to keep the last
   modification of the module. It is then possible to go back to the
-  last modified setting after selecting another mode like spot for
-  example.
+  last modified setting after selecting another mode (spot for
+  example).
 
-- Dynamic accelerators have been added for combo-boxes making it
+- Dynamic keyboard shortcuts have been added for combo-boxes making it
   possible to select next and previous values directly from the
   keyboard.
 
@@ -193,7 +201,7 @@ making a backup is strongly advised.
   having created them. This is achieved by dragging one of the four
   little square handles at the corner.
 
-- Tagging improvements. Entry tag(s) creation works now without image
+- Tagging improvements: Entry tag(s) creation works now without image
   selected.  It is allowed to create a tag on virtual node, to insert
   a pipe <kbd>|</kbd> character in create tag (menu). The tree display
   shows the newly created tags.
@@ -208,15 +216,17 @@ making a backup is strongly advised.
   made available in the collection module and so can be used to better
   control of created collections.
 
-- Multiple images drag & drop works now on map view.
+- Multiple image drag & drop works now on map view.
 
-- Add a new preference for keyboard shortcuts for selecting the way
-  multi-instances are handled (use first or last instance, use the
-  visible, active or unfolded instance).
+- Add new preferences for keyboard shortcuts to control how
+  multi-instances are handled (use first or last instance, prefer the
+  visible, active or expanded instance). This also fixes some faults 
+  caused when duplicating or deleting modules, and when selecting
+  earlier edits in the history stack.
 
-- An introspection support has been added into darktable. At this time
+- Introspection support has been added into darktable. At this time
   this does not bring new features for end-users but it has provided a
-  ground for a big simplification of the code. This will provide easier
+  basis for significant simplification of the code. This will provide easier
   integration of new modules and will ensure better interactivity
   consistency between modules.
 
@@ -225,37 +235,41 @@ making a backup is strongly advised.
 - Add some tooltip information for tone equalizer.
 
 - Some actions like cropping are more responsive by triggering a
-  fast-pipe mode where the quality of the image may be less accurate
+  fast-pipe mode where the quality of the image is less important
   while dragging the controls.
 
 - Better support for HiDPI icons theme on Windows.
 
-- Add keyboard shortcut for enabling/disabling tooltips.
+- Add keyboard shortcut for enabling/disabling tooltips <kbd>Shift+T</kbd>.
 
-- Better history stack module order (more logical).
+- Better history stack module order (more logical) for newly-imported images.
 
 - Add confirmation when deleting/updating presets.
 
 - It is possible to handle (deleting, applying or exporting) multiple
-  styles in the style module.
+  styles in the style module. 
+
+- Applying a style now supports overwrite mode (it previously could
+  only append to the existing history stack). This makes the style module
+  consistent with the copy/paste of history.
 
 - Rework the sliders to make then look better (smaller and controls a
   bit more visible).
 
-- Implement undo/redo for the orientation changes from the lighttable.
+- Implement undo/redo for orientation changes from the lighttable.
 
 - Exported pictures size should be more conservative and stable when
   flip or orientation is changed.
 
-- Using <kdb>Ctrl+Click</kbd> in blending module it is possible to
+- Using <kbd>Ctrl+Click</kbd> in blending module drawn masks it is possible to
   allow continuous creation of masks.
 
-  This was the default in liquify module, for consistency this has
-  been changed and so now one need to use <kdb>Ctrl+Click</kbd> in
-  liquify for continuous mask creation.
+  Continuous mask creation was previously the default in the retouch and spot 
+  removal modules. For consistency this has been changed and so now one need to use 
+  <kbd>Ctrl+Click</kbd> in these modules as well for continuous mask creation.
 
-- Rejecting an image still keeps the last number of starts. So
-  un-rejecting it will recover the previous notes.
+- Rejecting an image still keeps the last number of stars. So
+  un-rejecting it will recover the previous star rating.
 
 - Improve messages when a database lock is detected to give better
   guidance about the possible solutions, checks to be done for
@@ -264,32 +278,34 @@ making a backup is strongly advised.
 - Rework local laplacian implementation for a 2x speed-up.
 
 - Optimize the denoise profile module (bilateral filter) for better
-  performances.
+  performance.
 
 - Many part of the histogram code has been reworked for better
-  performances.
+  performance.
 
 - A new universal toast message framework has been put in place. This
-  is used to display information about changes done with dynamic keys
-  when the module is collapsed. It gives visual information about the
-  change being done (like exposure change or new opacity value, etc.).
+  is used to display information about changes performed with dynamic 
+  keyboard shortcuts when the module is collapsed. 
+  It gives visual information about the change being made 
+  (like exposure change or new opacity value, etc.).
 
-- The spot removal module has been enhanced to better fit with other
-  modules. A new button has been added to show/hide shapes. It also
-  supports continuous shape creation.
-
-- Applying a style now support the overwrite mode (it was always
-  appending to the current modules). This makes the style module
-  consistent with the copy/paste of history.
+- The spot removal module has been enhanced to be more consistent with 
+  the functionality of the retouch module. A new button has been added 
+  to show/hide shapes. It also now supports continuous shape creation.
 
 - Add a new keyboard shortcut to toggle last snapshot on/off.
 
 - Add a new keyboard shortcut to show/hide lib modules.
 
+- Add a new keyboard shortcut to show/hide drawn masks for the currently active module
+
 - Allow for more than 500 images in tethered control which is needed
   for time-lapse.
 
 - It is now possible to export masks in TIFF format.
+
+- Duplicate module now uses the new metadata field "version name" in place
+  of the title field to show a description of each image version
 
 - Fix support of legacy parameters in the basic adjustment module.
 
@@ -301,11 +317,15 @@ making a backup is strongly advised.
 
 - Fix some displayed images issues.
 
+- Fix to allow the shift modifier to be used in dynamic keyboard shortcuts.
+
 - Fix exporting private tags issue with different settings along the path.
 
 - Fix possible freeze on liquify module.
 
-- Fix long text display when no place to show all by ellipsize them.
+- Fix long text display when no space to show all by ellipsizing.
+  This allows the side panels to be reduced in size without adversely
+  affecting the UI.
 
 - Fix some crop & rotate issues.
 
@@ -321,6 +341,8 @@ making a backup is strongly advised.
   color-picker modules when masks are set on/off and/or removing some
   unnecessary reprocessing.
 
+- Various minor fixes to the shape selection buttons in the retouch module
+
 - Fix displayed curve in denoise profile Y0U0V0 mode.
 
 - Film rolls can be ordered by folder name or id (so in chronological
@@ -331,7 +353,7 @@ making a backup is strongly advised.
 - Fix the opacity (a second attempt) issue which could go wrong and
   let thinking that a mask had no effect.
 
-- Fix a possible infinite loop in the slide show module.
+- Fix a possible infinite loop in the slideshow module.
 
 - Fix a possible out-of-bound indexing in the chromatic aberration module.
 
