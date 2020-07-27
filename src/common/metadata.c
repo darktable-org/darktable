@@ -579,7 +579,8 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
 {
   if(!key || !imgid || imgid == -1) return;
 
-  int keyid = dt_metadata_get_keyid(key);
+  const int keyid = dt_metadata_get_keyid(key);
+
   if(keyid != -1) // known key
   {
     gboolean imported = TRUE;
