@@ -481,8 +481,8 @@ void cleanup(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_map_check_preference_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_check_preference_changed), self);
 
   if(darktable.gui)
   {
@@ -894,7 +894,7 @@ void leave(dt_view_t *self)
   _view_map_set_map_source_g_object(self, OSM_GPS_MAP_SOURCE_NULL);
 
   /* disconnect from filmstrip image activate */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_map_filmstrip_activate_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_filmstrip_activate_callback),
                                (gpointer)self);
   g_signal_handlers_disconnect_by_func(dt_ui_thumbtable(darktable.gui->ui)->widget,
                                        G_CALLBACK(_view_map_dnd_remove_callback), self);

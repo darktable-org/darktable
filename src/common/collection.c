@@ -104,11 +104,11 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
 
 void dt_collection_free(const dt_collection_t *collection)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_1),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_1),
                                (gpointer)collection);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_2),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_2),
                                (gpointer)collection);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_filmroll_imported_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_filmroll_imported_callback),
                                (gpointer)collection);
 
   g_free(collection->query);
