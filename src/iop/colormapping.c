@@ -1089,12 +1089,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   button = gtk_button_new_with_label(_("acquire as source"));
   g->acquire_source_button = button;
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_START);
   gtk_widget_set_tooltip_text(button, _("analyze this image as a source image"));
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_source_button_pressed), (gpointer)self);
 
   button = gtk_button_new_with_label(_("acquire as target"));
   g->acquire_target_button = button;
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_START);
   gtk_widget_set_tooltip_text(button, _("analyze this image as a target image"));
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_target_button_pressed), (gpointer)self);

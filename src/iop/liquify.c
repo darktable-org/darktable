@@ -3544,7 +3544,9 @@ void gui_init(dt_iop_module_t *module)
   gtk_widget_set_tooltip_text(hbox, _("use a tool to add warps.\nright-click to remove a warp."));
   gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_("warps|nodes count:")), FALSE, TRUE, 0);
+  GtkWidget *label = gtk_label_new(_("warps|nodes count:"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
   g->label = GTK_LABEL(gtk_label_new("-"));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
 

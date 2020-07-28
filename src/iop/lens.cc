@@ -2416,6 +2416,7 @@ void gui_init(struct dt_iop_module_t *self)
   // profile only some of the lens flaws can be corrected
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *label = gtk_label_new(_("corrections done: "));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(label, _("which corrections have actually been done"));
   gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
