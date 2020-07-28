@@ -539,11 +539,11 @@ void leave(dt_view_t *self)
   dt_import_session_destroy(cv->session);
 
   /* disconnect from mipmap updated signal */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_capture_mipmaps_updated_signal_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_capture_mipmaps_updated_signal_callback),
                                (gpointer)self);
 
   /* disconnect from filmstrip image activate */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_capture_filmstrip_activate_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_capture_filmstrip_activate_callback),
                                (gpointer)self);
 }
 

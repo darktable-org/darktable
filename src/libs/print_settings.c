@@ -1106,7 +1106,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 
 void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
 {
-  dt_control_signal_disconnect(darktable.signals,
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                G_CALLBACK(_print_settings_activate_or_update_callback),
                                self);
 }

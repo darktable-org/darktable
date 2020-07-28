@@ -574,7 +574,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_iop_zonesystem_redraw_preview_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_iop_zonesystem_redraw_preview_callback), self);
 
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   g_free(g->in_preview_buffer);

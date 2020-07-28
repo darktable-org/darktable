@@ -2678,13 +2678,13 @@ void gui_cleanup(dt_lib_module_t *self)
 
   for(int i = 0; i < MAX_RULES; i++) dt_gui_key_accel_block_on_focus_disconnect(d->rule[i].text);
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(preferences_changed), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(tag_changed), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(view_set_click), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(collection_updated), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_updated), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_imported), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(preferences_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_removed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(tag_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(view_set_click), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   free(d->params);
 

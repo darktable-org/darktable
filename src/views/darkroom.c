@@ -2915,14 +2915,14 @@ void leave(dt_view_t *self)
   _unregister_modules_drag_n_drop(self);
 
   /* disconnect from filmstrip image activate */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
                                (gpointer)self);
 
   /* disconnect from pipe finish signal */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
                                (gpointer)self);
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_darkroom_ui_preview2_pipe_finish_signal_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_darkroom_ui_preview2_pipe_finish_signal_callback),
                                (gpointer)self);
 
   // store groups for next time:
