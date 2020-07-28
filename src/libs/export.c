@@ -876,12 +876,12 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->width));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->height));
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(on_storage_list_changed), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_export_styles_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(on_storage_list_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_export_styles_changed_callback), self);
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
 
   GList *it = g_list_first(darktable.imageio->plugins_storage);
   if(it != NULL) do

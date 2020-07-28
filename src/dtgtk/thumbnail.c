@@ -1269,12 +1269,12 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 {
   if(thumb->overlay_timeout_id > 0) g_source_remove(thumb->overlay_timeout_id);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_image_info_changed_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_changed_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_image_info_changed_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_changed_callback), thumb);
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
     cairo_surface_destroy(thumb->img_surf);
   thumb->img_surf = NULL;

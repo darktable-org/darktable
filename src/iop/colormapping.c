@@ -1131,7 +1131,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(process_clusters), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(process_clusters), self);
 
   cmsDeleteTransform(g->xform);
   dt_pthread_mutex_destroy(&g->lock);

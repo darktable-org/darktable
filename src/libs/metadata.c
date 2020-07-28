@@ -756,9 +756,9 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {

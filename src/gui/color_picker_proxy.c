@@ -245,7 +245,7 @@ void dt_iop_color_picker_init(void)
 
 void dt_iop_color_picker_cleanup(void)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_iop_color_picker_signal_callback), NULL);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_iop_color_picker_signal_callback), NULL);
 }
 
 GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w)

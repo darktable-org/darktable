@@ -1769,7 +1769,7 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_gui_key_accel_block_on_focus_disconnect(g->lutentry);
 #endif // HAVE_GMIC
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(module_moved_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(module_moved_callback), self);
   free(self->gui_data);
   self->gui_data = NULL;
 }
