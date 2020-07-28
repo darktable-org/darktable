@@ -2943,6 +2943,19 @@ GdkModifierType dt_key_modifier_state()
   return state & gtk_accelerator_get_default_mod_mask();
 }
 
+GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
+{
+  GtkWidget *label = gtk_label_new(text);
+  GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  if(strlen(text) > 9) gtk_label_set_width_chars(GTK_LABEL(label), strlen(text) / 3);
+  gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
+  gtk_notebook_append_page(notebook, page, label);
+  gtk_container_child_set(GTK_CONTAINER(notebook), page, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+
+  return page;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
