@@ -2406,6 +2406,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // edit by area
   c->chk_edit_by_area = gtk_check_button_new_with_label(_("edit by area"));
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(c->chk_edit_by_area))), PANGO_ELLIPSIZE_START);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->chk_edit_by_area), c->edit_by_area);
   gtk_widget_set_tooltip_text(c->chk_edit_by_area, _("edit the curve nodes by area"));
   gtk_box_pack_start(GTK_BOX(hbox_select_by), c->chk_edit_by_area, TRUE, TRUE, 0);
