@@ -16,36 +16,240 @@
     <primary>histogram</primary>
   </indexterm>
 
-  <informaltable frame="none">
-    <tgroup cols="2" colsep="0" rowsep="0">
-      <colspec colwidth="6*"/>
-      <colspec colwidth="4*"/>
-      <tbody>
-        <row>
-          <entry>
-            <para>
-              This shows a histogram of the developed image's light levels. In its default state
-              curves for all three RGB color channels are displayed. You can toggle the colored
-              squares to enable or disable specific color channels. A curve button is also
-              provided to toggle between linear view, logarithmic view and waveform view.
-            </para>
+  <indexterm>
+    <primary>waveform</primary>
+  </indexterm>
 
-            <para>
-              The histogram is directly linked to the <emphasis>exposure</emphasis> module
-              described in <xref linkend="exposure"/>, and you can operate some of the exposure
-              module's controls from the histogram. You can left-click towards the right hand
-              side of the histogram and then drag right to increase or drag left to decrease the
-              exposure. In a similar manner you can control the black level by clicking and
-              dragging in the left hand side. Double-clicking in the histogram resets the
-              exposure module's parameters to their defaults.
-            </para>
-          </entry>
-          <entry>
-            <graphic fileref="darkroom/images/panel_histogram.png" scalefit="1" width="80%" align="center" />
-          </entry>
-        </row>
-      </tbody>
-    </tgroup>
-  </informaltable>
+  <indexterm>
+    <primary>RGB parade</primary>
+  </indexterm>
 
+  <indexterm>
+    <primary>scopes</primary>
+  </indexterm>
+
+  <sect3>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+	      <para>
+		This is a graphical depiction of aspects of the developed image. Moving the
+		mouse over the panel displays buttons to adjust the display. The leftmost button
+		allows for cycling the mode between a "regular" and a waveform-style
+		histogram. The next button over adjusts how the data for the current mode is
+		displayed. The three rightmost colored squares are toggles which enable or
+		disable the display of specific color channels.
+	      </para>
+
+	      <para>
+		When the mouse is over the histogram panel, scrolling while holding down the
+		<emphasis>Ctrl</emphasis> key will change the height of the panel. You can
+		hide/show the histogram entirely with a keyboard shortcut. The default shortcut
+		is <emphasis>Shift+Ctrl+H</emphasis>.
+	      </para>
+
+	      <para>
+		It is possible to assign keyboard shortcuts to cycle through or switch histogram
+		mode/type. Separate shortcuts can be set for the darkroom and tethering
+		views. By default, none of these shortcuts are associated with keys.
+	      </para>
+
+	      <para>
+		For the purposes of speed, the scopes are calculated from the image
+		preview. This is the image which is displayed in the navigation panel (see <xref
+		linkend="navigation"/>), rather than the higher quality developed image which is
+		displayed in the center view. The preview is calculated at a lower resolution
+		and may use shortcuts to bypass time-consuming image processing steps. Hence
+		scopes may not represent fine detail in the image, and may deviate in other ways
+		from the final developed image.
+	      </para>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_histogram_logarithmic.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect3>
+
+  <sect3>
+
+    <title>"Regular" Histogram</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+	      <para>
+		This shows the distribution of pixels by lightness for each color channel
+		channel. In its default state, data for all three RGB color channels are
+		displayed. The x-axis runs from 0% to 100% lightness for each channel. The
+		y-axis height gives the count of pixels which have the given lightness, up to
+		the maximum count for the developed image.
+	      </para>
+
+	      <para>
+		Clicking the second-to-leftmost button on the panel toggles between a
+		logarithmic and a linear rendering of the y-axis data.
+	      </para>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_histogram_linear.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect3>
+
+  <sect3>
+
+    <title>Waveform</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+	      <para>
+		The leftmost button of the panel is a toggle which flips to a waveform
+		scope. This scope includes spatial data about the image. The y-axis represents
+		the distribution of pixels by lightness for each channel. The scope's x-axis
+		represents the distribution of this data across the x-axis of the image. The
+		lightness of each point of the waveform represents the quantity of pixels
+		represented at that scope position.
+	      </para>
+
+	      <para>
+		The thick dotted horizontal line at the top of the waveform histogram represents
+		100% lightness. Hence, any channel which displays above that line may be clipped
+		in the resulting image. The thinner dotted horizontal line represents 50%
+		lightness. The bottom of the scope represents 0% lightness.
+	      </para>
+
+	      <para>
+		As with the "regular" histogram, it is possible to selectively display red,
+		green, and blue channels, or (the default) overlay all three of them.
+	      </para>
+
+	      <para>
+		See <ulink
+		url="https://www.darktable.org/2013/12/of-histograms-and-waveforms/">Of
+		Histograms and Waveforms</ulink> for more on darktable's waveform scope.
+	      </para>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_histogram_waveform.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect3>
+
+  <sect3>
+
+    <title>RGB Parade</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+	      <para>
+		This shows the same data as the waveform, but with the red, green, and blue
+		channels side-by-side. When in waveform mode, clicking the second-to-leftmost
+		button on the panel toggles between waveform (overlaid) and RGB parade rendering
+		of the data.
+	      </para>
+
+	      <para>
+		The RGB parade can be useful for matching the intensities of the red, green, and
+		blue channels. It can also help with understanding the differences between and
+		individual qualities of each channel.
+	      </para>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_histogram_rgb_parade.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect3>
+
+  <sect3>
+
+    <title>Exposure Adjustment</title>
+
+    <para>
+      The histogram is directly linked to the <emphasis>exposure</emphasis> module described in
+      <xref linkend="exposure"/>, and you can operate some of the exposure module's controls
+      from the histogram.
+    </para>
+
+    <para>
+      For the regular histogram, you can left-click towards the right hand side of the histogram
+      and then drag right to increase or drag left to decrease the exposure. In a similar manner
+      you can control the black level by clicking and dragging in the left hand side.
+    </para>
+
+    <para>
+      For a waveform-style scope, dragging the upper portion of the histogram up/down will
+      increase/decrease exposure. Dragging the lower portion up/down will increase/decrease the
+      black level.
+    </para>
+
+    <para>
+      Scrolling in the appropriate area -- rather than dragging -- will also adjust exposure and
+      black point. Double-clicking in the histogram resets the exposure module's parameters to
+      their defaults.
+    </para>
+  </sect3>
+
+  <sect3>
+
+    <title>Histogram Profile</title>
+
+    <para>
+      For the regular histogram, the image data is converted to the <emphasis>histogram
+      profile</emphasis> before the histogram is calculated. You can choose this profile by
+      right-clicking on the <emphasis>softproofing</emphasis> or <emphasis>gamut
+      checking</emphasis> icons in the bottom panel (see <xref
+      linkend="darkroom_bottom_panel"/>) then selecting the profile of interest.
+    </para>
+
+    <para>
+      Besides choosing a specific colorspace, you can also choose the <emphasis>work
+      profile</emphasis>, <emphasis>export profile</emphasis>, <emphasis>softproof
+      profile</emphasis>, or <emphasis>display profile</emphasis>.
+    </para>
+
+    <para>
+      In the case of the waveform and RGB parade scopes, the colorspace depends on the
+      <programlisting>cache_color_managed</programlisting> configuration variable. In its
+      default (<emphasis>true</emphasis>) setting, these scopes are calculated in the
+      <quote>Adobe RGB (compatible)</quote> colorspace. Otherwise, they are calculated in the
+      display colorspace.
+    </para>
+  </sect3>
 </sect2>
