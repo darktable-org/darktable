@@ -1998,6 +1998,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *hbox_shapes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *label = gtk_label_new(_("shapes:"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_box_pack_start(GTK_BOX(hbox_shapes), label, FALSE, TRUE, 0);
   g->label_form = GTK_LABEL(gtk_label_new("-1"));
   gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, DT_PIXEL_APPLY_DPI(5));
@@ -2043,6 +2044,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *hbox_algo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *label2 = gtk_label_new(_("algorithms:"));
+  gtk_label_set_ellipsize(GTK_LABEL(label2), PANGO_ELLIPSIZE_END);
   gtk_box_pack_start(GTK_BOX(hbox_algo), label2, FALSE, TRUE, 0);
 
   g->bt_fill
@@ -2168,16 +2170,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_showmask, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_suppress, FALSE, FALSE, 0);
 
-  GtkWidget *lbl_scale_sep = gtk_label_new(NULL);
-  gtk_label_set_width_chars(GTK_LABEL(lbl_scale_sep), 1);
-  gtk_box_pack_end(GTK_BOX(hbox_scale), GTK_WIDGET(lbl_scale_sep), FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_scale), gtk_grid_new(), TRUE, TRUE, 0);
 
   gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_paste_scale, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_copy_scale, FALSE, FALSE, 0);
 
-  GtkWidget *lbl_scale_sep1 = gtk_label_new(NULL);
-  gtk_label_set_width_chars(GTK_LABEL(lbl_scale_sep1), 1);
-  gtk_box_pack_end(GTK_BOX(hbox_scale), GTK_WIDGET(lbl_scale_sep1), FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_scale), gtk_grid_new(), TRUE, TRUE, 0);
 
   gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_display_wavelet_scale, FALSE, FALSE, 0);
 
@@ -2221,7 +2219,8 @@ void gui_init(dt_iop_module_t *self)
 
   // shapes selected (label)
   GtkWidget *hbox_shape_sel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *label1 = gtk_label_new(_("shape selected: "));
+  GtkWidget *label1 = gtk_label_new(_("shape selected:"));
+  gtk_label_set_ellipsize(GTK_LABEL(label1), PANGO_ELLIPSIZE_START);
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), label1, FALSE, TRUE, 0);
   g->label_form_selected = GTK_LABEL(gtk_label_new("-1"));
   gtk_widget_set_tooltip_text(hbox_shape_sel,
