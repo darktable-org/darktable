@@ -352,17 +352,7 @@ static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
   return label;
 };
 
-static inline GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
-{
-  GtkWidget *label = gtk_label_new(text);
-  GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  if(tooltip) gtk_widget_set_tooltip_text(label, tooltip);
-  gtk_notebook_append_page(notebook, page, label);
-  gtk_container_child_set(GTK_CONTAINER(notebook), page, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
-
-  return page;
-}
+GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
 
 static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)
 {
