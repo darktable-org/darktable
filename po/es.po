@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-26 13:53-0500\n"
-"PO-Revision-Date: 2020-07-26 21:10-0500\n"
+"POT-Creation-Date: 2020-07-28 13:52-0500\n"
+"PO-Revision-Date: 2020-07-28 17:46-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -397,7 +397,7 @@ msgstr "colores saturados"
 #: ../src/iop/channelmixer.c:443 ../src/iop/colorbalance.c:2190
 #: ../src/iop/colorbalance.c:2238 ../src/iop/colorbalance.c:2285
 #: ../src/iop/colorize.c:361 ../src/iop/colorreconstruction.c:1303
-#: ../src/iop/colorzones.c:2366
+#: ../src/iop/colorzones.c:2370
 msgid "hue"
 msgstr "tono"
 
@@ -420,7 +420,7 @@ msgstr "modo de proceso"
 
 #: ../build/src/iop/introspection_colorzones.c:255
 #: ../src/iop/channelmixer.c:445 ../src/iop/colorchecker.c:1375
-#: ../src/iop/colorize.c:377 ../src/iop/colorzones.c:2364
+#: ../src/iop/colorize.c:377 ../src/iop/colorzones.c:2368
 msgid "lightness"
 msgstr "luminosidad"
 
@@ -435,7 +435,7 @@ msgstr "luminosidad"
 #: ../src/iop/colorbalance.c:2200 ../src/iop/colorbalance.c:2248
 #: ../src/iop/colorbalance.c:2295 ../src/iop/colorchecker.c:1393
 #: ../src/iop/colorcorrection.c:271 ../src/iop/colorize.c:372
-#: ../src/iop/colorzones.c:2365 ../src/iop/lowpass.c:603
+#: ../src/iop/colorzones.c:2369 ../src/iop/lowpass.c:603
 #: ../src/iop/soften.c:677 ../src/iop/vignette.c:1037
 msgid "saturation"
 msgstr "saturación"
@@ -883,7 +883,7 @@ msgid "midtones bias"
 msgstr "desviación de tonos medios"
 
 #: ../build/src/iop/introspection_highlights.c:80
-#: ../build/src/iop/introspection_highlights.c:139 ../src/iop/exposure.c:895
+#: ../build/src/iop/introspection_highlights.c:139 ../src/iop/exposure.c:897
 #: ../src/views/darkroom.c:2144
 msgid "clipping threshold"
 msgstr "umbral superior"
@@ -923,7 +923,7 @@ msgstr "detección por 3 pixeles cercanos"
 #: ../build/src/iop/introspection_rgblevels.c:51
 #: ../build/src/iop/introspection_rgblevels.c:118 ../src/iop/bilat.c:428
 #: ../src/iop/colorbalance.c:2057 ../src/iop/denoiseprofile.c:4326
-#: ../src/iop/exposure.c:929 ../src/iop/levels.c:710
+#: ../src/iop/exposure.c:931 ../src/iop/levels.c:710
 #: ../src/iop/profile_gamma.c:746 ../src/libs/copy_history.c:382
 #: ../src/libs/export.c:761 ../src/libs/image.c:589
 #: ../src/libs/print_settings.c:1516 ../src/libs/styles.c:587
@@ -1043,7 +1043,7 @@ msgstr "punto blanco"
 #: ../build/src/iop/introspection_relight.c:98 ../src/common/collection.c:690
 #: ../src/gui/preferences.c:792 ../src/gui/preferences.c:1797
 #: ../src/gui/presets.c:471 ../src/iop/basicadj.c:630 ../src/iop/exposure.c:108
-#: ../src/iop/exposure.c:884 ../src/libs/metadata_view.c:122
+#: ../src/iop/exposure.c:886 ../src/libs/metadata_view.c:122
 msgid "exposure"
 msgstr "exposición"
 
@@ -4326,7 +4326,7 @@ msgstr ""
 "* rango definido por marcadores inferiores: no hay mezcla\n"
 "* rango entre marcadores superiores/inferiores adyacentes: mezcla gradual"
 
-#: ../src/develop/blend_gui.c:1660 ../src/iop/colorzones.c:2375
+#: ../src/develop/blend_gui.c:1660 ../src/iop/colorzones.c:2379
 #: ../src/iop/rgbcurve.c:1419 ../src/iop/tonecurve.c:1280
 msgid ""
 "pick GUI color from image\n"
@@ -5688,7 +5688,7 @@ msgid "reset value to default"
 msgstr "Restablecer valor a predeterminado"
 
 #: ../src/gui/camera_import_dialog.c:219 ../src/libs/export_metadata.c:269
-#: ../src/libs/geotagging.c:420 ../src/libs/metadata.c:460
+#: ../src/libs/geotagging.c:420 ../src/libs/metadata.c:438
 #: ../src/libs/tagging.c:1321 ../src/libs/tagging.c:1408
 #: ../src/libs/tagging.c:1489 ../src/libs/tagging.c:1614
 #: ../src/libs/tagging.c:1832
@@ -7717,7 +7717,7 @@ msgstr ""
 "cambia el borde de los halos para cada tamaño\n"
 "solo cambia los resultados de las pestañas de luma y crominancia"
 
-#: ../src/iop/atrous.c:1903 ../src/iop/colorzones.c:2431
+#: ../src/iop/atrous.c:1903 ../src/iop/colorzones.c:2435
 msgid "make effect stronger or weaker"
 msgstr "Hacer más suave o más intenso el efecto"
 
@@ -7809,7 +7809,7 @@ msgstr "similar a nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:289 ../src/iop/colorzones.c:2460
+#: ../src/iop/basecurve.c:289 ../src/iop/colorzones.c:2464
 #: ../src/iop/rgbcurve.c:1464 ../src/iop/tonecurve.c:1315
 msgid "cubic spline"
 msgstr "curva segmentaria cúbica"
@@ -7972,15 +7972,15 @@ msgstr ""
 "Si está mal configurado, recortará los colores casi negros de la gama\n"
 "forzando los valores RGB a los negativos."
 
-#: ../src/iop/basicadj.c:633 ../src/iop/exposure.c:827
-#: ../src/iop/exposure.c:888 ../src/iop/exposure.c:910
+#: ../src/iop/basicadj.c:633 ../src/iop/exposure.c:830
+#: ../src/iop/exposure.c:890 ../src/iop/exposure.c:912
 #: ../src/iop/graduatednd.c:1157 ../src/iop/relight.c:284
 #: ../src/iop/soften.c:682
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f EV"
 
-#: ../src/iop/basicadj.c:634 ../src/iop/exposure.c:885
+#: ../src/iop/basicadj.c:634 ../src/iop/exposure.c:887
 msgid "adjust the exposure correction"
 msgstr "Ajusta la corrección de exposición"
 
@@ -9526,7 +9526,7 @@ msgctxt "accel"
 msgid "acquire"
 msgstr "adquirir"
 
-#: ../src/iop/colortransfer.c:124 ../src/libs/metadata.c:551
+#: ../src/iop/colortransfer.c:124 ../src/libs/metadata.c:529
 msgctxt "accel"
 msgid "apply"
 msgstr "establecer"
@@ -9554,7 +9554,7 @@ msgid "analyze this image"
 msgstr "Analizar esta imagen"
 
 #. apply button
-#: ../src/iop/colortransfer.c:696 ../src/libs/metadata.c:770
+#: ../src/iop/colortransfer.c:696 ../src/libs/metadata.c:748
 #: ../src/libs/styles.c:636
 msgid "apply"
 msgstr "establecer"
@@ -9607,12 +9607,12 @@ msgstr "película blanco y negro"
 msgid "HSL base setting"
 msgstr "configuración básica HSL"
 
-#: ../src/iop/colorzones.c:2208 ../src/iop/retouch.c:1996
+#: ../src/iop/colorzones.c:2212 ../src/iop/retouch.c:1996
 #: ../src/iop/toneequal.c:1762
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "No se pueden mostrar máscaras cuando se muestra la de fusión"
 
-#: ../src/iop/colorzones.c:2382 ../src/iop/rgbcurve.c:1426
+#: ../src/iop/colorzones.c:2386 ../src/iop/rgbcurve.c:1426
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -9625,43 +9625,43 @@ msgstr ""
 "Use Mayús+Arrastre para crear una curva negativa"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2404
+#: ../src/iop/colorzones.c:2408
 msgid "edit by area"
 msgstr "editar por área"
 
-#: ../src/iop/colorzones.c:2406
+#: ../src/iop/colorzones.c:2410
 msgid "edit the curve nodes by area"
 msgstr "Editar los nodos de la curva por área"
 
-#: ../src/iop/colorzones.c:2413
+#: ../src/iop/colorzones.c:2417
 msgid "display selection"
 msgstr "selección de visualización"
 
-#: ../src/iop/colorzones.c:2423
+#: ../src/iop/colorzones.c:2427
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr ""
 "Elegir el criterio de selección, que corresponde a la abscisa en el gráfico"
 
-#: ../src/iop/colorzones.c:2426
+#: ../src/iop/colorzones.c:2430
 msgid "choose between a smoother or stronger effect"
 msgstr "Elegir entre un efecto más suave o más marcado."
 
-#: ../src/iop/colorzones.c:2459 ../src/iop/rgbcurve.c:1463
+#: ../src/iop/colorzones.c:2463 ../src/iop/rgbcurve.c:1463
 #: ../src/iop/tonecurve.c:1314
 msgid "interpolation method"
 msgstr "interpolación"
 
-#: ../src/iop/colorzones.c:2461 ../src/iop/rgbcurve.c:1465
+#: ../src/iop/colorzones.c:2465 ../src/iop/rgbcurve.c:1465
 #: ../src/iop/tonecurve.c:1316
 msgid "centripetal spline"
 msgstr "curva segmentaria centrípeta"
 
-#: ../src/iop/colorzones.c:2462 ../src/iop/rgbcurve.c:1466
+#: ../src/iop/colorzones.c:2466 ../src/iop/rgbcurve.c:1466
 #: ../src/iop/tonecurve.c:1317
 msgid "monotonic spline"
 msgstr "curva segmentaria monótona"
 
-#: ../src/iop/colorzones.c:2465 ../src/iop/rgbcurve.c:1469
+#: ../src/iop/colorzones.c:2469 ../src/iop/rgbcurve.c:1469
 #: ../src/iop/tonecurve.c:1319
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -10200,12 +10200,12 @@ msgstr "basado en la escena (predefinido)"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "No se pudo obtener el búfer en bruto de la imagen `%s'"
 
-#: ../src/iop/exposure.c:594 ../src/iop/exposure.c:876
+#: ../src/iop/exposure.c:594 ../src/iop/exposure.c:878
 #, no-c-format
 msgid "compensate camera exposure (%+.1f EV)"
 msgstr "compensar la exposición de la cámara (%+.1f EV)"
 
-#: ../src/iop/exposure.c:880
+#: ../src/iop/exposure.c:882
 msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
@@ -10213,36 +10213,36 @@ msgstr ""
 "Elimina automáticamente la desviación de la exposición de la cámara.\n"
 "Es útil cuando la imagen se ha expuesto a la derecha."
 
-#: ../src/iop/exposure.c:893
+#: ../src/iop/exposure.c:895
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
 "Porcentaje del valor del brillo excluido, pulsar en el cuentagotas para "
 "activar"
 
-#: ../src/iop/exposure.c:906
+#: ../src/iop/exposure.c:908
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
 "Donde se medirá el histograma para remover el parpadeo (p.ej. 50% es mediano)"
 
-#: ../src/iop/exposure.c:912
+#: ../src/iop/exposure.c:914
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "El lugar del nivel de exposición en las fotos procesadas, debajo de la "
 "sobreexposición EV."
 
-#: ../src/iop/exposure.c:915
+#: ../src/iop/exposure.c:917
 msgid "computed EC: "
 msgstr "compensación de exposición calculada: "
 
 #. This gets filled in by process
-#: ../src/iop/exposure.c:917
+#: ../src/iop/exposure.c:919
 msgid "what exposure correction has actually been used"
 msgstr "Las correcciones de exposición que se han utilizado realmente"
 
-#: ../src/iop/exposure.c:934
+#: ../src/iop/exposure.c:936
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -11320,21 +11320,21 @@ msgid ""
 "mount:\t\t%s\n"
 "crop factor:\t%.1f"
 msgstr ""
-"fabricante:\t\t%s\n"
-"modelo:\t\t%s%s\n"
-"montura:\t\t%s\n"
-"factor de recorte:\t%.1f"
+"Fabricante:\t\t%s\n"
+"Modelo:\t\t\t%s%s\n"
+"Montura:\t\t%s\n"
+"Factor de recorte: %.1f"
 
 #: ../src/iop/lens.cc:1800
 msgid "camera/lens not found - please select manually"
 msgstr ""
-"cámara/lente no encontrada -\n"
-"por favor, seleccionelo manualmente"
+"Cámara u objetivo no encontrado.\n"
+"Seleccionar manualmente."
 
 #: ../src/iop/lens.cc:1803
 msgid "try to locate your camera/lens in the above two menus"
 msgstr ""
-"intente localizar su cámara/lente en alguno de los dos menús superiores"
+"Explore en el menú correspondiente para elegir el modelo de cámara u objetivo"
 
 #: ../src/iop/lens.cc:1867
 #, c-format
@@ -11347,17 +11347,17 @@ msgid ""
 "type:\t\t%s\n"
 "mounts:\t%s"
 msgstr ""
-"fabricante:\t\t%s\n"
-"modelo:\t\t%s\n"
-"rango focal:\t%s\n"
-"apertura:\t\t%s\n"
-"factor de recorte:\t%.1f\n"
-"tipo:\t\t\t%s\n"
-"montura:\t\t%s"
+"Fabricante:\t\t%s\n"
+"Modelo:\t\t\t%s\n"
+"Distancia focal:\t%s\n"
+"Apertura:\t\tf/%s\n"
+"Factor de recorte: %.1f\n"
+"Tipo:\t\t\t%s\n"
+"Montura:\t\t%s"
 
 #: ../src/iop/lens.cc:1913
 msgid "focal length (mm)"
-msgstr "longitud focal (mm)"
+msgstr "Longitud focal (mm)"
 
 #: ../src/iop/lens.cc:1937
 msgid "f/"
@@ -11365,7 +11365,7 @@ msgstr "f/"
 
 #: ../src/iop/lens.cc:1938
 msgid "f-number (aperture)"
-msgstr "número-f (apertura)"
+msgstr "Apertura de diafragma (número f)"
 
 #: ../src/iop/lens.cc:1952
 msgid "d"
@@ -11373,7 +11373,7 @@ msgstr "d"
 
 #: ../src/iop/lens.cc:1953
 msgid "distance to subject"
-msgstr "distancia al sujeto"
+msgstr "Distancia al motivo principal"
 
 #: ../src/iop/lens.cc:2271
 msgid "distortion & TCA"
@@ -11401,11 +11401,11 @@ msgstr "sólo viñeteado"
 
 #: ../src/iop/lens.cc:2317
 msgid "find camera"
-msgstr "encontrar cámara"
+msgstr "Buscar cámara"
 
 #: ../src/iop/lens.cc:2330
 msgid "find lens"
-msgstr "encontrar lente"
+msgstr "Buscar lente"
 
 #: ../src/iop/lens.cc:2361 ../src/iop/negadoctor.c:1063
 msgid "corrections"
@@ -11413,11 +11413,11 @@ msgstr "correcciones"
 
 #: ../src/iop/lens.cc:2363
 msgid "which corrections to apply"
-msgstr "corrección a aplicar"
+msgstr "Correcciones que se aplicarán"
 
 #: ../src/iop/lens.cc:2378
 msgid "target geometry"
-msgstr "geometría destino"
+msgstr "Geometría del objetivo"
 
 #: ../src/iop/lens.cc:2379
 msgid "rectilinear"
@@ -11437,11 +11437,11 @@ msgstr "equirrectangular"
 
 #: ../src/iop/lens.cc:2384
 msgid "orthographic"
-msgstr "ortográfico"
+msgstr "ortográfica"
 
 #: ../src/iop/lens.cc:2385
 msgid "stereographic"
-msgstr "estereográfico"
+msgstr "estereográfica"
 
 #: ../src/iop/lens.cc:2386
 msgid "equisolid angle"
@@ -11449,15 +11449,15 @@ msgstr "ángulo sólido constante"
 
 #: ../src/iop/lens.cc:2387
 msgid "thoby fish-eye"
-msgstr "ojo de pez thoby"
+msgstr "ojo de pez Thoby"
 
 #: ../src/iop/lens.cc:2398
 msgid "auto scale"
-msgstr "auto redimensionar"
+msgstr "Autorredimensionar"
 
 #: ../src/iop/lens.cc:2402
 msgid "correct"
-msgstr "corregir"
+msgstr "corrección"
 
 #: ../src/iop/lens.cc:2403
 msgid "distort"
@@ -11465,7 +11465,7 @@ msgstr "distorsión"
 
 #: ../src/iop/lens.cc:2404
 msgid "correct distortions or apply them"
-msgstr "corrija la distorsión o establézcala"
+msgstr "Corregir las distorsiones o aplicarlas"
 
 #: ../src/iop/lens.cc:2409
 msgid "Transversal Chromatic Aberration red"
@@ -11481,7 +11481,7 @@ msgstr "correcciones realizadas: "
 
 #: ../src/iop/lens.cc:2419
 msgid "which corrections have actually been done"
-msgstr "qué correcciones se han realizado actualmente"
+msgstr "Indica las correcciones que han sido realizadas"
 
 #: ../src/iop/levels.c:110
 msgid "levels"
@@ -11501,24 +11501,24 @@ msgstr "blanco"
 msgid ""
 "drag handles to set black, gray, and white points. operates on L channel."
 msgstr ""
-"arrastre las barras para establecer los puntos negro, gris y blanco. opera "
+"Arrastre las barras para establecer los puntos negro, gris y blanco. Opera "
 "en el canal L."
 
 #: ../src/iop/levels.c:665 ../src/iop/rgblevels.c:1022
 msgid "apply auto levels"
-msgstr "establecer niveles automáticos"
+msgstr "Establecer niveles automáticos"
 
 #: ../src/iop/levels.c:669 ../src/iop/rgblevels.c:1000
 msgid "pick black point from image"
-msgstr "seleccionar punto negro de la imagen"
+msgstr "Seleccionar el punto negro de la imagen"
 
 #: ../src/iop/levels.c:673 ../src/iop/rgblevels.c:1005
 msgid "pick medium gray point from image"
-msgstr "seleccionar el punto gris medio de la imagen"
+msgstr "Seleccionar el punto gris medio de la imagen"
 
 #: ../src/iop/levels.c:677 ../src/iop/rgblevels.c:1010
 msgid "pick white point from image"
-msgstr "seleccionar el punto blanco de la imagen"
+msgstr "Seleccionar el punto blanco de la imagen"
 
 #: ../src/iop/levels.c:690
 msgid "black"
@@ -14526,7 +14526,7 @@ msgstr "tipo"
 msgid "edit metadata exportation"
 msgstr "Editar la exportación de metadatos"
 
-#: ../src/libs/export_metadata.c:269 ../src/libs/metadata.c:460
+#: ../src/libs/export_metadata.c:269 ../src/libs/metadata.c:438
 #: ../src/libs/tagging.c:1489 ../src/libs/tagging.c:1614
 msgid "save"
 msgstr "guardar"
@@ -14544,8 +14544,8 @@ msgid "export exif metadata"
 msgstr "Exportar metadatos Exif"
 
 #: ../src/libs/export_metadata.c:289 ../src/libs/image.c:421
-#: ../src/libs/image.c:559 ../src/libs/metadata.c:465
-#: ../src/libs/metadata.c:652
+#: ../src/libs/image.c:559 ../src/libs/metadata.c:443
+#: ../src/libs/metadata.c:630
 msgid "metadata"
 msgstr "metadatos"
 
@@ -14789,7 +14789,7 @@ msgid ""
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
-"Arrastrar para cambiar el punto negro.\n"
+"Para cambiar el punto negro, pulse y arrastre.\n"
 "Para reiniciar, pulse dos veces.\n"
 "Para cambiar la altura del visor: Ctrl+Desplazamiento"
 
@@ -14800,7 +14800,7 @@ msgid ""
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
-"Para cambiar la exposición, arrástrelo.\n"
+"Para cambiar la exposición, pulse y arrastre.\n"
 "Para reiniciar, pulse dos veces.\n"
 "Para cambiar la altura del visor: Ctrl+Desplazamiento"
 
@@ -15027,7 +15027,7 @@ msgstr "pegar"
 msgid "paste selected metadata on selected images"
 msgstr "Pegar los metadatos elegidos en las imágenes seleccionadas"
 
-#: ../src/libs/image.c:581 ../src/libs/metadata.c:763
+#: ../src/libs/image.c:581 ../src/libs/metadata.c:741
 msgid "clear"
 msgstr "eliminar"
 
@@ -15526,19 +15526,19 @@ msgstr "figuras creadas"
 msgid "metadata editor"
 msgstr "editor de metadatos"
 
-#: ../src/libs/metadata.c:95 ../src/libs/metadata.c:131
+#: ../src/libs/metadata.c:73 ../src/libs/metadata.c:109
 msgid "<leave unchanged>"
 msgstr "<dejar sin cambios>"
 
-#: ../src/libs/metadata.c:459
+#: ../src/libs/metadata.c:437
 msgid "metadata settings"
 msgstr "Configuración de metadatos"
 
-#: ../src/libs/metadata.c:467
+#: ../src/libs/metadata.c:445
 msgid "hidden"
 msgstr "oculto"
 
-#: ../src/libs/metadata.c:470
+#: ../src/libs/metadata.c:448
 msgid ""
 "tick if the corresponding metadata is of no interest for you\n"
 "it will be hidden from metadata editor, collection, image information and "
@@ -15550,29 +15550,29 @@ msgstr ""
 "imagen\n"
 "y el módulo de importación tampoco los exportará"
 
-#: ../src/libs/metadata.c:473 ../src/libs/tagging.c:1519
+#: ../src/libs/metadata.c:451 ../src/libs/tagging.c:1519
 #: ../src/libs/tagging.c:1658
 msgid "private"
 msgstr "privado"
 
-#: ../src/libs/metadata.c:476
+#: ../src/libs/metadata.c:454
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 "Marque la casilla si desea mantener esta información en privado (no se "
 "exporta con las imágenes)"
 
-#: ../src/libs/metadata.c:550
+#: ../src/libs/metadata.c:528
 msgctxt "accel"
 msgid "clear"
 msgstr "eliminar"
 
-#: ../src/libs/metadata.c:614
+#: ../src/libs/metadata.c:592
 msgid "metadata list"
 msgstr "lista de metadatos"
 
 # Verificar en contexto
-#: ../src/libs/metadata.c:715
+#: ../src/libs/metadata.c:693
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -15590,72 +15590,72 @@ msgstr ""
 "En ese caso, con clic secundario se puede de elegir una de ellas.\n"
 "Pulse Esc para salir de la ventana emergente."
 
-#: ../src/libs/metadata.c:765
+#: ../src/libs/metadata.c:743
 msgid "remove metadata from selected images"
 msgstr "Eliminar los metadatos de todas las imágenes seleccionadas"
 
-#: ../src/libs/metadata.c:772
+#: ../src/libs/metadata.c:750
 msgid "write metadata for selected images"
 msgstr "Establecer los metadatos en las imágenes seleccionadas"
 
-#: ../src/libs/metadata.c:780
+#: ../src/libs/metadata.c:758
 msgid "configure metadata"
 msgstr "configurar metadatos"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:834
+#: ../src/libs/metadata.c:812
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:834
+#: ../src/libs/metadata.c:812
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Atribución (CC BY)"
 
-#: ../src/libs/metadata.c:835
+#: ../src/libs/metadata.c:813
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:835
+#: ../src/libs/metadata.c:813
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Atribución-Compartir Igual (CC BY-SA)"
 
-#: ../src/libs/metadata.c:836
+#: ../src/libs/metadata.c:814
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:836
+#: ../src/libs/metadata.c:814
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Atribución-Sin Derivadas (CC BY-ND)"
 
-#: ../src/libs/metadata.c:837
+#: ../src/libs/metadata.c:815
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:837
+#: ../src/libs/metadata.c:815
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Atribución-No Comercial  (CC BY-NC)"
 
-#: ../src/libs/metadata.c:838
+#: ../src/libs/metadata.c:816
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:839
+#: ../src/libs/metadata.c:817
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Atribución-No Comercial-Compartir Igual (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:840
+#: ../src/libs/metadata.c:818
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:841
+#: ../src/libs/metadata.c:819
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Atribución-No Comercial-Sin Derivadas (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:842
+#: ../src/libs/metadata.c:820
 msgid "all rights reserved"
 msgstr "todos los derechos reservados"
 
-#: ../src/libs/metadata.c:842
+#: ../src/libs/metadata.c:820
 msgid "all rights reserved."
 msgstr "todos los derechos reservados."
 
