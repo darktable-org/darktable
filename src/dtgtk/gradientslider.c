@@ -388,6 +388,8 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
 
 static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 {
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
   const gint selected = _get_active_marker(gslider);
   if(selected == -1) return TRUE;
