@@ -2080,6 +2080,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   snprintf(w_name, sizeof(w_name), "iop-panel-icon-%s", module->op);
   hw[IOP_MODULE_ICON] = gtk_label_new("");
   gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_ICON]), w_name);
+  gtk_widget_set_valign(GTK_WIDGET(hw[IOP_MODULE_ICON]), GTK_ALIGN_CENTER);
 
   /* add module label */
   hw[IOP_MODULE_LABEL] = gtk_label_new("");
