@@ -413,16 +413,46 @@ making a backup is strongly advised.
 ### Changes
 
 
-## Camera support, compared to 3.0.0
-
+## Camera support, compared to 3.0.2
 
 ### Base Support
 
+- Fujifilm FinePix S1
+- Fujifilm X-T200
+- Fujifilm X-T4 (compressed)
+- Hasselblad H4D-50
+- Hasselblad X1D II 50C
+- Hasselblad X1DM2-50c
+- Nikon D780 (12bit-compressed, 14bit-compressed)
+- Olympus E-PL10
+- Panasonic DC-FZ10002 (3:2)
+- Panasonic DC-GX880 (4:3)
+- Panasonic DC-S1H (3:2)
+- Panasonic DMC-FZ40 (1:1, 3:2, 16:9)
+- Panasonic DMC-FZ45 (1:1, 3:2, 16:9)
+- Sony ILCE-9M2
 
 ### White Balance Presets
 
+- Fujifilm X-E3
+- Fujifilm X-T30
+- Fujifilm X-T4
+- Sony ILCE-7RM4
 
 ### Noise Profiles
+
+- Fujifilm X-T100
+- Fujifilm X-T4
+- Nikon COOLPIX P1000
+- Nikon Z 50
+- Olympus E-M5 Mark III
+- Olympus TG-6
+- Panasonic DC-GF9
+- Panasonic DC-GX800
+- Panasonic DC-GX850
+- Sony DSC-RX100M6
+- Sony DSC-RX100M7
+- Sony ILCE-9M2
 
 
 ## Translations
