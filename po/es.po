@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 3.0\n"
+"Project-Id-Version: darktable 3.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-28 13:52-0500\n"
-"PO-Revision-Date: 2020-07-28 17:46-0500\n"
+"POT-Creation-Date: 2020-07-29 11:51-0500\n"
+"PO-Revision-Date: 2020-07-30 02:43-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2735,63 +2735,63 @@ msgstr ""
 "promedio dE: %.02f\n"
 "máx. dE: %.02f"
 
-#: ../src/cli/main.c:129
+#: ../src/cli/main.c:130
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
 "TODO: disculpe, debido a restricciones del API no podemos configurar el BPP a"
 
-#: ../src/cli/main.c:141
+#: ../src/cli/main.c:142
 msgid "unknown option for --hq"
 msgstr "Opción desconocida para --hq"
 
-#: ../src/cli/main.c:157
+#: ../src/cli/main.c:158
 msgid "unknown option for --export_masks"
 msgstr "Opción desconocida para --export_masks"
 
-#: ../src/cli/main.c:173
+#: ../src/cli/main.c:174
 msgid "unknown option for --upscale"
 msgstr "Opción desconocida para --upscale"
 
-#: ../src/cli/main.c:198
+#: ../src/cli/main.c:199
 msgid "unknown option for --apply-custom-presets"
 msgstr "Opción desconocida para --apply-custom-presets"
 
-#: ../src/cli/main.c:253
+#: ../src/cli/main.c:254
 #, c-format
 msgid "error: output file is a directory. please specify file name"
 msgstr ""
 "Error: el archivo de salida es un directorio. Especifique un nombre de "
 "archivo"
 
-#: ../src/cli/main.c:262
+#: ../src/cli/main.c:263
 msgid "output file already exists, it will get renamed"
 msgstr "El archivo de salida ya existe. Será renombrado"
 
-#: ../src/cli/main.c:279
+#: ../src/cli/main.c:280
 #, c-format
 msgid "error: can't open folder %s"
 msgstr "Error: no se puede abrir la carpeta %s"
 
-#: ../src/cli/main.c:297
+#: ../src/cli/main.c:298
 #, c-format
 msgid "error: can't open file %s"
 msgstr "Error: no se puede abrir el archivo %s"
 
-#: ../src/cli/main.c:311
+#: ../src/cli/main.c:312
 #, c-format
 msgid "no images to export, aborting\n"
 msgstr "No hay imágenes que exportar. Abortando la operación...\n"
 
-#: ../src/cli/main.c:325
+#: ../src/cli/main.c:326
 #, c-format
 msgid "error: can't open xmp file %s"
 msgstr "Error: no se puede abrir el archivo xmp %s"
 
-#: ../src/cli/main.c:343
+#: ../src/cli/main.c:344
 msgid "empty history stack"
 msgstr "borrar historial de acciones"
 
-#: ../src/cli/main.c:366
+#: ../src/cli/main.c:367
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -2799,18 +2799,18 @@ msgstr ""
 "No es posible encontrar el módulo de almacenamiento en disco. Pudiera "
 "haberse estropeado algo; revise la instalación."
 
-#: ../src/cli/main.c:374
+#: ../src/cli/main.c:375
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "Falló al intentar obtener los parámetros del módulo de almacenamiento. "
 "Abortando la exportación..."
 
-#: ../src/cli/main.c:387
+#: ../src/cli/main.c:388
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "Extensión desconocida '.%s'"
 
-#: ../src/cli/main.c:396
+#: ../src/cli/main.c:397
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "Falló al intentar obtener los parámetros del módulo de formato. Abortando la "
@@ -4824,12 +4824,12 @@ msgstr "borrar"
 msgid "rename"
 msgstr "renombrar"
 
-#: ../src/develop/imageop.c:1179 ../src/develop/imageop.c:2134
+#: ../src/develop/imageop.c:1179 ../src/develop/imageop.c:2135
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está activado"
 
-#: ../src/develop/imageop.c:1179 ../src/develop/imageop.c:2134
+#: ../src/develop/imageop.c:1179 ../src/develop/imageop.c:2135
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desactivado"
@@ -4874,7 +4874,7 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "mostrar menú de preajustes"
 
-#: ../src/develop/imageop.c:2092
+#: ../src/develop/imageop.c:2093
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -4882,17 +4882,17 @@ msgstr ""
 "Gestión de acciones para el módulo\n"
 "Pulse el botón central para crear un módulo nuevo"
 
-#: ../src/develop/imageop.c:2103 ../src/libs/lib.c:1066
+#: ../src/develop/imageop.c:2104 ../src/libs/lib.c:1066
 msgid "reset parameters"
 msgstr "reiniciar parámetros"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2111 ../src/gui/preferences.c:754
+#: ../src/develop/imageop.c:2112 ../src/gui/preferences.c:754
 #: ../src/libs/lib.c:1075
 msgid "presets"
 msgstr "preajustes"
 
-#: ../src/develop/imageop.c:2113
+#: ../src/develop/imageop.c:2114
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -4901,7 +4901,7 @@ msgstr ""
 "Pulse el botón central sobre el preajuste para establecerlo en un módulo "
 "nuevo"
 
-#: ../src/develop/imageop.c:2408
+#: ../src/develop/imageop.c:2409
 msgid "ERROR"
 msgstr "ERROR"
 
@@ -5236,7 +5236,7 @@ msgstr "Imágenes agrupadas"
 
 #: ../src/dtgtk/thumbnail.c:506
 msgid "fit"
-msgstr "adaptar"
+msgstr "normal"
 
 #. setup rating key accelerators
 #: ../src/dtgtk/thumbtable.c:2017
@@ -6367,11 +6367,13 @@ msgstr ""
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:433
 msgid "modify selected theme with CSS tweaks below"
-msgstr "Modificar el tema seleccionado con los ajustes de CSS a continuación"
+msgstr "Modificar el tema seleccionado con el código CSS a continuación:"
 
 #: ../src/gui/preferences.c:441
 msgid "modify theme with CSS keyed below (saved to user.css)"
-msgstr "Modificar el tema con el CSS tecleado abajo (guardado en usuario.css)"
+msgstr ""
+"El tema se modifica con el código CSS introducido abajo (guardado en usuario."
+"css)"
 
 #: ../src/gui/preferences.c:461
 msgctxt "usercss"
@@ -16830,12 +16832,16 @@ msgstr "Revele y organice las imágenes de cámaras digitales"
 #: ../src/libs/tools/darktable.c:271
 msgid "translator-credits"
 msgstr ""
-"Edgar Lux @EdgarLux\n"
-"Tatica Leandro\n"
-"José Carlos García Sogo\n"
+"Edgar De la Luz (EdgarLux) (2019 - 2020)\n"
+"Tatica Leandro (2012 - 2017)\n"
+"José Carlos García Sogo (2011 - 2014)\n"
+"Roberto Quintero (2010 - 2011)\n"
+"\n"
+"Con aportaciones de (2019):\n"
 "Salvador Calero\n"
 "J. Karlos D @Xabaz\n"
 "Pablo Carrascón\n"
+"\n"
 "Telegram:  @darktable_es"
 
 #: ../src/libs/tools/filmstrip.c:53
@@ -16887,7 +16893,7 @@ msgstr "preferencias"
 #. we write the label with the size categorie
 #: ../src/libs/tools/global_toolbox.c:221
 msgid "thumbnails overlays for size"
-msgstr "Información sobrepuesta por tamaño"
+msgstr "Visibilidad de información para el tamaño"
 
 #: ../src/libs/tools/global_toolbox.c:223
 msgid "px"
@@ -16902,21 +16908,21 @@ msgid ""
 msgstr ""
 "Tiempo en el que el bloqueo de la información permanece después de cada "
 "movimiento del ratón sobre la imagen\n"
-"Fije en -1 para que la superposición se mantenga"
+"Fije en -1 para que la visibilidad se mantenga"
 
 #: ../src/libs/tools/global_toolbox.c:260
 #: ../src/libs/tools/global_toolbox.c:323
 msgid "timeout only available for block overlay"
 msgstr ""
-"El tiempo de espera sólo está disponible para el bloqueo de superposición"
+"El tiempo de espera sólo está disponible para el bloqueo de visibilidad"
 
 #: ../src/libs/tools/global_toolbox.c:283
 msgid "culling overlays"
-msgstr "Información sobrepuesta en vista de selección"
+msgstr "Visibilidad de la información en vista de selección"
 
 #: ../src/libs/tools/global_toolbox.c:285
 msgid "preview overlays"
-msgstr "Vista previa de la superposición"
+msgstr "Vista previa de la información visible"
 
 #: ../src/libs/tools/global_toolbox.c:341
 msgid "overlays not available here..."
@@ -16935,45 +16941,45 @@ msgstr "Plegar imágenes agrupadas"
 #: ../src/libs/tools/global_toolbox.c:393
 msgid "click to change the type of overlays shown on thumbnails"
 msgstr ""
-"Pulse para cambiar el tipo de superposición que se muestra en las miniaturas"
+"Pulse para cambiar la manera en la que se muestra la información sobre las "
+"miniaturas"
 
 #: ../src/libs/tools/global_toolbox.c:412
 #: ../src/libs/tools/global_toolbox.c:456
 msgid "overlay mode for size"
-msgstr "modo de superposición para el tamaño"
+msgstr "modo de visibilidad para el tamaño"
 
 #: ../src/libs/tools/global_toolbox.c:415
 #: ../src/libs/tools/global_toolbox.c:459
 msgid "no overlays"
-msgstr "sin superposición"
+msgstr "desactivada"
 
 #: ../src/libs/tools/global_toolbox.c:419
 msgid "overlays on mouse hover"
-msgstr "superposición al pasar el ratón"
+msgstr "mostrar información al pasar el ratón"
 
 #: ../src/libs/tools/global_toolbox.c:423
 msgid "extended overlays on mouse hover"
-msgstr "superposición ampliada al pasar el ratón"
+msgstr "mostrar información extendida al pasar el ratón"
 
 #: ../src/libs/tools/global_toolbox.c:426
 #: ../src/libs/tools/global_toolbox.c:463
 msgid "permanent overlays"
-msgstr "superposición permanente"
+msgstr "fijar información"
 
 #: ../src/libs/tools/global_toolbox.c:430
 #: ../src/libs/tools/global_toolbox.c:467
 msgid "permanent extended overlays"
-msgstr "superposición permanente ampliada"
+msgstr "fijar información extendida"
 
 #: ../src/libs/tools/global_toolbox.c:434
 msgid "permanent overlays extended on mouse hover"
-msgstr "superposición ampliada permanente al pasar el ratón"
+msgstr "fijar información parcialmente y extender sólo al pasar el ratón"
 
 #: ../src/libs/tools/global_toolbox.c:439
 #: ../src/libs/tools/global_toolbox.c:472
 msgid "overlays block on mouse hover during (s) "
-msgstr ""
-"duración del bloqueo de la información superpuesta al pasar el ratón (s)"
+msgstr "duración del bloqueo de la información visible al pasar el ratón (s)"
 
 #: ../src/libs/tools/global_toolbox.c:446
 #: ../src/libs/tools/global_toolbox.c:479
