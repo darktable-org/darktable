@@ -21,7 +21,7 @@ making a backup is strongly advised.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- Almost 2450 commits to darktable+rawspeed since 3.0
+- Almost 2700 commits to darktable+rawspeed since 3.0
 - 790 pull requests handled
 - 92 issues closed
 - Updated user manual is coming soon™
@@ -406,52 +406,93 @@ making a backup is strongly advised.
 
 ## RawSpeed changes
 
+- New Panasonic 'V6' decompressor
+- Huffman table implementations rewrite/cleanup
+- Fuji compressed raw decompressor performance improvements (-13% wall clock)
+- Canon CRW decoding performance improvements (-15% wall clock)
+- DNG LJpeg decompressor support for images with 2 components / pixel
+- DNG Deflate decompressor support for images with more than 1 component / pixel
+- Fuji compressed raw decompressor support for 16-bit raws
+- Continuation of ongoing collaboration with LLVM, highlights include many
+  little steps towards making it possible to auto-vectorize GoPro's VC5
+  decompressor loops, Canon S-RAW interpolator loops; more changes upcoming.
 
-### Changed Dependencies
 
-
-### Changes
-
-
-## Camera support, compared to 3.0.2
+## Camera support, compared to 3.0.0
 
 ### Base Support
 
 - Fujifilm FinePix S1
+- Fujifilm GFX 100 (compressed)
+- Fujifilm X-Pro3 (compressed)
 - Fujifilm X-T200
 - Fujifilm X-T4 (compressed)
+- Fujifilm X100V (compressed)
 - Hasselblad H4D-50
 - Hasselblad X1D II 50C
 - Hasselblad X1DM2-50c
+- Nikon COOLPIX P950 (12bit-uncompressed)
 - Nikon D780 (12bit-compressed, 14bit-compressed)
+- Nikon Z 50 (12bit-compressed, 14bit-compressed)
+- Olympus E-M1MarkIII
 - Olympus E-PL10
 - Panasonic DC-FZ10002 (3:2)
 - Panasonic DC-GX880 (4:3)
+- Panasonic DC-S1 (3:2)
 - Panasonic DC-S1H (3:2)
+- Panasonic DC-S1R (3:2)
+- Panasonic DC-TZ91 (4:3)
+- Panasonic DC-TZ95 (4:3)
+- Panasonic DC-TZ96 (4:3)
+- Panasonic DC-ZS80 (4:3)
 - Panasonic DMC-FZ40 (1:1, 3:2, 16:9)
 - Panasonic DMC-FZ45 (1:1, 3:2, 16:9)
+- Sony ILCE-6100
 - Sony ILCE-9M2
 
 ### White Balance Presets
 
+- Canon EOS 77D
+- Canon EOS 9000D
 - Fujifilm X-E3
 - Fujifilm X-T30
 - Fujifilm X-T4
+- Nikon COOLPIX P1000
+- Olympus E-M1MarkIII
+- Olympus E-PL6
+- Olympus TG-5
+- Panasonic DC-GH5
+- Panasonic DC-TZ95
+- Panasonic DC-TZ96
+- Panasonic DC-ZS80
+- Samsung NX1
 - Sony ILCE-7RM4
 
 ### Noise Profiles
 
+- Canon EOS-1Ds
+- Fujifilm X-H1
 - Fujifilm X-T100
+- Fujifilm X-T30
 - Fujifilm X-T4
 - Nikon COOLPIX P1000
 - Nikon Z 50
+- Olympus E-510
+- Olympus E-M1MarkIII
 - Olympus E-M5 Mark III
 - Olympus TG-6
 - Panasonic DC-GF9
 - Panasonic DC-GX800
 - Panasonic DC-GX850
+- Panasonic DC-GH5
+- Panasonic DC-TZ95
+- Panasonic DC-TZ96
+- Panasonic DC-ZS80
 - Sony DSC-RX100M6
 - Sony DSC-RX100M7
+- Sony ILCE-6600
+- Sony ILCE-7RM4
+- Sony ILCE-9
 - Sony ILCE-9M2
 
 
