@@ -74,7 +74,7 @@ making a backup is strongly advised.
   films.
 
 - A new histogram display called RGB Parade has been added. At the
-  same time the histogram module height can now be adjusted with 
+  same time the histogram module height can now be adjusted with
   <kbd>Ctrl+Scroll</kbd>.
 
 - The metadata feature has been made generic internally and has new
@@ -106,8 +106,8 @@ making a backup is strongly advised.
   touches all areas of darktable like masks, guided filter, liquify
   controls, crop & rotate, lens and perspective corrections...
 
-- Clarify the three possible workflows. Previous version had a preference 
-  to choose whether to auto-apply the base curve module. Many questions were 
+- Clarify the three possible workflows. Previous version had a preference
+  to choose whether to auto-apply the base curve module. Many questions were
   raised about the intention. The new preference introduces three workflows:
 
   display-referred : use base-curve module
@@ -182,7 +182,7 @@ making a backup is strongly advised.
 - The crop & rotate module now allows format ratios to be entered as
   a float number.
 
-- When using a snapshot view, a flag has been added to clearly show the 
+- When using a snapshot view, a flag has been added to clearly show the
   position of the snapshot.
 
 - Improve the falloff and radius of the vignette to 200% for better
@@ -220,7 +220,7 @@ making a backup is strongly advised.
 
 - Add new preferences for keyboard shortcuts to control how
   multi-instances are handled (use first or last instance, prefer the
-  visible, active or expanded instance). This also fixes some faults 
+  visible, active or expanded instance). This also fixes some faults
   caused when duplicating or deleting modules, and when selecting
   earlier edits in the history stack.
 
@@ -247,7 +247,7 @@ making a backup is strongly advised.
 - Add confirmation when deleting/updating presets.
 
 - It is possible to handle (deleting, applying or exporting) multiple
-  styles in the style module. 
+  styles in the style module.
 
 - Applying a style now supports overwrite mode (it previously could
   only append to the existing history stack). This makes the style module
@@ -264,8 +264,8 @@ making a backup is strongly advised.
 - Using <kbd>Ctrl+Click</kbd> in blending module drawn masks it is possible to
   allow continuous creation of masks.
 
-  Continuous mask creation was previously the default in the retouch and spot 
-  removal modules. For consistency this has been changed and so now one need to use 
+  Continuous mask creation was previously the default in the retouch and spot
+  removal modules. For consistency this has been changed and so now one need to use
   <kbd>Ctrl+Click</kbd> in these modules as well for continuous mask creation.
 
 - Rejecting an image still keeps the last number of stars. So
@@ -284,13 +284,13 @@ making a backup is strongly advised.
   performance.
 
 - A new universal toast message framework has been put in place. This
-  is used to display information about changes performed with dynamic 
-  keyboard shortcuts when the module is collapsed. 
-  It gives visual information about the change being made 
+  is used to display information about changes performed with dynamic
+  keyboard shortcuts when the module is collapsed.
+  It gives visual information about the change being made
   (like exposure change or new opacity value, etc.).
 
-- The spot removal module has been enhanced to be more consistent with 
-  the functionality of the retouch module. A new button has been added 
+- The spot removal module has been enhanced to be more consistent with
+  the functionality of the retouch module. A new button has been added
   to show/hide shapes. It also now supports continuous shape creation.
 
 - Add a new keyboard shortcut to toggle last snapshot on/off.
