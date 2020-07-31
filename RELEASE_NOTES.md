@@ -498,18 +498,12 @@ making a backup is strongly advised.
 
 ## Translations
 
-- Catalan
-- Czech
-- Danish
 - German
 - European Spanish
 - French
 - Hebrew
-- Hungarian
 - Italian
-- Japanese
-- Norwegian Bokmål
-- Dutch
 - Polish
+- Brazilian Portuguese
 - Russian
 - Slovenian
