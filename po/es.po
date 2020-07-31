@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-29 11:51-0500\n"
-"PO-Revision-Date: 2020-07-30 02:43-0500\n"
+"POT-Creation-Date: 2020-07-30 22:06-0500\n"
+"PO-Revision-Date: 2020-07-30 23:54-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1766,14 +1766,16 @@ msgstr "Modo completo (posiblemente lento)"
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using PPG + interpolation modes specified "
-"below, full will use exactly the settings for full-size export. X-Trans "
-"sensors use VNG rather than PPG as middle ground."
+"on the 'pixel interpolator' option (processing tab), full will use exactly "
+"the settings for full-size export. X-Trans sensors use VNG rather than PPG "
+"as middle ground."
 msgstr ""
 "Indica la interpolación cromática usada, cuando en el modo de cuarto oscuro "
 "no está en escala 1:1: bilineal es más rápido, pero sin tanta nitidez. La "
-"opción intermedia utiliza PPG + el que se elija en la opción de abajo. El "
-"modocompleto tomará los valores desde la configuración de exportación para "
-"el tamaño final. Los sensores X-trans usan VNG en vez de PPG."
+"opción intermedia utiliza PPG + el especificado en la pestaña \"procesamiento"
+"\" opción \"Interpolador de pixel\". El modo completo tomará los valores "
+"desde la configuración de exportación para el tamaño final. Los sensores X-"
+"trans usan VNG en vez de PPG."
 
 #: ../build/src/preferences_gen.h:2822
 msgid "reduce resolution of preview image"
@@ -2780,7 +2782,7 @@ msgstr "Error: no se puede abrir el archivo %s"
 #: ../src/cli/main.c:312
 #, c-format
 msgid "no images to export, aborting\n"
-msgstr "No hay imágenes que exportar. Abortando la operación...\n"
+msgstr "No hay imágenes para exportar. Abortando la operación...\n"
 
 #: ../src/cli/main.c:326
 #, c-format
@@ -3827,11 +3829,11 @@ msgstr[1] "capturando %d imágenes"
 
 #: ../src/control/jobs/camera_jobs.c:120
 msgid "please set your camera to manual mode first!"
-msgstr "ponga primero la cámara en modo manual"
+msgstr "Ponga primero la cámara en modo manual"
 
 #: ../src/control/jobs/camera_jobs.c:210
 msgid "capture images"
-msgstr "capturar imágenes"
+msgstr "Capturar imágenes"
 
 #: ../src/control/jobs/camera_jobs.c:281
 #, c-format
@@ -3842,18 +3844,18 @@ msgstr[1] "%d/%d importados a %s"
 
 #: ../src/control/jobs/camera_jobs.c:331
 msgid "starting to import images from camera"
-msgstr "comenzando a importar imágenes desde la cámara"
+msgstr "Comenzando a importar imágenes desde la cámara"
 
 #: ../src/control/jobs/camera_jobs.c:342
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
-msgstr[0] "importando %d imagen desde la cámara"
-msgstr[1] "importando %d imágenes desde la cámara"
+msgstr[0] "Importando %d imagen desde la cámara"
+msgstr[1] "Importando %d imágenes desde la cámara"
 
 #: ../src/control/jobs/camera_jobs.c:399 ../src/gui/camera_import_dialog.c:218
 msgid "import images from camera"
-msgstr "importar imágenes desde la cámara"
+msgstr "Importar imágenes desde la cámara"
 
 #: ../src/control/jobs/control_jobs.c:123
 msgid "failed to create film roll for destination directory, aborting move.."
@@ -3861,44 +3863,44 @@ msgstr "Falló al crear el carrete para el directorio de destino, abortando..."
 
 #: ../src/control/jobs/control_jobs.c:345
 msgid "exposure bracketing only works on raw images."
-msgstr "el ahorquillado de exposición solo funciona con imágenes raw."
+msgstr "El ahorquillado de exposición solo funciona con imágenes RAW."
 
 #: ../src/control/jobs/control_jobs.c:352
 msgid "images have to be of same size and orientation!"
-msgstr "las imágenes deben tener el mismo tamaño y orientación"
+msgstr "Las imágenes deben tener el mismo tamaño y orientación"
 
 #: ../src/control/jobs/control_jobs.c:447
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
-msgstr[0] "fusionando %d imagen"
-msgstr[1] "fusionando %d imágenes"
+msgstr[0] "Fusionando %d imagen"
+msgstr[1] "Fusionando %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:508
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "escribir HDR fusionado `%s'"
+msgstr "Guardando la imagen fusionada HDR `%s'"
 
 #: ../src/control/jobs/control_jobs.c:535
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
-msgstr[0] "duplicando %d imagen"
-msgstr[1] "duplicando %d imágenes"
+msgstr[0] "Duplicando %d imagen"
+msgstr[1] "Duplicando %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:565
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
-msgstr[0] "girando %d imagen"
-msgstr[1] "girando %d imágenes"
+msgstr[0] "Girando %d imagen"
+msgstr[1] "Girando %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:640
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
-msgstr[0] "eliminando %d imagen"
-msgstr[1] "eliminando %d imágenes"
+msgstr[0] "Eliminando %d imagen"
+msgstr[1] "Eliminando %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:742
 #, c-format
@@ -3932,70 +3934,70 @@ msgstr "detener el proceso"
 
 #: ../src/control/jobs/control_jobs.c:763
 msgid "trashing error"
-msgstr "error eliminando"
+msgstr "Error al eliminar"
 
 #: ../src/control/jobs/control_jobs.c:764
 msgid "deletion error"
-msgstr "error de borrado"
+msgstr "Error al borrar"
 
 #: ../src/control/jobs/control_jobs.c:905
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
-msgstr[0] "descartando %d imagen"
-msgstr[1] "descartando %d imágenes"
+msgstr[0] "Descartando %d imagen"
+msgstr[1] "Descartando %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:907
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
-msgstr[0] "borrando %d imagen"
-msgstr[1] "borrando %d imágenes"
+msgstr[0] "Borrando %d imagen"
+msgstr[1] "Borrando %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1034
 msgid "failed to parse GPX file"
-msgstr "fallo al analizar el archivo GPX"
+msgstr "Hubo un fallo al analizar el archivo GPX"
 
 #: ../src/control/jobs/control_jobs.c:1099
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
-msgstr[0] "asociación de ubicación GPX en %d imagen aplicada"
-msgstr[1] "asociación de ubicación GPX en %d imágenes aplicadas"
+msgstr[0] "Se aplicó la localización GPX coincidente en %d imagen"
+msgstr[1] "Se aplicó la localización GPX coincidente en %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1114
 #, c-format
 msgid "moving %d image"
-msgstr "moviendo %d imagen"
+msgstr "Moviendo %d imagen"
 
 #: ../src/control/jobs/control_jobs.c:1115
 #, c-format
 msgid "moving %d images"
-msgstr "moviendo %d imágenes"
+msgstr "Moviendo %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1120
 #, c-format
 msgid "copying %d image"
-msgstr "copiando %d imagen"
+msgstr "Copiando %d imagen"
 
 #: ../src/control/jobs/control_jobs.c:1121
 #, c-format
 msgid "copying %d images"
-msgstr "copiando %d imágenes"
+msgstr "Copiando %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1136
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
-msgstr[0] "creando copia local de %d imagen"
-msgstr[1] "creando copia local de %d imagenes"
+msgstr[0] "Creando copia local de %d imagen"
+msgstr[1] "Creando copia local de %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1139
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
-msgstr[0] "eliminando copia local de %d imagen"
-msgstr[1] "eliminando copia local de %d imagenes"
+msgstr[0] "Eliminando copia local de %d imagen"
+msgstr[1] "Eliminando copia local de %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1183
 #, c-format
@@ -4024,7 +4026,7 @@ msgstr "La imagen `%s' no esta disponible actualmente"
 
 #: ../src/control/jobs/control_jobs.c:1392
 msgid "merge hdr image"
-msgstr "Fusionar imagen hdr"
+msgstr "Fusionar imagen HDR"
 
 #: ../src/control/jobs/control_jobs.c:1406
 msgid "duplicate images"
@@ -4138,7 +4140,7 @@ msgstr[1] "¿copiar imagenes?"
 #: ../src/control/jobs/control_jobs.c:1666
 #: ../src/control/jobs/control_jobs.c:1674
 msgid "local copy images"
-msgstr "copia local de las imágenes"
+msgstr "Copia local de las imágenes"
 
 #: ../src/control/jobs/control_jobs.c:1681 ../src/libs/image.c:597
 msgid "refresh exif"
@@ -5749,7 +5751,7 @@ msgstr ""
 
 #: ../src/gui/camera_import_dialog.c:316 ../src/libs/image.c:420
 msgid "images"
-msgstr "imágenes"
+msgstr "imagen"
 
 #: ../src/gui/camera_import_dialog.c:317
 msgid "settings"
@@ -6909,7 +6911,7 @@ msgstr "PENDIENTE: páginas"
 
 #: ../src/imageio/format/pdf.c:683
 msgid "single images"
-msgstr "imágenes"
+msgstr "imágenes individuales"
 
 #: ../src/imageio/format/pdf.c:684
 msgid "contact sheet"
@@ -7163,7 +7165,7 @@ msgstr "enviar como correo electrónico"
 
 #: ../src/imageio/storage/email.c:198
 msgid "images exported from darktable"
-msgstr "imágenes exportadas desde dartable"
+msgstr "imágenes exportadas desde darktable"
 
 #: ../src/imageio/storage/email.c:251
 msgid "could not launch email client!"
@@ -14070,7 +14072,7 @@ msgstr "eliminar esta regla"
 
 #: ../src/libs/collect.c:1936
 msgid "clear this rule or add new rules"
-msgstr "eliminar esta regla o añadir nuevas reglas"
+msgstr "Eliminar esta regla o añadir nuevas reglas"
 
 #: ../src/libs/collect.c:1992
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
@@ -14887,7 +14889,7 @@ msgstr "original"
 
 #: ../src/libs/image.c:72
 msgid "selected image[s]"
-msgstr "imagen(es) seleccionada(s)"
+msgstr "imágenes seleccionadas"
 
 #: ../src/libs/image.c:167
 msgid "trash"
