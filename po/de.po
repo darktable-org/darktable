@@ -14618,7 +14618,7 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:331
 msgid "develop history"
-msgstr "Historie erstellen"
+msgstr "Verlaufsstapel exportieren"
 
 #: ../src/libs/export_metadata.c:332
 msgid ""
