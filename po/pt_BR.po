@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 20:42-0300\n"
-"PO-Revision-Date: 2020-07-30 20:47-0300\n"
+"POT-Creation-Date: 2020-08-02 18:10-0300\n"
+"PO-Revision-Date: 2020-08-02 18:14-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1760,14 +1760,10 @@ msgstr "completo (possivelmente lento)"
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using PPG + interpolation modes specified "
-"below, full will use exactly the settings for full-size export. X-Trans "
-"sensors use VNG rather than PPG as middle ground."
-msgstr ""
-"interpolação quando não visualizando 1:1 no modo sala escura: bilinear é o "
-"mais rápido, mas não tão nítido. a via intermediária é usando PPG + modos de "
-"interpolação especificados abaixo, completo usará exatamente as "
-"configurações para exportação de tamanho grande. Sensores X-Trans usam VNG "
-"em vez de PPG como intermediário."
+"on the 'pixel interpolator' option (processing tab), full will use exactly "
+"the settings for full-size export. X-Trans sensors use VNG rather than PPG "
+"as middle ground."
+msgstr "interpolação quando não visualizando 1:1 no modo sala escura: bilinear é o mais rápido, mas não tão nítido. a via intermediária é usando PPG + modos de interpolação especificados na opção 'interpolador de pixel' (aba processamento), completo usará exatamente as configurações para exportação de tamanho grande. Sensores X-Trans usam VNG em vez de PPG como intermediário."
 
 #: ../build/src/preferences_gen.h:2822
 msgid "reduce resolution of preview image"
@@ -1974,9 +1970,14 @@ msgid ""
 "to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
 "\" should be set to \"none\""
 msgstr ""
-"usar a curva base específica por-câmera como default ao invés do genérico do fabricante, se houver uma curva específica disponível (precisa reiniciar).\n"
-"esta opção é levada em consideração quando o default \"auto-aplicar defaults do fluxo de trabalho da pixelpipe\" é definido como \"relativo à exibição\".\n"
-"para previnir a aplicação automática de definições de curva base, \"auto-aplicar defaults do fluxo de trabalho da pixelpipe\" deve ser configurado como \"nenhuma\""
+"usar a curva base específica por-câmera como default ao invés do genérico do "
+"fabricante, se houver uma curva específica disponível (precisa reiniciar).\n"
+"esta opção é levada em consideração quando o default \"auto-aplicar defaults "
+"do fluxo de trabalho da pixelpipe\" é definido como \"relativo à exibição"
+"\".\n"
+"para previnir a aplicação automática de definições de curva base, \"auto-"
+"aplicar defaults do fluxo de trabalho da pixelpipe\" deve ser configurado "
+"como \"nenhuma\""
 
 #: ../build/src/preferences_gen.h:3232
 msgid "auto-apply sharpen"
@@ -2403,7 +2404,7 @@ msgstr ""
 
 #. tags
 #: ../build/src/preferences_gen.h:4086 ../src/develop/lightroom.c:1510
-#: ../src/gui/import_metadata.c:220 ../src/libs/export_metadata.c:310
+#: ../src/gui/import_metadata.c:223 ../src/libs/export_metadata.c:310
 #: ../src/libs/image.c:545 ../src/libs/metadata_view.c:148
 msgid "tags"
 msgstr "etiquetas"
@@ -6230,12 +6231,16 @@ msgstr "a ser importado"
 
 #: ../src/gui/import_metadata.c:177
 msgid ""
-"selected metadata are imported from image and override the default value"
+"selected metadata are imported from image and override the default value\n"
+" this drives also the 'look for updated xmp files' and 'load sidecar file' "
+"actions\n"
+" CAUTION: not selected metadata are cleaned up when xmp file is udpated"
 msgstr ""
-"metadados selecionados são importados da imagem e sobrescrevem os valores "
-"default"
+"os metadados selecionados são importados da imagem e sobrescrevem o valor default\n"
+" isto também tem efeito sobre as ações 'procurar por arquivos xmp atualizados' e 'carregar arquivo associado\n"
+" CUIDADO: metadados não selecionados são limpados quando o arquivo xmp é atualizado"
 
-#: ../src/gui/import_metadata.c:227
+#: ../src/gui/import_metadata.c:230
 msgid "comma separated list of tags"
 msgstr "lista de etiquetas separadas por vírgula"
 
@@ -17792,6 +17797,12 @@ msgstr "atalhos"
 #: ../src/views/view.c:1622
 msgid "Action"
 msgstr "Ação"
+
+#~ msgid ""
+#~ "selected metadata are imported from image and override the default value"
+#~ msgstr ""
+#~ "metadados selecionados são importados da imagem e sobrescrevem os valores "
+#~ "default"
 
 #~ msgid ""
 #~ "use the per-camera basecurve by default instead of the generic "
