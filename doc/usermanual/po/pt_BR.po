@@ -11467,43 +11467,6 @@ msgid ""
 "represents 100% lightness. Hence, any channel which displays above that line "
 "may be clipped in the resulting image. The thinner dotted horizontal line "
 "represents 50% lightness. The bottom of the scope represents 0% lightness."
-msgstr "A linha horizontal grossa, pontilhada, no topo do histograma em forma de onda representa 100% da luminosidade. Assim, qualquer canal que tenha medida acima desta linha pode estar recortado na imagem resultante. A linha pontilhada mais fina representa 50% da luminosidade. O fundo do histograma representa 0% de luminosidade."
-
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9252(para)
-msgid ""
-"As with the \"regular\" histogram, it is possible to selectively display "
-"red, green, and blue channels, or (the default) overlay all three of them."
-msgstr "Assim como no histograma \"regular\", é possível mostrar seletivamente os canais vermelho, verde e azul, ou (o default) uma sobreposição dos três."
-
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9257(para)
-msgid ""
-"See <ulink url=\"https://www.darktable.org/2013/12/of-histograms-and-"
-"waveforms/\">Of Histograms and Waveforms</ulink> for more on darktable's "
-"waveform scope."
-msgstr "Veja <ulink url=\"https://www.darktable.org/2013/12/of-histograms-and-waveforms/\">Of Histograms and Waveforms</ulink> (em Inglês) para mais informação sobre o gráfico de formas d eonda do darktable."
-
-=======
-msgid ""
-"The leftmost button of the panel is a toggle which flips to a waveform "
-"scope. This scope includes spatial data about the image. The y-axis "
-"represents the distribution of pixels by lightness for each channel. The "
-"scope's x-axis represents the distribution of this data across the x-axis of "
-"the image. The lightness of each point of the waveform represents the "
-"quantity of pixels represented at that scope position."
-msgstr ""
-"O botão mais à esquerda do painel é uma chave que muda para um gráfico do "
-"tipo forma de onda. Este gráfico contém dados espaciais sobre a imagem. O "
-"eixo y representa a distribuição de pixels por brilho em cada canal. O eixo "
-"x do gráfico representa a distribuição desses dados pelo eixo x da imagem. A "
-"luminosidade de cada ponto da forma de onda representa a quantidade de "
-"pixels representado naquela posição do gráfico."
-
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9245(para)
-msgid ""
-"The thick dotted horizontal line at the top of the waveform histogram "
-"represents 100% lightness. Hence, any channel which displays above that line "
-"may be clipped in the resulting image. The thinner dotted horizontal line "
-"represents 50% lightness. The bottom of the scope represents 0% lightness."
 msgstr ""
 "A linha horizontal grossa, pontilhada, no topo do histograma em forma de "
 "onda representa 100% da luminosidade. Assim, qualquer canal que tenha medida "
