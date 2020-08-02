@@ -1684,6 +1684,11 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     {
       // in filemanager, we need to take care of the center offset
       posx = table->center_offset;
+
+      // ensure that the overall layout doesn't change 
+      // (i.e. we don't get empty spaces in the very first row)
+      const int offset_row = table->offset / table->thumbs_per_row;
+      offset = offset_row * table->thumbs_per_row + 1;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
