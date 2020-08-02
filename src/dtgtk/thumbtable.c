@@ -2328,7 +2328,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
     newrowid = baserowid - 1;
   else if(move == DT_THUMBTABLE_MOVE_RIGHT && baserowid < maxrowid)
     newrowid = baserowid + 1;
-  else if(move == DT_THUMBTABLE_MOVE_UP && baserowid >= 2)
+  else if(move == DT_THUMBTABLE_MOVE_UP && baserowid - table->thumbs_per_row >= 1)
     newrowid = baserowid - table->thumbs_per_row;
   else if(move == DT_THUMBTABLE_MOVE_DOWN && baserowid + table->thumbs_per_row <= maxrowid)
     newrowid = baserowid + table->thumbs_per_row;
