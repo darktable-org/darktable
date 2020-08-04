@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 22:06-0500\n"
-"PO-Revision-Date: 2020-07-30 23:54-0500\n"
+"POT-Creation-Date: 2020-08-04 00:06-0500\n"
+"PO-Revision-Date: 2020-08-04 00:34-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1020,7 +1020,7 @@ msgstr "factor de seguridad"
 #: ../build/src/iop/introspection_profile_gamma.c:184
 #: ../src/iop/basecurve.c:2135
 msgid "logarithmic"
-msgstr "logarítmico"
+msgstr "logarítmica"
 
 #: ../build/src/iop/introspection_profile_gamma.c:185
 #: ../src/iop/colorbalance.c:2232 ../src/iop/profile_gamma.c:698
@@ -2351,7 +2351,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3943
 msgid "look for updated xmp files on startup"
-msgstr "Buscar archivos xmp actualizados al iniciar"
+msgstr "Buscar archivos XMP actualizados al iniciar"
 
 #: ../build/src/preferences_gen.h:3956
 msgid ""
@@ -2425,7 +2425,7 @@ msgstr ""
 
 #. tags
 #: ../build/src/preferences_gen.h:4086 ../src/develop/lightroom.c:1510
-#: ../src/gui/import_metadata.c:220 ../src/libs/export_metadata.c:310
+#: ../src/gui/import_metadata.c:223 ../src/libs/export_metadata.c:310
 #: ../src/libs/image.c:545 ../src/libs/metadata_view.c:148
 msgid "tags"
 msgstr "etiquetas"
@@ -6262,12 +6262,19 @@ msgstr "para ser importado"
 
 #: ../src/gui/import_metadata.c:177
 msgid ""
-"selected metadata are imported from image and override the default value"
+"selected metadata are imported from image and override the default value\n"
+" this drives also the 'look for updated xmp files' and 'load sidecar file' "
+"actions\n"
+" CAUTION: not selected metadata are cleaned up when xmp file is udpated"
 msgstr ""
-"Los metadatos seleccionados se importan desde la imagen anulando el valor "
-"predeterminado"
+"Los metadatos seleccionados se importan desde la imagen y anulan el valor "
+"predeterminado\n"
+"Esto implica también a las acciones de \"Buscar archivos XMP actualizados al "
+"iniciar\" y \"cargar archivo xmp\".\n"
+"PRECAUCIÓN: los metadatos no seleccionados se borran cuando se actualiza el "
+"archivo XMP"
 
-#: ../src/gui/import_metadata.c:227
+#: ../src/gui/import_metadata.c:230
 msgid "comma separated list of tags"
 msgstr "Lista de etiquetas separadas por coma"
 
@@ -7858,8 +7865,8 @@ msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
 msgstr ""
-"escala a usar en el gráfico. use escala logarítmica para un control más "
-"preciso cerca de los negros"
+"Escala que se usará en el gráfico. La escala logarítmica permite un control "
+"más preciso en el área de los negros"
 
 #: ../src/iop/basecurve.c:2142 ../src/iop/basicadj.c:645
 #: ../src/iop/rgbcurve.c:1479 ../src/iop/rgblevels.c:1044
@@ -13248,7 +13255,7 @@ msgstr "curva para el canal b"
 
 #: ../src/iop/tonecurve.c:1331
 msgid "log"
-msgstr "registro"
+msgstr "logarítmica"
 
 #: ../src/iop/tonecurve.c:1339
 msgid "base of the logarithm"
@@ -17919,6 +17926,12 @@ msgstr "Atajos del teclado"
 #: ../src/views/view.c:1622
 msgid "Action"
 msgstr "Acción"
+
+#~ msgid ""
+#~ "selected metadata are imported from image and override the default value"
+#~ msgstr ""
+#~ "Los metadatos seleccionados se importan desde la imagen anulando el valor "
+#~ "predeterminado"
 
 #~ msgid ""
 #~ "use the per-camera basecurve by default instead of the generic "
