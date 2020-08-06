@@ -4068,6 +4068,7 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
       {
         exif_tm.tm_year -= 1900;
         exif_tm.tm_mon--;
+        exif_tm.tm_isdst = -1;    // no daylight saving time
         *datetime_taken = mktime(&exif_tm);
         return TRUE;
       }
