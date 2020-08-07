@@ -297,7 +297,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   avifImageRGBToYUV(image, &rgb);
 
   if (imgid > 0) {
-    bool use_icc = false;
+    gboolean use_icc = false;
 
 #if AVIF_VERSION >= 800
     image->colorPrimaries = AVIF_COLOR_PRIMARIES_UNKNOWN;
