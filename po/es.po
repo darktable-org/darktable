@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-04 00:06-0500\n"
-"PO-Revision-Date: 2020-08-05 03:11-0500\n"
+"PO-Revision-Date: 2020-08-07 01:46-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -6033,7 +6033,7 @@ msgstr "$(EXIF_EXPOSURE) - exposición Exif"
 
 #: ../src/gui/gtkentry.c:208
 msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
-msgstr "$(EXIF_EXPOSURE_BIAS) - Sesgo de exposición Exif"
+msgstr "$(EXIF_EXPOSURE_BIAS) - Compensación de exposición Exif"
 
 #: ../src/gui/gtkentry.c:209
 msgid "$(EXIF_APERTURE) - EXIF aperture"
@@ -10221,7 +10221,7 @@ msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
 msgstr ""
-"Elimina automáticamente la desviación de la exposición de la cámara.\n"
+"Elimina automáticamente el sesgo de exposición de la cámara.\n"
 "Es útil cuando la imagen se ha expuesto a la derecha."
 
 #: ../src/iop/exposure.c:895
@@ -12108,16 +12108,16 @@ msgstr "ajustes de exposición del escáner"
 
 #: ../src/iop/negadoctor.c:1138
 msgid "scan exposure bias"
-msgstr "sesgo de exposición al escanear"
+msgstr "compensación de exposición (escáner)"
 
 #: ../src/iop/negadoctor.c:1140
 msgid ""
 "correct the exposure of the scanner, for all RGB channels,\n"
 "before the inversion, so blacks are neither clipped or too pale."
 msgstr ""
-"Corrige la exposición del escáner, para todos los canales RGB,\n"
-"antes de la inversión, por lo que los negros no están ni recortados ni "
-"pálidos."
+"Corrige la exposición del escáner para todos los canales RGB antes de "
+"invertirlos,\n"
+"para evitar que los negros no estén ni recortados ni pálidos."
 
 #. WB shadows
 #: ../src/iop/negadoctor.c:1146
