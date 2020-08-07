@@ -27,7 +27,7 @@ _scripts_install.dt = require 'darktable'
 
 -- check for gui so that we don't hang darktable-cli
 
-if _scripts_install.dt.configuration.has_gui then
+if _scripts_install.dt.configuration.has_gui and _scripts_install.dt.gui.current_view() == "lighttable" then
 
 
   _scripts_install.dt.preferences.register(
