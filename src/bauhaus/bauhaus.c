@@ -106,7 +106,7 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
 
   if(max_width > 0)
   {
-    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
+    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
     pango_layout_set_width(layout, (int)(PANGO_SCALE * max_width + 0.5f));
   }
 
