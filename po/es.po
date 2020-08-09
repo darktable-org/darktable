@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-04 00:06-0500\n"
-"PO-Revision-Date: 2020-08-04 00:34-0500\n"
+"PO-Revision-Date: 2020-08-07 01:46-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1056,7 +1056,7 @@ msgstr "compensar gris medio"
 #: ../build/src/iop/introspection_rgblevels.c:148
 #: ../build/src/iop/introspection_tonecurve.c:266
 msgid "RGB, linked channels"
-msgstr "RGB  canales enlazados"
+msgstr "canales enlazados RGB"
 
 #: ../build/src/iop/introspection_rgbcurve.c:247
 #: ../build/src/iop/introspection_rgblevels.c:149
@@ -1081,11 +1081,11 @@ msgstr "reconstrucción de luces"
 #: ../build/src/iop/introspection_tonecurve.c:135
 #: ../build/src/iop/introspection_tonecurve.c:232
 msgid "color space"
-msgstr "esquema de color"
+msgstr "espacio de color"
 
 #: ../build/src/iop/introspection_tonecurve.c:263
 msgid "Lab, linked channels"
-msgstr "Lab canales enlazados"
+msgstr "canales enlazados Lab"
 
 #: ../build/src/iop/introspection_tonecurve.c:264
 msgid "Lab, independent channels"
@@ -1093,7 +1093,7 @@ msgstr "canales independientes Lab"
 
 #: ../build/src/iop/introspection_tonecurve.c:265
 msgid "XYZ, linked channels"
-msgstr "XYZ, canales enlazados"
+msgstr "canales enlazados XYZ"
 
 #: ../build/src/iop/introspection_toneequal.c:187
 #: ../build/src/iop/introspection_toneequal.c:314
@@ -6033,7 +6033,7 @@ msgstr "$(EXIF_EXPOSURE) - exposición Exif"
 
 #: ../src/gui/gtkentry.c:208
 msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
-msgstr "$(EXIF_EXPOSURE_BIAS) - Sesgo de exposición Exif"
+msgstr "$(EXIF_EXPOSURE_BIAS) - Compensación de exposición Exif"
 
 #: ../src/gui/gtkentry.c:209
 msgid "$(EXIF_APERTURE) - EXIF aperture"
@@ -7997,7 +7997,7 @@ msgstr "Ajusta la corrección de exposición"
 
 #: ../src/iop/basicadj.c:638
 msgid "highlight compression adjustment"
-msgstr "ajuste de compresión de luces altas"
+msgstr "Ajusta la compresión de las luces"
 
 #: ../src/iop/basicadj.c:640 ../src/iop/bilat.c:447 ../src/iop/colisa.c:327
 #: ../src/iop/colorbalance.c:2101 ../src/iop/colorbalance.c:2108
@@ -8008,11 +8008,11 @@ msgstr "contraste"
 
 #: ../src/iop/basicadj.c:642 ../src/iop/colisa.c:331
 msgid "contrast adjustment"
-msgstr "ajuste de contraste"
+msgstr "Ajusta el contraste"
 
 #: ../src/iop/basicadj.c:651
 msgid "middle grey adjustment"
-msgstr "ajuste de gris medio"
+msgstr "Ajusta el gris medio"
 
 #: ../src/iop/basicadj.c:654 ../src/iop/colisa.c:328 ../src/iop/lowpass.c:602
 #: ../src/iop/retouch.c:2658 ../src/iop/soften.c:681 ../src/iop/vignette.c:1036
@@ -8021,15 +8021,15 @@ msgstr "brillo"
 
 #: ../src/iop/basicadj.c:656 ../src/iop/colisa.c:332
 msgid "brightness adjustment"
-msgstr "ajuste de brillo"
+msgstr "Ajusta el brillo"
 
 #: ../src/iop/basicadj.c:659
 msgid "saturation adjustment"
-msgstr "ajuste de saturación"
+msgstr "Ajusta la saturación"
 
 #: ../src/iop/basicadj.c:662
 msgid "vibrance adjustment"
-msgstr "ajustes de intensidad"
+msgstr "Ajusta la intensidad"
 
 #: ../src/iop/basicadj.c:667
 msgid "apply auto exposure based on the entire image"
@@ -10221,7 +10221,7 @@ msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
 msgstr ""
-"Elimina automáticamente la desviación de la exposición de la cámara.\n"
+"Elimina automáticamente el sesgo de exposición de la cámara.\n"
 "Es útil cuando la imagen se ha expuesto a la derecha."
 
 #: ../src/iop/exposure.c:895
@@ -12108,16 +12108,16 @@ msgstr "ajustes de exposición del escáner"
 
 #: ../src/iop/negadoctor.c:1138
 msgid "scan exposure bias"
-msgstr "sesgo de exposición al escanear"
+msgstr "compensación de exposición (escáner)"
 
 #: ../src/iop/negadoctor.c:1140
 msgid ""
 "correct the exposure of the scanner, for all RGB channels,\n"
 "before the inversion, so blacks are neither clipped or too pale."
 msgstr ""
-"Corrige la exposición del escáner, para todos los canales RGB,\n"
-"antes de la inversión, por lo que los negros no están ni recortados ni "
-"pálidos."
+"Corrige la exposición del escáner para todos los canales RGB antes de "
+"invertirlos,\n"
+"para evitar que los negros no estén ni recortados ni pálidos."
 
 #. WB shadows
 #: ../src/iop/negadoctor.c:1146
@@ -13224,10 +13224,10 @@ msgid ""
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
 "XYZ is similar but applies the saturation changes in XYZ space."
 msgstr ""
-"en auto, las curvas a y b no tendrán efecto y no se mostrarán. los valores "
-"de color (a y b) de cada pixel se ajustarán en función a los datos de la "
-"curva L. auto XYZ es similar, pero establece los cambios de saturación en el "
-"espacio XYZ."
+"En el modo automático, no se mostrarán las curvas a y b. Los valores "
+"cromáticos (a y b) de cada pixel se ajustarán en función de los datos de la "
+"curva L. XYZ en modo automático, funcionará similarmente, pero los cambios "
+"de saturación serán en el espacio XYZ."
 
 #: ../src/iop/tonecurve.c:1266
 msgid "  L  "
