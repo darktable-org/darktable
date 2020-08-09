@@ -9,3 +9,25 @@
  # define TCP_FASTOPEN_OSX
  #elif defined TCP_FASTOPEN && defined MSG_FASTOPEN
  # define TCP_FASTOPEN_LINUX
+--- gl/explicit_bzero.c.orig	2020-08-04 16:59:54.000000000 +0300
++++ gl/explicit_bzero.c	2020-08-04 17:00:24.000000000 +0300
+@@ -52,8 +52,6 @@
+   (void) SecureZeroMemory (s, len);
+ #elif HAVE_EXPLICIT_MEMSET
+   explicit_memset (s, '\0', len);
+-#elif HAVE_MEMSET_S
+-  (void) memset_s (s, len, '\0', len);
+ #else
+   memset (s, '\0', len);
+ # if defined __GNUC__ && !defined __clang__
+--- src/gl/explicit_bzero.c.orig	2020-08-04 17:00:42.000000000 +0300
++++ src/gl/explicit_bzero.c	2020-08-04 17:00:53.000000000 +0300
+@@ -52,8 +52,6 @@
+   (void) SecureZeroMemory (s, len);
+ #elif HAVE_EXPLICIT_MEMSET
+   explicit_memset (s, '\0', len);
+-#elif HAVE_MEMSET_S
+-  (void) memset_s (s, len, '\0', len);
+ #else
+   memset (s, '\0', len);
+ # if defined __GNUC__ && !defined __clang__
