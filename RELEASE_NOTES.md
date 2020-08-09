@@ -109,7 +109,7 @@ making a backup is strongly advised.
 
 ## New Features And Changes
 
-- Add support for curved gradients. This can be helpful when putting a gradient mask on an image with a horizon line that is curved due to lens distortion. This can also be for towards artistic goals.
+- Add support for curved gradients. This can be helpful when putting a gradient mask on an image with a horizon line that is curved due to lens distortion. This can also be for artistic goals.
 
 - Add support for AVIF file format (requires [libavif](https://github.com/AOMediaCodec/libavif) >= 0.7)
 
