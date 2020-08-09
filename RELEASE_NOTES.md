@@ -109,7 +109,7 @@ making a backup is strongly advised.
 
 ## New Features And Changes
 
-- Add support for curved gradients. This can be helpful when putting a gradient mask on an  image with a horizon line that is curved because lens distortion. This can also be used towards artistic goals.
+- Add support for curved gradients. This can be helpful when putting a gradient mask on an image with a horizon line that is curved due to lens distortion. This can also be for towards artistic goals.
 
 - Add support for AVIF file format (requires [libavif](https://github.com/AOMediaCodec/libavif) >= 0.7)
 
@@ -188,7 +188,7 @@ making a backup is strongly advised.
   little square handles at the corner.
 
 - Tagging improvements: Entry tag(s) creation works now without an image
-  selected.  It is allowed the user to create a tag on a virtual node, to insert
+  selected.  It allows the user to create a tag on a virtual node, to insert
   a pipe <kbd>|</kbd> character in create tag (menu). The tree display
   shows the newly created tags.
 
@@ -220,7 +220,7 @@ making a backup is strongly advised.
 
 - Add some tooltip information for tone equalizer.
 
-- Some actions, like cropping, are more responsive by triggering a
+- Some actions, like cropping, have been made more responsive by triggering a
   fast-pipe mode where the quality of the image is less important
   while dragging the controls.
 
@@ -266,7 +266,7 @@ making a backup is strongly advised.
 - Optimize the denoise profile module (bilateral filter) for better
   performance.
 
-- Many parts of the histogram code has been reworked for better
+- Many parts of the histogram code have been reworked for better
   performance.
 
 - A new universal toast message framework has been put in place. This
@@ -336,7 +336,7 @@ making a backup is strongly advised.
 
 - Fix gphoto camera detection procedure.
 
-- Fix the opacity (a second attempt) issue which lead to a mask having no effect.
+- Fix the opacity issue (second attempt) which led to a mask having no effect.
 
 - Fix a possible infinite loop in the slideshow module.
 
