@@ -363,6 +363,23 @@ making a backup is strongly advised.
 
 ## Notes
 
+- A known issue when using two computers to edit images. If the three
+  following options activated:
+
+  - update database from selected xmp files
+  - write sidecar file for each image
+  - check xmp on start
+
+  then darktable will write the XMP for each images each time you swith
+  from one computer to another. This is due to an issue with the way
+  timestamps are implemented and is being fixed for 3.4.
+
+  You can follow the discussion here:
+  https://github.com/darktable-org/darktable/pull/5869
+
+  A safe option if you are in this specific case is to wait to 3.4 release
+  planned at the end of year.
+
 - The histogram has been deactivated on the print view because after
   lot of work on the histogram code it was not possible to have it
   ready for this view. The work on this part is almost ready now so
