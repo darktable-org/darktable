@@ -28,7 +28,7 @@ making a backup is strongly advised.
 
 ## The Big Ones
 
-- The *lighttable* view has been rewritten and the filmstrip reworked, resulting in large performance gains, especially when using the zoomable lighttable view. Operations are smooth at any screen resolution.
+- The *lighttable* view has been rewritten and the filmstrip reworked, resulting in large performance gains, especially when using the zoomable lighttable view. The culling view has also been rewritten from scratch. Operations are smooth at any screen resolution up to 8k.
 
   Many types of overlay are now possible on lighttable thumbs. Different overlay
   information can be selected depending on the thumb size on the
