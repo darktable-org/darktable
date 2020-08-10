@@ -69,10 +69,10 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-3.0.2 (stable)
+3.2.1 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2-win64.exe)
-* [Download executable for Mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.0.2/darktable-3.0.2.dmg)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.2.1/darktable-3.2.1-win64.exe)
+* [Download executable for Mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.2.1/darktable-3.2.1.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -225,7 +225,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-3.0.2
+3.2.1
 
 darktable project releases one major version every year, for Christmas, tagged with even numbers, (like 2.2, 2.4, 2.6, 3.0). 
 Minor revisions are tagged with a third digit (like 3.0.1, 3.0.2) and mostly provide bug fixes and minor new features.
@@ -235,7 +235,7 @@ You may want to compile these stable releases yourself in order to get better pe
 git clone https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-3.0.2
+git checkout tags/release-3.2.1
 ```
 
 ### Get submodules
