@@ -357,7 +357,7 @@ making a backup is strongly advised.
   - write sidecar file for each image
   - check xmp on start
 
-  then darktable will write the XMP for each images each time you swith
+  then darktable will write the XMP for each images each time you switch
   from one computer to another. This is due to an issue with the way
   timestamps are implemented and is being fixed for 3.4.
 
