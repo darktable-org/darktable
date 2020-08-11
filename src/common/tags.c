@@ -654,6 +654,7 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
                             " ORDER by T.name",
                             images, ignore_dt_tags ? " AND T.id NOT IN memory.darktable_tags" : "");
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    g_free(images);
 
     // Create result
     *result = NULL;
