@@ -708,6 +708,7 @@ const char *dt_collection_name(dt_collection_properties_t prop)
           const char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
           char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
           const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+          free(setting);
           if(!hidden) col_name = _(name);
         }
       }
