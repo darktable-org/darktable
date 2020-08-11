@@ -173,7 +173,9 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
     /* if current image in develop reload history */
     if(dt_dev_is_current_image(darktable.develop, imgid)) dt_dev_reload_history_items(darktable.develop);
 
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+    dt_image_cache_write_release(darktable.image_cache, img,
+    // ugly but if not history_only => called from crawler - do not write the xmp
+                                 history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
     dt_image_reset_final_size(imgid);
   }
