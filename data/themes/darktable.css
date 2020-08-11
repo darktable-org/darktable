@@ -1354,12 +1354,6 @@ cell:selected
   margin: 0 0 8px 0;
 }
 
-/* Set specific padding for export module spinbutton */
-#export-max-size spinbutton
-{
-  padding: 0px 5px;
-}
-
 /* Set below spacing between history items in darkroom */
 /* the label buttons */
 #left #history-button,
