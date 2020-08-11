@@ -122,7 +122,7 @@ msgstr "Belichtungsanpassung"
 #: ../build/src/iop/introspection_basecurve.c:239
 #: ../src/libs/metadata_view.c:123
 msgid "exposure bias"
-msgstr "Belichtungskorreektur"
+msgstr "Belichtungskorrektur"
 
 #: ../build/src/iop/introspection_basecurve.c:152
 #: ../build/src/iop/introspection_basecurve.c:243
