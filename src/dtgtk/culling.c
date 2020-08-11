@@ -796,7 +796,10 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   gchar *otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", table->mode);
   table->overlays = dt_conf_get_int(otxt);
   g_free(otxt);
-  gtk_style_context_add_class(context, _thumbs_get_overlays_class(table->overlays));
+
+  gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
+  gtk_style_context_add_class(context, cl0);
+  free(cl0);
 
   otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
   table->overlays_block_timeout = 2;
