@@ -1741,7 +1741,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   // now we save all that if it has changed
   if(d != abs(p->ratio_d) || n != p->ratio_n)
   {
-    if(p->ratio_d > 0)
+    if(p->ratio_d >= 0)
       p->ratio_d = d;
     else
       p->ratio_d = -d;
