@@ -106,7 +106,7 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
 
   if(max_width > 0)
   {
-    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
+    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
     pango_layout_set_width(layout, (int)(PANGO_SCALE * max_width + 0.5f));
   }
 
@@ -119,7 +119,7 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
     pango_layout_set_text(layout, NULL, 0);
   }
 
-  PangoFontDescription *font_desc = pango_font_description_copy(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *font_desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
 
   // This should be able to update the font style for current text depending on :hover, :focused, etc.
   // CSS pseudo-classes, yet it defaults to system font.
@@ -140,6 +140,7 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
     cairo_move_to(cr, x_pos, y_pos);
     pango_cairo_show_layout(cr, layout);
   }
+  pango_font_description_free(font_desc);
   g_object_unref(layout);
 
   return text_width;
