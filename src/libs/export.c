@@ -39,6 +39,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 DT_MODULE(7)
 
@@ -47,9 +48,10 @@ DT_MODULE(7)
 
 typedef struct dt_lib_export_t
 {
-  GtkSpinButton *width, *height;
+  GtkWidget *width, *height;
   GtkWidget *storage, *format;
   int format_lut[128];
+  uint32_t max_allowed_width , max_allowed_height;
   GtkWidget *upscale, *profile, *intent, *style, *style_mode;
   GtkButton *export_button;
   GtkWidget *storage_extra_container, *format_extra_container;
@@ -220,13 +222,22 @@ static void export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   g_free(icc_filename);
 }
 
+void _set_dimensions(dt_lib_export_t *d, int max_width, int max_height)
+{
+  gchar *max_width_char = g_strdup_printf("%d", max_width);
+  gchar *max_height_char = g_strdup_printf("%d", max_height);
+  gtk_entry_set_text(GTK_ENTRY(d->width), max_width_char);
+  gtk_entry_set_text(GTK_ENTRY(d->height), max_height_char);
+  g_free(max_width_char);
+  g_free(max_height_char);
+}
+
 void gui_reset(dt_lib_module_t *self)
 {
   // make sure we don't do anything useless:
   if(!dt_control_running()) return;
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  gtk_spin_button_set_value(d->width, dt_conf_get_int(CONFIG_PREFIX "width"));
-  gtk_spin_button_set_value(d->height, dt_conf_get_int(CONFIG_PREFIX "height"));
+  _set_dimensions(d, dt_conf_get_int(CONFIG_PREFIX "width"), dt_conf_get_int(CONFIG_PREFIX "height"));
 
   // Set storage
   gchar *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
@@ -384,12 +395,26 @@ static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint3
   }
 }
 
+static void _validate_dimensions(dt_lib_export_t *d)
+{
+  //reset dimensions to previously stored value if they exceed the maximum
+  uint32_t width = atoi(gtk_entry_get_text(GTK_ENTRY(d->width)));
+  uint32_t height = atoi(gtk_entry_get_text(GTK_ENTRY(d->height)));
+  if(width > d->max_allowed_width || height > d->max_allowed_height)
+  {
+    width = width > d->max_allowed_width ? dt_conf_get_int(CONFIG_PREFIX "width"): width;
+    height = height > d->max_allowed_height ? dt_conf_get_int(CONFIG_PREFIX "height") : height;
+    _set_dimensions(d, width, height);
+  }
+}
+
 static void _update_dimensions(dt_lib_export_t *d)
 {
-  uint32_t w = 0, h = 0;
-  _get_max_output_dimension(d, &w, &h);
-  gtk_spin_button_set_range(d->width, 0, (w > 0 ? w : EXPORT_MAX_IMAGE_SIZE));
-  gtk_spin_button_set_range(d->height, 0, (h > 0 ? h : EXPORT_MAX_IMAGE_SIZE));
+  uint32_t max_w = 0, max_h = 0;
+  _get_max_output_dimension(d, &max_w, &max_h);
+  d->max_allowed_width = max_w > 0 ? max_w : EXPORT_MAX_IMAGE_SIZE;
+  d->max_allowed_height = max_h > 0 ? max_h : EXPORT_MAX_IMAGE_SIZE;
+  _validate_dimensions(d);
 }
 
 static void set_storage_by_name(dt_lib_export_t *d, const char *name)
@@ -434,8 +459,7 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   if(h > ch || h == 0) h = ch;
 
   // Set the recommended dimension
-  gtk_spin_button_set_value(d->width, w);
-  gtk_spin_button_set_value(d->height, h);
+  _set_dimensions(d, w, h);
 
   // Let's update formats combobox with supported formats of selected storage module...
   _update_formats_combobox(d);
@@ -480,10 +504,39 @@ static void profile_changed(GtkWidget *widget, dt_lib_export_t *d)
   dt_conf_set_string(CONFIG_PREFIX "iccprofile", "");
 }
 
-static void size_changed(GtkSpinButton *spin, gpointer user_data)
+static void width_changed(GtkEditable *entry, gpointer user_data)
 {
-  const char *key = (const char *)user_data;
-  dt_conf_set_int(key, gtk_spin_button_get_value(spin));
+  dt_lib_export_t *d = (dt_lib_export_t *)user_data;
+  _validate_dimensions(d);
+  dt_conf_set_int(CONFIG_PREFIX "width", atoi(gtk_entry_get_text(GTK_ENTRY(d->width))));
+}
+
+static void height_changed(GtkEditable *entry, gpointer user_data)
+{
+  dt_lib_export_t *d = (dt_lib_export_t *)user_data;
+  _validate_dimensions(d);
+  dt_conf_set_int(CONFIG_PREFIX "height", atoi(gtk_entry_get_text(GTK_ENTRY(d->height))));
+}
+
+static void insert_text_handler(GtkEditable *entry, char *text, int length, gpointer position, gpointer user_data)
+{
+  int i, count=0;
+  gchar *result = g_new (gchar, length);
+
+  for (i=0; i < length; i++) {
+    if (!isdigit(text[i]))
+      continue;
+    result[count++] = text[i];
+  }
+  
+  if (count > 0) {
+    g_signal_handlers_block_by_func (GTK_WIDGET (entry), insert_text_handler, user_data);
+    gtk_editable_insert_text (entry, result, count, position);
+    g_signal_handlers_unblock_by_func (GTK_WIDGET (entry), insert_text_handler, user_data);
+  }
+  g_signal_stop_emission_by_name (entry, "insert-text");
+  
+  g_free (result);
 }
 
 static void _callback_bool(GtkWidget *widget, gpointer user_data)
@@ -667,25 +720,26 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
   dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
 
-  d->width = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->width), _("maximum output width\nset to 0 for no scaling"));
-  d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->height), _("maximum output height\nset to 0 for no scaling"));
+  d->width = gtk_entry_new();
+  gtk_widget_set_tooltip_text(d->width, _("maximum output width\nset to 0 for no scaling"));
+  gtk_entry_set_width_chars(GTK_ENTRY(d->width), 6);
+  d->height = gtk_entry_new();
+  gtk_widget_set_tooltip_text(d->height, _("maximum output height\nset to 0 for no scaling"));
+  gtk_entry_set_width_chars(GTK_ENTRY(d->height), 6);
 
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->width));
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->height));
+  dt_gui_key_accel_block_on_focus_connect(d->width);
+  dt_gui_key_accel_block_on_focus_connect(d->height);
 
-
-  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3));
   gtk_widget_set_name(GTK_WIDGET(hbox), "export-max-size");
   label = gtk_label_new(_("max size"));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
-  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(hbox1, GTK_WIDGET(d->width), TRUE, TRUE, 0);
+  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3));
+  gtk_box_pack_start(hbox1, d->width, TRUE, TRUE, 0);
   gtk_box_pack_start(hbox1, gtk_label_new(_("x")), FALSE, FALSE, 0);
-  gtk_box_pack_start(hbox1, GTK_WIDGET(d->height), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox1, d->height, TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(hbox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
@@ -803,8 +857,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->width), "value-changed", G_CALLBACK(size_changed), CONFIG_PREFIX "width");
-  g_signal_connect(G_OBJECT(d->height), "value-changed", G_CALLBACK(size_changed), CONFIG_PREFIX "height");
+  g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(width_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(height_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->width), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "width");
+  g_signal_connect(G_OBJECT(d->height), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "height");
   g_signal_connect(G_OBJECT(d->metadata_button), "clicked", G_CALLBACK(metadata_export_clicked), (gpointer)d);
 
   // this takes care of keeping hidden widgets hidden
@@ -1423,8 +1479,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   set_format_by_name(d, fname);
 
   // set dimensions after switching, to have new range ready.
-  gtk_spin_button_set_value(d->width, max_width);
-  gtk_spin_button_set_value(d->height, max_height);
+  _set_dimensions(d, max_width, max_height);
   dt_bauhaus_combobox_set(d->upscale, upscale ? 1 : 0);
   dt_bauhaus_combobox_set(d->high_quality, high_quality ? 1 : 0);
   dt_bauhaus_combobox_set(d->export_masks, export_masks ? 1 : 0);
