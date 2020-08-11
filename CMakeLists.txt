@@ -22,6 +22,9 @@ else()
   project(darktable VERSION 0 LANGUAGES CXX C)
 endif()
 
+# enable cache system
+include(Cache)
+
 # Allow forcing the C/CPP compiler that is actually used during the compilation
 # to something other than what is used by the cmake run. This is useful when
 # the compiler for some reason breaks the initial cmake checks but works fine
