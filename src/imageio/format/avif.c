@@ -297,7 +297,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   avifImageRGBToYUV(image, &rgb);
 
   if (imgid > 0) {
-    gboolean use_icc = false;
+    gboolean use_icc = FALSE;
 
 #if AVIF_VERSION >= 800
     image->colorPrimaries = AVIF_COLOR_PRIMARIES_UNKNOWN;
@@ -350,7 +350,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     }
 
     if (image->colorPrimaries == AVIF_COLOR_PRIMARIES_UNKNOWN) {
-      use_icc = true;
+      use_icc = TRUE;
     }
 #else /* AVIF_VERSION 700 */
     avifNclxColorProfile nclx = {
@@ -460,7 +460,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
     if (nclx.colourPrimaries != AVIF_NCLX_COLOUR_PRIMARIES_UNKNOWN) {
         avifImageSetProfileNCLX(image, &nclx);
-        use_icc = true;
+        use_icc = TRUE;
     }
 #endif
     dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s - %s]\n",
