@@ -1898,7 +1898,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->which##_##c, _(text[CHANNEL_##N]));        \
   dt_bauhaus_widget_set_label(g->which##_##c, _(#which), _(#n));            \
 
-#define ADD_BLOCK(which, text, span)                                        \
+#define ADD_BLOCK(which, text, span, satspan)                               \
   if(GTK_IS_NOTEBOOK(main_sliders))                                         \
     self->widget = dt_ui_notebook_page(                                     \
                    GTK_NOTEBOOK(main_sliders), _(text[4]), _(text[5]));     \
@@ -1940,7 +1940,7 @@ void gui_init(dt_iop_module_t *self)
                                                                             \
   g->sat_##which = dt_bauhaus_slider_new_with_range_and_feedback(self,      \
                    0.0f, 100.0f, 0.05f, 0.0f, 2, 0);                        \
-  dt_bauhaus_slider_set_soft_range(g->sat_##which, 0.0f, 5.0f);             \
+  dt_bauhaus_slider_set_soft_max(g->sat_##which, satspan);                  \
   dt_bauhaus_widget_set_label(g->sat_##which, NULL, _("saturation"));       \
   dt_bauhaus_slider_set_format(g->sat_##which, "%.2f %%");                  \
   dt_bauhaus_slider_set_stop(g->sat_##which, 0.0f, 0.2f, 0.2f, 0.2f);       \
@@ -1987,9 +1987,9 @@ void gui_init(dt_iop_module_t *self)
       N_("gain"),
       N_("highlights : gain / slope") };
 
-  ADD_BLOCK(lift,  lift_messages, 0.05f)
-  ADD_BLOCK(gamma, gamma_messages, 0.5f)
-  ADD_BLOCK(gain,  gain_messages,  0.5f)
+  ADD_BLOCK(lift,  lift_messages, 0.05f,  5.0f)
+  ADD_BLOCK(gamma, gamma_messages, 0.5f, 20.0f)
+  ADD_BLOCK(gain,  gain_messages,  0.5f, 25.0f)
 
   g->optimizer_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
