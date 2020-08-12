@@ -114,7 +114,16 @@ static void generic_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
-  dt_introspection_field_t *f = self->so->get_f(param);
+
+  int param_index = 0;
+  char param_name[30], base_name[33];
+  if(sscanf(param, "%[^[][%d]", param_name, &param_index) == 2)
+  {
+    sprintf(base_name, "%s[0]", param_name);
+    param = base_name;
+  }
+
+  const dt_introspection_field_t *f = self->so->get_f(param);
 
   GtkWidget *slider = NULL;
   gchar *str;
@@ -159,7 +168,9 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
         g_free(str);
       }
 
-      g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(generic_slider_float_callback), p + f->header.offset);
+      g_signal_connect(G_OBJECT(slider), "value-changed", 
+                       G_CALLBACK(generic_slider_float_callback), 
+                       p + f->header.offset + param_index * sizeof(float));
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_INT)
     {
@@ -169,7 +180,9 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 
-      g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(generic_slider_int_callback), p + f->header.offset);
+      g_signal_connect(G_OBJECT(slider), "value-changed", 
+                       G_CALLBACK(generic_slider_int_callback), 
+                       p + f->header.offset + param_index * sizeof(int));
     }
 
     if (*f->header.description)
