@@ -61,7 +61,10 @@ class CameraSupportState
 
   def get_maker_model(file)
     def get_exif_key(key, file)
-      IO.popen("exiv2 -g \"#{key}\" -Pt \"#{file}\" 2>/dev/null","r").read
+      f = IO.popen("exiv2 -g \"#{key}\" -Pt \"#{file}\" 2>/dev/null","r")
+      c = f.read
+      f.close
+      return c
     end
 
     maker = get_exif_key("Exif.Image.Make", file)
@@ -70,7 +73,8 @@ class CameraSupportState
     model = model[0..5] == "NX2000" ? "NX2000" : model.strip
 
     if (maker == "" || model == "") # Try with rawspeed instead
-      IO.popen("darktable-rs-identify \"#{file}\"","r").each do |line|
+      f = IO.popen("/opt/darktable/bin/darktable-rs-identify \"#{file}\"","r")
+      f.each do |line|
         parts = line.split(":")
         case parts[0].strip
         when "make"
@@ -79,6 +83,7 @@ class CameraSupportState
           model = parts[1..-1].join(":").strip
         end
       end
+      f.close
     end
     return [maker,model]
   end
