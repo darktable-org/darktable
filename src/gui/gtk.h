@@ -340,15 +340,29 @@ void dt_ellipsize_combo(GtkComboBox *cbox);
 static inline void dt_ui_section_label_set(GtkWidget *label)
 {
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);    // make the text left aligned
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
 }
+
 static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
 {
   GtkWidget *label = gtk_label_new(str);
   dt_ui_section_label_set(label);
   return label;
 };
+
+static inline GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
+{
+  GtkWidget *label = gtk_label_new(text);
+  GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  if(tooltip) gtk_widget_set_tooltip_text(label, tooltip);
+  gtk_notebook_append_page(notebook, page, label);
+  gtk_container_child_set(GTK_CONTAINER(notebook), page, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+
+  return page;
+}
 
 static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)
 {
