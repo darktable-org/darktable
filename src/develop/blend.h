@@ -355,12 +355,17 @@ typedef struct dt_iop_gui_blendif_colorstop_t
 } dt_iop_gui_blendif_colorstop_t;
 
 
-/** container to deal with deprecated blend modes in gui */
-typedef struct dt_iop_blend_mode_t
+typedef struct dt_iop_blend_name_value_t
 {
-  char name[128];
-  unsigned int mode;
-} dt_iop_blend_mode_t;
+  char name[25];
+  int value;
+} dt_develop_name_value_t;
+
+extern const dt_develop_name_value_t dt_develop_blend_mode_names[];
+extern const dt_develop_name_value_t dt_develop_mask_mode_names[];
+extern const dt_develop_name_value_t dt_develop_combine_masks_names[];
+extern const dt_develop_name_value_t dt_develop_feathering_guide_names[];
+extern const dt_develop_name_value_t dt_develop_invert_mask_names[];
 
 
 #define DEVELOP_MASKS_NB_SHAPES 5
@@ -376,13 +381,8 @@ typedef struct dt_iop_gui_blend_data_t
   int raster_inited;
   dt_iop_colorspace_type_t csp;
   dt_iop_module_t *module;
-  GList *blend_modes;
   GList *masks_modes;
   GList *masks_modes_toggles;
-  GList *masks_combine;
-  GList *masks_invert;
-  GList *masks_feathering_guide;
-  GList *blend_modes_all;
   GtkWidget *iopw;
   GtkBox *top_box;
   GtkBox *bottom_box;

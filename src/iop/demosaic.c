@@ -4882,7 +4882,7 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_hide(g->demosaic_method_xtrans);
     gtk_widget_show(g->median_thrs);
     gtk_widget_show(g->greeneq);
-    dt_bauhaus_combobox_set(g->demosaic_method_bayer, p->demosaicing_method);
+    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, p->demosaicing_method);
   }
   else
   {
@@ -4890,7 +4890,7 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_hide(g->demosaic_method_bayer);
     gtk_widget_hide(g->median_thrs);
     gtk_widget_hide(g->greeneq);
-    dt_bauhaus_combobox_set(g->demosaic_method_xtrans, p->demosaicing_method & ~DEMOSAIC_XTRANS);
+    dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, p->demosaicing_method);
   }
 
   if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
