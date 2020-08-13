@@ -122,15 +122,22 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 {
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
 
-  int param_index = 0;
-  char param_name[30], base_name[33];
-  if(sscanf(param, "%[^[][%d]", param_name, &param_index) == 2)
-  {
-    sprintf(base_name, "%s[0]", param_name);
-    param = base_name;
-  }
+  size_t param_index = 0;
 
-  const dt_introspection_field_t *f = self->so->get_f(param);
+  const size_t param_length = strlen(param) + 1;
+  char *param_name = g_malloc(param_length);
+  char *base_name = g_malloc(param_length);
+  if(sscanf(param, "%[^[][%zu]", base_name, &param_index) == 2)
+  {
+    sprintf(param_name, "%s[0]", base_name);
+  }
+  else
+  {
+    memcpy(param_name, param, param_length);
+  }
+  g_free(base_name);
+
+  const dt_introspection_field_t *f = self->so->get_f(param_name);
 
   GtkWidget *slider = NULL;
   gchar *str;
@@ -141,7 +148,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const float min = f->Float.Min;
       const float max = f->Float.Max;
-      const float defval = *(float*)self->so->get_p(p, param);
+      const float defval = *(float*)self->so->get_p(p, param_name);
       int digits = 2;
       float step = 0;
 
@@ -183,7 +190,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const int min = f->Int.Min;
       const int max = f->Int.Max;
-      const int defval = *(float*)self->so->get_p(p, param);
+      const int defval = *(float*)self->so->get_p(p, param_name);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 
@@ -209,7 +216,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   }
   else
   {
-    str = g_strdup_printf("'%s' is not a float/int/slider parameter", param);
+    str = g_strdup_printf("'%s' is not a float/int/slider parameter", param_name);
 
     slider = dt_bauhaus_slider_new(self);
     dt_bauhaus_widget_set_label(slider, NULL, str);
@@ -219,6 +226,8 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
   if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), slider, FALSE, FALSE, 0);
+
+  g_free(param_name);
 
   return slider;
 }
