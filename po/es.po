@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-14 10:27-0500\n"
-"PO-Revision-Date: 2020-08-14 12:42-0500\n"
+"PO-Revision-Date: 2020-08-14 12:54-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -5968,7 +5968,7 @@ msgstr "activar/desactivar descripción emergente"
 
 #: ../src/gui/gtk.c:1492
 msgid "enable focus-peaking mode"
-msgstr "activar detección de máximo enfoque"
+msgstr "Activar detección de máximo enfoque"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
