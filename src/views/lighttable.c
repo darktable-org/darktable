@@ -564,11 +564,6 @@ void enter(dt_view_t *self)
 
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
-
-  /* re-attach global focus peaking button in toolbox */
-  ++darktable.gui->reset;
-  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button, DT_VIEW_LIGHTTABLE);
-  --darktable.gui->reset;
 }
 
 static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int32_t mouse_over_id)
@@ -1369,11 +1364,11 @@ void gui_init(dt_view_t *self)
                               gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
 
   /* add the global focus peaking button in toolbox */
-  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button, DT_VIEW_LIGHTTABLE);
+  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button,
+                                     DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM);
 
   // create display profile button
-  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT,
-                                                     NULL);
+  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 
