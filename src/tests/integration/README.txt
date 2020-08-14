@@ -30,7 +30,7 @@ How to add a new test (using default driver)
 
    ./run <dir>
 
-   And rename output.png to expected.png and double check that
+   The output.png will be copied to expected.png, double check that
    expected.png is correct and really the expected output.
 
 6. Test that all is ok by running:
