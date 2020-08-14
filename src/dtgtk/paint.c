@@ -940,7 +940,7 @@ void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, gint x, gint y, gint w, gint h
   // corners
   const double center = 0.5;
   const double width = 1.;
-  const double height = width * 2. / 3.;
+  const double height = width * 3. / 4.;
   const double offset_h = height / 2.;
   const double offset_w = width / 2.;
 
