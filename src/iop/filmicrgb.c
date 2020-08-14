@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop_gui.h"
+#include "develop/imageop_math.h"
 #include "develop/noise_generator.h"
 #include "develop/openmp_maths.h"
 #include "dtgtk/button.h"
@@ -283,6 +284,7 @@ typedef struct dt_iop_filmicrgb_data_t
   float reconstruct_bloom_vs_details;
   float reconstruct_grey_vs_color;
   float reconstruct_structure_vs_texture;
+  float normalize;
   float dynamic_range;
   float saturation;
   float output_power;
@@ -301,6 +303,9 @@ typedef struct dt_iop_filmicrgb_global_data_t
 {
   int kernel_filmic_rgb_split;
   int kernel_filmic_rgb_chroma;
+  int kernel_filmic_mask;
+  int kernel_filmic_show_mask;
+  int kernel_filmic_inpaint_noise;
 } dt_iop_filmicrgb_global_data_t;
 
 
@@ -745,47 +750,51 @@ static inline gint mask_clipped_pixels(const float *const restrict in, float *co
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(in, mask, inpainted : 64)                                                        \
-    uniform(num_elem, ch, noise_level, noise_distribution, threshold)
+#pragma omp declare simd aligned(in, mask, inpainted:64) uniform(width, height, ch, noise_level, noise_distribution, threshold)
 #endif
-inline static void inpaint_noise(const float *const in, const float *const mask, float *const inpainted,
-                                 const float noise_level, const float threshold,
-                                 const dt_noise_distribution_t noise_distribution, const size_t num_elem,
-                                 const size_t ch)
+inline static void inpaint_noise(const float *const in, const float *const mask,
+                                 float *const inpainted, const float noise_level, const float threshold,
+                                 const dt_noise_distribution_t noise_distribution,
+                                 const size_t width, const size_t height, const size_t ch)
 {
   // add statistical noise in highlights to fill-in texture
   // this creates "particules" in highlights, that will help the implicit partial derivative equation
   // solver used in wavelets reconstruction to generate texture
 
-  // Init random number generator
-  uint64_t DT_ALIGNED_ARRAY state[4] = { 0 };
-  xoshiro256_init(1, state);
-
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none)                                                                       \
-    dt_omp_firstprivate(in, mask, inpainted, num_elem, ch, state, noise_level, noise_distribution, threshold)     \
-        schedule(simd                                                                                             \
-                 : static) aligned(mask, in, inpainted, state : 64)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, mask, inpainted, width, height, ch, noise_level, noise_distribution, threshold) \
+  schedule(simd:static) aligned(mask, in, inpainted:64) collapse(2)
 #endif
-  for(size_t k = 0; k < num_elem; k += ch)
-  {
-    // get the mask value in [0 ; 1]
-    const float weight = mask[k / ch];
-    const float DT_ALIGNED_ARRAY cache[3] = { in[k], in[k + 1], in[k + 2] };
-    float DT_ALIGNED_ARRAY noise[3] = { 0.f };
-    float DT_ALIGNED_ARRAY sigma[3] = { 0.f };
-    const int DT_ALIGNED_ARRAY flip[3] = { TRUE, FALSE, TRUE };
+  for(size_t i = 0; i < height; i++)
+    for(size_t j = 0; j < width; j++)
+    {
+      // Init random number generator
+      uint32_t DT_ALIGNED_ARRAY state[4] = { splitmix32(j + 1), splitmix32((j + 1) * (i + 3)), splitmix32(1337), splitmix32(666) };
+      xoshiro128plus(state);
+      xoshiro128plus(state);
+      xoshiro128plus(state);
+      xoshiro128plus(state);
 
-    #pragma unroll
-    for(size_t c = 0; c < 3; c++) sigma[c] = cache[c] * noise_level / threshold;
+      // get the mask value in [0 ; 1]
+      const size_t idx = i * width + j;
+      const size_t index = idx * ch;
+      const float weight = mask[idx];
+      const float DT_ALIGNED_ARRAY cache[3] = { in[index], in[index + 1], in[index + 2] };
+      float DT_ALIGNED_ARRAY noise[3] = { 0.f };
+      float DT_ALIGNED_ARRAY sigma[3] = { 0.f };
+      const int DT_ALIGNED_ARRAY flip[3] = { TRUE, FALSE, TRUE };
 
-    // create statistical noise
-    dt_noise_generator_simd(noise_distribution, cache, sigma, flip, state, noise);
+      #pragma unroll
+      for(size_t c = 0; c < 3; c++) sigma[c] = cache[c] * noise_level / threshold;
 
-    // add noise to input
-    #pragma unroll
-    for(size_t c = 0; c < 3; c++) inpainted[k + c] = cache[c] * (1.0f - weight) + weight * noise[c];
-  }
+      // create statistical noise
+      dt_noise_generator_simd(noise_distribution, cache, sigma, flip, state, noise);
+
+      // add noise to input
+      #pragma unroll
+      for(size_t c = 0; c < 3; c++) inpainted[index + c] = cache[c] * (1.0f - weight) + weight * noise[c];
+    }
 }
 
 
@@ -1622,10 +1631,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   clock_t start, end;
 
   // build a mask of clipped pixels
-  const float normalize = data->reconstruct_feather / data->reconstruct_threshold;
-
   start = clock();
-  const int recover_highlights = mask_clipped_pixels(in, mask, normalize, data->reconstruct_feather, roi_out->width, roi_out->height, 4);
+  const int recover_highlights = mask_clipped_pixels(in, mask, data->normalize, data->reconstruct_feather, roi_out->width, roi_out->height, 4);
   end = clock();
 
   fprintf(stdout, "mask generation: %f\n", (end - start)/(double)CLOCKS_PER_SEC / 8.);
@@ -1652,9 +1659,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     float *const restrict inpainted =  dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
     start = clock();
     inpaint_noise(in, mask, inpainted, data->noise_level / scale, data->reconstruct_threshold, data->noise_distribution,
-                  roi_out->width * roi_out->height * ch, ch);
-    end = clock();
-    fprintf(stdout, "noise inpainting: %f\n", (end - start)/(double)CLOCKS_PER_SEC / 8.);
+                  roi_out->width, roi_out->height, ch);
 
     start = clock();
     const gint success_1 = reconstruct_highlights(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, ch, data, piece, roi_in, roi_out);
@@ -1733,17 +1738,66 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_filmicrgb_data_t *const d = (dt_iop_filmicrgb_data_t *)piece->data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   dt_iop_filmicrgb_global_data_t *const gd = (dt_iop_filmicrgb_global_data_t *)self->global_data;
-  const dt_iop_filmic_rgb_spline_t spline = (dt_iop_filmic_rgb_spline_t)d->spline;
 
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int use_work_profile = (work_profile == NULL) ? 0 : 1;
 
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+
+  // used to adjuste noise level depending on size. Don't amplify noise if magnified > 100%
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
+
+  // build a mask of clipped pixels
+  cl_mem mask = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_mask, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_mask, 1, sizeof(cl_mem), (void *)&mask);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_mask, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_mask, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_mask, 4, sizeof(float), (void *)&d->normalize);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_mask, 5, sizeof(float), (void *)&d->reconstruct_feather);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_mask, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  // display mask and exit
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  {
+    dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+
+    if(g->show_mask)
+    {
+      dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_show_mask, 0, sizeof(cl_mem), (void *)&mask);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_show_mask, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_show_mask, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_show_mask, 3, sizeof(int), (void *)&height);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_show_mask, sizes);
+      dt_opencl_release_mem_object(mask);
+      return TRUE;
+    }
+  }
+
+  // Inpaint noise
+  const float noise_level = d->noise_level / scale;
+  cl_mem inpainted = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 1, sizeof(cl_mem), (void *)&mask);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 2, sizeof(cl_mem), (void *)&inpainted);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 4, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 5, sizeof(float), (void *)&noise_level);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 6, sizeof(float), (void *)&d->reconstruct_threshold);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 7, sizeof(float), (void *)&d->noise_distribution);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_inpaint_noise, sizes);
+
+  dt_opencl_release_mem_object(mask);
+  if(err != CL_SUCCESS) goto error;
+
+  // fetch working color profile
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const int use_work_profile = (work_profile == NULL) ? 0 : 1;
   cl_mem dev_profile_info = NULL;
   cl_mem dev_profile_lut = NULL;
   dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
@@ -1753,11 +1807,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  const dt_iop_filmic_rgb_spline_t spline = (dt_iop_filmic_rgb_spline_t)d->spline;
 
   if(d->preserve_color == DT_FILMIC_METHOD_NONE)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 0, sizeof(cl_mem), (void *)&inpainted);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 3, sizeof(int), (void *)&height);
@@ -1787,7 +1841,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   else
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 0, sizeof(cl_mem), (void *)&inpainted);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 3, sizeof(int), (void *)&height);
@@ -1816,6 +1870,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto error;
     return TRUE;
   }
+
+  dt_opencl_release_mem_object(inpainted);
+
 error:
   dt_print(DT_DEBUG_OPENCL, "[opencl_filmicrgb] couldn't enqueue kernel! %d\n", err);
   return FALSE;
@@ -2244,6 +2301,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->reconstruct_feather = exp2f(12.f / p->reconstruct_feather);
 
   // offset and rescale user param to alpha blending so 0 -> 50% and 1 -> 100%
+  d->normalize = d->reconstruct_feather / d->reconstruct_threshold;
   d->reconstruct_structure_vs_texture = (p->reconstruct_structure_vs_texture / 100.0f + 1.f) / 2.f;
   d->reconstruct_bloom_vs_details = (p->reconstruct_bloom_vs_details / 100.0f + 1.f) / 2.f;
   d->reconstruct_grey_vs_color = (p->reconstruct_grey_vs_color / 100.0f + 1.f) / 2.f;
@@ -2368,6 +2426,9 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_filmic_rgb_split = dt_opencl_create_kernel(program, "filmicrgb_split");
   gd->kernel_filmic_rgb_chroma = dt_opencl_create_kernel(program, "filmicrgb_chroma");
+  gd->kernel_filmic_mask = dt_opencl_create_kernel(program, "filmic_mask_clipped_pixels");
+  gd->kernel_filmic_show_mask = dt_opencl_create_kernel(program, "filmic_show_mask");
+  gd->kernel_filmic_inpaint_noise = dt_opencl_create_kernel(program, "filmic_inpaint_noise");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -2375,6 +2436,9 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_filmicrgb_global_data_t *gd = (dt_iop_filmicrgb_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_split);
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_chroma);
+  dt_opencl_free_kernel(gd->kernel_filmic_mask);
+  dt_opencl_free_kernel(gd->kernel_filmic_show_mask);
+  dt_opencl_free_kernel(gd->kernel_filmic_inpaint_noise);
   free(module->data);
   module->data = NULL;
 }
