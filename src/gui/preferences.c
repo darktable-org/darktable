@@ -553,6 +553,8 @@ void dt_gui_preferences_show()
 
   dt_gui_accel_search_t *search_data = (dt_gui_accel_search_t *)malloc(sizeof(dt_gui_accel_search_t));
 
+  restart_required = FALSE;
+
   //setup tabs
   init_tab_general(stack);
   init_tab_import(_preferences_dialog, stack);
@@ -587,6 +589,9 @@ void dt_gui_preferences_show()
   g_free(search_data->last_search_term);
   free(search_data);
   gtk_widget_destroy(_preferences_dialog);
+
+  if(restart_required)
+    dt_control_log(_("Darktable needs to be restarted for settings to take effect"));
 
   // Cleaning up any memory still allocated for remapping
   if(darktable.control->accel_remap_path)
