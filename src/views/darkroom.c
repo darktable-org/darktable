@@ -2076,9 +2076,6 @@ void gui_init(dt_view_t *self)
 
   const int dialog_width = 350;
 
-  /* add the global focus peaking button in toolbox */
-  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button, DT_VIEW_DARKROOM);
-
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
@@ -2816,9 +2813,6 @@ void enter(dt_view_t *self)
 
     modules = g_list_previous(modules);
   }
-
-  /* re-attach global focus peaking button in toolbox */
-  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button, DT_VIEW_DARKROOM);
 
   // make signals work again:
   --darktable.gui->reset;
