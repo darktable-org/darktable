@@ -31,7 +31,7 @@ making a backup is strongly advised.
 
 ## New Features And Changes
 
-- Add a foxus-peaking button in lighttable and darkroom which complements the key accel.
+- Add a focus-peaking button in lighttable and darkroom which complements the key accel.
 
 - Better visual feedback when changing module order with drag&drop.
 
