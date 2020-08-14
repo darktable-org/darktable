@@ -31,9 +31,23 @@ making a backup is strongly advised.
 
 ## New Features And Changes
 
+- Add a foxus-peaking button in lighttable and darkroom which complements the key accel.
+
+- Better visual feedback when changing module order with drag&drop.
+
+- Better performance for the wavelet algorithm.
 
 ## Bug fixes
 
+- Fix orientation in the clipping module after having selected the freehand aspect ratio.
+
+- Fix compilation issue in AVIF format support.
+
+- Fix multiple small memory leaks.
+
+- Fix daylight saving time in $(EXIF_HOUR) variable.
+
+- Fix timestamp display on Windows (use UTF-8 format for timestamps).
 
 ## Notes
 
