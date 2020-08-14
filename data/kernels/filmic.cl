@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018 Aurélien Pierre.
+    copyright (c) 2018-2020 Aurélien Pierre.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 */
 
 #include "basic.cl"
+#include "noise_generator.h"
 
 // In case the OpenCL driver doesn't have a dot method
 inline float vdot(const float4 vec1, const float4 vec2)
@@ -477,5 +478,66 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
   }
 
   o.w = i.w;
+  write_imagef(out, (int2)(x, y), o);
+}
+
+
+kernel void
+filmic_mask_clipped_pixels(read_only image2d_t in, write_only image2d_t out,
+                           int width, int height,
+                           const float normalize, const float feathering)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 i2 = i * i;
+
+  const float pix_max = native_sqrt(i2.x + i2.y + i2.z);
+  const float argument = -pix_max * normalize + feathering;
+  const float weight = 1.0f / ( 1.0f + native_exp2(argument));
+
+  write_imagef(out, (int2)(x, y), weight);
+}
+
+kernel void
+filmic_show_mask(read_only image2d_t in, write_only image2d_t out,
+                 int width, int height)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float i = (read_imagef(in, sampleri, (int2)(x, y))).x;
+  write_imagef(out, (int2)(x, y), (float4){i, i, i, 1.0f});
+}
+
+
+kernel void
+filmic_inpaint_noise(read_only image2d_t in, read_only image2d_t mask, write_only image2d_t out,
+                     int width, int height, const float noise_level, const float threshold,
+                     const dt_noise_distribution_t noise_distribution)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  // Init random number generator
+  unsigned int state[4] = { splitmix32(x + 1), splitmix32((x + 1) * (y + 3)), splitmix32(1337), splitmix32(666) };
+  xoshiro128plus(state);
+  xoshiro128plus(state);
+  xoshiro128plus(state);
+  xoshiro128plus(state);
+
+  // create noise
+  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 sigma = i * noise_level / threshold;
+  const float4 noise = dt_noise_generator_simd(noise_distribution, i, sigma, state);
+  const float weight = (read_imagef(mask, sampleri, (int2)(x, y))).x;
+  const float4 o = i * (1.0f - weight) + weight * noise;
   write_imagef(out, (int2)(x, y), o);
 }
