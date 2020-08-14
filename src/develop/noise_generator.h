@@ -30,50 +30,34 @@ typedef enum dt_noise_distribution_t
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline uint64_t splitmix64(const uint64_t seed)
+static inline uint32_t splitmix32(const uint64_t seed)
 {
   // fast random number generator
   // reference : http://prng.di.unimi.it/splitmix64.c
-  uint64_t result = (seed ^ (seed >> 30)) * 0xBF58476D1CE4E5B9;
-  result = (result ^ (result >> 27)) * 0x94D049BB133111EB;
-  return result ^ (result >> 31);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(state:64)
-#endif
-static inline void xoshiro256_init(uint64_t seed, uint64_t state[4])
-{
-  // Init the xoshiro256 random generator
-  uint64_t tmp = splitmix64(seed);
-  state[0] = (uint32_t)tmp;
-  state[1] = (uint32_t)(tmp >> 32);
-
-  tmp = splitmix64(seed + 0x9E3779B97f4A7C15);
-  state[2] = (uint32_t)tmp;
-  state[3] = (uint32_t)(tmp >> 32);
+  uint64_t result = (seed ^ (seed >> 33)) * 0x62a9d9ed799705f5ul;
+  result = (result ^ (result >> 28)) * 0xcb24d0a5c88c35b3ul;
+  return (uint32_t)(result >> 32);
 }
 
 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(k)
 #endif
-static inline uint64_t rol64(const uint64_t x, const uint64_t k)
+static inline uint32_t rol32(const uint32_t x, const int k)
 {
-  return (x << k) | (x >> (64 - k));
+  return (x << k) | (x >> (32 - k));
 }
 
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(state:64)
 #endif
-static inline float xoshiro256ss(uint64_t state[4])
+static inline float xoshiro128plus(uint32_t state[4])
 {
   // fast random number generator
   // reference : http://prng.di.unimi.it/
-  const uint64_t result = rol64(state[1] * 5, 7) * 9;
-  const uint64_t t = state[1] << 17;
+  const unsigned int result = state[0] + state[3];
+  const unsigned int t = state[1] << 9;
 
   state[2] ^= state[0];
   state[3] ^= state[1];
@@ -81,33 +65,33 @@ static inline float xoshiro256ss(uint64_t state[4])
   state[0] ^= state[3];
 
   state[2] ^= t;
-  state[3] = rol64(state[3], 45);
+  state[3] = rol32(state[3], 11);
 
-  return (float)result / (float)UINT64_MAX;
+  return (float)(result >> 8) * 0x1.0p-24f; // take the first 24 bits and put them in mantissa
 }
 
 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(sigma) aligned(state:64)
 #endif
-static inline float uniform_noise(const float mu, const float sigma, uint64_t state[4])
+static inline float uniform_noise(const float mu, const float sigma, uint32_t state[4])
 {
-  return mu + 2.0f * (xoshiro256ss(state) - 0.5f) * sigma;
+  return mu + 2.0f * (xoshiro128plus(state) - 0.5f) * sigma;
 }
 
 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(sigma) aligned(state:64)
 #endif
-static inline float gaussian_noise(const float mu, const float sigma, const int flip, uint64_t state[4])
+static inline float gaussian_noise(const float mu, const float sigma, const int flip, uint32_t state[4])
 {
   // Create gaussian noise centered in mu of standard deviation sigma
   // state should be initialized with xoshiro256_init() before calling and private in thread
   // flip needs to be flipped every next iteration
   // reference : https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
-  const float u1 = fmaxf(xoshiro256ss(state), FLT_MIN);
-  const float u2 = xoshiro256ss(state);
+  const float u1 = fmaxf(xoshiro128plus(state), FLT_MIN);
+  const float u2 = xoshiro128plus(state);
   const float noise = (flip) ? sqrtf(-2.0f * logf(u1)) * cosf(2.f * M_PI * u2) :
                                sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
   return noise * sigma + mu;
@@ -117,11 +101,11 @@ static inline float gaussian_noise(const float mu, const float sigma, const int 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(sigma) aligned(state:64)
 #endif
-static inline float poisson_noise(const float mu, const float sigma, const int flip, uint64_t state[4])
+static inline float poisson_noise(const float mu, const float sigma, const int flip, uint32_t state[4])
 {
   // create poisson noise - It's just gaussian noise with Anscombe transform applied
-  const float u1 = fmaxf(xoshiro256ss(state), FLT_MIN);
-  const float u2 = xoshiro256ss(state);
+  const float u1 = fmaxf(xoshiro128plus(state), FLT_MIN);
+  const float u2 = xoshiro128plus(state);
   const float noise = (flip) ? sqrtf(-2.0f * logf(u1)) * cosf(2.f * M_PI * u2) :
                                sqrtf(-2.0f * logf(u1)) * sinf(2.f * M_PI * u2);
   const float r = noise * sigma + 2.0f * sqrtf(fmaxf(mu + 3.f / 8.f, 0.0f));
@@ -133,7 +117,7 @@ static inline float poisson_noise(const float mu, const float sigma, const int f
 #pragma omp declare simd uniform(distribution, param) aligned(state:64)
 #endif
 static inline float dt_noise_generator(const dt_noise_distribution_t distribution,
-                                       const float mu, const float param, const int flip, uint64_t state[4])
+                                       const float mu, const float param, const int flip, uint32_t state[4])
 {
   // scalar version
 
@@ -154,9 +138,9 @@ static inline float dt_noise_generator(const dt_noise_distribution_t distributio
 #ifdef _OPENMP
 #pragma omp declare simd uniform(sigma) aligned(state:64) aligned(mu, sigma, out:16)
 #endif
-static inline void uniform_noise_simd(const float mu[3], const float sigma[3], uint64_t state[4], float out[3])
+static inline void uniform_noise_simd(const float mu[3], const float sigma[3], uint32_t state[4], float out[3])
 {
-  const float DT_ALIGNED_ARRAY noise[3] = { xoshiro256ss(state), xoshiro256ss(state), xoshiro256ss(state) };
+  const float DT_ALIGNED_ARRAY noise[3] = { xoshiro128plus(state), xoshiro128plus(state), xoshiro128plus(state) };
 
   #pragma unroll
   for(size_t c = 0; c < 3; c++)
@@ -167,7 +151,7 @@ static inline void uniform_noise_simd(const float mu[3], const float sigma[3], u
 #ifdef _OPENMP
 #pragma omp declare simd uniform(sigma) aligned(state:64) aligned(mu, sigma, flip, out:16)
 #endif
-static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], const int flip[3], uint64_t state[4], float out[3])
+static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], const int flip[3], uint32_t state[4], float out[3])
 {
   // Create gaussian noise centered in mu of standard deviation sigma
   // state should be initialized with xoshiro256_init() before calling and private in thread
@@ -179,10 +163,11 @@ static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], 
 
   #pragma unroll
   for(size_t c = 0; c < 3; c++)
-  {
-    u1[c] = fmaxf(xoshiro256ss(state), FLT_MIN);
-    u2[c] = xoshiro256ss(state);
-  }
+    u1[c] = fmaxf(xoshiro128plus(state), FLT_MIN);
+
+  #pragma unroll
+  for(size_t c = 0; c < 3; c++)  
+    u2[c] = xoshiro128plus(state);
 
   float DT_ALIGNED_ARRAY noise[3] = { 0.f };
 
@@ -201,17 +186,17 @@ static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(sigma) aligned(state:64) aligned(mu, sigma, flip, out:16)
 #endif
-static inline void poisson_noise_simd(const float mu[3], const float sigma[3], const int flip[3], uint64_t state[4], float out[3])
+static inline void poisson_noise_simd(const float mu[3], const float sigma[3], const int flip[3], uint32_t state[4], float out[3])
 {
-  // create poisson noise - It's just gaussian noise with Anscombe transform applied
+  // create poissonian noise - It's just gaussian noise with Anscombe transform applied
   float DT_ALIGNED_ARRAY u1[3] = { 0.f };
   float DT_ALIGNED_ARRAY u2[3] = { 0.f };
 
   #pragma unroll
   for(size_t c = 0; c < 3; c++)
   {
-    u1[c] = fmaxf(xoshiro256ss(state), FLT_MIN);
-    u2[c] = xoshiro256ss(state);
+    u1[c] = fmaxf(xoshiro128plus(state), FLT_MIN);
+    u2[c] = xoshiro128plus(state);
   }
 
   float DT_ALIGNED_ARRAY noise[3] = { 0.f };
@@ -223,6 +208,7 @@ static inline void poisson_noise_simd(const float mu[3], const float sigma[3], c
                            sqrtf(-2.0f * logf(u1[c])) * sinf(2.f * M_PI * u2[c]);
   }
 
+  // now we have gaussian noise, then apply Anscombe transform to get poissonian one
   float DT_ALIGNED_ARRAY r[3] = { 0.f };
 
   #pragma unroll
@@ -239,7 +225,7 @@ static inline void poisson_noise_simd(const float mu[3], const float sigma[3], c
 #endif
 static inline void dt_noise_generator_simd(const dt_noise_distribution_t distribution,
                                            const float mu[3], const float param[3], const int flip[3],
-                                           uint64_t state[4], float out[3])
+                                           uint32_t state[4], float out[3])
 {
   // vector version
 
