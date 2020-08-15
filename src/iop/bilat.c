@@ -271,7 +271,25 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)p1;
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
-  *d = *p;
+
+  d->mode = p->mode;
+  // sanity check (especially for bilateral)
+  switch (p->mode)
+  {
+  case s_mode_bilateral:
+    d->sigma_s = CLAMP(p->sigma_s, 3.f, 100.f); // Lower than 3 will eat up mem
+    d->sigma_r = CLAMP(p->sigma_r, 1.f, 100.f);
+    break;
+  case s_mode_local_laplacian:
+    d->sigma_r = CLAMP(p->sigma_r, 0.f, 2.f);
+    d->sigma_s = CLAMP(p->sigma_s, 0.f, 2.f);
+    break;
+  default:
+    // yell
+    break;
+  }
+  d->detail = CLAMP(p->detail, -1.f, 4.f);
+  d->midtone = CLAMP(p->midtone, 0.001f, 1.f);
 
 #ifdef HAVE_OPENCL
   if(d->mode == s_mode_bilateral)
