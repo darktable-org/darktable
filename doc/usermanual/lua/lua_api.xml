@@ -9233,6 +9233,48 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_lua_stack_h_size_fixed">
+<title>types.lua_stack.h_size_fixed</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>h_size_fixed</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if horizontal size is fixed, false if stack can be resized horizontally.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_stack_v_size_fixed">
+<title>types.lua_stack.v_size_fixed</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>v_size_fixed</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if vertical size is fixed, false if stack can be resized vertically.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 </section>
 
 <section status="final" id="types_lua_slider">
