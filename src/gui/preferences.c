@@ -1495,13 +1495,14 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
 static void import_export(GtkButton *button, gpointer data)
 {
   GtkWidget *chooser;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   gchar confdir[PATH_MAX] = { 0 };
   gchar accelpath[PATH_MAX] = { 0 };
 
   if(data)
   {
     // Non-zero value indicates export
-    chooser = gtk_file_chooser_dialog_new(_("select file to export"), NULL, GTK_FILE_CHOOSER_ACTION_SAVE,
+    chooser = gtk_file_chooser_dialog_new(_("select file to export"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SAVE,
                                           _("_cancel"), GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT,
                                           NULL);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1527,7 +1528,7 @@ static void import_export(GtkButton *button, gpointer data)
   else
   {
     // Zero value indicates import
-    chooser = gtk_file_chooser_dialog_new(_("select file to import"), NULL, GTK_FILE_CHOOSER_ACTION_OPEN,
+    chooser = gtk_file_chooser_dialog_new(_("select file to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
                                           _("_cancel"), GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT,
                                           NULL);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1607,9 +1608,10 @@ static void import_preset(GtkButton *button, gpointer data)
 {
   GtkTreeModel *model = (GtkTreeModel *)data;
   GtkWidget *chooser;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   // Zero value indicates import
-  chooser = gtk_file_chooser_dialog_new(_("select preset to import"), NULL, GTK_FILE_CHOOSER_ACTION_OPEN,
+  chooser = gtk_file_chooser_dialog_new(_("select preset to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
                                         _("_cancel"), GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT,
                                         NULL);
 #ifdef GDK_WINDOWING_QUARTZ
