@@ -65,6 +65,11 @@ typedef struct dt_gui_accel_search_t
   int last_found_count, curr_found_count;
 } dt_gui_accel_search_t;
 
+typedef struct dt_gui_themetweak_widgets_t
+{
+  GtkWidget *apply_toggle, *save_button, *css_text_view;
+} dt_gui_themetweak_widgets_t;
+
 // FIXME: this is copypasta from gui/presets.c. better put these somewhere so that all places can access the
 // same data.
 static const int dt_gui_presets_exposure_value_cnt = 24;
@@ -241,7 +246,9 @@ static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
   g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
 
   //read text buffer into gchar
-  GtkTextBuffer *buffer = (GtkTextBuffer *)user_data;
+  dt_gui_themetweak_widgets_t *tw = (dt_gui_themetweak_widgets_t *)user_data;
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tw->css_text_view));
+
   GtkTextIter start, end;
   gtk_text_buffer_get_start_iter(buffer, &start);
   gtk_text_buffer_get_end_iter(buffer, &end);
@@ -255,9 +262,17 @@ static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
     g_clear_error(&error);
   }
 
-  //reload the theme
-  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
-  dt_bauhaus_load_theme();
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tw->apply_toggle)))
+  {
+    //reload the theme
+    dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+    dt_bauhaus_load_theme();
+  }
+  else
+  {
+    //toggle the apply button, which will also reload the theme
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tw->apply_toggle), TRUE);
+  }
 }
 
 ///////////// gui language and theme selection
@@ -288,7 +303,7 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
   return FALSE;
 }
 
-static void init_tab_general(GtkWidget *stack)
+static void init_tab_general(GtkWidget *stack, dt_gui_themetweak_widgets_t *tw)
 {
 
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -432,15 +447,15 @@ static void init_tab_general(GtkWidget *stack)
   //checkbox to allow user to modify theme with user.css
   label = gtk_label_new(_("modify selected theme with CSS tweaks below"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  GtkWidget *cssbutton = gtk_check_button_new();
+  tw->apply_toggle = gtk_check_button_new();
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), cssbutton, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(cssbutton, _("modify theme with CSS keyed below (saved to user.css)"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cssbutton), dt_conf_get_bool("themes/usercss"));
-  g_signal_connect(G_OBJECT(cssbutton), "toggled", G_CALLBACK(usercss_callback), 0);
+  gtk_grid_attach_next_to(GTK_GRID(grid), tw->apply_toggle, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(tw->apply_toggle, _("modify theme with CSS keyed below (saved to user.css)"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tw->apply_toggle), dt_conf_get_bool("themes/usercss"));
+  g_signal_connect(G_OBJECT(tw->apply_toggle), "toggled", G_CALLBACK(usercss_callback), 0);
 
   //scrollable textarea with save button to allow user to directly modify user.css file
   GtkWidget *usercssbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -448,20 +463,20 @@ static void init_tab_general(GtkWidget *stack)
   gtk_widget_set_name(usercssbox, "usercss_box");
 
   GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
-  GtkWidget *textview = gtk_text_view_new_with_buffer(buffer);
-  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
-  gtk_widget_set_hexpand(textview, TRUE);
-  gtk_widget_set_halign(textview, GTK_ALIGN_FILL);
+  tw->css_text_view= gtk_text_view_new_with_buffer(buffer);
+  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(tw->css_text_view), GTK_WRAP_WORD);
+  gtk_widget_set_hexpand(tw->css_text_view, TRUE);
+  gtk_widget_set_halign(tw->css_text_view, GTK_ALIGN_FILL);
 
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(scroll), textview);
+  gtk_container_add(GTK_CONTAINER(scroll), tw->css_text_view);
   gtk_box_pack_start(GTK_BOX(usercssbox), scroll, TRUE, TRUE, 0);
 
-  GtkWidget *button = gtk_button_new_with_label(C_("usercss", "save theme tweaks"));
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(save_usercss_callback), buffer);
+  tw->save_button = gtk_button_new_with_label(C_("usercss", "save and apply"));
+  g_signal_connect(G_OBJECT(tw->save_button), "clicked", G_CALLBACK(save_usercss_callback), tw);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), tw->save_button, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(usercssbox), hbox, FALSE, FALSE, 0);
 
   //set textarea text from file or default
@@ -552,11 +567,12 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_path = NULL;
 
   dt_gui_accel_search_t *search_data = (dt_gui_accel_search_t *)malloc(sizeof(dt_gui_accel_search_t));
+  dt_gui_themetweak_widgets_t *tweak_widgets = (dt_gui_themetweak_widgets_t *)malloc(sizeof(dt_gui_themetweak_widgets_t));
 
   restart_required = FALSE;
 
   //setup tabs
-  init_tab_general(stack);
+  init_tab_general(stack, tweak_widgets);
   init_tab_import(_preferences_dialog, stack);
   init_tab_lighttable(_preferences_dialog, stack);
   init_tab_darkroom(_preferences_dialog, stack);
@@ -588,6 +604,7 @@ void dt_gui_preferences_show()
 
   g_free(search_data->last_search_term);
   free(search_data);
+  free(tweak_widgets);
   gtk_widget_destroy(_preferences_dialog);
 
   if(restart_required)
