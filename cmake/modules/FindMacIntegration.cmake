@@ -12,11 +12,11 @@
 find_path(MACINTEGRATION_INCLUDE_DIR gtkosxapplication.h PATH_SUFFIXES gtkmacintegration gtkmacintegration-gtk3)
 mark_as_advanced(MACINTEGRATION_INCLUDE_DIR)
 
-set(MacIntegration_NAMES ${MacIntegration_NAMES} gtkMacIntegration libgtkMacIntegration gtkMacIntegration-gtk3 libgtkMacIntegration-gtk3)
-find_library(MacIntegration_LIBRARY NAMES ${MacIntegration_NAMES})
-mark_as_advanced(MacIntegration_LIBRARY)
+set(MACINTEGRATION_NAMES ${MACINTEGRATION_NAMES} gtkmacintegration libgtkmacintegration gtkmacintegration-gtk3 libgtkmacintegration-gtk3)
+find_library(MACINTEGRATION_LIBRARY NAMES ${MACINTEGRATION_NAMES})
+mark_as_advanced(MACINTEGRATION_LIBRARY)
 
-# handle the QUIETLY and REQUIRED arguments and set MacIntegration_FOUND to TRUE if
+# handle the QUIETLY and REQUIRED arguments and set MACINTEGRATION_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MacIntegration DEFAULT_MSG MACINTEGRATION_LIBRARY MACINTEGRATION_INCLUDE_DIR)
