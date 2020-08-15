@@ -347,6 +347,7 @@ static inline void dt_ui_section_label_set(GtkWidget *label)
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);    // make the text left aligned
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END); // ellipsize labels
 }
 
 static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
