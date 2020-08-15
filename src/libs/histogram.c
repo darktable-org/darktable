@@ -379,6 +379,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const void *c
 
   if(is_8bit) dt_free_align(input_f);
 
+  // FIXME: when live view is turned off, we should immediately revert the histogram back to the center view image and turn off this flag -- this may have to happen via the tether view
   d->is_live_view = is_live_view;
   // hacky: normally the histogram knows to redraw itself when the
   // preview pipe completes, but live view data comes in from tether
@@ -948,7 +949,9 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       dt_conf_set_string("plugins/darkroom/histogram/mode",
                          dt_lib_histogram_scope_type_names[d->scope_type]);
       // generate data for changed scope and trigger widget redraw
-      dt_dev_process_preview(d->dev);
+      // FIXME: hack: if in live view we'll just wait for the scope to update at the next frame
+      if(!d->is_live_view)
+        dt_dev_process_preview(d->dev);
     }
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_MODE)
     {
@@ -1126,8 +1129,9 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   if(d->scope_type != old_scope)
   {
     // different scope, calculate its buffer from the image
-    // FIXME: shouldn't need to do this if in live view mode
-    dt_dev_process_preview(d->dev);
+    // FIXME: hack: if in live view we'll just wait for the scope to update at the next frame
+    if(!d->is_live_view)
+      dt_dev_process_preview(d->dev);
   }
   else
   {
@@ -1147,8 +1151,9 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
   d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
-  // FIXME: shouldn't need to do this if in live view mode
-  dt_dev_process_preview(d->dev);
+  // FIXME: hack: if in live view we'll just wait for the scope to update at the next frame
+  if(!d->is_live_view)
+    dt_dev_process_preview(d->dev);
   return TRUE;
 }
 
@@ -1190,8 +1195,8 @@ static void _lib_histogram_mipmap_callback(gpointer instance, int imgid, gpointe
   // updated. Differentiate these, and only run preview pipe if it is
   // not yet up to date.
   // FIXME: can the center view call just also request a preview from its pixelpipe?
-  // FIXME: shouldn't need to do this if in live view mode
-  if(imgid == d->dev->image_storage.id && d->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY)
+  // FIXME: is there any case in live view mode when we'd want to do this?
+  if(imgid == d->dev->image_storage.id && d->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY && !d->is_live_view)
   {
     dt_dev_process_preview(d->dev);
   }
