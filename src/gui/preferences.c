@@ -623,7 +623,7 @@ void dt_gui_preferences_show()
   gtk_widget_destroy(_preferences_dialog);
 
   if(restart_required)
-    dt_control_log(_("Darktable needs to be restarted for settings to take effect"));
+    dt_control_log(_("darktable needs to be restarted for settings to take effect"));
 
   // Cleaning up any memory still allocated for remapping
   if(darktable.control->accel_remap_path)
