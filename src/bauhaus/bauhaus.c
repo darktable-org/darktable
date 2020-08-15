@@ -593,9 +593,6 @@ void dt_bauhaus_init()
   // for pie menu:
   // gtk_window_set_position(GTK_WINDOW(c->popup_window), GTK_WIN_POS_MOUSE);// | GTK_WIN_POS_CENTER);
 
-  // gtk_window_set_keep_above isn't enough on OS X
-  gtk_window_set_transient_for(GTK_WINDOW(darktable.bauhaus->popup_window),
-                               GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   // needed on macOS to avoid fullscreening the popup with newer GTK
   gtk_window_set_type_hint(GTK_WINDOW(darktable.bauhaus->popup_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
 
@@ -1925,6 +1922,7 @@ void dt_bauhaus_hide_popup()
   {
     gtk_grab_remove(darktable.bauhaus->popup_window);
     gtk_widget_hide(darktable.bauhaus->popup_window);
+    gtk_window_set_attached_to(GTK_WINDOW(darktable.bauhaus->popup_window), NULL);
     darktable.bauhaus->current = NULL;
     // TODO: give focus to center view? do in accept() as well?
   }
@@ -2000,6 +1998,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   gtk_window_move(GTK_WINDOW(darktable.bauhaus->popup_window), wx, wy);
   gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, tmp.height);
   gtk_widget_set_size_request(darktable.bauhaus->popup_window, tmp.width, tmp.height);
+  // gtk_window_set_keep_above isn't enough on macOS
+  gtk_window_set_attached_to(GTK_WINDOW(darktable.bauhaus->popup_window), GTK_WIDGET(darktable.bauhaus->current));
   gtk_widget_show_all(darktable.bauhaus->popup_window);
   gtk_widget_grab_focus(darktable.bauhaus->popup_area);
 }
