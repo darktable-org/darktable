@@ -864,13 +864,13 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
 
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
-  const uint32_t module_group = dt_dev_modulegroups_get(darktable.develop);
-
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);
 
   // first we create the new module
+  ++darktable.gui->reset;
   dt_iop_module_t *module = dt_dev_module_duplicate(base->dev, base);
+  --darktable.gui->reset;
   if(!module) return NULL;
 
   // what is the position of the module in the pipe ?
@@ -935,9 +935,6 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
     dt_iop_gui_set_expanded(base, FALSE, TRUE);
     dt_iop_gui_set_expanded(module, TRUE, TRUE);
   }
-
-  // we want to stay on the same group
-  dt_dev_modulegroups_set(darktable.develop, module_group);
 
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(module->dev);
