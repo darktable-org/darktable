@@ -341,7 +341,7 @@ void enter(dt_view_t *self)
   /* initialize a session */
   lib->session = dt_import_session_new();
 
-  char *tmp = dt_conf_get_string("plugins/capture/jobcode");
+  char *tmp = dt_conf_get_string("plugins/session/jobcode");
   if(tmp != NULL)
   {
     _capture_view_set_jobcode(self, tmp);

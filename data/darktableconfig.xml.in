@@ -465,7 +465,7 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/capture/jobcode</name>
+    <name>plugins/session/jobcode</name>
     <type>string</type>
     <default>capture job</default>
     <shortdescription>name of capture job</shortdescription>
