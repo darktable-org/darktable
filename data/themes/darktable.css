@@ -1579,6 +1579,15 @@ notebook tab:hover label,
   color: @button_hover_fg;
 }
 
+/* workaround for a macOS quartz GTK backend bug
+   making combobox list appear behind dialog window:
+   color of "button:checked cellview" has to differ from
+   "button:hover cellview", don't ask for a reason for that */
+button:checked cellview
+{
+  color: shade(@button_hover_fg, 0.99);
+}
+
 /* Set submenus */
 menuitem:hover menuitem *
 {
