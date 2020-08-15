@@ -16,7 +16,7 @@ set(MACINTEGRATION_NAMES ${MACINTEGRATION_NAMES} gtkmacintegration libgtkmacinte
 find_library(MACINTEGRATION_LIBRARY NAMES ${MACINTEGRATION_NAMES})
 mark_as_advanced(MACINTEGRATION_LIBRARY)
 
-# handle the QUIETLY and REQUIRED arguments and set MACINTEGRATION_FOUND to TRUE if
+# handle the QUIETLY and REQUIRED arguments and set MacIntegration_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MacIntegration DEFAULT_MSG MACINTEGRATION_LIBRARY MACINTEGRATION_INCLUDE_DIR)
