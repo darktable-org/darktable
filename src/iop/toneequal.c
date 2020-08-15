@@ -1827,8 +1827,8 @@ static void switch_cursors(struct dt_iop_module_t *self)
     dt_control_change_cursor(GDK_BLANK_CURSOR);
     dt_control_hinter_message(darktable.control,
                               _("scroll over image to change tone exposure\n"
-                                "shift+scroll to change in large steps\n"
-                                "ctrl+scroll to change in small steps"));
+                                "shift+scroll for large steps; "
+                                "ctrl+scroll for small steps"));
 
     dt_control_queue_redraw_center();
   }
@@ -2289,8 +2289,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     dt_control_hinter_message(darktable.control,
                               _("scroll over image to change tone exposure\n"
-                                "shift+scroll to change in large steps\n"
-                                "ctrl+scroll to change in small steps"));
+                                "shift+scroll for large steps; "
+                                "ctrl+scroll for small steps"));
   }
 }
 
