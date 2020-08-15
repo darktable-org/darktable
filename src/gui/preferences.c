@@ -238,17 +238,14 @@ static void use_sys_font_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
-static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
+static void save_usercss(GtkTextBuffer *buffer)
 {
   //get file locations
   char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
   g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
 
-  //read text buffer into gchar
-  dt_gui_themetweak_widgets_t *tw = (dt_gui_themetweak_widgets_t *)user_data;
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tw->css_text_view));
-
+  //get the text
   GtkTextIter start, end;
   gtk_text_buffer_get_start_iter(buffer, &start);
   gtk_text_buffer_get_end_iter(buffer, &end);
@@ -262,6 +259,15 @@ static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
     g_clear_error(&error);
   }
 
+}
+
+static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_gui_themetweak_widgets_t *tw = (dt_gui_themetweak_widgets_t *)user_data;
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tw->css_text_view));
+
+  save_usercss(buffer);
+
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tw->apply_toggle)))
   {
     //reload the theme
@@ -273,6 +279,14 @@ static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
     //toggle the apply button, which will also reload the theme
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tw->apply_toggle), TRUE);
   }
+}
+
+static void usercss_dialog_callback(GtkDialog *dialog, gint response_id, gpointer user_data)
+{
+  //just save the latest css but don't reload the theme
+  dt_gui_themetweak_widgets_t *tw = (dt_gui_themetweak_widgets_t *)user_data;
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tw->css_text_view));
+  save_usercss(buffer);
 }
 
 ///////////// gui language and theme selection
@@ -303,7 +317,7 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
   return FALSE;
 }
 
-static void init_tab_general(GtkWidget *stack, dt_gui_themetweak_widgets_t *tw)
+static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetweak_widgets_t *tw)
 {
 
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -475,6 +489,7 @@ static void init_tab_general(GtkWidget *stack, dt_gui_themetweak_widgets_t *tw)
 
   tw->save_button = gtk_button_new_with_label(C_("usercss", "save and apply"));
   g_signal_connect(G_OBJECT(tw->save_button), "clicked", G_CALLBACK(save_usercss_callback), tw);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(usercss_dialog_callback), tw);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_end(GTK_BOX(hbox), tw->save_button, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(usercssbox), hbox, FALSE, FALSE, 0);
@@ -572,7 +587,7 @@ void dt_gui_preferences_show()
   restart_required = FALSE;
 
   //setup tabs
-  init_tab_general(stack, tweak_widgets);
+  init_tab_general(_preferences_dialog, stack, tweak_widgets);
   init_tab_import(_preferences_dialog, stack);
   init_tab_lighttable(_preferences_dialog, stack);
   init_tab_darkroom(_preferences_dialog, stack);
