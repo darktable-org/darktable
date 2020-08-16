@@ -192,6 +192,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
     if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
     {
+      // FIXME: the live_view_pixbuf is probably sRGB -- convert it to display profile
       const gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
       const gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
 
@@ -235,8 +236,13 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
             o[x * 4 + 3] = 0.0f;
           }
         }
+        // in most cases, histogram gets its data from the preview
+        // pipe and catches DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED to
+        // know to update itself, but we have to do this by hand for
+        // live view
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
                                                out_f, lv_width, lv_height, TRUE);
+        dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
         // FIXME: what is the resolution of the preview? should we limit the frame rate of histogram update?
         dt_free_align(out_f);
       }
