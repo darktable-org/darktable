@@ -333,7 +333,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 }
 
 static void dt_lib_histogram_process(struct dt_lib_module_t *self, const void *const input,
-                                     int width, int height, int stride,
+                                     int width, int height, int stride, int n_channels,
                                      gboolean is_8bit, gboolean is_live_view)
 // FIXME: instead of is_8bit is there a mask declared which lets us know bit depth & float/int?
 {
@@ -347,11 +347,17 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const void *c
     if(!input_f) return;
     for(int y = 0; y < height; y++)
     {
-      const uint8_t *const p = ((uint8_t *)input) + y * stride;
+      // FIXME: will this still work with pixelpipe 8-bit data?
+      const guchar *const p = ((guchar *)input) + y * stride;
       float *const o = input_f + y * width * 4;
       for(int x = 0; x < width; x++)
       {
-        for(int c = 0; c < 3; c++) o[x * 4 + c] = ((float)p[x * 4 + (2 - c)]) * (1.0f / 255.0f);
+        // FIXME: always call process with float data, callers do the conversion?
+        if(is_live_view)
+          // FIXME: do need to flip 2-c when from tether?
+          for(int c = 0; c < 3; c++) o[x * 4 + c] = ((float)p[x * n_channels + c]) * (1.0f / 255.0f);
+        else
+          for(int c = 0; c < 3; c++) o[x * 4 + c] = ((float)p[x * n_channels + (2 - c)]) * (1.0f / 255.0f);
         input_f[x * 4 + 3] = 0.0f;
       }
     }
