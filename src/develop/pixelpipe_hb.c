@@ -2391,7 +2391,7 @@ post_process_collect_info:
       {
         // input may not be available, so we use the output from gamma
         // this may lead to some rounding errors
-        // FIXME: under what circumstances would input not be available?
+        // FIXME: under what circumstances would input not be available? when this iop's result is pulled in from cache?
         float *const buf = dt_alloc_align(64, roi_out->width * roi_out->height * 4 * sizeof(float));
         if(buf)
         {

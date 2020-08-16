@@ -82,9 +82,14 @@ typedef struct dt_lib_histogram_t
   // waveform histogram buffer and dimensions
   uint8_t *waveform;
   uint32_t waveform_width, waveform_height, waveform_stride;
+  // FIXME: s/processing_mutex/lock/
+  dt_pthread_mutex_t processing_mutex;
   // pixelpipe for current image when not in darkroom view
   dt_develop_t *dev;
+  // in darkroom view, dragging/scrolling widget will change exposure
+  // FIXME: record a flag of whether in darkroom or tether view, this is confusing
   gboolean can_change_iops;
+  // FIXME: eliminate keeping this state if possible -- currently the only time we care about this is to tag live view generated histograms to display regardless of whether the pixelpipe is up to date
   gboolean is_live_view;
   // exposure params on mouse down
   float exposure, black;
@@ -130,7 +135,7 @@ int position()
 }
 
 
-static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height)
+static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height, gboolean is_live_view)
 {
   float *img_tmp = NULL;
 
@@ -166,22 +171,23 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   }
 #endif
 
-  // If in live view mode, calculate in preview's colorspace, as we
-  // don't know anything about its profile
-  if(d->dev && !d->is_live_view)
+  // FIXME: this colorspace conversion should happen for all scopes, not just histogram
+  // FIXME: in live view mode, this skips the colorspace conversion -- instead _expose_tethered_mode() in views/tethering.c should convert the image to display colorspace and then we can remove the special case code here
+  // FIXME: is there any case in which d->dev is false here?
+  if(d->dev && !is_live_view)
   {
-    dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-    gchar *histogram_filename = NULL;
-    gchar _histogram_filename[1] = { 0 };
+    dt_colorspaces_color_profile_type_t to_profile_type = DT_COLORSPACE_SRGB;
+    gchar *to_profile_filename = NULL;
+    gchar _profile_no_filename[1] = { 0 };
 
     // FIXME: could just call dt_ioppr_get_histogram_profile_info() and call dt_ioppr_add_profile_info_to_list() for display profile and compare these results?
-    dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
+    dt_ioppr_get_histogram_profile_type(&to_profile_type, &to_profile_filename);
     // FIXME: do need to test this for null?
-    if(histogram_filename == NULL) histogram_filename = _histogram_filename;
+    if(to_profile_filename == NULL) to_profile_filename = _profile_no_filename;
 
-    if((histogram_type != darktable.color_profiles->display_type)
-       || (histogram_type == DT_COLORSPACE_FILE
-           && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+    if((to_profile_type != darktable.color_profiles->display_type)
+       || (to_profile_type == DT_COLORSPACE_FILE
+           && strcmp(to_profile_filename, darktable.color_profiles->display_filename)))
     {
       img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
 
@@ -189,7 +195,7 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
           = dt_ioppr_add_profile_info_to_list(d->dev, darktable.color_profiles->display_type,
                                               darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
       const dt_iop_order_iccprofile_info_t *const profile_info_to
-          = dt_ioppr_add_profile_info_to_list(d->dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
+          = dt_ioppr_add_profile_info_to_list(d->dev, to_profile_type, to_profile_filename, INTENT_PERCEPTUAL);
 
       dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, width, height, profile_info_from,
                                               profile_info_to, "final histogram");
@@ -337,31 +343,26 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
+  dt_pthread_mutex_lock(&d->processing_mutex);
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input, width, height);
+      _lib_histogram_process_histogram(d, input, width, height, is_live_view);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      // this makes horizontal banding artifacts due to rounding issues
-      // when putting colors into the bins, but is still meaningful and is
-      // better than no output
       _lib_histogram_process_waveform(d, input, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
-
   // FIXME: when live view is turned off, we should immediately revert the histogram back to the center view image and turn off this flag -- this may have to happen via the tether view
   d->is_live_view = is_live_view;
-  // hacky: normally the histogram knows to redraw itself when the
-  // preview pipe completes, but live view data comes in from tether
-  // expose, so we have to issue a redraw request directly
-  if(is_live_view) dt_control_queue_redraw_widget(self->widget);
+  dt_pthread_mutex_unlock(&d->processing_mutex);
 }
 
 static void _draw_color_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state)
 {
+  // FIXME: use dtgtk_cairo_paint_color()
   const float border = MIN(width * .05, height * .05);
   cairo_rectangle(cr, x + border, y + border, width - 2.0 * border, height - 2.0 * border);
   cairo_fill_preserve(cr);
@@ -388,6 +389,7 @@ static void _draw_type_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_stroke(cr);
 
   // icon
+  // FIXME: move to dtgtk/paint
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
   cairo_move_to(cr, 2.0 * border, height - 2.0 * border);
   switch(type)
@@ -450,6 +452,7 @@ static void _draw_histogram_scale_toggle(cairo_t *cr, float x, float y, float wi
   cairo_stroke(cr);
 
   // icon
+  // FIXME: move to dtgtk/paint
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
   cairo_move_to(cr, 2.0 * border, height - 2.0 * border);
   switch(mode)
@@ -474,6 +477,7 @@ static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float widt
 
   // border
   const float border = MIN(width * .05, height * .05);
+  // FIXME: move to dtgtk/paint
   switch(mode)
   {
     case DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID:
@@ -511,6 +515,7 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
+  // FIXME: gtk-ize this, use buttons packed in a GtkBox
   const int width = event->width;
   // mode and color buttons position on first expose or widget size change
   // FIXME: should the button size depend on histogram width or just be set to something reasonable
@@ -528,26 +533,16 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   return TRUE;
 }
 
-static dt_pthread_mutex_t *_lib_histogram_active_mutex(dt_lib_histogram_t *d)
-{
-  if(d->is_live_view)
-  {
-    dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
-    return(&cam->live_view_pixbuf_mutex);
-  }
-  return(&d->dev->preview_pipe_mutex);
-}
-
 static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
   if(!d->histogram_max) return;
-  dt_pthread_mutex_t *mutex = _lib_histogram_active_mutex(d);
-  dt_pthread_mutex_lock(mutex);
+  dt_pthread_mutex_lock(&d->processing_mutex);
   const size_t histsize = HISTOGRAM_BINS * 4 * sizeof(uint32_t);
+  // FIXME: skip this alloc/copy as we're protected w/in a mutex dealing with our lib's own data as generated by process()
   // FIXME: does this need to be aligned?
   uint32_t *hist = malloc(histsize);
   if(hist) memcpy(hist, d->histogram, histsize);
-  dt_pthread_mutex_unlock(mutex);
+  dt_pthread_mutex_unlock(&d->processing_mutex);
   if(hist == NULL) return;
 
   // FIXME: pre-adjust hist_max based on histogram_scale?
@@ -570,11 +565,11 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
-  dt_pthread_mutex_t *mutex = _lib_histogram_active_mutex(d);
-  dt_pthread_mutex_lock(mutex);
+  dt_pthread_mutex_lock(&d->processing_mutex);
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   const gint wf_stride = d->waveform_stride;
+  // FIXME: skip this alloc/copy as we're protected w/in a mutex dealing with our lib's own data as generated by process(), unless we need to re-arrange the data
   uint8_t *wav = malloc(sizeof(uint8_t) * wf_height * wf_stride * 4);
   if(wav)
   {
@@ -584,7 +579,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int
         for(int k = 0; k < 3; k++)
           wav[4 * (y * wf_stride + x) + k] = wf_buf[wf_stride * (y + k * wf_height) + x] * mask[2-k];
   }
-  dt_pthread_mutex_unlock(mutex);
+  dt_pthread_mutex_unlock(&d->processing_mutex);
   if(wav == NULL) return;
 
   // NOTE: The nice way to do this would be to draw each color channel
@@ -607,15 +602,15 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
-  dt_pthread_mutex_t *mutex = _lib_histogram_active_mutex(d);
-  dt_pthread_mutex_lock(mutex);
+  dt_pthread_mutex_lock(&d->processing_mutex);
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   const gint wf_stride = d->waveform_stride;
+  // FIXME: skip this alloc/copy as we're protected w/in a mutex dealing with our lib's own data as generated by process()
   const size_t histsize = sizeof(uint8_t) * wf_height * wf_stride * 3;
   uint8_t *wav = malloc(histsize);
   if(wav) memcpy(wav, d->waveform, histsize);
-  dt_pthread_mutex_unlock(mutex);
+  dt_pthread_mutex_unlock(&d->processing_mutex);
   if(wav == NULL) return;
 
   // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
@@ -696,7 +691,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 
   // draw scope so long as preview pipe is finished -- or if we have
   // received a live view preview
-  // FIXME: there should really be a mutex here, or else we may have switched in/out of live view before we do the draw
+  // FIXME: there should really be a mutex here, or else we may have switched in/out of live view before we do the draw -- just lock d->processing_mutex here and unlock after draw is done
   if(d->is_live_view ||
      (d->dev && d->dev->image_storage.id == d->dev->preview_pipe->output_imgid))
   {
@@ -756,6 +751,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   const gboolean hooks_available = d->can_change_iops && dt_dev_exposure_hooks_available(d->dev);
+  // FIXME: as when dragging a bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -921,9 +917,11 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
       dt_conf_set_string("plugins/darkroom/histogram/mode",
                          dt_lib_histogram_scope_type_names[d->scope_type]);
-      // generate data for changed scope and trigger widget redraw
-      // FIXME: hack: if in live view we'll just wait for the scope to update at the next frame
-      if(!d->is_live_view)
+      // generate data for changed scope and trigger widget redraw --
+      // though if in live view we'll just wait for the scope to
+      // update at the next frame
+      dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
+      if(!(cam && cam->is_live_viewing))
         dt_dev_process_preview(d->dev);
     }
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_MODE)
@@ -998,6 +996,7 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
     }
     else if(d->can_change_iops && dt_dev_exposure_hooks_available(d->dev))
     {
+      // FIXME: as with bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
       {
         const float ce = dt_dev_exposure_get_exposure(d->dev);
@@ -1101,9 +1100,11 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
 
   if(d->scope_type != old_scope)
   {
-    // different scope, calculate its buffer from the image
-    // FIXME: hack: if in live view we'll just wait for the scope to update at the next frame
-    if(!d->is_live_view)
+    // generate data for changed scope and trigger widget redraw --
+    // though if in live view we'll just wait for the scope to
+    // update at the next frame
+    dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
+    if(!(cam && cam->is_live_viewing))
       dt_dev_process_preview(d->dev);
   }
   else
@@ -1124,8 +1125,11 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
   d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
-  // FIXME: hack: if in live view we'll just wait for the scope to update at the next frame
-  if(!d->is_live_view)
+  // generate data for changed scope and trigger widget redraw --
+  // though if in live view we'll just wait for the scope to
+  // update at the next frame
+  dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
+  if(!(cam && cam->is_live_viewing))
     dt_dev_process_preview(d->dev);
   return TRUE;
 }
@@ -1158,18 +1162,21 @@ static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
+// this is only called in tether view
 static void _lib_histogram_mipmap_callback(gpointer instance, int imgid, gpointer user_data)
 {
+  // FIXME: when change histogram mode, call this function rather than dt_dev_process_preview() directly (or raise the signal to call this function?) as it will do the necessary testing?
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   // Either the center view is now loaded, hence we can run the
   // preview pipe if needed, or some random thumbtable image
   // updated. Differentiate these, and only run preview pipe if it is
-  // not yet up to date.
-  // FIXME: can the center view call just also request a preview from its pixelpipe?
-  // FIXME: is there any case in live view mode when we'd want to do this?
-  if(imgid == d->dev->image_storage.id && d->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY && !d->is_live_view)
+  // not yet up to date. If in live view, ignore all this, as we're
+  // getting images and redraws fed to us via tether view expose.
+  dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
+  if(imgid == d->dev->image_storage.id && d->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY &&
+     !(cam && cam->is_live_viewing))
   {
     dt_dev_process_preview(d->dev);
   }
@@ -1178,6 +1185,7 @@ static void _lib_histogram_mipmap_callback(gpointer instance, int imgid, gpointe
 static void _lib_histogram_load_image(dt_lib_histogram_t *d, int imgid)
 {
   // in tether view there may not be an initially selected image
+  // FIXME: in this case, clear or dont' display any leftover histogram data
   if(imgid == -1) return;
 
   if(!d->dev) d->dev = malloc(sizeof(dt_develop_t));
@@ -1185,6 +1193,9 @@ static void _lib_histogram_load_image(dt_lib_histogram_t *d, int imgid)
   // paraphernalia so that dt_dev_process_preview_job can find the
   // preview pixelpipe
   // FIXME: could use dt_imageio_export_with_flags() if we added a way for it to create a preview pipe
+  // FIXME: At least toneequal seems to crash if gui_attached is true but gui_init() isn't called -- but if we set it to false -- which is actually right -- then will need to have pixelpipe not test for gui_attached -- or amend test -- before generating histogram. Buit maybe patch toneequal to not test for gui_attached but for if gui_data is allocated? or initialize dt_dev_init() without gui_attached and allocate preview pipe by hand?
+  // FIXME: a number of other iops depend on dev->gui_attached, so maybe we don't muck with a fake gui_attached pipeline
+  // FIXME: can we get enough data from a mipmap to draw a decent histogram?
   dt_dev_init(d->dev, TRUE);
   dt_dev_load_image(d->dev, imgid);
   // don't wait for the full pixelpipe to complete
@@ -1196,10 +1207,12 @@ static void _lib_histogram_load_image(dt_lib_histogram_t *d, int imgid)
   dt_dev_process_preview(d->dev);
 }
 
+// this is only called in tether view
 static void _lib_histogram_thumbtable_callback(gpointer instance, int imgid, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+
   // user has choosen a different image -- it would be nice to keep
   // around the pixelpipe and call dt_dev_change_image() but there
   // seem to be all sorts of wrinkles with history stack and such, so
@@ -1212,13 +1225,15 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
 {
   // preview pipe has already given process() the high quality
   // pre-gamma image. Now that preview pipe is complete, draw it
+  // FIXME: it would be nice if process() just queued a redraw if not in live view, but then our draw code would have to have some other way to assure that the histogram image is current besides checking the pixelpipe to see if it has processed the current image
   dt_control_queue_redraw_widget(self->widget);
 }
 
-void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
+  // FIXME: instead of this, just have process() call dt_control_queue_redraw_widget() when it is done?
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_lib_histogram_preview_updated_callback), self);
 
@@ -1245,7 +1260,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   }
 }
 
-void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   if(d->dev)
@@ -1255,7 +1270,7 @@ void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
       dt_dev_cleanup(d->dev);
       free(d->dev);
       // in case exited while in live view
-      // FIXME: can tether tell us when we've left live view?
+      // FIXME: can tether tell us when we've left live view? -- or better yet make histogram.c not care whether in live view
       d->is_live_view = FALSE;
     }
     d->dev = NULL;
@@ -1277,6 +1292,8 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc0(sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
+
+  dt_pthread_mutex_init(&d->processing_mutex, NULL);
 
   d->red = dt_conf_get_bool("plugins/darkroom/histogram/show_red");
   d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
@@ -1388,6 +1405,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
   free(d->histogram);
   free(d->waveform);
+  dt_pthread_mutex_destroy(&d->processing_mutex);
 
   g_free(self->data);
   self->data = NULL;

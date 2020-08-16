@@ -210,6 +210,7 @@ static void _toggle_live_view_clicked(GtkWidget *widget, gpointer user_data)
   else
   {
     dt_camctl_camera_stop_live_view(darktable.camctl);
+    // FIXME: request a redraw of histogram widget to update to non live view data (image from filmstrip if any) -- or maybe issue a thumbtable chagned event?
   }
 }
 
@@ -477,6 +478,24 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   gtk_widget_set_sensitive(lib->focus_in_small, sensitive);
   gtk_widget_set_sensitive(lib->focus_out_big, sensitive);
   gtk_widget_set_sensitive(lib->focus_out_small, sensitive);
+}
+
+void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
+{
+  dt_lib_live_view_t *lib = self->data;
+
+  // there's no cdode to automatically restart live view when entering
+  // the view, and besides the user may not want to jump right back
+  // into leave view if they've been out of tethering view doing other
+  // things
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->live_view)) == TRUE)
+  {
+#if 0
+    // FIXME: this currently causes a crash -- but without this when re-renter live view the live view button is enabled but live view is off until button is pressed twice
+    dt_camctl_camera_stop_live_view(darktable.camctl);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lib->live_view), FALSE);
+#endif
+  }
 }
 
 // TODO: find out where the zoom window is and draw overlay + grid accordingly
