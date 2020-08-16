@@ -129,8 +129,14 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->height = height;
   const int nthreads = /*darktable.num_openmp_threads*/ dt_get_num_threads();
   b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(float) * nthreads);
-
-  memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(float) * nthreads);
+  if (b->buf)
+  {
+    memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(float) * nthreads);
+  }
+  else
+  {
+    fprintf(stderr,"[bilateral] unable to allocate buffer for %lux%lux%lu grid\n",b->size_x,b->size_y,b->size_z);
+  }
 #if 0
   fprintf(stderr, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
@@ -151,6 +157,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
   float *const buf = b->buf;
   const int bufsize = b->size_x * b->size_y * b->size_z;
 
+  if (!buf) return;
 // splat into downsampled grid
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -291,6 +298,8 @@ static void blur_line(float *buf, const int offset1, const int offset2, const in
 
 void dt_bilateral_blur(const dt_bilateral_t *b)
 {
+  if (!b || !b->buf)
+    return;
   // gaussian up to 3 sigma
   blur_line(b->buf, b->size_x * b->size_y, b->size_x, 1, b->size_z, b->size_y, b->size_x);
   // gaussian up to 3 sigma
@@ -317,6 +326,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
   const int width = b->width;
   const int height = b->height;
 
+  if (!buf) return;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(b, in, norm, ox, oy, oz, size_x, size_y, size_z, height, width, buf) \
@@ -374,6 +384,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
   const int width = b->width;
   const int height = b->height;
 
+  if (!buf) return;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(b, in, norm, oy, oz, ox, buf, size_x, size_y, size_z, width, height) \
