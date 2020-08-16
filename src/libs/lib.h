@@ -68,9 +68,8 @@ typedef struct dt_lib_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*process)(struct dt_lib_module_t *self, const void *const input,
-                      int width, int height, int stride, int n_channels,
-                      gboolean is_8bit, gboolean is_live_view);
+      void (*process)(struct dt_lib_module_t *self, const float *const input,
+                      int width, int height, gboolean is_live_view);
       // FIXME: should this be a function or just a boolean which histogram lib keeps updated?
       // FIXME: should this be a darktable-level value, set by lib/histogram.c and noticed by iops?
       gboolean is_linear;
