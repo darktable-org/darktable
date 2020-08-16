@@ -221,6 +221,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
                                              gdk_pixbuf_get_width(cam->live_view_pixbuf),
                                              gdk_pixbuf_get_height(cam->live_view_pixbuf),
                                              gdk_pixbuf_get_rowstride(cam->live_view_pixbuf),
+                                             gdk_pixbuf_get_n_channels(cam->live_view_pixbuf),
                                              TRUE, TRUE);
       // FIXME: what is the resolution of the preview? should we limit the frame rate of histogram update?
     }

@@ -2393,13 +2393,13 @@ post_process_collect_info:
         // this may lead to some rounding errors
         // FIXME: under what circumstances would input not be available?
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, *output,
-                                               roi_out->width, roi_out->height, roi_out->width * sizeof(uint8_t) * 4,
+                                               roi_out->width, roi_out->height, roi_out->width * sizeof(uint8_t) * 4, 4,
                                                TRUE, FALSE);
       }
       else
       {
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
-                                               roi_in.width, roi_in.height, roi_in.width * sizeof(float) * 4,
+                                               roi_in.width, roi_in.height, roi_in.width * sizeof(float) * 4, 4,
                                                FALSE, FALSE);
       }
     }
