@@ -2392,15 +2392,25 @@ post_process_collect_info:
         // input may not be available, so we use the output from gamma
         // this may lead to some rounding errors
         // FIXME: under what circumstances would input not be available?
-        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, *output,
-                                               roi_out->width, roi_out->height, roi_out->width * sizeof(uint8_t) * 4, 4,
-                                               TRUE, FALSE);
+        float *const buf = dt_alloc_align(64, roi_out->width * roi_out->height * 4 * sizeof(float));
+        if(buf)
+        {
+          const uint8_t *in = (uint8_t *)(*output);
+          for(size_t k = 0; k < roi_out->width * roi_out->height * 4; k += 4)
+          {
+            for(size_t c = 0; c < 3; c++)
+              buf[k + c] = in[k + 2 - c] / 255.0f;
+            buf[k + 3] = 0.0f;
+          }
+          darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, buf,
+                                                 roi_out->width, roi_out->height, FALSE);
+          dt_free_align(buf);
+        }
       }
       else
       {
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
-                                               roi_in.width, roi_in.height, roi_in.width * sizeof(float) * 4, 4,
-                                               FALSE, FALSE);
+                                               roi_in.width, roi_in.height, FALSE);
       }
     }
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
