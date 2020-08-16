@@ -109,12 +109,19 @@ size_t dt_bilateral_singlebuffer_size2(const int width,
 }
 #endif /* !HAVE_OPENCL */
 
-static void image_to_grid(const dt_bilateral_t *const b, const int i, const int j, const float L, float *x,
-                          float *y, float *z)
+static size_t image_to_grid(const dt_bilateral_t *const b, const int i, const int j, const float L, float *y,
+                            float *xf, float *yf, float *zf)
 {
-  *x = CLAMPS(i / b->sigma_s, 0, b->size_x - 1);
+  float x = CLAMPS(i / b->sigma_s, 0, b->size_x - 1);
   *y = CLAMPS(j / b->sigma_s, 0, b->size_y - 1);
-  *z = CLAMPS(L / b->sigma_r, 0, b->size_z - 1);
+  float z = CLAMPS(L / b->sigma_r, 0, b->size_z - 1);
+  const int xi = MIN((int)x, b->size_x - 2);
+  const int yi = MIN((int)*y, b->size_y - 2);
+  const int zi = MIN((int)z, b->size_z - 2);
+  *xf = x - xi;
+  *yf = *y - yi;
+  *zf = z - zi;
+  return ((xi + yi * b->size_x) * b->size_z) + zi;
 }
 
 dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
@@ -170,17 +177,10 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
     for(int i = 0; i < b->width; i++)
     {
       size_t index = 4 * (j * b->width + i);
-      float x, y, z;
+      float y, xf, yf, zf;
       const float L = in[index];
-      image_to_grid(b, i, j, L, &x, &y, &z);
-      const int xi = MIN((int)x, b->size_x - 2);
-      const int yi = MIN((int)y, b->size_y - 2);
-      const int zi = MIN((int)z, b->size_z - 2);
-      const float xf = x - xi;
-      const float yf = y - yi;
-      const float zf = z - zi;
       // nearest neighbour splatting:
-      const size_t grid_index = (xi * ox) + (yi * oy) + (zi * oz) + bufsize * dt_get_thread_num();
+      const size_t grid_index = image_to_grid(b, i, j, L, &y, &xf, &yf, &zf) + bufsize * dt_get_thread_num();
       // sum up payload here, doesn't have to be same as edge stopping data
       // for cross bilateral applications.
       // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
@@ -323,16 +323,13 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
   const int oy = b->size_x * b->size_z;
   const int oz = 1;
   float *const buf = b->buf;
-  const int size_x = b->size_x;
-  const int size_y = b->size_y;
-  const int size_z = b->size_z;
   const int width = b->width;
   const int height = b->height;
 
   if (!buf) return;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(b, in, norm, ox, oy, oz, size_x, size_y, size_z, height, width, buf) \
+  dt_omp_firstprivate(b, in, norm, ox, oy, oz, height, width, buf) \
     shared(out) collapse(2)
 #endif
   for(int j = 0; j < height; j++)
@@ -340,17 +337,10 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
     for(int i = 0; i < width; i++)
     {
       size_t index = 4 * (j * width + i);
-      float x, y, z;
+      float y, xf, yf, zf;
       const float L = in[index];
-      image_to_grid(b, i, j, L, &x, &y, &z);
       // trilinear lookup:
-      const int xi = MIN((int)x, size_x - 2);
-      const int yi = MIN((int)y, size_y - 2);
-      const int zi = MIN((int)z, size_z - 2);
-      const float xf = x - xi;
-      const float yf = y - yi;
-      const float zf = z - zi;
-      const size_t gi = (xi * ox) + (yi * oy) + (zi * oz);
+      const size_t gi = image_to_grid(b, i, j, L, &y, &xf, &yf, &zf);
       const float Lout = L
                          + norm * (buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
                                    + buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
@@ -381,16 +371,13 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
   const int oy = b->size_x * b->size_z;
   const int oz = 1;
   float *const buf = b->buf;
-  const int size_x = b->size_x;
-  const int size_y = b->size_y;
-  const int size_z = b->size_z;
   const int width = b->width;
   const int height = b->height;
 
   if (!buf) return;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(b, in, norm, oy, oz, ox, buf, size_x, size_y, size_z, width, height) \
+  dt_omp_firstprivate(b, in, norm, oy, oz, ox, buf, width, height) \
   shared(out) collapse(2)
 #endif
   for(int j = 0; j < height; j++)
@@ -398,17 +385,10 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
     for(int i = 0; i < width; i++)
     {
       size_t index = 4 * (j * width + i);
-      float x, y, z;
+      float y, xf, yf, zf;
       const float L = in[index];
-      image_to_grid(b, i, j, L, &x, &y, &z);
       // trilinear lookup:
-      const int xi = MIN((int)x, size_x - 2);
-      const int yi = MIN((int)y, size_y - 2);
-      const int zi = MIN((int)z, size_z - 2);
-      const float xf = x - xi;
-      const float yf = y - yi;
-      const float zf = z - zi;
-      const size_t gi = (xi * ox) + (yi * oy) + (zi * oz);
+      const size_t gi = image_to_grid(b, i, j, L, &y, &xf, &yf, &zf);
       const float Lout = norm * (buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
                                  + buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
                                  + buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
