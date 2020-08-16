@@ -228,7 +228,7 @@ if _scripts_install.dt.configuration.has_gui  then
 
       -- _scripts_install.dt.print_log("installing library")
 
-      if _scripts_install.dt.gui.current_view().name == "lighttable" then
+      if _scripts_install.dt.gui.current_view().id == "lighttable" then
         _scripts_install.install_module()
       else
         if not _scripts_install.event_registered then
