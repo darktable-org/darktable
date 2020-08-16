@@ -150,9 +150,9 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
 #endif
 void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
 {
-  const int ox = 1;
-  const int oy = b->size_x;
-  const int oz = b->size_y * b->size_x;
+  const int ox = b->size_z;
+  const int oy = b->size_x * b->size_z;
+  const int oz = 1;
   const float sigma_s = b->sigma_s * b->sigma_s;
   float *const buf = b->buf;
   const int bufsize = b->size_x * b->size_y * b->size_z;
@@ -180,7 +180,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
       const float yf = y - yi;
       const float zf = z - zi;
       // nearest neighbour splatting:
-      const size_t grid_index = xi + b->size_x * (yi + b->size_y * zi) + bufsize * dt_get_thread_num();
+      const size_t grid_index = (xi * ox) + (yi * oy) + (zi * oz) + bufsize * dt_get_thread_num();
       // sum up payload here, doesn't have to be same as edge stopping data
       // for cross bilateral applications.
       // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
@@ -300,12 +300,15 @@ void dt_bilateral_blur(const dt_bilateral_t *b)
 {
   if (!b || !b->buf)
     return;
+  const int ox = b->size_z;
+  const int oy = b->size_x * b->size_z;
+  const int oz = 1;
   // gaussian up to 3 sigma
-  blur_line(b->buf, b->size_x * b->size_y, b->size_x, 1, b->size_z, b->size_y, b->size_x);
+  blur_line(b->buf, oz, oy, ox, b->size_z, b->size_y, b->size_x);
   // gaussian up to 3 sigma
-  blur_line(b->buf, b->size_x * b->size_y, 1, b->size_x, b->size_z, b->size_x, b->size_y);
+  blur_line(b->buf, oz, ox, oy, b->size_z, b->size_x, b->size_y);
   // -2 derivative of the gaussian up to 3 sigma: x*exp(-x*x)
-  blur_line_z(b->buf, 1, b->size_x, b->size_x * b->size_y, b->size_x, b->size_y, b->size_z);
+  blur_line_z(b->buf, ox, oy, oz, b->size_x, b->size_y, b->size_z);
 }
 
 
@@ -316,9 +319,9 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
   const float norm = -detail * b->sigma_r * 0.04f;
-  const int ox = 1;
-  const int oy = b->size_x;
-  const int oz = b->size_y * b->size_x;
+  const int ox = b->size_z;
+  const int oy = b->size_x * b->size_z;
+  const int oz = 1;
   float *const buf = b->buf;
   const int size_x = b->size_x;
   const int size_y = b->size_y;
@@ -347,7 +350,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
       const float xf = x - xi;
       const float yf = y - yi;
       const float zf = z - zi;
-      const size_t gi = xi + size_x * (yi + size_y * zi);
+      const size_t gi = (xi * ox) + (yi * oy) + (zi * oz);
       const float Lout = L
                          + norm * (buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
                                    + buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
@@ -374,9 +377,9 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
   const float norm = -detail * b->sigma_r * 0.04f;
-  const int ox = 1;
-  const int oy = b->size_x;
-  const int oz = b->size_y * b->size_x;
+  const int ox = b->size_z;
+  const int oy = b->size_x * b->size_z;
+  const int oz = 1;
   float *const buf = b->buf;
   const int size_x = b->size_x;
   const int size_y = b->size_y;
@@ -405,7 +408,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
       const float xf = x - xi;
       const float yf = y - yi;
       const float zf = z - zi;
-      const size_t gi = xi + size_x * (yi + size_y * zi);
+      const size_t gi = (xi * ox) + (yi * oy) + (zi * oz);
       const float Lout = norm * (buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
                                  + buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
                                  + buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
