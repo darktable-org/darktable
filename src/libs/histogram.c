@@ -332,58 +332,25 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   }
 }
 
-static void dt_lib_histogram_process(struct dt_lib_module_t *self, const void *const input,
-                                     int width, int height, int stride, int n_channels,
-                                     gboolean is_8bit, gboolean is_live_view)
-// FIXME: instead of is_8bit is there a mask declared which lets us know bit depth & float/int?
+static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *const input,
+                                     int width, int height, gboolean is_live_view)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-
-  float *input_f = NULL;
-  if(is_8bit)
-  {
-    // FIXME: make 8-bit/float helper functions for binning each type of scope rather than do this alloc/work here?
-    input_f = dt_alloc_align(64, width * height * 4 * sizeof(float));
-    if(!input_f) return;
-    for(int y = 0; y < height; y++)
-    {
-      // FIXME: will this still work with pixelpipe 8-bit data?
-      const guchar *const p = ((guchar *)input) + y * stride;
-      float *const o = input_f + y * width * 4;
-      for(int x = 0; x < width; x++)
-      {
-        // FIXME: always call process with float data, callers do the conversion?
-        if(is_live_view)
-          // FIXME: do need to flip 2-c when from tether?
-          for(int c = 0; c < 3; c++) o[x * 4 + c] = ((float)p[x * n_channels + c]) * (1.0f / 255.0f);
-        else
-          for(int c = 0; c < 3; c++) o[x * 4 + c] = ((float)p[x * n_channels + (2 - c)]) * (1.0f / 255.0f);
-        input_f[x * 4 + 3] = 0.0f;
-      }
-    }
-  }
-  else
-  {
-    // FIXME: we ignore stride, as we know how it is set from pixelpipe
-    input_f = (float *const)input;
-  }
 
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input_f, width, height);
+      _lib_histogram_process_histogram(d, input, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       // this makes horizontal banding artifacts due to rounding issues
       // when putting colors into the bins, but is still meaningful and is
       // better than no output
-      _lib_histogram_process_waveform(d, input_f, width, height);
+      _lib_histogram_process_waveform(d, input, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
-
-  if(is_8bit) dt_free_align(input_f);
 
   // FIXME: when live view is turned off, we should immediately revert the histogram back to the center view image and turn off this flag -- this may have to happen via the tether view
   d->is_live_view = is_live_view;

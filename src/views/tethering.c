@@ -216,14 +216,30 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       cairo_paint(cr);
 
       // update histogram for live view image
-      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
-                                             gdk_pixbuf_read_pixels(cam->live_view_pixbuf),
-                                             gdk_pixbuf_get_width(cam->live_view_pixbuf),
-                                             gdk_pixbuf_get_height(cam->live_view_pixbuf),
-                                             gdk_pixbuf_get_rowstride(cam->live_view_pixbuf),
-                                             gdk_pixbuf_get_n_channels(cam->live_view_pixbuf),
-                                             TRUE, TRUE);
-      // FIXME: what is the resolution of the preview? should we limit the frame rate of histogram update?
+      const int lv_width = gdk_pixbuf_get_width(cam->live_view_pixbuf);
+      const int lv_height = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+      const int lv_stride = gdk_pixbuf_get_rowstride(cam->live_view_pixbuf);
+      const int lv_n_channels = gdk_pixbuf_get_n_channels(cam->live_view_pixbuf);
+      const guchar *const lv_buf = gdk_pixbuf_read_pixels(cam->live_view_pixbuf);
+      float *const out_f = dt_alloc_align(64, lv_width * lv_height * 4 * sizeof(float));
+      if(out_f)
+      {
+        for(int y = 0; y < lv_height; y++)
+        {
+          const guchar *const p = lv_buf + y * lv_stride;
+          float *const o = out_f + y * lv_width * 4;
+          for(int x = 0; x < lv_width; x++)
+          {
+            for(int c = 0; c < 3; c++)
+              o[x * 4 + c] = p[x * lv_n_channels + c] * (1.0f / 255.0f);
+            o[x * 4 + 3] = 0.0f;
+          }
+        }
+        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
+                                               out_f, lv_width, lv_height, TRUE);
+        // FIXME: what is the resolution of the preview? should we limit the frame rate of histogram update?
+        dt_free_align(out_f);
+      }
     }
     dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
   }
