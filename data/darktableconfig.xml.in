@@ -2362,7 +2362,14 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>whether to show coefficients</shortdescription>
-    <longdescription>this is just for remembering whether to show coefficients or not and remember it.</longdescription>
+    <longdescription>this is just for remembering whether to show coefficients or not and remember it</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/temperature/button_bar</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>arange buttons as bar below temp/tint sliders</shortdescription>
+    <longdescription>if enabled, the buttons in white balance module will be aranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
