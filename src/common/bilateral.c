@@ -23,31 +23,60 @@
 #include <stdlib.h>           // for size_t, free, malloc, NULL
 #include <string.h>           // for memset
 
-// these clamp away insane memory requirements.
-// they should reasonably faithfully represent the
-// full precision though, so tiling will help reducing memory footprint
-// and export will look the same as darkroom mode (only 1mpix there).
-#define DT_COMMON_BILATERAL_MAX_RES_S 6000
+// These limits clamp away insane memory requirements.  They should reasonably faithfully represent the full
+// precision though, so tiling will help reduce the memory footprint and export will look the same as darkroom
+// mode (only 1mpix there).
+#define DT_COMMON_BILATERAL_MAX_RES_S 3000
 #define DT_COMMON_BILATERAL_MAX_RES_R 50
 
-#ifndef HAVE_OPENCL
-// function definition on opencl path takes precedence
+void dt_bilateral_grid_size(dt_bilateral_t *b, const int width, const int height, const float L_range,
+                            float sigma_s, const float sigma_r)
+{
+  // Callers adjust sigma_s to account for image scaling to make the bilateral filter scale-invariant.  As a
+  // result, if the user sets a small enough value for sigma, we can get sigma_s substantially below 1.0.
+  // Values < 1 generate a bilateral grid with spatial dimensions larger than the (scaled) image pixel
+  // dimensions; for sigma_s < 0.5, there is at least one unused grid point between any two used points, and
+  // thus the gaussian blur will have little effect.  So we force sigma_s to be at least 0.5 to avoid an
+  // excessively large grid.
+  if (sigma_s < 0.5) sigma_s = 0.5;
+
+  // compute an initial grid size, clamping away insanely large grids
+  float _x = CLAMPS((int)roundf(width / sigma_s), 4, DT_COMMON_BILATERAL_MAX_RES_S);
+  float _y = CLAMPS((int)roundf(height / sigma_s), 4, DT_COMMON_BILATERAL_MAX_RES_S);
+  float _z = CLAMPS((int)roundf(L_range / sigma_r), 4, DT_COMMON_BILATERAL_MAX_RES_R);
+  // If we clamped the X or Y dimensions, the sigma_s for that dimension changes.  Since we need to use the
+  // same value in both dimensions, compute the effective sigma_s for the grid.
+  b->sigma_s = MAX(height / _y, width / _x);
+  b->sigma_r = L_range / _z;
+  // Compute the grid size in light of the actual adjusted values for sigma_s and sigma_r
+  b->size_x = (int)ceilf(width / b->sigma_s) + 1;
+  b->size_y = (int)ceilf(height / b->sigma_s) + 1;
+  b->size_z = (int)ceilf(L_range / b->sigma_r) + 1;
+#if 0
+  if (b->sigma_s != sigma_s) fprintf(stderr, "[bilateral] clamped sigma_s (%g -> %g)!\n",sigma_s,b->sigma_s);
+  if (b->sigma_r != sigma_r) fprintf(stderr, "[bilateral] clamped sigma_r (%g -> %g)!\n",sigma_r,b->sigma_r);
+#endif
+}
+
 size_t dt_bilateral_memory_use(const int width,     // width of input image
                                const int height,    // height of input image
                                const float sigma_s, // spatial sigma (blur pixel coords)
                                const float sigma_r) // range sigma (blur luma values)
 {
-  float _x = roundf(width / sigma_s);
-  float _y = roundf(height / sigma_s);
-  float _z = roundf(100.0f / sigma_r);
-  size_t size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
-  size_t size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
-  size_t size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
-
-  return dt_get_num_threads() * size_x * size_y * size_z * sizeof(float);
+  dt_bilateral_t b;
+  dt_bilateral_grid_size(&b,width,height,100.0f,sigma_s,sigma_r);
+  size_t grid_size = b.size_x * b.size_y * b.size_z;
+#ifdef HAVE_OPENCL
+  // OpenCL path needs two buffers
+  return MAX(dt_get_num_threads(),2) * grid_size * sizeof(float);
+#else
+  return dt_get_num_threads() * grid_size * sizeof(float);
+#endif /* HAVE_OPENCL */
 }
 
+#ifndef HAVE_OPENCL
 // for the CPU path this is just an alias as no additional temp buffer is needed
+// when compiling with OpenCL, version in bilateralcl.c takes precedence
 size_t dt_bilateral_memory_use2(const int width,
                                 const int height,
                                 const float sigma_s,
@@ -55,23 +84,22 @@ size_t dt_bilateral_memory_use2(const int width,
 {
   return dt_bilateral_memory_use(width, height, sigma_s, sigma_r);
 }
+#endif /* !HAVE_OPENCL */
 
 size_t dt_bilateral_singlebuffer_size(const int width,     // width of input image
                                       const int height,    // height of input image
                                       const float sigma_s, // spatial sigma (blur pixel coords)
                                       const float sigma_r) // range sigma (blur luma values)
 {
-  float _x = roundf(width / sigma_s);
-  float _y = roundf(height / sigma_s);
-  float _z = roundf(100.0f / sigma_r);
-  size_t size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
-  size_t size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
-  size_t size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
-
-  return dt_get_num_threads() * size_x * size_y * size_z * sizeof(float);
+  dt_bilateral_t b;
+  dt_bilateral_grid_size(&b,width,height,100.0f,sigma_s,sigma_r);
+  size_t grid_size = b.size_x * b.size_y * b.size_z;
+  return dt_get_num_threads() * grid_size * sizeof(float);
 }
 
+#ifndef HAVE_OPENCL
 // for the CPU path this is just an alias as no additional temp buffer is needed
+// when compiling with OpenCL, version in bilateralcl.c takes precedence
 size_t dt_bilateral_singlebuffer_size2(const int width,
                                        const int height,
                                        const float sigma_s,
@@ -79,7 +107,7 @@ size_t dt_bilateral_singlebuffer_size2(const int width,
 {
   return dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r);
 }
-#endif
+#endif /* !HAVE_OPENCL */
 
 static void image_to_grid(const dt_bilateral_t *const b, const int i, const int j, const float L, float *x,
                           float *y, float *z)
@@ -96,19 +124,9 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
 {
   dt_bilateral_t *b = (dt_bilateral_t *)malloc(sizeof(dt_bilateral_t));
   if(!b) return NULL;
-  // if(width/sigma_s < 4 || width/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
-  // if(height/sigma_s < 4 || height/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
-  // if(100.0/sigma_r < 4 || 100.0/sigma_r > 100) fprintf(stderr, "[bilateral] need to clamp sigma_r!\n");
-  float _x = roundf(width / sigma_s);
-  float _y = roundf(height / sigma_s);
-  float _z = roundf(100.0f / sigma_r);
-  b->size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
-  b->size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
-  b->size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
+  dt_bilateral_grid_size(b,width,height,100.0f,sigma_s,sigma_r);
   b->width = width;
   b->height = height;
-  b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
-  b->sigma_r = 100.0f / (b->size_z - 1.0f);
   const int nthreads = /*darktable.num_openmp_threads*/ dt_get_num_threads();
   b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(float) * nthreads);
 
@@ -124,7 +142,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in:64)
 #endif
-void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
+void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
 {
   const int ox = 1;
   const int oy = b->size_x;
@@ -271,7 +289,7 @@ static void blur_line(float *buf, const int offset1, const int offset2, const in
 }
 
 
-void dt_bilateral_blur(dt_bilateral_t *b)
+void dt_bilateral_blur(const dt_bilateral_t *b)
 {
   // gaussian up to 3 sigma
   blur_line(b->buf, b->size_x * b->size_y, b->size_x, 1, b->size_z, b->size_y, b->size_x);
