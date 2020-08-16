@@ -1021,36 +1021,18 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
 
 static void _iop_gui_rename_module(dt_iop_module_t *module)
 {
-  const int bs = DT_PIXEL_APPLY_DPI(12);
-  gint px = 0, py = 0;
-
   dt_iop_gui_rename_module_t *d = (dt_iop_gui_rename_module_t *)calloc(1, sizeof(dt_iop_gui_rename_module_t));
   d->module = module;
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
   GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
   GtkWidget *label = g_list_nth_data(childs, IOP_MODULE_LABEL);
-  gdk_window_get_origin(gtk_widget_get_window(label), &px, &py);
-  const gint w = gdk_window_get_width(gtk_widget_get_window(label)) - bs * 8 - bs * 1.7;
-  const gint h = gdk_window_get_height(gtk_widget_get_window(label));
+  const gint w = gtk_widget_get_allocated_width(module->header) * 0.8f;
+  const gint h = gtk_widget_get_allocated_height(label);
 
-  const gint x = px + bs * 6;
-  const gint y = py;
-
-  d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(d->floating_window);
-#endif
-  /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
-  gtk_widget_set_can_focus(d->floating_window, TRUE);
-  gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
-  gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-  gtk_window_set_transient_for(GTK_WINDOW(d->floating_window), GTK_WINDOW(window));
-  gtk_widget_set_opacity(d->floating_window, 0.8);
-  gtk_window_move(GTK_WINDOW(d->floating_window), x, y);
+  d->floating_window = gtk_popover_new(label);
 
   GtkWidget *entry = gtk_entry_new();
-  gtk_widget_set_size_request(entry, w, h);
+  gtk_entry_set_width_chars(GTK_ENTRY(entry), 10);
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
   gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
@@ -1058,12 +1040,10 @@ static void _iop_gui_rename_module(dt_iop_module_t *module)
 
   gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
 
-  gtk_widget_show(d->floating_window);
   gtk_widget_show(entry);
-  gtk_window_resize(GTK_WINDOW(d->floating_window), w, h + 4);
-  gtk_window_set_modal(GTK_WINDOW(d->floating_window), TRUE);
+  gtk_widget_set_size_request(entry, w, h);
+  gtk_popover_popup(GTK_POPOVER(d->floating_window));
   gtk_widget_grab_focus(entry);
-  gtk_window_present(GTK_WINDOW(d->floating_window));
 }
 
 static void dt_iop_gui_rename_callback(GtkButton *button, dt_iop_module_t *module)
