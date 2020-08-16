@@ -1946,6 +1946,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_free(config);
 
   const int feedback = g->colored_sliders ? 0 : 1;
+  const int button_bar = dt_conf_get_bool("plugins/darkroom/temperature/button_bar");
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -1960,6 +1961,8 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *temp_label_box = gtk_event_box_new();
   GtkWidget *temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
   gtk_widget_set_tooltip_text(temp_label, _("click to cycle color mode on sliders"));
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(temp_label));
+  gtk_style_context_add_class(context, "section_label_top");
   gtk_container_add(GTK_CONTAINER(temp_label_box), temp_label);
 
   g_signal_connect(G_OBJECT(temp_label_box), "button-release-event", G_CALLBACK(temp_label_click), self);
@@ -1995,10 +1998,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->btn_asshot = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
   g->btn_user = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_drawn, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
   g->btn_d65 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-  gtk_grid_attach(grid, g->colorpicker, 1, 1, 1, 1);
-  gtk_grid_attach(grid, g->btn_asshot, 2, 1, 1, 1);
-  gtk_grid_attach(grid, g->btn_user, 1, 2, 1, 1);
-  gtk_grid_attach(grid, g->btn_d65, 2, 2, 1, 1);
 
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
   gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance preset to as shot"));
@@ -2009,6 +2008,25 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->btn_asshot), "toggled", G_CALLBACK(btn_asshot_toggled),  (gpointer)self);
   g_signal_connect(G_OBJECT(g->btn_user), "toggled", G_CALLBACK(btn_user_toggled),  (gpointer)self);
   g_signal_connect(G_OBJECT(g->btn_d65), "toggled", G_CALLBACK(btn_d65_toggled),  (gpointer)self);
+
+  if(button_bar)
+  {
+    GtkWidget* buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_d65, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_user, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(buttonbar), g->colorpicker, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_asshot, FALSE, FALSE, 0);
+
+    gtk_grid_attach(grid, buttonbar, 0, 3, 1, 1);
+  } 
+  else 
+  {
+    gtk_grid_attach(grid, g->btn_asshot, 1, 1, 1, 1);
+    gtk_grid_attach(grid, g->colorpicker, 2, 1, 1, 1);
+    gtk_grid_attach(grid, g->btn_user, 1, 2, 1, 1);
+    gtk_grid_attach(grid, g->btn_d65, 2, 2, 1, 1);
+  }
 
   gtk_box_pack_start(GTK_BOX(g->box_enabled), gridw, TRUE, TRUE, 0);
 
