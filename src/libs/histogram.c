@@ -1254,6 +1254,9 @@ void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
     {
       dt_dev_cleanup(d->dev);
       free(d->dev);
+      // in case exited while in live view
+      // FIXME: can tether tell us when we've left live view?
+      d->is_live_view = FALSE;
     }
     d->dev = NULL;
   }
