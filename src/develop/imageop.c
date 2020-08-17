@@ -979,72 +979,80 @@ static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   dt_iop_connect_accels_multi(((dt_iop_module_t *)user_data)->so);
 }
 
-typedef struct dt_iop_gui_rename_module_t
-{
-  GtkWidget *floating_window;
-  dt_iop_module_t *module;
-} dt_iop_gui_rename_module_t;
-
-// http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry
-static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_gui_rename_module_t *d)
+static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_module_t *module)
 {
   int ended = 0;
 
-  switch(event->keyval)
+  if(event->type == GDK_FOCUS_CHANGE || event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
   {
-    case GDK_KEY_Escape:
-      ended = 1;
-      break;
-    case GDK_KEY_Return:
-    case GDK_KEY_KP_Enter:
+    const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
+    if(strcmp(module->multi_name, name) != 0)
     {
-      const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
-      if(strcmp(d->module->multi_name, name) != 0)
-      {
-        g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name));
-        dt_dev_add_history_item(d->module->dev, d->module, TRUE);
-        dt_iop_gui_update_header(d->module);
-      }
-
-      ended = 1;
+      g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+      dt_dev_add_history_item(module->dev, module, TRUE);
     }
-    break;
+
+    ended = 1;
+  }
+  else if(event->keyval == GDK_KEY_Escape)
+  {
+    // restore saved 1st character of instance name
+    module->multi_name[0] = module->multi_name[sizeof(module->multi_name) - 1];
+    module->multi_name[sizeof(module->multi_name) - 1] = 0;
+
+    ended = 1;
   }
 
   if(ended)
   {
-    gtk_widget_destroy(d->floating_window);
-    gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-    free(d);
+    g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_rename_module_key_press), module);
+    gtk_widget_destroy(entry);
+    dt_iop_gui_update_header(module);
+
     return TRUE;
   }
+
   return FALSE; /* event not handled */
+}
+
+static gboolean _rename_module_resize(GtkWidget *entry, GdkEventKey *event, dt_iop_module_t *module)
+{
+  int width = 0;
+  GtkBorder padding;
+  
+  pango_layout_get_pixel_size(gtk_entry_get_layout(GTK_ENTRY(entry)), &width, NULL);
+  gtk_style_context_get_padding(gtk_widget_get_style_context (entry), 
+                                gtk_widget_get_state_flags (entry),
+                                &padding);
+  gtk_widget_set_size_request(entry, width + padding.left + padding.right + 1, -1);
+
+  return TRUE;
 }
 
 static void _iop_gui_rename_module(dt_iop_module_t *module)
 {
-  dt_iop_gui_rename_module_t *d = (dt_iop_gui_rename_module_t *)calloc(1, sizeof(dt_iop_gui_rename_module_t));
-  d->module = module;
-
-  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
-  GtkWidget *label = g_list_nth_data(childs, IOP_MODULE_LABEL);
-  const gint w = gtk_widget_get_allocated_width(module->header) * 0.8f;
-  const gint h = gtk_widget_get_allocated_height(label);
-
-  d->floating_window = gtk_popover_new(label);
+  if(gtk_container_get_focus_child(GTK_CONTAINER(module->header))) return;
 
   GtkWidget *entry = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(entry), 10);
 
-  gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
-  gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
-  g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), d);
-
+  gtk_widget_set_name(entry, "iop-panel-label");
+  gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
+  gtk_entry_set_max_length(GTK_ENTRY(entry), sizeof(module->multi_name) - 1);
   gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
 
+  // remove instance name but save 1st character in case of escape
+  module->multi_name[sizeof(module->multi_name) - 1] = module->multi_name[0];
+  module->multi_name[0] = 0;
+  dt_iop_gui_update_header(module);
+
+  dt_gui_key_accel_block_on_focus_connect(entry); // needs to be before focus-out-event
+  g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), module);
+  g_signal_connect(entry, "focus-out-event", G_CALLBACK(_rename_module_key_press), module);
+  g_signal_connect(entry, "style-updated", G_CALLBACK(_rename_module_resize), module);
+  g_signal_connect(entry, "changed", G_CALLBACK(_rename_module_resize), module);
+
+  gtk_box_pack_start(GTK_BOX(module->header), entry, TRUE, TRUE, 0);
   gtk_widget_show(entry);
-  gtk_widget_set_size_request(entry, w, h);
-  gtk_popover_popup(GTK_POPOVER(d->floating_window));
   gtk_widget_grab_focus(entry);
 }
 
@@ -2122,12 +2130,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), !module->hide_enable_button);
 
   /* reorder header, for now, iop are always in the right panel */
-  for(int i = 0; i < IOP_MODULE_LAST; i++)
-    if(hw[i]) gtk_box_pack_start( GTK_BOX(header),
-                                  hw[i],
-                                  i == IOP_MODULE_LABEL ? TRUE : FALSE,
-                                  i == IOP_MODULE_LABEL ? TRUE : FALSE,
-                                  0);  // padding
+  for(int i = 0; i <= IOP_MODULE_LABEL; i++)
+    if(hw[i]) gtk_box_pack_start( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
+  for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
+    if(hw[i]) gtk_box_pack_end( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
 
   dt_gui_add_help_link(header, "interacting.html");
 
