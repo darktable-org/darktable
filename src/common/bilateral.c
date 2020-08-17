@@ -23,8 +23,6 @@
 #include <stdlib.h>           // for size_t, free, malloc, NULL
 #include <string.h>           // for memset
 
-#define USE_NEW
-
 // These limits clamp away insane memory requirements.  They should reasonably faithfully represent the full
 // precision though, so tiling will help reduce the memory footprint and export will look the same as darkroom
 // mode (only 1mpix there).
@@ -68,21 +66,12 @@ size_t dt_bilateral_memory_use(const int width,     // width of input image
   dt_bilateral_t b;
   dt_bilateral_grid_size(&b,width,height,100.0f,sigma_s,sigma_r);
   size_t grid_size = b.size_x * b.size_y * b.size_z;
-#ifdef USE_NEW
 #ifdef HAVE_OPENCL
   // OpenCL path needs two buffers
   return 2 * grid_size * sizeof(float);
 #else
   return (grid_size + 2 * b.size_x * b.size_z) * sizeof(float);
 #endif /* HAVE_OPENCL */
-#else // !USE_NEW
-#ifdef HAVE_OPENCL
-  // OpenCL path needs two buffers
-  return MAX(dt_get_num_threads(),2) * grid_size * sizeof(float);
-#else
-  return dt_get_num_threads() * grid_size * sizeof(float);
-#endif /* HAVE_OPENCL */
-#endif /* USE_NEW */
 }
 
 #ifndef HAVE_OPENCL
@@ -105,11 +94,7 @@ size_t dt_bilateral_singlebuffer_size(const int width,     // width of input ima
   dt_bilateral_t b;
   dt_bilateral_grid_size(&b,width,height,100.0f,sigma_s,sigma_r);
   size_t grid_size = b.size_x * b.size_y * b.size_z;
-#ifdef USE_NEW
   return (grid_size + 2 * b.size_x * b.size_z) * sizeof(float);
-#else // !USE_NEW
-  return dt_get_num_threads() * grid_size * sizeof(float);
-#endif /* USE_NEW */
 }
 
 #ifndef HAVE_OPENCL
@@ -160,7 +145,6 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   dt_bilateral_grid_size(b,width,height,100.0f,sigma_s,sigma_r);
   b->width = width;
   b->height = height;
-#ifdef USE_NEW
   b->numslices = darktable.num_openmp_threads;
   b->sliceheight = (height + b->numslices - 1) / b->numslices;
   b->slicerows = (b->size_y + b->numslices - 1) / b->numslices + 1;
@@ -169,14 +153,6 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   {
     memset(b->buf, 0, b->size_x * b->size_z * b->numslices * b->slicerows * sizeof(float));
   }
-#else // !USE_NEW
-  const int nthreads = /*darktable.num_openmp_threads*/ dt_get_num_threads();
-  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(float) * nthreads);
-  if (b->buf)
-  {
-    memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(float) * nthreads);
-  }
-#endif /* USE_NEW */
   else
   {
     fprintf(stderr,"[bilateral] unable to allocate buffer for %lux%lux%lu grid\n",b->size_x,b->size_y,b->size_z);
@@ -198,8 +174,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
   float *const buf = b->buf;
 
   if (!buf) return;
-// splat into downsampled grid
-#ifdef USE_NEW
+  // splat into downsampled grid
   const int nthreads = darktable.num_openmp_threads;
   const size_t offsets[8] =
   {
@@ -280,51 +255,6 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
         memset(buf + j*oy, '\0', oy*sizeof(float));
     }
   }
-#else // !USE_NEW
-  const int bufsize = b->size_x * b->size_y * b->size_z;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, oy, oz, ox, sigma_s, buf, bufsize)    \
-  shared(b) \
-  collapse(2)
-#endif
-  for(int j = 0; j < b->height; j++)
-  {
-    for(int i = 0; i < b->width; i++)
-    {
-      size_t index = 4 * (j * b->width + i);
-      float xf, yf, zf;
-      const float L = in[index];
-      // nearest neighbour splatting:
-      const size_t grid_index = image_to_grid(b, i, j, L, &xf, &yf, &zf) + bufsize * dt_get_thread_num();
-      // sum up payload here, doesn't have to be same as edge stopping data
-      // for cross bilateral applications.
-      // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
-      // should not cause clipping here.
-#ifdef _OPENMP
-#pragma omp simd aligned(buf:64)
-#endif
-      for(int k = 0; k < 8; k++)
-      {
-        const size_t ii = grid_index + ((k & 1) ? ox : 0) + ((k & 2) ? oy : 0) + ((k & 4) ? oz : 0);
-        const float contrib = ((k & 1) ? xf : (1.0f - xf)) * ((k & 2) ? yf : (1.0f - yf))
-                              * ((k & 4) ? zf : (1.0f - zf)) * 100.0f / sigma_s;
-        buf[ii] += contrib;
-      }
-    }
-  }
-
-  // merge the per-thread results into the final result
-  const int nthreads = /*darktable.num_openmp_threads*/ dt_get_num_threads();
-  for(int index = 0; index < bufsize; index++)
-  {
-    for(int i = 1; i < nthreads; i++)
-    {
-      buf[index] += buf[index + i*bufsize];
-    }
-  }
-#endif /* USE_NEW */
-
 }
 
 #ifdef _OPENMP
