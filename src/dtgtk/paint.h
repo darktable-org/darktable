@@ -181,6 +181,8 @@ void dtgtk_cairo_paint_multiinstance(cairo_t *cr, gint x, gint y, gint w, gint h
 void dtgtk_cairo_paint_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint focus peaking icon */
 void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint camera icon */
+void dtgtk_cairo_paint_camera(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 /** paint active modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
