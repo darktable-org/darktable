@@ -71,7 +71,6 @@ static int h_size_fixed_member(lua_State *L)
   if(lua_gettop(L) > 2) {
     gboolean resize = lua_toboolean(L,3);
     gtk_stack_set_hhomogeneous(GTK_STACK(stack->widget), resize);
-    fprintf(stderr, "set horizontal resize\n\n\n");
     return 0;
   }
   lua_pushboolean(L,gtk_stack_get_hhomogeneous(GTK_STACK(stack->widget)));
@@ -86,7 +85,6 @@ static int v_size_fixed_member(lua_State *L)
   if(lua_gettop(L) > 2) {
     gboolean resize = lua_toboolean(L,3);
     gtk_stack_set_vhomogeneous(GTK_STACK(stack->widget), resize);
-    fprintf(stderr, "set vertical resize\n\n\n\n");
     return 0;
   }
   lua_pushboolean(L,gtk_stack_get_vhomogeneous(GTK_STACK(stack->widget)));
