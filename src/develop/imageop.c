@@ -977,14 +977,7 @@ static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   dt_iop_connect_accels_multi(((dt_iop_module_t *)user_data)->so);
 }
 
-typedef struct dt_iop_gui_rename_module_t
-{
-  GtkWidget *floating_window;
-  dt_iop_module_t *module;
-} dt_iop_gui_rename_module_t;
-
-// http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry
-static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_gui_rename_module_t *d)
+static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_module_t *module)
 {
   int ended = 0;
 
@@ -995,54 +988,53 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
       break;
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
-    {
-      const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
-      if(strcmp(d->module->multi_name, name) != 0)
       {
-        g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name));
-        dt_dev_add_history_item(d->module->dev, d->module, TRUE);
-        dt_iop_gui_update_header(d->module);
+        const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
+        if(strcmp(module->multi_name, name) != 0)
+        {
+          g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+          dt_dev_add_history_item(module->dev, module, TRUE);
+        }
       }
 
       ended = 1;
-    }
-    break;
+      break;
   }
 
   if(ended)
   {
-    gtk_widget_destroy(d->floating_window);
-    gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-    free(d);
+    gtk_container_remove(GTK_CONTAINER(module->header), entry);
+    dt_iop_gui_update_header(module);
+
     return TRUE;
   }
+
   return FALSE; /* event not handled */
 }
 
 static void _iop_gui_rename_module(dt_iop_module_t *module)
 {
-  dt_iop_gui_rename_module_t *d = (dt_iop_gui_rename_module_t *)calloc(1, sizeof(dt_iop_gui_rename_module_t));
-  d->module = module;
+  GList *children = gtk_container_get_children(GTK_CONTAINER(module->header));
 
-  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
-  GtkWidget *label = g_list_nth_data(childs, IOP_MODULE_LABEL);
-  const gint w = gtk_widget_get_allocated_width(module->header) * 0.8f;
-  const gint h = gtk_widget_get_allocated_height(label);
+  GtkWidget *label = g_list_nth_data(children, IOP_MODULE_LABEL);
+  GtkWidget *widget = g_list_nth_data(children, IOP_MODULE_LABEL + 1);
 
-  d->floating_window = gtk_popover_new(label);
+  g_list_free(children);
+
+  if(GTK_IS_ENTRY(widget)) return;
 
   GtkWidget *entry = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(entry), 10);
 
-  gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
-  gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
-  g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), d);
+  gtk_box_pack_start(GTK_BOX(module->header), entry, TRUE, TRUE, 0);
 
+  dt_gui_key_accel_block_on_focus_connect(entry);
+  g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), module);
+
+  gtk_entry_set_width_chars(GTK_ENTRY(entry), 3);
+  gtk_label_set_text(GTK_LABEL(label), module->name());
   gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
-
+  gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
   gtk_widget_show(entry);
-  gtk_widget_set_size_request(entry, w, h);
-  gtk_popover_popup(GTK_POPOVER(d->floating_window));
   gtk_widget_grab_focus(entry);
 }
 
@@ -2120,12 +2112,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), !module->hide_enable_button);
 
   /* reorder header, for now, iop are always in the right panel */
-  for(int i = 0; i < IOP_MODULE_LAST; i++)
-    if(hw[i]) gtk_box_pack_start( GTK_BOX(header),
-                                  hw[i],
-                                  i == IOP_MODULE_LABEL ? TRUE : FALSE,
-                                  i == IOP_MODULE_LABEL ? TRUE : FALSE,
-                                  0);  // padding
+  for(int i = 0; i <= IOP_MODULE_LABEL; i++)
+    if(hw[i]) gtk_box_pack_start( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
+  for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
+    if(hw[i]) gtk_box_pack_end( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
 
   dt_gui_add_help_link(header, "interacting.html");
 
