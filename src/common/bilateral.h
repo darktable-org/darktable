@@ -24,6 +24,7 @@ typedef struct dt_bilateral_t
 {
   size_t size_x, size_y, size_z;
   int width, height;
+  int numslices, sliceheight, slicerows; //height--in input image, rows--in grid
   float sigma_s, sigma_r;
   float *buf __attribute__((aligned(64)));
 } __attribute__((packed)) dt_bilateral_t;
