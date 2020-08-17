@@ -1,5 +1,9 @@
 #!/bin/bash
-lensfun-update-data
+set -e -o pipefail
+trap 'echo "${BASH_SOURCE[0]}{${FUNCNAME[0]}}:${LINENO}: Error: command \`${BASH_COMMAND}\` failed with exit code $?"' ERR
+cd "$(dirname "$0")"/
+
+lensfun-update-data || true
 cp -R ~/.local/share/lensfun .
 ~/.local/bin/gtk-mac-bundler darktable.bundle
 mv package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/MacOS/darktable
