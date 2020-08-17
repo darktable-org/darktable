@@ -604,7 +604,8 @@ overshoot.right
 {
   background-color: @bg_color;
   color: @plugin_label_color;
-  border:0;
+  border: 0;
+  margin: 0;
   padding: 0 2px 2px 0.45em;
   font-weight: normal;
   font-family: sans-serif;
