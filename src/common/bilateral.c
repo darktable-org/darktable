@@ -251,7 +251,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
       dest += oy;
       // clear elements in the part of the buffer which holds the final result now that we've read the partial result,
       // since we'll be adding to those locations later
-      if (j < b->height)
+      if (j < b->size_y)
         memset(buf + j*oy, '\0', oy*sizeof(float));
     }
   }
