@@ -231,7 +231,7 @@
 
   <para>
     The base directory part of the naming pattern (default
-    <quote>$(PICTURES_FOLDER)/darktable</quote>).
+    <quote>$(PICTURES_FOLDER)/Darktable</quote>).
   </para>
 
   <bridgehead renderas="sect4">sub directory naming pattern</bridgehead>

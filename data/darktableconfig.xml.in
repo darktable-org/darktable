@@ -474,7 +474,7 @@
   <dtconfig>
     <name>plugins/capture/storage/basedirectory</name>
     <type>string</type>
-    <default>$(PICTURES_FOLDER)/darktable</default>
+    <default>$(PICTURES_FOLDER)/Darktable</default>
     <shortdescription>path of storage for captured images</shortdescription>
     <longdescription/>
   </dtconfig>
