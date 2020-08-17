@@ -1838,6 +1838,16 @@ static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer us
   dt_conf_set_bool("plugins/darkroom/temperature/expand_coefficients", active);
 }
 
+static void _coeffs_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
+{
+  if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return;
+
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle)));
+}
+
 static void gui_sliders_update(struct dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
@@ -1982,16 +1992,49 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
   gtk_widget_set_tooltip_text(g->scale_tint, _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
 
-  GtkWidget *gridw = gtk_grid_new();
-  GtkGrid *grid = GTK_GRID(gridw);
-  gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_spacing(grid, DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_homogeneous(grid, FALSE);
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_k, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->scale_tint, TRUE, TRUE, 0);
 
-  gtk_grid_attach(grid, g->scale_k, 0, 1, 1, 1);
-  gtk_widget_set_hexpand(g->scale_k, TRUE);
-  gtk_grid_attach(grid, g->scale_tint, 0, 2, 1, 1);
-  gtk_widget_set_hexpand(g->scale_tint, TRUE);
+  // collapsible section for coeffs that are generally not to be used
+
+  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+  GtkWidget *header_evb = gtk_event_box_new();
+  GtkWidget *destdisp = dt_ui_section_label_new(_("channel coefficients"));
+  gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
+
+  g->coeffs_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), g->expand_coeffs);
+  gtk_widget_set_name(GTK_WIDGET(g->coeffs_toggle), "control-button");
+
+  g->coeff_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), header_evb, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), g->coeffs_toggle, FALSE, FALSE, 0);
+
+  g->coeffs_expander = dtgtk_expander_new(destdisp_head, g->coeff_widgets);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), TRUE);
+  gtk_box_pack_end(GTK_BOX(g->box_enabled), g->coeffs_expander, FALSE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(g->coeffs_toggle), "toggled", G_CALLBACK(_coeffs_button_changed),  (gpointer)self);
+
+  g_signal_connect(G_OBJECT(header_evb), "button-release-event", G_CALLBACK(_coeffs_expander_click),
+                   (gpointer)self);
+
+  g->scale_r = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[0], 3, feedback);
+  g->scale_g = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[1], 3, feedback);
+  g->scale_b = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[2], 3, feedback);
+  g->scale_g2 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[3], 3, feedback);
+
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_r, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_b, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g2, TRUE, TRUE, 0);
+
+  gtk_widget_set_no_show_all(g->scale_g2, TRUE);
+
+  gui_sliders_update(self);
+
+  GtkWidget *cam_preset_label = dt_ui_section_label_new(_("white balance presets"));
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), cam_preset_label, TRUE, TRUE, 0);
 
   // create color picker to be able to send its signal when spot selected
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
@@ -2013,63 +2056,19 @@ void gui_init(struct dt_iop_module_t *self)
   {
     GtkWidget* buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_d65, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_user, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(buttonbar), g->colorpicker, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_asshot, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_d65, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_user, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(buttonbar), g->colorpicker, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_asshot, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(g->box_enabled), buttonbar, TRUE, TRUE, 0);
 
-    gtk_grid_attach(grid, buttonbar, 0, 3, 1, 1);
-  } 
-  else 
-  {
-    gtk_grid_attach(grid, g->btn_asshot, 1, 1, 1, 1);
-    gtk_grid_attach(grid, g->colorpicker, 2, 1, 1, 1);
-    gtk_grid_attach(grid, g->btn_user, 1, 2, 1, 1);
-    gtk_grid_attach(grid, g->btn_d65, 2, 2, 1, 1);
+    //in case we don't have enabled button bar, no need to show buttons and all buttons are simply hidden!
   }
-
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), gridw, TRUE, TRUE, 0);
-
-  // collapsible section for coeffs that are generally not to be used
-
-  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  GtkWidget *destdisp = dt_ui_section_label_new(_("channels coefficients"));
-
-  g->coeffs_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle), g->expand_coeffs);
-  gtk_widget_set_name(GTK_WIDGET(g->coeffs_toggle), "control-button");
-
-  g->coeff_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), g->coeffs_toggle, FALSE, FALSE, 0);
-
-  g->coeffs_expander = dtgtk_expander_new(destdisp_head, g->coeff_widgets);
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), TRUE);
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->coeffs_expander, FALSE, FALSE, 0);
-
-  g_signal_connect(G_OBJECT(g->coeffs_toggle), "toggled", G_CALLBACK(_coeffs_button_changed),  (gpointer)self);
-
-  g->scale_r = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[0], 3, feedback);
-  g->scale_g = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[1], 3, feedback);
-  g->scale_b = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[2], 3, feedback);
-  g->scale_g2 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 8.0, .001, p->coeffs[3], 3, feedback);
-
-  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_r, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_b, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->coeff_widgets), g->scale_g2, TRUE, TRUE, 0);
-
-  gtk_widget_set_no_show_all(g->scale_g2, TRUE);
-
-  gui_sliders_update(self);
-
-  GtkWidget *cam_preset_label = dt_ui_section_label_new(_("camera presets"));
-  gtk_box_pack_start(GTK_BOX(g->box_enabled), cam_preset_label, TRUE, TRUE, 0);
 
   g->presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->presets, NULL, _("setting")); // relabel to setting to remove confusion between module presets and white balance settings
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->presets, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->presets, _("choose white balance preset from camera"));
+  gtk_widget_set_tooltip_text(g->presets, _("choose white balance preset"));
 
   g->finetune = dt_bauhaus_slider_new_with_range_and_feedback(self, -9.0, 9.0, 1.0, 0.0, 0, feedback);
   dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
@@ -2077,7 +2076,7 @@ void gui_init(struct dt_iop_module_t *self)
   // initially doesn't have fine tuning stuff (camera wb)
   gtk_widget_set_sensitive(g->finetune, FALSE);
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->finetune, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->finetune, _("fine tune white balance preset"));
+  gtk_widget_set_tooltip_text(g->finetune, _("fine tune camera's white balance preset"));
 
   gtk_widget_show_all(g->box_enabled);
   gtk_stack_add_named(GTK_STACK(g->stack), g->box_enabled, "enabled");
