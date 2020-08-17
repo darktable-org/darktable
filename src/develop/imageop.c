@@ -958,6 +958,8 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   /* update ui to new parameters */
   dt_iop_gui_update(module);
 
+  dt_dev_modulegroups_update_visibility(darktable.develop);
+
   return module;
 }
 
