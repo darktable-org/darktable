@@ -257,6 +257,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
                 scale = fminf(w / ph, h / pw);
               scale = fminf(1.0, scale);
 
+              // FIXME: use cairo_pattern_set_filter()?
               cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);                    // origin to middle of canvas
               // FIXME: should do rotate/flip in dt_imageio_flip_buffers_ui8_to_float() so that histogram corresponds?
               if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);                       // mirror image
@@ -270,10 +271,10 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
             cairo_surface_destroy(source);
             dt_free_align(tmp_display_i);
           }
+          // FIXME: this histogram isn't a precise match for when the equivalent image is captured -- is there work to do here?
           darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
                                                  tmp_display_f, pw, ph);
           dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
-          // FIXME: what is the resolution of the preview? should we limit the frame rate of histogram update?
           dt_free_align(tmp_display_f);
         }
       }

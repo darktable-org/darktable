@@ -1037,21 +1037,24 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
     if(cv->view(cv) == DT_VIEW_TETHERING)
     {
-      // FIXME: put this into the same loop as for doing colorspace conversion above?
-      // FIXME: would doing colorspace conversion uint8_t -> float to create this data, then truncate to create rgbbuf, produce a nicer histogram?
       // FIXME: this is going to show horizontal banding as it is quantized 8-bit data
       float *const out_f = dt_alloc_align(64, buf_wd * buf_ht * 4 * sizeof(float));
       if(out_f)
       {
-        // FIXME: use dt_imageio_flip_buffers_ui8_to_float()
-        // FIXME: vectorize?
-        for(size_t k = 0; k < (size_t) buf_wd * buf_ht * 4; k+=4)
-        {
-          out_f[k] = rgbbuf[k+2] / 255.0f;
-          out_f[k+1] = rgbbuf[k+1] / 255.0f;
-          out_f[k+2] = rgbbuf[k] / 255.0f;
-          out_f[k+3] = 0;  // FIXME: necessary?
-        }
+        // FIXME: it would be nice to use dt_imageio_flip_buffers_ui8_to_float() but then we'd need to make another pass to convert RGB to BGR
+        // FIXME: it would be nice to convert to float, then do colorspace transform, then truncate to display as a special high quality case for tethering
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(buf_wd, buf_ht) \
+    shared(rgbbuf, out_f) \
+    schedule(static)
+#endif
+        for(int j = 0; j < buf_ht; j++)
+          for(int i = 0; i < buf_wd; i++)
+            for(int k = 0; k < 3; k++)
+              out_f[4 * ((size_t)j * buf_wd + i) + (2-k)] = (rgbbuf[(size_t)4 * (j * buf_wd + i) + k]) / 255.0f;
+        // FIXME: this histogram is a pretty close match for the one in darkroom, but regular histogram is slightly off and the waveform has banding, both presumably due to quantization error -- an alternative would be to run dt_imageio_export_with_flags() to produce more of a 1:1 match
+        // FIXME: should add some noise to help with errors?
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
                                                out_f, buf_wd, buf_ht);
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
