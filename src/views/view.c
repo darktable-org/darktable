@@ -1052,7 +1052,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
           out_f[k+3] = 0;  // FIXME: necessary?
         }
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
-                                               out_f, buf_wd, buf_ht, TRUE);
+                                               out_f, buf_wd, buf_ht, FALSE);
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
         dt_free_align(out_f);
       }
