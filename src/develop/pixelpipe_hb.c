@@ -2403,14 +2403,14 @@ post_process_collect_info:
             buf[k + 3] = 0.0f;
           }
           darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, buf,
-                                                 roi_out->width, roi_out->height, FALSE);
+                                                 roi_out->width, roi_out->height);
           dt_free_align(buf);
         }
       }
       else
       {
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
-                                               roi_in.width, roi_in.height, FALSE);
+                                               roi_in.width, roi_in.height);
       }
     }
     dt_pthread_mutex_unlock(&pipe->busy_mutex);

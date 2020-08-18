@@ -84,8 +84,6 @@ typedef struct dt_lib_histogram_t
   uint32_t waveform_width, waveform_height, waveform_stride;
   // FIXME: s/processing_mutex/lock/
   dt_pthread_mutex_t processing_mutex;
-  // FIXME: eliminate keeping this state if possible -- currently the only time we care about this is to tag live view generated histograms to display regardless of whether the pixelpipe is up to date
-  gboolean is_live_view;
   // exposure params on mouse down
   float exposure, black;
   // mouse state
@@ -130,8 +128,9 @@ int position()
 }
 
 
-static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height, gboolean is_live_view)
+static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height)
 {
+  dt_develop_t *dev = darktable.develop;
   float *img_tmp = NULL;
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = iop_cs_rgb;
@@ -143,7 +142,6 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   // Constraining the area if the colorpicker is active in area mode
   // FIXME: if we do allow roi, then dt_lib_histogram_process() will need to take roi as a param, and this work of determining roi would happen in pixelpipe -- or the color_picker_box/point would move from dev->gui_module to darktable.lib->proxy.histogram
 #if 0
-  dt_develop_t *dev = darktable.develop;
   // FIXME: this is never true
   if(dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
      && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
@@ -167,35 +165,31 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
 #endif
 
   // FIXME: this colorspace conversion should happen for all scopes, not just histogram
-  // FIXME: in live view mode, this skips the colorspace conversion -- instead _expose_tethered_mode() in views/tethering.c should convert the image to display colorspace and then we can remove the special case code here
-  if(!is_live_view)
+  //dt_colorspaces_color_profile_type_t from_profile_type;
+  //gchar *from_profile_filename;
+  dt_colorspaces_color_profile_type_t to_profile_type = DT_COLORSPACE_SRGB;
+  gchar *to_profile_filename = NULL;
+  gchar _profile_no_filename[1] = { 0 };
+
+  // FIXME: could just call dt_ioppr_get_histogram_profile_info() and call dt_ioppr_add_profile_info_to_list() for display profile and compare these results?
+  dt_ioppr_get_histogram_profile_type(&to_profile_type, &to_profile_filename);
+  // FIXME: do need to test this for null?
+  if(to_profile_filename == NULL) to_profile_filename = _profile_no_filename;
+
+  if((to_profile_type != darktable.color_profiles->display_type)
+     || (to_profile_type == DT_COLORSPACE_FILE
+         && strcmp(to_profile_filename, darktable.color_profiles->display_filename)))
   {
-    //dt_colorspaces_color_profile_type_t from_profile_type;
-    //gchar *from_profile_filename;
-    dt_colorspaces_color_profile_type_t to_profile_type = DT_COLORSPACE_SRGB;
-    gchar *to_profile_filename = NULL;
-    gchar _profile_no_filename[1] = { 0 };
+    img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
 
-    // FIXME: could just call dt_ioppr_get_histogram_profile_info() and call dt_ioppr_add_profile_info_to_list() for display profile and compare these results?
-    dt_ioppr_get_histogram_profile_type(&to_profile_type, &to_profile_filename);
-    // FIXME: do need to test this for null?
-    if(to_profile_filename == NULL) to_profile_filename = _profile_no_filename;
+    const dt_iop_order_iccprofile_info_t *const profile_info_from
+        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
+                                            darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
+    const dt_iop_order_iccprofile_info_t *const profile_info_to
+        = dt_ioppr_add_profile_info_to_list(dev, to_profile_type, to_profile_filename, INTENT_PERCEPTUAL);
 
-    if((to_profile_type != darktable.color_profiles->display_type)
-       || (to_profile_type == DT_COLORSPACE_FILE
-           && strcmp(to_profile_filename, darktable.color_profiles->display_filename)))
-    {
-      img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
-
-      const dt_iop_order_iccprofile_info_t *const profile_info_from
-          = dt_ioppr_add_profile_info_to_list(darktable.develop, darktable.color_profiles->display_type,
-                                              darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
-      const dt_iop_order_iccprofile_info_t *const profile_info_to
-          = dt_ioppr_add_profile_info_to_list(darktable.develop, to_profile_type, to_profile_filename, INTENT_PERCEPTUAL);
-
-      dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, width, height, profile_info_from,
-                                              profile_info_to, "final histogram");
-    }
+    dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, width, height, profile_info_from,
+                                            profile_info_to, "final histogram");
   }
 
   dt_times_t start_time = { 0 };
@@ -335,7 +329,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 }
 
 static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *const input,
-                                     int width, int height, gboolean is_live_view)
+                                     int width, int height)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
@@ -343,7 +337,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input, width, height, is_live_view);
+      _lib_histogram_process_histogram(d, input, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       _lib_histogram_process_waveform(d, input, width, height);
@@ -351,8 +345,6 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
-  // FIXME: when live view is turned off, we should immediately revert the histogram back to the center view image and turn off this flag -- this may have to happen via the tether view
-  d->is_live_view = is_live_view;
   dt_pthread_mutex_unlock(&d->processing_mutex);
 }
 
@@ -1262,8 +1254,6 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_height = 175;
   d->waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   d->waveform = calloc(d->waveform_height * d->waveform_stride * 3, sizeof(uint8_t));
-
-  d->is_live_view = FALSE;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
