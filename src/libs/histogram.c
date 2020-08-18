@@ -173,8 +173,7 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
 
   // FIXME: this colorspace conversion should happen for all scopes, not just histogram
   // FIXME: in live view mode, this skips the colorspace conversion -- instead _expose_tethered_mode() in views/tethering.c should convert the image to display colorspace and then we can remove the special case code here
-  // FIXME: is there any case in which d->dev is false here?
-  if(d->dev && !is_live_view)
+  if(!is_live_view)
   {
     dt_colorspaces_color_profile_type_t to_profile_type = DT_COLORSPACE_SRGB;
     gchar *to_profile_filename = NULL;
@@ -922,7 +921,12 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       // update at the next frame
       dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
       if(!(cam && cam->is_live_viewing))
-        dt_dev_process_preview(d->dev);
+      {
+        if(d->dev)
+          dt_dev_process_preview(d->dev);
+        else
+          dt_control_queue_redraw_center();
+      }
     }
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_MODE)
     {
@@ -1105,7 +1109,12 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
     // update at the next frame
     dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
     if(!(cam && cam->is_live_viewing))
-      dt_dev_process_preview(d->dev);
+    {
+      if(d->dev)
+        dt_dev_process_preview(d->dev);
+      else
+        dt_control_queue_redraw_center();
+    }
   }
   else
   {
@@ -1130,7 +1139,12 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
   // update at the next frame
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
   if(!(cam && cam->is_live_viewing))
-    dt_dev_process_preview(d->dev);
+  {
+    if(d->dev)
+      dt_dev_process_preview(d->dev);
+    else
+      dt_control_queue_redraw_center();
+  }
   return TRUE;
 }
 
@@ -1162,65 +1176,7 @@ static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
-// this is only called in tether view
-static void _lib_histogram_mipmap_callback(gpointer instance, int imgid, gpointer user_data)
-{
-  // FIXME: when change histogram mode, call this function rather than dt_dev_process_preview() directly (or raise the signal to call this function?) as it will do the necessary testing?
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-
-  // Either the center view is now loaded, hence we can run the
-  // preview pipe if needed, or some random thumbtable image
-  // updated. Differentiate these, and only run preview pipe if it is
-  // not yet up to date. If in live view, ignore all this, as we're
-  // getting images and redraws fed to us via tether view expose.
-  dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
-  if(imgid == d->dev->image_storage.id && d->dev->preview_status == DT_DEV_PIXELPIPE_DIRTY &&
-     !(cam && cam->is_live_viewing))
-  {
-    dt_dev_process_preview(d->dev);
-  }
-}
-
-static void _lib_histogram_load_image(dt_lib_histogram_t *d, int imgid)
-{
-  // in tether view there may not be an initially selected image
-  // FIXME: in this case, clear or dont' display any leftover histogram data
-  if(imgid == -1) return;
-
-  if(!d->dev) d->dev = malloc(sizeof(dt_develop_t));
-  // NOTE: this is making a gui_attached pixelpipe with some unneeded
-  // paraphernalia so that dt_dev_process_preview_job can find the
-  // preview pixelpipe
-  // FIXME: could use dt_imageio_export_with_flags() if we added a way for it to create a preview pipe
-  // FIXME: At least toneequal seems to crash if gui_attached is true but gui_init() isn't called -- but if we set it to false -- which is actually right -- then will need to have pixelpipe not test for gui_attached -- or amend test -- before generating histogram. Buit maybe patch toneequal to not test for gui_attached but for if gui_data is allocated? or initialize dt_dev_init() without gui_attached and allocate preview pipe by hand?
-  // FIXME: a number of other iops depend on dev->gui_attached, so maybe we don't muck with a fake gui_attached pipeline
-  // FIXME: can we get enough data from a mipmap to draw a decent histogram?
-  dt_dev_init(d->dev, TRUE);
-  dt_dev_load_image(d->dev, imgid);
-  // don't wait for the full pixelpipe to complete
-  d->dev->image_loading = FALSE;
-  // run preview pixelpipe, which will send the resulting image to
-  // dt_lib_histogram_process(), and raise
-  // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED when the pipe is
-  // complete, to prompt a redraw of the histogram widget
-  dt_dev_process_preview(d->dev);
-}
-
-// this is only called in tether view
-static void _lib_histogram_thumbtable_callback(gpointer instance, int imgid, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-
-  // user has choosen a different image -- it would be nice to keep
-  // around the pixelpipe and call dt_dev_change_image() but there
-  // seem to be all sorts of wrinkles with history stack and such, so
-  // just create a new pixelpipe for the new image
-  dt_dev_cleanup(d->dev);
-  _lib_histogram_load_image(d, imgid);
-}
-
+// this is only called in darkroom view
 static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
   // preview pipe has already given process() the high quality
@@ -1233,30 +1189,19 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
-  // FIXME: instead of this, just have process() call dt_control_queue_redraw_widget() when it is done?
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                            G_CALLBACK(_lib_histogram_preview_updated_callback), self);
-
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
+    // FIXME: if we've gotten rid of our private pixelpipe, then don't need to have/set d->dev, and instead just a simple flag of whether we are in darkroom view (check matching image ID) or tether view (check if live view, perhaps)
     d->dev = darktable.develop;
     d->can_change_iops = TRUE;
+    // FIXME: instead of this, just have process() call dt_control_queue_redraw_widget() when it is done?
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                              G_CALLBACK(_lib_histogram_preview_updated_callback), self);
   }
   else
   {
-    // user activated a new image via the filmstrip or user entered this
-    // view which activates an image
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                              G_CALLBACK(_lib_histogram_thumbtable_callback), self);
-
-    // FIXME: flag when in tether view so it's easy to test if in live view mode?
     d->can_change_iops = FALSE;
-    _lib_histogram_load_image(d, dt_view_get_image_to_act_on());
-    // an updated mipmap, perhaps when the center view image is ready
-    dt_control_signal_connect(darktable.signals,
-                              DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                              G_CALLBACK(_lib_histogram_mipmap_callback),
-                              self);
+    // FIXME: set histogram data to blank if there is no active image
   }
 }
 
@@ -1265,26 +1210,11 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   if(d->dev)
   {
-    if(d->dev != darktable.develop)
-    {
-      dt_dev_cleanup(d->dev);
-      free(d->dev);
-      // in case exited while in live view
-      // FIXME: can tether tell us when we've left live view? -- or better yet make histogram.c not care whether in live view
-      d->is_live_view = FALSE;
-    }
     d->dev = NULL;
+    dt_control_signal_disconnect(darktable.signals,
+                                 G_CALLBACK(_lib_histogram_preview_updated_callback),
+                                 self);
   }
-
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_lib_histogram_preview_updated_callback),
-                               self);
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_lib_histogram_thumbtable_callback),
-                               self);
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_lib_histogram_mipmap_callback),
-                               self);
 }
 
 void gui_init(dt_lib_module_t *self)
