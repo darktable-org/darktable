@@ -1032,6 +1032,32 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     }
     if(have_lock) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
+    // hack: this is adequate data to create a histogram -- use it for that
+    // FIXME: don't make a histogram of a skull? (buf_wd == 8 && buf_ht == 8)
+    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+    if(cv->view(cv) == DT_VIEW_TETHERING)
+    {
+      // FIXME: put this into the same loop as for doing colorspace conversion above?
+      // FIXME: would doing colorspace conversion uint8_t -> float to create this data, then truncate to create rgbbuf, produce a nicer histogram?
+      // FIXME: this is going to show horizontal banding as it is quantized 8-bit data
+      float *const out_f = dt_alloc_align(64, buf_wd * buf_ht * 4 * sizeof(float));
+      if(out_f)
+      {
+        // FIXME: vectorize?
+        for(size_t k = 0; k < (size_t) buf_wd * buf_ht * 4; k+=4)
+        {
+          out_f[k] = rgbbuf[k+2] / 255.0f;
+          out_f[k+1] = rgbbuf[k+1] / 255.0f;
+          out_f[k+2] = rgbbuf[k] / 255.0f;
+          out_f[k+3] = 0;  // FIXME: necessary?
+        }
+        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
+                                               out_f, buf_wd, buf_ht, TRUE);
+        dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
+        dt_free_align(out_f);
+      }
+    }
+
     const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_wd);
     tmp_surface = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf_wd, buf_ht, stride);
   }
