@@ -436,6 +436,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
 
   // Updating the display
   _update_samples_output((dt_lib_module_t *)self);
+  if(darktable.lib->proxy.colorpicker.display_samples) dt_dev_invalidate_from_gui(darktable.develop);
 }
 
 static void _display_samples_changed(GtkToggleButton *button, gpointer data)
