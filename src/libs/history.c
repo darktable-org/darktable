@@ -838,7 +838,7 @@ void gui_reset(dt_lib_module_t *self)
 
     GtkWidget *dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        _("do you really want to reset history of current image?"));
+        _("do you really want to clear history of current image?"));
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -855,12 +855,12 @@ void gui_reset(dt_lib_module_t *self)
                           dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
 
-  dt_history_delete_on_image_ext(imgid, FALSE);
+    dt_history_delete_on_image_ext(imgid, FALSE);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
-  dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 
-  dt_control_queue_redraw_center();
+    dt_control_queue_redraw_center();
   }
 }
 
