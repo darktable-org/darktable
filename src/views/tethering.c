@@ -212,16 +212,12 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                   // scale to fit canvas
       cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                        // origin back to corner
 
-      // FIXME: color manage? the live view is probably in either sRGB or Adobe RGB, but it is displayed in the display color profile
-      gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
-      cairo_paint(cr);
-
-      // update histogram for live view image
+      // convert to display profile and update histogram
       const int lv_width = gdk_pixbuf_get_width(cam->live_view_pixbuf);
       const int lv_height = gdk_pixbuf_get_height(cam->live_view_pixbuf);
       const int lv_stride = gdk_pixbuf_get_rowstride(cam->live_view_pixbuf);
       const int lv_n_channels = gdk_pixbuf_get_n_channels(cam->live_view_pixbuf);
-      const guchar *const lv_buf = gdk_pixbuf_read_pixels(cam->live_view_pixbuf);
+      guchar *const lv_buf = gdk_pixbuf_get_pixels(cam->live_view_pixbuf);
       // incoming image is probably sRGB
       // FIXME: test JPEG to see if it is sRGB or Adobe RGB
       // FIXME: use lcms to convert int sRGB to float display -- this is hacky -- and lcms should be able to handle stride
@@ -233,22 +229,30 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         // FIXME: vectorize?
         for(int y = 0; y < lv_height; y++)
         {
-          const guchar *i = lv_buf + y * lv_stride;
+          guchar *i = lv_buf + y * lv_stride;
           float *o = out_f + y * lv_width * 4;
           for(int x = 0; x < lv_width; x++, i+=lv_n_channels, o+=4)
           {
-            const uint8_t temp_in[4] = {i[2], i[1], i[0], 0};
+            const uint8_t temp_in[4] = {i[0], i[1], i[2], 0};
             uint8_t temp_out[4];
             // FIXME: this can actually handle lv_n_channels, etc.
             cmsDoTransform(transform, temp_in, temp_out, 1);
+            // FIXME: if draw is called multiple times before live view updates, this will do multiple updates to the same data
+            // FIXME: hacky -- just transform in palce
+            i[0] = temp_out[2];
+            i[1] = temp_out[1];
+            i[2] = temp_out[0];
             // FIXME: draw the image in display colorspace, not in sRGB input
-            o[0] = temp_out[0] / 255.0f;
+            o[0] = temp_out[2] / 255.0f;
             o[1] = temp_out[1] / 255.0f;
-            o[2] = temp_out[2] / 255.0f;
+            o[2] = temp_out[0] / 255.0f;
             o[3] = 0.0f;  // FIXME: necessary?
           }
         }
         pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
+        gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
+        cairo_paint(cr);
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
                                                out_f, lv_width, lv_height);
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
