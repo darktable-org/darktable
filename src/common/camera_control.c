@@ -335,9 +335,16 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       {
         // everything worked
         GError *error = NULL;
-        // FIXME: does gphoto2 or the camera tag the JPEG with a profile? if so it would be nice to store this, as this would allow for color managing the preview display and its histogram
-        // FIXME: can use darktable's internal JPEG loader which should be able to get the profile if it is tagged with one?
-        // FIXME: should really convert the image to display profile here or in view/tethering.c
+        // FIXME: is the JPEG ever tagged with a profile? testing so far (limited to Canon EOS 5D Mark III) hasn't found one
+        // FIXME: it would be nice to use dt's imageio rather than GDKPixbufLoader
+        //   dt_imageio_jpeg_t jpg;
+        //   dt_imageio_jpeg_decompress_header(data, data_size, &jpg)
+        //   *buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+        //   dt_imageio_jpeg_decompress(&jpg, *buffer)
+        // or as in dt_imageio_open_jpeg()?
+        //   dt_imageio_jpeg_read_header() -- though takes filename, maybe can get from gphoto
+        //   ...alloc...
+        //   if(dt_imageio_jpeg_read(&jpg, tmp)) ...
         GdkPixbufLoader *loader = gdk_pixbuf_loader_new_with_mime_type(
             "image/jpeg", &error); // there were cases where GDKPixbufLoader failed to recognize the JPEG
         if(error)

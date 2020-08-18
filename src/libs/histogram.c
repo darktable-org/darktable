@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/histogram.h"
+#include "common/iop_profile.h"
 #include "common/image_cache.h"
 #include "common/math.h"
 #include "control/conf.h"

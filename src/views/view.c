@@ -1043,6 +1043,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
       float *const out_f = dt_alloc_align(64, buf_wd * buf_ht * 4 * sizeof(float));
       if(out_f)
       {
+        // FIXME: use dt_imageio_flip_buffers_ui8_to_float()
         // FIXME: vectorize?
         for(size_t k = 0; k < (size_t) buf_wd * buf_ht * 4; k+=4)
         {
