@@ -744,8 +744,9 @@ static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboo
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        if(!g_list_find_custom(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)), _images_to_act_on_find_custom))
-          *list = g_list_append(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+        const int imgidg = sqlite3_column_int(stmt, 0);
+        if(!g_list_find_custom(*list, GINT_TO_POINTER(imgidg), _images_to_act_on_find_custom))
+          *list = g_list_append(*list, GINT_TO_POINTER(imgidg));
       }
       sqlite3_finalize(stmt);
       g_free(query);
