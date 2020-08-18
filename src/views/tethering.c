@@ -222,27 +222,35 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       const int lv_stride = gdk_pixbuf_get_rowstride(cam->live_view_pixbuf);
       const int lv_n_channels = gdk_pixbuf_get_n_channels(cam->live_view_pixbuf);
       const guchar *const lv_buf = gdk_pixbuf_read_pixels(cam->live_view_pixbuf);
+      // incoming image is probably sRGB
+      // FIXME: test JPEG to see if it is sRGB or Adobe RGB
+      // FIXME: use lcms to convert int sRGB to float display -- this is hacky -- and lcms should be able to handle stride
+      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+      cmsHTRANSFORM transform = darktable.color_profiles->transform_srgb_to_display;
       float *const out_f = dt_alloc_align(64, lv_width * lv_height * 4 * sizeof(float));
       if(out_f)
       {
         // FIXME: vectorize?
         for(int y = 0; y < lv_height; y++)
         {
-          const guchar *const p = lv_buf + y * lv_stride;
-          float *const o = out_f + y * lv_width * 4;
-          for(int x = 0; x < lv_width; x++)
+          const guchar *i = lv_buf + y * lv_stride;
+          float *o = out_f + y * lv_width * 4;
+          for(int x = 0; x < lv_width; x++, i+=lv_n_channels, o+=4)
           {
-            for(int c = 0; c < 3; c++)
-              o[x * 4 + c] = p[x * lv_n_channels + c] / 255.0f;
-            o[x * 4 + 3] = 0.0f;
+            const uint8_t temp_in[4] = {i[2], i[1], i[0], 0};
+            uint8_t temp_out[4];
+            // FIXME: this can actually handle lv_n_channels, etc.
+            cmsDoTransform(transform, temp_in, temp_out, 1);
+            // FIXME: draw the image in display colorspace, not in sRGB input
+            o[0] = temp_out[0] / 255.0f;
+            o[1] = temp_out[1] / 255.0f;
+            o[2] = temp_out[2] / 255.0f;
+            o[3] = 0.0f;  // FIXME: necessary?
           }
         }
-        // in darkoom view histogram gets its data from the preview
-        // pipe and catches DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED to
-        // know to update itself, but we have to pass it in data by
-        // hand for live view
+        pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
-                                               out_f, lv_width, lv_height, TRUE);
+                                               out_f, lv_width, lv_height);
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
         // FIXME: what is the resolution of the preview? should we limit the frame rate of histogram update?
         dt_free_align(out_f);
@@ -254,6 +262,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   else if(lib->image_id >= 0) // First of all draw image if available
   {
     cairo_surface_t *surf = NULL;
+    // FIXME: every time the mouse moves over the center view this redraws, which isn't necessary
     // note that this will also update the histogram
     const int res
         = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf, FALSE);
