@@ -84,11 +84,6 @@ typedef struct dt_lib_histogram_t
   uint32_t waveform_width, waveform_height, waveform_stride;
   // FIXME: s/processing_mutex/lock/
   dt_pthread_mutex_t processing_mutex;
-  // pixelpipe for current image when not in darkroom view
-  dt_develop_t *dev;
-  // in darkroom view, dragging/scrolling widget will change exposure
-  // FIXME: record a flag of whether in darkroom or tether view, this is confusing
-  gboolean can_change_iops;
   // FIXME: eliminate keeping this state if possible -- currently the only time we care about this is to tag live view generated histograms to display regardless of whether the pixelpipe is up to date
   gboolean is_live_view;
   // exposure params on mouse down
@@ -138,7 +133,6 @@ int position()
 static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height, gboolean is_live_view)
 {
   float *img_tmp = NULL;
-
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = iop_cs_rgb;
   dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0 };
@@ -149,24 +143,25 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   // Constraining the area if the colorpicker is active in area mode
   // FIXME: if we do allow roi, then dt_lib_histogram_process() will need to take roi as a param, and this work of determining roi would happen in pixelpipe -- or the color_picker_box/point would move from dev->gui_module to darktable.lib->proxy.histogram
 #if 0
+  dt_develop_t *dev = darktable.develop;
   // FIXME: this is never true
-  if(d->dev->gui_module && !strcmp(d->dev->gui_module->op, "colorout")
-     && d->dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+  if(dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
+     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
     if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
     {
-      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, d->dev->gui_module->color_picker_box[0] * roi_in->width));
-      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, d->dev->gui_module->color_picker_box[1] * roi_in->height));
-      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, d->dev->gui_module->color_picker_box[2] * roi_in->width));
-      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, d->dev->gui_module->color_picker_box[3] * roi_in->height));
+      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[0] * roi_in->width));
+      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[1] * roi_in->height));
+      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[2] * roi_in->width));
+      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[3] * roi_in->height));
     }
     else
     {
-      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, d->dev->gui_module->color_picker_point[0] * roi_in->width));
-      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, d->dev->gui_module->color_picker_point[1] * roi_in->height));
-      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, d->dev->gui_module->color_picker_point[0] * roi_in->width));
-      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, d->dev->gui_module->color_picker_point[1] * roi_in->height));
+      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
+      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
+      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
+      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
     }
   }
 #endif
@@ -175,6 +170,8 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   // FIXME: in live view mode, this skips the colorspace conversion -- instead _expose_tethered_mode() in views/tethering.c should convert the image to display colorspace and then we can remove the special case code here
   if(!is_live_view)
   {
+    //dt_colorspaces_color_profile_type_t from_profile_type;
+    //gchar *from_profile_filename;
     dt_colorspaces_color_profile_type_t to_profile_type = DT_COLORSPACE_SRGB;
     gchar *to_profile_filename = NULL;
     gchar _profile_no_filename[1] = { 0 };
@@ -191,10 +188,10 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
       img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
 
       const dt_iop_order_iccprofile_info_t *const profile_info_from
-          = dt_ioppr_add_profile_info_to_list(d->dev, darktable.color_profiles->display_type,
+          = dt_ioppr_add_profile_info_to_list(darktable.develop, darktable.color_profiles->display_type,
                                               darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
       const dt_iop_order_iccprofile_info_t *const profile_info_to
-          = dt_ioppr_add_profile_info_to_list(d->dev, to_profile_type, to_profile_filename, INTENT_PERCEPTUAL);
+          = dt_ioppr_add_profile_info_to_list(darktable.develop, to_profile_type, to_profile_filename, INTENT_PERCEPTUAL);
 
       dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, width, height, profile_info_from,
                                               profile_info_to, "final histogram");
@@ -640,6 +637,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -688,11 +686,12 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
-  // draw scope so long as preview pipe is finished -- or if we have
-  // received a live view preview
+  // darkroom view: draw scope so long as preview pipe is finished
+  // tether view: draw whatever has come in from tether
   // FIXME: there should really be a mutex here, or else we may have switched in/out of live view before we do the draw -- just lock d->processing_mutex here and unlock after draw is done
-  if(d->is_live_view ||
-     (d->dev && d->dev->image_storage.id == d->dev->preview_pipe->output_imgid))
+  // FIXME: should set histogram buffer to black if have just entered tether view and nothing is displayed
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view(cv) == DT_VIEW_TETHERING || dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     cairo_save(cr);
     uint8_t mask[3] = { d->red, d->green, d->blue };
@@ -749,7 +748,9 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  const gboolean hooks_available = d->can_change_iops && dt_dev_exposure_hooks_available(d->dev);
+  dt_develop_t *dev = darktable.develop;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  const gboolean hooks_available = (cv->view(cv) == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
   // FIXME: as when dragging a bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
 
   GtkAllocation allocation;
@@ -763,12 +764,12 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
       const float exposure = d->exposure + diff * 4.0f / (float)range;
-      dt_dev_exposure_set_exposure(d->dev, exposure);
+      dt_dev_exposure_set_exposure(dev, exposure);
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
     {
       const float black = d->black - diff * .1f / (float)range;
-      dt_dev_exposure_set_black(d->dev, black);
+      dt_dev_exposure_set_black(dev, black);
     }
   }
   else
@@ -900,13 +901,15 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-
-  const gboolean hooks_available = d->can_change_iops && dt_dev_exposure_hooks_available(d->dev);
+  dt_develop_t *dev = darktable.develop;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  const dt_view_type_flags_t view_type = cv->view(cv);
+  const gboolean hooks_available = (view_type == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
 
   if(event->type == GDK_2BUTTON_PRESS && hooks_available &&
      (d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT || d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE))
   {
-    dt_dev_exposure_reset_defaults(d->dev);
+    dt_dev_exposure_reset_defaults(dev);
   }
   else
   {
@@ -916,17 +919,11 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
       dt_conf_set_string("plugins/darkroom/histogram/mode",
                          dt_lib_histogram_scope_type_names[d->scope_type]);
-      // generate data for changed scope and trigger widget redraw --
-      // though if in live view we'll just wait for the scope to
-      // update at the next frame
-      dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
-      if(!(cam && cam->is_live_viewing))
-      {
-        if(d->dev)
-          dt_dev_process_preview(d->dev);
-        else
-          dt_control_queue_redraw_center();
-      }
+      // generate data for changed scope and trigger widget redraw
+      if(view_type == DT_VIEW_DARKROOM)
+        dt_dev_process_preview(dev);
+      else
+        dt_control_queue_redraw_center();
     }
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_MODE)
     {
@@ -967,9 +964,9 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
     {
       d->dragging = 1;
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-        d->exposure = dt_dev_exposure_get_exposure(d->dev);
+        d->exposure = dt_dev_exposure_get_exposure(dev);
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE)
-        d->black = dt_dev_exposure_get_black(d->dev);
+        d->black = dt_dev_exposure_get_black(dev);
       d->button_down_x = event->x;
       d->button_down_y = event->y;
     }
@@ -983,8 +980,6 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
 static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-
   int delta_y;
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
@@ -998,18 +993,25 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
       dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
       gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
     }
-    else if(d->can_change_iops && dt_dev_exposure_hooks_available(d->dev))
+    else
     {
-      // FIXME: as with bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
-      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+      dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+      dt_develop_t *dev = darktable.develop;
+      const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+      const dt_view_type_flags_t view_type = cv->view(cv);
+      if(view_type == DT_VIEW_DARKROOM && dt_dev_exposure_hooks_available(dev))
       {
-        const float ce = dt_dev_exposure_get_exposure(d->dev);
-        dt_dev_exposure_set_exposure(d->dev, ce - 0.15f * delta_y);
-      }
-      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-      {
-        const float cb = dt_dev_exposure_get_black(d->dev);
-        dt_dev_exposure_set_black(d->dev, cb + 0.001f * delta_y);
+        // FIXME: as with bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
+        if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+        {
+          const float ce = dt_dev_exposure_get_exposure(dev);
+          dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
+        }
+        else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+        {
+          const float cb = dt_dev_exposure_get_black(dev);
+          dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
+        }
       }
     }
   }
@@ -1104,17 +1106,11 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
 
   if(d->scope_type != old_scope)
   {
-    // generate data for changed scope and trigger widget redraw --
-    // though if in live view we'll just wait for the scope to
-    // update at the next frame
-    dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
-    if(!(cam && cam->is_live_viewing))
-    {
-      if(d->dev)
-        dt_dev_process_preview(d->dev);
-      else
-        dt_control_queue_redraw_center();
-    }
+    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+    if(cv->view(cv) == DT_VIEW_DARKROOM)
+      dt_dev_process_preview(darktable.develop);
+    else
+      dt_control_queue_redraw_center();
   }
   else
   {
@@ -1131,20 +1127,14 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
-  // generate data for changed scope and trigger widget redraw --
-  // though if in live view we'll just wait for the scope to
-  // update at the next frame
-  dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
-  if(!(cam && cam->is_live_viewing))
-  {
-    if(d->dev)
-      dt_dev_process_preview(d->dev);
-    else
-      dt_control_queue_redraw_center();
-  }
+  if(cv->view(cv) == DT_VIEW_DARKROOM)
+    dt_dev_process_preview(darktable.develop);
+  else
+    dt_control_queue_redraw_center();
   return TRUE;
 }
 
@@ -1187,34 +1177,20 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
 
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
-    // FIXME: if we've gotten rid of our private pixelpipe, then don't need to have/set d->dev, and instead just a simple flag of whether we are in darkroom view (check matching image ID) or tether view (check if live view, perhaps)
-    d->dev = darktable.develop;
-    d->can_change_iops = TRUE;
     // FIXME: instead of this, just have process() call dt_control_queue_redraw_widget() when it is done?
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                               G_CALLBACK(_lib_histogram_preview_updated_callback), self);
   }
-  else
-  {
-    d->can_change_iops = FALSE;
-    // FIXME: set histogram data to blank if there is no active image
-  }
+  // FIXME: set histogram data to blank if enter tether with no active image
 }
 
 void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  if(d->dev)
-  {
-    d->dev = NULL;
-    dt_control_signal_disconnect(darktable.signals,
-                                 G_CALLBACK(_lib_histogram_preview_updated_callback),
-                                 self);
-  }
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_lib_histogram_preview_updated_callback),
+                               self);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1287,8 +1263,6 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   d->waveform = calloc(d->waveform_height * d->waveform_stride * 3, sizeof(uint8_t));
 
-  d->dev = NULL;
-  d->can_change_iops = FALSE;
   d->is_live_view = FALSE;
 
   // proxy functions and data so that pixelpipe or tether can
