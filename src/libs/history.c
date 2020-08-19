@@ -844,7 +844,7 @@ void gui_reset(dt_lib_module_t *self)
 
   gint res = GTK_RESPONSE_YES;
 
-  if(dt_conf_get_bool("ask_before_delete"))
+  if(dt_conf_get_bool("ask_before_discard"))
   {
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 

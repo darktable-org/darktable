@@ -42,7 +42,7 @@ typedef struct dt_lib_copy_history_t
 {
   GtkWidget *pastemode;
   GtkButton *paste, *paste_parts;
-  GtkWidget *copy_button, *delete_button, *load_button, *write_button;
+  GtkWidget *copy_button, *discard_button, *load_button, *write_button;
   GtkWidget *copy_parts_button;
   GtkButton *compress_button;
   guint timeout_handle;
@@ -76,7 +76,7 @@ static void _update(dt_lib_module_t *self)
             || (act_on_cnt == 1
                 && (darktable.view_manager->copy_paste.copied_imageid != dt_view_get_image_to_act_on())));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->discard_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->compress_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->load_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->write_button), act_on_cnt > 0);
@@ -212,13 +212,13 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
+static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
-  if(dt_conf_get_bool("ask_before_delete"))
+  if(dt_conf_get_bool("ask_before_discard"))
   {
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
@@ -379,12 +379,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->compress_button), _("compress history stack of\nall selected images"));
   gtk_grid_attach(grid, GTK_WIDGET(d->compress_button), 0, line, 3, 1);
 
-  GtkWidget *delete = gtk_button_new_with_label(_("discard history"));
-  ellipsize_button(delete);
-  d->delete_button = delete;
-  gtk_widget_set_tooltip_text(delete, _("discard history stack of\nall selected images"));
-  dt_gui_add_help_link(delete, "history_stack.html#history_stack_usage");
-  gtk_grid_attach(grid, delete, 3, line++, 3, 1);
+  GtkWidget *discard = gtk_button_new_with_label(_("discard history"));
+  ellipsize_button(discard);
+  d->discard_button = discard;
+  gtk_widget_set_tooltip_text(discard, _("discard history stack of\nall selected images"));
+  dt_gui_add_help_link(discard, "history_stack.html#history_stack_usage");
+  gtk_grid_attach(grid, discard, 3, line++, 3, 1);
 
   d->pastemode = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->pastemode, NULL, _("mode"));
@@ -422,7 +422,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(compress_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(delete), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(discard), "clicked", G_CALLBACK(discard_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste_parts), "clicked", G_CALLBACK(paste_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste), "clicked", G_CALLBACK(paste_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(loadbutton), "clicked", G_CALLBACK(load_button_clicked), (gpointer)self);
@@ -461,7 +461,7 @@ void connect_key_accels(dt_lib_module_t *self)
 
   dt_accel_connect_button_lib(self, "copy all", GTK_WIDGET(d->copy_button));
   dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_parts_button));
-  dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
+  dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->discard_button));
   dt_accel_connect_button_lib(self, "compress", GTK_WIDGET(d->compress_button));
   dt_accel_connect_button_lib(self, "paste all", GTK_WIDGET(d->paste));
   dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste_parts));
