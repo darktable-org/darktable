@@ -130,8 +130,6 @@ int position()
 
 static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height)
 {
-  dt_develop_t *dev = darktable.develop;
-  float *img_tmp = NULL;
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = iop_cs_rgb;
   dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0 };
@@ -142,6 +140,7 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   // Constraining the area if the colorpicker is active in area mode
   // FIXME: if we do allow roi, then dt_lib_histogram_process() will need to take roi as a param, and this work of determining roi would happen in pixelpipe -- or the color_picker_box/point would move from dev->gui_module to darktable.lib->proxy.histogram
 #if 0
+  dt_develop_t *dev = darktable.develop;
   // FIXME: this is never true
   if(dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
      && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
@@ -164,34 +163,6 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   }
 #endif
 
-  // FIXME: this colorspace conversion should happen for all scopes, not just histogram
-  //dt_colorspaces_color_profile_type_t from_profile_type;
-  //gchar *from_profile_filename;
-  dt_colorspaces_color_profile_type_t to_profile_type = DT_COLORSPACE_SRGB;
-  gchar *to_profile_filename = NULL;
-  gchar _profile_no_filename[1] = { 0 };
-
-  // FIXME: could just call dt_ioppr_get_histogram_profile_info() and call dt_ioppr_add_profile_info_to_list() for display profile and compare these results?
-  dt_ioppr_get_histogram_profile_type(&to_profile_type, &to_profile_filename);
-  // FIXME: do need to test this for null?
-  if(to_profile_filename == NULL) to_profile_filename = _profile_no_filename;
-
-  if((to_profile_type != darktable.color_profiles->display_type)
-     || (to_profile_type == DT_COLORSPACE_FILE
-         && strcmp(to_profile_filename, darktable.color_profiles->display_filename)))
-  {
-    img_tmp = dt_alloc_align(64, width * height * 4 * sizeof(float));
-
-    const dt_iop_order_iccprofile_info_t *const profile_info_from
-        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
-                                            darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
-    const dt_iop_order_iccprofile_info_t *const profile_info_to
-        = dt_ioppr_add_profile_info_to_list(dev, to_profile_type, to_profile_filename, INTENT_PERCEPTUAL);
-
-    dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, width, height, profile_info_from,
-                                            profile_info_to, "final histogram");
-  }
-
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
@@ -202,11 +173,9 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   histogram_params.bins_count = HISTOGRAM_BINS;
   histogram_params.mul = histogram_params.bins_count - 1;
 
-  dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, (img_tmp) ? img_tmp: input, &d->histogram, FALSE, NULL);
+  dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, input, &d->histogram, FALSE, NULL);
   dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &d->histogram, histogram_max);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
-
-  if(img_tmp) dt_free_align(img_tmp);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
@@ -328,23 +297,36 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 }
 
 static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *const input,
-                                     int width, int height)
+                                     int width, int height,
+                                     // FIXME: don't need filename if only ever called with DT_COLORSPACE_SRGB, DT_COLORSPACE_ADOBERGB, or DT_COLORSPACE_DISPLAY or DT_COLORSPACE_histogram?
+                                     dt_colorspaces_color_profile_type_t in_profile_type, const gchar *in_profile_filename)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
+  float *const img_display = dt_alloc_align(64, width * height * 4 * sizeof(float));
+  if(!img_display) return;
+
+  const dt_iop_order_iccprofile_info_t *const profile_info_from
+    = dt_ioppr_add_profile_info_to_list(dev, in_profile_type, in_profile_filename, INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_info_to = dt_ioppr_get_histogram_profile_info(dev);
+  dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height, profile_info_from,
+                                          profile_info_to, "final histogram");
 
   dt_pthread_mutex_lock(&d->lock);
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, input, width, height);
+      _lib_histogram_process_histogram(d, img_display, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      _lib_histogram_process_waveform(d, input, width, height);
+      _lib_histogram_process_waveform(d, img_display, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
   dt_pthread_mutex_unlock(&d->lock);
+
+  dt_free_align(img_display);
 }
 
 static void _draw_color_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state)

@@ -2400,17 +2400,18 @@ post_process_collect_info:
           {
             for(size_t c = 0; c < 3; c++)
               buf[k + c] = in[k + 2 - c] / 255.0f;
-            buf[k + 3] = 0.0f;
           }
           darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, buf,
-                                                 roi_out->width, roi_out->height);
+                                                 roi_out->width, roi_out->height,
+                                                 DT_COLORSPACE_DISPLAY, "");
           dt_free_align(buf);
         }
       }
       else
       {
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
-                                               roi_in.width, roi_in.height);
+                                               roi_in.width, roi_in.height,
+                                               DT_COLORSPACE_DISPLAY, "");
       }
     }
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
