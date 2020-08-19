@@ -1649,7 +1649,7 @@
  <dtconfig prefs="lighttable">
     <name>lighttable/ui/scrollbars</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>show scrollbars for central view</shortdescription>
     <longdescription>defines whether scrollbars should be displayed</longdescription>
   </dtconfig>
