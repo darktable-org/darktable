@@ -31,6 +31,10 @@
 #include "libs/lib_api.h"
 #include "common/history.h"
 
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
+
 DT_MODULE(1)
 
 
