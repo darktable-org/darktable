@@ -1062,7 +1062,10 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
             }
         // FIXME: this histogram is a pretty close match for the one in darkroom, but regular histogram is slightly off and the waveform has banding, both presumably due to quantization error -- an alternative would be to run dt_imageio_export_with_flags() to produce more of a 1:1 match
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
-                                               out_f, buf_wd, buf_ht);
+                                               out_f, buf_wd, buf_ht,
+                                               // FIXME: covert buf.buf to float and send that in with appropriate profile
+                                               darktable.color_profiles->display_type,
+                                               darktable.color_profiles->display_filename);
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
         dt_free_align(out_f);
       }
