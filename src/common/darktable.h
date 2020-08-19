@@ -205,24 +205,25 @@ struct dt_l10n_t;
 typedef enum dt_debug_thread_t
 {
   // powers of two, masking
-  DT_DEBUG_CACHE = 1 << 0,
-  DT_DEBUG_CONTROL = 1 << 1,
-  DT_DEBUG_DEV = 1 << 2,
-  DT_DEBUG_PERF = 1 << 4,
-  DT_DEBUG_CAMCTL = 1 << 5,
-  DT_DEBUG_PWSTORAGE = 1 << 6,
-  DT_DEBUG_OPENCL = 1 << 7,
-  DT_DEBUG_SQL = 1 << 8,
-  DT_DEBUG_MEMORY = 1 << 9,
-  DT_DEBUG_LIGHTTABLE = 1 << 10,
-  DT_DEBUG_NAN = 1 << 11,
-  DT_DEBUG_MASKS = 1 << 12,
-  DT_DEBUG_LUA = 1 << 13,
-  DT_DEBUG_INPUT = 1 << 14,
-  DT_DEBUG_PRINT = 1 << 15,
+  DT_DEBUG_CACHE          = 1 <<  0,
+  DT_DEBUG_CONTROL        = 1 <<  1,
+  DT_DEBUG_DEV            = 1 <<  2,
+  DT_DEBUG_PERF           = 1 <<  4,
+  DT_DEBUG_CAMCTL         = 1 <<  5,
+  DT_DEBUG_PWSTORAGE      = 1 <<  6,
+  DT_DEBUG_OPENCL         = 1 <<  7,
+  DT_DEBUG_SQL            = 1 <<  8,
+  DT_DEBUG_MEMORY         = 1 <<  9,
+  DT_DEBUG_LIGHTTABLE     = 1 << 10,
+  DT_DEBUG_NAN            = 1 << 11,
+  DT_DEBUG_MASKS          = 1 << 12,
+  DT_DEBUG_LUA            = 1 << 13,
+  DT_DEBUG_INPUT          = 1 << 14,
+  DT_DEBUG_PRINT          = 1 << 15,
   DT_DEBUG_CAMERA_SUPPORT = 1 << 16,
-  DT_DEBUG_IOPORDER = 1 << 17,
-  DT_DEBUG_IMAGEIO = 1 << 18,
+  DT_DEBUG_IOPORDER       = 1 << 17,
+  DT_DEBUG_IMAGEIO        = 1 << 18,
+  DT_DEBUG_UNDO           = 1 << 19
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
