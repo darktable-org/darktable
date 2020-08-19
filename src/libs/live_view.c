@@ -210,7 +210,6 @@ static void _toggle_live_view_clicked(GtkWidget *widget, gpointer user_data)
   else
   {
     dt_camctl_camera_stop_live_view(darktable.camctl);
-    // FIXME: request a redraw of histogram widget to update to non live view data (image from filmstrip if any) -- or maybe issue a thumbtable chagned event?
   }
 }
 
