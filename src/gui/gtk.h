@@ -186,6 +186,11 @@ int dt_gui_gtk_write_config();
 void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
 void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t, float opacity_coef);
 
+/* Check sidebar_scroll_default and modifier keys to determine if scroll event
+ * should be processed by control or by panel. If default is panel scroll but
+ * modifiers are pressed to indicate the control should be scrolled, then remove
+ * the modifiers from the event before returning false */
+gboolean dt_gui_ignore_scroll(GdkEventScroll *event);
 /* Return requested scroll delta(s) from event. If delta_x or delta_y
  * is NULL, do not return that delta. Return TRUE if requested deltas
  * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
