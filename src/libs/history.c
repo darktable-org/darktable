@@ -843,7 +843,7 @@ void gui_reset(dt_lib_module_t *self)
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete images' history?"));
+    gtk_window_set_title(GTK_WINDOW(dialog), _("delete image's history?"));
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
   }
