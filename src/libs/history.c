@@ -825,6 +825,45 @@ static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
   }
 }
 
+void gui_reset(dt_lib_module_t *self)
+{
+  const int32_t imgid = darktable.develop->image_storage.id;
+  if(!imgid) return;
+
+  gint res = GTK_RESPONSE_YES;
+
+  if(dt_conf_get_bool("ask_before_delete"))
+  {
+    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+    GtkWidget *dialog = gtk_message_dialog_new(
+        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        _("do you really want to clear history of current image?"));
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+
+    gtk_window_set_title(GTK_WINDOW(dialog), _("delete images' history?"));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
+
+  if(res == GTK_RESPONSE_YES)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
+                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+
+
+    dt_history_delete_on_image_ext(imgid, FALSE);
+
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+
+    dt_control_queue_redraw_center();
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
