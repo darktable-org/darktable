@@ -1036,7 +1036,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     // hack: this is adequate data to create a histogram -- use it for that
     // FIXME: don't make a histogram of a skull? (buf_wd == 8 && buf_ht == 8)
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    if(cv->view(cv) == DT_VIEW_TETHERING)
+    if(cv->view(cv) == DT_VIEW_TETHERING && quality)
     {
       // FIXME: this is going to show horizontal banding as it is quantized 8-bit data
       float *const out_f = dt_alloc_align(64, buf_wd * buf_ht * 4 * sizeof(float));
