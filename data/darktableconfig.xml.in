@@ -383,8 +383,15 @@
     <name>ask_before_delete</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>ask before erasing images from disk / discarding history stack</shortdescription>
-    <longdescription>always ask the user before any image file is deleted / history stack is discarded.</longdescription>
+    <shortdescription>ask before erasing images from disk</shortdescription>
+    <longdescription>always ask the user before any image file is deleted</longdescription>
+  </dtconfig>
+  <dtconfig prefs="security">
+    <name>ask_before_discard</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>ask before discarding history stack</shortdescription>
+    <longdescription>always ask the user before history stack is discarded on any image</longdescription>
   </dtconfig>
   <dtconfig prefs="security">
     <name>send_to_trash</name>
