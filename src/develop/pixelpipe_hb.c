@@ -2396,6 +2396,7 @@ post_process_collect_info:
         if(buf)
         {
           const uint8_t *in = (uint8_t *)(*output);
+          // FIXME: it would be nice to use dt_imageio_flip_buffers_ui8_to_float() but then we'd need to make another pass to convert RGB to BGR
           for(size_t k = 0; k < roi_out->width * roi_out->height * 4; k += 4)
           {
             for(size_t c = 0; c < 3; c++)
