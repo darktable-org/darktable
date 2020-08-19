@@ -48,6 +48,9 @@ typedef struct dt_lib_history_t
   GtkWidget *create_button;
   GtkWidget *compress_button;
   gboolean record_undo;
+  int record_history_level; // set to +1 in signal DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
+                            // and back to -1 in DT_SIGNAL_DEVELOP_HISTORY_CHANGE. We want
+                            // to avoid multiple will-change before a change cb.
   // previous_* below store values sent by signal DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
   GList *previous_snapshot;
   int previous_history_end;
@@ -114,6 +117,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->record_undo = TRUE;
+  d->record_history_level = 0;
   d->previous_snapshot = NULL;
   d->previous_history_end = 0;
   d->previous_iop_order_list = NULL;
@@ -653,7 +657,7 @@ static void _lib_history_will_change_callback(gpointer instance, GList *history,
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_history_t *lib = (dt_lib_history_t *)self->data;
 
-  if(lib->record_undo)
+  if(lib->record_undo && (lib->record_history_level == 0))
   {
     // history is about to change, we want here ot record a snapshot of the history for the undo
     // record previous history
@@ -663,6 +667,8 @@ static void _lib_history_will_change_callback(gpointer instance, GList *history,
     lib->previous_history_end = history_end;
     lib->previous_iop_order_list = iop_order_list;
   }
+
+  lib->record_history_level += 1;
 }
 
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
@@ -680,7 +686,9 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
   num++;
 
-  if (d->record_undo == TRUE)
+  d->record_history_level -= 1;
+
+  if (d->record_undo == TRUE && (d->record_history_level == 0))
   {
     /* record undo/redo history snapshot */
     dt_undo_history_t *hist = malloc(sizeof(dt_undo_history_t));
