@@ -296,6 +296,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     // export) and use its preview path to process the image and
     // generate a histogram. Or to use dt_imageio_export_with_flags()
     // with thumbnail_export set to TRUE.
+    // FIXME: instead of this use dt_imageio_export_with_flags() as in _init_8() -- this will still give us 8-bit data, but if it does the colorspace conversion we might avoid so much quantization
     const int res
         = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf, TRUE);
     if(res)

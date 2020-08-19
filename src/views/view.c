@@ -1033,44 +1033,6 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     }
     if(have_lock) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-    // hack: this is adequate data to create a histogram -- use it for that
-    // FIXME: don't make a histogram of a skull? (buf_wd == 8 && buf_ht == 8)
-    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    if(cv->view(cv) == DT_VIEW_TETHERING && quality)
-    {
-      // FIXME: this is going to show horizontal banding as it is quantized 8-bit data
-      float *const out_f = dt_alloc_align(64, buf_wd * buf_ht * 4 * sizeof(float));
-      uint64_t DT_ALIGNED_ARRAY state[4] = { 0 };
-      xoshiro256_init(1, state);
-      if(out_f)
-      {
-        // FIXME: it would be nice to use dt_imageio_flip_buffers_ui8_to_float() but then we'd need to make another pass to convert RGB to BGR
-        // FIXME: it would be nice to convert to float, then do colorspace transform, then truncate to display as a special high quality case for tethering
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(buf_wd, buf_ht, state)      \
-    shared(rgbbuf, out_f) \
-    schedule(simd:static) aligned(out_f, state:64)
-#endif
-        for(int j = 0; j < buf_ht; j++)
-          for(int i = 0; i < buf_wd; i++)
-            for(int k = 0; k < 3; k++)
-            {
-              const uint8_t input = rgbbuf[(size_t)4 * (j * buf_wd + i) + (2-k)];
-              const float noise = dt_noise_generator(DT_NOISE_UNIFORM, input, 0.5f, 0, state);
-              out_f[4 * ((size_t)j * buf_wd + i) + k] = noise / 255.0f;
-            }
-        // FIXME: this histogram is a pretty close match for the one in darkroom, but regular histogram is slightly off and the waveform has banding, both presumably due to quantization error -- an alternative would be to run dt_imageio_export_with_flags() to produce more of a 1:1 match
-        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
-                                               out_f, buf_wd, buf_ht,
-                                               // FIXME: covert buf.buf to float and send that in with appropriate profile
-                                               darktable.color_profiles->display_type,
-                                               darktable.color_profiles->display_filename);
-        dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
-        dt_free_align(out_f);
-      }
-    }
-
     const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_wd);
     tmp_surface = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf_wd, buf_ht, stride);
   }
@@ -1105,6 +1067,41 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
+  }
+
+  // hack: in tether mode, use mipmap as adequate data to create a histogram
+  // FIXME: don't make a histogram of a skull (buf_wd == 8 && buf_ht == 8)
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view(cv) == DT_VIEW_TETHERING && quality)
+  {
+    float *const out_f = dt_alloc_align(64, buf_wd * buf_ht * 4 * sizeof(float));
+    uint64_t DT_ALIGNED_ARRAY state[4] = { 0 };
+    xoshiro256_init(1, state);
+    if(out_f)
+    {
+      // FIXME: if we get rid of noise can use dt_imageio_flip_buffers_ui8_to_float()
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(buf_wd, buf_ht, state)      \
+  shared(buf, out_f) \
+  schedule(simd:static) aligned(out_f, state:64)
+#endif
+      // FIXME: combine outer loops into one loop to buf_ht * buf_wd * 4, incremented by 4
+      for(int j = 0; j < buf_ht; j++)
+        for(int i = 0; i < buf_wd; i++)
+          for(int k = 0; k < 3; k++)
+          {
+            const uint8_t input = buf.buf[(size_t)4 * (j * buf_wd + i) + k];
+            const float noise = dt_noise_generator(DT_NOISE_UNIFORM, input, 0.5f, 0, state);
+            out_f[4 * ((size_t)j * buf_wd + i) + k] = noise / 255.0f;
+          }
+      // FIXME: this histogram is a pretty close match for the one in darkroom, but regular histogram is slightly off and the waveform has banding, both presumably due to quantization error -- an alternative would be to run dt_imageio_export_with_flags() to produce more of a 1:1 match
+      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
+                                             out_f, buf_wd, buf_ht,
+                                             buf.color_space, "");
+      dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
+      dt_free_align(out_f);
+    }
   }
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
