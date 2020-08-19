@@ -204,7 +204,6 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
 
   dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, (img_tmp) ? img_tmp: input, &d->histogram, FALSE, NULL);
   dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &d->histogram, histogram_max);
-  // FIXME: recalculate this based on if it's logarithmic of linear, so that iops won't have to
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
 
   if(img_tmp) dt_free_align(img_tmp);
@@ -1149,7 +1148,6 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 {
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
-    // FIXME: instead of this, just have process() call dt_control_queue_redraw_widget() when it is done?
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                               G_CALLBACK(_lib_histogram_preview_updated_callback), self);
   }

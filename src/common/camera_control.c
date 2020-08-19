@@ -566,7 +566,6 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
   pthread_join(cam->live_view_thread, NULL);
   // tell camera to get back to normal state (close mirror)
   dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 0);
-  // FIXME: trigger a thumbtable callback so that histogram knows to draw any current image -- though what happens when no current image is selected? we want the histogram to go blank then -- maybe a thumbtable callback of -1 but then all the other signal recipients will have to know what that means -- and if leaving tether mode in live view calls this, we don't want to trigger a histogram redraw while leaving the view
 }
 
 static void _camctl_lock(const dt_camctl_t *c, const dt_camera_t *cam)
