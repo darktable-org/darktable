@@ -272,7 +272,10 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
           dt_free_align(tmp_i);
         }
         // FIXME: this histogram isn't a precise match for when the equivalent image is captured -- though the live view histogram is a good match -- is something off?
-        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph);
+        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
+                                               // FIXME: use sRGB and don't do conversion above
+                                               darktable.color_profiles->display_type,
+                                               darktable.color_profiles->display_filename);
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
         dt_free_align(tmp_f);
       }
