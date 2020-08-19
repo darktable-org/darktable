@@ -294,7 +294,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     // generate a histogram. Or to use dt_imageio_export_with_flags()
     // with thumbnail_export set to TRUE.
     const int res
-        = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf, FALSE);
+        = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf, TRUE);
     if(res)
     {
       // if the image is missing, we reload it again
