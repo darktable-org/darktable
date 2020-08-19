@@ -48,6 +48,7 @@ dt_undo_t *dt_undo_init(void)
   dt_pthread_mutex_init(&udata->mutex, NULL);
   udata->group = DT_UNDO_NONE;
   udata->group_indent = 0;
+  dt_print(DT_DEBUG_UNDO, "[undo] init\n");
   return udata;
 }
 
@@ -60,6 +61,7 @@ dt_undo_t *dt_undo_init(void)
 void dt_undo_disable_next(dt_undo_t *self)
 {
   self->disable_next = TRUE;
+  dt_print(DT_DEBUG_UNDO, "[undo] disable next\n");
 }
 
 void dt_undo_cleanup(dt_undo_t *self)
@@ -112,6 +114,9 @@ static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t typ
       g_list_free_full(self->redo_list, _free_undo_data);
       self->redo_list = NULL;
 
+      dt_print(DT_DEBUG_UNDO, "[undo] record for type %d (length %d)\n",
+               type, g_list_length(self->undo_list));
+
       UNLOCK;
     }
   }
@@ -123,6 +128,7 @@ void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
 
   if(self->group == DT_UNDO_NONE)
   {
+    dt_print(DT_DEBUG_UNDO, "[undo] start group for type %d\n", type);
     self->group = type;
     self->group_indent = 1;
     _undo_record(self, NULL, type, NULL, TRUE, NULL, NULL);
@@ -140,6 +146,7 @@ void dt_undo_end_group(dt_undo_t *self)
   if(self->group_indent == 0)
   {
     _undo_record(self, NULL, self->group, NULL, TRUE, NULL, NULL);
+    dt_print(DT_DEBUG_UNDO, "[undo] end group for type %d\n", self->group);
     self->group = DT_UNDO_NONE;
   }
 }
@@ -170,6 +177,9 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
   GList *imgs = NULL;
 
   // check for first item that is matching the given pattern
+
+  dt_print(DT_DEBUG_UNDO, "[undo] action %s for %d (from length %d -> to length %d)\n",
+           action == DT_ACTION_UNDO?"UNDO":"DO", filter, g_list_length(*from), g_list_length(*to));
 
   while(l)
   {
@@ -284,6 +294,9 @@ static void _undo_clear_list(GList **list, uint32_t filter)
     }
     l = next;
   };
+
+  dt_print(DT_DEBUG_UNDO, "[undo] clear list for %d (length %d)\n",
+           filter, g_list_length(*list));
 }
 
 void dt_undo_clear(dt_undo_t *self, uint32_t filter)
