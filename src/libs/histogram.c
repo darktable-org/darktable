@@ -32,6 +32,7 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "libs/colorpicker.h"
 
 #define HISTOGRAM_BINS 256
 
@@ -138,30 +139,28 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
                                       .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0 };
 
   // Constraining the area if the colorpicker is active in area mode
-  // FIXME: if we do allow roi, then dt_lib_histogram_process() will need to take roi as a param, and this work of determining roi would happen in pixelpipe -- or the color_picker_box/point would move from dev->gui_module to darktable.lib->proxy.histogram
-#if 0
   dt_develop_t *dev = darktable.develop;
-  // FIXME: this is never true
-  if(dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view(cv) == DT_VIEW_DARKROOM &&
+     dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
      && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
     if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
     {
-      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[0] * roi_in->width));
-      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[1] * roi_in->height));
-      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_box[2] * roi_in->width));
-      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_box[3] * roi_in->height));
+      histogram_roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_box[0] * width));
+      histogram_roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_box[1] * height));
+      histogram_roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_box[2] * width));
+      histogram_roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_box[3] * height));
     }
     else
     {
-      histogram_roi.crop_x = MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
-      histogram_roi.crop_y = MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
-      histogram_roi.crop_width = roi_in->width - MIN(roi_in->width, MAX(0, dev->gui_module->color_picker_point[0] * roi_in->width));
-      histogram_roi.crop_height = roi_in->height - MIN(roi_in->height, MAX(0, dev->gui_module->color_picker_point[1] * roi_in->height));
+      histogram_roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
+      histogram_roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
+      histogram_roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
+      histogram_roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
     }
   }
-#endif
 
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
