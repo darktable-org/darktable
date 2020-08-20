@@ -213,6 +213,7 @@ static void gui_scaling_changed_callback(GtkWidget *widget, gpointer user_data)
   float ppd = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   if(ppd > 0.0) ppd = fmax(0.5, ppd); // else <= 0 -> use system default
   dt_conf_set_float("screen_ppd_overwrite", ppd);
+  restart_required = TRUE;
   dt_configure_ppd_dpi(darktable.gui);
   dt_bauhaus_load_theme();
 }
@@ -222,6 +223,7 @@ static void dpi_scaling_changed_callback(GtkWidget *widget, gpointer user_data)
   float dpi = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   if(dpi > 0.0) dpi = fmax(64, dpi); // else <= 0 -> use system default
   dt_conf_set_float("screen_dpi_overwrite", dpi);
+  restart_required = TRUE;
   dt_configure_ppd_dpi(darktable.gui);
   dt_bauhaus_load_theme();
 }
@@ -305,6 +307,7 @@ static void language_callback(GtkWidget *widget, gpointer user_data)
     dt_conf_set_string("ui_last/gui_language", language->code);
     darktable.l10n->selected = selected;
   }
+  restart_required = TRUE;
 }
 
 static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
