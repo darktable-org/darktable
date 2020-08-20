@@ -47,8 +47,6 @@
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
-const gchar *dt_dev_scope_type_names[DT_DEV_SCOPE_N] = { "histogram", "waveform" };
-
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
@@ -77,33 +75,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dt_pthread_mutex_init(&dev->pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview_pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview2_pipe_mutex, NULL);
-  dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
-  gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
-  if(g_strcmp0(mode, "histogram") == 0)
-    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
-  else if(g_strcmp0(mode, "waveform") == 0)
-    dev->scope_type = DT_DEV_SCOPE_WAVEFORM;
-  else if(g_strcmp0(mode, "linear") == 0)
-  { // update legacy conf
-    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
-    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
-    dt_conf_set_string("plugins/darkroom/histogram/histogram","linear");
-  }
-  else if(g_strcmp0(mode, "logarithmic") == 0)
-  { // update legacy conf
-    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
-    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
-    dt_conf_set_string("plugins/darkroom/histogram/histogram","logarithmic");
-  }
-  g_free(mode);
-  gchar *histogram_type = dt_conf_get_string("plugins/darkroom/histogram/histogram");
-  if(g_strcmp0(histogram_type, "linear") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(histogram_type, "logarithmic") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
-  g_free(histogram_type);
   gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
   dev->preview_downsampling =
     (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
@@ -125,37 +98,12 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
     dt_dev_pixelpipe_init_preview2(dev->preview2_pipe);
 
-    dev->histogram = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
 
     // FIXME: these are uint32_t, setting to -1 is confusing
-    dev->histogram_max = -1;
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
-
-    // Waveform buffer doesn't need to be coupled with the histogram
-    // widget size. The waveform is almost always scaled when
-    // drawn. Choose buffer dimensions which produces workable detail,
-    // don't use too much CPU/memory, and allow reasonable gradations
-    // of tone.
-
-    // Don't use absurd amounts of memory, exceed width of DT_MIPMAP_F
-    // (which will be darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
-    // for mosaiced images), nor make it too slow to calculate
-    // (regardless of ppd). Try to get enough detail for a (default)
-    // 350px panel, possibly 2x that on hidpi.  The actual buffer
-    // width will vary with integral binning of image.
-    dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
-    // 175 rows is the default histogram widget height. It's OK if the
-    // widget height changes from this, as the width will almost
-    // always be scaled, regardless.
-    dev->histogram_waveform_height = 175;
-    // making the stride work for cairo muddles UI and underlying
-    // data, and mipmap widths should already reasonable, but better
-    // to be safe, and the histogram is for the sake of UI, after all
-    dev->histogram_waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, dev->histogram_waveform_width);
-    dev->histogram_waveform = calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride * 3, sizeof(uint8_t));
   }
 
   dev->iop_instance = 0;
@@ -238,10 +186,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dev->allprofile_info = g_list_delete_link(dev->allprofile_info, dev->allprofile_info);
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);
-  free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
-  free(dev->histogram_waveform);
 
   g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
