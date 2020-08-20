@@ -327,7 +327,6 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to capture preview: %s\n",
                  gp_result_as_string(res));
       }
-      // FIXME: do need to do this or just use dt_imageio_open_jpeg()?
       else if((res = gp_file_get_data_and_size(fp, &data, &data_size)) != GP_OK)
       {
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to get preview data: %s\n",

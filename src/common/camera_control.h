@@ -86,7 +86,6 @@ typedef struct dt_camera_t
   /** Live view */
   gboolean is_live_viewing;
   /** The last preview image from the camera */
-  // FIXME: use dt_image_t?
   uint8_t *live_view_buffer;
   int live_view_width, live_view_height;
   //dt_colorspaces_color_profile_type_t live_view_color_space;

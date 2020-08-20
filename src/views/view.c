@@ -1086,16 +1086,14 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
   shared(buf, out_f) \
   schedule(simd:static) aligned(out_f, state:64)
 #endif
-      // FIXME: combine outer loops into one loop to buf_ht * buf_wd * 4, incremented by 4
-      for(int j = 0; j < buf_ht; j++)
-        for(int i = 0; i < buf_wd; i++)
-          for(int k = 0; k < 3; k++)
-          {
-            const uint8_t input = buf.buf[(size_t)4 * (j * buf_wd + i) + k];
-            const float noise = dt_noise_generator(DT_NOISE_UNIFORM, input, 0.5f, 0, state);
-            out_f[4 * ((size_t)j * buf_wd + i) + k] = noise / 255.0f;
-          }
-      // FIXME: this histogram is a pretty close match for the one in darkroom, but regular histogram is slightly off and the waveform has banding, both presumably due to quantization error -- an alternative would be to run dt_imageio_export_with_flags() to produce more of a 1:1 match
+      for(size_t p = 0; p < (size_t) 4 * buf_ht * buf_wd; p += 4)
+        for(int k = 0; k < 3; k++)
+        {
+          const uint8_t input = buf.buf[p+k];
+          const float noise = dt_noise_generator(DT_NOISE_UNIFORM, input, 0.5f, 0, state);
+          out_f[p+k] = noise / 255.0f;
+        }
+      // FIXME: this histogram is a pretty close match for the one in darkroom, but regular histogram is slightly off, presumably due to quantization error and histogram_max varying -- an alternative would be to run dt_imageio_export_with_flags() to produce more of a 1:1 match
       darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
                                              out_f, buf_wd, buf_ht,
                                              buf.color_space, "");
