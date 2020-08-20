@@ -489,7 +489,7 @@ static void *dt_camctl_camera_get_live_view(void *data)
 
   int frames = 0;
   double capture_time = dt_get_wtime();
-  int fps = dt_conf_get_int("plugins/capture/camera/live_view_fps");
+  const int fps = dt_conf_get_int("plugins/capture/camera/live_view_fps");
 
   while(cam->is_live_viewing == TRUE)
   {
