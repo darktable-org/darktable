@@ -1664,6 +1664,11 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
 
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
+      // ensure that the overall layout doesn't change
+      // (i.e. we don't get empty spaces in the very first row)
+      const int offset_row = (table->offset - 1) / table->thumbs_per_row;
+      offset = offset_row * table->thumbs_per_row + 1;
+
       // in zoomable, we want the first thumb at the same position as the old one
       if(g_list_length(table->list) > 0)
       {
