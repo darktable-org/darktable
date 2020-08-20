@@ -298,7 +298,6 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 
 static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *const input,
                                      int width, int height,
-                                     // FIXME: don't need filename if only ever called with DT_COLORSPACE_SRGB, DT_COLORSPACE_ADOBERGB, or DT_COLORSPACE_DISPLAY or DT_COLORSPACE_histogram?
                                      dt_colorspaces_color_profile_type_t in_profile_type, const gchar *in_profile_filename)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
@@ -324,6 +323,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     // make sense as they can't be read from iops. For now make
     // colorspace conversion a nop.
     // FIXME: handle this better, or at leat tell the user what is happening
+    // FIXME: will dt_colorspaces_get_output_profile() give us export profile?
     profile_info_to = profile_info_from;
   }
 
