@@ -31,8 +31,11 @@
 
 #include "common/camera_control.h"
 #include "common/collection.h"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/iop_profile.h"
 #include "common/image_cache.h"
+#include "common/imageio.h"
 #include "common/import_session.h"
 #include "common/selection.h"
 #include "common/utility.h"
@@ -164,6 +167,38 @@ void configure(dt_view_t *self, int wd, int ht)
   // dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
+typedef struct _tethering_format_t
+{
+  dt_imageio_module_data_t head;
+  float *buf;
+} _tethering_format_t;
+
+static const char *_tethering_mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
+static int _tethering_levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_FLOAT;
+}
+
+static int _tethering_bpp(dt_imageio_module_data_t *data)
+{
+  return 32;
+}
+
+static int _tethering_write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                                  dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                                  void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                                  const gboolean export_masks)
+{
+  _tethering_format_t *d = (_tethering_format_t *)data;
+  d->buf = (float *)malloc(sizeof(float) * 4 * d->head.width * d->head.height);
+  memcpy(d->buf, in, sizeof(float) * 4 * d->head.width * d->head.height);
+  return 0;
+}
+
 #define MARGIN DT_PIXEL_APPLY_DPI(20)
 #define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) /* see libs/camera.c */
 
@@ -189,35 +224,69 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
 
   if(cam->is_live_viewing == TRUE) // display the preview
   {
-    dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
-    if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
+    dt_pthread_mutex_lock(&cam->live_view_buffer_mutex);
+    if(cam->live_view_buffer)
     {
-      const gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
-      const gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+      const gint pw = cam->live_view_width;
+      const gint ph = cam->live_view_height;
+      const uint8_t *const p_buf = cam->live_view_buffer;
+      uint8_t *const tmp_i = dt_alloc_align(64, sizeof(uint8_t) * pw * ph * 4);
+      if(tmp_i)
+      {
+        const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, pw);
+        pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+        // FIXME: if liveview image is tagged and we can read its colorspace, use that
+        cmsDoTransformLineStride(darktable.color_profiles->transform_srgb_to_display,
+                                 p_buf, tmp_i, pw, ph, pw * 4, stride, 0, 0);
+        pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-      const float w = width - (MARGIN * 2.0f);
-      const float h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
+        cairo_surface_t *source
+          = dt_cairo_image_surface_create_for_data(tmp_i, CAIRO_FORMAT_RGB24, pw, ph, stride);
+        if(cairo_surface_status(source) == CAIRO_STATUS_SUCCESS)
+        {
+          const float w = width - (MARGIN * 2.0f);
+          const float h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
+          float scale;
+          if(cam->live_view_rotation % 2 == 0)
+            scale = fminf(w / pw, h / ph);
+          else
+            scale = fminf(w / ph, h / pw);
+          scale = fminf(1.0, scale);
 
-      float scale;
-      if(cam->live_view_rotation % 2 == 0)
-        scale = fminf(w / pw, h / ph);
-      else
-        scale = fminf(w / ph, h / pw);
-      scale = fminf(1.0, scale);
+          // FIXME: use cairo_pattern_set_filter()?
+          cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);                    // origin to middle of canvas
+          // FIXME: should do rotate/flip in dt_imageio_flip_buffers_ui8_to_float() so that histogram corresponds?
+          if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);                       // mirror image
+          if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation);  // rotate around middle
+          if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                   // scale to fit canvas
+          cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                        // origin back to corner
+          cairo_scale(cr, darktable.gui->ppd, darktable.gui->ppd);
+          cairo_set_source_surface(cr, source, 0.0, 0.0);
+          cairo_paint(cr);
+        }
+        cairo_surface_destroy(source);
+        dt_free_align(tmp_i);
+      }
 
-      cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);                    // origin to middle of canvas
-      if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);                       // mirror image
-      if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation);  // rotate around middle
-      if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                   // scale to fit canvas
-      cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                        // origin back to corner
-
-      gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
-      cairo_paint(cr);
+      float *const tmp_f = dt_alloc_align(64, sizeof(float) * pw * ph * 4);
+      if(tmp_f)
+      {
+        dt_imageio_flip_buffers_ui8_to_float(tmp_f, p_buf, 0.0f, 255.0f, 4,
+                                             pw, ph, pw, ph, 4 * pw, ORIENTATION_NONE);
+        // FIXME: this histogram isn't a precise match for when the equivalent image is captured -- though the live view histogram is a good match -- is something off?
+        // FIXME: if liveview image is tagged and we can read its colorspace, use that
+        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
+                                               DT_COLORSPACE_SRGB, "");
+        dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
+        dt_free_align(tmp_f);
+      }
     }
-    dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+    dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
   }
+  // FIXME: set histogram data to blank and draw blank if there is no active image -- or make a test in histogram draw which will know to draw it blank
   else if(lib->image_id >= 0) // First of all draw image if available
   {
+    // FIXME: every time the mouse moves over the center view this redraws, which isn't necessary
     cairo_surface_t *surf = NULL;
     const int res
         = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf, FALSE);
@@ -232,11 +301,39 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     {
       cairo_translate(cr, (width - cairo_image_surface_get_width(surf)) / 2,
                       (height - cairo_image_surface_get_height(surf)) / 2);
-      cairo_set_source_surface(cr, surf, 0, 0);
+      cairo_set_source_surface(cr, surf, 0.0, 0.0);
       cairo_paint(cr);
       cairo_surface_destroy(surf);
       if(lib->busy) dt_control_log_busy_leave();
       lib->busy = FALSE;
+    }
+
+    // update the histogram
+    dt_imageio_module_format_t format;
+    _tethering_format_t dat;
+    format.bpp = _tethering_bpp;
+    format.write_image = _tethering_write_image;
+    format.levels = _tethering_levels;
+    format.mime = _tethering_mime;
+    dat.head.max_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F];
+    dat.head.max_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F];
+    dat.head.style[0] = '\0';
+    // this uses the export rather than thumbnail pipe -- slower, but
+    // as we're not competing with the full pixelpipe, it's a
+    // reasonable trade-off for a histogram which matches that in
+    // darkroom view
+    // FIXME: could use histogram profile for export?
+    if (!dt_imageio_export_with_flags(lib->image_id, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
+                                      FALSE, FALSE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, "", DT_INTENT_PERCEPTUAL, NULL,
+                                      NULL, 1, 1, NULL))
+    {
+      // FIXME: is this the best way to do this?
+      const dt_colorspaces_color_profile_t *const out_profile =
+        dt_colorspaces_get_output_profile(lib->image_id, DT_COLORSPACE_NONE, "");
+      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width, dat.head.height,
+                                             out_profile->type, out_profile->filename);
+      dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
+      free(dat.buf);
     }
   }
 }

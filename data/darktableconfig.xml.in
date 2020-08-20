@@ -512,6 +512,13 @@
     <shortdescription>jobcode of import job</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/capture/camera/live_view_fps</name>
+    <type>int</type>
+    <default>15</default>
+    <shortdescription>maximum fps of live view update in tethering view</shortdescription>
+    <longdescription>going too fast will result in too many redraws without a real benefit</longdescription>
+  </dtconfig>
   <dtconfig prefs="lighttable">
     <name>plugins/collect/filmroll_sort</name>
     <type>
