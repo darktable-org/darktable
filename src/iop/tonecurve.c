@@ -1353,7 +1353,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  dt_develop_t *dev = darktable.develop;
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
 
   int ch = c->channel;
@@ -1486,6 +1485,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
     float picker_mean[3], picker_min[3], picker_max[3];
+    const gboolean is_linear = darktable.lib->proxy.histogram.is_linear;
 
     raw_mean = gd->picked_color;
     raw_min = gd->picked_color_min;
@@ -1493,8 +1493,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     raw_mean_output = gd->picked_output_color;
 
     const uint32_t *hist = self->histogram;
-    const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
-                                                                          : logf(1.0 + self->histogram_max[ch]);
+    const float hist_max = is_linear ? self->histogram_max[ch] : logf(1.0 + self->histogram_max[ch]);
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
@@ -1504,12 +1503,11 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       if (ch == ch_L && c->loglogscale > 0.0f)
       {
-        dt_draw_histogram_8_log_base(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR, c->loglogscale);
+        dt_draw_histogram_8_log_base(cr, hist, 4, ch, is_linear, c->loglogscale);
       }
       else
       {
-        // TODO: make draw handle waveform histograms
-        dt_draw_histogram_8(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, ch, is_linear);
       }
       cairo_restore(cr);
     }

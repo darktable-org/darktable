@@ -1055,7 +1055,6 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t p = *(dt_iop_colorzones_params_t *)self->params;
-  dt_develop_t *dev = darktable.develop;
 
   if(p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
   {
@@ -1184,9 +1183,9 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     {
       const int ch_hist = p.channel;
       const uint32_t *hist = self->histogram;
-      const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR
-                                 ? self->histogram_max[ch_hist]
-                                 : logf(1.0f + self->histogram_max[ch_hist]);
+      const gboolean is_linear = darktable.lib->proxy.histogram.is_linear;
+      const float hist_max = is_linear ? self->histogram_max[ch_hist]
+                                       : logf(1.0f + self->histogram_max[ch_hist]);
       if(hist && hist_max > 0.0f)
       {
         cairo_save(cr);
@@ -1195,7 +1194,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
         cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
         dt_draw_histogram_8_zoomed(cr, hist, 4, ch_hist, c->zoom_factor, c->offset_x * 255.f,
-                                   c->offset_y * hist_max, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+                                   c->offset_y * hist_max, is_linear);
 
         cairo_restore(cr);
       }

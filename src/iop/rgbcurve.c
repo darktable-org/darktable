@@ -826,6 +826,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   if(self->enabled)
   {
     const uint32_t *hist = self->histogram;
+    const gboolean is_linear = darktable.lib->proxy.histogram.is_linear;
     float hist_max;
 
     if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
@@ -833,7 +834,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     else
       hist_max = self->histogram_max[ch];
 
-    if (dev->histogram_type != DT_DEV_HISTOGRAM_LINEAR)
+    if (!is_linear)
       hist_max = logf(1.0 + hist_max);
 
     if(hist && hist_max > 0.0f)
@@ -847,15 +848,15 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
         cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_R, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
-                                   dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+                                   is_linear);
 
         cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_G, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
-                                   dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+                                   is_linear);
 
         cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_B, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
-                                   dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+                                   is_linear);
         }
         else if(autoscale == DT_S_SCALE_MANUAL_RGB)
         {
@@ -866,7 +867,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
           else
             cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
           dt_draw_histogram_8_zoomed(cr, hist, 4, ch, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
-                                     dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+                                     is_linear);
         }
 
       cairo_restore(cr);
