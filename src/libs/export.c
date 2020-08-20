@@ -523,19 +523,21 @@ static void insert_text_handler(GtkEditable *entry, char *text, int length, gpoi
   int i, count=0;
   gchar *result = g_new (gchar, length);
 
-  for (i=0; i < length; i++) {
+  for (i=0; i < length; i++)
+  {
     if (!isdigit(text[i]))
       continue;
     result[count++] = text[i];
   }
-  
-  if (count > 0) {
+
+  if (count > 0)
+  {
     g_signal_handlers_block_by_func (GTK_WIDGET (entry), insert_text_handler, user_data);
     gtk_editable_insert_text (entry, result, count, position);
     g_signal_handlers_unblock_by_func (GTK_WIDGET (entry), insert_text_handler, user_data);
   }
   g_signal_stop_emission_by_name (entry, "insert-text");
-  
+
   g_free (result);
 }
 
