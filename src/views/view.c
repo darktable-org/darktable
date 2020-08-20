@@ -31,7 +31,6 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
-#include "develop/imageop_math.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/thumbtable.h"
@@ -1067,39 +1066,6 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
-  }
-
-  // hack: in tether mode, use mipmap as adequate data to create a histogram
-  // FIXME: don't make a histogram of a skull (buf_wd == 8 && buf_ht == 8)
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view(cv) == DT_VIEW_TETHERING && quality)
-  {
-    float *const out_f = dt_alloc_align(64, buf_wd * buf_ht * 4 * sizeof(float));
-    uint64_t DT_ALIGNED_ARRAY state[4] = { 0 };
-    xoshiro256_init(1, state);
-    if(out_f)
-    {
-      // FIXME: if we get rid of noise can use dt_imageio_flip_buffers_ui8_to_float()
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(buf_wd, buf_ht, state)      \
-  shared(buf, out_f) \
-  schedule(simd:static) aligned(out_f, state:64)
-#endif
-      for(size_t p = 0; p < (size_t) 4 * buf_ht * buf_wd; p += 4)
-        for(int k = 0; k < 3; k++)
-        {
-          const uint8_t input = buf.buf[p+k];
-          const float noise = dt_noise_generator(DT_NOISE_UNIFORM, input, 0.5f, 0, state);
-          out_f[p+k] = noise / 255.0f;
-        }
-      // FIXME: this histogram is a pretty close match for the one in darkroom, but regular histogram is slightly off, presumably due to quantization error and histogram_max varying -- an alternative would be to run dt_imageio_export_with_flags() to produce more of a 1:1 match
-      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
-                                             out_f, buf_wd, buf_ht,
-                                             buf.color_space, "");
-      dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
-      dt_free_align(out_f);
-    }
   }
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
