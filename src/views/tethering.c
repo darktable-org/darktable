@@ -197,85 +197,68 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     {
       const gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
       const gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
-      const gint p_stride = gdk_pixbuf_get_rowstride(cam->live_view_pixbuf);
-      const gint p_channels = gdk_pixbuf_get_n_channels(cam->live_view_pixbuf);
       const guint8 *const p_buf = gdk_pixbuf_read_pixels(cam->live_view_pixbuf);
-      float *const tmp_f = dt_alloc_align(64, sizeof(float) * pw * ph * 4);
-      if(tmp_f)
+      uint8_t *const tmp_i = dt_alloc_align(64, sizeof(uint8_t) * pw * ph * 4);
+      if(tmp_i)
       {
-        // Convert to float as:
-        //  - the data needs to be converted to float anyhow for histogram to work on it
-        //  - don't lose precision when the data is converted to display then histogram colorspace
-        //  - this lets us use the nice iop_profile conversion code
-        dt_imageio_flip_buffers_ui8_to_float(tmp_f, p_buf, 0.0f, 255.0f, p_channels,
-                                             pw, ph, pw, ph, p_stride, ORIENTATION_NONE);
-        // In theory we could convert to display colorspace in
-        // camera_control, as conversion here could happen multiple
-        // times if multiple expose events happen. But it seems good
-        // to keep camera_control simple, and keep view-related code
-        // here. And there is an unlikely case where the display
-        // profile would change after the live view image is received
-        // but before it is display. And in most cases the new live
-        // view image will arrive before the next expose event.
-        // FIXME: if liveview image is tagged and we can read its colorspace, use that
-        const dt_iop_order_iccprofile_info_t *const profile_info_from
-            = dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
-        const dt_iop_order_iccprofile_info_t *const profile_info_to
-            = dt_ioppr_add_profile_info_to_list(darktable.develop, darktable.color_profiles->display_type,
-                                                darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
-        // QUESTION: if converted tmp_f straight to histogram colorspace would the histogram quality be any better?
-        // QUESTION: can we dither or add noise in this conversion to make it look better?
-        dt_ioppr_transform_image_colorspace_rgb(tmp_f, tmp_f, pw, ph,
-                                                profile_info_from, profile_info_to, "live view");
-
-        int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, pw);
-        uint8_t *const tmp_i = dt_alloc_align(64, sizeof(uint8_t) * pw * ph * 4);
-        if(tmp_i)
-        {
-          // FIXME: use 10-bit as long as we have the extra preicsion?
-          // FIXME: is there already a fast routine to do this?
+        const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, pw);
+        // FIXME: read the live view via dt JPEG code so that it is 4-byte per pixel, not packed 3 byte per pixel, then don't do colorspace conversion in place
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
     dt_omp_firstprivate(pw, ph, stride) \
-    shared(tmp_f, tmp_i) \
-    schedule(simd:static) aligned(tmp_f, tmp_i:64)
+    shared(p_buf, tmp_i) \
+    schedule(simd:static) aligned(tmp_i:64)
 #endif
-          for(int y=0; y<ph; y++)
-            for(int x=0; x<pw; x++)
-              for(int k=0; k<3; k++)
-                tmp_i[y*stride+x*4+k]=CLAMP(tmp_f[4*(y*pw+x)+(2-k)]*255.0f,0,255);
-          cairo_surface_t *source
-            = dt_cairo_image_surface_create_for_data(tmp_i, CAIRO_FORMAT_RGB24, pw, ph, stride);
-          if(cairo_surface_status(source) == CAIRO_STATUS_SUCCESS)
-          {
-            const float w = width - (MARGIN * 2.0f);
-            const float h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
-            float scale;
-            if(cam->live_view_rotation % 2 == 0)
-              scale = fminf(w / pw, h / ph);
-            else
-              scale = fminf(w / ph, h / pw);
-            scale = fminf(1.0, scale);
+        for(int y=0; y<ph; y++)
+          for(int x=0; x<pw; x++)
+            for(int k=0; k<3; k++)
+              tmp_i[y*stride+x*4+k]=p_buf[y*pw*3+x*3+k];
 
-            // FIXME: use cairo_pattern_set_filter()?
-            cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);                    // origin to middle of canvas
-            // FIXME: should do rotate/flip in dt_imageio_flip_buffers_ui8_to_float() so that histogram corresponds?
-            if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);                       // mirror image
-            if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation);  // rotate around middle
-            if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                   // scale to fit canvas
-            cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                        // origin back to corner
-            cairo_scale(cr, darktable.gui->ppd, darktable.gui->ppd);
-            cairo_set_source_surface(cr, source, 0.0, 0.0);
-            cairo_paint(cr);
-          }
-          cairo_surface_destroy(source);
-          dt_free_align(tmp_i);
+        pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+        // FIXME: if liveview image is tagged and we can read its colorspace, use that
+        cmsDoTransformLineStride(darktable.color_profiles->transform_srgb_to_display,
+                                 tmp_i, tmp_i, pw, ph, pw * 4, stride, 0, 0);
+        pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
+        cairo_surface_t *source
+          = dt_cairo_image_surface_create_for_data(tmp_i, CAIRO_FORMAT_RGB24, pw, ph, stride);
+        if(cairo_surface_status(source) == CAIRO_STATUS_SUCCESS)
+        {
+          const float w = width - (MARGIN * 2.0f);
+          const float h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
+          float scale;
+          if(cam->live_view_rotation % 2 == 0)
+            scale = fminf(w / pw, h / ph);
+          else
+            scale = fminf(w / ph, h / pw);
+          scale = fminf(1.0, scale);
+
+          // FIXME: use cairo_pattern_set_filter()?
+          cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);                    // origin to middle of canvas
+          // FIXME: should do rotate/flip in dt_imageio_flip_buffers_ui8_to_float() so that histogram corresponds?
+          if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);                       // mirror image
+          if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation);  // rotate around middle
+          if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                   // scale to fit canvas
+          cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                        // origin back to corner
+          cairo_scale(cr, darktable.gui->ppd, darktable.gui->ppd);
+          cairo_set_source_surface(cr, source, 0.0, 0.0);
+          cairo_paint(cr);
         }
+        cairo_surface_destroy(source);
+        dt_free_align(tmp_i);
+      }
+
+      float *const tmp_f = dt_alloc_align(64, sizeof(float) * pw * ph * 4);
+      if(tmp_f)
+      {
+        dt_imageio_flip_buffers_ui8_to_float(tmp_f, p_buf, 0.0f, 255.0f,
+                                             gdk_pixbuf_get_n_channels(cam->live_view_pixbuf),
+                                             pw, ph, pw, ph,
+                                             gdk_pixbuf_get_rowstride(cam->live_view_pixbuf), ORIENTATION_NONE);
         // FIXME: this histogram isn't a precise match for when the equivalent image is captured -- though the live view histogram is a good match -- is something off?
+        // FIXME: if liveview image is tagged and we can read its colorspace, use that
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
-                                               // FIXME: use sRGB and don't do conversion above
-                                               darktable.color_profiles->display_type,
-                                               darktable.color_profiles->display_filename);
+                                               DT_COLORSPACE_SRGB, "");
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
         dt_free_align(tmp_f);
       }
