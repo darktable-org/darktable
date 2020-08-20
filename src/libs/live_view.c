@@ -489,11 +489,8 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   // things
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->live_view)) == TRUE)
   {
-#if 0
-    // FIXME: this currently causes a crash -- but without this when re-renter live view the live view button is enabled but live view is off until button is pressed twice
     dt_camctl_camera_stop_live_view(darktable.camctl);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lib->live_view), FALSE);
-#endif
   }
 }
 
