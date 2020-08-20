@@ -545,6 +545,7 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   dt_camera_t *cam = (dt_camera_t *)camctl->active_camera;
+  if(!cam) return;
   if(cam->is_live_viewing == FALSE)
   {
     dt_print(DT_DEBUG_CAMCTL, "[camera_control] Not in live view mode, nothing to stop\n");
