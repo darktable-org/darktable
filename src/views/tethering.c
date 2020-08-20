@@ -192,32 +192,20 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
 
   if(cam->is_live_viewing == TRUE) // display the preview
   {
-    dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
-    if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
+    dt_pthread_mutex_lock(&cam->live_view_buffer_mutex);
+    if(cam->live_view_buffer)
     {
-      const gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
-      const gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
-      const guint8 *const p_buf = gdk_pixbuf_read_pixels(cam->live_view_pixbuf);
+      const gint pw = cam->live_view_width;
+      const gint ph = cam->live_view_height;
+      const uint8_t *const p_buf = cam->live_view_buffer;
       uint8_t *const tmp_i = dt_alloc_align(64, sizeof(uint8_t) * pw * ph * 4);
       if(tmp_i)
       {
         const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, pw);
-        // FIXME: read the live view via dt JPEG code so that it is 4-byte per pixel, not packed 3 byte per pixel, then don't do colorspace conversion in place
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(pw, ph, stride) \
-    shared(p_buf, tmp_i) \
-    schedule(simd:static) aligned(tmp_i:64)
-#endif
-        for(int y=0; y<ph; y++)
-          for(int x=0; x<pw; x++)
-            for(int k=0; k<3; k++)
-              tmp_i[y*stride+x*4+k]=p_buf[y*pw*3+x*3+k];
-
         pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
         // FIXME: if liveview image is tagged and we can read its colorspace, use that
         cmsDoTransformLineStride(darktable.color_profiles->transform_srgb_to_display,
-                                 tmp_i, tmp_i, pw, ph, pw * 4, stride, 0, 0);
+                                 p_buf, tmp_i, pw, ph, pw * 4, stride, 0, 0);
         pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
         cairo_surface_t *source
@@ -251,10 +239,8 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       float *const tmp_f = dt_alloc_align(64, sizeof(float) * pw * ph * 4);
       if(tmp_f)
       {
-        dt_imageio_flip_buffers_ui8_to_float(tmp_f, p_buf, 0.0f, 255.0f,
-                                             gdk_pixbuf_get_n_channels(cam->live_view_pixbuf),
-                                             pw, ph, pw, ph,
-                                             gdk_pixbuf_get_rowstride(cam->live_view_pixbuf), ORIENTATION_NONE);
+        dt_imageio_flip_buffers_ui8_to_float(tmp_f, p_buf, 0.0f, 255.0f, 4,
+                                             pw, ph, pw, ph, 4 * pw, ORIENTATION_NONE);
         // FIXME: this histogram isn't a precise match for when the equivalent image is captured -- though the live view histogram is a good match -- is something off?
         // FIXME: if liveview image is tagged and we can read its colorspace, use that
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
@@ -263,7 +249,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         dt_free_align(tmp_f);
       }
     }
-    dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+    dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
   }
   // FIXME: set histogram data to blank and draw blank if there is no active image -- or make a test in histogram draw which will know to draw it blank
   else if(lib->image_id >= 0) // First of all draw image if available

@@ -20,6 +20,7 @@
 #endif
 #include "common/camera_control.h"
 #include "common/exif.h"
+#include "common/imageio_jpeg.h"
 #include "control/control.h"
 #include <gphoto2/gphoto2-file.h>
 
@@ -326,6 +327,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to capture preview: %s\n",
                  gp_result_as_string(res));
       }
+      // FIXME: do need to do this or just use dt_imageio_open_jpeg()?
       else if((res = gp_file_get_data_and_size(fp, &data, &data_size)) != GP_OK)
       {
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to get preview data: %s\n",
@@ -334,45 +336,38 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       else
       {
         // everything worked
-        GError *error = NULL;
-        // FIXME: is the JPEG ever tagged with a profile? testing so far (limited to Canon EOS 5D Mark III) hasn't found one
-        // FIXME: it would be nice to use dt's imageio rather than GDKPixbufLoader
-        //   dt_imageio_jpeg_t jpg;
-        //   dt_imageio_jpeg_decompress_header(data, data_size, &jpg)
-        //   *buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
-        //   dt_imageio_jpeg_decompress(&jpg, *buffer)
-        // or as in dt_imageio_open_jpeg()?
-        //   dt_imageio_jpeg_read_header() -- though takes filename, maybe can get from gphoto
-        //   ...alloc...
-        //   if(dt_imageio_jpeg_read(&jpg, tmp)) ...
-        GdkPixbufLoader *loader = gdk_pixbuf_loader_new_with_mime_type(
-            "image/jpeg", &error); // there were cases where GDKPixbufLoader failed to recognize the JPEG
-        if(error)
+        dt_imageio_jpeg_t jpg;
+        if(dt_imageio_jpeg_decompress_header(data, data_size, &jpg))
         {
-          dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to create jpeg image loader: %s\n",
-                   error->message);
-          g_error_free(error);
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to decompress jpeg header\n");
         }
         else
         {
-          if(gdk_pixbuf_loader_write(loader, (guchar *)data, data_size, NULL) == TRUE)
+          // FIXME: is the live view ever tagged with a profile? testing so far (limited to Canon EOS 5D Mark III) hasn't found one
+          // dt_colorspaces_color_profile_type_t color_space = dt_imageio_jpeg_read_color_space(&jpg);
+          //if(color_space == DT_COLORSPACE_DISPLAY)
+          //  color_space = DT_COLORSPACE_SRGB;            // no embedded colorspace, assume is sRGB
+          uint8_t *const buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+          if(!buffer)
           {
-            dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
-            if(cam->live_view_pixbuf != NULL) g_object_unref(cam->live_view_pixbuf);
-            // Calling gdk_pixbuf_loader_close forces the data to be parsed by the
-            // loader.  We must do this before calling gdk_pixbuf_loader_get_pixbuf.
-            gdk_pixbuf_loader_close(loader, &error);
-            if(error)
-            {
-              dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to close image loader: %s\n",
-                       error->message);
-              g_error_free(error);
-            }
-            cam->live_view_pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
-            dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+            dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view could not allocate image buffer\n");
+          }
+          else if(dt_imageio_jpeg_decompress(&jpg, buffer))
+          {
+            dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to decompress jpeg\n");
+          }
+          else
+          {
+            dt_pthread_mutex_lock(&cam->live_view_buffer_mutex);
+            // FIXME: don't need to alloc/dealloc if the image dimensions haven't changed
+            if(cam->live_view_buffer != NULL) dt_free_align(cam->live_view_buffer);
+            cam->live_view_buffer = buffer;
+            cam->live_view_width = jpg.width;
+            cam->live_view_height = jpg.height;
+            //cam->live_view_color_space = color_space;
+            dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
           }
         }
-        gdk_pixbuf_loader_close(loader, NULL);
       }
       if(fp) gp_file_free(fp);
       dt_pthread_mutex_BAD_unlock(&cam->live_view_synch);
@@ -639,15 +634,15 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam)
     gp_file_free((CameraFile *)it->data);
   }
   
-  if(cam->live_view_pixbuf != NULL)
+  if(cam->live_view_buffer != NULL)
   {
-    g_object_unref(cam->live_view_pixbuf);
-    cam->live_view_pixbuf = NULL; // just in case someone else is using this
+    dt_free_align(cam->live_view_buffer);
+    cam->live_view_buffer = NULL; // just in case someone else is using this
   }
   g_free(cam->model);
   g_free(cam->port);
   dt_pthread_mutex_destroy(&cam->config_lock);
-  dt_pthread_mutex_destroy(&cam->live_view_pixbuf_mutex);
+  dt_pthread_mutex_destroy(&cam->live_view_buffer_mutex);
   dt_pthread_mutex_destroy(&cam->live_view_synch);
   // TODO: cam->jobqueue
   g_free(cam);
@@ -739,7 +734,7 @@ static void dt_camctl_detect_cameras(const dt_camctl_t *c)
     gp_list_get_value(available_cameras, i, &s);
     camera->port = g_strdup(s);
     dt_pthread_mutex_init(&camera->config_lock, NULL);
-    dt_pthread_mutex_init(&camera->live_view_pixbuf_mutex, NULL);
+    dt_pthread_mutex_init(&camera->live_view_buffer_mutex, NULL);
     dt_pthread_mutex_init(&camera->live_view_synch, NULL);
 
     // if(g_strcmp0(camera->port,"usb:")==0) { g_free(camera); continue; }

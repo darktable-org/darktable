@@ -86,7 +86,10 @@ typedef struct dt_camera_t
   /** Live view */
   gboolean is_live_viewing;
   /** The last preview image from the camera */
-  GdkPixbuf *live_view_pixbuf;
+  // FIXME: use dt_image_t?
+  uint8_t *live_view_buffer;
+  int live_view_width, live_view_height;
+  //dt_colorspaces_color_profile_type_t live_view_color_space;
   /** Rotation of live view, multiples of 90° */
   int32_t live_view_rotation;
   /** Zoom level for live view */
@@ -99,8 +102,8 @@ typedef struct dt_camera_t
   gboolean live_view_flip;
   /** The thread adding the live view jobs */
   pthread_t live_view_thread;
-  /** A guard so that writing and reading the pixbuf don't interfere */
-  dt_pthread_mutex_t live_view_pixbuf_mutex;
+  /** A guard so that writing and reading the live view buffer don't interfere */
+  dt_pthread_mutex_t live_view_buffer_mutex;
   /** A flag to tell the live view thread that the last job was completed */
   dt_pthread_mutex_t live_view_synch;
 } dt_camera_t;
