@@ -308,7 +308,25 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
 
   const dt_iop_order_iccprofile_info_t *const profile_info_from
     = dt_ioppr_add_profile_info_to_list(dev, in_profile_type, in_profile_filename, INTENT_PERCEPTUAL);
-  const dt_iop_order_iccprofile_info_t *const profile_info_to = dt_ioppr_get_histogram_profile_info(dev);
+
+  const dt_iop_order_iccprofile_info_t *profile_info_to;
+  dt_colorspaces_color_profile_type_t histogram_profile_type;
+  char *histogram_profile_filename;
+  dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
+  if(histogram_profile_type != DT_COLORSPACE_NONE)
+  {
+    profile_info_to = dt_ioppr_add_profile_info_to_list(dev, histogram_profile_type, histogram_profile_filename,
+                                                        DT_INTENT_PERCEPTUAL);
+  }
+  else
+  {
+    // If in tether view, histogram profile of work or export don't
+    // make sense as they can't be read from iops. For now make
+    // colorspace conversion a nop.
+    // FIXME: handle this better, or at leat tell the user what is happening
+    profile_info_to = profile_info_from;
+  }
+
   dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height, profile_info_from,
                                           profile_info_to, "final histogram");
 
