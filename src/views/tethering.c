@@ -167,6 +167,38 @@ void configure(dt_view_t *self, int wd, int ht)
   // dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
+typedef struct _tethering_format_t
+{
+  dt_imageio_module_data_t head;
+  float *buf;
+} _tethering_format_t;
+
+static const char *_tethering_mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
+static int _tethering_levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_FLOAT;
+}
+
+static int _tethering_bpp(dt_imageio_module_data_t *data)
+{
+  return 32;
+}
+
+static int _tethering_write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                                  dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                                  void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                                  const gboolean export_masks)
+{
+  _tethering_format_t *d = (_tethering_format_t *)data;
+  d->buf = (float *)malloc(sizeof(float) * 4 * d->head.width * d->head.height);
+  memcpy(d->buf, in, sizeof(float) * 4 * d->head.width * d->head.height);
+  return 0;
+}
+
 #define MARGIN DT_PIXEL_APPLY_DPI(20)
 #define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) /* see libs/camera.c */
 
@@ -256,18 +288,8 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   {
     // FIXME: every time the mouse moves over the center view this redraws, which isn't necessary
     cairo_surface_t *surf = NULL;
-    // Note that this will also update the histogram. As the histogram
-    // is calculated from the 8-bit JPEG, there may be banding, and
-    // overexposed pixels are clipped. In the case of an image not
-    // heavily processed by presets, this should be an OK trade-off
-    // for generating a histogram without too much extra code. An
-    // alternative would be to spin up a non-gui pixelpipe (as with
-    // export) and use its preview path to process the image and
-    // generate a histogram. Or to use dt_imageio_export_with_flags()
-    // with thumbnail_export set to TRUE.
-    // FIXME: instead of this use dt_imageio_export_with_flags() as in _init_8() -- this will still give us 8-bit data, but if it does the colorspace conversion we might avoid so much quantization
     const int res
-        = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf, TRUE);
+        = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf, FALSE);
     if(res)
     {
       // if the image is missing, we reload it again
@@ -284,6 +306,34 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       cairo_surface_destroy(surf);
       if(lib->busy) dt_control_log_busy_leave();
       lib->busy = FALSE;
+    }
+
+    // update the histogram
+    dt_imageio_module_format_t format;
+    _tethering_format_t dat;
+    format.bpp = _tethering_bpp;
+    format.write_image = _tethering_write_image;
+    format.levels = _tethering_levels;
+    format.mime = _tethering_mime;
+    dat.head.max_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F];
+    dat.head.max_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F];
+    dat.head.style[0] = '\0';
+    // this uses the export rather than thumbnail pipe -- slower, but
+    // as we're not competing with the full pixelpipe, it's a
+    // reasonable trade-off for a histogram which matches that in
+    // darkroom view
+    // FIXME: could use histogram profile for export?
+    if (!dt_imageio_export_with_flags(lib->image_id, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
+                                      FALSE, FALSE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, "", DT_INTENT_PERCEPTUAL, NULL,
+                                      NULL, 1, 1, NULL))
+    {
+      // FIXME: is this the best way to do this?
+      const dt_colorspaces_color_profile_t *const out_profile =
+        dt_colorspaces_get_output_profile(lib->image_id, DT_COLORSPACE_NONE, "");
+      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width, dat.head.height,
+                                             out_profile->type, out_profile->filename);
+      dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
+      free(dat.buf);
     }
   }
 }
