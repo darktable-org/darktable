@@ -2283,14 +2283,12 @@ void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t
     cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha * 0.5);
   }
 
-
-  cairo_rectangle(cr, button->left, button->top, button->w, button->h);
+  cairo_rectangle(cr, button->left, button->top, button->w - DT_PIXEL_APPLY_DPI(0.5), button->h - DT_PIXEL_APPLY_DPI(0.5));
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_stroke(cr);
-  cairo_translate(cr, button->left + button->w /2. - DT_PIXEL_APPLY_DPI(1.), 
-                      button->top + button->h / 2. - DT_PIXEL_APPLY_DPI(1.));
+  cairo_translate(cr, button->left + button->w /2. - DT_PIXEL_APPLY_DPI(0.25), button->top + button->h / 2. - DT_PIXEL_APPLY_DPI(0.25));
 
-  const float scale = 0.8;
+  const float scale = 0.85;
   cairo_scale(cr, scale, scale);
   button->icon(cr, -scale * button->w / 2., -scale * button->h / 2., 
                     scale * button->w, scale * button->h, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
@@ -2388,7 +2386,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   g->gui_sizes_inited = TRUE;
 
   g->buttons[0].icon = dtgtk_cairo_paint_refresh;
-  g->buttons[1].icon = dtgtk_cairo_paint_label;
+  g->buttons[1].icon = dtgtk_cairo_paint_text_label;
 
   if(g->gui_hover)
   {
