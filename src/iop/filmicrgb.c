@@ -184,6 +184,35 @@ typedef struct dt_iop_filmicrgb_params_t
 } dt_iop_filmicrgb_params_t;
 
 
+// custom buttons in graph views
+typedef enum dt_iop_filmicrgb_gui_button_t
+{
+  DT_FILMIC_GUI_BUTTON_TYPE = 0,
+  DT_FILMIC_GUI_BUTTON_LABELS = 1,
+  DT_FILMIC_GUI_BUTTON_LAST
+} dt_iop_filmicrgb_gui_button_t;
+
+// custom buttons in graph views - data
+typedef struct dt_iop_filmicrgb_gui_button_data_t
+{
+  // coordinates in GUI - compute them only in the drawing function
+  float left;
+  float right;
+  float top;
+  float bottom;
+  float w;
+  float h;
+
+  // properties
+  gint mouse_hover; // whether it should be acted on / mouse is over it
+  GtkStateFlags state;
+
+  // icon drawing, function as set in dtgtk/paint.h
+  DTGTKCairoPaintIconFunc icon;
+
+} dt_iop_filmicrgb_gui_button_data_t;
+
+
 typedef struct dt_iop_filmicrgb_gui_data_t
 {
   GtkWidget *white_point_source;
@@ -213,7 +242,12 @@ typedef struct dt_iop_filmicrgb_gui_data_t
   GtkDrawingArea *area;
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
   gint show_mask;
-  dt_iop_filmic_rgb_gui_mode_t gui_mode;
+  dt_iop_filmic_rgb_gui_mode_t gui_mode; // graph display mode
+  gint gui_show_labels;
+  gint gui_hover;
+  gint gui_sizes_inited;
+  dt_iop_filmicrgb_gui_button_t active_button; // ID of the button under cursor
+  dt_iop_filmicrgb_gui_button_data_t buttons[DT_FILMIC_GUI_BUTTON_LAST];
     
   // Cache Pango and Cairo stuff for the equalizer drawing
   float line_height;
@@ -2089,7 +2123,13 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 
   g->show_mask = FALSE;
-  g->gui_mode = DT_FILMIC_GUI_LOOK;
+  g->gui_mode = dt_conf_get_int("plugins/darkroom/filmicrgb/graph_view");
+  g->gui_show_labels = dt_conf_get_int("plugins/darkroom/filmicrgb/graph_show_label");
+  g->gui_hover = FALSE;
+  g->gui_sizes_inited = FALSE;
+
+  // fetch last view in dartablerc
+  
 
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .50f;
@@ -2216,8 +2256,47 @@ static inline void dt_cairo_draw_arrow(cairo_t *cr,
     cairo_line_to(cr, x_2, y_2);
     cairo_stroke(cr);
   }
-
 }
+
+void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t *button, struct dt_iop_filmicrgb_gui_data_t *g)
+{
+  if(!g->gui_sizes_inited) return;
+  
+  cairo_save(cr);
+
+  GdkRGBA color;
+
+  // copy color
+  color.red = darktable.bauhaus->graph_fg.red;
+  color.green = darktable.bauhaus->graph_fg.green;
+  color.blue = darktable.bauhaus->graph_fg.blue;
+  color.alpha = darktable.bauhaus->graph_fg.alpha;
+
+  if(button->mouse_hover)
+  {
+    // use graph_fg color as-is if mouse hover
+    cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  }
+  else
+  {
+    // use graph_fg color with transparency else
+    cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha * 0.5);
+  }
+
+
+  cairo_rectangle(cr, button->left, button->top, button->w, button->h);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+  cairo_stroke(cr);
+  cairo_translate(cr, button->left + button->w /2. - DT_PIXEL_APPLY_DPI(1.), 
+                      button->top + button->h / 2. - DT_PIXEL_APPLY_DPI(1.));
+
+  const float scale = 0.8;
+  cairo_scale(cr, scale, scale);
+  button->icon(cr, -scale * button->w / 2., -scale * button->h / 2., 
+                    scale * button->w, scale * button->h, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  cairo_restore(cr);
+}
+
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
@@ -2265,10 +2344,22 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   g->inner_padding = 4; // TODO: INNER_PADDING value as defined in bauhaus.c macros, sync them
   g->inset = g->inner_padding;
 
-  const float margin_left = 3. * g->zero_width + 2. * g->inset;
+  float margin_left;
+  float margin_bottom;
+  if(g->gui_show_labels)
+  {
+    // leave room for labels
+    margin_left = 3. * g->zero_width + 2. * g->inset;
+    margin_bottom = 2. * g->line_height + 4. * g->inset;
+  }
+  else
+  {
+    margin_left = g->inset;
+    margin_bottom = g->inset;
+  }
+
   const float margin_top = 2. * g->line_height + g->inset;
   const float margin_right = 3. * g->zero_width + 2. * g->inset;
-  const float margin_bottom = 2. * g->line_height + 4. * g->inset;
 
   g->graph_width = g->allocation.width - margin_right - margin_left; // align the right border on sliders
   g->graph_height = g->allocation.height - margin_bottom - margin_top; // give room to nodes
@@ -2280,6 +2371,30 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   g->x_label = g->graph_width + g->sign_width + 3.0 * g->inner_padding;
 
   gtk_render_background(g->context, g->cr, 0, 0, g->allocation.width, g->allocation.height);
+
+  // Init icons bounds and cache them for mouse events
+  for(int i = 0; i < DT_FILMIC_GUI_BUTTON_LAST; i++)
+  {
+    // put the buttons in the right margin and increment vertical position
+    g->buttons[i].right = g->allocation.width;
+    g->buttons[i].left = g->buttons[i].right - darktable.bauhaus->quad_width;
+    g->buttons[i].top = margin_top + i * (g->inset + darktable.bauhaus->quad_width);
+    g->buttons[i].bottom = g->buttons[i].top + darktable.bauhaus->quad_width; 
+    g->buttons[i].w = g->buttons[i].right - g->buttons[i].left;
+    g->buttons[i].h = g->buttons[i].bottom - g->buttons[i].top;
+    g->buttons[i].state = GTK_STATE_FLAG_NORMAL;
+  }
+
+  g->gui_sizes_inited = TRUE;
+
+  g->buttons[0].icon = dtgtk_cairo_paint_refresh;
+  g->buttons[1].icon = dtgtk_cairo_paint_label;
+
+  if(g->gui_hover)
+  {
+    for(int i = 0; i < DT_FILMIC_GUI_BUTTON_LAST; i++)
+      filmic_gui_draw_icon(g->cr, &g->buttons[i], g);
+  }
 
   const float grey = p->grey_point_source / 100.f;
   const float DR = p->white_point_source - p->black_point_source;
@@ -2519,129 +2634,132 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     }
     cairo_restore(g->cr);
 
-    // mark the y axis graduation at grey spot
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    snprintf(text, sizeof(text), "%.0f", p->grey_point_target);
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, -2. * g->inset - g->ink.width - g->ink.x,
-                  (1.0 - y_grey) * g->graph_height - 0.5 * g->ink.height - g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-
-    // mark the x axis graduation at black spot
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
-      snprintf(text, sizeof(text), "%+.1f", 0.f);
-    else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
-      snprintf(text, sizeof(text), "%.0f", p->grey_point_source);
-
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, x_grey * g->graph_width - 0.5 * g->ink.width - g->ink.x,
-                        g->graph_height + g->line_height - g->ink.height + g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-
-    // mark the y axis graduation at black spot
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    snprintf(text, sizeof(text), "%.0f", p->black_point_target);
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, -2. * g->inset - g->ink.width - g->ink.x,
-                        (1.0 - y_black) * g->graph_height - 0.5 * g->ink.height - g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-
-    // mark the y axis graduation at black spot
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    snprintf(text, sizeof(text), "%.0f", p->white_point_target);
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, -2. * g->inset - g->ink.width - g->ink.x,
-                        (1.0 - y_white) * g->graph_height - 0.5 * g->ink.height - g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-
-    // mark the x axis graduation at black spot
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
-      snprintf(text, sizeof(text), "%+.1f", p->black_point_source);
-    else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
-      snprintf(text, sizeof(text), "%.0f", exp2f(p->black_point_source) * p->grey_point_source);
-
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, x_black * g->graph_width - 0.5 * g->ink.width - g->ink.x,
-                        g->graph_height + g->line_height - g->ink.height + g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-
-    // mark the x axis graduation at white spot
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
-      snprintf(text, sizeof(text), "%+.1f", p->white_point_source);
-    else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+    if(g->gui_show_labels)
     {
-      if(x_white > 1.f)
-        snprintf(text, sizeof(text), "%.0f →", 100.f); // this marks the bound of the graph, not the actual white
-      else 
-        snprintf(text, sizeof(text), "%.0f", exp2f(p->white_point_source) * p->grey_point_source);
-    }
-
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, fminf(x_white, 1.f) * g->graph_width - 0.5 * g->ink.width - g->ink.x,
-                        g->graph_height + g->line_height - g->ink.height + g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-
-    // handle the case where white > 100 %, so the node is out of the graph.
-    // we still want to display the value to get a hint.
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    if((g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) && (x_white > 1.f)) 
-    {
-      // set to italic font
-      PangoStyle backup = pango_font_description_get_style(g->desc);
-      pango_font_description_set_style(g->desc, PANGO_STYLE_ITALIC);
-      pango_layout_set_font_description(g->layout, g->desc);
-
-      snprintf(text, sizeof(text), _("(%.0f %%)"), exp2f(p->white_point_source) * p->grey_point_source);
+      // mark the y axis graduation at grey spot
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      snprintf(text, sizeof(text), "%.0f", p->grey_point_target);
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-      cairo_move_to(g->cr, g->allocation.width - g->ink.width - g->ink.x - margin_left,
-                           g->graph_height + 3. * g->inset + g->line_height - g->ink.y);
+      cairo_move_to(g->cr, -2. * g->inset - g->ink.width - g->ink.x,
+                    (1.0 - y_grey) * g->graph_height - 0.5 * g->ink.height - g->ink.y);
       pango_cairo_show_layout(g->cr, g->layout);
       cairo_stroke(g->cr);
 
-      // restore font
-      pango_font_description_set_style(g->desc, backup);
-      pango_layout_set_font_description(g->layout, g->desc);
+      // mark the x axis graduation at black spot
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+        snprintf(text, sizeof(text), "%+.1f", 0.f);
+      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+        snprintf(text, sizeof(text), "%.0f", p->grey_point_source);
+
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, x_grey * g->graph_width - 0.5 * g->ink.width - g->ink.x,
+                          g->graph_height + g->line_height - g->ink.height + g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+
+      // mark the y axis graduation at black spot
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      snprintf(text, sizeof(text), "%.0f", p->black_point_target);
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, -2. * g->inset - g->ink.width - g->ink.x,
+                          (1.0 - y_black) * g->graph_height - 0.5 * g->ink.height - g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+
+      // mark the y axis graduation at black spot
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      snprintf(text, sizeof(text), "%.0f", p->white_point_target);
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, -2. * g->inset - g->ink.width - g->ink.x,
+                          (1.0 - y_white) * g->graph_height - 0.5 * g->ink.height - g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+
+      // mark the x axis graduation at black spot
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+        snprintf(text, sizeof(text), "%+.1f", p->black_point_source);
+      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+        snprintf(text, sizeof(text), "%.0f", exp2f(p->black_point_source) * p->grey_point_source);
+
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, x_black * g->graph_width - 0.5 * g->ink.width - g->ink.x,
+                          g->graph_height + g->line_height - g->ink.height + g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+
+      // mark the x axis graduation at white spot
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+        snprintf(text, sizeof(text), "%+.1f", p->white_point_source);
+      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+      {
+        if(x_white > 1.f)
+          snprintf(text, sizeof(text), "%.0f →", 100.f); // this marks the bound of the graph, not the actual white
+        else 
+          snprintf(text, sizeof(text), "%.0f", exp2f(p->white_point_source) * p->grey_point_source);
+      }
+
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, fminf(x_white, 1.f) * g->graph_width - 0.5 * g->ink.width - g->ink.x,
+                          g->graph_height + g->line_height - g->ink.height + g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+
+      // handle the case where white > 100 %, so the node is out of the graph.
+      // we still want to display the value to get a hint.
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      if((g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) && (x_white > 1.f)) 
+      {
+        // set to italic font
+        PangoStyle backup = pango_font_description_get_style(g->desc);
+        pango_font_description_set_style(g->desc, PANGO_STYLE_ITALIC);
+        pango_layout_set_font_description(g->layout, g->desc);
+
+        snprintf(text, sizeof(text), _("(%.0f %%)"), exp2f(p->white_point_source) * p->grey_point_source);
+        pango_layout_set_text(g->layout, text, -1);
+        pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+        cairo_move_to(g->cr, g->allocation.width - g->ink.width - g->ink.x - margin_left,
+                            g->graph_height + 3. * g->inset + g->line_height - g->ink.y);
+        pango_cairo_show_layout(g->cr, g->layout);
+        cairo_stroke(g->cr);
+
+        // restore font
+        pango_font_description_set_style(g->desc, backup);
+        pango_layout_set_font_description(g->layout, g->desc);
+      }
+
+      // mark the y axis legend
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      snprintf(text, sizeof(text), _("%% display"));
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, -2. * g->inset - g->zero_width - g->ink.x,
+                          -g->line_height -g->inset - 0.5 * g->ink.height - g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+
+      // mark the x axis legend
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+        snprintf(text, sizeof(text), _("EV scene"));
+      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+        snprintf(text, sizeof(text), _("%% camera"));
+
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, 0.5 * g->graph_width - 0.5 * g->ink.width - g->ink.x,
+                          g->graph_height + 3. * g->inset + g->line_height - g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
     }
-
-    // mark the y axis legend
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    snprintf(text, sizeof(text), _("%% display"));
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, -2. * g->inset - g->zero_width - g->ink.x,
-                        -g->line_height -g->inset - 0.5 * g->ink.height - g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-
-    // mark the x axis legend
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
-      snprintf(text, sizeof(text), _("EV scene"));
-    else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
-      snprintf(text, sizeof(text), _("%% camera"));
-
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, 0.5 * g->graph_width - 0.5 * g->ink.width - g->ink.x,
-                         g->graph_height + 3. * g->inset + g->line_height - g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
   }
   else
   {
@@ -2654,8 +2772,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     const float display_DR = 8.f + log2f(p->white_point_target / 100.f);
 
     // FIXME : if darktable becomes HDR-10bits compatible (for output), this needs to be updated
-    const float y_display = g->allocation.height / 3.f;
-    const float y_scene = 2. * g->allocation.height / 3.f;
+    const float y_display = g->allocation.height / 3.f + g->line_height;
+    const float y_scene = 2. * g->allocation.height / 3.f + g->line_height;
 
     // labels
     set_color(g->cr, darktable.bauhaus->graph_fg);
@@ -2677,7 +2795,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     const float scene_label_width = g->ink.width;
 
     // arrow between labels
-    cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(2.));
+    cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.));
     dt_cairo_draw_arrow(g->cr, fminf(scene_label_width, display_label_width) / 2.f, y_scene - g->line_height, 
                                fminf(scene_label_width, display_label_width) / 2.f, y_display + g->line_height + g->inset, 
                                TRUE);
@@ -2922,38 +3040,184 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
 
   dt_iop_request_focus(self);
 
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(g->active_button != DT_FILMIC_GUI_BUTTON_LAST)
   {
-    // double click resets view
-    g->gui_mode = DT_FILMIC_GUI_LOOK;
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    return TRUE;
-  }
-  else if(event->button == 1)
-  {
-    // simple left click cycles through modes in positive direction
 
-    if(g->gui_mode == DT_FILMIC_GUI_RANGES) 
-      g->gui_mode = DT_FILMIC_GUI_LOOK;
-    else
-      g->gui_mode++;
-    
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    return TRUE;
-  }
+    if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+    {
+      // double click resets view
+      if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
+      {
+        g->gui_mode = DT_FILMIC_GUI_LOOK;
+        gtk_widget_queue_draw(GTK_WIDGET(g->area));
+        dt_conf_set_int("plugins/darkroom/filmicrgb/graph_view", g->gui_mode);
+        return TRUE;
+      }
+      else
+      {
+        return FALSE;
+      }
+      
+    }
+    else if(event->button == 1)
+    {
+      // simple left click cycles through modes in positive direction
+      if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
+      {
+        // cycle type of graph
+        if(g->gui_mode == DT_FILMIC_GUI_RANGES) 
+          g->gui_mode = DT_FILMIC_GUI_LOOK;
+        else
+          g->gui_mode++;
+        
+        gtk_widget_queue_draw(GTK_WIDGET(g->area));
+        dt_conf_set_int("plugins/darkroom/filmicrgb/graph_view", g->gui_mode);
+        return TRUE;
+      }
+      else if(g->active_button == DT_FILMIC_GUI_BUTTON_LABELS)
+      {
+        g->gui_show_labels = !g->gui_show_labels;
+        gtk_widget_queue_draw(GTK_WIDGET(g->area));
+        dt_conf_set_int("plugins/darkroom/filmicrgb/graph_show_labels", g->gui_show_labels);
+        return TRUE;
+      }
+      else
+      {
+        // we should never get there since (g->active_button != DT_FILMIC_GUI_BUTTON_LAST)
+        // and any other case has been processed above.
+        return FALSE;
+      }
+    }
     else if(event->button == 3)
-  {
-    // simple right click cycles through modes in negative direction
-    if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
-      g->gui_mode = DT_FILMIC_GUI_RANGES;
-    else
-      g->gui_mode--;
-    
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    return TRUE;
+    {
+      // simple right click cycles through modes in negative direction
+      if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
+      {
+        if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+          g->gui_mode = DT_FILMIC_GUI_RANGES;
+        else
+          g->gui_mode--;
+      
+        gtk_widget_queue_draw(GTK_WIDGET(g->area));
+        dt_conf_set_int("plugins/darkroom/filmicrgb/graph_view", g->gui_mode);
+        return TRUE;
+      }
+      else if(g->active_button == DT_FILMIC_GUI_BUTTON_LABELS)
+      {
+        g->gui_show_labels = !g->gui_show_labels;
+        gtk_widget_queue_draw(GTK_WIDGET(g->area));
+        dt_conf_set_int("plugins/darkroom/filmicrgb/graph_show_labels", g->gui_show_labels);
+        return TRUE;
+      }
+      else
+      {
+        return FALSE;
+      }
+      
+    }
   }
 
   return FALSE;
+}
+
+static gboolean area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return 1;
+  if(!self->enabled) return 0;
+
+  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  g->gui_hover = TRUE;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+  return TRUE;
+}
+
+
+static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return 1;
+  if(!self->enabled) return 0;
+
+  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  g->gui_hover = FALSE;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+  return TRUE;
+}
+
+static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return 1;
+
+  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  if(!g->gui_sizes_inited) return FALSE;
+
+  // get in-widget coordinates
+  const float y = event->y;
+  const float x = event->x;
+
+  if(x > 0. && x < g->allocation.width && y > 0. && y < g->allocation.height)
+    g->gui_hover = TRUE;
+
+  gint save_active_button = g->active_button;
+
+  if(g->gui_hover)
+  {
+    // find out which button is under the mouse
+    gint found_something = FALSE;
+    for(int i = 0; i < DT_FILMIC_GUI_BUTTON_LAST; i++)
+    {
+      // check if mouse in in the button's bounds
+      if(x > g->buttons[i].left && x < g->buttons[i].right && y > g->buttons[i].top && y < g->buttons[i].bottom)
+      {
+        // yeah, mouse is over that button
+        g->buttons[i].mouse_hover = TRUE;
+        g->active_button = i;
+        found_something = TRUE;
+      }
+      else
+      {
+        // no luck with this button
+        g->buttons[i].mouse_hover = FALSE;
+      }
+    }
+
+    if(!found_something) g->active_button = DT_FILMIC_GUI_BUTTON_LAST; // mouse is over no known button
+
+    // update the tooltips
+    if(g->active_button == DT_FILMIC_GUI_BUTTON_LAST && x < g->buttons[0].left)
+    {
+      // we are over the graph area
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("use the parameters below to set the nodes.\n"
+                                                         "the bright curve is the filmic tone mapping curve\n"
+                                                         "the dark curve is the desaturation curve."));
+    }
+    else if (g->active_button == DT_FILMIC_GUI_BUTTON_LABELS)
+    {
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("toggle axis labels and values display."));
+    }
+    else if (g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
+    {
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("cycle through graph views.\n"
+                                                         "left click: cycle forward.\n"
+                                                         "right click: cycle backward.\n"
+                                                         "double click: reset to look view."));
+    }
+    else
+    {
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), "");
+    }
+    
+    if(save_active_button != g->active_button) gtk_widget_queue_draw(GTK_WIDGET(g->area));
+    return TRUE;
+  }
+  else
+  {
+    g->active_button = DT_FILMIC_GUI_BUTTON_LAST;
+    if(save_active_button != g->active_button) (GTK_WIDGET(g->area));
+    return FALSE;
+  }
 }
 
 
@@ -2966,18 +3230,19 @@ void gui_init(dt_iop_module_t *self)
 
   g->show_mask = FALSE;
   g->gui_mode = DT_FILMIC_GUI_LOOK;
+  g->gui_show_labels = TRUE;
+  g->gui_hover = FALSE;
+  g->gui_sizes_inited = FALSE;
 
   // don't make the area square to safe some vertical space -- it's not interactive anyway
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
-  
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("use the parameters below to set the nodes.\n"
-                                                     "click to cycle through display modes\n"
-                                                     "the bright curve is the filmic tone mapping curve\n"
-                                                     "the dark curve is the desaturation curve\n"));
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button_press), self);
+  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_leave_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
 
   // Init GTK notebook
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
