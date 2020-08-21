@@ -1072,6 +1072,8 @@ void dt_history_truncate_on_image(int32_t imgid, int32_t history_end)
     return;
   }
 
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+
   // delete end of history
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM main.history"
@@ -1103,6 +1105,8 @@ void dt_history_truncate_on_image(int32_t imgid, int32_t history_end)
   sqlite3_finalize(stmt);
   dt_unlock_image(imgid);
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
   GList *imgs = g_list_append(NULL, GINT_TO_POINTER(imgid));
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgs);
