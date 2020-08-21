@@ -354,6 +354,18 @@ typedef struct dt_iop_gui_blendif_colorstop_t
   GdkRGBA color;
 } dt_iop_gui_blendif_colorstop_t;
 
+typedef struct dt_iop_gui_blendif_slider_t
+{
+  char *label;
+  char *tooltip;
+  float increments;
+  int numberstops;
+  const dt_iop_gui_blendif_colorstop_t *colorstops;
+  int channels[2];
+  dt_dev_pixelpipe_display_mask_t display_channel;
+  void (*scale_print)(float value, char *string, int n);
+  int (*altdisplay)(GtkWidget *, dt_iop_module_t *, int);
+} dt_iop_gui_blendif_slider_t;
 
 typedef struct dt_iop_blend_name_value_t
 {
@@ -366,8 +378,6 @@ extern const dt_develop_name_value_t dt_develop_mask_mode_names[];
 extern const dt_develop_name_value_t dt_develop_combine_masks_names[];
 extern const dt_develop_name_value_t dt_develop_feathering_guide_names[];
 extern const dt_develop_name_value_t dt_develop_invert_mask_names[];
-extern const dt_develop_name_value_t dt_develop_blendif_names_rgb[];
-extern const dt_develop_name_value_t dt_develop_blendif_names_lab[];
 
 #define DEVELOP_MASKS_NB_SHAPES 5
 
@@ -427,6 +437,8 @@ typedef struct dt_iop_gui_blend_data_t
   int numberstops[8];
   const dt_iop_gui_blendif_colorstop_t *colorstops[8];
   float increments[8];
+
+  const dt_iop_gui_blendif_slider_t *inout;
 
   GtkWidget *masks_combo;
   GtkWidget *masks_shapes[DEVELOP_MASKS_NB_SHAPES];

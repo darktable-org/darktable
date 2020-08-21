@@ -856,7 +856,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
 
   #define add_blend_history_change(field, format, label)                                       \
     if(hitem->blend_params->field != old_blend->field)                                         \
-      change_parts[num_parts++] = g_strdup_printf("%s\t" format "\t\u2192\t" format, _(label),   \
+      change_parts[num_parts++] = g_strdup_printf("%s\t" format "\t\u2192\t" format, _(label), \
                                                   old_blend->field, hitem->blend_params->field);
 
   #define add_blend_history_change_enum(field, label, list)                                    \
@@ -868,11 +868,11 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
         if(i->value == old_blend->field) old_str = i->name;                                    \
         if(i->value == hitem->blend_params->field) new_str = i->name;                          \
       }                                                                                        \
-                                                                                                \
+                                                                                               \
       change_parts[num_parts++] = (!old_str || !new_str)                                       \
-                                ? g_strdup_printf("%s\t%d\t\u2192\t%d", _(label),                \
+                                ? g_strdup_printf("%s\t%d\t\u2192\t%d", _(label),              \
                                                   old_blend->field, hitem->blend_params->field)\
-                                : g_strdup_printf("%s\t%s\t\u2192\t%s", _(label),                \
+                                : g_strdup_printf("%s\t%s\t\u2192\t%s", _(label),              \
                                                   _(g_dpgettext2(NULL, "blendmode", old_str)), \
                                                   _(g_dpgettext2(NULL, "blendmode", new_str)));\
     }
@@ -882,7 +882,6 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
   add_blend_history_change(opacity, "%.4f", "mask opacity");
   add_blend_history_change_enum(mask_combine, "combine masks", dt_develop_combine_masks_names);
   add_blend_history_change(mask_id, "%d", "mask_id");
-  add_blend_history_change_enum(blendif, "blendif", dt_develop_blendif_names_rgb);
   add_blend_history_change(feathering_radius, "%.4f", "feathering radius");
   add_blend_history_change_enum(feathering_guide, "feathering guide", dt_develop_feathering_guide_names);
   add_blend_history_change(blur_radius, "%.4f", "mask blur");
@@ -891,17 +890,41 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
   add_blend_history_change(raster_mask_instance, "%d", "raster_mask_instance");
   add_blend_history_change(raster_mask_id, "%d", "raster_mask_id");
   add_blend_history_change_enum(raster_mask_invert, "invert mask", dt_develop_invert_mask_names);
+
+  add_blend_history_change(blendif, "%08X", "blendif");
   
-  const dt_develop_name_value_t *b = dt_develop_blendif_names_rgb;
-  if(hitem->module->blend_colorspace(hitem->module, NULL, NULL) == iop_cs_Lab) b = dt_develop_blendif_names_lab;
-  while(*b->name)
+  dt_iop_gui_blend_data_t *bd = hitem->module->blend_data;
+
+  for(int k = 1; k >= 0; k--)
   {
-    float *of = &old_blend->blendif_parameters[4 * b->value];
-    float *nf = &hitem->blend_params->blendif_parameters[4 * b->value];
-    if(memcmp(of, nf, 4 * sizeof(float)))
-      change_parts[num_parts++] = g_strdup_printf("blendif[%s]\t%.0f|%.0f-%.0f|%.0f\t\u2192\t%.0f|%.0f-%.0f|%.0f",
-            b->name, of[0]*100, of[1]*100, of[2]*100, of[3]*100, nf[0]*100, nf[1]*100, nf[2]*100, nf[3]*100);
-    b++;
+    gboolean first = TRUE;
+
+    const dt_iop_gui_blendif_slider_t *b = bd ? bd->inout : NULL;
+    while(b && b->label)
+    {
+      float *of = &old_blend->blendif_parameters[4 * b->channels[k]];
+      float *nf = &hitem->blend_params->blendif_parameters[4 * b->channels[k]];
+      if(memcmp(of, nf, 4 * sizeof(float)))
+      {
+        if(first)
+        {
+          change_parts[num_parts++] = g_strdup(k ? _("parametric output mask:") : _("parametric input mask:"));
+          first = FALSE;
+        }
+        char s[4][2][25];
+        for(int i = 0; i < 4; i++)
+        {
+          b->scale_print(of[i], s[i][0], sizeof(s[i][0]));
+          b->scale_print(nf[i], s[i][1], sizeof(s[i][1]));
+        }
+
+        change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s\t\u2192\t%s| %s- %s| %s", _(b->label),
+                                                    s[0][0], s[1][0], s[2][0], s[3][0], 
+                                                    s[0][1], s[1][1], s[2][1], s[3][1]);
+      }
+    
+      b++;
+    }
   }
 
   gchar *tooltip_text = g_strjoinv("\n", change_parts);
