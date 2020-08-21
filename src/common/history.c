@@ -961,6 +961,8 @@ void dt_history_compress_on_image(const int32_t imgid)
   const char *op_mask_manager = "mask_manager";
   gboolean manager_position = FALSE;
 
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+
   // We must know for sure whether there is a mask manager at slot 0 in history
   // because only if this is **not** true history nums and history_end must be increased
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1052,6 +1054,8 @@ void dt_history_compress_on_image(const int32_t imgid)
   }
   dt_unlock_image(imgid);
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
   GList *imgs = g_list_append(NULL, GINT_TO_POINTER(imgid));
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgs);
