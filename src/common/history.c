@@ -595,7 +595,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   return 0;
 }
 
-static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t dest_imgid, GList *ops)
+static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const int32_t dest_imgid, GList *ops)
 {
   int ret_val = 0;
   sqlite3_stmt *stmt;
@@ -719,7 +719,8 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
   return ret_val;
 }
 
-int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops, gboolean copy_iop_order)
+int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_imgid,
+                                       const gboolean merge, GList *ops, const gboolean copy_iop_order)
 {
   if(imgid == dest_imgid) return 1;
 
@@ -792,7 +793,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   return ret_val;
 }
 
-GList *dt_history_get_items(int32_t imgid, gboolean enabled)
+GList *dt_history_get_items(const int32_t imgid, gboolean enabled)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
@@ -852,7 +853,7 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled)
   return result;
 }
 
-char *dt_history_get_items_as_string(int32_t imgid)
+char *dt_history_get_items_as_string(const int32_t imgid)
 {
   GList *items = NULL;
   const char *onoff[2] = { _("off"), _("on") };
@@ -881,7 +882,7 @@ char *dt_history_get_items_as_string(int32_t imgid)
   return result;
 }
 
-void dt_history_set_compress_problem(int32_t imgid, gboolean set)
+void dt_history_set_compress_problem(const int32_t imgid, const gboolean set)
 {
   guint tagid = 0;
   char tagname[64];
@@ -893,7 +894,7 @@ void dt_history_set_compress_problem(int32_t imgid, gboolean set)
     dt_tag_detach(tagid, imgid, FALSE, FALSE);
 }
 
-static int dt_history_end_attop(int32_t imgid)
+static int dt_history_end_attop(const int32_t imgid)
 {
   int size=0;
   int end=0;
@@ -934,7 +935,7 @@ static int dt_history_end_attop(int32_t imgid)
   - is used in lighttable and darkroom mode
   - It compresses history *exclusively* in the database and does *not* touch anything on the history stack
 */
-void dt_history_compress_on_image(int32_t imgid)
+void dt_history_compress_on_image(const int32_t imgid)
 {
   dt_lock_image(imgid);
   sqlite3_stmt *stmt;
@@ -1060,7 +1061,7 @@ void dt_history_compress_on_image(int32_t imgid)
   - can be used in lighttable and darkroom mode
   - It truncates history *exclusively* in the database and does *not* touch anything on the history stack
 */
-void dt_history_truncate_on_image(int32_t imgid, int32_t history_end)
+void dt_history_truncate_on_image(const int32_t imgid, const int32_t history_end)
 {
   dt_lock_image(imgid);
   sqlite3_stmt *stmt;
