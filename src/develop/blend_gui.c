@@ -121,44 +121,6 @@ const dt_develop_name_value_t dt_develop_invert_mask_names[]
         { N_("on"), DEVELOP_COMBINE_INV },
         { "", 0 } };
 
-const dt_develop_name_value_t dt_develop_blendif_names_rgb[]
-    = { { N_("GRAY in"), DEVELOP_BLENDIF_GRAY_in },
-        { N_("RED in"), DEVELOP_BLENDIF_RED_in },
-        { N_("GREEN in"), DEVELOP_BLENDIF_GREEN_in },
-        { N_("BLUE in"), DEVELOP_BLENDIF_BLUE_in },
-
-        { N_("GRAY out"), DEVELOP_BLENDIF_GRAY_out },
-        { N_("RED out"), DEVELOP_BLENDIF_RED_out },
-        { N_("GREEN out"), DEVELOP_BLENDIF_GREEN_out },
-        { N_("BLUE out"), DEVELOP_BLENDIF_BLUE_out },
-
-        { N_("H in"), DEVELOP_BLENDIF_H_in },
-        { N_("S in"), DEVELOP_BLENDIF_S_in },
-        { N_("l in"), DEVELOP_BLENDIF_l_in },
-
-        { N_("H out"), DEVELOP_BLENDIF_H_out },
-        { N_("S out"), DEVELOP_BLENDIF_S_out },
-        { N_("l out"), DEVELOP_BLENDIF_l_out },
-
-        { "", 0 } };
-
-const dt_develop_name_value_t dt_develop_blendif_names_lab[]
-    = { { N_("L in"), DEVELOP_BLENDIF_L_in },
-        { N_("A in"), DEVELOP_BLENDIF_A_in },
-        { N_("B in"), DEVELOP_BLENDIF_B_in },
-
-        { N_("L out"), DEVELOP_BLENDIF_L_out },
-        { N_("A out"), DEVELOP_BLENDIF_A_out },
-        { N_("B out"), DEVELOP_BLENDIF_B_out },
-
-        { N_("C in"), DEVELOP_BLENDIF_C_in },
-        { N_("h in"), DEVELOP_BLENDIF_h_in },
-
-        { N_("C out"), DEVELOP_BLENDIF_C_out },
-        { N_("h out"), DEVELOP_BLENDIF_h_out },
-
-        { "", 0 } };
-
 static const dt_iop_gui_blendif_colorstop_t _gradient_L[]
     = { { 0.0f,   { 0, 0, 0, 1.0 } },
         { 0.125f, { NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, 1.0 } },
@@ -1526,6 +1488,49 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   --darktable.gui->reset;
 }
 
+#define COLORSTOPS(gradient) sizeof(gradient) / sizeof(dt_iop_gui_blendif_colorstop_t), gradient
+
+const dt_iop_gui_blendif_slider_t Lab_slider[]
+    = { { N_("L"), N_("sliders for L channel"), 1.0f / 100.0f, COLORSTOPS(_gradient_L),
+          { DEVELOP_BLENDIF_L_in, DEVELOP_BLENDIF_L_out }, DT_DEV_PIXELPIPE_DISPLAY_L,
+          _blendif_scale_print_L, _blendop_blendif_disp_alternative_log },
+        { N_("a"), N_("sliders for a channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_a),
+          { DEVELOP_BLENDIF_A_in, DEVELOP_BLENDIF_A_out }, DT_DEV_PIXELPIPE_DISPLAY_a, 
+          _blendif_scale_print_ab, _blendop_blendif_disp_alternative_mag },
+        { N_("b"), N_("sliders for b channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_b),
+          { DEVELOP_BLENDIF_B_in, DEVELOP_BLENDIF_B_out }, DT_DEV_PIXELPIPE_DISPLAY_b, 
+          _blendif_scale_print_ab, _blendop_blendif_disp_alternative_mag },
+        { N_("C"), N_("sliders for chroma channel (of LCh)"), 1.0f / 100.0f, COLORSTOPS(_gradient_chroma),
+          { DEVELOP_BLENDIF_C_in, DEVELOP_BLENDIF_C_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_C, 
+          _blendif_scale_print_default, _blendop_blendif_disp_alternative_log },
+        { N_("h"), N_("sliders for hue channel (of LCh)"), 1.0f / 360.0f, COLORSTOPS(_gradient_hue),
+          { DEVELOP_BLENDIF_h_in, DEVELOP_BLENDIF_h_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_h,
+          _blendif_scale_print_hue, _blendop_blendif_disp_alternative_log },
+        { NULL } };
+
+const dt_iop_gui_blendif_slider_t rgb_slider[]
+    = { { N_("g"), N_("sliders for gray value"), 1.0f / 255.0f, COLORSTOPS(_gradient_gray),
+          { DEVELOP_BLENDIF_GRAY_in, DEVELOP_BLENDIF_GRAY_out }, DT_DEV_PIXELPIPE_DISPLAY_GRAY,
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log },
+        { N_("R"), N_("sliders for red channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_red),
+          { DEVELOP_BLENDIF_RED_in, DEVELOP_BLENDIF_RED_out }, DT_DEV_PIXELPIPE_DISPLAY_R, 
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log },
+        { N_("G"), N_("sliders for green channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_green),
+          { DEVELOP_BLENDIF_GREEN_in, DEVELOP_BLENDIF_GREEN_out }, DT_DEV_PIXELPIPE_DISPLAY_G, 
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log },
+        { N_("B"), N_("sliders for blue channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_blue),
+          { DEVELOP_BLENDIF_BLUE_in, DEVELOP_BLENDIF_BLUE_out }, DT_DEV_PIXELPIPE_DISPLAY_B, 
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log },
+        { N_("H"), N_("sliders for hue channel (of HSL)"), 1.0f / 360.0f, COLORSTOPS(_gradient_HUE),
+          { DEVELOP_BLENDIF_H_in, DEVELOP_BLENDIF_H_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_H,
+          _blendif_scale_print_hue, _blendop_blendif_disp_alternative_log },
+        { N_("S"), N_("sliders for chroma channel (of HSL)"), 1.0f / 100.0f, COLORSTOPS(_gradient_chroma),
+          { DEVELOP_BLENDIF_S_in, DEVELOP_BLENDIF_S_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_S,
+          _blendif_scale_print_default, _blendop_blendif_disp_alternative_log },
+        { N_("L"), N_("sliders for value channel (of HSL)"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
+          { DEVELOP_BLENDIF_l_in, DEVELOP_BLENDIF_l_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_l,
+          _blendif_scale_print_L, _blendop_blendif_disp_alternative_log },
+        { NULL } };
 
 void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 {
@@ -1564,9 +1569,13 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     char **labels = NULL;
     char **tooltips = NULL;
 
+    bd->inout = NULL;
+
     switch(bd->csp)
     {
       case iop_cs_Lab:
+        bd->inout = Lab_slider;
+
         maxchannels = 5;
         labels = Lab_labels;
         tooltips = Lab_tooltips;
@@ -1616,6 +1625,8 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
         bd->altdisplay[3] = _blendop_blendif_disp_alternative_log;
         break;
       case iop_cs_rgb:
+        bd->inout = rgb_slider;
+
         maxchannels = 7;
         labels = rgb_labels;
         tooltips = rgb_tooltips;
