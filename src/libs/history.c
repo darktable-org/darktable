@@ -828,6 +828,93 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
   return NULL;
 }
 
+static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
+                                          GtkTooltip *tooltip, const dt_dev_history_item_t *hitem)
+{
+  dt_iop_params_t *old_params = hitem->module->default_params;
+  dt_develop_blend_params_t *old_blend = hitem->module->default_blendop_params;
+
+  GList *find_old = g_list_first(darktable.develop->history);
+  while(find_old && find_old->data != hitem)
+  {
+    const dt_dev_history_item_t *hiprev = (dt_dev_history_item_t *)(find_old->data);
+
+    if(hiprev->module == hitem->module)
+    {
+      old_params = hiprev->params;
+      old_blend = hiprev->blend_params;
+    }
+
+    find_old = g_list_next(find_old);
+  }
+
+  gchar **change_parts = g_malloc0_n(sizeof(dt_develop_blend_params_t) / (sizeof(float)) + 3, sizeof(char*));
+
+  change_parts[0] = _lib_history_change_text(hitem->module->so->get_introspection()->field, NULL,
+                                              hitem->params, old_params);
+  int num_parts = change_parts[0] ? 1 : 0;
+
+  #define add_blend_history_change(field, format, label)                                       \
+    if(hitem->blend_params->field != old_blend->field)                                         \
+      change_parts[num_parts++] = g_strdup_printf("%s: " format " \u2192 " format, _(label),   \
+                                                  old_blend->field, hitem->blend_params->field);
+
+  #define add_blend_history_change_enum(field, label, list)                                    \
+    if(hitem->blend_params->field != old_blend->field)                                         \
+    {                                                                                          \
+      const char *old_str = NULL, *new_str = NULL;                                             \
+      for(const dt_develop_name_value_t *i = list; *i->name; i++)                              \
+      {                                                                                        \
+        if(i->value == old_blend->field) old_str = i->name;                                    \
+        if(i->value == hitem->blend_params->field) new_str = i->name;                          \
+      }                                                                                        \
+                                                                                                \
+      change_parts[num_parts++] = (!old_str || !new_str)                                       \
+                                ? g_strdup_printf("%s: %d \u2192 %d", _(label),                \
+                                                  old_blend->field, hitem->blend_params->field)\
+                                : g_strdup_printf("%s: %s \u2192 %s", _(label),                \
+                                                  _(g_dpgettext2(NULL, "blendmode", old_str)), \
+                                                  _(g_dpgettext2(NULL, "blendmode", new_str)));\
+    }
+
+  add_blend_history_change_enum(mask_mode, "mask mode", dt_develop_mask_mode_names);
+  add_blend_history_change_enum(blend_mode, "blend mode", dt_develop_blend_mode_names);
+  add_blend_history_change(opacity, "%.4f", "mask opacity");
+  add_blend_history_change_enum(mask_combine, "combine masks", dt_develop_combine_masks_names);
+  add_blend_history_change(mask_id, "%d", "mask_id");
+  add_blend_history_change_enum(blendif, "blendif", dt_develop_blendif_names_rgb);
+  add_blend_history_change(feathering_radius, "%.4f", "feathering radius");
+  add_blend_history_change_enum(feathering_guide, "feathering guide", dt_develop_feathering_guide_names);
+  add_blend_history_change(blur_radius, "%.4f", "mask blur");
+  add_blend_history_change(contrast, "%.4f", "mask contrast");
+  add_blend_history_change(brightness, "%.4f", "brightness");
+  add_blend_history_change(raster_mask_instance, "%d", "raster_mask_instance");
+  add_blend_history_change(raster_mask_id, "%d", "raster_mask_id");
+  add_blend_history_change_enum(raster_mask_invert, "invert mask", dt_develop_invert_mask_names);
+  
+  const dt_develop_name_value_t *b = dt_develop_blendif_names_rgb;
+  if(hitem->module->blend_colorspace(hitem->module, NULL, NULL) == iop_cs_Lab) b = dt_develop_blendif_names_lab;
+  while(*b->name)
+  {
+    float *of = &old_blend->blendif_parameters[4 * b->value];
+    float *nf = &hitem->blend_params->blendif_parameters[4 * b->value];
+    if(memcmp(of, nf, 4 * sizeof(float)))
+      change_parts[num_parts++] = g_strdup_printf("blendif[%s]: %.0f|%.0f-%.0f|%.0f \u2192 %.0f|%.0f-%.0f|%.0f",
+            b->name, of[0]*100, of[1]*100, of[2]*100, of[3]*100, nf[0]*100, nf[1]*100, nf[2]*100, nf[3]*100);
+    b++;
+  }
+
+  gchar *tooltip_text = g_strjoinv("\n", change_parts);
+  g_strfreev(change_parts);
+
+  gboolean show_tooltip = *tooltip_text;
+
+  gtk_tooltip_set_text (tooltip, tooltip_text);
+  g_free(tooltip_text);
+
+  return show_tooltip;
+}
+
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -885,85 +972,9 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
     g_free(label);
 
-    dt_iop_params_t *old_params = hitem->module->default_params;
-    dt_develop_blend_params_t *old_blend = hitem->module->default_blendop_params;
-
-    GList *find_old = g_list_first(darktable.develop->history);
-    while(find_old != history)
-    {
-      const dt_dev_history_item_t *hiprev = (dt_dev_history_item_t *)(find_old->data);
-
-      if(hiprev->module == hitem->module)
-      {
-        old_params = hiprev->params;
-        old_blend = hiprev->blend_params;
-      }
-
-      find_old = g_list_next(find_old);
-    }
-
-    gchar **change_parts = g_malloc0_n(sizeof(dt_develop_blend_params_t) / (sizeof(float)) + 3, sizeof(char*));
-
-    change_parts[0] = _lib_history_change_text(hitem->module->so->get_introspection()->field, NULL,
-                                               hitem->params, old_params);
-    int num_parts = change_parts[0] ? 1 : 0;
-
-    #define add_blend_history_change(field, format, label)                                       \
-      if(hitem->blend_params->field != old_blend->field)                                         \
-        change_parts[num_parts++] = g_strdup_printf("%s: " format " \u2192 " format, _(label),   \
-                                                    old_blend->field, hitem->blend_params->field);
-
-    #define add_blend_history_change_enum(field, label, list)                                    \
-      if(hitem->blend_params->field != old_blend->field)                                         \
-      {                                                                                          \
-        const char *old_str = NULL, *new_str = NULL;                                             \
-        for(const dt_develop_name_value_t *i = list; *i->name; i++)                              \
-        {                                                                                        \
-          if(i->value == old_blend->field) old_str = i->name;                                    \
-          if(i->value == hitem->blend_params->field) new_str = i->name;                          \
-        }                                                                                        \
-                                                                                                 \
-        change_parts[num_parts++] = (!old_str || !new_str)                                       \
-                                  ? g_strdup_printf("%s: %d \u2192 %d", _(label),                \
-                                                    old_blend->field, hitem->blend_params->field)\
-                                  : g_strdup_printf("%s: %s \u2192 %s", _(label),                \
-                                                    _(g_dpgettext2(NULL, "blendmode", old_str)), \
-                                                    _(g_dpgettext2(NULL, "blendmode", new_str)));\
-      }
-
-    add_blend_history_change_enum(mask_mode, "mask mode", dt_develop_mask_mode_names);
-    add_blend_history_change_enum(blend_mode, "blend mode", dt_develop_blend_mode_names);
-    add_blend_history_change(opacity, "%.4f", "mask opacity");
-    add_blend_history_change_enum(mask_combine, "combine masks", dt_develop_combine_masks_names);
-    add_blend_history_change(mask_id, "%d", "mask_id");
-    add_blend_history_change_enum(blendif, "blendif", dt_develop_blendif_names_rgb);
-    add_blend_history_change(feathering_radius, "%.4f", "feathering radius");
-    add_blend_history_change_enum(feathering_guide, "feathering guide", dt_develop_feathering_guide_names);
-    add_blend_history_change(blur_radius, "%.4f", "mask blur");
-    add_blend_history_change(contrast, "%.4f", "mask contrast");
-    add_blend_history_change(brightness, "%.4f", "brightness");
-    add_blend_history_change(raster_mask_instance, "%d", "raster_mask_instance");
-    add_blend_history_change(raster_mask_id, "%d", "raster_mask_id");
-    add_blend_history_change_enum(raster_mask_invert, "invert mask", dt_develop_invert_mask_names);
-    
-    const dt_develop_name_value_t *b = dt_develop_blendif_names_rgb;
-    if(hitem->module->blend_colorspace(hitem->module, NULL, NULL) == iop_cs_Lab) b = dt_develop_blendif_names_lab;
-    while(*b->name)
-    {
-      float *of = &old_blend->blendif_parameters[4 * b->value];
-      float *nf = &hitem->blend_params->blendif_parameters[4 * b->value];
-      if(memcmp(of, nf, 4 * sizeof(float)))
-        change_parts[num_parts++] = g_strdup_printf("blendif[%s]: %.0f|%.0f-%.0f|%.0f \u2192 %.0f|%.0f-%.0f|%.0f",
-              b->name, of[0]*100, of[1]*100, of[2]*100, of[3]*100, nf[0]*100, nf[1]*100, nf[2]*100, nf[3]*100);
-      b++;
-    }
-
-    gchar *tooltip = g_strjoinv("\n", change_parts);
-    g_strfreev(change_parts);
-
-    gtk_widget_set_tooltip_text(widget, tooltip);
-    g_free(tooltip);
-
+    gtk_widget_set_has_tooltip(widget, TRUE);
+    g_signal_connect(G_OBJECT(widget), "query-tooltip", G_CALLBACK(_changes_tooltip_callback), (void *)hitem);
+  
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
     gtk_box_reorder_child(GTK_BOX(d->history_box), widget, 0);
     num++;
