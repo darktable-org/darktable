@@ -1872,18 +1872,11 @@ static void _preference_changed(gpointer instance, gpointer user_data)
 
 static void _preference_prev_downsample_change(gpointer instance, gpointer user_data)
 {
-  gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
   if(user_data != NULL)
   {
-    float *preview_downsampling = user_data;
-    *preview_downsampling =
-      (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
-      : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
-      : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
-      : 0.25f;
+    float *ds_value = user_data;
+    *ds_value = dt_dev_set_preview_downsampling();
   }
-
-  g_free(preview_downsample);
 }
 
 static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
