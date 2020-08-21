@@ -1870,6 +1870,22 @@ static void _preference_changed(gpointer instance, gpointer user_data)
   dt_dynamic_accel_get_valid_list();
 }
 
+static void _preference_prev_downsample_change(gpointer instance, gpointer user_data)
+{
+  gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
+  if(user_data != NULL)
+  {
+    float *preview_downsampling = user_data;
+    *preview_downsampling =
+      (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
+      : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
+      : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
+      : 0.25f;
+  }
+
+  g_free(preview_downsample);
+}
+
 static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
 {
   GList *l = darktable.color_profiles->profiles;
@@ -2361,6 +2377,8 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                              G_CALLBACK(_preference_prev_downsample_change), &(dev->preview_downsampling));                                                                                                           
     // update the gui when the preferences changed (i.e. show intent when using lcms2)
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                               G_CALLBACK(_preference_changed), (gpointer)display_intent);
