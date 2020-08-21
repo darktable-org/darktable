@@ -725,7 +725,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
     if(field->Array.type == DT_INTROSPECTION_TYPE_CHAR)
     {
       if(strncmp((char*)o, (char*)p, field->Array.count))
-        return g_strdup_printf("%s: \"%s\" \u2192 \"%s\"", d, (char*)o, (char*)p);
+        return g_strdup_printf("%s\t\"%s\"\t\u2192\t\"%s\"", d, (char*)o, (char*)p);
     }
     else
     {
@@ -747,7 +747,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
 
       gchar *array_text = NULL;
       if(num_parts > max_elements)
-        array_text = g_strdup_printf("%s: %d changes", d, num_parts);
+        array_text = g_strdup_printf("%s\t%d changes", d, num_parts);
       else if(num_parts > 0)
         array_text = g_strjoinv("\n", change_parts);
 
@@ -758,31 +758,31 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
     if(*(float*)o != *(float*)p)
-      return g_strdup_printf("%s: %.4f \u2192 %.4f", d, *(float*)o, *(float*)p);
+      return g_strdup_printf("%s\t%.4f\t\u2192\t%.4f", d, *(float*)o, *(float*)p);
     break;
   case DT_INTROSPECTION_TYPE_INT:
     if(*(int*)o != *(int*)p)
-      return g_strdup_printf("%s: %d \u2192 %d", d, *(int*)o, *(int*)p);
+      return g_strdup_printf("%s\t%d\t\u2192\t%d", d, *(int*)o, *(int*)p);
     break;
   case DT_INTROSPECTION_TYPE_UINT:
     if(*(unsigned int*)o != *(unsigned int*)p)
-      return g_strdup_printf("%s: %u \u2192 %u", d, *(unsigned int*)o, *(unsigned int*)p);
+      return g_strdup_printf("%s\t%u\t\u2192\t%u", d, *(unsigned int*)o, *(unsigned int*)p);
     break;
   case DT_INTROSPECTION_TYPE_USHORT:
     if(*(unsigned short int*)o != *(unsigned short int*)p)
-      return g_strdup_printf("%s: %hu \u2192 %hu", d, *(unsigned short int*)o, *(unsigned short int*)p);
+      return g_strdup_printf("%s\t%hu\t\u2192\t%hu", d, *(unsigned short int*)o, *(unsigned short int*)p);
     break;
   case DT_INTROSPECTION_TYPE_INT8:
     if(*(uint8_t*)o != *(uint8_t*)p)
-      return g_strdup_printf("%s: %d \u2192 %d", d, *(uint8_t*)o, *(uint8_t*)p);
+      return g_strdup_printf("%s\t%d\t\u2192\t%d", d, *(uint8_t*)o, *(uint8_t*)p);
     break;
   case DT_INTROSPECTION_TYPE_CHAR:
     if(*(char*)o != *(char*)p)
-      return g_strdup_printf("%s: '%c' \u2192 '%c'", d, *(char *)o, *(char *)p);
+      return g_strdup_printf("%s\t'%c'\t\u2192\t'%c'", d, *(char *)o, *(char *)p);
     break;
   case DT_INTROSPECTION_TYPE_FLOATCOMPLEX:
     if(*(float complex*)o != *(float complex*)p)
-      return g_strdup_printf("%s: %.4f + %.4fi \u2192 %.4f + %.4fi", d, 
+      return g_strdup_printf("%s\t%.4f + %.4fi\t\u2192\t%.4f + %.4fi", d, 
                              creal(*(float complex*)o), cimag(*(float complex*)o), 
                              creal(*(float complex*)p), cimag(*(float complex*)p));
     break;
@@ -804,7 +804,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
         }
       }
 
-      return g_strdup_printf("%s: %s \u2192 %s", d, _(old_str), _(new_str));
+      return g_strdup_printf("%s\t%s\t\u2192\t%s", d, _(old_str), _(new_str));
     }
     break;
   case DT_INTROSPECTION_TYPE_BOOL:
@@ -812,7 +812,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
     {
       char *old_str = *(gboolean*)o ? "on" : "off";
       char *new_str = *(gboolean*)p ? "on" : "off";
-      return g_strdup_printf("%s: %s \u2192 %s", d, _(old_str), _(new_str));
+      return g_strdup_printf("%s\t%s\t\u2192\t%s", d, _(old_str), _(new_str));
     }
     break;
   case DT_INTROSPECTION_TYPE_OPAQUE:
@@ -856,7 +856,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
 
   #define add_blend_history_change(field, format, label)                                       \
     if(hitem->blend_params->field != old_blend->field)                                         \
-      change_parts[num_parts++] = g_strdup_printf("%s: " format " \u2192 " format, _(label),   \
+      change_parts[num_parts++] = g_strdup_printf("%s\t" format "\t\u2192\t" format, _(label),   \
                                                   old_blend->field, hitem->blend_params->field);
 
   #define add_blend_history_change_enum(field, label, list)                                    \
@@ -870,9 +870,9 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
       }                                                                                        \
                                                                                                 \
       change_parts[num_parts++] = (!old_str || !new_str)                                       \
-                                ? g_strdup_printf("%s: %d \u2192 %d", _(label),                \
+                                ? g_strdup_printf("%s\t%d\t\u2192\t%d", _(label),                \
                                                   old_blend->field, hitem->blend_params->field)\
-                                : g_strdup_printf("%s: %s \u2192 %s", _(label),                \
+                                : g_strdup_printf("%s\t%s\t\u2192\t%s", _(label),                \
                                                   _(g_dpgettext2(NULL, "blendmode", old_str)), \
                                                   _(g_dpgettext2(NULL, "blendmode", new_str)));\
     }
@@ -899,7 +899,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
     float *of = &old_blend->blendif_parameters[4 * b->value];
     float *nf = &hitem->blend_params->blendif_parameters[4 * b->value];
     if(memcmp(of, nf, 4 * sizeof(float)))
-      change_parts[num_parts++] = g_strdup_printf("blendif[%s]: %.0f|%.0f-%.0f|%.0f \u2192 %.0f|%.0f-%.0f|%.0f",
+      change_parts[num_parts++] = g_strdup_printf("blendif[%s]\t%.0f|%.0f-%.0f|%.0f\t\u2192\t%.0f|%.0f-%.0f|%.0f",
             b->name, of[0]*100, of[1]*100, of[2]*100, of[3]*100, nf[0]*100, nf[1]*100, nf[2]*100, nf[3]*100);
     b++;
   }
@@ -909,7 +909,16 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
 
   gboolean show_tooltip = *tooltip_text;
 
-  gtk_tooltip_set_text (tooltip, tooltip_text);
+  GtkWidget *view = gtk_text_view_new ();
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
+  gtk_text_buffer_set_text(buffer, tooltip_text, -1);
+
+  PangoTabArray *tabs = pango_tab_array_new_with_positions(3, TRUE, PANGO_TAB_LEFT, 200, PANGO_TAB_LEFT, 400, PANGO_TAB_LEFT, 420);
+  gtk_text_view_set_tabs(GTK_TEXT_VIEW(view), tabs);
+  pango_tab_array_free(tabs);
+
+  gtk_tooltip_set_custom(tooltip, view);
+  
   g_free(tooltip_text);
 
   return show_tooltip;
