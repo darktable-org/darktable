@@ -152,7 +152,6 @@ typedef struct dt_iop_tonecurve_gui_data_t
   GtkNotebook *channel_tabs;
   GtkWidget *colorpicker;
   GtkWidget *interpolator;
-  GtkWidget *scale;
   tonecurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected;
@@ -210,10 +209,9 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "base of the logarithm"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale for graph"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "interpolation method"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color space"));
 }
 
@@ -221,10 +219,9 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "base of the logarithm", GTK_WIDGET(g->logbase));
+  dt_accel_connect_slider_iop(self, "graph scale", GTK_WIDGET(g->logbase));
   dt_accel_connect_combobox_iop(self, "interpolation method", GTK_WIDGET(g->interpolator));
   dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->preserve_colors));
-  dt_accel_connect_combobox_iop(self, "scale", GTK_WIDGET(g->scale));
   dt_accel_connect_combobox_iop(self, "color space", GTK_WIDGET(g->autoscale_ab));
 }
 
@@ -501,35 +498,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-static const struct
-{
-  const char *name;
-  const char *maker;
-  const char *model;
-  int iso_min;
-  float iso_max;
-  struct dt_iop_tonecurve_params_t preset;
-} preset_camera_curves[] = {
-  // This is where you can paste the line provided by dt-curve-tool
-  // Here is a valid example for you to compare
-  // clang-format off
-    // nikon d750 by Edouard Gomez
-    {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.083508, 0.073677}, {0.212191, 0.274799}, {0.397095, 0.594035}, {0.495025, 0.714660}, {0.683565, 0.878550}, {0.854059, 0.950927}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
-    // nikon d5100 contributed by Stefan Kauerauf
-    {"NIKON D5100", "NIKON CORPORATION", "NIKON D5100", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000957, 0.000176}, {0.002423, 0.000798}, {0.005893, 0.003685}, {0.013219, 0.006619}, {0.023372, 0.011954}, {0.037580, 0.017817}, {0.069695, 0.035353}, {0.077276, 0.040315}, {0.123707, 0.082707}, {0.145249, 0.112105}, {0.189168, 0.186135}, {0.219576, 0.243677}, {0.290201, 0.385251}, {0.428150, 0.613355}, {0.506199, 0.700256}, {0.622833, 0.805488}, {0.702763, 0.870959}, {0.935053, 0.990139}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
-    // nikon d7000 by Edouard Gomez
-    {"Nikon D7000", "NIKON CORPORATION", "NIKON D7000", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.110633, 0.111192}, {0.209771, 0.286963}, {0.355888, 0.561236}, {0.454987, 0.673098}, {0.769212, 0.920485}, {0.800468, 0.933428}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
-    // nikon d7200 standard by Ralf Brown (firmware 1.00)
-    {"Nikon D7200", "NIKON CORPORATION", "NIKON D7200", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000618, 0.003286}, {0.001639, 0.003705}, {0.005227, 0.005101}, {0.013299, 0.011192}, {0.016048, 0.013130}, {0.037941, 0.027014}, {0.058195, 0.041339}, {0.086531, 0.069088}, {0.116679, 0.107283}, {0.155629, 0.159422}, {0.205477, 0.246265}, {0.225923, 0.287343}, {0.348056, 0.509104}, {0.360629, 0.534732}, {0.507562, 0.762089}, {0.606899, 0.865692}, {0.734828, 0.947468}, {0.895488, 0.992021}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
-    // nikon d7500 by Anders Bennehag (firmware C 1.00, LD 2.016)
-    {"NIKON D7500", "NIKON CORPORATION", "NIKON D7500", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000421, 0.003412}, {0.003775, 0.004001}, {0.013762, 0.008704}, {0.016698, 0.010230}, {0.034965, 0.018732}, {0.087311, 0.049808}, {0.101389, 0.060789}, {0.166845, 0.145269}, {0.230944, 0.271288}, {0.333399, 0.502609}, {0.353207, 0.542549}, {0.550014, 0.819535}, {0.731749, 0.944033}, {0.783283, 0.960546}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },}, {16, 16, 16}, {2, 2, 2}, 1, 0, 0}},
-    // nikon d90 by Edouard Gomez
-    {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.002915, 0.006453}, {0.023324, 0.021601}, {0.078717, 0.074963}, {0.186589, 0.242230}, {0.364432, 0.544956}, {0.629738, 0.814127}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
-    // Olympus OM-D E-M10 II by Lukas Schrangl
-    {"Olympus OM-D E-M10 II", "OLYMPUS CORPORATION    ", "E-M10MarkII     ", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.004036, 0.000809}, {0.015047, 0.009425}, {0.051948, 0.042053}, {0.071777, 0.066635}, {0.090018, 0.086722}, {0.110197, 0.118773}, {0.145817, 0.171861}, {0.207476, 0.278652}, {0.266832, 0.402823}, {0.428061, 0.696319}, {0.559728, 0.847113}, {0.943576, 0.993482}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.071429, 0.071429}, {0.142857, 0.142857}, {0.214286, 0.214286}, {0.285714, 0.285714}, {0.357143, 0.357143}, {0.428571, 0.428571}, {0.500000, 0.500000}, {0.571429, 0.571429}, {0.642857, 0.642857}, {0.714286, 0.714286}, {0.785714, 0.785714}, {0.857143, 0.857143}, {0.928571, 0.928571}, },{{0.000000, 0.000000}, {0.071429, 0.071429}, {0.142857, 0.142857}, {0.214286, 0.214286}, {0.285714, 0.285714}, {0.357143, 0.357143}, {0.428571, 0.428571}, {0.500000, 0.500000}, {0.571429, 0.571429}, {0.642857, 0.642857}, {0.714286, 0.714286}, {0.785714, 0.785714}, {0.857143, 0.857143}, {0.928571, 0.928571}, },}, {14, 14, 14}, {2, 2, 2}, 1, 0, 0}},
-  // clang-format on
-};
-
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_tonecurve_params_t p;
@@ -635,27 +603,6 @@ void init_presets(dt_iop_module_so_t *self)
   // Exp2 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(2.0f, linear_L[k]) - 1.0f;
   dt_gui_presets_add_generic(_("exponential (base 2)"), self->op, self->version(), &p, sizeof(p), 1);
-
-  for (int k=0; k<sizeof(preset_camera_curves)/sizeof(preset_camera_curves[0]); k++)
-  {
-    // insert the preset
-    dt_gui_presets_add_generic(preset_camera_curves[k].name, self->op, self->version(),
-                               &preset_camera_curves[k].preset, sizeof(p), 1);
-
-    // restrict it to model, maker
-    dt_gui_presets_update_mml(preset_camera_curves[k].name, self->op, self->version(),
-                              preset_camera_curves[k].maker, preset_camera_curves[k].model, "");
-
-    // restrict it to  iso
-    dt_gui_presets_update_iso(preset_camera_curves[k].name, self->op, self->version(),
-                              preset_camera_curves[k].iso_min, preset_camera_curves[k].iso_max);
-
-    // restrict it to raw images
-    dt_gui_presets_update_ldr(preset_camera_curves[k].name, self->op, self->version(), FOR_RAW);
-
-    // hide all non-matching presets in case the model string is set.
-    dt_gui_presets_update_filter(preset_camera_curves[k].name, self->op, self->version(), 1);
-  }
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -772,7 +719,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 static float eval_grey(float x)
 {
-  // estimate the log base to remap the grey x to 0.5
+  // "log base" is a combined scaling and offset change so that x->[0,1] with
+  // the left side of the histogram expanded (slider->right) or not (slider left, linear)
   return x;
 }
 
@@ -813,8 +761,7 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
   dt_bauhaus_combobox_set(g->preserve_colors, p->preserve_colors);
-
-  dt_bauhaus_combobox_set(g->scale, 0); // linear
+  dt_bauhaus_slider_set(g->logbase, 0);
   g->loglogscale = 0;
   g->semilog = 0;
 
@@ -833,19 +780,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
   dt_bauhaus_combobox_set(g->preserve_colors, p->preserve_colors);
-
-  if (dt_bauhaus_combobox_get(g->scale) != 0)
-  {
-    g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-    gtk_widget_set_visible(g->logbase, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_visible(g->logbase, FALSE);
-  }
-
-  dt_iop_cancel_history_update(self);
-
+  g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -900,43 +835,12 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  gtk_widget_set_visible(g->scale, TRUE);
-  switch(dt_bauhaus_combobox_get(widget))
-  {
-    case 0:
-    {
-      // x: linear
-      g->loglogscale = 0;
-      g->semilog = 0;
-      gtk_widget_set_visible(g->logbase, FALSE);
-      break;
-    }
-    case 1:
-    {
-      // x: log
-      g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-      g->semilog = 1;
-      gtk_widget_set_visible(g->logbase, TRUE);
-      break;
-    }
-  }
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
-}
-
 static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-
-  if (dt_bauhaus_combobox_get(g->scale) != 0)
-  {
-    g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  }
+  g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -975,19 +879,6 @@ static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, g
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
   c->channel = (tonecurve_channel_t)page_num;
-  if (c->channel == ch_L)
-  {
-    gtk_widget_set_visible(c->scale, TRUE);
-    if (c->loglogscale == 0 && c->semilog == 0)
-      gtk_widget_set_visible(c->logbase, FALSE);
-    else
-      gtk_widget_set_visible(c->logbase, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_visible(c->scale, FALSE);
-    gtk_widget_set_visible(c->logbase, FALSE);
-  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1005,7 +896,7 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
 static float to_log(const float x, const float base, const int ch, const int semilog, const int is_ordinate)
 {
   // don't log-encode the a and b channels
-  if(base > 0.0f && base != 1.0f && ch == ch_L)
+  if(base > 0.0f && ch == ch_L)
   {
     if (semilog == 1 && is_ordinate == 1)
     {
@@ -1019,7 +910,7 @@ static float to_log(const float x, const float base, const int ch, const int sem
     }
     else
     {
-      return logf(x * (base - 1.0f) + 1.0f) / logf(base);
+      return logf(x * base + 1.0f) / logf(base + 1.0f);
     }
   }
   else
@@ -1031,7 +922,7 @@ static float to_log(const float x, const float base, const int ch, const int sem
 static float to_lin(const float x, const float base, const int ch, const int semilog, const int is_ordinate)
 {
   // don't log-encode the a and b channels
-  if(base > 0.0f && base != 1.0f && ch == ch_L)
+  if(base > 0.0f && ch == ch_L)
   {
     if (semilog == 1 && is_ordinate == 1)
     {
@@ -1045,7 +936,7 @@ static float to_lin(const float x, const float base, const int ch, const int sem
     }
     else
     {
-      return (powf(base, x) - 1.0f) / (base - 1.0f);
+      return (powf(base + 1.0f, x) - 1.0f) / base;
     }
   }
   else
@@ -1238,9 +1129,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                  "not displayed. chroma values (a and b) of each pixel are "
                                                  "then adjusted based on L curve data. auto XYZ is similar "
                                                  "but applies the saturation changes in XYZ space."));
-
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
   dt_ui_notebook_page(c->channel_tabs, _("L"), _("tonecurve for L channel"));
   dt_ui_notebook_page(c->channel_tabs, _("a"), _("tonecurve for a channel"));
@@ -1294,26 +1183,14 @@ void gui_init(struct dt_iop_module_t *self)
   c->preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(c->preserve_colors, _("method to preserve colors when applying contrast"));
 
-  c->scale = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
-  dt_bauhaus_combobox_add(c->scale, _("linear"));
-  dt_bauhaus_combobox_add(c->scale, _("log"));
-  gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
-                                          "more precise control near the blacks"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
-
-
-  c->logbase = dt_bauhaus_slider_new_with_range(self, 2.0f, 64.f, 0.5f, 2.0f, 2);
-  dt_bauhaus_widget_set_label(c->logbase, NULL, _("base of the logarithm"));
+  c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0.5f, 0.0f, 2);
+  dt_bauhaus_widget_set_label(c->logbase, NULL, _("scale for graph"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
   c->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->area));
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->channel_tabs));
-
-  dt_bauhaus_combobox_set(c->scale, 0); // linear
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1352,7 +1229,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;                                        
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
 
   int ch = c->channel;

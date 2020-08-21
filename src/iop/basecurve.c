@@ -186,7 +186,7 @@ typedef struct dt_iop_basecurve_gui_data_t
   int minmax_curve_type, minmax_curve_nodes;
   GtkBox *hbox;
   GtkDrawingArea *area;
-  GtkWidget *scale, *fusion, *exposure_step, *exposure_bias;
+  GtkWidget *fusion, *exposure_step, *exposure_bias;
   GtkWidget *cmb_preserve_colors;
   double mouse_x, mouse_y;
   int selected;
@@ -194,12 +194,13 @@ typedef struct dt_iop_basecurve_gui_data_t
   float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
   float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
   float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
-  int loglogscale;
+  float loglogscale;
+  GtkWidget *logbase;
 } dt_iop_basecurve_gui_data_t;
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "graph scale"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "exposure fusion"));
 }
@@ -208,7 +209,7 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_combobox_iop(self, "scale", GTK_WIDGET(g->scale));
+  dt_accel_connect_slider_iop(self, "graph scale", GTK_WIDGET(g->logbase));
   dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->cmb_preserve_colors));
   dt_accel_connect_combobox_iop(self, "exposure fusion", GTK_WIDGET(g->fusion));
 }
@@ -349,11 +350,10 @@ const char *name()
 
 const char *description()
 {
-  return _("apply a view transform based on camera manufacturer look,\n"
-           "for corrective purposes, to prepare images for display.\n"
-           "works in RGB,\n"
-           "takes preferably a linear RGB input,\n"
-           "outputs non-linear RGB.");
+  return _("applies an exposure transform based on\n"
+           "your preference, or manufacturer data.\n"
+           "works in RGB, maps linear RGB input,\n"
+           "to non-linear RGB output.");
 }
 
 int default_group()
@@ -954,7 +954,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   }
 }
 
-
 // See comments of opencl version in data/kernels/basecurve.cl for description of the meaning of "legacy"
 static inline void apply_legacy_curve(
     const float *const in,
@@ -1446,23 +1445,26 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
 
-  dt_iop_cancel_history_update(self);
-
+  dt_iop_cancel_history_update(self);   
   dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
   dt_bauhaus_slider_set(g->exposure_bias, p->exposure_bias);
   // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
 
+static float eval_grey(float x)
+{
+  // "log base" is a combined scaling and offset change so that x->[0,1], with
+  // the left side of the histogram expanded (slider->right) or not (slider left, linear)  
+  return x;
+}
+
 void init(dt_iop_module_t *module)
 {
   dt_iop_default_init(module);
-
   dt_iop_basecurve_params_t *d = module->default_params;
-
   d->basecurve[0][1].x = d->basecurve[0][1].y = 1.0;
   d->basecurve_nodes[0] = 2;
-
   memcpy(module->params, module->default_params, sizeof(dt_iop_basecurve_params_t));
 }
 
@@ -1525,16 +1527,16 @@ static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossin
 
 static float to_log(const float x, const float base)
 {
-  if(base > 0.0f && base != 1.0f)
-    return logf(x * (base - 1.0f) + 1.0f) / logf(base);
+  if(base > 0.0f)
+    return logf(x * base + 1.0f) / logf(base + 1.0f);
   else
     return x;
 }
 
 static float to_lin(const float x, const float base)
 {
-  if(base > 0.0f && base != 1.0f)
-    return (powf(base, x) - 1.0f) / (base - 1.0f);
+  if(base > 0.0f)
+    return (powf(base - 1.0f, x) - 1.0f) / base;
   else
     return x;
 }
@@ -2075,14 +2077,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-static void scale_callback(GtkWidget *widget, gpointer user_data)
+static void logbase_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  if(dt_bauhaus_combobox_get(widget))
-    g->loglogscale = 64;
-  else
-    g->loglogscale = 0;
+  g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -2108,16 +2107,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("abscissa: input, ordinate: output. works on RGB channels"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-
-  c->scale = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
-  dt_bauhaus_combobox_add(c->scale, _("linear"));
-  dt_bauhaus_combobox_add(c->scale, _("logarithmic"));
-  gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
-                                          "more precise control near the blacks"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
-
   c->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
@@ -2143,6 +2132,9 @@ void gui_init(struct dt_iop_module_t *self)
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
   gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
   gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
+  c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0.5f, 0.0f, 2);
+  dt_bauhaus_widget_set_label(c->logbase, NULL, _("scale for graph"));  
+  gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
