@@ -2359,7 +2359,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   }
 
   const float margin_top = 2. * g->line_height + g->inset;
-  const float margin_right = 3. * g->zero_width + 2. * g->inset;
+  const float margin_right = darktable.bauhaus->quad_width + 2. * g->inset;
 
   g->graph_width = g->allocation.width - margin_right - margin_left; // align the right border on sliders
   g->graph_height = g->allocation.height - margin_bottom - margin_top; // give room to nodes
@@ -2524,7 +2524,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     for(int k = 1; k < 256; k++)
     {
-      float x = k / 255.0f; 
+      // k / 255 step defines a linearly scaled space. This might produce large gaps in lowlights when using log GUI scaling
+      // so we non-linearly rescale that step to get more points in lowlights
+      float x = powf(k / 255.0f, 2.4f); 
       float value = x;
 
       if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
@@ -2636,6 +2638,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     if(g->gui_show_labels)
     {
+      // position of the upper bound of x axis labels
+      const float x_legend_top = g->graph_height + 0.5 * g->line_height;
+
       // mark the y axis graduation at grey spot
       set_color(g->cr, darktable.bauhaus->graph_fg);
       snprintf(text, sizeof(text), "%.0f", p->grey_point_target);
@@ -2646,7 +2651,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       pango_cairo_show_layout(g->cr, g->layout);
       cairo_stroke(g->cr);
 
-      // mark the x axis graduation at black spot
+      // mark the x axis graduation at grey spot
       set_color(g->cr, darktable.bauhaus->graph_fg);
       if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
         snprintf(text, sizeof(text), "%+.1f", 0.f);
@@ -2655,8 +2660,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-      cairo_move_to(g->cr, x_grey * g->graph_width - 0.5 * g->ink.width - g->ink.x,
-                          g->graph_height + g->line_height - g->ink.height + g->ink.y);
+      cairo_move_to(g->cr, x_grey * g->graph_width - 0.5 * g->ink.width - g->ink.x, x_legend_top);
       pango_cairo_show_layout(g->cr, g->layout);
       cairo_stroke(g->cr);
 
@@ -2689,8 +2693,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-      cairo_move_to(g->cr, x_black * g->graph_width - 0.5 * g->ink.width - g->ink.x,
-                          g->graph_height + g->line_height - g->ink.height + g->ink.y);
+      cairo_move_to(g->cr, x_black * g->graph_width - 0.5 * g->ink.width - g->ink.x, x_legend_top);
       pango_cairo_show_layout(g->cr, g->layout);
       cairo_stroke(g->cr);
 
@@ -2708,8 +2711,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-      cairo_move_to(g->cr, fminf(x_white, 1.f) * g->graph_width - 0.5 * g->ink.width - g->ink.x,
-                          g->graph_height + g->line_height - g->ink.height + g->ink.y);
+      cairo_move_to(g->cr, fminf(x_white, 1.f) * g->graph_width - 0.5 * g->ink.width - g->ink.x + 2. * (x_white > 1.f) * g->sign_width,
+                           x_legend_top);
       pango_cairo_show_layout(g->cr, g->layout);
       cairo_stroke(g->cr);
 
@@ -2769,38 +2772,70 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     // draw the dynamic range of display
     // if white = 100%, assume 8 EV because of uint8 output.
     // for uint10 output, white should be set to 400%, so anything above 100% increases DR
+    // FIXME : if darktable becomes HDR-10bits compatible (for output), this needs to be updated
     const float display_DR = 8.f + log2f(p->white_point_target / 100.f);
 
-    // FIXME : if darktable becomes HDR-10bits compatible (for output), this needs to be updated
     const float y_display = g->allocation.height / 3.f + g->line_height;
     const float y_scene = 2. * g->allocation.height / 3.f + g->line_height;
 
-    // labels
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    snprintf(text, sizeof(text), _("display"));
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, 0., y_display - 0.5 * g->ink.height - g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-    const float display_label_width = g->ink.width;
+    const float display_top = y_display - g->line_height / 2;
+    const float display_bottom = display_top + g->line_height;
 
-    set_color(g->cr, darktable.bauhaus->graph_fg);
-    snprintf(text, sizeof(text), _("scene"));
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, 0., y_scene - 0.5 * g->ink.height - g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-    const float scene_label_width = g->ink.width;
+    const float scene_top = y_scene - g->line_height / 2;
+    const float scene_bottom = scene_top + g->line_height;
 
-    // arrow between labels
-    cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.));
-    dt_cairo_draw_arrow(g->cr, fminf(scene_label_width, display_label_width) / 2.f, y_scene - g->line_height, 
-                               fminf(scene_label_width, display_label_width) / 2.f, y_display + g->line_height + g->inset, 
-                               TRUE);
+    float column_left;
 
-    const float column_left = fmaxf(display_label_width, scene_label_width) + g->inset;
+    if(g->gui_show_labels)
+    {
+      // labels
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      snprintf(text, sizeof(text), _("display"));
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, 0., y_display - 0.5 * g->ink.height - g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+      const float display_label_width = g->ink.width;
+
+      // axis legend
+      snprintf(text, sizeof(text), _("(%%)"));
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, 0.5 * display_label_width - 0.5 * g->ink.width - g->ink.x,
+                          display_top - 4. * g->inset - g->ink.height - g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+
+      set_color(g->cr, darktable.bauhaus->graph_fg);
+      snprintf(text, sizeof(text), _("scene"));
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, 0., y_scene - 0.5 * g->ink.height - g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+      const float scene_label_width = g->ink.width;
+
+      // axis legend
+      snprintf(text, sizeof(text), _("(EV)"));
+      pango_layout_set_text(g->layout, text, -1);
+      pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
+      cairo_move_to(g->cr, 0.5 * scene_label_width - 0.5 * g->ink.width - g->ink.x,
+                          scene_bottom + 2. * g->inset + 0. * g->ink.height + g->ink.y);
+      pango_cairo_show_layout(g->cr, g->layout);
+      cairo_stroke(g->cr);
+
+      // arrow between labels
+      cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.));
+      dt_cairo_draw_arrow(g->cr, fminf(scene_label_width, display_label_width) / 2.f, y_scene - g->line_height, 
+                                fminf(scene_label_width, display_label_width) / 2.f, y_display + g->line_height + g->inset, 
+                                TRUE);
+
+      column_left = fmaxf(display_label_width, scene_label_width) + g->inset;
+    }
+    else
+      column_left = darktable.bauhaus->quad_width + g->inset;
+    
     const float column_right = g->allocation.width - column_left - darktable.bauhaus->quad_width;
 
     // compute dynamic ranges left and right to middle grey
@@ -2826,12 +2861,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     const float scene_black_x = grey_x - scene_LL_EV * EV;
     const float scene_white_x = grey_x + scene_HL_EV * EV;
-
-    const float display_top = y_display - g->line_height / 2;
-    const float display_bottom = display_top + g->line_height;
-
-    const float scene_top = y_scene - g->line_height / 2;
-    const float scene_bottom = scene_top + g->line_height;
 
     // show EV zones for display - zones are aligned on 0% and 100%
     cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.));
@@ -2974,15 +3003,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     pango_cairo_show_layout(g->cr, g->layout);
     cairo_stroke(g->cr);
 
-    // axis legend
-    snprintf(text, sizeof(text), _("(EV)"));
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, 0.5 * scene_label_width - 0.5 * g->ink.width - g->ink.x,
-                         scene_bottom + 2. * g->inset + 0. * g->ink.height + g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-
     // black scene legend
     snprintf(text, sizeof(text), "%.0f", p->black_point_target);
     pango_layout_set_text(g->layout, text, -1);
@@ -2992,7 +3012,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     pango_cairo_show_layout(g->cr, g->layout);
     cairo_stroke(g->cr);
 
-    // green scene legend
+    // grey scene legend
     snprintf(text, sizeof(text), "%.0f", p->grey_point_target);
     pango_layout_set_text(g->layout, text, -1);
     pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
@@ -3006,15 +3026,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     pango_layout_set_text(g->layout, text, -1);
     pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
     cairo_move_to(g->cr, display_white_x - 0.5 * g->ink.width - g->ink.x,
-                         display_top - 4. * g->inset - g->ink.height - g->ink.y);
-    pango_cairo_show_layout(g->cr, g->layout);
-    cairo_stroke(g->cr);
-
-    // axis legend
-    snprintf(text, sizeof(text), _("(%%)"));
-    pango_layout_set_text(g->layout, text, -1);
-    pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-    cairo_move_to(g->cr, 0.5 * display_label_width - 0.5 * g->ink.width - g->ink.x,
                          display_top - 4. * g->inset - g->ink.height - g->ink.y);
     pango_cairo_show_layout(g->cr, g->layout);
     cairo_stroke(g->cr);
