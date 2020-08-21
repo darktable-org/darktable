@@ -55,9 +55,12 @@
 
 #define DT_MAX_STYLE_NAME_LENGTH 128
 
+// Make sure it's OK to limit output extension length
+#define DT_MAX_OUTPUT_EXT_LENGTH 5
+
 static void usage(const char *progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [options] [--core <darktable options>]\n", progname);
+  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output destination> [options] [--core <darktable options>]\n", progname);
   fprintf(stderr, "\n");
   fprintf(stderr, "options:\n");
   fprintf(stderr, "   --width <max width> default: 0 = full resolution\n");
@@ -70,6 +73,8 @@ static void usage(const char *progname)
   fprintf(stderr, "   --style-overwrite\n");
   fprintf(stderr, "   --apply-custom-presets <0|1|false|true>, default: true\n");
   fprintf(stderr, "                          disable for multiple instances\n");
+  fprintf(stderr, "   --out-ext <extension>, default from output destination or '.jpg'\n");
+  fprintf(stderr, "                          if specified, takes preference over output\n");
   fprintf(stderr, "   --verbose\n");
   fprintf(stderr, "   --help,-h\n");
   fprintf(stderr, "   --version\n");
@@ -89,12 +94,14 @@ int main(int argc, char *arg[])
   // parse command line arguments
   char *input_filename = NULL;
   char *xmp_filename = NULL;
-  char *output_filename = NULL;
+  gchar *output_filename = NULL;
+  gchar *output_ext = NULL;
   char *style = NULL;
   int file_counter = 0;
   int width = 0, height = 0, bpp = 0;
   gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE,
-           style_overwrite = FALSE, custom_presets = TRUE, export_masks = FALSE;
+           style_overwrite = FALSE, custom_presets = TRUE, export_masks = FALSE,
+           output_to_dir = FALSE;
 
   int k;
   for(k = 1; k < argc; k++)
@@ -202,7 +209,22 @@ int main(int argc, char *arg[])
         }
         g_free(str);
       }
-
+      else if(!strcmp(arg[k], "--out-ext") && argc > k + 1)
+      {
+        k++;
+        if(strlen(arg[k])> DT_MAX_OUTPUT_EXT_LENGTH)
+        {
+          fprintf(stderr, "%s: %s\n", _("too long output ext for --out-ext"), arg[k]);
+          usage(arg[0]);
+          exit(1);
+        }
+        if (*arg[k] == '.')
+        {
+          //remove dot ;)
+          arg[k]++; 
+        }
+        output_ext = g_strdup(arg[k]);
+      }
       else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
       {
         verbose = TRUE;
@@ -221,7 +243,9 @@ int main(int argc, char *arg[])
       else if(file_counter == 1)
         xmp_filename = arg[k];
       else if(file_counter == 2)
-        output_filename = arg[k];
+      {
+        output_filename = g_strdup(arg[k]);
+      }
       file_counter++;
     }
   }
@@ -240,33 +264,53 @@ int main(int argc, char *arg[])
   {
     usage(arg[0]);
     free(m_arg);
+    g_free(output_filename);
+    if(output_ext)
+      g_free(output_ext);
     exit(1);
   }
   else if(file_counter == 2)
   {
-    // no xmp file given
-    output_filename = xmp_filename;
+    // assume no xmp file given
+    g_free(output_filename);
+    output_filename = g_strdup(xmp_filename);
     xmp_filename = NULL;
   }
 
   if(g_file_test(output_filename, G_FILE_TEST_IS_DIR))
   {
-    fprintf(stderr, _("error: output file is a directory. please specify file name"));
+    output_to_dir = TRUE;
+    if(!output_ext)
+    {
+      output_ext = g_strdup("jpg");
+    }
+    fprintf(stderr, _("notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output pattern"),output_filename, output_ext);
     fprintf(stderr, "\n");
-    free(m_arg);
-    exit(1);
+    gchar* temp_of = g_strdup(output_filename);
+    g_free(output_filename);
+    if(g_str_has_suffix(temp_of, "/")) temp_of[strlen(temp_of) - 1] = '\0';
+    output_filename = g_strconcat(temp_of, "/$(FILE_NAME)", NULL);
+    g_free(temp_of);
   }
 
   // the output file already exists, so there will be a sequence number added
-  if(g_file_test(output_filename, G_FILE_TEST_EXISTS))
+  if(g_file_test(output_filename, G_FILE_TEST_EXISTS) && !output_to_dir)
   {
-    fprintf(stderr, "%s\n", _("output file already exists, it will get renamed"));
+    if(!output_ext || (output_ext && g_str_has_suffix(output_filename, output_ext) && !g_strcmp0(output_ext,strrchr(output_filename, '.')+1))){
+      //output file exists or there's output ext specified and it's same as file...
+      fprintf(stderr, "%s\n", _("output file already exists, it will get renamed"));
+    }
+    //TODO: test if file with replaced ext exists
+    // or not if we decide we don't replace file ext with output ext specified
   }
 
   // init dt without gui and without data.db:
   if(dt_init(m_argc, m_arg, FALSE, custom_presets, NULL))
   {
     free(m_arg);
+    g_free(output_filename);
+    if(output_ext)
+      g_free(output_ext);
     exit(1);
   }
 
@@ -280,6 +324,9 @@ int main(int argc, char *arg[])
       fprintf(stderr, _("error: can't open folder %s"), input_filename);
       fprintf(stderr, "\n");
       free(m_arg);
+      g_free(output_filename);
+      if(output_ext)
+        g_free(output_ext);
       exit(1);
     }
     id_list = dt_film_get_image_ids(filmid);
@@ -298,6 +345,9 @@ int main(int argc, char *arg[])
       fprintf(stderr, _("error: can't open file %s"), input_filename);
       fprintf(stderr, "\n");
       free(m_arg);
+      g_free(output_filename);
+      if(output_ext)
+        g_free(output_ext);
       exit(1);
     }
     g_free(directory);
@@ -311,6 +361,9 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("no images to export, aborting\n"));
     free(m_arg);
+    g_free(output_filename);
+    if(output_ext)
+      g_free(output_ext);
     exit(1);
   }
 
@@ -326,6 +379,9 @@ int main(int argc, char *arg[])
         fprintf(stderr, _("error: can't open xmp file %s"), xmp_filename);
         fprintf(stderr, "\n");
         free(m_arg);
+        g_free(output_filename);
+        if(output_ext)
+          g_free(output_ext);
         exit(1);
       }
       // don't write new xmp:
@@ -344,15 +400,47 @@ int main(int argc, char *arg[])
       printf("[%s]\n", _("empty history stack"));
   }
 
-  // try to find out the export format from the output_filename
-  char *ext = output_filename + strlen(output_filename);
-  while(ext > output_filename && *ext != '.') ext--;
-  *ext = '\0';
-  ext++;
+  if(!output_ext)
+  {
+    /* char *ext = output_filename + strlen(output_filename);
+    while(ext > output_filename && *ext != '.') ext--;
+    *ext = '\0';
+    ext++; */
+    // by this point we're sure output is not dir, there's no output ext specified
+    // so only place to look for it is in filename
+    // try to find out the export format from the output_filename
+    char *ext = strrchr(output_filename, '.');
+    if(!ext || strlen(ext) > DT_MAX_OUTPUT_EXT_LENGTH)
+    {
+      // too long ext, no point in wasting time
+      fprintf(stderr, "%s: %s\n", _("too long output ext"), ext);
+      usage(arg[0]);
+      g_free(output_filename);
+      exit(1);
+    }
+    *ext = '\0';
+    ext++;
+    output_ext = g_strdup(ext);
+  } else {
+    // check and remove redundant file ext
+    char *ext = strrchr(output_filename, '.');
+    if(!strcmp(output_ext, ext+1))
+    {
+      *ext = '\0';
+    }
+  }
 
-  if(!strcmp(ext, "jpg")) ext = "jpeg";
+    if(!strcmp(output_ext, "jpg"))
+    {
+      g_free(output_ext);
+      output_ext = g_strdup("jpeg");
+    }
 
-  if(!strcmp(ext, "tif")) ext = "tiff";
+    if(!strcmp(output_ext, "tif"))
+    {
+      g_free(output_ext);
+      output_ext = g_strdup("tiff");
+    }
 
   // init the export data structures
   dt_imageio_module_format_t *format;
@@ -366,6 +454,8 @@ int main(int argc, char *arg[])
         stderr, "%s\n",
         _("cannot find disk storage module. please check your installation, something seems to be broken."));
     free(m_arg);
+    g_free(output_filename);
+    g_free(output_ext);
     exit(1);
   }
 
@@ -374,6 +464,8 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
     free(m_arg);
+    g_free(output_filename);
+    g_free(output_ext);
     exit(1);
   }
 
@@ -382,12 +474,14 @@ int main(int argc, char *arg[])
   g_strlcpy((char *)sdata, output_filename, DT_MAX_PATH_FOR_PARAMS);
   // all is good now, the last line didn't happen.
 
-  format = dt_imageio_get_format_by_name(ext);
+  format = dt_imageio_get_format_by_name(output_ext);
   if(format == NULL)
   {
-    fprintf(stderr, _("unknown extension '.%s'"), ext);
+    fprintf(stderr, _("unknown extension '.%s'"), output_ext);
     fprintf(stderr, "\n");
     free(m_arg);
+    g_free(output_filename);
+    g_free(output_ext);
     exit(1);
   }
 
@@ -396,6 +490,8 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
     free(m_arg);
+    g_free(output_filename);
+    g_free(output_ext);
     exit(1);
   }
 
