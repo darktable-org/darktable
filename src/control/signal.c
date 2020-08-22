@@ -352,14 +352,14 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
 void dt_control_signal_connect(const dt_control_signal_t *ctlsig, dt_signal_t signal, GCallback cb,
                                gpointer user_data)
 {
-  dt_print(DT_DEBUG_SIGNAL, "[signal] connect: %s\n", _signal_description[signal].name);
+  dt_print(DT_DEBUG_SIGNAL, "[signal] connected: %s\n", _signal_description[signal].name);
   _print_trace("connect");
   g_signal_connect(G_OBJECT(ctlsig->sink), _signal_description[signal].name, G_CALLBACK(cb), user_data);
 }
 
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data)
 {
-  dt_print(DT_DEBUG_SIGNAL, "[signal] disconnect\n");
+  dt_print(DT_DEBUG_SIGNAL, "[signal] disconnected\n");
   _print_trace("disconnect");
   g_signal_handlers_disconnect_matched(G_OBJECT(ctlsig->sink), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0,
                                        0, NULL, cb, user_data);
