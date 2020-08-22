@@ -77,6 +77,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dt_pthread_mutex_init(&dev->preview2_pipe_mutex, NULL);
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
+  dev->preview_downsampling = dt_dev_get_preview_downsampling();
   dev->forms = NULL;
   dev->form_visible = NULL;
   dev->form_gui = NULL;
@@ -90,7 +91,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
     dt_dev_pixelpipe_init_preview2(dev->preview2_pipe);
-    dev->preview_downsampling = dt_dev_get_preview_downsampling();
     dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
 
