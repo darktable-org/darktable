@@ -60,7 +60,7 @@
 
 static void usage(const char *progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output destination> [options] [--core <darktable options>]\n", progname);
+  fprintf(stderr, "usage: %s [<input file or dir>] [<xmp file>] <output destination> [options] [--core <darktable options>]\n", progname);
   fprintf(stderr, "\n");
   fprintf(stderr, "options:\n");
   fprintf(stderr, "   --width <max width> default: 0 = full resolution\n");
@@ -75,6 +75,8 @@ static void usage(const char *progname)
   fprintf(stderr, "                          disable for multiple instances\n");
   fprintf(stderr, "   --out-ext <extension>, default from output destination or '.jpg'\n");
   fprintf(stderr, "                          if specified, takes preference over output\n");
+  fprintf(stderr, "   --import <file or dir> specify input file or dir, can be used'\n");
+  fprintf(stderr, "                          multiple times instead of input file\n");
   fprintf(stderr, "   --verbose\n");
   fprintf(stderr, "   --help,-h\n");
   fprintf(stderr, "   --version\n");
@@ -102,6 +104,8 @@ int main(int argc, char *arg[])
   gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE,
            style_overwrite = FALSE, custom_presets = TRUE, export_masks = FALSE,
            output_to_dir = FALSE;
+
+  GList* inputs = NULL;
 
   int k;
   for(k = 1; k < argc; k++)
@@ -214,16 +218,24 @@ int main(int argc, char *arg[])
         k++;
         if(strlen(arg[k])> DT_MAX_OUTPUT_EXT_LENGTH)
         {
-          fprintf(stderr, "%s: %s\n", _("too long output ext for --out-ext"), arg[k]);
+          fprintf(stderr, "%s: %s\n", _("too long ext for --out-ext"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
         if (*arg[k] == '.')
         {
           //remove dot ;)
-          arg[k]++; 
+          arg[k]++;
         }
         output_ext = g_strdup(arg[k]);
+      }
+      else if(!strcmp(arg[k], "--import") && argc > k + 1)
+      {
+        k++;
+        if(g_file_test(arg[k], G_FILE_TEST_EXISTS))
+          inputs = g_list_prepend(inputs, g_strdup(arg[k]));
+        else
+          fprintf(stderr, _("notice: input file or dir '%s' doesn't exist, skipping\n"), arg[k]);
       }
       else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
       {
@@ -260,21 +272,62 @@ int main(int argc, char *arg[])
   for(; k < argc; k++) m_arg[m_argc++] = arg[k];
   m_arg[m_argc] = NULL;
 
-  if(file_counter < 2 || file_counter > 3)
+  if( (inputs && file_counter < 1) || (!inputs && file_counter < 2) || file_counter > 3)
   {
     usage(arg[0]);
     free(m_arg);
-    g_free(output_filename);
+    if(output_filename)
+      g_free(output_filename);
     if(output_ext)
       g_free(output_ext);
+    if(inputs)
+      g_list_free_full(inputs, g_free);
+    exit(1);
+  }
+  else if(inputs && file_counter == 1)
+  {
+    //user specified inputs as options, and only dest is present
+    if(output_filename)
+      g_free(output_filename);
+    output_filename = g_strdup(input_filename);
+    input_filename = xmp_filename = NULL;
+  }
+  else if (inputs && file_counter == 2)
+  {
+    // inputs as options, xmp & output specified
+    if(output_filename)
+      g_free(output_filename);
+    output_filename = g_strdup(xmp_filename);
+    xmp_filename = input_filename;
+    input_filename = NULL;
+  }
+  else if (inputs && file_counter == 3)
+  {
+    fprintf(stderr, _("error: input file and import opts specified! that's not supported!\n"));
+    usage(arg[0]);
+    free(m_arg);
+    if(output_filename)
+      g_free(output_filename);
+    if(output_ext)
+      g_free(output_ext);
+    if(inputs)
+      g_list_free_full(inputs, g_free);
     exit(1);
   }
   else if(file_counter == 2)
   {
     // assume no xmp file given
-    g_free(output_filename);
+    if(output_filename)
+      g_free(output_filename);
     output_filename = g_strdup(xmp_filename);
     xmp_filename = NULL;
+  }
+
+  if(!inputs && input_filename)
+  {
+    // input is present as param
+    inputs = g_list_prepend(inputs, g_strdup(input_filename));
+    input_filename = NULL;
   }
 
   if(g_file_test(output_filename, G_FILE_TEST_IS_DIR))
@@ -284,11 +337,12 @@ int main(int argc, char *arg[])
     {
       output_ext = g_strdup("jpg");
     }
-    fprintf(stderr, _("notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output pattern"),output_filename, output_ext);
+    fprintf(stderr, _("notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output pattern"), output_filename, output_ext);
     fprintf(stderr, "\n");
     gchar* temp_of = g_strdup(output_filename);
     g_free(output_filename);
-    if(g_str_has_suffix(temp_of, "/")) temp_of[strlen(temp_of) - 1] = '\0';
+    if(g_str_has_suffix(temp_of, "/"))
+      temp_of[strlen(temp_of) - 1] = '\0';
     output_filename = g_strconcat(temp_of, "/$(FILE_NAME)", NULL);
     g_free(temp_of);
   }
@@ -311,49 +365,54 @@ int main(int argc, char *arg[])
     g_free(output_filename);
     if(output_ext)
       g_free(output_ext);
+    if(inputs)
+      g_list_free_full(inputs, g_free);
     exit(1);
   }
 
   GList *id_list = NULL;
 
-  if(g_file_test(input_filename, G_FILE_TEST_IS_DIR))
+  for(GList *l = inputs; l != NULL; l=g_list_next(l))
   {
-    const int filmid = dt_film_import(input_filename);
-    if(!filmid)
-    {
-      fprintf(stderr, _("error: can't open folder %s"), input_filename);
-      fprintf(stderr, "\n");
-      free(m_arg);
-      g_free(output_filename);
-      if(output_ext)
-        g_free(output_ext);
-      exit(1);
-    }
-    id_list = dt_film_get_image_ids(filmid);
-  }
-  else
-  {
-    dt_film_t film;
-    int id = 0;
-    int filmid = 0;
+    gchar* input = l->data;
 
-    gchar *directory = g_path_get_dirname(input_filename);
-    filmid = dt_film_new(&film, directory);
-    id = dt_image_import(filmid, input_filename, TRUE);
-    if(!id)
+    if(g_file_test(input, G_FILE_TEST_IS_DIR))
     {
-      fprintf(stderr, _("error: can't open file %s"), input_filename);
-      fprintf(stderr, "\n");
-      free(m_arg);
-      g_free(output_filename);
-      if(output_ext)
-        g_free(output_ext);
-      exit(1);
+      const int filmid = dt_film_import(input);
+      if(!filmid)
+      {
+        // one of inputs was a failure, no prob
+        fprintf(stderr, _("error: can't open folder %s"), input);
+        fprintf(stderr, "\n");
+        continue;
+      }
+      id_list = g_list_concat(id_list, dt_film_get_image_ids(filmid));
     }
-    g_free(directory);
+    else
+    {
+      dt_film_t film;
+      int id = 0;
+      int filmid = 0;
 
-    id_list = g_list_append(id_list, GINT_TO_POINTER(id));
+      gchar *directory = g_path_get_dirname(input);
+      filmid = dt_film_new(&film, directory);
+      id = dt_image_import(filmid, input, TRUE);
+      g_free(directory);
+      if(!id)
+      {
+        fprintf(stderr, _("error: can't open file %s"), input);
+        fprintf(stderr, "\n");
+        continue;
+      }
+      id_list = g_list_append(id_list, GINT_TO_POINTER(id));
+    }
+    const int total = g_list_length(id_list);
   }
+
+  //we no longer need inputs
+  if(inputs)
+      g_list_free_full(inputs, g_free);
+  inputs = NULL;
 
   const int total = g_list_length(id_list);
 
@@ -402,10 +461,6 @@ int main(int argc, char *arg[])
 
   if(!output_ext)
   {
-    /* char *ext = output_filename + strlen(output_filename);
-    while(ext > output_filename && *ext != '.') ext--;
-    *ext = '\0';
-    ext++; */
     // by this point we're sure output is not dir, there's no output ext specified
     // so only place to look for it is in filename
     // try to find out the export format from the output_filename
@@ -424,23 +479,23 @@ int main(int argc, char *arg[])
   } else {
     // check and remove redundant file ext
     char *ext = strrchr(output_filename, '.');
-    if(!strcmp(output_ext, ext+1))
+    if(ext && !strcmp(output_ext, ext+1))
     {
       *ext = '\0';
     }
   }
 
-    if(!strcmp(output_ext, "jpg"))
-    {
-      g_free(output_ext);
-      output_ext = g_strdup("jpeg");
-    }
+  if(!strcmp(output_ext, "jpg"))
+  {
+    g_free(output_ext);
+    output_ext = g_strdup("jpeg");
+  }
 
-    if(!strcmp(output_ext, "tif"))
-    {
-      g_free(output_ext);
-      output_ext = g_strdup("tiff");
-    }
+  if(!strcmp(output_ext, "tif"))
+  {
+    g_free(output_ext);
+    output_ext = g_strdup("tiff");
+  }
 
   // init the export data structures
   dt_imageio_module_format_t *format;
