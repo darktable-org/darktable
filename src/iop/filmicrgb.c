@@ -2741,6 +2741,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // mark the y axis legend
       set_color(g->cr, darktable.bauhaus->graph_fg);
+      // xgettext:no-c-format
       g_strlcpy(text, _("% display"), sizeof(text));
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
@@ -2753,9 +2754,11 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       set_color(g->cr, darktable.bauhaus->graph_fg);
       if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
         g_strlcpy(text, _("EV scene"), sizeof(text));
-      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
+      {
+        // xgettext:no-c-format
         g_strlcpy(text, _("% camera"), sizeof(text));
-
+      }
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
       cairo_move_to(g->cr, 0.5 * g->graph_width - 0.5 * g->ink.width - g->ink.x,
