@@ -50,8 +50,8 @@
     <para>
       Double clicking on a style name applies the style to all
       selected images. The style can be applied by replacing the
-      history (mode <emphasis>overwrite</emphasis>) or by appending the history (mode
-      <emphasis>append</emphasis>) of the target images.
+      history (<emphasis>overwrite</emphasis> mode) or by appending to the history (
+      <emphasis>append</emphasis> mode) of the target images.
     </para>
 
     <sect4 id="styles_usage_duplicate">
