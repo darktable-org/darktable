@@ -322,6 +322,7 @@ typedef struct dt_develop_t
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
+float dt_dev_set_preview_downsampling();
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
 void dt_dev_process_preview2_job(dt_develop_t *dev);
@@ -363,7 +364,6 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int mode);
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x,
                                  float *zoom_y);
-
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
