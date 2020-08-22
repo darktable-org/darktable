@@ -164,8 +164,8 @@ typedef struct dt_iop_filmicrgb_params_t
   float reconstruct_grey_vs_color;        // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "grey/colorful details"
   float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "structure/texture"
   float security_factor;    // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
-  float grey_point_target;  // $MIN: .1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle grey"
-  float black_point_target; // $MIN: 0 $MAX: 100 $DEFAULT: 0 $DESCRIPTION: "target black luminance"
+  float grey_point_target;  // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle grey"
+  float black_point_target; // $MIN: 0 $MAX: 20 $DEFAULT: 0 $DESCRIPTION: "target black luminance"
   float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
   float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
   float latitude;           // $MIN: 0.01 $MAX: 100 $DEFAULT: 33.0
@@ -2506,7 +2506,21 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     cairo_stroke(g->cr);
 
     // draw the tone curve
-    cairo_move_to(g->cr, 0, g->graph_height * (1.0 - filmic_spline(0.0f, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4, g->spline.M5, g->spline.latitude_min, g->spline.latitude_max)));
+    float x_start = 0.f;
+    if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+      x_start = log_tonemapping_v2(x_start, grey, p->black_point_source, DR);
+
+    if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
+      x_start = dt_log_scale_axis(x_start, LOGBASE);
+
+    float y_start = clamp_simd(filmic_spline(x_start, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4, g->spline.M5, g->spline.latitude_min, g->spline.latitude_max));
+    
+    if(g->gui_mode == DT_FILMIC_GUI_BASECURVE) 
+      y_start = powf(y_start, p->output_power);
+    else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+      y_start = dt_log_scale_axis(powf(y_start, p->output_power), LOGBASE);
+
+    cairo_move_to(g->cr, 0, g->graph_height * (1.0 - y_start));
 
     for(int k = 1; k < 256; k++)
     {
@@ -2756,10 +2770,10 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     cairo_identity_matrix(g->cr); // reset coordinates
 
     // draw the dynamic range of display
-    // if white = 100%, assume 8 EV because of uint8 output.
+    // if white = 100%, assume -11.69 EV because of uint8 output + sRGB OETF.
     // for uint10 output, white should be set to 400%, so anything above 100% increases DR
     // FIXME : if darktable becomes HDR-10bits compatible (for output), this needs to be updated
-    const float display_DR = 8.f + log2f(p->white_point_target / 100.f);
+    const float display_DR = 12.f + log2f(p->white_point_target / 100.f);
 
     const float y_display = g->allocation.height / 3.f + g->line_height;
     const float y_scene = 2. * g->allocation.height / 3.f + g->line_height;
@@ -2827,6 +2841,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     // compute dynamic ranges left and right to middle grey
     const float display_HL_EV = -log2f(p->grey_point_target / p->white_point_target);       // compared to white EV
     const float display_LL_EV = display_DR - display_HL_EV;  // compared to black EV
+    const float display_real_black_EV = -fmaxf(log2f(p->black_point_target / p->grey_point_target), -11.685887601778058f + display_HL_EV);
     const float scene_HL_EV = p->white_point_source;                        // compared to white EV
     const float scene_LL_EV = -p->black_point_source;                       // compared to black EV
 
@@ -2840,7 +2855,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     const float grey_x = g->allocation.width - (grey_EV) * EV - darktable.bauhaus->quad_width;
 
     // similarly, get black/white coordinates from grey point
-    const float display_black_x = grey_x - display_LL_EV * EV;
+    const float display_black_x = grey_x - display_real_black_EV * EV;
+    const float display_DR_start_x = grey_x - display_LL_EV * EV;
     const float display_white_x = grey_x + display_HL_EV * EV;
 
     const float scene_black_x = grey_x - scene_LL_EV * EV;
@@ -2852,9 +2868,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     for(int i = 0; i < (int)ceilf(display_DR); i++)
     {
       // content
-      const float shade = powf(exp2f(-7.f + (float)i), 1.f / 2.4f);
+      const float shade = powf(exp2f(-11.f + (float)i), 1.f / 2.4f);
       cairo_set_source_rgb(g->cr, shade, shade, shade);
-      cairo_rectangle(g->cr, display_black_x + i * EV, display_top, EV, g->line_height);
+      cairo_rectangle(g->cr, display_DR_start_x + i * EV, display_top, EV, g->line_height);
       cairo_fill_preserve(g->cr);
 
       // borders
@@ -2902,7 +2918,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
         // take clamping into account
         if(y_temp < 0.f)        // clamp to - 8 EV (black)
-          y_temp = fmaxf(y_temp, -display_LL_EV); 
+          y_temp = fmaxf(y_temp, -display_real_black_EV); 
         else if(y_temp > 0.f)   // clamp to 0 EV (white)
           y_temp = fminf(y_temp, display_HL_EV); 
 
@@ -2916,7 +2932,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     // arrows for black and white
     float x_temp = grey_x + p->black_point_source * EV;
-    float y_temp = grey_x - display_LL_EV * EV;
+    float y_temp = grey_x - display_real_black_EV * EV;
     dt_cairo_draw_arrow(g->cr, x_temp, scene_top, y_temp, display_bottom, FALSE);
 
     x_temp = grey_x + p->white_point_source * EV;
