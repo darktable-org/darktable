@@ -189,6 +189,10 @@ if _scripts_install.dt.configuration.has_gui  then
             nil
           )
           _scripts_install.module_installed = true
+          if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
+           _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
+           _scripts_install.dt.preferences.write("_scripts_install", "initialized", "bool", true)
+         end
         end
       end
 
@@ -243,12 +247,6 @@ if _scripts_install.dt.configuration.has_gui  then
           _scripts_install.event_registered = true
         end
       end
-
-      if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
-       _scripts_install.dt.control.sleep(1000)
-       _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
-       _scripts_install.dt.preferences.write("_scripts_install", "initialized", "bool", true)
-     end
     end
   end
 end
