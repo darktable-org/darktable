@@ -236,7 +236,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "presets"));
 
   dt_accel_register_iop(self, TRUE, NC_("accel", "preset/as shot"), 0, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera standard D65"), 0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "preset/camera reference"), 0, 0);
   dt_accel_register_iop(self, TRUE, NC_("accel", "preset/from image area"), 0, 0);
   dt_accel_register_iop(self, TRUE, NC_("accel", "preset/user modified"), 0, 0);
 }
@@ -259,7 +259,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_iop(self, "preset/as shot", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_set_preset_camera_neutral), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "preset/camera standard D65", closure);
+  dt_accel_connect_iop(self, "preset/camera reference", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL);
   dt_accel_connect_iop(self, "preset/from image area", closure);
@@ -1154,7 +1154,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot")); // old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
-  dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera standard D65")); // old "camera neutral", reason: better matches intent
+  dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera reference")); // old "camera neutral", reason: better matches intent
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
   dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
 
@@ -2045,7 +2045,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
   gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance preset to as shot"));
   gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
-  gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance preset to D65"));
+  gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance preset to camera reference point\nin most cases it should be D65"));
 
   //g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   g_signal_connect(G_OBJECT(g->btn_asshot), "toggled", G_CALLBACK(btn_asshot_toggled),  (gpointer)self);
