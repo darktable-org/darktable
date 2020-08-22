@@ -1589,6 +1589,23 @@ void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
+void dtgtk_cairo_paint_text_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // draw an A
+  cairo_move_to(cr, 0.1, 1.);
+  cairo_line_to(cr, 0.5, 0.);
+  cairo_line_to(cr, 0.9, 1.);
+
+  cairo_move_to(cr, 0.25, 0.6);
+  cairo_line_to(cr, 0.75, 0.6);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+
 void dtgtk_cairo_paint_or(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 0, 0)
