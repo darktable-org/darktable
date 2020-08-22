@@ -255,12 +255,6 @@ typedef struct dt_iop_filmicrgb_gui_data_t
   float zero_width;
   float graph_width;
   float graph_height;
-  float gradient_left_limit;
-  float gradient_right_limit;
-  float gradient_top_limit;
-  float gradient_width;
-  float legend_top_limit;
-  float x_label;
   int inset;
   int inner_padding;
 
@@ -2321,19 +2315,19 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   pango_layout_set_font_description(g->layout, g->desc);
 
   // Get the text line height for spacing
-  snprintf(text, sizeof(text), "X");
+  g_strlcpy(text, "X", sizeof(text));
   pango_layout_set_text(g->layout, text, -1);
   pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
   g->line_height = g->ink.height;
 
   // Get the width of a minus sign for legend labels spacing
-  snprintf(text, sizeof(text), "-");
+  g_strlcpy(text, "-", sizeof(text));
   pango_layout_set_text(g->layout, text, -1);
   pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
   g->sign_width = g->ink.width / 2.0;
 
   // Get the width of a zero for legend labels spacing
-  snprintf(text, sizeof(text), "0");
+  g_strlcpy(text, "0", sizeof(text));
   pango_layout_set_text(g->layout, text, -1);
   pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
   g->zero_width = g->ink.width;
@@ -2361,12 +2355,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   g->graph_width = g->allocation.width - margin_right - margin_left; // align the right border on sliders
   g->graph_height = g->allocation.height - margin_bottom - margin_top; // give room to nodes
-  g->gradient_left_limit = 0.0;
-  g->gradient_right_limit = g->graph_width;
-  g->gradient_top_limit = g->graph_height + 2 * g->inner_padding;
-  g->gradient_width = g->gradient_right_limit - g->gradient_left_limit;
-  g->legend_top_limit = -0.5 * g->line_height - 2.0 * g->inner_padding;
-  g->x_label = g->graph_width + g->sign_width + 3.0 * g->inner_padding;
 
   gtk_render_background(g->context, g->cr, 0, 0, g->allocation.width, g->allocation.height);
 
@@ -2406,13 +2394,13 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   pango_font_description_set_size(g->desc, font_size);
   pango_layout_set_font_description(g->layout, g->desc);
   if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
-    snprintf(text, sizeof(text), _("look only"));
+    g_strlcpy(text, _("look only"), sizeof(text));
   else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE) 
-    snprintf(text, sizeof(text), _("look + mapping (lin)"));
+    g_strlcpy(text, _("look + mapping (lin)"), sizeof(text));
   else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
-    snprintf(text, sizeof(text), _("look + mapping (log)"));
+    g_strlcpy(text, _("look + mapping (log)"), sizeof(text));
   else if(g->gui_mode == DT_FILMIC_GUI_RANGES) 
-    snprintf(text, sizeof(text), _("dynamic range mapping"));
+    g_strlcpy(text, _("dynamic range mapping"), sizeof(text));
   
   pango_layout_set_text(g->layout, text, -1);
   pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
@@ -2739,7 +2727,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // mark the y axis legend
       set_color(g->cr, darktable.bauhaus->graph_fg);
-      snprintf(text, sizeof(text), _("%% display"));
+      g_strlcpy(text, _("% display"), sizeof(text));
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
       cairo_move_to(g->cr, -2. * g->inset - g->zero_width - g->ink.x,
@@ -2750,9 +2738,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       // mark the x axis legend
       set_color(g->cr, darktable.bauhaus->graph_fg);
       if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
-        snprintf(text, sizeof(text), _("EV scene"));
+        g_strlcpy(text, _("EV scene"), sizeof(text));
       else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
-        snprintf(text, sizeof(text), _("%% camera"));
+        g_strlcpy(text, _("% camera"), sizeof(text));
 
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
@@ -2788,7 +2776,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     {
       // labels
       set_color(g->cr, darktable.bauhaus->graph_fg);
-      snprintf(text, sizeof(text), _("display"));
+      g_strlcpy(text, _("display"), sizeof(text));
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
       cairo_move_to(g->cr, 0., y_display - 0.5 * g->ink.height - g->ink.y);
@@ -2797,7 +2785,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       const float display_label_width = g->ink.width;
 
       // axis legend
-      snprintf(text, sizeof(text), _("(%%)"));
+      g_strlcpy(text, _("(%)"), sizeof(text));
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
       cairo_move_to(g->cr, 0.5 * display_label_width - 0.5 * g->ink.width - g->ink.x,
@@ -2806,7 +2794,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_stroke(g->cr);
 
       set_color(g->cr, darktable.bauhaus->graph_fg);
-      snprintf(text, sizeof(text), _("scene"));
+      g_strlcpy(text, _("scene"), sizeof(text));
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
       cairo_move_to(g->cr, 0., y_scene - 0.5 * g->ink.height - g->ink.y);
@@ -2815,7 +2803,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       const float scene_label_width = g->ink.width;
 
       // axis legend
-      snprintf(text, sizeof(text), _("(EV)"));
+      g_strlcpy(text, _("(EV)"), sizeof(text));
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
       cairo_move_to(g->cr, 0.5 * scene_label_width - 0.5 * g->ink.width - g->ink.x,
@@ -2832,7 +2820,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       column_left = fmaxf(display_label_width, scene_label_width) + g->inset;
     }
     else
-      column_left = darktable.bauhaus->quad_width + g->inset;
+      column_left = darktable.bauhaus->quad_width;
     
     const float column_right = g->allocation.width - column_left - darktable.bauhaus->quad_width;
 
@@ -2841,8 +2829,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     const float display_LL_EV = display_DR - display_HL_EV;  // compared to black EV
     const float scene_HL_EV = p->white_point_source;                        // compared to white EV
     const float scene_LL_EV = -p->black_point_source;                       // compared to black EV
-
-    fprintf(stdout, "%f, %f \n", display_HL_EV, display_LL_EV);
 
     // compute the max width needed to fit both dynamic ranges and derivate the unit size of a GUI EV
     const float max_DR = ceilf(fmaxf(display_HL_EV, scene_HL_EV)) + ceilf(fmaxf(display_LL_EV, scene_LL_EV));
@@ -2862,8 +2848,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     // show EV zones for display - zones are aligned on 0% and 100%
     cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.));
-
-    fprintf(stdout, "%i \n", (int)display_DR);
 
     for(int i = 0; i < (int)ceilf(display_DR); i++)
     {
