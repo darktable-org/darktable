@@ -322,7 +322,7 @@ typedef struct dt_develop_t
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
-float dt_dev_set_preview_downsampling();
+float dt_dev_get_preview_downsampling();
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
 void dt_dev_process_preview2_job(dt_develop_t *dev);
