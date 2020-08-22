@@ -98,25 +98,9 @@ typedef struct patch_t patch_t;
 # define _mm_prefetch(where,hint)
 #endif
 
-typedef union floatint_t
-{
-  float f;
-  uint32_t i;
-} floatint_t;
-
 static inline float gh(const float f)
 {
-#if 0
-  return exp2f(-f);
-#else
-  // fast integer-hack version of the above
-  const int i1 = 0x3f800000; // 2^0
-  const int i2 = 0x3f000000; // 2^-1
-  const int k0 = i1 + (int)(f * (i2 - i1));
-  floatint_t k;
-  k.i = k0 >= 0x800000 ? k0 : 0;
-  return k.f;
-#endif
+  return dt_fast_mexp2f(f) ;
 }
 
 static inline int sign(int a)
@@ -125,7 +109,7 @@ static inline int sign(int a)
 }
 
 // map the basic row/column offset into a possible much larger offset based on a user parameter
-static int scatter(float scale, int scattering, int index1, int index2)
+static int scatter(const float scale, const float scattering, const int index1, const int index2)
 {
   // this formula is designed to
   //  - produce an identity mapping when scattering = 0
@@ -512,8 +496,8 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
             for (int col = col_min; col < col_max; col++)
             {
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-              const float dissimilarity = (distortion + pixel_difference(in+4*col,in+4*col+offset,center_norm)
-                                           / (1.0f + params->center_weight));
+              const float dissimilarity = (distortion + pixel_difference(in+4*col,in+4*col+offset,center_norm))
+                                           / (1.0f + params->center_weight);
               const float wt = gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f));
               const float *const inpx = in + 4*col;
               const float pixel[4] = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
@@ -735,8 +719,8 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
             for (int col = col_min; col < col_max; col++)
             {
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-              const float dissimilarity = (distortion + pixel_difference_sse2(in+4*col,in+4*col+offset,center_norm)
-                                           / (1.0f + params->center_weight));
+              const float dissimilarity = (distortion + pixel_difference_sse2(in+4*col,in+4*col+offset,center_norm))
+                                           / (1.0f + params->center_weight);
               const __m128 wt = _mm_set1_ps(gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f)));
               __m128 pixel = _mm_load_ps(in+4*col+offset);
               pixel[3] = 1.0f;
