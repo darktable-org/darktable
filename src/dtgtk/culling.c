@@ -1064,6 +1064,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
     const int id = sqlite3_column_int(stmt, 0);
     if(id > 0) dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
   }
+  sqlite3_finalize(stmt);
 }
 
 static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
