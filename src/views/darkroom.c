@@ -1875,7 +1875,7 @@ static void _preference_prev_downsample_change(gpointer instance, gpointer user_
   if(user_data != NULL)
   {
     float *ds_value = user_data;
-    *ds_value = dt_dev_set_preview_downsampling();
+    *ds_value = dt_dev_get_preview_downsampling();
   }
 }
 
@@ -2371,7 +2371,7 @@ void gui_init(dt_view_t *self)
     _update_softproof_gamut_checking(dev);
 
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                              G_CALLBACK(_preference_prev_downsample_change), &(dev->preview_downsampling));                                                                                                           
+                              G_CALLBACK(_preference_prev_downsample_change), &(dev->preview_downsampling));
     // update the gui when the preferences changed (i.e. show intent when using lcms2)
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                               G_CALLBACK(_preference_changed), (gpointer)display_intent);

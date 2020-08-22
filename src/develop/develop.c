@@ -90,7 +90,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
     dt_dev_pixelpipe_init_preview2(dev->preview2_pipe);
-    dev->preview_downsampling = dt_dev_set_preview_downsampling();
+    dev->preview_downsampling = dt_dev_get_preview_downsampling();
     dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
 
@@ -198,7 +198,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_conf_set_int("darkroom/ui/overlay_color", dev->overlay_color.color);
 }
 
-float dt_dev_set_preview_downsampling()
+float dt_dev_get_preview_downsampling()
 {
   gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
   const float downsample = (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
@@ -1370,7 +1370,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
-  //add scene-referred workflow 
+  //add scene-referred workflow
   if(dt_image_is_matrix_correction_supported(image)
      && strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
   {
