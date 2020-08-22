@@ -2118,7 +2118,7 @@ void gui_update(dt_iop_module_t *self)
 
   g->show_mask = FALSE;
   g->gui_mode = dt_conf_get_int("plugins/darkroom/filmicrgb/graph_view");
-  g->gui_show_labels = dt_conf_get_int("plugins/darkroom/filmicrgb/graph_show_label");
+  g->gui_show_labels = dt_conf_get_int("plugins/darkroom/filmicrgb/graph_show_labels");
   g->gui_hover = FALSE;
   g->gui_sizes_inited = FALSE;
 
@@ -2841,7 +2841,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     // compute dynamic ranges left and right to middle grey
     const float display_HL_EV = -log2f(p->grey_point_target / p->white_point_target);       // compared to white EV
     const float display_LL_EV = display_DR - display_HL_EV;  // compared to black EV
-    const float display_real_black_EV = -fmaxf(log2f(p->black_point_target / p->grey_point_target), -11.685887601778058f + display_HL_EV);
+    const float display_real_black_EV = -fmaxf(log2f(p->black_point_target / p->grey_point_target), 
+                                               -11.685887601778058f + display_HL_EV - log2f(p->white_point_target / 100.f));
     const float scene_HL_EV = p->white_point_source;                        // compared to white EV
     const float scene_LL_EV = -p->black_point_source;                       // compared to black EV
 
