@@ -375,7 +375,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
 
     if(force || allocation.width != table->view_width || allocation.height != table->view_height)
     {
-      table->thumbs_per_row = DT_LIGHTTABLE_MAX_ZOOM;
+      table->thumbs_per_row = DT_ZOOMABLE_NB_PER_ROW;
       table->view_width = allocation.width;
       table->view_height = allocation.height;
       table->thumb_size = table->view_width / npr;
@@ -434,8 +434,8 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
     const int pos_h
         = lbefore * table->thumb_size + table->view_height - table->thumb_size * 0.5 - table->thumbs_area.y;
 
-    const int total_width = DT_LIGHTTABLE_MAX_ZOOM * table->thumb_size
-      + 2 * (table->view_width - table->thumb_size * 0.5);
+    const int total_width
+        = DT_ZOOMABLE_NB_PER_ROW * table->thumb_size + 2 * (table->view_width - table->thumb_size * 0.5);
     const int pos_w = table->view_width - table->thumb_size * 0.5 - table->thumbs_area.x;
 
     dt_view_set_scrollbar(darktable.view_manager->current_view, pos_w, 0, total_width, table->view_width, pos_h, 0,
@@ -693,6 +693,10 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
 
   // and we store it
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
+  }
 
   // update scrollbars
   _thumbtable_update_scrollbars(table);
@@ -770,7 +774,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   posy = MAX(space - table->thumbs_area.y - table->thumbs_area.height, posy);
   int posx = MIN(table->view_width - space - table->thumbs_area.x, 0);
   posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
-  if(posx != 0 && posy != 0) _move(table, posx, posy, FALSE);
+  if(posx != 0 || posy != 0) _move(table, posx, posy, FALSE);
 
   // and we load/unload thumbs if needed
   int changed = _thumbs_load_needed(table);
@@ -1034,8 +1038,8 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
   }
 
   // we register the position
-  dt_conf_set_int("lighttable/ui/pos_x", table->thumbs_area.x);
-  dt_conf_set_int("lighttable/ui/pos_y", table->thumbs_area.y);
+  dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
+  dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
   return TRUE;
 }
 
@@ -1310,6 +1314,8 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
       table->offset_imgid = _thumb_get_imgid(1);
     table->offset = MAX(1, nrow);
     if(offset_changed) dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+    if(offset_changed && table->mode == DT_THUMBTABLE_MODE_ZOOM)
+      dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
 
     dt_thumbtable_full_redraw(table, TRUE);
 
@@ -1340,13 +1346,9 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     table->offset = 1;
     table->offset_imgid = _thumb_get_imgid(table->offset);
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
-    // and we reset position of first thumb for zooming
-    if(g_list_length(table->list) > 0)
-    {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-      thumb->x = 0;
-      thumb->y = 0;
-    }
+    dt_conf_set_int("lighttable/zoomable/last_offset", 1);
+    dt_conf_set_int("lighttable/zoomable/last_pos_x", 0);
+    dt_conf_set_int("lighttable/zoomable/last_pos_y", 0);
     dt_thumbtable_full_redraw(table, TRUE);
     dt_view_lighttable_change_offset(darktable.view_manager, TRUE, table->offset_imgid);
   }
@@ -1664,28 +1666,19 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
 
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
-      // in zoomable, we want the first thumb at the same position as the old one
-      if(g_list_length(table->list) > 0)
-      {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-        posx = thumb->x;
-        posy = thumb->y;
-      }
-      else
-      {
-        // first start let's retrieve values from rc file
-        posx = dt_conf_get_int("lighttable/ui/pos_x");
-        posy = dt_conf_get_int("lighttable/ui/pos_y");
-        table->thumbs_area.x = posx;
-        table->thumbs_area.y = posy;
-      }
+      // retrieve old values to avoid layout modifications
+      posx = dt_conf_get_int("lighttable/zoomable/last_pos_x");
+      posy = dt_conf_get_int("lighttable/zoomable/last_pos_y");
+      offset = dt_conf_get_int("lighttable/zoomable/last_offset");
+      table->thumbs_area.x = posx;
+      table->thumbs_area.y = posy;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
       // in filemanager, we need to take care of the center offset
       posx = table->center_offset;
 
-      // ensure that the overall layout doesn't change 
+      // ensure that the overall layout doesn't change
       // (i.e. we don't get empty spaces in the very first row)
       const int offset_row = (table->offset-1) / table->thumbs_per_row;
       offset = offset_row * table->thumbs_per_row + 1;
