@@ -118,7 +118,6 @@ static void icc_types()
   fprintf(stderr, " HLG_REC2020\n");
   fprintf(stderr, " PQ_P3\n");
   fprintf(stderr, " HLG_P3\n");
-  fprintf(stderr, " LAST\n");
 }
 
 #define ICC_FROM_STR(name) if(!strcmp(option, #name)) return DT_COLORSPACE_ ## name;
@@ -151,8 +150,7 @@ static dt_colorspaces_color_profile_type_t get_icc_type(const char* option)
   ICC_FROM_STR(HLG_REC2020);
   ICC_FROM_STR(PQ_P3);
   ICC_FROM_STR(HLG_P3);
-  ICC_FROM_STR(LAST);
-  return DT_COLORSPACE_LAST + 1;
+  return DT_COLORSPACE_LAST;
 }
 #undef ICC_FROM_STR
 
@@ -164,7 +162,6 @@ static void icc_intents()
   fprintf(stderr, " RELATIVE_COLORIMETRIC\n");
   fprintf(stderr, " SATURATION\n");
   fprintf(stderr, " ABSOLUTE_COLORIMETRIC\n");
-  fprintf(stderr, " LAST\n");
 }
 #define ICC_INTENT_FROM_STR(name) if(!strcmp(option, #name)) return DT_INTENT_ ## name;
 static dt_iop_color_intent_t get_icc_intent(const char* option)
@@ -173,8 +170,7 @@ static dt_iop_color_intent_t get_icc_intent(const char* option)
   ICC_INTENT_FROM_STR(RELATIVE_COLORIMETRIC);
   ICC_INTENT_FROM_STR(SATURATION);
   ICC_INTENT_FROM_STR(ABSOLUTE_COLORIMETRIC);
-  ICC_INTENT_FROM_STR(LAST);
-  return DT_INTENT_LAST + 1;
+  return DT_INTENT_LAST;
 }
 #undef ICC_INTENT_FROM_STR
 
@@ -349,7 +345,7 @@ int main(int argc, char *arg[])
         gchar *str = g_ascii_strup(arg[k], -1);
         icc_type = get_icc_type(str);
         g_free(str);
-        if(icc_type > DT_COLORSPACE_LAST){
+        if(icc_type >= DT_COLORSPACE_LAST){
           fprintf(stderr, _("incorrect ICC type for --icc-type: '%s'\n"), arg[k]);
           icc_types();
           usage(arg[0]);
@@ -374,7 +370,7 @@ int main(int argc, char *arg[])
         gchar *str = g_ascii_strup(arg[k], -1);
         icc_intent = get_icc_intent(str);
         g_free(str);
-        if(icc_intent > DT_INTENT_LAST){
+        if(icc_intent >= DT_INTENT_LAST){
           fprintf(stderr, _("incorrect ICC intent for --icc-intent: '%s'\n"), arg[k]);
           icc_intents();
           usage(arg[0]);
