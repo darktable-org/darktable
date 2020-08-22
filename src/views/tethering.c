@@ -273,7 +273,6 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       {
         dt_imageio_flip_buffers_ui8_to_float(tmp_f, p_buf, 0.0f, 255.0f, 4,
                                              pw, ph, pw, ph, 4 * pw, ORIENTATION_NONE);
-        // FIXME: this histogram isn't a precise match for when the equivalent image is captured -- though the live view histogram is a good match -- is something off?
         // FIXME: if liveview image is tagged and we can read its colorspace, use that
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
                                                DT_COLORSPACE_SRGB, "");
@@ -283,7 +282,6 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     }
     dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
   }
-  // FIXME: set histogram data to blank and draw blank if there is no active image -- or make a test in histogram draw which will know to draw it blank
   else if(lib->image_id >= 0) // First of all draw image if available
   {
     // FIXME: every time the mouse moves over the center view this redraws, which isn't necessary
@@ -335,6 +333,13 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
       free(dat.buf);
     }
+  }
+  else // not in live view, no image selected
+  {
+    // if we just left live view, blank out its histogram
+    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, NULL, 0, 0,
+                                           DT_COLORSPACE_NONE, "");
+    dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
   }
 }
 
