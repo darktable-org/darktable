@@ -362,7 +362,7 @@ int main(int argc, char *arg[])
           icc_filename = g_strdup(arg[k]);
         }
         else
-          fprintf(stderr, _("notice: icc file '%s' doesn't exist, skipping\n"), arg[k]);
+          fprintf(stderr, _("notice: ICC file '%s' doesn't exist, skipping\n"), arg[k]);
       }
       else if(!strcmp(arg[k], "--icc-intent") && argc > k + 1)
       {
