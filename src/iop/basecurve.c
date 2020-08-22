@@ -350,10 +350,11 @@ const char *name()
 
 const char *description()
 {
-  return _("applies an exposure transform based on\n"
-           "your preference, or manufacturer data.\n"
-           "works in RGB, maps linear RGB input,\n"
-           "to non-linear RGB output.");
+  return _("apply a view transform based on personal or camera manufacturer look,\n"
+           "for corrective purposes, to prepare images for display.\n"
+           "works in RGB,\n"
+           "takes preferably a linear RGB input,\n"
+           "outputs non-linear RGB.");
 }
 
 int default_group()
