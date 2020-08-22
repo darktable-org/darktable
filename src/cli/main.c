@@ -77,10 +77,106 @@ static void usage(const char *progname)
   fprintf(stderr, "                          if specified, takes preference over output\n");
   fprintf(stderr, "   --import <file or dir> specify input file or dir, can be used'\n");
   fprintf(stderr, "                          multiple times instead of input file\n");
+  fprintf(stderr, "   --icc-type <type> specify icc type, default to NONE\n");
+  fprintf(stderr, "                     use --help icc-type for list of supported types\n");
+  fprintf(stderr, "   --icc-file <file> specify icc filename, default to NONE\n");
+  fprintf(stderr, "   --icc-intent <intent> specify icc intent, default to LAST\n");
+  fprintf(stderr, "                     use --help icc-intent for list of supported intents\n");
   fprintf(stderr, "   --verbose\n");
-  fprintf(stderr, "   --help,-h\n");
+  fprintf(stderr, "   --help,-h [option]\n");
   fprintf(stderr, "   --version\n");
 }
+
+static void icc_types()
+{
+  // TODO: Can this be automated to keep in sync with colorspaces.h?
+  fprintf(stderr, "available ICC types:\n");
+  fprintf(stderr, " NONE\n");
+  fprintf(stderr, " FILE\n");
+  fprintf(stderr, " SRGB\n");
+  fprintf(stderr, " ADOBERGB\n");
+  fprintf(stderr, " LIN_REC709\n");
+  fprintf(stderr, " LIN_REC2020\n");
+  fprintf(stderr, " XYZ\n");
+  fprintf(stderr, " LAB\n");
+  fprintf(stderr, " INFRARED\n");
+  fprintf(stderr, " DISPLAY\n");
+  fprintf(stderr, " EMBEDDED_ICC\n");
+  fprintf(stderr, " EMBEDDED_MATRIX\n");
+  fprintf(stderr, " STANDARD_MATRIX\n");
+  fprintf(stderr, " ENHANCED_MATRIX\n");
+  fprintf(stderr, " VENDOR_MATRIX\n");
+  fprintf(stderr, " ALTERNATE_MATRIX\n");
+  fprintf(stderr, " BRG\n");
+  fprintf(stderr, " EXPORT\n"); // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
+  fprintf(stderr, " SOFTPROOF\n");
+  fprintf(stderr, " WORK\n");
+  fprintf(stderr, " DISPLAY2\n");
+  fprintf(stderr, " REC709\n");
+  fprintf(stderr, " PROPHOTO_RGB\n");
+  fprintf(stderr, " PQ_REC2020\n");
+  fprintf(stderr, " HLG_REC2020\n");
+  fprintf(stderr, " PQ_P3\n");
+  fprintf(stderr, " HLG_P3\n");
+  fprintf(stderr, " LAST\n");
+}
+
+#define ICC_FROM_STR(name) if(!strcmp(option, #name)) return DT_COLORSPACE_ ## name;
+static dt_colorspaces_color_profile_type_t get_icc_type(const char* option)
+{
+  ICC_FROM_STR(NONE);
+  ICC_FROM_STR(FILE);
+  ICC_FROM_STR(SRGB);
+  ICC_FROM_STR(ADOBERGB);
+  ICC_FROM_STR(LIN_REC709);
+  ICC_FROM_STR(LIN_REC2020);
+  ICC_FROM_STR(XYZ);
+  ICC_FROM_STR(LAB);
+  ICC_FROM_STR(INFRARED);
+  ICC_FROM_STR(DISPLAY);
+  ICC_FROM_STR(EMBEDDED_ICC);
+  ICC_FROM_STR(EMBEDDED_MATRIX);
+  ICC_FROM_STR(STANDARD_MATRIX);
+  ICC_FROM_STR(ENHANCED_MATRIX);
+  ICC_FROM_STR(VENDOR_MATRIX);
+  ICC_FROM_STR(ALTERNATE_MATRIX);
+  ICC_FROM_STR(BRG);
+  ICC_FROM_STR(EXPORT); // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
+  ICC_FROM_STR(SOFTPROOF);
+  ICC_FROM_STR(WORK);
+  ICC_FROM_STR(DISPLAY2);
+  ICC_FROM_STR(REC709);
+  ICC_FROM_STR(PROPHOTO_RGB);
+  ICC_FROM_STR(PQ_REC2020);
+  ICC_FROM_STR(HLG_REC2020);
+  ICC_FROM_STR(PQ_P3);
+  ICC_FROM_STR(HLG_P3);
+  ICC_FROM_STR(LAST);
+  return DT_COLORSPACE_LAST + 1;
+}
+#undef ICC_FROM_STR
+
+static void icc_intents()
+{
+  // TODO: Can this be automated to keep in sync with colorspaces.h?
+  fprintf(stderr, "available ICC intents:\n");
+  fprintf(stderr, " PERCEPTUAL\n");
+  fprintf(stderr, " RELATIVE_COLORIMETRIC\n");
+  fprintf(stderr, " SATURATION\n");
+  fprintf(stderr, " ABSOLUTE_COLORIMETRIC\n");
+  fprintf(stderr, " LAST\n");
+}
+#define ICC_INTENT_FROM_STR(name) if(!strcmp(option, #name)) return DT_INTENT_ ## name;
+static dt_iop_color_intent_t get_icc_intent(const char* option)
+{
+  ICC_INTENT_FROM_STR(PERCEPTUAL);
+  ICC_INTENT_FROM_STR(RELATIVE_COLORIMETRIC);
+  ICC_INTENT_FROM_STR(SATURATION);
+  ICC_INTENT_FROM_STR(ABSOLUTE_COLORIMETRIC);
+  ICC_INTENT_FROM_STR(LAST);
+  return DT_INTENT_LAST + 1;
+}
+#undef ICC_INTENT_FROM_STR
 
 int main(int argc, char *arg[])
 {
@@ -107,6 +203,10 @@ int main(int argc, char *arg[])
 
   GList* inputs = NULL;
 
+  dt_colorspaces_color_profile_type_t icc_type = DT_COLORSPACE_NONE;
+  gchar *icc_filename = NULL;
+  dt_iop_color_intent_t icc_intent = DT_INTENT_LAST;
+
   int k;
   for(k = 1; k < argc; k++)
   {
@@ -115,6 +215,12 @@ int main(int argc, char *arg[])
       if(!strcmp(arg[k], "--help") || !strcmp(arg[k], "-h"))
       {
         usage(arg[0]);
+        if(k+1 < argc) {
+          if(!strcmp(arg[k+1], "icc-type"))
+            icc_types();
+          if(!strcmp(arg[k+1], "icc-intent"))
+            icc_intents();
+        }
         exit(1);
       }
       else if(!strcmp(arg[k], "--version"))
@@ -236,6 +342,44 @@ int main(int argc, char *arg[])
           inputs = g_list_prepend(inputs, g_strdup(arg[k]));
         else
           fprintf(stderr, _("notice: input file or dir '%s' doesn't exist, skipping\n"), arg[k]);
+      }
+      else if(!strcmp(arg[k], "--icc-type") && argc > k + 1)
+      {
+        k++;
+        gchar *str = g_ascii_strup(arg[k], -1);
+        icc_type = get_icc_type(str);
+        g_free(str);
+        if(icc_type > DT_COLORSPACE_LAST){
+          fprintf(stderr, _("incorrect ICC type for --icc-type: '%s'\n"), arg[k]);
+          icc_types();
+          usage(arg[0]);
+          exit(1);
+        }
+      }
+      else if(!strcmp(arg[k], "--icc-file") && argc > k + 1)
+      {
+        k++;
+        if(g_file_test(arg[k], G_FILE_TEST_EXISTS) && ! g_file_test(arg[k], G_FILE_TEST_IS_DIR))
+        {
+          if(icc_filename)
+            g_free(icc_filename);
+          icc_filename = g_strdup(arg[k]);
+        }
+        else
+          fprintf(stderr, _("notice: icc file '%s' doesn't exist, skipping\n"), arg[k]);
+      }
+      else if(!strcmp(arg[k], "--icc-intent") && argc > k + 1)
+      {
+        k++;
+        gchar *str = g_ascii_strup(arg[k], -1);
+        icc_intent = get_icc_intent(str);
+        g_free(str);
+        if(icc_intent > DT_INTENT_LAST){
+          fprintf(stderr, _("incorrect ICC intent for --icc-intent: '%s'\n"), arg[k]);
+          icc_intents();
+          usage(arg[0]);
+          exit(1);
+        }
       }
       else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
       {
@@ -406,7 +550,6 @@ int main(int argc, char *arg[])
       }
       id_list = g_list_append(id_list, GINT_TO_POINTER(id));
     }
-    const int total = g_list_length(id_list);
   }
 
   //we no longer need inputs
@@ -588,12 +731,6 @@ int main(int argc, char *arg[])
     storage->set_params(storage, sdata, storage->params_size(storage));
   }
 
-  // TODO: do we want to use the settings from conf?
-  // TODO: expose these via command line arguments
-  dt_colorspaces_color_profile_type_t icc_type = DT_COLORSPACE_NONE;
-  const gchar *icc_filename = NULL;
-  dt_iop_color_intent_t icc_intent = DT_INTENT_LAST;
-
   // TODO: add a callback to set the bpp without going through the config
 
   int num = 1;
@@ -613,6 +750,9 @@ int main(int argc, char *arg[])
   storage->free_params(storage, sdata);
   format->free_params(format, fdata);
   g_list_free(id_list);
+
+  if(icc_filename)
+    g_free(icc_filename);
 
   dt_cleanup();
 
