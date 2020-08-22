@@ -58,6 +58,13 @@
   </para>
 
   <para>
+    Hitting <quote>compress history stack</quote> while holding the <emphasis>Ctrl</emphasis> 
+    key truncates the history stack without compressing it i.e. it discards all modules 
+    above the currently selected one without suppressing obsolete items in the rest of the
+    stack.
+  </para>
+
+  <para>
     The button to the right
     <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" />
     lets you create a new style for applying your history stack to other images. Use the first
