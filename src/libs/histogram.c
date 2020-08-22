@@ -300,6 +300,17 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
                                      dt_colorspaces_color_profile_type_t in_profile_type, const gchar *in_profile_filename)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+
+  // special case, clear the scopes
+  if(!input)
+  {
+    dt_pthread_mutex_lock(&d->lock);
+    memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
+    memset(d->waveform, 0, sizeof(uint8_t) * d->waveform_height * d->waveform_stride * 3);
+    dt_pthread_mutex_unlock(&d->lock);
+    return;
+  }
+
   dt_develop_t *dev = darktable.develop;
   float *const img_display = dt_alloc_align(64, width * height * 4 * sizeof(float));
   if(!img_display) return;
