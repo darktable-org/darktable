@@ -1681,9 +1681,9 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
         // first start let's retrieve values from rc file
         posx = dt_conf_get_int("lighttable/ui/pos_x");
         posy = dt_conf_get_int("lighttable/ui/pos_y");
-        table->thumbs_area.x = posx;
-        table->thumbs_area.y = posy;
       }
+      table->thumbs_area.x = posx;
+      table->thumbs_area.y = posy;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
