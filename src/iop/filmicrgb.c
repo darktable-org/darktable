@@ -248,7 +248,7 @@ typedef struct dt_iop_filmicrgb_gui_data_t
   gint gui_sizes_inited;
   dt_iop_filmicrgb_gui_button_t active_button; // ID of the button under cursor
   dt_iop_filmicrgb_gui_button_data_t buttons[DT_FILMIC_GUI_BUTTON_LAST];
-    
+
   // Cache Pango and Cairo stuff for the equalizer drawing
   float line_height;
   float sign_width;
@@ -2123,7 +2123,7 @@ void gui_update(dt_iop_module_t *self)
   g->gui_sizes_inited = FALSE;
 
   // fetch last view in dartablerc
-  
+
 
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .50f;
@@ -2224,7 +2224,7 @@ void gui_reset(dt_iop_module_t *self)
 
 #define LOGBASE 20.f
 
-static inline void dt_cairo_draw_arrow(cairo_t *cr, 
+static inline void dt_cairo_draw_arrow(cairo_t *cr,
                                        double origin_x, double origin_y, double destination_x, double destination_y,
                                        gboolean show_head)
 {
@@ -2255,7 +2255,7 @@ static inline void dt_cairo_draw_arrow(cairo_t *cr,
 void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t *button, struct dt_iop_filmicrgb_gui_data_t *g)
 {
   if(!g->gui_sizes_inited) return;
-  
+
   cairo_save(cr);
 
   GdkRGBA color;
@@ -2284,7 +2284,7 @@ void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t
 
   const float scale = 0.85;
   cairo_scale(cr, scale, scale);
-  button->icon(cr, -scale * button->w / 2., -scale * button->h / 2., 
+  button->icon(cr, -scale * button->w / 2., -scale * button->h / 2.,
                     scale * button->w, scale * button->h, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   cairo_restore(cr);
 }
@@ -2365,7 +2365,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     g->buttons[i].right = g->allocation.width;
     g->buttons[i].left = g->buttons[i].right - darktable.bauhaus->quad_width;
     g->buttons[i].top = margin_top + i * (g->inset + darktable.bauhaus->quad_width);
-    g->buttons[i].bottom = g->buttons[i].top + darktable.bauhaus->quad_width; 
+    g->buttons[i].bottom = g->buttons[i].top + darktable.bauhaus->quad_width;
     g->buttons[i].w = g->buttons[i].right - g->buttons[i].left;
     g->buttons[i].h = g->buttons[i].bottom - g->buttons[i].top;
     g->buttons[i].state = GTK_STATE_FLAG_NORMAL;
@@ -2393,15 +2393,15 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // write the graph legend at GUI default size
   pango_font_description_set_size(g->desc, font_size);
   pango_layout_set_font_description(g->layout, g->desc);
-  if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+  if(g->gui_mode == DT_FILMIC_GUI_LOOK)
     g_strlcpy(text, _("look only"), sizeof(text));
-  else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE) 
+  else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
     g_strlcpy(text, _("look + mapping (lin)"), sizeof(text));
-  else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+  else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
     g_strlcpy(text, _("look + mapping (log)"), sizeof(text));
-  else if(g->gui_mode == DT_FILMIC_GUI_RANGES) 
+  else if(g->gui_mode == DT_FILMIC_GUI_RANGES)
     g_strlcpy(text, _("dynamic range mapping"), sizeof(text));
-  
+
   pango_layout_set_text(g->layout, text, -1);
   pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
 
@@ -2409,7 +2409,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   set_color(g->cr, darktable.bauhaus->graph_bg);
   cairo_rectangle(g->cr, g->allocation.width -margin_left - g->ink.width - g->ink.x - 2. * g->inset,
                         -g->line_height -g->inset - 0.5 * g->ink.height - g->ink.y - g->inset,
-                         g->ink.width + 3. * g->inset, 
+                         g->ink.width + 3. * g->inset,
                          g->ink.height + 2. * g->inset);
   cairo_fill(g->cr);
 
@@ -2467,7 +2467,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     // prevent graph overflowing
     cairo_save(g->cr);
-    cairo_rectangle(g->cr, -DT_PIXEL_APPLY_DPI(2.), -DT_PIXEL_APPLY_DPI(2.), 
+    cairo_rectangle(g->cr, -DT_PIXEL_APPLY_DPI(2.), -DT_PIXEL_APPLY_DPI(2.),
                             g->graph_width + 2. * DT_PIXEL_APPLY_DPI(2.), g->graph_height + 2. * DT_PIXEL_APPLY_DPI(2.));
     cairo_clip(g->cr);
 
@@ -2478,10 +2478,10 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       {
         float x = k / 255.0;
         const float y = filmic_desaturate_v1(x, sigma_toe, sigma_shoulder, saturation);
-        
-        if(g->gui_mode == DT_FILMIC_GUI_BASECURVE) 
+
+        if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
           x = exp_tonemapping_v2(x, grey, p->black_point_source, DR);
-        else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+        else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
           x = dt_log_scale_axis(exp_tonemapping_v2(x, grey, p->black_point_source, DR), LOGBASE);
 
         cairo_line_to(g->cr, x * g->graph_width, g->graph_height * (1.0 - y));
@@ -2495,9 +2495,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         float x = k / 255.0;
         const float y = filmic_desaturate_v2(x, sigma_toe, sigma_shoulder, saturation);
 
-        if(g->gui_mode == DT_FILMIC_GUI_BASECURVE) 
+        if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
           x = exp_tonemapping_v2(x, grey, p->black_point_source, DR);
-        else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+        else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
           x = dt_log_scale_axis(exp_tonemapping_v2(x, grey, p->black_point_source, DR), LOGBASE);
 
         cairo_line_to(g->cr, x * g->graph_width, g->graph_height * (1.0 - y));
@@ -2507,17 +2507,17 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     // draw the tone curve
     float x_start = 0.f;
-    if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+    if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
       x_start = log_tonemapping_v2(x_start, grey, p->black_point_source, DR);
 
     if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
       x_start = dt_log_scale_axis(x_start, LOGBASE);
 
     float y_start = clamp_simd(filmic_spline(x_start, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4, g->spline.M5, g->spline.latitude_min, g->spline.latitude_max));
-    
-    if(g->gui_mode == DT_FILMIC_GUI_BASECURVE) 
+
+    if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
       y_start = powf(y_start, p->output_power);
-    else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+    else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
       y_start = dt_log_scale_axis(powf(y_start, p->output_power), LOGBASE);
 
     cairo_move_to(g->cr, 0, g->graph_height * (1.0 - y_start));
@@ -2526,10 +2526,10 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     {
       // k / 255 step defines a linearly scaled space. This might produce large gaps in lowlights when using log GUI scaling
       // so we non-linearly rescale that step to get more points in lowlights
-      float x = powf(k / 255.0f, 2.4f); 
+      float x = powf(k / 255.0f, 2.4f);
       float value = x;
 
-      if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+      if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
         value = log_tonemapping_v2(x, grey, p->black_point_source, DR);
 
       if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
@@ -2552,9 +2552,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         set_color(g->cr, darktable.bauhaus->graph_fg);
       }
 
-      if(g->gui_mode == DT_FILMIC_GUI_BASECURVE) 
+      if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
         y = powf(y, p->output_power);
-      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
         y = dt_log_scale_axis(powf(y, p->output_power), LOGBASE);
 
       cairo_line_to(g->cr, x * g->graph_width, g->graph_height * (1.0 - y));
@@ -2568,18 +2568,18 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     // special case for the grey node
     cairo_save(g->cr);
-    cairo_rectangle(g->cr, -DT_PIXEL_APPLY_DPI(4.), -DT_PIXEL_APPLY_DPI(4.), 
+    cairo_rectangle(g->cr, -DT_PIXEL_APPLY_DPI(4.), -DT_PIXEL_APPLY_DPI(4.),
                             g->graph_width + 2. * DT_PIXEL_APPLY_DPI(4.), g->graph_height + 2. * DT_PIXEL_APPLY_DPI(4.));
     cairo_clip(g->cr);
     float x_grey = g->spline.x[2];
     float y_grey = g->spline.y[2];
 
-    if(g->gui_mode == DT_FILMIC_GUI_BASECURVE) 
+    if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
     {
       x_grey = exp_tonemapping_v2(x_grey, grey, p->black_point_source, DR);
       y_grey = powf(y_grey, p->output_power);
     }
-    else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+    else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
     {
       x_grey = dt_log_scale_axis(exp_tonemapping_v2(x_grey, grey, p->black_point_source, DR), LOGBASE);
       y_grey = dt_log_scale_axis(powf(y_grey, p->output_power), LOGBASE);
@@ -2605,12 +2605,12 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         float x = g->spline.x[k];
         float y = g->spline.y[k];
 
-        if(g->gui_mode == DT_FILMIC_GUI_BASECURVE) 
+        if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
         {
           x = exp_tonemapping_v2(x, grey, p->black_point_source, DR);
           y = powf(y, p->output_power);
         }
-        else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+        else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
         {
           x = dt_log_scale_axis(exp_tonemapping_v2(x, grey, p->black_point_source, DR), LOGBASE);
           y = dt_log_scale_axis(powf(y, p->output_power), LOGBASE);
@@ -2653,9 +2653,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // mark the x axis graduation at grey spot
       set_color(g->cr, darktable.bauhaus->graph_fg);
-      if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+      if(g->gui_mode == DT_FILMIC_GUI_LOOK)
         snprintf(text, sizeof(text), "%+.1f", 0.f);
-      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
         snprintf(text, sizeof(text), "%.0f", p->grey_point_source);
 
       pango_layout_set_text(g->layout, text, -1);
@@ -2686,9 +2686,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // mark the x axis graduation at black spot
       set_color(g->cr, darktable.bauhaus->graph_fg);
-      if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+      if(g->gui_mode == DT_FILMIC_GUI_LOOK)
         snprintf(text, sizeof(text), "%+.1f", p->black_point_source);
-      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
         snprintf(text, sizeof(text), "%.0f", exp2f(p->black_point_source) * p->grey_point_source);
 
       pango_layout_set_text(g->layout, text, -1);
@@ -2699,13 +2699,13 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // mark the x axis graduation at white spot
       set_color(g->cr, darktable.bauhaus->graph_fg);
-      if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+      if(g->gui_mode == DT_FILMIC_GUI_LOOK)
         snprintf(text, sizeof(text), "%+.1f", p->white_point_source);
-      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) 
+      else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
       {
         if(x_white > 1.f)
           snprintf(text, sizeof(text), "%.0f →", 100.f); // this marks the bound of the graph, not the actual white
-        else 
+        else
           snprintf(text, sizeof(text), "%.0f", exp2f(p->white_point_source) * p->grey_point_source);
       }
 
@@ -2719,7 +2719,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       // handle the case where white > 100 %, so the node is out of the graph.
       // we still want to display the value to get a hint.
       set_color(g->cr, darktable.bauhaus->graph_fg);
-      if((g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) && (x_white > 1.f)) 
+      if((g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) && (x_white > 1.f))
       {
         // set to italic font
         PangoStyle backup = pango_font_description_get_style(g->desc);
@@ -2752,7 +2752,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // mark the x axis legend
       set_color(g->cr, darktable.bauhaus->graph_fg);
-      if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+      if(g->gui_mode == DT_FILMIC_GUI_LOOK)
         g_strlcpy(text, _("EV scene"), sizeof(text));
       else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
       {
@@ -2830,21 +2830,21 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // arrow between labels
       cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.));
-      dt_cairo_draw_arrow(g->cr, fminf(scene_label_width, display_label_width) / 2.f, y_scene - g->line_height, 
-                                fminf(scene_label_width, display_label_width) / 2.f, y_display + g->line_height + g->inset, 
+      dt_cairo_draw_arrow(g->cr, fminf(scene_label_width, display_label_width) / 2.f, y_scene - g->line_height,
+                                fminf(scene_label_width, display_label_width) / 2.f, y_display + g->line_height + g->inset,
                                 TRUE);
 
       column_left = fmaxf(display_label_width, scene_label_width) + g->inset;
     }
     else
       column_left = darktable.bauhaus->quad_width;
-    
+
     const float column_right = g->allocation.width - column_left - darktable.bauhaus->quad_width;
 
     // compute dynamic ranges left and right to middle grey
     const float display_HL_EV = -log2f(p->grey_point_target / p->white_point_target);       // compared to white EV
     const float display_LL_EV = display_DR - display_HL_EV;  // compared to black EV
-    const float display_real_black_EV = -fmaxf(log2f(p->black_point_target / p->grey_point_target), 
+    const float display_real_black_EV = -fmaxf(log2f(p->black_point_target / p->grey_point_target),
                                                -11.685887601778058f + display_HL_EV - log2f(p->white_point_target / 100.f));
     const float scene_HL_EV = p->white_point_source;                        // compared to white EV
     const float scene_LL_EV = -p->black_point_source;                       // compared to black EV
@@ -2909,7 +2909,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(2.));
       else
         cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.));
-      
+
       if((float)i > p->black_point_source && (float)i < p->white_point_source)
       {
         // Compute usual filmic  mapping
@@ -2922,9 +2922,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
         // take clamping into account
         if(y_temp < 0.f)        // clamp to - 8 EV (black)
-          y_temp = fmaxf(y_temp, -display_real_black_EV); 
+          y_temp = fmaxf(y_temp, -display_real_black_EV);
         else if(y_temp > 0.f)   // clamp to 0 EV (white)
-          y_temp = fminf(y_temp, display_HL_EV); 
+          y_temp = fminf(y_temp, display_HL_EV);
 
         // get destination coordinate and draw
         y_temp = grey_x + y_temp * EV;
@@ -2977,7 +2977,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     // legends
     set_color(g->cr, darktable.bauhaus->graph_fg);
-  
+
     // black scene legend
     snprintf(text, sizeof(text), "%+.1f", p->black_point_source);
     pango_layout_set_text(g->layout, text, -1);
@@ -3070,7 +3070,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
       {
         return FALSE;
       }
-      
+
     }
     else if(event->button == 1)
     {
@@ -3078,11 +3078,11 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
       {
         // cycle type of graph
-        if(g->gui_mode == DT_FILMIC_GUI_RANGES) 
+        if(g->gui_mode == DT_FILMIC_GUI_RANGES)
           g->gui_mode = DT_FILMIC_GUI_LOOK;
         else
           g->gui_mode++;
-        
+
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
         dt_conf_set_int("plugins/darkroom/filmicrgb/graph_view", g->gui_mode);
         return TRUE;
@@ -3106,11 +3106,11 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
       // simple right click cycles through modes in negative direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
       {
-        if(g->gui_mode == DT_FILMIC_GUI_LOOK) 
+        if(g->gui_mode == DT_FILMIC_GUI_LOOK)
           g->gui_mode = DT_FILMIC_GUI_RANGES;
         else
           g->gui_mode--;
-      
+
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
         dt_conf_set_int("plugins/darkroom/filmicrgb/graph_view", g->gui_mode);
         return TRUE;
@@ -3126,7 +3126,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
       {
         return FALSE;
       }
-      
+
     }
   }
 
@@ -3221,7 +3221,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     {
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), "");
     }
-    
+
     if(save_active_button != g->active_button) gtk_widget_queue_draw(GTK_WIDGET(g->area));
     return TRUE;
   }
@@ -3297,7 +3297,7 @@ void gui_init(dt_iop_module_t *self)
                                                     "useful to give a safety margin to extreme luminances."));
 
   // Auto tune slider
-  g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+  g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                    dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
