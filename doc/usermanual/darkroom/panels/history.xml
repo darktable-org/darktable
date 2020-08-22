@@ -59,7 +59,7 @@
 
   <para>
     Hitting <quote>compress history stack</quote> while holding the <emphasis>Ctrl</emphasis> 
-    key truncates the history stack without compressing it i.e. it discard all modules 
+    key truncates the history stack without compressing it i.e. it discards all modules 
     above the currently selected one without suppressing obsolete items in the rest of the
     stack.
   </para>
