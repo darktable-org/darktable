@@ -1507,19 +1507,28 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
 
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force)
 {
+  int w = 0;
+  int h = 0;
+  gtk_widget_get_size_request(thumb->w_main, &w, &h);
+
   // first, we verify that there's something to change
-  if(!force)
-  {
-    int w = 0;
-    int h = 0;
-    gtk_widget_get_size_request(thumb->w_main, &w, &h);
-    if(w == width && h == height) return;
-  }
+  if(!force && w == width && h == height) return;
 
   // widget resizing
   thumb->width = width;
   thumb->height = height;
   gtk_widget_set_size_request(thumb->w_main, width, height);
+
+  // we change the size and margins according to the size change. This will be refined after
+  if(h > 0 && w > 0)
+  {
+    int wi = 0;
+    int hi = 0;
+    gtk_widget_get_size_request(thumb->w_image_box, &wi, &hi);
+    const int nimg_w = width * wi / w;
+    const int nimg_h = height * hi / h;
+    gtk_widget_set_size_request(thumb->w_image_box, nimg_w, nimg_h);
+  }
 
   _thumb_retrieve_margins(thumb);
 
