@@ -145,6 +145,14 @@ static inline void dt_draw_grid_zoomed(cairo_t *cr, const int num, const float l
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd uniform(base)
+#endif
+static inline float dt_log_scale_axis(const float x, const float base)
+{
+  return logf(x * (base - 1.0f) + 1.f) / logf(base);
+}
+
 static inline void dt_draw_loglog_grid(cairo_t *cr, const int num, const int left, const int top, const int right,
                                        const int bottom, const float base)
 {
@@ -153,7 +161,7 @@ static inline void dt_draw_loglog_grid(cairo_t *cr, const int num, const int lef
 
   for(int k = 1; k < num; k++)
   {
-    const float x = logf(k / (float)num * (base - 1.0f) + 1) / logf(base);
+    const float x = dt_log_scale_axis(k / (float)num, base);
     dt_draw_line(cr, left + x * width, top, left + x * width, bottom);
     cairo_stroke(cr);
     dt_draw_line(cr, left, top + x * height, right, top + x * height);
@@ -169,7 +177,7 @@ static inline void dt_draw_semilog_x_grid(cairo_t *cr, const int num, const int 
 
   for(int k = 1; k < num; k++)
   {
-    const float x = logf(k / (float)num * (base - 1.0f) + 1) / logf(base);
+    const float x = dt_log_scale_axis(k / (float)num, base);
     dt_draw_line(cr, left + x * width, top, left + x * width, bottom);
     cairo_stroke(cr);
     dt_draw_line(cr, left, top + k / (float)num * height, right, top + k / (float)num * height);
@@ -185,7 +193,7 @@ static inline void dt_draw_semilog_y_grid(cairo_t *cr, const int num, const int 
 
   for(int k = 1; k < num; k++)
   {
-    const float x = logf(k / (float)num * (base - 1.0f) + 1) / logf(base);
+    const float x = dt_log_scale_axis(k / (float)num, base);
     dt_draw_line(cr, left + k / (float)num * width, top, left + k / (float)num * width, bottom);
     cairo_stroke(cr);
     dt_draw_line(cr, left, top + x * height, right, top + x * height);
