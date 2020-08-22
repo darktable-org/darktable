@@ -74,8 +74,7 @@
     preset will register the current module order of the pipe. This
     module order can then be selected to edit other images. Note that
     the module order can be copied from one image to another when
-    copying history. And the module order can also be recorded as part
-    of a style.
+    copying history and can also be recorded as part of a style.
   </para>
 
 </sect2>
