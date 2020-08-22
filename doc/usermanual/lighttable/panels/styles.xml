@@ -43,8 +43,8 @@
     <para>
       This panel displays a list of all available styles. A search field above the list allows
       you to input a text string which is compared against the styles' names and descriptions,
-      thus limiting the list to the matching ones. A mode <emphasis>append</emphasis> or
-      overwrite can be selected to control the way the style is applied.
+      thus limiting the list to the matching ones. You can choose <emphasis>append</emphasis> or
+      <emphasis>overwrite</emphasis>  mode to control the way the style is applied.
     </para>
 
     <para>
