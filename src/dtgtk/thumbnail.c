@@ -398,6 +398,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
+        thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
         res = dt_view_image_get_surface(thumb->imgid, image_w * thumb->zoom, image_h * thumb->zoom, &img_surf, FALSE);
       }
       else
@@ -1692,10 +1693,9 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
     dt_image_get_final_size(thumb->imgid, &w, &h);
     if(!thumb->img_margin) _thumb_retrieve_margins(thumb);
 
-    const float ratio_h = (float)(100 - thumb->img_margin->top - thumb->img_margin->bottom) / 100.0;
-    const float ratio_w = (float)(100 - thumb->img_margin->left - thumb->img_margin->right) / 100.0;
-    thumb->zoom_100
-        = fmaxf((float)w / ((float)thumb->width * ratio_w), (float)h / ((float)thumb->height * ratio_h));
+    const float used_h = (float)(thumb->height - thumb->img_margin->top - thumb->img_margin->bottom);
+    const float used_w = (float)(thumb->width - thumb->img_margin->left - thumb->img_margin->right);
+    thumb->zoom_100 = fmaxf((float)w / used_w, (float)h / used_h);
     if(thumb->zoom_100 < 1.0f) thumb->zoom_100 = 1.0f;
   }
 
