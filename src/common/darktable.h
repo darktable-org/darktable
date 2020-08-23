@@ -228,6 +228,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_IMAGEIO        = 1 << 18,
   DT_DEBUG_UNDO           = 1 << 19,
   DT_DEBUG_SIGNAL         = 1 << 20,
+  DT_DEBUG_PARAMS         = 1 << 21,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t

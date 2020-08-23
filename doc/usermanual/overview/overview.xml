@@ -181,8 +181,8 @@
       </para>
 
 <synopsis>darktable [-d {all,cache,camctl,camsupport,control,dev,
-               fswatch,input,lighttable,lua,masks,memory,nan,
-               opencl,perf,pwstorage,print,sql}]
+                fswatch,imageio,input,ioporder,lighttable,lua,masks,
+                memory,nan,opencl,params,perf,pwstorage,print,signal,sql,undo}]
           [&lt;input file&gt;|&lt;image folder&gt;]
           [--version]
           [--disable-opencl]
