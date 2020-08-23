@@ -35,6 +35,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+// some shorthand to make code more legible
+// if we have OpenMP simd enabled, declare a vectorizable for loop;
+// otherwise, just leave it a plain for()
+#if defined(_OPENMP) && defined(OPENMP_SIMD_)
+#define SIMD_FOR \
+  _Pragma("omp simd") \
+  for
+#else
+#define SIMD_FOR for
+#endif
+
+// avoid cluttering the scalar codepath with #ifdefs by hiding the dependency on SSE2
+#ifndef __SSE2__
+# define _mm_prefetch(where,hint)
+#endif
+
+// the filter does internal tiling to keep memory requirements reasonable, so this structure
+// defines the position of the tile being processed
 typedef struct tile
 {
   int left, right, lower, upper;
@@ -46,6 +64,20 @@ typedef struct color_image
   int width, height, stride;
 } color_image;
 
+// allocate space for n-component image of size width x height
+static inline color_image new_color_image(int width, int height, int ch)
+{
+  return (color_image){ dt_alloc_align(64, sizeof(float) * width * height * ch), width, height, ch };
+}
+
+// free space for n-component image
+static inline void free_color_image(color_image *img_p)
+{
+  dt_free_align(img_p->data);
+  img_p->data = NULL;
+}
+
+// get a pointer to pixel number 'i' within the image
 static inline float *get_color_pixel(color_image img, size_t i)
 {
   return img.data + i * img.stride;
@@ -106,37 +138,124 @@ static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y,
   }
 }
 
-// calculate the two-dimensional moving average over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and output images are identical
-// this function is always called from a OpenMP thread, thus no parallelization
-static void box_mean(gray_image img1, gray_image img2, int w)
+// calculate the one-dimensional moving average over a window of size 2*w+1 independently for each of four channels
+// input array x has stride 4, output array y has stride stride_y
+static inline void box_mean_1d_4ch(int N, const float *x, float *y, size_t stride_y, int w)
 {
-  gray_image img2_bak;
-  if(img1.data == img2.data)
+  float n_box = 0.f, m[4] = { 0.f, 0.f, 0.f, 0.f }, c[4] = { 0.f, 0.f, 0.f, 0.f };
+  if(N > 2 * w)
   {
-    img2_bak = new_gray_image(max_i(img2.width, img2.height), 1);
-    for(int i1 = 0; i1 < img2.height; i1++)
+    for(int i = 0, i_end = w + 1; i < i_end; i++)
     {
-      memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(float) * img2.width);
-      box_mean_1d(img2.width, img2_bak.data, img2.data + (size_t)i1 * img2.width, 1, w);
+      SIMD_FOR (int k = 0; k < 4; k++)
+        m[k] = Kahan_sum(m[k], &c[k], x[4*i+k]);
+      n_box++;
+    }
+    for(int i = 0, i_end = w; i < i_end; i++)
+    {
+      SIMD_FOR (int k = 0; k < 4; k++)
+      {
+        y[i * stride_y + k] = m[k] / n_box;
+        m[k] = Kahan_sum(m[k], &c[k], x[4*(i + w + 1) + k]);
+      }
+      n_box++;
+    }
+    for(int i = w, i_end = N - w - 1; i < i_end; i++)
+    {
+      SIMD_FOR (int k = 0; k < 4; k++)
+      {
+        y[i * stride_y + k] = m[k] / n_box;
+        m[k] = Kahan_sum(m[k], &c[k], x[4*(i + w + 1) + k]);
+        m[k] = Kahan_sum(m[k], &c[k], -x[4*(i - w) + k]);
+      }
+    }
+    for(int i = N - w - 1, i_end = N; i < i_end; i++)
+    {
+      SIMD_FOR (int k = 0; k < 4; k++)
+      {
+        y[i * stride_y + k] = m[k] / n_box;
+        m[k] = Kahan_sum(m[k], &c[k], -x[4*(i - w) + k]);
+      }
+      n_box--;
     }
   }
   else
   {
-    for(int i1 = 0; i1 < img1.height; i1++)
-      box_mean_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);
-    img2_bak = new_gray_image(1, img2.height);
+    for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++)
+    {
+      SIMD_FOR (int k = 0; k < 4; k++)
+      {
+        m[k] = Kahan_sum(m[k], &c[k], x[4*i + k]);
+      }
+      n_box++;
+    }
+    for(int i = 0; i < N; i++)
+    {
+      SIMD_FOR (int k = 0; k < 4; k++)
+        y[i * stride_y + k] = m[k] / n_box;
+      if(i - w >= 0)
+      {
+        SIMD_FOR (int k = 0; k < 4; k++)
+          m[k] = Kahan_sum(m[k], &c[k], -x[4*(i - w)+k]);
+        n_box--;
+      }
+      if(i + w + 1 < N)
+      {
+        SIMD_FOR (int k = 0; k < 4; k++)
+          m[k] = Kahan_sum(m[k], &c[k], x[4*(i + w + 1)+k]);
+        n_box++;
+      }
+    }
   }
-  for(int i0 = 0; i0 < img1.width; i0++)
-  {
-    for(int i1 = 0; i1 < img1.height; i1++) img2_bak.data[i1] = img2.data[i0 + (size_t)i1 * img2.width];
-    box_mean_1d(img1.height, img2_bak.data, img2.data + i0, img1.width, w);
-  }
-  free_gray_image(&img2_bak);
 }
 
-// apply guided filter to single-component image img using the 3-components
-// image imgg as a guide
+// in-place calculate the two-dimensional moving average over a box of size (2*w+1) x (2*w+1)
+// this function is always called from an OpenMP thread, thus no parallelization
+static void box_mean(gray_image img, int w)
+{
+  gray_image img_bak = new_gray_image(max_i(img.width, img.height), 1);
+  for(int i1 = 0; i1 < img.height; i1++)
+  {
+    memcpy(img_bak.data, img.data + (size_t)i1 * img.width, sizeof(float) * img.width);
+    box_mean_1d(img.width, img_bak.data, img.data + (size_t)i1 * img.width, 1, w);
+  }
+  for(int i0 = 0; i0 < img.width; i0++)
+  {
+    for(int i1 = 0; i1 < img.height; i1++) img_bak.data[i1] = img.data[i0 + (size_t)i1 * img.width];
+    box_mean_1d(img.height, img_bak.data, img.data + i0, img.width, w);
+  }
+  free_gray_image(&img_bak);
+}
+
+// in-place calculate the two-dimensional moving average of a four-channel image over a box of size (2*w+1) x (2*w+1)
+// this function is always called from an OpenMP thread, thus no parallelization
+static void box_mean_4ch(color_image img, int w)
+{
+  color_image img_bak = new_color_image(max_i(img.width, img.height), 1, 4);
+  const size_t width = 4 * img.width;
+  for(int i1 = 0; i1 < img.height; i1++)
+  {
+    memcpy(img_bak.data, img.data + (size_t)i1 * width, sizeof(float) * width);
+    box_mean_1d_4ch(img.width, img_bak.data, img.data + (size_t)i1 * width, 4, w);
+  }
+  for(int i0 = 0; i0 < img.width; i0++)
+  {
+    for(int i1 = 0; i1 < img.height; i1++)
+      SIMD_FOR (int k = 0; k < 4; k++)
+        img_bak.data[4*i1+k] = img.data[4*(i0 + (size_t)i1 * img.width)+k];
+    box_mean_1d_4ch(img.height, img_bak.data, img.data + 4*i0, width, w);
+  }
+  free_color_image(&img_bak);
+}
+
+// apply guided filter to single-component image img using the 3-components image imgg as a guide
+// the filtering applies a monochrome box filter to a total of 13 image channels:
+//    1 monochrome input image
+//    3 color guide image
+//    3 covariance (R, G, B)
+//    6 variance (R-R, R-G, R-B, G-G, G-B, B-B)
+// for computational efficiency, we'll pack them into three four-channel images and one mono image instead
+// of running 13 separate box filters: guide+input, R/G/B/R-R, R-G/R-B/G-G/G-B, and B-B.
 static void guided_filter_tiling(color_image imgg, gray_image img, gray_image img_out, tile target, const int w,
                                  const float eps, const float guide_weight, const float min, const float max)
 {
@@ -145,141 +264,135 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
   const int width = source.right - source.left;
   const int height = source.upper - source.lower;
   size_t size = (size_t)width * (size_t)height;
-  gray_image imgg_mean_r = new_gray_image(width, height);
-  gray_image imgg_mean_g = new_gray_image(width, height);
-  gray_image imgg_mean_b = new_gray_image(width, height);
-  gray_image img_mean = new_gray_image(width, height);
-  for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
-  {
-    int j = j_imgg - source.lower;
-    for(int i_imgg = source.left; i_imgg < source.right; i_imgg++)
-    {
-      int i = i_imgg - source.left;
-      float *pixel = get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
-      size_t k = i + (size_t)j * width;
-      imgg_mean_r.data[k] = pixel[0] * guide_weight;
-      imgg_mean_g.data[k] = pixel[1] * guide_weight;
-      imgg_mean_b.data[k] = pixel[2] * guide_weight;
-      img_mean.data[k] = img.data[i_imgg + (size_t)j_imgg * img.width];
-    }
-  }
-  box_mean(imgg_mean_r, imgg_mean_r, w);
-  box_mean(imgg_mean_g, imgg_mean_g, w);
-  box_mean(imgg_mean_b, imgg_mean_b, w);
-  box_mean(img_mean, img_mean, w);
-  gray_image cov_imgg_img_r = new_gray_image(width, height);
-  gray_image cov_imgg_img_g = new_gray_image(width, height);
-  gray_image cov_imgg_img_b = new_gray_image(width, height);
-  gray_image var_imgg_rr = new_gray_image(width, height);
-  gray_image var_imgg_gg = new_gray_image(width, height);
+// since we're packing multiple monochrome planes into a color image, define symbolic constants so that
+// we can keep track of which values we're actually using
+#define INP_MEAN 0
+#define GUIDE_MEAN_R 1
+#define GUIDE_MEAN_G 2
+#define GUIDE_MEAN_B 3
+#define COV_R 0
+#define COV_G 1
+#define COV_B 2
+#define VAR_RR 3  // packed into the covar image
+#define VAR_RG 0
+#define VAR_RB 1
+#define VAR_GG 2
+#define VAR_GB 3
+#define VAR_BB 0 // not actually packed, it's in a separate gray_image
+  color_image mean = new_color_image(width, height, 4);
+  color_image covar = new_color_image(width, height, 4);
+  color_image variance = new_color_image(width, height, 4);
   gray_image var_imgg_bb = new_gray_image(width, height);
-  gray_image var_imgg_rg = new_gray_image(width, height);
-  gray_image var_imgg_rb = new_gray_image(width, height);
-  gray_image var_imgg_gb = new_gray_image(width, height);
   for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
   {
     int j = j_imgg - source.lower;
     for(int i_imgg = source.left; i_imgg < source.right; i_imgg++)
     {
       int i = i_imgg - source.left;
-      float *pixel_ = get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
+      const float *pixel_ = get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
       float pixel[3] = { pixel_[0] * guide_weight, pixel_[1] * guide_weight, pixel_[2] * guide_weight };
-      size_t k = i + (size_t)j * width;
-      cov_imgg_img_r.data[k] = pixel[0] * img.data[i_imgg + (size_t)j_imgg * imgg.width];
-      cov_imgg_img_g.data[k] = pixel[1] * img.data[i_imgg + (size_t)j_imgg * imgg.width];
-      cov_imgg_img_b.data[k] = pixel[2] * img.data[i_imgg + (size_t)j_imgg * imgg.width];
-      var_imgg_rr.data[k] = pixel[0] * pixel[0];
-      var_imgg_rg.data[k] = pixel[0] * pixel[1];
-      var_imgg_rb.data[k] = pixel[0] * pixel[2];
-      var_imgg_gg.data[k] = pixel[1] * pixel[1];
-      var_imgg_gb.data[k] = pixel[1] * pixel[2];
+      const size_t k = i + (size_t)j * width;
+      float *const meanpx = get_color_pixel(mean, k);
+      const float input = img.data[i_imgg + (size_t)j_imgg * img.width];
+      meanpx[INP_MEAN] = input;
+      meanpx[GUIDE_MEAN_R] = pixel[0];
+      meanpx[GUIDE_MEAN_G] = pixel[1];
+      meanpx[GUIDE_MEAN_B] = pixel[2];
+      float *const covpx = get_color_pixel(covar, k);
+      covpx[COV_R] = pixel[0] * input;
+      covpx[COV_G] = pixel[1] * input;
+      covpx[COV_B] = pixel[2] * input;
+      covpx[VAR_RR] = pixel[0] * pixel[0];
+      float *const varpx = get_color_pixel(variance, k);
+      varpx[VAR_RG] = pixel[0] * pixel[1];
+      varpx[VAR_RB] = pixel[0] * pixel[2];
+      varpx[VAR_GG] = pixel[1] * pixel[1];
+      varpx[VAR_GB] = pixel[1] * pixel[2];
       var_imgg_bb.data[k] = pixel[2] * pixel[2];
     }
   }
-  box_mean(cov_imgg_img_r, cov_imgg_img_r, w);
-  box_mean(cov_imgg_img_g, cov_imgg_img_g, w);
-  box_mean(cov_imgg_img_b, cov_imgg_img_b, w);
-  box_mean(var_imgg_rr, var_imgg_rr, w);
-  box_mean(var_imgg_rg, var_imgg_rg, w);
-  box_mean(var_imgg_rb, var_imgg_rb, w);
-  box_mean(var_imgg_gg, var_imgg_gg, w);
-  box_mean(var_imgg_gb, var_imgg_gb, w);
-  box_mean(var_imgg_bb, var_imgg_bb, w);
+  box_mean_4ch(mean, w);
+  box_mean_4ch(covar, w);
+  box_mean_4ch(variance, w);
+  box_mean(var_imgg_bb, w);
   for(size_t i = 0; i < size; i++)
   {
-    cov_imgg_img_r.data[i] -= imgg_mean_r.data[i] * img_mean.data[i];
-    cov_imgg_img_g.data[i] -= imgg_mean_g.data[i] * img_mean.data[i];
-    cov_imgg_img_b.data[i] -= imgg_mean_b.data[i] * img_mean.data[i];
-    var_imgg_rr.data[i] -= imgg_mean_r.data[i] * imgg_mean_r.data[i];
-    var_imgg_rr.data[i] += eps;
-    var_imgg_rg.data[i] -= imgg_mean_r.data[i] * imgg_mean_g.data[i];
-    var_imgg_rb.data[i] -= imgg_mean_r.data[i] * imgg_mean_b.data[i];
-    var_imgg_gg.data[i] -= imgg_mean_g.data[i] * imgg_mean_g.data[i];
-    var_imgg_gg.data[i] += eps;
-    var_imgg_gb.data[i] -= imgg_mean_g.data[i] * imgg_mean_b.data[i];
-    var_imgg_bb.data[i] -= imgg_mean_b.data[i] * imgg_mean_b.data[i];
+    const float *meanpx = get_color_pixel(mean, i);
+    const float inp_mean = meanpx[INP_MEAN];
+    const float guide_r = meanpx[GUIDE_MEAN_R];
+    const float guide_g = meanpx[GUIDE_MEAN_G];
+    const float guide_b = meanpx[GUIDE_MEAN_B];
+    float *const covpx = get_color_pixel(covar, i);
+    covpx[COV_R] -= guide_r * inp_mean;
+    covpx[COV_G] -= guide_g * inp_mean;
+    covpx[COV_B] -= guide_b * inp_mean;
+    covpx[VAR_RR] -= guide_r * guide_r;
+    covpx[VAR_RR] += eps;
+    float *const varpx = get_color_pixel(variance, i);
+    varpx[VAR_RG] -= guide_r * guide_g;
+    varpx[VAR_RB] -= guide_r * guide_b;
+    varpx[VAR_GG] -= guide_g * guide_g;
+    varpx[VAR_GG] += eps;
+    varpx[VAR_GB] -= guide_g * guide_b;
+    var_imgg_bb.data[i] -= guide_b * guide_b;
     var_imgg_bb.data[i] += eps;
   }
   // we will recycle memory of the arrays imgg_mean_? and img_mean for the new coefficient arrays a_? and b to
   // reduce memory foot print
-  gray_image a_r = imgg_mean_r;
-  gray_image a_g = imgg_mean_g;
-  gray_image a_b = imgg_mean_b;
-  gray_image b = img_mean;
-  for(int i1 = 0; i1 < height; i1++)
+  color_image a_b = mean;
+  #define A_RED 0
+  #define A_GREEN 1
+  #define A_BLUE 2
+  #define B 3
+  for(int i = 0; i < height*width; i++)
   {
-    size_t i = (size_t)i1 * width;
-    for(int i0 = 0; i0 < width; i0++)
+    // solve linear system of equations of size 3x3 via Cramer's rule
+    // symmetric coefficient matrix
+    const float *covpx = get_color_pixel(covar, i);
+    const float *varpx = get_color_pixel(variance, i);
+    const float Sigma_0_0 = covpx[VAR_RR];
+    const float Sigma_0_1 = varpx[VAR_RG];
+    const float Sigma_0_2 = varpx[VAR_RB];
+    const float Sigma_1_1 = varpx[VAR_GG];
+    const float Sigma_1_2 = varpx[VAR_GB];
+    const float Sigma_2_2 = var_imgg_bb.data[i];
+    const float cov_imgg_img[3] = { covpx[COV_R], covpx[COV_G], covpx[COV_B] };
+    const float det0 = Sigma_0_0 * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
+      - Sigma_0_1 * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
+      + Sigma_0_2 * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
+    float a_r_, a_g_, a_b_, b_;
+    if(fabsf(det0) > 4.f * FLT_EPSILON)
     {
-      // solve linear system of equations of size 3x3 via Cramer's rule
-      // symmetric coefficient matrix
-      const float Sigma_0_0 = var_imgg_rr.data[i];
-      const float Sigma_0_1 = var_imgg_rg.data[i];
-      const float Sigma_0_2 = var_imgg_rb.data[i];
-      const float Sigma_1_1 = var_imgg_gg.data[i];
-      const float Sigma_1_2 = var_imgg_gb.data[i];
-      const float Sigma_2_2 = var_imgg_bb.data[i];
-      const float cov_imgg_img[3] = { cov_imgg_img_r.data[i], cov_imgg_img_g.data[i], cov_imgg_img_b.data[i] };
-      const float det0 = Sigma_0_0 * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
-                         - Sigma_0_1 * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
-                         + Sigma_0_2 * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
-      float a_r_, a_g_, a_b_;
-      if(fabsf(det0) > 4.f * FLT_EPSILON)
-      {
-        const float det1 = cov_imgg_img[0] * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
-                           - Sigma_0_1 * (cov_imgg_img[1] * Sigma_2_2 - cov_imgg_img[2] * Sigma_1_2)
-                           + Sigma_0_2 * (cov_imgg_img[1] * Sigma_1_2 - cov_imgg_img[2] * Sigma_1_1);
-        const float det2 = Sigma_0_0 * (cov_imgg_img[1] * Sigma_2_2 - cov_imgg_img[2] * Sigma_1_2)
-                           - cov_imgg_img[0] * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
-                           + Sigma_0_2 * (Sigma_0_1 * cov_imgg_img[2] - Sigma_0_2 * cov_imgg_img[1]);
-        const float det3 = Sigma_0_0 * (Sigma_1_1 * cov_imgg_img[2] - Sigma_1_2 * cov_imgg_img[1])
-                           - Sigma_0_1 * (Sigma_0_1 * cov_imgg_img[2] - Sigma_0_2 * cov_imgg_img[1])
-                           + cov_imgg_img[0] * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
-        a_r_ = det1 / det0;
-        a_g_ = det2 / det0;
-        a_b_ = det3 / det0;
-      }
-      else
-      {
-        // linear system is singular
-        a_r_ = 0.f;
-        a_g_ = 0.f;
-        a_b_ = 0.f;
-      }
-      b.data[i] -= a_r_ * imgg_mean_r.data[i];
-      b.data[i] -= a_g_ * imgg_mean_g.data[i];
-      b.data[i] -= a_b_ * imgg_mean_b.data[i];
-      // now data of imgg_mean_? is no longer needed, we can safely overwrite aliasing arrays
-      a_r.data[i] = a_r_;
-      a_g.data[i] = a_g_;
-      a_b.data[i] = a_b_;
-      ++i;
+      const float det1 = cov_imgg_img[0] * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
+        - Sigma_0_1 * (cov_imgg_img[1] * Sigma_2_2 - cov_imgg_img[2] * Sigma_1_2)
+        + Sigma_0_2 * (cov_imgg_img[1] * Sigma_1_2 - cov_imgg_img[2] * Sigma_1_1);
+      const float det2 = Sigma_0_0 * (cov_imgg_img[1] * Sigma_2_2 - cov_imgg_img[2] * Sigma_1_2)
+        - cov_imgg_img[0] * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
+        + Sigma_0_2 * (Sigma_0_1 * cov_imgg_img[2] - Sigma_0_2 * cov_imgg_img[1]);
+      const float det3 = Sigma_0_0 * (Sigma_1_1 * cov_imgg_img[2] - Sigma_1_2 * cov_imgg_img[1])
+        - Sigma_0_1 * (Sigma_0_1 * cov_imgg_img[2] - Sigma_0_2 * cov_imgg_img[1])
+        + cov_imgg_img[0] * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
+      a_r_ = det1 / det0;
+      a_g_ = det2 / det0;
+      a_b_ = det3 / det0;
+      const float *meanpx = get_color_pixel(mean, i);
+      b_ = meanpx[INP_MEAN] - a_r_ * meanpx[GUIDE_MEAN_R] - a_g_ * meanpx[GUIDE_MEAN_G] - a_b_ * meanpx[GUIDE_MEAN_B];
     }
+    else
+    {
+      // linear system is singular
+      a_r_ = 0.f;
+      a_g_ = 0.f;
+      a_b_ = 0.f;
+      b_ = get_color_pixel(mean, i)[INP_MEAN];
+    }
+    // now data of imgg_mean_? is no longer needed, we can safely overwrite aliasing arrays
+    a_b.data[4*i+A_RED] = a_r_;
+    a_b.data[4*i+A_GREEN] = a_g_;
+    a_b.data[4*i+A_BLUE] = a_b_;
+    a_b.data[4*i+B] = b_;
   }
-  box_mean(a_r, a_r, w);
-  box_mean(a_g, a_g, w);
-  box_mean(a_b, a_b, w);
-  box_mean(b, b, w);
+  box_mean_4ch(a_b, w);
   for(int j_imgg = target.lower; j_imgg < target.upper; j_imgg++)
   {
     // index of the left most target pixel in the current row
@@ -290,28 +403,17 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     size_t k = (target.left - source.left) + (size_t)(j_imgg - source.lower) * width;
     for(int i_imgg = target.left; i_imgg < target.right; i_imgg++, k++, l++)
     {
-      float *pixel = get_color_pixel(imgg, l);
-      float res = a_r.data[k] * pixel[0] + a_g.data[k] * pixel[1] + a_b.data[k] * pixel[2];
-      res *= guide_weight;
-      res += b.data[k];
-      if(res < min) res = min;
-      if(res > max) res = max;
-      img_out.data[i_imgg + (size_t)j_imgg * imgg.width] = res;
+      const float *pixel = get_color_pixel(imgg, l);
+      const float *px_ab = get_color_pixel(a_b, k);
+      float res = guide_weight * (px_ab[A_RED] * pixel[0] + px_ab[A_GREEN] * pixel[1] + px_ab[A_BLUE] * pixel[2]);
+      res += px_ab[B];
+      img_out.data[i_imgg + (size_t)j_imgg * imgg.width] = CLAMP(res, min, max);
     }
   }
-  free_gray_image(&var_imgg_rr);
-  free_gray_image(&var_imgg_rg);
-  free_gray_image(&var_imgg_rb);
-  free_gray_image(&var_imgg_gg);
-  free_gray_image(&var_imgg_gb);
+  free_color_image(&mean);
+  free_color_image(&covar);
+  free_color_image(&variance);
   free_gray_image(&var_imgg_bb);
-  free_gray_image(&cov_imgg_img_r);
-  free_gray_image(&cov_imgg_img_g);
-  free_gray_image(&cov_imgg_img_b);
-  free_gray_image(&img_mean);
-  free_gray_image(&imgg_mean_r);
-  free_gray_image(&imgg_mean_g);
-  free_gray_image(&imgg_mean_b);
 }
 
 
