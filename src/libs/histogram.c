@@ -300,6 +300,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
                                      dt_colorspaces_color_profile_type_t in_profile_type, const gchar *in_profile_filename)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
 
   // special case, clear the scopes
   if(!input)
@@ -311,7 +312,6 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     return;
   }
 
-  dt_develop_t *dev = darktable.develop;
   float *const img_display = dt_alloc_align(64, width * height * 4 * sizeof(float));
   if(!img_display) return;
 
@@ -321,6 +321,8 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   const dt_iop_order_iccprofile_info_t *profile_info_to;
   dt_colorspaces_color_profile_type_t histogram_profile_type;
   char *histogram_profile_filename;
+  // this returns DT_COLORSPACE_NONE for if profile is
+  // DT_COLORSPACE_EXPORT or DT_COLORSPACE_WORK and are in tether view
   dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
   if(histogram_profile_type != DT_COLORSPACE_NONE)
   {
@@ -329,11 +331,13 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   }
   else
   {
-    // If in tether view, histogram profile of work or export don't
-    // make sense as they can't be read from iops. For now make
-    // colorspace conversion a nop.
-    // FIXME: handle this better, or at leat tell the user what is happening
-    // FIXME: will dt_colorspaces_get_output_profile() give us export profile?
+    // Noop transform. If showing a selected image in tether view, no
+    // transform needed for histogram profile
+    // DT_COLORSPACE_EXPORT. It's up to tether view to give us an
+    // image in work profile, and again we don't convert it. If the
+    // image is from live view, we just show the image as-is, as the
+    // image hasn't gone through the pixelpipe.
+    // FIXME: do something nice with pointers to save a memcpy.
     profile_info_to = profile_info_from;
   }
 
