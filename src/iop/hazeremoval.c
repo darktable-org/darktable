@@ -195,24 +195,6 @@ void cleanup(dt_iop_module_t *self)
 }
 
 
-static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_hazeremoval_params_t *p = self->params;
-  p->strength = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
-static void distance_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_hazeremoval_params_t *p = (dt_iop_hazeremoval_params_t *)self->params;
-  p->distance = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
