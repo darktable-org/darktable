@@ -320,7 +320,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
 
   const dt_iop_order_iccprofile_info_t *profile_info_to;
   dt_colorspaces_color_profile_type_t histogram_profile_type;
-  char *histogram_profile_filename;
+  const char *histogram_profile_filename;
   // this returns DT_COLORSPACE_NONE for if profile is
   // DT_COLORSPACE_EXPORT or DT_COLORSPACE_WORK and are in tether view
   dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
