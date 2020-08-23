@@ -555,15 +555,16 @@ gboolean restart_required = FALSE;
   </xsl:template>
 
   <xsl:template match="dtconfig[type='float']" mode="tab">
-    <xsl:text>    float min = -1000000000.0f;&#xA;    float max = 1000000000.0f;&#xA;</xsl:text>
+    <xsl:text>    float min = -1000000000.0f;&#xA;    float max = 1000000000.0f;&#xA;    int digits = 5;&#xA;</xsl:text>
     <xsl:apply-templates select="type" mode="range"/>
     <xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
-    <xsl:text>    min *= factor; max *= factor;
-    widget = gtk_spin_button_new_with_range(min, max, 0.001f);
+    <xsl:text>  float steps = pow(10, -digits);
+    min *= factor; max *= factor;
+    widget = gtk_spin_button_new_with_range(min, max, steps);
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
     gtk_widget_set_hexpand(widget, FALSE);
-    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
+    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), digits);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     </xsl:text>
     <xsl:if test="@restart">
@@ -639,9 +640,25 @@ gboolean restart_required = FALSE;
   </xsl:template>
 
 <!-- Grab min/max from input. Is there a better way? -->
+  <xsl:template match="type[@min and @max and @digits]" mode="range" priority="7">
+    <xsl:text>    min = </xsl:text><xsl:value-of select="@min"/><xsl:text>;&#xA;</xsl:text>
+    <xsl:text>    max = </xsl:text><xsl:value-of select="@max"/><xsl:text>;&#xA;</xsl:text>
+    <xsl:text>    digits = </xsl:text><xsl:value-of select="@digits"/><xsl:text>;&#xA;</xsl:text>
+  </xsl:template>
+  
   <xsl:template match="type[@min and @max]" mode="range" priority="5">
     <xsl:text>    min = </xsl:text><xsl:value-of select="@min"/><xsl:text>;&#xA;</xsl:text>
     <xsl:text>    max = </xsl:text><xsl:value-of select="@max"/><xsl:text>;&#xA;</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="type[@max and @digits]" mode="range" priority="5">
+    <xsl:text>    max = </xsl:text><xsl:value-of select="@max"/><xsl:text>;&#xA;</xsl:text>
+    <xsl:text>    digits = </xsl:text><xsl:value-of select="@digits"/><xsl:text>;&#xA;</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="type[@max and @digits]" mode="range" priority="5">
+    <xsl:text>    min = </xsl:text><xsl:value-of select="@min"/><xsl:text>;&#xA;</xsl:text>
+    <xsl:text>    digits = </xsl:text><xsl:value-of select="@digits"/><xsl:text>;&#xA;</xsl:text>
   </xsl:template>
 
   <xsl:template match="type[@min]" mode="range" priority="3">
@@ -650,6 +667,10 @@ gboolean restart_required = FALSE;
 
   <xsl:template match="type[@max]" mode="range" priority="3">
     <xsl:text>    max = </xsl:text><xsl:value-of select="@max"/><xsl:text>;&#xA;</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="type[@max and @digits]" mode="range" priority="3">
+    <xsl:text>    digits = </xsl:text><xsl:value-of select="@digits"/><xsl:text>;&#xA;</xsl:text>
   </xsl:template>
 
   <xsl:template match="type" mode="range"  priority="1">
@@ -664,6 +685,5 @@ gboolean restart_required = FALSE;
   <xsl:template match="type" mode="factor"  priority="1">
     <xsl:text>  float factor = 1.0f;&#xA;</xsl:text>
   </xsl:template>
-
 
 </xsl:stylesheet>
