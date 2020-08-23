@@ -29,7 +29,6 @@
 */
 
 #include "common/guided_filter.h"
-#include "common/darktable.h"
 #include "common/opencl.h"
 #include <assert.h>
 #include <float.h>
@@ -50,46 +49,6 @@ typedef struct color_image
 static inline float *get_color_pixel(color_image img, size_t i)
 {
   return img.data + i * img.stride;
-}
-
-typedef struct gray_image
-{
-  float *data;
-  int width, height;
-} gray_image;
-
-// allocate space for 1-component image of size width x height
-static inline gray_image new_gray_image(int width, int height)
-{
-  return (gray_image){ dt_alloc_align(64, sizeof(float) * width * height), width, height };
-}
-
-// free space for 1-component image
-static inline void free_gray_image(gray_image *img_p)
-{
-  dt_free_align(img_p->data);
-  img_p->data = NULL;
-}
-
-// minimum of two integers
-static inline int min_i(int a, int b)
-{
-  return a < b ? a : b;
-}
-
-// maximum of two integers
-static inline int max_i(int a, int b)
-{
-  return a > b ? a : b;
-}
-
-// Kahan summation algorithm
-static inline float Kahan_sum(const float m, float *c, const float add)
-{
-   const float t1 = add - (*c);
-   const float t2 = m + t1;
-   *c = (t2 - m) - t1;
-   return t2;
 }
 
 // calculate the one-dimensional moving average over a window of size 2*w+1
