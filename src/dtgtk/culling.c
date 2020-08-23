@@ -869,6 +869,18 @@ void dt_culling_init(dt_culling_t *table, int offset)
   table->navigate_inside_selection = FALSE;
   table->selection_sync = FALSE;
 
+  // reset remaining zooming values if any
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+    thumb->zoom = 1.0f;
+    thumb->zoomx = 0.0;
+    thumb->zoomy = 0.0;
+    thumb->img_surf_dirty = TRUE;
+    l = g_list_next(l);
+  }
+
   const gboolean culling_dynamic
       = (table->mode == DT_CULLING_MODE_CULLING
          && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC);
@@ -1436,6 +1448,17 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   // first, we see if we need to do something
   if(!_compute_sizes(table, force)) return;
 
+  // we store first image zoom and pos for new ones
+  float old_z = 1.0;
+  float old_zx = 0.0;
+  float old_zy = 0.0;
+  if(g_list_length(table->list) > 0)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    old_z = thumb->zoom;
+    old_zx = thumb->zoomx;
+    old_zy = thumb->zoomy;
+  }
   // we recreate the list of images
   _thumbs_recreate_list_at(table, table->offset);
 
@@ -1457,6 +1480,9 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     if(!gtk_widget_get_parent(thumb->w_main))
     {
       gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
+      thumb->zoomx = old_zx;
+      thumb->zoomy = old_zy;
+      thumb->zoom = old_z;
     }
     else
     {
