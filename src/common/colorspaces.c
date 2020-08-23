@@ -825,6 +825,56 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
   return profile;
 }
 
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int imgid)
+{
+  // find the colorin module -- the pointer stays valid until darktable shuts down
+  static dt_iop_module_so_t *colorin = NULL;
+  if(colorin == NULL)
+  {
+    GList *modules = g_list_first(darktable.iop);
+    while(modules)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(module->op, "colorin"))
+      {
+        colorin = module;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+
+  const dt_colorspaces_color_profile_t *p = NULL;
+
+  if(colorin && colorin->get_p)
+  {
+    // get the profile assigned from colorin
+    // FIXME: does this work when using JPEG thumbs and the image was never opened?
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT op_params FROM main.history WHERE imgid=?1 AND operation='colorin' ORDER BY num DESC LIMIT 1", -1,
+      &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      // use introspection to get the profile name from the binary params blob
+      const void *params = sqlite3_column_blob(stmt, 0);
+      dt_colorspaces_color_profile_type_t *type = colorin->get_p(params, "type_work");
+      char *filename = colorin->get_p(params, "filename_work");
+
+      if(type && filename) p = dt_colorspaces_get_profile(*type, filename,
+                                                          DT_PROFILE_DIRECTION_WORK);
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  // if all else fails -> fall back to linear Rec2020 RGB
+  if(!p) p = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_WORK);
+
+  return p;
+}
+
 const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
                                                                         dt_colorspaces_color_profile_type_t over_type,
                                                                         const char *over_filename)
