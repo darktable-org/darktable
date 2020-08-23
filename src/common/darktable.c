@@ -122,6 +122,8 @@ static int usage(const char *argv0)
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
   printf("      lua,masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder,\n");
   printf("      imageio,undo,signal}\n");
+  printf("  --d-signal <signal> \n");
+  printf("  --d-signal-act <all,raise,connect,disconnect>\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
@@ -661,6 +663,81 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_SIGNAL; // signal information on console
         else
           return usage(argv[0]);
+        k++;
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--d-signal-act") && argc > k + 1)
+      {
+        if(!strcmp(argv[k + 1], "all"))
+          darktable.unmuted_signal_dbg_acts = 0xffffffff; // enable all signal debug information
+        else if(!strcmp(argv[k + 1], "raise"))
+          darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_RAISE; // enable debugging for signal raising
+        else if(!strcmp(argv[k + 1], "connect"))
+          darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_CONNECT; // enable debugging for signal connection
+        else if(!strcmp(argv[k + 1], "disconnect"))
+          darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_DISCONNECT; // enable debugging for signal disconnection
+        else
+          return usage(argv[0]);
+        k++;
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--d-signal") && argc > k + 1)
+      {
+        gchar *str = g_ascii_strup(argv[k+1], -1);
+
+        #define CHKSIGDBG(sig) else if(!g_strcmp0(str, #sig)) do {darktable.unmuted_signal_dbg[sig] = TRUE;} while (0)
+        if(!g_strcmp0(str, "ALL"))
+        {
+          for(int sig=0; sig<DT_SIGNAL_COUNT; sig++)
+            darktable.unmuted_signal_dbg[sig] = TRUE;
+        }
+        CHKSIGDBG(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_REDRAW_ALL);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_REDRAW_CENTER);
+        CHKSIGDBG(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE);
+        CHKSIGDBG(DT_SIGNAL_COLLECTION_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_SELECTION_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_TAG_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_METADATA_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_IMAGE_INFO_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_STYLE_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_IMAGES_ORDER_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_FILMROLLS_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_FILMROLLS_IMPORTED);
+        CHKSIGDBG(DT_SIGNAL_FILMROLLS_REMOVED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_INITIALIZE);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_MODULE_REMOVE);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_MODULE_MOVED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_IMAGE_IMPORT);
+        CHKSIGDBG(DT_SIGNAL_IMAGE_EXPORT_TMPFILE);
+        CHKSIGDBG(DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_PREFERENCES_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_CAMERA_DETECTED);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_LOG_REDRAW);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_TOAST_REDRAW);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_PICKERDATA_READY);
+        CHKSIGDBG(DT_SIGNAL_METADATA_UPDATE);
+        else
+        {
+          fprintf(stderr, _("unknown signal name: '%s'. use 'ALL' to enable debug for all or use full signal name\n"), str);
+          return usage(argv[0]);
+        }
+        g_free(str);
+        #undef CHKSIGDBG
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
