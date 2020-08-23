@@ -895,35 +895,34 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
   
   dt_iop_gui_blend_data_t *bd = hitem->module->blend_data;
 
-  for(int k = 1; k >= 0; k--)
+  for(int in_out = 1; in_out >= 0; in_out--)
   {
     gboolean first = TRUE;
 
-    const dt_iop_gui_blendif_slider_t *b = bd ? bd->inout : NULL;
-    while(b && b->label)
+    for(const dt_iop_gui_blendif_channel_t *b = bd ? bd->channel : NULL;
+        b && b->label != NULL;
+        b++)
     {
-      float *of = &old_blend->blendif_parameters[4 * b->channels[k]];
-      float *nf = &hitem->blend_params->blendif_parameters[4 * b->channels[k]];
+      float *of = &old_blend->blendif_parameters[4 * b->param_channels[in_out]];
+      float *nf = &hitem->blend_params->blendif_parameters[4 * b->param_channels[in_out]];
       if(memcmp(of, nf, 4 * sizeof(float)))
       {
         if(first)
         {
-          change_parts[num_parts++] = g_strdup(k ? _("parametric output mask:") : _("parametric input mask:"));
+          change_parts[num_parts++] = g_strdup(in_out ? _("parametric output mask:") : _("parametric input mask:"));
           first = FALSE;
         }
         char s[4][2][25];
-        for(int i = 0; i < 4; i++)
+        for(int k = 0; k < 4; k++)
         {
-          b->scale_print(of[i], s[i][0], sizeof(s[i][0]));
-          b->scale_print(nf[i], s[i][1], sizeof(s[i][1]));
+          b->scale_print(of[k], s[k][0], sizeof(s[k][0]));
+          b->scale_print(nf[k], s[k][1], sizeof(s[k][1]));
         }
 
-        change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s\t\u2192\t%s| %s- %s| %s", _(b->label),
+        change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s\t\u2192\t%s| %s- %s| %s", _(b->name),
                                                     s[0][0], s[1][0], s[2][0], s[3][0], 
                                                     s[0][1], s[1][1], s[2][1], s[3][1]);
-      }
-    
-      b++;
+      }   
     }
   }
 
