@@ -64,6 +64,7 @@ typedef enum dt_iop_retouch_blur_types_t {
 } dt_iop_retouch_blur_types_t;
 
 typedef enum dt_iop_retouch_algo_type_t {
+  DT_IOP_RETOUCH_NONE = 0,  // $DESCRIPTION: "unused"
   DT_IOP_RETOUCH_CLONE = 1, // $DESCRIPTION: "clone"
   DT_IOP_RETOUCH_HEAL = 2,  // $DESCRIPTION: "heal"
   DT_IOP_RETOUCH_BLUR = 3,  // $DESCRIPTION: "blur"

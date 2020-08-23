@@ -50,6 +50,7 @@
 #include <assert.h>
 #include <gmodule.h>
 #include <math.h>
+#include <complex.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -1699,6 +1700,116 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_
   module->raster_mask.sink.id = 0;
 }
 
+gboolean _iop_validate_params(dt_introspection_field_t *field, dt_iop_params_t *params, gboolean report)
+{
+  dt_iop_params_t *p = params + field->header.offset;
+
+  gboolean all_ok = TRUE;
+
+  switch(field->header.type)
+  {
+  case DT_INTROSPECTION_TYPE_STRUCT:
+    for(int i = 0; i < field->Struct.entries; i++)
+    {
+      dt_introspection_field_t *entry = field->Struct.fields[i];
+
+      all_ok &= _iop_validate_params(entry, params, report);
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_UNION:
+    all_ok = FALSE;
+    for(int i = field->Union.entries - 1; i >= 0 ; i--)
+    {
+      dt_introspection_field_t *entry = field->Union.fields[i];
+
+      if(_iop_validate_params(entry, params, report && i == 0))
+      {
+        all_ok = TRUE;
+        break;
+      }
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_ARRAY:
+    if(field->Array.type == DT_INTROSPECTION_TYPE_CHAR)
+    {
+      if(!memchr(p, '\0', field->Array.count))
+      {
+        if(report)
+          fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\"; string not null terminated.\n",
+                          field->header.type_name);
+        all_ok = FALSE;
+      }
+    }
+    else
+    {
+      for(int i = 0, item_offset = 0; i < field->Array.count; i++, item_offset += field->Array.field->header.size)
+      {
+        if(!_iop_validate_params(field->Array.field, params + item_offset, report))
+        {
+          if(report)
+            fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\", for array element \"%d\"\n",
+                            field->header.type_name, i);
+          all_ok = FALSE;
+          break;
+        }
+      }
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_FLOAT:
+    all_ok = isnan(*(float*)p) || ((*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max));
+    break;
+  case DT_INTROSPECTION_TYPE_INT:
+    all_ok = (*(int*)p >= field->Int.Min && *(int*)p <= field->Int.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_UINT:
+    all_ok = (*(unsigned int*)p >= field->UInt.Min && *(unsigned int*)p <= field->UInt.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_USHORT:
+    all_ok = (*(unsigned short int*)p >= field->UShort.Min && *(unsigned short int*)p <= field->UShort.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_INT8:
+    all_ok = (*(uint8_t*)p >= field->Int8.Min && *(uint8_t*)p <= field->Int8.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_CHAR:
+    all_ok = (*(char*)p >= field->Char.Min && *(char*)p <= field->Char.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_FLOATCOMPLEX:
+    all_ok = creal(*(float complex*)p) >= creal(field->FloatComplex.Min) &&
+             creal(*(float complex*)p) <= creal(field->FloatComplex.Max) &&
+             cimag(*(float complex*)p) >= cimag(field->FloatComplex.Min) &&
+             cimag(*(float complex*)p) <= cimag(field->FloatComplex.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_ENUM:
+    all_ok = FALSE;
+    for(dt_introspection_type_enum_tuple_t *i = field->Enum.values; i && i->name; i++)
+    {
+      if(i->value == *(int*)p)
+      {
+        all_ok = TRUE;
+        break;
+      }
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_BOOL:
+    // *(gboolean*)p
+    break;
+  case DT_INTROSPECTION_TYPE_OPAQUE:
+    // TODO: special case float2
+    break;
+  default:
+    fprintf(stderr, "unsupported introspection type \"%s\" encountered in _iop_validate_params (field %s)\n",
+                    field->header.type_name, field->header.name);
+    all_ok = FALSE;
+    break;
+  }
+
+  if(!all_ok && report)
+    fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\"%s%s\n",
+                    field->header.type_name, (*field->header.name ? ", field: " : ""), field->header.name);
+
+  return all_ok;
+}
+
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
@@ -1734,6 +1845,9 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
 
     // register if module allows tiling, commit_params can overwrite this.
     if(module->flags() & IOP_FLAGS_ALLOW_TILING) piece->process_tiling_ready = 1;
+
+    if(darktable.unmuted & DT_DEBUG_PARAMS && module->so->get_introspection())
+      _iop_validate_params(module->so->get_introspection()->field, params, TRUE);
 
     module->commit_params(module, params, pipe, piece);
     uint64_t hash = 5381;

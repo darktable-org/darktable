@@ -12,8 +12,9 @@ Options:
     --cachedir <user cache directory>
     --conf <key>=<value>
     --configdir <user config directory>
-    -d {all,cache,camctl,camsupport,control,dev,fswatch, input,lighttable,
-        lua,masks,memory,nan,opencl, perf,pwstorage,print,sql}
+    -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,
+        ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,
+        pwstorage,print,signal,sql,undo}
     --datadir <data directory>
     --disable-opencl
     -h, --help
