@@ -318,21 +318,25 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     dat.head.max_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F];
     dat.head.style[0] = '\0';
 
-    dt_colorspaces_color_profile_type_t icc_type = DT_COLORSPACE_NONE;
-    const char *icc_filename = "";
+    dt_colorspaces_color_profile_type_t icc_type;
+    const char *icc_filename;
+    const char _icc_filename[1] = { 0 };
     if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
     {
-      // leave the image in work profile if that is the histogram colorspace
-      const dt_colorspaces_color_profile_t *work_profile =
-        dt_colorspaces_get_work_profile(lib->image_id);
+      const dt_colorspaces_color_profile_t *work_profile = dt_colorspaces_get_work_profile(lib->image_id);
       icc_type = work_profile->type;
       icc_filename = work_profile->filename;
     }
-    else if(darktable.color_profiles->histogram_type != DT_COLORSPACE_EXPORT)
+    else if (darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
     {
-      // simply use histogram profile for export
+      icc_type = DT_COLORSPACE_NONE;  // use the colorout profile
+      icc_filename = _icc_filename;
+    }
+    else
+    {
       dt_ioppr_get_histogram_profile_type(&icc_type, &icc_filename);
     }
+
     // this uses the export rather than thumbnail pipe -- slower, but
     // as we're not competing with the full pixelpipe, it's a
     // reasonable trade-off for a histogram which matches that in
@@ -341,15 +345,8 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
                                       FALSE, FALSE, NULL, FALSE, FALSE, icc_type, icc_filename, DT_INTENT_PERCEPTUAL, NULL,
                                       NULL, 1, 1, NULL))
     {
-      if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
-      {
-        const dt_colorspaces_color_profile_t *output_profile =
-          dt_colorspaces_get_output_profile(lib->image_id, DT_COLORSPACE_NONE, "");
-        icc_type = output_profile->type;
-        icc_filename = output_profile->filename;
-      }
       darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width, dat.head.height,
-                                             icc_type, icc_filename);
+                                             DT_COLORSPACE_NONE, "");
       dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
       free(dat.buf);
     }
