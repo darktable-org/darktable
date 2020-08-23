@@ -89,11 +89,11 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_de
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);
 
 /** returns the current setting of the work profile on colorin iop */
-void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, char **profile_filename);
+void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename);
 /** returns the current setting of the export profile on colorout iop */
-void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, char **profile_filename);
+void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename);
 /** returns the current setting of the histogram profile */
-void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filename);
+void dt_ioppr_get_histogram_profile_type(int *profile_type, const char **profile_filename);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
 void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
