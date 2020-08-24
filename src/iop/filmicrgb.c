@@ -2881,7 +2881,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       // mark the y axis legend
       set_color(g->cr, darktable.bauhaus->graph_fg);
-      // xgettext:no-c-format
+      /* xgettext:no-c-format */
       g_strlcpy(text, _("% display"), sizeof(text));
       pango_layout_set_text(g->layout, text, -1);
       pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
@@ -2896,7 +2896,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         g_strlcpy(text, _("EV scene"), sizeof(text));
       else if(g->gui_mode == DT_FILMIC_GUI_BASECURVE || g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG)
       {
-        // xgettext:no-c-format
+        /* xgettext:no-c-format */
         g_strlcpy(text, _("% camera"), sizeof(text));
       }
       pango_layout_set_text(g->layout, text, -1);
@@ -3490,8 +3490,8 @@ void gui_init(dt_iop_module_t *self)
   g->reconstruct_structure_vs_texture = dt_bauhaus_slider_from_params(self, "reconstruct_structure_vs_texture");
   dt_bauhaus_slider_set_step(g->reconstruct_structure_vs_texture, 0.1);
   dt_bauhaus_slider_set_format(g->reconstruct_structure_vs_texture, "%.2f %%");
-  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->reconstruct_structure_vs_texture,
+                              /* xgettext:no-c-format */
                               _("decide which reconstruction strategy to favor,\n"
                                 "between inpainting a smooth color gradient,\n"
                                 "or trying to recover the textured details.\n"
@@ -3502,20 +3502,21 @@ void gui_init(dt_iop_module_t *self)
   g->reconstruct_bloom_vs_details = dt_bauhaus_slider_from_params(self, "reconstruct_bloom_vs_details");
   dt_bauhaus_slider_set_step(g->reconstruct_bloom_vs_details, 0.1);
   dt_bauhaus_slider_set_format(g->reconstruct_bloom_vs_details, "%.2f %%");
-  /* xgettext:no-c-format */
-  gtk_widget_set_tooltip_text(g->reconstruct_bloom_vs_details, _("decide which reconstruction strategy to favor,\n"
-                                                                 "between blooming highlights like film does,\n"
-                                                                 "or trying to recover sharp details.\n"
-                                                                 "0% is an equal mix of both.\n"
-                                                                 "increase if you want more details.\n"
-                                                                 "decrease if you want more blur."));
+  gtk_widget_set_tooltip_text(g->reconstruct_bloom_vs_details,
+                              /* xgettext:no-c-format */
+                              _("decide which reconstruction strategy to favor,\n"
+                                "between blooming highlights like film does,\n"
+                                "or trying to recover sharp details.\n"
+                                "0% is an equal mix of both.\n"
+                                "increase if you want more details.\n"
+                                "decrease if you want more blur."));
 
   // Bloom threshold
   g->reconstruct_grey_vs_color = dt_bauhaus_slider_from_params(self, "reconstruct_grey_vs_color");
   dt_bauhaus_slider_set_step(g->reconstruct_grey_vs_color, 0.1);
   dt_bauhaus_slider_set_format(g->reconstruct_grey_vs_color, "%.2f %%");
-  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->reconstruct_grey_vs_color,
+                              /* xgettext:no-c-format */
                               _("decide which reconstruction strategy to favor,\n"
                                 "between recovering monochromatic highlights,\n"
                                 "or trying to recover colorful highlights.\n"
