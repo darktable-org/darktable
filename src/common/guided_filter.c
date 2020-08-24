@@ -35,6 +35,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// processing is split into tiles of this size (or three times the filter
+// width, if greater) to keep memory use under control.
+#define GF_TILE_SIZE 512
+
 // some shorthand to make code more legible
 // if we have OpenMP simd enabled, declare a vectorizable for loop;
 // otherwise, just leave it a plain for()
@@ -416,6 +420,55 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
   free_gray_image(&var_imgg_bb);
 }
 
+static int compute_tile_height(const int height, const int w)
+{
+  int tile_h = max_i(3 * w, GF_TILE_SIZE);
+#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handfull of pixels
+      // to round off differently (as does changing GF_TILE_SIZE)
+  if ((height % tile_h) > 0 && (height % tile_h) < GF_TILE_SIZE/3)
+  {
+    // if there's just a sliver left over for the last row of tiles, see whether slicing off a few pixels
+    // gives us a mostly-full tile
+    if (height % (tile_h - 8) >= GF_TILE_SIZE/3)
+      tile_h -= 8;
+    else  if (height % (tile_h - w/4) >= GF_TILE_SIZE/3)
+      tile_h -= (w/4);
+    else  if (height % (tile_h - w/2) >= GF_TILE_SIZE/3)
+      tile_h -= (w/2);
+    // try adding a few pixels
+    else if (height % (tile_h + 8) >= GF_TILE_SIZE/3)
+      tile_h += 8;
+    else if (height % (tile_h + 16) >= GF_TILE_SIZE/3)
+      tile_h += 16;
+  }
+#endif
+  return tile_h;
+}
+
+static int compute_tile_width(const int width, const int w)
+{
+  int tile_w = max_i(3 * w, GF_TILE_SIZE);
+#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handfull of pixels
+      // to round off differently (as does changing GF_TILE_SIZE)
+  if ((width % tile_w) > 0 && (width % tile_w) < GF_TILE_SIZE/2)
+  {
+    // if there's just a sliver left over for the last column of tiles, see whether slicing off a few pixels
+    // gives us a mostly-full tile
+    if (width % (tile_w - 8) >= GF_TILE_SIZE/3)
+      tile_w -= 8;
+    else  if (width % (tile_w - w/4) >= GF_TILE_SIZE/3)
+      tile_w -= (w/4);
+    else  if (width % (tile_w - w/2) >= GF_TILE_SIZE/3)
+      tile_w -= (w/2);
+    // try adding a few pixels
+    else if (width % (tile_w + 8) >= GF_TILE_SIZE/3)
+      tile_w += 8;
+    else if (width % (tile_w + 16) >= GF_TILE_SIZE/3)
+      tile_w += 16;
+  }
+#endif
+  return tile_w;
+}
 
 void guided_filter(const float *const guide, const float *const in, float *const out, const int width,
                    const int height, const int ch,
@@ -430,17 +483,18 @@ void guided_filter(const float *const guide, const float *const in, float *const
   color_image img_guide = (color_image){ (float *)guide, width, height, ch };
   gray_image img_in = (gray_image){ (float *)in, width, height };
   gray_image img_out = (gray_image){ out, width, height };
-  const int tile_width = max_i(3 * w, 512);
+  const int tile_width = compute_tile_width(width,w);
+  const int tile_height = compute_tile_height(height,w);
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
 
 #ifdef _OPENMP
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for collapse(2) schedule(static)
 #endif
-  for(int j = 0; j < height; j += tile_width)
+  for(int j = 0; j < height; j += tile_height)
   {
     for(int i = 0; i < width; i += tile_width)
     {
-      tile target = { i, min_i(i + tile_width, width), j, min_i(j + tile_width, height) };
+      tile target = { i, min_i(i + tile_width, width), j, min_i(j + tile_height, height) };
       guided_filter_tiling(img_guide, img_in, img_out, target, w, eps, guide_weight, min, max);
     }
   }
