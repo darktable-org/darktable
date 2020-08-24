@@ -483,7 +483,7 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 {
   dt_lib_live_view_t *lib = self->data;
 
-  // there's no cdode to automatically restart live view when entering
+  // there's no code to automatically restart live view when entering
   // the view, and besides the user may not want to jump right back
   // into leave view if they've been out of tethering view doing other
   // things
