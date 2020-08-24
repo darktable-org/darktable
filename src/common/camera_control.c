@@ -540,6 +540,7 @@ gboolean dt_camctl_camera_start_live_view(const dt_camctl_t *c)
   }
   cam->is_live_viewing = TRUE;
   dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 1);
+  dt_camctl_camera_set_property_int(camctl, NULL, "viewfinder", 1);
 
   dt_pthread_create(&cam->live_view_thread, &dt_camctl_camera_get_live_view, (void *)camctl);
 
@@ -561,6 +562,7 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
   pthread_join(cam->live_view_thread, NULL);
   // tell camera to get back to normal state (close mirror)
   dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 0);
+  dt_camctl_camera_set_property_int(camctl, NULL, "viewfinder", 0);
 }
 
 static void _camctl_lock(const dt_camctl_t *c, const dt_camera_t *cam)
