@@ -20,7 +20,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
   $ pacman -S mingw-w64-x86_64-gmic
 
     For gphoto2:
-    You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available. Also make sure they aren't pointing into your normal windows installation in case you already have Darktable installed. You can check them with:
+    You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available. Also make sure they aren't pointing into your normal windows installation in case you already have darktable installed. You can check them with:
 	$ echo $CAMLIBS
 	$ echo $IOLIBS
     If you have to set them manually you can do so by setting the variables in your .bash_profile. Example:
@@ -238,7 +238,7 @@ B) Cross compile on Linux
     && make -j $MAKE_TASKS
 
     if [ $? = 0 ]; then
-    echo "Darktable finished building, to actually install darktable you need to type:"
+    echo "darktable finished building, to actually install darktable you need to type:"
     echo "# cd ${BUILD_DIR}; sudo make install"
     fi
 
