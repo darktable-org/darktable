@@ -174,6 +174,9 @@ cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel);
 /** just get the associated transformation matrix, for manual application. */
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
 
+/** return the work profile as set in colorin */
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int imgid);
+
 /** return the output profile as set in colorout, taking export override into account if passed in. */
 const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
                                                                         dt_colorspaces_color_profile_type_t over_type,

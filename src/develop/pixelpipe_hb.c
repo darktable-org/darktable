@@ -811,8 +811,8 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
   cmsHTRANSFORM xform_rgb2lab = NULL;
   cmsHTRANSFORM xform_rgb2rgb = NULL;
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-  gchar *histogram_filename = NULL;
-  gchar _histogram_filename[1] = { 0 };
+  const gchar *histogram_filename = NULL;
+  const gchar _histogram_filename[1] = { 0 };
 
   dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
@@ -881,8 +881,8 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
   cmsHTRANSFORM xform_rgb2lab = NULL;
   cmsHTRANSFORM xform_rgb2rgb = NULL;
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-  gchar *histogram_filename = NULL;
-  gchar _histogram_filename[1] = { 0 };
+  const gchar *histogram_filename = NULL;
+  const gchar _histogram_filename[1] = { 0 };
 
   dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;

@@ -300,6 +300,8 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
                                      dt_colorspaces_color_profile_type_t in_profile_type, const gchar *in_profile_filename)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
+  float *img_display = NULL;
 
   // special case, clear the scopes
   if(!input)
@@ -311,50 +313,47 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     return;
   }
 
-  dt_develop_t *dev = darktable.develop;
-  float *const img_display = dt_alloc_align(64, width * height * 4 * sizeof(float));
-  if(!img_display) return;
-
-  const dt_iop_order_iccprofile_info_t *const profile_info_from
-    = dt_ioppr_add_profile_info_to_list(dev, in_profile_type, in_profile_filename, INTENT_PERCEPTUAL);
-
-  const dt_iop_order_iccprofile_info_t *profile_info_to;
-  dt_colorspaces_color_profile_type_t histogram_profile_type;
-  char *histogram_profile_filename;
-  dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
-  if(histogram_profile_type != DT_COLORSPACE_NONE)
+  // If showing a selected image in tether view, then the image is
+  // already in histogram profile. If the image is from live view and
+  // histogram profile is DT_COLORSPACE_WORK or DT_COLORSPACE_EXPORT,
+  // we just show the image as-is, as the image hasn't gone through
+  // the pixelpipe. Otherwise, convert it to histogram profile.
+  // FIXME: detect whether in live view (darktable.develop state should give a clue) and if so if histogram profile is DT_COLORSPACE_WORK use linear rec 2020 as a reasonable default, if profile is export skip this conversion
+  if(in_profile_type != DT_COLORSPACE_NONE)
   {
-    profile_info_to = dt_ioppr_add_profile_info_to_list(dev, histogram_profile_type, histogram_profile_filename,
-                                                        DT_INTENT_PERCEPTUAL);
-  }
-  else
-  {
-    // If in tether view, histogram profile of work or export don't
-    // make sense as they can't be read from iops. For now make
-    // colorspace conversion a nop.
-    // FIXME: handle this better, or at leat tell the user what is happening
-    // FIXME: will dt_colorspaces_get_output_profile() give us export profile?
-    profile_info_to = profile_info_from;
-  }
+    dt_colorspaces_color_profile_type_t out_profile_type;
+    const char *out_profile_filename;
+    const dt_iop_order_iccprofile_info_t *const profile_info_from
+      = dt_ioppr_add_profile_info_to_list(dev, in_profile_type, in_profile_filename, INTENT_PERCEPTUAL);
+    dt_ioppr_get_histogram_profile_type(&out_profile_type, &out_profile_filename);
 
-  dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height, profile_info_from,
-                                          profile_info_to, "final histogram");
+    if(out_profile_type != DT_COLORSPACE_NONE)
+    {
+      const dt_iop_order_iccprofile_info_t *profile_info_to =
+        dt_ioppr_add_profile_info_to_list(dev, out_profile_type, out_profile_filename, DT_INTENT_PERCEPTUAL);
+      img_display = dt_alloc_align(64, width * height * 4 * sizeof(float));
+      if(!img_display) return;
+      dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height, profile_info_from,
+                                              profile_info_to, "final histogram");
+    }
+  }
 
   dt_pthread_mutex_lock(&d->lock);
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, img_display, width, height);
+      _lib_histogram_process_histogram(d, img_display ? img_display : input, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      _lib_histogram_process_waveform(d, img_display, width, height);
+      _lib_histogram_process_waveform(d, img_display ? img_display : input, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
   dt_pthread_mutex_unlock(&d->lock);
 
-  dt_free_align(img_display);
+  if(img_display)
+    dt_free_align(img_display);
 }
 
 static void _draw_color_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state)
