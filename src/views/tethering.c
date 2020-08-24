@@ -313,23 +313,40 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     format.write_image = _tethering_write_image;
     format.levels = _tethering_levels;
     format.mime = _tethering_mime;
+    // FIXME: is this reasonable resolution? does it match what pixelpipe preview pipe does?
     dat.head.max_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F];
     dat.head.max_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F];
     dat.head.style[0] = '\0';
+
+    dt_colorspaces_color_profile_type_t icc_type;
+    const char *icc_filename;
+    const char _icc_filename[1] = { 0 };
+    if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
+    {
+      const dt_colorspaces_color_profile_t *work_profile = dt_colorspaces_get_work_profile(lib->image_id);
+      icc_type = work_profile->type;
+      icc_filename = work_profile->filename;
+    }
+    else if (darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+    {
+      icc_type = DT_COLORSPACE_NONE;  // use the colorout profile
+      icc_filename = _icc_filename;
+    }
+    else
+    {
+      dt_ioppr_get_histogram_profile_type(&icc_type, &icc_filename);
+    }
+
     // this uses the export rather than thumbnail pipe -- slower, but
     // as we're not competing with the full pixelpipe, it's a
     // reasonable trade-off for a histogram which matches that in
     // darkroom view
-    // FIXME: could use histogram profile for export?
     if (!dt_imageio_export_with_flags(lib->image_id, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
-                                      FALSE, FALSE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, "", DT_INTENT_PERCEPTUAL, NULL,
+                                      FALSE, FALSE, NULL, FALSE, FALSE, icc_type, icc_filename, DT_INTENT_PERCEPTUAL, NULL,
                                       NULL, 1, 1, NULL))
     {
-      // FIXME: is this the best way to do this?
-      const dt_colorspaces_color_profile_t *const out_profile =
-        dt_colorspaces_get_output_profile(lib->image_id, DT_COLORSPACE_NONE, "");
       darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width, dat.head.height,
-                                             out_profile->type, out_profile->filename);
+                                             DT_COLORSPACE_NONE, "");
       dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
       free(dat.buf);
     }
