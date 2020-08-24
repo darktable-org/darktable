@@ -850,23 +850,24 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
 
   gchar **change_parts = g_malloc0_n(sizeof(dt_develop_blend_params_t) / (sizeof(float)) + 3, sizeof(char*));
 
-  change_parts[0] = _lib_history_change_text(hitem->module->so->get_introspection()->field, NULL,
-                                              hitem->params, old_params);
+  if(hitem->module->so->get_introspection())
+    change_parts[0] = _lib_history_change_text(hitem->module->so->get_introspection()->field, NULL,
+                                                hitem->params, old_params);
   int num_parts = change_parts[0] ? 1 : 0;
 
   #define add_blend_history_change(field, format, label)                                       \
-    if(hitem->blend_params->field != old_blend->field)                                         \
+    if((hitem->blend_params->field) != (old_blend->field))                                     \
       change_parts[num_parts++] = g_strdup_printf("%s\t" format "\t\u2192\t" format, _(label), \
-                                                  old_blend->field, hitem->blend_params->field);
+                                  (old_blend->field), (hitem->blend_params->field));
 
   #define add_blend_history_change_enum(field, label, list)                                    \
-    if(hitem->blend_params->field != old_blend->field)                                         \
+    if((hitem->blend_params->field) != (old_blend->field))                                     \
     {                                                                                          \
       const char *old_str = NULL, *new_str = NULL;                                             \
       for(const dt_develop_name_value_t *i = list; *i->name; i++)                              \
       {                                                                                        \
-        if(i->value == old_blend->field) old_str = i->name;                                    \
-        if(i->value == hitem->blend_params->field) new_str = i->name;                          \
+        if(i->value == (old_blend->field)) old_str = i->name;                                  \
+        if(i->value == (hitem->blend_params->field)) new_str = i->name;                        \
       }                                                                                        \
                                                                                                \
       change_parts[num_parts++] = (!old_str || !new_str)                                       \
@@ -880,18 +881,24 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
   add_blend_history_change_enum(mask_mode, "mask mode", dt_develop_mask_mode_names);
   add_blend_history_change_enum(blend_mode, "blend mode", dt_develop_blend_mode_names);
   add_blend_history_change(opacity, "%.4f", "mask opacity");
-  add_blend_history_change_enum(mask_combine, "combine masks", dt_develop_combine_masks_names);
-  add_blend_history_change(mask_id, "%d", "mask_id");
+  add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), "combine masks", dt_develop_combine_masks_names);
   add_blend_history_change(feathering_radius, "%.4f", "feathering radius");
   add_blend_history_change_enum(feathering_guide, "feathering guide", dt_develop_feathering_guide_names);
   add_blend_history_change(blur_radius, "%.4f", "mask blur");
   add_blend_history_change(contrast, "%.4f", "mask contrast");
   add_blend_history_change(brightness, "%.4f", "brightness");
-  add_blend_history_change(raster_mask_instance, "%d", "raster_mask_instance");
-  add_blend_history_change(raster_mask_id, "%d", "raster_mask_id");
+  add_blend_history_change(raster_mask_instance, "%d", "raster mask instance");
+  add_blend_history_change(raster_mask_id, "%d", "raster mask id");
   add_blend_history_change_enum(raster_mask_invert, "invert mask", dt_develop_invert_mask_names);
 
-  add_blend_history_change(blendif, "%08X", "blendif");
+  add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS ? '-' : '+', "%c", "drawn mask polarity");
+
+  if(hitem->blend_params->mask_id != old_blend->mask_id)
+    change_parts[num_parts++] = old_blend->mask_id == 0
+                              ? g_strdup_printf(_("a drawn mask was added"))
+                              : hitem->blend_params->mask_id == 0
+                              ? g_strdup_printf(_("the drawn mask was removed"))
+                              : g_strdup_printf(_("the drawn mask was changed"));
   
   dt_iop_gui_blend_data_t *bd = hitem->module->blend_data;
 
@@ -903,9 +910,18 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
         b && b->label != NULL;
         b++)
     {
-      float *of = &old_blend->blendif_parameters[4 * b->param_channels[in_out]];
-      float *nf = &hitem->blend_params->blendif_parameters[4 * b->param_channels[in_out]];
-      if(memcmp(of, nf, 4 * sizeof(float)))
+      const dt_develop_blendif_channels_t ch = b->param_channels[in_out];
+
+      const int oactive = old_blend->blendif & (1 << ch);
+      const int nactive = hitem->blend_params->blendif & (1 << ch);
+
+      const int opolarity = old_blend->blendif & (1 << (ch + 16));
+      const int npolarity = hitem->blend_params->blendif & (1 << (ch + 16));
+
+      float *of = &old_blend->blendif_parameters[4 * ch];
+      float *nf = &hitem->blend_params->blendif_parameters[4 * ch];
+
+      if((oactive || nactive) && (memcmp(of, nf, 4 * sizeof(float)) || opolarity != npolarity))
       {
         if(first)
         {
@@ -919,9 +935,12 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
           b->scale_print(nf[k], s[k][1], sizeof(s[k][1]));
         }
 
-        change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s\t\u2192\t%s| %s- %s| %s", _(b->name),
-                                                    s[0][0], s[1][0], s[2][0], s[3][0], 
-                                                    s[0][1], s[1][1], s[2][1], s[3][1]);
+        char *opol = !oactive ? "" : (opolarity ? "(-)" : "(+)");
+        char *npol = !nactive ? "" : (npolarity ? "(-)" : "(+)");
+
+        change_parts[num_parts++] = g_strdup_printf("%s\t%s %s| %s- %s| %s\t\u2192\t%s %s| %s- %s| %s", _(b->name),
+                                                    opol, s[0][0], s[1][0], s[2][0], s[3][0], 
+                                                    npol, s[0][1], s[1][1], s[2][1], s[3][1]);
       }   
     }
   }
