@@ -265,7 +265,7 @@ CMAKE_MORE_OPTIONS="${CMAKE_MORE_OPTIONS} ${CMAKE_PREFIX_PATH}"
 mkdir -p "$BUILD_DIR"
 
 cat <<EOF
-Darktable build script
+darktable build script
 
 Building directory:  $BUILD_DIR
 Installation prefix: $INSTALL_PREFIX

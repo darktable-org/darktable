@@ -336,7 +336,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsMLUsetASCII(mlu3, "en", "US", dmdd);
   cmsWriteTag(profile, cmsSigDeviceModelDescTag, mlu3);
 
-  cmsMLUsetASCII(mlu4, "en", "US", "Darktable");
+  cmsMLUsetASCII(mlu4, "en", "US", "darktable");
   cmsWriteTag(profile, cmsSigDeviceMfgDescTag, mlu4);
 
   cmsMLUfree(mlu1);
@@ -681,7 +681,7 @@ cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel)
   if(hp == NULL) return NULL;
 
   char name[512];
-  snprintf(name, sizeof(name), "Darktable profiled %s", makermodel);
+  snprintf(name, sizeof(name), "darktable profiled %s", makermodel);
   cmsSetProfileVersion(hp, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
@@ -714,7 +714,7 @@ static cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu1, "en", "US", "linear XYZ");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable linear XYZ");
+  cmsMLUsetASCII(mlu2, "en", "US", "darktable linear XYZ");
   cmsWriteTag(hXYZ, cmsSigDeviceMfgDescTag, mlu0);
   cmsWriteTag(hXYZ, cmsSigDeviceModelDescTag, mlu1);
   // this will only be displayed when the embedded profile is read by for example GIMP
@@ -817,7 +817,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
   // linear rgb with r and b swapped:
   cmsCIExyYTRIPLE BGR_Primaries = { sRGB_Primaries.Blue, sRGB_Primaries.Green, sRGB_Primaries.Red };
 
-  cmsHPROFILE profile = _create_lcms_profile("Linear Infrared BGR", "Darktable Linear Infrared BGR",
+  cmsHPROFILE profile = _create_lcms_profile("Linear Infrared BGR", "darktable Linear Infrared BGR",
                                              &D65xyY, &BGR_Primaries, transferFunction, FALSE);
 
   cmsFreeToneCurve(transferFunction);
