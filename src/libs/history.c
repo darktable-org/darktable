@@ -848,7 +848,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
     find_old = g_list_next(find_old);
   }
 
-  gchar **change_parts = g_malloc0_n(sizeof(dt_develop_blend_params_t) / (sizeof(float)) + 3, sizeof(char*));
+  gchar **change_parts = g_malloc0_n(sizeof(dt_develop_blend_params_t) / (sizeof(float)) + 10, sizeof(char*));
 
   if(hitem->module->so->get_introspection())
     change_parts[0] = _lib_history_change_text(hitem->module->so->get_introspection()->field, NULL,
@@ -938,9 +938,9 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
         char *opol = !oactive ? "" : (opolarity ? "(-)" : "(+)");
         char *npol = !nactive ? "" : (npolarity ? "(-)" : "(+)");
 
-        change_parts[num_parts++] = g_strdup_printf("%s\t%s %s| %s- %s| %s\t\u2192\t%s %s| %s- %s| %s", _(b->name),
-                                                    opol, s[0][0], s[1][0], s[2][0], s[3][0], 
-                                                    npol, s[0][1], s[1][1], s[2][1], s[3][1]);
+        change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s%s\t\u2192\t%s| %s- %s| %s%s", _(b->name),
+                                                    s[0][0], s[1][0], s[2][0], s[3][0], opol,
+                                                    s[0][1], s[1][1], s[2][1], s[3][1], npol);
       }   
     }
   }
@@ -950,16 +950,44 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
 
   gboolean show_tooltip = *tooltip_text;
 
-  GtkWidget *view = gtk_text_view_new ();
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
-  gtk_text_buffer_set_text(buffer, tooltip_text, -1);
+  if(show_tooltip)
+  {
+    GtkWidget *view = gtk_text_view_new ();
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
+    gtk_text_buffer_set_text(buffer, tooltip_text, -1);
+    gtk_tooltip_set_custom(tooltip, view);
 
-  PangoTabArray *tabs = pango_tab_array_new_with_positions(3, TRUE, PANGO_TAB_LEFT, 200, PANGO_TAB_LEFT, 400, PANGO_TAB_LEFT, 420);
-  gtk_text_view_set_tabs(GTK_TEXT_VIEW(view), tabs);
-  pango_tab_array_free(tabs);
+    int count_column1 = 0, count_column2 = 0;
+    for(gchar *line = tooltip_text; *line; )
+    {
+      gchar *endline = g_strstr_len(line, -1, "\n");
+      if(!endline) endline = line + strlen(line);
 
-  gtk_tooltip_set_custom(tooltip, view);
-  
+      gchar *found_tab1 = g_strstr_len(line, endline - line, "\t");
+      if(found_tab1)
+      {
+        if(found_tab1 - line >= count_column1) count_column1 = found_tab1 - line + 1;
+
+        gchar *found_tab2 = g_strstr_len(found_tab1 + 1, endline - found_tab1 - 1, "\t");
+        if(found_tab2 - found_tab1 > count_column2) count_column2 = found_tab2 - found_tab1;
+      }
+
+      line = endline;
+      if(*line) line++;
+    }
+
+    gtk_text_view_set_monospace(GTK_TEXT_VIEW(view), TRUE);
+    PangoLayout *layout = gtk_widget_create_pango_layout(view, " ");
+    int char_width;
+    pango_layout_get_size(layout, &char_width, NULL);
+    g_object_unref(layout);
+    PangoTabArray *tabs = pango_tab_array_new_with_positions(3, FALSE, PANGO_TAB_LEFT, (count_column1) * char_width,
+                                                                       PANGO_TAB_LEFT, (count_column1 + count_column2) * char_width,
+                                                                       PANGO_TAB_LEFT, (count_column1 + count_column2 + 2) * char_width);
+    gtk_text_view_set_tabs(GTK_TEXT_VIEW(view), tabs);
+    pango_tab_array_free(tabs);
+  }
+
   g_free(tooltip_text);
 
   return show_tooltip;
