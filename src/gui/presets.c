@@ -963,24 +963,31 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
 
   if(module)
   {
-    if(active_preset >= 0 && !writeprotect)
+    if(active_preset >= 0)
     {
-      mi = gtk_menu_item_new_with_label(_("edit this preset.."));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_edit_preset), module);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      //we have an active preset...
+      if(!writeprotect)
+      {
+        // we have active preset and it is NOT write protect
+        mi = gtk_menu_item_new_with_label(_("edit this preset.."));
+        g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_edit_preset), module);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
-      mi = gtk_menu_item_new_with_label(_("delete this preset"));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), module);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+        mi = gtk_menu_item_new_with_label(_("delete this preset"));
+        g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), module);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      }
     }
     else
     {
+      // we don't have active preset
       mi = gtk_menu_item_new_with_label(_("store new preset.."));
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
       if(darktable.gui->last_preset && found)
       {
+        // we HAD an active preset but something changed in op/blend so maybe update?
         char *markup = g_markup_printf_escaped("%s <span weight=\"bold\">%s</span>", _("update preset"),
                                                darktable.gui->last_preset);
         mi = gtk_menu_item_new_with_label("");
