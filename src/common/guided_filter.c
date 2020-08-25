@@ -213,6 +213,78 @@ static inline void box_mean_1d_4ch(int N, const float *x, float *y, size_t strid
   }
 }
 
+// calculate the one-dimensional moving average over a window of size 2*w+1 independently for each of eight channels
+// input array x has stride 8, output array y has stride stride_y
+static inline void box_mean_1d_8ch(int N, const float *x, float *y, size_t stride_y, int w)
+{
+  float n_box = 0.f, m[8] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+  float c[8] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+  if(N > 2 * w)
+  {
+    for(int i = 0, i_end = w + 1; i < i_end; i++)
+    {
+      SIMD_FOR (int k = 0; k < 8; k++)
+        m[k] = Kahan_sum(m[k], &c[k], x[8*i+k]);
+      n_box++;
+    }
+    for(int i = 0, i_end = w; i < i_end; i++)
+    {
+      SIMD_FOR (int k = 0; k < 8; k++)
+      {
+        y[i * stride_y + k] = m[k] / n_box;
+        m[k] = Kahan_sum(m[k], &c[k], x[8*(i + w + 1) + k]);
+      }
+      n_box++;
+    }
+    for(int i = w, i_end = N - w - 1; i < i_end; i++)
+    {
+      SIMD_FOR (int k = 0; k < 8; k++)
+      {
+        y[i * stride_y + k] = m[k] / n_box;
+        m[k] = Kahan_sum(m[k], &c[k], x[8*(i + w + 1) + k]);
+        m[k] = Kahan_sum(m[k], &c[k], -x[8*(i - w) + k]);
+      }
+    }
+    for(int i = N - w - 1, i_end = N; i < i_end; i++)
+    {
+      SIMD_FOR (int k = 0; k < 8; k++)
+      {
+        y[i * stride_y + k] = m[k] / n_box;
+        m[k] = Kahan_sum(m[k], &c[k], -x[8*(i - w) + k]);
+      }
+      n_box--;
+    }
+  }
+  else
+  {
+    for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++)
+    {
+      SIMD_FOR (int k = 0; k < 8; k++)
+      {
+        m[k] = Kahan_sum(m[k], &c[k], x[8*i + k]);
+      }
+      n_box++;
+    }
+    for(int i = 0; i < N; i++)
+    {
+      SIMD_FOR (int k = 0; k < 8; k++)
+        y[i * stride_y + k] = m[k] / n_box;
+      if(i - w >= 0)
+      {
+        SIMD_FOR (int k = 0; k < 8; k++)
+          m[k] = Kahan_sum(m[k], &c[k], -x[8*(i - w)+k]);
+        n_box--;
+      }
+      if(i + w + 1 < N)
+      {
+        SIMD_FOR (int k = 0; k < 8; k++)
+          m[k] = Kahan_sum(m[k], &c[k], x[8*(i + w + 1)+k]);
+        n_box++;
+      }
+    }
+  }
+}
+
 // in-place calculate the two-dimensional moving average of a four-channel image over a box of size (2*w+1) x (2*w+1)
 static void box_mean_4ch(color_image img, int w)
 {
@@ -243,14 +315,12 @@ static void box_mean_4ch(color_image img, int w)
 }
 
 // in-place calculate the two-dimensional moving average of a four-channel image over a box of size (2*w+1) x (2*w+1)
-static void box_means_vert(float *img_bak, int w, color_image mean, color_image covar, color_image var,
-                           gray_image var_bb)
+static void box_means_vert(float *img_bak, int w, color_image mean, color_image var, gray_image var_bb)
 {
-  const size_t size = 4 * max_i(mean.width, mean.height);
-  const size_t width = 4 * mean.width;
+  const size_t size = 8 * max_i(mean.width, mean.height);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) dt_omp_firstprivate(w, size, img_bak) \
-  shared(mean, covar, var, var_bb)
+  shared(mean, var, var_bb)
 #endif
   for(int i0 = 0; i0 < mean.width; i0++)
   {
@@ -258,15 +328,11 @@ static void box_means_vert(float *img_bak, int w, color_image mean, color_image 
     for(int i1 = 0; i1 < mean.height; i1++)
       SIMD_FOR (int k = 0; k < 4; k++)
         buf[4*i1+k] = mean.data[4*(i0 + (size_t)i1 * mean.width)+k];
-    box_mean_1d_4ch(mean.height, buf, mean.data + 4*i0, width, w);
-    for(int i1 = 0; i1 < covar.height; i1++)
-      SIMD_FOR (int k = 0; k < 4; k++)
-        buf[4*i1+k] = covar.data[4*(i0 + (size_t)i1 * covar.width)+k];
-    box_mean_1d_4ch(covar.height, buf, covar.data + 4*i0, width, w);
+    box_mean_1d_4ch(mean.height, buf, mean.data + 4*i0, 4 * mean.width, w);
     for(int i1 = 0; i1 < var.height; i1++)
-      SIMD_FOR (int k = 0; k < 4; k++)
-        buf[4*i1+k] = var.data[4*(i0 + (size_t)i1 * var.width)+k];
-    box_mean_1d_4ch(var.height, buf, var.data + 4*i0, width, w);
+      SIMD_FOR (int k = 0; k < 8; k++)
+        buf[8*i1+k] = var.data[8*(i0 + (size_t)i1 * var.width)+k];
+    box_mean_1d_8ch(var.height, buf, var.data + 8*i0, 8 * var.width, w);
     for(int i1 = 0; i1 < var_bb.height; i1++)
         buf[i1] = var_bb.data[i0 + (size_t)i1 * var_bb.width];
     box_mean_1d(var_bb.height, buf, var_bb.data + i0, var_bb.width, w);
@@ -279,8 +345,8 @@ static void box_means_vert(float *img_bak, int w, color_image mean, color_image 
 //    3 color guide image
 //    3 covariance (R, G, B)
 //    6 variance (R-R, R-G, R-B, G-G, G-B, B-B)
-// for computational efficiency, we'll pack them into three four-channel images and one mono image instead
-// of running 13 separate box filters: guide+input, R/G/B/R-R, R-G/R-B/G-G/G-B, and B-B.
+// for computational efficiency, we'll pack them into a four-channel image, an 8-channel image, and a mono
+// image instead of running 13 separate box filters: guide+input, R/G/B/R-R/R-G/R-B/G-G/G-B, and B-B.
 static void guided_filter_tiling(color_image imgg, gray_image img, gray_image img_out, tile target, const int w,
                                  const float eps, const float guide_weight, const float min, const float max)
 {
@@ -298,62 +364,55 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
 #define COV_R 0
 #define COV_G 1
 #define COV_B 2
-#define VAR_RR 3  // packed into the covar image
-#define VAR_RG 0
-#define VAR_RB 1
-#define VAR_GG 2
-#define VAR_GB 3
+#define VAR_RR 3
+#define VAR_RG 4
+#define VAR_RB 5
+#define VAR_GG 6
+#define VAR_GB 7
 #define VAR_BB 0 // not actually packed, it's in a separate gray_image
   color_image mean = new_color_image(width, height, 4);
-  color_image covar = new_color_image(width, height, 4);
-  color_image variance = new_color_image(width, height, 4);
+  color_image variance = new_color_image(width, height, 8);
   gray_image var_bb = new_gray_image(width, height);
-  const size_t img_bak_sz = 4* max_i(mean.width, mean.height);
+  const size_t img_dimen = max_i(mean.width, mean.height);
+  const size_t img_bak_sz = 13 * img_dimen;
   float *img_bak = dt_alloc_align(64, dt_get_num_threads() * img_bak_sz * sizeof(float));
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(img, imgg, mean, covar, variance, var_bb, img_bak) \
+#pragma omp parallel for schedule(static) default(none) shared(img, imgg, mean, variance, var_bb, img_bak) \
   dt_omp_firstprivate(img_bak_sz)
 #endif
   for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
   {
     int j = j_imgg - source.lower;
+    // put values directly into temp buffer to avoid a memcpy for the horizontal box mean pass
+    float *const meanpx = img_bak + dt_get_thread_num() * img_bak_sz;
+    float *const varpx = meanpx + 4*img_dimen;
+    float *const varbbpx = meanpx + 12*img_dimen;
     for(int i_imgg = source.left; i_imgg < source.right; i_imgg++)
     {
-      int i = i_imgg - source.left;
+      size_t i = i_imgg - source.left;
       const float *pixel_ = get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
       float pixel[3] = { pixel_[0] * guide_weight, pixel_[1] * guide_weight, pixel_[2] * guide_weight };
-      const size_t k = i + (size_t)j * width;
-      float *const meanpx = get_color_pixel(mean, k);
       const float input = img.data[i_imgg + (size_t)j_imgg * img.width];
-      meanpx[INP_MEAN] = input;
-      meanpx[GUIDE_MEAN_R] = pixel[0];
-      meanpx[GUIDE_MEAN_G] = pixel[1];
-      meanpx[GUIDE_MEAN_B] = pixel[2];
-      float *const covpx = get_color_pixel(covar, k);
-      covpx[COV_R] = pixel[0] * input;
-      covpx[COV_G] = pixel[1] * input;
-      covpx[COV_B] = pixel[2] * input;
-      covpx[VAR_RR] = pixel[0] * pixel[0];
-      float *const varpx = get_color_pixel(variance, k);
-      varpx[VAR_RG] = pixel[0] * pixel[1];
-      varpx[VAR_RB] = pixel[0] * pixel[2];
-      varpx[VAR_GG] = pixel[1] * pixel[1];
-      varpx[VAR_GB] = pixel[1] * pixel[2];
-      var_bb.data[k] = pixel[2] * pixel[2];
+      meanpx[4*i+INP_MEAN] = input;
+      meanpx[4*i+GUIDE_MEAN_R] = pixel[0];
+      meanpx[4*i+GUIDE_MEAN_G] = pixel[1];
+      meanpx[4*i+GUIDE_MEAN_B] = pixel[2];
+      varpx[8*i+COV_R] = pixel[0] * input;
+      varpx[8*i+COV_G] = pixel[1] * input;
+      varpx[8*i+COV_B] = pixel[2] * input;
+      varpx[8*i+VAR_RR] = pixel[0] * pixel[0];
+      varpx[8*i+VAR_RG] = pixel[0] * pixel[1];
+      varpx[8*i+VAR_RB] = pixel[0] * pixel[2];
+      varpx[8*i+VAR_GG] = pixel[1] * pixel[1];
+      varpx[8*i+VAR_GB] = pixel[1] * pixel[2];
+      varbbpx[i] = pixel[2] * pixel[2];
     }
     // apply horizontal pass of box mean filter while the cache is still hot
-    float *const buf = img_bak + dt_get_thread_num() * img_bak_sz;
-    const size_t offset = 4 * (size_t)j * mean.width;
-    memcpy(buf, mean.data + offset, sizeof(float) * 4 * mean.width);
-    box_mean_1d_4ch(mean.width, buf, mean.data + offset, 4, w);
-    memcpy(buf, covar.data + offset, sizeof(float) * 4 * covar.width);
-    box_mean_1d_4ch(covar.width, buf, covar.data + offset, 4, w);
-    memcpy(buf, variance.data + offset, sizeof(float) * 4 * variance.width);
-    box_mean_1d_4ch(variance.width, buf, variance.data + offset, 4, w);
-    memcpy(buf, var_bb.data + (size_t)j * var_bb.width, sizeof(float) * var_bb.width);
-    box_mean_1d(var_bb.width, buf, var_bb.data + (size_t)j * var_bb.width, 1, w);
+    box_mean_1d_4ch(mean.width, meanpx, mean.data + 4 * j * mean.width, 4, w);
+    box_mean_1d_8ch(variance.width, varpx, variance.data + 8 * j * variance.width, 8, w);
+    box_mean_1d(var_bb.width, varbbpx, var_bb.data + j * var_bb.width, 1, w);
   }
-  box_means_vert(img_bak, w, mean, covar, variance,var_bb);
+  box_means_vert(img_bak, w, mean, variance, var_bb);
   dt_free_align(img_bak);
   // we will recycle memory of 'mean' for the new coefficient arrays a_? and b to reduce memory foot print
   color_image a_b = mean;
@@ -363,7 +422,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
   #define B 3
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) \
-  dt_omp_firstprivate(size) shared(mean, covar, variance, var_bb, a_b)
+  dt_omp_firstprivate(size) shared(mean, variance, var_bb, a_b)
 #endif
   for(size_t i = 0; i < size; i++)
   {
@@ -372,18 +431,17 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     const float guide_r = meanpx[GUIDE_MEAN_R];
     const float guide_g = meanpx[GUIDE_MEAN_G];
     const float guide_b = meanpx[GUIDE_MEAN_B];
-    float *const covpx = get_color_pixel(covar, i);
     float *const varpx = get_color_pixel(variance, i);
     // solve linear system of equations of size 3x3 via Cramer's rule
     // symmetric coefficient matrix
-    const float Sigma_0_0 = covpx[VAR_RR] - (guide_r * guide_r) + eps;
+    const float Sigma_0_0 = varpx[VAR_RR] - (guide_r * guide_r) + eps;
     const float Sigma_0_1 = varpx[VAR_RG] - (guide_r * guide_g);
     const float Sigma_0_2 = varpx[VAR_RB] - (guide_r * guide_b);
     const float Sigma_1_1 = varpx[VAR_GG] - (guide_g * guide_g) + eps;;
     const float Sigma_1_2 = varpx[VAR_GB] - (guide_g * guide_b);
     const float Sigma_2_2 = var_bb.data[i] - (guide_b * guide_b) + eps;
     const float cov_imgg_img[3] =
-      { covpx[COV_R] - guide_r * inp_mean, covpx[COV_G] - guide_g * inp_mean, covpx[COV_B] - guide_b * inp_mean };
+      { varpx[COV_R] - guide_r * inp_mean, varpx[COV_G] - guide_g * inp_mean, varpx[COV_B] - guide_b * inp_mean };
     const float det0 = Sigma_0_0 * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
       - Sigma_0_1 * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
       + Sigma_0_2 * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
@@ -418,7 +476,6 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     a_b.data[4*i+A_BLUE] = a_b_;
     a_b.data[4*i+B] = b_;
   }
-  free_color_image(&covar);
   free_color_image(&variance);
   free_gray_image(&var_bb);
   box_mean_4ch(a_b, w);
