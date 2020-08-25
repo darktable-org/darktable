@@ -213,43 +213,64 @@ static inline void box_mean_1d_4ch(int N, const float *x, float *y, size_t strid
   }
 }
 
-// in-place calculate the two-dimensional moving average over a box of size (2*w+1) x (2*w+1)
-// this function is always called from an OpenMP thread, thus no parallelization
-static void box_mean(gray_image img, int w)
+// in-place calculate the two-dimensional moving average of a four-channel image over a box of size (2*w+1) x (2*w+1)
+static void box_mean_4ch(color_image img, int w)
 {
-  gray_image img_bak = new_gray_image(max_i(img.width, img.height), 1);
+  const size_t size = 4 * max_i(img.width, img.height);
+  float *img_bak = dt_alloc_align(64, dt_get_num_threads() * size * sizeof(float));
+  const size_t width = 4 * img.width;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) dt_omp_firstprivate(w, size, img_bak) shared(img)
+#endif
   for(int i1 = 0; i1 < img.height; i1++)
   {
-    memcpy(img_bak.data, img.data + (size_t)i1 * img.width, sizeof(float) * img.width);
-    box_mean_1d(img.width, img_bak.data, img.data + (size_t)i1 * img.width, 1, w);
+    float *buf = img_bak + dt_get_thread_num() * size;
+    memcpy(buf, img.data + (size_t)i1 * width, sizeof(float) * width);
+    box_mean_1d_4ch(img.width, buf, img.data + (size_t)i1 * width, 4, w);
   }
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) dt_omp_firstprivate(w, size, img_bak) shared(img)
+#endif
   for(int i0 = 0; i0 < img.width; i0++)
   {
-    for(int i1 = 0; i1 < img.height; i1++) img_bak.data[i1] = img.data[i0 + (size_t)i1 * img.width];
-    box_mean_1d(img.height, img_bak.data, img.data + i0, img.width, w);
+    float *buf = img_bak + dt_get_thread_num() * size;
+    for(int i1 = 0; i1 < img.height; i1++)
+      SIMD_FOR (int k = 0; k < 4; k++)
+        buf[4*i1+k] = img.data[4*(i0 + (size_t)i1 * img.width)+k];
+    box_mean_1d_4ch(img.height, buf, img.data + 4*i0, width, w);
   }
-  free_gray_image(&img_bak);
+  dt_free_align(img_bak);
 }
 
 // in-place calculate the two-dimensional moving average of a four-channel image over a box of size (2*w+1) x (2*w+1)
-// this function is always called from an OpenMP thread, thus no parallelization
-static void box_mean_4ch(color_image img, int w)
+static void box_means_vert(float *img_bak, int w, color_image mean, color_image covar, color_image var,
+                           gray_image var_bb)
 {
-  color_image img_bak = new_color_image(max_i(img.width, img.height), 1, 4);
-  const size_t width = 4 * img.width;
-  for(int i1 = 0; i1 < img.height; i1++)
+  const size_t size = 4 * max_i(mean.width, mean.height);
+  const size_t width = 4 * mean.width;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) dt_omp_firstprivate(w, size, img_bak) \
+  shared(mean, covar, var, var_bb)
+#endif
+  for(int i0 = 0; i0 < mean.width; i0++)
   {
-    memcpy(img_bak.data, img.data + (size_t)i1 * width, sizeof(float) * width);
-    box_mean_1d_4ch(img.width, img_bak.data, img.data + (size_t)i1 * width, 4, w);
-  }
-  for(int i0 = 0; i0 < img.width; i0++)
-  {
-    for(int i1 = 0; i1 < img.height; i1++)
+    float *buf = img_bak + dt_get_thread_num() * size;
+    for(int i1 = 0; i1 < mean.height; i1++)
       SIMD_FOR (int k = 0; k < 4; k++)
-        img_bak.data[4*i1+k] = img.data[4*(i0 + (size_t)i1 * img.width)+k];
-    box_mean_1d_4ch(img.height, img_bak.data, img.data + 4*i0, width, w);
+        buf[4*i1+k] = mean.data[4*(i0 + (size_t)i1 * mean.width)+k];
+    box_mean_1d_4ch(mean.height, buf, mean.data + 4*i0, width, w);
+    for(int i1 = 0; i1 < covar.height; i1++)
+      SIMD_FOR (int k = 0; k < 4; k++)
+        buf[4*i1+k] = covar.data[4*(i0 + (size_t)i1 * covar.width)+k];
+    box_mean_1d_4ch(covar.height, buf, covar.data + 4*i0, width, w);
+    for(int i1 = 0; i1 < var.height; i1++)
+      SIMD_FOR (int k = 0; k < 4; k++)
+        buf[4*i1+k] = var.data[4*(i0 + (size_t)i1 * var.width)+k];
+    box_mean_1d_4ch(var.height, buf, var.data + 4*i0, width, w);
+    for(int i1 = 0; i1 < var_bb.height; i1++)
+        buf[i1] = var_bb.data[i0 + (size_t)i1 * var_bb.width];
+    box_mean_1d(var_bb.height, buf, var_bb.data + i0, var_bb.width, w);
   }
-  free_color_image(&img_bak);
 }
 
 // apply guided filter to single-component image img using the 3-components image imgg as a guide
@@ -286,7 +307,13 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
   color_image mean = new_color_image(width, height, 4);
   color_image covar = new_color_image(width, height, 4);
   color_image variance = new_color_image(width, height, 4);
-  gray_image var_imgg_bb = new_gray_image(width, height);
+  gray_image var_bb = new_gray_image(width, height);
+  const size_t img_bak_sz = 4* max_i(mean.width, mean.height);
+  float *img_bak = dt_alloc_align(64, dt_get_num_threads() * img_bak_sz * sizeof(float));
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(img, imgg, mean, covar, variance, var_bb, img_bak) \
+  dt_omp_firstprivate(img_bak_sz)
+#endif
   for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
   {
     int j = j_imgg - source.lower;
@@ -312,13 +339,32 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
       varpx[VAR_RB] = pixel[0] * pixel[2];
       varpx[VAR_GG] = pixel[1] * pixel[1];
       varpx[VAR_GB] = pixel[1] * pixel[2];
-      var_imgg_bb.data[k] = pixel[2] * pixel[2];
+      var_bb.data[k] = pixel[2] * pixel[2];
     }
+    // apply horizontal pass of box mean filter while the cache is still hot
+    float *const buf = img_bak + dt_get_thread_num() * img_bak_sz;
+    const size_t offset = 4 * (size_t)j * mean.width;
+    memcpy(buf, mean.data + offset, sizeof(float) * 4 * mean.width);
+    box_mean_1d_4ch(mean.width, buf, mean.data + offset, 4, w);
+    memcpy(buf, covar.data + offset, sizeof(float) * 4 * covar.width);
+    box_mean_1d_4ch(covar.width, buf, covar.data + offset, 4, w);
+    memcpy(buf, variance.data + offset, sizeof(float) * 4 * variance.width);
+    box_mean_1d_4ch(variance.width, buf, variance.data + offset, 4, w);
+    memcpy(buf, var_bb.data + (size_t)j * var_bb.width, sizeof(float) * var_bb.width);
+    box_mean_1d(var_bb.width, buf, var_bb.data + (size_t)j * var_bb.width, 1, w);
   }
-  box_mean_4ch(mean, w);
-  box_mean_4ch(covar, w);
-  box_mean_4ch(variance, w);
-  box_mean(var_imgg_bb, w);
+  box_means_vert(img_bak, w, mean, covar, variance,var_bb);
+  dt_free_align(img_bak);
+  // we will recycle memory of 'mean' for the new coefficient arrays a_? and b to reduce memory foot print
+  color_image a_b = mean;
+  #define A_RED 0
+  #define A_GREEN 1
+  #define A_BLUE 2
+  #define B 3
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) \
+  dt_omp_firstprivate(size) shared(mean, covar, variance, var_bb, a_b)
+#endif
   for(size_t i = 0; i < size; i++)
   {
     const float *meanpx = get_color_pixel(mean, i);
@@ -327,40 +373,17 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     const float guide_g = meanpx[GUIDE_MEAN_G];
     const float guide_b = meanpx[GUIDE_MEAN_B];
     float *const covpx = get_color_pixel(covar, i);
-    covpx[COV_R] -= guide_r * inp_mean;
-    covpx[COV_G] -= guide_g * inp_mean;
-    covpx[COV_B] -= guide_b * inp_mean;
-    covpx[VAR_RR] -= guide_r * guide_r;
-    covpx[VAR_RR] += eps;
     float *const varpx = get_color_pixel(variance, i);
-    varpx[VAR_RG] -= guide_r * guide_g;
-    varpx[VAR_RB] -= guide_r * guide_b;
-    varpx[VAR_GG] -= guide_g * guide_g;
-    varpx[VAR_GG] += eps;
-    varpx[VAR_GB] -= guide_g * guide_b;
-    var_imgg_bb.data[i] -= guide_b * guide_b;
-    var_imgg_bb.data[i] += eps;
-  }
-  // we will recycle memory of the arrays imgg_mean_? and img_mean for the new coefficient arrays a_? and b to
-  // reduce memory foot print
-  color_image a_b = mean;
-  #define A_RED 0
-  #define A_GREEN 1
-  #define A_BLUE 2
-  #define B 3
-  for(int i = 0; i < height*width; i++)
-  {
     // solve linear system of equations of size 3x3 via Cramer's rule
     // symmetric coefficient matrix
-    const float *covpx = get_color_pixel(covar, i);
-    const float *varpx = get_color_pixel(variance, i);
-    const float Sigma_0_0 = covpx[VAR_RR];
-    const float Sigma_0_1 = varpx[VAR_RG];
-    const float Sigma_0_2 = varpx[VAR_RB];
-    const float Sigma_1_1 = varpx[VAR_GG];
-    const float Sigma_1_2 = varpx[VAR_GB];
-    const float Sigma_2_2 = var_imgg_bb.data[i];
-    const float cov_imgg_img[3] = { covpx[COV_R], covpx[COV_G], covpx[COV_B] };
+    const float Sigma_0_0 = covpx[VAR_RR] - (guide_r * guide_r) + eps;
+    const float Sigma_0_1 = varpx[VAR_RG] - (guide_r * guide_g);
+    const float Sigma_0_2 = varpx[VAR_RB] - (guide_r * guide_b);
+    const float Sigma_1_1 = varpx[VAR_GG] - (guide_g * guide_g) + eps;;
+    const float Sigma_1_2 = varpx[VAR_GB] - (guide_g * guide_b);
+    const float Sigma_2_2 = var_bb.data[i] - (guide_b * guide_b) + eps;
+    const float cov_imgg_img[3] =
+      { covpx[COV_R] - guide_r * inp_mean, covpx[COV_G] - guide_g * inp_mean, covpx[COV_B] - guide_b * inp_mean };
     const float det0 = Sigma_0_0 * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
       - Sigma_0_1 * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
       + Sigma_0_2 * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
@@ -379,8 +402,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
       a_r_ = det1 / det0;
       a_g_ = det2 / det0;
       a_b_ = det3 / det0;
-      const float *meanpx = get_color_pixel(mean, i);
-      b_ = meanpx[INP_MEAN] - a_r_ * meanpx[GUIDE_MEAN_R] - a_g_ * meanpx[GUIDE_MEAN_G] - a_b_ * meanpx[GUIDE_MEAN_B];
+      b_ = inp_mean - a_r_ * guide_r - a_g_ * guide_g - a_b_ * guide_b;
     }
     else
     {
@@ -396,7 +418,14 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     a_b.data[4*i+A_BLUE] = a_b_;
     a_b.data[4*i+B] = b_;
   }
+  free_color_image(&covar);
+  free_color_image(&variance);
+  free_gray_image(&var_bb);
   box_mean_4ch(a_b, w);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) \
+  shared(target, imgg, a_b, img_out)
+#endif
   for(int j_imgg = target.lower; j_imgg < target.upper; j_imgg++)
   {
     // index of the left most target pixel in the current row
@@ -415,9 +444,6 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     }
   }
   free_color_image(&mean);
-  free_color_image(&covar);
-  free_color_image(&variance);
-  free_gray_image(&var_imgg_bb);
 }
 
 static int compute_tile_height(const int height, const int w)
@@ -487,9 +513,6 @@ void guided_filter(const float *const guide, const float *const in, float *const
   const int tile_height = compute_tile_height(height,w);
   const float eps = sqrt_eps * sqrt_eps; // this is the regularization parameter of the original papers
 
-#ifdef _OPENMP
-#pragma omp parallel for collapse(2) schedule(static)
-#endif
   for(int j = 0; j < height; j += tile_height)
   {
     for(int i = 0; i < width; i += tile_width)
