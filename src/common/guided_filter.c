@@ -440,23 +440,24 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     const float Sigma_1_1 = varpx[VAR_GG] - (guide_g * guide_g) + eps;;
     const float Sigma_1_2 = varpx[VAR_GB] - (guide_g * guide_b);
     const float Sigma_2_2 = var_bb.data[i] - (guide_b * guide_b) + eps;
-    const float cov_imgg_img[3] =
-      { varpx[COV_R] - guide_r * inp_mean, varpx[COV_G] - guide_g * inp_mean, varpx[COV_B] - guide_b * inp_mean };
     const float det0 = Sigma_0_0 * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
       - Sigma_0_1 * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
       + Sigma_0_2 * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
     float a_r_, a_g_, a_b_, b_;
     if(fabsf(det0) > 4.f * FLT_EPSILON)
     {
-      const float det1 = cov_imgg_img[0] * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
-        - Sigma_0_1 * (cov_imgg_img[1] * Sigma_2_2 - cov_imgg_img[2] * Sigma_1_2)
-        + Sigma_0_2 * (cov_imgg_img[1] * Sigma_1_2 - cov_imgg_img[2] * Sigma_1_1);
-      const float det2 = Sigma_0_0 * (cov_imgg_img[1] * Sigma_2_2 - cov_imgg_img[2] * Sigma_1_2)
-        - cov_imgg_img[0] * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
-        + Sigma_0_2 * (Sigma_0_1 * cov_imgg_img[2] - Sigma_0_2 * cov_imgg_img[1]);
-      const float det3 = Sigma_0_0 * (Sigma_1_1 * cov_imgg_img[2] - Sigma_1_2 * cov_imgg_img[1])
-        - Sigma_0_1 * (Sigma_0_1 * cov_imgg_img[2] - Sigma_0_2 * cov_imgg_img[1])
-        + cov_imgg_img[0] * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
+      const float cov_r = varpx[COV_R] - guide_r * inp_mean;
+      const float cov_g = varpx[COV_G] - guide_g * inp_mean;
+      const float cov_b = varpx[COV_B] - guide_b * inp_mean;
+      const float det1 = cov_r * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
+        - Sigma_0_1 * (cov_g * Sigma_2_2 - cov_b * Sigma_1_2)
+        + Sigma_0_2 * (cov_g * Sigma_1_2 - cov_b * Sigma_1_1);
+      const float det2 = Sigma_0_0 * (cov_g * Sigma_2_2 - cov_b * Sigma_1_2)
+        - cov_r * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
+        + Sigma_0_2 * (Sigma_0_1 * cov_b - Sigma_0_2 * cov_g);
+      const float det3 = Sigma_0_0 * (Sigma_1_1 * cov_b - Sigma_1_2 * cov_g)
+        - Sigma_0_1 * (Sigma_0_1 * cov_b - Sigma_0_2 * cov_g)
+        + cov_r * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
       a_r_ = det1 / det0;
       a_g_ = det2 / det0;
       a_b_ = det3 / det0;
