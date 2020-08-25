@@ -1492,11 +1492,22 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
     gint rowid;
     gchar *name;
     GdkPixbuf *editable;
-    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name, P_EDITABLE_COLUMN,
-                       &editable, -1);
+    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name, 
+                       P_EDITABLE_COLUMN, &editable, -1);
     if(editable == NULL)
     {
       sqlite3_stmt *stmt;
+      gchar* operation = NULL;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name, operation FROM data.presets WHERE rowid = ?1",
+                              -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        operation = g_strdup( (const char*)sqlite3_column_text(stmt,1));
+      }
+      sqlite3_finalize(stmt);
 
       GtkWidget *dialog = gtk_message_dialog_new
         (GTK_WINDOW(_preferences_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
@@ -1506,9 +1517,29 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
       dt_osx_disallow_fullscreen(dialog);
 #endif
       gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
+
       if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
       {
-        // TODO: remove accel
+        //deregistering accel...
+        if(operation)
+        {
+          gchar accel[256];
+          gchar datadir[PATH_MAX] = { 0 };
+          gchar accelpath[PATH_MAX] = { 0 };
+
+          dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+          snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
+
+          gchar* tmp_path = g_strdup_printf("%s/%s", _("preset"), name);
+          g_strlcpy(accel, "<Darktable>", sizeof(accel));
+          dt_accel_path_iop(accel, sizeof(accel), operation, tmp_path);
+          g_free(tmp_path);
+          gtk_accel_map_change_entry(accel, 0, 0, TRUE);
+
+          // Saving the changed bindings
+          gtk_accel_map_save(accelpath);
+        }
+
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "DELETE FROM data.presets WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
@@ -1519,6 +1550,8 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
         tree_insert_presets(tree_store);
       }
       gtk_widget_destroy(dialog);
+      if(operation)
+        g_free(operation);
     }
     else
       g_object_unref(editable);
@@ -1760,6 +1793,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
                                        GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                        _("_cancel"), GTK_RESPONSE_CANCEL,
                                        _("_save"), GTK_RESPONSE_YES,
+                                       _("delete"), GTK_RESPONSE_REJECT,
                                        _("_ok"), GTK_RESPONSE_OK, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -2004,6 +2038,63 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     }
 
     gtk_widget_destroy(GTK_WIDGET(filechooser));
+  }
+  else if(response_id == GTK_RESPONSE_REJECT)
+  {
+    const gchar *name = gtk_label_get_text(g->name);
+
+    sqlite3_stmt *stmt;
+    gchar* operation = NULL;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name, operation FROM data.presets WHERE rowid = ?1",
+                              -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->rowid);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        operation = g_strdup( (const char*)sqlite3_column_text(stmt,1));
+      }
+      sqlite3_finalize(stmt);
+
+      GtkWidget *win = gtk_message_dialog_new
+        (GTK_WINDOW(_preferences_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+         GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+         _("do you really want to delete the preset `%s'?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(dialog);
+#endif
+      gtk_window_set_title(GTK_WINDOW(win), _("delete preset?"));
+      if(gtk_dialog_run(GTK_DIALOG(win)) == GTK_RESPONSE_YES)
+      {
+        //deregistering accel...
+        if(operation)
+        {
+          gchar accel[256];
+          gchar datadir[PATH_MAX] = { 0 };
+          gchar accelpath[PATH_MAX] = { 0 };
+
+          dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+          snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
+
+          gchar* tmp_path = g_strdup_printf("%s/%s", _("preset"), name);
+          g_strlcpy(accel, "<Darktable>", sizeof(accel));
+          dt_accel_path_iop(accel, sizeof(accel), operation, tmp_path);
+          g_free(tmp_path);
+          gtk_accel_map_change_entry(accel, 0, 0, TRUE);
+
+          // Saving the changed bindings
+          gtk_accel_map_save(accelpath);
+        }
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "DELETE FROM data.presets WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->rowid);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+      gtk_widget_destroy(win);
+      if(operation)
+        g_free(operation);
   }
 
   GtkTreeStore *tree_store = GTK_TREE_STORE(gtk_tree_view_get_model(g->tree));
