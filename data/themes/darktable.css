@@ -174,11 +174,6 @@
   min-height: 0;
 }
 
-.monospace
-{
-  font-family: monospace;
-}
-
 /* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
 #lib-plugin-ui,
 #iop-plugin-ui,
@@ -1417,7 +1412,8 @@ cell:selected
 
 /* Set some specific fonts */
 #live-sample-data,
-#usercss_box textview
+#usercss_box textview,
+#hist-tooltip
 {
   font-family: monospace;
 }
