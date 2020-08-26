@@ -374,12 +374,9 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, gboolean camera)
 {
-  char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
-  const gboolean autoapply = strcmp(workflow, "display-referred") == 0;
-  g_free(workflow);
   const gboolean autoapply_percamera = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
 
-  const gboolean force_autoapply = autoapply && (autoapply_percamera || !camera);
+  const gboolean force_autoapply = (autoapply_percamera || !camera);
 
   // transform presets above to db entries.
   for(int k = 0; k < count; k++)
