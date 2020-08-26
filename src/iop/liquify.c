@@ -167,27 +167,27 @@ float dt_liquify_ui_widths [] =
 
 typedef enum
 {
-  DT_LIQUIFY_WARP_TYPE_LINEAR,         ///< A linear warp originating from one point.
-  DT_LIQUIFY_WARP_TYPE_RADIAL_GROW,    ///< A radial warp originating from one point.
-  DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK,
+  DT_LIQUIFY_WARP_TYPE_LINEAR,        // $DESCRIPTION: "linear" A linear warp originating from one point.
+  DT_LIQUIFY_WARP_TYPE_RADIAL_GROW,   // $DESCRIPTION: "radial grow" A radial warp originating from one point.
+  DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK, // $DESCRIPTION: "radial shrink"
   DT_LIQUIFY_WARP_TYPE_LAST
 } dt_liquify_warp_type_enum_t;
 
 typedef enum
 {
-  DT_LIQUIFY_NODE_TYPE_CUSP,
-  DT_LIQUIFY_NODE_TYPE_SMOOTH,
-  DT_LIQUIFY_NODE_TYPE_SYMMETRICAL,
-  DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH,
+  DT_LIQUIFY_NODE_TYPE_CUSP,        // $DESCRIPTION: "cusp"
+  DT_LIQUIFY_NODE_TYPE_SMOOTH,      // $DESCRIPTION: "smooth"
+  DT_LIQUIFY_NODE_TYPE_SYMMETRICAL, // $DESCRIPTION: "symmetrical"
+  DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH,  // $DESCRIPTION: "autosmooth"
   DT_LIQUIFY_NODE_TYPE_LAST
 } dt_liquify_node_type_enum_t;
 
 typedef enum
 {
-  DT_LIQUIFY_STATUS_NONE = 0,
-  DT_LIQUIFY_STATUS_NEW = 1,
-  DT_LIQUIFY_STATUS_INTERPOLATED = 2,
-  DT_LIQUIFY_STATUS_PREVIEW = 4,
+  DT_LIQUIFY_STATUS_NONE = 0,         // $DESCRIPTION: "none"
+  DT_LIQUIFY_STATUS_NEW = 1,          // $DESCRIPTION: "new"
+  DT_LIQUIFY_STATUS_INTERPOLATED = 2, // $DESCRIPTION: "interpolated"
+  DT_LIQUIFY_STATUS_PREVIEW = 4,      // $DESCRIPTION: "preview"
   DT_LIQUIFY_STATUS_LAST
 } dt_liquify_status_enum_t;
 
@@ -195,10 +195,10 @@ typedef enum
 
 typedef enum
 {
-  DT_LIQUIFY_PATH_INVALIDATED = 0,
-  DT_LIQUIFY_PATH_MOVE_TO_V1,
-  DT_LIQUIFY_PATH_LINE_TO_V1,
-  DT_LIQUIFY_PATH_CURVE_TO_V1,
+  DT_LIQUIFY_PATH_INVALIDATED = 0, // $DESCRIPTION: "invalidated"
+  DT_LIQUIFY_PATH_MOVE_TO_V1,      // $DESCRIPTION: "move"
+  DT_LIQUIFY_PATH_LINE_TO_V1,      // $DESCRIPTION: "line"
+  DT_LIQUIFY_PATH_CURVE_TO_V1,     // $DESCRIPTION: "curve"
 } dt_liquify_path_data_enum_t;
 
 typedef struct
