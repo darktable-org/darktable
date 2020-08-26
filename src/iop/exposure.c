@@ -764,7 +764,7 @@ static void autoexpp_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   if(self->dt->gui->reset) return;
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || 
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE ||
      !dt_bauhaus_widget_get_quad_active(g->autoexpp) ||
      self->picked_color_max[0] < 0.0f) return;
 
