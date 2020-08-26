@@ -719,6 +719,7 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
     if(!writeprotect) dt_gui_store_last_preset(name);
   }
   sqlite3_finalize(stmt);
+  dt_iop_request_focus(module);
   dt_iop_gui_update(module);
   dt_dev_add_history_item(darktable.develop, module, FALSE);
   gtk_widget_queue_draw(module->widget);
