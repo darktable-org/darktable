@@ -274,6 +274,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       float *const tmp_f = dt_alloc_align(64, sizeof(float) * pw * ph * 4);
       if(tmp_f)
       {
+        dt_develop_t *dev = darktable.develop;
         uint64_t DT_ALIGNED_ARRAY state[4] = { 0 };
         xoshiro256_init(1, state);
         // FIXME: add OpenMP
@@ -281,11 +282,42 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
           for(int k = 0; k < 3; k++)
             tmp_f[p + k] = dt_noise_generator(DT_NOISE_UNIFORM, p_buf[p + k], 0.5f, 0, state) / 255.0f;
 
-        // FIXME: if histogram profile is work or export handle by hand
-        // FIXME: can figure out the default work colorspace via checking presets?
-        // FIXME: if liveview image is tagged and we can read its colorspace, use that
+        // Do colorspace conversion here rather than having histogram
+        // process do it. We need to do special cases for work/export
+        // colorspace which dt_ioppr_get_histogram_profile_type()
+        // can't handle when not in darkroom view. Plus we can do an
+        // in-place conversion which saves allocating an extra buffer.
+        const dt_iop_order_iccprofile_info_t *profile_to;
+        if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
+        {
+          // The work profile of a SOC JPEG is nonsensical. So that
+          // the histogram will have some relationship to a captured
+          // image's profile, go with the standard work profile.
+          // FIXME: can figure out the current default work colorspace via checking presets?
+          profile_to = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "",
+                                                         DT_INTENT_PERCEPTUAL);
+        }
+        else if (darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+        {
+          // don't touch the image
+          profile_to = NULL;
+        }
+        else
+        {
+          profile_to = dt_ioppr_get_histogram_profile_info(dev);
+        }
+
+        if(profile_to)
+        {
+          // FIXME: if liveview image is tagged and we can read its colorspace, use that
+          const dt_iop_order_iccprofile_info_t *const profile_from
+            = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
+          dt_ioppr_transform_image_colorspace_rgb(tmp_f, tmp_f, pw, ph, profile_from,
+                                                  profile_to, "live view histogram");
+        }
+
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
-                                               DT_COLORSPACE_SRGB, "");
+                                               DT_COLORSPACE_NONE, "");
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
         dt_free_align(tmp_f);
       }
