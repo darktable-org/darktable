@@ -1417,7 +1417,8 @@ cell:selected
 
 /* Set some specific fonts */
 #live-sample-data,
-#usercss_box textview
+#usercss_box textview,
+#hist-tooltip
 {
   font-family: monospace;
 }

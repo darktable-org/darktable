@@ -476,22 +476,14 @@ static void _blendop_masks_invert_callback(GtkWidget *combo, dt_iop_gui_blend_da
 static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider, dt_iop_gui_blend_data_t *data)
 {
   if(darktable.gui->reset) return;
+
   dt_develop_blend_params_t *bp = data->module->blend_params;
 
-  const int tab = data->tab;
-  int ch;
-  GtkLabel **label;
+  const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
 
-  if(slider == data->upper_slider)
-  {
-    ch = data->channels[tab][1];
-    label = data->upper_label;
-  }
-  else
-  {
-    ch = data->channels[tab][0];
-    label = data->lower_label;
-  }
+  int in_out = (slider == data->filter[1].slider) ? 1 : 0;
+  dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+  GtkLabel **label = data->filter[in_out].label;
 
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) &&
      !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values)))
@@ -508,7 +500,7 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
   for(int k = 0; k < 4; k++)
   {
     char text[256];
-    (data->scale_print[tab])(parameters[k], text, sizeof(text));
+    (channel->scale_print)(parameters[k], text, sizeof(text));
     gtk_label_set_text(label[k], text);
   }
 
@@ -529,10 +521,11 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt
 
   dt_develop_blend_params_t *bp = data->module->blend_params;
 
-  const int tab = data->tab;
-  const int ch = GTK_WIDGET(togglebutton) == data->lower_polarity ? data->channels[tab][0] : data->channels[tab][1];
-  GtkDarktableGradientSlider *slider = GTK_WIDGET(togglebutton) == data->lower_polarity ? data->lower_slider
-                                                                                        : data->upper_slider;
+  const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
+
+  int in_out = (GTK_WIDGET(togglebutton) == data->filter[1].polarity) ? 1 : 0;
+  dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+  GtkDarktableGradientSlider *slider = data->filter[in_out].slider;
 
   if(!active)
     bp->blendif |= (1 << (ch + 16));
@@ -605,28 +598,17 @@ static int _blendop_blendif_disp_alternative_worker(GtkWidget *widget, dt_iop_mo
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
   GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
-  const int uplow = (slider == data->lower_slider) ? 0 : 1;
 
-  GtkLabel *head = (uplow == 0) ? data->lower_head : data->upper_head;
-  const char *inout = (uplow == 0) ? _("input") : _("output");
+  int in_out = (slider == data->filter[1].slider) ? 1 : 0;
 
-  char text[32];
-  int newmode = (mode == 1) ? 1 : 0;
+  dtgtk_gradient_slider_multivalue_set_scale_callback(slider, (mode == 1) ? scale_callback : NULL);
+  gchar *text = g_strdup_printf("%s%s", 
+                                (in_out == 0) ? _("input") : _("output"), 
+                                (mode == 1) ? label : "");
+  gtk_label_set_text(data->filter[in_out].head, text);
+  g_free(text);
 
-  if(newmode == 1)
-  {
-    dtgtk_gradient_slider_multivalue_set_scale_callback(slider, scale_callback);
-    snprintf(text, sizeof(text), "%s%s", inout, label);
-    gtk_label_set_text(head, text);
-  }
-  else
-  {
-    dtgtk_gradient_slider_multivalue_set_scale_callback(slider, NULL);
-    snprintf(text, sizeof(text), "%s%s", inout, "");
-    gtk_label_set_text(head, text);
-  }
-
-  return newmode;
+  return (mode == 1) ? 1 : 0;
 }
 
 
@@ -684,28 +666,22 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy, dt_iop_mo
   dt_iop_color_picker_set_cst(module, _blendop_blendif_get_picker_colorspace(data));
 
   float *raw_mean, *raw_min, *raw_max;
-  GtkDarktableGradientSlider *widget;
-  GtkLabel *label;
 
   ++darktable.gui->reset;
 
-  for (int s = 0; s < 2; s++)
+  for(int in_out = 1; in_out >= 0; in_out--)
   {
-    if(s)
-    {
-      raw_mean = module->picked_color;
-      raw_min = module->picked_color_min;
-      raw_max = module->picked_color_max;
-      widget = data->lower_slider;
-      label = data->lower_picker_label;
-    }
-    else
+    if(in_out)
     {
       raw_mean = module->picked_output_color;
       raw_min = module->picked_output_color_min;
       raw_max = module->picked_output_color_max;
-      widget = data->upper_slider;
-      label = data->upper_picker_label;
+    }
+    else
+    {
+      raw_mean = module->picked_color;
+      raw_min = module->picked_color_min;
+      raw_max = module->picked_color_max;
     }
 
     if((gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
@@ -714,11 +690,10 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy, dt_iop_mo
     {
       float picker_mean[8], picker_min[8], picker_max[8];
       float cooked[8];
-      char text[256];
 
       const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
-                          ? data->csp
-                          : dt_iop_color_picker_get_active_cst(module);
+                    ? data->csp
+                    : dt_iop_color_picker_get_active_cst(module);
       const dt_iop_order_iccprofile_info_t *work_profile
           = dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
       _blendif_scale(cst, raw_mean, picker_mean, work_profile);
@@ -726,16 +701,18 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy, dt_iop_mo
       _blendif_scale(cst, raw_max, picker_max, work_profile);
       _blendif_cook(cst, raw_mean, cooked, work_profile);
 
-      snprintf(text, sizeof(text), "(%.*f)", _blendif_print_digits_picker(cooked[data->tab]), cooked[data->tab]);
+      gchar *text = g_strdup_printf("(%.*f)", _blendif_print_digits_picker(cooked[data->tab]), cooked[data->tab]);
 
       dtgtk_gradient_slider_multivalue_set_picker_meanminmax(
-          widget, picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
-      gtk_label_set_text(label, text);
+          data->filter[in_out].slider, picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
+      gtk_label_set_text(data->filter[in_out].picker_label, text);
+
+      g_free(text);
     }
     else
     {
-      dtgtk_gradient_slider_multivalue_set_picker(widget, NAN);
-      gtk_label_set_text(label, "");
+      dtgtk_gradient_slider_multivalue_set_picker(data->filter[in_out].slider, NAN);
+      gtk_label_set_text(data->filter[in_out].picker_label, "");
     }
   }
 
@@ -751,92 +728,69 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab)
 
   ++darktable.gui->reset;
 
-  const int in_ch = data->channels[tab][0];
-  const int out_ch = data->channels[tab][1];
+  const dt_iop_gui_blendif_channel_t *channel = &data->channel[tab];
 
-  float *iparameters = &(bp->blendif_parameters[4 * in_ch]);
-  float *oparameters = &(bp->blendif_parameters[4 * out_ch]);
-  float *idefaults = &(dp->blendif_parameters[4 * in_ch]);
-  float *odefaults = &(dp->blendif_parameters[4 * out_ch]);
-
-  const int ipolarity = !(bp->blendif & (1 << (in_ch + 16)));
-  const int opolarity = !(bp->blendif & (1 << (out_ch + 16)));
-  char text[256];
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->lower_polarity), ipolarity);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->upper_polarity), opolarity);
-
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->lower_slider,
-      ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 0);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->lower_slider,
-      ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->lower_slider,
-      ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->lower_slider,
-      ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
-
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->upper_slider,
-      opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 0);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->upper_slider,
-      opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->upper_slider,
-      opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->upper_slider,
-      opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
-
-  dt_pthread_mutex_lock(&data->lock);
-  for(int k = 0; k < 4; k++)
+  for(int in_out = 1; in_out >= 0; in_out--)
   {
-    dtgtk_gradient_slider_multivalue_set_value(data->lower_slider, iparameters[k], k);
-    dtgtk_gradient_slider_multivalue_set_value(data->upper_slider, oparameters[k], k);
-    dtgtk_gradient_slider_multivalue_set_resetvalue(data->lower_slider, idefaults[k], k);
-    dtgtk_gradient_slider_multivalue_set_resetvalue(data->upper_slider, odefaults[k], k);
+    const dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+    dt_iop_gui_blendif_filter_t *sl = &data->filter[in_out];
+
+    float *parameters = &(bp->blendif_parameters[4 * ch]);
+    float *defaults = &(dp->blendif_parameters[4 * ch]);
+
+    const int polarity = !(bp->blendif & (1 << (ch + 16)));
+    char text[256];
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sl->polarity), polarity);
+
+    dtgtk_gradient_slider_multivalue_set_marker(
+        sl->slider,
+        polarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 0);
+    dtgtk_gradient_slider_multivalue_set_marker(
+        sl->slider,
+        polarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
+    dtgtk_gradient_slider_multivalue_set_marker(
+        sl->slider,
+        polarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
+    dtgtk_gradient_slider_multivalue_set_marker(
+        sl->slider,
+        polarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
+
+    dt_pthread_mutex_lock(&data->lock);
+    for(int k = 0; k < 4; k++)
+    {
+      dtgtk_gradient_slider_multivalue_set_value(sl->slider, parameters[k], k);
+      dtgtk_gradient_slider_multivalue_set_resetvalue(sl->slider, defaults[k], k);
+    }
+    dt_pthread_mutex_unlock(&data->lock);
+
+    for(int k = 0; k < 4; k++)
+    {
+      channel->scale_print(parameters[k], text, sizeof(text));
+      gtk_label_set_text(sl->label[k], text);
+    }
+
+    dtgtk_gradient_slider_multivalue_clear_stops(sl->slider);
+
+    for(int k = 0; k < channel->numberstops; k++)
+    {
+      dtgtk_gradient_slider_multivalue_set_stop(sl->slider, channel->colorstops[k].stoppoint,
+                                                channel->colorstops[k].color);
+    }
+
+    dtgtk_gradient_slider_multivalue_set_increment(sl->slider, channel->increment);
+
+    if(channel->altdisplay)
+    {
+      data->altmode[tab][in_out] = channel->altdisplay(GTK_WIDGET(sl->slider), module, data->altmode[tab][in_out]);
+    }
+    else
+    {
+      _blendof_blendif_disp_alternative_reset(GTK_WIDGET(sl->slider), module);
+    }
   }
-  dt_pthread_mutex_unlock(&data->lock);
-
-  for(int k = 0; k < 4; k++)
-  {
-    (data->scale_print[tab])(iparameters[k], text, sizeof(text));
-    gtk_label_set_text(data->lower_label[k], text);
-    (data->scale_print[tab])(oparameters[k], text, sizeof(text));
-    gtk_label_set_text(data->upper_label[k], text);
-  }
-
-  dtgtk_gradient_slider_multivalue_clear_stops(data->lower_slider);
-  dtgtk_gradient_slider_multivalue_clear_stops(data->upper_slider);
-
-  for(int k = 0; k < data->numberstops[tab]; k++)
-  {
-    dtgtk_gradient_slider_multivalue_set_stop(data->lower_slider, (data->colorstops[tab])[k].stoppoint,
-                                              (data->colorstops[tab])[k].color);
-    dtgtk_gradient_slider_multivalue_set_stop(data->upper_slider, (data->colorstops[tab])[k].stoppoint,
-                                              (data->colorstops[tab])[k].color);
-  }
-
-  dtgtk_gradient_slider_multivalue_set_increment(data->lower_slider, data->increments[tab]);
-  dtgtk_gradient_slider_multivalue_set_increment(data->upper_slider, data->increments[tab]);
-
 
   _update_gradient_slider_pickers(NULL, module);
-
-  if(data->altdisplay[tab])
-  {
-    data->altmode[tab][0] = (data->altdisplay[tab])(GTK_WIDGET(data->lower_slider), module, data->altmode[tab][0]);
-    data->altmode[tab][1] = (data->altdisplay[tab])(GTK_WIDGET(data->upper_slider), module, data->altmode[tab][1]);
-  }
-  else
-  {
-    _blendof_blendif_disp_alternative_reset(GTK_WIDGET(data->lower_slider), module);
-    _blendof_blendif_disp_alternative_reset(GTK_WIDGET(data->upper_slider), module);
-  }
 
   --darktable.gui->reset;
 }
@@ -1154,6 +1108,7 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
 gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
+
   if(picker == data->colorpicker_set_values)
   {
     if(darktable.gui->reset) return TRUE;
@@ -1161,36 +1116,36 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     ++darktable.gui->reset;
 
     dt_develop_blend_params_t *bp = module->blend_params;
+
     const int tab = data->tab;
     float *raw_mean, *raw_min, *raw_max;
     float picker_mean[8], picker_min[8], picker_max[8];
     float picker_values[4];
-    GtkDarktableGradientSlider *slider;
 
-    int lower_upper; // lower=0, upper=1
-    if(dt_key_modifier_state() == GDK_CONTROL_MASK) 
+    int in_out = (dt_key_modifier_state() == GDK_CONTROL_MASK) ? 1 : 0;
+
+    if(in_out)
     {
-      lower_upper = 1;
       raw_mean = module->picked_output_color;
       raw_min = module->picked_output_color_min;
       raw_max = module->picked_output_color_max;
-      slider = data->upper_slider;
     }
     else
     {
-      lower_upper = 0;
       raw_mean = module->picked_color;
       raw_min = module->picked_color_min;
       raw_max = module->picked_color_max;
-      slider = data->lower_slider;
     }
 
-    const int ch = data->channels[tab][lower_upper];
+    const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
+    dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+    dt_iop_gui_blendif_filter_t *sl = &data->filter[in_out];
+
     float *parameters = &(bp->blendif_parameters[4 * ch]);
 
     const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
-                        ? data->csp
-                        : dt_iop_color_picker_get_active_cst(module);
+                  ? data->csp
+                  : dt_iop_color_picker_get_active_cst(module);
     const dt_iop_order_iccprofile_info_t *work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
     _blendif_scale(cst, raw_mean, picker_mean, work_profile);
     _blendif_scale(cst, raw_min, picker_min, work_profile);
@@ -1221,7 +1176,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
 
     dt_pthread_mutex_lock(&data->lock);
     for(int k = 0; k < 4; k++)
-      dtgtk_gradient_slider_multivalue_set_value(slider, picker_values[k], k);
+      dtgtk_gradient_slider_multivalue_set_value(sl->slider, picker_values[k], k);
     dt_pthread_mutex_unlock(&data->lock);
 
     // update picked values
@@ -1230,11 +1185,8 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     for(int k = 0; k < 4; k++)
     {
       char text[256];
-      (data->scale_print[tab])(dtgtk_gradient_slider_multivalue_get_value(slider, k), text, sizeof(text));
-      if(lower_upper == 0)
-        gtk_label_set_text(data->lower_label[k], text);
-      else
-        gtk_label_set_text(data->upper_label[k], text);
+      channel->scale_print(dtgtk_gradient_slider_multivalue_get_value(sl->slider, k), text, sizeof(text));
+      gtk_label_set_text(sl->label[k], text);
     }
 
     --darktable.gui->reset;
@@ -1242,7 +1194,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     // save values to parameters
     dt_pthread_mutex_lock(&data->lock);
     for(int k = 0; k < 4; k++)
-      parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
+      parameters[k] = dtgtk_gradient_slider_multivalue_get_value(sl->slider, k);
     dt_pthread_mutex_unlock(&data->lock);
 
     // de-activate processing of this channel if maximum span is selected
@@ -1263,7 +1215,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
 
     return TRUE;
   }
-  else return FALSE;
+  else return FALSE; // needs to be handled by module
 }
 
 // activate channel/mask view
@@ -1276,9 +1228,10 @@ static void _blendop_blendif_channel_mask_view(GtkWidget *widget, dt_iop_module_
   // in case user requests channel display: get the cannel
   if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
   {
-    int tab = data->tab;
-    int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
-    dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
+    dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
+
+    if(widget == GTK_WIDGET(data->filter[1].slider))
+      channel |= DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
 
     new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
     new_request_mask_display |= channel;
@@ -1317,9 +1270,10 @@ static void _blendop_blendif_channel_mask_view_toggle(GtkWidget *widget, dt_iop_
   // in case user requests channel display: get the cannel
   if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
   {
-    int tab = data->tab;
-    int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
-    dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
+    dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
+
+    if(widget == GTK_WIDGET(data->filter[1].slider))
+      channel |= DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
 
     new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
     new_request_mask_display |= channel;
@@ -1428,15 +1382,14 @@ static gboolean _blendop_blendif_key_press(GtkWidget *widget, GdkEventKey *event
   gboolean handled = FALSE;
 
   const int tab = data->tab;
-  GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
-  const int uplow = (slider == data->lower_slider) ? 0 : 1;
+  const int in_out = (widget == GTK_WIDGET(data->filter[1].slider)) ? 1 : 0;
 
   switch(event->keyval)
   {
     case GDK_KEY_a:
     case GDK_KEY_A:
-      if(data->altdisplay[tab])
-        data->altmode[tab][uplow] = (data->altdisplay[tab])(widget, module, data->altmode[tab][uplow] + 1);
+      if(data->channel[tab].altdisplay)
+        data->altmode[tab][in_out] = (data->channel[tab].altdisplay)(widget, module, data->altmode[tab][in_out] + 1);
       handled = TRUE;
       break;
     case GDK_KEY_c:
@@ -1458,7 +1411,6 @@ static gboolean _blendop_blendif_key_press(GtkWidget *widget, GdkEventKey *event
 
   return handled;
 }
-
 
 
 void dt_iop_gui_update_blendif(dt_iop_module_t *module)
@@ -1488,6 +1440,56 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   --darktable.gui->reset;
 }
 
+#define COLORSTOPS(gradient) sizeof(gradient) / sizeof(dt_iop_gui_blendif_colorstop_t), gradient
+
+const dt_iop_gui_blendif_channel_t Lab_channels[]
+    = { { N_("L"), N_("sliders for L channel"), 1.0f / 100.0f, COLORSTOPS(_gradient_L),
+          { DEVELOP_BLENDIF_L_in, DEVELOP_BLENDIF_L_out }, DT_DEV_PIXELPIPE_DISPLAY_L,
+          _blendif_scale_print_L, _blendop_blendif_disp_alternative_log, N_("lightness") },
+        { N_("a"), N_("sliders for a channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_a),
+          { DEVELOP_BLENDIF_A_in, DEVELOP_BLENDIF_A_out }, DT_DEV_PIXELPIPE_DISPLAY_a, 
+          _blendif_scale_print_ab, _blendop_blendif_disp_alternative_mag, N_("green/red") },
+        { N_("b"), N_("sliders for b channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_b),
+          { DEVELOP_BLENDIF_B_in, DEVELOP_BLENDIF_B_out }, DT_DEV_PIXELPIPE_DISPLAY_b, 
+          _blendif_scale_print_ab, _blendop_blendif_disp_alternative_mag, N_("blue/yellow") },
+        { N_("C"), N_("sliders for chroma channel (of LCh)"), 1.0f / 100.0f, COLORSTOPS(_gradient_chroma),
+          { DEVELOP_BLENDIF_C_in, DEVELOP_BLENDIF_C_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_C, 
+          _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("saturation") },
+        { N_("h"), N_("sliders for hue channel (of LCh)"), 1.0f / 360.0f, COLORSTOPS(_gradient_hue),
+          { DEVELOP_BLENDIF_h_in, DEVELOP_BLENDIF_h_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_h,
+          _blendif_scale_print_hue, _blendop_blendif_disp_alternative_log, N_("hue") },
+        { NULL } };
+
+const dt_iop_gui_blendif_channel_t rgb_channels[]
+    = { { N_("g"), N_("sliders for gray value"), 1.0f / 255.0f, COLORSTOPS(_gradient_gray),
+          { DEVELOP_BLENDIF_GRAY_in, DEVELOP_BLENDIF_GRAY_out }, DT_DEV_PIXELPIPE_DISPLAY_GRAY,
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log, N_("gray") },
+        { N_("R"), N_("sliders for red channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_red),
+          { DEVELOP_BLENDIF_RED_in, DEVELOP_BLENDIF_RED_out }, DT_DEV_PIXELPIPE_DISPLAY_R, 
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log, N_("red") },
+        { N_("G"), N_("sliders for green channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_green),
+          { DEVELOP_BLENDIF_GREEN_in, DEVELOP_BLENDIF_GREEN_out }, DT_DEV_PIXELPIPE_DISPLAY_G, 
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log, N_("green") },
+        { N_("B"), N_("sliders for blue channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_blue),
+          { DEVELOP_BLENDIF_BLUE_in, DEVELOP_BLENDIF_BLUE_out }, DT_DEV_PIXELPIPE_DISPLAY_B, 
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log, N_("blue") },
+        { N_("H"), N_("sliders for hue channel (of HSL)"), 1.0f / 360.0f, COLORSTOPS(_gradient_HUE),
+          { DEVELOP_BLENDIF_H_in, DEVELOP_BLENDIF_H_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_H,
+          _blendif_scale_print_hue, _blendop_blendif_disp_alternative_log, N_("hue") },
+        { N_("S"), N_("sliders for chroma channel (of HSL)"), 1.0f / 100.0f, COLORSTOPS(_gradient_chroma),
+          { DEVELOP_BLENDIF_S_in, DEVELOP_BLENDIF_S_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_S,
+          _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("chroma") },
+        { N_("L"), N_("sliders for value channel (of HSL)"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
+          { DEVELOP_BLENDIF_l_in, DEVELOP_BLENDIF_l_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_l,
+          _blendif_scale_print_L, _blendop_blendif_disp_alternative_log, N_("luminance") },
+        { NULL } };
+
+const char *slider_tooltip[] = { N_("adjustment based on input received by this module:\n* range defined by upper markers: "
+                                    "blend fully\n* range defined by lower markers: do not blend at all\n* range between "
+                                    "adjacent upper/lower markers: blend gradually"),
+                                 N_("adjustment based on unblended output of this module:\n* range defined by upper "
+                                    "markers: blend fully\n* range defined by lower markers: do not blend at all\n* range "
+                                    "between adjacent upper/lower markers: blend gradually") };
 
 void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 {
@@ -1498,151 +1500,22 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
   GtkWidget* event_box = gtk_event_box_new();
   dt_gui_add_help_link(GTK_WIDGET(event_box), "blending.html#parametric_mask");
   gtk_container_add(GTK_CONTAINER(blendw), event_box);
+  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->blendif_box));
 
   /* create and add blendif support if module supports it */
   if(bd->blendif_support)
   {
-    char *Lab_labels[] = { "L", "a", "b", "C", "h" };
-    char *Lab_tooltips[]
-        = { _("sliders for L channel"), _("sliders for a channel"), _("sliders for b channel"),
-            _("sliders for chroma channel (of LCh)"), _("sliders for hue channel (of LCh)") };
-    char *rgb_labels[] = { _("g"), _("R"), _("G"), _("B"), _("H"), _("S"), _("L") };
-    char *rgb_tooltips[]
-        = { _("sliders for gray value"), _("sliders for red channel"), _("sliders for green channel"),
-            _("sliders for blue channel"), _("sliders for hue channel (of HSL)"),
-            _("sliders for chroma channel (of HSL)"), _("sliders for value channel (of HSL)") };
-
-    char *ttinput = _("adjustment based on input received by this module:\n* range defined by upper markers: "
-                      "blend fully\n* range defined by lower markers: do not blend at all\n* range between "
-                      "adjacent upper/lower markers: blend gradually");
-
-    char *ttoutput = _("adjustment based on unblended output of this module:\n* range defined by upper "
-                       "markers: blend fully\n* range defined by lower markers: do not blend at all\n* range "
-                       "between adjacent upper/lower markers: blend gradually");
-
     bd->tab = 0;
 
-    int maxchannels = 0;
-    char **labels = NULL;
-    char **tooltips = NULL;
+    bd->channel = NULL;
 
     switch(bd->csp)
     {
       case iop_cs_Lab:
-        maxchannels = 5;
-        labels = Lab_labels;
-        tooltips = Lab_tooltips;
-        bd->scale_print[0] = _blendif_scale_print_L;
-        bd->scale_print[1] = _blendif_scale_print_ab;
-        bd->scale_print[2] = _blendif_scale_print_ab;
-        bd->scale_print[3] = _blendif_scale_print_default;
-        bd->scale_print[4] = _blendif_scale_print_hue;
-        bd->increments[0] = 1.0f / 100.0f;
-        bd->increments[1] = 1.0f / 256.0f;
-        bd->increments[2] = 1.0f / 256.0f;
-        bd->increments[3] = 1.0f / 100.0f;
-        bd->increments[4] = 1.0f / 360.0f;
-        bd->channels[0][0] = DEVELOP_BLENDIF_L_in;
-        bd->channels[0][1] = DEVELOP_BLENDIF_L_out;
-        bd->channels[1][0] = DEVELOP_BLENDIF_A_in;
-        bd->channels[1][1] = DEVELOP_BLENDIF_A_out;
-        bd->channels[2][0] = DEVELOP_BLENDIF_B_in;
-        bd->channels[2][1] = DEVELOP_BLENDIF_B_out;
-        bd->channels[3][0] = DEVELOP_BLENDIF_C_in;
-        bd->channels[3][1] = DEVELOP_BLENDIF_C_out;
-        bd->channels[4][0] = DEVELOP_BLENDIF_h_in;
-        bd->channels[4][1] = DEVELOP_BLENDIF_h_out;
-        bd->display_channel[0][0] = DT_DEV_PIXELPIPE_DISPLAY_L;
-        bd->display_channel[0][1] = DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[1][0] = DT_DEV_PIXELPIPE_DISPLAY_a;
-        bd->display_channel[1][1] = DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[2][0] = DT_DEV_PIXELPIPE_DISPLAY_b;
-        bd->display_channel[2][1] = DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[3][0] = DT_DEV_PIXELPIPE_DISPLAY_LCH_C;
-        bd->display_channel[3][1] = DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[4][0] = DT_DEV_PIXELPIPE_DISPLAY_LCH_h;
-        bd->display_channel[4][1] = DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->colorstops[0] = _gradient_L;
-        bd->numberstops[0] = sizeof(_gradient_L) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[1] = _gradient_a;
-        bd->numberstops[1] = sizeof(_gradient_a) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[2] = _gradient_b;
-        bd->numberstops[2] = sizeof(_gradient_b) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[3] = _gradient_chroma;
-        bd->numberstops[3] = sizeof(_gradient_chroma) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[4] = _gradient_hue;
-        bd->numberstops[4] = sizeof(_gradient_hue) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->altdisplay[0] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[1] = _blendop_blendif_disp_alternative_mag;
-        bd->altdisplay[2] = _blendop_blendif_disp_alternative_mag;
-        bd->altdisplay[3] = _blendop_blendif_disp_alternative_log;
+        bd->channel = Lab_channels;
         break;
       case iop_cs_rgb:
-        maxchannels = 7;
-        labels = rgb_labels;
-        tooltips = rgb_tooltips;
-        bd->scale_print[0] = _blendif_scale_print_rgb;
-        bd->scale_print[1] = _blendif_scale_print_rgb;
-        bd->scale_print[2] = _blendif_scale_print_rgb;
-        bd->scale_print[3] = _blendif_scale_print_rgb;
-        bd->scale_print[4] = _blendif_scale_print_hue;
-        bd->scale_print[5] = _blendif_scale_print_default;
-        bd->scale_print[6] = _blendif_scale_print_L;
-        bd->increments[0] = 1.0f / 255.0f;
-        bd->increments[1] = 1.0f / 255.0f;
-        bd->increments[2] = 1.0f / 255.0f;
-        bd->increments[3] = 1.0f / 255.0f;
-        bd->increments[4] = 1.0f / 360.0f;
-        bd->increments[5] = 1.0f / 100.0f;
-        bd->increments[6] = 1.0f / 100.0f;
-        bd->channels[0][0] = DEVELOP_BLENDIF_GRAY_in;
-        bd->channels[0][1] = DEVELOP_BLENDIF_GRAY_out;
-        bd->channels[1][0] = DEVELOP_BLENDIF_RED_in;
-        bd->channels[1][1] = DEVELOP_BLENDIF_RED_out;
-        bd->channels[2][0] = DEVELOP_BLENDIF_GREEN_in;
-        bd->channels[2][1] = DEVELOP_BLENDIF_GREEN_out;
-        bd->channels[3][0] = DEVELOP_BLENDIF_BLUE_in;
-        bd->channels[3][1] = DEVELOP_BLENDIF_BLUE_out;
-        bd->channels[4][0] = DEVELOP_BLENDIF_H_in;
-        bd->channels[4][1] = DEVELOP_BLENDIF_H_out;
-        bd->channels[5][0] = DEVELOP_BLENDIF_S_in;
-        bd->channels[5][1] = DEVELOP_BLENDIF_S_out;
-        bd->channels[6][0] = DEVELOP_BLENDIF_l_in;
-        bd->channels[6][1] = DEVELOP_BLENDIF_l_out;
-        bd->display_channel[0][0] = DT_DEV_PIXELPIPE_DISPLAY_GRAY;
-        bd->display_channel[0][1] = DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[1][0] = DT_DEV_PIXELPIPE_DISPLAY_R;
-        bd->display_channel[1][1] = DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[2][0] = DT_DEV_PIXELPIPE_DISPLAY_G;
-        bd->display_channel[2][1] = DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[3][0] = DT_DEV_PIXELPIPE_DISPLAY_B;
-        bd->display_channel[3][1] = DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[4][0] = DT_DEV_PIXELPIPE_DISPLAY_HSL_H;
-        bd->display_channel[4][1] = DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[5][0] = DT_DEV_PIXELPIPE_DISPLAY_HSL_S;
-        bd->display_channel[5][1] = DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[6][0] = DT_DEV_PIXELPIPE_DISPLAY_HSL_l;
-        bd->display_channel[6][1] = DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->colorstops[0] = _gradient_gray;
-        bd->numberstops[0] = sizeof(_gradient_gray) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[1] = _gradient_red;
-        bd->numberstops[1] = sizeof(_gradient_red) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[2] = _gradient_green;
-        bd->numberstops[2] = sizeof(_gradient_green) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[3] = _gradient_blue;
-        bd->numberstops[3] = sizeof(_gradient_blue) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[4] = _gradient_HUE;
-        bd->numberstops[4] = sizeof(_gradient_HUE) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[5] = _gradient_chroma;
-        bd->numberstops[5] = sizeof(_gradient_chroma) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[6] = _gradient_gray;
-        bd->numberstops[6] = sizeof(_gradient_gray) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->altdisplay[0] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[1] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[2] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[3] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[5] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[6] = _blendop_blendif_disp_alternative_log;
+        bd->channel = rgb_channels;
         break;
       default:
         assert(FALSE); // blendif not supported for RAW, which is already caught upstream; we should not get
@@ -1650,11 +1523,6 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     }
 
     GtkWidget *section = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *uplabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *lowlabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *upslider = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *lowslider = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     gtk_box_pack_start(GTK_BOX(section), dt_ui_section_label_new(_("parametric mask")), TRUE, TRUE, 0);
 
@@ -1662,19 +1530,20 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(res, _("reset blend mask settings"));
     gtk_box_pack_end(GTK_BOX(section), GTK_WIDGET(res), FALSE, FALSE, 0);
 
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(section), TRUE, FALSE, 0);
+
+    GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
     bd->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-    for(int ch = 0; ch < maxchannels; ch++)
+    for(const dt_iop_gui_blendif_channel_t *ch = bd->channel; ch->label != NULL; ch++)
     {
-      dt_ui_notebook_page(bd->channel_tabs, labels[ch], tooltips[ch]);
+      dt_ui_notebook_page(bd->channel_tabs, ch->label, ch->tooltip);
     }
-
     gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(bd->channel_tabs, bd->tab)));
     gtk_notebook_set_current_page(GTK_NOTEBOOK(bd->channel_tabs), bd->tab);
     gtk_notebook_set_scrollable(bd->channel_tabs, TRUE);
-    // gtk_notebook_popup_enable(bd->channel_tabs); // leads to crashes
-
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(bd->channel_tabs), TRUE, TRUE, 0);
+
     gtk_box_pack_start(GTK_BOX(header), gtk_grid_new(), TRUE, TRUE, 0);
 
     bd->colorpicker = dt_color_picker_new(module, DT_COLOR_PICKER_POINT_AREA, header);
@@ -1693,98 +1562,61 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(inv, _("invert all channel's polarities"));
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(inv), FALSE, FALSE, 0);
 
-    bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_name(4, "blend-lower"));
-    bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_name(4, "blend-upper"));
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
 
-    bd->lower_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
-    gtk_widget_set_tooltip_text(bd->lower_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
-
-    bd->upper_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
-    gtk_widget_set_tooltip_text(bd->upper_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
-
-    gtk_box_pack_start(GTK_BOX(upslider), GTK_WIDGET(bd->upper_slider), TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(upslider), GTK_WIDGET(bd->upper_polarity), FALSE, FALSE, 0);
-
-    gtk_box_pack_start(GTK_BOX(lowslider), GTK_WIDGET(bd->lower_slider), TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(lowslider), GTK_WIDGET(bd->lower_polarity), FALSE, FALSE, 0);
-
-
-    bd->upper_head = GTK_LABEL(gtk_label_new(_("output")));
-    gtk_label_set_ellipsize(GTK_LABEL(bd->upper_head), PANGO_ELLIPSIZE_END);
-    bd->upper_picker_label = GTK_LABEL(gtk_label_new(""));
-    gtk_label_set_ellipsize(GTK_LABEL(bd->upper_picker_label), PANGO_ELLIPSIZE_END);
-    gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_head), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_picker_label), TRUE, TRUE, 0);
-    for(int k = 0; k < 4; k++)
+    for(int in_out = 1; in_out >= 0; in_out--)
     {
-      bd->upper_label[k] = GTK_LABEL(gtk_label_new(NULL));
-      gtk_label_set_ellipsize(GTK_LABEL(bd->upper_label[k]), PANGO_ELLIPSIZE_END);
-      gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_label[k]), FALSE, FALSE, 0);
-    }
+      dt_iop_gui_blendif_filter_t *sl = &bd->filter[in_out];
 
-    bd->lower_head = GTK_LABEL(gtk_label_new(_("input")));
-    gtk_label_set_ellipsize(GTK_LABEL(bd->lower_head), PANGO_ELLIPSIZE_END);
-    bd->lower_picker_label = GTK_LABEL(gtk_label_new(""));
-    gtk_label_set_ellipsize(GTK_LABEL(bd->lower_picker_label), PANGO_ELLIPSIZE_END);
-    gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_head), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_picker_label), TRUE, TRUE, 0);
-    for(int k = 0; k < 4; k++)
-    {
-      bd->lower_label[k] = GTK_LABEL(gtk_label_new(NULL));
-      gtk_label_set_ellipsize(GTK_LABEL(bd->lower_label[k]), PANGO_ELLIPSIZE_END);
-      gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
-    }
+      GtkWidget *slider_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_head), ttinput);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_head), ttoutput);
+      sl->slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_name(4, 
+                                                   in_out ? "blend-upper" : "blend-lower"));
+      gtk_box_pack_start(GTK_BOX(slider_box), GTK_WIDGET(sl->slider), TRUE, TRUE, 0);
+
+      sl->polarity
+          = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
+      gtk_widget_set_tooltip_text(sl->polarity, _("toggle polarity. best seen by enabling 'display mask'"));
+      gtk_box_pack_end(GTK_BOX(slider_box), GTK_WIDGET(sl->polarity), FALSE, FALSE, 0);
+
+      GtkWidget *label_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+      sl->head = GTK_LABEL(gtk_label_new(in_out ? _("output") : _("input")));
+      gtk_label_set_ellipsize(GTK_LABEL(sl->head), PANGO_ELLIPSIZE_END);
+      gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->head), FALSE, FALSE, 0);
+
+      sl->picker_label = GTK_LABEL(gtk_label_new(""));
+      gtk_label_set_ellipsize(GTK_LABEL(sl->picker_label), PANGO_ELLIPSIZE_END);
+      gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->picker_label), TRUE, TRUE, 0);
+
+      for(int k = 0; k < 4; k++)
+      {
+        sl->label[k] = GTK_LABEL(gtk_label_new(NULL));
+        gtk_label_set_ellipsize(GTK_LABEL(sl->label[k]), PANGO_ELLIPSIZE_END);
+        gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->label[k]), FALSE, FALSE, 0);
+      }
+
+      gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(sl->head), _(slider_tooltip[in_out]));
+
+      g_signal_connect(G_OBJECT(sl->slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
+      g_signal_connect(G_OBJECT(sl->slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
+      g_signal_connect(G_OBJECT(sl->slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
+      g_signal_connect(G_OBJECT(sl->slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
+      g_signal_connect(G_OBJECT(sl->polarity), "toggled", G_CALLBACK(_blendop_blendif_polarity_callback), bd);
+
+      gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(label_box), TRUE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(slider_box), TRUE, FALSE, 0);
+    }
 
     g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page", G_CALLBACK(_blendop_blendif_tab_switch), bd);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
-
     g_signal_connect(G_OBJECT(bd->colorpicker), "toggled", G_CALLBACK(_update_gradient_slider_pickers), module);
-
     g_signal_connect(G_OBJECT(bd->colorpicker_set_values), "toggled", G_CALLBACK(_update_gradient_slider_pickers), module);
-
     g_signal_connect(G_OBJECT(res), "clicked", G_CALLBACK(_blendop_blendif_reset), module);
-
     g_signal_connect(G_OBJECT(inv), "clicked", G_CALLBACK(_blendop_blendif_invert), module);
-
-    g_signal_connect(G_OBJECT(bd->lower_polarity), "toggled", G_CALLBACK(_blendop_blendif_polarity_callback),
-                     bd);
-
-    g_signal_connect(G_OBJECT(bd->upper_polarity), "toggled", G_CALLBACK(_blendop_blendif_polarity_callback),
-                     bd);
-
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(section), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(upslider), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowslider), TRUE, FALSE, 0);
 
     bd->blendif_inited = 1;
   }
-
-  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->blendif_box));
 }
 
 void dt_iop_gui_update_masks(dt_iop_module_t *module)
