@@ -44,6 +44,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/settings.h"
+#include "develop/imageop_math.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
@@ -230,6 +231,8 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       const gint pw = cam->live_view_width;
       const gint ph = cam->live_view_height;
       const uint8_t *const p_buf = cam->live_view_buffer;
+
+      // draw live view image
       uint8_t *const tmp_i = dt_alloc_align(64, sizeof(uint8_t) * pw * ph * 4);
       if(tmp_i)
       {
@@ -255,7 +258,6 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
 
           // FIXME: use cairo_pattern_set_filter()?
           cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);                    // origin to middle of canvas
-          // FIXME: should do rotate/flip in dt_imageio_flip_buffers_ui8_to_float() so that histogram corresponds?
           if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);                       // mirror image
           if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation);  // rotate around middle
           if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                   // scale to fit canvas
@@ -268,14 +270,54 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         dt_free_align(tmp_i);
       }
 
+      // process live view histogram
       float *const tmp_f = dt_alloc_align(64, sizeof(float) * pw * ph * 4);
       if(tmp_f)
       {
-        dt_imageio_flip_buffers_ui8_to_float(tmp_f, p_buf, 0.0f, 255.0f, 4,
-                                             pw, ph, pw, ph, 4 * pw, ORIENTATION_NONE);
-        // FIXME: if liveview image is tagged and we can read its colorspace, use that
+        dt_develop_t *dev = darktable.develop;
+        uint64_t DT_ALIGNED_ARRAY state[4] = { 0 };
+        xoshiro256_init(1, state);
+        // FIXME: add OpenMP
+        for(size_t p = 0; p < (size_t) 4 * pw * ph; p += 4)
+          for(int k = 0; k < 3; k++)
+            tmp_f[p + k] = dt_noise_generator(DT_NOISE_UNIFORM, p_buf[p + k], 0.5f, 0, state) / 255.0f;
+
+        // Do colorspace conversion here rather than having histogram
+        // process do it. We need to do special cases for work/export
+        // colorspace which dt_ioppr_get_histogram_profile_type()
+        // can't handle when not in darkroom view. Plus we can do an
+        // in-place conversion which saves allocating an extra buffer.
+        const dt_iop_order_iccprofile_info_t *profile_to;
+        if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
+        {
+          // The work profile of a SOC JPEG is nonsensical. So that
+          // the histogram will have some relationship to a captured
+          // image's profile, go with the standard work profile.
+          // FIXME: can figure out the current default work colorspace via checking presets?
+          profile_to = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "",
+                                                         DT_INTENT_PERCEPTUAL);
+        }
+        else if (darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+        {
+          // don't touch the image
+          profile_to = NULL;
+        }
+        else
+        {
+          profile_to = dt_ioppr_get_histogram_profile_info(dev);
+        }
+
+        if(profile_to)
+        {
+          // FIXME: if liveview image is tagged and we can read its colorspace, use that
+          const dt_iop_order_iccprofile_info_t *const profile_from
+            = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
+          dt_ioppr_transform_image_colorspace_rgb(tmp_f, tmp_f, pw, ph, profile_from,
+                                                  profile_to, "live view histogram");
+        }
+
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
-                                               DT_COLORSPACE_SRGB, "");
+                                               DT_COLORSPACE_NONE, "");
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
         dt_free_align(tmp_f);
       }
