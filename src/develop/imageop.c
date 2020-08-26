@@ -255,7 +255,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
         size_t num_ints = i->header.size / sizeof(int);
 
         int *p = module->default_params + i->header.offset;
-        for (size_t c = element_size; c < num_ints; c++, p++) 
+        for (size_t c = element_size; c < num_ints; c++, p++)
           p[element_size] = *p;
       }
       break;
@@ -323,7 +323,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->gui_update = NULL;
   if(!g_module_symbol(module->module, "color_picker_apply", (gpointer) & (module->color_picker_apply)))
     module->color_picker_apply = NULL;
-  if(!g_module_symbol(module->module, "gui_changed", (gpointer) & (module->gui_changed))) 
+  if(!g_module_symbol(module->module, "gui_changed", (gpointer) & (module->gui_changed)))
     module->gui_changed = NULL;
   if(!g_module_symbol(module->module, "gui_cleanup", (gpointer) & (module->gui_cleanup)))
     module->gui_cleanup = default_gui_cleanup;
@@ -354,7 +354,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled", (gpointer) & (module->scrolled))) module->scrolled = NULL;
 
-  if(!g_module_symbol(module->module, "init", (gpointer) & (module->init))) 
+  if(!g_module_symbol(module->module, "init", (gpointer) & (module->init)))
     module->init = dt_iop_default_init;
   if(!g_module_symbol(module->module, "cleanup", (gpointer) & (module->cleanup)))
     module->cleanup = default_cleanup;
@@ -853,7 +853,7 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   next->dev->pipe->cache_obsolete = 1;
   next->dev->preview_pipe->cache_obsolete = 1;
   next->dev->preview2_pipe->cache_obsolete = 1;
-  
+
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
@@ -894,10 +894,10 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   if(!dt_iop_is_hidden(module))
   {
     // make sure gui_init and reload defaults is called safely
-    ++darktable.gui->reset;   
+    ++darktable.gui->reset;
     module->gui_init(module);
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
-    --darktable.gui->reset;   
+    --darktable.gui->reset;
 
     if(copy_params)
     {
@@ -1019,9 +1019,9 @@ static gboolean _rename_module_resize(GtkWidget *entry, GdkEventKey *event, dt_i
 {
   int width = 0;
   GtkBorder padding;
-  
+
   pango_layout_get_pixel_size(gtk_entry_get_layout(GTK_ENTRY(entry)), &width, NULL);
-  gtk_style_context_get_padding(gtk_widget_get_style_context (entry), 
+  gtk_style_context_get_padding(gtk_widget_get_style_context (entry),
                                 gtk_widget_get_state_flags (entry),
                                 &padding);
   gtk_widget_set_size_request(entry, width + padding.left + padding.right + 1, -1);
@@ -1756,7 +1756,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module
   dt_iop_gui_update(module);
 
   dt_dev_add_history_item(module->dev, module, TRUE);
-  
+
   if(dt_conf_get_bool("accel/prefer_expanded") || dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
   {
     // rebuild the accelerators
