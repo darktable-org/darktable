@@ -2360,6 +2360,45 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
+void init_presets (dt_iop_module_so_t *self)
+{
+  // For scene-referred workflow (the preset name is used in develop.c)
+  dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
+                             &(dt_iop_filmicrgb_params_t)
+                             {
+                               .grey_point_source                = 18.45,
+                               .black_point_source               = -8.0,
+                               .white_point_source               = 4.0,
+                               .reconstruct_threshold            = 3.0,
+                               .reconstruct_feather              = 3.0,
+                               .reconstruct_bloom_vs_details     = 100.0,
+                               .reconstruct_grey_vs_color        = 100.0,
+                               .reconstruct_structure_vs_texture = 0.0,
+                               .security_factor                  = 0,
+                               .grey_point_target                = 18.45,
+                               .black_point_target               = 0.01517634,
+                               .white_point_target               = 100,
+                               .output_power                     = 4.0,
+                               .latitude                         = 25.0,
+                               .contrast                         = 1.35,
+                               .saturation                       = 10,
+                               .balance                          = 0.0,
+                               .noise_level                      = 0.1f,
+                               .preserve_color                   = DT_FILMIC_METHOD_POWER_NORM,
+                               .version                          = DT_FILMIC_COLORSCIENCE_V2,
+                               .auto_hardness                    = TRUE,
+                               .custom_grey                      = FALSE,
+                               .high_quality_reconstruction      = 1,
+                               .noise_distribution               = DT_NOISE_POISSONIAN,
+                               .shadows                          = DT_FILMIC_CURVE_POLY_4,
+                               .highlights                       = DT_FILMIC_CURVE_POLY_4,
+                               .compensate_icc_black             = FALSE,
+                               .internal_version                 = 2020
+                              },
+                             sizeof(dt_iop_filmicrgb_params_t), 1);
+  dt_gui_presets_update_ldr(_("scene-referred default"), self->op, self->version(), FOR_RAW);
+}
+
 #define LOGBASE 20.f
 
 static inline void dt_cairo_draw_arrow(cairo_t *cr, double origin_x, double origin_y, double destination_x,

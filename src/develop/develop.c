@@ -1372,23 +1372,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
+  const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
   g_free(workflow);
-
-  //add scene-referred workflow
-  if(dt_image_is_matrix_correction_supported(image) && is_scene_referred)
-  {
-    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-
-      if(!dt_history_check_module_exists(imgid, module->op)
-         && strcmp(module->op, "filmicrgb") == 0
-         && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
-      {
-        _dev_insert_module(dev, module, imgid);
-      }
-    }
-  }
 
   // select all presets from one of the following table and add them into memory.history. Note that
   // this is appended to possibly already present default modules.
@@ -1400,15 +1385,22 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            " SELECT ?1, 0, op_version, operation, op_params,"
            "       enabled, blendop_params, blendop_version, multi_priority, multi_name"
            " FROM %s"
-           " WHERE autoapply=1 AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
-           "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
-           "       AND ?8 BETWEEN exposure_min AND exposure_max"
-           "       AND ?9 BETWEEN aperture_min AND aperture_max"
-           "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "       AND (format = 0 OR format&?11!=0)"
-           "       AND operation NOT IN ('ioporder', 'modulelist', 'metadata', 'export', 'tagging', 'collect')"
+           " WHERE (autoapply=1"
+           "        AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+           "        AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+           "        AND ?8 BETWEEN exposure_min AND exposure_max"
+           "        AND ?9 BETWEEN aperture_min AND aperture_max"
+           "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
+           "        AND (format = 0 OR format&?11!=0)"
+           "        AND operation NOT IN"
+           "            ('ioporder', 'modulelist', 'metadata', 'export', 'tagging', 'collect', '%s'))"
+           "  OR (name = '%s')"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
-           preset_table[legacy]);
+           preset_table[legacy],
+           is_display_referred?"":"basecurve",
+           is_display_referred?_("display-referred default")
+           :(is_scene_referred?_("scene-referred default")
+           :"\t\n"));
   // query for all modules at once:
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
