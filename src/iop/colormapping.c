@@ -66,6 +66,7 @@ typedef enum dt_iop_colormapping_flags_t
   NEUTRAL = 0,
   HAS_SOURCE = 1 << 0,
   HAS_TARGET = 1 << 1,
+  HAS_SOURCE_TARGET = HAS_SOURCE | HAS_TARGET,
   ACQUIRE = 1 << 2,
   GET_SOURCE = 1 << 3,
   GET_TARGET = 1 << 4
