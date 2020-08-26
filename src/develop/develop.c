@@ -1370,9 +1370,12 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
+  gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+  const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
+  g_free(workflow);
+
   //add scene-referred workflow
-  if(dt_image_is_matrix_correction_supported(image)
-     && strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
+  if(dt_image_is_matrix_correction_supported(image) && is_scene_referred)
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
