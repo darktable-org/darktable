@@ -37,6 +37,8 @@ making a backup is strongly advised.
 
 - Better performance for the wavelet algorithm.
 
+- A new tooltip was added to history items in the darkroom that shows each of the individual parameter changes within the module. It could especially help track down unintended adjustments in modules with many tabs, such as filmic rgb or the parametric blending settings. This feature was based on the under-the-hood introspection enhancements in 3.2.
+
 ## Bug fixes
 
 - Fix orientation in the clipping module after having selected the freehand aspect ratio.
