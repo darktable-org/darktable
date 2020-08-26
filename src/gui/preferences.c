@@ -1492,7 +1492,7 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
     gint rowid;
     gchar *name;
     GdkPixbuf *editable;
-    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name, 
+    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name,
                        P_EDITABLE_COLUMN, &editable, -1);
     if(editable == NULL)
     {
