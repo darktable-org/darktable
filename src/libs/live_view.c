@@ -485,7 +485,7 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 
   // there's no code to automatically restart live view when entering
   // the view, and besides the user may not want to jump right back
-  // into leave view if they've been out of tethering view doing other
+  // into live view if they've been out of tethering view doing other
   // things
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->live_view)) == TRUE)
   {
