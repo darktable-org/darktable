@@ -313,12 +313,8 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     return;
   }
 
-  // If showing a selected image in tether view, then the image is
-  // already in histogram profile. If the image is from live view and
-  // histogram profile is DT_COLORSPACE_WORK or DT_COLORSPACE_EXPORT,
-  // we just show the image as-is, as the image hasn't gone through
-  // the pixelpipe. Otherwise, convert it to histogram profile.
-  // FIXME: detect whether in live view (darktable.develop state should give a clue) and if so if histogram profile is DT_COLORSPACE_WORK use linear rec 2020 as a reasonable default, if profile is export skip this conversion
+  // Convert pixelpipe output to histogram profile. If in tether view,
+  // then the image is already converted by the caller.
   if(in_profile_type != DT_COLORSPACE_NONE)
   {
     dt_colorspaces_color_profile_type_t out_profile_type;
