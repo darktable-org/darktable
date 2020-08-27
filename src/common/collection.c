@@ -1913,10 +1913,13 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
         i++;
       }
       gchar *query = dt_util_dstrcat(NULL,
-                                     "SELECT imgid FROM memory.collected_images "
-                                     "WHERE imgid NOT IN (%s) AND "
-                                     "rowid>(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
-                                     "ORDER BY rowid LIMIT 1",
+                                     "SELECT imgid"
+                                     " FROM memory.collected_images"
+                                     " WHERE imgid NOT IN (%s)"
+                                     "  AND rowid > (SELECT rowid"
+                                     "              FROM memory.collected_images"
+                                     "              WHERE imgid=%d)"
+                                     " ORDER BY rowid LIMIT 1",
                                      txt, id0);
       sqlite3_stmt *stmt2;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
@@ -1930,10 +1933,13 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
       if(next < 0)
       {
         query = dt_util_dstrcat(NULL,
-                                "SELECT imgid FROM memory.collected_images "
-                                "WHERE imgid NOT IN (%s) AND "
-                                "rowid<(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
-                                "ORDER BY rowid DESC LIMIT 1",
+                                "SELECT imgid"
+                                " FROM memory.collected_images"
+                                " WHERE imgid NOT IN (%s)"
+                                "   AND rowid < (SELECT rowid"
+                                "                FROM memory.collected_images"
+                                "                WHERE imgid=%d)"
+                                " ORDER BY rowid DESC LIMIT 1",
                                 txt, id0);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
         if(sqlite3_step(stmt2) == SQLITE_ROW)
