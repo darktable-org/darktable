@@ -1631,7 +1631,7 @@ static void _float_to_fract(const char *num, int *n, int *d)
     if(sep_found) *d *= 10;
 
     // look for decimal sep
-    if((*p == ',') || (*p == '.'))
+    if(!sep_found && ((*p == ',') || (*p == '.')))
     {
       sep_found = TRUE;
     }
