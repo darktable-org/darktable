@@ -2310,8 +2310,11 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev || module->dev->image_storage.id == -1) goto end;
 
-  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage)
-     && strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
+  gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+  const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
+  g_free(workflow);
+
+  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage) && is_scene_referred)
   {
     // For scene-referred workflow, auto-enable and adjust based on exposure
     // TODO: fetch actual exposure in module, don't assume 1.
