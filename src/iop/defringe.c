@@ -423,11 +423,9 @@ void gui_init(dt_iop_module_t *self)
         "static: fast, only uses the threshold as a static limit"));
 
   g->radius_scale = dt_bauhaus_slider_from_params(self, "radius");
-  dt_bauhaus_widget_set_label(g->radius_scale, NULL, _("edge detection radius"));
   gtk_widget_set_tooltip_text(g->radius_scale, _("radius for detecting fringe"));
 
   g->thresh_scale = dt_bauhaus_slider_from_params(self, "thresh");
-  dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
   gtk_widget_set_tooltip_text(g->thresh_scale, _("threshold for defringe, higher values mean less defringing"));
 }
 

@@ -173,28 +173,6 @@ void cleanup_global(dt_iop_module_so_t *self)
 }
 
 
-void init(dt_iop_module_t *self)
-{
-  self->params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
-  self->default_enabled = 0;
-  self->params_size = sizeof(dt_iop_hazeremoval_params_t);
-  self->gui_data = NULL;
-  dt_iop_hazeremoval_params_t tmp = (dt_iop_hazeremoval_params_t){ 0.2f, 0.2f };
-  memcpy(self->params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
-}
-
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
-}
-
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
