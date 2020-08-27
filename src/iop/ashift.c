@@ -4134,7 +4134,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 #endif
   do_crop(self, p);
   commit_crop_box(p,g);
-  
+
   if(w == g->mode)
   {
     gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
@@ -4625,14 +4625,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_ashift_lanczos3 = dt_opencl_create_kernel(program, "ashift_lanczos3");
 }
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)module->data;
@@ -4799,7 +4791,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->f_length, "%.0fmm");
   dt_bauhaus_slider_set_step(g->f_length, 1.0);
 
-  g->crop_factor = dt_bauhaus_slider_from_params(self, "crop_factor"); 
+  g->crop_factor = dt_bauhaus_slider_from_params(self, "crop_factor");
   dt_bauhaus_slider_set_soft_range(g->crop_factor, 1.0f, 2.0f);
 
   g->orthocorr = dt_bauhaus_slider_from_params(self, "orthocorr");
