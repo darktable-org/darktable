@@ -853,7 +853,6 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
     // reset current curve
     dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
     dt_iop_rawdenoise_params_t *d = (dt_iop_rawdenoise_params_t *)self->default_params;
-    /*   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data; */
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
     {
       p->x[ch][k] = d->x[ch][k];
@@ -929,7 +928,7 @@ void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_rawdenoise_gui_data_t));
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
+  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->default_params;
 
   c->stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(c->stack), FALSE);

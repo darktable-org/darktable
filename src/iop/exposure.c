@@ -69,7 +69,7 @@ typedef struct dt_iop_exposure_params_t
   float exposure; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
   float deflicker_percentile;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "percentile"
   float deflicker_target_level; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: -4.0 $DESCRIPTION: "target level"
-  int compensate_exposure_bias; // $DEFAULT: FALSE
+  gboolean compensate_exposure_bias; // $DEFAULT: FALSE $DESCRIPTION: "compensate exposure bias"
 } dt_iop_exposure_params_t;
 
 typedef struct dt_iop_exposure_gui_data_t
@@ -670,13 +670,6 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void compensate_exposure_bias_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->compensate_exposure_bias = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const float exposure)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
@@ -860,7 +853,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_exposure_gui_data_t));
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
   g->deflicker_histogram = NULL;
 
@@ -872,14 +864,9 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *vbox_manual = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_manual, "manual");
 
-  /* xgettext:no-c-format */
-  g->compensate_exposure_bias = gtk_check_button_new_with_label(g_strdup_printf(_("compensate camera exposure (%+.1f EV)"),
-                                                                                  get_exposure_bias(self)));
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_exposure_bias))), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);
+  g->compensate_exposure_bias = dt_bauhaus_toggle_from_params(self, "compensate_exposure_bias");
   gtk_widget_set_tooltip_text(g->compensate_exposure_bias, _("automatically remove the camera exposure bias\n"
                                                              "this is useful if you exposed the image to the right."));
-  gtk_box_pack_start(GTK_BOX(vbox_manual), g->compensate_exposure_bias, TRUE, TRUE, 0);
 
   g->exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
@@ -939,7 +926,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->black, 4);
   dt_bauhaus_slider_set_soft_range(g->black, -0.1, 0.1);
 
-  g_signal_connect(G_OBJECT(g->compensate_exposure_bias), "toggled", G_CALLBACK(compensate_exposure_bias_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
 

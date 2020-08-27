@@ -745,7 +745,6 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
     // reset current curve
     dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
     dt_iop_lowlight_params_t *d = (dt_iop_lowlight_params_t *)self->default_params;
-    /*   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data; */
     for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++)
     {
       p->transition_x[k] = d->transition_x[k];
@@ -813,7 +812,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_lowlight_gui_data_t));
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
-  dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
+  dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->default_params;
 
   c->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(c->transition_curve, p->transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0,

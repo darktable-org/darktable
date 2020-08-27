@@ -433,7 +433,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_channelmixer_gui_data_t));
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
+  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

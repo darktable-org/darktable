@@ -710,8 +710,6 @@ void gui_init(dt_iop_module_t *self)
   c->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
  
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
-
-  gui_changed(self, c->mode, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

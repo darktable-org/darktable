@@ -1824,7 +1824,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_atrous_gui_data_t));
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->default_params;
 
   c->num_samples = 0;
   c->band_max = 0;

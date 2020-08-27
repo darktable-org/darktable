@@ -1366,7 +1366,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_rgbcurve_gui_data_t));
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
-  dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
+  dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->default_params;
 
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
   {
