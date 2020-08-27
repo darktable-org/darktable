@@ -4721,7 +4721,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_ashift_gui_data_t));
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
   dt_pthread_mutex_lock(&g->lock);
@@ -4765,8 +4764,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->adjust_crop = FALSE;
   g->lastx = g->lasty = -1.0f;
   g->crop_cx = g->crop_cy = 1.0f;
-
-  shadow_crop_box(p,g);
 
   g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
@@ -4819,7 +4816,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = saved_widget;
   gtk_box_pack_start(GTK_BOX(self->widget), g->specifics, TRUE, TRUE, 0);
-  gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(grid, 2 * DT_BAUHAUS_SPACE);

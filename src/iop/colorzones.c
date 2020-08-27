@@ -2325,7 +2325,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colorzones_gui_data_t));
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->default_params;
 
   self->histogram_cst = iop_cs_LCh;
 

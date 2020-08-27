@@ -1992,7 +1992,7 @@ void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_retouch_gui_data_t));
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->default_params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
@@ -2327,8 +2327,6 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_show_all(g->vbox_preview_scale);
   gtk_widget_set_no_show_all(g->vbox_preview_scale, TRUE);
-
-  rt_show_hide_controls(self, g, p, g);
 }
 
 void gui_reset(struct dt_iop_module_t *self)

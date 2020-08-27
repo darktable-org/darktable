@@ -2087,7 +2087,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_basecurve_gui_data_t));
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->default_params;
 
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
   c->minmax_curve_type = p->basecurve_type[0];

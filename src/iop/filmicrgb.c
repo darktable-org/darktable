@@ -3373,12 +3373,10 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
 }
 
 
-
 void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_filmicrgb_gui_data_t));
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  dt_iop_filmicrgb_params_t *p = self->params;
 
   g->show_mask = FALSE;
   g->gui_mode = DT_FILMIC_GUI_LOOK;
@@ -3534,7 +3532,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve\n"
                                              "affects mostly the mid-tones"));
 
-
   // brightness slider
   g->output_power = dt_bauhaus_slider_from_params(self, "output_power");
   gtk_widget_set_tooltip_text(g->output_power, _("equivalent to paper grade in analog.\n"
@@ -3564,10 +3561,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
                                                "specifically at extreme luminances.\n"
                                                "increase if shadows and/or highlights are under-saturated."));
-  if(p->version == DT_FILMIC_COLORSCIENCE_V1)
-    dt_bauhaus_widget_set_label(g->saturation, NULL, _("extreme luminance saturation"));
-  else if(p->version == DT_FILMIC_COLORSCIENCE_V2)
-    dt_bauhaus_widget_set_label(g->saturation, NULL, _("middle tones saturation"));
 
   // Page DISPLAY
   self->widget = dt_ui_notebook_page(g->notebook, _("display"), NULL);
