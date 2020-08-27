@@ -121,6 +121,7 @@ static void _iop_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *dat
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
+  dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
 
   size_t param_index = 0;
 
@@ -148,7 +149,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const float min = f->Float.Min;
       const float max = f->Float.Max;
-      const float defval = *(float*)self->so->get_p(p, param_name);
+      const float defval = *(float*)self->so->get_p(d, param_name);
       int digits = 2;
       float step = 0;
 
@@ -190,7 +191,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const int min = f->Int.Min;
       const int max = f->Int.Max;
-      const int defval = *(float*)self->so->get_p(p, param_name);
+      const int defval = *(int*)self->so->get_p(d, param_name);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 

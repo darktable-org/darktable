@@ -1288,7 +1288,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colorreconstruct_gui_data_t));
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->can = NULL;
@@ -1312,8 +1311,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_show_all(g->hue);
   gtk_widget_set_no_show_all(g->hue, TRUE);
-
-  gtk_widget_set_visible(g->hue, p->precedence == COLORRECONSTRUCT_PRECEDENCE_HUE);
 
   gtk_widget_set_tooltip_text(g->threshold, _("pixels with lightness values above this threshold are corrected"));
   gtk_widget_set_tooltip_text(g->spatial, _("how far to look for replacement colors in spatial dimensions"));

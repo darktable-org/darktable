@@ -747,8 +747,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->mode, _("tone mapping method"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode_stack, TRUE, TRUE, 0);
-
-  gui_changed(self, g->mode, 0);
 }
 
 
