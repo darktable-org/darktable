@@ -680,8 +680,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_profilegamma_gui_data_t));
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_profilegamma_gui_data_t *g = IOP_GUI_ALLOC(profilegamma);
 
   // prepare the modes widgets stack
   g->mode_stack = gtk_stack_new();

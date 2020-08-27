@@ -4719,8 +4719,7 @@ static float log2_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_ashift_gui_data_t));
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  dt_iop_ashift_gui_data_t *g = IOP_GUI_ALLOC(ashift);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   dt_pthread_mutex_lock(&g->lock);
@@ -4916,8 +4915,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(g->buf);
   free(g->points);
   free(g->points_idx);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)

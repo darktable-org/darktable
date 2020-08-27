@@ -1364,8 +1364,7 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rgbcurve_gui_data_t));
-  dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
+  dt_iop_rgbcurve_gui_data_t *g = IOP_GUI_ALLOC(rgbcurve);
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->default_params;
 
   for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
@@ -1483,8 +1482,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_iop_cancel_history_update(self);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
