@@ -49,8 +49,6 @@ typedef struct dt_iop_scalepixels_data_t {
   float y_scale;
 } dt_iop_scalepixels_data_t;
 
-static dt_iop_scalepixels_gui_data_t dummy;
-
 const char *name()
 {
   return C_("modulename", "scale pixels");
@@ -284,7 +282,6 @@ void init(dt_iop_module_t *self)
   self->default_enabled = (!isnan(image->pixel_aspect_ratio) && image->pixel_aspect_ratio > 0.0f
                            && image->pixel_aspect_ratio != 1.0f);
   self->params_size = sizeof(dt_iop_scalepixels_params_t);
-  self->gui_data = &dummy;
 }
 
 void cleanup(dt_iop_module_t *self)
@@ -297,14 +294,11 @@ void cleanup(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
+  IOP_GUI_ALLOC(scalepixels);
+
   self->widget = gtk_label_new("");
   gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

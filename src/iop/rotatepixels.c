@@ -363,7 +363,6 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->params_size = sizeof(dt_iop_rotatepixels_params_t);
-  self->gui_data = &dummy;
 }
 
 void cleanup(dt_iop_module_t *self)
@@ -376,14 +375,11 @@ void cleanup(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
+  IOP_GUI_ALLOC(rotatepixels);
+
   self->widget = gtk_label_new("");
   gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

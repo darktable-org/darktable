@@ -864,8 +864,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-  self->gui_data = calloc(1, sizeof(dt_iop_colorout_gui_data_t));
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  dt_iop_colorout_gui_data_t *g = IOP_GUI_ALLOC(colorout);
 
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
@@ -923,8 +922,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_changed), self->dev);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_preference_changed), self);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

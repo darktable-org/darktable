@@ -1990,8 +1990,7 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_retouch_gui_data_t));
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
+  dt_iop_retouch_gui_data_t *g = IOP_GUI_ALLOC(retouch);
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->default_params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
@@ -2344,8 +2343,8 @@ void gui_cleanup(dt_iop_module_t *self)
   {
     dt_pthread_mutex_destroy(&g->lock);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,

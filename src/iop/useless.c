@@ -265,8 +265,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_useless_gui_data_t));
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  dt_iop_useless_gui_data_t *g = IOP_GUI_ALLOC(useless);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -284,8 +283,8 @@ void gui_init(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 /** additional, optional callbacks to capture darkroom center events. */

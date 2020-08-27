@@ -909,8 +909,7 @@ static void gui_init_positions(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_borders_gui_data_t));
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  dt_iop_borders_gui_data_t *g = IOP_GUI_ALLOC(borders);
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->default_params;
 
   g->size = dt_bauhaus_slider_from_params(self, "size");

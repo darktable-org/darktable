@@ -3819,8 +3819,7 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook, GtkWidget *page, gu
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_denoiseprofile_gui_data_t));
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = IOP_GUI_ALLOC(denoiseprofile);
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->default_params;
 
   g->profiles = NULL;
@@ -4027,8 +4026,8 @@ void gui_cleanup(dt_iop_module_t *self)
   g_list_free_full(g->profiles, dt_noiseprofile_free);
   dt_draw_curve_destroy(g->transition_curve);
   // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -410,12 +410,11 @@ FINISH_PROCESS:
   free(xy_avg);
 }
 
-void gui_init(dt_iop_module_t *module)
+void gui_init(dt_iop_module_t *self)
 {
-  module->gui_data = malloc(sizeof(dt_iop_defringe_gui_data_t));
-  dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)module->gui_data;
+  dt_iop_defringe_gui_data_t *g = IOP_GUI_ALLOC(defringe);
 
-  g->mode_select = dt_bauhaus_combobox_from_params(module, "op_mode");
+  g->mode_select = dt_bauhaus_combobox_from_params(self, "op_mode");
   gtk_widget_set_tooltip_text(g->mode_select,
       _("method for color protection:\n - global average: fast, might show slightly wrong previews in high "
         "magnification; might sometimes protect saturation too much or too low in comparison to local "
@@ -423,11 +422,11 @@ void gui_init(dt_iop_module_t *module)
         "near pixels as color reference, so it can still allow for more desaturation where required\n - "
         "static: fast, only uses the threshold as a static limit"));
 
-  g->radius_scale = dt_bauhaus_slider_from_params(module, "radius");
+  g->radius_scale = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_widget_set_label(g->radius_scale, NULL, _("edge detection radius"));
   gtk_widget_set_tooltip_text(g->radius_scale, _("radius for detecting fringe"));
 
-  g->thresh_scale = dt_bauhaus_slider_from_params(module, "thresh");
+  g->thresh_scale = dt_bauhaus_slider_from_params(self, "thresh");
   dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
   gtk_widget_set_tooltip_text(g->thresh_scale, _("threshold for defringe, higher values mean less defringing"));
 }

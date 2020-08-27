@@ -149,8 +149,7 @@ static void default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
 static void default_gui_cleanup(dt_iop_module_t *self)
 {
-  g_free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 static void default_cleanup(dt_iop_module_t *module)
@@ -1365,7 +1364,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-
+/*
       module->init(module);
       if(module->params_size == 0)
       {
@@ -1373,7 +1372,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-
+*/
       // we call reload_defaults() in case the module defines it
       if(module->reload_defaults) module->reload_defaults(module);
 

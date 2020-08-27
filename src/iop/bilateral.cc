@@ -310,8 +310,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = (dt_iop_gui_data_t *)malloc(sizeof(dt_iop_bilateral_gui_data_t));
-  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
+  dt_iop_bilateral_gui_data_t *g = IOP_GUI_ALLOC(bilateral);
 
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the gaussian"));

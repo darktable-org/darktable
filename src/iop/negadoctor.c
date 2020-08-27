@@ -846,8 +846,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_negadoctor_gui_data_t));
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_gui_data_t *g = IOP_GUI_ALLOC(negadoctor);
 
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
 

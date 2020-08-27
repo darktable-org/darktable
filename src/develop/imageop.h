@@ -688,6 +688,9 @@ void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior)
 /** cancel any previously-queued history update */
 void dt_iop_cancel_history_update(dt_iop_module_t *module);
 
+#define IOP_GUI_ALLOC(module) (dt_iop_##module##_gui_data_t *)(self->gui_data = calloc(1, sizeof(dt_iop_##module##_gui_data_t)))
+#define IOP_GUI_FREE free(self->gui_data); self->gui_data = NULL
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

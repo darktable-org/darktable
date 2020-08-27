@@ -2083,8 +2083,7 @@ static void update_profile_list(dt_iop_module_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
-  self->gui_data = malloc(sizeof(dt_iop_colorin_gui_data_t));
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+  dt_iop_colorin_gui_data_t *g = IOP_GUI_ALLOC(colorin);
 
   g->image_profiles = NULL;
 
@@ -2143,8 +2142,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->image_profiles->data);
     g->image_profiles = g_list_delete_link(g->image_profiles, g->image_profiles);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

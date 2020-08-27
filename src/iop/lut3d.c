@@ -1682,8 +1682,7 @@ void module_moved_callback(gpointer instance, dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_lut3d_gui_data_t));
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+  dt_iop_lut3d_gui_data_t *g = IOP_GUI_ALLOC(lut3d);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1770,8 +1769,8 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(g->lutentry);
 #endif // HAVE_GMIC
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(module_moved_callback), self);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
