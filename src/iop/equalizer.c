@@ -285,14 +285,6 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_equalizer_params_t));
 }
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 #if 0
 void init_presets (dt_iop_module_so_t *self)
 {
@@ -352,7 +344,7 @@ void init_presets (dt_iop_module_so_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(equalizer);
-  
+
   self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
                                  "switch it off\nand move to the new equalizer."));
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
