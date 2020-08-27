@@ -374,12 +374,9 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, gboolean camera)
 {
-  char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
-  const gboolean autoapply = strcmp(workflow, "display-referred") == 0;
-  g_free(workflow);
   const gboolean autoapply_percamera = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
 
-  const gboolean force_autoapply = autoapply && (autoapply_percamera || !camera);
+  const gboolean force_autoapply = (autoapply_percamera || !camera);
 
   // transform presets above to db entries.
   for(int k = 0; k < count; k++)
@@ -1446,7 +1443,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
 
-  dt_iop_cancel_history_update(self);   
+  dt_iop_cancel_history_update(self);
   dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
   dt_bauhaus_slider_set(g->exposure_bias, p->exposure_bias);
   // gui curve is read directly from params during expose event.
@@ -1456,7 +1453,7 @@ void gui_update(struct dt_iop_module_t *self)
 static float eval_grey(float x)
 {
   // "log base" is a combined scaling and offset change so that x->[0,1], with
-  // the left side of the histogram expanded (slider->right) or not (slider left, linear)  
+  // the left side of the histogram expanded (slider->right) or not (slider left, linear)
   return x;
 }
 
@@ -2127,14 +2124,14 @@ void gui_init(struct dt_iop_module_t *self)
   // initially set to 1 (consistency with previous versions), but double-click resets to 0
   // to get a quick way to reach 0 with the mouse.
   c->exposure_bias = dt_bauhaus_slider_from_params(self, "exposure_bias");
-  dt_bauhaus_slider_set_default(c->exposure_bias, 0.0f); 
-  dt_bauhaus_slider_set_digits(c->exposure_bias, 3); 
+  dt_bauhaus_slider_set_default(c->exposure_bias, 0.0f);
+  dt_bauhaus_slider_set_digits(c->exposure_bias, 3);
   gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
   gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
   gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
   c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0.5f, 0.0f, 2);
-  dt_bauhaus_widget_set_label(c->logbase, NULL, _("scale for graph"));  
+  dt_bauhaus_widget_set_label(c->logbase, NULL, _("scale for graph"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK

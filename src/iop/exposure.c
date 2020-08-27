@@ -279,6 +279,7 @@ void init_presets (dt_iop_module_so_t *self)
 
   // For scene-referred workflow, since filmic doesn't brighten as base curve does,
   // we need an initial exposure boost. This might be too much in some cases but…
+  // (the preset name is used in develop.c)
   dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
                              &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
                                                          .black = -0.000244140625f,
@@ -289,9 +290,6 @@ void init_presets (dt_iop_module_so_t *self)
                              sizeof(dt_iop_exposure_params_t), 1);
 
   dt_gui_presets_update_ldr(_("scene-referred default"), self->op, self->version(), FOR_RAW);
-
-  dt_gui_presets_update_autoapply(_("scene-referred default"), self->op, self->version(),
-     (strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0));
 }
 
 static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
@@ -764,7 +762,7 @@ static void autoexpp_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   if(self->dt->gui->reset) return;
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || 
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE ||
      !dt_bauhaus_widget_get_quad_active(g->autoexpp) ||
      self->picked_color_max[0] < 0.0f) return;
 
