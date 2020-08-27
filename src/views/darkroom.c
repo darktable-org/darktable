@@ -1045,12 +1045,32 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
     new_offset = sqlite3_column_int(stmt, 0);
     new_id = sqlite3_column_int(stmt, 1);
   }
-  else
+  else if(diff > 0)
   {
     // if we are here, that means that the current is not anymore in the list
     // in this case, let's use the current offset image
     new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
     new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
+  }
+  else
+  {
+    // if we are here, that means that the current is not anymore in the list
+    // in this case, let's use the image before current offset
+    new_offset = MAX(1, dt_ui_thumbtable(darktable.gui->ui)->offset - 1);
+    sqlite3_stmt *stmt2;
+    gchar *query2 = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid=%d", new_offset);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt2, NULL);
+    if(sqlite3_step(stmt2) == SQLITE_ROW)
+    {
+      new_id = sqlite3_column_int(stmt2, 0);
+    }
+    else
+    {
+      new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
+      new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
+    }
+    g_free(query2);
+    sqlite3_finalize(stmt2);
   }
   g_free(query);
   sqlite3_finalize(stmt);
