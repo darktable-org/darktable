@@ -2367,8 +2367,8 @@ void init_presets (dt_iop_module_so_t *self)
                              &(dt_iop_filmicrgb_params_t)
                              {
                                .grey_point_source                = 18.45,
-                               .black_point_source               = -8.0,
-                               .white_point_source               = 4.0,
+                               .black_point_source               = -7.75,
+                               .white_point_source               = 4.40,
                                .reconstruct_threshold            = 3.0,
                                .reconstruct_feather              = 3.0,
                                .reconstruct_bloom_vs_details     = 100.0,
