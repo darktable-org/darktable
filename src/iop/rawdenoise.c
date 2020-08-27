@@ -926,8 +926,7 @@ static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint 
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rawdenoise_gui_data_t));
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_gui_data_t *c = IOP_GUI_ALLOC(rawdenoise);
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->default_params;
 
   c->stack = gtk_stack_new();
@@ -1013,8 +1012,8 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", c->channel);
   dt_draw_curve_destroy(c->transition_curve);
   dt_iop_cancel_history_update(self);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

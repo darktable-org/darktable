@@ -578,8 +578,7 @@ void init_global(struct dt_iop_module_so_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_grain_gui_data_t));
-  dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
+  dt_iop_grain_gui_data_t *g = IOP_GUI_ALLOC(grain);
 
   /* courseness */
   g->scale = dt_bauhaus_slider_from_params(self, "scale");

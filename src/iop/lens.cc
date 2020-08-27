@@ -2238,8 +2238,7 @@ static void corrections_done(gpointer instance, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_lensfun_gui_data_t));
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lensfun_gui_data_t *g = IOP_GUI_ALLOC(lensfun);
 
   dt_pthread_mutex_init(&g->lock, NULL);
 
@@ -2524,8 +2523,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 }

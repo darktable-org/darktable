@@ -1606,8 +1606,7 @@ static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpoi
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_filmic_gui_data_t));
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_gui_data_t *g = IOP_GUI_ALLOC(filmic);
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);

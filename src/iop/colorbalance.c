@@ -1771,8 +1771,7 @@ HSL_CALLBACK(gain)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorbalance_gui_data_t));
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_gui_data_t *g = IOP_GUI_ALLOC(colorbalance);
 
   g->mode = NULL;
 

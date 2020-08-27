@@ -620,8 +620,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_levels_gui_data_t));
-  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_gui_data_t *c = IOP_GUI_ALLOC(levels);
 
   dt_pthread_mutex_init(&c->lock, NULL);
 
@@ -719,8 +718,7 @@ void gui_cleanup(dt_iop_module_t *self)
 
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)

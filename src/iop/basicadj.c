@@ -610,8 +610,7 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_basicadj_gui_data_t));
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = IOP_GUI_ALLOC(basicadj);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
@@ -701,8 +700,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   {
     dt_pthread_mutex_destroy(&g->lock);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 static inline int64_t doubleToRawLongBits(double d)

@@ -2085,8 +2085,7 @@ static void logbase_callback(GtkWidget *slider, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_basecurve_gui_data_t));
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  dt_iop_basecurve_gui_data_t *c = IOP_GUI_ALLOC(basecurve);
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->default_params;
 
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
@@ -2154,8 +2153,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->minmax_curve);
   dt_iop_cancel_history_update(self);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
