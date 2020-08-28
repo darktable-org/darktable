@@ -2654,8 +2654,6 @@ void init(dt_iop_module_t *module)
   module->request_histogram |= (DT_REQUEST_ON);
 
   _reset_parameters(module->default_params, DT_IOP_COLORZONES_h, DT_IOP_COLORZONES_SPLINES_V2);
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorzones_params_t));
 }
 
 #undef DT_IOP_COLORZONES_INSET

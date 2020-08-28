@@ -4543,12 +4543,11 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   ((dt_iop_ashift_params_t *)module->default_params)->f_length = f_length;
   ((dt_iop_ashift_params_t *)module->default_params)->crop_factor = crop_factor;
-  memcpy(module->params, module->default_params, sizeof(dt_iop_ashift_params_t));
 
   // reset gui elements
-  if(module->gui_data)
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+  if(g)
   {
-    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
     char string_v[256];
     char string_h[256];

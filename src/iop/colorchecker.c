@@ -915,8 +915,6 @@ void init(dt_iop_module_t *module)
     d->source_a[k] = d->target_a[k] = colorchecker_Lab[3*k+1];
     d->source_b[k] = d->target_b[k] = colorchecker_Lab[3*k+2];
   }
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorchecker_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)

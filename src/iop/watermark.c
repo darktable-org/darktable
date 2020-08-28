@@ -1379,8 +1379,6 @@ void init(dt_iop_module_t *module)
 
   g_strlcpy(d->filename, "darktable.svg", sizeof(d->filename));
   g_strlcpy(d->font, "DejaVu Sans 10", sizeof(d->font));
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_watermark_params_t));
 }
 
 void gui_init(struct dt_iop_module_t *self)

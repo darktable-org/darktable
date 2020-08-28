@@ -416,10 +416,16 @@ void init_presets(dt_iop_module_so_t *self)
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_flip_params_t tmp = (dt_iop_flip_params_t){ .orientation = ORIENTATION_NULL };
+  dt_iop_flip_params_t *d = self->default_params;
+  
+  d->orientation = ORIENTATION_NULL;
 
   // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
+  if(!self->dev)
+  {
+    fprintf(stderr, "reload_defaults should not be called without image.\n");
+    return;
+  }
 
   self->default_enabled = 1;
 
@@ -435,16 +441,12 @@ void reload_defaults(dt_iop_module_t *self)
     {
       // convert the old legacy flip bits to a proper parameter set:
       self->default_enabled = 1;
-      tmp.orientation
+      d->orientation
           = merge_two_orientations(dt_image_orientation(&self->dev->image_storage),
                                    (dt_image_orientation_t)(self->dev->image_storage.legacy_flip.user_flip));
     }
     sqlite3_finalize(stmt);
   }
-
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_flip_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_flip_params_t));
 }
 
 void gui_update(struct dt_iop_module_t *self)

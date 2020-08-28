@@ -597,8 +597,6 @@ void reload_defaults(dt_iop_module_t *self)
   d->levels[0] = 0.0f;
   d->levels[1] = 0.5f;
   d->levels[2] = 1.0f;
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_levels_params_t));
 }
 
 void init_global(dt_iop_module_so_t *self)

@@ -87,7 +87,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
-  memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
+  memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_commit_blend_params(module, &_default_blendop_params);
 }
@@ -268,8 +268,6 @@ void dt_iop_default_init(dt_iop_module_t *module)
 
     i++;
   }
-
-  memcpy(module->params, module->default_params, param_size);
 }
 
 int dt_iop_load_module_so(void *m, const char *libname, const char *op)

@@ -1312,7 +1312,7 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)module->default_params;
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
+  if(!module->dev) return;
 
   new_lens = _lens_sanitize(img->exif_lens);
   g_strlcpy(d->lens, new_lens, sizeof(d->lens));
@@ -1321,8 +1321,8 @@ void reload_defaults(dt_iop_module_t *module)
   d->crop = img->exif_crop;
   d->aperture = img->exif_aperture;
   d->focal = img->exif_focal_length;
-  d->scale = 1.0;  
-  d->modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING | LF_MODIFY_DISTORTION | 
+  d->scale = 1.0;
+  d->modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING | LF_MODIFY_DISTORTION |
                     LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
   // if we did not find focus_distance in EXIF, lets default to 1000
   d->distance = img->exif_focus_distance == 0.0f ? 1000.0f : img->exif_focus_distance;
@@ -1341,7 +1341,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->global_data;
 
     // just to be sure
-    if(!gd || !gd->db) goto end;
+    if(!gd || !gd->db) return;
 
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfCamera **cam = gd->db->FindCamerasExt(img->exif_maker, img->exif_model, 0);
@@ -1409,17 +1409,14 @@ void reload_defaults(dt_iop_module_t *module)
   }
 
   // if we have a gui -> reset corrections_done message
-  if(module->gui_data)
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)module->gui_data;
+  if(g)
   {
-    dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)module->gui_data;
     dt_pthread_mutex_lock(&g->lock);
     g->corrections_done = -1;
     dt_pthread_mutex_unlock(&g->lock);
     gtk_label_set_text(g->message, "");
   }
-
-end:
-  memcpy(module->params, module->default_params, sizeof(dt_iop_lensfun_params_t));
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
