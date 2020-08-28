@@ -1860,7 +1860,7 @@ void reload_defaults(dt_iop_module_t *module)
   dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id <= 0) goto end;
+  if(!module->dev || module->dev->image_storage.id <= 0) return;
 
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
@@ -1950,9 +1950,6 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = DT_COLORSPACE_ENHANCED_MATRIX;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-
-end:
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorin_params_t));
 }
 
 static void update_profile_list(dt_iop_module_t *self)

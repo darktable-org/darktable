@@ -308,9 +308,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
-  dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t){ 64, 1.25 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_rlce_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_rlce_params_t));
+  *((dt_iop_rlce_params_t *)module->default_params) = (dt_iop_rlce_params_t){ 64, 1.25 };
 }
 
 void cleanup(dt_iop_module_t *module)

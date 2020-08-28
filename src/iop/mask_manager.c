@@ -121,22 +121,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_mask_manager_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_mask_manager_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_mask_manager_params_t);
-  module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

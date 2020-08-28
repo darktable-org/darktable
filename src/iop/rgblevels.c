@@ -909,8 +909,6 @@ void init(dt_iop_module_t *self)
     d->levels[c][1] = RGBLEVELS_MID;
     d->levels[c][2] = RGBLEVELS_MAX;
   }
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_rgblevels_params_t));
 }
 
 void init_global(dt_iop_module_so_t *self)

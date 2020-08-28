@@ -399,8 +399,6 @@ void init(dt_iop_module_t *module)
   d->Dmin[0] = 1.00f;
   d->Dmin[1] = 0.45f;
   d->Dmin[2] = 0.25f;
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_negadoctor_params_t));
 }
 
 void init_presets(dt_iop_module_so_t *self)

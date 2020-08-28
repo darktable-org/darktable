@@ -5037,8 +5037,6 @@ void reload_defaults(dt_iop_module_t *module)
   {
     module->default_enabled = 0;
   }
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_demosaic_params_t));
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)

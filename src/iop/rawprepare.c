@@ -726,28 +726,26 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_rawprepare_params_t tmp = { { { 0 } } };
+  dt_iop_rawprepare_params_t *d = self->default_params;
+  
+  *d = (dt_iop_rawprepare_params_t){ 0 };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
-
+  if(!self->dev) return;
+  
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rawprepare_params_t){.crop.named.x = image->crop_x,
-                                     .crop.named.y = image->crop_y,
-                                     .crop.named.width = image->crop_width,
-                                     .crop.named.height = image->crop_height,
-                                     .raw_black_level_separate[0] = image->raw_black_level_separate[0],
-                                     .raw_black_level_separate[1] = image->raw_black_level_separate[1],
-                                     .raw_black_level_separate[2] = image->raw_black_level_separate[2],
-                                     .raw_black_level_separate[3] = image->raw_black_level_separate[3],
-                                     .raw_white_point = image->raw_white_point };
+  *d = (dt_iop_rawprepare_params_t){.crop.named.x = image->crop_x,
+                                    .crop.named.y = image->crop_y,
+                                    .crop.named.width = image->crop_width,
+                                    .crop.named.height = image->crop_height,
+                                    .raw_black_level_separate[0] = image->raw_black_level_separate[0],
+                                    .raw_black_level_separate[1] = image->raw_black_level_separate[1],
+                                    .raw_black_level_separate[2] = image->raw_black_level_separate[2],
+                                    .raw_black_level_separate[3] = image->raw_black_level_separate[3],
+                                    .raw_white_point = image->raw_white_point };
 
   self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
-
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_rawprepare_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_rawprepare_params_t));
 }
 
 void init_global(dt_iop_module_so_t *self)

@@ -1613,8 +1613,6 @@ void reload_defaults(dt_iop_module_t *self)
   d->cy = img->usercrop[0];
   d->cw = img->usercrop[3];
   d->ch = img->usercrop[2];
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_clipping_params_t));
 }
 
 static void _float_to_fract(const char *num, int *n, int *d)
