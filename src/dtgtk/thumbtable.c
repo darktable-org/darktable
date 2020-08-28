@@ -1670,6 +1670,9 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       posx = dt_conf_get_int("lighttable/zoomable/last_pos_x");
       posy = dt_conf_get_int("lighttable/zoomable/last_pos_y");
       offset = dt_conf_get_int("lighttable/zoomable/last_offset");
+      // ensure that the overall layout doesn't change
+      // (i.e. we don't get empty spaces in the very first row)
+      offset = (offset - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
       table->thumbs_area.x = posx;
       table->thumbs_area.y = posy;
     }
@@ -1750,6 +1753,9 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     table->list = newlist;
 
     _pos_compute_area(table);
+
+    // we need to ensure there's no need to load other image on top/bottom
+    if(table->mode == DT_THUMBTABLE_MODE_ZOOM) _thumbs_load_needed(table);
 
     if(g_slist_length(darktable.view_manager->active_images) > 0
        && (table->mode == DT_THUMBTABLE_MODE_ZOOM || table->mode == DT_THUMBTABLE_MODE_FILEMANAGER))
