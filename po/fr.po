@@ -10643,7 +10643,7 @@ msgstr "look + mappage (lin)"
 
 #: ../src/iop/filmicrgb.c:2537
 msgid "look + mapping (log)"
-msgstr "look + mappage (long)"
+msgstr "look + mappage (log)"
 
 #: ../src/iop/filmicrgb.c:2539
 msgid "dynamic range mapping"
