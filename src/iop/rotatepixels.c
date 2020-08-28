@@ -330,23 +330,21 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_rotatepixels_params_t tmp = { 0 };
+  dt_iop_rotatepixels_params_t *d = self->default_params;
+
+  *d = (dt_iop_rotatepixels_params_t){ 0 };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
+  if(!self->dev) return;
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
+  *d = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
 
-  self->default_enabled = ((tmp.rx != 0u) || (tmp.ry != 0u));
+  self->default_enabled = ((d->rx != 0u) || (d->ry != 0u));
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
-
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_rotatepixels_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_rotatepixels_params_t));
 }
 
 void gui_update(dt_iop_module_t *self)

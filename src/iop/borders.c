@@ -1011,8 +1011,6 @@ void init(dt_iop_module_t *self)
   g_strlcpy(defaults->aspect_text, "constant border", sizeof(defaults->aspect_text));
   g_strlcpy(defaults->pos_h_text, "1/2", sizeof(defaults->pos_h_text));
   g_strlcpy(defaults->pos_v_text, "1/2", sizeof(defaults->pos_v_text));
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_borders_params_t));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

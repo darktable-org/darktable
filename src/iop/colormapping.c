@@ -895,8 +895,6 @@ void reload_defaults(dt_iop_module_t *module)
       d->flag = HAS_SOURCE;
     }
   }
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colormapping_params_t));
 }
 
 

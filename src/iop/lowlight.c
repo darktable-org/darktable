@@ -301,8 +301,6 @@ void init(dt_iop_module_t *module)
   dt_iop_lowlight_params_t *d = module->default_params;
 
   for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++) d->transition_x[k] = k / (DT_IOP_LOWLIGHT_BANDS - 1.0);
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_lowlight_params_t));
 }
 
 void init_presets(dt_iop_module_so_t *self)

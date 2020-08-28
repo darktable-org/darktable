@@ -274,15 +274,13 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0; // we're a rather slow and rare op.
   module->params_size = sizeof(dt_iop_equalizer_params_t);
   module->gui_data = NULL;
-  dt_iop_equalizer_params_t tmp;
+  dt_iop_equalizer_params_t *d = module->default_params;
   for(int ch = 0; ch < 3; ch++)
   {
     for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++)
-      tmp.equalizer_x[ch][k] = k / (float)(DT_IOP_EQUALIZER_BANDS - 1);
-    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++) tmp.equalizer_y[ch][k] = 0.5f;
+      d->equalizer_x[ch][k] = k / (float)(DT_IOP_EQUALIZER_BANDS - 1);
+    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++) d->equalizer_y[ch][k] = 0.5f;
   }
-  memcpy(module->params, &tmp, sizeof(dt_iop_equalizer_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_equalizer_params_t));
 }
 
 #if 0

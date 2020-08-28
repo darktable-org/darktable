@@ -1463,7 +1463,6 @@ void init(dt_iop_module_t *module)
   dt_iop_basecurve_params_t *d = module->default_params;
   d->basecurve[0][1].x = d->basecurve[0][1].y = 1.0;
   d->basecurve_nodes[0] = 2;
-  memcpy(module->params, module->default_params, sizeof(dt_iop_basecurve_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)

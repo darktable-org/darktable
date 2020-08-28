@@ -1768,8 +1768,6 @@ void init(dt_iop_module_t *module)
   d->preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
   d->preview_levels[1] = 0.f;
   d->preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_retouch_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)

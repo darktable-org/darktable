@@ -534,7 +534,7 @@ void reload_defaults(dt_iop_module_t *module)
     }
   }
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
+  if(!module->dev) return;
 
   // can't be switched on for non-raw images:
   if(dt_image_is_raw(&module->dev->image_storage))
@@ -543,9 +543,6 @@ void reload_defaults(dt_iop_module_t *module)
     module->hide_enable_button = 1;
 
   module->default_enabled = 0;
-
-end:
- memcpy(module->params, module->default_params, sizeof(dt_iop_rawdenoise_params_t));
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,

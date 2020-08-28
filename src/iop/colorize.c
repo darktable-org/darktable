@@ -349,7 +349,6 @@ void init(dt_iop_module_t *module)
   dt_iop_default_init(module);
 
   ((dt_iop_colorize_params_t *)module->default_params)->version = module->version();
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorize_params_t));
 }
 
 void gui_init(struct dt_iop_module_t *self)

@@ -244,24 +244,22 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_scalepixels_params_t tmp = (dt_iop_scalepixels_params_t){ .pixel_aspect_ratio = 1.0f };
+  dt_iop_scalepixels_params_t *d = self->default_params;
+
+  *d = (dt_iop_scalepixels_params_t){ .pixel_aspect_ratio = 1.0f };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
+  if(!self->dev) return;
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp.pixel_aspect_ratio = image->pixel_aspect_ratio;
+  d->pixel_aspect_ratio = image->pixel_aspect_ratio;
 
   self->default_enabled
-      = (!isnan(tmp.pixel_aspect_ratio) && tmp.pixel_aspect_ratio > 0.0f && tmp.pixel_aspect_ratio != 1.0f);
+      = (!isnan(d->pixel_aspect_ratio) && d->pixel_aspect_ratio > 0.0f && d->pixel_aspect_ratio != 1.0f);
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
-
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_scalepixels_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_scalepixels_params_t));
 }
 
 void gui_update(dt_iop_module_t *self)

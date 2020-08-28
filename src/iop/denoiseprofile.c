@@ -3004,7 +3004,6 @@ void reload_defaults(dt_iop_module_t *module)
         default_params->x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.f);
       }
     }
-    memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
   }
 }
 

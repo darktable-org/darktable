@@ -1530,8 +1530,6 @@ void init(dt_iop_module_t *module)
   d->curve_nodes[2][1].x = d->curve_nodes[2][1].y = 1.0;
 
   module->histogram_middle_grey = d->compensate_middle_grey;
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_rgbcurve_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)

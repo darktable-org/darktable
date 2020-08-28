@@ -976,8 +976,6 @@ void init(dt_iop_module_t *module)
     d->y[atrous_Lt][k] = d->y[atrous_ct][k] = 0.0f;
     for(int c = atrous_L; c <= atrous_ct; c++) d->x[c][k] = k / (BANDS - 1.0f);
   }
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_atrous_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)

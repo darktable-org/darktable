@@ -580,7 +580,6 @@ void init(dt_iop_module_t *module)
   memset(tmp.mean, 0, sizeof(float) * MAXN * 2);
   memset(tmp.var, 0, sizeof(float) * MAXN * 2);
   tmp.n = 3;
-  memcpy(module->params, &tmp, sizeof(dt_iop_colortransfer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colortransfer_params_t));
 }
 

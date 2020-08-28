@@ -1621,11 +1621,6 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   gtk_widget_destroy(filechooser);
 }
 
-void gui_reset(dt_iop_module_t *self)
-{
-  memcpy(self->params, self->default_params, sizeof(dt_iop_lut3d_params_t));
-}
-
 static void _show_hide_colorspace(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;

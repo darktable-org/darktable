@@ -425,8 +425,6 @@ void init(dt_iop_module_t *module)
   dt_iop_channelmixer_params_t *d = module->default_params;
 
   d->red[CHANNEL_RED] = d->green[CHANNEL_GREEN] = d->blue[CHANNEL_BLUE] = 1.0;
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_channelmixer_params_t));
 }
 
 void gui_init(struct dt_iop_module_t *self)

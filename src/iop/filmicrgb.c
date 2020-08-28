@@ -2305,7 +2305,7 @@ void reload_defaults(dt_iop_module_t *module)
   module->default_enabled = FALSE;
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id == -1) goto end;
+  if(!module->dev || module->dev->image_storage.id == -1) return;
 
   gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
@@ -2325,9 +2325,6 @@ void reload_defaults(dt_iop_module_t *module)
     d->output_power = logf(d->grey_point_target / 100.0f)
                       / logf(-d->black_point_source / (d->white_point_source - d->black_point_source));
   }
-
-end:
-  memcpy(module->params, module->default_params, sizeof(dt_iop_filmicrgb_params_t));
 }
 
 
