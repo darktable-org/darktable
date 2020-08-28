@@ -327,7 +327,9 @@ static void init_column_sums_sse2(float *const col_sums, const patch_t *const pa
     col_sums[col] = sum;
   }
   // clear out any columns where the patch column would be outside the RoI, as well as our overrun area
-  for (int col = col_max; col < chunk_right + radius; col++)
+  // (When the chunk is sufficiently narrow, col_max can become less than col_min, which would cause a buffer
+  // under-run if we didn't check for that condition here.)
+  for (int col = MAX(col_min,col_max); col < chunk_right + radius; col++)
   {
     col_sums[col] = 0;
 #ifdef CACHE_PIXDIFFS_SSE
@@ -374,13 +376,15 @@ static int compute_slice_width(const int width)
 {
   int sl_width = SLICE_WIDTH;
   // if there's just a sliver left over for the last column, see whether slicing a few pixels off each gives
-  // us a mostly-full final chunk
-  if (width % sl_width < SLICE_WIDTH/2)
+  // us a more nearly full final chunk
+  int rem = width % sl_width;
+  if (rem < SLICE_WIDTH/2 && (width % (sl_width-4)) > rem)
   {
-    if (width % (sl_width-4) >= SLICE_WIDTH/2)
+    sl_width -= 4;
+    // check whether removing an additional sliver improves things even more
+    rem = width % sl_width;
+    if (rem < SLICE_WIDTH/2 && (width % (sl_width-4)) > rem)
       sl_width -= 4;
-    else if (width % (sl_width-8) >= SLICE_WIDTH/2)
-      sl_width -= 8;
   }
   return sl_width;
 }
