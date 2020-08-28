@@ -82,8 +82,9 @@ typedef struct dt_lib_histogram_t
   uint32_t *histogram;
   uint32_t histogram_max;
   // waveform histogram buffer and dimensions
-  uint8_t *waveform;
-  uint32_t waveform_width, waveform_height, waveform_stride;
+  float *waveform_linear, *waveform_display;
+  uint8_t *waveform_8bit;
+  uint32_t waveform_width, waveform_height, waveform_max_width;
   dt_pthread_mutex_t lock;
   // exposure params on mouse down
   float exposure, black;
@@ -189,103 +190,53 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
-  const int waveform_height = d->waveform_height;
-  const int waveform_stride = d->waveform_stride;
-  uint8_t *const waveform = d->waveform;
+  const int wf_height = d->waveform_height;
+  float *const wf_linear = d->waveform_linear;
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on draw to smoothly do horizontal
   // scaling.
   // Note that waveform_stride is pre-initialized/hardcoded,
   // but waveform_width varies, depending on preview image
   // width and # of bins.
-  const int bin_width = ceilf(width / (float)waveform_stride);
-  const int waveform_width = ceilf(width / (float)bin_width);
+  const int bin_width = ceilf(width / (float)d->waveform_max_width);
+  const int wf_width = ceilf(width / (float)bin_width);
+  d->waveform_width = wf_width;
 
-  // max input size should be 1440x900, and with a bin_width of 1,
-  // that makes a maximum possible count of 900 in buf, while even if
-  // waveform buffer is 128 (about smallest possible), bin_width is
-  // 12, making max count of 10,800, still much smaller than uint16_t
-  uint16_t *buf = calloc(waveform_width * waveform_height * 3, sizeof(uint16_t));
+  memset(wf_linear, 0, sizeof(float) * wf_width * wf_height * 4);
+
+  // Every bin_width x height portion of the image is being described
+  // in a 1 pixel x wf_height portion of the histogram.
+  const float brightness = wf_height / 40.0f;
+  const float scale = brightness / (height * bin_width);
 
   // 1.0 is at 8/9 of the height!
-  const float _height = (float)(waveform_height - 1);
+  const float _height = (float)(wf_height - 1);
 
-  // count the colors into buf ...
+  // count the colors
+  // note that threads must handle >= bin_width columns to not overwrite each other
+  // FIXME: instead outer loop could be by bin
+  // FIXME: could flip x/y axes here and when reading to make row-wise iteration?
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(bin_width, _height, waveform_width, input, buf, width, height) \
-  schedule(static)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(input, width, height, wf_width, bin_width, _height, scale) \
+  shared(wf_linear) aligned(input, wf_linear:64) \
+  schedule(simd:static, bin_width)
 #endif
-  for(int in_y = 0; in_y < height; in_y++)
+  for(int x = 0; x < width; x++)
   {
-    for(int in_x = 0; in_x < width; in_x++)
+    float *const out = wf_linear + 4 * (x / bin_width);
+    for(int y = 0; y < height; y++)
     {
-      const float *const in = input + 4 * (in_y*width + in_x);
-      const int out_x = in_x / bin_width;
+      const float *const in = input + 4 * (y * width + x);
       for(int k = 0; k < 3; k++)
       {
         const float v = 1.0f - (8.0f / 9.0f) * in[2 - k];
         // flipped from dt's CLAMPS so as to treat NaN's as 0 (NaN compares false)
         const int out_y = (v < 1.0f ? (v > 0.0f ? v : 0.0f) : 1.0f) * _height;
-        __sync_add_and_fetch(buf + (out_x + waveform_width * out_y) * 3 + k, 1);
+        out[4 * wf_width * out_y + k] += scale;
       }
     }
   }
-
-  // TODO: Find a nicer function to map buf -> image than just clipping
-  //         float factor[3];
-  //         for(int k = 0; k < 3; k++)
-  //           factor[k] = 255.0 / (float)(maxcol[k] - mincol[k]); // leave some clipping
-
-  // ... and scale that into a nice image. putting the pixels into the image directly gets too
-  // saturated/clips.
-
-  // new scale factor to do about the same as the old one for 1MP views, but scale to hidpi
-  const float scale = 0.5 * 1e6f/(height*width) *
-    (waveform_width*waveform_height) / (350.0f*233.)
-    / 255.0f; // normalization to 0..1 for gamma correction
-  const float gamma = 1.0 / 1.5; // TODO make this settable from the gui?
-  //uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
-  // even bin_width 12 and height 900 image gives 10,800 byte cache, more normal will ~1K
-  const int cache_size = (height * bin_width) + 1;
-  uint8_t *cache = (uint8_t *)calloc(cache_size, sizeof(uint8_t));
-
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(waveform_width, waveform_height, waveform_stride, buf, waveform, cache, scale, gamma) \
-  schedule(static) collapse(2)
-#endif
-  for(int k = 0; k < 3; k++)
-  {
-    for(int out_y = 0; out_y < waveform_height; out_y++)
-    {
-      const uint16_t *const in = buf + (waveform_width * out_y) * 3 + k;
-      uint8_t *const out = waveform + (waveform_stride * (waveform_height * k + out_y));
-      for(int out_x = 0; out_x < waveform_width; out_x++)
-      {
-        //mincol[k] = MIN(mincol[k], in[k]);
-        //maxcol[k] = MAX(maxcol[k], in[k]);
-        const uint16_t v = in[out_x * 3];
-        // cache XORd result so common casees cached and cache misses are quick to find
-        if(!cache[v])
-        {
-          // multiple threads may be writing to cache[v], but as
-          // they're writing the same value, don't declare omp atomic
-          cache[v] = (uint8_t)(CLAMP(powf(v * scale, gamma) * 255.0, 0, 255)) ^ 1;
-        }
-        out[out_x] = cache[v] ^ 1;
-        //               if(in[k] == 0)
-        //                 out[k] = 0;
-        //               else
-        //                 out[k] = (float)(in[k] - mincol[k]) * factor[k];
-      }
-    }
-  }
-  //printf("mincol %d,%d,%d maxcol %d,%d,%d\n", mincol[0], mincol[1], mincol[2], maxcol[0], maxcol[1], maxcol[2]);
-  d->waveform_width = waveform_width;
-
-  free(cache);
-  free(buf);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
@@ -308,7 +259,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   {
     dt_pthread_mutex_lock(&d->lock);
     memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
-    memset(d->waveform, 0, sizeof(uint8_t) * d->waveform_height * d->waveform_stride * 3);
+    d->waveform_width = 0;
     dt_pthread_mutex_unlock(&d->lock);
     return;
   }
@@ -529,7 +480,8 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   return TRUE;
 }
 
-static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
+static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
+                                          int width, int height, const uint8_t mask[3])
 {
   if(!d->histogram_max) return;
   const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
@@ -547,64 +499,119 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 }
 
-static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
+static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
+                                         int width, int height, const uint8_t mask[3])
 {
+  dt_develop_t *dev = darktable.develop;
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
-  const gint wf_stride = d->waveform_stride;
-  // FIXME: skip this alloc/copy if there's a way not to re-arrange the data
-  uint8_t *wav = malloc(sizeof(uint8_t) * wf_height * wf_stride * 4);
-  if(wav)
-  {
-    const uint8_t *const wf_buf = d->waveform;
-    for(int y = 0; y < wf_height; y++)
-      for(int x = 0; x < wf_width; x++)
-        for(int k = 0; k < 3; k++)
-          wav[4 * (y * wf_stride + x) + k] = wf_buf[wf_stride * (y + k * wf_height) + x] * mask[2-k];
-  }
-  if(wav == NULL) return;
+  const int wf_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wf_width);
+  float *const wf_linear = d->waveform_linear;
+  float *const wf_display = d->waveform_display;
+  uint8_t *const wf_8bit = d->waveform_8bit;
 
-  // NOTE: The nice way to do this would be to draw each color channel
-  // separately, overlaid, via cairo. Unfortunately, that is about
-  // twice as slow as compositing the channels by hand, so we do the
-  // latter, at the cost of some extra code (and comments) and of
-  // making the color channel selector work by hand.
+  // FIXME: instead of just using 100% R/G/B we could choose the colors we want R/G/B to represent
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(wf_linear, wf_width, wf_height, mask) \
+  shared(wf_display) aligned(wf_linear, wf_display:64) \
+  schedule(simd:static)
+#endif
+  for(int p = 0; p < wf_height * wf_width * 4; p += 4)
+    for(int k = 0; k < 3; k++)
+      // FIXME: if use lcms2 straight to 8-bit don't need to constrain?
+      wf_display[p + k] = mask[2-k] ? MIN(1.0f, wf_linear[p + k]) : 0.0f;
+
+  // FIXME: can/should we cache the linear rec 709 profile info?
+  // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- as ioppr ignores intent?
+  const dt_iop_order_iccprofile_info_t *const profile_from =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC709, "", DT_INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_to =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
+  // FIXME: are better off using lcms2 and converting directly from float to 8-bit
+  dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
+                                          profile_from, profile_to, "waveform to display");
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
+  shared(wf_8bit) aligned(wf_8bit, wf_display:64) \
+  schedule(simd:static) collapse(2)
+#endif
+  for(int y = 0; y < wf_height; y++)
+    for(int x = 0; x < wf_width; x++)
+      for(int k = 0; k < 3; k++)
+        // FIXME: would it be better to round this instead of truncate?
+        wf_8bit[(y * wf_stride + x * 4) + k] = wf_display[4 * (y * wf_width + x) + k] * 255.0f;
 
   cairo_surface_t *source
-      = dt_cairo_image_surface_create_for_data(wav, CAIRO_FORMAT_RGB24,
-                                               wf_width, wf_height, wf_stride * 4);
+      = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_RGB24,
+                                               wf_width, wf_height, wf_stride);
   cairo_scale(cr, darktable.gui->ppd*width/wf_width, darktable.gui->ppd*height/wf_height);
   cairo_set_source_surface(cr, source, 0.0, 0.0);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_paint(cr);
   cairo_surface_destroy(source);
-
-  free(wav);
 }
 
-static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
+static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
+                                           int width, int height, const uint8_t mask[3])
 {
+  dt_develop_t *dev = darktable.develop;
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
-  const gint wf_stride = d->waveform_stride;
+  const int wf_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wf_width);
+  float *const wf_linear = d->waveform_linear;
+  float *const wf_display = d->waveform_display;
+  uint8_t *const wf_8bit = d->waveform_8bit;
+  // FIXME: can/should we cache the linear rec 709 profile info?
+  // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- do ioppr mind intent?
+  const dt_iop_order_iccprofile_info_t *const profile_from =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC709, "", DT_INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_to =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
 
-  // don't multiply by ppd as the source isn't screen pixels (though the mask is pixels)
+  // FIXME: is that right anymore? though this does work...
+  // don't multiply by ppd as the source isn't screen pixels
   cairo_scale(cr, (double)width/(wf_width*3), (double)height/wf_height);
-  // this makes the blue come in more than CAIRO_OPERATOR_ADD, as it can go darker than the background
-  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
   for(int k = 0; k < 3; k++)
   {
     if(mask[k])
     {
-      cairo_save(cr);
-      cairo_set_source_rgb(cr, k==0, k==1, k==2);
-      cairo_surface_t *alpha
-          = cairo_image_surface_create_for_data(d->waveform + wf_stride * wf_height * (2-k),
-                                                CAIRO_FORMAT_A8, wf_width, wf_height, wf_stride);
-      cairo_mask_surface(cr, alpha, 0, 0);
-      cairo_surface_destroy(alpha);
-      cairo_restore(cr);
+      // FIXME: instead of just using 100% R/G/B we could choose the colors we want R/G/B to represent
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(wf_linear, wf_width, wf_height, k) \
+  shared(wf_display) aligned(wf_linear, wf_display:64) \
+  schedule(simd:static)
+#endif
+      for(int p = 0; p < wf_height * wf_width * 4; p += 4)
+        for(int rgb = 0; rgb < 3; rgb++)
+          // FIXME: if use lcms2 straight to 8-bit don't need to constrain?
+          wf_display[p + rgb] = (rgb == 2-k) ? MIN(1.0f, wf_linear[p + rgb]) : 0.0f;
+
+      // FIXME: are better off using lcms2 and converting directly from float to 8-bit
+      dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
+                                              profile_from, profile_to, "rgb parade to display");
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
+  shared(wf_8bit) aligned(wf_8bit, wf_display:64) \
+  schedule(simd:static) collapse(2)
+#endif
+      for(int y = 0; y < wf_height; y++)
+        for(int x = 0; x < wf_width; x++)
+          for(int rgb = 0; rgb < 3; rgb++)
+            wf_8bit[(y * wf_stride + x * 4) + rgb] = wf_display[4 * (y * wf_width + x) + rgb] * 255.0f;
+
+      cairo_surface_t *source = cairo_image_surface_create_for_data(
+        wf_8bit, CAIRO_FORMAT_RGB24, wf_width, wf_height, wf_stride);
+      cairo_set_source_surface(cr, source, 0.0, 0.0);
+      cairo_paint(cr);
+      cairo_surface_destroy(source);
     }
     cairo_translate(cr, wf_width, 0);
   }
@@ -612,6 +619,9 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
 
 static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
+  dt_times_t start_time = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_develop_t *dev = darktable.develop;
@@ -665,13 +675,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 
   // darkroom view: draw scope so long as preview pipe is finished
   // tether view: draw whatever has come in from tether
-  // FIXME: should set histogram buffer to black if have just entered tether view and nothing is displayed, or if have left live view with no image selected
+  // FIXME: should set histogram buffer to black if have just entered tether view and nothing is displayed
   dt_pthread_mutex_lock(&d->lock);
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view(cv) == DT_VIEW_TETHERING || dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
-    cairo_save(cr);
     uint8_t mask[3] = { d->red, d->green, d->blue };
+    cairo_save(cr);
     switch(d->scope_type)
     {
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
@@ -705,6 +715,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
     }
+    // FIXME: if go all the way with color profiling, these should be Rec.709 converted to display profile RGB -- or we just finish all the drawing in linear, then get the buffer and convert to display profile, but it does lose some precision
+    // FIXME: in RGB Levels the histogram background have a nice light blue -- do we use this -- and if so do we use that color rather than Rec.709 blue etc. for the waveform?
     cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.33);
     _draw_color_toggle(cr, d->red_x, d->button_y, d->button_w, d->button_h, d->red);
     cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.33);
@@ -717,6 +729,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_times_t end_time = { 0 };
+    dt_get_times(&end_time);
+    fprintf(stderr, "scope draw took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+  }
 
   return TRUE;
 }
@@ -1230,15 +1249,19 @@ void gui_init(dt_lib_module_t *self)
   // (regardless of ppd). Try to get enough detail for a (default)
   // 350px panel, possibly 2x that on hidpi.  The actual buffer
   // width will vary with integral binning of image.
-  d->waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
+  // FIXME: increasing waveform_max_width increases processing speed less than increasing waveform_height -- tune these better?
+  d->waveform_max_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
+  // initially no waveform to draw
+  d->waveform_width = 0;
   // 175 rows is the default histogram widget height. It's OK if the
   // widget height changes from this, as the width will almost always
   // be scaled. 175 rows is reasonable CPU usage and represents plenty
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
   d->waveform_height = 175;
-  d->waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
-  d->waveform = calloc(d->waveform_height * d->waveform_stride * 3, sizeof(uint8_t));
+  d->waveform_linear = dt_alloc_align(64, sizeof(float) * d->waveform_height * d->waveform_max_width * 4);
+  d->waveform_display = dt_alloc_align(64, sizeof(float) * d->waveform_height * d->waveform_max_width * 4);
+  d->waveform_8bit = dt_alloc_align(64, sizeof(uint8_t) * d->waveform_height * d->waveform_max_width * 4);
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
@@ -1283,7 +1306,9 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   free(d->histogram);
-  free(d->waveform);
+  dt_free_align(d->waveform_linear);
+  dt_free_align(d->waveform_display);
+  dt_free_align(d->waveform_8bit);
   dt_pthread_mutex_destroy(&d->lock);
 
   g_free(self->data);
