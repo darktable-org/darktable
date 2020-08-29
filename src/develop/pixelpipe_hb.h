@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/atomic.h"
 #include "common/image.h"
 #include "common/imageio.h"
 #include "common/iop_order.h"
@@ -126,7 +127,7 @@ typedef struct dt_dev_pixelpipe_t
   // working?
   int processing;
   // shutting down?
-  int shutdown;
+  dt_atomic_int shutdown;
   // opencl enabled for this pixelpipe?
   int opencl_enabled;
   // opencl error detected?
