@@ -247,8 +247,8 @@
     <para>
       Sets the color profile for the display. The option <quote>system display profile</quote>
       is the preferred setting when working with a calibrated display; the profile is taken
-      either from your system's color manager or from your X display server. In <emphasis>GUI
-      options</emphasis> (see <xref linkend="gui_options"/>) you can specify which method to
+      either from your system's color manager or from your X display server. In <emphasis>miscellaneous
+      options</emphasis> (see <xref linkend="miscellaneous"/>) you can specify which method to
       use. For more information see <xref linkend="display_profile"/>.
     </para>
 
