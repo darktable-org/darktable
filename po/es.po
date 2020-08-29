@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Bookmarks: -1,1170,-1,-1,-1,-1,-1,-1,-1,-1\n"
-"X-Generator: Poedit 2.3.1\n"
+"X-Generator: Poedit 2.4.1\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -2171,8 +2171,8 @@ msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"Preguntar siempre antes de remover cualquier carpeta vacía. Esto puede pasar "
-"después de mover o eliminar imágenes."
+"Preguntar siempre antes de eliminar cualquier carpeta vacía. Esto puede "
+"pasar después de mover o eliminar imágenes."
 
 #: ../build/src/preferences_gen.h:3550
 msgid "ask before deleting a tag"
@@ -5504,7 +5504,7 @@ msgstr "vistas/miniaturas/color púrpura"
 #: ../src/dtgtk/thumbtable.c:2042
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
-msgstr "vistas/miniaturas/remover marcas de color"
+msgstr "vistas/miniaturas/eliminar marcas de color"
 
 #. setup selection accelerators
 #: ../src/dtgtk/thumbtable.c:2045
@@ -10346,7 +10346,8 @@ msgstr ""
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
-"Donde se medirá el histograma para remover el parpadeo (p.ej. 50% es mediano)"
+"Donde se medirá el histograma para eliminar el parpadeo (p.ej. 50% es "
+"mediano)"
 
 #: ../src/iop/exposure.c:912
 msgid ""
@@ -14328,8 +14329,9 @@ msgstr "Advertencia de compresión del historial"
 #, c-format
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
-msgstr[0] "¿Desea realmente remover el historial de %d imagen seleccionada?"
-msgstr[1] "¿Desea realmente remover el historial de %d imágenes seleccionadas?"
+msgstr[0] "¿Desea realmente eliminar el historial de %d imagen seleccionada?"
+msgstr[1] ""
+"¿Desea realmente eliminar el historial de %d imágenes seleccionadas?"
 
 #: ../src/libs/copy_history.c:222
 msgid "delete images' history?"
@@ -15129,7 +15131,7 @@ msgstr "sincronizar copia local"
 
 #: ../src/libs/image.c:484
 msgid "synchronize the image's XMP and remove the local copy"
-msgstr "Sincronizar el XMP de la imagen y remover la copia local"
+msgstr "Sincronizar el XMP de la imagen y eliminar la copia local"
 
 #: ../src/libs/image.c:489 ../src/libs/tools/filter.c:92
 msgid "group"
@@ -15193,7 +15195,7 @@ msgstr "eliminar"
 
 #: ../src/libs/image.c:561
 msgid "clear selected metadata on selected images"
-msgstr "Remover los metadatos elegidos de las imágenes seleccionadas"
+msgstr "Eliminar los metadatos elegidos de las imágenes seleccionadas"
 
 #: ../src/libs/image.c:567
 msgid "merge"
@@ -15648,7 +15650,7 @@ msgstr "borrar esta figura"
 
 #: ../src/libs/masks.c:1133
 msgid "remove from group"
-msgstr "remover del grupo"
+msgstr "eliminar del grupo"
 
 #: ../src/libs/masks.c:1141
 msgid "group the forms"
@@ -15676,7 +15678,7 @@ msgstr "modo : exclusión"
 
 #: ../src/libs/masks.c:1179
 msgid "cleanup unused shapes"
-msgstr "remover figuras no usadas"
+msgstr "eliminar figuras no usadas"
 
 #: ../src/libs/masks.c:1651
 msgid "created shapes"
