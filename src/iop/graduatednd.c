@@ -50,12 +50,12 @@ DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 
 typedef struct dt_iop_graduatednd_params_t
 {
-  float density;     // $MIN: -8.0 $MAX: 8.0 $DEFAULT: 1.0 The density of filter 0-8 EV
-  float hardness;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 0% = soft and 100% = hard
-  float rotation;    // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0 2*PI -180 - +180
-  float offset;      // $DEFAULT: 50.0 centered, can be offsetted...
-  float hue;         // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0
-  float saturation;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0
+  float density;     // $MIN: -8.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "density" The density of filter 0-8 EV
+  float hardness;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "hardness" 0% = soft and 100% = hard
+  float rotation;    // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0 $DESCRIPTION: "rotation" 2*PI -180 - +180
+  float offset;      // $DEFAULT: 50.0 $DESCRIPTION: "offset" centered, can be offsetted...
+  float hue;         // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+  float saturation;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation"
 } dt_iop_graduatednd_params_t;
 
 typedef struct dt_iop_graduatednd_global_data_t

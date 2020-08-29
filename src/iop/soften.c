@@ -670,15 +670,15 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_soften_gui_data_t));
   dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
 
-  g->size = dt_bauhaus_slider_from_params(self, "size");
+  g->size = dt_bauhaus_slider_from_params(self, N_("size"));
   dt_bauhaus_slider_set_format(g->size, "%.0f%%");
   gtk_widget_set_tooltip_text(g->size, _("the size of blur"));
 
-  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
+  g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
   dt_bauhaus_slider_set_format(g->saturation, "%.0f%%");
   gtk_widget_set_tooltip_text(g->saturation, _("the saturation of blur"));
 
-  g->brightness = dt_bauhaus_slider_from_params(self, "brightness");
+  g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
   dt_bauhaus_slider_set_format(g->brightness, _("%.2f EV"));
   gtk_widget_set_tooltip_text(g->brightness, _("the brightness of blur"));
 

@@ -76,20 +76,6 @@ typedef enum dt_dev_rawoverexposed_colorscheme_t {
   DT_DEV_RAWOVEREXPOSED_BLACK = 3
 } dt_dev_rawoverexposed_colorscheme_t;
 
-typedef enum dt_dev_scope_type_t
-{
-  DT_DEV_SCOPE_HISTOGRAM = 0,
-  DT_DEV_SCOPE_WAVEFORM,
-  DT_DEV_SCOPE_N // needs to be the last one
-} dt_dev_scope_type_t;
-
-typedef enum dt_dev_histogram_type_t
-{
-  DT_DEV_HISTOGRAM_LOGARITHMIC = 0,
-  DT_DEV_HISTOGRAM_LINEAR,
-  DT_DEV_HISTOGRAM_N // needs to be the last one
-} dt_dev_histogram_type_t;
-
 typedef enum dt_dev_transform_direction_t
 {
   DT_DEV_TRANSFORM_DIR_ALL = 0,
@@ -128,8 +114,6 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
-
-extern const gchar *dt_dev_scope_type_names[];
 
 typedef struct dt_dev_proxy_exposure_t
 {
@@ -195,12 +179,8 @@ typedef struct dt_develop_t
   GList *allprofile_info;
 
   // histogram for display.
-  uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
-  uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  uint8_t *histogram_waveform;
-  uint32_t histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
-  dt_dev_scope_type_t scope_type;
-  dt_dev_histogram_type_t histogram_type;
+  uint32_t *histogram_pre_tonecurve, *histogram_pre_levels;
+  uint32_t histogram_pre_tonecurve_max, histogram_pre_levels_max;
 
   // list of forms iop can use for masks or whatever
   GList *forms;
@@ -342,6 +322,7 @@ typedef struct dt_develop_t
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
+float dt_dev_get_preview_downsampling();
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
 void dt_dev_process_preview2_job(dt_develop_t *dev);
@@ -383,7 +364,6 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int mode);
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x,
                                  float *zoom_y);
-
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);

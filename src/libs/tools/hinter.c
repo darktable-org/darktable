@@ -72,6 +72,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_event_box_new();
   d->label = gtk_label_new("");
+  gtk_label_set_ellipsize(GTK_LABEL(d->label), PANGO_ELLIPSIZE_END);
   gtk_container_add(GTK_CONTAINER(self->widget), d->label);
 
   darktable.control->proxy.hinter.module = self;

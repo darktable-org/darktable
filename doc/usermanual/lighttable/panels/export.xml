@@ -739,6 +739,15 @@
         your can tweak the export metadata configuration.
       </para>
 
+      <para>
+        Exported grayscale TIFF images - either originating from a monochrome camera or after
+        conversion - can either contain all valid RGB channels (default) or just one intensity
+        channel, you can select this in the menu.
+
+        The second option leads to smaller files but at least some windows printer drivers
+        don't like them.    
+      </para>
+
     </sect4>
 
     <sect4 id="export_selected_usage_size">

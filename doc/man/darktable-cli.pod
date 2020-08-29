@@ -108,6 +108,8 @@ appended to it.
 With this option you can decide if darktable loads its set of default parameters from
 B<data.db> and applies them. Otherwise the defaults that ship with darktable are used.
 
+Set this flag to false in order to run multiple instances.
+
 =item B<< --verbose  >>
 
 Enables verbose output.

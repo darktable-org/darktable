@@ -322,8 +322,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
           if(plugin->view_leave) plugin->view_leave(plugin, old_view, NULL);
           plugin->gui_cleanup(plugin);
           plugin->data = NULL;
-          dt_accel_disconnect_list(plugin->accel_closures);
-          plugin->accel_closures = NULL;
+          dt_accel_disconnect_list(&plugin->accel_closures);
           plugin->widget = NULL;
         }
       }
@@ -353,8 +352,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   {
     /* leave current view */
     if(old_view->leave) old_view->leave(old_view);
-    dt_accel_disconnect_list(old_view->accel_closures);
-    old_view->accel_closures = NULL;
+    dt_accel_disconnect_list(&old_view->accel_closures);
 
     /* iterator plugins and cleanup plugins in current view */
     for(GList *iter = darktable.lib->plugins; iter; iter = g_list_next(iter))
@@ -365,8 +363,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       if(dt_lib_is_visible_in_view(plugin, old_view))
       {
         if(plugin->view_leave) plugin->view_leave(plugin, old_view, new_view);
-        dt_accel_disconnect_list(plugin->accel_closures);
-        plugin->accel_closures = NULL;
+        dt_accel_disconnect_list(&plugin->accel_closures);
       }
     }
 
@@ -747,8 +744,9 @@ static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboo
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        if(!g_list_find_custom(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)), _images_to_act_on_find_custom))
-          *list = g_list_append(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+        const int imgidg = sqlite3_column_int(stmt, 0);
+        if(!g_list_find_custom(*list, GINT_TO_POINTER(imgidg), _images_to_act_on_find_custom))
+          *list = g_list_append(*list, GINT_TO_POINTER(imgidg));
       }
       sqlite3_finalize(stmt);
       g_free(query);

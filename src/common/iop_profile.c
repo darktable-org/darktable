@@ -729,7 +729,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop
   if(in_between)
   {
     dt_colorspaces_color_profile_type_t type = DT_COLORSPACE_NONE;
-    char *filename = NULL;
+    const char *filename = NULL;
     dt_develop_t *dev = module->dev;
 
     dt_ioppr_get_work_profile_type(dev, &type, &filename);
@@ -757,7 +757,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_de
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
 {
   dt_colorspaces_color_profile_type_t histogram_profile_type;
-  char *histogram_profile_filename;
+  const char *histogram_profile_filename;
   dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
   return dt_ioppr_add_profile_info_to_list(dev, histogram_profile_type, histogram_profile_filename,
                                            DT_INTENT_PERCEPTUAL);
@@ -770,7 +770,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_de
 
 // returns a pointer to the filename of the work profile instead of the actual string data
 // pointer must not be stored
-void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, char **profile_filename)
+void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename)
 {
   *profile_type = DT_COLORSPACE_NONE;
   *profile_filename = NULL;
@@ -819,7 +819,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type,
     fprintf(stderr, "[dt_ioppr_get_work_profile_type] can't find colorin iop\n");
 }
 
-void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, char **profile_filename)
+void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename)
 {
   *profile_type = DT_COLORSPACE_NONE;
   *profile_filename = NULL;
@@ -868,7 +868,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_typ
     fprintf(stderr, "[dt_ioppr_get_export_profile_type] can't find colorout iop\n");
 }
 
-void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filename)
+void dt_ioppr_get_histogram_profile_type(int *profile_type, const char **profile_filename)
 {
   const dt_colorspaces_color_mode_t mode = darktable.color_profiles->mode;
 

@@ -186,7 +186,7 @@ fi
 # ---------------------------------------------------------------------------
 
 cat <<EOF
-Darktable build script
+darktable build script
 
 Building directory:  $BUILD_DIR
 Build tasks:         $MAKE_TASKS

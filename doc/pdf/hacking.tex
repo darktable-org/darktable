@@ -66,14 +66,14 @@
 %\setkomafont{sectioning}{\sfdefault}
 
 
-\title{Darktable Programmer's Guide}
+\title{darktable Programmer's Guide}
 \author{hanatos}
 
 \begin{document}
 
 \fbox{\includegraphics[width=\linewidth]{header12}}%
 \vspace*{-1em}%
-\section*{\hfill Darktable Programmer's Guide}
+\section*{\hfill darktable Programmer's Guide}
 \hrule
 
 \vspace*{4\baselineskip}
@@ -184,7 +184,7 @@ The buffers are as follows:
     \code{DT\_IMAGE\_MIP0-4}. It stores a capped-size four float per pixel representation of the input image.
 
     This buffer is needed to reduce the overall mem requirements and still process multiple thumbnails of large images
-    in parallel. Darktable rather stores and prefetches a few low-resolution \code{MIPF} buffers instead of full images.
+    in parallel. darktable rather stores and prefetches a few low-resolution \code{MIPF} buffers instead of full images.
 
     \code{MIPF} can never be explicitly loaded.
 

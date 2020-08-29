@@ -785,7 +785,7 @@ int32_t dt_image_duplicate(const int32_t imgid)
 }
 
 
-int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
+int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
 {
   sqlite3_stmt *stmt;
   int32_t newid = -1;
@@ -875,6 +875,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+#ifdef HAVE_SQLITE_324_OR_NEWER
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO main.tagged_images (imgid, tagid, position)"
                                 "  SELECT ?1, tagid, "
@@ -888,6 +889,24 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+#else // break down the tagged_images insert per tag
+    GList *tags = dt_tag_get_tags(imgid, FALSE);
+    for(GList *tag = tags; tag; tag = g_list_next(tag))
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "INSERT INTO main.tagged_images (imgid, tagid, position)"
+                                  "  VALUES (?1, ?2, "
+                                  "   (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
+                                  "     + (1 << 32)"
+                                  "   FROM main.tagged_images))",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, GPOINTER_TO_INT(tag->data));
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    g_list_free(tags);
+#endif
 
     if(darktable.develop->image_storage.id == imgid)
     {
@@ -905,15 +924,8 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    // make sure that the duplicate doesn't have some magic darktable| tags
-    if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
-       || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
-    /* unset change timestamp */
-    dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
-
     // set version of new entry and max_version of all involved duplicates (with same film_id and filename)
+    // this needs to happen before we do anything with the image cache, as version isn't updated through the cache
     const int32_t version = (newversion != -1) ? newversion : max_version + 1;
     max_version = (newversion != -1) ? MAX(max_version, newversion) : max_version + 1;
 
@@ -934,6 +946,22 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_finalize(stmt);
 
     g_free(filename);
+  }
+  return newid;
+}
+
+int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
+{
+  const int32_t newid = _image_duplicate_with_version(imgid, newversion);
+  if(newid != -1)
+  {
+    // make sure that the duplicate doesn't have some magic darktable| tags
+    if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
+       || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+    /* unset change timestamp */
+    dt_image_cache_unset_change_timestamp(darktable.image_cache, newid);
 
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     const int grpid = img->group_id;
@@ -943,6 +971,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       darktable.gui->expanded_group_id = grpid;
     }
     dt_grouping_add_to_group(grpid, newid);
+
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   }
   return newid;
@@ -1108,6 +1137,7 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
     }
 
     int newid = id;
+    int grpid = -1;
 
     if(!count_xmps_processed)
     {
@@ -1123,8 +1153,14 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
     }
     else
     {
-      //create a new duplicate based on the passed-in id
-      newid = dt_image_duplicate_with_version(id, version);
+      // create a new duplicate based on the passed-in id. Note that we do not call
+      // dt_image_duplicate_with_version() as this version also set the group which
+      // is using DT_IMAGE_CACHE_SAFE and so will write the .XMP. But we must avoid
+      // this has the xmp for the duplicate is read just below.
+      newid = _image_duplicate_with_version(id, version);
+      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
+      grpid = img->group_id;
+      dt_image_cache_read_release(darktable.image_cache, img);
     }
     // make sure newid is not selected
     dt_selection_clear(darktable.selection);
@@ -1133,6 +1169,13 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
     img->version = version;
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
+    if(grpid != -1)
+    {
+      // now it is safe to set the duplicate group-id
+      dt_grouping_add_to_group(grpid, newid);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    }
+
     count_xmps_processed++;
     file_iter = g_list_next(file_iter);
   }
@@ -1140,8 +1183,8 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
   g_list_free_full(files, g_free);
 }
 
-static uint32_t dt_image_import_internal(const int32_t film_id, const char *filename,
-                                         gboolean override_ignore_jpegs, gboolean lua_locking)
+static uint32_t _image_import_internal(const int32_t film_id, const char *filename,
+                                       gboolean override_ignore_jpegs, gboolean lua_locking)
 {
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename
@@ -1416,12 +1459,12 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
 
 uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
+  return _image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
 }
 
 uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
+  return _image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
 }
 
 void dt_image_init(dt_image_t *img)
@@ -1832,6 +1875,7 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
+#ifdef HAVE_SQLITE_324_OR_NEWER
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "INSERT INTO main.tagged_images (imgid, tagid, position)"
                                     " SELECT ?1, tagid, "
@@ -1845,7 +1889,24 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
-
+#else   // break down the tagged_images insert per tag
+        GList *tags = dt_tag_get_tags(imgid, FALSE);
+        for(GList *tag = tags; tag; tag = g_list_next(tag))
+        {
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                      "INSERT INTO main.tagged_images (imgid, tagid, position)"
+                                      "  VALUES (?1, ?2, "
+                                      "   (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
+                                      "     + (1 << 32)"
+                                      "   FROM main.tagged_images))",
+                                      -1, &stmt, NULL);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, GPOINTER_TO_INT(tag->data));
+          sqlite3_step(stmt);
+          sqlite3_finalize(stmt);
+        }
+        g_list_free(tags);
+#endif
         // get max_version of image duplicates in destination filmroll
         int32_t max_version = -1;
         DT_DEBUG_SQLITE3_PREPARE_V2

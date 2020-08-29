@@ -106,7 +106,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *module, dt_dev_pixelpipe_io
   }
 }
 
-static void _iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean update)
+static void _iop_color_picker_reset(dt_iop_color_picker_t *picker)
 {
   if(picker)
   {
@@ -121,13 +121,13 @@ static void _iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean upda
   }
 }
 
-void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean update)
+void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep)
 {
   if(module && module->picker)
   {
-    if(strcmp(gtk_widget_get_name(module->picker->colorpick), "keep-active") != 0)
+    if(!keep || (strcmp(gtk_widget_get_name(module->picker->colorpick), "keep-active") != 0))
     {
-      _iop_color_picker_reset(module->picker, update);
+      _iop_color_picker_reset(module->picker);
       module->picker = NULL;
       module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     }
@@ -145,7 +145,7 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
   for(int j = 0; j<2; j++) picker->pick_pos[j] = NAN;
   for(int j = 0; j < 4; j++) picker->pick_box[j] = NAN;
 
-  _iop_color_picker_reset(picker, TRUE);
+  _iop_color_picker_reset(picker);
 }
 
 static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEventButton *e, dt_iop_color_picker_t *self)
@@ -157,15 +157,14 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   // set module active if not yet the case
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
 
-  const uint32_t state = e != NULL
-                        ? e->state
-                        : gdk_keymap_get_modifier_state(gdk_keymap_get_for_display(gdk_display_get_default()));
-  gboolean ctrl_key_pressed = (state & gtk_accelerator_get_default_mod_mask()) == GDK_CONTROL_MASK;
+  const GdkModifierType state
+      = e != NULL ? e->state & gtk_accelerator_get_default_mod_mask() : dt_key_modifier_state();
+  const gboolean ctrl_key_pressed = (state == GDK_CONTROL_MASK);
   dt_iop_color_picker_kind_t kind = self->kind;
 
   if (module->picker != self || (ctrl_key_pressed && kind == DT_COLOR_PICKER_POINT_AREA))
   {
-    _iop_color_picker_reset(module->picker, TRUE);
+    _iop_color_picker_reset(module->picker);
     module->picker = self;
 
     ++darktable.gui->reset;
@@ -203,7 +202,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   }
   else
   {
-    _iop_color_picker_reset(module->picker, TRUE);
+    _iop_color_picker_reset(module->picker);
     module->picker = NULL;
     module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }

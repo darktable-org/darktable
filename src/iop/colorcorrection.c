@@ -268,7 +268,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_colorcorrection_scrolled), self);
   g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_colorcorrection_key_press), self);
 
-  g->slider = dt_bauhaus_slider_from_params(self, "saturation");
+  g->slider = dt_bauhaus_slider_from_params(self, N_("saturation"));
   gtk_widget_set_tooltip_text(g->slider, _("set the global saturation"));
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
@@ -450,7 +450,8 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {

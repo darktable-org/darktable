@@ -687,17 +687,17 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *vbox_automatic = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
-  c->percentile_black = dt_bauhaus_slider_from_params(self, "black");
+  c->percentile_black = dt_bauhaus_slider_from_params(self, N_("black"));
   gtk_widget_set_tooltip_text(c->percentile_black, _("black percentile"));
   dt_bauhaus_slider_set_format(c->percentile_black, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_black, 0.1);
 
-  c->percentile_grey = dt_bauhaus_slider_from_params(self,"gray"); 
+  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray")); 
   gtk_widget_set_tooltip_text(c->percentile_grey, _("gray percentile"));
   dt_bauhaus_slider_set_format(c->percentile_grey, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_grey, 0.1);
 
-  c->percentile_white = dt_bauhaus_slider_from_params(self, "white");
+  c->percentile_white = dt_bauhaus_slider_from_params(self, N_("white"));
   gtk_widget_set_tooltip_text(c->percentile_white, _("white percentile"));
   dt_bauhaus_slider_set_format(c->percentile_white, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_white, 0.1);
@@ -707,7 +707,7 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
-  c->mode = dt_bauhaus_combobox_from_params(self, "mode");
+  c->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
  
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 
@@ -740,7 +740,6 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  dt_develop_t *dev = darktable.develop;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(GTK_WIDGET(c->area), &allocation);
@@ -823,16 +822,14 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   if(self->enabled)
   {
     uint32_t *hist = self->histogram;
-    float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[0]
-                                                                    : logf(1.0 + self->histogram_max[0]);
+    const gboolean is_linear = darktable.lib->proxy.histogram.is_linear;
+    float hist_max = is_linear ? self->histogram_max[0] : logf(1.0 + self->histogram_max[0]);
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
       cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
-                                                                                        // handle waveform
-                                                                                        // histograms
+      dt_draw_histogram_8(cr, hist, 4, 0, is_linear);
       cairo_restore(cr);
     }
   }
@@ -1002,7 +999,8 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   dt_iop_color_picker_reset(self, TRUE);
 
   if(c->dragging)

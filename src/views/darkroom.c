@@ -506,6 +506,7 @@ void expose(
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+    const float lw = 1.0 / zoom_scale;
 
     cairo_translate(cri, width / 2.0, height / 2.0f);
     cairo_scale(cri, zoom_scale, zoom_scale);
@@ -515,7 +516,7 @@ void expose(
     {
       sample = samples->data;
 
-      cairo_set_line_width(cri, 1.0 / zoom_scale);
+      cairo_set_line_width(cri, lw);
       if(sample == darktable.lib->proxy.colorpicker.selected_sample)
         cairo_set_source_rgb(cri, .2, 0, 0);
       else
@@ -525,17 +526,15 @@ void expose(
       const float *point = sample->point;
       if(sample->size == DT_COLORPICKER_SIZE_BOX)
       {
-        cairo_rectangle(cri, box[0] * wd, box[1] * ht, (box[2] - box[0]) * wd, (box[3] - box[1]) * ht);
+        cairo_rectangle(cri, box[0] * wd + lw, box[1] * ht + lw, (box[2] - box[0]) * wd, (box[3] - box[1]) * ht);
         cairo_stroke(cri);
-        cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
+
         if(sample == darktable.lib->proxy.colorpicker.selected_sample)
           cairo_set_source_rgb(cri, .8, 0, 0);
         else
           cairo_set_source_rgb(cri, 0, 0, .8);
-        cairo_rectangle(cri, box[0] * wd + 1.0 / zoom_scale, box[1] * ht,
-                        (box[2] - box[0]) * wd - 3. / zoom_scale, (box[3] - box[1]) * ht - 2. / zoom_scale);
+        cairo_rectangle(cri, box[0] * wd + 2. * lw, box[1] * ht + 2. * lw, (box[2] - box[0]) * wd - 2. * lw, (box[3] - box[1]) * ht - 2. * lw);
         cairo_stroke(cri);
-        cairo_translate(cri, -1.0 / zoom_scale, -1.0 / zoom_scale); // revert the translation for next sample
       }
       else
       {
@@ -546,13 +545,13 @@ void expose(
           cairo_set_source_rgb(cri, .8, 0, 0);
         else
           cairo_set_source_rgb(cri, 0, 0, .8);
-        cairo_rectangle(cri, (point[0] - 0.01) * wd + 1.0 / zoom_scale,
-                        point[1] * ht - 0.01 * wd + 1.0 / zoom_scale, .02 * wd - 2. / zoom_scale,
-                        .02 * wd - 2. / zoom_scale);
-        cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * wd + 1. / zoom_scale);
-        cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * wd - 1. / zoom_scale);
-        cairo_move_to(cri, point[0] * wd - .01 * wd + 1. / zoom_scale, point[1] * ht);
-        cairo_line_to(cri, point[0] * wd + .01 * wd - 1. / zoom_scale, point[1] * ht);
+        cairo_rectangle(cri, (point[0] - 0.01) * wd + lw,
+                        point[1] * ht - 0.01 * wd + lw, .02 * wd - 2. * lw,
+                        .02 * wd - 2. * lw);
+        cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * wd + lw);
+        cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * wd - lw);
+        cairo_move_to(cri, point[0] * wd - .01 * wd + lw, point[1] * ht);
+        cairo_line_to(cri, point[0] * wd + .01 * wd - lw, point[1] * ht);
         cairo_stroke(cri);
       }
 
@@ -716,7 +715,7 @@ int try_enter(dt_view_t *self)
 
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 {
-  dt_accel_disconnect_list(module->accel_closures);
+  dt_accel_disconnect_list(&module->accel_closures);
   dt_accel_cleanup_locals_iop(module);
 }
 
@@ -885,9 +884,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       dev->iop = g_list_remove_link(dev->iop, g_list_nth(dev->iop, i));
 
       // we cleanup the module
-      dt_accel_disconnect_list(module->accel_closures);
+      dt_accel_disconnect_list(&module->accel_closures);
       dt_accel_cleanup_locals_iop(module);
-      module->accel_closures = NULL;
       dt_iop_cleanup_module(module);
       free(module);
     }
@@ -1047,12 +1045,32 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
     new_offset = sqlite3_column_int(stmt, 0);
     new_id = sqlite3_column_int(stmt, 1);
   }
-  else
+  else if(diff > 0)
   {
     // if we are here, that means that the current is not anymore in the list
     // in this case, let's use the current offset image
     new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
     new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
+  }
+  else
+  {
+    // if we are here, that means that the current is not anymore in the list
+    // in this case, let's use the image before current offset
+    new_offset = MAX(1, dt_ui_thumbtable(darktable.gui->ui)->offset - 1);
+    sqlite3_stmt *stmt2;
+    gchar *query2 = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid=%d", new_offset);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt2, NULL);
+    if(sqlite3_step(stmt2) == SQLITE_ROW)
+    {
+      new_id = sqlite3_column_int(stmt2, 0);
+    }
+    else
+    {
+      new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
+      new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
+    }
+    g_free(query2);
+    sqlite3_finalize(stmt2);
   }
   g_free(query);
   sqlite3_finalize(stmt);
@@ -1872,6 +1890,15 @@ static void _preference_changed(gpointer instance, gpointer user_data)
   dt_dynamic_accel_get_valid_list();
 }
 
+static void _preference_prev_downsample_change(gpointer instance, gpointer user_data)
+{
+  if(user_data != NULL)
+  {
+    float *ds_value = user_data;
+    *ds_value = dt_dev_get_preview_downsampling();
+  }
+}
+
 static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
 {
   GList *l = darktable.color_profiles->profiles;
@@ -2363,6 +2390,8 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                              G_CALLBACK(_preference_prev_downsample_change), &(dev->preview_downsampling));
     // update the gui when the preferences changed (i.e. show intent when using lcms2)
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                               G_CALLBACK(_preference_changed), (gpointer)display_intent);
@@ -2493,15 +2522,15 @@ static void _on_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer 
   dt_iop_module_t *module_src = _get_dnd_source_module(container);
   if(module_src && module_src->expander)
   {
-    GdkWindow *window = gtk_widget_get_parent_window(module_src->expander);
+    GdkWindow *window = gtk_widget_get_parent_window(module_src->header);
     if(window)
     {
       GtkAllocation allocation_w = {0};
-      gtk_widget_get_allocation(module_src->expander, &allocation_w);
+      gtk_widget_get_allocation(module_src->header, &allocation_w);
 
       GdkPixbuf *pixbuf = gdk_pixbuf_get_from_window(window, allocation_w.x, allocation_w.y,
                                                      allocation_w.width, allocation_w.height);
-      gtk_drag_set_icon_pixbuf(context, pixbuf, allocation_w.width / 2, 0);
+      gtk_drag_set_icon_pixbuf(context, pixbuf, allocation_w.width / 2, allocation_w.height / 2);
     }
   }
 }
@@ -2545,8 +2574,29 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
       can_moved = dt_ioppr_check_can_move_before_iop(darktable.develop->iop, module_src, module_dest);
   }
 
+  GList *modules = g_list_last(darktable.develop->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->expander)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
+      gtk_style_context_remove_class(context, "iop_drop_after");
+      gtk_style_context_remove_class(context, "iop_drop_before");
+    }
+
+    modules = g_list_previous(modules);
+  }
+
   if(can_moved)
   {
+    GtkStyleContext *context = gtk_widget_get_style_context(module_dest->expander);
+    if(module_src->iop_order < module_dest->iop_order)
+      gtk_style_context_add_class(context, "iop_drop_after");
+    else
+      gtk_style_context_add_class(context, "iop_drop_before");
+
     gdk_drag_status(dc, GDK_ACTION_COPY, time);
     GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
     if(w) gtk_drag_unhighlight(w);
@@ -2601,6 +2651,21 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
       fprintf(stderr, "[_on_drag_data_received] can't find destination module\n");
   }
 
+  GList *modules = g_list_last(darktable.develop->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->expander)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
+      gtk_style_context_remove_class(context, "iop_drop_after");
+      gtk_style_context_remove_class(context, "iop_drop_before");
+    }
+
+    modules = g_list_previous(modules);
+  }
+
   gtk_drag_finish(dc, TRUE, FALSE, time);
 
   if(moved)
@@ -2641,6 +2706,21 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
 
 static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
 {
+  GList *modules = g_list_last(darktable.develop->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->expander)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
+      gtk_style_context_remove_class(context, "iop_drop_after");
+      gtk_style_context_remove_class(context, "iop_drop_before");
+    }
+
+    modules = g_list_previous(modules);
+  }
+
   GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
   if(w)
   {
@@ -2763,6 +2843,7 @@ void enter(dt_view_t *self)
 
     modules = g_list_previous(modules);
   }
+
   // make signals work again:
   --darktable.gui->reset;
 
@@ -3296,13 +3377,18 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
     if(w->type == DT_BAUHAUS_SLIDER)
     {
-      float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
-      float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
+      float value = dt_bauhaus_slider_get(widget);
+      float step = dt_bauhaus_slider_get_step(widget);
+      float multiplier = dt_accel_get_slider_scale_multiplier();
+
+      const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget));
+      if(fabsf(step*multiplier) < min_visible)
+        multiplier = min_visible / fabsf(step);
 
       if(up)
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step);
+        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step * multiplier);
       else
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step);
+        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step * multiplier);
     }
     else
     {
@@ -3569,6 +3655,23 @@ static gboolean search_callback(GtkAccelGroup *accel_group, GObject *acceleratab
   return TRUE;
 }
 
+static gboolean change_slider_accel_precision(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data)
+{
+  const int curr_precision = dt_conf_get_int("accel/slider_precision");
+  const int new_precision = curr_precision + 1 == 3 ? 0 : curr_precision + 1;
+  dt_conf_set_int("accel/slider_precision", new_precision);
+
+  if(new_precision == DT_IOP_PRECISION_FINE)
+    dt_toast_log(_("keyboard shortcut slider precision: fine"));
+  else if(new_precision == DT_IOP_PRECISION_NORMAL)
+    dt_toast_log(_("keyboard shortcut slider precision: normal"));
+  else
+    dt_toast_log(_("keyboard shortcut slider precision: coarse"));
+
+  return TRUE;
+}
+
 static gboolean zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
@@ -3661,6 +3764,9 @@ void init_key_accels(dt_view_t *self)
 
   // set focus to the search modules text box
   dt_accel_register_view(self, NC_("accel", "search modules"), 0, 0);
+
+  // change the precision for adjusting sliders with keyboard shortcuts
+  dt_accel_register_view(self, NC_("accel", "change keyboard shortcut slider precision"), 0, 0);
 }
 
 static gboolean _darkroom_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -3765,6 +3871,10 @@ void connect_key_accels(dt_view_t *self)
   // search modules
   closure = g_cclosure_new(G_CALLBACK(search_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "search modules", closure);
+
+  // change the precision for adjusting sliders with keyboard shortcuts
+  closure = g_cclosure_new(G_CALLBACK(change_slider_accel_precision), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "change keyboard shortcut slider precision", closure);
 
   // dynamics accels
   dt_dynamic_accel_get_valid_list();

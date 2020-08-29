@@ -251,7 +251,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
       "crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18, longitude = ?19, "
       "latitude = ?20, altitude = ?21, color_matrix = ?22, colorspace = ?23, raw_black = ?24, "
       "raw_maximum = ?25, aspect_ratio = ROUND(?26,1), exposure_bias = ?27, "
-      "change_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30, print_timestamp = ?31 "
+      "import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30, print_timestamp = ?31 "
       "WHERE id = ?32",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);

@@ -49,7 +49,6 @@ typedef struct dt_lib_metadata_t
   GtkWidget *config_button;
   gint line_height;
   gboolean init_layout;
-  guint timeout_handle;
 } dt_lib_metadata_t;
 
 const char *name(dt_lib_module_t *self)
@@ -66,28 +65,6 @@ const char **views(dt_lib_module_t *self)
 uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
-}
-
-void init(dt_lib_module_t *self)
-{
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const int type = dt_metadata_get_type(i);
-    const char *name = (gchar *)dt_metadata_get_name(i);
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
-    if(!dt_conf_key_exists(setting))
-    {
-      // per default should be imported
-      uint32_t flag = DT_METADATA_FLAG_IMPORTED;
-      if(type == DT_METADATA_TYPE_OPTIONAL)
-      {
-        // per default this one should be hidden
-        flag |= DT_METADATA_FLAG_HIDDEN;
-      }
-      dt_conf_set_int(setting, flag);
-    }
-    g_free(setting);
-  }
 }
 
 static gboolean _is_leave_unchanged(const char *text)
@@ -140,6 +117,7 @@ static void _fill_text_view(const uint32_t i, const uint32_t count, dt_lib_modul
 
 static void _update(dt_lib_module_t *self)
 {
+  dt_lib_cancel_postponed_update(self);
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   d->imgsel = dt_control_get_mouse_over_id();
 
@@ -199,20 +177,6 @@ static void _update(dt_lib_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->apply_button), imgs_count > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->clear_button), imgs_count > 0);
-
-  if(d->timeout_handle)
-  {
-    g_source_remove(d->timeout_handle);
-    d->timeout_handle = 0;
-  }
-}
-
-static gboolean _postponed_update(gpointer data)
-{
-  // timeout handle clearing is handled by update code
-  _update((dt_lib_module_t *)data);
-
-  return FALSE;
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -396,15 +360,7 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
   // if editing don't lose the current entry
   if (d->editing) return;
 
-  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
-
-  if(d->timeout_handle)
-  {
-    // here we're making sure the event fires at last hover
-    // and we won't have avalanche of events in the mean time.
-    g_source_remove(d->timeout_handle);
-  }
-  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
+  dt_lib_queue_postponed_update(self, _update);
 }
 
 static gboolean _metadata_list_size_changed(GtkWidget *window, GdkEvent  *event, GtkCellRenderer *renderer)
@@ -693,7 +649,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->imgsel = -1;
-  d->timeout_handle = 0;
+  self->timeout_handle = 0;
 
   GtkGrid *grid = (GtkGrid *)gtk_grid_new();
   self->widget = GTK_WIDGET(grid);
@@ -798,13 +754,11 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_cancel_postponed_update(self);
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
-
-  if(d->timeout_handle)
-    g_source_remove(d->timeout_handle);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {

@@ -68,7 +68,7 @@ typedef struct dt_iop_grain_params_t
                           $DEFAULT: 1600.0/GRAIN_SCALE_FACTOR 
                           $DESCRIPTION: "coarseness" */
   float strength;      // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
-  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0
+  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "midtones bias"
 } dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
@@ -468,6 +468,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)fmax(roi_out->width * 0.3, 1.0);
 
+  const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
   const int ch = piece->colors;
   // Apply grain to image
   const double strength = (data->strength / 100.0);
@@ -475,12 +476,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // double zoom=1.0+(8*(data->scale/100.0));
   const double wd = fminf(piece->buf_in.width, piece->buf_in.height);
   const double zoom = (1.0 + 8 * data->scale / 100) / 800.0;
-  const int filter = fabsf(roi_out->scale - 1.0f) > 0.01;
+  // in fastpipe mode, skip the downsampling for zoomed-out views
+  const int filter = !fastmode && fabsf(roi_out->scale - 1.0f) > 0.01;
   // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to
   // pixelpipe iscale)
   const double filtermul = piece->iscale / (roi_out->scale * wd);
   const float fib1 = 34.0, fib2 = 21.0;
   const float fib1div2 = fib1 / fib2;
+
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -586,7 +589,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->scale, _("%.0f ISO"));
   gtk_widget_set_tooltip_text(g->scale, _("the grain size (~ISO of the film)"));
 
-  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
   gtk_widget_set_tooltip_text(g->strength, _("the strength of applied grain"));
 

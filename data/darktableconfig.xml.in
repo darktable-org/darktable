@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
 <!DOCTYPE dtconfiglist SYSTEM "darktableconfig.dtd">
 <dtconfiglist>
+  <dtconfig>
+    <name>themes/usercss</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>modify theme with user tweaks</shortdescription>
+  </dtconfig>
   <dtconfig prefs="misc" section="accel">
     <name>accel/prefer_expanded</name>
     <type>bool</type>
@@ -33,6 +39,12 @@
     <default>last instance</default>
     <shortdescription>selection order</shortdescription>
     <longdescription>after applying the above rules, apply the shortcut based on its position in the pixelpipe</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>accel/slider_precision</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>keyboard shortcut slider precision</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>bauhaus/scale</name>
@@ -100,6 +112,19 @@
     <shortdescription>maximum width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>ui/cairo_filter</name>
+    <type>
+      <enum>
+	<option>fast</option>
+	<option>good</option>
+	<option>best</option>
+      </enum>
+    </type>
+    <default>fast</default>
+    <shortdescription>speed/quality trade-off for drawing images</shortdescription>
+    <longdescription>fast (default) - high-performance, similar to nearest neighbor filter; good - reasonable-performance, similar to bilinear (linear interpolation in two dimensions); best - highest-quality available, performance may not be suitable for interactive use. sets Cairo image scaling filter. (needs a restart)</longdescription>
+  </dtconfig>
   <dtconfig prefs="otherviews" section="slideshow">
     <name>slideshow_delay</name>
     <type>int</type>
@@ -112,7 +137,7 @@
     <default>true</default>
     <shortdescription>do not show april 1st game</shortdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu">
+  <dtconfig prefs="cpugpu" restart="true">
     <name>cache_memory</name>
     <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>
     <default>(1024 * 1024 * 512)</default>
@@ -140,21 +165,21 @@
     <shortdescription>color manage cached thumbnails</shortdescription>
     <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu">
+  <dtconfig prefs="cpugpu" restart="true">
     <name>worker_threads</name>
     <type>int</type>
     <default>2</default>
     <shortdescription>number of background threads</shortdescription>
     <longdescription>this controls for example how many threads are used to create thumbnails during import. the cache will grow to a maximum of twice this number of full resolution image buffers (needs a restart).</longdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu">
+  <dtconfig prefs="cpugpu" restart="true">
     <name>host_memory_limit</name>
     <type>int</type>
     <default>1500</default>
     <shortdescription>host memory limit (in MB) for tiling</shortdescription>
     <longdescription>this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500 (needs a restart).</longdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu">
+  <dtconfig prefs="cpugpu" restart="true">
     <name>singlebuffer_limit</name>
     <type min="2" max="64">int</type>
     <default>16</default>
@@ -279,7 +304,7 @@
     <shortdescription>omit hierarchy in simple tag lists</shortdescription>
     <longdescription>when creating XMP file the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="tags">
+  <dtconfig prefs="misc" section="tags" restart="true">
     <name>plugins/lighttable/tagging/no_entry_completion</name>
     <type>bool</type>
     <default>false</default>
@@ -358,8 +383,15 @@
     <name>ask_before_delete</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>ask before erasing images from disk / discarding history stack</shortdescription>
-    <longdescription>always ask the user before any image file is deleted / history stack is discarded.</longdescription>
+    <shortdescription>ask before erasing images from disk</shortdescription>
+    <longdescription>always ask the user before any image file is deleted</longdescription>
+  </dtconfig>
+  <dtconfig prefs="security">
+    <name>ask_before_discard</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>ask before discarding history stack</shortdescription>
+    <longdescription>always ask the user before history stack is discarded on any image</longdescription>
   </dtconfig>
   <dtconfig prefs="security">
     <name>send_to_trash</name>
@@ -446,7 +478,7 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/capture/jobcode</name>
+    <name>plugins/session/jobcode</name>
     <type>string</type>
     <default>capture job</default>
     <shortdescription>name of capture job</shortdescription>
@@ -479,6 +511,13 @@
     <default>noname</default>
     <shortdescription>jobcode of import job</shortdescription>
     <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/capture/camera/live_view_fps</name>
+    <type>int</type>
+    <default>15</default>
+    <shortdescription>maximum fps of live view update in tethering view</shortdescription>
+    <longdescription>going too fast will result in too many redraws without a real benefit</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable">
     <name>plugins/collect/filmroll_sort</name>
@@ -1544,7 +1583,7 @@
     <shortdescription>show scrollbars for central view</shortdescription>
     <longdescription>defines whether scrollbars should be displayed</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="interface">
+  <dtconfig prefs="misc" section="interface" restart="true">
     <name>panel_scrollbars_always_visible</name>
     <type>bool</type>
     <default>true</default>
@@ -1617,7 +1656,7 @@
  <dtconfig prefs="lighttable">
     <name>lighttable/ui/scrollbars</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>show scrollbars for central view</shortdescription>
     <longdescription>defines whether scrollbars should be displayed</longdescription>
   </dtconfig>
@@ -1688,7 +1727,7 @@
     </type>
     <default>at most PPG (reasonable)</default>
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified below, full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than PPG as middle ground.</longdescription>
+    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified on the 'pixel interpolator' option (processing tab), full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than PPG as middle ground.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" >
     <name>preview_downsampling</name>
@@ -2229,7 +2268,7 @@
     <shortdescription>executable for playing audio files</shortdescription>
     <longdescription>this external program is used to play audio files some cameras record to keep notes for images</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing">
+  <dtconfig prefs="processing" restart="true">
     <name>plugins/darkroom/lut3d/def_path</name>
     <type>dir</type>
     <default></default>
@@ -2249,14 +2288,14 @@
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
     <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve and the legacy module pipe order.\n(needs a restart)</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing">
+  <dtconfig prefs="processing" restart="true">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>auto-apply per camera basecurve presets</shortdescription>
-    <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs a restart)</longdescription>
+    <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs a restart).\nthis option is taken into account when the \"auto-apply pixel workflow defaults\" is set to \"display-referred\".\nto prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults\" should be set to \"none\"</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing">
+  <dtconfig prefs="processing" restart="true">
     <name>plugins/darkroom/sharpen/auto_apply</name>
     <type>bool</type>
     <default>true</default>
@@ -2268,14 +2307,14 @@
     <type>float</type>
     <default>-1.0</default>
     <shortdescription>overwrite the screen's dpi setting</shortdescription>
-    <longdescription>if this value is > 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
+    <longdescription>if this value is &gt; 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
   </dtconfig>
   <dtconfig>
     <name>screen_ppd_overwrite</name>
     <type>float</type>
     <default>-1.0</default>
     <shortdescription>overwrite the screen's ppd setting</shortdescription>
-    <longdescription>if this value is > 0.0 then it is used as the screen's ppd setting which is used for HiDPI support</longdescription>
+    <longdescription>if this value is &gt; 0.0 then it is used as the screen's ppd setting which is used for HiDPI support</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/preview/max_in_memory_images</name>

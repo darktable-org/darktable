@@ -150,6 +150,28 @@ const int dt_metadata_get_type(const uint32_t keyid)
     return 0;
 }
 
+void dt_metadata_init()
+{
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const int type = dt_metadata_get_type(i);
+    const char *name = (gchar *)dt_metadata_get_name(i);
+    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+    if(!dt_conf_key_exists(setting))
+    {
+      // per default should be imported
+      uint32_t flag = DT_METADATA_FLAG_IMPORTED;
+      if(type == DT_METADATA_TYPE_OPTIONAL)
+      {
+        // per default this one should be hidden
+        flag |= DT_METADATA_FLAG_HIDDEN;
+      }
+      dt_conf_set_int(setting, flag);
+    }
+    g_free(setting);
+  }
+}
+
 typedef struct dt_undo_metadata_t
 {
   int imgid;
@@ -579,7 +601,8 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
 {
   if(!key || !imgid || imgid == -1) return;
 
-  int keyid = dt_metadata_get_keyid(key);
+  const int keyid = dt_metadata_get_keyid(key);
+
   if(keyid != -1) // known key
   {
     gboolean imported = TRUE;

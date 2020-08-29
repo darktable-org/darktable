@@ -23,7 +23,10 @@
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/collection.h"
 #include "common/metadata.h"
+#include "common/ratings.h"
+#include "views/view.h"
 #include "lua/database.h"
 #include "lua/film.h"
 #include "lua/glist.h"
@@ -182,7 +185,11 @@ static int rating_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    const int score = dt_image_get_xmp_rating(my_image);
+    int score = my_image->flags & DT_VIEW_RATINGS_MASK;
+    if(score > 6) score = 5;
+    if(score == DT_VIEW_REJECT) score = -1;
+    // check the reject flag just to be sure
+    if(my_image->flags & DT_IMAGE_REJECTED) score = -1;
 
     lua_pushinteger(L, score);
     releasereadimage(L, my_image);
@@ -202,8 +209,18 @@ static int rating_member(lua_State *L)
       releasewriteimage(L, my_image);
       return luaL_error(L, "rating too low : %d", my_score);
     }
-    dt_image_set_xmp_rating(my_image, my_score);
+    if(my_score == -1) 
+    {
+      my_score = DT_VIEW_REJECT;
+      my_image->flags = my_image->flags | DT_IMAGE_REJECTED;
+    }
+    if(my_score < DT_VIEW_REJECT && my_image->flags & DT_IMAGE_REJECTED)
+      my_image->flags = my_image->flags & ~DT_IMAGE_REJECTED;
+    my_image->flags &= ~DT_VIEW_RATINGS_MASK;
+    my_image->flags |= my_score;
     releasewriteimage(L, my_image);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                               g_list_append(NULL, GINT_TO_POINTER(my_image->id)));
     return 0;
   }
 }
@@ -304,6 +321,8 @@ static int colorlabel_member(lua_State *L)
     {
       dt_colorlabels_remove_label(imgid, colorlabel_index);
     }
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                               g_list_append(NULL, GINT_TO_POINTER(imgid)));
     return 0;
   }
 }

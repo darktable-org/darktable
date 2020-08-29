@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
+#include "common/focus_peaking.h"
 #include "common/grouping.h"
 #include "common/history.h"
 #include "common/image_cache.h"
@@ -116,6 +117,8 @@ static void _preview_quit(dt_view_t *self)
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                        TRUE); // always on, visibility is driven by panel state
+
+    dt_culling_update_active_images_list(lib->culling);
   }
   else
   {
@@ -226,6 +229,8 @@ static void _lighttable_check_layout(dt_view_t *self)
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                        TRUE); // always on, visibility is driven by panel state
     dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->culling->offset_imgid, TRUE);
+    dt_culling_update_active_images_list(lib->culling);
   }
   else
   {
@@ -544,6 +549,11 @@ void enter(dt_view_t *self)
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                        TRUE); // always on, visibility is driven by panel state
+
+    if(lib->preview_state)
+      dt_culling_update_active_images_list(lib->preview);
+    else
+      dt_culling_update_active_images_list(lib->culling);
   }
   else
   {
@@ -1352,9 +1362,13 @@ void gui_init(dt_view_t *self)
                               gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                               gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
+
+  /* add the global focus peaking button in toolbox */
+  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button,
+                                     DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM);
+
   // create display profile button
-  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT,
-                                                     NULL);
+  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 

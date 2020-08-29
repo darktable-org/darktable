@@ -375,7 +375,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
 
     if(force || allocation.width != table->view_width || allocation.height != table->view_height)
     {
-      table->thumbs_per_row = DT_LIGHTTABLE_MAX_ZOOM;
+      table->thumbs_per_row = DT_ZOOMABLE_NB_PER_ROW;
       table->view_width = allocation.width;
       table->view_height = allocation.height;
       table->thumb_size = table->view_width / npr;
@@ -434,8 +434,8 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
     const int pos_h
         = lbefore * table->thumb_size + table->view_height - table->thumb_size * 0.5 - table->thumbs_area.y;
 
-    const int total_width = DT_LIGHTTABLE_MAX_ZOOM * table->thumb_size
-      + 2 * (table->view_width - table->thumb_size * 0.5);
+    const int total_width
+        = DT_ZOOMABLE_NB_PER_ROW * table->thumb_size + 2 * (table->view_width - table->thumb_size * 0.5);
     const int pos_w = table->view_width - table->thumb_size * 0.5 - table->thumbs_area.x;
 
     dt_view_set_scrollbar(darktable.view_manager->current_view, pos_w, 0, total_width, table->view_width, pos_h, 0,
@@ -693,6 +693,10 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
 
   // and we store it
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
+  {
+    dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
+  }
 
   // update scrollbars
   _thumbtable_update_scrollbars(table);
@@ -770,7 +774,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   posy = MAX(space - table->thumbs_area.y - table->thumbs_area.height, posy);
   int posx = MIN(table->view_width - space - table->thumbs_area.x, 0);
   posx = MAX(space - table->thumbs_area.x - table->thumbs_area.width, posx);
-  if(posx != 0 && posy != 0) _move(table, posx, posy, FALSE);
+  if(posx != 0 || posy != 0) _move(table, posx, posy, FALSE);
 
   // and we load/unload thumbs if needed
   int changed = _thumbs_load_needed(table);
@@ -1034,8 +1038,8 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
   }
 
   // we register the position
-  dt_conf_set_int("lighttable/ui/pos_x", table->thumbs_area.x);
-  dt_conf_set_int("lighttable/ui/pos_y", table->thumbs_area.y);
+  dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
+  dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
   return TRUE;
 }
 
@@ -1303,10 +1307,15 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 
     // get the new rowid of the new offset image
     const int nrow = _thumb_get_rowid(newid);
-    const gboolean offset_changed = (nrow != table->offset);
-    table->offset_imgid = newid;
-    table->offset = nrow;
+    const gboolean offset_changed = (MAX(1, nrow) != table->offset);
+    if(nrow >= 1)
+      table->offset_imgid = newid;
+    else
+      table->offset_imgid = _thumb_get_imgid(1);
+    table->offset = MAX(1, nrow);
     if(offset_changed) dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+    if(offset_changed && table->mode == DT_THUMBTABLE_MODE_ZOOM)
+      dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
 
     dt_thumbtable_full_redraw(table, TRUE);
 
@@ -1337,13 +1346,9 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     table->offset = 1;
     table->offset_imgid = _thumb_get_imgid(table->offset);
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
-    // and we reset position of first thumb for zooming
-    if(g_list_length(table->list) > 0)
-    {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-      thumb->x = 0;
-      thumb->y = 0;
-    }
+    dt_conf_set_int("lighttable/zoomable/last_offset", 1);
+    dt_conf_set_int("lighttable/zoomable/last_pos_x", 0);
+    dt_conf_set_int("lighttable/zoomable/last_pos_y", 0);
     dt_thumbtable_full_redraw(table, TRUE);
     dt_view_lighttable_change_offset(darktable.view_manager, TRUE, table->offset_imgid);
   }
@@ -1661,26 +1666,22 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
 
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
-      // in zoomable, we want the first thumb at the same position as the old one
-      if(g_list_length(table->list) > 0)
-      {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-        posx = thumb->x;
-        posy = thumb->y;
-      }
-      else
-      {
-        // first start let's retrieve values from rc file
-        posx = dt_conf_get_int("lighttable/ui/pos_x");
-        posy = dt_conf_get_int("lighttable/ui/pos_y");
-        table->thumbs_area.x = posx;
-        table->thumbs_area.y = posy;
-      }
+      // retrieve old values to avoid layout modifications
+      posx = dt_conf_get_int("lighttable/zoomable/last_pos_x");
+      posy = dt_conf_get_int("lighttable/zoomable/last_pos_y");
+      offset = dt_conf_get_int("lighttable/zoomable/last_offset");
+      table->thumbs_area.x = posx;
+      table->thumbs_area.y = posy;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
       // in filemanager, we need to take care of the center offset
       posx = table->center_offset;
+
+      // ensure that the overall layout doesn't change
+      // (i.e. we don't get empty spaces in the very first row)
+      const int offset_row = (table->offset-1) / table->thumbs_per_row;
+      offset = offset_row * table->thumbs_per_row + 1;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
@@ -2054,78 +2055,78 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int vi
 {
   //disconnect all accels and reconnect if thumbtable may be active for this view
 
-  dt_accel_disconnect_list(table->accel_closures);
+  dt_accel_disconnect_list(&table->accel_closures);
 
   if((view & DT_VIEW_LIGHTTABLE) || (view & DT_VIEW_DARKROOM) || (view & DT_VIEW_TETHERING)
      || (view & DT_VIEW_MAP) || (view & DT_VIEW_PRINT))
   {
     // Rating accels
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 0",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 0",
                             g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_DESERT), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 1",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 1",
                             g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_1), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 2",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 2",
                             g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_2), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 3",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 3",
                             g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_3), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 4",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 4",
                             g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_4), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate 5",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 5",
                             g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_5), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/rate reject",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate reject",
                             g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_REJECT), NULL));
 
     // History key accels
     if(!(view & DT_VIEW_LIGHTTABLE))
     {
-      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/copy history",
+      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/copy history",
                               g_cclosure_new(G_CALLBACK(_accel_copy), NULL, NULL));
-      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/copy history parts",
+      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/copy history parts",
                               g_cclosure_new(G_CALLBACK(_accel_copy_parts), NULL, NULL));
-      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/paste history",
+      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/paste history",
                               g_cclosure_new(G_CALLBACK(_accel_paste), NULL, NULL));
-      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/paste history parts",
+      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/paste history parts",
                               g_cclosure_new(G_CALLBACK(_accel_paste_parts), NULL, NULL));
-      dt_accel_connect_manual(table->accel_closures, "views/thumbtable/discard history",
+      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/discard history",
                               g_cclosure_new(G_CALLBACK(_accel_hist_discard), NULL, NULL));
     }
 
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/duplicate image",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/duplicate image",
                             g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(0), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/duplicate image virgin",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/duplicate image virgin",
                             g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(1), NULL));
 
     // Color label accels
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color red",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color red",
                             g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(0), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color yellow",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color yellow",
                             g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(1), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color green",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color green",
                             g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(2), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color blue",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color blue",
                             g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(3), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/color purple",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color purple",
                             g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(4), NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/clear color labels",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/clear color labels",
                             g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(5), NULL));
 
     // Selection accels
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select all",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/select all",
                             g_cclosure_new(G_CALLBACK(_accel_select_all), NULL, NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select none",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/select none",
                             g_cclosure_new(G_CALLBACK(_accel_select_none), NULL, NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/invert selection",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/invert selection",
                             g_cclosure_new(G_CALLBACK(_accel_select_invert), NULL, NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select film roll",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/select film roll",
                             g_cclosure_new(G_CALLBACK(_accel_select_film), NULL, NULL));
-    dt_accel_connect_manual(table->accel_closures, "views/thumbtable/select untouched",
+    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/select untouched",
                             g_cclosure_new(G_CALLBACK(_accel_select_untouched), NULL, NULL));
   }
 }
 
-static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
+static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)
 {
-  if(rowid < 1) return FALSE;
+  if(rowid < 1) rowid = 1;
   if(!table->list || g_list_length(table->list) == 0) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
@@ -2134,14 +2135,16 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, con
 
   if(first->rowid > rowid)
   {
-    if(_move(table, 0, table->thumb_size, TRUE))
+    const int rows = MAX(1,(first->rowid-rowid)/table->thumbs_per_row);
+    if(_move(table, 0, rows*table->thumb_size, TRUE))
       return _filemanager_ensure_rowid_visibility(table, rowid);
     else
       return FALSE;
   }
   else if(last->rowid < rowid)
   {
-    if(_move(table, 0, -table->thumb_size, TRUE))
+    const int rows = MAX(1,(rowid-last->rowid)/table->thumbs_per_row);
+    if(_move(table, 0, -rows*table->thumb_size, TRUE))
       return _filemanager_ensure_rowid_visibility(table, rowid);
     else
       return FALSE;
@@ -2323,7 +2326,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   else if(move == DT_THUMBTABLE_MOVE_PAGEUP)
   {
     newrowid = baserowid - table->thumbs_per_row * (table->rows - 1);
-    while(newrowid < 1) newrowid += table->thumbs_per_row;
+    while(newrowid < 2 - table->thumbs_per_row) newrowid += table->thumbs_per_row;
   }
   else if(move == DT_THUMBTABLE_MOVE_PAGEDOWN)
   {
@@ -2340,7 +2343,6 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
 
   // change image_over
   const int imgid = _thumb_get_imgid(newrowid);
-  if(imgid < 1) return FALSE;
 
   dt_control_set_mouse_over_id(imgid);
 
@@ -2348,7 +2350,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   _filemanager_ensure_rowid_visibility(table, newrowid);
 
   // if needed, we set the selection
-  if(select) dt_selection_select_range(darktable.selection, imgid);
+  if(select && imgid > 0) dt_selection_select_range(darktable.selection, imgid);
   return TRUE;
 }
 static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, const gboolean select)

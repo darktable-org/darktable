@@ -78,9 +78,9 @@
 /* Views */
 @define-color darkroom_bg_color @grey_60;
 @define-color darkroom_preview_bg_color @grey_50;
-@define-color print_bg_color @grey_60;
-@define-color lighttable_bg_color @print_bg_color;
-@define-color lighttable_preview_bg_color @grey_50;
+@define-color print_bg_color @darkroom_bg_color;
+@define-color lighttable_bg_color @darkroom_bg_color;
+@define-color lighttable_preview_bg_color @darkroom_preview_bg_color;
 @define-color lighttable_bg_font_color @grey_85;
 
 /* Lighttable and film-strip */

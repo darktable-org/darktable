@@ -63,4 +63,11 @@
     triangle button to the right of the <quote>sort by</quote> combobox.
   </para>
 
+  <para>
+    When <quote>tag</quote> is at the first level of Collect module, the images
+    order is saved along with the selected tag. As a tag can be seen as
+    a collection of images, it is then possible to associate to every collection
+    (or tag) a specific images order, including a <quote>custom order</quote>.
+  </para>
+
 </sect2>

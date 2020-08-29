@@ -493,7 +493,7 @@ void dtgtk_cairo_paint_masks_circle(cairo_t *cr, gint x, gint y, gint w, gint h,
 
 void dtgtk_cairo_paint_masks_ellipse(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1.1, 0, -0.025)
+  PREAMBLE(1.15, 0, 0)
 
   cairo_save(cr);
   cairo_translate(cr, 0.1465, 0);
@@ -507,7 +507,7 @@ void dtgtk_cairo_paint_masks_ellipse(cairo_t *cr, gint x, gint y, gint w, gint h
 
 void dtgtk_cairo_paint_masks_gradient(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 0, 0)
+  PREAMBLE(1, -0.05, -0.05)
 
   cairo_rectangle(cr, 0.1, 0.1, 0.9, 0.9);
   cairo_stroke_preserve(cr);
@@ -556,24 +556,25 @@ void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, gint x, gint y, gint w, g
   FINISH
 }
 
-
 void dtgtk_cairo_paint_masks_brush_and_inverse(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.85, 0.1, 0.1)
-
-  cairo_move_to(cr, 0.0, 1.0);
-  cairo_line_to(cr, 0.1, 0.7);
-  cairo_line_to(cr, 0.8, 0.0);
-  cairo_line_to(cr, 1.0, 0.2);
-  cairo_line_to(cr, 0.3, 0.9);
-  cairo_line_to(cr, 0.0, 1.0);
-  cairo_stroke(cr);
+  PREAMBLE(1, 0, 0)
 
   cairo_arc(cr, 0.5, 0.5, 0.4, 0, 2.0 * M_PI);
   cairo_stroke(cr);
   cairo_arc(cr, 0.5, 0.5, 0.4, 3.0 * M_PI / 2.0, M_PI / 2.0);
   cairo_fill(cr);
 
+  cairo_move_to(cr, -0.05, 1.0);
+  cairo_arc_negative(cr, 0.25, 0.85, 0.15, 0.5 * M_PI, 1.12 * M_PI);
+  cairo_arc(cr, -0.236, 0.72, 0.35, 0.08 * M_PI, 0.26 * M_PI);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+
+  cairo_set_line_width(cr, 0.01);
+  cairo_arc(cr, 0.98, 0.0, 0.055, 1.2 * M_PI, 0.2 * M_PI);
+  cairo_arc(cr, 0.48, 0.72, 0.09, 0.2 * M_PI, 1.2 * M_PI);
+  cairo_close_path(cr);
   cairo_stroke(cr);
 
   FINISH
@@ -581,31 +582,22 @@ void dtgtk_cairo_paint_masks_brush_and_inverse(cairo_t *cr, gint x, gint y, gint
 
 void dtgtk_cairo_paint_masks_brush(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.8, 0., 0.)
+  PREAMBLE(0.90, 0., 0.)
 
-  // main cylinder
-  cairo_move_to(cr, 0.0, 1.0);
-  cairo_line_to(cr, 0.1, 0.7);
-  cairo_line_to(cr, 0.8, 0.0);
-  cairo_line_to(cr, 1.0, 0.2);
-  cairo_line_to(cr, 0.3, 0.9);
-  cairo_line_to(cr, 0.0, 1.0);
+  cairo_move_to(cr, -0.05, 1.0);
+  cairo_arc_negative(cr, 0.25, 0.85, 0.15, 0.5 * M_PI, 1.12 * M_PI);
+  cairo_arc(cr, -0.236, 0.72, 0.35, 0.08 * M_PI, 0.26 * M_PI);
+  cairo_close_path(cr);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0, 1);
+  cairo_arc_negative(cr, 0.20, 0.80, 0.10, 0.4 * M_PI, 1.9 * M_PI);
   cairo_stroke(cr);
 
-  // line
-  cairo_move_to(cr, 0.2, 0.8);
-  cairo_line_to(cr, 0.85, 0.15);
-  cairo_stroke(cr);
-
-  // junction
-  cairo_move_to(cr, 0.1, 0.7);
-  cairo_line_to(cr, 0.3, 0.9);
-  cairo_stroke(cr);
-
-  // tip
-  cairo_move_to(cr, -0.05, 1.05);
-  cairo_line_to(cr, 0.05, 0.95);
-  cairo_stroke(cr);
+  cairo_set_line_width(cr, 0.01);
+  cairo_arc(cr, 0.98, 0.0, 0.055, 1.2 * M_PI, 0.2 * M_PI);
+  cairo_arc(cr, 0.48, 0.72, 0.09, 0.2 * M_PI, 1.2 * M_PI);
+  cairo_close_path(cr);
+  cairo_fill(cr);
 
   FINISH
 }
@@ -622,23 +614,31 @@ void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, gint x, gint y, gint w, gint h
 
 void dtgtk_cairo_paint_masks_drawn(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1.03, 0, -0.05)
+  PREAMBLE(0.9, 0, 0)
 
-  // draw the body of the pencil (filled)
-  cairo_move_to(cr, 0.9, 0.6);
-  cairo_line_to(cr, 0.3, 0.0);
-  cairo_line_to(cr, 0.0, 0.3);
-  cairo_line_to(cr, 0.6, 0.9);
-  // cairo_stroke_preserve(cr);
-  cairo_fill(cr);
-  cairo_stroke(cr);
+   // main cylinder
+   cairo_move_to(cr, 1.0, 1.0);
+   cairo_line_to(cr, 0.9, 0.7);
+   cairo_line_to(cr, 0.2, 0.0);
+   cairo_line_to(cr, 0.0, 0.2);
+   cairo_line_to(cr, 0.7, 0.9);
+   cairo_line_to(cr, 1.0, 1.0);
+   cairo_stroke(cr);
 
-  // draw the tip of the pencil
-  cairo_move_to(cr, 1.0, 1.0);
-  cairo_line_to(cr, 0.9, 0.6);
-  cairo_line_to(cr, 0.6, 0.9);
-  cairo_line_to(cr, 1.0, 1.0);
-  cairo_stroke(cr);
+   // line
+   cairo_move_to(cr, 0.8, 0.8);
+   cairo_line_to(cr, 0.15, 0.15);
+   cairo_stroke(cr);
+
+   // junction
+   cairo_move_to(cr, 0.9, 0.7);
+   cairo_line_to(cr, 0.7, 0.9);
+   cairo_stroke(cr);
+
+   // tip
+   cairo_move_to(cr, 1.05, 1.05);
+   cairo_line_to(cr, 0.95, 0.95);
+   cairo_stroke(cr);
 
   FINISH
 }
@@ -646,7 +646,7 @@ void dtgtk_cairo_paint_masks_drawn(cairo_t *cr, gint x, gint y, gint w, gint h, 
 /** draws an arc with a B&W gradient following the arc path.
  *  nb_steps must be adjusted depending on the displayed size of the element, 16 is fine for small buttons*/
 void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double y_center, double radius,
-                   double angle_from, double angle_to, double color_from, double color_to)
+                   double angle_from, double angle_to, double color_from, double color_to, double alpha)
 {
   cairo_set_line_width(cr, lw);
 
@@ -662,7 +662,7 @@ void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double
   for(int i = 0; i < nb_steps; i++)
   {
     double color = color_from + i * (color_to - color_from) / nb_steps;
-    cairo_set_source_rgb(cr, color, color, color);
+    cairo_set_source_rgba(cr, color, color, color, alpha);
     cairo_arc(cr, x_center, y_center, radius, portions[i], portions[i + 1]);
     cairo_stroke(cr);
   }
@@ -673,9 +673,14 @@ void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, gint x, gint y, gint w, gin
 {
   PREAMBLE(0.95, 0, 0)
 
-  _gradient_arc(cr, 0.125, 16, 0.5, 0.5, 0.5, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.3, 0.9);
+  cairo_pattern_t *p = cairo_get_source (cr);
+  double r, g, b, a;
+  double start;
+  cairo_pattern_get_rgba (p, &r, &g, &b, &a);
 
-  cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
+  start = ((flags & CPF_PRELIGHT) && (r < 0.5)) ? 0.8 :  r / 4.0;
+   _gradient_arc(cr, 0.125, 16, 0.5, 0.5, 0.5, -M_PI / 3.0, M_PI + M_PI / 3.0, start, r, a);
+
   // draw one tick up right
   cairo_move_to(cr, 1, 0.2);
   cairo_line_to(cr, 1.2, 0.2);
@@ -695,9 +700,15 @@ void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, g
 {
   PREAMBLE(1.05, -0.1, -0.05)
 
-  _gradient_arc(cr, 0.125, 16, 0.75, 0.6, 0.4, -M_PI / 3.0, M_PI + M_PI / 3.0, 0.3, 0.9);
+  cairo_pattern_t *p = cairo_get_source (cr);
+  double r, g, b, a;
+  double start;
+  cairo_pattern_get_rgba (p, &r, &g, &b, &a);
 
-  cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
+  start = ((flags & CPF_PRELIGHT) && (r < 0.5)) ? 0.8 :  r / 4.0;
+  cairo_save(cr);
+  _gradient_arc(cr, 0.125, 16, 0.75, 0.6, 0.4, -M_PI / 3.0, M_PI + M_PI / 3.0, start, r, a);
+
   // draw one tick up right
   cairo_move_to(cr, 1.2, 0.35);
   cairo_line_to(cr, 1.35, 0.35);
@@ -708,22 +719,33 @@ void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, g
   cairo_line_to(cr, 1.4, 0.6);
   cairo_line_to(cr, 1.4, 0.8);
   cairo_fill(cr);
+  cairo_restore(cr);
 
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   cairo_scale(cr, 0.8, 0.8);
-  cairo_translate(cr, -0.05, -0.05);
-  // draw the body of the pencil (filled)
-  cairo_move_to(cr, 0.9, 0.6);
-  cairo_line_to(cr, 0.3, 0.0);
-  cairo_line_to(cr, 0.0, 0.3);
-  cairo_line_to(cr, 0.6, 0.9);
-  cairo_fill(cr);
-  cairo_stroke(cr);
-  // draw the tip of the pencil
+  cairo_translate(cr, 0.05, -0.05);
+
+  // main cylinder
   cairo_move_to(cr, 1.0, 1.0);
-  cairo_line_to(cr, 0.9, 0.6);
-  cairo_line_to(cr, 0.6, 0.9);
+  cairo_line_to(cr, 0.9, 0.7);
+  cairo_line_to(cr, 0.2, 0.0);
+  cairo_line_to(cr, 0.0, 0.2);
+  cairo_line_to(cr, 0.7, 0.9);
   cairo_line_to(cr, 1.0, 1.0);
+  cairo_stroke(cr);
+
+  // line
+  cairo_move_to(cr, 0.8, 0.8);
+  cairo_line_to(cr, 0.25, 0.25);
+  cairo_stroke(cr);
+
+  // junction
+  cairo_move_to(cr, 0.9, 0.7);
+  cairo_line_to(cr, 0.7, 0.9);
+  cairo_stroke(cr);
+
+  // tip
+  cairo_move_to(cr, 1.05, 1.05);
+  cairo_line_to(cr, 0.95, 0.95);
   cairo_stroke(cr);
 
   FINISH
@@ -739,12 +761,11 @@ void dtgtk_cairo_paint_masks_raster(cairo_t *cr, gint x, gint y, gint w, gint h,
 
   for(int i = 0; i < 4; i++)
     for(int j = 0; j < 4; j++)
-    {
-      double color = (i + j) % 2 ? 0.2 : 0.9;
-      cairo_set_source_rgb(cr, color, color, color);
-      cairo_rectangle(cr, i / 4.0, j / 4.0, 1.0 / 4.0, 1.0 / 4.0);
-      cairo_fill(cr);
-    }
+      if((i + j) % 2)
+      {
+        cairo_rectangle(cr, i / 4.0, j / 4.0, 1.0 / 4.0, 1.0 / 4.0);
+        cairo_fill(cr);
+      }
 
   FINISH
 }
@@ -845,6 +866,7 @@ void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 0, 0)
 
+  cairo_set_line_width(cr, 0.1);
   cairo_arc(cr, 0.5, 0.5, 0.1, 0, 6.2832);
   cairo_stroke(cr);
 
@@ -858,7 +880,6 @@ void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, g
   cairo_translate(cr, 0, -0.20);
   if((flags & CPF_ACTIVE))
   {
-    cairo_set_source_rgba(cr, 0.6, 0.1, 0.1, 1.0);
     cairo_move_to(cr, 0.1, 0.9);
     cairo_line_to(cr, 0.9, 0.1);
     cairo_stroke(cr);
@@ -866,7 +887,6 @@ void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, g
 
   FINISH
 }
-
 
 
 void dtgtk_cairo_paint_timer(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
@@ -906,6 +926,58 @@ void dtgtk_cairo_paint_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 
   FINISH
 }
+
+void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // stigmometer aka split focusing screen aka Dodin's prism
+  cairo_arc(cr, 0.5, 0.5, 0.2, 0, 2. * M_PI);
+  cairo_move_to(cr, 0.3, 0.5);
+  cairo_line_to(cr, 0.7, 0.5);
+  cairo_stroke(cr);
+
+  // corners
+  const double center = 0.5;
+  const double width = 1.;
+  const double height = width * 3. / 4.;
+  const double offset_h = height / 2.;
+  const double offset_w = width / 2.;
+
+  const double tick_length = 0.1;
+
+  const double left = center - offset_w;
+  const double right = center + offset_w;
+  const double top = center - offset_h;
+  const double bottom = center + offset_h;
+
+  /// north west
+  cairo_move_to(cr, left + tick_length, top);
+  cairo_line_to(cr, left,               top);
+  cairo_line_to(cr, left,               top + tick_length);
+  cairo_stroke(cr);
+
+  // south west
+  cairo_move_to(cr, left,               bottom - tick_length);
+  cairo_line_to(cr, left,               bottom);
+  cairo_line_to(cr, left + tick_length, bottom);
+  cairo_stroke(cr);
+
+  // south east
+  cairo_move_to(cr, right - tick_length, bottom);
+  cairo_line_to(cr, right,               bottom);
+  cairo_line_to(cr, right,               bottom - tick_length);
+  cairo_stroke(cr);
+
+  // north east
+  cairo_move_to(cr, right,               top + tick_length);
+  cairo_line_to(cr, right,               top);
+  cairo_line_to(cr, right - tick_length, top);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
@@ -1375,15 +1447,14 @@ void dtgtk_cairo_paint_showmask(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 {
   PREAMBLE(1, 0, 0)
 
+  /* draw circle */
+  cairo_arc(cr, 0.5, 0.5, 0.30, -M_PI, M_PI);
+
   /* draw rectangle */
   cairo_rectangle(cr, 0.0, 0.0, 1.0, 1.0);
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_fill(cr);
   cairo_stroke(cr);
-
-  /* draw circle */
-  cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
-  cairo_arc(cr, 0.5, 0.5, 0.30, -M_PI, M_PI);
-  cairo_fill(cr);
 
   FINISH
 }
@@ -1517,6 +1588,23 @@ void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 
   FINISH
 }
+
+void dtgtk_cairo_paint_text_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // draw an A
+  cairo_move_to(cr, 0.1, 1.);
+  cairo_line_to(cr, 0.5, 0.);
+  cairo_line_to(cr, 0.9, 1.);
+
+  cairo_move_to(cr, 0.25, 0.6);
+  cairo_line_to(cr, 0.75, 0.6);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 
 void dtgtk_cairo_paint_or(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
@@ -2023,6 +2111,204 @@ void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint
 
   FINISH
 }
+
+void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_arc(cr, 0.65, 0.35, 0.35, 0, 2 * M_PI);
+  cairo_stroke(cr);
+
+  cairo_arc(cr, 0.35, 0.65, 0.35, 0, 2 * M_PI);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_tool_heal(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_set_line_width(cr, 0.01);
+  cairo_move_to(cr, 0.35, 0.1);
+  cairo_rel_line_to(cr, 0.3, 0.0);
+  cairo_rel_line_to(cr, 0.0, 0.25);
+  cairo_rel_line_to(cr, 0.25, 0.0);
+  cairo_rel_line_to(cr, 0.0, 0.3);
+  cairo_rel_line_to(cr, -0.25, 0.0);
+  cairo_rel_line_to(cr, 0.0, 0.25);
+  cairo_rel_line_to(cr, -0.3, 0.0);
+  cairo_rel_line_to(cr, 0.0, -0.25);
+  cairo_rel_line_to(cr, -0.25, 0.0);
+  cairo_rel_line_to(cr, 0.0, -0.3);
+  cairo_rel_line_to(cr, 0.25, 0.0);
+  cairo_close_path(cr);
+
+  cairo_rectangle(cr, 0., 0., 1., 1.);
+
+  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_tool_fill(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.08, 0, 0)
+
+  cairo_move_to(cr, 0.1, 0.1);
+  cairo_line_to(cr, 0.2, 0.1);
+  cairo_line_to(cr, 0.2, 0.9);
+  cairo_line_to(cr, 0.8, 0.9);
+  cairo_line_to(cr, 0.8, 0.1);
+  cairo_line_to(cr, 0.9, 0.1);
+  cairo_stroke(cr);
+  cairo_rectangle(cr, 0.2, 0.4, .6, .5);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_tool_blur(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.1, 0, 0)
+
+ cairo_move_to(cr, 0.5, 0.1);
+ cairo_arc(cr, 0.5, 0.65, 0.28, -0.2 * M_PI, 1.2 * M_PI);
+ cairo_close_path(cr);
+ cairo_stroke(cr);
+ cairo_set_line_width(cr, 0.1);
+ cairo_arc(cr, 0.5, 0.65, 0.13, 0.65 * M_PI, 1.2 * M_PI);
+ cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_paste_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, 0.1, 0.6);
+  cairo_line_to(cr, 0.9, 0.6);
+  cairo_line_to(cr, 0.5, 1.0);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.4, 0.0);
+  cairo_line_to(cr, 0.6, 0.0);
+  cairo_line_to(cr, 0.6, 0.6);
+  cairo_line_to(cr, 0.4, 0.6);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_cut_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, -0.07)
+
+  cairo_set_line_width(cr, 0.1);
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_move_to(cr, 0.11, 0.25);
+    cairo_line_to(cr, 0.89, 0.75);
+    cairo_move_to(cr, 0.25, 0.11);
+    cairo_line_to(cr, 0.75, 0.89);
+    cairo_stroke(cr);
+
+    cairo_arc(cr, 0.89, 0.53, 0.17, 0, 2 * M_PI);
+    cairo_stroke(cr);
+
+    cairo_arc(cr, 0.53, 0.89, 0.17, 0, 2 * M_PI);
+    cairo_stroke(cr);
+  }
+  else
+  {
+    cairo_move_to(cr, 0.01, 0.35);
+    cairo_line_to(cr, 0.99, 0.65);
+    cairo_move_to(cr, 0.35, 0.01);
+    cairo_line_to(cr, 0.65, 0.99);
+    cairo_stroke(cr);
+
+    cairo_arc(cr, 0.89, 0.53, 0.17, 0, 2 * M_PI);
+    cairo_stroke(cr);
+
+    cairo_arc(cr, 0.53, 0.89, 0.17, 0, 2 * M_PI);
+    cairo_stroke(cr);
+  }
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_display_wavelet_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(0.93, 0, 0)
+
+  if(flags & CPF_ACTIVE)
+  {
+    float x1 = 0.2f;
+    float y1 = 1.f;
+
+    cairo_move_to(cr, x1, y1);
+
+    const int steps = 4;
+    const float delta = 1. / (float)steps;
+    for(int i = 0; i < steps; i++)
+    {
+      y1 -= delta;
+      cairo_line_to(cr, x1, y1);
+      x1 += delta;
+      if(x1 > .9) x1 = .9;
+      cairo_line_to(cr, x1, y1);
+    }
+    cairo_stroke(cr);
+
+    cairo_set_line_width(cr, 0.1);
+    cairo_rectangle(cr, 0., 0., 1., 1.);
+    cairo_stroke(cr);
+  }
+  else
+  {
+    cairo_move_to(cr, 0.08, 1.);
+    cairo_curve_to(cr, 0.4, 0.05, 0.6, 0.05, 1., 1.);
+    cairo_line_to(cr, 0.08, 1.);
+    cairo_fill(cr);
+
+    cairo_set_line_width(cr, 0.1);
+    cairo_rectangle(cr, 0., 0., 1., 1.);
+    cairo_stroke(cr);
+  }
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_auto_levels(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, .1, 0.3);
+  cairo_line_to(cr, .1, 1.);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, .5, 0.1);
+  cairo_line_to(cr, .5, 1.);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, .9, 0.3);
+  cairo_line_to(cr, .9, 1.);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0., 1.0);
+  cairo_line_to(cr, 1.0, 1.0);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

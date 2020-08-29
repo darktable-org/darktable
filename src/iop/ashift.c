@@ -292,7 +292,7 @@ typedef struct dt_iop_ashift_params_t
   float rotation;    // $MIN: -ROTATION_RANGE_SOFT $MAX: ROTATION_RANGE_SOFT $DEFAULT: 0.0
   float lensshift_v; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (vertical)"
   float lensshift_h; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "lens shift (horizontal)"
-  float shear;       // $MIN: -SHEAR_RANGE_SOFT $MAX: SHEAR_RANGE_SOFT $DEFAULT: 0.0
+  float shear;       // $MIN: -SHEAR_RANGE_SOFT $MAX: SHEAR_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "shear"
   float f_length;    // $MIN: 1.0 $MAX: 2000.0 $DEFAULT: DEFAULT_F_LENGTH $DESCRIPTION: "focal length"
   float crop_factor; // $MIN: 0.5 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "crop factor"
   float orthocorr;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "lens dependence"
@@ -4768,7 +4768,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   shadow_crop_box(p,g);
 
-  g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
+  g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 
@@ -4826,6 +4826,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
   GtkWidget *label1 = gtk_label_new(_("automatic fit"));
+  gtk_label_set_ellipsize(GTK_LABEL(label1), PANGO_ELLIPSIZE_END);
   gtk_widget_set_halign(label1, GTK_ALIGN_START);
   gtk_grid_attach(grid, label1, 0, 0, 1, 1);
 
@@ -4842,6 +4843,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, g->fit_both, 3, 0, 1, 1);
 
   GtkWidget *label2 = gtk_label_new(_("get structure"));
+  gtk_label_set_ellipsize(GTK_LABEL(label2), PANGO_ELLIPSIZE_END);
   gtk_widget_set_halign(label2, GTK_ALIGN_START);
   gtk_grid_attach(grid, label2, 0, 1, 1, 1);
 

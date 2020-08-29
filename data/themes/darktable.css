@@ -127,9 +127,9 @@
 /* Views */
 @define-color darkroom_bg_color @grey_45;
 @define-color darkroom_preview_bg_color @grey_35;
-@define-color print_bg_color @grey_45;
-@define-color lighttable_bg_color @print_bg_color;
-@define-color lighttable_preview_bg_color @grey_35;
+@define-color print_bg_color @darkroom_bg_color;
+@define-color lighttable_bg_color @darkroom_bg_color;
+@define-color lighttable_preview_bg_color @darkroom_preview_bg_color;
 @define-color lighttable_bg_font_color @grey_75;
 
 /* Lighttable and film-strip */
@@ -595,7 +595,12 @@ overshoot.right
 /* Set modules name header */
 #module-header
 {
-  padding: 0.5em 0.5em 0.25em 0.5em;
+  padding: 0.5em 0.5em 0.5em 0.5em;
+}
+
+#module-header entry 
+{
+  background-color: @field_active_bg;
 }
 
 /* Labels in modules */
@@ -604,7 +609,8 @@ overshoot.right
 {
   background-color: @bg_color;
   color: @plugin_label_color;
-  border:0;
+  border: 0;
+  margin: 0;
   padding: 0 2px 2px 0.45em;
   font-weight: normal;
   font-family: sans-serif;
@@ -633,7 +639,8 @@ overshoot.right
   margin: 12px 0 6px 0;
 }
 
-#iop-plugin-ui #section_label.section_label_top
+#iop-plugin-ui #section_label.section_label_top,
+#lib-plugin-ui #section_label.section_label_top
 {
   margin: 2px 0 6px 0;
 }
@@ -808,7 +815,6 @@ menuitem > menu, /* sub-menu */
 menuitem arrow,
 tooltip,
 popover,
-#background_job_eventbox, /* background of export progress bar */
 combobox window,
 dialog combobox window
 {
@@ -1298,26 +1304,39 @@ border-bottom: 1px solid @button_border;
 /*** Some tags below inherit from properties above ; so avoid moving that part ***/
 
 /* Progress bar on bottom left side when exporting, importing, etc... */
-progressbar *
+#background_job_eventbox /* background of export progress bar */
 {
-  background-color: @text_color;
+  background-color: @plugin_bg_color;
 }
 
-progressbar
+#background_job_eventbox label
 {
-  background-color: @really_dark_bg_color;
+  margin: 1px 4px;
+}
+
+#background_job_eventbox #dt-button
+{
+  border: 0;
+}
+
+progressbar *
+{
+  background-color: @selected_bg_color;
+  border-radius: 0;
 }
 
 progressbar progress
 {
-  background-color: @fg_color;
+  background-color: @darkroom_bg_color;
+  border-radius: 4px;
 }
 
-/* Combobox inner margins in main panels */
-#lib-plugin-ui combobox,
-#iop-plugin-ui combobox
+/* Be sure to have minimum width allowed for infos on images infos module if reducing panel width */
+#brightbg
 {
-  margin: 2px 0;
+  min-width: 80px;
+  padding-left: 2px;
+  padding-bottom: 1px;
 }
 
 /* Checkbutton check state */
@@ -1338,12 +1357,6 @@ cell:selected
 #blending-box #section_label
 {
   margin: 0 0 8px 0;
-}
-
-/* Set specific padding for export module spinbutton */
-#export-max-size spinbutton
-{
-  padding: 0px 5px;
 }
 
 /* Set below spacing between history items in darkroom */
@@ -1404,7 +1417,8 @@ cell:selected
 
 /* Set some specific fonts */
 #live-sample-data,
-#usercss_box textview
+#usercss_box textview,
+#hist-tooltip
 {
   font-family: monospace;
 }
@@ -1424,8 +1438,15 @@ cell:selected
 /* Module in darkroom left panel */
 #color-picker-area
 {
-  min-height: 9em;
-  min-width: 9em;
+  min-height: 7em;
+  min-width: 7em;
+}
+.picker-module combobox,
+.picker-module combobox button
+{
+  padding-top: 0;
+  padding-bottom: 0;
+  border: 0;
 }
 
 #live-sample
@@ -1557,6 +1578,15 @@ notebook tab:hover label,
 #view_dropdown .combo:hover *
 {
   color: @button_hover_fg;
+}
+
+/* workaround for a macOS quartz GTK backend bug
+   making combobox list appear behind dialog window:
+   color of "button:checked cellview" has to differ from
+   "button:hover cellview", don't ask for a reason for that */
+button:checked cellview
+{
+  color: shade(@button_hover_fg, 0.99);
 }
 
 /* Set submenus */
@@ -1759,6 +1789,17 @@ scale contents trough slider:hover
   background-color: @scroll_bar_active;
 }
 
+.iop_drop_before
+{
+   border: 2px solid @plugin_bg_color;
+   border-bottom: 2.8em solid @plugin_bg_color;
+}
+
+.iop_drop_after
+{
+   border: 2px solid @plugin_bg_color;
+   border-top: 2.8em solid @plugin_bg_color;
+}
 
 /*** --- Thumbtable css part ---
 
@@ -1769,6 +1810,7 @@ Hierachy :
       #thumb_back                                                    (GtkEventBox -- thumbnail background)
       #thumb_ext                                                     (GtkLabel -- thumbnail extension)
       #thumb_image                                                   (GtkDrawingArea -- thumbnail image)
+      #thumb_cursor                                                  (GtkDrawingArea -- top triangle to show active images in filmstrip)
       #thumb_bottom                                                  (GtkEventBox -- background of the bottom infos area)
         #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
       #thumb_reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
@@ -1938,14 +1980,24 @@ spinbutton>button
   margin: 20px;
 }
 
-#thumb_main:active #thumb_image
-{
-  border: 2px solid @plugin_bg_color;
-}
-
 #thumb_ext /* adjust margin to better align to group, audio... icons and match to near all thumbnails sizes */
 {
   margin-top: -1px;
+}
+
+/* Set top margin on active image in filmstrip */
+#thumb_main:active #thumb_back
+{
+  border-top: 1.5px solid @border_color;
+}
+/* Set top cursor on active image in filmstrip */
+#thumb_cursor
+{
+  color: transparent;
+}
+#thumb_main:active #thumb_cursor
+{
+  color: @border_color;
 }
 
 /*---------------
@@ -2190,9 +2242,11 @@ spinbutton>button
 .dt_culling #thumb_back,
 .dt_culling #thumb_main:selected #thumb_back,
 .dt_culling #thumb_main:hover #thumb_back,
+.dt_culling #thumb_main:active #thumb_back,
 .dt_preview #thumb_back,
 .dt_preview #thumb_main:selected #thumb_back,
-.dt_preview #thumb_main:hover #thumb_back
+.dt_preview #thumb_main:hover #thumb_back,
+.dt_preview #thumb_main:active #thumb_back
 {
   background-color: transparent;
   border: none;

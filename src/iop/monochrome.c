@@ -553,7 +553,8 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   dt_iop_color_picker_reset(self, TRUE);
 
   gdouble delta_y;
@@ -594,7 +595,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
 
   g->highlights = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
-                  dt_bauhaus_slider_from_params(self, "highlights"));
+                  dt_bauhaus_slider_from_params(self, N_("highlights")));
   gtk_widget_set_tooltip_text(g->highlights, _("how much to keep highlights"));
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;

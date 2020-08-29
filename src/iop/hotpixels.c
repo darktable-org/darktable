@@ -392,12 +392,12 @@ void gui_init(dt_iop_module_t *self)
   g->box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(g->box_raw), "draw", G_CALLBACK(draw), self);
 
-  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
+  g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
   dt_bauhaus_slider_set_step(g->threshold, 0.005);
   dt_bauhaus_slider_set_digits(g->threshold, 4);
   gtk_widget_set_tooltip_text(g->threshold, _("lower threshold for hot pixel"));
 
-  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_digits(g->strength, 4);
   gtk_widget_set_tooltip_text(g->strength, _("strength of hot pixel correction"));
 

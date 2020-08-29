@@ -71,7 +71,6 @@ typedef struct dt_iop_rawdenoise_gui_data_t
   dt_iop_rawdenoise_params_t drag_params;
   int dragging;
   int x_move;
-  int timeout_handle;
   dt_iop_rawdenoise_channel_t channel;
   float draw_xs[DT_IOP_RAWDENOISE_RES], draw_ys[DT_IOP_RAWDENOISE_RES];
   float draw_min_xs[DT_IOP_RAWDENOISE_RES], draw_min_ys[DT_IOP_RAWDENOISE_RES];
@@ -598,11 +597,7 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
-  if(g->timeout_handle)
-  {
-    g_source_remove(g->timeout_handle);
-    g->timeout_handle = 0;
-  }
+  dt_iop_cancel_history_update(self);
   dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
@@ -808,17 +803,6 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   return TRUE;
 }
 
-static gboolean postponed_value_change(gpointer data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)data;
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  c->timeout_handle = 0;
-
-  return FALSE;
-}
-
 static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -838,10 +822,7 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
       dt_iop_rawdenoise_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
-
-    if(!c->timeout_handle)
-      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
+    dt_iop_queue_history_update(self, FALSE);
   }
   else
   {
@@ -923,7 +904,8 @@ static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
@@ -955,12 +937,11 @@ void gui_init(dt_iop_module_t *self)
   c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("all")));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("R")));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("G")));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), gtk_label_new(_("B")));
+  dt_ui_notebook_page(c->channel_tabs, _("all"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, _("R"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, _("G"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, _("B"), NULL);
 
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
 
@@ -975,7 +956,7 @@ void gui_init(dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
-  c->timeout_handle = 0;
+  self->timeout_handle = 0;
   c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
   c->box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1030,7 +1011,7 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
-  if(c->timeout_handle) g_source_remove(c->timeout_handle);
+  dt_iop_cancel_history_update(self);
   free(self->gui_data);
   self->gui_data = NULL;
 }

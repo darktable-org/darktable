@@ -473,6 +473,7 @@ GList *dt_film_get_image_ids(const int filmid)
     int id = sqlite3_column_int(stmt, 0);
     result = g_list_append(result, GINT_TO_POINTER(id));
   }
+  sqlite3_finalize(stmt);
   return result;
 }
 

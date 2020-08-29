@@ -415,9 +415,7 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
       query = dt_util_dstrcat(query, ",(%d)", imgid);
       list = g_list_next(list);
     }
-    char *result = NULL;
-
-    sqlite3_exec(dt_database_get(darktable.db), query, NULL, NULL, &result);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
     g_free(query);
   }

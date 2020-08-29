@@ -89,9 +89,13 @@ gboolean dt_history_delete_on_list(const GList *list, gboolean undo);
 
 /** compress history stack */
 int dt_history_compress_on_list(const GList *imgs);
-void dt_history_compress_on_image(int32_t imgid);
+void dt_history_compress_on_image(const int32_t imgid);
+
+/** truncate history stack */
+void dt_history_truncate_on_image(const int32_t imgid, const int32_t history_end);
+
 /* set or clear a tag representing an error state while compressing history */
-void dt_history_set_compress_problem(int32_t imgid, gboolean set);
+void dt_history_set_compress_problem(const int32_t imgid, const gboolean set);
 /* duplicate an history list */
 GList *dt_history_duplicate(GList *hist);
 

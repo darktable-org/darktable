@@ -288,7 +288,7 @@ public:
 }
 
 static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
-static gboolean read_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid);
+static void read_xmp_timestamps(Exiv2::XmpData &xmpData, dt_image_t *img);
 
 // this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[]
@@ -412,7 +412,7 @@ static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterat
 // there is no need to pass xmpData
 // version = -1 -> version ignored
 static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int version,
-                                  bool use_default_rating)
+                                  bool exif_read)
 {
   // as this can be called several times during the image lifetime, clean up first
   GList *imgs = NULL;
@@ -427,7 +427,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     // why for they don't get passed to that function.
     if(version == -1 || version > 0)
     {
-      dt_metadata_clear(imgs, FALSE);
+      if(!exif_read) dt_metadata_clear(imgs, FALSE);
       for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       {
         const gchar *key = dt_metadata_get_key(i);
@@ -452,7 +452,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       dt_image_set_xmp_rating(img, stars);
     }
 
-    dt_colorlabels_remove_labels(img->id);
+    if(!exif_read) dt_colorlabels_remove_labels(img->id);
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
     {
       std::string label = pos->toString();
@@ -480,7 +480,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
 
     GList *tags = NULL;
     // preserve dt tags which are not saved in xmp file
-    dt_tag_set_tags(tags, imgs, TRUE, TRUE, FALSE);
+    if(!exif_read) dt_tag_set_tags(tags, imgs, TRUE, TRUE, FALSE);
     if(FIND_XMP_TAG("Xmp.lr.hierarchicalSubject"))
       _exif_import_tags(img, pos);
     else if(FIND_XMP_TAG("Xmp.dc.subject"))
@@ -2719,8 +2719,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     if(!history_only)
     {
       // otherwise we ignore title, description, ... from non-dt xmp files :(
-      size_t ns_pos = image->xmpPacket().find("xmlns:darktable=\"http://darktable.sf.net/\"");
-      bool is_a_dt_xmp = (ns_pos != std::string::npos);
+      const size_t ns_pos = image->xmpPacket().find("xmlns:darktable=\"http://darktable.sf.net/\"");
+      const bool is_a_dt_xmp = (ns_pos != std::string::npos);
       _exif_decode_xmp_data(img, xmpData, is_a_dt_xmp ? version : -1, false);
     }
 
@@ -3057,7 +3057,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
   end:
 
-    all_ok = read_xmp_timestamps(xmpData, img->id);
+    read_xmp_timestamps(xmpData, img);
 
     sqlite3_finalize(stmt);
 
@@ -3302,50 +3302,23 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
 }
 
 // read timestamps from XmpData
-gboolean read_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
+void read_xmp_timestamps(Exiv2::XmpData &xmpData, dt_image_t *img)
 {
-  gboolean all_ok = TRUE;
   Exiv2::XmpData::iterator pos;
 
-  const char *timestamps[] = { "change_timestamp", "export_timestamp", "print_timestamp" };
   // Do not read for import_ts. It must be updated at each import.
-
-  const int nb_timestamps = sizeof(timestamps) / sizeof(char *);
-  char xmpkey[1024] = { 0 };
-  char query[1024] = { 0 };
-  char values[1024] = { 0 };
-  char tmp[64];
-  gboolean found_some = FALSE;
-
-  for (int i = 0 ; i < nb_timestamps ; i++)
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.change_timestamp"))) != xmpData.end())
   {
-    snprintf(xmpkey, sizeof(xmpkey), "Xmp.darktable.%s", timestamps[i]);
-    if((pos = xmpData.findKey(Exiv2::XmpKey(xmpkey))) != xmpData.end())
-    {
-      snprintf(tmp, sizeof(tmp), " %s = %ld,", timestamps[i], pos->toLong());
-      g_strlcat(values, tmp, sizeof(values));
-      found_some = TRUE;
-    }
+    img->change_timestamp = pos->toLong();
   }
-
-  if(found_some)
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.export_timestamp"))) != xmpData.end())
   {
-    sqlite3_stmt *stmt;
-
-    values[strlen(values) - 1] = '\0'; /* remove last comma */
-    snprintf(query, sizeof(query), "UPDATE main.images SET %s WHERE id = %d", values, imgid);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-
-    if(sqlite3_step(stmt) != SQLITE_DONE)
-      {
-        fprintf(stderr, "[exif] error writing timestamps entry for image %d\n", imgid);
-        fprintf(stderr, "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
-        all_ok = FALSE;
-      }
-    sqlite3_finalize(stmt);
+    img->export_timestamp = pos->toLong();
   }
-
-  return all_ok;
+  if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.print_timestamp"))) != xmpData.end())
+  {
+    img->print_timestamp = pos->toLong();
+  }
 }
 
 static void dt_remove_xmp_exif_geotag(Exiv2::XmpData &xmpData)
@@ -4095,6 +4068,7 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
       {
         exif_tm.tm_year -= 1900;
         exif_tm.tm_mon--;
+        exif_tm.tm_isdst = -1;    // no daylight saving time
         *datetime_taken = mktime(&exif_tm);
         return TRUE;
       }
