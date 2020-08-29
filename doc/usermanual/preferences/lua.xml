@@ -1,0 +1,25 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="lua_options">
+
+  <title>Lua options</title>
+
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>lua options</secondary>
+  </indexterm>
+
+  <para>
+    This option control lua scripts installator.
+  </para>
+
+  <bridgehead renderas="sect5">lua scripts installer don't show again</bridgehead>
+
+  <para>
+    Choose to show again, or not, the lua scripts installer in lighttable left panel.
+  </para>
+
+</sect1>

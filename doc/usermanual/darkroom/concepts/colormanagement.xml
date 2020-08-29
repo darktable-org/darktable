@@ -61,8 +61,8 @@
       calibrated and profiled, and it needs the profile to be correctly installed on your
       system. darktable queries your X display server's <emphasis>xatom</emphasis> as well as the
       system service <emphasis>colord</emphasis> (if available) for the right profile. If needed
-      you can enforce a specific method in the GUI preferences dialog (see
-      <xref linkend="gui_options"/>).
+      you can enforce a specific method in the miscellaneous tab in preferences dialog (see
+      <xref linkend="miscellaneous"/>).
     </para>
 
     <para>
@@ -96,8 +96,8 @@
 
     <para>
       A configuration parameter <quote>always use LittleCMS 2 to apply output color
-      profile</quote> in darktable's <emphasis>core options</emphasis> (see
-      <xref linkend="core_options"/>) defines how colors are rendered.
+      profile</quote> in darktable's <emphasis>processing</emphasis> tab in preferences dialog (see
+      <xref linkend="processing"/>) defines how colors are rendered.
     </para>
 
     <para>

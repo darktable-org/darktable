@@ -23,7 +23,7 @@
     than one GUI expanded, you may expand further modules with <emphasis>Shift+click</emphasis>
     &nbsp;&ndash; all previously expanded GUIs remain opened. The expander bar behavior on
     <emphasis>click</emphasis> and <emphasis>Shift+click</emphasis>, respectively, is controlled
-    by a preference setting in GUI options (see <xref linkend="gui_options"/>).
+    by a preference setting in darkroom options (see <xref linkend="darkroom_options"/>).
   </para>
 
   <para>
