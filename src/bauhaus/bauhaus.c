@@ -1560,20 +1560,16 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
         i++;
         g_free(text_cmp);
       }
-      // if list is short (2 entries could be: typed something similar, and one similar)
-      if(k < 3)
+      // didn't find it, but had only one matching choice?
+      if(k == 1 && match)
+        dt_bauhaus_combobox_set(widget, kk);
+      else if(d->editable)
       {
-        // didn't find it, but had only one matching choice?
-        if(k == 1 && match)
-          dt_bauhaus_combobox_set(widget, kk);
-        else if(d->editable)
-        {
-          // had no close match (k == 1 && !match) or no match at all (k == 0)
-          memset(d->text, 0, sizeof(d->text));
-          g_strlcpy(d->text, darktable.bauhaus->keys, sizeof(d->text));
-          // select custom entry
-          dt_bauhaus_combobox_set(widget, -1);
-        }
+        // otherwise, if combobox is editable, assume it is a custom input
+        memset(d->text, 0, sizeof(d->text));
+        g_strlcpy(d->text, darktable.bauhaus->keys, sizeof(d->text));
+        // select custom entry
+        dt_bauhaus_combobox_set(widget, -1);
       }
       g_free(keys);
       break;
