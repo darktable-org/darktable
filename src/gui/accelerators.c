@@ -534,14 +534,14 @@ void dt_accel_connect_lua(const gchar *path, GClosure *closure)
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
 }
 
-void dt_accel_connect_manual(GSList *list, const gchar *full_path, GClosure *closure)
+void dt_accel_connect_manual(GSList **list_ptr, const gchar *full_path, GClosure *closure)
 {
   gchar accel_path[256];
   dt_accel_path_manual(accel_path, sizeof(accel_path), full_path);
   dt_accel_t *accel = _lookup_accel(accel_path);
   accel->closure = closure;
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path, closure);
-  list = g_slist_prepend(list, accel);
+  *list_ptr = g_slist_prepend(*list_ptr, accel);
 }
 
 static gboolean _press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -669,6 +669,22 @@ void dt_accel_widget_toast(GtkWidget *widget)
 
 }
 
+float dt_accel_get_slider_scale_multiplier()
+{
+  const int slider_precision = dt_conf_get_int("accel/slider_precision");
+  
+  if(slider_precision == DT_IOP_PRECISION_COARSE)
+  {
+    return dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
+  }
+  else if(slider_precision == DT_IOP_PRECISION_FINE)
+  {
+    return dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+  }
+
+  return dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+}
+
 static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                  guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -676,8 +692,13 @@ static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group, GOb
 
   float value = dt_bauhaus_slider_get(slider);
   float step = dt_bauhaus_slider_get_step(slider);
+  float multiplier = dt_accel_get_slider_scale_multiplier();
 
-  dt_bauhaus_slider_set(slider, value + step);
+  const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(slider));
+  if(fabsf(step*multiplier) < min_visible) 
+    multiplier = min_visible / fabsf(step);
+
+  dt_bauhaus_slider_set(slider, value + step * multiplier);
 
   g_signal_emit_by_name(G_OBJECT(slider), "value-changed");
 
@@ -692,8 +713,13 @@ static gboolean bauhaus_slider_decrease_callback(GtkAccelGroup *accel_group, GOb
 
   float value = dt_bauhaus_slider_get(slider);
   float step = dt_bauhaus_slider_get_step(slider);
+  float multiplier = dt_accel_get_slider_scale_multiplier();
 
-  dt_bauhaus_slider_set(slider, value - step);
+  const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(slider));
+  if(fabsf(step*multiplier) < min_visible) 
+    multiplier = min_visible / fabsf(step);
+
+  dt_bauhaus_slider_set(slider, value - step * multiplier);
 
   g_signal_emit_by_name(G_OBJECT(slider), "value-changed");
 
@@ -896,14 +922,16 @@ void dt_accel_connect_locals_iop(dt_iop_module_t *module)
   module->local_closures_connected = TRUE;
 }
 
-void dt_accel_disconnect_list(GSList *list)
+void dt_accel_disconnect_list(GSList **list_ptr)
 {
+  GSList *list = *list_ptr;
   while(list)
   {
     dt_accel_t *accel = (dt_accel_t *)list->data;
     if(accel) gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
     list = g_slist_delete_link(list, list);
   }
+  *list_ptr = NULL;
 }
 
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/darktable.h"
+#include "common/dtpthread.h"
 
 #include <gtk/gtk.h>
 #include <stdint.h>
@@ -110,6 +111,7 @@ typedef struct dt_gui_gtk_t
 
   gboolean show_overlays;
   gboolean show_focus_peaking;
+  GtkWidget *focus_peaking_button;
 
   double dpi, dpi_factor, ppd;
 
@@ -124,6 +126,8 @@ typedef struct dt_gui_gtk_t
   guint sidebar_scroll_mask;
 
   cairo_filter_t filter_image;
+
+  dt_pthread_mutex_t mutex;
 } dt_gui_gtk_t;
 
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
@@ -182,6 +186,11 @@ int dt_gui_gtk_write_config();
 void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
 void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t, float opacity_coef);
 
+/* Check sidebar_scroll_default and modifier keys to determine if scroll event
+ * should be processed by control or by panel. If default is panel scroll but
+ * modifiers are pressed to indicate the control should be scrolled, then remove
+ * the modifiers from the event before returning false */
+gboolean dt_gui_ignore_scroll(GdkEventScroll *event);
 /* Return requested scroll delta(s) from event. If delta_x or delta_y
  * is NULL, do not return that delta. Return TRUE if requested deltas
  * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
@@ -340,15 +349,19 @@ void dt_ellipsize_combo(GtkComboBox *cbox);
 static inline void dt_ui_section_label_set(GtkWidget *label)
 {
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);    // make the text left aligned
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
 }
+
 static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
 {
   GtkWidget *label = gtk_label_new(str);
   dt_ui_section_label_set(label);
   return label;
 };
+
+GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
 
 static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)
 {
@@ -379,9 +392,12 @@ void dt_gui_load_theme(const char *theme);
 // reload GUI scalings
 void dt_configure_ppd_dpi(dt_gui_gtk_t *gui);
 
-//translate key press events to remove any modifiers used to produce the keyval
+// translate key press events to remove any modifiers used to produce the keyval
 // for example when the shift key is used to create the asterisk character
 guint dt_gui_translated_key_state(GdkEventKey *event);
+
+// return modifier keys currently pressed, independent of any key event
+GdkModifierType dt_key_modifier_state();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

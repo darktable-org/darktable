@@ -1391,7 +1391,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("content")), TRUE, TRUE, 0);
+  GtkWidget *label = dt_ui_section_label_new(_("content"));
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
+  gtk_style_context_add_class(context, "section_label_top");
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
@@ -1404,7 +1407,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  GtkWidget *label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
+  label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
   g->watermarks = dt_bauhaus_combobox_new(self);
   gtk_widget_set_hexpand(GTK_WIDGET(g->watermarks), TRUE);
   char *tooltip = g_strdup_printf(_("SVG watermarks in %s/watermarks or %s/watermarks"), configdir, datadir);
@@ -1468,9 +1471,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
-  g->opacity = dt_bauhaus_slider_from_params(self, "opacity");
+  g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
   dt_bauhaus_slider_set_format(g->opacity, "%.f%%");
-  g->scale = dt_bauhaus_slider_from_params(self, "scale");
+  g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
   dt_bauhaus_slider_set_soft_max(g->scale, 100.0);
   dt_bauhaus_slider_set_format(g->scale, "%.f%%");
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
@@ -1500,9 +1503,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   // x/y offset
   g->x_offset = dt_bauhaus_slider_from_params(self, "xoffset");
-  dt_bauhaus_slider_set_format(g->x_offset, "%.3f");
+  dt_bauhaus_slider_set_digits(g->x_offset, 3);
   g->y_offset = dt_bauhaus_slider_from_params(self, "yoffset");
-  dt_bauhaus_slider_set_format(g->y_offset, "%.3f");
+  dt_bauhaus_slider_set_digits(g->y_offset, 3);
 
   // Let's add some tooltips and hook up some signals...
   gtk_widget_set_tooltip_text(g->opacity, _("the opacity of the watermark"));

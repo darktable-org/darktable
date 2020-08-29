@@ -479,6 +479,21 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   gtk_widget_set_sensitive(lib->focus_out_small, sensitive);
 }
 
+void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
+{
+  dt_lib_live_view_t *lib = self->data;
+
+  // there's no code to automatically restart live view when entering
+  // the view, and besides the user may not want to jump right back
+  // into live view if they've been out of tethering view doing other
+  // things
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->live_view)) == TRUE)
+  {
+    dt_camctl_camera_stop_live_view(darktable.camctl);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lib->live_view), FALSE);
+  }
+}
+
 // TODO: find out where the zoom window is and draw overlay + grid accordingly
 #define MARGIN 20
 #define BAR_HEIGHT 18 /* see libs/camera.c */
@@ -490,16 +505,16 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
   if(cam->is_live_viewing == FALSE || cam->live_view_zoom == TRUE) return;
 
-  dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
-  if(GDK_IS_PIXBUF(cam->live_view_pixbuf) == FALSE)
+  dt_pthread_mutex_lock(&cam->live_view_buffer_mutex);
+  if(!cam->live_view_buffer)
   {
-    dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+    dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
     return;
   }
   double w = width - (MARGIN * 2.0f);
   double h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
-  gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
-  gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+  gint pw = cam->live_view_width;
+  gint ph = cam->live_view_height;
   lib->overlay_x0 = lib->overlay_x1 = lib->overlay_y0 = lib->overlay_y1 = 0.0;
 
   gboolean use_splitline = (dt_bauhaus_combobox_get(lib->overlay_splitline) == 1);
@@ -576,7 +591,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
             break;
           default:
             fprintf(stderr, "OMFG, the world will collapse, this shouldn't be reachable!\n");
-            dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+            dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
             return;
         }
 
@@ -698,7 +713,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
     cairo_stroke(cr);
   }
   cairo_restore(cr);
-  dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+  dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
 }
 
 int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)

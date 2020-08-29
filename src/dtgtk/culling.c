@@ -427,9 +427,9 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_culling_t *table = (dt_culling_t *)user_data;
-  gdouble delta;
+  int delta;
 
-  if(dt_gui_get_scroll_delta(e, &delta))
+  if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
     if((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
     {
@@ -796,7 +796,10 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   gchar *otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", table->mode);
   table->overlays = dt_conf_get_int(otxt);
   g_free(otxt);
-  gtk_style_context_add_class(context, _thumbs_get_overlays_class(table->overlays));
+
+  gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
+  gtk_style_context_add_class(context, cl0);
+  free(cl0);
 
   otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
   table->overlays_block_timeout = 2;
@@ -865,6 +868,18 @@ void dt_culling_init(dt_culling_t *table, int offset)
   // init values
   table->navigate_inside_selection = FALSE;
   table->selection_sync = FALSE;
+
+  // reset remaining zooming values if any
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+    thumb->zoom = 1.0f;
+    thumb->zoomx = 0.0;
+    thumb->zoomy = 0.0;
+    thumb->img_surf_dirty = TRUE;
+    l = g_list_next(l);
+  }
 
   const gboolean culling_dynamic
       = (table->mode == DT_CULLING_MODE_CULLING
@@ -1061,6 +1076,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
     const int id = sqlite3_column_int(stmt, 0);
     if(id > 0) dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
   }
+  sqlite3_finalize(stmt);
 }
 
 static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
@@ -1404,6 +1420,26 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   return TRUE;
 }
 
+void dt_culling_update_active_images_list(dt_culling_t *table)
+{
+  // we erase the list of active images
+  g_slist_free(darktable.view_manager->active_images);
+  darktable.view_manager->active_images = NULL;
+
+  // and we effectively move and resize thumbs
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+    // we update the active images list
+    darktable.view_manager->active_images
+        = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(thumb->imgid));
+    l = g_list_next(l);
+  }
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+}
+
 // recreate the list of thumb if needed and recomputes sizes and positions if needed
 void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
 {
@@ -1412,6 +1448,17 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   // first, we see if we need to do something
   if(!_compute_sizes(table, force)) return;
 
+  // we store first image zoom and pos for new ones
+  float old_z = 1.0;
+  float old_zx = 0.0;
+  float old_zy = 0.0;
+  if(g_list_length(table->list) > 0)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    old_z = thumb->zoom;
+    old_zx = thumb->zoomx;
+    old_zy = thumb->zoomy;
+  }
   // we recreate the list of images
   _thumbs_recreate_list_at(table, table->offset);
 
@@ -1433,6 +1480,9 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     if(!gtk_widget_get_parent(thumb->w_main))
     {
       gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
+      thumb->zoomx = old_zx;
+      thumb->zoomy = old_zy;
+      thumb->zoom = old_z;
     }
     else
     {

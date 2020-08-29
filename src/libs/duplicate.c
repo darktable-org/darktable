@@ -44,6 +44,8 @@ typedef struct dt_lib_duplicate_t
   gboolean busy;
   int cur_final_width;
   int cur_final_height;
+  int32_t preview_width;
+  int32_t preview_height;
   gboolean allow_zoom;
 
   cairo_surface_t *preview_surf;
@@ -210,8 +212,20 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   if(!dev->preview_pipe->backbuf || dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
 
   // use the same resolution as main previem image to avoid blur
-  float img_wd = dev->preview_pipe->backbuf_width;
-  float img_ht = dev->preview_pipe->backbuf_height;
+  float img_wd, img_ht;
+  if(d->allow_zoom)
+  {
+    img_wd = dev->preview_pipe->backbuf_width;
+    img_ht = dev->preview_pipe->backbuf_height;
+  }
+  else
+  {
+    int w2, h2;
+    dt_image_get_final_size(d->imgid, &w2, &h2);
+    img_wd = w2;
+    img_ht = h2;
+  }
+
   const int32_t tb = darktable.develop->border_size;
 
   // we rescale the sizes to the screen size
@@ -249,8 +263,12 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
   // if not cached, load or reload a mipmap
   int res = 0;
-  if(d->preview_id != d->imgid || d->preview_zoom != nz * zoom_ratio || !d->preview_surf)
+  if(d->preview_id != d->imgid || d->preview_zoom != nz * zoom_ratio || !d->preview_surf
+     || d->preview_width != width || d->preview_height != height)
   {
+    d->preview_width = width;
+    d->preview_height = height;
+
     res = dt_view_image_get_surface(d->imgid, img_wd * nz, img_ht * nz, &d->preview_surf, TRUE);
 
     if(!res)
@@ -275,8 +293,17 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_paint(cri);
 
     // move coordinates according to margin
-    const float wd = dev->pipe->output_backbuf_width / darktable.gui->ppd;
-    const float ht = dev->pipe->output_backbuf_height / darktable.gui->ppd;
+    float wd, ht;
+    if(d->allow_zoom)
+    {
+      wd = dev->pipe->output_backbuf_width / darktable.gui->ppd;
+      ht = dev->pipe->output_backbuf_height / darktable.gui->ppd;
+    }
+    else
+    {
+      wd = img_wd / darktable.gui->ppd;
+      ht = img_ht / darktable.gui->ppd;
+    }
     const float margin_left = ceilf(.5f * (width - wd));
     const float margin_top = ceilf(.5f * (height - ht));
     cairo_translate(cri, margin_left, margin_top);
@@ -289,16 +316,20 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       cairo_fill(cri);
     }
 
-    // compute the surface pixel shift to match reference image FIXME!
-    const float zoom_y = dt_control_get_dev_zoom_y();
-    const float zoom_x = dt_control_get_dev_zoom_x();
-    const float dx = -floorf(zoom_x * (img_wd) * nz + img_wd * nz / 2. - width / 2.) - margin_left;
-    const float dy = -floorf(zoom_y * (img_ht) * nz + img_ht * nz / 2. - height/ 2.) - margin_top;
-
     // finally, draw the image
     cairo_rectangle(cri, 0, 0, wd, ht);
     cairo_clip_preserve(cri);
-    cairo_set_source_surface(cri, d->preview_surf, dx, dy);
+    if(d->allow_zoom)
+    {
+      // compute the surface pixel shift to match reference image FIXME!
+      const float zoom_y = dt_control_get_dev_zoom_y();
+      const float zoom_x = dt_control_get_dev_zoom_x();
+      const float dx = -floorf(zoom_x * (img_wd)*nz + img_wd * nz / 2. - width / 2.) - margin_left;
+      const float dy = -floorf(zoom_y * (img_ht)*nz + img_ht * nz / 2. - height / 2.) - margin_top;
+      cairo_set_source_surface(cri, d->preview_surf, dx, dy);
+    }
+    else
+      cairo_set_source_surface(cri, d->preview_surf, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cri), (darktable.gui->filter_image == CAIRO_FILTER_FAST)
       ? CAIRO_FILTER_GOOD : darktable.gui->filter_image) ;
     cairo_paint(cri);
@@ -487,6 +518,8 @@ void gui_init(dt_lib_module_t *self)
   d->imgid = 0;
   d->preview_surf = NULL;
   d->preview_zoom = 1.0;
+  d->preview_width = 0;
+  d->preview_height = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkStyleContext *context = gtk_widget_get_style_context(self->widget);

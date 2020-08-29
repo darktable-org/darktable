@@ -444,7 +444,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_highpass_gui_data_t));
   dt_iop_highpass_gui_data_t *g = (dt_iop_highpass_gui_data_t *)self->gui_data;
 
-  g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
+  g->sharpness = dt_bauhaus_slider_from_params(self, N_("sharpness"));
   dt_bauhaus_slider_set_format(g->sharpness, "%.0f%%");
   gtk_widget_set_tooltip_text(g->sharpness, _("the sharpness of highpass filter"));
 

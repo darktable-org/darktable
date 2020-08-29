@@ -252,6 +252,26 @@ static void _thumb_write_extension(dt_thumbnail_t *thumb)
   g_free(ext2);
 }
 
+static gboolean _event_cursor_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+  if(!user_data || !widget) return TRUE;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+
+  GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_cursor);
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_cursor);
+  GdkRGBA col;
+  gtk_style_context_get_color(context, state, &col);
+
+  cairo_set_source_rgba(cr, col.red, col.green, col.blue, col.alpha);
+  cairo_line_to(cr, gtk_widget_get_allocated_width(widget), 0);
+  cairo_line_to(cr, gtk_widget_get_allocated_width(widget) / 2, gtk_widget_get_allocated_height(widget));
+  cairo_line_to(cr, 0, 0);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+
+  return TRUE;
+}
+
 static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!user_data) return TRUE;
@@ -378,6 +398,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
+        thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
         res = dt_view_image_get_surface(thumb->imgid, image_w * thumb->zoom, image_h * thumb->zoom, &img_surf, FALSE);
       }
       else
@@ -516,6 +537,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   gtk_widget_show(thumb->w_bottom_eb);
   gtk_widget_show(thumb->w_reject);
   gtk_widget_show(thumb->w_ext);
+  gtk_widget_show(thumb->w_cursor);
   for(int i = 0; i < MAX_STARS; i++) gtk_widget_show(thumb->w_stars[i]);
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
@@ -818,7 +840,6 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb) return;
-  if(!gtk_widget_is_visible(thumb->w_main)) return;
 
   gboolean active = FALSE;
   GSList *l = darktable.view_manager->active_images;
@@ -837,8 +858,11 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   if(active != thumb->active)
   {
     thumb->active = active;
-    _thumb_update_icons(thumb);
-    gtk_widget_queue_draw(thumb->w_main);
+    if(gtk_widget_is_visible(thumb->w_main))
+    {
+      _thumb_update_icons(thumb);
+      gtk_widget_queue_draw(thumb->w_main);
+    }
   }
 }
 
@@ -1035,6 +1059,14 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image_box);
     _thumb_retrieve_margins(thumb);
+
+    // triangle to indicate current image(s) in filmstrip
+    thumb->w_cursor = gtk_drawing_area_new();
+    gtk_widget_set_name(thumb->w_cursor, "thumb_cursor");
+    gtk_widget_set_valign(thumb->w_cursor, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_cursor, GTK_ALIGN_CENTER);
+    g_signal_connect(G_OBJECT(thumb->w_cursor), "draw", G_CALLBACK(_event_cursor_draw), thumb);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_cursor);
 
     // determine the overlays parents
     GtkWidget *overlays_parent = thumb->w_main;
@@ -1363,6 +1395,9 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_END);
     gtk_widget_set_margin_top(thumb->w_audio, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_audio, thumb->img_margin->right + 5.0 * r1);
+
+    // the filmstrip cursor
+    gtk_widget_set_size_request(thumb->w_cursor, 6.0 * r1, 1.5 * r1);
   }
   else
   {
@@ -1473,19 +1508,28 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
 
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force)
 {
+  int w = 0;
+  int h = 0;
+  gtk_widget_get_size_request(thumb->w_main, &w, &h);
+
   // first, we verify that there's something to change
-  if(!force)
-  {
-    int w = 0;
-    int h = 0;
-    gtk_widget_get_size_request(thumb->w_main, &w, &h);
-    if(w == width && h == height) return;
-  }
+  if(!force && w == width && h == height) return;
 
   // widget resizing
   thumb->width = width;
   thumb->height = height;
   gtk_widget_set_size_request(thumb->w_main, width, height);
+
+  // we change the size and margins according to the size change. This will be refined after
+  if(h > 0 && w > 0)
+  {
+    int wi = 0;
+    int hi = 0;
+    gtk_widget_get_size_request(thumb->w_image_box, &wi, &hi);
+    const int nimg_w = width * wi / w;
+    const int nimg_h = height * hi / h;
+    gtk_widget_set_size_request(thumb->w_image_box, nimg_w, nimg_h);
+  }
 
   _thumb_retrieve_margins(thumb);
 
@@ -1649,10 +1693,9 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
     dt_image_get_final_size(thumb->imgid, &w, &h);
     if(!thumb->img_margin) _thumb_retrieve_margins(thumb);
 
-    const float ratio_h = (float)(100 - thumb->img_margin->top - thumb->img_margin->bottom) / 100.0;
-    const float ratio_w = (float)(100 - thumb->img_margin->left - thumb->img_margin->right) / 100.0;
-    thumb->zoom_100
-        = fmaxf((float)w / ((float)thumb->width * ratio_w), (float)h / ((float)thumb->height * ratio_h));
+    const float used_h = (float)(thumb->height - thumb->img_margin->top - thumb->img_margin->bottom);
+    const float used_w = (float)(thumb->width - thumb->img_margin->left - thumb->img_margin->right);
+    thumb->zoom_100 = fmaxf((float)w / used_w, (float)h / used_h);
     if(thumb->zoom_100 < 1.0f) thumb->zoom_100 = 1.0f;
   }
 
