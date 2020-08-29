@@ -149,12 +149,14 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_categories] = _("categories");
 }
 
-
 typedef struct dt_lib_metadata_view_t
 {
   GtkLabel *name[md_size];
   GtkLabel *metadata[md_size];
+  GtkWidget *scrolled_window;
 } dt_lib_metadata_view_t;
+
+static gboolean view_onMouseScroll(GtkWidget *view, GdkEventScroll *event, dt_lib_metadata_view_t *d);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -216,6 +218,7 @@ static void _metadata_update_value_end(GtkLabel *label, const char *value)
   const gchar *str = validated ? value : NODATA_STRING;
   gtk_label_set_text(GTK_LABEL(label), str);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
 }
 
@@ -250,11 +253,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     char value[512];
     char pathname[PATH_MAX] = { 0 };
-
-    // get the size before locking the image!
-    // TODO: put that into dt_image_t and make sure it stays in sync
-    int width = 0, height = 0;
-//     dt_image_get_final_size(mouse_over_id, &width, &height); // kind of slow on some machines
 
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
     if(!img) goto fill_minuses;
@@ -296,7 +294,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       char datetime[200];
       // just %c is too long and includes a time zone that we don't know from exif
       strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->import_timestamp));
-      _metadata_update_value(d->metadata[md_internal_import_timestamp], datetime);
+      _metadata_update_value(d->metadata[md_internal_import_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
     }
     else
       _metadata_update_value(d->metadata[md_internal_import_timestamp], "-");
@@ -305,7 +303,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       char datetime[200];
       strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->change_timestamp));
-      _metadata_update_value(d->metadata[md_internal_change_timestamp], datetime);
+      _metadata_update_value(d->metadata[md_internal_change_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
     }
     else
       _metadata_update_value(d->metadata[md_internal_change_timestamp], "-");
@@ -314,7 +312,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       char datetime[200];
       strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->export_timestamp));
-      _metadata_update_value(d->metadata[md_internal_export_timestamp], datetime);
+      _metadata_update_value(d->metadata[md_internal_export_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
     }
     else
       _metadata_update_value(d->metadata[md_internal_export_timestamp], "-");
@@ -323,7 +321,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       char datetime[200];
       strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->print_timestamp));
-      _metadata_update_value(d->metadata[md_internal_print_timestamp], datetime);
+      _metadata_update_value(d->metadata[md_internal_print_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
     }
     else
       _metadata_update_value(d->metadata[md_internal_print_timestamp], "-");
@@ -459,7 +457,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         { N_("avif"), 'a'},
       };
 
-      int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
+      const int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
       value[12] = loaders[loader].flag;
       char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders[loader].tooltip));
       tooltip_parts[next_tooltip_part++] = loader_tooltip;
@@ -486,14 +484,12 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value_end(d->metadata[md_exif_lens], img->exif_lens);
     _metadata_update_value_end(d->metadata[md_exif_maker], img->camera_maker);
 
-    snprintf(value, sizeof(value), "F/%.1f", img->exif_aperture);
+    snprintf(value, sizeof(value), "f/%.1f", img->exif_aperture);
     _metadata_update_value(d->metadata[md_exif_aperture], value);
 
-    if(img->exif_exposure <= 0.5)
-      snprintf(value, sizeof(value), "1/%.0f", 1.0 / img->exif_exposure);
-    else
-      snprintf(value, sizeof(value), "%.1f''", img->exif_exposure);
-    _metadata_update_value(d->metadata[md_exif_exposure], value);
+    char *exposure_str = dt_util_format_exposure(img->exif_exposure);
+    _metadata_update_value(d->metadata[md_exif_exposure], exposure_str);
+    g_free(exposure_str);
 
     if(isnan(img->exif_exposure_bias))
     {
@@ -532,21 +528,38 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       mktime(&tt_exif);
       // just %c is too long and includes a time zone that we don't know from exif
       strftime(datetime, sizeof(datetime), "%a %x %X", &tt_exif);
-      _metadata_update_value(d->metadata[md_exif_datetime], datetime);
+      _metadata_update_value(d->metadata[md_exif_datetime], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
     }
     else
       _metadata_update_value(d->metadata[md_exif_datetime], img->exif_datetime_taken);
 
+    if(((img->p_width != img->width) || (img->p_height != img->height))  &&
+       (img->p_width || img->p_height))
+    {
+      snprintf(value, sizeof(value), "%d (%d)", img->p_height, img->height);
+      _metadata_update_value(d->metadata[md_exif_height], value);
+      snprintf(value, sizeof(value), "%d (%d) ",img->p_width, img->width);
+      _metadata_update_value(d->metadata[md_exif_width], value);
+    }
+    else {
     snprintf(value, sizeof(value), "%d", img->height);
     _metadata_update_value(d->metadata[md_exif_height], value);
     snprintf(value, sizeof(value), "%d", img->width);
     _metadata_update_value(d->metadata[md_exif_width], value);
+    }
 
-    snprintf(value, sizeof(value), "%d", height);
+    if(img->verified_size)
+    {
+      snprintf(value, sizeof(value), "%d", img->final_height);
     _metadata_update_value(d->metadata[md_height], value);
-    snprintf(value, sizeof(value), "%d", width);
+      snprintf(value, sizeof(value), "%d", img->final_width);
     _metadata_update_value(d->metadata[md_width], value);
-
+    }
+    else
+    {
+      _metadata_update_value(d->metadata[md_height], "-");
+      _metadata_update_value(d->metadata[md_width], "-");
+    }
     /* XMP */
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
@@ -779,30 +792,39 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   _lib_metatdata_view_init_labels();
 
-  self->widget = gtk_grid_new();
+  GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *child_grid_window = gtk_grid_new();
+  gtk_container_add(GTK_CONTAINER(scrolled_window), child_grid_window);
+
+  d->scrolled_window = GTK_WIDGET(scrolled_window);
+  self->widget = d->scrolled_window;
+
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
-  gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
-//   GtkWidget *last = NULL;
+  gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
+
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->scrolled_window), DT_PIXEL_APPLY_DPI(300));
+  const gint height = dt_conf_get_int("plugins/lighttable/metadata_view/windowheight");
+  gtk_widget_set_size_request(d->scrolled_window, -1, DT_PIXEL_APPLY_DPI(height));
 
   /* initialize the metadata name/value labels */
   for(int k = 0; k < md_size; k++)
   {
-    GtkWidget *evb = gtk_event_box_new();
-    gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
     d->name[k] = name;
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
+    gtk_widget_set_name(GTK_WIDGET(d->metadata[k]), "brightbg");
     gtk_label_set_selectable(d->metadata[k], TRUE);
-    gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(d->metadata[k]));
+    gtk_label_set_xalign (d->metadata[k], 0.0f);
     if(k == md_internal_filmroll)
     {
       // film roll jump to:
-      g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
+      g_signal_connect(G_OBJECT(GTK_WIDGET(d->metadata[k])), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
     }
     gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
-    gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_START);
-    gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(name), 0, k, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
+    gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_FILL);
+    gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(name), 0, k, 1, 1);
+    gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(GTK_WIDGET(d->metadata[k])), 1, k, 1, 1);
   }
 
   /* lets signup for mouse over image change signals */
@@ -821,6 +843,13 @@ void gui_init(dt_lib_module_t *self)
   /* signup for tags changes */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_mouse_over_image_callback), self);
+
+  /* signup for metadata changes */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_METADATA_UPDATE,
+                            G_CALLBACK(_mouse_over_image_callback), self);
+
+  /* adaptable window size */
+  g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(view_onMouseScroll), d);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -829,6 +858,28 @@ void gui_cleanup(dt_lib_module_t *self)
   g_free(self->data);
   self->data = NULL;
 }
+
+static gboolean view_onMouseScroll(GtkWidget *view, GdkEventScroll *event, dt_lib_metadata_view_t *d)
+{
+  if(event->state & GDK_CONTROL_MASK)
+  {
+    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
+    const gint min_height = gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(d->scrolled_window));
+    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
+    gint width, height;
+
+    gtk_widget_get_size_request(GTK_WIDGET(d->scrolled_window), &width, &height);
+    height = height + increment*event->delta_y;
+    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+
+    gtk_widget_set_size_request(GTK_WIDGET(d->scrolled_window), -1, height);
+    dt_conf_set_int("plugins/lighttable/metadata_view/windowheight", height);
+
+    return TRUE;
+  }
+  return FALSE;
+}
+
 #ifdef USE_LUA
 static int lua_update_widgets(lua_State*L)
 {
@@ -895,16 +946,15 @@ static int lua_register_info(lua_State *L)
     lua_pop(L,1);
   }
   {
-    GtkWidget *evb = gtk_event_box_new();
-    gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(key));
     GtkLabel *value = GTK_LABEL(gtk_label_new("-"));
+    gtk_widget_set_name(GTK_WIDGET(value), "brightbg");
     gtk_label_set_selectable(value, TRUE);
-    gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(value));
     gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
-    gtk_widget_set_halign(GTK_WIDGET(value), GTK_ALIGN_START);
+    gtk_widget_set_halign(GTK_WIDGET(value), GTK_ALIGN_FILL);
+    gtk_label_set_xalign (value, 0.0f);
     gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(name), NULL, GTK_POS_BOTTOM, 1, 1);
-    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(value), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
     gtk_widget_show_all(self->widget);
     {
       lua_getfield(L,-1,"widgets");

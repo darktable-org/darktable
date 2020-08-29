@@ -906,24 +906,17 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_colorchecker_params_t);
   module->gui_data = NULL;
-  dt_iop_colorchecker_params_t tmp;
-  tmp.num_patches = 24;
-  for(int k=0;k<tmp.num_patches;k++) tmp.source_L[k] = colorchecker_Lab[3*k+0];
-  for(int k=0;k<tmp.num_patches;k++) tmp.source_a[k] = colorchecker_Lab[3*k+1];
-  for(int k=0;k<tmp.num_patches;k++) tmp.source_b[k] = colorchecker_Lab[3*k+2];
-  for(int k=0;k<tmp.num_patches;k++) tmp.target_L[k] = colorchecker_Lab[3*k+0];
-  for(int k=0;k<tmp.num_patches;k++) tmp.target_a[k] = colorchecker_Lab[3*k+1];
-  for(int k=0;k<tmp.num_patches;k++) tmp.target_b[k] = colorchecker_Lab[3*k+2];
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorchecker_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorchecker_params_t));
-}
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  dt_iop_colorchecker_params_t *d = module->default_params;
+  d->num_patches = colorchecker_patches;
+  for(int k = 0; k < d->num_patches; k++)
+  {
+    d->source_L[k] = d->target_L[k] = colorchecker_Lab[3*k+0];
+    d->source_a[k] = d->target_a[k] = colorchecker_Lab[3*k+1];
+    d->source_b[k] = d->target_b[k] = colorchecker_Lab[3*k+2];
+  }
+
+  memcpy(module->params, module->default_params, sizeof(dt_iop_colorchecker_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -958,11 +951,9 @@ static void picker_callback(GtkWidget *button, gpointer user_data)
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
-    dt_dev_reprocess_all(self->dev);
     self->gui_update(self);
   }
-  else
-    dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 }
@@ -992,10 +983,9 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
     const float Cout = sqrtf(
         p->target_a[g->patch]*p->target_a[g->patch]+
         p->target_b[g->patch]*p->target_b[g->patch]);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_C, Cout);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   else
   {
@@ -1006,10 +996,9 @@ static void target_a_callback(GtkWidget *slider, gpointer user_data)
     const float Cout = sqrtf(
         p->target_a[g->patch]*p->target_a[g->patch]+
         p->target_b[g->patch]*p->target_b[g->patch]);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1026,10 +1015,9 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
     const float Cout = sqrtf(
         p->target_a[g->patch]*p->target_a[g->patch]+
         p->target_b[g->patch]*p->target_b[g->patch]);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_C, Cout);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   else
   {
@@ -1040,10 +1028,9 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
     const float Cout = sqrtf(
         p->target_a[g->patch]*p->target_a[g->patch]+
         p->target_b[g->patch]*p->target_b[g->patch]);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1066,22 +1053,20 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
     const float Cnew = CLAMP(dt_bauhaus_slider_get(slider), 0.01, 128.0);
     p->target_a[g->patch] = CLAMP(p->target_a[g->patch]*Cnew/Cout, -128.0, 128.0);
     p->target_b[g->patch] = CLAMP(p->target_b[g->patch]*Cnew/Cout, -128.0, 128.0);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch]);
     dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch]);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   else
   {
     const float Cnew = CLAMP(Cin + dt_bauhaus_slider_get(slider), 0.01, 128.0);
     p->target_a[g->patch] = CLAMP(p->target_a[g->patch]*Cnew/Cout, -128.0, 128.0);
     p->target_b[g->patch] = CLAMP(p->target_b[g->patch]*Cnew/Cout, -128.0, 128.0);
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1; // avoid history item
+    ++darktable.gui->reset; // avoid history item
     dt_bauhaus_slider_set(g->scale_a, p->target_a[g->patch] - p->source_a[g->patch]);
     dt_bauhaus_slider_set(g->scale_b, p->target_b[g->patch] - p->source_b[g->patch]);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1203,12 +1188,11 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     // freshly picked, also select it in gui:
     int pick = self->request_color_pick;
     g->drawn_patch = cells_x * bestj + besti;
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
     dt_bauhaus_combobox_set(g->combobox_patch, g->drawn_patch);
     g->patch = g->drawn_patch;
     self->gui_update(self);
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
     self->request_color_pick = pick; // restore, the combobox will kill it
   }
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
@@ -1359,7 +1343,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // custom 24-patch widget in addition to combo box
   g->area = dtgtk_drawing_area_new_with_aspect_ratio(4.0/6.0);

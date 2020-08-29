@@ -39,7 +39,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_invert_params_t)
 
 typedef struct dt_iop_invert_params_t
 {
-  float color[4]; // color of film material
+  float color[4]; // $DEFAULT: 1.0 color of film material
 } dt_iop_invert_params_t;
 
 typedef struct dt_iop_invert_gui_data_t
@@ -50,7 +50,6 @@ typedef struct dt_iop_invert_gui_data_t
   GtkWidget *picker;
   double RGB_to_CAM[4][3];
   double CAM_to_RGB[3][4];
-  dt_iop_color_picker_t color_picker;
 } dt_iop_invert_gui_data_t;
 
 typedef struct dt_iop_invert_global_data_t
@@ -161,7 +160,7 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpicker), &color);
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   static float old[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -174,10 +173,9 @@ static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dt_iop_invert_params_t *p = self->params;
   for(int k = 0; k < 4; k++) p->color[k] = grayrgb[k];
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   gui_update_from_coeffs(self);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   dt_control_queue_redraw_widget(self->widget);
@@ -185,7 +183,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
 static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
@@ -499,11 +497,6 @@ error:
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_invert_params_t tmp = (dt_iop_invert_params_t){ { 1.0f, 1.0f, 1.0f } };
-  memcpy(self->params, &tmp, sizeof(dt_iop_invert_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_invert_params_t));
-
-  self->default_enabled = 0;
   self->hide_enable_button = 0;
 
   if(!self->dev) return;
@@ -537,23 +530,6 @@ void init_global(dt_iop_module_so_t *module)
   dt_iop_invert_global_data_t *gd = module->data;
   gd->kernel_invert_1f = dt_opencl_create_kernel(program, "invert_1f");
   gd->kernel_invert_4f = dt_opencl_create_kernel(program, "invert_4f");
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_invert_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_invert_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_invert_params_t);
-  module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -620,8 +596,6 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
   g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, 4 * sizeof(float)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label), TRUE, TRUE, 0);
 
@@ -635,22 +609,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->colorpicker), "color-set", G_CALLBACK(colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
 
-  g->picker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->picker, _("pick color of film material from image"));
-  g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-  gtk_box_pack_start(GTK_BOX(g->pickerbuttons), g->picker, TRUE, TRUE, 0);
-
-  dt_iop_init_single_picker(&g->color_picker,
-                     self,
-                     GTK_WIDGET(g->picker),
-                     DT_COLOR_PICKER_AREA,
-                     _iop_color_picker_apply);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  g_free(self->gui_data);
-  self->gui_data = NULL;
+  g->picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, GTK_WIDGET(g->pickerbuttons));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

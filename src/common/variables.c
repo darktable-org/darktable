@@ -51,6 +51,7 @@ typedef struct dt_variables_data_t
   int exif_iso;
   char *camera_maker;
   char *camera_alias;
+  char *exif_lens;
   int version;
   int stars;
   struct tm exif_tm;
@@ -97,6 +98,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->exif_iso = 100;
   params->data->camera_maker = NULL;
   params->data->camera_alias = NULL;
+  params->data->exif_lens = NULL;
   params->data->version = 0;
   params->data->stars = 0;
   params->data->exif_exposure = 0.0f;
@@ -120,6 +122,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->exif_iso = img->exif_iso;
     params->data->camera_maker = g_strdup(img->camera_maker);
     params->data->camera_alias = g_strdup(img->camera_alias);
+    params->data->exif_lens = g_strdup(img->exif_lens);
     params->data->version = img->version;
     params->data->stars = (img->flags & 0x7);
     if(params->data->stars == 6) params->data->stars = -1;
@@ -162,6 +165,7 @@ static inline gboolean has_prefix(char **str, const char *prefix)
 static char *get_base_value(dt_variables_params_t *params, char **variable)
 {
   char *result = NULL;
+  gboolean escape = TRUE;
 
   struct tm exif_tm = params->data->have_exif_tm ? params->data->exif_tm : params->data->time;
 
@@ -201,29 +205,14 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   }
   else if(has_prefix(variable, "EXIF_EXPOSURE"))
   {
-    /* no special chars for all jobs except infos */
+    result = dt_util_format_exposure(params->data->exif_exposure);
+    // for job other than info (export) we strip the slash char
     if(g_strcmp0(params->jobcode, "infos") != 0)
-      if(nearbyintf(params->data->exif_exposure) == params->data->exif_exposure)
-        result = g_strdup_printf("%.0f", params->data->exif_exposure);
-      else
-        result = g_strdup_printf("%.1f", params->data->exif_exposure);
-    else if(params->data->exif_exposure >= 1.0f)
-      if(nearbyintf(params->data->exif_exposure) == params->data->exif_exposure)
-        result = g_strdup_printf("%.0f″", params->data->exif_exposure);
-      else
-        result = g_strdup_printf("%.1f″", params->data->exif_exposure);
-    /* want to catch everything below 0.3 seconds */
-    else if(params->data->exif_exposure < 0.29f)
-      result = g_strdup_printf("1/%.0f", 1.0 / params->data->exif_exposure);
-    /* catch 1/2, 1/3 */
-    else if(nearbyintf(1.0f / params->data->exif_exposure) == 1.0f / params->data->exif_exposure)
-      result = g_strdup_printf("1/%.0f", 1.0 / params->data->exif_exposure);
-    /* catch 1/1.3, 1/1.6, etc. */
-    else if(10 * nearbyintf(10.0f / params->data->exif_exposure)
-            == nearbyintf(100.0f / params->data->exif_exposure))
-      result = g_strdup_printf("1/%.1f", 1.0 / params->data->exif_exposure);
-    else
-      result = g_strdup_printf("%.1f″", params->data->exif_exposure);
+    {
+      gchar *res = dt_util_str_replace(result, "/", "_");
+      g_free(result);
+      result = res;
+    }
   }
   else if(has_prefix(variable, "EXIF_APERTURE"))
     result = g_strdup_printf("%.1f", params->data->exif_aperture);
@@ -263,6 +252,8 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(params->data->camera_maker);
   else if(has_prefix(variable, "MODEL"))
     result = g_strdup(params->data->camera_alias);
+  else if(has_prefix(variable, "LENS"))
+    result = g_strdup(params->data->exif_lens);
   else if(has_prefix(variable, "ID"))
     result = g_strdup_printf("%d", params->imgid);
   else if(has_prefix(variable, "VERSION_NAME"))
@@ -335,7 +326,15 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "FILE_EXTENSION"))
     result = g_strdup(params->data->file_ext);
   else if(has_prefix(variable, "SEQUENCE"))
-    result = g_strdup_printf("%.4d", params->sequence >= 0 ? params->sequence : params->data->sequence);
+  {
+    uint8_t nb_digit = 4;
+    if(g_ascii_isdigit(*variable[0]))
+    {
+      nb_digit = (uint8_t)*variable[0] & 0b1111;
+      (*variable) ++;
+    }
+    result = g_strdup_printf("%.*d", nb_digit, params->sequence >= 0 ? params->sequence : params->data->sequence);
+  }
   else if(has_prefix(variable, "USERNAME"))
     result = g_strdup(g_get_user_name());
   else if(has_prefix(variable, "HOME_FOLDER"))
@@ -377,7 +376,75 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
         break;
     }
   }
-  else if(has_prefix(variable, "LABELS"))
+  else if(has_prefix(variable, "LABELS_ICONS") && g_strcmp0(params->jobcode, "infos") == 0)
+  {
+    escape = FALSE;
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      do
+      {
+        const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
+        if(g_strcmp0(lb, "red") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "yellow") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "green") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "blue") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "purple") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">⚫ </span>");
+        }
+      } while((res = g_list_next(res)) != NULL);
+    }
+    g_list_free(res);
+  }
+  else if(has_prefix(variable, "LABELS_COLORICONS") && g_strcmp0(params->jobcode, "infos") == 0)
+  {
+    escape = FALSE;
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      do
+      {
+        const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
+        if(g_strcmp0(lb, "red") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">🔴 </span>");
+        }
+        else if(g_strcmp0(lb, "yellow") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">🟡 </span>");
+        }
+        else if(g_strcmp0(lb, "green") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">🟢 </span>");
+        }
+        else if(g_strcmp0(lb, "blue") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">🔵 </span>");
+        }
+        else if(g_strcmp0(lb, "purple") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">🟣 </span>");
+        }
+      } while((res = g_list_next(res)) != NULL);
+    }
+    g_list_free(res);
+  }
+  else if(has_prefix(variable, "LABELS") || has_prefix(variable, "LABELS_ICONS") || has_prefix(variable, "LABELS_COLORICONS"))
   {
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
     // only use the first/last label?
@@ -472,7 +539,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
           end[0] = '|';
           end[1] = '\0';
           (*variable) += strlen(category) + 1;
-          char *tag = dt_tag_get_subtag(params->imgid, category, (int)level);
+          char *tag = dt_tag_get_subtags(params->imgid, category, (int)level);
           if (tag)
           {
             result = g_strdup(tag);
@@ -513,6 +580,12 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   }
   if(!result) result = g_strdup("");
 
+  if(params->escape_markup && escape)
+  {
+    gchar *e_res = g_markup_escape_text(result, -1);
+    g_free(result);
+    return e_res;
+  }
   return result;
 }
 
@@ -902,6 +975,8 @@ void dt_variables_set_tags_flags(dt_variables_params_t *params, uint32_t flags)
 {
   params->data->tags_flags = flags;
 }
+
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

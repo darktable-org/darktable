@@ -573,11 +573,9 @@
 <para>The type of storage object to create, one of : <itemizedlist>
 <listitem><para>disk</para></listitem>
 <listitem><para>email</para></listitem>
-<listitem><para>facebook</para></listitem>
-<listitem><para>flickr</para></listitem>
 <listitem><para>gallery</para></listitem>
 <listitem><para>latex</para></listitem>
-<listitem><para>picasa</para></listitem>
+<listitem><para>piwigo</para></listitem>
 </itemizedlist>
 (Other, lua-defined, storage types may appear.)</para>
 
@@ -836,6 +834,54 @@
 
 </section>
 
+<section status="final" id="darktable_gui_panel_get_size">
+<title>darktable.gui.panel_get_size</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_get_size</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_get_size_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+)int</synopsis>
+<para>Gets the size in pixels of the specified panel.  This only works for the left, right, and bottom panels.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_get_size_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to get the size of.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_panel_set_size">
+<title>darktable.gui.panel_set_size</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_set_size</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_set_size_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+	<emphasis><link linkend="darktable_gui_panel_set_size_size">size</link></emphasis> : int
+)</synopsis>
+<para>Sets the size in pixels of the specified panel.  This only works for the left, right, and bottom panels.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_set_size_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to set the size of.</para>
+
+</listitem></varlistentry>
+<varlistentry id="darktable_gui_panel_set_size_size"><term>size</term><listitem>
+<synopsis>int></synopsis>
+<para>The size to set the panel to.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 <section status="final" id="darktable_gui_create_job">
 <title>darktable.gui.create_job</title>
 <indexterm>
@@ -1049,6 +1095,61 @@
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+
+<section status="final" id="darktable_gui_views_lighttable_is_image_visible">
+<title>darktable.gui.views.lighttable.is_image_visible</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>is_image_visible</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_views_lighttable_is_image_visible_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Check if the image is visible in lighttable view.  The lighttable must be in file manager or zoomable mode.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_views_lighttable_is_image_visible_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to be checked.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>boolean</synopsis>
+<para>True if the image is displayed. False if the image is partially displayed or not displayed.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_views_lighttable_set_image_visible">
+<title>darktable.gui.views.lighttable.set_image_visible</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>set_image_visible</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_views_lighttable_set_image_visible_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Set the image visible in lighttable view.  The lighttable must be in file manager or zoomable mode.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_views_lighttable_set_image_visible_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to set visible.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>int</synopsis>
+<para>An error is returned if no image is specified.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_views_tethering">
@@ -3458,11 +3559,12 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 </indexterm>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_database_move_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	<emphasis><link linkend="darktable_database_move_image_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>
+	<emphasis><link linkend="darktable_database_move_image_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>,
+	[<emphasis><link linkend="darktable_database_move_image_newname">newname</link></emphasis> : string]
 )</synopsis>
-<para>Physically moves an image (and all its duplicates) to another film.</para>
-<para>This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film</para>
-<para>Note that the parameter order is not relevant.</para>
+<para>Physically moves an image (and all its duplicates) to another film, and/or renames the image file.</para>
+<para>This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film and rename them as specified.</para>
+<para>Note that the order of the two required parameters is not relevant.</para>
 
 <variablelist>
 <varlistentry id="darktable_database_move_image_image"><term>image</term><listitem>
@@ -3473,10 +3575,15 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 
 <varlistentry id="darktable_database_move_image_film"><term>film</term><listitem>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
-<para>The film to move to</para>
+<para>The film to move to. To rename a file within the same film, set this to the image's current film.</para>
 
 </listitem></varlistentry>
 
+<varlistentry id="darktable_database_move_image_newname"><term>newname</term><listitem>
+<synopsis>string</synopsis>
+<para><emphasis>(Optional)</emphasis> If provided, rename the file with this new name. Must not contain any path separator characters.</para>
+
+</listitem></varlistentry>
 </variablelist>
 </section>
 
@@ -3488,12 +3595,13 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 </indexterm>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_database_copy_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	<emphasis><link linkend="darktable_database_copy_image_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>
+	<emphasis><link linkend="darktable_database_copy_image_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>,
+	[<emphasis><link linkend="darktable_database_copy_image_newname">newname</link></emphasis> : string]
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Physically copies an image to another film.</para>
-<para>This will copy the image file and the related XMP to the directory of the new film</para>
-<para>If there is already a file with the same name as the image file, it will create a duplicate from that file instead</para>
-<para>Note that the parameter order is not relevant.</para>
+<para>This will copy the image file and the related XMP to the directory of the new film and rename them as specified.</para>
+<para>If there is already a file with the same name as the image file, it will create a duplicate from that file instead.</para>
+<para>Note that the order of the two required parameters is not relevant.</para>
 
 <variablelist>
 <varlistentry id="darktable_database_copy_image_image"><term>image</term><listitem>
@@ -3504,7 +3612,13 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 
 <varlistentry id="darktable_database_copy_image_film"><term>film</term><listitem>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
-<para>The film to copy to</para>
+<para>The film to copy to. To make a copy of a file within the same film, set this to the image's current film.</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_database_copy_image_newname"><term>newname</term><listitem>
+<synopsis>string</synopsis>
+<para><emphasis>(Optional)</emphasis> If provided, give the copy this new filename. Must not contain any path separator characters.</para>
 
 </listitem></varlistentry>
 
@@ -4273,6 +4387,48 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The description field for the image.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_lua_image_t_notes">
+<title>types.dt_lua_image_t.notes</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>notes</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The notes field for the image.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_lua_image_t_version_name">
+<title>types.dt_lua_image_t.version_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>version_name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The version_name field for the image.</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -5964,48 +6120,6 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_imageio_module_storage_data_flickr">
-<title>types.dt_imageio_module_storage_data_flickr</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>dt_imageio_module_storage_data_flickr</secondary>
-</indexterm>
-<synopsis>dt_type</synopsis>
-<para>An object containing parameters to export to flickr.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
-<section status="final" id="types_dt_imageio_module_storage_data_facebook">
-<title>types.dt_imageio_module_storage_data_facebook</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>dt_imageio_module_storage_data_facebook</secondary>
-</indexterm>
-<synopsis>dt_type</synopsis>
-<para>An object containing parameters to export to facebook.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
 <section status="final" id="types_dt_imageio_module_storage_data_latex">
 <title>types.dt_imageio_module_storage_data_latex</title>
 <indexterm>
@@ -6069,14 +6183,14 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 
 </section>
 
-<section status="final" id="types_dt_imageio_module_storage_data_picasa">
-<title>types.dt_imageio_module_storage_data_picasa</title>
+<section status="final" id="types_dt_imageio_module_storage_data_piwigo">
+<title>types.dt_imageio_module_storage_data_piwigo</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>dt_imageio_module_storage_data_picasa</secondary>
+<secondary>dt_imageio_module_storage_data_piwigo</secondary>
 </indexterm>
 <synopsis>dt_type</synopsis>
-<para>An object containing parameters to export to picasa.</para>
+<para>An object containing parameters to export to piwigo.</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -7194,6 +7308,10 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 <listitem><para>DT_COLLECTION_PROP_TAG</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_DAY</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_TIME</para></listitem>
+<listitem><para>DT_COLLECTION_PROP_IMPORT_TIMESTAMP</para></listitem>
+<listitem><para>DT_COLLECTION_PROP_CHANGE_TIMESTAMP</para></listitem>
+<listitem><para>DT_COLLECTION_PROP_EXPORT_TIMESTAMP</para></listitem>
+<listitem><para>DT_COLLECTION_PROP_PRINT_TIMESTAMP</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_HISTORY</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_COLORLABEL</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_TITLE</para></listitem>
@@ -8431,6 +8549,27 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_lua_button_ellipsize">
+<title>types.lua_button.ellipsize</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>ellipsize</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_lua_ellipsize_mode_t">types.dt_lua_ellipsize_mode_t</link></synopsis>
+<para>The ellipsize mode of the button label</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_lua_button_clicked_callback">
 <title>types.lua_button.clicked_callback</title>
 <indexterm>
@@ -9081,6 +9220,48 @@ darktable.database.import(), then dt_lua_image_t.is_raw is not guaranteed to be 
 </indexterm>
 <synopsis><link linkend="types_lua_widget">types.lua_widget</link> or nil</synopsis>
 <para>The currently selected child, can be nil if the container has no child, can be set to one of the child widget or to an index in the child table</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_stack_h_size_fixed">
+<title>types.lua_stack.h_size_fixed</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>h_size_fixed</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if horizontal size is fixed, false if stack can be resized horizontally.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_stack_v_size_fixed">
+<title>types.lua_stack.v_size_fixed</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>v_size_fixed</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if vertical size is fixed, false if stack can be resized vertically.</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>

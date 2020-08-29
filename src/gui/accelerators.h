@@ -50,6 +50,13 @@ typedef struct dt_accel_dynamic_t
 
 } dt_accel_dynamic_t;
 
+typedef enum dt_accel_iop_slider_scale_t
+{
+  DT_IOP_PRECISION_NORMAL = 0,
+  DT_IOP_PRECISION_FINE = 1,
+  DT_IOP_PRECISION_COARSE = 2
+} dt_accel_iop_slider_scale_t;
+
 // Accel path string building functions
 void dt_accel_path_global(char *s, size_t n, const char *path);
 void dt_accel_path_view(char *s, size_t n, char *module, const char *path);
@@ -80,6 +87,8 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
 void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods);
 void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t views, const gchar *path,
                                      guint accel_key, GdkModifierType mods);
+//register lib shortcut but make it look like a view shortcut
+void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods);
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
 void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods);
@@ -91,6 +100,11 @@ void dt_accel_connect_global(const gchar *path, GClosure *closure);
 void dt_accel_connect_view(dt_view_t *self, const gchar *path, GClosure *closure);
 dt_accel_t *dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure);
 dt_accel_t *dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure);
+//connect lib as a view shortcut
+dt_accel_t *dt_accel_connect_lib_as_view(dt_lib_module_t *module, gchar *view_name, const gchar *path, GClosure *closure);
+//connect lib as a global shortcut
+dt_accel_t *dt_accel_connect_lib_as_global(dt_lib_module_t *module, const gchar *path, GClosure *closure);
+void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *slider);
@@ -99,10 +113,10 @@ void dt_accel_connect_locals_iop(dt_iop_module_t *module);
 void dt_accel_connect_preset_iop(dt_iop_module_t *so, const gchar *path);
 void dt_accel_connect_preset_lib(dt_lib_module_t *so, const gchar *path);
 void dt_accel_connect_lua(const gchar *path, GClosure *closure);
-void dt_accel_connect_manual(GSList *list, const gchar *full_path, GClosure *closure);
+void dt_accel_connect_manual(GSList **list_ptr, const gchar *full_path, GClosure *closure);
 
 // Disconnect function
-void dt_accel_disconnect_list(GSList *accels);
+void dt_accel_disconnect_list(GSList **accels_ptr);
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module);
 void dt_accel_cleanup_locals_iop(dt_iop_module_t *module);
 
@@ -120,6 +134,9 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_path);
 
 // UX miscellaneous functions
 void dt_accel_widget_toast(GtkWidget *widget);
+
+// Get the scale multiplier for adjusting sliders with shortcuts
+float dt_accel_get_slider_scale_multiplier();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

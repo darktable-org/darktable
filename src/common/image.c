@@ -24,10 +24,12 @@
 #include "common/file_location.h"
 #include "common/grouping.h"
 #include "common/history.h"
+#include "common/history_snapshot.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_rawspeed.h"
 #include "common/mipmap_cache.h"
+#include "common/ratings.h"
 #include "common/tags.h"
 #include "common/undo.h"
 #include "common/history.h"
@@ -314,28 +316,43 @@ void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len
 
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
 {
-  if(img->exif_exposure >= 1.0f)
-    if(nearbyintf(img->exif_exposure) == img->exif_exposure)
-      snprintf(line, line_len, "%.0f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
-               (int)img->exif_focal_length, (int)img->exif_iso);
-    else
-      snprintf(line, line_len, "%.1f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
-               (int)img->exif_focal_length, (int)img->exif_iso);
-  /* want to catch everything below 0.3 seconds */
-  else if(img->exif_exposure < 0.29f)
-    snprintf(line, line_len, "1/%.0f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
-  /* catch 1/2, 1/3 */
-  else if(nearbyintf(1.0f / img->exif_exposure) == 1.0f / img->exif_exposure)
-    snprintf(line, line_len, "1/%.0f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
-  /* catch 1/1.3, 1/1.6, etc. */
-  else if(10 * nearbyintf(10.0f / img->exif_exposure) == nearbyintf(100.0f / img->exif_exposure))
-    snprintf(line, line_len, "1/%.1f f/%.1f %dmm ISO %d", 1.0 / img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
+  char *exposure_str = dt_util_format_exposure(img->exif_exposure);
+
+  snprintf(line, line_len, "%s f/%.1f %dmm ISO %d", exposure_str, img->exif_aperture, (int)img->exif_focal_length,
+           (int)img->exif_iso);
+
+  g_free(exposure_str);
+}
+
+int dt_image_get_xmp_rating_from_flags(const int flags)
+{
+  return (flags & DT_IMAGE_REJECTED)
+    ? -1                              // rejected image = -1
+    : (flags & DT_VIEW_RATINGS_MASK); // others = 0 .. 5
+}
+
+int dt_image_get_xmp_rating(const dt_image_t *img)
+{
+  return dt_image_get_xmp_rating_from_flags(img->flags);
+}
+
+void dt_image_set_xmp_rating(dt_image_t *img, const int rating)
+{
+  // clean flags stars and rejected
+  img->flags &= ~(DT_IMAGE_REJECTED | DT_VIEW_RATINGS_MASK);
+
+  if(rating == 0)
+    {
+      img->flags |= (DT_VIEW_RATINGS_MASK & dt_conf_get_int("ui_last/import_initial_rating"));
+    }
+  else if(rating == -1)
+    {
+      img->flags |= DT_IMAGE_REJECTED;
+    }
   else
-    snprintf(line, line_len, "%.1f″ f/%.1f %dmm ISO %d", img->exif_exposure, img->exif_aperture,
-             (int)img->exif_focal_length, (int)img->exif_iso);
+    {
+      img->flags |= (DT_VIEW_RATINGS_MASK & rating);
+    }
 }
 
 void dt_image_get_location(int imgid, dt_image_geoloc_t *geoloc)
@@ -415,13 +432,12 @@ void _image_set_location(GList *imgs, const dt_image_geoloc_t *geoloc, GList **u
   }
 }
 
-void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, const gboolean undo_on, const gboolean group_on)
+void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, const gboolean undo_on)
 {
   GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
 
     _image_set_location(imgs, geoloc, &undo, undo_on);
@@ -441,10 +457,11 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = dt_view_get_images_to_act_on();
+    imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
   else
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-  dt_image_set_locations(imgs, geoloc, undo_on, group_on);
+  if(group_on) dt_grouping_add_grouped_images(&imgs);
+  dt_image_set_locations(imgs, geoloc, undo_on);
   g_list_free(imgs);
 }
 
@@ -585,7 +602,7 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid)
   dt_image_orientation_t orientation = ORIENTATION_NULL;
 
   // db lookup flip params
-  if(flip && flip->get_p)
+  if(flip && flip->have_introspection && flip->get_p)
   {
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -618,6 +635,10 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(darktable.develop->image_storage.id == imgid && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) return;
 
+  dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
+  hist->imgid = imgid;
+  dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+
   dt_image_orientation_t orientation = dt_image_get_orientation(imgid);
 
   if(cw == 1)
@@ -638,6 +659,28 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
 
   if(cw == 2) orientation = ORIENTATION_NULL;
   dt_image_set_flip(imgid, orientation);
+
+  dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
+  dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                 dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+}
+
+/* About the image size ratio
+   It has been calculated from the exif data width&height, this is not exact as we crop
+   the sensor data in most cases for raws.
+   This is managed by
+   rawspeed - knowing about default crops
+   rawprepare - modify the defaults
+
+   The database does **not** hold the cropped width & height so we fill the data
+   when starting to develop.
+*/
+double dt_image_get_sensor_ratio(const struct dt_image_t *img)
+{
+  if(img->p_height >0)
+    return (double)img->p_width / (double)img->p_height;
+
+  return (double)img->width / (double)img->height;
 }
 
 void dt_image_set_raw_aspect_ratio(const int32_t imgid)
@@ -742,14 +785,14 @@ int32_t dt_image_duplicate(const int32_t imgid)
 }
 
 
-int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
+int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
 {
   sqlite3_stmt *stmt;
   int32_t newid = -1;
-  const int64_t image_position = dt_collection_get_image_position(imgid);
+  const int64_t image_position = dt_collection_get_image_position(imgid, 0);
   const int64_t new_image_position = (image_position < 0) ? max_image_position() : image_position + 1;
 
-  dt_collection_shift_image_positions(1, new_image_position);
+  dt_collection_shift_image_positions(1, new_image_position, 0);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT a.id"
@@ -776,14 +819,14 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
      "   aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
      "   output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
      "   raw_auto_bright_threshold, raw_black, raw_maximum,"
-     "   caption, description, license, sha1sum, orientation, histogram, lightmap,"
+     "   license, sha1sum, orientation, histogram, lightmap,"
      "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end,"
      "   position, aspect_ratio, exposure_bias, import_timestamp)"
      " SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens,"
      "       exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
      "       flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
      "       raw_auto_bright_threshold, raw_black, raw_maximum,"
-     "       caption, description, license, sha1sum, orientation, histogram, lightmap,"
+     "       license, sha1sum, orientation, histogram, lightmap,"
      "       longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
      "       aspect_ratio, exposure_bias, import_timestamp"
      " FROM main.images WHERE id = ?2",
@@ -832,14 +875,38 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+#ifdef HAVE_SQLITE_324_OR_NEWER
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.tagged_images (imgid, tagid)"
-                                "  SELECT ?1, tagid FROM main.tagged_images WHERE imgid = ?2",
+                                "INSERT INTO main.tagged_images (imgid, tagid, position)"
+                                "  SELECT ?1, tagid, "
+                                "        (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
+                                "         FROM main.tagged_images)"
+                                "         + (ROW_NUMBER() OVER (ORDER BY imgid) << 32)"
+                                " FROM main.tagged_images AS ti"
+                                " WHERE imgid = ?2",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+#else // break down the tagged_images insert per tag
+    GList *tags = dt_tag_get_tags(imgid, FALSE);
+    for(GList *tag = tags; tag; tag = g_list_next(tag))
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "INSERT INTO main.tagged_images (imgid, tagid, position)"
+                                  "  VALUES (?1, ?2, "
+                                  "   (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
+                                  "     + (1 << 32)"
+                                  "   FROM main.tagged_images))",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, GPOINTER_TO_INT(tag->data));
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    g_list_free(tags);
+#endif
 
     if(darktable.develop->image_storage.id == imgid)
     {
@@ -857,14 +924,8 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    // make sure that the duplicate doesn't have some magic darktable| tags
-    dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE);
-    dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE);
-
-    /* unset change timestamp */
-    dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
-
     // set version of new entry and max_version of all involved duplicates (with same film_id and filename)
+    // this needs to happen before we do anything with the image cache, as version isn't updated through the cache
     const int32_t version = (newversion != -1) ? newversion : max_version + 1;
     max_version = (newversion != -1) ? MAX(max_version, newversion) : max_version + 1;
 
@@ -885,6 +946,22 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     sqlite3_finalize(stmt);
 
     g_free(filename);
+  }
+  return newid;
+}
+
+int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
+{
+  const int32_t newid = _image_duplicate_with_version(imgid, newversion);
+  if(newid != -1)
+  {
+    // make sure that the duplicate doesn't have some magic darktable| tags
+    if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
+       || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+    /* unset change timestamp */
+    dt_image_cache_unset_change_timestamp(darktable.image_cache, newid);
 
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     const int grpid = img->group_id;
@@ -894,6 +971,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       darktable.gui->expanded_group_id = grpid;
     }
     dt_grouping_add_to_group(grpid, newid);
+
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   }
   return newid;
@@ -972,6 +1050,11 @@ gboolean dt_image_altered(const uint32_t imgid)
   return status & DT_HISTORY_HASH_CURRENT;
 }
 
+gboolean dt_image_basic(const uint32_t imgid)
+{
+  dt_history_hash_t status = dt_history_hash_get_status(imgid);
+  return status & DT_HISTORY_HASH_BASIC;
+}
 
 GList* dt_image_find_duplicates(const char* filename)
 {
@@ -1054,6 +1137,7 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
     }
 
     int newid = id;
+    int grpid = -1;
 
     if(!count_xmps_processed)
     {
@@ -1069,8 +1153,14 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
     }
     else
     {
-      //create a new duplicate based on the passed-in id
-      newid = dt_image_duplicate_with_version(id, version);
+      // create a new duplicate based on the passed-in id. Note that we do not call
+      // dt_image_duplicate_with_version() as this version also set the group which
+      // is using DT_IMAGE_CACHE_SAFE and so will write the .XMP. But we must avoid
+      // this has the xmp for the duplicate is read just below.
+      newid = _image_duplicate_with_version(id, version);
+      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
+      grpid = img->group_id;
+      dt_image_cache_read_release(darktable.image_cache, img);
     }
     // make sure newid is not selected
     dt_selection_clear(darktable.selection);
@@ -1079,6 +1169,13 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
     img->version = version;
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
+    if(grpid != -1)
+    {
+      // now it is safe to set the duplicate group-id
+      dt_grouping_add_to_group(grpid, newid);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    }
+
     count_xmps_processed++;
     file_iter = g_list_next(file_iter);
   }
@@ -1086,8 +1183,8 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
   g_list_free_full(files, g_free);
 }
 
-static uint32_t dt_image_import_internal(const int32_t film_id, const char *filename,
-                                         gboolean override_ignore_jpegs, gboolean lua_locking)
+static uint32_t _image_import_internal(const int32_t film_id, const char *filename,
+                                       gboolean override_ignore_jpegs, gboolean lua_locking)
 {
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename
@@ -1178,9 +1275,9 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   //insert a v0 record (which may be updated later if no v0 xmp exists)
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
-     "INSERT INTO main.images (id, film_id, filename, caption, description, license, sha1sum, flags, version, "
+     "INSERT INTO main.images (id, film_id, filename, license, sha1sum, flags, version, "
      "                         max_version, history_end, position, import_timestamp)"
-     " SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32), ?4 "
+     " SELECT NULL, ?1, ?2, '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)  + (1 << 32), ?4 "
      " FROM images",
      -1, &stmt, NULL);
 
@@ -1362,18 +1459,18 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
 
 uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
+  return _image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
 }
 
 uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  return dt_image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
+  return _image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
 }
 
 void dt_image_init(dt_image_t *img)
 {
   img->width = img->height = img->verified_size = 0;
-  img->final_width = img->final_height = 0;
+  img->final_width = img->final_height = img->p_width = img->p_height = 0;
   img->aspect_ratio = 0.f;
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
@@ -1715,14 +1812,14 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
          "   aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
          "   output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
          "   raw_auto_bright_threshold, raw_black, raw_maximum,"
-         "   caption, description, license, sha1sum, orientation, histogram, lightmap,"
+         "   license, sha1sum, orientation, histogram, lightmap,"
          "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
          "   position, aspect_ratio, exposure_bias)"
          " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename, maker, model, lens,"
          "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
          "        flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
          "        raw_auto_bright_threshold, raw_black, raw_maximum,"
-         "        caption, description, license, sha1sum, orientation, histogram, lightmap,"
+         "        license, sha1sum, orientation, histogram, lightmap,"
          "        longitude, latitude, altitude, color_matrix, colorspace, -1, -1,"
          "        ?3, aspect_ratio, exposure_bias"
          " FROM main.images"
@@ -1778,17 +1875,38 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
+#ifdef HAVE_SQLITE_324_OR_NEWER
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "INSERT INTO main.tagged_images (imgid, tagid)"
-                                    " SELECT ?1, tagid"
-                                    " FROM main.tagged_images"
+                                    "INSERT INTO main.tagged_images (imgid, tagid, position)"
+                                    " SELECT ?1, tagid, "
+                                    "        (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
+                                    "         FROM main.tagged_images)"
+                                    "         + (ROW_NUMBER() OVER (ORDER BY imgid) << 32)"
+                                    " FROM main.tagged_images AS ti"
                                     " WHERE imgid = ?2",
                                     -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
-
+#else   // break down the tagged_images insert per tag
+        GList *tags = dt_tag_get_tags(imgid, FALSE);
+        for(GList *tag = tags; tag; tag = g_list_next(tag))
+        {
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                      "INSERT INTO main.tagged_images (imgid, tagid, position)"
+                                      "  VALUES (?1, ?2, "
+                                      "   (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)"
+                                      "     + (1 << 32)"
+                                      "   FROM main.tagged_images))",
+                                      -1, &stmt, NULL);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, GPOINTER_TO_INT(tag->data));
+          sqlite3_step(stmt);
+          sqlite3_finalize(stmt);
+        }
+        g_list_free(tags);
+#endif
         // get max_version of image duplicates in destination filmroll
         int32_t max_version = -1;
         DT_DEBUG_SQLITE3_PREPARE_V2
@@ -2104,9 +2222,8 @@ void dt_image_synch_xmp(const int selected)
   }
   else
   {
-    GList *imgs = dt_view_get_images_to_act_on();
+    const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
     dt_image_synch_xmps(imgs);
-    g_list_free(imgs);
   }
 }
 
@@ -2292,6 +2409,24 @@ char *dt_image_get_text_path(const int32_t imgid)
   dt_image_full_path(imgid, image_path, sizeof(image_path), &from_cache);
 
   return dt_image_get_text_path_from_path(image_path);
+}
+
+float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
+{
+  // just check that pointers exist and are initialized
+  if((image_storage) && (image_storage->exif_exposure_bias))
+  {
+    // sanity checks because I don't trust exif tags too much
+    if(image_storage->exif_exposure_bias == NAN ||
+       image_storage->exif_exposure_bias != image_storage->exif_exposure_bias ||
+       isnan(image_storage->exif_exposure_bias) ||
+       CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f) != image_storage->exif_exposure_bias)
+      return 0.0f; // isnan
+    else
+      return CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f);
+  }
+  else
+    return 0.0f;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -1,0 +1,48 @@
+#!/usr/bin/python3
+
+# Requires:
+#   python3-opencv
+#   python3-numpy
+#   python3-colour (recent version needed, see below):
+#      pip3 install colour-science
+
+# Maximum delta allowed, above this value the difference can be detected
+MAX_DELTA_E = 2.0
+
+import cv2
+import colour
+import numpy
+import os
+import sys
+
+if "delta_E" not in dir(colour):
+    print("  Unable to compute delta-E, please upgrade python3-colour")
+    exit(0)
+
+expected = sys.argv[1]
+output = sys.argv[2]
+
+expected_rgb = cv2.imread(expected)
+output_rgb = cv2.imread(output)
+
+expected_lab = cv2.cvtColor(expected_rgb, cv2.COLOR_RGB2Lab)
+output_lab = cv2.cvtColor(output_rgb, cv2.COLOR_RGB2Lab)
+
+delta_E = colour.delta_E(expected_lab, output_lab)
+
+max_dE = numpy.max(delta_E)
+mean_dE = numpy.mean(delta_E)
+count_above = 0
+
+print("      Max  dE         %.4f" % max_dE)
+
+if(max_dE > MAX_DELTA_E):
+    count_above = numpy.sum(delta_E >= MAX_DELTA_E)
+    print("      Mean dE         %.4f" % mean_dE)
+    print("      Count above max %d" % count_above)
+    exit(2)
+
+if max_dE < 0.01:
+    exit(0)
+else:
+    exit(1)

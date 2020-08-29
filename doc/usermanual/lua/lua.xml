@@ -54,9 +54,9 @@
     </para>
 
     <para>
-      darktable uses Lua version 5.2. Describing the principles and syntax of Lua is beyond the
+      darktable uses Lua version 5.3. Describing the principles and syntax of Lua is beyond the
       scope of this usermanual. For a detailed introduction see the
-      <ulink url="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</ulink>.
+      <ulink url="http://www.lua.org/manual/5.3/manual.html">Lua reference manual</ulink>.
     </para>
 
     <sect2 id="lua_basic_principles">
@@ -107,7 +107,7 @@
       </para>
 
       <para>
-        Start darktable and you will see the sencence <emphasis>Hello World !</emphasis> printed
+        Start darktable and you will see the sentence <emphasis>Hello World !</emphasis> printed
         on the console. Nothing fancy but it's a start...
       </para>
 
@@ -125,12 +125,12 @@
 
       <para>
 <programlisting language="lua">local darktable = require "darktable"
-darktable.print_error("Hello World !")</programlisting>
+darktable.print_log("Hello World !")</programlisting>
       </para>
 
       <para>
         Run the script ... and nothing happens. The function
-        <code>darktable.print_error</code>
+        <code>darktable.print_log</code>
         is just like print but will only print the message if you have enabled lua traces with
         <command>-d lua</command> on the command line. This is the recommended way to do traces
         in a darktable lua script.
@@ -325,12 +325,12 @@ darktable.register_event("shortcut",hello_shortcut,
 
       <para>
         Now start darktable, go to
-        <code> preferences => shortcut => lua => A shortcut that print its parameters </code>
+        <code> preferences => shortcut => lua => A shortcut that prints its parameters </code>
         assign a shortcut and try it. You should have a nice message printed on the screen.
       </para>
 
       <para>
-        Let's look at the code in details. We first define a function with two parameters. These
+        Let's look at the code in detail. We first define a function with two parameters. These
         parameters are strings. The first one is the type of event that is triggered (
         <code>"shortcut"</code>
         ) and the second one is what shortcut specifically (
@@ -349,7 +349,7 @@ darktable.register_event("shortcut",hello_shortcut,
       </para>
 
       <para>
-        Let's try a shortcut a little more interactive. This one will look at the images the
+        Let's try a shortcut that is a little more interactive. This one will look at the images the
         user is currently interested in (selected or moused-over) and will increase their
         rating.
       </para>
@@ -459,9 +459,9 @@ end,"Increase the rating of an image")</programlisting>
       <title>Exporting images with Lua</title>
 
       <para>
-        We have learned to use lua to adapt darktable to our particular workflow, let's look at
-        how to use lua to easily export images. darktable can easily export images to quite a
-        few online services but there are always more. If you are able to upload an image to a
+        We have learned to use lua to adapt darktable to our particular workflow, now let's look at
+        how to use lua to easily export images. darktable can easily export images to some
+        online services but there are always more. If you are able to upload an image to a
         service via the command line then you can use lua to integrate it into darktable's user
         interface.
       </para>
@@ -483,7 +483,7 @@ darktable.preferences.register("scp_export","export_path",
 darktable.register_storage("scp_export","Export via scp",
   function( storage, image, format, filename,
      number, total, high_quality, extra_data)
-    if coroutine.yield("RUN_COMMAND","scp "..filename.." "..
+    if darktable.control.execute("scp "..filename.." "..
       darktable.preferences.read("scp_export",
          "export_path","string")) then
       darktable.print_error("scp failed for "..tostring(image))
@@ -497,7 +497,7 @@ end)</programlisting>
         <code>scp_export</code>
         and
         <code>export_path</code>
-        allow us to uniquely identify our preference. These fields are reused when we read the
+        allows us to uniquely identify our preference. These fields are reused when we read the
         value of the preference. The
         <code>string</code>
         field tells the lua engine that the preference is a string. It could also be an integer,
@@ -544,7 +544,7 @@ end)</programlisting>
 
           <listitem><para>
             We use
-            <code>coroutine.yield</code>
+            <code>darktable.control.execute</code>
             to call an external program. The normal
             <code>os.execute</code>
             would block other lua codes from happening.
@@ -617,7 +617,7 @@ local scp_path = darktable.new_widget("entry"){
 darktable.register_storage("scp_export","Export via scp",
   function( storage, image, format, filename,
      number, total, high_quality, extra_data)
-    if coroutine.yield("RUN_COMMAND","scp "..filename.." "..
+    if darktable.control.execute("scp "..filename.." "..
       scp_path.text
     ) then
       darktable.print_error("scp failed for "..tostring(image))
@@ -683,7 +683,7 @@ local scp_path = darktable.new_widget("entry"){
 darktable.register_storage("scp_export","Export via scp",
   function( storage, image, format, filename,
      number, total, high_quality, extra_data)
-    if coroutine.yield("RUN_COMMAND","scp "..filename.." "..
+    if darktable.control.execute("scp "..filename.." "..
       scp_path.text
     ) then
       darktable.print_error("scp failed for "..tostring(image))
@@ -728,7 +728,7 @@ darktable.register_storage("scp_export","Export via scp",
 
           <listitem><para>
             Make sure you do not leave debug prints in your code.
-            <code>darktable.print_error</code>
+            <code>darktable.print_log</code>
             in particular allows you to leave debug prints in your final code without disturbing
             the console.
           </para></listitem>
@@ -741,7 +741,7 @@ darktable.register_storage("scp_export","Export via scp",
         </itemizedlist>
         Once you have filled all the fields, checked your code, you can upload it to our script
         page
-        <ulink url="https://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</ulink>.
+        <ulink url="https://github.com/darktable-org/lua-scripts">here</ulink>.
       </para>
 
     </sect2>

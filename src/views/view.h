@@ -187,69 +187,16 @@ typedef enum dt_view_image_over_t
   DT_VIEW_END     = 10, // placeholder for the end of the list
 } dt_view_image_over_t;
 
-/** returns -1 if the action has to be applied to the selection,
-    or the imgid otherwise
-    TODO : remove it in profit of next functions*/
-int32_t dt_view_get_image_to_act_on();
-
 // get images to act on for gloabals change (via libs or accels)
-GList *dt_view_get_images_to_act_on();
+// no need to free the list - done internally
+const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gboolean force);
 // get the main image to act on during global changes (libs, accels)
-int dt_view_get_image_to_act_on2();
+int dt_view_get_image_to_act_on();
 
-/** guess the image_over flag assuming that all possible controls are displayed */
-dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
-
-typedef struct dt_view_image_expose_t
-{
-  dt_view_image_over_t *image_over;
-  uint32_t imgid;
-  cairo_t *cr;
-  float width;
-  float height;
-  int32_t zoom;
-  int32_t px;
-  int32_t py;
-  gboolean full_preview;
-  gboolean filmstrip;
-  gboolean image_only;
-  gboolean no_deco;
-  gboolean mouse_over;
-  float full_zoom;
-  float full_zoom100;
-  float *full_w1;
-  float *full_h1;
-  float full_x;
-  float full_y;
-  float *full_maxdx;
-  float *full_maxdy;
-
-  cairo_surface_t **full_surface;
-  uint8_t **full_rgbbuf;
-  int *full_surface_mip;
-  int *full_surface_id;
-  int *full_surface_wd;
-  int *full_surface_ht;
-  int *full_surface_w_lock;
-} dt_view_image_expose_t;
 /** returns an uppercase string of file extension **plus** some flag information **/
 char* dt_view_extend_modes_str(const char * name, const int is_hdr, const int is_bw);
-/** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
-int dt_view_image_expose(dt_view_image_expose_t *vals);
 /** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
-int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface);
-
-/* expose only the image imgid at position (offsetx,offsety) into the cairo surface occupying width/height pixels.
-   this routine does not output any meta-data as the version above.
- */
-void
-dt_view_image_only_expose(
-  uint32_t imgid,
-  cairo_t *cr,
-  int32_t width,
-  int32_t height,
-  int32_t offsetx,
-  int32_t offsety);
+int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality);
 
 
 /** Set the selection bit to a given value for the specified image */
@@ -280,6 +227,15 @@ typedef struct dt_view_manager_t
     gboolean sticky;
     gboolean prevent_refresh;
   } accels_window;
+
+  struct
+  {
+    GList *images;
+    gboolean ok;
+    int image_over;
+    gboolean inside_table;
+    GSList *active_imgs;
+  } act_on;
 
   /* reusable db statements
    * TODO: reconsider creating a common/database helper API
@@ -364,11 +320,11 @@ typedef struct dt_view_manager_t
       gint (*get_zoom)(struct dt_lib_module_t *module);
       dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
       void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
+      void (*culling_init_mode)(struct dt_view_t *view);
+      void (*culling_preview_refresh)(struct dt_view_t *view);
+      void (*culling_preview_reload_overlays)(struct dt_view_t *view);
       dt_lighttable_culling_zoom_mode_t (*get_zoom_mode)(struct dt_lib_module_t *module);
-      int (*get_images_in_row)(struct dt_view_t *view);
-      int (*get_full_preview_id)(struct dt_view_t *view);
-      void (*force_expose_all)(struct dt_view_t *view);
-      gboolean (*culling_is_image_visible)(struct dt_view_t *view, gint imgid);
+      gboolean (*get_preview_state)(struct dt_view_t *view);
       void (*change_offset)(struct dt_view_t *view, gboolean reset, gint imgid);
     } lighttable;
 
@@ -496,10 +452,12 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
 /** gets the culling zoom mode */
 dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm);
-/** force a full redraw of the lighttable */
-void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm);
-/** is the image visible in culling layout */
-gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid);
+/** reinit culling for new mode */
+void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm);
+/** force refresh of culling and/or preview */
+void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm);
+/** force refresh of culling and/or preview overlays */
+void dt_view_lighttable_culling_preview_reload_overlays(dt_view_manager_t *vm);
 /** sets the offset image (for culling and full preview) */
 void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid);
 

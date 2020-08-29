@@ -87,6 +87,19 @@ static gboolean _gui_styles_is_copy_module_order_set(dt_gui_styles_dialog_t *d)
   return active && (num == -1);
 }
 
+static gboolean _gui_styles_is_update_module_order_set(dt_gui_styles_dialog_t *d)
+{
+  /* first item is the copy-module */
+  GtkTreeIter iter;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->items));
+
+  gboolean active = FALSE;
+  gint num = 0;
+  if(gtk_tree_model_get_iter_first(model, &iter))
+    gtk_tree_model_get(model, &iter, DT_STYLE_ITEMS_COL_UPDATE, &active, DT_STYLE_ITEMS_COL_NUM, &num, -1);
+  return active && (num == -1);
+}
+
 void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd, GList **enabled, GList **update)
 {
   /* run through all items and add active ones to result */
@@ -129,7 +142,7 @@ void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd, GList **enabled, G
                          DT_STYLE_ITEMS_COL_NUM, &num,
                          DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num,
                          -1);
-      if(active && num >= 0)
+      if(active)
       {
         if(update_num == -1) // item from style
         {
@@ -217,13 +230,17 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog, gint response_id,
     {
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->duplicate)))
       {
-        dt_styles_create_from_style(g->nameorig, name, gtk_entry_get_text(GTK_ENTRY(g->description)), result,
-                                    g->imgid, update, _gui_styles_is_copy_module_order_set(g));
+        dt_styles_create_from_style(g->nameorig, name, gtk_entry_get_text(GTK_ENTRY(g->description)),
+                                    result, g->imgid, update,
+                                    _gui_styles_is_copy_module_order_set(g),
+                                    _gui_styles_is_update_module_order_set(g));
       }
       else
       {
-        dt_styles_update(g->nameorig, name, gtk_entry_get_text(GTK_ENTRY(g->description)), result, g->imgid,
-                         update, _gui_styles_is_copy_module_order_set(g));
+        dt_styles_update(g->nameorig, name, gtk_entry_get_text(GTK_ENTRY(g->description)),
+                         result, g->imgid, update,
+                         _gui_styles_is_copy_module_order_set(g),
+                         _gui_styles_is_update_module_order_set(g));
       }
       dt_control_log(_("style %s was successfully saved"), name);
     }

@@ -87,6 +87,8 @@
 
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
+#elif defined HAVE_IMAGEMAGICK
+#include <MagickWand/MagickWand.h>
 #endif
 
 #include "dbus.h"
@@ -119,8 +121,8 @@ static int usage(const char *argv0)
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
-  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder\n");
-  printf("      imageio\n");
+  printf("      lua,masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder,\n");
+  printf("      imageio,undo}\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
@@ -499,6 +501,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  GraphicsMagick support disabled\n"
 #endif
 
+#ifdef HAVE_IMAGEMAGICK
+               "  ImageMagick support enabled\n"
+#else
+               "  ImageMagick support disabled\n"
+#endif
+
 #ifdef HAVE_OPENEXR
                "  OpenEXR support enabled\n"
 #else
@@ -595,9 +603,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_CAMERA_SUPPORT; // camera support warnings are reported on console
         else if(!strcmp(argv[k + 1], "ioporder"))
           darktable.unmuted |= DT_DEBUG_IOPORDER; // iop order information are reported on console
-        else if(!strcmp(argv[k + 1], "imageio")) {
+        else if(!strcmp(argv[k + 1], "imageio"))
           darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting mesages on console
-        } else
+        else if(!strcmp(argv[k + 1], "undo"))
+          darktable.unmuted |= DT_DEBUG_UNDO; // undo/redo
+        else
           return usage(argv[0]);
         k++;
         argv[k-1] = NULL;
@@ -914,6 +924,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // *SIGH*
   dt_set_signal_handlers();
+#elif defined HAVE_IMAGEMAGICK
+  /* ImageMagick init */
+  MagickWandGenesis();
 #endif
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
@@ -980,12 +993,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // set up memory.darktable_iop_names table
   dt_iop_set_darktable_iop_table();
 
+  // set up the list of exiv2 metadata
+  dt_exif_set_exiv2_taglist();
+
+  // init metadata flags
+  dt_metadata_init();
+
   if(init_gui)
   {
 #ifdef HAVE_GPHOTO2
     // Initialize the camera control.
     // this is done late so that the gui can react to the signal sent but before switching to lighttable!
     darktable.camctl = dt_camctl_new();
+    dt_camctl_background_detect_cameras();
 #endif
 
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
@@ -1099,6 +1119,8 @@ void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
 
+  // last chance to ask user for any input...
+
   dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
 
 #ifdef HAVE_PRINT
@@ -1108,8 +1130,14 @@ void dt_cleanup()
 #ifdef USE_LUA
   dt_lua_finalize_early();
 #endif
+
+  // anything that asks user for input should be placed before this line
+
   if(init_gui)
   {
+    // hide main window and do rest of the cleanup in the background
+    gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
+
     dt_ctl_switch_mode_to("");
     dt_dbus_destroy(darktable.dbus);
 
@@ -1158,6 +1186,8 @@ void dt_cleanup()
 
 #ifdef HAVE_GRAPHICSMAGICK
   DestroyMagick();
+#elif defined HAVE_IMAGEMAGICK
+  MagickWandTerminus();
 #endif
 
   dt_guides_cleanup(darktable.guides);

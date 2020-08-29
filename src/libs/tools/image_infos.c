@@ -102,6 +102,7 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
   vp->jobcode = "infos";
   vp->imgid = imgid;
   vp->sequence = 0;
+  vp->escape_markup = TRUE;
 
   gchar *pattern = dt_conf_get_string("plugins/darkroom/image_infos_pattern");
   gchar *msg = dt_variables_expand(vp, pattern, TRUE);

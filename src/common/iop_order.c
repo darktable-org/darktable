@@ -309,7 +309,9 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
 
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
 {
-  dt_iop_order_t iop_order_version = DT_IOP_ORDER_V30;
+  char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+  dt_iop_order_t iop_order_version = strcmp(workflow, "display-referred") == 0 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
+  g_free(workflow);
 
   // check current iop order version
   sqlite3_stmt *stmt;
@@ -656,7 +658,14 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
   // and new image not yet loaded or whose history has been reset.
   if(!iop_order_list)
   {
-    iop_order_list = _table_to_list(v30_order);
+    char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+    dt_iop_order_t iop_order_version = strcmp(workflow, "display-referred") == 0 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
+    g_free(workflow);
+
+    if(iop_order_version == DT_IOP_ORDER_LEGACY)
+      iop_order_list = _table_to_list(legacy_order);
+    else
+      iop_order_list = _table_to_list(v30_order);
   }
 
   if(sorted) iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
@@ -1990,6 +1999,37 @@ char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list)
   return text;
 }
 
+/* this sanity check routine is used to correct wrong iop-list that
+ * could have been stored while some bugs were present in
+ * dartkable. There was a window around Sep 2019 where such issue
+ * existed and some xmp may have been corrupt at this time making dt
+ * crash while reimporting using the xmp.
+ *
+ * One common case seems that the list does not end with gamma.
+*/
+
+static gboolean _ioppr_sanity_check_iop_order(GList *list)
+{
+  gboolean ok = TRUE;
+
+  // First check that first module is rawprepare (even for a jpeg, we
+  // are speaking of the module ordering not the activated modules.
+
+  GList *first = g_list_first(list);
+  dt_iop_order_entry_t *entry_first = (dt_iop_order_entry_t *)first->data;
+
+  ok = ok && (g_strcmp0(entry_first->operation, "rawprepare") == 0);
+
+  // Then check that last module is gamma
+
+  GList *last = g_list_last(list);
+  dt_iop_order_entry_t *entry_last = (dt_iop_order_entry_t *)last->data;
+
+  ok = ok && (g_strcmp0(entry_last->operation, "gamma") == 0);
+
+  return ok;
+}
+
 GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
 {
   GList *iop_order_list = NULL;
@@ -2026,6 +2066,8 @@ GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
   g_list_free(list);
 
   _ioppr_reset_iop_order(iop_order_list);
+
+  if(!_ioppr_sanity_check_iop_order(iop_order_list)) goto error;
 
   return iop_order_list;
 

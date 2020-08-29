@@ -73,8 +73,9 @@ typedef enum atrous_channel_t
 
 typedef struct dt_iop_atrous_params_t
 {
-  int32_t octaves;
-  float x[atrous_none][BANDS], y[atrous_none][BANDS];
+  int32_t octaves; // $DEFAULT: 3
+  float x[atrous_none][BANDS];
+  float y[atrous_none][BANDS]; // $DEFAULT: 0.5
 } dt_iop_atrous_params_t;
 
 typedef struct dt_iop_atrous_gui_data_t
@@ -96,7 +97,6 @@ typedef struct dt_iop_atrous_gui_data_t
   float band_max;
   float sample[MAX_NUM_SCALES];
   int num_samples;
-  int timeout_handle;
 } dt_iop_atrous_gui_data_t;
 
 typedef struct dt_iop_atrous_global_data_t
@@ -116,6 +116,15 @@ typedef struct dt_iop_atrous_data_t
 const char *name()
 {
   return _("contrast equalizer");
+}
+
+const char *description()
+{
+  return _("add or remove local contrast,\n"
+           "for corrective and creative purposes.\n"
+           "works in Lab,\n"
+           "takes preferably a linear RGB input,\n"
+           "outputs almost linear RGB.");
 }
 
 int default_group()
@@ -154,7 +163,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
 static const __m128 fone ALIGNED(64) = VEC4(0x3f800000u);
 static const __m128 femo ALIGNED(64) = VEC4(0x00adf880u);
-static const __m128 ooo1 ALIGNED(64) = { 0.f, 0.f, 0.f, 1.f };
+static const __m128 o111 ALIGNED(64) = { ~0, ~0, ~0, 0 };
 
 /* SSE intrinsics version of dt_fast_expf defined in darktable.h */
 static inline __m128 dt_fast_expf_sse2(const __m128 x)
@@ -195,18 +204,14 @@ static inline void weight(const float *c1, const float *c2, const float sharpen,
  */
 static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float sharpen)
 {
-  const __m128 vsharpen = _mm_set1_ps(-sharpen); // (-s, -s, -s, -s)
-  __m128 diff = _mm_sub_ps(*c1, *c2);
-  __m128 square = _mm_mul_ps(diff, diff);                                   // (?, d3, d2, d1)
+  const __m128 diff = *c1 - *c2;
+  __m128 square = diff * diff;                                      // (?, d3, d2, d1)
   __m128 square2 = _mm_shuffle_ps(square, square, _MM_SHUFFLE(3, 1, 2, 0)); // (?, d2, d3, d1)
-  __m128 added = _mm_add_ps(square, square2);                               // (?, d2+d3, d2+d3, 2*d1)
-  added = _mm_sub_ss(added, square);                                        // (?, d2+d3, d2+d3, d1)
-  __m128 sharpened = _mm_mul_ps(added, vsharpen);                   // (?, -s*(d2+d3), -s*(d2+d3), -s*d1)
-  __m128 exp = dt_fast_expf_sse2(sharpened);                        // (?, wc, wc, wl)
-  exp = _mm_castsi128_ps(_mm_slli_si128(_mm_castps_si128(exp), 4)); // (wc, wc, wl, 0)
-  exp = _mm_castsi128_ps(_mm_srli_si128(_mm_castps_si128(exp), 4)); // (0, wc, wc, wl)
-  exp = _mm_or_ps(exp, ooo1);                                       // (1, wc, wc, wl)
-  return exp;
+  __m128 added = square + square2;                                  // (?, d2+d3, d2+d3, 2*d1)
+  added = _mm_sub_ss(added, square);                                // (?, d2+d3, d2+d3, d1)
+  __m128 sharpened = added * _mm_set1_ps(-sharpen);                 // (?, -s*(d2+d3), -s*(d2+d3), -s*d1)
+  sharpened = _mm_and_ps(sharpened,o111);			    // (0, -s*(d2+d3), -s*(d2+d3), -s*d1)
+  return dt_fast_expf_sse2(sharpened);                              // (1, wc, wc, wl)
 }
 #endif
 
@@ -711,7 +716,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -809,7 +814,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
 
-  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -919,7 +924,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_iop_nap(darktable.opencl->micro_nap);
   }
 
-  if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+  if(!darktable.opencl->async_pixelpipe || (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT)
     dt_opencl_finish(devid);
 
   dt_opencl_release_mem_object(dev_filter);
@@ -962,22 +967,17 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_atrous_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_atrous_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_atrous_params_t);
-  module->gui_data = NULL;
-  dt_iop_atrous_params_t tmp;
-  tmp.octaves = 3;
+  dt_iop_default_init(module);
+
+  dt_iop_atrous_params_t *d = module->default_params;
+  
   for(int k = 0; k < BANDS; k++)
   {
-    tmp.y[atrous_L][k] = tmp.y[atrous_s][k] = tmp.y[atrous_c][k] = 0.5f;
-    tmp.x[atrous_L][k] = tmp.x[atrous_s][k] = tmp.x[atrous_c][k] = k / (BANDS - 1.0f);
-    tmp.y[atrous_Lt][k] = tmp.y[atrous_ct][k] = 0.0f;
-    tmp.x[atrous_Lt][k] = tmp.x[atrous_ct][k] = k / (BANDS - 1.0f);
+    d->y[atrous_Lt][k] = d->y[atrous_ct][k] = 0.0f;
+    for(int c = atrous_L; c <= atrous_ct; c++) d->x[c][k] = k / (BANDS - 1.0f);
   }
-  memcpy(module->params, &tmp, sizeof(dt_iop_atrous_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_atrous_params_t));
+
+  memcpy(module->params, module->default_params, sizeof(dt_iop_atrous_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -988,14 +988,6 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_decompose = dt_opencl_create_kernel(program, "eaw_decompose");
   gd->kernel_synthesize = dt_opencl_create_kernel(program, "eaw_synthesize");
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1318,21 +1310,15 @@ static void reset_mix(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   c->drag_params = *(dt_iop_atrous_params_t *)self->params;
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(c->mix, 1.0f);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   reset_mix(self);
-  if(c->timeout_handle)
-  {
-    g_source_remove(c->timeout_handle);
-    c->timeout_handle = 0;
-  }
+  dt_iop_cancel_history_update(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1656,17 +1642,6 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   return TRUE;
 }
 
-static gboolean postponed_value_change(gpointer data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)data;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  c->timeout_handle = 0;
-
-  return FALSE;
-}
-
 static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1700,10 +1675,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
       get_params(p, c->channel2, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
     gtk_widget_queue_draw(widget);
-    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
-
-    if(!c->timeout_handle)
-      c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
+    dt_iop_queue_history_update(self, FALSE);
   }
   else if(event->y > height)
   {
@@ -1810,7 +1782,8 @@ static gboolean area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {
@@ -1824,7 +1797,7 @@ static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, g
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   c->channel = c->channel2 = (atrous_channel_t)page_num;
   gtk_widget_queue_draw(self->widget);
 }
@@ -1832,7 +1805,7 @@ static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, g
 static void mix_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
@@ -1861,42 +1834,22 @@ void gui_init(struct dt_iop_module_t *self)
   for(int k = 0; k < BANDS; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
-  c->timeout_handle = 0;
+  self->timeout_handle = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0 / BANDS;
+
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("luma")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("change lightness at each feature size"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("chroma")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("change color saturation at each feature size"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("edges")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
-
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
-
+  dt_ui_notebook_page(c->channel_tabs, _("luma"), _("change lightness at each feature size"));
+  dt_ui_notebook_page(c->channel_tabs, _("chroma"), _("change color saturation at each feature size"));
+  dt_ui_notebook_page(c->channel_tabs, _("edges"), _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
-
-  dtgtk_justify_notebook_tabs(c->channel_tabs);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
   // graph
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -1922,7 +1875,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", c->channel);
   dt_draw_curve_destroy(c->minmax_curve);
-  if(c->timeout_handle) g_source_remove(c->timeout_handle);
+  dt_iop_cancel_history_update(self);
   free(self->gui_data);
   self->gui_data = NULL;
 }

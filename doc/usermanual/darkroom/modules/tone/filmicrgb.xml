@@ -520,7 +520,7 @@
 
   <sect4 id="filmic-rgb-for-26-users">
 
-    <title>Filmic rgb for Darktable 2.6 filmic users</title>
+    <title>Filmic rgb for darktable 2.6 filmic users</title>
 
     <para>
       Filmic rgb is a reimplementation of the filmic module, and some adjustments are necessary

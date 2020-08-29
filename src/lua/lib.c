@@ -46,7 +46,7 @@ static int visible_member(lua_State *L)
   }
   else
   {
-    dt_lib_set_visible(module, lua_toboolean(L, 3));
+    dt_lib_gui_set_expanded(module, lua_toboolean(L, 3));
     return 0;
   }
 }

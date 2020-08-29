@@ -38,7 +38,7 @@
 #define O_BINARY 0
 #endif
 
-#include "ThreadSafetyAnalysis.h"
+#include "external/ThreadSafetyAnalysis.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -121,7 +121,7 @@ typedef unsigned int u_int;
 
 #include "common/usermanual_url.h"
 
-#define DT_MODULE_VERSION 21 // version of dt's module interface
+#define DT_MODULE_VERSION 22 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
@@ -205,24 +205,25 @@ struct dt_l10n_t;
 typedef enum dt_debug_thread_t
 {
   // powers of two, masking
-  DT_DEBUG_CACHE = 1 << 0,
-  DT_DEBUG_CONTROL = 1 << 1,
-  DT_DEBUG_DEV = 1 << 2,
-  DT_DEBUG_PERF = 1 << 4,
-  DT_DEBUG_CAMCTL = 1 << 5,
-  DT_DEBUG_PWSTORAGE = 1 << 6,
-  DT_DEBUG_OPENCL = 1 << 7,
-  DT_DEBUG_SQL = 1 << 8,
-  DT_DEBUG_MEMORY = 1 << 9,
-  DT_DEBUG_LIGHTTABLE = 1 << 10,
-  DT_DEBUG_NAN = 1 << 11,
-  DT_DEBUG_MASKS = 1 << 12,
-  DT_DEBUG_LUA = 1 << 13,
-  DT_DEBUG_INPUT = 1 << 14,
-  DT_DEBUG_PRINT = 1 << 15,
+  DT_DEBUG_CACHE          = 1 <<  0,
+  DT_DEBUG_CONTROL        = 1 <<  1,
+  DT_DEBUG_DEV            = 1 <<  2,
+  DT_DEBUG_PERF           = 1 <<  4,
+  DT_DEBUG_CAMCTL         = 1 <<  5,
+  DT_DEBUG_PWSTORAGE      = 1 <<  6,
+  DT_DEBUG_OPENCL         = 1 <<  7,
+  DT_DEBUG_SQL            = 1 <<  8,
+  DT_DEBUG_MEMORY         = 1 <<  9,
+  DT_DEBUG_LIGHTTABLE     = 1 << 10,
+  DT_DEBUG_NAN            = 1 << 11,
+  DT_DEBUG_MASKS          = 1 << 12,
+  DT_DEBUG_LUA            = 1 << 13,
+  DT_DEBUG_INPUT          = 1 << 14,
+  DT_DEBUG_PRINT          = 1 << 15,
   DT_DEBUG_CAMERA_SUPPORT = 1 << 16,
-  DT_DEBUG_IOPORDER = 1 << 17,
-  DT_DEBUG_IMAGEIO = 1 << 18,
+  DT_DEBUG_IOPORDER       = 1 << 17,
+  DT_DEBUG_IMAGEIO        = 1 << 18,
+  DT_DEBUG_UNDO           = 1 << 19
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -429,6 +430,36 @@ static inline float dt_fast_expf(const float x)
   } u;
   u.k = k0 > 0 ? k0 : 0;
   return u.f;
+}
+
+// fast approximation of 2^-x for 0<x<126
+static inline float dt_fast_mexp2f(const float x)
+{
+  const int i1 = 0x3f800000; // bit representation of 2^0
+  const int i2 = 0x3f000000; // bit representation of 2^-1
+  const int k0 = i1 + (int)(x * (i2 - i1));
+  union {
+    float f;
+    int i;
+  } k;
+  k.i = k0 >= 0x800000 ? k0 : 0;
+  return k.f;
+}
+
+// The below version is incorrect, suffering from reduced precision.
+// It is used by the non-local means code in both nlmeans.c and
+// denoiseprofile.c, and fixing it would cause a change in output.
+static inline float fast_mexp2f(const float x)
+{
+  const float i1 = (float)0x3f800000u; // 2^0
+  const float i2 = (float)0x3f000000u; // 2^-1
+  const float k0 = i1 + x * (i2 - i1);
+  union {
+    float f;
+    int i;
+  } k;
+  k.i = k0 >= (float)0x800000u ? k0 : 0;
+  return k.f;
 }
 
 static inline void dt_print_mem_usage()

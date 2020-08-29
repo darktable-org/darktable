@@ -60,6 +60,7 @@ static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
 
 static void on_destroy(GtkWidget *widget, gpointer user_data)
 {
+  free((lua_widget*) user_data);
 }
 
 static gboolean on_destroy_wrapper(gpointer user_data)

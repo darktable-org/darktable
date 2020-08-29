@@ -21,7 +21,7 @@ Optionally, you might need for special features:
  - `gphoto2` (for camera support, recommended)
  - `flickcurl` (for Flickr support)
  - SDL, SDL-image and Mesa OpenGL (to build darktable-viewer)
- - `osm-gps-map` and `libsoup` for geo tagging view
+ - `osm-gps-map` for geo tagging view
  - `lensfun` (lens distortion plugin)
  - OpenEXR for HDR export
  - `libsecret` for storing passwords
@@ -62,7 +62,7 @@ Other used packages (supplied in the source tree):
  - RawSpeed
  - Lua 5.2 and LuaAutoc (although the local system version can be used instead)
 
-Darktable has OpenCL support for graphics cards with:
+darktable has OpenCL support for graphics cards with:
 
  - at least 1GB graphics RAM (more is better)
  - a modern AMD or nVidia chipset

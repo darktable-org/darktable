@@ -140,6 +140,7 @@ typedef enum dt_image_loader_t
   LOADER_RAWSPEED = 9,
   LOADER_PNM = 10,
   LOADER_AVIF = 11,
+  LOADER_IM = 12,
 } dt_image_loader_t;
 
 typedef struct dt_image_geoloc_t
@@ -178,7 +179,7 @@ typedef struct dt_image_t
   // common stuff
 
   // to understand this, look at comment for dt_histogram_roi_t
-  int32_t width, height, verified_size, final_width, final_height;
+  int32_t width, height, verified_size, final_width, final_height, p_width, p_height;
   int32_t crop_x, crop_y, crop_width, crop_height;
   float aspect_ratio;
 
@@ -252,6 +253,11 @@ void dt_image_path_append_version_no_db(int version, char *pathname, size_t path
 void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
+/* set rating to img flags */
+void dt_image_set_xmp_rating(dt_image_t *img, const int rating);
+/* get rating from img flags */
+int dt_image_get_xmp_rating(const dt_image_t *img);
+int dt_image_get_xmp_rating_from_flags(const int flags);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
@@ -278,11 +284,13 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
                            const gboolean undo_on, const gboolean group_on);
 /** set images location lon/lat/ele */
 void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc,
-                           const gboolean undo_on, const gboolean group_on);
+                           const gboolean undo_on);
 /** get image location lon/lat/ele */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
-/** returns 1 if there is history data found for this image, 0 else. */
+/** returns TRUE if current hash is not basic nor auto_apply, FALSE otherwise. */
 gboolean dt_image_altered(const uint32_t imgid);
+/** returns TRUE if if current has is basic, FALSE otherwise. */
+gboolean dt_image_basic(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */
 double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise);
 /** set the image raw aspect ratio */
@@ -293,6 +301,8 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboo
 void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio, gboolean raise);
 /** reset the image final/cropped aspect ratio to 0.0 */
 void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise);
+/** get the ratio of cropped raw sensor data */
+double dt_image_get_sensor_ratio(const dt_image_t *img);
 /** returns the orientation bits of the image from exif. */
 static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {
@@ -359,6 +369,8 @@ char *dt_image_get_audio_path_from_path(const char *image_path);
 /** helper function to get the text file filename that is accompanying the image. g_free() after use */
 char *dt_image_get_text_path(const int32_t imgid);
 char *dt_image_get_text_path_from_path(const char *image_path);
+
+float dt_image_get_exposure_bias(const struct dt_image_t *image_storage);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

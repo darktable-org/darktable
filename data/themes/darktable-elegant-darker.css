@@ -104,7 +104,8 @@ button,
 
 notebook tabs,
 #modules-tabs,
-#blending-tabs
+#blending-tabs,
+tooltip label
 {
     font-family: "Roboto", 
                  "Segoe UI", 

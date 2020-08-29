@@ -19,6 +19,14 @@
 #include <setjmp.h>
 #include <windows.h>
 
+// Required by (at least) clang 10.0 as packaged by MSYS2 MinGW64.
+// This platform combination is needed for dt appveyor build.
+#ifdef __clang__
+#ifdef __MINGW32__ // 64-bit subsystem also sets this symbol 
+#include <errno.h>
+#endif
+#endif
+
 const wchar_t *dtwin_get_locale()
 {
   wchar_t *posix = NULL;

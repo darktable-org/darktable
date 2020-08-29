@@ -409,12 +409,6 @@ void gui_init(struct dt_iop_module_t *self)
 #endif
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
 #if 0
 static gboolean dt_iop_equalizer_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {

@@ -51,11 +51,13 @@ const int dt_ratings_get(const int imgid)
 
 static void _ratings_apply_to_image(const int imgid, const int rating)
 {
+  int new_rating = rating;
+  const int previous_rating = dt_ratings_get(imgid);
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   if(image)
   {
-    if(rating == DT_VIEW_REJECT)
+    if(new_rating == DT_VIEW_REJECT)
     {
       // this is a toggle, we invert the DT_IMAGE_REJECTED flag
       if(image->flags & DT_IMAGE_REJECTED)
@@ -64,8 +66,16 @@ static void _ratings_apply_to_image(const int imgid, const int rating)
         image->flags = (image->flags | DT_IMAGE_REJECTED);
     }
     else
+    {
+      if(!dt_conf_get_bool("rating_one_double_tap") 
+          && (previous_rating == DT_VIEW_STAR_1) && (new_rating == DT_VIEW_STAR_1))
+      {
+        new_rating = DT_VIEW_DESERT;
+      }
+
       image->flags = (image->flags & ~(DT_IMAGE_REJECTED | DT_VIEW_RATINGS_MASK))
-        | (DT_VIEW_RATINGS_MASK & rating);
+        | (DT_VIEW_RATINGS_MASK & new_rating);
+    }
     // synch through:
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
   }
@@ -119,15 +129,13 @@ static void _ratings_apply(GList *imgs, const int rating, GList **undo, const gb
   }
 }
 
-void dt_ratings_apply_on_list(const GList *img, const int rating,
-                              const gboolean undo_on, const gboolean group_on)
+void dt_ratings_apply_on_list(const GList *img, const int rating, const gboolean undo_on)
 {
   GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
 
     _ratings_apply(imgs, rating, &undo, undo_on);
 
@@ -185,9 +193,6 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
   }
   else
     dt_control_log(_("no images selected to apply rating"));
-  /* redraw view */
-  /* dt_control_queue_redraw_center() */
-  /* needs to be called in the caller function */
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

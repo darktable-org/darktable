@@ -59,6 +59,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self);
    \see dt_dev_modulegroups_set()
 */
 static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group);
+/* modulegroups proxy update visibility function
+*/
+static void _lib_modulegroups_update_visibility_proxy(dt_lib_module_t *self);
 /* modulegroups proxy get group function
   \see dt_dev_modulegroups_get()
 */
@@ -159,6 +162,19 @@ static gboolean _text_entry_icon_press_callback(GtkEntry *entry, GtkEntryIconPos
   return TRUE;
 }
 
+static gboolean _text_entry_key_press_callback(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+
+  if(event->keyval == GDK_KEY_Escape)
+  {
+    gtk_entry_set_text(GTK_ENTRY(widget), "");
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 void view_leave(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
 {
   if(!strcmp(old_view->module_name, "darkroom"))
@@ -255,6 +271,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(d->text_entry, GDK_KEY_PRESS_MASK);
   g_signal_connect(G_OBJECT(d->text_entry), "changed", G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "icon-press", G_CALLBACK(_text_entry_icon_press_callback), self);
+  g_signal_connect(G_OBJECT(d->text_entry), "key-press-event", G_CALLBACK(_text_entry_key_press_callback), self);
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), d->text_entry, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_icon_from_icon_name(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, "edit-clear");
@@ -288,6 +305,7 @@ void gui_init(dt_lib_module_t *self)
    */
   darktable.develop->proxy.modulegroups.module = self;
   darktable.develop->proxy.modulegroups.set = _lib_modulegroups_set;
+  darktable.develop->proxy.modulegroups.update_visibility = _lib_modulegroups_update_visibility_proxy;
   darktable.develop->proxy.modulegroups.get = _lib_modulegroups_get;
   darktable.develop->proxy.modulegroups.test = _lib_modulegroups_test;
   darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
@@ -357,6 +375,21 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
   if (DT_IOP_ORDER_INFO)
     fprintf(stderr,"\n^^^^^ modulegroups");
+
+  /* only show module group as selected if not currently searching */
+  if(visibility != DT_MODULEGROUP_SEARCH_IOP_TEXT_VISIBLE && d->current != DT_MODULEGROUP_NONE)
+  {
+    const int cb = _lib_modulegroups_get(self);
+    /* toggle button visibility without executing callback */
+    g_signal_handlers_block_matched(d->buttons[cb], G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
+
+    if(text_entered && text_entered[0] != '\0')
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[cb]), FALSE);
+    else
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[cb]), TRUE);
+
+    g_signal_handlers_unblock_matched(d->buttons[cb], G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
+  }
 
   GList *modules = darktable.develop->iop;
   if(modules)
@@ -499,6 +532,9 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
+                                  ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
+                                  : NULL;
 
   /* block all button callbacks */
   for(int k = 0; k < DT_MODULEGROUP_SIZE; k++)
@@ -519,7 +555,8 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[k]), FALSE);
   }
 
-  if(d->current == gid)
+  /* only deselect button if not currently searching else re-enable module */
+  if(d->current == gid && !(text_entered && text_entered[0] != '\0'))
     d->current = DT_MODULEGROUP_NONE;
   else
   {
@@ -556,13 +593,20 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
 
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)params->self->data;
 
-  const int group = _iop_get_group_order(params->group, params->group);
-
-  /* set current group or just update iop visibility*/
-  if(d->current != group && params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
+  /* set current group and update visibility */
+  if(params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[params->group]), TRUE);
-  else
-    _lib_modulegroups_update_iop_visibility(params->self);
+  _lib_modulegroups_update_iop_visibility(params->self);
+
+  free(params);
+  return FALSE;
+}
+
+static gboolean _lib_modulegroups_upd_gui_thread(gpointer user_data)
+{
+  _set_gui_thread_t *params = (_set_gui_thread_t *)user_data;
+
+  _lib_modulegroups_update_iop_visibility(params->self);
 
   free(params);
   return FALSE;
@@ -595,6 +639,15 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
 }
 
 /* this is a proxy function so it might be called from another thread */
+static void _lib_modulegroups_update_visibility_proxy(dt_lib_module_t *self)
+{
+  _set_gui_thread_t *params = (_set_gui_thread_t *)malloc(sizeof(_set_gui_thread_t));
+  if(!params) return;
+  params->self = self;
+  g_main_context_invoke(NULL, _lib_modulegroups_upd_gui_thread, params);
+}
+
+/* this is a proxy function so it might be called from another thread */
 static void _lib_modulegroups_search_text_focus(dt_lib_module_t *self)
 {
   _set_gui_thread_t *params = (_set_gui_thread_t *)malloc(sizeof(_set_gui_thread_t));
@@ -606,11 +659,6 @@ static void _lib_modulegroups_search_text_focus(dt_lib_module_t *self)
 
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  /* do nothing if module is member of current group */
-  if(_lib_modulegroups_test_internal(self, d->current, dt_iop_get_group(module))) return;
-
   /* lets find the group which is not favorite/active pipe */
   for(int k = DT_MODULEGROUP_BASIC; k < DT_MODULEGROUP_SIZE; k++)
   {

@@ -5,6 +5,8 @@
 
 declare -A PATTERNS;
 PATTERNS['src/external/rawspeed']="use --no-verify to change rawspeed";
+PATTERNS['src/external/OpenCL']="use --no-verify to change OpenCL";
+PATTERNS['src/external/libxcf']="use --no-verify to change libxcf";
 
 # Loop over staged files and check for any specific pattern listed in
 # PATTERNS keys.

@@ -44,11 +44,18 @@ typedef struct dt_import_session_t
 static void _import_session_cleanup_filmroll(dt_import_session_t *self)
 {
   if(self->film == NULL) return;
-
   /* if current filmroll for session is empty, remove it */
-  /* TODO: check if dt_film_remove actual removes directories */
-  if(dt_film_is_empty(self->film->id)) dt_film_remove(self->film->id);
-
+  if(dt_film_is_empty(self->film->id))
+  {
+    dt_film_remove(self->film->id);
+    if(self->current_path != NULL && g_file_test(self->current_path, G_FILE_TEST_IS_DIR) && dt_util_is_dir_empty(self->current_path))
+    {
+      // no need to ask for rmdir as it'll be re-created if it's needed
+      // by another import session with same path params
+      g_rmdir(self->current_path);
+      self->current_path = NULL;
+    }
+  }
   dt_film_cleanup(self->film);
 
   g_free(self->film);
@@ -230,18 +237,20 @@ const char *dt_import_session_name(struct dt_import_session_t *self)
   return self->vp->jobcode;
 }
 
-
-const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean current)
+/* This returns a unique filename using session path **and** the filename.
+   If current is true we will use the original filename otherwise use the pattern.
+*/
+const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean use_filename)
 {
   const char *path;
   char *fname, *previous_fname;
   char *pattern;
-
-  if(current && self->current_filename != NULL) return self->current_filename;
+  gchar *result_fname;
 
   /* expand next filename */
   g_free((void *)self->current_filename);
   self->current_filename = NULL;
+
   pattern = _import_session_filename_pattern();
   if(pattern == NULL)
   {
@@ -251,7 +260,12 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 
   /* verify that expanded path and filename yields a unique file */
   path = dt_import_session_path(self, TRUE);
-  gchar *result_fname = dt_variables_expand(self->vp, pattern, TRUE);
+
+  if(use_filename)
+    result_fname = g_strdup(self->vp->filename);
+  else
+    result_fname = dt_variables_expand(self->vp, pattern, TRUE);
+
   previous_fname = fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
   if(g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE)
   {
@@ -318,6 +332,7 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean cu
   /* we need to initialize a new filmroll for the new path */
   if(_import_session_initialize_filmroll(self, new_path) != 0)
   {
+    g_free(new_path);
     fprintf(stderr, "[import_session] Failed to get session path.\n");
     return NULL;
   }

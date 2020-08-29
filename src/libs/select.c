@@ -56,6 +56,35 @@ typedef struct dt_lib_select_t
       *select_untouched_button;
 } dt_lib_select_t;
 
+static void _update(dt_lib_module_t *self)
+{
+  dt_lib_select_t *d = (dt_lib_select_t *)self->data;
+
+  const uint32_t collection_cnt =  dt_collection_get_count_no_group(darktable.collection);
+  const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_all_button), selected_cnt < collection_cnt);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_none_button), selected_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_invert_button), collection_cnt > 0);
+
+  //theoretically can count if there are unaltered in collection but no need to waste CPU cycles on that.
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_untouched_button), collection_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_film_roll_button), selected_cnt > 0);
+}
+
+static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                        int next, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
 static void button_clicked(GtkWidget *widget, gpointer user_data)
 {
   switch(GPOINTER_TO_INT(user_data))
@@ -133,11 +162,20 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(button, _("select untouched images in\ncurrent collection"));
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_collection_updated_callback), self);
+
+  _update(self);
 }
 #undef ellipsize_button
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   free(self->data);
   self->data = NULL;
 }

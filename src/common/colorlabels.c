@@ -133,9 +133,9 @@ typedef enum dt_colorlabels_actions_t
 
 
 
-static void _colorlabels_execute(GList *imgs, const int labels, GList **undo, const gboolean undo_on, const int action)
+static void _colorlabels_execute(const GList *imgs, const int labels, GList **undo, const gboolean undo_on, const int action)
 {
-  GList *images = imgs;
+  GList *images = (GList *)imgs;
   while(images)
   {
     const int image_id = GPOINTER_TO_INT(images->data);
@@ -173,13 +173,12 @@ static void _colorlabels_execute(GList *imgs, const int labels, GList **undo, co
 }
 
 void dt_colorlabels_set_labels(const GList *img, const int labels, const gboolean clear_on,
-                               const gboolean undo_on, const gboolean group_on)
+                               const gboolean undo_on)
 {
   GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
-    if(group_on) dt_grouping_add_grouped_images(&imgs);
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
 
     _colorlabels_execute(imgs, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
@@ -195,7 +194,7 @@ void dt_colorlabels_set_labels(const GList *img, const int labels, const gboolea
   }
 }
 
-void dt_colorlabels_toggle_label_on_list(GList *list, const int color, const gboolean undo_on)
+void dt_colorlabels_toggle_label_on_list(const GList *list, const int color, const gboolean undo_on)
 {
   const int label = 1<<color;
   GList *undo = NULL;
@@ -211,7 +210,7 @@ void dt_colorlabels_toggle_label_on_list(GList *list, const int color, const gbo
   }
 
   // synchronise xmp files
-  GList *l = list;
+  GList *l = (GList *)list;
   while(l)
   {
     dt_image_synch_xmp(GPOINTER_TO_INT(l->data));

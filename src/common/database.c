@@ -44,7 +44,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 29
+#define CURRENT_DATABASE_VERSION_LIBRARY 30
 #define CURRENT_DATABASE_VERSION_DATA     6
 
 typedef struct dt_database_t
@@ -1427,7 +1427,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // insert an history_hash entry for all images which have an history
     // note that images without history don't get hash and are considered as basic
     sqlite3_stmt *h_stmt;
-    const gboolean basecurve_auto_apply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
+    char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+    const gboolean basecurve_auto_apply = strcmp(workflow, "display-referred") == 0;
+    g_free(workflow);
     const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
     char *query = NULL;
     query = dt_util_dstrcat(query,
@@ -1610,6 +1612,65 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 29;
+  }
+  else if(version == 29)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // add position in tagged_images table
+    TRY_EXEC("ALTER TABLE main.tagged_images ADD COLUMN position INTEGER",
+             "[init] can't add `position' column to tagged_images table in database\n");
+
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.tagged_images_imgid_index ON tagged_images (imgid)",
+             "[init] can't create image index on tagged_images\n");
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.tagged_images_position_index ON tagged_images (position)",
+             "[init] can't create position index on tagged_images\n");
+    TRY_EXEC("UPDATE main.tagged_images SET position = (tagid + imgid) << 32",
+             "[init] can't populate position on tagged_images\n");
+
+    // remove caption and description fields from images table
+
+    TRY_EXEC("CREATE TABLE main.i (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER, "
+             "width INTEGER, height INTEGER, filename VARCHAR, maker VARCHAR, model VARCHAR, "
+             "lens VARCHAR, exposure REAL, aperture REAL, iso REAL, focal_length REAL, "
+             "focus_distance REAL, datetime_taken CHAR(20), flags INTEGER, "
+             "output_width INTEGER, output_height INTEGER, crop REAL, "
+             "raw_parameters INTEGER, raw_denoise_threshold REAL, "
+             "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
+             "license VARCHAR, sha1sum CHAR(40), "
+             "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
+             "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
+             "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
+             "aspect_ratio REAL, exposure_bias REAL, "
+             "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
+             "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1)",
+             "[init] can't create table i\n");
+
+    TRY_EXEC("INSERT INTO main.i SELECT id, group_id, film_id, width, height, filename, maker, model,"
+             " lens, exposure, aperture, iso, focal_length, focus_distance, datetime_taken, flags,"
+             " output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
+             " raw_auto_bright_threshold, raw_black, raw_maximum, license, sha1sum,"
+             " orientation, histogram, lightmap, longitude, latitude, altitude, color_matrix, colorspace, version,"
+             " max_version, write_timestamp, history_end, position, aspect_ratio, exposure_bias,"
+             " import_timestamp, change_timestamp, export_timestamp, print_timestamp "
+             "FROM main.images",
+             "[init] can't populate table i\n");
+    TRY_EXEC("DROP TABLE main.images",
+             "[init] can't drop table images\n");
+    TRY_EXEC("ALTER TABLE main.i RENAME TO images",
+             "[init] can't rename i to images\n");
+
+    TRY_EXEC("CREATE INDEX main.images_group_id_index ON images (group_id)",
+          "[init] can't create group_id index on images table\n");
+    TRY_EXEC("CREATE INDEX main.images_film_id_index ON images (film_id)",
+          "[init] can't create film_id index on images table\n");
+    TRY_EXEC("CREATE INDEX main.images_filename_index ON images (filename)",
+          "[init] can't create filename index on images table\n");
+    TRY_EXEC("CREATE INDEX main.image_position_index ON images (position)",
+          "[init] can't create position index on images table\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 30;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -1874,11 +1935,11 @@ static void _create_library_schema(dt_database_t *db)
       "output_width INTEGER, output_height INTEGER, crop REAL, "
       "raw_parameters INTEGER, raw_denoise_threshold REAL, "
       "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
-      "caption VARCHAR, description VARCHAR, license VARCHAR, sha1sum CHAR(40), "
+      "license VARCHAR, sha1sum CHAR(40), "
       "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
       "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
-      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, aspect_ratio REAL, "
-      "exposure_bias REAL, "
+      "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
+      "aspect_ratio REAL, exposure_bias REAL, "
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
       "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1)",
       NULL, NULL, NULL);
@@ -1908,9 +1969,11 @@ static void _create_library_schema(dt_database_t *db)
       NULL, NULL, NULL);
 
   ////////////////////////////// tagged_images
-  sqlite3_exec(db->handle, "CREATE TABLE main.tagged_images (imgid INTEGER, tagid INTEGER, "
+  sqlite3_exec(db->handle, "CREATE TABLE main.tagged_images (imgid INTEGER, tagid INTEGER, position INTEGER, "
                            "PRIMARY KEY (imgid, tagid))", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_imgid_index ON selected_images (imgid)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_position_index ON selected_images (position)", NULL, NULL, NULL);
   ////////////////////////////// color_labels
   sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
@@ -2001,11 +2064,16 @@ static void _create_memory_schema(dt_database_t *db)
       NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
-      "CREATE TABLE memory.undo_masks_history (id INTEGER, imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, "
-      "name VARCHAR(256), version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
+      "CREATE TABLE memory.undo_masks_history (id INTEGER, imgid INTEGER, num INTEGER, formid INTEGER,"
+      " form INTEGER, name VARCHAR(256), version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
+      NULL, NULL, NULL);
+  sqlite3_exec(
+      db->handle,
+      "CREATE TABLE memory.undo_module_order (id INTEGER, imgid INTEGER, version INTEGER, iop_list VARCHAR)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle,
-      "CREATE TABLE memory.darktable_iop_names (operation VARCHAR(256) PRIMARY KEY, name VARCHAR(256))", NULL, NULL, NULL);
+      "CREATE TABLE memory.darktable_iop_names (operation VARCHAR(256) PRIMARY KEY, name VARCHAR(256))",
+      NULL, NULL, NULL);
 }
 
 static void _sanitize_db(dt_database_t *db)
@@ -2372,8 +2440,11 @@ dt_database_t *dt_database_init(const char *alternative, const gboolean load_dat
   sqlite3_initialize();
 
 start:
-  /* migrate default database location to new default */
-  _database_migrate_to_xdg_structure();
+  if(alternative == NULL)
+  {
+    /* migrate default database location to new default */
+    _database_migrate_to_xdg_structure();
+  }
 
   /* delete old mipmaps files */
   _database_delete_mipmaps_files();
@@ -2434,6 +2505,8 @@ start:
     g_free(library_path);
     dt_database_backup(dbfilename_library);
   }
+
+  dt_print(DT_DEBUG_SQL, "[init sql] library: %s, data: %s\n", dbfilename_library, dbfilename_data);
 
   /* having more than one instance of darktable using the same database is a bad idea */
   /* try to get locks for the databases */
@@ -2759,15 +2832,15 @@ static void _database_migrate_to_xdg_structure()
 
   if(conf_db && conf_db[0] != '/')
   {
-    char *homedir = getenv("HOME");
+    const char *homedir = getenv("HOME");
     snprintf(dbfilename, sizeof(dbfilename), "%s/%s", homedir, conf_db);
     if(g_file_test(dbfilename, G_FILE_TEST_EXISTS))
     {
-      fprintf(stderr, "[init] moving database into new XDG directory structure\n");
       char destdbname[PATH_MAX] = { 0 };
       snprintf(destdbname, sizeof(dbfilename), "%s/%s", datadir, "library.db");
       if(!g_file_test(destdbname, G_FILE_TEST_EXISTS))
       {
+        fprintf(stderr, "[init] moving database into new XDG directory structure\n");
         rename(dbfilename, destdbname);
         dt_conf_set_string("database", "library.db");
       }
@@ -2804,13 +2877,81 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
   return db->lock_acquired;
 }
 
+int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
+{
+  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
+  int val = -1;
+  sqlite3_stmt *stmt;
+  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  __DT_DEBUG_ASSERT_WITH_QUERY__(rc, query);
+  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    val = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  return val;
+}
+
+#define ERRCHECK {if (err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'\n",err); sqlite3_free(err); err=NULL;}}
 void _dt_database_maintenance(const struct dt_database_t *db)
 {
-  sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, NULL);
+  char* err = NULL;
+
+  const int main_pre_free_count = _get_pragma_val(db, "main.freelist_count");
+  const int main_page_size = _get_pragma_val(db, "main.page_size");
+  const int data_pre_free_count = _get_pragma_val(db, "data.freelist_count");
+  const int data_page_size = _get_pragma_val(db, "data.page_size");
+
+  const guint64 calc_pre_size = (main_pre_free_count*main_page_size) + (data_pre_free_count*data_page_size);
+
+  if(calc_pre_size == 0)
+  {
+    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance deemed unnecesary, performing only analyze.\n");
+    DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, &err);
+    ERRCHECK
+    DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, &err);
+    ERRCHECK
+    DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE", NULL, NULL, &err);
+    ERRCHECK
+    return;
+  }
+
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM data", NULL, NULL, &err);
+  ERRCHECK
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM main", NULL, NULL, &err);
+  ERRCHECK
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, &err);
+  ERRCHECK
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, &err);
+  ERRCHECK
+
+  // for some reason this is needed in some cases
+  // in case above performed vacuum+analyze properly, this is noop.
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM", NULL, NULL, &err);
+  ERRCHECK
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE", NULL, NULL, &err);
+  ERRCHECK
+
+  const int main_post_free_count = _get_pragma_val(db, "main.freelist_count");
+  const int data_post_free_count = _get_pragma_val(db, "data.freelist_count");
+
+  const guint64 calc_post_size = (main_post_free_count*main_page_size) + (data_post_free_count*data_page_size);
+  const gint64 bytes_freed = calc_pre_size - calc_post_size;
+
+  dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance done, %" G_GINT64_FORMAT " bytes freed.\n", bytes_freed);
+
+  if(calc_post_size >= calc_pre_size)
+  {
+    dt_print(DT_DEBUG_SQL, "[db maintenance] paintenance problem. if no errors logged, it should work fine next time.\n");
+  }
+  else
+  {
+    
+  }
 }
+#undef ERRCHECK
 
 gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_time, const guint64 size)
 {
@@ -2853,22 +2994,6 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
     g_free(size_info);
 
     return shall_perform_maintenance;
-}
-
-int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
-{
-  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
-  int val = -1;
-  sqlite3_stmt *stmt;
-  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
-  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    val = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
-  g_free(query);
-
-  return val;
 }
 
 void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
@@ -2941,7 +3066,6 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
     if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
     {
       _dt_database_maintenance(db);
-      dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance done, %" G_GUINT64_FORMAT " bytes freed.\n", calc_size);
     }
   }
 }
@@ -2951,7 +3075,7 @@ void dt_database_optimize(const struct dt_database_t *db)
   // optimize should in most cases be no-op and have no noticeable downsides
   // this should be ran on every exit
   // see: https://www.sqlite.org/pragma.html#pragma_optimize
-  sqlite3_exec(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
 }
 
 

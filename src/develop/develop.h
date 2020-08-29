@@ -76,20 +76,6 @@ typedef enum dt_dev_rawoverexposed_colorscheme_t {
   DT_DEV_RAWOVEREXPOSED_BLACK = 3
 } dt_dev_rawoverexposed_colorscheme_t;
 
-typedef enum dt_dev_scope_type_t
-{
-  DT_DEV_SCOPE_HISTOGRAM = 0,
-  DT_DEV_SCOPE_WAVEFORM,
-  DT_DEV_SCOPE_N // needs to be the last one
-} dt_dev_scope_type_t;
-
-typedef enum dt_dev_histogram_type_t
-{
-  DT_DEV_HISTOGRAM_LOGARITHMIC = 0,
-  DT_DEV_HISTOGRAM_LINEAR,
-  DT_DEV_HISTOGRAM_N // needs to be the last one
-} dt_dev_histogram_type_t;
-
 typedef enum dt_dev_transform_direction_t
 {
   DT_DEV_TRANSFORM_DIR_ALL = 0,
@@ -129,8 +115,6 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
 
-extern const gchar *dt_dev_scope_type_names[];
-
 typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
@@ -148,10 +132,11 @@ typedef struct dt_develop_t
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
   int32_t focus_hash;   // determines whether to start a new history item or to merge down.
-  int32_t image_loading, first_load, image_force_reload, history_updating;
-  int32_t preview_loading, preview_input_changed;
-  int32_t preview2_loading, preview2_input_changed;
+  gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
+  gboolean preview_input_changed, preview2_input_changed;
+
   dt_dev_pixelpipe_status_t image_status, preview_status, preview2_status;
+  int32_t image_invalid_cnt;
   uint32_t timestamp;
   uint32_t average_delay;
   uint32_t preview_average_delay;
@@ -194,12 +179,8 @@ typedef struct dt_develop_t
   GList *allprofile_info;
 
   // histogram for display.
-  uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
-  uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  uint8_t *histogram_waveform;
-  uint32_t histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
-  dt_dev_scope_type_t scope_type;
-  dt_dev_histogram_type_t histogram_type;
+  uint32_t *histogram_pre_tonecurve, *histogram_pre_levels;
+  uint32_t histogram_pre_tonecurve_max, histogram_pre_levels_max;
 
   // list of forms iop can use for masks or whatever
   GList *forms;
@@ -238,6 +219,8 @@ typedef struct dt_develop_t
       gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
       /* switch to modulegroup */
       void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
+      /* update modulegroup visibility */
+      void (*update_visibility)(struct dt_lib_module_t *self);
       /* set focus to the search module text box */
       void (*search_text_focus)(struct dt_lib_module_t *self);
     } modulegroups;
@@ -339,6 +322,7 @@ typedef struct dt_develop_t
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
+float dt_dev_get_preview_downsampling();
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
 void dt_dev_process_preview2_job(dt_develop_t *dev);
@@ -381,7 +365,6 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x,
                                  float *zoom_y);
 
-
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
@@ -411,6 +394,8 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
 gboolean dt_dev_modulegroups_available(dt_develop_t *dev);
 /** switch to modulegroup of module */
 void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
+/** update modulegroup visibility */
+void dt_dev_modulegroups_update_visibility(dt_develop_t *dev);
 /** set the focus to modulegroup search text */
 void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev);
 /** set the active modulegroup */

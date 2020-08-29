@@ -63,6 +63,9 @@ typedef struct dt_camera_t
   /** Flag camera in tethering mode. \see dt_camera_tether_mode() */
   gboolean is_tethering;
 
+  /** List of open gp_files to be closed when closing the camera */
+  GList *open_gpfiles;
+
   /** A mutex lock for jobqueue */
   dt_pthread_mutex_t jobqueue_lock;
   /** The jobqueue */
@@ -83,7 +86,9 @@ typedef struct dt_camera_t
   /** Live view */
   gboolean is_live_viewing;
   /** The last preview image from the camera */
-  GdkPixbuf *live_view_pixbuf;
+  uint8_t *live_view_buffer;
+  int live_view_width, live_view_height;
+  //dt_colorspaces_color_profile_type_t live_view_color_space;
   /** Rotation of live view, multiples of 90° */
   int32_t live_view_rotation;
   /** Zoom level for live view */
@@ -96,8 +101,8 @@ typedef struct dt_camera_t
   gboolean live_view_flip;
   /** The thread adding the live view jobs */
   pthread_t live_view_thread;
-  /** A guard so that writing and reading the pixbuf don't interfere */
-  dt_pthread_mutex_t live_view_pixbuf_mutex;
+  /** A guard so that writing and reading the live view buffer don't interfere */
+  dt_pthread_mutex_t live_view_buffer_mutex;
   /** A flag to tell the live view thread that the last job was completed */
   dt_pthread_mutex_t live_view_synch;
 } dt_camera_t;
@@ -179,7 +184,7 @@ typedef struct dt_camctl_listener_t
   /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews(), if 0 is returned the
    * recurse is stopped.. */
   int (*camera_storage_image_filename)(const dt_camera_t *camera, const char *filename, CameraFile *preview,
-                                       CameraFile *exif, void *data);
+                                       void *data);
 
   /** Invoked when a value of a property is changed. */
   void (*camera_property_value_changed)(const dt_camera_t *camera, const char *name, const char *value,
@@ -204,21 +209,19 @@ typedef enum dt_camera_preview_flags_t
   CAMCTL_IMAGE_NO_DATA = 0,
   /**Get an image preview. */
   CAMCTL_IMAGE_PREVIEW_DATA = 1,
-  /**Get the image exif */
-  CAMCTL_IMAGE_EXIF_DATA = 2
 } dt_camera_preview_flags_t;
 
 
 /** Initializes the gphoto and cam control, returns NULL if failed */
 dt_camctl_t *dt_camctl_new();
-/** Destroys the came control */
+/** Destroys the camera control */
 void dt_camctl_destroy(dt_camctl_t *c);
 /** Registers a listener of camera control */
 void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Unregisters a listener of camera control */
 void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
-/** Detect cameras and update list of available cameras */
-void dt_camctl_detect_cameras(const dt_camctl_t *c);
+/** start a thread job to detect cameras and update list of available cameras */
+void dt_camctl_background_detect_cameras();
 /** Check if there is any camera connected */
 int dt_camctl_have_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/
@@ -228,7 +231,7 @@ int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam
 /** Enables/Disables the tether mode on camera. */
 void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam, gboolean enable);
 /** traverse filesystem on camera an retrieves previews of images */
-void dt_camctl_get_previews(const dt_camctl_t *c, dt_camera_preview_flags_t flags, const dt_camera_t *cam);
+void dt_camctl_get_previews(const dt_camctl_t *c, dt_camera_preview_flags_t flags, dt_camera_t *cam);
 /** Imports the images in list from specified camera */
 void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *images);
 
