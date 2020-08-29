@@ -1,0 +1,66 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="processing">
+
+  <title>Processing</title>
+
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>processing</secondary>
+  </indexterm>
+
+  <para>
+    These options control some of the internals processing of darktable.
+  </para>
+
+  <bridgehead renderas="sect5">always use LittleCMS 2 to apply output color profile</bridgehead>
+
+  <para>
+    If this option is activated, darktable will use system library LittleCMS 2 instead of its
+    own routines. This is significantly slower than the default but might give more accurate
+    results in some cases (default off).
+  </para>
+
+  <para>
+    Note that if the given ICC is LUT-based or contains both, a LUT and a matrix, darktable will
+    use LittleCMS 2 to render the colors regardless of this configuration parameter's value.
+  </para>
+
+  <bridgehead renderas="sect5">pixel interpolator</bridgehead>
+
+  <para>
+    Pixel interpolator used in rotation, lens correction, up-and-down scaling; options are
+    <quote>bilinear</quote>, <quote>bicubic</quote>, <quote>lanczos2</quote>,
+    <quote>lanczos3</quote> (default).
+  </para>
+
+  <bridgehead renderas="sect5">3D lut root folder</bridgehead>
+
+  <para>
+    Set folder that contains Lut files used by lut 3D module. (need a restart)
+  </para>
+  
+  <bridgehead renderas="sect5">auto-apply pixel workflow defaults</bridgehead>
+
+  <para>
+    
+  </para>
+
+  <bridgehead renderas="sect5">auto-apply per camera basecurve presets</bridgehead>
+
+  <para>
+    Use the per-camera basecurve by default instead of the generic manufacturer one if there is
+    one available. For more details see <xref linkend="base_curve"/> (default off).
+  </para>
+
+  <bridgehead renderas="sect5">auto-apply sharpen</bridgehead>
+
+  <para>
+   This added sharpen is not recommended on cameras without a low-pass filter.
+   The default is to not add any sharpening automatically as most recent cameras have no low-pass filter. (need a restart)
+  </para>
+
+</sect1>
