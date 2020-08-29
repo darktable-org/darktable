@@ -83,6 +83,7 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *box_enabled;
   GtkWidget *label_disabled;
   GtkWidget *stack;
+  GtkWidget *buttonbar;
   GtkWidget *colorpicker;
   GtkWidget *btn_asshot; //As Shot
   GtkWidget *btn_user;
@@ -97,6 +98,7 @@ typedef struct dt_iop_temperature_gui_data_t
   int colored_sliders;
   int blackbody_is_confusing;
   int expand_coeffs;
+  gboolean button_bar_visible;
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
@@ -1289,6 +1291,7 @@ void gui_update(struct dt_iop_module_t *self)
                                CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
 
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), (found && gtk_widget_get_sensitive(g->finetune)));
+  gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
 
   const int preset = dt_bauhaus_combobox_get(g->presets);
 
@@ -1960,7 +1963,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_free(config);
 
   const int feedback = g->colored_sliders ? 0 : 1;
-  const int button_bar = dt_conf_get_bool("plugins/darkroom/temperature/button_bar");
+  g->button_bar_visible = dt_conf_get_bool("plugins/darkroom/temperature/button_bar");
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -2055,19 +2058,16 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->btn_asshot), "toggled", G_CALLBACK(btn_asshot_toggled),  (gpointer)self);
   g_signal_connect(G_OBJECT(g->btn_user), "toggled", G_CALLBACK(btn_user_toggled),  (gpointer)self);
   g_signal_connect(G_OBJECT(g->btn_d65), "toggled", G_CALLBACK(btn_d65_toggled),  (gpointer)self);
+  
+  g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  if(button_bar)
-  {
-    GtkWidget* buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_user, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->colorpicker, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_asshot, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_enabled), g->buttonbar, TRUE, TRUE, 0);
 
-    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_d65, TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_user, TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(buttonbar), g->colorpicker, TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(buttonbar), g->btn_asshot, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(g->box_enabled), buttonbar, TRUE, TRUE, 0);
-
-    //in case we don't have enabled button bar, no need to show buttons and all buttons are simply hidden!
-  }
+  gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
 
   g->presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->presets, NULL, _("setting")); // relabel to setting to remove confusion between module presets and white balance settings
