@@ -8,7 +8,7 @@ set(THEME hicolor)
 foreach(pixmap_size ${FIXED_SIZES})
 	# install apps icons
 	FILE(GLOB PIXMAP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${pixmap_size}/*.png ${CMAKE_CURRENT_SOURCE_DIR}/${pixmap_size}/*.svg)
-	install(FILES ${PIXMAP_FILES} DESTINATION ${DARKTABLE_DATADIR}/icons/${THEME}/${pixmap_size}/apps COMPONENT DTApplication)
+	install(FILES ${PIXMAP_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/${THEME}/${pixmap_size}/apps COMPONENT DTApplication)
 	# Need to copy to have themes, icons, etc all in one path like after installing
 	FILE(MAKE_DIRECTORY ${DARKTABLE_DATADIR}/icons/${THEME}/${pixmap_size})
 	FILE(COPY ${PIXMAP_FILES} DESTINATION ${DARKTABLE_DATADIR}/icons/${THEME}/${pixmap_size}/apps)
