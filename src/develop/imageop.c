@@ -229,6 +229,9 @@ void dt_iop_default_init(dt_iop_module_t *module)
     case DT_INTROSPECTION_TYPE_UINT:
       *(unsigned int*)(module->default_params + i->header.offset) = i->UInt.Default;
       break;
+    case DT_INTROSPECTION_TYPE_USHORT:
+      *(unsigned short*)(module->default_params + i->header.offset) = i->UShort.Default;
+      break;
     case DT_INTROSPECTION_TYPE_ENUM:
       *(int*)(module->default_params + i->header.offset) = i->Enum.Default;
       break;
@@ -248,14 +251,19 @@ void dt_iop_default_init(dt_iop_module_t *module)
         size_t element_size = i->Array.field->header.size;
         if(element_size % sizeof(int))
         {
-          fprintf(stderr, "trying to initialize array not multiple of sizeof(int) in dt_iop_default_init\n");
+          int8_t *p = module->default_params + i->header.offset;
+          for (size_t c = element_size; c < i->header.size; c++, p++)
+            p[element_size] = *p;
         }
-        element_size /= sizeof(int);
-        size_t num_ints = i->header.size / sizeof(int);
+        else
+        {
+          element_size /= sizeof(int);
+          size_t num_ints = i->header.size / sizeof(int);
 
-        int *p = module->default_params + i->header.offset;
-        for (size_t c = element_size; c < num_ints; c++, p++)
-          p[element_size] = *p;
+          int *p = module->default_params + i->header.offset;
+          for (size_t c = element_size; c < num_ints; c++, p++)
+            p[element_size] = *p;
+        }
       }
       break;
     case DT_INTROSPECTION_TYPE_STRUCT:

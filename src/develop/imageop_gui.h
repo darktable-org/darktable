@@ -28,6 +28,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
 
 void dt_iop_slider_float_callback(GtkWidget *slider, float *field);
 void dt_iop_slider_int_callback(GtkWidget *slider, int *field);
+void dt_iop_slider_ushort_callback(GtkWidget *slider, unsigned short *field);
 void dt_iop_combobox_enum_callback(GtkWidget *combobox, int *field);
 void dt_iop_combobox_int_callback(GtkWidget *combobox, int *field);
 void dt_iop_combobox_bool_callback(GtkWidget *combobox, gboolean *field);
