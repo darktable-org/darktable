@@ -68,6 +68,8 @@ static void _update_formats_combobox(dt_lib_export_t *d);
 static void _update_dimensions(dt_lib_export_t *d);
 /** get the max output dimension supported by combination of storage and format.. */
 static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint32_t *height);
+/** handler for inserting text in max height/width entries */
+static void insert_text_handler(GtkEditable *entry, char *text, int length, gpointer position, gpointer user_data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -201,8 +203,12 @@ void _set_dimensions(dt_lib_export_t *d, int max_width, int max_height)
 {
   gchar *max_width_char = g_strdup_printf("%d", max_width);
   gchar *max_height_char = g_strdup_printf("%d", max_height);
+  g_signal_handlers_block_matched(d->width, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_block_matched(d->height, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->width), max_width_char);
   gtk_entry_set_text(GTK_ENTRY(d->height), max_height_char);
+  g_signal_handlers_unblock_matched(d->width, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_unblock_matched(d->height, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
   g_free(max_width_char);
   g_free(max_height_char);
 }
@@ -496,7 +502,14 @@ static void height_changed(GtkEditable *entry, gpointer user_data)
 static void insert_text_handler(GtkEditable *entry, char *text, int length, gpointer position, gpointer user_data)
 {
   int i, count=0;
-  gchar *result = g_new (gchar, length);
+  gchar *result = g_try_new0(gchar, length);
+
+  if(!result)
+  {
+    // stop insert on zero length or failure to allocate mem for result
+    g_signal_stop_emission_by_name (entry, "insert-text");
+    return;
+  }
 
   for (i=0; i < length; i++)
   {
