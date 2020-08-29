@@ -1017,7 +1017,10 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     if(g->mask_display)
+    {
       display_luminance_mask(in, luminance, out, roi_in, roi_out, ch);
+      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    }
     else
       apply_toneequalizer(in, luminance, out, roi_in, roi_out, ch, d);
   }
