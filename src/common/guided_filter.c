@@ -58,7 +58,7 @@
 #ifndef dt_omp_shared
 #ifdef _OPENMP
 #if defined(__clang__) || __GNUC__ > 8
-# define dt_omp_shared(var, ...)  shared(var, __VA_ARGS__)
+# define dt_omp_shared(...)  shared(__VA_ARGS__)
 #else
   // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
   //  'const' variables as shared
