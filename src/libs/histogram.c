@@ -510,22 +510,35 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
   float *const wf_display = d->waveform_display;
   uint8_t *const wf_8bit = d->waveform_8bit;
 
-  // FIXME: instead of just using 100% R/G/B we could choose the colors we want R/G/B to represent
+  const float graph_rgb[3][3] = {
+    {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red},
+    {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red},
+    {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red},
+  };
+
+  // could save the memset if first enabled color is an assignment
+  memset(wf_display, 0, sizeof(float) * wf_height * wf_width * 4);
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(wf_linear, wf_width, wf_height, mask) \
+  dt_omp_firstprivate(wf_linear, wf_width, wf_height, mask, graph_rgb) \
   shared(wf_display) aligned(wf_linear, wf_display:64) \
   schedule(simd:static)
 #endif
   for(int p = 0; p < wf_height * wf_width * 4; p += 4)
     for(int k = 0; k < 3; k++)
-      // FIXME: if use lcms2 straight to 8-bit don't need to constrain?
-      wf_display[p + k] = mask[2-k] ? MIN(1.0f, wf_linear[p + k]) : 0.0f;
+      if(mask[2-k])
+      {
+        // FIXME: if use lcms2 straight to 8-bit don't need to constrain?
+        const float src = MIN(1.0f, wf_linear[p + k]);
+        wf_display[p] += src * graph_rgb[k][0];
+        wf_display[p+1] += src * graph_rgb[k][1];
+        wf_display[p+2] += src * graph_rgb[k][2];
+      }
 
-  // FIXME: can/should we cache the linear rec 709 profile info?
+  // FIXME: can/should we cache the linear rec 2020 profile info?
   // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- as ioppr ignores intent?
   const dt_iop_order_iccprofile_info_t *const profile_from =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC709, "", DT_INTENT_PERCEPTUAL);
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const profile_to =
     dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
   // FIXME: are better off using lcms2 and converting directly from float to 8-bit
@@ -576,6 +589,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_scale(cr, (double)width/(wf_width*3), (double)height/wf_height);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
+  // FIXME: make a single buffer with the three side-by-side images and then draw them with a single Cairo call -- to speed things up, and work at a display resolution equivalent to waveform
   for(int k = 0; k < 3; k++)
   {
     if(mask[k])
