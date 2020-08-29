@@ -496,7 +496,14 @@ static void height_changed(GtkEditable *entry, gpointer user_data)
 static void insert_text_handler(GtkEditable *entry, char *text, int length, gpointer position, gpointer user_data)
 {
   int i, count=0;
-  gchar *result = g_new (gchar, length);
+  gchar *result = g_try_new0(gchar, length);
+
+  if(!result)
+  {
+    // stop insert on zero length or failure to allocate mem for result
+    g_signal_stop_emission_by_name (entry, "insert-text");
+    return;
+  }
 
   for (i=0; i < length; i++)
   {
