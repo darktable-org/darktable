@@ -1370,17 +1370,17 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
 
   //retrieve full image dimensions to calculate aspect ratio if "original image" specified
   const char *text = dt_bauhaus_combobox_get_text(combo);
-  if(text && !g_strcmp0(text,"original image"))
+  if(text && !g_strcmp0(text,_("original image")))
   {
     int proc_iwd = 0, proc_iht = 0;
     dt_dev_get_processed_size(darktable.develop, &proc_iwd, &proc_iht);
 
     if(!(proc_iwd > 0 && proc_iht > 0)) return 0.0f;
 
-    p->ratio_d = proc_iwd;
-    p->ratio_n = proc_iht;
-    if(proc_iwd >= proc_iht) return (float)proc_iwd / (float)proc_iht;
-    else  return (float)proc_iht / (float)proc_iwd;
+    if((p->ratio_d > 0 && proc_iwd > proc_iht) || (p->ratio_d < 0 && proc_iwd < proc_iht))
+      return (float)proc_iwd / (float)proc_iht;
+    else
+      return (float)proc_iht / (float)proc_iwd;
   }
 
   // we want to know the size of the actual buffer
@@ -1514,10 +1514,10 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
   {
     // if only one side changed, force aspect by two adjacent in equal parts
     // 1 2 4 8 : x y w h
-    double clip_x = MAX(floor(iwd * g->clip_x) / (float)iwd, 0.0f);
-    double clip_y = MAX(floor(iht * g->clip_y) / (float)iht, 0.0f);
-    double clip_w = MIN(ceil(iwd * g->clip_w) / (float)iwd, 1.0f);
-    double clip_h = MIN(ceil(iht * g->clip_h) / (float)iht, 1.0f);
+    double clip_x = MAX(iwd * g->clip_x / (float)iwd, 0.0f);
+    double clip_y = MAX(iht * g->clip_y / (float)iht, 0.0f);
+    double clip_w = MIN(iwd * g->clip_w / (float)iwd, 1.0f);
+    double clip_h = MIN(iht * g->clip_h / (float)iht, 1.0f);
 
     // if we only modified one dim, respectively, we wanted these values:
     const double target_h = (double)iwd * g->clip_w / ((double)iht * aspect);
@@ -1606,7 +1606,7 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
 void reload_defaults(dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
-  
+
   dt_iop_clipping_params_t *d = (dt_iop_clipping_params_t *)self->default_params;
 
   d->cx = img->usercrop[1];
@@ -1617,11 +1617,42 @@ void reload_defaults(dt_iop_module_t *self)
   memcpy(self->params, self->default_params, sizeof(dt_iop_clipping_params_t));
 }
 
+static void _float_to_fract(const char *num, int *n, int *d)
+{
+  char tnum[100];
+  gboolean sep_found = FALSE;
+  char *p = (char *)num;
+  int k = 0;
+
+  *d = 1;
+
+  while(*p)
+  {
+    if(sep_found) *d *= 10;
+
+    // look for decimal sep
+    if((*p == ',') || (*p == '.'))
+    {
+      sep_found = TRUE;
+    }
+    else
+    {
+      tnum[k++] = *p;
+    }
+
+    p++;
+  }
+
+  tnum[k] = '\0';
+
+  *n = atoi(tnum);
+}
+
 static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  int which = dt_bauhaus_combobox_get(combo);
+  const int which = dt_bauhaus_combobox_get(combo);
   int d = abs(p->ratio_d), n = p->ratio_n;
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which < 0)
@@ -1650,68 +1681,16 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
       else
       {
         // find the closest fraction from the input ratio
-        const float rr = atof(text);
-        int dd = ceilf(rr);
-        int nn = floor(rr);
+        int nn = 0, dd = 0;
+        _float_to_fract(text, &nn, &dd);
 
         // some sanity check
-        if(dd == 0)
+        if(dd == 0 || nn == 0)
         {
           dt_control_log(_("invalid ratio format. it should be non zero"));
           dt_bauhaus_combobox_set(combo, 0);
           return;
         }
-
-        // find the superior and inferior rational bounds for rr
-        // such that frac_inf < rr < frac_sup
-        // with frac_inf = frac_inf_top / frac_inf_bot
-        // and frac_sup = frac_sup_top / frac_sup_bot
-        int frac_sup_top = dd * dd;
-        int frac_sup_bot = dd;
-
-        int frac_inf_top = nn * dd;
-        int frac_inf_bot = dd;
-
-        int not_found = TRUE;
-        int count = 0;
-
-        while(not_found && count < 16)
-        {
-          ++count;
-          float mediant = (float)(frac_sup_top + frac_inf_top) / (float)(frac_sup_bot + frac_inf_bot);
-          //fprintf(stdout, "mediant: %f\n", mediant);
-
-          if(mediant > rr)
-          {
-            // frac_inf < input < mediant
-            frac_sup_top = frac_sup_top + frac_inf_top;
-            frac_sup_bot = frac_sup_bot + frac_inf_bot;
-            frac_inf_top *= 2;
-            frac_inf_bot *= 2;
-          }
-          else if(mediant < rr)
-          {
-            // mediant < input < frac_sup
-            frac_inf_top = frac_sup_top + frac_inf_top;
-            frac_inf_bot = frac_sup_bot + frac_inf_bot;
-            frac_sup_top *= 2;
-            frac_sup_bot *= 2;
-          }
-          else
-          {
-            // mediant == input, we found our candidate
-            not_found = FALSE;
-          }
-        }
-
-        /* debug
-        fprintf(stdout, "%i / %i (%f) < input < %i / %i (%f)\n", frac_inf_top, frac_inf_bot, (float)frac_inf_top / (float)frac_inf_bot,
-                                                                 frac_sup_top, frac_sup_bot, (float)frac_sup_top / (float)frac_sup_bot );
-        */
-
-        // output the mediant - it's either the exact result or the closest approximation
-        dd = frac_sup_bot + frac_inf_bot;
-        nn = frac_sup_top + frac_inf_top;
 
         d = MAX(dd, nn);
         n = MIN(dd, nn);
@@ -1720,8 +1699,8 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
       // simplify the fraction with binary GCD - https://en.wikipedia.org/wiki/Greatest_common_divisor
       // search g and d such that g is odd and gcd(nn, dd) = g × 2^d
       int e = 0;
-      int nn = n;
-      int dd = d;
+      int nn = abs(n);
+      int dd = abs(d);
       while((nn % 2 == 0) && (dd % 2 == 0))
       {
         nn /= 2;
@@ -1762,7 +1741,11 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   // now we save all that if it has changed
   if(d != abs(p->ratio_d) || n != p->ratio_n)
   {
-    p->ratio_d = d;
+    if(p->ratio_d >= 0)
+      p->ratio_d = d;
+    else
+      p->ratio_d = -d;
+
     p->ratio_n = n;
     dt_conf_set_int("plugins/darkroom/clipping/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/clipping/ratio_n", abs(p->ratio_n));
@@ -1794,7 +1777,8 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   {
     // we got a custom ratio
     char str[128];
-    snprintf(str, sizeof(str), "%d:%d %2.2f", p->ratio_d, p->ratio_n, (float)p->ratio_d / (float)p->ratio_n);
+    snprintf(str, sizeof(str), "%d:%d %2.2f",
+             abs(p->ratio_d), abs(p->ratio_n), (float)abs(p->ratio_d) / (float)abs(p->ratio_n));
     dt_bauhaus_combobox_set_text(g->aspect_presets, str);
   }
   else if(dt_bauhaus_combobox_get(g->aspect_presets) != act)
@@ -1854,7 +1838,7 @@ static void keystone_type_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  int which = dt_bauhaus_combobox_get(combo);
+  const int which = dt_bauhaus_combobox_get(combo);
   if((which == 5) || (which == 4 && p->k_h == 0 && p->k_v == 0))
   {
     // if the keystone is applied,autocrop must be disabled !
@@ -1989,7 +1973,8 @@ void gui_update(struct dt_iop_module_t *self)
   if(act == -1)
   {
     char str[128];
-    snprintf(str, sizeof(str), "%d:%d %2.2f", p->ratio_d, p->ratio_n, (float)p->ratio_d / (float)p->ratio_n);
+    snprintf(str, sizeof(str), "%d:%d %2.2f",
+             abs(p->ratio_d), abs(p->ratio_n), (float)abs(p->ratio_d) / (float)abs(p->ratio_n));
     dt_bauhaus_combobox_set_text(g->aspect_presets, str);
   }
   if(dt_bauhaus_combobox_get(g->aspect_presets) == act)
@@ -2147,7 +2132,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->k_selected = -1;
   g->old_width = g->old_height = -1;
 
-  GtkWidget *page1 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+
+  self->widget = dt_ui_notebook_page(g->notebook, _("main"), NULL);
 
   g->hvflip = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->hvflip, NULL, _("flip"));
@@ -2157,9 +2144,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->hvflip, _("both"));
   g_signal_connect(G_OBJECT(g->hvflip), "value-changed", G_CALLBACK(hvflip_callback), self);
   gtk_widget_set_tooltip_text(g->hvflip, _("mirror image horizontally and/or vertically"));
-  gtk_box_pack_start(GTK_BOX(page1), g->hvflip, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->hvflip, TRUE, TRUE, 0);
 
-  g->angle = dt_bauhaus_slider_from_params(self, "angle");
+  g->angle = dt_bauhaus_slider_from_params(self, N_("angle"));
   dt_bauhaus_slider_set_step(g->angle, 0.25);
   dt_bauhaus_slider_set_factor(g->angle, -1.0);
   dt_bauhaus_slider_set_format(g->angle, "%.02f°");
@@ -2173,7 +2160,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->keystone_type, _("full"));
   gtk_widget_set_tooltip_text(g->keystone_type, _("set perspective correction for your image"));
   g_signal_connect(G_OBJECT(g->keystone_type), "value-changed", G_CALLBACK(keystone_type_changed), self);
-  gtk_box_pack_start(GTK_BOX(page1), g->keystone_type, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->keystone_type, TRUE, TRUE, 0);
 
   g->crop_auto = dt_bauhaus_combobox_from_params(self, "crop_auto");
   gtk_widget_set_tooltip_text(g->crop_auto, _("automatically crop to avoid black edges"));
@@ -2292,15 +2279,15 @@ void gui_init(struct dt_iop_module_t *self)
                                                    "the list is sorted: from most square to least square"));
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0, NULL);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
-  gtk_box_pack_start(GTK_BOX(page1), g->aspect_presets, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
-  gtk_box_pack_start(GTK_BOX(page1), g->guide_lines, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->guides_widgets = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->guides_widgets), FALSE);
-  gtk_box_pack_start(GTK_BOX(page1), g->guides_widgets, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->guides_widgets, TRUE, TRUE, 0);
 
   dt_bauhaus_combobox_add(g->guide_lines, _("none"));
   int i = 0;
@@ -2335,41 +2322,38 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->flip_guides, _("both"));
   gtk_widget_set_tooltip_text(g->flip_guides, _("flip guides"));
   g_signal_connect(G_OBJECT(g->flip_guides), "value-changed", G_CALLBACK(guides_flip_changed), self);
-  gtk_box_pack_start(GTK_BOX(page1), g->flip_guides, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->flip_guides, TRUE, TRUE, 0);
   dt_bauhaus_combobox_set(g->flip_guides, dt_conf_get_int("plugins/darkroom/clipping/flip_guides"));
 
   guides_presets_set_visibility(g, guide);
 
-  GtkWidget *page2 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  self->widget = dt_ui_notebook_page(g->notebook, _("margins"), NULL);
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
+  dt_bauhaus_slider_set_digits(g->cx, 4);
   dt_bauhaus_slider_set_factor(g->cx, 100.0);
-  dt_bauhaus_slider_set_format(g->cx, "%0.f %%");
+  dt_bauhaus_slider_set_format(g->cx, "%0.2f %%");
   gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
 
   g->cw = dt_bauhaus_slider_from_params(self, "cw");
+  dt_bauhaus_slider_set_digits(g->cw, 4);
   dt_bauhaus_slider_set_factor(g->cw, -100.0);
   dt_bauhaus_slider_set_offset(g->cw, 100.0);
-  dt_bauhaus_slider_set_format(g->cw, "%0.f %%");
+  dt_bauhaus_slider_set_format(g->cw, "%0.2f %%");
   gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
 
   g->cy = dt_bauhaus_slider_from_params(self, "cy");
+  dt_bauhaus_slider_set_digits(g->cy, 4);
   dt_bauhaus_slider_set_factor(g->cy, 100.0);
-  dt_bauhaus_slider_set_format(g->cy, "%0.f %%");
+  dt_bauhaus_slider_set_format(g->cy, "%0.2f %%");
   gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
 
   g->ch = dt_bauhaus_slider_from_params(self, "ch");
+  dt_bauhaus_slider_set_digits(g->ch, 4);
   dt_bauhaus_slider_set_factor(g->ch, -100.0);
   dt_bauhaus_slider_set_offset(g->ch, 100.0);
-  dt_bauhaus_slider_set_format(g->ch, "%0.f %%");
+  dt_bauhaus_slider_set_format(g->ch, "%0.2f %%");
   gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
-
-  // Put notebook pages together
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
-  gtk_notebook_append_page(g->notebook, page1, gtk_label_new(_("main")));
-  gtk_notebook_append_page(g->notebook, page2, gtk_label_new(_("margins")));
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
-  dtgtk_justify_notebook_tabs(g->notebook);
 
   self->widget = GTK_WIDGET(g->notebook);
 }

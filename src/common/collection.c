@@ -708,6 +708,7 @@ const char *dt_collection_name(dt_collection_properties_t prop)
           const char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
           char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
           const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+          free(setting);
           if(!hidden) col_name = _(name);
         }
       }
@@ -1912,10 +1913,13 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
         i++;
       }
       gchar *query = dt_util_dstrcat(NULL,
-                                     "SELECT imgid FROM memory.collected_images "
-                                     "WHERE imgid NOT IN (%s) AND "
-                                     "rowid>(SELECT rowid FROM memory.collected_images WHERE imgid=%d) "
-                                     "ORDER BY rowid LIMIT 1",
+                                     "SELECT imgid"
+                                     " FROM memory.collected_images"
+                                     " WHERE imgid NOT IN (%s)"
+                                     "  AND rowid > (SELECT rowid"
+                                     "              FROM memory.collected_images"
+                                     "              WHERE imgid=%d)"
+                                     " ORDER BY rowid LIMIT 1",
                                      txt, id0);
       sqlite3_stmt *stmt2;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
@@ -1925,6 +1929,26 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
       }
       sqlite3_finalize(stmt2);
       g_free(query);
+      // if next is still unvalid, let's try to find the first untouched image before the list
+      if(next < 0)
+      {
+        query = dt_util_dstrcat(NULL,
+                                "SELECT imgid"
+                                " FROM memory.collected_images"
+                                " WHERE imgid NOT IN (%s)"
+                                "   AND rowid < (SELECT rowid"
+                                "                FROM memory.collected_images"
+                                "                WHERE imgid=%d)"
+                                " ORDER BY rowid DESC LIMIT 1",
+                                txt, id0);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
+        if(sqlite3_step(stmt2) == SQLITE_ROW)
+        {
+          next = sqlite3_column_int(stmt2, 0);
+        }
+        sqlite3_finalize(stmt2);
+        g_free(query);
+      }
       g_free(txt);
     }
   }

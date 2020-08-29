@@ -1541,6 +1541,7 @@ void gui_init(dt_iop_module_t *self)
 {
   self->widget = gtk_label_new("");
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  gtk_label_set_ellipsize(GTK_LABEL(self->widget), PANGO_ELLIPSIZE_END);
   self->gui_data = &dummy;
 }
 

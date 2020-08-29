@@ -173,6 +173,28 @@ void cleanup_global(dt_iop_module_so_t *self)
 }
 
 
+void init(dt_iop_module_t *self)
+{
+  self->params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
+  self->default_enabled = 0;
+  self->params_size = sizeof(dt_iop_hazeremoval_params_t);
+  self->gui_data = NULL;
+  dt_iop_hazeremoval_params_t tmp = (dt_iop_hazeremoval_params_t){ 0.2f, 0.2f };
+  memcpy(self->params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
+  memcpy(self->default_params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
+}
+
+
+void cleanup(dt_iop_module_t *self)
+{
+  free(self->params);
+  self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
+}
+
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
@@ -202,10 +224,10 @@ void gui_init(dt_iop_module_t *self)
   g->A0[2] = NAN;
   g->hash = 0;
 
-  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
 
-  g->distance = dt_bauhaus_slider_from_params(self, "distance");
+  g->distance = dt_bauhaus_slider_from_params(self, N_("distance"));
   dt_bauhaus_slider_set_step(g->distance, 0.005);
   dt_bauhaus_slider_set_digits(g->distance, 3);
   gtk_widget_set_tooltip_text(g->distance, _("limit haze removal up to a specific spatial depth"));
@@ -244,47 +266,6 @@ typedef struct const_rgb_image
 } const_rgb_image;
 
 
-typedef struct gray_image
-{
-  float *data;
-  int width, height;
-} gray_image;
-
-
-// allocate space for 1-component image of size width x height
-static inline gray_image new_gray_image(int width, int height)
-{
-  return (gray_image){ dt_alloc_align(64, sizeof(float) * width * height), width, height };
-}
-
-
-// free space for 1-component image
-static inline void free_gray_image(gray_image *img_p)
-{
-  dt_free_align(img_p->data);
-  img_p->data = NULL;
-}
-
-
-// copy 1-component image img1 to img2
-static inline void copy_gray_image(gray_image img1, gray_image img2)
-{
-  memcpy(img2.data, img1.data, sizeof(float) * img1.width * img1.height);
-}
-
-
-// minimum of two integers
-static inline int min_i(int a, int b)
-{
-  return a < b ? a : b;
-}
-
-
-// maximum of two integers
-static inline int max_i(int a, int b)
-{
-  return a > b ? a : b;
-}
 
 
 // swap the two floats that the pointers point to
@@ -330,7 +311,7 @@ static void box_max(const gray_image img1, const gray_image img2, const int w)
     {
       img2_bak = new_gray_image(img2.width, 1);
 #ifdef _OPENMP
-#pragma omp for
+#pragma omp for schedule(static)
 #endif
       for(int i1 = 0; i1 < img2.height; i1++)
       {
@@ -349,7 +330,7 @@ static void box_max(const gray_image img1, const gray_image img2, const int w)
 #endif
     {
 #ifdef _OPENMP
-#pragma omp for
+#pragma omp for schedule(static)
 #endif
       for(int i1 = 0; i1 < img1.height; i1++)
         box_max_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);
@@ -363,7 +344,7 @@ static void box_max(const gray_image img1, const gray_image img2, const int w)
   {
     img2_bak = new_gray_image(1, img2.height);
 #ifdef _OPENMP
-#pragma omp for
+#pragma omp for schedule(static)
 #endif
     for(int i0 = 0; i0 < img1.width; i0++)
     {
@@ -409,7 +390,7 @@ static void box_min(const gray_image img1, const gray_image img2, const int w)
     {
       img2_bak = new_gray_image(img2.width, 1);
 #ifdef _OPENMP
-#pragma omp for
+#pragma omp for schedule(static)
 #endif
       for(int i1 = 0; i1 < img2.height; i1++)
       {
@@ -428,7 +409,7 @@ static void box_min(const gray_image img1, const gray_image img2, const int w)
 #endif
     {
 #ifdef _OPENMP
-#pragma omp for
+#pragma omp for schedule(static)
 #endif
       for(int i1 = 0; i1 < img1.height; i1++)
         box_min_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);

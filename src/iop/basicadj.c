@@ -45,8 +45,9 @@ typedef struct dt_iop_basicadj_params_t
                            $DESCRIPTION:"highlight compression" */
   float hlcomprthresh;  
   float contrast;       // $MIN: -1.0 $MAX: 5.0 $DEFAULT: 0.0
-  dt_iop_rgb_norms_t preserve_colors; // $DEFAULT: DT_RGB_NORM_LUMINANCE
-  float middle_grey;    // $MIN: 0.05 $MAX: 100 $DEFAULT: 18.42
+  dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE 
+                                         $DESCRIPTION:"preserve colors" */
+  float middle_grey;    // $MIN: 0.05 $MAX: 100 $DEFAULT: 18.42 $DESCRIPTION: "middle grey"
   float brightness;     // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0
   float saturation;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
   float vibrance;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
@@ -620,12 +621,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->sl_black_point = dt_bauhaus_slider_from_params(self, "black_point");
   dt_bauhaus_slider_set_soft_range(g->sl_black_point, -0.1, 0.1);
   dt_bauhaus_slider_set_step(g->sl_black_point, .001);
+  dt_bauhaus_slider_set_digits(g->sl_black_point, 4);
   gtk_widget_set_tooltip_text(g->sl_black_point, _("adjust the black level to unclip negative RGB values.\n"
                                                     "you should never use it to add more density in blacks!\n"
                                                     "if poorly set, it will clip near-black colors out of gamut\n"
                                                     "by pushing RGB values into negatives"));
 
-  g->sl_exposure = dt_bauhaus_slider_from_params(self, "exposure");
+  g->sl_exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
   dt_bauhaus_slider_set_soft_range(g->sl_exposure, -4.0, 4.0);
   dt_bauhaus_slider_set_step(g->sl_exposure, .02);
   dt_bauhaus_slider_set_format(g->sl_exposure, _("%.2f EV"));
@@ -635,7 +637,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_max(g->sl_hlcompr, 100.0);
   gtk_widget_set_tooltip_text(g->sl_hlcompr, _("highlight compression adjustment"));
 
-  g->sl_contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  g->sl_contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
   dt_bauhaus_slider_set_soft_range(g->sl_contrast, -1.0, 1.0);
   gtk_widget_set_tooltip_text(g->sl_contrast, _("contrast adjustment"));
 
@@ -649,14 +651,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle grey adjustment"));
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 
-  g->sl_brightness = dt_bauhaus_slider_from_params(self, "brightness");
+  g->sl_brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
   dt_bauhaus_slider_set_soft_range(g->sl_brightness, -1.0, 1.0);
   gtk_widget_set_tooltip_text(g->sl_brightness,_("brightness adjustment"));
 
-  g->sl_saturation = dt_bauhaus_slider_from_params(self, "saturation");
+  g->sl_saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
   gtk_widget_set_tooltip_text(g->sl_saturation,_("saturation adjustment"));
 
-  g->sl_vibrance = dt_bauhaus_slider_from_params(self, "vibrance");
+  g->sl_vibrance = dt_bauhaus_slider_from_params(self, N_("vibrance"));
   gtk_widget_set_tooltip_text(g->sl_vibrance, _("vibrance adjustment"));
  
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
@@ -677,7 +679,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
 
-  g->sl_clip = dt_bauhaus_slider_from_params(self, "clip");
+  g->sl_clip = dt_bauhaus_slider_from_params(self, N_("clip"));
+  dt_bauhaus_slider_set_digits(g->sl_clip, 3);
   gtk_widget_set_tooltip_text(g->sl_clip, _("adjusts clipping value for auto exposure calculation"));
 
   // add signal handler for preview pipe finish

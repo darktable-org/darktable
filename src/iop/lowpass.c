@@ -595,12 +595,12 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_lowpass_gui_data_t));
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
 
-  g->radius = dt_bauhaus_slider_from_params(self, "radius");
+  g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   dt_bauhaus_slider_set_step(g->radius, 0.1);
   g->lowpass_algo = dt_bauhaus_combobox_from_params(self, "lowpass_algo");
-  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
-  g->brightness = dt_bauhaus_slider_from_params(self, "brightness");
-  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
+  g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
+  g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
+  g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
 
   dt_bauhaus_widget_set_label(g->brightness, NULL, C_("lowpass", "brightness"));
 

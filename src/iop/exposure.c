@@ -279,6 +279,7 @@ void init_presets (dt_iop_module_so_t *self)
 
   // For scene-referred workflow, since filmic doesn't brighten as base curve does,
   // we need an initial exposure boost. This might be too much in some cases but…
+  // (the preset name is used in develop.c)
   dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
                              &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
                                                          .black = -0.000244140625f,
@@ -289,9 +290,6 @@ void init_presets (dt_iop_module_so_t *self)
                              sizeof(dt_iop_exposure_params_t), 1);
 
   dt_gui_presets_update_ldr(_("scene-referred default"), self->op, self->version(), FOR_RAW);
-
-  dt_gui_presets_update_autoapply(_("scene-referred default"), self->op, self->version(),
-     (strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0));
 }
 
 static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
@@ -628,8 +626,8 @@ void gui_update(struct dt_iop_module_t *self)
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   // switch off auto exposure when we lose focus (switching images etc)
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
   --darktable.gui->reset;
@@ -761,10 +759,13 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 static void autoexpp_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) return;
-
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+  if(self->dt->gui->reset) return;
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE ||
+     !dt_bauhaus_widget_get_quad_active(g->autoexpp) ||
+     self->picked_color_max[0] < 0.0f) return;
+
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]),
                             self->picked_color_max[2]) * (1.0 - dt_bauhaus_slider_get(g->autoexpp));
   exposure_set_white(self, white);
@@ -834,9 +835,11 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   }
   dt_pthread_mutex_unlock(&g->lock);
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return FALSE;
+  // if color-picker active and is the one in the main module (not blending ones)
 
-  if(self->picked_color_max[0] < 0.0f) return FALSE;
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE ||
+     !dt_bauhaus_widget_get_quad_active(g->autoexpp) ||
+     self->picked_color_max[0] < 0.0f) return FALSE;
 
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]),
                             self->picked_color_max[2]) * (1.0 - dt_bauhaus_slider_get(g->autoexpp));
@@ -878,8 +881,10 @@ void gui_init(struct dt_iop_module_t *self)
                                                              "this is useful if you exposed the image to the right."));
   gtk_box_pack_start(GTK_BOX(vbox_manual), g->compensate_exposure_bias, TRUE, TRUE, 0);
 
-  g->exposure = dt_bauhaus_slider_from_params(self, "exposure");
+  g->exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
+  dt_bauhaus_slider_set_step(g->exposure, 0.02);
+  dt_bauhaus_slider_set_digits(g->exposure, 3);
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 3.0);
 
@@ -921,7 +926,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode_stack), TRUE, TRUE, 0);
 
