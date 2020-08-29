@@ -334,7 +334,6 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     {
       image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
       image_h = thumb->height - thumb->img_margin->top - thumb->img_margin->bottom;
-      ;
     }
 
     if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
