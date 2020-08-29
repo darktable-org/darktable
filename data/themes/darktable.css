@@ -83,13 +83,13 @@
 
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_20;
-@define-color plugin_fg_color @grey_70;
+@define-color plugin_fg_color @fg_color;
 @define-color section_label @grey_60;
 @define-color plugin_label_color @grey_65;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg @grey_15;
-@define-color bauhaus_fg @grey_70;
+@define-color bauhaus_fg @fg_color;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
