@@ -67,6 +67,9 @@ static inline int max_i(int a, int b)
 }
 
 // Kahan summation algorithm
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline float Kahan_sum(const float m, float *c, const float add)
 {
    const float t1 = add - (*c);
