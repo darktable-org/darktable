@@ -781,6 +781,15 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   changed += _thumbs_remove_unneeded(table);
   if(changed > 0) _pos_compute_area(table);
 
+  // we update all the values
+  dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  table->offset = first->rowid;
+  table->offset_imgid = first->imgid;
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
+  dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
+  dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
+
   dt_view_lighttable_set_zoom(darktable.view_manager, newzoom);
   gtk_widget_queue_draw(table->widget);
 }
