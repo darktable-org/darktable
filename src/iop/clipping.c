@@ -1631,9 +1631,14 @@ static void _float_to_fract(const char *num, int *n, int *d)
     if(sep_found) *d *= 10;
 
     // look for decimal sep
-    if((*p == ',') || (*p == '.'))
+    if(!sep_found && ((*p == ',') || (*p == '.')))
     {
       sep_found = TRUE;
+    }
+    else if (*p < '0' || *p > '9')
+    {
+      *n = *d = 0;
+      return;
     }
     else
     {
@@ -1687,7 +1692,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
         // some sanity check
         if(dd == 0 || nn == 0)
         {
-          dt_control_log(_("invalid ratio format. it should be non zero"));
+          dt_control_log(_("invalid ratio format. it should be a positive number"));
           dt_bauhaus_combobox_set(combo, 0);
           return;
         }

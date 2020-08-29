@@ -1452,12 +1452,16 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   float old_z = 1.0;
   float old_zx = 0.0;
   float old_zy = 0.0;
+  int old_margin_x = 0;
+  int old_margin_y = 0;
   if(g_list_length(table->list) > 0)
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
     old_z = thumb->zoom;
     old_zx = thumb->zoomx;
     old_zy = thumb->zoomy;
+    old_margin_x = gtk_widget_get_margin_start(thumb->w_image_box);
+    old_margin_y = gtk_widget_get_margin_top(thumb->w_image_box);
   }
   // we recreate the list of images
   _thumbs_recreate_list_at(table, table->offset);
@@ -1479,6 +1483,8 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     // we add or move the thumb at the right position
     if(!gtk_widget_get_parent(thumb->w_main))
     {
+      gtk_widget_set_margin_start(thumb->w_image_box, old_margin_x);
+      gtk_widget_set_margin_top(thumb->w_image_box, old_margin_y);
       gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
       thumb->zoomx = old_zx;
       thumb->zoomy = old_zy;
