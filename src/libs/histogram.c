@@ -417,7 +417,8 @@ static void _draw_histogram_scale_toggle(cairo_t *cr, float x, float y, float wi
   cairo_restore(cr);
 }
 
-static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float width, float height, int mode)
+static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float width, float height, int mode,
+                                       const float graph_rgb_display[3][4])
 {
   cairo_save(cr);
   cairo_translate(cr, x, y);
@@ -436,13 +437,13 @@ static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float widt
     }
     case DT_LIB_HISTOGRAM_WAVEFORM_PARADE:
     {
-      cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.33);
+      cairo_set_source_rgba(cr, graph_rgb_display[2][2], graph_rgb_display[2][1], graph_rgb_display[2][0], 0.33);
       cairo_rectangle(cr, border, border, width / 3.0, height - 2.0 * border);
       cairo_fill(cr);
-      cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.33);
+      cairo_set_source_rgba(cr, graph_rgb_display[1][2], graph_rgb_display[1][1], graph_rgb_display[1][0], 0.33);
       cairo_rectangle(cr, width / 3.0, border, width / 3.0, height - 2.0 * border);
       cairo_fill(cr);
-      cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.33);
+      cairo_set_source_rgba(cr, graph_rgb_display[0][2], graph_rgb_display[0][1], graph_rgb_display[0][0], 0.33);
       cairo_rectangle(cr, width * 2.0 / 3.0, border, width / 3.0, height - 2.0 * border);
       cairo_fill(cr);
       cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
@@ -521,7 +522,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_linear, wf_width, wf_height, mask, graph_rgb) \
-  shared(wf_display) aligned(wf_linear, wf_display:64) \
+  shared(wf_display) aligned(wf_linear, wf_display, graph_rgb:64) \
   schedule(simd:static)
 #endif
   for(int p = 0; p < wf_height * wf_width * 4; p += 4)
@@ -587,7 +588,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_linear, wf_width, wf_height, k, graph_rgb) \
-  shared(wf_display) aligned(wf_linear, wf_display:64) \
+  shared(wf_display) aligned(wf_linear, wf_display, graph_rgb:64) \
   schedule(simd:static)
 #endif
       for(int p = 0; p < wf_height * wf_width * 4; p += 4)
@@ -680,7 +681,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
-  const float graph_rgb[3][4] = {
+  const float DT_ALIGNED_ARRAY graph_rgb[3][4] = {
     {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red, 0.0f},
     {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red, 0.0f},
     {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red, 0.0f},
@@ -693,7 +694,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
   // FIXME: is putting the colors in display profile the same as drawing in Rec.2020 linear then converting to display profile?
   // FIXME: this is such a quick conversion, just use LCMS and have the benefit of display intent
-  float graph_rgb_display[3][4];
+  float DT_ALIGNED_ARRAY graph_rgb_display[3][4];
   dt_ioppr_transform_image_colorspace_rgb(graph_rgb[0], graph_rgb_display[0], 3, 1,
                                           profile_from, profile_to, "histogram colors to display");
 
@@ -734,7 +735,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
         _draw_histogram_scale_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->histogram_scale);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-        _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->waveform_type);
+        _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->waveform_type,
+                                   graph_rgb_display);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
