@@ -503,13 +503,13 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
                                          int width, int height, const uint8_t mask[3])
 {
   dt_develop_t *dev = darktable.develop;
+  // FIXME: test this and return if it is zero?
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   const int wf_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wf_width);
   float *const wf_linear = d->waveform_linear;
   float *const wf_display = d->waveform_display;
   uint8_t *const wf_8bit = d->waveform_8bit;
-
   const float graph_rgb[3][3] = {
     {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red},
     {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red},
@@ -571,18 +571,24 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
                                            int width, int height, const uint8_t mask[3])
 {
   dt_develop_t *dev = darktable.develop;
+  // FIXME: test this and return if it is zero?
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   const int wf_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wf_width);
   float *const wf_linear = d->waveform_linear;
   float *const wf_display = d->waveform_display;
   uint8_t *const wf_8bit = d->waveform_8bit;
-  // FIXME: can/should we cache the linear rec 709 profile info?
+  // FIXME: can/should we cache the linear rec 2020 profile info?
   // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- do ioppr mind intent?
   const dt_iop_order_iccprofile_info_t *const profile_from =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC709, "", DT_INTENT_PERCEPTUAL);
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const profile_to =
     dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
+  const float graph_rgb[3][3] = {
+    {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red},
+    {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red},
+    {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red},
+  };
 
   // FIXME: is that right anymore? though this does work...
   // don't multiply by ppd as the source isn't screen pixels
@@ -597,14 +603,18 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
       // FIXME: instead of just using 100% R/G/B we could choose the colors we want R/G/B to represent
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(wf_linear, wf_width, wf_height, k) \
+  dt_omp_firstprivate(wf_linear, wf_width, wf_height, k, graph_rgb) \
   shared(wf_display) aligned(wf_linear, wf_display:64) \
   schedule(simd:static)
 #endif
       for(int p = 0; p < wf_height * wf_width * 4; p += 4)
-        for(int rgb = 0; rgb < 3; rgb++)
-          // FIXME: if use lcms2 straight to 8-bit don't need to constrain?
-          wf_display[p + rgb] = (rgb == 2-k) ? MIN(1.0f, wf_linear[p + rgb]) : 0.0f;
+      {
+        // FIXME: if use lcms2 straight to 8-bit don't need to constrain?
+        const float src = MIN(1.0f, wf_linear[p + (2-k)]);
+        wf_display[p] = src * graph_rgb[k][0];
+        wf_display[p+1] = src * graph_rgb[k][1];
+        wf_display[p+2] = src * graph_rgb[k][2];
+      }
 
       // FIXME: are better off using lcms2 and converting directly from float to 8-bit
       dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
