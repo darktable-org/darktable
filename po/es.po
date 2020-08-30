@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-27 23:47-0500\n"
-"PO-Revision-Date: 2020-08-27 23:56-0500\n"
+"POT-Creation-Date: 2020-08-29 23:36-0500\n"
+"PO-Revision-Date: 2020-08-30 00:17-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -143,10 +143,10 @@ msgstr "preservar los colores"
 #: ../build/src/iop/introspection_rgbcurve.c:251
 #: ../build/src/iop/introspection_rgblevels.c:153
 #: ../build/src/iop/introspection_tonecurve.c:270 ../src/iop/basecurve.c:2112
-#: ../src/iop/clipping.c:1880 ../src/iop/clipping.c:2141
-#: ../src/iop/clipping.c:2157 ../src/iop/clipping.c:2292
-#: ../src/iop/clipping.c:2319 ../src/iop/lens.cc:2259 ../src/iop/retouch.c:341
-#: ../src/libs/collect.c:1697 ../src/libs/export.c:612
+#: ../src/iop/clipping.c:1885 ../src/iop/clipping.c:2146
+#: ../src/iop/clipping.c:2162 ../src/iop/clipping.c:2297
+#: ../src/iop/clipping.c:2324 ../src/iop/lens.cc:2259 ../src/iop/retouch.c:341
+#: ../src/libs/collect.c:1697 ../src/libs/export.c:625
 #: ../src/libs/live_view.c:348 ../src/libs/live_view.c:373
 #: ../src/libs/live_view.c:382 ../src/libs/print_settings.c:1475
 msgid "none"
@@ -795,8 +795,8 @@ msgstr "versión del generador de curvas segmentarias"
 #: ../build/src/iop/introspection_filmicrgb.c:520
 #: ../build/src/iop/introspection_toneequal.c:360 ../src/common/darktable.c:822
 #: ../src/common/variables.c:520 ../src/imageio/format/pdf.c:670
-#: ../src/imageio/format/pdf.c:695 ../src/libs/export.c:725
-#: ../src/libs/export.c:731 ../src/libs/export.c:738
+#: ../src/imageio/format/pdf.c:695 ../src/libs/export.c:738
+#: ../src/libs/export.c:744 ../src/libs/export.c:751
 #: ../src/libs/metadata_view.c:289
 msgid "no"
 msgstr "no"
@@ -923,7 +923,7 @@ msgstr "detección por 3 pixeles cercanos"
 #: ../src/iop/colorbalance.c:1788 ../src/iop/denoiseprofile.c:3935
 #: ../src/iop/exposure.c:929 ../src/iop/levels.c:710
 #: ../src/iop/profile_gamma.c:746 ../src/libs/copy_history.c:367
-#: ../src/libs/export.c:792 ../src/libs/image.c:566
+#: ../src/libs/export.c:805 ../src/libs/image.c:566
 #: ../src/libs/print_settings.c:1516 ../src/libs/styles.c:564
 #: ../src/views/darkroom.c:2144
 msgid "mode"
@@ -2444,9 +2444,9 @@ msgid ""
 "to store the history stack in output files. this option allows xmp tags to "
 "be compressed and save space."
 msgstr ""
-"Las entradas de etiquetas xmp pueden ser muy largas y exceder el espacio de "
+"Las entradas de etiquetas XMP pueden ser muy largas y exceder el espacio de "
 "almacenamiento disponible en el historial de acciones de los archivos de "
-"salida. Esta opción permite comprimir las etiquetas xmp para ahorrar espacio."
+"salida. Esta opción permite comprimir las etiquetas XMP para ahorrar espacio."
 
 #: ../build/src/preferences_gen.h:4107
 msgid "look for updated xmp files on startup"
@@ -3321,8 +3321,8 @@ msgstr ""
 
 #: ../src/common/darktable.c:822 ../src/common/database.c:2991
 #: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
-#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:726
-#: ../src/libs/export.c:732 ../src/libs/export.c:739
+#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:739
+#: ../src/libs/export.c:745 ../src/libs/export.c:752
 #: ../src/libs/metadata_view.c:289
 msgid "yes"
 msgstr "sí"
@@ -5342,7 +5342,7 @@ msgstr "usar la misma figura como"
 msgid "masks can not contain themselves"
 msgstr "Las máscaras no pueden contenerse a sí mismas"
 
-#: ../src/develop/pixelpipe_hb.c:2599
+#: ../src/develop/pixelpipe_hb.c:2242
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -5399,135 +5399,135 @@ msgstr "Imagen de portada"
 msgid "grouped images"
 msgstr "Imágenes agrupadas"
 
-#: ../src/dtgtk/thumbnail.c:507
+#: ../src/dtgtk/thumbnail.c:506
 msgid "fit"
 msgstr "normal"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2015
+#: ../src/dtgtk/thumbtable.c:2033
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vistas/miniaturas/sin estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2016
+#: ../src/dtgtk/thumbtable.c:2034
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vistas/miniaturas/1 estrella"
 
-#: ../src/dtgtk/thumbtable.c:2017
+#: ../src/dtgtk/thumbtable.c:2035
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vistas/miniaturas/2 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2018
+#: ../src/dtgtk/thumbtable.c:2036
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vistas/miniaturas/3 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2019
+#: ../src/dtgtk/thumbtable.c:2037
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vistas/miniaturas/4 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2020
+#: ../src/dtgtk/thumbtable.c:2038
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vistas/miniaturas/5 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2021
+#: ../src/dtgtk/thumbtable.c:2039
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vistas/miniaturas/rechazar"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2024
+#: ../src/dtgtk/thumbtable.c:2042
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vistas/miniaturas/copiar historial"
 
-#: ../src/dtgtk/thumbtable.c:2025
+#: ../src/dtgtk/thumbtable.c:2043
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vistas/miniaturas/copiar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:2027
+#: ../src/dtgtk/thumbtable.c:2045
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vistas/miniaturas/pegar historial"
 
-#: ../src/dtgtk/thumbtable.c:2028
+#: ../src/dtgtk/thumbtable.c:2046
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vistas/miniaturas/pegar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:2030
+#: ../src/dtgtk/thumbtable.c:2048
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vistas/miniaturas/descartar historial de acciones"
 
-#: ../src/dtgtk/thumbtable.c:2032
+#: ../src/dtgtk/thumbtable.c:2050
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vistas/miniaturas/duplicar imagen"
 
-#: ../src/dtgtk/thumbtable.c:2033
+#: ../src/dtgtk/thumbtable.c:2051
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vistas/miniaturas/duplicar imagen virgen"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2037
+#: ../src/dtgtk/thumbtable.c:2055
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vistas/miniaturas/color rojo"
 
-#: ../src/dtgtk/thumbtable.c:2038
+#: ../src/dtgtk/thumbtable.c:2056
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vistas/miniaturas/color amarillo"
 
-#: ../src/dtgtk/thumbtable.c:2039
+#: ../src/dtgtk/thumbtable.c:2057
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vistas/miniaturas/color verde"
 
-#: ../src/dtgtk/thumbtable.c:2040
+#: ../src/dtgtk/thumbtable.c:2058
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vistas/miniaturas/color azul"
 
-#: ../src/dtgtk/thumbtable.c:2041
+#: ../src/dtgtk/thumbtable.c:2059
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vistas/miniaturas/color púrpura"
 
-#: ../src/dtgtk/thumbtable.c:2042
+#: ../src/dtgtk/thumbtable.c:2060
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
-msgstr "vistas/miniaturas/eliminar marcas de color"
+msgstr "vistas/miniaturas/quitar marcas de color"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2045
+#: ../src/dtgtk/thumbtable.c:2063
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vistas/miniaturas/seleccionar todas"
 
-#: ../src/dtgtk/thumbtable.c:2046
+#: ../src/dtgtk/thumbtable.c:2064
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vistas/miniaturas/deseleccionar"
 
-#: ../src/dtgtk/thumbtable.c:2048
+#: ../src/dtgtk/thumbtable.c:2066
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vistas/miniaturas/invertir selección"
 
-#: ../src/dtgtk/thumbtable.c:2049
+#: ../src/dtgtk/thumbtable.c:2067
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vistas/miniaturas/seleccionar carrete"
 
-#: ../src/dtgtk/thumbtable.c:2050
+#: ../src/dtgtk/thumbtable.c:2068
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vistas/miniaturas/seleccionar no editadas"
@@ -7271,7 +7271,7 @@ msgstr "foto"
 msgid "graphic"
 msgstr "gráfico"
 
-#: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:629
+#: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:642
 msgid "file on disk"
 msgstr "archivo en disco"
 
@@ -7351,7 +7351,7 @@ msgstr "imágenes exportadas desde darktable"
 
 #: ../src/imageio/storage/email.c:251
 msgid "could not launch email client!"
-msgstr "no se pudo abrir el cliente de correo!"
+msgstr "No se pudo abrir el cliente de correo"
 
 #: ../src/imageio/storage/gallery.c:72
 msgid "website gallery"
@@ -7372,16 +7372,16 @@ msgstr "Introduzca el título del libro"
 
 #: ../src/imageio/storage/piwigo.c:464
 msgid "authenticated"
-msgstr "autenticado"
+msgstr "autentificado"
 
 #: ../src/imageio/storage/piwigo.c:472 ../src/imageio/storage/piwigo.c:487
 #: ../src/imageio/storage/piwigo.c:499
 msgid "not authenticated"
-msgstr "no autenticado"
+msgstr "no autentificado"
 
 #: ../src/imageio/storage/piwigo.c:478
 msgid "not authenticated, cannot reach server"
-msgstr "No autenticado, no se pudo conectar con el servidor"
+msgstr "No autentificado; no se pudo conectar con el servidor"
 
 #: ../src/imageio/storage/piwigo.c:524 ../src/imageio/storage/piwigo.c:588
 msgid "create new album"
@@ -7397,7 +7397,7 @@ msgstr "No se puedieron actualizar los álbumes"
 
 #: ../src/imageio/storage/piwigo.c:723
 msgid "piwigo"
-msgstr "piwigo"
+msgstr "Piwigo"
 
 #: ../src/imageio/storage/piwigo.c:748
 msgid "accounts"
@@ -7479,15 +7479,15 @@ msgstr "álbum principal"
 
 #: ../src/imageio/storage/piwigo.c:875
 msgid "click login button to start"
-msgstr "pulse el botón acceder para empezar"
+msgstr "Para empezar, pulse el botón acceder"
 
 #: ../src/imageio/storage/piwigo.c:989
 msgid "cannot create a new piwigo album!"
-msgstr "crear album nuevo!"
+msgstr "No se pudo crear un álbum nuevo en Piwigo"
 
 #: ../src/imageio/storage/piwigo.c:998
 msgid "could not upload to piwigo!"
-msgstr "no se puede subir a piwigo!"
+msgstr "No se pudo subir a Piwigo"
 
 # piwigo es un servicio web para crear galerias de fotos
 #. this makes sense only if the export was successful
@@ -7495,8 +7495,8 @@ msgstr "no se puede subir a piwigo!"
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
-msgstr[0] "%d/%d exportado a álbum piwigo"
-msgstr[1] "%d/%d exportado a álbum picasa"
+msgstr[0] "%d/%d exportado a álbum Piwigo"
+msgstr[1] "%d/%d exportados a álbum Piwigo"
 
 #: ../src/iop/ashift.c:113
 msgid "perspective correction"
@@ -7557,7 +7557,7 @@ msgctxt "accel"
 msgid "guides"
 msgstr "guías"
 
-#: ../src/iop/ashift.c:542 ../src/iop/clipping.c:3457
+#: ../src/iop/ashift.c:542 ../src/iop/clipping.c:3462
 msgctxt "accel"
 msgid "automatic cropping"
 msgstr "recorte automatico"
@@ -7589,7 +7589,7 @@ msgstr "No hay suficiente estructura para la corrección automática"
 
 #: ../src/iop/ashift.c:2880
 msgid "automatic correction failed, please correct manually"
-msgstr "La corrección automática falló. Corrija manualmente"
+msgstr "La corrección automática falló. Deberá corregir manualmente."
 
 #: ../src/iop/ashift.c:4556 ../src/iop/ashift.c:4557 ../src/iop/ashift.c:4662
 #: ../src/iop/ashift.c:4663
@@ -7598,18 +7598,18 @@ msgid "lens shift (%s)"
 msgstr "desplazamiento %s"
 
 #: ../src/iop/ashift.c:4556 ../src/iop/ashift.c:4557 ../src/iop/ashift.c:4662
-#: ../src/iop/ashift.c:4663 ../src/iop/clipping.c:1882
-#: ../src/iop/clipping.c:2142 ../src/iop/clipping.c:2159
+#: ../src/iop/ashift.c:4663 ../src/iop/clipping.c:1887
+#: ../src/iop/clipping.c:2147 ../src/iop/clipping.c:2164
 msgid "horizontal"
 msgstr "horizontal"
 
 #: ../src/iop/ashift.c:4556 ../src/iop/ashift.c:4557 ../src/iop/ashift.c:4662
-#: ../src/iop/ashift.c:4663 ../src/iop/clipping.c:1881
-#: ../src/iop/clipping.c:2143 ../src/iop/clipping.c:2158
+#: ../src/iop/ashift.c:4663 ../src/iop/clipping.c:1886
+#: ../src/iop/clipping.c:2148 ../src/iop/clipping.c:2163
 msgid "vertical"
 msgstr "vertical"
 
-#: ../src/iop/ashift.c:4787 ../src/iop/clipping.c:2285
+#: ../src/iop/ashift.c:4787 ../src/iop/clipping.c:2290
 #: ../src/libs/live_view.c:341
 msgid "guides"
 msgstr "guías"
@@ -7638,7 +7638,7 @@ msgstr "Recortar la imagen de acuerdo a la diagonal"
 msgid "display guide lines overlay"
 msgstr "Mostrar lineas guías superpuestas"
 
-#: ../src/iop/ashift.c:4869 ../src/iop/clipping.c:2166
+#: ../src/iop/ashift.c:4869 ../src/iop/clipping.c:2171
 msgid "automatically crop to avoid black edges"
 msgstr "Cortar automáticamente para evitar bordes negros"
 
@@ -7925,67 +7925,67 @@ msgstr "neutral"
 
 #: ../src/iop/basecurve.c:218
 msgid "canon eos like"
-msgstr "similar a canon EOS"
+msgstr "similar a Canon EOS"
 
 #: ../src/iop/basecurve.c:219
 msgid "canon eos like alternate"
-msgstr "similar a canon eos (alternativo)"
+msgstr "similar a Canon EOS (alternativo)"
 
 #: ../src/iop/basecurve.c:220
 msgid "nikon like"
-msgstr "similar a nikon"
+msgstr "similar a Nikon"
 
 #: ../src/iop/basecurve.c:221
 msgid "nikon like alternate"
-msgstr "similar a nikon (alternativo)"
+msgstr "similar a Nikon (alternativo)"
 
 #: ../src/iop/basecurve.c:222
 msgid "sony alpha like"
-msgstr "similar a sony alpha"
+msgstr "similar a Sony Alpha"
 
 #: ../src/iop/basecurve.c:223
 msgid "pentax like"
-msgstr "similar a pentax"
+msgstr "similar a Pentax"
 
 #: ../src/iop/basecurve.c:224
 msgid "ricoh like"
-msgstr "similar a ricoh"
+msgstr "similar a Ricoh"
 
 #: ../src/iop/basecurve.c:225
 msgid "olympus like"
-msgstr "similar a olympus"
+msgstr "similar a Olympus"
 
 #: ../src/iop/basecurve.c:226
 msgid "olympus like alternate"
-msgstr "similar a olympus (alternativo)"
+msgstr "similar a Olympus (alternativo)"
 
 #: ../src/iop/basecurve.c:227
 msgid "panasonic like"
-msgstr "similar a panasonic"
+msgstr "similar a Panasonic"
 
 #: ../src/iop/basecurve.c:228
 msgid "leica like"
-msgstr "similar a leica"
+msgstr "similar a Leica"
 
 #: ../src/iop/basecurve.c:229
 msgid "kodak easyshare like"
-msgstr "similar a kodak easyshare"
+msgstr "similar a Kodak Easyshare"
 
 #: ../src/iop/basecurve.c:230
 msgid "konica minolta like"
-msgstr "similar a konica minolta"
+msgstr "similar a Konica Minolta"
 
 #: ../src/iop/basecurve.c:231
 msgid "samsung like"
-msgstr "similar a samsung"
+msgstr "similar a Samsung"
 
 #: ../src/iop/basecurve.c:232
 msgid "fujifilm like"
-msgstr "similar a fujifilm"
+msgstr "similar a Fujifilm"
 
 #: ../src/iop/basecurve.c:233
 msgid "nokia like"
-msgstr "similar a nokia"
+msgstr "similar a Nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
@@ -8015,7 +8015,9 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:2105
 msgid "abscissa: input, ordinate: output. works on RGB channels"
-msgstr "abcisas: entrada, ordenadas: salida. trabaja en los canales RGB"
+msgstr ""
+"La entrada corresponde al eje x; la salida al eje y. Opera sobre los canales "
+"RGB."
 
 #: ../src/iop/basecurve.c:2109 ../src/iop/basicadj.c:645
 #: ../src/iop/rgbcurve.c:1457 ../src/iop/rgblevels.c:1024
@@ -8483,7 +8485,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:855 ../src/iop/clipping.c:2180
+#: ../src/iop/borders.c:855 ../src/iop/clipping.c:2185
 msgid "golden cut"
 msgstr "proporción áurea"
 
@@ -8503,7 +8505,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:860 ../src/iop/clipping.c:2170
+#: ../src/iop/borders.c:860 ../src/iop/clipping.c:2175
 msgid "square"
 msgstr "cuadrado"
 
@@ -8539,7 +8541,7 @@ msgstr "2/3"
 msgid "size of the border in percent of the full image"
 msgstr "tamaño del borde en porcentaje de la imagen completa"
 
-#: ../src/iop/borders.c:924 ../src/iop/clipping.c:2267
+#: ../src/iop/borders.c:924 ../src/iop/clipping.c:2272
 msgid "aspect"
 msgstr "aspecto"
 
@@ -8758,143 +8760,143 @@ msgstr "Fuerza del efecto"
 msgid "crop and rotate"
 msgstr "recortar y rotar"
 
-#: ../src/iop/clipping.c:1373 ../src/iop/clipping.c:2169
+#: ../src/iop/clipping.c:1373 ../src/iop/clipping.c:2174
 msgid "original image"
 msgstr "imagen original"
 
-#: ../src/iop/clipping.c:1674
+#: ../src/iop/clipping.c:1679
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr ""
 "Formato de proporción de aspecto no válido. Debería ser \"número:número\""
 
-#: ../src/iop/clipping.c:1690
-msgid "invalid ratio format. it should be non zero"
+#: ../src/iop/clipping.c:1695
+msgid "invalid ratio format. it should be a positive number"
 msgstr ""
-"Formato de proporción de aspecto no válido. Debería ser diferente de cero."
+"Formato de proporción de aspecto inválido. Debería ser un número positivo."
 
-#: ../src/iop/clipping.c:1883 ../src/iop/clipping.c:2160
+#: ../src/iop/clipping.c:1888 ../src/iop/clipping.c:2165
 msgid "full"
 msgstr "lleno"
 
-#: ../src/iop/clipping.c:1884
+#: ../src/iop/clipping.c:1889
 msgid "old system"
 msgstr "sistema antiguo"
 
-#: ../src/iop/clipping.c:1885
+#: ../src/iop/clipping.c:1890
 msgid "correction applied"
 msgstr "corrección hecha"
 
-#: ../src/iop/clipping.c:2137
+#: ../src/iop/clipping.c:2142
 msgid "main"
 msgstr "principal"
 
-#: ../src/iop/clipping.c:2140 ../src/libs/live_view.c:372
+#: ../src/iop/clipping.c:2145 ../src/libs/live_view.c:372
 msgid "flip"
 msgstr "voltear"
 
-#: ../src/iop/clipping.c:2144 ../src/iop/clipping.c:2322
+#: ../src/iop/clipping.c:2149 ../src/iop/clipping.c:2327
 #: ../src/iop/colorbalance.c:1796 ../src/libs/live_view.c:376
 msgid "both"
 msgstr "ambos"
 
-#: ../src/iop/clipping.c:2146
+#: ../src/iop/clipping.c:2151
 msgid "mirror image horizontally and/or vertically"
 msgstr "Espejar la imagen horizontal o verticalmente"
 
-#: ../src/iop/clipping.c:2149
+#: ../src/iop/clipping.c:2154
 msgid "angle"
 msgstr "ángulo"
 
-#: ../src/iop/clipping.c:2153
+#: ../src/iop/clipping.c:2158
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "Forme un ángulo al trazar una línea con clic secundario + arrastre sobre la "
 "imagen"
 
-#: ../src/iop/clipping.c:2156
+#: ../src/iop/clipping.c:2161
 msgid "keystone"
 msgstr "perspectiva"
 
-#: ../src/iop/clipping.c:2161
+#: ../src/iop/clipping.c:2166
 msgid "set perspective correction for your image"
 msgstr "Seleccionar corrección de perspectiva para su imagen"
 
-#: ../src/iop/clipping.c:2168
+#: ../src/iop/clipping.c:2173
 msgid "freehand"
 msgstr "libre"
 
-#: ../src/iop/clipping.c:2171
+#: ../src/iop/clipping.c:2176
 msgid "10:8 in print"
 msgstr "10:8 en impresión"
 
-#: ../src/iop/clipping.c:2172
+#: ../src/iop/clipping.c:2177
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2173
+#: ../src/iop/clipping.c:2178
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2174
+#: ../src/iop/clipping.c:2179
 msgid "8.5x11, letter"
 msgstr "8.5x11, carta"
 
-#: ../src/iop/clipping.c:2175
+#: ../src/iop/clipping.c:2180
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2176
+#: ../src/iop/clipping.c:2181
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2177
+#: ../src/iop/clipping.c:2182
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2178
+#: ../src/iop/clipping.c:2183
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2179
+#: ../src/iop/clipping.c:2184
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2181
+#: ../src/iop/clipping.c:2186
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2182
+#: ../src/iop/clipping.c:2187
 msgid "widescreen"
 msgstr "pantalla ancha"
 
-#: ../src/iop/clipping.c:2183
+#: ../src/iop/clipping.c:2188
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2184
+#: ../src/iop/clipping.c:2189
 msgid "cinemascope"
 msgstr "cinemascopio"
 
-#: ../src/iop/clipping.c:2185
+#: ../src/iop/clipping.c:2190
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2186
+#: ../src/iop/clipping.c:2191
 msgid "anamorphic"
 msgstr "anamórfico"
 
-#: ../src/iop/clipping.c:2187
+#: ../src/iop/clipping.c:2192
 msgid "3:1, panorama"
 msgstr "3:1, panorámica"
 
-#: ../src/iop/clipping.c:2219 ../src/iop/clipping.c:2231
+#: ../src/iop/clipping.c:2224 ../src/iop/clipping.c:2236
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 "Formato de proporción de aspecto no válido para `%s'. Debería ser \"número:"
 "número\""
 
-#: ../src/iop/clipping.c:2278
+#: ../src/iop/clipping.c:2283
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -8902,104 +8904,104 @@ msgstr ""
 "Fija la relación de aspecto\n"
 "La lista está ordenada desde la más cuadrada hasta la más rectangular"
 
-#: ../src/iop/clipping.c:2314 ../src/libs/live_view.c:368
+#: ../src/iop/clipping.c:2319 ../src/libs/live_view.c:368
 msgid "display guide lines to help compose your photograph"
 msgstr "Mostrar lineas guía para ayudar a componer su fotografía"
 
-#: ../src/iop/clipping.c:2318 ../src/iop/clipping.c:2323
+#: ../src/iop/clipping.c:2323 ../src/iop/clipping.c:2328
 #: ../src/libs/live_view.c:377
 msgid "flip guides"
 msgstr "Invertir guías"
 
-#: ../src/iop/clipping.c:2320 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:2325 ../src/libs/live_view.c:374
 msgid "horizontally"
 msgstr "horizontalmente"
 
-#: ../src/iop/clipping.c:2321 ../src/libs/live_view.c:375
+#: ../src/iop/clipping.c:2326 ../src/libs/live_view.c:375
 msgid "vertically"
 msgstr "verticalmente"
 
-#: ../src/iop/clipping.c:2330
+#: ../src/iop/clipping.c:2335
 msgid "margins"
 msgstr "márgenes"
 
-#: ../src/iop/clipping.c:2336
+#: ../src/iop/clipping.c:2341
 msgid "the left margin cannot overlap with the right margin"
 msgstr "El margen izquierdo no puede superponerse con el margen derecho"
 
-#: ../src/iop/clipping.c:2343
+#: ../src/iop/clipping.c:2348
 msgid "the right margin cannot overlap with the left margin"
 msgstr "El margen derecho no puede superponerse con el margen izquierdo"
 
-#: ../src/iop/clipping.c:2349
+#: ../src/iop/clipping.c:2354
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "El margen superior no puede superponerse con el margen inferior"
 
-#: ../src/iop/clipping.c:2356
+#: ../src/iop/clipping.c:2361
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "El margen inferior no puede superponerse con el margen superior"
 
-#: ../src/iop/clipping.c:3447
+#: ../src/iop/clipping.c:3452
 msgctxt "accel"
 msgid "commit"
 msgstr "aceptar"
 
-#: ../src/iop/clipping.c:3448
+#: ../src/iop/clipping.c:3453
 msgctxt "accel"
 msgid "angle"
 msgstr "ángulo"
 
-#: ../src/iop/clipping.c:3449
+#: ../src/iop/clipping.c:3454
 msgctxt "accel"
 msgid "left"
 msgstr "margen izquierdo"
 
-#: ../src/iop/clipping.c:3450
+#: ../src/iop/clipping.c:3455
 msgctxt "accel"
 msgid "top"
 msgstr "margen superior"
 
-#: ../src/iop/clipping.c:3451
+#: ../src/iop/clipping.c:3456
 msgctxt "accel"
 msgid "right"
 msgstr "margen derecho"
 
-#: ../src/iop/clipping.c:3452
+#: ../src/iop/clipping.c:3457
 msgctxt "accel"
 msgid "bottom"
 msgstr "margen inferior"
 
-#: ../src/iop/clipping.c:3453
+#: ../src/iop/clipping.c:3458
 msgctxt "accel"
 msgid "aspect ratio"
 msgstr "proporción"
 
-#: ../src/iop/clipping.c:3454
+#: ../src/iop/clipping.c:3459
 msgctxt "accel"
 msgid "guide lines"
 msgstr "líneas guía"
 
-#: ../src/iop/clipping.c:3455
+#: ../src/iop/clipping.c:3460
 msgctxt "accel"
 msgid "flip"
 msgstr "voltear"
 
-#: ../src/iop/clipping.c:3456
+#: ../src/iop/clipping.c:3461
 msgctxt "accel"
 msgid "keystone"
 msgstr "perspectiva"
 
-#: ../src/iop/clipping.c:3487
+#: ../src/iop/clipping.c:3492
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s en los bordes] recortar"
 
-#: ../src/iop/clipping.c:3493
+#: ../src/iop/clipping.c:3498
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s en los bordes] recortar manteniendo la proporción"
 
-#: ../src/iop/clipping.c:3498
+#: ../src/iop/clipping.c:3503
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] definir o rotar horizonte"
@@ -9572,21 +9574,21 @@ msgstr "El perfil de salida no tiene soporte y se reemplazó por sRGB"
 msgid "output intent"
 msgstr "salida"
 
-#: ../src/iop/colorout.c:881 ../src/libs/export.c:775
+#: ../src/iop/colorout.c:881 ../src/libs/export.c:788
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2287 ../src/views/darkroom.c:2295
 #: ../src/views/lighttable.c:1397 ../src/views/lighttable.c:1405
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:882 ../src/libs/export.c:776
+#: ../src/iop/colorout.c:882 ../src/libs/export.c:789
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2288 ../src/views/darkroom.c:2296
 #: ../src/views/lighttable.c:1398 ../src/views/lighttable.c:1406
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
-#: ../src/iop/colorout.c:883 ../src/libs/export.c:777
+#: ../src/iop/colorout.c:883 ../src/libs/export.c:790
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2289 ../src/views/darkroom.c:2297
 #: ../src/views/lighttable.c:1399 ../src/views/lighttable.c:1407
@@ -9594,7 +9596,7 @@ msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturación"
 
-#: ../src/iop/colorout.c:884 ../src/libs/export.c:778
+#: ../src/iop/colorout.c:884 ../src/libs/export.c:791
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2290 ../src/views/darkroom.c:2298
 #: ../src/views/lighttable.c:1400 ../src/views/lighttable.c:1408
@@ -10050,7 +10052,7 @@ msgstr "varianza del azul: "
 msgid "variance computed on the blue channel"
 msgstr "Varianza calculada para el canal azul"
 
-#: ../src/iop/denoiseprofile.c:3928 ../src/libs/export.c:751
+#: ../src/iop/denoiseprofile.c:3928 ../src/libs/export.c:764
 #: ../src/libs/print_settings.c:1189 ../src/libs/print_settings.c:1409
 msgid "profile"
 msgstr "perfil"
@@ -10546,7 +10548,7 @@ msgstr ""
 "específicamente a luminancias extremas.\n"
 "Disminuir si las sombras o las luces o ambas están sobresaturadas."
 
-#: ../src/iop/filmic.c:1733 ../src/libs/export.c:773
+#: ../src/iop/filmic.c:1733 ../src/libs/export.c:786
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1457
 msgid "intent"
 msgstr "propósito"
@@ -14463,12 +14465,12 @@ msgstr "pegar"
 #: ../src/libs/copy_history.c:429
 msgctxt "accel"
 msgid "load sidecar files"
-msgstr "cargar archivo xmp"
+msgstr "cargar archivo XMP"
 
 #: ../src/libs/copy_history.c:430
 msgctxt "accel"
 msgid "write sidecar files"
-msgstr "escribir archivo xmp"
+msgstr "escribir archivo XMP"
 
 #: ../src/libs/duplicate.c:60
 msgid "duplicate manager"
@@ -14486,35 +14488,35 @@ msgstr "Crear un duplicado 'virgen' de la imagen (sin ningún revelado)"
 msgid "create a duplicate of the image with same history stack"
 msgstr "Crear un duplicado de la imagen con el mismo historial"
 
-#: ../src/libs/export.c:74
+#: ../src/libs/export.c:76
 msgid "export selected"
 msgstr "exportar selección"
 
-#: ../src/libs/export.c:167
+#: ../src/libs/export.c:169
 msgid "export to disk"
 msgstr "exportar al disco"
 
-#: ../src/libs/export.c:643
+#: ../src/libs/export.c:656
 msgid "storage options"
 msgstr "opciones de almacenamiento"
 
-#: ../src/libs/export.c:650
+#: ../src/libs/export.c:663
 msgid "target storage"
 msgstr "guardar en"
 
-#: ../src/libs/export.c:673
+#: ../src/libs/export.c:686
 msgid "format options"
 msgstr "opciones de formato"
 
-#: ../src/libs/export.c:678
+#: ../src/libs/export.c:691
 msgid "file format"
 msgstr "formato de archivo"
 
-#: ../src/libs/export.c:696
+#: ../src/libs/export.c:709
 msgid "global options"
 msgstr "opciones globales"
 
-#: ../src/libs/export.c:701
+#: ../src/libs/export.c:714
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -14522,7 +14524,7 @@ msgstr ""
 "Anchura máxima\n"
 "Use 0 para no redimensionar"
 
-#: ../src/libs/export.c:704
+#: ../src/libs/export.c:717
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -14530,82 +14532,82 @@ msgstr ""
 "Altura máxima\n"
 "Use 0 para no redimensionar"
 
-#: ../src/libs/export.c:712
+#: ../src/libs/export.c:725
 msgid "max size"
 msgstr "tamaño máx."
 
-#: ../src/libs/export.c:718
+#: ../src/libs/export.c:731
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:724
+#: ../src/libs/export.c:737
 msgid "allow upscaling"
 msgstr "permitir redimensionado"
 
-#: ../src/libs/export.c:730
+#: ../src/libs/export.c:743
 msgid "high quality resampling"
 msgstr "remuestreo de alta calidad"
 
-#: ../src/libs/export.c:733
+#: ../src/libs/export.c:746
 msgid "do high quality resampling during export"
 msgstr "Hacer un remuestreo de alta calidad durante la exportación"
 
-#: ../src/libs/export.c:737
+#: ../src/libs/export.c:750
 msgid "store masks"
 msgstr "guardar máscaras"
 
-#: ../src/libs/export.c:740
+#: ../src/libs/export.c:753
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "Almacena las máscaras como capas en las imágenes exportadas. Sólo funciona "
 "con algunos formatos."
 
-#: ../src/libs/export.c:753 ../src/libs/export.c:774
+#: ../src/libs/export.c:766 ../src/libs/export.c:787
 #: ../src/libs/print_settings.c:1412 ../src/libs/print_settings.c:1459
 msgid "image settings"
 msgstr "configuración de la imagen"
 
-#: ../src/libs/export.c:764 ../src/libs/print_settings.c:1448
+#: ../src/libs/export.c:777 ../src/libs/print_settings.c:1448
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "Perfiles de salida ICC en %s o %s"
 
-#: ../src/libs/export.c:784 ../src/libs/print_settings.c:1473
+#: ../src/libs/export.c:797 ../src/libs/print_settings.c:1473
 msgid "style"
 msgstr "estilo"
 
-#: ../src/libs/export.c:787
+#: ../src/libs/export.c:800
 msgid "temporary style to use while exporting"
 msgstr "Estilo temporal para ser aplicado al exportar"
 
-#: ../src/libs/export.c:796 ../src/libs/print_settings.c:1518
+#: ../src/libs/export.c:809 ../src/libs/print_settings.c:1518
 msgid "replace history"
 msgstr "reemplazar al historial"
 
-#: ../src/libs/export.c:797 ../src/libs/print_settings.c:1519
+#: ../src/libs/export.c:810 ../src/libs/print_settings.c:1519
 msgid "append history"
 msgstr "incorporar al historial"
 
-#: ../src/libs/export.c:802 ../src/libs/print_settings.c:1526
+#: ../src/libs/export.c:815 ../src/libs/print_settings.c:1526
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "Los elementos del estilo se anexan al historial o se reemplazan"
 
 #. Export button
-#: ../src/libs/export.c:825
+#: ../src/libs/export.c:838
 msgid "export"
 msgstr "exportar"
 
-#: ../src/libs/export.c:827
+#: ../src/libs/export.c:840
 msgid "export with current settings"
 msgstr "Exportar con la configuración actual"
 
-#: ../src/libs/export.c:833
+#: ../src/libs/export.c:846
 msgid "edit metadata exportation details"
 msgstr "Editar los detalles de exportación de los metadatos"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1471 ../src/libs/styles.c:73
+#: ../src/libs/export.c:1484 ../src/libs/styles.c:73
 #: ../src/views/darkroom.c:3716
 msgctxt "accel"
 msgid "export"
@@ -18073,6 +18075,10 @@ msgstr "Atajos del teclado"
 #: ../src/views/view.c:1623
 msgid "Action"
 msgstr "Acción"
+
+#~ msgid "invalid ratio format. it should be non zero"
+#~ msgstr ""
+#~ "Formato de proporción de aspecto no válido. Debería ser diferente de cero."
 
 #~ msgid "structure/texture"
 #~ msgstr "estructura/textura"
