@@ -2355,7 +2355,7 @@
     </type>
     <default>no color</default>
     <shortdescription>white balance slider colors</shortdescription>
-    <longdescription>visual indication of temperature adjustments. in 'illuminant color' mode slider colors correspond to light source color, in 'effect emulation' slider colors correspond to effect the adjustment would have on the scene</longdescription>
+    <longdescription>visual indication of temperature adjustments. in 'illuminant color' mode slider colors correspond to the color of the light source, in 'effect emulation' slider colors correspond to the effect the adjustment would have on the scene</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/temperature/expand_coefficients</name>
