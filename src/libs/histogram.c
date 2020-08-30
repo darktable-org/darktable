@@ -484,6 +484,21 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
                                           int width, int height, const uint8_t mask[3])
 {
   if(!d->histogram_max) return;
+
+  dt_develop_t *dev = darktable.develop;
+  const dt_iop_order_iccprofile_info_t *const profile_from =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_to =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
+  // FIXME: is putting the colors in display profile the same as drawing in Rec.2020 linear then converting to display profile?
+  float graph_rgb[3][4] = {
+    {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red, 0.0f},
+    {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red, 0.0f},
+    {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red, 0.0f},
+  };
+  dt_ioppr_transform_image_colorspace_rgb(graph_rgb[0], graph_rgb[0], 3, 1,
+                                          profile_from, profile_to, "histogram to display");
+
   const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
                                                                        : logf(1.0 + d->histogram_max);
   cairo_translate(cr, 0, height);
@@ -493,7 +508,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      cairo_set_source_rgba(cr, k == 0 ? 1. : 0., k == 1 ? 1. : 0., k == 2 ? 1. : 0., 0.5);
+      cairo_set_source_rgba(cr, graph_rgb[k][0], graph_rgb[k][1], graph_rgb[k][2], 0.5);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
