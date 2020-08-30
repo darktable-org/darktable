@@ -332,11 +332,6 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_rotatepixels_params_t *d = self->default_params;
 
-  *d = (dt_iop_rotatepixels_params_t){ 0 };
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) return;
-
   const dt_image_t *const image = &(self->dev->image_storage);
 
   *d = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
@@ -354,21 +349,6 @@ void gui_update(dt_iop_module_t *self)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
   else
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation only works for the sensors that need it."));
-}
-
-void init(dt_iop_module_t *self)
-{
-  self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  self->params_size = sizeof(dt_iop_rotatepixels_params_t);
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
 }
 
 void gui_init(dt_iop_module_t *self)

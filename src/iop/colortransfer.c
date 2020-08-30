@@ -65,14 +65,14 @@ typedef enum dt_iop_colortransfer_flag_t
 
 typedef struct dt_iop_colortransfer_params_t
 {
-  dt_iop_colortransfer_flag_t flag;
+  dt_iop_colortransfer_flag_t flag; // $DEFAULT: NEUTRAL
   // hist matching table
   float hist[HISTN];
   // n-means (max 5?) with mean/variance
   float2 mean[MAXN];
   float2 var[MAXN];
   // number of gaussians used.
-  int n;
+  int n; // $DEFAULT: 3
 } dt_iop_colortransfer_params_t;
 
 typedef struct dt_iop_colortransfer_gui_data_t
@@ -564,31 +564,6 @@ void gui_update(struct dt_iop_module_t *self)
   // redraw color cluster preview
   dt_control_queue_redraw_widget(self->widget);
 #endif
-}
-
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_colortransfer_data_t));
-  module->params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_colortransfer_params_t);
-  module->gui_data = NULL;
-  dt_iop_colortransfer_params_t tmp;
-  tmp.flag = NEUTRAL;
-  memset(tmp.hist, 0, sizeof(float) * HISTN);
-  memset(tmp.mean, 0, sizeof(float) * MAXN * 2);
-  memset(tmp.var, 0, sizeof(float) * MAXN * 2);
-  tmp.n = 3;
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colortransfer_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 #if 0

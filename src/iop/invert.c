@@ -499,8 +499,6 @@ void reload_defaults(dt_iop_module_t *self)
 {
   self->hide_enable_button = 0;
 
-  if(!self->dev) return;
-
   if(dt_image_is_monochrome(&self->dev->image_storage))
   {
     self->hide_enable_button = 0;

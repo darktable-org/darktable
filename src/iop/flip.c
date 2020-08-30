@@ -420,7 +420,9 @@ void reload_defaults(dt_iop_module_t *self)
   
   d->orientation = ORIENTATION_NULL;
 
-  // we might be called from presets update infrastructure => there is no image
+  // report if reload_defaults was called unnecessarily => this should be considered a bug
+  // the whole point of reload_defaults is to update defaults _based on current image_
+  // any required initialisation should go in init (and not be performed repeatedly here)
   if(!self->dev)
   {
     fprintf(stderr, "reload_defaults should not be called without image.\n");
@@ -452,16 +454,6 @@ void reload_defaults(dt_iop_module_t *self)
 void gui_update(struct dt_iop_module_t *self)
 {
   // nothing to do
-}
-
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_flip_data_t));
-  module->params = calloc(1, sizeof(dt_iop_flip_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_flip_params_t));
-  module->default_enabled = 1;
-  module->params_size = sizeof(dt_iop_flip_params_t);
-  module->gui_data = NULL;
 }
 
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)

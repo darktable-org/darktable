@@ -2936,6 +2936,21 @@ static inline float infer_bias_from_profile(const float a)
   return -MAX(5 + 0.5 * logf(a), 0.0);
 }
 
+void init(dt_iop_module_t *module)
+{
+  dt_iop_default_init(module);
+
+  dt_iop_denoiseprofile_params_t *d = module->default_params;
+  
+  for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
+  {
+    for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
+    {
+      d->x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.f);
+    }
+  }
+}
+
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
@@ -2987,22 +3002,22 @@ void reload_defaults(dt_iop_module_t *module)
     // set defaults depending on the profile
     // all these formulas were "guessed" and are completely empirical
     const float a = g->interpolated.a[1];
-    dt_iop_denoiseprofile_params_t *default_params = module->default_params;
-    default_params->radius = infer_radius_from_profile(a);
-    default_params->scattering = infer_scattering_from_profile(a);
-    default_params->shadows = infer_shadows_from_profile(a);
-    default_params->bias = infer_bias_from_profile(a);
+    dt_iop_denoiseprofile_params_t *d = module->default_params;
+
+    d->radius = infer_radius_from_profile(a);
+    d->scattering = infer_scattering_from_profile(a);
+    d->shadows = infer_shadows_from_profile(a);
+    d->bias = infer_bias_from_profile(a);
+
+    dt_bauhaus_slider_set_default(g->radius, d->radius);
+    dt_bauhaus_slider_set_default(g->scattering, d->scattering);
+    dt_bauhaus_slider_set_default(g->shadows, d->shadows);
+    dt_bauhaus_slider_set_default(g->bias, d->bias);
+
     for(int k = 0; k < 3; k++)
     {
-      default_params->a[k] = g->interpolated.a[k];
-      default_params->b[k] = g->interpolated.b[k];
-    }
-    for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
-    {
-      for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
-      {
-        default_params->x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.f);
-      }
+      d->a[k] = g->interpolated.a[k];
+      d->b[k] = g->interpolated.b[k];
     }
   }
 }
@@ -3367,10 +3382,6 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
     dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
   }
-  dt_bauhaus_slider_set_default(g->radius, infer_radius_from_profile(a));
-  dt_bauhaus_slider_set_default(g->scattering, infer_scattering_from_profile(a));
-  dt_bauhaus_slider_set_default(g->shadows, infer_shadows_from_profile(a));
-  dt_bauhaus_slider_set_default(g->bias, infer_bias_from_profile(a));
   dt_bauhaus_combobox_set(g->mode, combobox_index);
   dt_bauhaus_combobox_set(g->wavelet_color_mode, p->wavelet_color_mode);
   if(p->a[0] == -1.0)
