@@ -892,6 +892,10 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
         _move(table, 0, -table->thumb_size, TRUE);
       else if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         _move(table, -table->thumb_size, 0, TRUE);
+
+      // ensure the hovered image is the right one
+      dt_thumbnail_t *th = _thumb_get_under_mouse(table);
+      if(th) dt_control_set_mouse_over_id(th->imgid);
     }
     else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
     {
