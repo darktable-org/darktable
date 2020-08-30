@@ -481,23 +481,10 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
 }
 
 static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
-                                          int width, int height, const uint8_t mask[3])
+                                          int width, int height, const uint8_t mask[3],
+                                          const float graph_rgb_display[3][4])
 {
   if(!d->histogram_max) return;
-
-  dt_develop_t *dev = darktable.develop;
-  const dt_iop_order_iccprofile_info_t *const profile_from =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-  const dt_iop_order_iccprofile_info_t *const profile_to =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
-  // FIXME: is putting the colors in display profile the same as drawing in Rec.2020 linear then converting to display profile?
-  float graph_rgb[3][4] = {
-    {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red, 0.0f},
-    {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red, 0.0f},
-    {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red, 0.0f},
-  };
-  dt_ioppr_transform_image_colorspace_rgb(graph_rgb[0], graph_rgb[0], 3, 1,
-                                          profile_from, profile_to, "histogram to display");
 
   const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
                                                                        : logf(1.0 + d->histogram_max);
@@ -508,16 +495,19 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      cairo_set_source_rgba(cr, graph_rgb[k][0], graph_rgb[k][1], graph_rgb[k][2], 0.5);
+      cairo_set_source_rgba(cr, graph_rgb_display[k][0], graph_rgb_display[k][1], graph_rgb_display[k][2], 0.5);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 }
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
-                                         int width, int height, const uint8_t mask[3])
+                                         int width, int height,
+                                         const uint8_t mask[3],
+                                         const float graph_rgb[3][4],
+                                         const dt_iop_order_iccprofile_info_t *const profile_from,
+                                         const dt_iop_order_iccprofile_info_t *const profile_to)
 {
-  dt_develop_t *dev = darktable.develop;
   // FIXME: test this and return if it is zero?
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
@@ -525,11 +515,6 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
   float *const wf_linear = d->waveform_linear;
   float *const wf_display = d->waveform_display;
   uint8_t *const wf_8bit = d->waveform_8bit;
-  const float graph_rgb[3][3] = {
-    {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red},
-    {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red},
-    {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red},
-  };
 
   // could save the memset if first enabled color is an assignment
   memset(wf_display, 0, sizeof(float) * wf_height * wf_width * 4);
@@ -549,13 +534,6 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
         wf_display[p+1] += src * graph_rgb[k][1];
         wf_display[p+2] += src * graph_rgb[k][2];
       }
-
-  // FIXME: can/should we cache the linear rec 2020 profile info?
-  // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- as ioppr ignores intent?
-  const dt_iop_order_iccprofile_info_t *const profile_from =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-  const dt_iop_order_iccprofile_info_t *const profile_to =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
   // FIXME: are better off using lcms2 and converting directly from float to 8-bit
   dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
                                           profile_from, profile_to, "waveform to display");
@@ -583,9 +561,11 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 }
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
-                                           int width, int height, const uint8_t mask[3])
+                                           int width, int height, const uint8_t mask[3],
+                                           const float graph_rgb[3][4],
+                                           const dt_iop_order_iccprofile_info_t *const profile_from,
+                                           const dt_iop_order_iccprofile_info_t *const profile_to)
 {
-  dt_develop_t *dev = darktable.develop;
   // FIXME: test this and return if it is zero?
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
@@ -593,17 +573,6 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
   float *const wf_linear = d->waveform_linear;
   float *const wf_display = d->waveform_display;
   uint8_t *const wf_8bit = d->waveform_8bit;
-  // FIXME: can/should we cache the linear rec 2020 profile info?
-  // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- do ioppr mind intent?
-  const dt_iop_order_iccprofile_info_t *const profile_from =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-  const dt_iop_order_iccprofile_info_t *const profile_to =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
-  const float graph_rgb[3][3] = {
-    {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red},
-    {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red},
-    {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red},
-  };
 
   // FIXME: is that right anymore? though this does work...
   // don't multiply by ppd as the source isn't screen pixels
@@ -611,11 +580,10 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
   // FIXME: make a single buffer with the three side-by-side images and then draw them with a single Cairo call -- to speed things up, and work at a display resolution equivalent to waveform
-  for(int k = 0; k < 3; k++)
+  for(int k = 2; k >= 0; k--)
   {
-    if(mask[k])
+    if(mask[2-k])
     {
-      // FIXME: instead of just using 100% R/G/B we could choose the colors we want R/G/B to represent
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_linear, wf_width, wf_height, k, graph_rgb) \
@@ -625,7 +593,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
       for(int p = 0; p < wf_height * wf_width * 4; p += 4)
       {
         // FIXME: if use lcms2 straight to 8-bit don't need to constrain?
-        const float src = MIN(1.0f, wf_linear[p + (2-k)]);
+        const float src = MIN(1.0f, wf_linear[p + k]);
         wf_display[p] = src * graph_rgb[k][0];
         wf_display[p+1] = src * graph_rgb[k][1];
         wf_display[p+2] = src * graph_rgb[k][2];
@@ -712,6 +680,23 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
+  const float graph_rgb[3][4] = {
+    {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red, 0.0f},
+    {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red, 0.0f},
+    {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red, 0.0f},
+};
+  // FIXME: can/should we cache the linear rec 2020 profile info?
+  // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- as ioppr ignores intent?
+  const dt_iop_order_iccprofile_info_t *const profile_from =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_to =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
+  // FIXME: is putting the colors in display profile the same as drawing in Rec.2020 linear then converting to display profile?
+  // FIXME: this is such a quick conversion, just use LCMS and have the benefit of display intent
+  float graph_rgb_display[3][4];
+  dt_ioppr_transform_image_colorspace_rgb(graph_rgb[0], graph_rgb_display[0], 3, 1,
+                                          profile_from, profile_to, "histogram colors to display");
+
   // darkroom view: draw scope so long as preview pipe is finished
   // tether view: draw whatever has come in from tether
   // FIXME: should set histogram buffer to black if have just entered tether view and nothing is displayed
@@ -724,13 +709,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     switch(d->scope_type)
     {
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        _lib_histogram_draw_histogram(d, cr, width, height, mask);
+        _lib_histogram_draw_histogram(d, cr, width, height, mask, graph_rgb_display);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
-          _lib_histogram_draw_waveform(d, cr, width, height, mask);
+          _lib_histogram_draw_waveform(d, cr, width, height, mask, graph_rgb, profile_from, profile_to);
         else
-          _lib_histogram_draw_rgb_parade(d, cr, width, height, mask);
+          _lib_histogram_draw_rgb_parade(d, cr, width, height, mask, graph_rgb, profile_from, profile_to);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
@@ -754,13 +739,11 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
     }
-    // FIXME: if go all the way with color profiling, these should be Rec.709 converted to display profile RGB -- or we just finish all the drawing in linear, then get the buffer and convert to display profile, but it does lose some precision
-    // FIXME: in RGB Levels the histogram background have a nice light blue -- do we use this -- and if so do we use that color rather than Rec.709 blue etc. for the waveform?
-    cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.33);
+    cairo_set_source_rgba(cr, graph_rgb_display[2][2], graph_rgb_display[2][1], graph_rgb_display[2][0], 0.33);
     _draw_color_toggle(cr, d->red_x, d->button_y, d->button_w, d->button_h, d->red);
-    cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.33);
+    cairo_set_source_rgba(cr, graph_rgb_display[1][2], graph_rgb_display[1][1], graph_rgb_display[1][0], 0.33);
     _draw_color_toggle(cr, d->green_x, d->button_y, d->button_w, d->button_h, d->green);
-    cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.33);
+    cairo_set_source_rgba(cr, graph_rgb_display[0][2], graph_rgb_display[0][1], graph_rgb_display[0][0], 0.33);
     _draw_color_toggle(cr, d->blue_x, d->button_y, d->button_w, d->button_h, d->blue);
   }
 
