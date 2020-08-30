@@ -502,7 +502,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
     if(mask[k])
     {
       // FIXME: use no/less alpha to make white look less washed out?
-      cairo_set_source_rgba(cr, graph_rgb_display[k][0], graph_rgb_display[k][1], graph_rgb_display[k][2], 0.8);
+      cairo_set_source_rgba(cr, graph_rgb_display[2-k][2], graph_rgb_display[2-k][1], graph_rgb_display[2-k][0], 0.8);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
 
