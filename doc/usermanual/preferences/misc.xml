@@ -44,43 +44,51 @@
     <bridgehead renderas="sect5">omit hierarchy in simple tag list</bridgehead>
 
     <para>
-      
+      When creating XMP file, the hierarchical tags are also added as a simple list of non-hierarchical ones
+      to make them visible to some other programs. When this option is checked darktable will only include
+      their last part and ignore the rest, so 'foo|bar|baz' will only add 'baz'.
     </para>
     
     <bridgehead renderas="sect5">disable the entry completion</bridgehead>
 
     <para>
-      
+      The entry completion is useful for those who enter tags from keyboard only. For others, the entry completion
+      can be embarrassing. (need to restart darktable)
     </para>
     
   </sect2>
-  
+
   <sect2 id="keyboard_shortcuts_with_multiple_instances">
 
     <title>keyboard shortcuts with multiple instances</title>
+    
+    <para>
+      Where multiple module instances are present, these preferences control rules that are applied (in order)
+      to decide which module instance keyboard shortcuts will be applied to.
+    </para>
           
     <bridgehead renderas="sect5">prefer expanded instances</bridgehead>
 
     <para>
-      
+      If instances of the module are expanded, ignore collapsed instances.
     </para>
     
     <bridgehead renderas="sect5">prefer enabled instances</bridgehead>
 
     <para>
-      
+      After applying the above rule, if instances of the module are active, ignore inactive instances.
     </para>
         
     <bridgehead renderas="sect5">prefer unmasked instances</bridgehead>
 
     <para>
-      
+      After applying the above rule, if instances are unmasked, ignore masked instances.
     </para>
     
     <bridgehead renderas="sect5">selection order</bridgehead>
 
     <para>
-      
+      After applying the above rule, apply the shortcut based on its position in pixelpipe.
     </para>
     
   </sect2>
@@ -98,13 +106,13 @@
     <bridgehead renderas="sect5">password backend to use</bridgehead>
 
     <para>
-      
+      The storage backend for password storage to use: auto, none, libsecret, kwallet.
     </para>
         
     <bridgehead renderas="sect5">executable for playing audio files</bridgehead>
 
     <para>
-      
+      This external program is used to play audio files some cameras record to keep notes for images.
     </para>
 
   </sect2>

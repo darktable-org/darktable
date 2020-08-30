@@ -36,7 +36,8 @@
     <bridgehead renderas="sect5">pattern for the image infos line</bridgehead>
 
     <para>
-      See <!-- TODO <xref linkend="drawn_mask"/>--> for available values.
+      Defines pattern for the image infos line in darkroom. See <xref linkend="session_options"/>
+      for available values.
     </para>
 
     <bridgehead renderas="sect5">position of the image info line</bridgehead>
@@ -89,7 +90,7 @@
     <bridgehead renderas="sect5">show scrollbars for central view</bridgehead>
 
     <para>
-
+      Defines whether scrollbars should be display in central view.
     </para>
     
     <bridgehead renderas="sect5">demosaicing for zoomed out darkroom mode</bridgehead>
@@ -104,7 +105,7 @@
     <bridgehead renderas="sect5">reduce resolution of preview image</bridgehead>
 
     <para>
-
+      Decrease to speed up preview rendering, may hinder accurate masking.
     </para>
     
 </sect1>

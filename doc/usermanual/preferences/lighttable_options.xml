@@ -33,13 +33,13 @@
     <bridgehead renderas="sect5">sort film rolls by</bridgehead>
 
     <para>
-
+      Set the collection list order for film rolls.
     </para>
 
     <bridgehead renderas="sect5">sort collection recent to older</bridgehead>
 
     <para>
-
+      Changes the default collections list for folders, times and dates to run from recent to older.
     </para>
 
     <bridgehead renderas="sect5">high quality thumb processing from size</bridgehead>
@@ -52,7 +52,8 @@
     <bridgehead renderas="sect5">delimiters for sizes categories</bridgehead>
 
     <para>
-
+      Sizes categories are used to be able to set different overlays and css values depending of
+      the size of the thumbnail. Set here thumbnails sizes delimiters.
     </para>
 
     <bridgehead renderas="sect5">pattern for the thumbnail extended overlay text</bridgehead>
@@ -65,7 +66,8 @@
     <bridgehead renderas="sect5">pattern for the thumbnail tooltip (empty to disable)</bridgehead>
 
     <para>
-
+      Define the pattern for the thumbnail tooltip. Empty it to disable thumbnail tooltip. As for
+      previous pattern, see <xref linkend="session_options"/> for possible tags to use.
     </para>
     
     <bridgehead renderas="sect5">use single-click in the collect panel</bridgehead>
@@ -77,7 +79,8 @@
     <bridgehead renderas="sect5">overlay txt sidecar over zoomed images</bridgehead>
 
     <para>
-
+      When there is a txt file next to an image, it can be shown as an overlay over zoomed images
+      on the lighttable. The txt file either has to be there at import time or the crawler  has to be enabled.
     </para>
 
     <bridgehead renderas="sect5">expand a single lighttable module at a time</bridgehead>
@@ -108,7 +111,7 @@
     <bridgehead renderas="sect5">show scrollbars for central view</bridgehead>
 
     <para>
-
+      Defines whether scrollbars should be display in central view.
     </para>
 
 </sect1>

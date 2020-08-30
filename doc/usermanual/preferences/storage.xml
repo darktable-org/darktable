@@ -23,13 +23,13 @@
     <bridgehead renderas="sect5">check for database maintenance</bridgehead>
 
     <para>
-
+      This option indicates when to check database fragmentation and perform maintenance.
     </para>
 
     <bridgehead renderas="sect5">database fragmentation ratio treshold</bridgehead>
 
     <para>
-
+      Fragmentation ratio above which to ask or carry out automatically database maintenance.
     </para>
 
   </sect2>
