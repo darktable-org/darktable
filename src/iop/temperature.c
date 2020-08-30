@@ -880,14 +880,16 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
     double min_tune[3] = {0.0};
     double no_tune[3] = {0.0};
     double max_tune[3] = {0.0};
-    if(!g->blackbody_is_confusing) {
+    if(!g->blackbody_is_confusing)
+    {
       //realistic
       const double neutral[3] = {
           1 / wb_preset[preset->no_ft_pos].channel[0],
           1 / wb_preset[preset->no_ft_pos].channel[1],
           1 / wb_preset[preset->no_ft_pos].channel[2],
       };
-      for(int ch=0; ch<3; ch++) {
+      for(int ch=0; ch<3; ch++)
+      {
         min_tune[ch] = neutral[ch] * wb_preset[preset->min_ft_pos].channel[ch];
         no_tune[ch]  = neutral[ch] * wb_preset[preset->no_ft_pos].channel[ch];
         max_tune[ch] = neutral[ch] * wb_preset[preset->max_ft_pos].channel[ch];
@@ -896,27 +898,34 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
       const float maxsRGBmin_tune = fmaxf(fmaxf(min_tune[0], min_tune[1]), min_tune[2]);
       const float maxsRGBmax_tune = fmaxf(fmaxf(max_tune[0], max_tune[1]), max_tune[2]);
 
-      for(int ch=0; ch<3; ch++) {
+      for(int ch=0; ch<3; ch++)
+      {
         min_tune[ch] = min_tune[ch] / maxsRGBmin_tune;
         no_tune[ch]  = 1.0;
         max_tune[ch] = max_tune[ch] / maxsRGBmax_tune;
       }
-    } else {
+    }
+    else
+    {
       //exagerated
 
-      for(int ch=0; ch<3; ch++) {
+      for(int ch=0; ch<3; ch++)
+      {
         min_tune[ch] = 0.5;
         no_tune[ch]  = 0.9;
         max_tune[ch] = 0.5;
       }
 
-      if(wb_preset[preset->min_ft_pos].channel[0] < wb_preset[preset->max_ft_pos].channel[0]) {
+      if(wb_preset[preset->min_ft_pos].channel[0] < wb_preset[preset->max_ft_pos].channel[0])
+      {
         // from blue to red
         min_tune[0] = 0.1;
         min_tune[2] = 0.9;
         max_tune[0] = 0.9;
         max_tune[2] = 0.1;
-      } else {
+      }
+      else
+      {
         //from red to blue
         min_tune[0] = 0.9;
         min_tune[2] = 0.1;
@@ -931,7 +940,8 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->finetune, 0.5, no_tune[0],  no_tune[1],  no_tune[2]);
     dt_bauhaus_slider_set_stop(g->finetune, 1.0, max_tune[0], max_tune[1], max_tune[2]);
   }
-  if(gtk_widget_get_visible(GTK_WIDGET(g->finetune))) {
+  if(gtk_widget_get_visible(GTK_WIDGET(g->finetune)))
+  {
     gtk_widget_queue_draw(GTK_WIDGET(g->finetune));
   }
 }
@@ -979,7 +989,9 @@ void color_rgb_sliders(struct dt_iop_module_t *self)
 
     dt_bauhaus_slider_set_stop(g->scale_b, 0.0, rchan, gchan, 0.0);
     dt_bauhaus_slider_set_stop(g->scale_b, 1.0, rchan, gchan, 1.0);
-  } else {
+  }
+  else
+  {
     //real (ish)
     //we consider dalight wb to be "reference white"
     const double white[3] = {
@@ -1008,7 +1020,8 @@ void color_rgb_sliders(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_b, 1.0, white[0]*(rchanmul/rchanmulmax), white[1]*(gchanmul/gchanmulmax), white[2]*1.0);
   }
 
-  if(gtk_widget_get_visible(GTK_WIDGET(g->scale_r))) {
+  if(gtk_widget_get_visible(GTK_WIDGET(g->scale_r)))
+  {
     gtk_widget_queue_draw(GTK_WIDGET(g->scale_r));
     gtk_widget_queue_draw(GTK_WIDGET(g->scale_g));
     gtk_widget_queue_draw(GTK_WIDGET(g->scale_b));
@@ -1073,13 +1086,17 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       const float maxsRGB_K = fmaxf(fmaxf(sRGB_K[0], sRGB_K[1]), sRGB_K[2]);
       const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]),sRGB_tint[2]);
 
-      if(maxsRGB_K > 1.f) {
-        for(int ch=0; ch<3; ch++){
+      if(maxsRGB_K > 1.f)
+      {
+        for(int ch=0; ch<3; ch++)
+        {
           sRGB_K[ch] = fmaxf(sRGB_K[ch] / maxsRGB_K, 0.f);
         }
       }
-      if(maxsRGB_tint > 1.f) {
-        for(int ch=0; ch<3; ch++){
+      if(maxsRGB_tint > 1.f)
+      {
+        for(int ch=0; ch<3; ch++)
+        {
           sRGB_tint[ch] = fmaxf(sRGB_tint[ch] / maxsRGB_tint, 0.f);
         }
       }
@@ -1107,14 +1124,18 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       const float maxsRGB_temp = fmaxf(fmaxf(sRGB_temp[0], sRGB_temp[1]), sRGB_temp[2]);
       const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]), sRGB_tint[2]);
 
-      if(maxsRGB_temp > 1.f) {
-        for(int ch=0; ch<3; ch++){
+      if(maxsRGB_temp > 1.f) 
+      {
+        for(int ch=0; ch<3; ch++)
+        {
           sRGB_temp[ch] = fmaxf(sRGB_temp[ch] / maxsRGB_temp, 0.f);
         }
       }
 
-      if(maxsRGB_tint > 1.f) {
-        for(int ch=0; ch<3; ch++){
+      if(maxsRGB_tint > 1.f)
+      {
+        for(int ch=0; ch<3; ch++)
+        {
           sRGB_tint[ch] = fmaxf(sRGB_tint[ch] / maxsRGB_tint, 0.f);
         }
       }
@@ -1780,7 +1801,9 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
     dt_bauhaus_slider_set_hard_max(g->finetune, wb_preset[preset->max_ft_pos].tuning);
     dt_bauhaus_slider_set_default(g->finetune, wb_preset[preset->no_ft_pos].tuning);
     --darktable.gui->reset;
-  } else {
+  }
+  else
+  {
     gtk_widget_set_sensitive(g->finetune, FALSE);
   }
   gtk_widget_set_visible(GTK_WIDGET(g->finetune), gtk_widget_get_sensitive(g->finetune));
@@ -1903,17 +1926,20 @@ static void temp_label_click(GtkWidget *label, GdkEventButton *event, gpointer u
   gchar *old_config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
   gboolean reset_feedback = FALSE;
 
-  if(!g_strcmp0(old_config, "no color")) {
+  if(!g_strcmp0(old_config, "no color"))
+  {
     dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "blackbody");
     reset_feedback = TRUE;
     g->colored_sliders = TRUE;
     g->blackbody_is_confusing = FALSE;
-  } else if (!g_strcmp0(old_config, "blackbody"))
+  } 
+  else if (!g_strcmp0(old_config, "blackbody"))
   {
     dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "effect emulation");
     g->colored_sliders = TRUE;
     g->blackbody_is_confusing = TRUE;
-  } else
+  }
+  else
   {
     dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "no color");
     reset_feedback = TRUE;
@@ -1925,7 +1951,8 @@ static void temp_label_click(GtkWidget *label, GdkEventButton *event, gpointer u
 
   if(reset_feedback)
   {
-    if(!g->colored_sliders){
+    if(!g->colored_sliders)
+    {
       dt_bauhaus_slider_clear_stops(g->scale_k);
       dt_bauhaus_slider_clear_stops(g->scale_tint);
       dt_bauhaus_slider_clear_stops(g->scale_r);
@@ -1944,6 +1971,44 @@ static void temp_label_click(GtkWidget *label, GdkEventButton *event, gpointer u
     dt_bauhaus_slider_set_feedback(g->scale_g2, feedback);
     dt_bauhaus_slider_set_feedback(g->finetune, feedback);
   }
+
+  color_temptint_sliders(self);
+  color_rgb_sliders(self);
+  color_finetuning_slider(self);
+}
+
+static void _preference_changed(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  gchar *config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
+  g->colored_sliders = g_strcmp0(config, "no color"); // true if config != "no color"
+  g->blackbody_is_confusing = g->colored_sliders && g_strcmp0(config, "blackbody"); // true if config != "blackbody"
+  g_free(config);
+
+  g->button_bar_visible = dt_conf_get_bool("plugins/darkroom/temperature/button_bar");
+  gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
+
+  if(!g->colored_sliders)
+  {
+    dt_bauhaus_slider_clear_stops(g->scale_k);
+    dt_bauhaus_slider_clear_stops(g->scale_tint);
+    dt_bauhaus_slider_clear_stops(g->scale_r);
+    dt_bauhaus_slider_clear_stops(g->scale_g);
+    dt_bauhaus_slider_clear_stops(g->scale_b);
+    dt_bauhaus_slider_clear_stops(g->scale_g2);
+    dt_bauhaus_slider_clear_stops(g->finetune);
+  }
+
+  const int feedback = g->colored_sliders ? 0 : 1;
+  dt_bauhaus_slider_set_feedback(g->scale_k, feedback);
+  dt_bauhaus_slider_set_feedback(g->scale_tint, feedback);
+  dt_bauhaus_slider_set_feedback(g->scale_r, feedback);
+  dt_bauhaus_slider_set_feedback(g->scale_g, feedback);
+  dt_bauhaus_slider_set_feedback(g->scale_b, feedback);
+  dt_bauhaus_slider_set_feedback(g->scale_g2, feedback);
+  dt_bauhaus_slider_set_feedback(g->finetune, feedback);
 
   color_temptint_sliders(self);
   color_rgb_sliders(self);
@@ -2106,6 +2171,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->presets), "value-changed", G_CALLBACK(presets_changed), self);
   g_signal_connect(G_OBJECT(g->finetune), "value-changed", G_CALLBACK(finetune_changed), self);
+
+  // update the gui when the preferences changed (i.e. colored sliders stuff)
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                            G_CALLBACK(_preference_changed), (gpointer)self);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
