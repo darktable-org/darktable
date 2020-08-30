@@ -1768,7 +1768,8 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
     g->mask_display = !g->mask_display;
 
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
-  dt_dev_reprocess_center(self->dev);
+//  dt_dev_reprocess_center(self->dev);
+  dt_iop_refresh_center(self);
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);

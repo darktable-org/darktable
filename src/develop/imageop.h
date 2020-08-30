@@ -676,6 +676,13 @@ dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 
+/** queue a refresh of the center (FULL), preview, or second-preview windows, rerunning the pixelpipe from */
+/** the given module */
+void dt_iop_refresh_center(dt_iop_module_t *module);
+void dt_iop_refresh_preview(dt_iop_module_t *module);
+void dt_iop_refresh_preview2(dt_iop_module_t *module);
+void dt_iop_refresh_all(dt_iop_module_t *module);
+
 /** queue a delayed call to dt_dev_add_history_item to capture module parameters */
 void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior);
 /** cancel any previously-queued history update */
