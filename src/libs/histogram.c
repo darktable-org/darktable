@@ -489,6 +489,9 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
                                                                        : logf(1.0 + d->histogram_max);
 
+  // blend the red/green/blue histograms to produce saturated
+  // primaries, secondaries and whites without being washed out by a
+  // lighter darktable theme
   cairo_push_group(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_SCREEN);
 
@@ -505,7 +508,8 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
 
   cairo_pop_group_to_source(cr);
   // FIXME: try CAIRO_OPERATOR_COLOR_DODGE to make graph appear better?
-  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+  //cairo_set_operator(cr, CAIRO_OPERATOR_COLOR_DOGDGE);
+  // this should draw with default CAIRO_OPERATOR_OVER
   cairo_paint(cr);
 }
 
@@ -664,36 +668,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_fill(cr);
   cairo_restore(cr);
 
-  // exposure change regions
-  // FIXME: draw this over the regular histogram, using an operator to slightly lighten it
-  if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-  {
-    cairo_set_source_rgb(cr, .5, .5, .5);
-    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-      cairo_rectangle(cr, 0, 7.0/9.0 * height, width, height);
-    else
-      cairo_rectangle(cr, 0, 0, 0.2 * width, height);
-    cairo_fill(cr);
-  }
-  else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-  {
-    cairo_set_source_rgb(cr, .5, .5, .5);
-    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-      cairo_rectangle(cr, 0, 0, width, 7.0/9.0 * height);
-    else
-      cairo_rectangle(cr, 0.2 * width, 0, width, height);
-    cairo_fill(cr);
-  }
-
-  // draw grid
-  // FIXME: draw this over the regular histogram, using an operator to slightly lighten it
-  set_color(cr, darktable.bauhaus->graph_grid);
-
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-    dt_draw_waveform_lines(cr, 0, 0, width, height);
-  else
-    dt_draw_grid(cr, 4, 0, 0, width, height);
-
   const float DT_ALIGNED_ARRAY graph_rgb[3][4] = {
     {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red, 0.0f},
     {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red, 0.0f},
@@ -739,9 +713,38 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   }
   dt_pthread_mutex_unlock(&d->lock);
 
+  // draw grid
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOFT_LIGHT);
+  set_color(cr, darktable.bauhaus->graph_grid);
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+    dt_draw_waveform_lines(cr, 0, 0, width, height);
+  else
+    dt_draw_grid(cr, 4, 0, 0, width, height);
+
+  // exposure change regions
+  if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+  {
+    set_color(cr, darktable.bauhaus->graph_fg_active);
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+      cairo_rectangle(cr, 0, 7.0/9.0 * height, width, height);
+    else
+      cairo_rectangle(cr, 0, 0, 0.2 * width, height);
+    cairo_fill(cr);
+  }
+  else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+  {
+    set_color(cr, darktable.bauhaus->graph_fg_active);
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+      cairo_rectangle(cr, 0, 0, width, 7.0/9.0 * height);
+    else
+      cairo_rectangle(cr, 0.2 * width, 0, width, height);
+    cairo_fill(cr);
+  }
+
   // buttons to control the display of the histogram: linear/log, r, g, b
   if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET)
   {
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     _draw_type_toggle(cr, d->type_x, d->button_y, d->button_w, d->button_h, d->scope_type);
     switch(d->scope_type)
     {
