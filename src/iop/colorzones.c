@@ -744,7 +744,7 @@ static void _reset_display_selection(dt_iop_module_t *self)
     if(c->display_mask)
     {
       c->display_mask = FALSE;
-      dt_dev_reprocess_center(self->dev);
+      dt_iop_refresh_center(self);
     }
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->bt_showmask)))
     {
@@ -2142,7 +2142,8 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook, GtkWidget *page
   --darktable.gui->reset;
 
   dt_iop_color_picker_reset(self, TRUE);
-  if(c->display_mask) dt_dev_reprocess_center(self->dev);
+  if(c->display_mask)
+    dt_iop_refresh_center(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -2216,8 +2217,7 @@ static void _display_mask_callback(GtkToggleButton *togglebutton, dt_iop_module_
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
-
-  dt_dev_reprocess_center(module->dev);
+  dt_iop_refresh_center(module);
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)

@@ -846,7 +846,7 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
 
     dt_iop_request_focus(module);
-    dt_dev_reprocess_center(module->dev);
+    dt_iop_refresh_center(module);
   }
 }
 
@@ -931,7 +931,7 @@ static void _blendop_blendif_suppress_toggled(GtkToggleButton *togglebutton, dt_
   dt_iop_request_focus(module);
 
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
-  dt_dev_reprocess_center(module->dev);
+  dt_iop_refresh_center(module);
 }
 
 static void _blendop_blendif_reset(GtkButton *button, dt_iop_module_t *module)
@@ -1241,7 +1241,7 @@ static void _blendop_blendif_channel_mask_view(GtkWidget *widget, dt_iop_module_
   if(new_request_mask_display != module->request_mask_display)
   {
     module->request_mask_display = new_request_mask_display;
-    dt_dev_reprocess_center(module->dev);
+    dt_iop_refresh_center(module);
   }
 }
 
@@ -1282,7 +1282,7 @@ static void _blendop_blendif_channel_mask_view_toggle(GtkWidget *widget, dt_iop_
   if(new_request_mask_display != module->request_mask_display)
   {
     module->request_mask_display = new_request_mask_display;
-    dt_dev_reprocess_center(module->dev);
+    dt_iop_refresh_center(module);
   }
 }
 
@@ -1350,7 +1350,8 @@ static gboolean _blendop_blendif_leave_delayed(gpointer data)
   bd->timeout_handle = 0;
   dt_pthread_mutex_unlock(&bd->lock);
 
-  if(reprocess) dt_dev_reprocess_center(module->dev);
+  if(reprocess)
+    dt_iop_refresh_center(module);
   // return FALSE and thereby terminate the handler
   return FALSE;
 }
@@ -2165,7 +2166,8 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     dt_pthread_mutex_unlock(&bd->lock);
 
     // reprocess main center image if needed
-    if (has_mask_display || suppress) dt_dev_reprocess_center(module->dev);
+    if (has_mask_display || suppress)
+      dt_iop_refresh_center(module);
   }
 }
 
