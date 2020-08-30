@@ -486,20 +486,27 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
                                           const float graph_rgb_display[3][4])
 {
   if(!d->histogram_max) return;
-
   const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
                                                                        : logf(1.0 + d->histogram_max);
+
+  cairo_push_group(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SCREEN);
+
   cairo_translate(cr, 0, height);
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      cairo_set_source_rgba(cr, graph_rgb_display[k][0], graph_rgb_display[k][1], graph_rgb_display[k][2], 0.5);
+      // FIXME: use no/less alpha to make white look less washed out?
+      cairo_set_source_rgba(cr, graph_rgb_display[k][0], graph_rgb_display[k][1], graph_rgb_display[k][2], 0.8);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
-  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+
+  cairo_pop_group_to_source(cr);
+  // FIXME: try CAIRO_OPERATOR_COLOR_DODGE to make graph appear better?
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+  cairo_paint(cr);
 }
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
@@ -519,6 +526,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 
   // could save the memset if first enabled color is an assignment
   memset(wf_display, 0, sizeof(float) * wf_height * wf_width * 4);
+  // FIXME: it would be nice to have the SIMD without launching threads, as this should be a great chance for SIMD but for such a small array the overhead of launching threads and memory constraints may just stall out cores
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_linear, wf_width, wf_height, mask, graph_rgb) \
@@ -539,6 +547,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
   dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
                                           profile_from, profile_to, "waveform to display");
 
+  // FIXME: it would be nice to have the SIMD without launching threads, as this should be a great chance for SIMD but for such a small array the overhead of launching threads and memory constraints may just stall out cores
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
@@ -585,6 +594,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
   {
     if(mask[2-k])
     {
+      // FIXME: it would be nice to have the SIMD without launching threads, as this should be a great chance for SIMD but for such a small array the overhead of launching threads and memory constraints may just stall out cores
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_linear, wf_width, wf_height, k, graph_rgb) \
@@ -604,6 +614,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
       dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
                                               profile_from, profile_to, "rgb parade to display");
 
+      // FIXME: it would be nice to have the SIMD without launching threads, as this should be a great chance for SIMD but for such a small array the overhead of launching threads and memory constraints may just stall out cores
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
@@ -654,6 +665,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_restore(cr);
 
   // exposure change regions
+  // FIXME: draw this over the regular histogram, using an operator to slightly lighten it
   if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
   {
     cairo_set_source_rgb(cr, .5, .5, .5);
@@ -674,6 +686,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   }
 
   // draw grid
+  // FIXME: draw this over the regular histogram, using an operator to slightly lighten it
   set_color(cr, darktable.bauhaus->graph_grid);
 
   if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
@@ -706,6 +719,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   if(cv->view(cv) == DT_VIEW_TETHERING || dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     uint8_t mask[3] = { d->red, d->green, d->blue };
+    // FIXME: needed save/restore as it is wrapping a group push/pop which already does this?
     cairo_save(cr);
     switch(d->scope_type)
     {
