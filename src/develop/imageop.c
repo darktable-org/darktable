@@ -1370,9 +1370,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-*/
       // we call reload_defaults() in case the module defines it
-      if(module->reload_defaults) module->reload_defaults(module);
+      if(module->reload_defaults) module->reload_defaults(module); // why not call dt_iop_reload_defaults? (if needed at all)
+*/
 
       int32_t new_params_size = module->params_size;
       void *new_params = calloc(1, new_params_size);

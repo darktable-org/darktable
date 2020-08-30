@@ -64,9 +64,9 @@ typedef struct dt_iop_colorout_global_data_t
 
 typedef struct dt_iop_colorout_params_t
 {
-  dt_colorspaces_color_profile_type_t type;
+  dt_colorspaces_color_profile_type_t type; // $DEFAULT: DT_COLORSPACE_SRGB
   char filename[DT_IOP_COLOR_ICC_LEN];
-  dt_iop_color_intent_t intent;
+  dt_iop_color_intent_t intent; // $DEFAULT: DT_INTENT_PERCEPTUAL
 } dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
@@ -823,23 +823,10 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_colorout_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorout_params_t));
-  module->params_size = sizeof(dt_iop_colorout_params_t);
-  module->gui_data = NULL;
+  dt_iop_default_init(module);
+
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){ DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL};
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 static void _preference_changed(gpointer instance, gpointer user_data)

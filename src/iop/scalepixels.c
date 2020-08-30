@@ -36,7 +36,7 @@ typedef struct dt_iop_scalepixels_params_t
   // Aspect ratio of the pixels, usually 1 but some cameras need scaling
   // <1 means the image needs to be stretched vertically, (0.5 means 2x)
   // >1 means the image needs to be stretched horizontally (2 mean 2x)
-  float pixel_aspect_ratio;
+  float pixel_aspect_ratio; // $DEFAULT: 1.0f
 } dt_iop_scalepixels_params_t;
 
 typedef struct dt_iop_scalepixels_gui_data_t
@@ -246,17 +246,13 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_scalepixels_params_t *d = self->default_params;
 
-  *d = (dt_iop_scalepixels_params_t){ .pixel_aspect_ratio = 1.0f };
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) return;
-
   const dt_image_t *const image = &(self->dev->image_storage);
 
   d->pixel_aspect_ratio = image->pixel_aspect_ratio;
 
-  self->default_enabled
-      = (!isnan(d->pixel_aspect_ratio) && d->pixel_aspect_ratio > 0.0f && d->pixel_aspect_ratio != 1.0f);
+  self->default_enabled = (!isnan(d->pixel_aspect_ratio) &&
+                           d->pixel_aspect_ratio > 0.0f &&
+                           d->pixel_aspect_ratio != 1.0f);
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
@@ -269,25 +265,6 @@ void gui_update(dt_iop_module_t *self)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling"));
   else
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling only works for the sensors that need it."));
-}
-
-void init(dt_iop_module_t *self)
-{
-  const dt_image_t *const image = &(self->dev->image_storage);
-
-  self->params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
-  self->default_enabled = (!isnan(image->pixel_aspect_ratio) && image->pixel_aspect_ratio > 0.0f
-                           && image->pixel_aspect_ratio != 1.0f);
-  self->params_size = sizeof(dt_iop_scalepixels_params_t);
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
 }
 
 void gui_init(dt_iop_module_t *self)

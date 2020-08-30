@@ -673,16 +673,6 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_spots_params_t));
 }
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-  free(module->global_data); // just to be sure
-  module->global_data = NULL;
-}
-
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   if(self->enabled && !darktable.develop->image_loading)

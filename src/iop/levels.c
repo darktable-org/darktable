@@ -588,11 +588,13 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-void reload_defaults(dt_iop_module_t *self)
+void init(dt_iop_module_t *module)
 {
-  self->request_histogram |= (DT_REQUEST_ON);
+  dt_iop_default_init(module);
 
-  dt_iop_levels_params_t *d = self->default_params;
+  module->request_histogram |= (DT_REQUEST_ON);
+
+  dt_iop_levels_params_t *d = module->default_params;
 
   d->levels[0] = 0.0f;
   d->levels[1] = 0.5f;

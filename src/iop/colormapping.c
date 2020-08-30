@@ -881,19 +881,15 @@ void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_colormapping_params_t *d = module->default_params;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(module->dev)
-  { 
-    dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
-    if(module->dev->gui_attached && g && g->flowback_set)
-    {
-      memcpy(d->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
-      memcpy(d->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
-      memcpy(d->source_var, g->flowback.var, sizeof(float) * MAXN * 2);
-      memcpy(d->source_weight, g->flowback.weight, sizeof(float) * MAXN);
-      d->n = g->flowback.n;
-      d->flag = HAS_SOURCE;
-    }
+  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
+  if(module->dev->gui_attached && g && g->flowback_set)
+  {
+    memcpy(d->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
+    memcpy(d->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
+    memcpy(d->source_var, g->flowback.var, sizeof(float) * MAXN * 2);
+    memcpy(d->source_weight, g->flowback.weight, sizeof(float) * MAXN);
+    d->n = g->flowback.n;
+    d->flag = HAS_SOURCE;
   }
 }
 

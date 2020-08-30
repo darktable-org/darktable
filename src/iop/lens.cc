@@ -1311,9 +1311,6 @@ void reload_defaults(dt_iop_module_t *module)
   // get all we can from exif:
   dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)module->default_params;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) return;
-
   new_lens = _lens_sanitize(img->exif_lens);
   g_strlcpy(d->lens, new_lens, sizeof(d->lens));
   free(new_lens);
