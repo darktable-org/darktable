@@ -118,9 +118,11 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
 {
   gchar *result = NULL;
   gchar *path = NULL;
+  fprintf(stderr, "\tabsolute value: %s,\n\tapplication_directory: %s,\n\tdefault_value: %s\n", absolute_value, application_directory, default_value);
   
   if(absolute_value)
   {
+    fprintf(stderr, "* absolute value. \n");
     // the only adjustment the absolute path needs is transforming the possible tilde '~' to an absolute path
     path = dt_util_fix_path(absolute_value);
   }
@@ -128,15 +130,49 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
   {
     // the default_value could be absolute or relative. we decide upon presence of the application_directory.
     if(application_directory)
-    {
+    {   
       // default_value is relative.
       // combine basename (application_directory) and relative path (default_value).
       gchar complete_path[PATH_MAX] = { 0 };
+#if defined(__APPLE__)
+      // fprintf(stderr, "* checking for bundle\n");
+      char *bundle_path = dt_osx_get_bundle_res_path();
+      if(bundle_path)
+      {
+        /// bundle detected ...
+        fprintf(stderr, "(bundle detected)\n");
+
+        // on a mac inside the bundle the executables are in <bundleroot>/Contents/MacOS/
+        // all other directories are a subdirectory of <bundleroot>/Contents/Resources:
+        // <bundleroot>/Contents/Resources/etc
+        // <bundleroot>/Contents/Resources/lib
+        // <bundleroot>/Contents/Resources/share
+        // so the relative path from the binary directory to the other directories differs to the non-bundle version by
+        // ../etc -> ../Resources/etc, 
+        // ../lib -> ../Resources/lib, 
+        // ../share -> ../Resources/share, 
+        // So we have to modify the relative default value
+
+        // +2: removes the two dots '..'
+        g_snprintf(complete_path, sizeof(complete_path), "%s/../Resources%s", application_directory, default_value + 2);
+        fprintf(stderr, "-> %s\n", complete_path);
+      }
+      else
+      {
+        fprintf(stderr, "(no bundle detected)\n");
+        /// outside a bundle. Apply standard linux path rules
+        g_snprintf(complete_path, sizeof(complete_path), "%s/%s", application_directory, default_value);
+      }
+#else
       g_snprintf(complete_path, sizeof(complete_path), "%s/%s", application_directory, default_value);
+#endif
       path = g_strdup(complete_path);
+      fprintf(stderr, "-> complete_path: %s\n\tpath: %s\n", complete_path, path);
     }
     else
     {
+      fprintf(stderr, "-> default_value: %s\n", default_value);
+
       // default_value is absolute
       path = g_strdup(default_value);
     }
@@ -147,6 +183,8 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
   
   // removes '.', '..', and extra '/' characters.
   result = g_realpath(path);
+  fprintf(stderr, "g_realpath('%s'): %s\n", path, result);
+
   g_free(path);
   return result;
 }
@@ -158,20 +196,6 @@ void dt_loc_init_user_config_dir(const char *configdir)
   dt_check_opendir("darktable.configdir", darktable.configdir);
   g_free(default_config_dir);
 }
-
-#ifdef __APPLE__
-char *dt_loc_find_install_dir(const char *suffix)
-{
-  char *result = NULL;
-  char *res_path = dt_osx_get_bundle_res_path();
-
-  if(res_path)
-    result = g_build_filename(res_path, suffix, NULL);
-  g_free(res_path);
-
-  return result;
-}
-#endif
 
 void dt_loc_init_tmp_dir(const char *tmpdir)
 {
@@ -189,13 +213,7 @@ void dt_loc_init_user_cache_dir(const char *cachedir)
 
 void dt_loc_init_plugindir(const char* application_directory, const char *plugindir)
 {
-#if defined(__APPLE__)
-  char *directory = dt_loc_find_install_dir(DARKTABLE_LIBDIR);
-  darktable.plugindir = dt_loc_init_generic(plugindir, application_directory, directory ? directory : DARKTABLE_LIBDIR);
-  g_free(directory);
-#else
   darktable.plugindir = dt_loc_init_generic(plugindir, application_directory, DARKTABLE_LIBDIR);
-#endif
   dt_check_opendir("darktable.plugindir", darktable.plugindir);
 }
 
@@ -236,37 +254,19 @@ void dt_check_opendir(const char* text, const char* directory)
 
 void dt_loc_init_localedir(const char* application_directory, const char *localedir)
 {
-#if defined(__APPLE__)
-  char *directory = dt_loc_find_install_dir(DARKTABLE_LOCALEDIR);
-  darktable.localedir = dt_loc_init_generic(localedir, application_directory, directory ? directory : DARKTABLE_LOCALEDIR);
-  g_free(directory);
-#else
   darktable.localedir = dt_loc_init_generic(localedir, application_directory, DARKTABLE_LOCALEDIR);
-#endif
   dt_check_opendir("darktable.localedir", darktable.localedir);
 }
 
 void dt_loc_init_datadir(const char* application_directory, const char *datadir)
 {
-#if defined(__APPLE__)
-  char *directory = dt_loc_find_install_dir(DARKTABLE_DATADIR);
-  darktable.datadir = dt_loc_init_generic(datadir, application_directory, directory ? directory : DARKTABLE_DATADIR);
-  g_free(directory);
-#else
   darktable.datadir = dt_loc_init_generic(datadir, application_directory, DARKTABLE_DATADIR);
-#endif
   dt_check_opendir("darktable.datadir", darktable.datadir);
 }
 
 void dt_loc_init_sharedir(const char* application_directory)
 {
-#if defined(__APPLE__)
-  char *directory = dt_loc_find_install_dir(DARKTABLE_SHAREDIR);
-  darktable.sharedir = dt_loc_init_generic(NULL, application_directory, directory ? directory : DARKTABLE_SHAREDIR);
-  g_free(directory);
-#else
   darktable.sharedir = dt_loc_init_generic(NULL, application_directory, DARKTABLE_SHAREDIR);
-#endif
   dt_check_opendir("darktable.sharedir", darktable.sharedir);
 }
 

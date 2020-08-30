@@ -116,12 +116,21 @@ char* dt_osx_get_bundle_res_path()
 
 #ifdef GTK_TYPE_OSX_APPLICATION
   bundle_id = quartz_application_get_bundle_id();
+  // fprintf(stderr, "GTK_TYPE_OSX_APPLICATION: quartz_application_get_bundle_id bundle_id: %s\n", bundle_id);
+  
   if(bundle_id)
+  {
     result = quartz_application_get_resource_path();
+    // fprintf(stderr, "GTK_TYPE_OSX_APPLICATION: quartz_application_get_resource_path bundle_id: %s\n", bundle_id);
+  }
 #else
   bundle_id = gtkosx_application_get_bundle_id();
+  // fprintf(stderr, "!GTK_TYPE_OSX_APPLICATION: gtkosx_application_get_bundle_id bundle_id: %s\n", bundle_id);
   if(bundle_id)
+  {
     result = gtkosx_application_get_resource_path();
+    // fprintf(stderr, "!GTK_TYPE_OSX_APPLICATION: gtkosx_application_get_resource_path bundle_id: %s\n", bundle_id);
+  }
 #endif
   g_free(bundle_id);
 
@@ -133,6 +142,8 @@ char* dt_osx_get_bundle_res_path()
 void dt_osx_prepare_environment()
 {
   char* res_path = dt_osx_get_bundle_res_path();
+  fprintf(stderr, "dt_osx_prepare_environment, res_path: %s\n", res_path);
+
   if(res_path)
   {
     g_setenv("GTK_DATA_PREFIX", res_path, TRUE);
