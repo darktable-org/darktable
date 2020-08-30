@@ -1390,6 +1390,12 @@ cell:selected
   font-size: 0.5em;
 }
 
+#history-tooltip
+{
+  font-family: monospace;
+  background-color: @tooltip_bg_color;
+}
+
 /* Set color bar min height in colorzones module */
 #iop-bottom-bar
 {
@@ -1417,8 +1423,7 @@ cell:selected
 
 /* Set some specific fonts */
 #live-sample-data,
-#usercss_box textview,
-#hist-tooltip
+#usercss_box textview
 {
   font-family: monospace;
 }
