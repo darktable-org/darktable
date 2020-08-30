@@ -131,9 +131,18 @@
     </sect5>
 
     <sect5>
-      <title>black</title>
+      <title>compensate camera exposure</title>
       <para>
-        Adjust the black level in both <quote>manual</quote> and <quote>automatic</quote> mode.
+        Automatically remove the camera exposure bias (only available in <quote>manual</quote> mode).
+        The camera exposure bias is the EV compensation of the camera lightmeter, commonly used to
+        prevent highlight clipping, for photographers who expose to the right of the histogram. This
+        feature relies on reading the EXIF field <programlisting>ExposureBiasValue</programlisting>
+        which must be correctly filled in the RAW file by the camera for it to work.
+      </para>
+
+      <para>
+        Note: for Fuji RAWs, it will be necessary to add aditional +0.75 EV, for an overall correction
+        of +1.25 EV, to compensate for their native underexposure.
       </para>
     </sect5>
 
@@ -153,6 +162,13 @@
         <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
         icon starts the calculation and lets you draw a rectangular area of your choice using
         your mouse. This feature is only available in <quote>manual</quote> mode.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>black</title>
+      <para>
+        Adjust the black level in both <quote>manual</quote> and <quote>automatic</quote> mode.
       </para>
     </sect5>
 
