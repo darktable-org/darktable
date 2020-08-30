@@ -306,9 +306,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) return;
-
   // can't be switched on for non-raw images:
   module->hide_enable_button = !dt_image_is_raw(&module->dev->image_storage);
 }

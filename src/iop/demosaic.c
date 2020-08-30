@@ -5013,9 +5013,6 @@ void gui_update(struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) return;
-
   dt_iop_demosaic_params_t *d = module->default_params;
 
   if(dt_image_is_monochrome(&module->dev->image_storage))

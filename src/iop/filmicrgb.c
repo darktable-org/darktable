@@ -2304,9 +2304,6 @@ void reload_defaults(dt_iop_module_t *module)
 
   module->default_enabled = FALSE;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id == -1) return;
-
   gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
   g_free(workflow);

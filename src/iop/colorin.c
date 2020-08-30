@@ -1859,9 +1859,6 @@ void reload_defaults(dt_iop_module_t *module)
 
   dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id <= 0) return;
-
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
