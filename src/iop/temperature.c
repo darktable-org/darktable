@@ -1928,12 +1928,12 @@ static void temp_label_click(GtkWidget *label, GdkEventButton *event, gpointer u
 
   if(!g_strcmp0(old_config, "no color"))
   {
-    dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "blackbody");
+    dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "illuminant color");
     reset_feedback = TRUE;
     g->colored_sliders = TRUE;
     g->blackbody_is_confusing = FALSE;
   } 
-  else if (!g_strcmp0(old_config, "blackbody"))
+  else if (!g_strcmp0(old_config, "illuminant color"))
   {
     dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "effect emulation");
     g->colored_sliders = TRUE;
@@ -1984,7 +1984,7 @@ static void _preference_changed(gpointer instance, gpointer user_data)
 
   gchar *config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
   g->colored_sliders = g_strcmp0(config, "no color"); // true if config != "no color"
-  g->blackbody_is_confusing = g->colored_sliders && g_strcmp0(config, "blackbody"); // true if config != "blackbody"
+  g->blackbody_is_confusing = g->colored_sliders && g_strcmp0(config, "illuminant color"); // true if config != "illuminant color"
   g_free(config);
 
   g->button_bar_visible = dt_conf_get_bool("plugins/darkroom/temperature/button_bar");
@@ -2023,7 +2023,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gchar *config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
   g->colored_sliders = g_strcmp0(config, "no color"); // true if config != "no color"
-  g->blackbody_is_confusing = g->colored_sliders && g_strcmp0(config, "blackbody"); // true if config != "blackbody"
+  g->blackbody_is_confusing = g->colored_sliders && g_strcmp0(config, "illuminant color"); // true if config != "illuminant color"
   g->expand_coeffs = dt_conf_get_bool("plugins/darkroom/temperature/expand_coefficients");
   g_free(config);
 

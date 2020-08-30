@@ -2349,13 +2349,13 @@
     <type>
       <enum>
         <option>no color</option>
-        <option>blackbody</option>
+        <option>illuminant color</option>
         <option>effect emulation</option>
       </enum>
     </type>
     <default>no color</default>
     <shortdescription>white balance slider colors</shortdescription>
-    <longdescription>visual indication of temperature adjustments. in 'blackbody' mode shows light source color, in 'effect emulation' shows effect the adjustment would have</longdescription>
+    <longdescription>visual indication of temperature adjustments. in 'illuminant color' mode slider colors correspond to light source color, in 'effect emulation' slider colors correspond to effect the adjustment would have on the scene</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/temperature/expand_coefficients</name>
