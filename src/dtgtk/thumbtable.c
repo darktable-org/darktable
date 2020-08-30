@@ -483,8 +483,12 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
   sqlite3_stmt *stmt;
   int changed = 0;
 
-  // we load image at the beginning
+  // we rememeber image margins for new thumbs (this limit flickering)
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  const int old_margin_start = gtk_widget_get_margin_start(first->w_image_box);
+  const int old_margin_top = gtk_widget_get_margin_top(first->w_image_box);
+
+  // we load image at the beginning
   if(first->rowid > 1
      && (((table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_ZOOM) && first->y > 0)
          || (table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && first->x > 0)))
@@ -515,6 +519,8 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
         thumb->x = posx;
         thumb->y = posy;
         table->list = g_list_prepend(table->list, thumb);
+        gtk_widget_set_margin_start(thumb->w_image_box, old_margin_start);
+        gtk_widget_set_margin_top(thumb->w_image_box, old_margin_top);
         gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
         changed++;
       }
@@ -558,6 +564,8 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
         thumb->x = posx;
         thumb->y = posy;
         table->list = g_list_append(table->list, thumb);
+        gtk_widget_set_margin_start(thumb->w_image_box, old_margin_start);
+        gtk_widget_set_margin_top(thumb->w_image_box, old_margin_top);
         gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
         changed++;
       }
@@ -1708,6 +1716,16 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       posx += empty_start * table->thumb_size;
     }
 
+    // we store image margin from frist thumb to apply to new ones and limit flickering
+    int old_margin_start = 0;
+    int old_margin_top = 0;
+    if(g_list_length(table->list) > 0)
+    {
+      dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+      old_margin_start = gtk_widget_get_margin_start(first->w_image_box);
+      old_margin_top = gtk_widget_get_margin_top(first->w_image_box);
+    }
+
     // we add the thumbs
     GList *newlist = NULL;
     int nbnew = 0;
@@ -1753,6 +1771,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
         thumb->x = posx;
         thumb->y = posy;
         newlist = g_list_append(newlist, thumb);
+        gtk_widget_set_margin_start(thumb->w_image_box, old_margin_start);
+        gtk_widget_set_margin_top(thumb->w_image_box, old_margin_top);
         gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
         nbnew++;
       }
