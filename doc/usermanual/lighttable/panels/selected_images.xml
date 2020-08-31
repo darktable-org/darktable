@@ -80,8 +80,7 @@
 
       <para>
         See also preference option <quote>ask before erasing images from disk</quote>
-        (<xref linkend="security
-        "/>). If this configuration option is not active, darktable
+        (<xref linkend="security"/>). If this configuration option is not active, darktable
         will delete/trash the file(s) without further question.
       </para>
 
