@@ -493,7 +493,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   // primaries, secondaries and whites without being washed out by a
   // lighter darktable theme
   cairo_push_group(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_SCREEN);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
   cairo_translate(cr, 0, height);
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
@@ -501,15 +501,11 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      // FIXME: use no/less alpha to make white look less washed out?
-      cairo_set_source_rgba(cr, graph_rgb_display[2-k][2], graph_rgb_display[2-k][1], graph_rgb_display[2-k][0], 0.8);
+      cairo_set_source_rgba(cr, graph_rgb_display[2-k][2], graph_rgb_display[2-k][1], graph_rgb_display[2-k][0], 0.7);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
 
   cairo_pop_group_to_source(cr);
-  // FIXME: try CAIRO_OPERATOR_COLOR_DODGE to make graph appear better?
-  //cairo_set_operator(cr, CAIRO_OPERATOR_COLOR_DOGDGE);
-  // this should draw with default CAIRO_OPERATOR_OVER
   cairo_paint(cr);
 }
 
@@ -528,50 +524,54 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
   float *const wf_display = d->waveform_display;
   uint8_t *const wf_8bit = d->waveform_8bit;
 
-  // could save the memset if first enabled color is an assignment
-  memset(wf_display, 0, sizeof(float) * wf_height * wf_width * 4);
-  // FIXME: it would be nice to have the SIMD without launching threads, as this should be a great chance for SIMD but for such a small array the overhead of launching threads and memory constraints may just stall out cores
+  cairo_push_group(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_scale(cr, darktable.gui->ppd*width/wf_width, darktable.gui->ppd*height/wf_height);
+
+  for(int k = 0; k < 3; k++)
+    if(mask[2-k])
+    {
+      // map linear waveform data to a display colorspace
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(wf_linear, wf_width, wf_height, mask, graph_rgb) \
+  dt_omp_firstprivate(wf_width, wf_height, wf_linear, graph_rgb, k) \
   shared(wf_display) aligned(wf_linear, wf_display, graph_rgb:64) \
   schedule(simd:static)
 #endif
-  for(int p = 0; p < wf_height * wf_width * 4; p += 4)
-    for(int k = 0; k < 3; k++)
-      if(mask[2-k])
+      for(int p = 0; p < wf_height * wf_width * 4; p += 4)
       {
         // FIXME: if use lcms2 straight to 8-bit don't need to constrain?
         const float src = MIN(1.0f, wf_linear[p + k]);
-        wf_display[p] += src * graph_rgb[k][0];
-        wf_display[p+1] += src * graph_rgb[k][1];
-        wf_display[p+2] += src * graph_rgb[k][2];
+        for(int ch = 0; ch < 3; ch++)
+          wf_display[p+ch] = src * graph_rgb[k][ch];
+        // dt_ioppr_transform_image_colorspace_rgb() will ignore alpha, but as transform is in place, it is preserved
+        wf_display[p+3] = src;
       }
-  // FIXME: are better off using lcms2 and converting directly from float to 8-bit
-  dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
-                                          profile_from, profile_to, "waveform to display");
+      // FIXME: are better off using lcms2 and converting directly from float to 8-bit
+      dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
+                                              profile_from, profile_to, "waveform to display");
 
-  // FIXME: it would be nice to have the SIMD without launching threads, as this should be a great chance for SIMD but for such a small array the overhead of launching threads and memory constraints may just stall out cores
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
   shared(wf_8bit) aligned(wf_8bit, wf_display:64) \
   schedule(simd:static) collapse(2)
 #endif
-  for(int y = 0; y < wf_height; y++)
-    for(int x = 0; x < wf_width; x++)
-      for(int k = 0; k < 3; k++)
-        // FIXME: would it be better to round this instead of truncate?
-        wf_8bit[(y * wf_stride + x * 4) + k] = wf_display[4 * (y * wf_width + x) + k] * 255.0f;
+      for(int y = 0; y < wf_height; y++)
+        for(int x = 0; x < wf_width; x++)
+          for(int ch = 0; ch < 4; ch++)
+            wf_8bit[(y * wf_stride + x * 4) + ch] = wf_display[4 * (y * wf_width + x) + ch] * 255.0f;
 
-  cairo_surface_t *source
-      = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_RGB24,
-                                               wf_width, wf_height, wf_stride);
-  cairo_scale(cr, darktable.gui->ppd*width/wf_width, darktable.gui->ppd*height/wf_height);
-  cairo_set_source_surface(cr, source, 0.0, 0.0);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+      cairo_surface_t *source
+        = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_ARGB32,
+                                                 wf_width, wf_height, wf_stride);
+      cairo_set_source_surface(cr, source, 0.0, 0.0);
+      cairo_paint(cr);
+      cairo_surface_destroy(source);
+    }
+
+  cairo_pop_group_to_source(cr);
   cairo_paint(cr);
-  cairo_surface_destroy(source);
 }
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
@@ -591,14 +591,13 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
   // FIXME: is that right anymore? though this does work...
   // don't multiply by ppd as the source isn't screen pixels
   cairo_scale(cr, (double)width/(wf_width*3), (double)height/wf_height);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
   // FIXME: make a single buffer with the three side-by-side images and then draw them with a single Cairo call -- to speed things up, and work at a display resolution equivalent to waveform
   for(int k = 2; k >= 0; k--)
   {
     if(mask[2-k])
     {
-      // FIXME: it would be nice to have the SIMD without launching threads, as this should be a great chance for SIMD but for such a small array the overhead of launching threads and memory constraints may just stall out cores
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_linear, wf_width, wf_height, k, graph_rgb) \
@@ -609,16 +608,15 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
       {
         // FIXME: if use lcms2 straight to 8-bit don't need to constrain?
         const float src = MIN(1.0f, wf_linear[p + k]);
-        wf_display[p] = src * graph_rgb[k][0];
-        wf_display[p+1] = src * graph_rgb[k][1];
-        wf_display[p+2] = src * graph_rgb[k][2];
+        for(int ch = 0; ch < 3; ch++)
+          wf_display[p+ch] = src * graph_rgb[k][ch];
+        wf_display[p+3] = src;
       }
 
       // FIXME: are better off using lcms2 and converting directly from float to 8-bit
       dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
                                               profile_from, profile_to, "rgb parade to display");
 
-      // FIXME: it would be nice to have the SIMD without launching threads, as this should be a great chance for SIMD but for such a small array the overhead of launching threads and memory constraints may just stall out cores
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
@@ -627,11 +625,11 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
 #endif
       for(int y = 0; y < wf_height; y++)
         for(int x = 0; x < wf_width; x++)
-          for(int rgb = 0; rgb < 3; rgb++)
-            wf_8bit[(y * wf_stride + x * 4) + rgb] = wf_display[4 * (y * wf_width + x) + rgb] * 255.0f;
+          for(int ch = 0; ch < 4; ch++)
+            wf_8bit[(y * wf_stride + x * 4) + ch] = wf_display[4 * (y * wf_width + x) + ch] * 255.0f;
 
       cairo_surface_t *source = cairo_image_surface_create_for_data(
-        wf_8bit, CAIRO_FORMAT_RGB24, wf_width, wf_height, wf_stride);
+        wf_8bit, CAIRO_FORMAT_ARGB32, wf_width, wf_height, wf_stride);
       cairo_set_source_surface(cr, source, 0.0, 0.0);
       cairo_paint(cr);
       cairo_surface_destroy(source);
@@ -668,32 +666,37 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_fill(cr);
   cairo_restore(cr);
 
-  const float DT_ALIGNED_ARRAY graph_rgb[3][4] = {
+  // FIXME: if these are simply the sRGB primaries, just use those primaries rather than loading from CSS
+  const float DT_ALIGNED_ARRAY graph_rgb_srgb[3][4] = {
     {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red, 0.0f},
     {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red, 0.0f},
     {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red, 0.0f},
 };
-  // FIXME: can/should we cache the linear rec 2020 profile info?
+  // FIXME: can/should we cache srgb and linear rec 2020 profile info?
   // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- as ioppr ignores intent?
-  const dt_iop_order_iccprofile_info_t *const profile_from =
+  // FIXME: just use LCMS, as these are quick transforms and might as well take the extra accuracy, and less perf logging to stderr?
+  const dt_iop_order_iccprofile_info_t *const profile_srgb =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_linear =
     dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-  const dt_iop_order_iccprofile_info_t *const profile_to =
+  const dt_iop_order_iccprofile_info_t *const profile_display =
     dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
   // FIXME: is putting the colors in display profile the same as drawing in Rec.2020 linear then converting to display profile?
   // FIXME: this is such a quick conversion, just use LCMS and have the benefit of display intent
-  float DT_ALIGNED_ARRAY graph_rgb_display[3][4];
-  dt_ioppr_transform_image_colorspace_rgb(graph_rgb[0], graph_rgb_display[0], 3, 1,
-                                          profile_from, profile_to, "histogram colors to display");
+  float DT_ALIGNED_ARRAY graph_rgb_linear[3][4], graph_rgb_display[3][4];
+  dt_ioppr_transform_image_colorspace_rgb(graph_rgb_srgb[0], graph_rgb_linear[0], 3, 1,
+                                          profile_srgb, profile_linear, "histogram colors srgb to linear");
+  dt_ioppr_transform_image_colorspace_rgb(graph_rgb_srgb[0], graph_rgb_display[0], 3, 1,
+                                          profile_srgb, profile_display, "histogram colors srgb to display");
 
-  // darkroom view: draw scope so long as preview pipe is finished
-  // tether view: draw whatever has come in from tether
   // FIXME: should set histogram buffer to black if have just entered tether view and nothing is displayed
   dt_pthread_mutex_lock(&d->lock);
+  // darkroom view: draw scope so long as preview pipe is finished
+  // tether view: draw whatever has come in from tether
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view(cv) == DT_VIEW_TETHERING || dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     uint8_t mask[3] = { d->red, d->green, d->blue };
-    // FIXME: needed save/restore as it is wrapping a group push/pop which already does this?
     cairo_save(cr);
     switch(d->scope_type)
     {
@@ -702,9 +705,11 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
-          _lib_histogram_draw_waveform(d, cr, width, height, mask, graph_rgb, profile_from, profile_to);
+          _lib_histogram_draw_waveform(d, cr, width, height, mask,
+                                       graph_rgb_linear, profile_linear, profile_display);
         else
-          _lib_histogram_draw_rgb_parade(d, cr, width, height, mask, graph_rgb, profile_from, profile_to);
+          _lib_histogram_draw_rgb_parade(d, cr, width, height, mask,
+                                         graph_rgb_linear, profile_linear, profile_display);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();

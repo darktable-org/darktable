@@ -155,15 +155,20 @@
 @define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_05;
 @define-color inset_histogram alpha(@grey_65, 0.50);
-/* colors for histograms -- will be rendered in Rec.2020 linear */
+/* colors for histograms, assumed to be in sRGB */
 /* constraints:
    * graph_red, graph_green, graph_blue should be perceived as these primary colors
-   * the sum of pairs of colors should be pereceived as secondary colors
-   * the sum of all three colors should not have any channels exceed 100% and should appear white
+   * the sum of pairs of colors should be perceived as secondary colors
+   * the sum of all three colors should appear white
 */
-@define-color graph_red rgb(62%,9%,2%);
-@define-color graph_green rgb(27%, 66%, 7%);
-@define-color graph_blue rgb(4%, 10%, 87%);
+@define-color graph_red rgb(100%,0%,0%);
+@define-color graph_green rgb(0%, 100%, 0%);
+@define-color graph_blue rgb(0%, 0%, 100%);
+/* FIXME: these don't have to be primaries, e.g. compare to this:
+@define-color graph_red rgb(100%,5%,0%);
+@define-color graph_green rgb(5%, 100%, 0%);
+@define-color graph_blue rgb(15%, 15%, 100%);
+*/
 
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
 *
