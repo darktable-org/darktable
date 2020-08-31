@@ -495,20 +495,21 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   // primaries, secondaries and whites without being washed out by a
   // lighter darktable theme
   cairo_push_group(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_COLOR_DODGE);
 
+  cairo_set_operator(cr, CAIRO_OPERATOR_COLOR_DODGE);
   cairo_translate(cr, 0, height);
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      cairo_set_source_rgba(cr, graph_rgb_display[2-k][2], graph_rgb_display[2-k][1], graph_rgb_display[2-k][0], 0.95);
+      cairo_set_source_rgba(cr, graph_rgb_display[2-k][2], graph_rgb_display[2-k][1], graph_rgb_display[2-k][0], 1.0);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
 
   cairo_pop_group_to_source(cr);
-  cairo_paint(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+  cairo_paint_with_alpha(cr, 0.6);
 }
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
@@ -666,6 +667,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_fill(cr);
   cairo_restore(cr);
 
+  // draw grid
+  set_color(cr, darktable.bauhaus->graph_grid);
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+    dt_draw_waveform_lines(cr, 0, 0, width, height);
+  else
+    dt_draw_grid(cr, 4, 0, 0, width, height);
+
   // FIXME: if these are simply the sRGB primaries, just use those primaries rather than loading from CSS
   const float DT_ALIGNED_ARRAY graph_rgb_srgb[3][4] = {
     {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red, 0.0f},
@@ -711,15 +719,8 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   }
   dt_pthread_mutex_unlock(&d->lock);
 
-  // draw grid
-  cairo_set_operator(cr, CAIRO_OPERATOR_SOFT_LIGHT);
-  set_color(cr, darktable.bauhaus->graph_grid);
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-    dt_draw_waveform_lines(cr, 0, 0, width, height);
-  else
-    dt_draw_grid(cr, 4, 0, 0, width, height);
-
   // exposure change regions
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOFT_LIGHT);
   if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
   {
     set_color(cr, darktable.bauhaus->graph_fg_active);
