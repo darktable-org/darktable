@@ -1212,14 +1212,14 @@ void gui_reset(dt_lib_module_t *self)
 
   if(res == GTK_RESPONSE_YES)
   {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                           dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
                           dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
 
     dt_history_delete_on_image_ext(imgid, FALSE);
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 
     dt_control_queue_redraw_center();

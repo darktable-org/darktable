@@ -1437,7 +1437,7 @@ void dt_culling_update_active_images_list(dt_culling_t *table)
     l = g_list_next(l);
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 
 // recreate the list of thumb if needed and recomputes sizes and positions if needed
