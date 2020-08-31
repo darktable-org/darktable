@@ -1153,7 +1153,7 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 {
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                               G_CALLBACK(_lib_histogram_preview_updated_callback), self);
   }
   // FIXME: set histogram data to blank if enter tether with no active image
@@ -1161,7 +1161,7 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 
 void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
-  dt_control_signal_disconnect(darktable.signals,
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                G_CALLBACK(_lib_histogram_preview_updated_callback),
                                self);
 }

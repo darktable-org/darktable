@@ -1221,7 +1221,7 @@ static void _darkroom_ui_apply_style_activate_callback(gchar *name)
   /* apply style on image and reload*/
   dt_styles_apply_to_image(name, FALSE, darktable.develop->image_storage.id);
   dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();
@@ -2390,7 +2390,7 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                               G_CALLBACK(_preference_prev_downsample_change), &(dev->preview_downsampling));
     // update the gui when the preferences changed (i.e. show intent when using lcms2)
     DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,

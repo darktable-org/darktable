@@ -1807,7 +1807,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     }
 
     // if we force the redraw, we ensure selection is updated
-    if(force) dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+    if(force) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 
     // be sure the focus is in the right widget (needed for accels)
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -2005,7 +2005,7 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return TRUE;
 }
 static gboolean _accel_select_all(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
