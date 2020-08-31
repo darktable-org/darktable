@@ -814,6 +814,13 @@ void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float s
   dt_bauhaus_slider_set_soft_max(widget,soft_max);
 }
 
+float dt_bauhaus_slider_get_default(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  return d->defpos;
+}
+
 void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -2296,6 +2303,17 @@ void dt_bauhaus_slider_set_feedback(GtkWidget *widget, int feedback)
   d->fill_feedback = feedback;
 
   gtk_widget_queue_draw(widget);
+}
+
+int dt_bauhaus_slider_get_feedback(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+
+  if(w->type != DT_BAUHAUS_SLIDER) return 0;
+
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  return d->fill_feedback;
 }
 
 void dt_bauhaus_slider_reset(GtkWidget *widget)
