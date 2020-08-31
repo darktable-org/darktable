@@ -2061,7 +2061,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
          GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
          _("do you really want to delete the preset `%s'?"), name);
 #ifdef GDK_WINDOWING_QUARTZ
-      dt_osx_disallow_fullscreen(dialog);
+      dt_osx_disallow_fullscreen(win);
 #endif
       gtk_window_set_title(GTK_WINDOW(win), _("delete preset?"));
       if(gtk_dialog_run(GTK_DIALOG(win)) == GTK_RESPONSE_YES)
