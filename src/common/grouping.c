@@ -96,7 +96,7 @@ int dt_grouping_change_representative(const int image_id)
   sqlite3_stmt *stmt;
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, image_id, 'r');
-  int group_id = img->group_id;
+  const int group_id = img->group_id;
   dt_image_cache_read_release(darktable.image_cache, img);
 
   GList *imgs = NULL;
@@ -105,7 +105,7 @@ int dt_grouping_change_representative(const int image_id)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int other_id = sqlite3_column_int(stmt, 0);
+    const int other_id = sqlite3_column_int(stmt, 0);
     dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
     other_img->group_id = image_id;
     dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
