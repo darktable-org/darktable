@@ -2173,8 +2173,13 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->finetune), "value-changed", G_CALLBACK(finetune_changed), self);
 
   // update the gui when the preferences changed (i.e. colored sliders stuff)
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                             G_CALLBACK(_preference_changed), (gpointer)self);
+}
+
+void gui_cleanup(struct dt_iop_module_t *self)
+{
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_preference_changed), self);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
