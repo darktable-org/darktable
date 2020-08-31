@@ -245,6 +245,7 @@ typedef enum dt_debug_signal_action_t
   DT_DEBUG_SIGNAL_ACT_RAISE       = 1 << 0,
   DT_DEBUG_SIGNAL_ACT_CONNECT     = 1 << 1,
   DT_DEBUG_SIGNAL_ACT_DISCONNECT  = 1 << 2,
+  DT_DEBUG_SIGNAL_ACT_PRINT_TRACE = 1 << 3,
 } dt_debug_signal_action_t;
 
 /* inititialize the signal framework */
