@@ -828,24 +828,24 @@ void gui_init(dt_lib_module_t *self)
   }
 
   /* lets signup for mouse over image change signals */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
   /* lets signup for develop image changed signals */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
   /* signup for develop initialize to update info of current
      image in darkroom when enter */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
   /* signup for tags changes */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
   /* signup for metadata changes */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_METADATA_UPDATE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_UPDATE,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
   /* adaptable window size */
@@ -854,7 +854,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   g_free(self->data);
   self->data = NULL;
 }

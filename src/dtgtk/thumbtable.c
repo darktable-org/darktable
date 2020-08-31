@@ -981,7 +981,7 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
           && event->type == GDK_BUTTON_PRESS
           && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0)
   {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
   }
 
   if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
@@ -1616,15 +1616,15 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect(G_OBJECT(table->widget), "button-release-event", G_CALLBACK(_event_button_release), table);
 
   // we register globals signals
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_dt_collection_changed_callback), table);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_dt_mouse_over_image_callback), table);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
                             G_CALLBACK(_dt_active_images_callback), table);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_dt_profile_change_callback), table);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                             G_CALLBACK(_dt_pref_change_callback), table);
   gtk_widget_show(table->widget);
 
@@ -1827,11 +1827,11 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       }
       g_slist_free(darktable.view_manager->active_images);
       darktable.view_manager->active_images = NULL;
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
     }
 
     // if we force the redraw, we ensure selection is updated
-    if(force) dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+    if(force) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 
     // be sure the focus is in the right widget (needed for accels)
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -2029,7 +2029,7 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return TRUE;
 }
 static gboolean _accel_select_all(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,

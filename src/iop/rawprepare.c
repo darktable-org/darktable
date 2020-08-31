@@ -707,7 +707,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->rawprepare.raw_white_point = p->raw_white_point;
 
   if(image_set_rawcrops(pipe->image.id, d->x + d->width, d->y + d->height))
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 
   if(!(dt_image_is_rawprepare_supported(&piece->pipe->image)) || image_is_normalized(&piece->pipe->image)) piece->enabled = 0;
 }

@@ -95,9 +95,9 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_delete_on_image(newid);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
@@ -106,7 +106,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
   if (newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid,newid,FALSE,NULL, TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
@@ -128,7 +128,7 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
         if(l2)
         {
           dt_thumbnail_t *th2 = (dt_thumbnail_t *)l2->data;
-          dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, th2->imgid);
+          DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, th2->imgid);
           break;
         }
       }
@@ -175,7 +175,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
     else if(event->type == GDK_2BUTTON_PRESS)
     {
       // let's switch to the new image
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
     }
   }
 }
@@ -551,20 +551,20 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_widget_show_all(self->widget);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED, G_CALLBACK(_lib_duplicate_init_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE, G_CALLBACK(_lib_duplicate_init_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED, G_CALLBACK(_lib_duplicate_init_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE, G_CALLBACK(_lib_duplicate_init_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_lib_duplicate_collection_changed), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, G_CALLBACK(_lib_duplicate_mipmap_updated_callback), (gpointer)self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, G_CALLBACK(_lib_duplicate_mipmap_updated_callback), (gpointer)self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_lib_duplicate_preview_updated_callback), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_duplicate_init_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_duplicate_mipmap_updated_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_duplicate_preview_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_duplicate_init_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_duplicate_mipmap_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_duplicate_preview_updated_callback), self);
   g_free(self->data);
   self->data = NULL;
 }

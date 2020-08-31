@@ -196,7 +196,7 @@ static void _clear_button_clicked(GtkButton *button, dt_lib_module_t *self)
   d->editing = FALSE;
   const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
   dt_metadata_clear(imgs, TRUE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
   _update(self);
 }
@@ -231,8 +231,8 @@ static void _write_metadata(dt_lib_module_t *self)
   }
   g_list_free(key_value);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
   dt_image_synch_xmps(imgs);
   _update(self);
@@ -494,7 +494,7 @@ static void _config_button_clicked(GtkButton *button, dt_lib_module_t *self)
       }
     }
     if(meta_signal)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
                               meta_remove ? DT_METADATA_SIGNAL_HIDDEN : DT_METADATA_SIGNAL_SHOWN);
   }
 //  update_layout(self);
@@ -741,13 +741,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_hexpand(GTK_WIDGET(grid), TRUE);
 
   /* lets signup for mouse over image change signals */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
   // and 2 other interesting signals:
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
   _update(self);
 }
@@ -756,9 +756,9 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -921,7 +921,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   g_list_free(key_value);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
   _update(self);
   return 0;

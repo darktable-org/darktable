@@ -290,9 +290,9 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *file
   {
     // only redraw at the end, to not spam the cpu with exposure events
     dt_control_queue_redraw_center();
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
                             dt_import_session_film_id(t->shared.session));
   }
   t->import_count++;

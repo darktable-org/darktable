@@ -20,6 +20,10 @@
 #include <glib.h>
 #include <string.h>
 
+#ifdef DT_HAVE_SIGNAL_TRACE
+#include <execinfo.h>
+#endif
+
 typedef struct dt_control_signal_t
 {
   /* the sinks for the signals */
@@ -240,6 +244,27 @@ gboolean _async_com_callback(gpointer data)
   return FALSE;
 }
 
+static void _print_trace (const char* op)
+{
+#ifdef DT_HAVE_SIGNAL_TRACE
+  if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_PRINT_TRACE)
+  {
+    void *array[10];
+    size_t size;
+    char **strings;
+    size_t i;
+
+    size = backtrace (array, 10);
+    strings = backtrace_symbols (array, size);
+
+    for (i = 0; i < size; i++)
+      dt_print(DT_DEBUG_SIGNAL, "[signal-trace-%s]: %s\n", op, strings[i]);
+
+    free (strings);
+  }
+#endif
+}
+
 void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal, ...)
 {
   // ignore all signals on shutdown
@@ -255,6 +280,12 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
   {
     free(params);
     return;
+  }
+
+  if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_RAISE && darktable.unmuted_signal_dbg[signal])
+  {
+    dt_print(DT_DEBUG_SIGNAL, "[signal] raised: %s\n", signal_description->name);
+    _print_trace("raise");
   }
 
   // 0th element has to be the instance to call
@@ -322,15 +353,24 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
   }
 }
 
-
 void dt_control_signal_connect(const dt_control_signal_t *ctlsig, dt_signal_t signal, GCallback cb,
                                gpointer user_data)
 {
+  if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_CONNECT && darktable.unmuted_signal_dbg[signal])
+  {
+    dt_print(DT_DEBUG_SIGNAL, "[signal] connected: %s\n", _signal_description[signal].name);
+    _print_trace("connect");
+  }
   g_signal_connect(G_OBJECT(ctlsig->sink), _signal_description[signal].name, G_CALLBACK(cb), user_data);
 }
 
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data)
 {
+  if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_DISCONNECT)
+  {
+    dt_print(DT_DEBUG_SIGNAL, "[signal] disconnected\n");
+    _print_trace("disconnect");
+  }
   g_signal_handlers_disconnect_matched(G_OBJECT(ctlsig->sink), G_SIGNAL_MATCH_FUNC | G_SIGNAL_MATCH_DATA, 0,
                                        0, NULL, cb, user_data);
 }

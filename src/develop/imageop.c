@@ -624,7 +624,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   if(!next) return; // what happened ???
 
   if(dev->gui_attached)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
@@ -692,7 +692,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   // we save the current state of history (with the new multi_priorities)
   if(dev->gui_attached)
   {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
 
   // rebuild the accelerators (to point to an extant module)
@@ -812,7 +812,7 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(prev->dev);
@@ -856,7 +856,7 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(next->dev);

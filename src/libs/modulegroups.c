@@ -312,7 +312,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.search_text_focus = _lib_modulegroups_search_text_focus;
 
   /* let's connect to view changed signal to set default group */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
                             G_CALLBACK(_lib_modulegroups_viewchanged_callback), self);
 }
 
@@ -323,7 +323,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
 
   /* let's not listen to signals anymore.. */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_modulegroups_viewchanged_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_modulegroups_viewchanged_callback), self);
 
   darktable.develop->proxy.modulegroups.module = NULL;
   darktable.develop->proxy.modulegroups.set = NULL;

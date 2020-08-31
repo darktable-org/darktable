@@ -557,7 +557,7 @@ static void _raise_signal_tag_changed(dt_lib_module_t *self)
     // raises change only for other modules
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
     dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
     dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   }
@@ -2839,13 +2839,13 @@ void gui_init(dt_lib_module_t *self)
   else d->completion = NULL;
 
   /* connect to mouse over id */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_lib_tagging_redraw_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_lib_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
   d->collection = g_malloc(4096);
@@ -2862,10 +2862,10 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   g_free(d->collection);
   free(self->data);
   self->data = NULL;
