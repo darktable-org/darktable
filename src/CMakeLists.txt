@@ -777,6 +777,11 @@ else(USE_GAME)
   message(STATUS "Game: no")
 endif(USE_GAME)
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_definitions("-DDT_HAVE_SIGNAL_TRACE")
+  message(WARNING "Enabling signal tracing.\nrunning `-d signal --d-signal-act print-trace` will print backlogs.\nthis is solely for developers!")
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
 #
 # set development flags for our code
 #
