@@ -86,6 +86,8 @@ typedef struct dt_lib_histogram_t
   uint8_t *waveform_8bit;
   uint32_t waveform_width, waveform_height, waveform_max_width;
   dt_pthread_mutex_t lock;
+  // for colorspace work
+  const dt_iop_order_iccprofile_info_t *profile_srgb, *profile_linear;
   // exposure params on mouse down
   float exposure, black;
   // mouse state
@@ -513,8 +515,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
                                          int width, int height,
                                          const uint8_t mask[3],
                                          const float graph_rgb[3][4],
-                                         const dt_iop_order_iccprofile_info_t *const profile_from,
-                                         const dt_iop_order_iccprofile_info_t *const profile_to)
+                                         const dt_iop_order_iccprofile_info_t *const profile_display)
 {
   // FIXME: test this and return if it is zero?
   const int wf_width = d->waveform_width;
@@ -549,7 +550,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
       }
       // FIXME: are better off using lcms2 and converting directly from float to 8-bit
       dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
-                                              profile_from, profile_to, "waveform to display");
+                                              d->profile_linear, profile_display, "waveform linear to display");
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -577,8 +578,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
                                            int width, int height, const uint8_t mask[3],
                                            const float graph_rgb[3][4],
-                                           const dt_iop_order_iccprofile_info_t *const profile_from,
-                                           const dt_iop_order_iccprofile_info_t *const profile_to)
+                                           const dt_iop_order_iccprofile_info_t *const profile_display)
 {
   // FIXME: test this and return if it is zero?
   const int wf_width = d->waveform_width;
@@ -615,7 +615,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
 
       // FIXME: are better off using lcms2 and converting directly from float to 8-bit
       dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
-                                              profile_from, profile_to, "rgb parade to display");
+                                              d->profile_linear, profile_display, "rgb parade linear to display");
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -672,22 +672,17 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red, 0.0f},
     {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red, 0.0f},
 };
-  // FIXME: can/should we cache srgb and linear rec 2020 profile info?
   // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- as ioppr ignores intent?
   // FIXME: just use LCMS, as these are quick transforms and might as well take the extra accuracy, and less perf logging to stderr?
-  const dt_iop_order_iccprofile_info_t *const profile_srgb =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL);
-  const dt_iop_order_iccprofile_info_t *const profile_linear =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const profile_display =
     dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
   // FIXME: is putting the colors in display profile the same as drawing in Rec.2020 linear then converting to display profile?
   // FIXME: this is such a quick conversion, just use LCMS and have the benefit of display intent
   float DT_ALIGNED_ARRAY graph_rgb_linear[3][4], graph_rgb_display[3][4];
   dt_ioppr_transform_image_colorspace_rgb(graph_rgb_srgb[0], graph_rgb_linear[0], 3, 1,
-                                          profile_srgb, profile_linear, "histogram colors srgb to linear");
+                                          d->profile_srgb, d->profile_linear, "histogram colors srgb to linear");
   dt_ioppr_transform_image_colorspace_rgb(graph_rgb_srgb[0], graph_rgb_display[0], 3, 1,
-                                          profile_srgb, profile_display, "histogram colors srgb to display");
+                                          d->profile_srgb, profile_display, "histogram colors srgb to display");
 
   // FIXME: should set histogram buffer to black if have just entered tether view and nothing is displayed
   dt_pthread_mutex_lock(&d->lock);
@@ -705,11 +700,9 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
-          _lib_histogram_draw_waveform(d, cr, width, height, mask,
-                                       graph_rgb_linear, profile_linear, profile_display);
+          _lib_histogram_draw_waveform(d, cr, width, height, mask, graph_rgb_linear, profile_display);
         else
-          _lib_histogram_draw_rgb_parade(d, cr, width, height, mask,
-                                         graph_rgb_linear, profile_linear, profile_display);
+          _lib_histogram_draw_rgb_parade(d, cr, width, height, mask, graph_rgb_linear, profile_display);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
@@ -1237,6 +1230,9 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 
 void gui_init(dt_lib_module_t *self)
 {
+  // FIXME: is there a guarantee that darktable.develop is initialized by the time gui_init() is called?
+  dt_develop_t *dev = darktable.develop;
+
   /* initialize ui widgets */
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc0(sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
@@ -1308,6 +1304,10 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_linear = dt_alloc_align(64, sizeof(float) * d->waveform_height * d->waveform_max_width * 4);
   d->waveform_display = dt_alloc_align(64, sizeof(float) * d->waveform_height * d->waveform_max_width * 4);
   d->waveform_8bit = dt_alloc_align(64, sizeof(uint8_t) * d->waveform_height * d->waveform_max_width * 4);
+
+  // frequently used profiles
+  d->profile_srgb = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL);
+  d->profile_linear = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
