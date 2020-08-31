@@ -123,7 +123,11 @@ static int usage(const char *argv0)
   printf("      lua,masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder,\n");
   printf("      imageio,undo,signal}\n");
   printf("  --d-signal <signal> \n");
-  printf("  --d-signal-act <all,raise,connect,disconnect>\n");
+  printf("  --d-signal-act <all,raise,connect,disconnect");
+#ifdef DT_HAVE_SIGNAL_TRACE
+  printf(",print-trace");
+#endif
+  printf(">\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
@@ -677,6 +681,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_CONNECT; // enable debugging for signal connection
         else if(!strcmp(argv[k + 1], "disconnect"))
           darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_DISCONNECT; // enable debugging for signal disconnection
+#ifdef DT_HAVE_SIGNAL_TRACE
+        else if(!strcmp(argv[k + 1], "print-trace"))
+          darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_PRINT_TRACE; // enable printing of signal tracing
+#endif
         else
           return usage(argv[0]);
         k++;

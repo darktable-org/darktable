@@ -20,7 +20,7 @@
 #include <glib.h>
 #include <string.h>
 
-#ifdef DT_PRINT_SIGNAL_TRACE
+#ifdef DT_HAVE_SIGNAL_TRACE
 #include <execinfo.h>
 #endif
 
@@ -246,21 +246,22 @@ gboolean _async_com_callback(gpointer data)
 
 static void _print_trace (const char* op)
 {
-#ifdef DT_PRINT_SIGNAL_TRACE
-  void *array[10];
-  size_t size;
-  char **strings;
-  size_t i;
+#ifdef DT_HAVE_SIGNAL_TRACE
+  if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_PRINT_TRACE)
+  {
+    void *array[10];
+    size_t size;
+    char **strings;
+    size_t i;
 
-  size = backtrace (array, 10);
-  strings = backtrace_symbols (array, size);
+    size = backtrace (array, 10);
+    strings = backtrace_symbols (array, size);
 
-  //printf ("Obtained %zd stack frames.\n", size);
+    for (i = 0; i < size; i++)
+      dt_print(DT_DEBUG_SIGNAL, "[signal-trace-%s]: %s\n", op, strings[i]);
 
-  for (i = 0; i < size; i++)
-     dt_print(DT_DEBUG_SIGNAL, "[signal-trace-%s]: %s\n", op, strings[i]);
-
-  free (strings);
+    free (strings);
+  }
 #endif
 }
 
