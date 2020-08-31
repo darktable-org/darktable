@@ -140,12 +140,15 @@ void dt_gui_presets_add_with_blendop(
   sqlite3_finalize(stmt);
 }
 
-static gchar *get_active_preset_name(dt_iop_module_t *module)
+static gchar *get_active_preset_name(dt_iop_module_t *module, int *writeprotect)
 {
   sqlite3_stmt *stmt;
+  // if we sort by writeprotect DESC then in case user copied the writeprotected preset
+  // then the preset name returned will be writeprotected and thus not deletable
+  // sorting ASC prefers user created presets.
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params, blendop_params, enabled FROM data.presets WHERE "
-                              "operation=?1 AND op_version=?2 ORDER BY writeprotect DESC, LOWER(name), rowid",
+                              "SELECT name, op_params, blendop_params, enabled, writeprotect FROM data.presets WHERE "
+                              "operation=?1 AND op_version=?2 ORDER BY writeprotect ASC, LOWER(name), rowid",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
@@ -163,6 +166,7 @@ static gchar *get_active_preset_name(dt_iop_module_t *module)
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))) && module->enabled == enabled)
     {
       name = g_strdup((char *)sqlite3_column_text(stmt, 0));
+      *writeprotect = sqlite3_column_int(stmt, 4);
       break;
     }
   }
@@ -173,8 +177,16 @@ static gchar *get_active_preset_name(dt_iop_module_t *module)
 static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
-  gchar *name = get_active_preset_name(module);
+  int writeprotect = -1;
+  gchar *name = get_active_preset_name(module, &writeprotect);
   if(name == NULL) return;
+
+  if(writeprotect)
+  {
+    dt_control_log(_("preset `%s' is write-protected, can't delete!"), name);
+    g_free(name);
+    return;
+  }
 
   gint res = GTK_RESPONSE_YES;
 
@@ -379,8 +391,15 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   gchar *name = NULL;
   if(name_in == NULL)
   {
-    name = get_active_preset_name(module);
+    int writeprotect = -1;
+    name = get_active_preset_name(module, &writeprotect);
     if(name == NULL) return;
+    if(writeprotect)
+    {
+      dt_control_log(_("preset `%s' is write-protected! can't edit it!"), name);
+      g_free(name);
+      return;
+    }
   }
   else
     name = g_strdup(name_in);
