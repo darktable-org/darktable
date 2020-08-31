@@ -863,7 +863,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       }
       tagNode = tagNode->next;
     }
-    if(tag_change) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
   else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"RetouchInfo"))
   {

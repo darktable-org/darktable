@@ -1330,7 +1330,7 @@ end:
   // notify the user via the window manager
   dt_ui_notify_user();
 
-  if(tag_change) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return 0;
 }
 

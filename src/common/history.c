@@ -146,7 +146,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
 void dt_history_delete_on_image(int32_t imgid)
 {
   dt_history_delete_on_image_ext(imgid, TRUE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only)
@@ -1058,7 +1058,7 @@ void dt_history_compress_on_image(const int32_t imgid)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
   GList *imgs = g_list_append(NULL, GINT_TO_POINTER(imgid));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgs);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgs);
 }
 
 /* Please note: dt_history_truncate_on_image
@@ -1114,7 +1114,7 @@ void dt_history_truncate_on_image(const int32_t imgid, const int32_t history_end
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
   GList *imgs = g_list_append(NULL, GINT_TO_POINTER(imgid));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgs);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgs);
 }
 
 int dt_history_compress_on_list(const GList *imgs)
@@ -1695,7 +1695,7 @@ gboolean dt_history_delete_on_list(const GList *list, gboolean undo)
     l = g_list_next(l);
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   if(undo) dt_undo_end_group(darktable.undo);
   return TRUE;
