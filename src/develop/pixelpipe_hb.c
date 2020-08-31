@@ -1037,7 +1037,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
                      module->picked_output_color_min, module->picked_output_color_max,
                      pipe->dsc.cst, PIXELPIPE_PICKER_OUTPUT);
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
   }
 
   if(dt_atomic_get_int(&pipe->shutdown))
@@ -1508,7 +1508,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                 module->picked_output_color, module->picked_output_color_min,
                                 module->picked_output_color_max, *output, outbufsize, pipe->dsc.cst, PIXELPIPE_PICKER_OUTPUT);
 
-            dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
+            DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
           }
 
           if(dt_atomic_get_int(&pipe->shutdown))
@@ -1647,7 +1647,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                              module->picked_output_color_min, module->picked_output_color_max,
                              pipe->dsc.cst, PIXELPIPE_PICKER_OUTPUT);
 
-            dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
+            DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, module, piece);
           }
 
           if(dt_atomic_get_int(&pipe->shutdown))

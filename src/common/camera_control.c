@@ -833,7 +833,7 @@ static void dt_camctl_detect_cameras(const dt_camctl_t *c)
   if(changed_camera)
   {
     dt_print(DT_DEBUG_CAMCTL, "[camera_control] detected changed cameras\n");
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
   }
 }
 

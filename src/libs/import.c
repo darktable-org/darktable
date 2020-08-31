@@ -816,7 +816,7 @@ void gui_init(dt_lib_module_t *self)
   d->camctl_listener.control_status = _camctl_camera_control_status_callback;
   d->camctl_listener.camera_disconnected = _camctl_camera_disconnected_callback;
   dt_camctl_register_listener(darktable.camctl, &d->camctl_listener);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
                             self);
 #endif
 #ifdef USE_LUA
@@ -829,7 +829,7 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
 #ifdef HAVE_GPHOTO2
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_camera_detected), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_camera_detected), self);
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   /* unregister camctl listener */
   dt_camctl_unregister_listener(darktable.camctl, &d->camctl_listener);

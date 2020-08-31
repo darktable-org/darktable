@@ -321,7 +321,7 @@ void gui_init(dt_lib_module_t *self)
   _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, NULL, -1, self);
 
   /* connect collection changed signal */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_lib_recentcollection_updated), (gpointer)self);
 }
 
@@ -329,7 +329,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   const int curr_pos = dt_ui_thumbtable(darktable.gui->ui)->offset;
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_recentcollection_updated), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_recentcollection_updated), self);
   free(self->data);
   self->data = NULL;
 }
