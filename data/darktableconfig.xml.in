@@ -2358,6 +2358,33 @@
     <shortdescription>Geotagging search URL</shortdescription>
     <longdescription>this can be changed when the default OpenStreetMap search URL is broken</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom" section="interface">
+    <name>plugins/darkroom/temperature/colored_sliders</name>
+    <type>
+      <enum>
+        <option>no color</option>
+        <option>illuminant color</option>
+        <option>effect emulation</option>
+      </enum>
+    </type>
+    <default>no color</default>
+    <shortdescription>white balance slider colors</shortdescription>
+    <longdescription>visual indication of temperature adjustments.\nin 'illuminant color' mode slider colors represent the color of the light source,\nin 'effect emulation' slider colors represent the effect the adjustment would have on the scene</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/temperature/expand_coefficients</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show coefficients</shortdescription>
+    <longdescription>this is just for remembering whether to show coefficients or not and remember it</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/temperature/button_bar</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>arange buttons as bar below temp/tint sliders</shortdescription>
+    <longdescription>if enabled, the buttons in white balance module will be aranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
+  </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
 

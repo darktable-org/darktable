@@ -978,6 +978,31 @@ void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
+void dtgtk_cairo_paint_camera(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // lens
+  cairo_arc(cr, 0.5, 0.5, 0.2, 0, 2. * M_PI);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0.5, 0.5, 0.1, M_PI, M_PI+M_PI_2);
+  cairo_stroke(cr);
+
+  // body
+  
+  cairo_move_to(cr, 0, 0.25);
+  cairo_line_to(cr, 0, 0.85);
+  cairo_line_to(cr, 0.95, 0.85);
+  cairo_line_to(cr, 0.95, 0.25);
+  cairo_line_to(cr, 0.75, 0.25);
+  cairo_line_to(cr, 0.65, 0.15);
+  cairo_line_to(cr, 0.35, 0.15);
+  cairo_line_to(cr, 0.25, 0.25);
+  cairo_close_path(cr);
+  cairo_stroke(cr);
+
+  FINISH
+}
 
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
