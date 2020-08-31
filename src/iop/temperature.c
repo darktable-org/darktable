@@ -2180,6 +2180,8 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_preference_changed), self);
+  g_free(self->gui_data);
+  self->gui_data = NULL;
 }
 
 void gui_reset(struct dt_iop_module_t *self)
