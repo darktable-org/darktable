@@ -493,7 +493,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   // primaries, secondaries and whites without being washed out by a
   // lighter darktable theme
   cairo_push_group(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_operator(cr, CAIRO_OPERATOR_COLOR_DODGE);
 
   cairo_translate(cr, 0, height);
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
@@ -501,7 +501,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      cairo_set_source_rgba(cr, graph_rgb_display[2-k][2], graph_rgb_display[2-k][1], graph_rgb_display[2-k][0], 0.7);
+      cairo_set_source_rgba(cr, graph_rgb_display[2-k][2], graph_rgb_display[2-k][1], graph_rgb_display[2-k][0], 0.95);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
 
