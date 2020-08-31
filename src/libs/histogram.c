@@ -573,7 +573,8 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
     }
 
   cairo_pop_group_to_source(cr);
-  cairo_paint(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+  cairo_paint_with_alpha(cr, 0.6);
 }
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
@@ -632,7 +633,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
       cairo_surface_t *source = cairo_image_surface_create_for_data(
         wf_8bit, CAIRO_FORMAT_ARGB32, wf_width, wf_height, wf_stride);
       cairo_set_source_surface(cr, source, 0.0, 0.0);
-      cairo_paint(cr);
+      cairo_paint_with_alpha(cr, 0.6);
       cairo_surface_destroy(source);
     }
     cairo_translate(cr, wf_width, 0);
