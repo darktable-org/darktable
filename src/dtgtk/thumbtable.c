@@ -379,7 +379,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
       table->view_width = allocation.width;
       table->view_height = allocation.height;
       table->thumb_size = table->view_width / npr;
-      table->rows = table->view_height / table->thumb_size + 1;
+      table->rows = (table->view_height - table->thumbs_area.y) / table->thumb_size + 1;
       table->center_offset = 0;
       ret = TRUE;
     }
@@ -1804,7 +1804,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     _pos_compute_area(table);
 
     // we need to ensure there's no need to load other image on top/bottom
-    if(table->mode == DT_THUMBTABLE_MODE_ZOOM) _thumbs_load_needed(table);
+    if(table->mode == DT_THUMBTABLE_MODE_ZOOM) nbnew += _thumbs_load_needed(table);
 
     if(g_slist_length(darktable.view_manager->active_images) > 0
        && (table->mode == DT_THUMBTABLE_MODE_ZOOM || table->mode == DT_THUMBTABLE_MODE_FILEMANAGER))
