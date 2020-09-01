@@ -125,6 +125,11 @@ void *legacy_params(struct dt_lib_module_t *self,
   {
     /* from v1 to v2 we have reordered the filters */
     dt_lib_collect_params_t *o = (dt_lib_collect_params_t *)old_params;
+
+    if(o->rules > MAX_RULES)
+	/* preset is corrupted, return NULL and drop the preset */
+	return NULL;
+
     dt_lib_collect_params_t *n = (dt_lib_collect_params_t *)malloc(old_params_size);
 
     const int table[DT_COLLECTION_PROP_LAST] =
@@ -177,6 +182,11 @@ void *legacy_params(struct dt_lib_module_t *self,
   {
     /* from v2 to v3 we have added 4 new timestamp filters and 2 metadata filters */
     dt_lib_collect_params_t *old = (dt_lib_collect_params_t *)old_params;
+
+    if(old->rules > MAX_RULES)
+	/* preset is corrupted, return NULL and drop the preset */
+	return NULL;
+
     dt_lib_collect_params_t *new = (dt_lib_collect_params_t *)malloc(old_params_size);
 
     const int table[DT_COLLECTION_PROP_LAST] =
