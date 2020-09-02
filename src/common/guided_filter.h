@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <xmmintrin.h>
+
 #include "common/darktable.h"
 #include "common/opencl.h"
 
