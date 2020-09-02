@@ -458,13 +458,13 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   if(vm->accels_window.window && vm->accels_window.sticky) dt_view_accels_refresh(vm);
 
   /* raise view changed signal */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
 
   // update log visibility
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
 
   // update toast visibility
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
   return 0;
 }
 
@@ -744,8 +744,9 @@ static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboo
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        if(!g_list_find_custom(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)), _images_to_act_on_find_custom))
-          *list = g_list_append(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+        const int imgidg = sqlite3_column_int(stmt, 0);
+        if(!g_list_find_custom(*list, GINT_TO_POINTER(imgidg), _images_to_act_on_find_custom))
+          *list = g_list_append(*list, GINT_TO_POINTER(imgidg));
       }
       sqlite3_finalize(stmt);
       g_free(query);
@@ -1185,13 +1186,13 @@ void dt_view_active_images_reset(gboolean raise)
   g_slist_free(darktable.view_manager->active_images);
   darktable.view_manager->active_images = NULL;
 
-  if(raise) dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  if(raise) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 void dt_view_active_images_add(int imgid, gboolean raise)
 {
   darktable.view_manager->active_images
       = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
-  if(raise) dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  if(raise) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 GSList *dt_view_active_images_get()
 {

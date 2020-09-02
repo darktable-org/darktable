@@ -2416,6 +2416,7 @@ void gui_init(struct dt_iop_module_t *self)
   // profile only some of the lens flaws can be corrected
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *label = gtk_label_new(_("corrections done: "));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(label, _("which corrections have actually been done"));
   gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
@@ -2424,7 +2425,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 
   /* add signal handler for preview pipe finish to update message on corrections done */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(corrections_done), self);
 }
 
@@ -2511,7 +2512,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(corrections_done), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(corrections_done), self);
 
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->lens_model));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->camera_model));

@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/masks.h"
 #include "develop/tiling.h"
 #include "dtgtk/button.h"
@@ -54,13 +55,78 @@ typedef enum _iop_gui_blendif_channel_t
   ch_max = 4
 } _iop_gui_blendif_channel_t;
 
+const dt_develop_name_value_t dt_develop_blend_mode_names[]
+    = { { NC_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2 },
+        { NC_("blendmode", "normal bounded"), DEVELOP_BLEND_BOUNDED },
+        { NC_("blendmode", "lighten"), DEVELOP_BLEND_LIGHTEN },
+        { NC_("blendmode", "darken"), DEVELOP_BLEND_DARKEN },
+        { NC_("blendmode", "multiply"), DEVELOP_BLEND_MULTIPLY },
+        { NC_("blendmode", "average"), DEVELOP_BLEND_AVERAGE },
+        { NC_("blendmode", "addition"), DEVELOP_BLEND_ADD },
+        { NC_("blendmode", "subtract"), DEVELOP_BLEND_SUBSTRACT },
+        { NC_("blendmode", "difference"), DEVELOP_BLEND_DIFFERENCE2 },
+        { NC_("blendmode", "screen"), DEVELOP_BLEND_SCREEN },
+        { NC_("blendmode", "overlay"), DEVELOP_BLEND_OVERLAY },
+        { NC_("blendmode", "softlight"), DEVELOP_BLEND_SOFTLIGHT },
+        { NC_("blendmode", "hardlight"), DEVELOP_BLEND_HARDLIGHT },
+        { NC_("blendmode", "vividlight"), DEVELOP_BLEND_VIVIDLIGHT },
+        { NC_("blendmode", "linearlight"), DEVELOP_BLEND_LINEARLIGHT },
+        { NC_("blendmode", "pinlight"), DEVELOP_BLEND_PINLIGHT },
+        { NC_("blendmode", "lightness"), DEVELOP_BLEND_LIGHTNESS },
+        { NC_("blendmode", "chroma"), DEVELOP_BLEND_CHROMA },
+        { NC_("blendmode", "hue"), DEVELOP_BLEND_HUE },
+        { NC_("blendmode", "color"), DEVELOP_BLEND_COLOR },
+        { NC_("blendmode", "coloradjustment"), DEVELOP_BLEND_COLORADJUST },
+        { NC_("blendmode", "Lab lightness"), DEVELOP_BLEND_LAB_LIGHTNESS },
+        { NC_("blendmode", "Lab color"), DEVELOP_BLEND_LAB_COLOR },
+        { NC_("blendmode", "Lab L-channel"), DEVELOP_BLEND_LAB_L },
+        { NC_("blendmode", "Lab a-channel"), DEVELOP_BLEND_LAB_A },
+        { NC_("blendmode", "Lab b-channel"), DEVELOP_BLEND_LAB_B },
+        { NC_("blendmode", "HSV lightness"), DEVELOP_BLEND_HSV_LIGHTNESS },
+        { NC_("blendmode", "HSV color"), DEVELOP_BLEND_HSV_COLOR },
+        { NC_("blendmode", "RGB red channel"), DEVELOP_BLEND_RGB_R },
+        { NC_("blendmode", "RGB green channel"), DEVELOP_BLEND_RGB_G },
+        { NC_("blendmode", "RGB blue channel"), DEVELOP_BLEND_RGB_B },
+
+        /** deprecated blend modes: make them available as legacy history stacks might want them */
+        { NC_("blendmode", "difference (deprecated)"), DEVELOP_BLEND_DIFFERENCE },
+        { NC_("blendmode", "inverse (deprecated)"), DEVELOP_BLEND_INVERSE },
+        { NC_("blendmode", "normal (deprecated)"), DEVELOP_BLEND_NORMAL },
+        { NC_("blendmode", "unbounded (deprecated)"), DEVELOP_BLEND_UNBOUNDED },
+        { "", 0 } };
+
+const dt_develop_name_value_t dt_develop_mask_mode_names[]
+    = { { N_("off"), DEVELOP_MASK_DISABLED },
+        { N_("uniformly"), DEVELOP_MASK_ENABLED },
+        { N_("drawn mask"), DEVELOP_MASK_MASK | DEVELOP_MASK_ENABLED },
+        { N_("parametric mask"), DEVELOP_MASK_CONDITIONAL | DEVELOP_MASK_ENABLED },
+        { N_("raster mask"), DEVELOP_MASK_RASTER | DEVELOP_MASK_ENABLED },
+        { N_("drawn & parametric mask"), DEVELOP_MASK_MASK_CONDITIONAL | DEVELOP_MASK_ENABLED },
+        { "", 0 } };
+
+const dt_develop_name_value_t dt_develop_combine_masks_names[]
+    = { { N_("exclusive"), DEVELOP_COMBINE_NORM_EXCL },
+        { N_("inclusive"), DEVELOP_COMBINE_NORM_INCL },
+        { N_("exclusive & inverted"), DEVELOP_COMBINE_INV_EXCL },
+        { N_("inclusive & inverted"), DEVELOP_COMBINE_INV_INCL },
+        { "", 0 } };
+
+const dt_develop_name_value_t dt_develop_feathering_guide_names[]
+    = { { N_("output image"), DEVELOP_MASK_GUIDE_OUT },
+        { N_("input image"), DEVELOP_MASK_GUIDE_IN },
+        { "", 0 } };
+
+const dt_develop_name_value_t dt_develop_invert_mask_names[]
+    = { { N_("off"), DEVELOP_COMBINE_NORM },
+        { N_("on"), DEVELOP_COMBINE_INV },
+        { "", 0 } };
+
 static const dt_iop_gui_blendif_colorstop_t _gradient_L[]
     = { { 0.0f,   { 0, 0, 0, 1.0 } },
         { 0.125f, { NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, 1.0 } },
         { 0.25f,  { NEUTRAL_GRAY / 4, NEUTRAL_GRAY / 4, NEUTRAL_GRAY / 4, 1.0 } },
         { 0.5f,   { NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, 1.0 } },
         { 1.0f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } } };
-
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_a[]
     = { { 0.0f,   { 0, 0.34 * NEUTRAL_GRAY * 2, 0.27 * NEUTRAL_GRAY * 2, 1.0 } },
@@ -87,23 +153,26 @@ static const dt_iop_gui_blendif_colorstop_t _gradient_gray[]
         { 0.5f,   { NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, 1.0 } },
         { 1.0f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_red[] = { { 0.0f,   { 0, 0, 0, 1.0 } },
-                                                                { 0.125f, { NEUTRAL_GRAY / 8, 0, 0, 1.0 } },
-                                                                { 0.25f,  { NEUTRAL_GRAY / 4, 0, 0, 1.0 } },
-                                                                { 0.5f,   { NEUTRAL_GRAY / 2, 0, 0, 1.0 } },
-                                                                { 1.0f,   { NEUTRAL_GRAY, 0, 0, 1.0 } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_red[]
+    = { { 0.0f,   { 0, 0, 0, 1.0 } },
+        { 0.125f, { NEUTRAL_GRAY / 8, 0, 0, 1.0 } },
+        { 0.25f,  { NEUTRAL_GRAY / 4, 0, 0, 1.0 } },
+        { 0.5f,   { NEUTRAL_GRAY / 2, 0, 0, 1.0 } },
+        { 1.0f,   { NEUTRAL_GRAY, 0, 0, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_green[] = { { 0.0f,   { 0, 0, 0, 1.0 } },
-                                                                  { 0.125f, { 0, NEUTRAL_GRAY / 8, 0, 1.0 } },
-                                                                  { 0.25f,  { 0, NEUTRAL_GRAY / 8, 0, 1.0 } },
-                                                                  { 0.5f,   { 0, NEUTRAL_GRAY / 2, 0, 1.0 } },
-                                                                  { 1.0f,   { 0, NEUTRAL_GRAY, 0, 1.0 } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_green[]
+    = { { 0.0f,   { 0, 0, 0, 1.0 } },
+        { 0.125f, { 0, NEUTRAL_GRAY / 8, 0, 1.0 } },
+        { 0.25f,  { 0, NEUTRAL_GRAY / 8, 0, 1.0 } },
+        { 0.5f,   { 0, NEUTRAL_GRAY / 2, 0, 1.0 } },
+        { 1.0f,   { 0, NEUTRAL_GRAY, 0, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_blue[] = { { 0.0f,   { 0, 0, 0, 1.0 } },
-                                                                 { 0.125f, { 0, 0, NEUTRAL_GRAY / 8, 1.0 } },
-                                                                 { 0.25f,  { 0, 0, NEUTRAL_GRAY / 4, 1.0 } },
-                                                                 { 0.5f,   { 0, 0, NEUTRAL_GRAY / 2, 1.0 } },
-                                                                 { 1.0f,   { 0, 0, NEUTRAL_GRAY, 1.0 } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_blue[]
+    = { { 0.0f,   { 0, 0, 0, 1.0 } },
+        { 0.125f, { 0, 0, NEUTRAL_GRAY / 8, 1.0 } },
+        { 0.25f,  { 0, 0, NEUTRAL_GRAY / 4, 1.0 } },
+        { 0.5f,   { 0, 0, NEUTRAL_GRAY / 2, 1.0 } },
+        { 1.0f,   { 0, 0, NEUTRAL_GRAY, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_chroma[]
     = { { 0.0f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
@@ -112,24 +181,23 @@ static const dt_iop_gui_blendif_colorstop_t _gradient_chroma[]
         { 0.5f,   { NEUTRAL_GRAY, NEUTRAL_GRAY * 0.5, NEUTRAL_GRAY, 1.0 } },
         { 1.0f,   { NEUTRAL_GRAY, 0, NEUTRAL_GRAY, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_hue[] = {
-  { 0.0f, { 1.00f * 1.5f * NEUTRAL_GRAY, 0.68f * 1.5f * NEUTRAL_GRAY, 0.78f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-  { 0.166f, { 0.95f * 1.5f * NEUTRAL_GRAY, 0.73f * 1.5f * NEUTRAL_GRAY, 0.56f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-  { 0.333f, { 0.71f * 1.5f * NEUTRAL_GRAY, 0.81f * 1.5f * NEUTRAL_GRAY, 0.55f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-  { 0.500f, { 0.45f * 1.5f * NEUTRAL_GRAY, 0.85f * 1.5f * NEUTRAL_GRAY, 0.77f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-  { 0.666f, { 0.49f * 1.5f * NEUTRAL_GRAY, 0.82f * 1.5f * NEUTRAL_GRAY, 1.00f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-  { 0.833f, { 0.82f * 1.5f * NEUTRAL_GRAY, 0.74f * 1.5f * NEUTRAL_GRAY, 1.00f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-  { 1.0f, { 1.00f * 1.5f * NEUTRAL_GRAY, 0.68f * 1.5f * NEUTRAL_GRAY, 0.78f * 1.5f * NEUTRAL_GRAY, 1.0 } }
-};
+static const dt_iop_gui_blendif_colorstop_t _gradient_hue[]
+    = { { 0.0f,   { 1.00f * 1.5f * NEUTRAL_GRAY, 0.68f * 1.5f * NEUTRAL_GRAY, 0.78f * 1.5f * NEUTRAL_GRAY, 1.0 } },
+        { 0.166f, { 0.95f * 1.5f * NEUTRAL_GRAY, 0.73f * 1.5f * NEUTRAL_GRAY, 0.56f * 1.5f * NEUTRAL_GRAY, 1.0 } },
+        { 0.333f, { 0.71f * 1.5f * NEUTRAL_GRAY, 0.81f * 1.5f * NEUTRAL_GRAY, 0.55f * 1.5f * NEUTRAL_GRAY, 1.0 } },
+        { 0.500f, { 0.45f * 1.5f * NEUTRAL_GRAY, 0.85f * 1.5f * NEUTRAL_GRAY, 0.77f * 1.5f * NEUTRAL_GRAY, 1.0 } },
+        { 0.666f, { 0.49f * 1.5f * NEUTRAL_GRAY, 0.82f * 1.5f * NEUTRAL_GRAY, 1.00f * 1.5f * NEUTRAL_GRAY, 1.0 } },
+        { 0.833f, { 0.82f * 1.5f * NEUTRAL_GRAY, 0.74f * 1.5f * NEUTRAL_GRAY, 1.00f * 1.5f * NEUTRAL_GRAY, 1.0 } },
+        { 1.0f,   { 1.00f * 1.5f * NEUTRAL_GRAY, 0.68f * 1.5f * NEUTRAL_GRAY, 0.78f * 1.5f * NEUTRAL_GRAY, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_HUE[]
-    = { { 0.0f, { NEUTRAL_GRAY, 0, 0, 1.0 } },
+    = { { 0.0f,   { NEUTRAL_GRAY, 0, 0, 1.0 } },
         { 0.166f, { NEUTRAL_GRAY, NEUTRAL_GRAY, 0, 1.0 } },
         { 0.332f, { 0, NEUTRAL_GRAY, 0, 1.0 } },
         { 0.498f, { 0, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
         { 0.664f, { 0, 0, NEUTRAL_GRAY, 1.0 } },
         { 0.830f, { NEUTRAL_GRAY, 0, NEUTRAL_GRAY, 1.0 } },
-        { 1.0f, { NEUTRAL_GRAY, 0, 0, 1.0 } } };
+        { 1.0f,   { NEUTRAL_GRAY, 0, 0, 1.0 } } };
 
 static void _blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float *out,
                            const dt_iop_order_iccprofile_info_t *work_profile)
@@ -232,27 +300,27 @@ static inline int _blendif_print_digits_ab(float value)
 
 static void _blendif_scale_print_L(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.*f", _blendif_print_digits_default(value), value * 100.0f);
+  snprintf(string, n, "%-5.*f", _blendif_print_digits_default(value), value * 100.0f);
 }
 
 static void _blendif_scale_print_ab(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.*f", _blendif_print_digits_ab(value * 256.0f - 128.0f), value * 256.0f - 128.0f);
+  snprintf(string, n, "%-5.*f", _blendif_print_digits_ab(value * 256.0f - 128.0f), value * 256.0f - 128.0f);
 }
 
 static void _blendif_scale_print_rgb(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.*f", _blendif_print_digits_default(value), value * 255.0f);
+  snprintf(string, n, "%-5.*f", _blendif_print_digits_default(value), value * 255.0f);
 }
 
 static void _blendif_scale_print_hue(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.0f", value * 360.0f);
+  snprintf(string, n, "%-5.0f", value * 360.0f);
 }
 
 static void _blendif_scale_print_default(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.*f", _blendif_print_digits_default(value), value * 100.0f);
+  snprintf(string, n, "%-5.*f", _blendif_print_digits_default(value), value * 100.0f);
 }
 
 static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gui_blend_data_t *data)
@@ -276,19 +344,15 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
   {
     if(data->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
     {
-      dt_bauhaus_combobox_set(data->masks_combine_combo,
-                              g_list_index(data->masks_combine,
-                                           GUINT_TO_POINTER(data->module->blend_params->mask_combine
-                                                            & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL))));
+      dt_bauhaus_combobox_set_from_value(data->masks_combine_combo,
+                                         data->module->blend_params->mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL));
       gtk_widget_hide(GTK_WIDGET(data->masks_invert_combo));
       gtk_widget_show(GTK_WIDGET(data->masks_combine_combo));
     }
     else
     {
-      dt_bauhaus_combobox_set(
-          data->masks_invert_combo,
-          g_list_index(data->masks_invert,
-                       GUINT_TO_POINTER(data->module->blend_params->mask_combine & DEVELOP_COMBINE_INV)));
+      dt_bauhaus_combobox_set_from_value(data->masks_invert_combo,
+                                         data->module->blend_params->mask_combine & DEVELOP_COMBINE_INV);
       gtk_widget_show(GTK_WIDGET(data->masks_invert_combo));
       gtk_widget_hide(GTK_WIDGET(data->masks_combine_combo));
     }
@@ -390,18 +454,9 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
   }
 }
 
-
-static void _blendop_blend_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
-{
-  data->module->blend_params->blend_mode = GPOINTER_TO_UINT(
-      g_list_nth_data(data->blend_modes, dt_bauhaus_combobox_get(data->blend_modes_combo)));
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
 static void _blendop_masks_combine_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
 {
-  const unsigned combine = GPOINTER_TO_UINT(
-      g_list_nth_data(data->masks_combine, dt_bauhaus_combobox_get(data->masks_combine_combo)));
+  const unsigned combine = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(data->masks_combine_combo));
   data->module->blend_params->mask_combine &= ~(DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL);
   data->module->blend_params->mask_combine |= combine;
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
@@ -409,8 +464,7 @@ static void _blendop_masks_combine_callback(GtkWidget *combo, dt_iop_gui_blend_d
 
 static void _blendop_masks_invert_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
 {
-  unsigned int invert = GPOINTER_TO_UINT(g_list_nth_data(data->masks_invert,
-                                                         dt_bauhaus_combobox_get(data->masks_invert_combo)))
+  unsigned int invert = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(data->masks_invert_combo))
                         & DEVELOP_COMBINE_INV;
   if(invert)
     data->module->blend_params->mask_combine |= DEVELOP_COMBINE_INV;
@@ -419,66 +473,25 @@ static void _blendop_masks_invert_callback(GtkWidget *combo, dt_iop_gui_blend_da
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
-static void _blendop_opacity_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
-{
-  data->module->blend_params->opacity = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
-static void _blendop_blendif_feathering_radius_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
-{
-  data->module->blend_params->feathering_radius = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
-static void _blendop_masks_feathering_guide_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
-{
-  data->module->blend_params->feathering_guide = GPOINTER_TO_UINT(
-      g_list_nth_data(data->masks_feathering_guide, dt_bauhaus_combobox_get(data->masks_feathering_guide_combo)));
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
-static void _blendop_blendif_blur_radius_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
-{
-  data->module->blend_params->blur_radius = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
-static void _blendop_blendif_brightness_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
-{
-  data->module->blend_params->brightness = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
-static void _blendop_blendif_contrast_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
-{
-  data->module->blend_params->contrast = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
-}
-
 static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider, dt_iop_gui_blend_data_t *data)
 {
   if(darktable.gui->reset) return;
+
   dt_develop_blend_params_t *bp = data->module->blend_params;
 
-  const int tab = data->tab;
-  int ch;
-  GtkLabel **label;
+  const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
 
-  if(slider == data->upper_slider)
+  int in_out = (slider == data->filter[1].slider) ? 1 : 0;
+  dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+  GtkLabel **label = data->filter[in_out].label;
+
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) &&
+     !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values)))
   {
-    ch = data->channels[tab][1];
-    label = data->upper_label;
-  }
-  else
-  {
-    ch = data->channels[tab][0];
-    label = data->lower_label;
+    dt_iop_color_picker_reset(data->module, FALSE);
   }
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
-
-  dt_iop_color_picker_reset(data->module, FALSE);
 
   dt_pthread_mutex_lock(&data->lock);
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
@@ -487,7 +500,7 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
   for(int k = 0; k < 4; k++)
   {
     char text[256];
-    (data->scale_print[tab])(parameters[k], text, sizeof(text));
+    (channel->scale_print)(parameters[k], text, sizeof(text));
     gtk_label_set_text(label[k], text);
   }
 
@@ -508,10 +521,11 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt
 
   dt_develop_blend_params_t *bp = data->module->blend_params;
 
-  const int tab = data->tab;
-  const int ch = GTK_WIDGET(togglebutton) == data->lower_polarity ? data->channels[tab][0] : data->channels[tab][1];
-  GtkDarktableGradientSlider *slider = GTK_WIDGET(togglebutton) == data->lower_polarity ? data->lower_slider
-                                                                                        : data->upper_slider;
+  const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
+
+  int in_out = (GTK_WIDGET(togglebutton) == data->filter[1].polarity) ? 1 : 0;
+  dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+  GtkDarktableGradientSlider *slider = data->filter[in_out].slider;
 
   if(!active)
     bp->blendif |= (1 << (ch + 16));
@@ -584,28 +598,17 @@ static int _blendop_blendif_disp_alternative_worker(GtkWidget *widget, dt_iop_mo
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
   GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
-  const int uplow = (slider == data->lower_slider) ? 0 : 1;
 
-  GtkLabel *head = (uplow == 0) ? data->lower_head : data->upper_head;
-  const char *inout = (uplow == 0) ? _("input") : _("output");
+  int in_out = (slider == data->filter[1].slider) ? 1 : 0;
 
-  char text[32];
-  int newmode = (mode == 1) ? 1 : 0;
+  dtgtk_gradient_slider_multivalue_set_scale_callback(slider, (mode == 1) ? scale_callback : NULL);
+  gchar *text = g_strdup_printf("%s%s",
+                                (in_out == 0) ? _("input") : _("output"),
+                                (mode == 1) ? label : "");
+  gtk_label_set_text(data->filter[in_out].head, text);
+  g_free(text);
 
-  if(newmode == 1)
-  {
-    dtgtk_gradient_slider_multivalue_set_scale_callback(slider, scale_callback);
-    snprintf(text, sizeof(text), "%s%s", inout, label);
-    gtk_label_set_text(head, text);
-  }
-  else
-  {
-    dtgtk_gradient_slider_multivalue_set_scale_callback(slider, NULL);
-    snprintf(text, sizeof(text), "%s%s", inout, "");
-    gtk_label_set_text(head, text);
-  }
-
-  return newmode;
+  return (mode == 1) ? 1 : 0;
 }
 
 
@@ -663,41 +666,34 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy, dt_iop_mo
   dt_iop_color_picker_set_cst(module, _blendop_blendif_get_picker_colorspace(data));
 
   float *raw_mean, *raw_min, *raw_max;
-  GtkDarktableGradientSlider *widget;
-  GtkLabel *label;
 
   ++darktable.gui->reset;
 
-  for (int s = 0; s < 2; s++)
+  for(int in_out = 1; in_out >= 0; in_out--)
   {
-    if(s)
-    {
-      raw_mean = module->picked_color;
-      raw_min = module->picked_color_min;
-      raw_max = module->picked_color_max;
-      widget = data->lower_slider;
-      label = data->lower_picker_label;
-    }
-    else
+    if(in_out)
     {
       raw_mean = module->picked_output_color;
       raw_min = module->picked_output_color_min;
       raw_max = module->picked_output_color_max;
-      widget = data->upper_slider;
-      label = data->upper_picker_label;
+    }
+    else
+    {
+      raw_mean = module->picked_color;
+      raw_min = module->picked_color_min;
+      raw_max = module->picked_color_max;
     }
 
     if((gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
-        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))) && 
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))) &&
        (raw_min[0] != INFINITY))
     {
       float picker_mean[8], picker_min[8], picker_max[8];
       float cooked[8];
-      char text[256];
 
       const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
-                          ? data->csp
-                          : dt_iop_color_picker_get_active_cst(module);
+                    ? data->csp
+                    : dt_iop_color_picker_get_active_cst(module);
       const dt_iop_order_iccprofile_info_t *work_profile
           = dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
       _blendif_scale(cst, raw_mean, picker_mean, work_profile);
@@ -705,16 +701,18 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy, dt_iop_mo
       _blendif_scale(cst, raw_max, picker_max, work_profile);
       _blendif_cook(cst, raw_mean, cooked, work_profile);
 
-      snprintf(text, sizeof(text), "(%.*f)", _blendif_print_digits_picker(cooked[data->tab]), cooked[data->tab]);
+      gchar *text = g_strdup_printf("(%.*f)", _blendif_print_digits_picker(cooked[data->tab]), cooked[data->tab]);
 
       dtgtk_gradient_slider_multivalue_set_picker_meanminmax(
-          widget, picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
-      gtk_label_set_text(label, text);
+          data->filter[in_out].slider, picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
+      gtk_label_set_text(data->filter[in_out].picker_label, text);
+
+      g_free(text);
     }
     else
     {
-      dtgtk_gradient_slider_multivalue_set_picker(widget, NAN);
-      gtk_label_set_text(label, "");
+      dtgtk_gradient_slider_multivalue_set_picker(data->filter[in_out].slider, NAN);
+      gtk_label_set_text(data->filter[in_out].picker_label, "");
     }
   }
 
@@ -730,92 +728,69 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab)
 
   ++darktable.gui->reset;
 
-  const int in_ch = data->channels[tab][0];
-  const int out_ch = data->channels[tab][1];
+  const dt_iop_gui_blendif_channel_t *channel = &data->channel[tab];
 
-  float *iparameters = &(bp->blendif_parameters[4 * in_ch]);
-  float *oparameters = &(bp->blendif_parameters[4 * out_ch]);
-  float *idefaults = &(dp->blendif_parameters[4 * in_ch]);
-  float *odefaults = &(dp->blendif_parameters[4 * out_ch]);
-
-  const int ipolarity = !(bp->blendif & (1 << (in_ch + 16)));
-  const int opolarity = !(bp->blendif & (1 << (out_ch + 16)));
-  char text[256];
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->lower_polarity), ipolarity);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->upper_polarity), opolarity);
-
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->lower_slider,
-      ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 0);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->lower_slider,
-      ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->lower_slider,
-      ipolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->lower_slider,
-      ipolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
-
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->upper_slider,
-      opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 0);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->upper_slider,
-      opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->upper_slider,
-      opolarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
-  dtgtk_gradient_slider_multivalue_set_marker(
-      data->upper_slider,
-      opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
-
-  dt_pthread_mutex_lock(&data->lock);
-  for(int k = 0; k < 4; k++)
+  for(int in_out = 1; in_out >= 0; in_out--)
   {
-    dtgtk_gradient_slider_multivalue_set_value(data->lower_slider, iparameters[k], k);
-    dtgtk_gradient_slider_multivalue_set_value(data->upper_slider, oparameters[k], k);
-    dtgtk_gradient_slider_multivalue_set_resetvalue(data->lower_slider, idefaults[k], k);
-    dtgtk_gradient_slider_multivalue_set_resetvalue(data->upper_slider, odefaults[k], k);
+    const dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+    dt_iop_gui_blendif_filter_t *sl = &data->filter[in_out];
+
+    float *parameters = &(bp->blendif_parameters[4 * ch]);
+    float *defaults = &(dp->blendif_parameters[4 * ch]);
+
+    const int polarity = !(bp->blendif & (1 << (ch + 16)));
+    char text[256];
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sl->polarity), polarity);
+
+    dtgtk_gradient_slider_multivalue_set_marker(
+        sl->slider,
+        polarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 0);
+    dtgtk_gradient_slider_multivalue_set_marker(
+        sl->slider,
+        polarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 1);
+    dtgtk_gradient_slider_multivalue_set_marker(
+        sl->slider,
+        polarity ? GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG : GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG, 2);
+    dtgtk_gradient_slider_multivalue_set_marker(
+        sl->slider,
+        polarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
+
+    dt_pthread_mutex_lock(&data->lock);
+    for(int k = 0; k < 4; k++)
+    {
+      dtgtk_gradient_slider_multivalue_set_value(sl->slider, parameters[k], k);
+      dtgtk_gradient_slider_multivalue_set_resetvalue(sl->slider, defaults[k], k);
+    }
+    dt_pthread_mutex_unlock(&data->lock);
+
+    for(int k = 0; k < 4; k++)
+    {
+      channel->scale_print(parameters[k], text, sizeof(text));
+      gtk_label_set_text(sl->label[k], text);
+    }
+
+    dtgtk_gradient_slider_multivalue_clear_stops(sl->slider);
+
+    for(int k = 0; k < channel->numberstops; k++)
+    {
+      dtgtk_gradient_slider_multivalue_set_stop(sl->slider, channel->colorstops[k].stoppoint,
+                                                channel->colorstops[k].color);
+    }
+
+    dtgtk_gradient_slider_multivalue_set_increment(sl->slider, channel->increment);
+
+    if(channel->altdisplay)
+    {
+      data->altmode[tab][in_out] = channel->altdisplay(GTK_WIDGET(sl->slider), module, data->altmode[tab][in_out]);
+    }
+    else
+    {
+      _blendof_blendif_disp_alternative_reset(GTK_WIDGET(sl->slider), module);
+    }
   }
-  dt_pthread_mutex_unlock(&data->lock);
-
-  for(int k = 0; k < 4; k++)
-  {
-    (data->scale_print[tab])(iparameters[k], text, sizeof(text));
-    gtk_label_set_text(data->lower_label[k], text);
-    (data->scale_print[tab])(oparameters[k], text, sizeof(text));
-    gtk_label_set_text(data->upper_label[k], text);
-  }
-
-  dtgtk_gradient_slider_multivalue_clear_stops(data->lower_slider);
-  dtgtk_gradient_slider_multivalue_clear_stops(data->upper_slider);
-
-  for(int k = 0; k < data->numberstops[tab]; k++)
-  {
-    dtgtk_gradient_slider_multivalue_set_stop(data->lower_slider, (data->colorstops[tab])[k].stoppoint,
-                                              (data->colorstops[tab])[k].color);
-    dtgtk_gradient_slider_multivalue_set_stop(data->upper_slider, (data->colorstops[tab])[k].stoppoint,
-                                              (data->colorstops[tab])[k].color);
-  }
-
-  dtgtk_gradient_slider_multivalue_set_increment(data->lower_slider, data->increments[tab]);
-  dtgtk_gradient_slider_multivalue_set_increment(data->upper_slider, data->increments[tab]);
-
 
   _update_gradient_slider_pickers(NULL, module);
-
-  if(data->altdisplay[tab])
-  {
-    data->altmode[tab][0] = (data->altdisplay[tab])(GTK_WIDGET(data->lower_slider), module, data->altmode[tab][0]);
-    data->altmode[tab][1] = (data->altdisplay[tab])(GTK_WIDGET(data->upper_slider), module, data->altmode[tab][1]);
-  }
-  else
-  {
-    _blendof_blendif_disp_alternative_reset(GTK_WIDGET(data->lower_slider), module);
-    _blendof_blendif_disp_alternative_reset(GTK_WIDGET(data->upper_slider), module);
-  }
 
   --darktable.gui->reset;
 }
@@ -831,7 +806,7 @@ static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, 
   if(cst_old != _blendop_blendif_get_picker_colorspace(data) &&
      (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))))
-      
+
   {
     dt_iop_color_picker_set_cst(data->module, _blendop_blendif_get_picker_colorspace(data));
     dt_dev_reprocess_all(data->module->dev);
@@ -871,7 +846,7 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
 
     dt_iop_request_focus(module);
-    dt_dev_reprocess_center(module->dev);
+    dt_iop_refresh_center(module);
   }
 }
 
@@ -956,7 +931,7 @@ static void _blendop_blendif_suppress_toggled(GtkToggleButton *togglebutton, dt_
   dt_iop_request_focus(module);
 
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
-  dt_dev_reprocess_center(module->dev);
+  dt_iop_refresh_center(module);
 }
 
 static void _blendop_blendif_reset(GtkButton *button, dt_iop_module_t *module)
@@ -1133,6 +1108,7 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
 gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
+
   if(picker == data->colorpicker_set_values)
   {
     if(darktable.gui->reset) return TRUE;
@@ -1140,36 +1116,36 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     ++darktable.gui->reset;
 
     dt_develop_blend_params_t *bp = module->blend_params;
+
     const int tab = data->tab;
     float *raw_mean, *raw_min, *raw_max;
     float picker_mean[8], picker_min[8], picker_max[8];
     float picker_values[4];
-    GtkDarktableGradientSlider *slider;
 
-    int lower_upper; // lower=0, upper=1
-    if(dt_key_modifier_state() == GDK_CONTROL_MASK) 
+    int in_out = (dt_key_modifier_state() == GDK_CONTROL_MASK) ? 1 : 0;
+
+    if(in_out)
     {
-      lower_upper = 1;
       raw_mean = module->picked_output_color;
       raw_min = module->picked_output_color_min;
       raw_max = module->picked_output_color_max;
-      slider = data->upper_slider;
     }
     else
     {
-      lower_upper = 0;
       raw_mean = module->picked_color;
       raw_min = module->picked_color_min;
       raw_max = module->picked_color_max;
-      slider = data->lower_slider;
     }
 
-    const int ch = data->channels[tab][lower_upper];
+    const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
+    dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+    dt_iop_gui_blendif_filter_t *sl = &data->filter[in_out];
+
     float *parameters = &(bp->blendif_parameters[4 * ch]);
 
     const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
-                        ? data->csp
-                        : dt_iop_color_picker_get_active_cst(module);
+                  ? data->csp
+                  : dt_iop_color_picker_get_active_cst(module);
     const dt_iop_order_iccprofile_info_t *work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
     _blendif_scale(cst, raw_mean, picker_mean, work_profile);
     _blendif_scale(cst, raw_min, picker_min, work_profile);
@@ -1200,7 +1176,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
 
     dt_pthread_mutex_lock(&data->lock);
     for(int k = 0; k < 4; k++)
-      dtgtk_gradient_slider_multivalue_set_value(slider, picker_values[k], k);
+      dtgtk_gradient_slider_multivalue_set_value(sl->slider, picker_values[k], k);
     dt_pthread_mutex_unlock(&data->lock);
 
     // update picked values
@@ -1209,11 +1185,8 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     for(int k = 0; k < 4; k++)
     {
       char text[256];
-      (data->scale_print[tab])(dtgtk_gradient_slider_multivalue_get_value(slider, k), text, sizeof(text));
-      if(lower_upper == 0)
-        gtk_label_set_text(data->lower_label[k], text);
-      else
-        gtk_label_set_text(data->upper_label[k], text);
+      channel->scale_print(dtgtk_gradient_slider_multivalue_get_value(sl->slider, k), text, sizeof(text));
+      gtk_label_set_text(sl->label[k], text);
     }
 
     --darktable.gui->reset;
@@ -1221,7 +1194,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     // save values to parameters
     dt_pthread_mutex_lock(&data->lock);
     for(int k = 0; k < 4; k++)
-      parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
+      parameters[k] = dtgtk_gradient_slider_multivalue_get_value(sl->slider, k);
     dt_pthread_mutex_unlock(&data->lock);
 
     // de-activate processing of this channel if maximum span is selected
@@ -1242,7 +1215,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
 
     return TRUE;
   }
-  else return FALSE;
+  else return FALSE; // needs to be handled by module
 }
 
 // activate channel/mask view
@@ -1255,9 +1228,10 @@ static void _blendop_blendif_channel_mask_view(GtkWidget *widget, dt_iop_module_
   // in case user requests channel display: get the cannel
   if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
   {
-    int tab = data->tab;
-    int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
-    dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
+    dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
+
+    if(widget == GTK_WIDGET(data->filter[1].slider))
+      channel |= DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
 
     new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
     new_request_mask_display |= channel;
@@ -1267,7 +1241,7 @@ static void _blendop_blendif_channel_mask_view(GtkWidget *widget, dt_iop_module_
   if(new_request_mask_display != module->request_mask_display)
   {
     module->request_mask_display = new_request_mask_display;
-    dt_dev_reprocess_center(module->dev);
+    dt_iop_refresh_center(module);
   }
 }
 
@@ -1296,9 +1270,10 @@ static void _blendop_blendif_channel_mask_view_toggle(GtkWidget *widget, dt_iop_
   // in case user requests channel display: get the cannel
   if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
   {
-    int tab = data->tab;
-    int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
-    dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
+    dt_dev_pixelpipe_display_mask_t channel = data->channel[data->tab].display_channel;
+
+    if(widget == GTK_WIDGET(data->filter[1].slider))
+      channel |= DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
 
     new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
     new_request_mask_display |= channel;
@@ -1307,7 +1282,7 @@ static void _blendop_blendif_channel_mask_view_toggle(GtkWidget *widget, dt_iop_
   if(new_request_mask_display != module->request_mask_display)
   {
     module->request_mask_display = new_request_mask_display;
-    dt_dev_reprocess_center(module->dev);
+    dt_iop_refresh_center(module);
   }
 }
 
@@ -1375,7 +1350,8 @@ static gboolean _blendop_blendif_leave_delayed(gpointer data)
   bd->timeout_handle = 0;
   dt_pthread_mutex_unlock(&bd->lock);
 
-  if(reprocess) dt_dev_reprocess_center(module->dev);
+  if(reprocess)
+    dt_iop_refresh_center(module);
   // return FALSE and thereby terminate the handler
   return FALSE;
 }
@@ -1399,8 +1375,6 @@ static gboolean _blendop_blendif_leave(GtkWidget *widget, GdkEventCrossing *even
 }
 
 
-
-
 static gboolean _blendop_blendif_key_press(GtkWidget *widget, GdkEventKey *event, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return FALSE;
@@ -1409,15 +1383,14 @@ static gboolean _blendop_blendif_key_press(GtkWidget *widget, GdkEventKey *event
   gboolean handled = FALSE;
 
   const int tab = data->tab;
-  GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
-  const int uplow = (slider == data->lower_slider) ? 0 : 1;
+  const int in_out = (widget == GTK_WIDGET(data->filter[1].slider)) ? 1 : 0;
 
   switch(event->keyval)
   {
     case GDK_KEY_a:
     case GDK_KEY_A:
-      if(data->altdisplay[tab])
-        data->altmode[tab][uplow] = (data->altdisplay[tab])(widget, module, data->altmode[tab][uplow] + 1);
+      if(data->channel[tab].altdisplay)
+        data->altmode[tab][in_out] = (data->channel[tab].altdisplay)(widget, module, data->altmode[tab][in_out] + 1);
       handled = TRUE;
       break;
     case GDK_KEY_c:
@@ -1439,7 +1412,6 @@ static gboolean _blendop_blendif_key_press(GtkWidget *widget, GdkEventKey *event
 
   return handled;
 }
-
 
 
 void dt_iop_gui_update_blendif(dt_iop_module_t *module)
@@ -1469,6 +1441,56 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   --darktable.gui->reset;
 }
 
+#define COLORSTOPS(gradient) sizeof(gradient) / sizeof(dt_iop_gui_blendif_colorstop_t), gradient
+
+const dt_iop_gui_blendif_channel_t Lab_channels[]
+    = { { N_("L"), N_("sliders for L channel"), 1.0f / 100.0f, COLORSTOPS(_gradient_L),
+          { DEVELOP_BLENDIF_L_in, DEVELOP_BLENDIF_L_out }, DT_DEV_PIXELPIPE_DISPLAY_L,
+          _blendif_scale_print_L, _blendop_blendif_disp_alternative_log, N_("lightness") },
+        { N_("a"), N_("sliders for a channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_a),
+          { DEVELOP_BLENDIF_A_in, DEVELOP_BLENDIF_A_out }, DT_DEV_PIXELPIPE_DISPLAY_a,
+          _blendif_scale_print_ab, _blendop_blendif_disp_alternative_mag, N_("green/red") },
+        { N_("b"), N_("sliders for b channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_b),
+          { DEVELOP_BLENDIF_B_in, DEVELOP_BLENDIF_B_out }, DT_DEV_PIXELPIPE_DISPLAY_b,
+          _blendif_scale_print_ab, _blendop_blendif_disp_alternative_mag, N_("blue/yellow") },
+        { N_("C"), N_("sliders for chroma channel (of LCh)"), 1.0f / 100.0f, COLORSTOPS(_gradient_chroma),
+          { DEVELOP_BLENDIF_C_in, DEVELOP_BLENDIF_C_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_C,
+          _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("saturation") },
+        { N_("h"), N_("sliders for hue channel (of LCh)"), 1.0f / 360.0f, COLORSTOPS(_gradient_hue),
+          { DEVELOP_BLENDIF_h_in, DEVELOP_BLENDIF_h_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_h,
+          _blendif_scale_print_hue, _blendop_blendif_disp_alternative_log, N_("hue") },
+        { NULL } };
+
+const dt_iop_gui_blendif_channel_t rgb_channels[]
+    = { { N_("g"), N_("sliders for gray value"), 1.0f / 255.0f, COLORSTOPS(_gradient_gray),
+          { DEVELOP_BLENDIF_GRAY_in, DEVELOP_BLENDIF_GRAY_out }, DT_DEV_PIXELPIPE_DISPLAY_GRAY,
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log, N_("gray") },
+        { N_("R"), N_("sliders for red channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_red),
+          { DEVELOP_BLENDIF_RED_in, DEVELOP_BLENDIF_RED_out }, DT_DEV_PIXELPIPE_DISPLAY_R,
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log, N_("red") },
+        { N_("G"), N_("sliders for green channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_green),
+          { DEVELOP_BLENDIF_GREEN_in, DEVELOP_BLENDIF_GREEN_out }, DT_DEV_PIXELPIPE_DISPLAY_G,
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log, N_("green") },
+        { N_("B"), N_("sliders for blue channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_blue),
+          { DEVELOP_BLENDIF_BLUE_in, DEVELOP_BLENDIF_BLUE_out }, DT_DEV_PIXELPIPE_DISPLAY_B,
+          _blendif_scale_print_rgb, _blendop_blendif_disp_alternative_log, N_("blue") },
+        { N_("H"), N_("sliders for hue channel (of HSL)"), 1.0f / 360.0f, COLORSTOPS(_gradient_HUE),
+          { DEVELOP_BLENDIF_H_in, DEVELOP_BLENDIF_H_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_H,
+          _blendif_scale_print_hue, _blendop_blendif_disp_alternative_log, N_("hue") },
+        { N_("S"), N_("sliders for chroma channel (of HSL)"), 1.0f / 100.0f, COLORSTOPS(_gradient_chroma),
+          { DEVELOP_BLENDIF_S_in, DEVELOP_BLENDIF_S_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_S,
+          _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("chroma") },
+        { N_("L"), N_("sliders for value channel (of HSL)"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
+          { DEVELOP_BLENDIF_l_in, DEVELOP_BLENDIF_l_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_l,
+          _blendif_scale_print_L, _blendop_blendif_disp_alternative_log, N_("luminance") },
+        { NULL } };
+
+const char *slider_tooltip[] = { N_("adjustment based on input received by this module:\n* range defined by upper markers: "
+                                    "blend fully\n* range defined by lower markers: do not blend at all\n* range between "
+                                    "adjacent upper/lower markers: blend gradually"),
+                                 N_("adjustment based on unblended output of this module:\n* range defined by upper "
+                                    "markers: blend fully\n* range defined by lower markers: do not blend at all\n* range "
+                                    "between adjacent upper/lower markers: blend gradually") };
 
 void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 {
@@ -1479,182 +1501,51 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
   GtkWidget* event_box = gtk_event_box_new();
   dt_gui_add_help_link(GTK_WIDGET(event_box), "blending.html#parametric_mask");
   gtk_container_add(GTK_CONTAINER(blendw), event_box);
+  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->blendif_box));
 
   /* create and add blendif support if module supports it */
   if(bd->blendif_support)
   {
-    char *Lab_labels[] = { "  L  ", "  a  ", "  b  ", " C ", " h " };
-    char *Lab_tooltips[]
-        = { _("sliders for L channel"), _("sliders for a channel"), _("sliders for b channel"),
-            _("sliders for chroma channel (of LCh)"), _("sliders for hue channel (of LCh)") };
-    char *rgb_labels[] = { _(" g "), _(" R "), _(" G "), _(" B "), _(" H "), _(" S "), _(" L ") };
-    char *rgb_tooltips[]
-        = { _("sliders for gray value"), _("sliders for red channel"), _("sliders for green channel"),
-            _("sliders for blue channel"), _("sliders for hue channel (of HSL)"),
-            _("sliders for chroma channel (of HSL)"), _("sliders for value channel (of HSL)") };
-
-    char *ttinput = _("adjustment based on input received by this module:\n* range defined by upper markers: "
-                      "blend fully\n* range defined by lower markers: do not blend at all\n* range between "
-                      "adjacent upper/lower markers: blend gradually");
-
-    char *ttoutput = _("adjustment based on unblended output of this module:\n* range defined by upper "
-                       "markers: blend fully\n* range defined by lower markers: do not blend at all\n* range "
-                       "between adjacent upper/lower markers: blend gradually");
-
     bd->tab = 0;
 
-    int maxchannels = 0;
-    char **labels = NULL;
-    char **tooltips = NULL;
+    bd->channel = NULL;
 
     switch(bd->csp)
     {
       case iop_cs_Lab:
-        maxchannels = 5;
-        labels = Lab_labels;
-        tooltips = Lab_tooltips;
-        bd->scale_print[0] = _blendif_scale_print_L;
-        bd->scale_print[1] = _blendif_scale_print_ab;
-        bd->scale_print[2] = _blendif_scale_print_ab;
-        bd->scale_print[3] = _blendif_scale_print_default;
-        bd->scale_print[4] = _blendif_scale_print_hue;
-        bd->increments[0] = 1.0f / 100.0f;
-        bd->increments[1] = 1.0f / 256.0f;
-        bd->increments[2] = 1.0f / 256.0f;
-        bd->increments[3] = 1.0f / 100.0f;
-        bd->increments[4] = 1.0f / 360.0f;
-        bd->channels[0][0] = DEVELOP_BLENDIF_L_in;
-        bd->channels[0][1] = DEVELOP_BLENDIF_L_out;
-        bd->channels[1][0] = DEVELOP_BLENDIF_A_in;
-        bd->channels[1][1] = DEVELOP_BLENDIF_A_out;
-        bd->channels[2][0] = DEVELOP_BLENDIF_B_in;
-        bd->channels[2][1] = DEVELOP_BLENDIF_B_out;
-        bd->channels[3][0] = DEVELOP_BLENDIF_C_in;
-        bd->channels[3][1] = DEVELOP_BLENDIF_C_out;
-        bd->channels[4][0] = DEVELOP_BLENDIF_h_in;
-        bd->channels[4][1] = DEVELOP_BLENDIF_h_out;
-        bd->display_channel[0][0] = DT_DEV_PIXELPIPE_DISPLAY_L;
-        bd->display_channel[0][1] = DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[1][0] = DT_DEV_PIXELPIPE_DISPLAY_a;
-        bd->display_channel[1][1] = DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[2][0] = DT_DEV_PIXELPIPE_DISPLAY_b;
-        bd->display_channel[2][1] = DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[3][0] = DT_DEV_PIXELPIPE_DISPLAY_LCH_C;
-        bd->display_channel[3][1] = DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[4][0] = DT_DEV_PIXELPIPE_DISPLAY_LCH_h;
-        bd->display_channel[4][1] = DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->colorstops[0] = _gradient_L;
-        bd->numberstops[0] = sizeof(_gradient_L) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[1] = _gradient_a;
-        bd->numberstops[1] = sizeof(_gradient_a) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[2] = _gradient_b;
-        bd->numberstops[2] = sizeof(_gradient_b) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[3] = _gradient_chroma;
-        bd->numberstops[3] = sizeof(_gradient_chroma) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[4] = _gradient_hue;
-        bd->numberstops[4] = sizeof(_gradient_hue) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->altdisplay[0] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[1] = _blendop_blendif_disp_alternative_mag;
-        bd->altdisplay[2] = _blendop_blendif_disp_alternative_mag;
-        bd->altdisplay[3] = _blendop_blendif_disp_alternative_log;
+        bd->channel = Lab_channels;
         break;
       case iop_cs_rgb:
-        maxchannels = 7;
-        labels = rgb_labels;
-        tooltips = rgb_tooltips;
-        bd->scale_print[0] = _blendif_scale_print_rgb;
-        bd->scale_print[1] = _blendif_scale_print_rgb;
-        bd->scale_print[2] = _blendif_scale_print_rgb;
-        bd->scale_print[3] = _blendif_scale_print_rgb;
-        bd->scale_print[4] = _blendif_scale_print_hue;
-        bd->scale_print[5] = _blendif_scale_print_default;
-        bd->scale_print[6] = _blendif_scale_print_L;
-        bd->increments[0] = 1.0f / 255.0f;
-        bd->increments[1] = 1.0f / 255.0f;
-        bd->increments[2] = 1.0f / 255.0f;
-        bd->increments[3] = 1.0f / 255.0f;
-        bd->increments[4] = 1.0f / 360.0f;
-        bd->increments[5] = 1.0f / 100.0f;
-        bd->increments[6] = 1.0f / 100.0f;
-        bd->channels[0][0] = DEVELOP_BLENDIF_GRAY_in;
-        bd->channels[0][1] = DEVELOP_BLENDIF_GRAY_out;
-        bd->channels[1][0] = DEVELOP_BLENDIF_RED_in;
-        bd->channels[1][1] = DEVELOP_BLENDIF_RED_out;
-        bd->channels[2][0] = DEVELOP_BLENDIF_GREEN_in;
-        bd->channels[2][1] = DEVELOP_BLENDIF_GREEN_out;
-        bd->channels[3][0] = DEVELOP_BLENDIF_BLUE_in;
-        bd->channels[3][1] = DEVELOP_BLENDIF_BLUE_out;
-        bd->channels[4][0] = DEVELOP_BLENDIF_H_in;
-        bd->channels[4][1] = DEVELOP_BLENDIF_H_out;
-        bd->channels[5][0] = DEVELOP_BLENDIF_S_in;
-        bd->channels[5][1] = DEVELOP_BLENDIF_S_out;
-        bd->channels[6][0] = DEVELOP_BLENDIF_l_in;
-        bd->channels[6][1] = DEVELOP_BLENDIF_l_out;
-        bd->display_channel[0][0] = DT_DEV_PIXELPIPE_DISPLAY_GRAY;
-        bd->display_channel[0][1] = DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[1][0] = DT_DEV_PIXELPIPE_DISPLAY_R;
-        bd->display_channel[1][1] = DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[2][0] = DT_DEV_PIXELPIPE_DISPLAY_G;
-        bd->display_channel[2][1] = DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[3][0] = DT_DEV_PIXELPIPE_DISPLAY_B;
-        bd->display_channel[3][1] = DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[4][0] = DT_DEV_PIXELPIPE_DISPLAY_HSL_H;
-        bd->display_channel[4][1] = DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[5][0] = DT_DEV_PIXELPIPE_DISPLAY_HSL_S;
-        bd->display_channel[5][1] = DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->display_channel[6][0] = DT_DEV_PIXELPIPE_DISPLAY_HSL_l;
-        bd->display_channel[6][1] = DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT;
-        bd->colorstops[0] = _gradient_gray;
-        bd->numberstops[0] = sizeof(_gradient_gray) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[1] = _gradient_red;
-        bd->numberstops[1] = sizeof(_gradient_red) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[2] = _gradient_green;
-        bd->numberstops[2] = sizeof(_gradient_green) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[3] = _gradient_blue;
-        bd->numberstops[3] = sizeof(_gradient_blue) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[4] = _gradient_HUE;
-        bd->numberstops[4] = sizeof(_gradient_HUE) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[5] = _gradient_chroma;
-        bd->numberstops[5] = sizeof(_gradient_chroma) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->colorstops[6] = _gradient_gray;
-        bd->numberstops[6] = sizeof(_gradient_gray) / sizeof(dt_iop_gui_blendif_colorstop_t);
-        bd->altdisplay[0] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[1] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[2] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[3] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[5] = _blendop_blendif_disp_alternative_log;
-        bd->altdisplay[6] = _blendop_blendif_disp_alternative_log;
+        bd->channel = rgb_channels;
         break;
       default:
         assert(FALSE); // blendif not supported for RAW, which is already caught upstream; we should not get
                        // here
     }
 
-    GtkWidget *uplabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *lowlabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *upslider = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *lowslider = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *notebook = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *section = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+    gtk_box_pack_start(GTK_BOX(section), dt_ui_section_label_new(_("parametric mask")), TRUE, TRUE, 0);
+
+    GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(res, _("reset blend mask settings"));
+    gtk_box_pack_end(GTK_BOX(section), GTK_WIDGET(res), FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(section), TRUE, FALSE, 0);
+
     GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     bd->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-    for(int ch = 0; ch < maxchannels; ch++)
+    for(const dt_iop_gui_blendif_channel_t *ch = bd->channel; ch->label != NULL; ch++)
     {
-      gtk_notebook_append_page(GTK_NOTEBOOK(bd->channel_tabs),
-                               GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                               gtk_label_new(labels[ch]));
-      gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(bd->channel_tabs,
-                                                             gtk_notebook_get_nth_page(bd->channel_tabs, -1)),
-                                  tooltips[ch]);
+      dt_ui_notebook_page(bd->channel_tabs, ch->label, ch->tooltip);
     }
-
     gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(bd->channel_tabs, bd->tab)));
     gtk_notebook_set_current_page(GTK_NOTEBOOK(bd->channel_tabs), bd->tab);
     gtk_notebook_set_scrollable(bd->channel_tabs, TRUE);
+    gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(bd->channel_tabs), TRUE, TRUE, 0);
 
-    gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(bd->channel_tabs), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(header), gtk_grid_new(), TRUE, TRUE, 0);
 
     bd->colorpicker = dt_color_picker_new(module, DT_COLOR_PICKER_POINT_AREA, header);
     gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
@@ -1662,109 +1553,71 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->colorpicker_set_values = dt_color_picker_new(module, DT_COLOR_PICKER_AREA, header);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->colorpicker_set_values),
-                                 dtgtk_cairo_paint_colorpicker_set_values, 
+                                 dtgtk_cairo_paint_colorpicker_set_values,
                                  CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
     gtk_widget_set_tooltip_text(bd->colorpicker_set_values, _("set the range based on an area from the image\n"
                                                               "drag to use the input image\n"
                                                               "ctrl+drag to use the output image"));
 
-    GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
-    gtk_widget_set_tooltip_text(res, _("reset blend mask settings"));
-
     GtkWidget *inv = dtgtk_button_new(dtgtk_cairo_paint_invert, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(inv, _("invert all channel's polarities"));
-
-    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(inv), FALSE, FALSE, 0);
 
-    bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_name(4, "blend-lower"));
-    bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_name(4, "blend-upper"));
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
 
-    bd->lower_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
-    gtk_widget_set_tooltip_text(bd->lower_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
-
-    bd->upper_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
-    gtk_widget_set_tooltip_text(bd->upper_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
-
-    gtk_box_pack_start(GTK_BOX(upslider), GTK_WIDGET(bd->upper_slider), TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(upslider), GTK_WIDGET(bd->upper_polarity), FALSE, FALSE, 0);
-
-    gtk_box_pack_start(GTK_BOX(lowslider), GTK_WIDGET(bd->lower_slider), TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(lowslider), GTK_WIDGET(bd->lower_polarity), FALSE, FALSE, 0);
-
-
-    bd->upper_head = GTK_LABEL(gtk_label_new(_("output")));
-    bd->upper_picker_label = GTK_LABEL(gtk_label_new(""));
-    gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_head), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_picker_label), TRUE, TRUE, 0);
-    for(int k = 0; k < 4; k++)
+    for(int in_out = 1; in_out >= 0; in_out--)
     {
-      bd->upper_label[k] = GTK_LABEL(gtk_label_new(NULL));
-      gtk_label_set_width_chars(bd->upper_label[k], 5);
-      gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_label[k]), FALSE, FALSE, 0);
-    }
+      dt_iop_gui_blendif_filter_t *sl = &bd->filter[in_out];
 
-    bd->lower_head = GTK_LABEL(gtk_label_new(_("input")));
-    bd->lower_picker_label = GTK_LABEL(gtk_label_new(""));
-    gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_head), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_picker_label), TRUE, TRUE, 0);
-    for(int k = 0; k < 4; k++)
-    {
-      bd->lower_label[k] = GTK_LABEL(gtk_label_new(NULL));
-      gtk_label_set_width_chars(bd->lower_label[k], 5);
-      gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
-    }
+      GtkWidget *slider_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_head), ttinput);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_head), ttoutput);
+      sl->slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new_with_name(4,
+                                                   in_out ? "blend-upper" : "blend-lower"));
+      gtk_box_pack_start(GTK_BOX(slider_box), GTK_WIDGET(sl->slider), TRUE, TRUE, 0);
+
+      sl->polarity
+          = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
+      gtk_widget_set_tooltip_text(sl->polarity, _("toggle polarity. best seen by enabling 'display mask'"));
+      gtk_box_pack_end(GTK_BOX(slider_box), GTK_WIDGET(sl->polarity), FALSE, FALSE, 0);
+
+      GtkWidget *label_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+      sl->head = GTK_LABEL(gtk_label_new(in_out ? _("output") : _("input")));
+      gtk_label_set_ellipsize(GTK_LABEL(sl->head), PANGO_ELLIPSIZE_END);
+      gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->head), FALSE, FALSE, 0);
+
+      sl->picker_label = GTK_LABEL(gtk_label_new(""));
+      gtk_label_set_ellipsize(GTK_LABEL(sl->picker_label), PANGO_ELLIPSIZE_END);
+      gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->picker_label), TRUE, TRUE, 0);
+
+      for(int k = 0; k < 4; k++)
+      {
+        sl->label[k] = GTK_LABEL(gtk_label_new(NULL));
+        gtk_label_set_ellipsize(GTK_LABEL(sl->label[k]), PANGO_ELLIPSIZE_END);
+        gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->label[k]), FALSE, FALSE, 0);
+      }
+
+      gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(sl->head), _(slider_tooltip[in_out]));
+
+      g_signal_connect(G_OBJECT(sl->slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
+      g_signal_connect(G_OBJECT(sl->slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
+      g_signal_connect(G_OBJECT(sl->slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
+      g_signal_connect(G_OBJECT(sl->slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
+      g_signal_connect(G_OBJECT(sl->polarity), "toggled", G_CALLBACK(_blendop_blendif_polarity_callback), bd);
+
+      gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(label_box), TRUE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(slider_box), TRUE, FALSE, 0);
+    }
 
     g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page", G_CALLBACK(_blendop_blendif_tab_switch), bd);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
-
     g_signal_connect(G_OBJECT(bd->colorpicker), "toggled", G_CALLBACK(_update_gradient_slider_pickers), module);
-
     g_signal_connect(G_OBJECT(bd->colorpicker_set_values), "toggled", G_CALLBACK(_update_gradient_slider_pickers), module);
-
     g_signal_connect(G_OBJECT(res), "clicked", G_CALLBACK(_blendop_blendif_reset), module);
-
     g_signal_connect(G_OBJECT(inv), "clicked", G_CALLBACK(_blendop_blendif_invert), module);
-
-    g_signal_connect(G_OBJECT(bd->lower_polarity), "toggled", G_CALLBACK(_blendop_blendif_polarity_callback),
-                     bd);
-
-    g_signal_connect(G_OBJECT(bd->upper_polarity), "toggled", G_CALLBACK(_blendop_blendif_polarity_callback),
-                     bd);
-
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), dt_ui_section_label_new(_("parametric mask")), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(upslider), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowslider), TRUE, FALSE, 0);
 
     bd->blendif_inited = 1;
   }
-
-  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->blendif_box));
 }
 
 void dt_iop_gui_update_masks(dt_iop_module_t *module)
@@ -2074,21 +1927,44 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   if(bd->timeout_handle)
     g_source_remove(bd->timeout_handle);
 
-  g_list_free(bd->blend_modes);
   g_list_free(bd->masks_modes);
   g_list_free(bd->masks_modes_toggles);
-  g_list_free(bd->masks_combine);
-  g_list_free(bd->masks_invert);
-  g_list_free(bd->masks_feathering_guide);
-  g_list_free_full(bd->blend_modes_all, g_free);
   free(bd->masks_combo_ids);
   dt_pthread_mutex_unlock(&bd->lock);
   dt_pthread_mutex_destroy(&bd->lock);
 
-  memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
-
   g_free(module->blend_data);
   module->blend_data = NULL;
+}
+
+
+static gboolean _add_blendmode_combo(GtkWidget *combobox, dt_develop_blend_mode_t mode)
+{
+  for(const dt_develop_name_value_t *bm = dt_develop_blend_mode_names; *bm->name; bm++)
+  {
+    if(bm->value == mode)
+    {
+      dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "blendmode", bm->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GUINT_TO_POINTER(bm->value), NULL, TRUE);
+
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+static GtkWidget *_combobox_new_from_list(dt_iop_module_t *module, const gchar *label,
+                                          const dt_develop_name_value_t *list, const gchar *tooltip)
+{
+  GtkWidget *combo = dt_bauhaus_combobox_new(module);
+
+  dt_bauhaus_widget_set_label(combo, _("blend"), label);
+  gtk_widget_set_tooltip_text(combo, tooltip);
+  for(; *list->name; list++)
+    dt_bauhaus_combobox_add_full(combo, _(list->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                 GUINT_TO_POINTER(list->value), NULL, TRUE);
+
+  return combo;
 }
 
 void dt_iop_gui_update_blending(dt_iop_module_t *module)
@@ -2121,50 +1997,27 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
         bd->masks_modes_toggles, g_list_index(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_DISABLED)));
   }
 
-  /* special handling of deprecated blend modes */
-  int blend_mode_number = g_list_index(bd->blend_modes, GUINT_TO_POINTER(module->blend_params->blend_mode));
-  if(blend_mode_number < 0)
+  if(!dt_bauhaus_combobox_set_from_value(bd->blend_modes_combo, module->blend_params->blend_mode))
   {
-    GList *complete_list = bd->blend_modes_all;
-
-    while(complete_list)
+    // add deprecated blend mode
+    if(!_add_blendmode_combo(bd->blend_modes_combo, module->blend_params->blend_mode))
     {
-      dt_iop_blend_mode_t *bm = (dt_iop_blend_mode_t *)complete_list->data;
-      if(bm->mode == module->blend_params->blend_mode)
-      {
-        dt_bauhaus_combobox_add(bd->blend_modes_combo, bm->name);
-        bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(bm->mode));
-        break;
-      }
-      complete_list = g_list_next(complete_list);
-    }
-
-    if(complete_list)
-    {
-      /* found it and added it to combobox, now find entry number */
-      blend_mode_number = g_list_index(bd->blend_modes, GUINT_TO_POINTER(module->blend_params->blend_mode));
-    }
-    else
-    {
-      /* should never happen: unknown blend mode */
+      // should never happen: unknown blend mode
       dt_control_log("unknown blend mode '%d' in module '%s'", module->blend_params->blend_mode, module->op);
-      blend_mode_number = 0;
+
+      module->blend_params->blend_mode = DEVELOP_BLEND_NORMAL2;
     }
+
+    dt_bauhaus_combobox_set_from_value(bd->blend_modes_combo, module->blend_params->blend_mode);
   }
 
-  dt_bauhaus_combobox_set(bd->blend_modes_combo, blend_mode_number);
-
-  dt_bauhaus_combobox_set(
-      bd->masks_combine_combo,
-      g_list_index(bd->masks_combine, GUINT_TO_POINTER(module->blend_params->mask_combine
-                                                       & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL))));
-  dt_bauhaus_combobox_set(bd->masks_invert_combo,
-                          g_list_index(bd->masks_invert, GUINT_TO_POINTER(module->blend_params->mask_combine
-                                                                          & DEVELOP_COMBINE_INV)));
+  dt_bauhaus_combobox_set_from_value(bd->masks_combine_combo,
+                                     module->blend_params->mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL));
+  dt_bauhaus_combobox_set_from_value(bd->masks_invert_combo,
+                                     module->blend_params->mask_combine & DEVELOP_COMBINE_INV);
   dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
-  dt_bauhaus_combobox_set(
-      bd->masks_feathering_guide_combo,
-      g_list_index(bd->masks_feathering_guide, GUINT_TO_POINTER(module->blend_params->feathering_guide)));
+  dt_bauhaus_combobox_set_from_value(bd->masks_feathering_guide_combo,
+                                     module->blend_params->feathering_guide);
   dt_bauhaus_slider_set(bd->feathering_radius_slider, module->blend_params->feathering_radius);
   dt_bauhaus_slider_set(bd->blur_radius_slider, module->blend_params->blur_radius);
   dt_bauhaus_slider_set(bd->brightness_slider, module->blend_params->brightness);
@@ -2313,42 +2166,9 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     dt_pthread_mutex_unlock(&bd->lock);
 
     // reprocess main center image if needed
-    if (has_mask_display || suppress) dt_dev_reprocess_center(module->dev);
+    if (has_mask_display || suppress)
+      dt_iop_refresh_center(module);
   }
-}
-
-static void _collect_blend_modes(GList **list, const char *name, unsigned int mode)
-{
-  dt_iop_blend_mode_t *bm;
-  bm = g_malloc(sizeof(dt_iop_blend_mode_t));
-  g_strlcpy(bm->name, name, sizeof(bm->name));
-  bm->mode = mode;
-  *list = g_list_append(*list, bm);
-}
-
-
-static void _add_blendmode_combo(GList **list, GtkWidget *combobox, GList *complete, unsigned int mode)
-{
-  GList *all = complete;
-
-  while(all)
-  {
-    dt_iop_blend_mode_t *bm = (dt_iop_blend_mode_t *)all->data;
-    if(bm->mode == mode)
-    {
-      dt_bauhaus_combobox_add(combobox, bm->name);
-      *list = g_list_append(*list, GUINT_TO_POINTER(bm->mode));
-      break;
-    }
-    all = g_list_next(all);
-  }
-}
-
-
-static void _add_section_combo(GList **list, GtkWidget *combobox, const char *const name)
-{
-  *list = g_list_append(*list, GUINT_TO_POINTER(DEVELOP_BLEND_DISABLED));
-  dt_bauhaus_combobox_add_section(combobox, name);
 }
 
 
@@ -2368,67 +2188,12 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->masks_modes = NULL;
     bd->masks_modes_toggles = NULL;
-    bd->blend_modes = NULL;
-    bd->masks_combine = NULL;
-    bd->masks_invert = NULL;
-    bd->blend_modes_all = NULL;
 
     dt_pthread_mutex_init(&bd->lock, NULL);
     dt_pthread_mutex_lock(&bd->lock);
     bd->timeout_handle = 0;
     bd->save_for_leave = 0;
     dt_pthread_mutex_unlock(&bd->lock);
-
-    /** generate a list of all available blend modes */
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal bounded"), DEVELOP_BLEND_BOUNDED);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "lighten"), DEVELOP_BLEND_LIGHTEN);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "darken"), DEVELOP_BLEND_DARKEN);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "multiply"), DEVELOP_BLEND_MULTIPLY);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "average"), DEVELOP_BLEND_AVERAGE);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "addition"), DEVELOP_BLEND_ADD);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "subtract"), DEVELOP_BLEND_SUBSTRACT);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "difference"), DEVELOP_BLEND_DIFFERENCE2);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "screen"), DEVELOP_BLEND_SCREEN);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "overlay"), DEVELOP_BLEND_OVERLAY);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "softlight"), DEVELOP_BLEND_SOFTLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "hardlight"), DEVELOP_BLEND_HARDLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "vividlight"), DEVELOP_BLEND_VIVIDLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "linearlight"), DEVELOP_BLEND_LINEARLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "pinlight"), DEVELOP_BLEND_PINLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "lightness"), DEVELOP_BLEND_LIGHTNESS);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "chroma"), DEVELOP_BLEND_CHROMA);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "hue"), DEVELOP_BLEND_HUE);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "color"), DEVELOP_BLEND_COLOR);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "coloradjustment"),
-                         DEVELOP_BLEND_COLORADJUST);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab lightness"),
-                         DEVELOP_BLEND_LAB_LIGHTNESS);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab color"), DEVELOP_BLEND_LAB_COLOR);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab L-channel"),
-                         DEVELOP_BLEND_LAB_L);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab a-channel"),
-                         DEVELOP_BLEND_LAB_A);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab b-channel"),
-                         DEVELOP_BLEND_LAB_B);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "HSV lightness"),
-                         DEVELOP_BLEND_HSV_LIGHTNESS);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "HSV color"), DEVELOP_BLEND_HSV_COLOR);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB red channel"),
-                         DEVELOP_BLEND_RGB_R);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB green channel"),
-                         DEVELOP_BLEND_RGB_G);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "RGB blue channel"),
-                         DEVELOP_BLEND_RGB_B);
-
-    /** deprecated blend modes: make them available as legacy history stacks might want them */
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "difference (deprecated)"),
-                         DEVELOP_BLEND_DIFFERENCE);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "inverse (deprecated)"),
-                         DEVELOP_BLEND_INVERSE);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal (deprecated)"), DEVELOP_BLEND_NORMAL);
-    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "unbounded (deprecated)"),
-                         DEVELOP_BLEND_UNBOUNDED);
 
     //toggle buttons creation for masks modes
     GtkWidget *but = NULL;
@@ -2495,256 +2260,107 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend"), _("blend mode"));
     gtk_widget_set_tooltip_text(bd->blend_modes_combo, _("choose blending mode"));
 
-    switch(bd->csp)
+    if(bd->csp == iop_cs_Lab ||
+       bd->csp == iop_cs_rgb ||
+       bd->csp == iop_cs_RAW )
     {
-      case iop_cs_Lab:
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("normal & difference modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_NORMAL2);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_BOUNDED);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_AVERAGE);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DIFFERENCE2);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("lighten modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LIGHTEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_ADD);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SCREEN);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("darken modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DARKEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SUBSTRACT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_MULTIPLY);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("contrast enhancing modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_OVERLAY);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SOFTLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_HARDLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_VIVIDLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LINEARLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_PINLIGHT);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("color channel modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LAB_LIGHTNESS);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LAB_A);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LAB_B);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LAB_COLOR);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LIGHTNESS);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_CHROMA);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_HUE);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_COLOR);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_COLORADJUST);
-        break;
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("normal & difference modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_NORMAL2);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_BOUNDED);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_AVERAGE);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIFFERENCE2);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("lighten modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTEN);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_ADD);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SCREEN);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("darken modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DARKEN);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBSTRACT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_MULTIPLY);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("contrast enhancing modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_OVERLAY);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SOFTLIGHT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HARDLIGHT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_VIVIDLIGHT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LINEARLIGHT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_PINLIGHT);
 
-      case iop_cs_rgb:
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("normal & difference modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_NORMAL2);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_BOUNDED);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_AVERAGE);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DIFFERENCE2);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("lighten modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LIGHTEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_ADD);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SCREEN);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("darken modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DARKEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SUBSTRACT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_MULTIPLY);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("contrast enhancing modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_OVERLAY);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SOFTLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_HARDLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_VIVIDLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LINEARLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_PINLIGHT);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("color channel modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_RGB_R);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_RGB_G);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_RGB_B);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LIGHTNESS);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_HSV_LIGHTNESS);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_CHROMA);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_HSV_COLOR);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_HUE);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_COLOR);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_COLORADJUST);
-        break;
-
-      case iop_cs_RAW:
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("normal & difference modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_NORMAL2);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_BOUNDED);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_AVERAGE);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DIFFERENCE2);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("lighten modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LIGHTEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_ADD);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SCREEN);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("darken modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_DARKEN);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SUBSTRACT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_MULTIPLY);
-        _add_section_combo(&(bd->blend_modes), bd->blend_modes_combo, _("contrast enhancing modes"));
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_OVERLAY);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_SOFTLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_HARDLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_VIVIDLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_LINEARLIGHT);
-        _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
-                             DEVELOP_BLEND_PINLIGHT);
-        break;
-
-      case iop_cs_LCh:
-      case iop_cs_HSL:
-      case iop_cs_NONE:
-        break;
+      if(bd->csp == iop_cs_Lab)
+      {
+        dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("color channel modes"));
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_LIGHTNESS);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_A);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_B);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_COLOR);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMA);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HUE);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLOR);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLORADJUST);
+      }
+      else if(bd->csp == iop_cs_rgb)
+      {
+        dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("color channel modes"));
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_R);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_G);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_B);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HSV_LIGHTNESS);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMA);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HSV_COLOR);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HUE);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLOR);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLORADJUST);
+      }
+      else if(bd->csp == iop_cs_RAW)
+      {
+      }
+    }
+    else if(bd->csp == iop_cs_LCh ||
+            bd->csp == iop_cs_HSL ||
+            bd->csp == iop_cs_NONE )
+    {
     }
 
-
-    dt_bauhaus_combobox_set(bd->blend_modes_combo, 0);
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
-                     G_CALLBACK(_blendop_blend_mode_callback), bd);
+                     G_CALLBACK(dt_iop_combobox_enum_callback), &module->blend_params->blend_mode);
     dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo), "blending.html#blending_operators");
-
 
     bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);
     dt_bauhaus_widget_set_label(bd->opacity_slider, _("blend"), _("opacity"));
     dt_bauhaus_slider_set_format(bd->opacity_slider, "%.0f%%");
     module->fusion_slider = bd->opacity_slider;
     gtk_widget_set_tooltip_text(bd->opacity_slider, _("set the opacity of the blending"));
-    g_signal_connect(G_OBJECT(bd->opacity_slider), "value-changed", G_CALLBACK(_blendop_opacity_callback), bd);
+    g_signal_connect(G_OBJECT(bd->opacity_slider), "value-changed", G_CALLBACK(dt_iop_slider_float_callback), &module->blend_params->opacity);
 
-
-    bd->masks_combine_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_combine_combo, _("blend"), _("combine masks"));
-
-    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("exclusive"));
-    bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_NORM_EXCL));
-
-    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("inclusive"));
-    bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_NORM_INCL));
-
-    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("exclusive & inverted"));
-    bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_INV_EXCL));
-
-    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("inclusive & inverted"));
-    bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_INV_INCL));
-
-    dt_bauhaus_combobox_set(bd->masks_combine_combo, 0);
-    gtk_widget_set_tooltip_text(bd->masks_combine_combo,
-                                _("how to combine individual drawn mask and different channels of parametric mask"));
+    bd->masks_combine_combo = _combobox_new_from_list(module, _("combine masks"), dt_develop_combine_masks_names,
+                                                      _("how to combine individual drawn mask and different channels of parametric mask"));
     g_signal_connect(G_OBJECT(bd->masks_combine_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_combine_callback), bd);
 
-
-    bd->masks_invert_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_invert_combo, _("blend"), _("invert mask"));
-
-    dt_bauhaus_combobox_add(bd->masks_invert_combo, _("off"));
-    bd->masks_invert = g_list_append(bd->masks_invert, GUINT_TO_POINTER(DEVELOP_COMBINE_NORM));
-
-    dt_bauhaus_combobox_add(bd->masks_invert_combo, _("on"));
-    bd->masks_invert = g_list_append(bd->masks_invert, GUINT_TO_POINTER(DEVELOP_COMBINE_INV));
-
-    dt_bauhaus_combobox_set(bd->masks_invert_combo, 0);
-    gtk_widget_set_tooltip_text(bd->masks_invert_combo, _("apply mask in normal or inverted mode"));
+    bd->masks_invert_combo = _combobox_new_from_list(module, _("invert mask"), dt_develop_invert_mask_names,
+                                                     _("apply mask in normal or inverted mode"));
     g_signal_connect(G_OBJECT(bd->masks_invert_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_invert_callback), bd);
 
-
-    bd->masks_feathering_guide_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_feathering_guide_combo, _("feathering guide"), _("feathering guide"));
-
-    dt_bauhaus_combobox_add(bd->masks_feathering_guide_combo, _("output image"));
-    bd->masks_feathering_guide
-        = g_list_append(bd->masks_feathering_guide, GUINT_TO_POINTER(DEVELOP_MASK_GUIDE_OUT));
-
-    dt_bauhaus_combobox_add(bd->masks_feathering_guide_combo, _("input image"));
-    bd->masks_feathering_guide
-        = g_list_append(bd->masks_feathering_guide, GUINT_TO_POINTER(DEVELOP_MASK_GUIDE_IN));
-
-    dt_bauhaus_combobox_set(bd->masks_feathering_guide_combo, 0);
-    gtk_widget_set_tooltip_text(bd->masks_feathering_guide_combo,
-                                _("choose to guide mask by input or output image"));
+    bd->masks_feathering_guide_combo = _combobox_new_from_list(module, _("feathering guide"), dt_develop_feathering_guide_names,
+                                                               _("choose to guide mask by input or output image"));
     g_signal_connect(G_OBJECT(bd->masks_feathering_guide_combo), "value-changed",
-                     G_CALLBACK(_blendop_masks_feathering_guide_callback), bd);
-
+                     G_CALLBACK(dt_iop_combobox_enum_callback), &module->blend_params->feathering_guide);
 
     bd->feathering_radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 250.0, 0.1, 0.0, 1);
     dt_bauhaus_widget_set_label(bd->feathering_radius_slider, _("blend"), _("feathering radius"));
     dt_bauhaus_slider_set_format(bd->feathering_radius_slider, "%.1f");
     gtk_widget_set_tooltip_text(bd->feathering_radius_slider, _("spatial radius of feathering"));
     g_signal_connect(G_OBJECT(bd->feathering_radius_slider), "value-changed",
-                     G_CALLBACK(_blendop_blendif_feathering_radius_callback), bd);
-
+                     G_CALLBACK(dt_iop_slider_float_callback), &module->blend_params->feathering_radius);
 
     bd->blur_radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0.1, 0.0, 1);
     dt_bauhaus_widget_set_label(bd->blur_radius_slider, _("blend"), _("mask blur"));
     dt_bauhaus_slider_set_format(bd->blur_radius_slider, "%.1f");
     gtk_widget_set_tooltip_text(bd->blur_radius_slider, _("radius for gaussian blur of blend mask"));
     g_signal_connect(G_OBJECT(bd->blur_radius_slider), "value-changed",
-                     G_CALLBACK(_blendop_blendif_blur_radius_callback), bd);
-
+                     G_CALLBACK(dt_iop_slider_float_callback), &module->blend_params->blur_radius);
 
     bd->brightness_slider = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0.01, 0.0, 2);
     dt_bauhaus_widget_set_label(bd->brightness_slider, _("blend"), _("mask opacity"));
@@ -2753,8 +2369,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                                                          "brightness without affecting fully transparent/fully opaque "
                                                          "regions"));
     g_signal_connect(G_OBJECT(bd->brightness_slider), "value-changed",
-                     G_CALLBACK(_blendop_blendif_brightness_callback), bd);
-
+                     G_CALLBACK(dt_iop_slider_float_callback), &module->blend_params->brightness);
 
     bd->contrast_slider = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0.01, 0.0, 2);
     dt_bauhaus_widget_set_label(bd->contrast_slider, _("blend"), _("mask contrast"));
@@ -2762,8 +2377,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(bd->contrast_slider, _("gives the tone curve of the blend mask an s-like shape to "
                                                        "adjust its contrast"));
     g_signal_connect(G_OBJECT(bd->contrast_slider), "value-changed",
-                     G_CALLBACK(_blendop_blendif_contrast_callback), bd);
-
+                     G_CALLBACK(dt_iop_slider_float_callback), &module->blend_params->contrast);
 
     bd->showmask = dtgtk_button_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl+click to display mask, "

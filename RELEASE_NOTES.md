@@ -31,9 +31,25 @@ making a backup is strongly advised.
 
 ## New Features And Changes
 
+- Add a focus-peaking button in lighttable and darkroom which complements the key accel.
+
+- Better visual feedback when changing module order with drag&drop.
+
+- Better performance for the wavelet algorithm.
+
+- A new tooltip was added to history items in the darkroom that shows each of the individual parameter changes within the module. It could especially help track down unintended adjustments in modules with many tabs, such as filmic rgb or the parametric blending settings. This feature was based on the under-the-hood introspection enhancements in 3.2.
 
 ## Bug fixes
 
+- Fix orientation in the clipping module after having selected the freehand aspect ratio.
+
+- Fix compilation issue in AVIF format support.
+
+- Fix multiple small memory leaks.
+
+- Fix daylight saving time in $(EXIF_HOUR) variable.
+
+- Fix timestamp display on Windows (use UTF-8 format for timestamps).
 
 ## Notes
 

@@ -54,7 +54,6 @@ typedef struct dt_lib_image_t
       *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
   GtkWidget *page1; // saved here for lua extensions
   int imageid;
-  guint timeout_handle;
 } dt_lib_image_t;
 
 typedef enum dt_lib_metadata_id
@@ -179,6 +178,7 @@ else
 
 static void _update(dt_lib_module_t *self)
 {
+  dt_lib_cancel_postponed_update(self);
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE);
 
@@ -211,20 +211,6 @@ static void _update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->clear_metadata_button), act_on_cnt > 0);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_cnt > 0);
-
-  if(d->timeout_handle)
-  {
-    g_source_remove(d->timeout_handle);
-    d->timeout_handle = 0;
-  }
-}
-
-static gboolean _postponed_update(gpointer data)
-{
-  // timeout handle clearing is handled by update code
-  _update((dt_lib_module_t *)data);
-
-  return FALSE;
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -240,16 +226,7 @@ static void _collection_updated_callback(gpointer instance, dt_collection_change
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
-
-  if(d->timeout_handle)
-  {
-    // here we're making sure the event fires at last hover
-    // and we won't have avalanche of events in the mean time.
-    g_source_remove(d->timeout_handle);
-  }
-  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
+  dt_lib_queue_postponed_update(self, _update);
 }
 
 static void _image_preference_changed(gpointer instance, gpointer user_data)
@@ -308,7 +285,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     {
       GList *metadata = (action == DT_MA_CLEAR) ? NULL : dt_metadata_get_list_id(imageid);
       dt_metadata_set_list_id(imgs, metadata, action != DT_MA_MERGE, TRUE);
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
       g_list_free_full(metadata, g_free);
     }
     if(geotag_flag)
@@ -326,7 +303,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
       // affect only user tags (not dt tags)
       GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid, TRUE);
       if(dt_tag_set_tags(tags, imgs, TRUE, action != DT_MA_MERGE, TRUE))
-        dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+        DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
       g_list_free(tags);
     }
 
@@ -407,7 +384,7 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
   self->data = (void *)d;
-  d->timeout_handle = 0;
+  self->timeout_handle = 0;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "selected_images.html#selected_images_usage");
 
@@ -602,17 +579,17 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(14));
 
   /* connect preference changed signal */
-  dt_control_signal_connect(
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(
       darktable.signals,
       DT_SIGNAL_PREFERENCES_CHANGE,
       G_CALLBACK(_image_preference_changed),
       (gpointer)self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
   _update(self);
@@ -628,14 +605,11 @@ void gui_reset(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_preference_changed), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
-
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  if(d->timeout_handle)
-    g_source_remove(d->timeout_handle);
+  dt_lib_cancel_postponed_update(self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_preference_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
 
   free(self->data);
   self->data = NULL;

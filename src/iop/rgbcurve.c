@@ -88,7 +88,6 @@ typedef struct dt_iop_rgbcurve_gui_data_t
   rgbcurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected;
-  int timeout_handle;
   float draw_ys[DT_IOP_RGBCURVE_RES];
   float draw_min_ys[DT_IOP_RGBCURVE_RES];
   float draw_max_ys[DT_IOP_RGBCURVE_RES];
@@ -556,17 +555,6 @@ static gboolean _sanity_check(const float x, const int selected, const int nodes
   return point_valid;
 }
 
-static gboolean postponed_value_change(gpointer data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)data;
-  dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  g->timeout_handle = 0;
-
-  return FALSE;
-}
-
 static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
 {
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
@@ -604,10 +592,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
     curve[g->selected].x = new_x;
     curve[g->selected].y = new_y;
 
-    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
-
-    if(!g->timeout_handle)
-      g->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
+    dt_iop_queue_history_update(self, FALSE);
   }
 
   return TRUE;
@@ -622,7 +607,8 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
 
   gdouble delta_y;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   if(darktable.develop->darkroom_skip_mouse_events)
   {
     if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
@@ -840,6 +826,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   if(self->enabled)
   {
     const uint32_t *hist = self->histogram;
+    const gboolean is_linear = darktable.lib->proxy.histogram.is_linear;
     float hist_max;
 
     if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
@@ -847,7 +834,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     else
       hist_max = self->histogram_max[ch];
 
-    if (dev->histogram_type != DT_DEV_HISTOGRAM_LINEAR)
+    if (!is_linear)
       hist_max = logf(1.0 + hist_max);
 
     if(hist && hist_max > 0.0f)
@@ -861,15 +848,15 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
         cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_R, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
-                                   dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+                                   is_linear);
 
         cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_G, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
-                                   dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+                                   is_linear);
 
         cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_B, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
-                                   dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+                                   is_linear);
         }
         else if(autoscale == DT_S_SCALE_MANUAL_RGB)
         {
@@ -880,7 +867,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
           else
             cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
           dt_draw_histogram_8_zoomed(cr, hist, 4, ch, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
-                                     dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+                                     is_linear);
         }
 
       cairo_restore(cr);
@@ -1391,28 +1378,21 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   g->channel = DT_IOP_RGBCURVE_R;
-  g->timeout_handle = 0;
+  self->timeout_handle = 0;
   change_image(self);
 
   g->autoscale = dt_bauhaus_combobox_from_params(self, "curve_autoscale");
   gtk_widget_set_tooltip_text(g->autoscale, _("choose between linked and independent channels."));
 
-  // tabs
-  g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-  GtkWidget *tab_label;
-  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  R  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for r channel"));
-  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  G  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for g channel"));
-  gtk_notebook_append_page(g->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  B  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for b channel"));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs, g->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
-
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+  g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+  dt_ui_notebook_page(g->channel_tabs, _("R"), _("curve nodes for r channel"));
+  dt_ui_notebook_page(g->channel_tabs, _("G"), _("curve nodes for g channel"));
+  dt_ui_notebook_page(g->channel_tabs, _("B"), _("curve nodes for b channel"));
+  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch_callback), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->channel_tabs), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
 
   // color pickers
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
@@ -1431,8 +1411,6 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch_callback), self);
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->area), TRUE, TRUE, 0);
@@ -1489,11 +1467,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_compensate_middle_grey), p->compensate_middle_grey);
   dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
 
-  if(g->timeout_handle)
-  {
-    g_source_remove(g->timeout_handle);
-    g->timeout_handle = 0;
-  }
+  dt_iop_cancel_history_update(self);
 
   _rgbcurve_show_hide_controls(p, g);
 
@@ -1507,7 +1481,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   for(int k = 0; k < DT_IOP_RGBCURVE_MAX_CHANNELS; k++) dt_draw_curve_destroy(g->minmax_curve[k]);
 
-  if(g->timeout_handle) g_source_remove(g->timeout_handle);
+  dt_iop_cancel_history_update(self);
 
   free(self->gui_data);
   self->gui_data = NULL;

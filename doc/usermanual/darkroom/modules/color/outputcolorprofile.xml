@@ -74,7 +74,7 @@
       <para>
         Only rendering with LittleCMS2 gives you a choice of rendering intent. The option is
         hidden, if darktable's internal rendering routines are used. Rendering with LittleCMS2
-        is activated in the preferences dialog (see <xref linkend="core_options"/>).
+        is activated in the preferences dialog (see <xref linkend="processing"/>).
       </para>
     </sect5>
 

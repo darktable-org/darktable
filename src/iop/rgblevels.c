@@ -379,7 +379,6 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
 
-  dt_develop_t *dev = darktable.develop;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(GTK_WIDGET(c->area), &allocation);
@@ -463,6 +462,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   {
     const int ch = c->channel;
     const uint32_t *hist = self->histogram;
+    const gboolean is_linear = darktable.lib->proxy.histogram.is_linear;
     float hist_max;
 
     if(p->autoscale == DT_IOP_RGBLEVELS_LINKED_CHANNELS)
@@ -470,7 +470,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     else
       hist_max = self->histogram_max[ch];
 
-    if (dev->histogram_type != DT_DEV_HISTOGRAM_LINEAR)
+    if (!is_linear)
       hist_max = logf(1.0 + hist_max);
 
     if(hist && hist_max > 0.0f)
@@ -483,13 +483,13 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
         cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_R, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_R, is_linear);
 
         cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_G, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_G, is_linear);
 
         cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_B, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_B, is_linear);
       }
       else if(p->autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS)
       {
@@ -499,7 +499,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
           cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
         else
           cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, ch, is_linear);
       }
 
       cairo_restore(cr);
@@ -649,7 +649,8 @@ static gboolean _area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, 
   dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   _turn_selregion_picker_off(self);
 
   if(c->dragging)
@@ -956,32 +957,15 @@ void gui_init(dt_iop_module_t *self)
   c->cmb_autoscale = dt_bauhaus_combobox_from_params(self, "autoscale");
   gtk_widget_set_tooltip_text(c->cmb_autoscale, _("choose between linked and independent channels."));
 
-  // tabs
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-  GtkWidget *tab_label;
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  R  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for r channel"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  G  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for g channel"));
-  gtk_notebook_append_page(c->channel_tabs, gtk_grid_new(), tab_label = gtk_label_new(_("  B  ")));
-  gtk_widget_set_tooltip_text(tab_label, _("curve nodes for b channel"));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
-
-  GtkWidget *notebook = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
-
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(notebook), TRUE, TRUE, 0);
-
+  dt_ui_notebook_page(c->channel_tabs, _("R"), _("curve nodes for r channel"));
+  dt_ui_notebook_page(c->channel_tabs, _("G"), _("curve nodes for g channel"));
+  dt_ui_notebook_page(c->channel_tabs, _("B"), _("curve nodes for b channel"));
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(_tab_switch_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
-  GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("drag handles to set black, gray, and white points. "
                                                     "operates on L channel."));
@@ -1016,7 +1000,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->greypick ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->whitepick), TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(vbox_manual), pick_hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), pick_hbox, TRUE, TRUE, 0);
 
   c->bt_auto_levels = gtk_button_new_with_label(_("auto"));
   gtk_widget_set_tooltip_text(c->bt_auto_levels, _("apply auto levels"));
@@ -1031,11 +1015,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(autolevels_box), c->bt_auto_levels, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(autolevels_box), c->bt_select_region, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(vbox_manual), autolevels_box, TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox_manual, TRUE, TRUE, 0);
-
-  gtk_widget_show_all(vbox_manual);
+  gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(c->bt_auto_levels), "clicked", G_CALLBACK(_auto_levels_callback), self);
   g_signal_connect(G_OBJECT(c->bt_select_region), "toggled", G_CALLBACK(_select_region_toggled_callback), self);
@@ -1044,13 +1024,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
   // add signal handler for preview pipe finish
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   dt_iop_rgblevels_gui_data_t *g = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   if(g)

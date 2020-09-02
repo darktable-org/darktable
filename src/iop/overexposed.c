@@ -112,7 +112,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 //   dt_accel_connect_slider_iop(self, "color scheme", GTK_WIDGET(g->colorscheme));
 // }
 
-static void _get_histogram_profile_type(dt_colorspaces_color_profile_type_t *out_type, gchar **out_filename)
+// FIXME: this is pretty much a duplicate of dt_ioppr_get_histogram_profile_type() excepting that it doesn't check darktable.color_profiles->mode
+static void _get_histogram_profile_type(dt_colorspaces_color_profile_type_t *out_type, const gchar **out_filename)
 {
   // if in gamut check use soft proof
   if(darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
@@ -139,7 +140,7 @@ static void _transform_image_colorspace(dt_iop_module_t *self, const float *cons
                                         const dt_iop_roi_t *const roi_in)
 {
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-  gchar *histogram_filename = NULL;
+  const gchar *histogram_filename = NULL;
 
   _get_histogram_profile_type(&histogram_type, &histogram_filename);
 
@@ -226,7 +227,7 @@ static void _transform_image_colorspace_cl(dt_iop_module_t *self, const int devi
                                            cl_mem dev_img_out, const dt_iop_roi_t *const roi_in)
 {
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-  gchar *histogram_filename = NULL;
+  const gchar *histogram_filename = NULL;
 
   _get_histogram_profile_type(&histogram_type, &histogram_filename);
 

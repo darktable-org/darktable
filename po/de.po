@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 23:41+0200\n"
-"PO-Revision-Date: 2020-07-23 22:57+0200\n"
+"PO-Revision-Date: 2020-08-08 12:39+0200\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -122,7 +122,7 @@ msgstr "Belichtungsanpassung"
 #: ../build/src/iop/introspection_basecurve.c:239
 #: ../src/libs/metadata_view.c:123
 msgid "exposure bias"
-msgstr "Belichtungskorreektur"
+msgstr "Belichtungskorrektur"
 
 #: ../build/src/iop/introspection_basecurve.c:152
 #: ../build/src/iop/introspection_basecurve.c:243
@@ -6239,14 +6239,15 @@ msgid "metadata to be applied per default"
 msgstr "Urheber, der beim Import hinzugefügt werden soll"
 
 #: ../src/gui/import_metadata.c:175
-#, fuzzy
 msgid "to be imported"
-msgstr "%s wurde importiert"
+msgstr "importieren"
 
 #: ../src/gui/import_metadata.c:177
 msgid ""
 "selected metadata are imported from image and override the default value"
 msgstr ""
+"Ausgewählte Metadaten werden, so vorhanden, aus dem Bild importiert und ersetzen "
+"den angegeben Standardwert."
 
 #: ../src/gui/import_metadata.c:227
 msgid "comma separated list of tags"
@@ -13050,9 +13051,8 @@ msgstr ""
 "Rechtsklick entfernt eine Form."
 
 #: ../src/iop/spots.c:800
-#, fuzzy
 msgid "show and edit shapes"
-msgstr "Masken-Elemente anzeigen und bearbeiten"
+msgstr "Masken anzeigen und bearbeiten"
 
 #: ../src/iop/spots.c:836
 msgctxt "accel"
@@ -14500,9 +14500,8 @@ msgid "done"
 msgstr "erledigt"
 
 #: ../src/libs/export_metadata.c:170
-#, fuzzy
 msgid "list filter"
-msgstr "kühlender Filter"
+msgstr "Liste filtern"
 
 #: ../src/libs/export_metadata.c:181
 msgid ""
@@ -14513,9 +14512,8 @@ msgstr ""
 "oder Doppelklick auf das Tag, fügt dieses hinzu"
 
 #: ../src/libs/export_metadata.c:187
-#, fuzzy
 msgid "type"
-msgstr "Weichzeichnungstyp"
+msgstr "Typ"
 
 #: ../src/libs/export_metadata.c:268
 msgid "edit metadata exportation"
@@ -14618,7 +14616,7 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:331
 msgid "develop history"
-msgstr "Historie erstellen"
+msgstr "Verlaufsstapel exportieren"
 
 #: ../src/libs/export_metadata.c:332
 msgid ""
@@ -15193,7 +15191,6 @@ msgstr "Import-Optionen"
 
 #. recursive opening.
 #: ../src/libs/import.c:382
-#, fuzzy
 msgid "import folders recursively"
 msgstr "Verzeichnisse rekursiv importieren"
 
@@ -15213,9 +15210,8 @@ msgid "file has unknown format!"
 msgstr "Datei hat ein unbekanntes Format!"
 
 #: ../src/libs/import.c:661
-#, fuzzy
 msgid "import folder"
-msgstr "Verzeichnis importieren"
+msgstr "Importverzeichnis"
 
 #. add import single image buttons
 #: ../src/libs/import.c:776
@@ -15541,12 +15537,10 @@ msgid "<leave unchanged>"
 msgstr "<nicht ändern>"
 
 #: ../src/libs/metadata.c:459
-#, fuzzy
 msgid "metadata settings"
-msgstr "mit Bezug auf die Metadaten-Einstellungen"
+msgstr "Metadaten-Einstellungen"
 
 #: ../src/libs/metadata.c:467
-#, fuzzy
 msgid "hidden"
 msgstr "verborgen"
 
@@ -15574,9 +15568,8 @@ msgid "clear"
 msgstr "löschen"
 
 #: ../src/libs/metadata.c:614
-#, fuzzy
 msgid "metadata list"
-msgstr "Metadaten-Editor"
+msgstr "Metadaten-Liste"
 
 #: ../src/libs/metadata.c:715
 msgid ""
@@ -16352,11 +16345,10 @@ msgstr[0] "Stil '%s' wirklich löschen?"
 msgstr[1] "Stil '%s' wirklich löschen?"
 
 #: ../src/libs/styles.c:333
-#, fuzzy
 msgid "remove style?"
 msgid_plural "remove styles?"
 msgstr[0] "Stil löschen?"
-msgstr[1] "Stil löschen?"
+msgstr[1] "Stile löschen?"
 
 #: ../src/libs/styles.c:392
 msgid "select style"
@@ -16504,9 +16496,8 @@ msgid "tag %s removed"
 msgstr "Tag %s entfernt"
 
 #: ../src/libs/tagging.c:1407 ../src/libs/tagging.c:2032
-#, fuzzy
 msgid "delete path"
-msgstr "Tag löschen"
+msgstr "Pfad löschen"
 
 #: ../src/libs/tagging.c:1421
 #, c-format
@@ -16610,15 +16601,15 @@ msgstr "Tag löschen"
 
 #: ../src/libs/tagging.c:2038
 msgid "create tag..."
-msgstr "Tag erstellen..."
+msgstr "Tag erstellen"
 
 #: ../src/libs/tagging.c:2042
 msgid "edit tag..."
-msgstr "Tag bearbeiten..."
+msgstr "Tag bearbeiten"
 
 #: ../src/libs/tagging.c:2051
 msgid "rename path..."
-msgstr "Pfad umbenennen..."
+msgstr "Pfad umbenennen"
 
 #: ../src/libs/tagging.c:2058
 msgid "copy to entry"
@@ -16891,14 +16882,12 @@ msgstr "Voreinstellungen"
 
 #. we write the label with the size categorie
 #: ../src/libs/tools/global_toolbox.c:221
-#, fuzzy
 msgid "thumbnails overlays for size"
-msgstr "Überlagerungsmodus für Größe"
+msgstr "Bildinfos für Miniaturansichten der Größe"
 
 #: ../src/libs/tools/global_toolbox.c:223
-#, fuzzy
 msgid "px"
-msgstr "×"
+msgstr "Pixel"
 
 #: ../src/libs/tools/global_toolbox.c:255
 #: ../src/libs/tools/global_toolbox.c:318
@@ -16914,19 +16903,17 @@ msgid "timeout only available for block overlay"
 msgstr ""
 
 #: ../src/libs/tools/global_toolbox.c:283
-#, fuzzy
 msgid "culling overlays"
-msgstr "keine Bildinfos"
+msgstr "Sichten-Bildinfos"
 
+# not sure if this is a good translation
 #: ../src/libs/tools/global_toolbox.c:285
-#, fuzzy
 msgid "preview overlays"
-msgstr "permanente Bildinfos"
+msgstr "Voransicht-Bildinfos"
 
 #: ../src/libs/tools/global_toolbox.c:341
-#, fuzzy
 msgid "overlays not available here..."
-msgstr "nicht verfügbar"
+msgstr "Bildinfos nicht verfügbar"
 
 # schreckliche übersetzung für "expand" ...
 #: ../src/libs/tools/global_toolbox.c:384
@@ -16977,15 +16964,13 @@ msgstr "permanente Bildinfos erweitert bei Überfahren mit Maus"
 
 #: ../src/libs/tools/global_toolbox.c:439
 #: ../src/libs/tools/global_toolbox.c:472
-#, fuzzy
 msgid "overlays block on mouse hover during (s) "
-msgstr "überlagerte Box mit Bildinfos bei Überfahren mit Maus"
+msgstr "überlagerte Bildinfos bei Überfahren mit Maus für (s)"
 
 #: ../src/libs/tools/global_toolbox.c:446
 #: ../src/libs/tools/global_toolbox.c:479
-#, fuzzy
 msgid "show tooltip"
-msgstr "zeige beide"
+msgstr "zeige Bildinfos"
 
 #: ../src/libs/tools/global_toolbox.c:490
 msgid "enable this, then click on a control element to see its online help"
@@ -17007,12 +16992,11 @@ msgstr "Auf das Online-Benutzerhandbuch zugreifen?"
 
 #: ../src/libs/tools/global_toolbox.c:643
 msgid "help url opened in web browser"
-msgstr "Hilfe-URL wird in Webbrowser geöffnet"
+msgstr "Hilfe-URL wird in Webbrowser geöffnet."
 
 #: ../src/libs/tools/global_toolbox.c:647
-#, fuzzy
 msgid "error while opening help url in web browser"
-msgstr "Hilfe-URL wird in Webbrowser geöffnet"
+msgstr "Fehler beim Laden der Hilfe-URL in Webbrowser."
 
 #: ../src/libs/tools/global_toolbox.c:658
 msgid "there is no help available for this element"

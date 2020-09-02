@@ -334,7 +334,6 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     {
       image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
       image_h = thumb->height - thumb->img_margin->top - thumb->img_margin->bottom;
-      ;
     }
 
     if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
@@ -398,6 +397,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
+        thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
         res = dt_view_image_get_surface(thumb->imgid, image_w * thumb->zoom, image_h * thumb->zoom, &img_surf, FALSE);
       }
       else
@@ -1002,17 +1002,17 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event", G_CALLBACK(_event_main_release), thumb);
 
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
                               G_CALLBACK(_dt_active_images_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                               G_CALLBACK(_dt_selection_changed_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                               G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                               G_CALLBACK(_dt_preview_updated_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
                               G_CALLBACK(_dt_image_info_changed_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                               G_CALLBACK(_dt_collection_changed_callback), thumb);
 
     // the background
@@ -1269,12 +1269,12 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 {
   if(thumb->overlay_timeout_id > 0) g_source_remove(thumb->overlay_timeout_id);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_image_info_changed_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_changed_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_image_info_changed_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_changed_callback), thumb);
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
     cairo_surface_destroy(thumb->img_surf);
   thumb->img_surf = NULL;
@@ -1507,19 +1507,28 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
 
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force)
 {
+  int w = 0;
+  int h = 0;
+  gtk_widget_get_size_request(thumb->w_main, &w, &h);
+
   // first, we verify that there's something to change
-  if(!force)
-  {
-    int w = 0;
-    int h = 0;
-    gtk_widget_get_size_request(thumb->w_main, &w, &h);
-    if(w == width && h == height) return;
-  }
+  if(!force && w == width && h == height) return;
 
   // widget resizing
   thumb->width = width;
   thumb->height = height;
   gtk_widget_set_size_request(thumb->w_main, width, height);
+
+  // we change the size and margins according to the size change. This will be refined after
+  if(h > 0 && w > 0)
+  {
+    int wi = 0;
+    int hi = 0;
+    gtk_widget_get_size_request(thumb->w_image_box, &wi, &hi);
+    const int nimg_w = width * wi / w;
+    const int nimg_h = height * hi / h;
+    gtk_widget_set_size_request(thumb->w_image_box, nimg_w, nimg_h);
+  }
 
   _thumb_retrieve_margins(thumb);
 
@@ -1683,10 +1692,9 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
     dt_image_get_final_size(thumb->imgid, &w, &h);
     if(!thumb->img_margin) _thumb_retrieve_margins(thumb);
 
-    const float ratio_h = (float)(100 - thumb->img_margin->top - thumb->img_margin->bottom) / 100.0;
-    const float ratio_w = (float)(100 - thumb->img_margin->left - thumb->img_margin->right) / 100.0;
-    thumb->zoom_100
-        = fmaxf((float)w / ((float)thumb->width * ratio_w), (float)h / ((float)thumb->height * ratio_h));
+    const float used_h = (float)(thumb->height - thumb->img_margin->top - thumb->img_margin->bottom);
+    const float used_w = (float)(thumb->width - thumb->img_margin->left - thumb->img_margin->right);
+    thumb->zoom_100 = fmaxf((float)w / used_w, (float)h / used_h);
     if(thumb->zoom_100 < 1.0f) thumb->zoom_100 = 1.0f;
   }
 

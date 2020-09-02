@@ -23,11 +23,14 @@ ipairs = function(t)
 
 local _scripts_install = {}
 
+_scripts_install.module_installed = false
+_scripts_install.event_registered = false
+
 _scripts_install.dt = require 'darktable'
 
 -- check for gui so that we don't hang darktable-cli
 
-if _scripts_install.dt.configuration.has_gui then
+if _scripts_install.dt.configuration.has_gui  then
 
 
   _scripts_install.dt.preferences.register(
@@ -170,6 +173,29 @@ if _scripts_install.dt.configuration.has_gui then
         _scripts_install.minimize_lib()
       end
 
+      function _scripts_install.install_module()
+        if not _scripts_install.module_installed then
+          _scripts_install.dt.register_lib(
+            "lua_scripts_installer",
+            _("lua scripts installer"),
+            true,
+            false,
+            {[_scripts_install.dt.gui.views.lighttable] = {"DT_UI_CONTAINER_PANEL_LEFT_BOTTOM", 900}},
+            _scripts_install.dt.new_widget("box"){
+              orientation = "vertical",
+              table.unpack(_scripts_install.display_widgets)
+            },
+            nil,
+            nil
+          )
+          _scripts_install.module_installed = true
+          if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
+           _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
+           _scripts_install.dt.preferences.write("_scripts_install", "initialized", "bool", true)
+         end
+        end
+      end
+
       -- _scripts_install.dt.print_log("building widgets")
 
       _scripts_install.display_widgets = {}
@@ -206,25 +232,21 @@ if _scripts_install.dt.configuration.has_gui then
 
       -- _scripts_install.dt.print_log("installing library")
 
-      _scripts_install.dt.register_lib(
-        "lua_scripts_installer",
-        _("lua scripts installer"),
-        true,
-        false,
-        {[_scripts_install.dt.gui.views.lighttable] = {"DT_UI_CONTAINER_PANEL_LEFT_BOTTOM", 900}},
-        _scripts_install.dt.new_widget("box"){
-          orientation = "vertical",
-          table.unpack(_scripts_install.display_widgets)
-        },
-        nil,
-        nil
-      )
-
-      if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
-       _scripts_install.dt.control.sleep(1000)
-       _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
-       _scripts_install.dt.preferences.write("_scripts_install", "initialized", "bool", true)
-     end
+      if _scripts_install.dt.gui.current_view().id == "lighttable" then
+        _scripts_install.install_module()
+      else
+        if not _scripts_install.event_registered then
+          _scripts_install.dt.register_event(
+            "view-changed",
+            function(event, old_view, new_view)
+              if new_view.name == "lighttable" and old_view.name == "darkroom" then
+                _scripts_install.install_module()
+               end
+            end
+          )
+          _scripts_install.event_registered = true
+        end
+      end
     end
   end
 end

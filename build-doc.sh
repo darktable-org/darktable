@@ -144,6 +144,9 @@ num_cpu()
         if [ $ncpu -lt 1 ] ; then
                 ncpu=1
         fi
+        if [ $ncpu -ge 8 ] ; then
+                ncpu=8
+        fi
         printf "$ncpu"
 }
 
@@ -186,7 +189,7 @@ fi
 # ---------------------------------------------------------------------------
 
 cat <<EOF
-Darktable build script
+darktable build script
 
 Building directory:  $BUILD_DIR
 Build tasks:         $MAKE_TASKS

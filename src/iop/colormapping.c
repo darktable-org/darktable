@@ -66,6 +66,7 @@ typedef enum dt_iop_colormapping_flags_t
   NEUTRAL = 0,
   HAS_SOURCE = 1 << 0,
   HAS_TARGET = 1 << 1,
+  HAS_SOURCE_TARGET = HAS_SOURCE | HAS_TARGET,
   ACQUIRE = 1 << 2,
   GET_SOURCE = 1 << 3,
   GET_TARGET = 1 << 4
@@ -1089,12 +1090,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   button = gtk_button_new_with_label(_("acquire as source"));
   g->acquire_source_button = button;
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_START);
   gtk_widget_set_tooltip_text(button, _("analyze this image as a source image"));
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_source_button_pressed), (gpointer)self);
 
   button = gtk_button_new_with_label(_("acquire as target"));
   g->acquire_target_button = button;
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_START);
   gtk_widget_set_tooltip_text(button, _("analyze this image as a target image"));
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_target_button_pressed), (gpointer)self);
@@ -1112,7 +1115,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->equalization, "%.02f%%");
 
   /* add signal handler for preview pipe finished: process clusters if requested */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(process_clusters), self);
 
 
@@ -1128,7 +1131,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(process_clusters), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(process_clusters), self);
 
   cmsDeleteTransform(g->xform);
   dt_pthread_mutex_destroy(&g->lock);

@@ -434,7 +434,7 @@ void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage)
 {
   darktable.imageio->plugins_storage
       = g_list_insert_sorted(darktable.imageio->plugins_storage, storage, dt_imageio_sort_modules_storage);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

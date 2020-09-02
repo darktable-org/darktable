@@ -336,7 +336,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsMLUsetASCII(mlu3, "en", "US", dmdd);
   cmsWriteTag(profile, cmsSigDeviceModelDescTag, mlu3);
 
-  cmsMLUsetASCII(mlu4, "en", "US", "Darktable");
+  cmsMLUsetASCII(mlu4, "en", "US", "darktable");
   cmsWriteTag(profile, cmsSigDeviceMfgDescTag, mlu4);
 
   cmsMLUfree(mlu1);
@@ -681,7 +681,7 @@ cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel)
   if(hp == NULL) return NULL;
 
   char name[512];
-  snprintf(name, sizeof(name), "Darktable profiled %s", makermodel);
+  snprintf(name, sizeof(name), "darktable profiled %s", makermodel);
   cmsSetProfileVersion(hp, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
@@ -714,7 +714,7 @@ static cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu1, "en", "US", "linear XYZ");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable linear XYZ");
+  cmsMLUsetASCII(mlu2, "en", "US", "darktable linear XYZ");
   cmsWriteTag(hXYZ, cmsSigDeviceMfgDescTag, mlu0);
   cmsWriteTag(hXYZ, cmsSigDeviceModelDescTag, mlu1);
   // this will only be displayed when the embedded profile is read by for example GIMP
@@ -817,12 +817,62 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
   // linear rgb with r and b swapped:
   cmsCIExyYTRIPLE BGR_Primaries = { sRGB_Primaries.Blue, sRGB_Primaries.Green, sRGB_Primaries.Red };
 
-  cmsHPROFILE profile = _create_lcms_profile("Linear Infrared BGR", "Darktable Linear Infrared BGR",
+  cmsHPROFILE profile = _create_lcms_profile("Linear Infrared BGR", "darktable Linear Infrared BGR",
                                              &D65xyY, &BGR_Primaries, transferFunction, FALSE);
 
   cmsFreeToneCurve(transferFunction);
 
   return profile;
+}
+
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int imgid)
+{
+  // find the colorin module -- the pointer stays valid until darktable shuts down
+  static dt_iop_module_so_t *colorin = NULL;
+  if(colorin == NULL)
+  {
+    GList *modules = g_list_first(darktable.iop);
+    while(modules)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(module->op, "colorin"))
+      {
+        colorin = module;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+
+  const dt_colorspaces_color_profile_t *p = NULL;
+
+  if(colorin && colorin->get_p)
+  {
+    // get the profile assigned from colorin
+    // FIXME: does this work when using JPEG thumbs and the image was never opened?
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT op_params FROM main.history WHERE imgid=?1 AND operation='colorin' ORDER BY num DESC LIMIT 1", -1,
+      &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      // use introspection to get the profile name from the binary params blob
+      const void *params = sqlite3_column_blob(stmt, 0);
+      dt_colorspaces_color_profile_type_t *type = colorin->get_p(params, "type_work");
+      char *filename = colorin->get_p(params, "filename_work");
+
+      if(type && filename) p = dt_colorspaces_get_profile(*type, filename,
+                                                          DT_PROFILE_DIRECTION_WORK);
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  // if all else fails -> fall back to linear Rec2020 RGB
+  if(!p) p = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_WORK);
+
+  return p;
 }
 
 const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
@@ -1725,7 +1775,7 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source, 
 
   pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  if(profile_changed) dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 #endif
 
@@ -1908,7 +1958,7 @@ void dt_colorspaces_set_display_profile(const dt_colorspaces_color_profile_type_
     g_free(buffer);
   }
   pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-  if(profile_changed) dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
   g_free(profile_source);
 }
 

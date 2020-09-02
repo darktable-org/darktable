@@ -47,8 +47,6 @@
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
-const gchar *dt_dev_scope_type_names[DT_DEV_SCOPE_N] = { "histogram", "waveform" };
-
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
@@ -77,40 +75,9 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dt_pthread_mutex_init(&dev->pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview_pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview2_pipe_mutex, NULL);
-  dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
-  gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
-  if(g_strcmp0(mode, "histogram") == 0)
-    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
-  else if(g_strcmp0(mode, "waveform") == 0)
-    dev->scope_type = DT_DEV_SCOPE_WAVEFORM;
-  else if(g_strcmp0(mode, "linear") == 0)
-  { // update legacy conf
-    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
-    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
-    dt_conf_set_string("plugins/darkroom/histogram/histogram","linear");
-  }
-  else if(g_strcmp0(mode, "logarithmic") == 0)
-  { // update legacy conf
-    dev->scope_type = DT_DEV_SCOPE_HISTOGRAM;
-    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
-    dt_conf_set_string("plugins/darkroom/histogram/histogram","logarithmic");
-  }
-  g_free(mode);
-  gchar *histogram_type = dt_conf_get_string("plugins/darkroom/histogram/histogram");
-  if(g_strcmp0(histogram_type, "linear") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(histogram_type, "logarithmic") == 0)
-    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
-  g_free(histogram_type);
-  gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
-  dev->preview_downsampling =
-    (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
-    : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
-    : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
-    : 0.25f;
-  g_free(preview_downsample);
+  dev->preview_downsampling = dt_dev_get_preview_downsampling();
   dev->forms = NULL;
   dev->form_visible = NULL;
   dev->form_gui = NULL;
@@ -124,38 +91,12 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
     dt_dev_pixelpipe_init_preview2(dev->preview2_pipe);
-
-    dev->histogram = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
     dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
 
     // FIXME: these are uint32_t, setting to -1 is confusing
-    dev->histogram_max = -1;
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
-
-    // Waveform buffer doesn't need to be coupled with the histogram
-    // widget size. The waveform is almost always scaled when
-    // drawn. Choose buffer dimensions which produces workable detail,
-    // don't use too much CPU/memory, and allow reasonable gradations
-    // of tone.
-
-    // Don't use absurd amounts of memory, exceed width of DT_MIPMAP_F
-    // (which will be darktable.mipmap_cache->max_width[DT_MIPMAP_F]*2
-    // for mosaiced images), nor make it too slow to calculate
-    // (regardless of ppd). Try to get enough detail for a (default)
-    // 350px panel, possibly 2x that on hidpi.  The actual buffer
-    // width will vary with integral binning of image.
-    dev->histogram_waveform_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
-    // 175 rows is the default histogram widget height. It's OK if the
-    // widget height changes from this, as the width will almost
-    // always be scaled, regardless.
-    dev->histogram_waveform_height = 175;
-    // making the stride work for cairo muddles UI and underlying
-    // data, and mipmap widths should already reasonable, but better
-    // to be safe, and the histogram is for the sake of UI, after all
-    dev->histogram_waveform_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, dev->histogram_waveform_width);
-    dev->histogram_waveform = calloc(dev->histogram_waveform_height * dev->histogram_waveform_stride * 3, sizeof(uint8_t));
   }
 
   dev->iop_instance = 0;
@@ -238,10 +179,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
     dev->allprofile_info = g_list_delete_link(dev->allprofile_info, dev->allprofile_info);
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);
-  free(dev->histogram);
   free(dev->histogram_pre_tonecurve);
   free(dev->histogram_pre_levels);
-  free(dev->histogram_waveform);
 
   g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
@@ -257,6 +196,17 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_conf_set_float("darkroom/ui/overexposed/upper", dev->overexposed.upper);
 
   dt_conf_set_int("darkroom/ui/overlay_color", dev->overlay_color.color);
+}
+
+float dt_dev_get_preview_downsampling()
+{
+  gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
+  const float downsample = (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
+        : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
+        : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
+        : 0.25f;
+  g_free(preview_downsample);
+  return downsample;
 }
 
 void dt_dev_process_image(dt_develop_t *dev)
@@ -394,7 +344,7 @@ restart:
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
 }
 
 void dt_dev_process_preview2_job(dt_develop_t *dev)
@@ -530,7 +480,7 @@ restart:
   dt_pthread_mutex_unlock(&dev->preview2_pipe_mutex);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
@@ -676,7 +626,7 @@ restart:
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
 
   if(dev->gui_attached && !dev->gui_leaving)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
 }
 
 // load the raw and get the new image struct, blocking in gui thread
@@ -973,7 +923,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   if(!darktable.gui || darktable.gui->reset) return;
 
   if(dev->gui_attached)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
@@ -1015,8 +965,8 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
-    if(tag_change) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
     /* redraw */
     dt_control_queue_redraw_center();
@@ -1057,7 +1007,7 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, g
   if(!darktable.gui || darktable.gui->reset) return;
 
   if(dev->gui_attached)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
@@ -1075,7 +1025,7 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, g
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 
     /* recreate mask list */
     dt_dev_masks_list_change(dev);
@@ -1404,8 +1354,6 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
 
 static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 {
-  // NOTE: the presets/default iops will be *prepended* into the history.
-
   const int imgid = dev->image_storage.id;
 
   if(imgid <= 0) return FALSE;
@@ -1422,22 +1370,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
-  //add scene-referred workflow 
-  if(dt_image_is_matrix_correction_supported(image)
-     && strcmp(dt_conf_get_string("plugins/darkroom/workflow"), "scene-referred") == 0)
-  {
-    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-
-      if(!dt_history_check_module_exists(imgid, module->op)
-         && strcmp(module->op, "filmicrgb") == 0
-         && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
-      {
-        _dev_insert_module(dev, module, imgid);
-      }
-    }
-  }
+  gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+  const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
+  const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
+  g_free(workflow);
 
   // select all presets from one of the following table and add them into memory.history. Note that
   // this is appended to possibly already present default modules.
@@ -1449,17 +1385,26 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            " SELECT ?1, 0, op_version, operation, op_params,"
            "       enabled, blendop_params, blendop_version, multi_priority, multi_name"
            " FROM %s"
-           " WHERE autoapply=1 AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
-           "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
-           "       AND ?8 BETWEEN exposure_min AND exposure_max"
-           "       AND ?9 BETWEEN aperture_min AND aperture_max"
-           "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "       AND (format = 0 OR format&?11!=0)"
-           "       AND operation NOT IN ('ioporder', 'modulelist', 'metadata', 'export', 'tagging', 'collect')"
+           " WHERE (autoapply=1"
+           "        AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+           "        AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+           "        AND ?8 BETWEEN exposure_min AND exposure_max"
+           "        AND ?9 BETWEEN aperture_min AND aperture_max"
+           "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
+           "        AND (format = 0 OR format&?11!=0)"
+           "        AND operation NOT IN"
+           "            ('ioporder', 'modulelist', 'metadata', 'export', 'tagging', 'collect', '%s'))"
+           "  OR (name = ?12)"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
-           preset_table[legacy]);
+           preset_table[legacy],
+           is_display_referred?"":"basecurve");
   // query for all modules at once:
   sqlite3_stmt *stmt;
+  const char *workflow_preset = is_display_referred
+                                ? _("display-referred default")
+                                : (is_scene_referred
+                                   ?_("scene-referred default")
+                                   :"\t\n");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
@@ -1474,6 +1419,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // 0: dontcare, 1: ldr, 2: raw
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11,
                                dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR));
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 12, workflow_preset, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -1609,35 +1555,37 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       g_list_free(rowids);
     }
 
-    // advance the current history by cnt amount, that is, make space for the preset/default iops that will be
-    // *prepended* into the history.
+    int maxhist = 0;
+    // get maximum row number in history
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MAX(num) FROM main.history", -1,
+                                &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      // if there is anything..
+      maxhist = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+    }
+
+    // update the end point of the history
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.history SET num=num+?1 WHERE imgid=?2", -1, &stmt, NULL);
+                                "UPDATE main.images SET history_end=history_end+?1 WHERE id=?2",
+                                -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
     if(sqlite3_step(stmt) == SQLITE_DONE)
     {
+      // and finally append the new items
       sqlite3_finalize(stmt);
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE main.images SET history_end=history_end+?1 WHERE id=?2",
-                                  -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-
-      if(sqlite3_step(stmt) == SQLITE_DONE)
-      {
-        // and finally prepend the rest with increasing numbers (starting at 0)
-        sqlite3_finalize(stmt);
-        DT_DEBUG_SQLITE3_PREPARE_V2(
-          dt_database_get(darktable.db),
-          "INSERT INTO main.history"
-          " SELECT imgid, num, module, operation, op_params, enabled, "
-          "        blendop_params, blendop_version, multi_priority, multi_name FROM memory.history",
-          -1, &stmt, NULL);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
-      }
+      DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "INSERT INTO main.history"
+        " SELECT imgid, num+?1, module, operation, op_params, enabled, "
+        "        blendop_params, blendop_version, multi_priority, multi_name FROM memory.history",
+        -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, maxhist);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
     }
   }
 }
@@ -1663,7 +1611,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   dt_lock_image(imgid);
 
   if(dev->gui_attached)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
@@ -1679,7 +1627,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     // cleanup
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
 
-    // prepend all default modules to memory.history
+    // append all default modules to memory.history
     _dev_add_default_modules(dev, imgid);
     const int default_modules = _dev_get_module_nb_records();
 
@@ -1904,7 +1852,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dt_dev_invalidate_all(dev);
 
     /* signal history changed */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   dt_dev_masks_list_change(dev);
 
@@ -2349,7 +2297,7 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   int del = 0;
   if(dev->gui_attached)
   {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
@@ -2390,8 +2338,8 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached && del)
   {
     /* signal that history has changed */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
     /* redraw */
     dt_control_queue_redraw_center();
   }
@@ -2621,7 +2569,7 @@ int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const d
 
   for(int n = 0; n < nloop; n++)
   {
-    if(pipe->shutdown)
+    if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;  // stop waiting if pipe shuts down
 
     uint64_t probehash;
@@ -2719,7 +2667,7 @@ int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
 
   for(int n = 0; n < nloop; n++)
   {
-    if(pipe->shutdown)
+    if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;  // stop waiting if pipe shuts down
 
     uint64_t probehash;

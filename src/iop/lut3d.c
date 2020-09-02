@@ -1703,6 +1703,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), self);
 
   g->filepath = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_combobox_set_entries_ellipsis(g->filepath, PANGO_ELLIPSIZE_MIDDLE);
   gtk_box_pack_start(GTK_BOX(g->hbox), g->filepath, TRUE, TRUE, 0);
 #ifdef HAVE_GMIC
   gtk_widget_set_tooltip_text(g->filepath,
@@ -1758,7 +1759,7 @@ void gui_init(dt_iop_module_t *self)
   g->interpolation = dt_bauhaus_combobox_from_params(self, N_("interpolation"));
   gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method"));
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED,
                             G_CALLBACK(module_moved_callback), self);
 }
 
@@ -1768,7 +1769,7 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_gui_key_accel_block_on_focus_disconnect(g->lutentry);
 #endif // HAVE_GMIC
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(module_moved_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(module_moved_callback), self);
   free(self->gui_data);
   self->gui_data = NULL;
 }

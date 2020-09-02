@@ -112,6 +112,7 @@ typedef struct dt_bauhaus_combobox_data_t
   int defpos;         // default position
   int editable;       // 1 if arbitrary text may be typed
   char text[180];     // roughly as much as a slider
+  PangoEllipsizeMode entries_ellipsis;
   GList *entries;
 } dt_bauhaus_combobox_data_t;
 
@@ -286,6 +287,7 @@ void dt_bauhaus_slider_set_step(GtkWidget *w, float val);
 float dt_bauhaus_slider_get_step(GtkWidget *w);
 
 void dt_bauhaus_slider_set_feedback(GtkWidget *w, int feedback);
+int dt_bauhaus_slider_get_feedback(GtkWidget *w);
 
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
@@ -295,6 +297,7 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
 void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float soft_max);
+float dt_bauhaus_slider_get_default(GtkWidget *widget);
 void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max);
 void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(GtkWidget *self, float value, dt_bauhaus_curve_t dir));
 
@@ -309,6 +312,7 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhau
                                   gpointer data, void (*free_func)(void *data), gboolean sensitive);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *w, const char *text);
+gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *w, int value);
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos);
 void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos);
 void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,
@@ -326,6 +330,8 @@ void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def);
 int dt_bauhaus_combobox_get_default(GtkWidget *widget);
 void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidget *w, struct dt_iop_module_t **module));
 void dt_bauhaus_combobox_entry_set_sensitive(GtkWidget *widget, int pos, gboolean sensitive);
+void dt_bauhaus_combobox_set_entries_ellipsis(GtkWidget *widget, PangoEllipsizeMode ellipis);
+PangoEllipsizeMode dt_bauhaus_combobox_get_entries_ellipsis(GtkWidget *widget);
 
 // key accel parsing:
 // execute a line of input

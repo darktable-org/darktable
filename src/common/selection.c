@@ -44,7 +44,7 @@ static void _selection_raise_signal()
   // discard cached images_to_act_on list
   darktable.view_manager->act_on.ok = FALSE;
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 }
 
 /* updates the internal collection of an selection */
@@ -128,7 +128,7 @@ const dt_selection_t *dt_selection_new()
 
   /* setup signal handler for darktable collection update
    to update the internal collection of the selection */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_selection_update_collection), (gpointer)s);
 
   return s;
@@ -415,9 +415,7 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
       query = dt_util_dstrcat(query, ",(%d)", imgid);
       list = g_list_next(list);
     }
-    char *result = NULL;
-
-    sqlite3_exec(dt_database_get(darktable.db), query, NULL, NULL, &result);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
     g_free(query);
   }

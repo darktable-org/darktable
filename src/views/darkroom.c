@@ -506,6 +506,7 @@ void expose(
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+    const float lw = 1.0 / zoom_scale;
 
     cairo_translate(cri, width / 2.0, height / 2.0f);
     cairo_scale(cri, zoom_scale, zoom_scale);
@@ -515,7 +516,7 @@ void expose(
     {
       sample = samples->data;
 
-      cairo_set_line_width(cri, 1.0 / zoom_scale);
+      cairo_set_line_width(cri, lw);
       if(sample == darktable.lib->proxy.colorpicker.selected_sample)
         cairo_set_source_rgb(cri, .2, 0, 0);
       else
@@ -525,17 +526,15 @@ void expose(
       const float *point = sample->point;
       if(sample->size == DT_COLORPICKER_SIZE_BOX)
       {
-        cairo_rectangle(cri, box[0] * wd, box[1] * ht, (box[2] - box[0]) * wd, (box[3] - box[1]) * ht);
+        cairo_rectangle(cri, box[0] * wd + lw, box[1] * ht + lw, (box[2] - box[0]) * wd, (box[3] - box[1]) * ht);
         cairo_stroke(cri);
-        cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
+
         if(sample == darktable.lib->proxy.colorpicker.selected_sample)
           cairo_set_source_rgb(cri, .8, 0, 0);
         else
           cairo_set_source_rgb(cri, 0, 0, .8);
-        cairo_rectangle(cri, box[0] * wd + 1.0 / zoom_scale, box[1] * ht,
-                        (box[2] - box[0]) * wd - 3. / zoom_scale, (box[3] - box[1]) * ht - 2. / zoom_scale);
+        cairo_rectangle(cri, box[0] * wd + 2. * lw, box[1] * ht + 2. * lw, (box[2] - box[0]) * wd - 2. * lw, (box[3] - box[1]) * ht - 2. * lw);
         cairo_stroke(cri);
-        cairo_translate(cri, -1.0 / zoom_scale, -1.0 / zoom_scale); // revert the translation for next sample
       }
       else
       {
@@ -546,13 +545,13 @@ void expose(
           cairo_set_source_rgb(cri, .8, 0, 0);
         else
           cairo_set_source_rgb(cri, 0, 0, .8);
-        cairo_rectangle(cri, (point[0] - 0.01) * wd + 1.0 / zoom_scale,
-                        point[1] * ht - 0.01 * wd + 1.0 / zoom_scale, .02 * wd - 2. / zoom_scale,
-                        .02 * wd - 2. / zoom_scale);
-        cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * wd + 1. / zoom_scale);
-        cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * wd - 1. / zoom_scale);
-        cairo_move_to(cri, point[0] * wd - .01 * wd + 1. / zoom_scale, point[1] * ht);
-        cairo_line_to(cri, point[0] * wd + .01 * wd - 1. / zoom_scale, point[1] * ht);
+        cairo_rectangle(cri, (point[0] - 0.01) * wd + lw,
+                        point[1] * ht - 0.01 * wd + lw, .02 * wd - 2. * lw,
+                        .02 * wd - 2. * lw);
+        cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * wd + lw);
+        cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * wd - lw);
+        cairo_move_to(cri, point[0] * wd - .01 * wd + lw, point[1] * ht);
+        cairo_line_to(cri, point[0] * wd + .01 * wd - lw, point[1] * ht);
         cairo_stroke(cri);
       }
 
@@ -730,7 +729,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   darktable.view_manager->active_images = NULL;
   darktable.view_manager->active_images
       = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // if the previous shown image is selected and the selection is unique
   // then we change the selected image to the new one
@@ -987,7 +986,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   }
 
   // Signal develop initialize
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
 
   // release pixel pipe mutices
   dt_pthread_mutex_BAD_unlock(&dev->preview2_pipe_mutex);
@@ -1046,12 +1045,32 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
     new_offset = sqlite3_column_int(stmt, 0);
     new_id = sqlite3_column_int(stmt, 1);
   }
-  else
+  else if(diff > 0)
   {
     // if we are here, that means that the current is not anymore in the list
     // in this case, let's use the current offset image
     new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
     new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
+  }
+  else
+  {
+    // if we are here, that means that the current is not anymore in the list
+    // in this case, let's use the image before current offset
+    new_offset = MAX(1, dt_ui_thumbtable(darktable.gui->ui)->offset - 1);
+    sqlite3_stmt *stmt2;
+    gchar *query2 = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid=%d", new_offset);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt2, NULL);
+    if(sqlite3_step(stmt2) == SQLITE_ROW)
+    {
+      new_id = sqlite3_column_int(stmt2, 0);
+    }
+    else
+    {
+      new_id = dt_ui_thumbtable(darktable.gui->ui)->offset_imgid;
+      new_offset = dt_ui_thumbtable(darktable.gui->ui)->offset;
+    }
+    g_free(query2);
+    sqlite3_finalize(stmt2);
   }
   g_free(query);
   sqlite3_finalize(stmt);
@@ -1202,7 +1221,7 @@ static void _darkroom_ui_apply_style_activate_callback(gchar *name)
   /* apply style on image and reload*/
   dt_styles_apply_to_image(name, FALSE, darktable.develop->image_storage.id);
   dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();
@@ -1726,7 +1745,7 @@ static void softproof_profile_callback(GtkWidget *combo, gpointer user_data)
 end:
   if(profile_changed)
   {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_SOFTPROOF);
     dt_dev_reprocess_all(d);
   }
 }
@@ -1766,7 +1785,7 @@ end:
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
     dt_colorspaces_update_display_transforms();
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
     dt_dev_reprocess_all(d);
   }
 }
@@ -1807,7 +1826,7 @@ end:
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
     dt_colorspaces_update_display2_transforms();
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_DISPLAY2);
     dt_dev_reprocess_all(d);
   }
@@ -1845,7 +1864,7 @@ static void histogram_profile_callback(GtkWidget *combo, gpointer user_data)
 end:
   if(profile_changed)
   {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_HISTOGRAM);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_HISTOGRAM);
     dt_dev_reprocess_all(d);
   }
 }
@@ -1869,6 +1888,15 @@ static void _preference_changed(gpointer instance, gpointer user_data)
 
   // reconstruct dynamic accels list
   dt_dynamic_accel_get_valid_list();
+}
+
+static void _preference_prev_downsample_change(gpointer instance, gpointer user_data)
+{
+  if(user_data != NULL)
+  {
+    float *ds_value = user_data;
+    *ds_value = dt_dev_get_preview_downsampling();
+  }
 }
 
 static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
@@ -2362,15 +2390,17 @@ void gui_init(dt_view_t *self)
 
     _update_softproof_gamut_checking(dev);
 
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                              G_CALLBACK(_preference_prev_downsample_change), &(dev->preview_downsampling));
     // update the gui when the preferences changed (i.e. show intent when using lcms2)
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                               G_CALLBACK(_preference_changed), (gpointer)display_intent);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_preference_changed),
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_preference_changed),
                               (gpointer)display2_intent);
     // and when profiles change
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               G_CALLBACK(_display_profile_changed), (gpointer)display_profile);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
   }
 
@@ -2492,15 +2522,15 @@ static void _on_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer 
   dt_iop_module_t *module_src = _get_dnd_source_module(container);
   if(module_src && module_src->expander)
   {
-    GdkWindow *window = gtk_widget_get_parent_window(module_src->expander);
+    GdkWindow *window = gtk_widget_get_parent_window(module_src->header);
     if(window)
     {
       GtkAllocation allocation_w = {0};
-      gtk_widget_get_allocation(module_src->expander, &allocation_w);
+      gtk_widget_get_allocation(module_src->header, &allocation_w);
 
       GdkPixbuf *pixbuf = gdk_pixbuf_get_from_window(window, allocation_w.x, allocation_w.y,
                                                      allocation_w.width, allocation_w.height);
-      gtk_drag_set_icon_pixbuf(context, pixbuf, allocation_w.width / 2, 0);
+      gtk_drag_set_icon_pixbuf(context, pixbuf, allocation_w.width / 2, allocation_w.height / 2);
     }
   }
 }
@@ -2544,8 +2574,29 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
       can_moved = dt_ioppr_check_can_move_before_iop(darktable.develop->iop, module_src, module_dest);
   }
 
+  GList *modules = g_list_last(darktable.develop->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->expander)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
+      gtk_style_context_remove_class(context, "iop_drop_after");
+      gtk_style_context_remove_class(context, "iop_drop_before");
+    }
+
+    modules = g_list_previous(modules);
+  }
+
   if(can_moved)
   {
+    GtkStyleContext *context = gtk_widget_get_style_context(module_dest->expander);
+    if(module_src->iop_order < module_dest->iop_order)
+      gtk_style_context_add_class(context, "iop_drop_after");
+    else
+      gtk_style_context_add_class(context, "iop_drop_before");
+
     gdk_drag_status(dc, GDK_ACTION_COPY, time);
     GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
     if(w) gtk_drag_unhighlight(w);
@@ -2600,6 +2651,21 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
       fprintf(stderr, "[_on_drag_data_received] can't find destination module\n");
   }
 
+  GList *modules = g_list_last(darktable.develop->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->expander)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
+      gtk_style_context_remove_class(context, "iop_drop_after");
+      gtk_style_context_remove_class(context, "iop_drop_before");
+    }
+
+    modules = g_list_previous(modules);
+  }
+
   gtk_drag_finish(dc, TRUE, FALSE, time);
 
   if(moved)
@@ -2631,7 +2697,7 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
     // rebuild the accelerators
     dt_iop_connect_accels_multi(module_src->so);
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(module_src->dev);
@@ -2640,6 +2706,21 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
 
 static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
 {
+  GList *modules = g_list_last(darktable.develop->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->expander)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
+      gtk_style_context_remove_class(context, "iop_drop_after");
+      gtk_style_context_remove_class(context, "iop_drop_before");
+    }
+
+    modules = g_list_previous(modules);
+  }
+
   GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
   if(w)
   {
@@ -2699,10 +2780,10 @@ void enter(dt_view_t *self)
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
   /* connect to ui pipe finished signal for redraw */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback), (gpointer)self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
                             G_CALLBACK(_darkroom_ui_preview2_pipe_finish_signal_callback), (gpointer)self);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
@@ -2762,11 +2843,12 @@ void enter(dt_view_t *self)
 
     modules = g_list_previous(modules);
   }
+
   // make signals work again:
   --darktable.gui->reset;
 
   /* signal that darktable.develop is initialized and ready to be used */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
 
   // synch gui and flag pipe as dirty
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
@@ -2802,7 +2884,7 @@ void enter(dt_view_t *self)
   dt_control_set_dev_zoom_y(zoom_y);
 
   /* connect signal for filmstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_darkroom_filmstrip_activate_callback), self);
 
   dt_collection_hint_message(darktable.collection);
@@ -2833,14 +2915,14 @@ void leave(dt_view_t *self)
   _unregister_modules_drag_n_drop(self);
 
   /* disconnect from filmstrip image activate */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
                                (gpointer)self);
 
   /* disconnect from pipe finish signal */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
                                (gpointer)self);
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_darkroom_ui_preview2_pipe_finish_signal_callback),
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_darkroom_ui_preview2_pipe_finish_signal_callback),
                                (gpointer)self);
 
   // store groups for next time:
@@ -3300,7 +3382,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       float multiplier = dt_accel_get_slider_scale_multiplier();
 
       const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget));
-      if(fabsf(step*multiplier) < min_visible) 
+      if(fabsf(step*multiplier) < min_visible)
         multiplier = min_visible / fabsf(step);
 
       if(up)

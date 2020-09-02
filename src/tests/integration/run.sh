@@ -115,7 +115,7 @@ for dir in $(ls -d $PATTERN); do
                     echo "  FAILS: image visually changed"
                     if [ ! -z $COMPARE -a -f expected.png ]; then
                         diffcount="$(compare expected.png output.png -metric ae diff.png 2>&1 )"
-                        echo "         see diff.jpg for visual difference"
+                        echo "         see diff.png for visual difference"
 			echo "         (${diffcount} pixels changed)"
                     fi
                 fi

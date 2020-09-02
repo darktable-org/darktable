@@ -1631,9 +1631,14 @@ static void _float_to_fract(const char *num, int *n, int *d)
     if(sep_found) *d *= 10;
 
     // look for decimal sep
-    if((*p == ',') || (*p == '.'))
+    if(!sep_found && ((*p == ',') || (*p == '.')))
     {
       sep_found = TRUE;
+    }
+    else if (*p < '0' || *p > '9')
+    {
+      *n = *d = 0;
+      return;
     }
     else
     {
@@ -1687,7 +1692,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
         // some sanity check
         if(dd == 0 || nn == 0)
         {
-          dt_control_log(_("invalid ratio format. it should be non zero"));
+          dt_control_log(_("invalid ratio format. it should be a positive number"));
           dt_bauhaus_combobox_set(combo, 0);
           return;
         }
@@ -1741,7 +1746,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   // now we save all that if it has changed
   if(d != abs(p->ratio_d) || n != p->ratio_n)
   {
-    if(p->ratio_d > 0)
+    if(p->ratio_d >= 0)
       p->ratio_d = d;
     else
       p->ratio_d = -d;
@@ -2132,7 +2137,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->k_selected = -1;
   g->old_width = g->old_height = -1;
 
-  GtkWidget *page1 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+
+  self->widget = dt_ui_notebook_page(g->notebook, _("main"), NULL);
 
   g->hvflip = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->hvflip, NULL, _("flip"));
@@ -2142,7 +2149,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->hvflip, _("both"));
   g_signal_connect(G_OBJECT(g->hvflip), "value-changed", G_CALLBACK(hvflip_callback), self);
   gtk_widget_set_tooltip_text(g->hvflip, _("mirror image horizontally and/or vertically"));
-  gtk_box_pack_start(GTK_BOX(page1), g->hvflip, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->hvflip, TRUE, TRUE, 0);
 
   g->angle = dt_bauhaus_slider_from_params(self, N_("angle"));
   dt_bauhaus_slider_set_step(g->angle, 0.25);
@@ -2158,7 +2165,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->keystone_type, _("full"));
   gtk_widget_set_tooltip_text(g->keystone_type, _("set perspective correction for your image"));
   g_signal_connect(G_OBJECT(g->keystone_type), "value-changed", G_CALLBACK(keystone_type_changed), self);
-  gtk_box_pack_start(GTK_BOX(page1), g->keystone_type, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->keystone_type, TRUE, TRUE, 0);
 
   g->crop_auto = dt_bauhaus_combobox_from_params(self, "crop_auto");
   gtk_widget_set_tooltip_text(g->crop_auto, _("automatically crop to avoid black edges"));
@@ -2277,15 +2284,15 @@ void gui_init(struct dt_iop_module_t *self)
                                                    "the list is sorted: from most square to least square"));
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0, NULL);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
-  gtk_box_pack_start(GTK_BOX(page1), g->aspect_presets, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
-  gtk_box_pack_start(GTK_BOX(page1), g->guide_lines, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->guides_widgets = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->guides_widgets), FALSE);
-  gtk_box_pack_start(GTK_BOX(page1), g->guides_widgets, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->guides_widgets, TRUE, TRUE, 0);
 
   dt_bauhaus_combobox_add(g->guide_lines, _("none"));
   int i = 0;
@@ -2320,12 +2327,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->flip_guides, _("both"));
   gtk_widget_set_tooltip_text(g->flip_guides, _("flip guides"));
   g_signal_connect(G_OBJECT(g->flip_guides), "value-changed", G_CALLBACK(guides_flip_changed), self);
-  gtk_box_pack_start(GTK_BOX(page1), g->flip_guides, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->flip_guides, TRUE, TRUE, 0);
   dt_bauhaus_combobox_set(g->flip_guides, dt_conf_get_int("plugins/darkroom/clipping/flip_guides"));
 
   guides_presets_set_visibility(g, guide);
 
-  GtkWidget *page2 = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  self->widget = dt_ui_notebook_page(g->notebook, _("margins"), NULL);
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
   dt_bauhaus_slider_set_digits(g->cx, 4);
@@ -2352,13 +2359,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_offset(g->ch, 100.0);
   dt_bauhaus_slider_set_format(g->ch, "%0.2f %%");
   gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
-
-  // Put notebook pages together
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
-  gtk_notebook_append_page(g->notebook, page1, gtk_label_new(_("main")));
-  gtk_notebook_append_page(g->notebook, page2, gtk_label_new(_("margins")));
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
-  dtgtk_justify_notebook_tabs(g->notebook);
 
   self->widget = GTK_WIDGET(g->notebook);
 }

@@ -522,7 +522,7 @@
 
             <listitem><para>
               A flag that defines whether to use high quality resampling during export (see
-              <xref linkend="core_options"/>). Defaults to true.
+              <xref linkend="darkroom_options"/>). Defaults to true.
             </para></listitem>
 
           </varlistentry>
@@ -1028,28 +1028,104 @@
       <para>
         The general screen layout of all views is similar. There is a center area which contains
         most of the relevant information of that view. Then there are panels left, right, top
-        and bottom to the center area. The left panel typically has an informational purpose.
+        and bottom to the center area. The left panel is typically used to provide information.
         The right panel offers functions to modify an image. The top and bottom panel give
         access to several settings and shortcuts. Each of the panels can be collapsed or
-        expanded by pressing a triangle like
-        <inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>
-        , located close to the panel.
+        expanded by pressing a triangle (<inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>) 
+        located at the edge of the panel.
       </para>
 
       <para>
-        By pressing the <emphasis>TAB</emphasis> key all panels get collapsed, allowing the
-        center area to occupy all available space. Pressing <emphasis>TAB</emphasis> again
-        brings you back to the previous view.
+        The left, right and filmstrip/timeline panels can be resized by dragging their borders.
+        Size and visibility of panels are stored independently for each view.
       </para>
 
       <para>
-        Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>.
+        Panel visibility can also be toggled using keyboard shortcuts, as follows:
       </para>
 
-      <para>
-        Left, right and bottom panels can be resized by dragging their borders.
-        Sizes and visibility of panels are stored per views.
-      </para>
+      <informaltable frame="none" width="80%">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth='1*'/>
+          <colspec colwidth='3*'/>
+          <tbody>
+            <row>
+              <entry>
+                <emphasis>TAB</emphasis>
+              </entry>
+              <entry>
+                 temporarily expand the centre view to fill the whole window. 
+                 Press again to return to the previous view.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>F11</emphasis>
+              </entry>
+              <entry>
+                 toggle fullscreen mode
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>Shift+Ctrl+t</emphasis>
+              </entry>
+              <entry>
+                 show/hide top panel (between the image and the top banner)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>Shift+Ctrl+b</emphasis>
+              </entry>
+              <entry>
+                 show/hide the bottom panel (beween the image and the filmstrip/timeline)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>Shift+Ctrl+l</emphasis>
+              </entry>
+              <entry>
+                 show/hide the left panel
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>Shift+Ctrl+r</emphasis>
+              </entry>
+              <entry>
+                 show/hide the right panel
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>Ctrl+f</emphasis>
+              </entry>
+              <entry>
+                 show/hide the filmstrip/timeline
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>Ctrl+h</emphasis>
+              </entry>
+              <entry>
+                 show/hide the top banner
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>b</emphasis>
+              </entry>
+              <entry>
+                 show/hide all borders and panel-collapse controls
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
     </sect2>
 
     <sect2 status="final" id="filmstrip_overview">

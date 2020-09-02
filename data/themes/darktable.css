@@ -83,13 +83,13 @@
 
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_20;
-@define-color plugin_fg_color @grey_70;
+@define-color plugin_fg_color @fg_color;
 @define-color section_label @grey_60;
 @define-color plugin_label_color @grey_65;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg @grey_15;
-@define-color bauhaus_fg @grey_70;
+@define-color bauhaus_fg @fg_color;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
@@ -598,13 +598,19 @@ overshoot.right
   padding: 0.5em 0.5em 0.5em 0.5em;
 }
 
+#module-header entry 
+{
+  background-color: @field_active_bg;
+}
+
 /* Labels in modules */
 #iop-panel-label,
 #lib-panel-label
 {
   background-color: @bg_color;
   color: @plugin_label_color;
-  border:0;
+  border: 0;
+  margin: 0;
   padding: 0 2px 2px 0.45em;
   font-weight: normal;
   font-family: sans-serif;
@@ -1353,12 +1359,6 @@ cell:selected
   margin: 0 0 8px 0;
 }
 
-/* Set specific padding for export module spinbutton */
-#export-max-size spinbutton
-{
-  padding: 0px 5px;
-}
-
 /* Set below spacing between history items in darkroom */
 /* the label buttons */
 #left #history-button,
@@ -1388,6 +1388,12 @@ cell:selected
 #left #history-switch-deprecated
 {
   font-size: 0.5em;
+}
+
+#history-tooltip
+{
+  font-family: monospace;
+  background-color: @tooltip_bg_color;
 }
 
 /* Set color bar min height in colorzones module */
@@ -1577,6 +1583,15 @@ notebook tab:hover label,
 #view_dropdown .combo:hover *
 {
   color: @button_hover_fg;
+}
+
+/* workaround for a macOS quartz GTK backend bug
+   making combobox list appear behind dialog window:
+   color of "button:checked cellview" has to differ from
+   "button:hover cellview", don't ask for a reason for that */
+button:checked cellview
+{
+  color: shade(@button_hover_fg, 0.99);
 }
 
 /* Set submenus */
@@ -1779,6 +1794,17 @@ scale contents trough slider:hover
   background-color: @scroll_bar_active;
 }
 
+.iop_drop_before
+{
+   border: 2px solid @plugin_bg_color;
+   border-bottom: 2.8em solid @plugin_bg_color;
+}
+
+.iop_drop_after
+{
+   border: 2px solid @plugin_bg_color;
+   border-top: 2.8em solid @plugin_bg_color;
+}
 
 /*** --- Thumbtable css part ---
 

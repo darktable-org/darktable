@@ -255,7 +255,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
         size_t num_ints = i->header.size / sizeof(int);
 
         int *p = module->default_params + i->header.offset;
-        for (size_t c = element_size; c < num_ints; c++, p++) 
+        for (size_t c = element_size; c < num_ints; c++, p++)
           p[element_size] = *p;
       }
       break;
@@ -323,7 +323,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->gui_update = NULL;
   if(!g_module_symbol(module->module, "color_picker_apply", (gpointer) & (module->color_picker_apply)))
     module->color_picker_apply = NULL;
-  if(!g_module_symbol(module->module, "gui_changed", (gpointer) & (module->gui_changed))) 
+  if(!g_module_symbol(module->module, "gui_changed", (gpointer) & (module->gui_changed)))
     module->gui_changed = NULL;
   if(!g_module_symbol(module->module, "gui_cleanup", (gpointer) & (module->gui_cleanup)))
     module->gui_cleanup = default_gui_cleanup;
@@ -354,7 +354,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled", (gpointer) & (module->scrolled))) module->scrolled = NULL;
 
-  if(!g_module_symbol(module->module, "init", (gpointer) & (module->init))) 
+  if(!g_module_symbol(module->module, "init", (gpointer) & (module->init)))
     module->init = dt_iop_default_init;
   if(!g_module_symbol(module->module, "cleanup", (gpointer) & (module->cleanup)))
     module->cleanup = default_cleanup;
@@ -624,7 +624,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   if(!next) return; // what happened ???
 
   if(dev->gui_attached)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
                             dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
@@ -692,7 +692,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   // we save the current state of history (with the new multi_priorities)
   if(dev->gui_attached)
   {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
 
   // rebuild the accelerators (to point to an extant module)
@@ -812,7 +812,7 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(prev->dev);
@@ -853,10 +853,10 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
   next->dev->pipe->cache_obsolete = 1;
   next->dev->preview_pipe->cache_obsolete = 1;
   next->dev->preview2_pipe->cache_obsolete = 1;
-  
+
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(next->dev);
@@ -864,13 +864,13 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
 
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
-  const uint32_t module_group = dt_dev_modulegroups_get(darktable.develop);
-
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);
 
   // first we create the new module
+  ++darktable.gui->reset;
   dt_iop_module_t *module = dt_dev_module_duplicate(base->dev, base);
+  --darktable.gui->reset;
   if(!module) return NULL;
 
   // what is the position of the module in the pipe ?
@@ -894,10 +894,10 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   if(!dt_iop_is_hidden(module))
   {
     // make sure gui_init and reload defaults is called safely
-    ++darktable.gui->reset;   
+    ++darktable.gui->reset;
     module->gui_init(module);
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
-    --darktable.gui->reset;   
+    --darktable.gui->reset;
 
     if(copy_params)
     {
@@ -936,9 +936,6 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
     dt_iop_gui_set_expanded(module, TRUE, TRUE);
   }
 
-  // we want to stay on the same group
-  dt_dev_modulegroups_set(darktable.develop, module_group);
-
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(module->dev);
 
@@ -961,6 +958,8 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   /* update ui to new parameters */
   dt_iop_gui_update(module);
 
+  dt_dev_modulegroups_update_visibility(darktable.develop);
+
   return module;
 }
 
@@ -980,93 +979,81 @@ static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   dt_iop_connect_accels_multi(((dt_iop_module_t *)user_data)->so);
 }
 
-typedef struct dt_iop_gui_rename_module_t
-{
-  GtkWidget *floating_window;
-  dt_iop_module_t *module;
-} dt_iop_gui_rename_module_t;
-
-// http://stackoverflow.com/questions/4631388/transparent-floating-gtkentry
-static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_gui_rename_module_t *d)
+static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_module_t *module)
 {
   int ended = 0;
 
-  switch(event->keyval)
+  if(event->type == GDK_FOCUS_CHANGE || event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
   {
-    case GDK_KEY_Escape:
-      ended = 1;
-      break;
-    case GDK_KEY_Return:
-    case GDK_KEY_KP_Enter:
+    const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
+    if(strcmp(module->multi_name, name) != 0)
     {
-      const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
-      if(strcmp(d->module->multi_name, name) != 0)
-      {
-        g_strlcpy(d->module->multi_name, name, sizeof(d->module->multi_name));
-        dt_dev_add_history_item(d->module->dev, d->module, TRUE);
-        dt_iop_gui_update_header(d->module);
-      }
-
-      ended = 1;
+      g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+      dt_dev_add_history_item(module->dev, module, TRUE);
     }
-    break;
+
+    ended = 1;
+  }
+  else if(event->keyval == GDK_KEY_Escape)
+  {
+    // restore saved 1st character of instance name
+    module->multi_name[0] = module->multi_name[sizeof(module->multi_name) - 1];
+    module->multi_name[sizeof(module->multi_name) - 1] = 0;
+
+    ended = 1;
   }
 
   if(ended)
   {
-    gtk_widget_destroy(d->floating_window);
-    gtk_window_present(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-    free(d);
+    g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_rename_module_key_press), module);
+    gtk_widget_destroy(entry);
+    dt_iop_gui_update_header(module);
+
     return TRUE;
   }
+
   return FALSE; /* event not handled */
+}
+
+static gboolean _rename_module_resize(GtkWidget *entry, GdkEventKey *event, dt_iop_module_t *module)
+{
+  int width = 0;
+  GtkBorder padding;
+
+  pango_layout_get_pixel_size(gtk_entry_get_layout(GTK_ENTRY(entry)), &width, NULL);
+  gtk_style_context_get_padding(gtk_widget_get_style_context (entry),
+                                gtk_widget_get_state_flags (entry),
+                                &padding);
+  gtk_widget_set_size_request(entry, width + padding.left + padding.right + 1, -1);
+
+  return TRUE;
 }
 
 static void _iop_gui_rename_module(dt_iop_module_t *module)
 {
-  const int bs = DT_PIXEL_APPLY_DPI(12);
-  gint px = 0, py = 0;
-
-  dt_iop_gui_rename_module_t *d = (dt_iop_gui_rename_module_t *)calloc(1, sizeof(dt_iop_gui_rename_module_t));
-  d->module = module;
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-
-  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
-  GtkWidget *label = g_list_nth_data(childs, IOP_MODULE_LABEL);
-  gdk_window_get_origin(gtk_widget_get_window(label), &px, &py);
-  const gint w = gdk_window_get_width(gtk_widget_get_window(label)) - bs * 8 - bs * 1.7;
-  const gint h = gdk_window_get_height(gtk_widget_get_window(label));
-
-  const gint x = px + bs * 6;
-  const gint y = py;
-
-  d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(d->floating_window);
-#endif
-  /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
-  gtk_widget_set_can_focus(d->floating_window, TRUE);
-  gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
-  gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
-  gtk_window_set_transient_for(GTK_WINDOW(d->floating_window), GTK_WINDOW(window));
-  gtk_widget_set_opacity(d->floating_window, 0.8);
-  gtk_window_move(GTK_WINDOW(d->floating_window), x, y);
+  if(gtk_container_get_focus_child(GTK_CONTAINER(module->header))) return;
 
   GtkWidget *entry = gtk_entry_new();
-  gtk_widget_set_size_request(entry, w, h);
 
-  gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
-  gtk_container_add(GTK_CONTAINER(d->floating_window), entry);
-  g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), d);
-
+  gtk_widget_set_name(entry, "iop-panel-label");
+  gtk_entry_set_width_chars(GTK_ENTRY(entry), 0);
+  gtk_entry_set_max_length(GTK_ENTRY(entry), sizeof(module->multi_name) - 1);
   gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
 
-  gtk_widget_show(d->floating_window);
+  // remove instance name but save 1st character in case of escape
+  module->multi_name[sizeof(module->multi_name) - 1] = module->multi_name[0];
+  module->multi_name[0] = 0;
+  dt_iop_gui_update_header(module);
+
+  dt_gui_key_accel_block_on_focus_connect(entry); // needs to be before focus-out-event
+  g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), module);
+  g_signal_connect(entry, "focus-out-event", G_CALLBACK(_rename_module_key_press), module);
+  g_signal_connect(entry, "style-updated", G_CALLBACK(_rename_module_resize), module);
+  g_signal_connect(entry, "changed", G_CALLBACK(_rename_module_resize), module);
+
+  gtk_box_pack_start(GTK_BOX(module->header), entry, TRUE, TRUE, 0);
   gtk_widget_show(entry);
-  gtk_window_resize(GTK_WINDOW(d->floating_window), w, h + 4);
-  gtk_window_set_modal(GTK_WINDOW(d->floating_window), TRUE);
   gtk_widget_grab_focus(entry);
-  gtk_window_present(GTK_WINDOW(d->floating_window));
 }
 
 static void dt_iop_gui_rename_callback(GtkButton *button, dt_iop_module_t *module)
@@ -1768,8 +1755,11 @@ static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module
   /* update ui to default params*/
   dt_iop_gui_update(module);
 
+  /* and give focus to the module*/
+  dt_iop_request_focus(module);
+
   dt_dev_add_history_item(module->dev, module, TRUE);
-  
+
   if(dt_conf_get_bool("accel/prefer_expanded") || dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
   {
     // rebuild the accelerators
@@ -2143,12 +2133,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), !module->hide_enable_button);
 
   /* reorder header, for now, iop are always in the right panel */
-  for(int i = 0; i < IOP_MODULE_LAST; i++)
-    if(hw[i]) gtk_box_pack_start( GTK_BOX(header),
-                                  hw[i],
-                                  i == IOP_MODULE_LABEL ? TRUE : FALSE,
-                                  i == IOP_MODULE_LABEL ? TRUE : FALSE,
-                                  0);  // padding
+  for(int i = 0; i <= IOP_MODULE_LABEL; i++)
+    if(hw[i]) gtk_box_pack_start( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
+  for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
+    if(hw[i]) gtk_box_pack_end( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
 
   dt_gui_add_help_link(header, "interacting.html");
 
@@ -2748,6 +2736,95 @@ int dt_iop_count_instances(dt_iop_module_so_t *module)
     iop_mods = g_list_previous(iop_mods);
   }
   return inst_count;
+}
+
+void dt_iop_refresh_center(dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+  dt_develop_t *dev = module->dev;
+  if (dev && dev->gui_attached)
+  {
+    // invalidate the pixelpipe cache except for the output of the prior module
+    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
+    dt_dev_pixelpipe_cache_flush_all_but(&dev->pipe->cache, hash);
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
+    dt_dev_invalidate(dev);
+    dt_control_queue_redraw_center();
+  }
+}
+
+void dt_iop_refresh_preview(dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+  dt_develop_t *dev = module->dev;
+  if (dev && dev->gui_attached)
+  {
+    // invalidate the pixelpipe cache except for the output of the prior module
+    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
+    dt_dev_pixelpipe_cache_flush_all_but(&dev->preview_pipe->cache, hash);
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
+    dt_dev_invalidate_all(dev);
+    dt_control_queue_redraw();
+  }
+}
+
+void dt_iop_refresh_preview2(dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+  dt_develop_t *dev = module->dev;
+  if (dev && dev->gui_attached)
+  {
+    // invalidate the pixelpipe cache except for the output of the prior module
+    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
+    dt_dev_pixelpipe_cache_flush_all_but(&dev->preview2_pipe->cache, hash);
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
+    dt_dev_invalidate_all(dev);
+    dt_control_queue_redraw();
+  }
+}
+
+void dt_iop_refresh_all(dt_iop_module_t *module)
+{
+  dt_iop_refresh_preview(module);
+  dt_iop_refresh_center(module);
+  dt_iop_refresh_preview2(module);
+}
+
+static gboolean _postponed_history_update(gpointer data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t*)data;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  self->timeout_handle = 0;
+  return FALSE; //cancel the timer
+}
+
+/** queue a delayed call of the add_history function after user interaction, to capture parameter updates (but not */
+/** too often). */
+void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior)
+{
+  if (module->timeout_handle && extend_prior)
+  {
+    // we already queued an update, but we don't want to have the update happen until the timeout expires
+    // without any activity, so cancel the queued callback
+    g_source_remove(module->timeout_handle);
+  }
+  if (!module->timeout_handle || extend_prior)
+  {
+    // adaptively set the timeout to 150% of the average time the past several pixelpipe runs took, clamped
+    //   to keep updates from appearing to be too sluggish (though early iops such as rawdenoise may have
+    //   multiple very slow iops following them, leading to >1000ms processing times)
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1200);
+    module->timeout_handle = g_timeout_add(delay, _postponed_history_update, module);
+  }
+}
+
+void dt_iop_cancel_history_update(dt_iop_module_t *module)
+{
+  if (module->timeout_handle)
+  {
+    g_source_remove(module->timeout_handle);
+    module->timeout_handle = 0;
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

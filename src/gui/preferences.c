@@ -65,6 +65,11 @@ typedef struct dt_gui_accel_search_t
   int last_found_count, curr_found_count;
 } dt_gui_accel_search_t;
 
+typedef struct dt_gui_themetweak_widgets_t
+{
+  GtkWidget *apply_toggle, *save_button, *css_text_view;
+} dt_gui_themetweak_widgets_t;
+
 // FIXME: this is copypasta from gui/presets.c. better put these somewhere so that all places can access the
 // same data.
 static const int dt_gui_presets_exposure_value_cnt = 24;
@@ -208,6 +213,7 @@ static void gui_scaling_changed_callback(GtkWidget *widget, gpointer user_data)
   float ppd = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   if(ppd > 0.0) ppd = fmax(0.5, ppd); // else <= 0 -> use system default
   dt_conf_set_float("screen_ppd_overwrite", ppd);
+  restart_required = TRUE;
   dt_configure_ppd_dpi(darktable.gui);
   dt_bauhaus_load_theme();
 }
@@ -217,6 +223,7 @@ static void dpi_scaling_changed_callback(GtkWidget *widget, gpointer user_data)
   float dpi = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   if(dpi > 0.0) dpi = fmax(64, dpi); // else <= 0 -> use system default
   dt_conf_set_float("screen_dpi_overwrite", dpi);
+  restart_required = TRUE;
   dt_configure_ppd_dpi(darktable.gui);
   dt_bauhaus_load_theme();
 }
@@ -233,15 +240,14 @@ static void use_sys_font_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
-static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
+static void save_usercss(GtkTextBuffer *buffer)
 {
   //get file locations
   char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
   g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
 
-  //read text buffer into gchar
-  GtkTextBuffer *buffer = (GtkTextBuffer *)user_data;
+  //get the text
   GtkTextIter start, end;
   gtk_text_buffer_get_start_iter(buffer, &start);
   gtk_text_buffer_get_end_iter(buffer, &end);
@@ -255,9 +261,34 @@ static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
     g_clear_error(&error);
   }
 
-  //reload the theme
-  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
-  dt_bauhaus_load_theme();
+}
+
+static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_gui_themetweak_widgets_t *tw = (dt_gui_themetweak_widgets_t *)user_data;
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tw->css_text_view));
+
+  save_usercss(buffer);
+
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tw->apply_toggle)))
+  {
+    //reload the theme
+    dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+    dt_bauhaus_load_theme();
+  }
+  else
+  {
+    //toggle the apply button, which will also reload the theme
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tw->apply_toggle), TRUE);
+  }
+}
+
+static void usercss_dialog_callback(GtkDialog *dialog, gint response_id, gpointer user_data)
+{
+  //just save the latest css but don't reload the theme
+  dt_gui_themetweak_widgets_t *tw = (dt_gui_themetweak_widgets_t *)user_data;
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tw->css_text_view));
+  save_usercss(buffer);
 }
 
 ///////////// gui language and theme selection
@@ -276,6 +307,7 @@ static void language_callback(GtkWidget *widget, gpointer user_data)
     dt_conf_set_string("ui_last/gui_language", language->code);
     darktable.l10n->selected = selected;
   }
+  restart_required = TRUE;
 }
 
 static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
@@ -288,7 +320,7 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
   return FALSE;
 }
 
-static void init_tab_general(GtkWidget *stack)
+static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetweak_widgets_t *tw)
 {
 
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -432,15 +464,15 @@ static void init_tab_general(GtkWidget *stack)
   //checkbox to allow user to modify theme with user.css
   label = gtk_label_new(_("modify selected theme with CSS tweaks below"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  GtkWidget *cssbutton = gtk_check_button_new();
+  tw->apply_toggle = gtk_check_button_new();
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), cssbutton, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(cssbutton, _("modify theme with CSS keyed below (saved to user.css)"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cssbutton), dt_conf_get_bool("themes/usercss"));
-  g_signal_connect(G_OBJECT(cssbutton), "toggled", G_CALLBACK(usercss_callback), 0);
+  gtk_grid_attach_next_to(GTK_GRID(grid), tw->apply_toggle, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(tw->apply_toggle, _("modify theme with CSS keyed below (saved to user.css)"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tw->apply_toggle), dt_conf_get_bool("themes/usercss"));
+  g_signal_connect(G_OBJECT(tw->apply_toggle), "toggled", G_CALLBACK(usercss_callback), 0);
 
   //scrollable textarea with save button to allow user to directly modify user.css file
   GtkWidget *usercssbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -448,20 +480,21 @@ static void init_tab_general(GtkWidget *stack)
   gtk_widget_set_name(usercssbox, "usercss_box");
 
   GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
-  GtkWidget *textview = gtk_text_view_new_with_buffer(buffer);
-  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
-  gtk_widget_set_hexpand(textview, TRUE);
-  gtk_widget_set_halign(textview, GTK_ALIGN_FILL);
+  tw->css_text_view= gtk_text_view_new_with_buffer(buffer);
+  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(tw->css_text_view), GTK_WRAP_WORD);
+  gtk_widget_set_hexpand(tw->css_text_view, TRUE);
+  gtk_widget_set_halign(tw->css_text_view, GTK_ALIGN_FILL);
 
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(scroll), textview);
+  gtk_container_add(GTK_CONTAINER(scroll), tw->css_text_view);
   gtk_box_pack_start(GTK_BOX(usercssbox), scroll, TRUE, TRUE, 0);
 
-  GtkWidget *button = gtk_button_new_with_label(C_("usercss", "save theme tweaks"));
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(save_usercss_callback), buffer);
+  tw->save_button = gtk_button_new_with_label(C_("usercss", "save and apply"));
+  g_signal_connect(G_OBJECT(tw->save_button), "clicked", G_CALLBACK(save_usercss_callback), tw);
+  g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(usercss_dialog_callback), tw);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), tw->save_button, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(usercssbox), hbox, FALSE, FALSE, 0);
 
   //set textarea text from file or default
@@ -552,9 +585,12 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_path = NULL;
 
   dt_gui_accel_search_t *search_data = (dt_gui_accel_search_t *)malloc(sizeof(dt_gui_accel_search_t));
+  dt_gui_themetweak_widgets_t *tweak_widgets = (dt_gui_themetweak_widgets_t *)malloc(sizeof(dt_gui_themetweak_widgets_t));
+
+  restart_required = FALSE;
 
   //setup tabs
-  init_tab_general(stack);
+  init_tab_general(_preferences_dialog, stack, tweak_widgets);
   init_tab_import(_preferences_dialog, stack);
   init_tab_lighttable(_preferences_dialog, stack);
   init_tab_darkroom(_preferences_dialog, stack);
@@ -586,7 +622,11 @@ void dt_gui_preferences_show()
 
   g_free(search_data->last_search_term);
   free(search_data);
+  free(tweak_widgets);
   gtk_widget_destroy(_preferences_dialog);
+
+  if(restart_required)
+    dt_control_log(_("darktable needs to be restarted for settings to take effect"));
 
   // Cleaning up any memory still allocated for remapping
   if(darktable.control->accel_remap_path)
@@ -595,7 +635,7 @@ void dt_gui_preferences_show()
     darktable.control->accel_remap_path = NULL;
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
 }
 
 static void cairo_destroy_from_pixbuf(guchar *pixels, gpointer data)
@@ -1452,11 +1492,22 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
     gint rowid;
     gchar *name;
     GdkPixbuf *editable;
-    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name, P_EDITABLE_COLUMN,
-                       &editable, -1);
+    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name,
+                       P_EDITABLE_COLUMN, &editable, -1);
     if(editable == NULL)
     {
       sqlite3_stmt *stmt;
+      gchar* operation = NULL;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name, operation FROM data.presets WHERE rowid = ?1",
+                              -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        operation = g_strdup( (const char*)sqlite3_column_text(stmt,1));
+      }
+      sqlite3_finalize(stmt);
 
       GtkWidget *dialog = gtk_message_dialog_new
         (GTK_WINDOW(_preferences_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
@@ -1466,9 +1517,29 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
       dt_osx_disallow_fullscreen(dialog);
 #endif
       gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
+
       if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
       {
-        // TODO: remove accel
+        //deregistering accel...
+        if(operation)
+        {
+          gchar accel[256];
+          gchar datadir[PATH_MAX] = { 0 };
+          gchar accelpath[PATH_MAX] = { 0 };
+
+          dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+          snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
+
+          gchar* tmp_path = g_strdup_printf("%s/%s", _("preset"), name);
+          g_strlcpy(accel, "<Darktable>", sizeof(accel));
+          dt_accel_path_iop(accel, sizeof(accel), operation, tmp_path);
+          g_free(tmp_path);
+          gtk_accel_map_change_entry(accel, 0, 0, TRUE);
+
+          // Saving the changed bindings
+          gtk_accel_map_save(accelpath);
+        }
+
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "DELETE FROM data.presets WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
@@ -1479,6 +1550,8 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
         tree_insert_presets(tree_store);
       }
       gtk_widget_destroy(dialog);
+      if(operation)
+        g_free(operation);
     }
     else
       g_object_unref(editable);
@@ -1495,13 +1568,14 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
 static void import_export(GtkButton *button, gpointer data)
 {
   GtkWidget *chooser;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   gchar confdir[PATH_MAX] = { 0 };
   gchar accelpath[PATH_MAX] = { 0 };
 
   if(data)
   {
     // Non-zero value indicates export
-    chooser = gtk_file_chooser_dialog_new(_("select file to export"), NULL, GTK_FILE_CHOOSER_ACTION_SAVE,
+    chooser = gtk_file_chooser_dialog_new(_("select file to export"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SAVE,
                                           _("_cancel"), GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT,
                                           NULL);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1527,7 +1601,7 @@ static void import_export(GtkButton *button, gpointer data)
   else
   {
     // Zero value indicates import
-    chooser = gtk_file_chooser_dialog_new(_("select file to import"), NULL, GTK_FILE_CHOOSER_ACTION_OPEN,
+    chooser = gtk_file_chooser_dialog_new(_("select file to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
                                           _("_cancel"), GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT,
                                           NULL);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1607,9 +1681,10 @@ static void import_preset(GtkButton *button, gpointer data)
 {
   GtkTreeModel *model = (GtkTreeModel *)data;
   GtkWidget *chooser;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   // Zero value indicates import
-  chooser = gtk_file_chooser_dialog_new(_("select preset to import"), NULL, GTK_FILE_CHOOSER_ACTION_OPEN,
+  chooser = gtk_file_chooser_dialog_new(_("select preset to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
                                         _("_cancel"), GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT,
                                         NULL);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1718,6 +1793,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
                                        GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                        _("_cancel"), GTK_RESPONSE_CANCEL,
                                        _("_save"), GTK_RESPONSE_YES,
+                                       _("delete"), GTK_RESPONSE_REJECT,
                                        _("_ok"), GTK_RESPONSE_OK, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -1962,6 +2038,63 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     }
 
     gtk_widget_destroy(GTK_WIDGET(filechooser));
+  }
+  else if(response_id == GTK_RESPONSE_REJECT)
+  {
+    const gchar *name = gtk_label_get_text(g->name);
+
+    sqlite3_stmt *stmt;
+    gchar* operation = NULL;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name, operation FROM data.presets WHERE rowid = ?1",
+                              -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->rowid);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        operation = g_strdup( (const char*)sqlite3_column_text(stmt,1));
+      }
+      sqlite3_finalize(stmt);
+
+      GtkWidget *win = gtk_message_dialog_new
+        (GTK_WINDOW(_preferences_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+         GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+         _("do you really want to delete the preset `%s'?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(win);
+#endif
+      gtk_window_set_title(GTK_WINDOW(win), _("delete preset?"));
+      if(gtk_dialog_run(GTK_DIALOG(win)) == GTK_RESPONSE_YES)
+      {
+        //deregistering accel...
+        if(operation)
+        {
+          gchar accel[256];
+          gchar datadir[PATH_MAX] = { 0 };
+          gchar accelpath[PATH_MAX] = { 0 };
+
+          dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+          snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
+
+          gchar* tmp_path = g_strdup_printf("%s/%s", _("preset"), name);
+          g_strlcpy(accel, "<Darktable>", sizeof(accel));
+          dt_accel_path_iop(accel, sizeof(accel), operation, tmp_path);
+          g_free(tmp_path);
+          gtk_accel_map_change_entry(accel, 0, 0, TRUE);
+
+          // Saving the changed bindings
+          gtk_accel_map_save(accelpath);
+        }
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "DELETE FROM data.presets WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->rowid);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+      gtk_widget_destroy(win);
+      if(operation)
+        g_free(operation);
   }
 
   GtkTreeStore *tree_store = GTK_TREE_STORE(gtk_tree_view_get_model(g->tree));

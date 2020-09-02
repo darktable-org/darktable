@@ -131,6 +131,8 @@ void dtgtk_cairo_paint_colorpicker_set_values(cairo_t *cr, gint x, gint y, gint 
 void dtgtk_cairo_paint_showmask(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint an alignment icon */
 void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a text label icon */
+void dtgtk_cairo_paint_text_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a styles icon */
 void dtgtk_cairo_paint_styles(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint the ? help label */
@@ -179,6 +181,10 @@ void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 void dtgtk_cairo_paint_multiinstance(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a simple grid icon */
 void dtgtk_cairo_paint_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint focus peaking icon */
+void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint camera icon */
+void dtgtk_cairo_paint_camera(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 /** paint active modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
@@ -241,6 +247,22 @@ void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gin
 void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a used icon for masks */
 void dtgtk_cairo_paint_masks_used(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a clone tool for retouch*/
+void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a heal tool for retouch*/
+void dtgtk_cairo_paint_tool_heal(cairo_t *cr, gint x, gint y, gint w, gint h,  gint flags, void *data);
+/** Paint a fill tool for retouch*/
+void dtgtk_cairo_paint_tool_fill(cairo_t *cr, gint x, gint y, gint w, gint h,  gint flags, void *data);
+/** Paint a blur tool for retouch*/
+void dtgtk_cairo_paint_tool_blur(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a past icon for retouch*/
+void dtgtk_cairo_paint_paste_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a cut icon for retouch*/
+void dtgtk_cairo_paint_cut_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a display scale for retouch*/
+void dtgtk_cairo_paint_display_wavelet_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a auto level icon for retouch*/
+void dtgtk_cairo_paint_auto_levels(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

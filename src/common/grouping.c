@@ -34,7 +34,7 @@ void dt_grouping_add_to_group(const int group_id, const int image_id)
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
   GList *imgs = NULL;
   imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 }
 
 /** remove an image from a group */
@@ -85,7 +85,7 @@ int dt_grouping_remove_from_group(const int image_id)
     // refresh also the group leader which may be alone now
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(img_group_id));
   }
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
   return new_group_id;
 }
@@ -96,7 +96,7 @@ int dt_grouping_change_representative(const int image_id)
   sqlite3_stmt *stmt;
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, image_id, 'r');
-  int group_id = img->group_id;
+  const int group_id = img->group_id;
   dt_image_cache_read_release(darktable.image_cache, img);
 
   GList *imgs = NULL;
@@ -105,14 +105,14 @@ int dt_grouping_change_representative(const int image_id)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int other_id = sqlite3_column_int(stmt, 0);
+    const int other_id = sqlite3_column_int(stmt, 0);
     dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
     other_img->group_id = image_id;
     dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
   }
   sqlite3_finalize(stmt);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
   return image_id;
 }
