@@ -13064,7 +13064,7 @@ msgstr ""
 "curva. Com <emphasis>Ctrl-clique</emphasis> você gera um novo nó na posição "
 "x do ponteiro do mouse e a posição y da curva atual - isto adiciona um nó "
 "sem acidentalmente modificar a curva. Para remover um nó, mova-o para fora "
-"da área da curva.\n"
+"da área da curva."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10754(para)
 msgid ""
@@ -13375,7 +13375,7 @@ msgstr ""
 "percentil de 50% denota uma posição no histograma onde 50% dos valores de "
 "pixels estão abaixo e 50% está acima. Para mais detalhes, veja <ulink url="
 "\"https://pt.wikipedia.org/wiki/Percentil\"><emphasis>percentil</emphasis></"
-"ulink> Somente disponível no modo <quote>automático</quote>.\n"
+"ulink> Somente disponível no modo <quote>automático</quote>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10974(title)
 msgid "target level"
@@ -13474,7 +13474,7 @@ msgstr ""
 "(zero), a imagem permanece inalterada. Deslocar o deslizador para a "
 "esquerda, na direção dos valores negativos, reduz contraste, brilho e "
 "saturação, respectivamente. Deslocar para a direita, na direção dos valores "
-"positivos, leva ao incremento desses atributos.\n"
+"positivos, leva ao incremento desses atributos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11050(para)
 msgid ""
@@ -13643,7 +13643,7 @@ msgstr ""
 "cor. Valores altos permitem que mais pixels contribuam na substituição da "
 "cor, mesmo que suas luminâncias difiram mais fortemente dos pixels alvo; "
 "novamente, isto aumenta a chance de encontrar uma cor substituta, mas "
-"aumenta o risco de cores inadequadas surgirem.\n"
+"aumenta o risco de cores inadequadas surgirem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11190(title)
 msgid "preference"
@@ -13828,7 +13828,7 @@ msgstr ""
 "configuração de preferências <quote>interpolação cromática para zoom na sala "
 "escura</quote> (veja  <xref linkend=\"core_options\"/>) estiver habilitada. "
 "De outra forma, os canais de cor são tomados de pixels vizinhos sem qualquer "
-"interpolação custosa.\n"
+"interpolação custosa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11353(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11479(title)
