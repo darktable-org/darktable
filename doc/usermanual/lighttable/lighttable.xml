@@ -304,7 +304,7 @@
 
         <para>
           To enhance performance in zoomed images loading, you can enable the disk backend for full preview cache in preferences
-          (see <xref linkend="core_options"/>). Keep in mind that this could take a lot of disk space...
+          (see <xref linkend="cpugpumemory"/>). Keep in mind that this could take a lot of disk space...
         </para>
 
       </sect3>

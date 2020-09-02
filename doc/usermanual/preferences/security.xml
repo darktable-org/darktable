@@ -1,0 +1,80 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="security">
+
+  <title>Security</title>
+
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>security</secondary>
+  </indexterm>
+
+  <para>
+    These options control the most secure use of darktable.
+  </para>
+
+  <bridgehead renderas="sect5">ask before removing images from database</bridgehead>
+
+  <para>
+    Always ask the user before any image is removed from the database (default on).
+  </para>
+
+  <bridgehead renderas="sect5">ask before erasing images from disk</bridgehead>
+
+  <para>
+    Always ask the user before any image file is deleted (default on).
+  </para>
+
+  <bridgehead renderas="sect5">ask before discarding history stack</bridgehead>
+
+  <para>
+    Always ask the user before history stack is discarding on any image (default on).
+  </para>
+
+  <bridgehead renderas="sect5">send files to trash when erasing images</bridgehead>
+
+  <para>
+    Instead of physically deleting images from disk put them into the system's trash bin
+    (default on).
+  </para>
+
+    <bridgehead renderas="sect5">ask before moving images from film roll folder</bridgehead>
+
+    <para>
+      Always ask the user before any image file is moved (default on).
+    </para>
+
+    <bridgehead renderas="sect5">ask before copying images to new film roll folder</bridgehead>
+
+    <para>
+      Always ask the user before any image file is copied (default on).
+    </para>
+
+    <bridgehead renderas="sect5">ask before removing empty folders</bridgehead>
+
+    <para>
+      Always ask the user before removing any empty folder. This can happen after moving or deleting images (default off).
+    </para>
+
+    <bridgehead renderas="sect5">ask before deleting a tag</bridgehead>
+
+    <para>
+      Always ask the user before deleting a tag from an image (default on).
+    </para>
+
+    <bridgehead renderas="sect5">ask before deleting a style</bridgehead>
+
+    <para>
+      Always ask the user before deleting a style (default on).
+    </para>
+    
+    <bridgehead renderas="sect5">ask before deleting a preset</bridgehead>
+
+    <para>
+      Always ask the user before deleting or overwritting a preset (default on).
+    </para>
+
+</sect1>

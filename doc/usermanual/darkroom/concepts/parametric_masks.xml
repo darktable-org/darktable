@@ -96,7 +96,7 @@
         down the <emphasis>Shift</emphasis> key while entering the respective slider with the
         mouse cursor. The center image changes to display the selected color channel either in
         graycale values or in false colors, depending on the corresponding preference setting in
-        <quote>GUI options</quote> (see <xref linkend="gui_options"/>). You may additionally
+        <quote>darkroom options</quote> (see <xref linkend="darkroom_options"/>). You may additionally
         hold down the <emphasis>ctrl</emphasis> key which lets you see the resulting mask
         overlaid to the image. When leaving the slider the image goes back to normal after a
         short delay.

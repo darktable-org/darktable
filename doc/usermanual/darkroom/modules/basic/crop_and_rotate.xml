@@ -50,8 +50,7 @@
     <para>
       Some of the tools of this module, namely adjustment of angle and corrections of
       perspective distortion, will require the original image data to be interpolated. For best
-      sharpness results set <quote>lanczos3</quote> as pixel interpolator in <emphasis>core
-      options</emphasis> (see <xref linkend="core_options"/>).
+      sharpness results set <quote>lanczos3</quote> as pixel interpolator in <emphasis>processing</emphasis> tab in preferences dialog (see <xref linkend="processing"/>).
     </para>
 
   </sect4>

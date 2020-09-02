@@ -130,12 +130,12 @@
       <para>
         If you have a graphics tablet with pen pressure sensitivity, darktable can apply the
         recorded pen pressure to certain attributes of the brush stroke. See
-        <xref linkend="gui_options"/> for more details.
+        <xref linkend="darkroom_options"/> for more details.
       </para>
       <para>
         On lifting the tablet pen or releasing the left mouse button the drawn figure is
         converted into a number of connected nodes which define the shape. A configuration
-        option (see <xref linkend="gui_options"/>) controls how much smoothing is applied. A
+        option (see <xref linkend="darkroom_options"/>) controls how much smoothing is applied. A
         higher level of smoothing leads to less nodes&nbsp;&ndash; this eases subsequent editing
         at the expense of a lower initial accuracy.
       </para>
