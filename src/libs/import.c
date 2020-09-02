@@ -76,7 +76,6 @@ typedef struct dt_lib_import_t
   GtkButton *import_file;
   GtkButton *import_directory;
   GtkButton *import_camera;
-  GtkButton *scan_devices;
   GtkButton *tethered_shoot;
 
   GtkBox *devices;
@@ -109,7 +108,6 @@ int position()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "scan for devices"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import from camera"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "tethered shoot"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import image"), 0, 0);
@@ -120,7 +118,6 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "scan for devices", GTK_WIDGET(d->scan_devices));
   dt_accel_connect_button_lib(self, "import image", GTK_WIDGET(d->import_file));
   dt_accel_connect_button_lib(self, "import folder", GTK_WIDGET(d->import_directory));
   if(d->tethered_shoot) dt_accel_connect_button_lib(self, "tethered shoot", GTK_WIDGET(d->tethered_shoot));
@@ -128,15 +125,6 @@ void connect_key_accels(dt_lib_module_t *self)
 }
 
 #ifdef HAVE_GPHOTO2
-
-/* scan for new devices button callback */
-static void _lib_import_scan_devices_callback(GtkButton *button, gpointer data)
-{
-  /* detect cameras */
-  dt_camctl_background_detect_cameras();
-  /* update UI */
-  // this part is now asynchronously done by the signal connected to in gui_init()
-}
 
 /* show import from camera dialog */
 static void _lib_import_from_camera_callback(GtkButton *button, gpointer data)
@@ -245,32 +233,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     } while((citem = g_list_next(citem)) != NULL);
   }
   dt_pthread_mutex_unlock(&camctl->lock);
-
-  if(count == 0)
-  {
-    // No supported devices is detected lets notice user..
-    GtkWidget *label = gtk_label_new(_("no supported devices found"));
-    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-    g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
-    gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
-  }
   gtk_widget_show_all(GTK_WIDGET(d->devices));
-}
-
-/** camctl camera disconnect callback */
-static gboolean _detect_async(gpointer user_data)
-{
-  dt_camctl_background_detect_cameras();
-  return FALSE;
-}
-
-static void _camctl_camera_disconnected_callback(const dt_camera_t *camera, void *data)
-{
-  /* rescan connected cameras. do that asynchronously since otherwise we deadlock (#10314) */
-  g_idle_add(_detect_async, NULL);
-
-  /* update gui with detected devices */
-  // this is done asynchronously in _camera_detected()
 }
 
 /** camctl status listener callback */
@@ -790,12 +753,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
 #ifdef HAVE_GPHOTO2
-  /* add the rescan button */
-  widget = dt_ui_button_new(_("scan for devices"), _("scan for newly attached devices"), "lighttable_panels.html#import_from_camera");
-  d->scan_devices = GTK_BUTTON(widget);
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(widget), TRUE, TRUE, 0);
-
   /* add devices container for cameras */
   d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
@@ -805,7 +762,6 @@ void gui_init(dt_lib_module_t *self)
   /* initialize camctl listener and update devices */
   d->camctl_listener.data = self;
   d->camctl_listener.control_status = _camctl_camera_control_status_callback;
-  d->camctl_listener.camera_disconnected = _camctl_camera_disconnected_callback;
   dt_camctl_register_listener(darktable.camctl, &d->camctl_listener);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
                             self);
