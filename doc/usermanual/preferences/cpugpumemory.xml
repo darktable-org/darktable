@@ -1,0 +1,92 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="cpugpumemory">
+
+  <title>Cpu / gpu / memory</title>
+
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>cpu / gpu / memory</secondary>
+  </indexterm>
+
+  <para>
+    These options control how darktable use your system resources.
+  </para>
+
+  <bridgehead renderas="sect5">memory in megabytes to use for thumbnail cache</bridgehead>
+
+  <para>
+    In order to speed-up display of film rolls, darktable stores thumbnails in a cache file on
+    disk (primary cache) and loads it into memory at startup. This value controls the cache size
+    in megabytes. It needs a restart if changed (default 256MB).
+  </para>
+
+  <bridgehead renderas="sect5">enable disk backend for thumbnail cache</bridgehead>
+
+  <para>
+    If activated darktable stores all thumbnails on disk as a secondary cache, and thereby
+    keeping thumbnails accessible in case they get dropped from the primary cache. This needs
+    more disk space but speeds up lighttable view as it avoids reprocessing of thumbnails
+    (default on).
+  </para>
+
+  <bridgehead renderas="sect5">enable disk backend for full preview cache</bridgehead>
+
+  <para>
+    If enabled, darktable write full preview to disk (.cache/darktable/) when evicted from the memory cache.
+    Note that this can take a lot of memory (several gigabytes for 20k images) and darktable will never delete cached images.
+    It's safe though to delete these manually, if you want.
+    Lighttable performance will be increased greatly when zooming image in full preview mode (default off).
+  </para>
+
+  <bridgehead renderas="sect5">number of background threads</bridgehead>
+
+  <para>
+    This controls how many parallel threads are used to create thumbnails during import. On
+    32bit systems it is strongly recommended to set this to 1. Needs a restart if changed
+    (default 2).
+  </para>
+
+  <bridgehead renderas="sect5">host memory limit (in MB) for tiling</bridgehead>
+
+  <para>
+    In order to manage large images on systems with limited memory darktable does tile-wise
+    processing. This variable controls the <emphasis>maximum</emphasis> amount of memory (in MB)
+    a module may use during image processing. Lower values will force memory hungry modules to
+    process an image with increasing number of tiles. Setting this to 0 will omit any limits.
+    Values below 500 will be treated as 500. On a 32bit system you should set this to 500. Needs
+    a restart if changed (default 1500).
+  </para>
+
+  <bridgehead renderas="sect5">minimum amount of memory (in MB) for a single buffer in tiling</bridgehead>
+
+  <para>
+    If set to a positive, non-zero value, this variable defines the <emphasis>minimum</emphasis>
+    amount of memory (in MB) that darktable should take for a single tile. On a 32bit system you
+    should set this to 8. 64bit systems can live with higher values. Needs a restart if changed
+    (default 16).
+  </para>
+
+  <bridgehead renderas="sect5">activate OpenCL support</bridgehead>
+
+  <para>
+    darktable can use your GPU to speed up processing significantly. Interface OpenCL requires
+    suitable hardware and matching OpenCL drivers on your system. If one of those is not found
+    the option is greyed out. Can be switched on and off at any time and takes immediate effect
+    (default on).
+  </para>
+
+  <bridgehead renderas="sect5">OpenCL scheduling profile</bridgehead>
+
+  <para>
+    Defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems.
+    <quote>default</quote>: the GPU processes the center view pixelpipe and the CPU processes
+    the preview pipe; <quote>multiple GPUs</quote>: both pixelpipes are processed in parallel on
+    two different GPUs; <quote>very fast GPU</quote>: both pixelpipes are processed sequentially
+    on the GPU.
+  </para>
+
+</sect1>
