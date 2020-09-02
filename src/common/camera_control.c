@@ -123,7 +123,7 @@ static void _dispatch_camera_property_value_changed(const dt_camctl_t *c, const 
 static void dt_camctl_camera_destroy(dt_camera_t *cam);
 
 /** Wrapper to asynchronously look for cameras */
-static int _detect_cameras_callback(dt_job_t *job);
+static int _update_cameras_callback(dt_job_t *job);
 
 /* Starts a job to update the camera list */
 void dt_camctl_background_detect_cameras();
@@ -586,7 +586,7 @@ static void _camctl_unlock(const dt_camctl_t *c)
 
 void dt_camctl_background_detect_cameras()
 {
-  dt_job_t *job = dt_control_job_create(&_detect_cameras_callback, "detect connected cameras");
+  dt_job_t *job = dt_control_job_create(&_update_cameras_callback, "update connected cameras");
   if(job)
   {
     dt_control_job_set_params(job, NULL, NULL);
@@ -704,9 +704,11 @@ static gint _compare_camera_by_port(gconstpointer a, gconstpointer b)
   return g_strcmp0(ca->port, cb->port);
 }
 
-static void dt_camctl_detect_cameras(const dt_camctl_t *c)
+static void dt_camctl_update_cameras(const dt_camctl_t *c)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
+  if(!camctl) return;
+
   dt_pthread_mutex_lock(&camctl->lock);
   gboolean changed_camera = FALSE;
 
@@ -837,10 +839,18 @@ static void dt_camctl_detect_cameras(const dt_camctl_t *c)
   }
 }
 
-static int _detect_cameras_callback(dt_job_t *job)
+static int _update_cameras_callback(dt_job_t *job)
 {
-  const dt_camctl_t *c = darktable.camctl;
-  dt_camctl_detect_cameras(c);
+  while(darktable.control->running && darktable.camctl)
+  {
+    // we want to sleep in the background thread but still want to be responsive for closing down
+    for(int i = 0; i < 10; i++)
+    {
+      if(!darktable.control->running) return 0;   
+      g_usleep(50000);
+    }
+    dt_camctl_update_cameras(darktable.camctl);
+  }
   return 0;
 }
 
