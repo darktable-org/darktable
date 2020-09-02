@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-31 16:30+0200\n"
-"PO-Revision-Date: 2020-08-31 16:55+0200\n"
+"POT-Creation-Date: 2020-09-02 20:16+0200\n"
+"PO-Revision-Date: 2020-09-02 20:18+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -92,7 +92,7 @@ msgstr "spécifique"
 #: ../src/common/history.c:843 ../src/common/history.c:859
 #: ../src/common/styles.c:1079 ../src/common/styles.c:1083
 #: ../src/develop/blend_gui.c:99 ../src/develop/blend_gui.c:120
-#: ../src/develop/blend_gui.c:2203 ../src/develop/develop.c:2023
+#: ../src/develop/blend_gui.c:2203 ../src/develop/develop.c:2026
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4788 ../src/iop/demosaic.c:5082
 #: ../src/libs/live_view.c:434
@@ -145,7 +145,7 @@ msgstr "préserver couleur"
 #: ../src/iop/clipping.c:1885 ../src/iop/clipping.c:2146
 #: ../src/iop/clipping.c:2162 ../src/iop/clipping.c:2297
 #: ../src/iop/clipping.c:2324 ../src/iop/lens.cc:2259 ../src/iop/retouch.c:341
-#: ../src/libs/collect.c:1697 ../src/libs/export.c:625
+#: ../src/libs/collect.c:1707 ../src/libs/export.c:625
 #: ../src/libs/live_view.c:348 ../src/libs/live_view.c:373
 #: ../src/libs/live_view.c:382 ../src/libs/print_settings.c:1475
 msgid "none"
@@ -790,7 +790,7 @@ msgid "version of the spline generator"
 msgstr "version du générateur de spline"
 
 #: ../build/src/iop/introspection_filmicrgb.c:520
-#: ../build/src/iop/introspection_toneequal.c:360 ../src/common/darktable.c:822
+#: ../build/src/iop/introspection_toneequal.c:360 ../src/common/darktable.c:909
 #: ../src/common/variables.c:520 ../src/imageio/format/pdf.c:670
 #: ../src/imageio/format/pdf.c:695 ../src/libs/export.c:738
 #: ../src/libs/export.c:744 ../src/libs/export.c:751
@@ -2824,7 +2824,7 @@ msgstr "Imprimer vos images"
 #: ../src/gui/preferences.c:2024 ../src/gui/presets.c:413
 #: ../src/gui/styles_dialog.c:357 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
-#: ../src/iop/lut3d.c:1568 ../src/libs/collect.c:354
+#: ../src/iop/lut3d.c:1568 ../src/libs/collect.c:364
 #: ../src/libs/copy_history.c:100 ../src/libs/geotagging.c:474
 #: ../src/libs/import.c:555 ../src/libs/import.c:661 ../src/libs/lib.c:227
 #: ../src/libs/styles.c:366 ../src/libs/styles.c:391 ../src/libs/tagging.c:2205
@@ -3076,13 +3076,13 @@ msgstr "ordre des modules"
 #: ../src/common/collection.c:1470 ../src/develop/blend_gui.c:1470
 #: ../src/develop/lightroom.c:828 ../src/iop/bilateral.cc:321
 #: ../src/iop/channelmixer.c:446 ../src/iop/channelmixer.c:457
-#: ../src/iop/temperature.c:1904 ../src/libs/collect.c:1598
+#: ../src/iop/temperature.c:1904 ../src/libs/collect.c:1608
 #: ../src/views/darkroom.c:2436
 msgid "red"
 msgstr "rouge"
 
 #: ../src/common/collection.c:1472 ../src/develop/lightroom.c:830
-#: ../src/iop/temperature.c:1894 ../src/libs/collect.c:1598
+#: ../src/iop/temperature.c:1894 ../src/libs/collect.c:1608
 #: ../src/views/darkroom.c:2438
 msgid "yellow"
 msgstr "jaune"
@@ -3091,48 +3091,48 @@ msgstr "jaune"
 #: ../src/develop/lightroom.c:832 ../src/iop/bilateral.cc:326
 #: ../src/iop/channelmixer.c:447 ../src/iop/channelmixer.c:463
 #: ../src/iop/temperature.c:1888 ../src/iop/temperature.c:1906
-#: ../src/libs/collect.c:1598 ../src/views/darkroom.c:2437
+#: ../src/libs/collect.c:1608 ../src/views/darkroom.c:2437
 msgid "green"
 msgstr "vert"
 
 #: ../src/common/collection.c:1476 ../src/develop/blend_gui.c:1476
 #: ../src/develop/lightroom.c:834 ../src/iop/bilateral.cc:331
 #: ../src/iop/channelmixer.c:448 ../src/iop/channelmixer.c:469
-#: ../src/iop/temperature.c:1908 ../src/libs/collect.c:1598
+#: ../src/iop/temperature.c:1908 ../src/libs/collect.c:1608
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:1478 ../src/libs/collect.c:1598
+#: ../src/common/collection.c:1478 ../src/libs/collect.c:1608
 msgid "purple"
 msgstr "violet"
 
 #: ../src/common/collection.c:1492 ../src/common/collection.c:1500
-#: ../src/libs/collect.c:1545
+#: ../src/libs/collect.c:1555
 msgid "basic"
 msgstr "basique"
 
-#: ../src/common/collection.c:1494 ../src/libs/collect.c:1545
+#: ../src/common/collection.c:1494 ../src/libs/collect.c:1555
 msgid "auto applied"
 msgstr "appliqué automatiquement"
 
-#: ../src/common/collection.c:1496 ../src/libs/collect.c:1545
+#: ../src/common/collection.c:1496 ../src/libs/collect.c:1555
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:1509 ../src/libs/collect.c:1558
+#: ../src/common/collection.c:1509 ../src/libs/collect.c:1568
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1515 ../src/libs/collect.c:1570
+#: ../src/common/collection.c:1515 ../src/libs/collect.c:1580
 msgid "not copied locally"
 msgstr "non copiée localement"
 
 #. grouping
-#: ../src/common/collection.c:1757 ../src/libs/collect.c:1672
+#: ../src/common/collection.c:1757 ../src/libs/collect.c:1682
 msgid "group leaders"
 msgstr "tête de groupe"
 
-#: ../src/common/collection.c:1789 ../src/libs/collect.c:1733
+#: ../src/common/collection.c:1789 ../src/libs/collect.c:1743
 msgid "not defined"
 msgstr "non défini"
 
@@ -3294,31 +3294,41 @@ msgstr "erreur pendant l'impression de l'image « %s » sur « %s »"
 msgid "printing `%s' on `%s'"
 msgstr "impression de l'image « %s » sur « %s »"
 
-#: ../src/common/darktable.c:237
+#: ../src/common/darktable.c:243
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange « %s »"
 
-#: ../src/common/darktable.c:252
+#: ../src/common/darktable.c:258
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier « %s »"
 
-#: ../src/common/darktable.c:275
+#: ../src/common/darktable.c:281
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:288 ../src/libs/import.c:621
+#: ../src/common/darktable.c:294 ../src/libs/import.c:621
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
-#: ../src/common/darktable.c:817
+#: ../src/common/darktable.c:744
+#, c-format
+msgid ""
+"unknown signal name: '%s'. use 'ALL' to enable debug for all or use full "
+"signal name\n"
+msgstr ""
+"signal « %s » non reconnu. utiliser 'ALL' pour activer le mode debug pour "
+"tous les signaux ou utiliser le nom complet du signal .\n"
+"\n"
+
+#: ../src/common/darktable.c:904
 msgid "darktable - run performance configuration?"
 msgstr "darktable - exécute la configuration des performances?"
 
-#: ../src/common/darktable.c:818
+#: ../src/common/darktable.c:905
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -3332,7 +3342,7 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:822 ../src/common/database.c:2991
+#: ../src/common/darktable.c:909 ../src/common/database.c:2991
 #: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:739
 #: ../src/libs/export.c:745 ../src/libs/export.c:752
@@ -3592,7 +3602,7 @@ msgstr ""
 #: ../src/common/history.c:840 ../src/common/history.c:843
 #: ../src/common/history.c:859 ../src/common/styles.c:1079
 #: ../src/common/styles.c:1083 ../src/develop/blend_gui.c:121
-#: ../src/develop/develop.c:2023 ../src/iop/ashift.c:4789
+#: ../src/develop/develop.c:2026 ../src/iop/ashift.c:4789
 #: ../src/libs/live_view.c:435
 msgid "on"
 msgstr "activé(e)"
@@ -4902,6 +4912,34 @@ msgstr "opacité"
 msgid "set the opacity of the blending"
 msgstr "fixer l'opacité de la fusion"
 
+#: ../src/develop/blend_gui.c:2336
+msgid "combine masks"
+msgstr "combinaison des masques"
+
+#: ../src/develop/blend_gui.c:2337
+msgid ""
+"how to combine individual drawn mask and different channels of parametric "
+"mask"
+msgstr ""
+"comment combiner le masque dessiné et les différents canaux du masque "
+"paramétrique"
+
+#: ../src/develop/blend_gui.c:2341
+msgid "invert mask"
+msgstr "inverser le masque"
+
+#: ../src/develop/blend_gui.c:2342
+msgid "apply mask in normal or inverted mode"
+msgstr "applique le masque en mode normal ou inversé"
+
+#: ../src/develop/blend_gui.c:2346
+msgid "feathering guide"
+msgstr "guide adoucissement"
+
+#: ../src/develop/blend_gui.c:2347
+msgid "choose to guide mask by input or output image"
+msgstr "permet de guider le masque depuis l'image d'entrée ou de sortie"
+
 #: ../src/develop/blend_gui.c:2352
 msgid "feathering radius"
 msgstr "adoucissement du masque"
@@ -4960,7 +4998,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "amélioration du masque"
 
-#: ../src/develop/develop.c:1401
+#: ../src/develop/develop.c:1404
 msgid "display-referred default"
 msgstr "relatif à l'affichage"
 
@@ -4968,13 +5006,13 @@ msgstr "relatif à l'affichage"
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
 #. For scene-referred workflow (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1402 ../src/iop/exposure.c:283
+#: ../src/develop/develop.c:1406 ../src/iop/exposure.c:283
 #: ../src/iop/exposure.c:292 ../src/iop/filmicrgb.c:2366
 #: ../src/iop/filmicrgb.c:2399
 msgid "scene-referred default"
 msgstr "défaut pour relatif à la scène"
 
-#: ../src/develop/develop.c:1784
+#: ../src/develop/develop.c:1787
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : module « %s » version non cohérente : %d != %d"
@@ -6693,7 +6731,7 @@ msgid "select file to import"
 msgstr "sélectionne le fichier à importer"
 
 #: ../src/gui/preferences.c:1605 ../src/gui/preferences.c:1688
-#: ../src/libs/collect.c:355 ../src/libs/copy_history.c:101
+#: ../src/libs/collect.c:365 ../src/libs/copy_history.c:101
 #: ../src/libs/geotagging.c:475 ../src/libs/import.c:556
 #: ../src/libs/import.c:662 ../src/libs/styles.c:392
 msgid "_open"
@@ -14236,56 +14274,56 @@ msgstr "BdB"
 msgid "collect images"
 msgstr "filtres de collection"
 
-#: ../src/libs/collect.c:354
+#: ../src/libs/collect.c:364
 msgid "search filmroll"
 msgstr "rechercher une pellicule"
 
-#: ../src/libs/collect.c:440
+#: ../src/libs/collect.c:450
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr ""
 "problème lors de la sélection d'un nouveau chemin pour la pellicule située "
 "dans %s"
 
-#: ../src/libs/collect.c:492
+#: ../src/libs/collect.c:502
 msgid "search filmroll..."
 msgstr "rechercher une pellicule..."
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/collect.c:496
+#: ../src/libs/collect.c:506
 msgid "remove..."
 msgstr "enlever..."
 
-#: ../src/libs/collect.c:1138
+#: ../src/libs/collect.c:1148
 msgid "uncategorized"
 msgstr "sans catégorie"
 
-#: ../src/libs/collect.c:1558
+#: ../src/libs/collect.c:1568
 msgid "not tagged"
 msgstr "non positionnée"
 
-#: ../src/libs/collect.c:1570
+#: ../src/libs/collect.c:1580
 msgid "copied locally"
 msgstr "copiée localement"
 
-#: ../src/libs/collect.c:1672
+#: ../src/libs/collect.c:1682
 msgid "group followers"
 msgstr "membres du groupe"
 
-#: ../src/libs/collect.c:1932 ../src/libs/collect.c:1947
-#: ../src/libs/collect.c:2469
+#: ../src/libs/collect.c:1942 ../src/libs/collect.c:1957
+#: ../src/libs/collect.c:2479
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:1936
+#: ../src/libs/collect.c:1946
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:1992
+#: ../src/libs/collect.c:2002
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "entrer la requête, utiliser <, <=, >, >=, <>, =, [;] comme opérateurs"
 
-#: ../src/libs/collect.c:1997
+#: ../src/libs/collect.c:2007
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -14294,41 +14332,41 @@ msgstr ""
 "entrer les dates sous la forme : AAAA:MM:JJ HH:MM:SS (uniquement l'année est "
 "obligatoire)"
 
-#: ../src/libs/collect.c:2003
+#: ../src/libs/collect.c:2013
 #, no-c-format
 msgid "type your query, use `%' as wildcard and `,' to separate values"
 msgstr ""
 "saisissez votre requête, utilisez « % » en caractère joker et « , » pour "
 "séparer les valeurs"
 
-#: ../src/libs/collect.c:2008 ../src/libs/collect.c:2577
+#: ../src/libs/collect.c:2018 ../src/libs/collect.c:2587
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
 "saisissez votre requête,\n"
 "utilisez « % » en caractère joker"
 
-#: ../src/libs/collect.c:2475
+#: ../src/libs/collect.c:2485
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:2480
+#: ../src/libs/collect.c:2490
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:2485
+#: ../src/libs/collect.c:2495
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:2492
+#: ../src/libs/collect.c:2502
 msgid "change to: and"
 msgstr "changer en « et »"
 
-#: ../src/libs/collect.c:2497
+#: ../src/libs/collect.c:2507
 msgid "change to: or"
 msgstr "changer en « ou »"
 
-#: ../src/libs/collect.c:2502
+#: ../src/libs/collect.c:2512
 msgid "change to: except"
 msgstr "changer en « sauf »"
 
@@ -18322,28 +18360,6 @@ msgstr "action"
 
 #~ msgid "  b  "
 #~ msgstr "  b  "
-
-#~ msgid "combine masks"
-#~ msgstr "combinaison des masques"
-
-#~ msgid ""
-#~ "how to combine individual drawn mask and different channels of parametric "
-#~ "mask"
-#~ msgstr ""
-#~ "comment combiner le masque dessiné et les différents canaux du masque "
-#~ "paramétrique"
-
-#~ msgid "invert mask"
-#~ msgstr "inverser le masque"
-
-#~ msgid "apply mask in normal or inverted mode"
-#~ msgstr "applique le masque en mode normal ou inversé"
-
-#~ msgid "feathering guide"
-#~ msgstr "guide adoucissement"
-
-#~ msgid "choose to guide mask by input or output image"
-#~ msgstr "permet de guider le masque depuis l'image d'entrée ou de sortie"
 
 #~ msgid ""
 #~ "selected metadata are imported from image and override the default value"
