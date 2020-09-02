@@ -1269,6 +1269,7 @@ void dt_cleanup()
   free(darktable.opencl);
 #ifdef HAVE_GPHOTO2
   dt_camctl_destroy((dt_camctl_t *)darktable.camctl);
+  darktable.camctl = NULL;
 #endif
   dt_pwstorage_destroy(darktable.pwstorage);
 
