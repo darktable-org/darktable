@@ -1,0 +1,117 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="lighttable_options">
+
+    <title>Lighttable</title>
+    
+    <bridgehead renderas="sect5">color manage cached thumbnails</bridgehead>
+
+    <para>
+      If activated darktable generates thumbnails in a general color space (AdobeRGB) in order to
+      render them independently of the individual monitor. Conversion to the monitor color space
+      is done at display time. If this option is not activated thumbnails are directly stored in
+      the specific monitor color space valid at generation time and are subsequently displayed
+      without further corrections (default on).
+    </para>
+    
+    <bridgehead renderas="sect5">don't use embedded preview JPEG but half-size raw</bridgehead>
+
+    <para>
+      Check this option to not use the embedded JPEG from the raw file but process the raw data.
+      This is slower. (default off).
+    </para>
+
+    <bridgehead renderas="sect5">number of folder levels to show in lists</bridgehead>
+
+    <para>
+      The number of folder levels to show in film roll names, starting from the right (default 1).
+    </para>
+    
+    <bridgehead renderas="sect5">sort film rolls by</bridgehead>
+
+    <para>
+      Set the collection list order for film rolls.
+    </para>
+
+    <bridgehead renderas="sect5">sort collection recent to older</bridgehead>
+
+    <para>
+      Changes the default collections list for folders, times and dates to run from recent to older.
+    </para>
+
+    <bridgehead renderas="sect5">high quality thumb processing from size</bridgehead>
+
+    <para>
+      If the thumbnails size is greater than this value, it will be processed using the full
+      quality rendering path which is better but slower (default 720p).
+    </para>
+
+    <bridgehead renderas="sect5">delimiters for sizes categories</bridgehead>
+
+    <para>
+      Sizes categories are used to be able to set different overlays and css values depending of
+      the size of the thumbnail. Set here thumbnails sizes delimiters.
+    </para>
+
+    <bridgehead renderas="sect5">pattern for the thumbnail extended overlay text</bridgehead>
+
+    <para>
+      If enabled adds additional information to the thumbnail under the mouse cursor: image name,
+      exposure time, aperture, focal length, ISO value (default off).
+    </para>
+    
+    <bridgehead renderas="sect5">pattern for the thumbnail tooltip (empty to disable)</bridgehead>
+
+    <para>
+      Define the pattern for the thumbnail tooltip. Empty it to disable thumbnail tooltip. As for
+      previous pattern, see <xref linkend="session_options"/> for possible tags to use.
+    </para>
+    
+    <bridgehead renderas="sect5">use single-click in the collect panel</bridgehead>
+
+    <para>
+      (default off). In single-click mode, you can select range of value directly with the mouse.
+    </para>
+
+    <bridgehead renderas="sect5">overlay txt sidecar over zoomed images</bridgehead>
+
+    <para>
+      When there is a txt file next to an image, it can be shown as an overlay over zoomed images
+      on the lighttable. The txt file either has to be there at import time or the crawler  has to be enabled.
+    </para>
+
+    <bridgehead renderas="sect5">expand a single lighttable module at a time</bridgehead>
+
+    <para>
+      Controls how lighttable panels are expanded. If this option is enabled, expanding a panel by
+      <emphasis>clicking</emphasis> collapses any currently expanded panel. If you want to expand
+      a panel without collapsing the others you do so with <emphasis>Shift+click</emphasis>.
+      Disabling this option reverts the meaning of <emphasis>click</emphasis> and
+      <emphasis>Shift+click</emphasis> (default off).
+    </para>
+
+    <bridgehead renderas="sect5">scroll to lighttable modules when expanded/collapsed</bridgehead>
+
+    <para>
+      With this option enabled the lighttable side panels will scroll a module to the top when it
+      is expanded or collapsed (default off).
+    </para>
+
+    <bridgehead renderas="sect5">rating an image one star twice will not zero out the rating</bridgehead>
+
+    <para>
+      Normally clicking a one star rating twice will set a zero star rating to that image. When
+      checking this option a second click on a one star rating will keep that rating (default
+      off).
+    </para>
+
+    <bridgehead renderas="sect5">show scrollbars for central view</bridgehead>
+
+    <para>
+      Defines whether scrollbars should be display in central view.
+    </para>
+
+</sect1>

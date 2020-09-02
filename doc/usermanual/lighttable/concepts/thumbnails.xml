@@ -15,8 +15,8 @@
   <para>
     Each image of the current collection is represented by a thumbnail in the lighttable view.
     darktable keeps a cache of the last recently used thumbnails in a file on disk and loads it
-    into memory at startup. The size of this cache can be adjusted in the core preferences
-    dialog (see <xref linkend="core_options"/>).
+    into memory at startup. The size of this cache can be adjusted in the cpu / gpu / memory tab in preferences
+    dialog (see <xref linkend="cpugpumemory"/>).
   </para>
 
   <sect3 status="final" id="thumbnail_creation">
@@ -34,8 +34,8 @@
       where to take a thumbnail. darktable can either try to extract an embedded thumbnail out
       of the input image&nbsp;&ndash; most raw files contain these kind of thumbnails generated
       by the camera&nbsp;&ndash; or process the image by itself using default settings. You can
-      define how darktable gets its thumbnails in the GUI preferences dialog (see
-      <xref linkend="gui_options"/>).
+      define how darktable gets its thumbnails in the lighttable tab in preferences dialog (see
+      <xref linkend="lighttable_options"/>).
     </para>
 
     <para>
@@ -59,7 +59,7 @@
       As the thumbnail cache file has a pre-defined maximum size it will eventually get filled
       up. Then if new thumbnails are added, old ones need to be dropped. However, darktable will
       keep all thumbnails on disk if the corresponding disk backend option is activated in the
-      core preferences dialog (see <xref linkend="core_options"/>). Access to the thumbnails in
+      cpu / gpu / memory tab in preferences dialog (see <xref linkend="cpugpumemory"/>). Access to the thumbnails in
       this secondary cache is slower than to the ones in the primary cache, but still much
       faster than reprocessing thumbnails from scratch. The size of the secondary cache is only
       limited by disk space.
@@ -86,7 +86,7 @@
 
     <para>
       Starting with darktable 2.0 thumbnails are fully color managed if the corresponding option
-      is activated in the core preferences dialog (see <xref linkend="core_options"/>). Colors
+      is activated in the lighttable tab in preferences dialog (see <xref linkend="lighttable_options"/>). Colors
       are rendered accurately on screen as long as your system is properly set up to hand over
       the right monitor profile to darktable. For more information on color management see
       <xref linkend="color_management"/>.

@@ -1,0 +1,74 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="storage">
+
+  <title>Storage</title>
+
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>storage</secondary>
+  </indexterm>
+
+  <para>
+    These options control storage used by darktable.
+  </para>
+  
+  <sect2 id="database">
+
+    <title>database</title>
+
+    <bridgehead renderas="sect5">check for database maintenance</bridgehead>
+
+    <para>
+      This option indicates when to check database fragmentation and perform maintenance.
+    </para>
+
+    <bridgehead renderas="sect5">database fragmentation ratio treshold</bridgehead>
+
+    <para>
+      Fragmentation ratio above which to ask or carry out automatically database maintenance.
+    </para>
+
+  </sect2>
+  
+  <sect2 id="xmp">
+
+    <title>xmp</title>
+
+    <bridgehead renderas="sect5">write sidecar file for each image</bridgehead>
+
+    <para>
+      These redundant XMP files can later be re-imported into a different database, preserving
+      your changes to the image. It's strongly recommended to have this option activated so you
+      don't lose data in case of a database corruption. Backing up your raw file plus the
+      accompanying XMP file will allow you to fully restore your work (default on).
+    </para>
+
+    <bridgehead renderas="sect5">store xmp tags in compressed format</bridgehead>
+
+    <para>
+      Entries in XMP tags can get rather large and may exceed the available space to store the
+      history stack in output files on export. This option allows binary XMP tags to be compressed
+      in order to save space. Available options are <quote>never</quote>, <quote>always</quote>,
+      and <quote>only large entries</quote> (default).
+    </para>
+
+    <bridgehead renderas="sect5">look for updated xmp files on startup</bridgehead>
+
+    <para>
+      Check file modification times of all XMP files on startup to find out if any got updated in
+      the meantime by some other software. If updated XMP files are found a menu opens for the
+      user to decide which of the XMP files to be reloaded&nbsp;&ndash; replacing darktable's
+      database entries by the XMP file contents&nbsp;&ndash; and which of the XMP files to be
+      overwritten by darktable's database. Activating this option also causes darktable to check
+      for text sidecar files that have been added after import time&nbsp;&ndash; see option
+      <quote>overlay txt sidecar over zoomed images</quote> in <xref linkend="lighttable_options"/>
+      (default off).
+    </para>
+
+  </sect2>
+
+</sect1>

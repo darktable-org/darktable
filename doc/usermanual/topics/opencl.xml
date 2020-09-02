@@ -116,7 +116,7 @@
     <para>
       Per default OpenCL support is activated in darktable if all the above steps were
       successful. If you want to de-activate it you can do so in <quote>core options</quote>
-      (<xref linkend="core_options"/>) by unchecking <quote>activate opencl support</quote>.
+      (<xref linkend="cpugpumemory"/>) by unchecking <quote>cpu / gpu / memory</quote>.
       This configuration parameter also tells you if OpenCL initialization failed: it is greyed
       out in that case.
     </para>
@@ -683,7 +683,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
       darktable can use the CPU and one or several OpenCL capable GPUs. Depending on the
       relative performance users can choose among certain scheduling profiles to optimize
       performance. This is done by the configuration parameter <quote>OpenCL scheduling
-      profile</quote> in the <quote>core options</quote> dialog (<xref linkend="core_options"/>)
+      profile</quote> in the <quote>cpu / gpu / memory</quote> dialog (<xref linkend="cpugpumemory"/>)
       which offers the following choices:
     </para>
 
@@ -737,7 +737,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     <para>
       On first start-up or after any detected change in the GPU configuration of your system
       darktable tries to identify the best suited profile for you. You can change it at any time
-      in the <quote>core options</quote> dialog (<xref linkend="core_options"/>) with immediate
+      in the <quote>cpu / gpu / memory</quote> dialog (<xref linkend="cpugpumemory"/>) with immediate
       effect.
     </para>
 

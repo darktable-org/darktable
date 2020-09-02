@@ -73,14 +73,14 @@
       <para>
         Eliminate the selected images from the darktable database and remove the image files
         from their respective locations. Depending on the setting of config parameter
-        <quote>send files to trash when erasing images</quote> (<xref linkend="gui_options"/>)
+        <quote>send files to trash when erasing images</quote> (<xref linkend="security"/>)
         this either irrevocably deletes the images from filesystem or puts them into your
         system's trash bin.
       </para>
 
       <para>
         See also preference option <quote>ask before erasing images from disk</quote>
-        (<xref linkend="gui_options"/>). If this configuration option is not active, darktable
+        (<xref linkend="security"/>). If this configuration option is not active, darktable
         will delete/trash the file(s) without further question.
       </para>
 

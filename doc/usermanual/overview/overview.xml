@@ -522,7 +522,7 @@
 
             <listitem><para>
               A flag that defines whether to use high quality resampling during export (see
-              <xref linkend="core_options"/>). Defaults to true.
+              <xref linkend="darkroom_options"/>). Defaults to true.
             </para></listitem>
 
           </varlistentry>
