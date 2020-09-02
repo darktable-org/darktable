@@ -397,7 +397,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
-        thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
+        if(thumb->zoom > 1.0f) thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
         res = dt_view_image_get_surface(thumb->imgid, image_w * thumb->zoom, image_h * thumb->zoom, &img_surf, FALSE);
       }
       else
