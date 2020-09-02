@@ -1394,15 +1394,17 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "        AND (format = 0 OR format&?11!=0)"
            "        AND operation NOT IN"
            "            ('ioporder', 'modulelist', 'metadata', 'export', 'tagging', 'collect', '%s'))"
-           "  OR (name = '%s')"
+           "  OR (name = ?12)"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            preset_table[legacy],
-           is_display_referred?"":"basecurve",
-           is_display_referred?_("display-referred default")
-           :(is_scene_referred?_("scene-referred default")
-           :"\t\n"));
+           is_display_referred?"":"basecurve");
   // query for all modules at once:
   sqlite3_stmt *stmt;
+  const char *workflow_preset = is_display_referred
+                                ? _("display-referred default")
+                                : (is_scene_referred
+                                   ?_("scene-referred default")
+                                   :"\t\n");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
@@ -1417,6 +1419,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // 0: dontcare, 1: ldr, 2: raw
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11,
                                dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR));
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 12, workflow_preset, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
