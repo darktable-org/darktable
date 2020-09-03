@@ -436,7 +436,7 @@ void expose(
     else
     {
       fontsize = DT_PIXEL_APPLY_DPI(14);
-      load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading"), dev->image_storage.filename);
+      load_txt = dt_util_dstrcat(NULL, "%s `%s' ...", _("loading"), dev->image_storage.filename);
     }
 
     pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
