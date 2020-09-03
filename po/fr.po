@@ -1905,7 +1905,7 @@ msgstr "sans couleur"
 #: ../build/src/preferences_gen.h:3031
 msgctxt "preferences"
 msgid "illuminant color"
-msgstr "coleur de l'illuminant"
+msgstr "couleur de l'illuminant"
 
 #: ../build/src/preferences_gen.h:3036
 msgctxt "preferences"
