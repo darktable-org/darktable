@@ -2998,6 +2998,9 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
 
 void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
 {
+  if(!g_strcmp0(db->dbfilename_data, ":memory:") || !g_strcmp0(db->dbfilename_library, ":memory:"))
+    return;
+
   char *config = dt_conf_get_string("database/maintenance_check");
 
   if(!g_strcmp0(config, "never"))
@@ -3072,6 +3075,8 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
 
 void dt_database_optimize(const struct dt_database_t *db)
 {
+  if(!g_strcmp0(db->dbfilename_data, ":memory:") || !g_strcmp0(db->dbfilename_library, ":memory:"))
+    return;
   // optimize should in most cases be no-op and have no noticeable downsides
   // this should be ran on every exit
   // see: https://www.sqlite.org/pragma.html#pragma_optimize
