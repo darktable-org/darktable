@@ -425,7 +425,7 @@ void expose(
           _("darktable could not load"),
           dev->image_storage.filename,
           _("switching to lighttable now."),
-          _("Please check the image (use exiv2 or exiftool) for corrupted data. If the image seems to"),
+          _("please check the image (use exiv2 or exiftool) for corrupted data. if the image seems to"),
           _("be intact, please consider opening an issue at https://github.com/darktable-org/darktable.") );
       if(dev->image_invalid_cnt > 400)
       {
