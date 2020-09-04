@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-02 20:16+0200\n"
-"PO-Revision-Date: 2020-09-02 20:18+0200\n"
+"POT-Creation-Date: 2020-09-04 08:22+0200\n"
+"PO-Revision-Date: 2020-09-04 08:22+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4998,7 +4998,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "amélioration du masque"
 
-#: ../src/develop/develop.c:1404
+#: ../src/develop/develop.c:1406
 msgid "display-referred default"
 msgstr "relatif à l'affichage"
 
@@ -5006,7 +5006,7 @@ msgstr "relatif à l'affichage"
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
 #. For scene-referred workflow (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1406 ../src/iop/exposure.c:283
+#: ../src/develop/develop.c:1408 ../src/iop/exposure.c:283
 #: ../src/iop/exposure.c:292 ../src/iop/filmicrgb.c:2366
 #: ../src/iop/filmicrgb.c:2399
 msgid "scene-referred default"
@@ -17495,9 +17495,33 @@ msgstr "double-cliquer pour réinitialiser à « %f »"
 msgid "lua options"
 msgstr "options lua"
 
+#: ../src/views/darkroom.c:425
+msgid "darktable could not load"
+msgstr "darktable ne peut pas ouvrir l'image"
+
+#: ../src/views/darkroom.c:427
+msgid "switching to lighttable now."
+msgstr "retour vers la table lumineuse"
+
+#: ../src/views/darkroom.c:428
+msgid ""
+"please check the image (use exiv2 or exiftool) for corrupted data. if the "
+"image seems to"
+msgstr ""
+"vérifiez (avec exiv2 or exiftool) que l'image n'est pas corrompue. si "
+"l'image semble intacte"
+
+#: ../src/views/darkroom.c:429
+msgid ""
+"be intact, please consider opening an issue at https://github.com/darktable-"
+"org/darktable."
+msgstr ""
+"alors considérez l'ouverture d'un ticket ici https://github.com/darktable-"
+"org/darktable."
+
 #: ../src/views/darkroom.c:439
-msgid "loading image"
-msgstr "chargement de l'image"
+msgid "loading"
+msgstr "chargement"
 
 #: ../src/views/darkroom.c:655
 msgid "gamut check"
