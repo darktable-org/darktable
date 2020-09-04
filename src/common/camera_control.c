@@ -650,6 +650,14 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam)
   g_free(cam);
 }
 
+static void dt_camctl_locked_camera_destroy(dt_camera_locked_t *cam)
+{
+  if(!cam) return;
+  g_free(cam->model);
+  g_free(cam->port);
+  g_free(cam);
+}
+
 void dt_camctl_destroy(dt_camctl_t *camctl)
 {
   if(!camctl) return;
@@ -657,6 +665,11 @@ void dt_camctl_destroy(dt_camctl_t *camctl)
   for(GList *it = g_list_first(camctl->cameras); it != NULL; it = g_list_delete_link(it, it))
   {
     dt_camctl_camera_destroy((dt_camera_t *)it->data);
+  }
+  // Go thru all c->locked_cameras and free them
+  for(GList *itl = g_list_first(camctl->locked_cameras); itl != NULL; itl = g_list_delete_link(itl, itl))
+  {
+    dt_camctl_locked_camera_destroy((dt_camera_locked_t *)itl->data);
   }
   gp_context_unref(camctl->gpcontext);
   gp_abilities_list_free(camctl->gpcams);
@@ -720,14 +733,11 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] loaded %d port drivers.\n",
            gp_port_info_list_count(camctl->gpports));
 
-
-
   CameraList *available_cameras = NULL;
   gp_list_new(&available_cameras);
   gp_abilities_list_detect(c->gpcams, c->gpports, available_cameras, c->gpcontext);
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] %d cameras connected\n",
            gp_list_count(available_cameras) > 0 ? gp_list_count(available_cameras) : 0);
-
 
   for(int i = 0; i < gp_list_count(available_cameras); i++)
   {
@@ -754,11 +764,22 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
           dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to initialize device %s on port %s, probably "
                                     "causes are: locked by another application, no access to udev etc.\n",
                    camera->model, camera->port);
+          /* Ok we found a new camera but it is not available so we keep track of it */
+          dt_camera_locked_t *locked_camera = g_malloc0(sizeof(dt_camera_locked_t));
+          locked_camera->model = g_strdup(camera->model);
+          locked_camera->port = g_strdup(camera->port);
+          camctl->locked_cameras = g_list_append(camctl->locked_cameras, locked_camera);
+
           dt_camctl_camera_destroy(camera);
           continue;
         }
         else
         {
+          dt_camera_locked_t *locked_camera = g_malloc0(sizeof(dt_camera_locked_t));
+          locked_camera->model = g_strdup(camera->model);
+          locked_camera->port = g_strdup(camera->port);
+          camctl->locked_cameras = g_list_append(camctl->locked_cameras, locked_camera);
+
           changed_camera = TRUE;
           dt_print(DT_DEBUG_CAMCTL, "[camera_control] new camera initialized device %s on port %s.\n",
                    camera->model, camera->port);
