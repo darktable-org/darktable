@@ -24,6 +24,7 @@
 #include <strings.h>
 #include <unistd.h>
 
+#include "common/atomic.h"
 #include "common/debug.h"
 #include "common/history.h"
 #include "common/image_cache.h"
