@@ -79,6 +79,8 @@ typedef struct dt_lib_import_t
   GtkButton *tethered_shoot;
 
   GtkBox *devices;
+  GtkBox *locked_devices;
+
 #ifdef USE_LUA
   GtkWidget *extra_lua_widgets;
 #endif
@@ -172,7 +174,13 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
   g_list_free(item);
 
-  uint32_t count = 0;
+  if((iter = item = gtk_container_get_children(GTK_CONTAINER(d->locked_devices))) != NULL) do
+    {
+      gtk_container_remove(GTK_CONTAINER(d->locked_devices), GTK_WIDGET(iter->data));
+    } while((iter = g_list_next(iter)) != NULL);
+
+  g_list_free(item);
+
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
   dt_pthread_mutex_lock(&camctl->lock);
 
@@ -183,8 +191,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     do
     {
       dt_camera_t *camera = (dt_camera_t *)citem->data;
-      count++;
-
+ 
       /* add camera label */
       GtkWidget *label = dt_ui_section_label_new(camera->model);
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
@@ -232,8 +239,27 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     } while((citem = g_list_next(citem)) != NULL);
   }
+
+  if((citem = g_list_first(camctl->locked_cameras)) != NULL)
+  {
+    // Add detected but locked devices
+    char buffer[512] = { 0 };
+    do
+    {
+      dt_camera_locked_t *camera = (dt_camera_locked_t *)citem->data;
+
+      snprintf(buffer, sizeof(buffer), "Locked: %s on\n%s", camera->model, camera->port);
+
+      /* add camera label */
+      GtkWidget *label = dt_ui_section_label_new(buffer);
+      gtk_box_pack_start(GTK_BOX(d->locked_devices), label, FALSE, FALSE, 0);
+
+    } while((citem = g_list_next(citem)) != NULL);
+  }
+
   dt_pthread_mutex_unlock(&camctl->lock);
   gtk_widget_show_all(GTK_WIDGET(d->devices));
+  gtk_widget_show_all(GTK_WIDGET(d->locked_devices));
 }
 
 /** camctl status listener callback */
@@ -757,7 +783,11 @@ void gui_init(dt_lib_module_t *self)
   d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
 
-  _lib_import_ui_devices_update(self);
+   /* add devices container for locked cameras */
+  d->locked_devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->locked_devices), FALSE, FALSE, 0);
+
+ _lib_import_ui_devices_update(self);
 
   /* initialize camctl listener and update devices */
   d->camctl_listener.data = self;

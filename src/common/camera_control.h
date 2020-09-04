@@ -107,6 +107,15 @@ typedef struct dt_camera_t
   dt_pthread_mutex_t live_view_synch;
 } dt_camera_t;
 
+/** A dummy camera object used for locked cameras */
+typedef struct dt_camera_locked_t
+{
+  /** A pointer to the model string of camera. */
+  char *model;
+  /** A pointer to the port string of camera. */
+  char *port;
+} dt_camera_locked_t;
+
 /** Camera control status.
   These enumerations are passed back to host application using
   listener interface function control_status().
@@ -148,6 +157,8 @@ typedef struct dt_camctl_t
   GList *listeners;
   /** List of cameras found and initialized by camera control.*/
   GList *cameras;
+  /** List of locked cameras found */
+  GList *locked_cameras;
 
   /** The actual gphoto2 context */
   GPContext *gpcontext;
