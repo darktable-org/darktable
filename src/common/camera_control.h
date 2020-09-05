@@ -234,7 +234,9 @@ void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *l
 /** start a thread job to detect cameras and update list of available cameras */
 void dt_camctl_background_detect_cameras();
 /** Check if there is any camera connected */
-int dt_camctl_have_cameras(const dt_camctl_t *c);
+gboolean dt_camctl_have_cameras(const dt_camctl_t *c);
+/** Check if there is any camera locked  */
+gboolean dt_camctl_have_locked_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Can tether...*/

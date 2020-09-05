@@ -680,9 +680,14 @@ void dt_camctl_destroy(dt_camctl_t *camctl)
 }
 
 
-int dt_camctl_have_cameras(const dt_camctl_t *c)
+gboolean dt_camctl_have_cameras(const dt_camctl_t *c)
 {
-  return (g_list_length(c->cameras) > 0) ? 1 : 0;
+  return (g_list_length(c->cameras) > 0) ? TRUE : FALSE;
+}
+
+gboolean dt_camctl_have_locked_cameras(const dt_camctl_t *c)
+{
+  return (g_list_length(c->locked_cameras) > 0) ? TRUE : FALSE;
 }
 
 void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener)
@@ -812,7 +817,7 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
   }
 
   /* check c->cameras in available_cameras */
-  if(c->cameras && g_list_length(c->cameras) > 0)
+  if(dt_camctl_have_cameras(camctl))
   {
     GList *citem = c->cameras;
     do
@@ -842,7 +847,7 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
   }
 
   /* check c->locked_cameras in available_cameras */
-  if(c->locked_cameras && g_list_length(c->locked_cameras) > 0)
+  if(dt_camctl_have_locked_cameras(camctl))
   {
     GList *c_lock_item = c->locked_cameras;
     do
@@ -874,8 +879,7 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
   gp_list_unref(available_cameras);
 
   /* check c->cameras in locked_cameras */
-  if((c->cameras && g_list_length(c->cameras) > 0) &&
-     (c->locked_cameras && g_list_length(c->locked_cameras) > 0))
+  if( (dt_camctl_have_cameras(camctl)) && (dt_camctl_have_locked_cameras(camctl)) )
   {
     GList *c_lock_item = c->locked_cameras;
     do
