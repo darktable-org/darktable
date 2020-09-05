@@ -580,6 +580,12 @@ overshoot.right
   margin: 8px 0px;
 }
 
+#left #lib-plugin-ui #lib-collect-entry
+{
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
 #left #lib-plugin-ui scrolledwindow entry /* this will avoid having too much height on entry items in clone manager without touching other parts of the UI */
 {
   padding: 0px;
