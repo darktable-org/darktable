@@ -1024,6 +1024,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->defpos = 0;
   d->active = -1;
   d->editable = 0;
+  d->scale = 1;
   d->entries_ellipsis = PANGO_ELLIPSIZE_END;
   memset(d->text, 0, sizeof(d->text));
 
@@ -1103,6 +1104,14 @@ int dt_bauhaus_combobox_get_editable(GtkWidget *widget)
   if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   return d->editable;
+}
+
+void dt_bauhaus_combobox_set_popup_scale(GtkWidget *widget, const int scale)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->scale = scale;
 }
 
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
@@ -1703,6 +1712,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       const int hovered = darktable.bauhaus->mouse_y / ht;
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
       const PangoEllipsizeMode ellipsis = d->entries_ellipsis;
+      wd *= d->scale;
       for(GList *it = d->entries; it; it = g_list_next(it))
       {
         const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)it->data;
@@ -1973,6 +1983,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       if(!d->num_labels) return;
       tmp.height = inner_height(tmp) * d->num_labels + 2 * INNER_PADDING;
+      tmp.width *= d->scale;
       GtkAllocation allocation_w;
       gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
       const int ht = allocation_w.height;

@@ -111,6 +111,7 @@ typedef struct dt_bauhaus_combobox_data_t
   int active;         // currently active element
   int defpos;         // default position
   int editable;       // 1 if arbitrary text may be typed
+  int scale;          // scale of the combo popup from combo widget
   char text[180];     // roughly as much as a slider
   PangoEllipsizeMode entries_ellipsis;
   GList *entries;
@@ -319,6 +320,7 @@ void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bau
                                      gpointer data, void (*free_func)(void *data), int pos);
 int dt_bauhaus_combobox_length(GtkWidget *widget);
 void dt_bauhaus_combobox_set_editable(GtkWidget *w, int editable);
+void dt_bauhaus_combobox_set_popup_scale(GtkWidget *widget, int scale);
 int dt_bauhaus_combobox_get_editable(GtkWidget *w);
 const char *dt_bauhaus_combobox_get_text(GtkWidget *w);
 void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
