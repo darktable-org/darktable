@@ -53,11 +53,9 @@ typedef struct dt_iop_rawprepare_params_t
 
 typedef struct dt_iop_rawprepare_gui_data_t
 {
-  GtkWidget *box_raw;
   GtkWidget *black_level_separate[4];
   GtkWidget *white_point;
   GtkWidget *x, *y, *width, *height;
-  GtkWidget *label_non_raw;
 } dt_iop_rawprepare_gui_data_t;
 
 typedef struct dt_iop_rawprepare_data_t
@@ -775,15 +773,14 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_slider_set_soft(g->height, p->height);
   }
 
-  gtk_widget_set_visible(g->box_raw      ,  self->default_enabled);
-  gtk_widget_set_visible(g->label_non_raw, !self->default_enabled);
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_rawprepare_gui_data_t *g = IOP_GUI_ALLOC(rawprepare);
 
-  g->box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   for(int i = 0; i < 4; i++)
   {
@@ -823,14 +820,15 @@ void gui_init(dt_iop_module_t *self)
   }
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
+  
+  GtkWidget *label_non_raw = gtk_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
+  gtk_widget_set_halign(label_non_raw, GTK_ALIGN_START);
+  gtk_label_set_ellipsize(GTK_LABEL(label_non_raw), PANGO_ELLIPSIZE_END);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
-
-  g->label_non_raw
-      = gtk_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
-  gtk_widget_set_halign(g->label_non_raw, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->label_non_raw, FALSE, FALSE, 0);
+  gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
+  gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
