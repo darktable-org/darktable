@@ -942,7 +942,8 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(c->channel_tabs, _("G"), NULL);
   dt_ui_notebook_page(c->channel_tabs, _("B"), NULL);
 
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
+  gtk_widget_show_all(GTK_WIDGET(c->channel_tabs));
+  gtk_notebook_set_current_page(c->channel_tabs, c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
 
   const int ch = (int)c->channel;
@@ -1010,6 +1011,7 @@ void gui_init(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", c->channel);
   dt_draw_curve_destroy(c->transition_curve);
   dt_iop_cancel_history_update(self);
   free(self->gui_data);

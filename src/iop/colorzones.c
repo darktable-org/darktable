@@ -817,7 +817,7 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
                                const float *const picker_max)
 {
   if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) || 
+     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
   {
     // the global live samples ...
@@ -909,7 +909,7 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
   }
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) || 
+     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
   {
     // draw marker for currently selected color:
@@ -2364,6 +2364,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_ui_notebook_page(c->channel_tabs, _("saturation"), NULL);
   dt_ui_notebook_page(c->channel_tabs, _("hue"), NULL);
 
+  gtk_widget_show_all(GTK_WIDGET(c->channel_tabs));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(_channel_tabs_switch_callback), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), TRUE, TRUE, 0);
