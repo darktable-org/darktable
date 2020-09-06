@@ -1548,9 +1548,10 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
     {
       // only set to what's in the filtered list.
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-      int active = darktable.bauhaus->end_mouse_y >= 0
-                       ? (darktable.bauhaus->end_mouse_y / (base_height))
-                       : d->active;
+      const int active = darktable.bauhaus->end_mouse_y >= 0
+                             ? (darktable.bauhaus->end_mouse_y / (darktable.bauhaus->line_height))
+                             : d->active;
+
       int k = 0, i = 0, kk = 0, match = 1;
 
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
@@ -1709,10 +1710,11 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       gboolean first_label = TRUE;
       gboolean show_box_label = TRUE;
       int k = 0, i = 0;
-      const int hovered = darktable.bauhaus->mouse_y / ht;
+      const int hovered = darktable.bauhaus->mouse_y / darktable.bauhaus->line_height;
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
       const PangoEllipsizeMode ellipsis = d->entries_ellipsis;
       wd *= d->scale;
+      ht = darktable.bauhaus->line_height;
       for(GList *it = d->entries; it; it = g_list_next(it))
       {
         const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)it->data;
@@ -1982,13 +1984,14 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       darktable.bauhaus->change_active = 1;
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       if(!d->num_labels) return;
-      tmp.height = inner_height(tmp) * d->num_labels + 2 * INNER_PADDING;
+      tmp.height = darktable.bauhaus->line_height * d->num_labels + 2 * INNER_PADDING;
       tmp.width *= d->scale;
+
       GtkAllocation allocation_w;
       gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
       const int ht = allocation_w.height;
       const int skip = ht + get_line_height();
-      offset = -d->active * get_line_height();
+      offset = -d->active * darktable.bauhaus->line_height;
       darktable.bauhaus->mouse_x = 0;
       darktable.bauhaus->mouse_y = d->active * skip + ht / 2;
       break;
