@@ -510,7 +510,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   const int wf_height = d->waveform_height;
   const int wf_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
   const float (*const primaries_linear)[3][4] = &d->primaries_linear;
-  float *const wf_linear = d->waveform_linear;
+  const float *const wf_linear = d->waveform_linear;
   float *const wf_display = d->waveform_display;
   uint8_t *const wf_8bit = d->waveform_8bit;
 
@@ -540,11 +540,12 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   shared(wf_8bit) aligned(wf_8bit, wf_display:64) \
   schedule(simd:static) collapse(2)
 #endif
+  // FIXME: we could do this in place in wf_display, but it'd require care w/OpenMP
   for(int y = 0; y < wf_height; y++)
     for(int x = 0; x < wf_width; x++)
       for(int k = 0; k < 4; k++)
-        // FIXME: we could do this in place, but it'd require care w/OpenMP
-        wf_8bit[(y * wf_stride + x * 4) + k] = wf_display[4 * (y * wf_width + x) + k] * 255.0f;
+        // linear -> display transform can return pixels > 1, hence limit these
+        wf_8bit[(y * wf_stride + x * 4) + k] = MIN(255, (int)(wf_display[4 * (y * wf_width + x) + k] * 255.0f));
 
   cairo_surface_t *source
     = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_ARGB32,
