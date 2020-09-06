@@ -226,8 +226,7 @@ typedef struct dt_bauhaus_t
   GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border, indicator_border, color_fill;
 
   // colors for graphs
-  GdkRGBA graph_bg, graph_border, graph_fg, graph_grid, graph_fg_active, graph_overlay, inset_histogram,
-    graph_red, graph_green, graph_blue;
+  GdkRGBA graph_bg, graph_border, graph_fg, graph_grid, graph_fg_active, graph_overlay, inset_histogram;
 } dt_bauhaus_t;
 
 #define DT_BAUHAUS_SPACE 0

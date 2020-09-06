@@ -156,15 +156,6 @@
 @define-color graph_grid @grey_05;
 @define-color graph_overlay @grey_50;
 @define-color inset_histogram alpha(@grey_65, 0.50);
-/* colors for histograms, assumed to be in sRGB */
-/* constraints:
-   * graph_red, graph_green, graph_blue should be perceived as these primary colors
-   * the sum of pairs of colors should be perceived as secondary colors
-   * the sum of all three colors should appear white
-*/
-@define-color graph_red rgb(100%,0%,0%);
-@define-color graph_green rgb(0%, 100%, 0%);
-@define-color graph_blue rgb(0%, 0%, 100%);
 
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
 *

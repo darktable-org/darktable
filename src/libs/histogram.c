@@ -483,7 +483,9 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   return TRUE;
 }
 
-static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
+static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
+                                          int width, int height, const uint8_t mask[3],
+                                          const float rgb[3][4])
 {
   if(!d->histogram_max) return;
   const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
@@ -495,11 +497,9 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, in
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      cairo_set_source_rgba(cr, k == 0 ? 1. : 0., k == 1 ? 1. : 0., k == 2 ? 1. : 0., 0.5);
+      cairo_set_source_rgba(cr, rgb[2-k][2], rgb[2-k][1], rgb[2-k][0], 0.5);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
-  // FIXME: this does nothing?
-  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 }
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
@@ -685,12 +685,11 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
-  // FIXME: if these are simply the sRGB primaries, just use those primaries rather than loading from CSS
-  const float DT_ALIGNED_ARRAY graph_rgb_srgb[3][4] = {
-    {darktable.bauhaus->graph_blue.blue, darktable.bauhaus->graph_blue.green, darktable.bauhaus->graph_blue.red, 0.0f},
-    {darktable.bauhaus->graph_green.blue, darktable.bauhaus->graph_green.green, darktable.bauhaus->graph_green.red, 0.0f},
-    {darktable.bauhaus->graph_red.blue, darktable.bauhaus->graph_red.green, darktable.bauhaus->graph_red.red, 0.0f},
-};
+  const float DT_ALIGNED_ARRAY graph_rgb_srgb[3][4] = { // all colors as BGRA
+    {1, 0, 0, 1}, // blue
+    {0, 1, 0, 1}, // green
+    {0, 0, 1, 1}  // red
+  };
   // FIXME: is there a better intent than perceptual? and if so will we need to use LCMS2 -- as ioppr ignores intent?
   // FIXME: just use LCMS, as these are quick transforms and might as well take the extra accuracy, and less perf logging to stderr?
   const dt_iop_order_iccprofile_info_t *const profile_display =
@@ -715,7 +714,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     switch(d->scope_type)
     {
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        _lib_histogram_draw_histogram(d, cr, width, height, mask);
+        _lib_histogram_draw_histogram(d, cr, width, height, mask, graph_rgb_display);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
