@@ -107,12 +107,13 @@ typedef struct dt_bauhaus_combobox_entry_t
 
 typedef struct dt_bauhaus_combobox_data_t
 {
-  int num_labels;     // number of elements
-  int active;         // currently active element
-  int defpos;         // default position
-  int editable;       // 1 if arbitrary text may be typed
-  int scale;          // scale of the combo popup from combo widget
-  char text[180];     // roughly as much as a slider
+  int num_labels;       // number of elements
+  int active;           // currently active element
+  int defpos;           // default position
+  int editable;         // 1 if arbitrary text may be typed
+  int scale;            // scale of the combo popup from combo widget
+  dt_bauhaus_combobox_alignment_t text_align; // if selected text in combo should be aligned to the left/right
+  char text[180];       // roughly as much as a slider
   PangoEllipsizeMode entries_ellipsis;
   GList *entries;
 } dt_bauhaus_combobox_data_t;
@@ -205,9 +206,9 @@ typedef struct dt_bauhaus_t
   // appearance relevant stuff:
   // sizes and fonts:
   float scale;                           // gui scale multiplier
-  float widget_space;                      // space between widgets in a module
-  float line_space;                        // space between lines of text in e.g. the combo box
-  float line_height;                       // height of a line of text
+  float widget_space;                    // space between widgets in a module
+  float line_space;                      // space between lines of text in e.g. the combo box
+  float line_height;                     // height of a line of text
   float marker_size;                     // height of the slider indicator
   float baseline_size;                   // height of the slider bar
   float border_width;                    // width of the border of the slider marker
@@ -321,6 +322,7 @@ void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bau
 int dt_bauhaus_combobox_length(GtkWidget *widget);
 void dt_bauhaus_combobox_set_editable(GtkWidget *w, int editable);
 void dt_bauhaus_combobox_set_popup_scale(GtkWidget *widget, int scale);
+void dt_bauhaus_combobox_set_selected_text_align(GtkWidget *widget, const dt_bauhaus_combobox_alignment_t text_align);
 int dt_bauhaus_combobox_get_editable(GtkWidget *w);
 const char *dt_bauhaus_combobox_get_text(GtkWidget *w);
 void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);

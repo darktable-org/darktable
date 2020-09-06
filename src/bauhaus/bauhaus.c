@@ -1028,6 +1028,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->active = -1;
   d->editable = 0;
   d->scale = 1;
+  d->text_align = DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT;
   d->entries_ellipsis = PANGO_ELLIPSIZE_END;
   memset(d->text, 0, sizeof(d->text));
 
@@ -1115,6 +1116,14 @@ void dt_bauhaus_combobox_set_popup_scale(GtkWidget *widget, const int scale)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->scale = scale;
+}
+
+void dt_bauhaus_combobox_set_selected_text_align(GtkWidget *widget, const dt_bauhaus_combobox_alignment_t text_align)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->text_align = text_align;
 }
 
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
@@ -1727,7 +1736,6 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         {
           float max_width = wd - INNER_PADDING - darktable.bauhaus->quad_width;
           if(first_label) max_width *= 0.8; // give the label at least some room
-
           float label_width;
           if(!entry->sensitive)
             set_color(cr, text_color_insensitive);
@@ -1889,18 +1897,27 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
       if((label_width + combo_width) > available_width)
       {
         //they don't fit: evenly divide the available width between the two in proportion
-        float ratio = label_width / (label_width + combo_width);
-        show_pango_text(w, context, cr, w->label, 0, 0,  available_width * ratio - INNER_PADDING * 2,
+        const float ratio = label_width / (label_width + combo_width);
+        show_pango_text(w, context, cr, w->label, 0, 0, available_width * ratio - INNER_PADDING * 2,
                         FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
-        show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0,
-                        available_width * (1.0f - ratio),
-                        TRUE, FALSE, combo_ellipsis, FALSE);
+        if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
+          show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0,
+                          available_width * (1.0f - ratio),
+                          TRUE, FALSE, combo_ellipsis, FALSE);
+        else
+          show_pango_text(w, context, cr, text, INNER_PADDING, 0,
+                          available_width * (1.0f - ratio),
+                          FALSE, FALSE, combo_ellipsis, FALSE);
       }
       else
       {
         show_pango_text(w, context, cr, w->label, 0, 0, 0, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
-        show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0, 0,
-                        TRUE, FALSE, combo_ellipsis, FALSE);
+        if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
+          show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0, 0,
+                          TRUE, FALSE, combo_ellipsis, FALSE);
+        else
+          show_pango_text(w, context, cr, text, INNER_PADDING, 0, 0,
+                          FALSE, FALSE, combo_ellipsis, FALSE);
       }
       break;
     }
