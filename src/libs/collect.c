@@ -2586,6 +2586,7 @@ void gui_init(dt_lib_module_t *self)
 
     d->rule[i].combo = dt_bauhaus_combobox_new(NULL);
     dt_bauhaus_combobox_set_popup_scale(d->rule[i].combo, 2);
+    dt_bauhaus_combobox_set_selected_text_align(d->rule[i].combo, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     _populate_collect_combo(d->rule[i].combo);
 
     g_signal_connect(G_OBJECT(d->rule[i].combo), "value-changed", G_CALLBACK(combo_changed), d->rule + i);
