@@ -361,6 +361,14 @@ static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
   return label;
 };
 
+static inline GtkWidget *dt_ui_label_new(const gchar *str)
+{
+  GtkWidget *label = gtk_label_new(str);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  return label;
+};
+
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
 
 static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)

@@ -692,7 +692,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
         if(bd->masks_shown == DT_MASKS_EDIT_OFF) dt_masks_set_edit_mode(self, DT_MASKS_EDIT_FULL);
 
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
-                                     (bd->masks_shown != DT_MASKS_EDIT_OFF) 
+                                     (bd->masks_shown != DT_MASKS_EDIT_OFF)
                                      && (darktable.develop->gui_module == self));
       }
       else
@@ -776,10 +776,8 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *label = gtk_label_new(_("number of strokes:"));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-  g->label = GTK_LABEL(gtk_label_new("-1"));
+  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("number of strokes:")), FALSE, TRUE, 0);
+  g->label = GTK_LABEL(dt_ui_label_new("-1"));
   gtk_widget_set_tooltip_text(hbox, _("click on a shape and drag on canvas.\nuse the mouse wheel "
                                       "to adjust size.\nright click to remove a shape."));
 

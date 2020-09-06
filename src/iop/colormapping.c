@@ -1058,19 +1058,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkWidget *source = gtk_label_new(_("source clusters:"));
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(source), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("source clusters:")), TRUE, TRUE, 0);
 
   g->source_area = dtgtk_drawing_area_new_with_aspect_ratio(1.0 / 3.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->source_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->source_area), "draw", G_CALLBACK(cluster_preview_draw), self);
 
-  GtkBox *hbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkWidget *target = gtk_label_new(_("target clusters:"));
-  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(target), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("target clusters:")), TRUE, TRUE, 0);
 
   g->target_area = dtgtk_drawing_area_new_with_aspect_ratio(1.0 / 3.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_area, TRUE, TRUE, 0);

@@ -1435,8 +1435,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(grid, g->color_picker_button, g->colorpick, GTK_POS_RIGHT, 1, 1);
 
   // Simple text
-  label = gtk_label_new(_("text"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  label = dt_ui_label_new(_("text"));
   g->text = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
   gtk_widget_set_tooltip_text(g->text, _("text string, tag:\n$(WATERMARK_TEXT)"));

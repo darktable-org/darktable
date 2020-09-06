@@ -271,9 +271,9 @@ void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(scalepixels);
 
-  self->widget = gtk_label_new("");
+  self->widget = dt_ui_label_new("");
   gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

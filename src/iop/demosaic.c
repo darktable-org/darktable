@@ -5080,10 +5080,8 @@ void gui_init(struct dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
-  
-  GtkWidget *label_non_raw = gtk_label_new(_("demosaicing\nonly needed for raw images."));
-  gtk_widget_set_halign(label_non_raw, GTK_ALIGN_START);
-  gtk_label_set_ellipsize(GTK_LABEL(label_non_raw), PANGO_ELLIPSIZE_END);
+
+  GtkWidget *label_non_raw = dt_ui_label_new(_("demosaicing\nonly needed for raw images."));
 
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");

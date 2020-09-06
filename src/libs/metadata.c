@@ -664,8 +664,7 @@ void gui_init(dt_lib_module_t *self)
 
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    GtkWidget *label = gtk_label_new(_(dt_metadata_get_name_by_display_order(i)));
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    GtkWidget *label = dt_ui_label_new(_(dt_metadata_get_name_by_display_order(i)));
     gtk_grid_attach(grid, label, 0, i, 1, 1);
     gtk_widget_set_tooltip_text(GTK_WIDGET(label),
               _("metadata text. ctrl-wheel scroll to resize the text box"
