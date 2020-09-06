@@ -2894,8 +2894,26 @@ int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
   return val;
 }
 
+void dt_database_cleanup_busy_statements(const struct dt_database_t *db)
+{
+  sqlite3_stmt *stmt = NULL;
+  while( (stmt = sqlite3_next_stmt(db->handle, NULL)) != NULL)
+  {
+    const char* sql = sqlite3_sql(stmt);
+    if(sqlite3_stmt_busy(stmt))
+    {
+      dt_print(DT_DEBUG_SQL, "[db busy stmt] non-finalized nor stepped through statement: '%s'\n",sql);
+      sqlite3_reset(stmt);
+    }
+    else {
+      dt_print(DT_DEBUG_SQL, "[db busy stmt] non-finalized statement: '%s'\n",sql);
+    }
+    sqlite3_finalize(stmt);
+  }
+}
+
 #define ERRCHECK {if (err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'\n",err); sqlite3_free(err); err=NULL;}}
-void _dt_database_maintenance(const struct dt_database_t *db)
+void dt_database_perform_maintenance(const struct dt_database_t *db)
 {
   char* err = NULL;
 
@@ -2944,7 +2962,7 @@ void _dt_database_maintenance(const struct dt_database_t *db)
 
   if(calc_post_size >= calc_pre_size)
   {
-    dt_print(DT_DEBUG_SQL, "[db maintenance] paintenance problem. if no errors logged, it should work fine next time.\n");
+    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance problem. if no errors logged, it should work fine next time.\n");
   }
   else
   {
@@ -3001,10 +3019,10 @@ static inline gboolean _is_mem_db(const struct dt_database_t *db)
   return !g_strcmp0(db->dbfilename_data, ":memory:") || !g_strcmp0(db->dbfilename_library, ":memory:");
 }
 
-void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
+gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
 {
   if(_is_mem_db(db))
-    return;
+    return FALSE;
 
   char *config = dt_conf_get_string("database/maintenance_check");
 
@@ -3012,7 +3030,7 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
   {
     // early bail out on "never"
     dt_print(DT_DEBUG_SQL, "[db maintenance] please consider enabling database maintenance.\n");
-    return;
+    return FALSE;
   }
 
   gboolean check_for_maintenance = FALSE;
@@ -3034,7 +3052,7 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
 
   if(!check_for_maintenance)
   {
-    return;
+    return FALSE;
   }
 
   // checking free pages
@@ -3056,7 +3074,7 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
     dt_print(DT_DEBUG_SQL,
         "[db maintenance] page_count <= 0 : main.page_count: %d, data.page_count: %d \n",
         main_page_count, data_page_count);
-    return;
+    return FALSE;
   }
 
   // we don't need fine-grained percentages, so let's do ints
@@ -3073,9 +3091,10 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
 
     if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
     {
-      _dt_database_maintenance(db);
+      return TRUE;
     }
   }
+  return FALSE;
 }
 
 void dt_database_optimize(const struct dt_database_t *db)

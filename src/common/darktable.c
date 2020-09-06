@@ -963,7 +963,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
 
   //db maintenance on startup (if configured to do so)
-  dt_database_maybe_maintenance(darktable.db, init_gui, FALSE);
+  if(dt_database_maybe_maintenance(darktable.db, init_gui, FALSE))
+  {
+    dt_database_perform_maintenance(darktable.db);
+  }
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
@@ -1209,7 +1212,7 @@ void dt_cleanup()
 
   // last chance to ask user for any input...
 
-  dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
+  const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
 
 #ifdef HAVE_PRINT
   dt_printers_abort_discovery();
@@ -1279,6 +1282,12 @@ void dt_cleanup()
 #endif
 
   dt_guides_cleanup(darktable.guides);
+
+  if(perform_maintenance)
+  {
+    dt_database_cleanup_busy_statements(darktable.db);
+    dt_database_perform_maintenance(darktable.db);
+  }
 
   dt_database_optimize(darktable.db);
   dt_database_destroy(darktable.db);
