@@ -3535,10 +3535,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(hbox, _("use a tool to add warps.\nright-click to remove a warp."));
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
-  GtkWidget *label = gtk_label_new(_("warps|nodes count:"));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  GtkWidget *label = dt_ui_label_new(_("warps|nodes count:"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-  g->label = GTK_LABEL(gtk_label_new("-"));
+  g->label = GTK_LABEL(dt_ui_label_new("-"));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -3598,7 +3597,7 @@ void gui_cleanup(dt_iop_module_t *self)
 
   cairo_destroy(g->fake_cr);
   dt_pthread_mutex_destroy(&g->lock);
-  
+
   IOP_GUI_FREE;
 }
 

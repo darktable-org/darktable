@@ -4811,10 +4811,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_set_row_spacing(grid, 2 * DT_BAUHAUS_SPACE);
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
-  GtkWidget *label1 = gtk_label_new(_("automatic fit"));
-  gtk_label_set_ellipsize(GTK_LABEL(label1), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_halign(label1, GTK_ALIGN_START);
-  gtk_grid_attach(grid, label1, 0, 0, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("automatic fit")), 0, 0, 1, 1);
 
   g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
@@ -4828,10 +4825,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
   gtk_grid_attach(grid, g->fit_both, 3, 0, 1, 1);
 
-  GtkWidget *label2 = gtk_label_new(_("get structure"));
-  gtk_label_set_ellipsize(GTK_LABEL(label2), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_halign(label2, GTK_ALIGN_START);
-  gtk_grid_attach(grid, label2, 0, 1, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("get structure")), 0, 1, 1, 1);
 
   g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);

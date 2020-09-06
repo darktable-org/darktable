@@ -897,8 +897,8 @@ void gui_init(struct dt_iop_module_t *self)
                               _("where to place the exposure level for processed pics, EV below overexposure."));
 
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(gtk_label_new(_("computed EC: "))), FALSE, FALSE, 0);
-  g->deflicker_used_EC = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(dt_ui_label_new(_("computed EC: "))), FALSE, FALSE, 0);
+  g->deflicker_used_EC = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->deflicker_used_EC), _("what exposure correction has actually been used"));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
 

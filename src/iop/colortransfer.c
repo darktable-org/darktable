@@ -630,9 +630,8 @@ void gui_init(struct dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(colortransfer);
 
-  self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
-                                 "switch it off\nand move to the new color mapping module."));
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  self->widget = dt_ui_label_new(_("this module will be removed in the future\nand is only here so you can "
+                                   "switch it off\nand move to the new color mapping module."));
 
 #if 0
   dt_iop_colortransfer_gui_data_t *g = IOP_GUI_ALLOC(colortransfer);

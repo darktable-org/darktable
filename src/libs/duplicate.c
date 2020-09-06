@@ -532,7 +532,7 @@ void gui_init(dt_lib_module_t *self)
   d->duplicate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *bt = gtk_label_new(_("existing duplicates"));
+  GtkWidget *bt = dt_ui_label_new(_("existing duplicates"));
   gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
   bt = dtgtk_button_new(dtgtk_cairo_paint_plus, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(bt), "tooltip-text", _("create a 'virgin' duplicate of the image without any development"), (char *)NULL);

@@ -1776,7 +1776,7 @@ static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
   p[0] = MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f);
   p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
   p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
-  
+
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++)
   {
@@ -1813,7 +1813,7 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
   p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
   p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
   p[3] = 1.0f;
-  
+
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++)
   {
@@ -2510,7 +2510,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const float wb_weights[3] = { 2.0f, 1.0f, 2.0f };
   compute_wb_factors(wb,d,piece,wb_weights);
   wb[3] = 0.0f;
-  
+
   // adaptive p depending on white balance
   const float p[4] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f),
                        MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
@@ -2941,7 +2941,7 @@ void init(dt_iop_module_t *module)
   dt_iop_default_init(module);
 
   dt_iop_denoiseprofile_params_t *d = module->default_params;
-  
+
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
   {
     for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
@@ -3898,32 +3898,31 @@ void gui_init(dt_iop_module_t *self)
 
   g->box_variance = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->label_var = GTK_LABEL(gtk_label_new(_("use only with a perfectly\n"
-                                           "uniform image if you want to\n"
-                                           "estimate the noise variance.")));
-  gtk_widget_set_halign(GTK_WIDGET(g->label_var), GTK_ALIGN_START);
+  g->label_var = GTK_LABEL(dt_ui_label_new(_("use only with a perfectly\n"
+                                             "uniform image if you want to\n"
+                                             "estimate the noise variance.")));
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(g->label_var), TRUE, TRUE, 0);
 
   GtkBox *hboxR = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelR = GTK_LABEL(gtk_label_new(_("variance red: ")));
+  GtkLabel *labelR = GTK_LABEL(dt_ui_label_new(_("variance red: ")));
   gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(labelR), FALSE, FALSE, 0);
-  g->label_var_R = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  g->label_var_R = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_R), _("variance computed on the red channel"));
   gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(g->label_var_R), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxR), TRUE, TRUE, 0);
 
   GtkBox *hboxG = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelG = GTK_LABEL(gtk_label_new(_("variance green: ")));
+  GtkLabel *labelG = GTK_LABEL(dt_ui_label_new(_("variance green: ")));
   gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(labelG), FALSE, FALSE, 0);
-  g->label_var_G = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  g->label_var_G = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_G), _("variance computed on the green channel"));
   gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(g->label_var_G), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxG), TRUE, TRUE, 0);
 
   GtkBox *hboxB = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelB = GTK_LABEL(gtk_label_new(_("variance blue: ")));
+  GtkLabel *labelB = GTK_LABEL(dt_ui_label_new(_("variance blue: ")));
   gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(labelB), FALSE, FALSE, 0);
-  g->label_var_B = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  g->label_var_B = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_B), _("variance computed on the blue channel"));
   gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(g->label_var_B), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxB), TRUE, TRUE, 0);
@@ -3969,9 +3968,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
 
   g->fix_anscombe_and_nlmeans_norm = dt_bauhaus_toggle_from_params(self, "fix_anscombe_and_nlmeans_norm");
-  
+
   g->use_new_vst = dt_bauhaus_toggle_from_params(self, "use_new_vst");
-  
+
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
   gtk_widget_show_all(g->box_variance);
