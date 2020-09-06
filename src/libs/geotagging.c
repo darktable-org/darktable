@@ -775,13 +775,11 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   GtkBox *hbox;
-  GtkWidget *button, *label;
+  GtkWidget *button;
 
   /* the offset line */
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  label = GTK_WIDGET(gtk_label_new(_("time offset")));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(hbox, label, FALSE, TRUE, 0);
+  gtk_box_pack_start(hbox, dt_ui_label_new(_("time offset")), FALSE, TRUE, 0);
 
   d->offset_entry = gtk_entry_new();
   dt_gui_key_accel_block_on_focus_connect(d->offset_entry);

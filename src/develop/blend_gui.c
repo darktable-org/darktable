@@ -806,7 +806,6 @@ static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, 
   if(cst_old != _blendop_blendif_get_picker_colorspace(data) &&
      (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))))
-
   {
     dt_iop_color_picker_set_cst(data->module, _blendop_blendif_get_picker_colorspace(data));
     dt_dev_reprocess_all(data->module->dev);
@@ -1582,8 +1581,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
       GtkWidget *label_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-      sl->head = GTK_LABEL(gtk_label_new(in_out ? _("output") : _("input")));
-      gtk_label_set_ellipsize(GTK_LABEL(sl->head), PANGO_ELLIPSIZE_END);
+      sl->head = GTK_LABEL(dt_ui_label_new(in_out ? _("output") : _("input")));
       gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->head), FALSE, FALSE, 0);
 
       sl->picker_label = GTK_LABEL(gtk_label_new(""));
@@ -1592,8 +1590,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
       for(int k = 0; k < 4; k++)
       {
-        sl->label[k] = GTK_LABEL(gtk_label_new(NULL));
-        gtk_label_set_ellipsize(GTK_LABEL(sl->label[k]), PANGO_ELLIPSIZE_END);
+        sl->label[k] = GTK_LABEL(dt_ui_label_new(NULL));
         gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->label[k]), FALSE, FALSE, 0);
       }
 

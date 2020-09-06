@@ -641,7 +641,7 @@ static gboolean image_set_rawcrops(const uint32_t imgid, int dx, int dy)
   if(test) return FALSE;
 
   img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  img->p_width = img->width - dx;  
+  img->p_width = img->width - dx;
   img->p_height = img->height - dy;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
   return TRUE;
@@ -714,13 +714,13 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 }
 
 void reload_defaults(dt_iop_module_t *self)
-{  
+{
   dt_iop_rawprepare_params_t *d = self->default_params;
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  *d = (dt_iop_rawprepare_params_t){.x = image->crop_x, 
-                                    .y = image->crop_y, 
-                                    .width = image->crop_width, 
+  *d = (dt_iop_rawprepare_params_t){.x = image->crop_x,
+                                    .y = image->crop_y,
+                                    .width = image->crop_width,
                                     .height = image->crop_height,
                                     .raw_black_level_separate[0] = image->raw_black_level_separate[0],
                                     .raw_black_level_separate[1] = image->raw_black_level_separate[1],
@@ -822,10 +822,8 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
-  
-  GtkWidget *label_non_raw = gtk_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
-  gtk_widget_set_halign(label_non_raw, GTK_ALIGN_START);
-  gtk_label_set_ellipsize(GTK_LABEL(label_non_raw), PANGO_ELLIPSIZE_END);
+
+  GtkWidget *label_non_raw = dt_ui_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
 
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
