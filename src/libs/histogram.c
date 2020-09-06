@@ -88,9 +88,7 @@ typedef struct dt_lib_histogram_t
   dt_pthread_mutex_t lock;
   // for colorspace work
   const dt_iop_order_iccprofile_info_t *profile_linear, *profile_display;
-  // blue green red primaries as BGRA
   float DT_ALIGNED_ARRAY primaries_linear[3][4];
-  // red green blue primaries as RGB
   float DT_ALIGNED_ARRAY primaries_display[3][3];
   // exposure params on mouse down
   float exposure, black;
@@ -527,7 +525,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   {
     const float src = MIN(1.0f, wf_linear[p + ch]);
     for(int k = 0; k < 3; k++)
-      wf_display[p+k] = src * (*primaries_linear)[ch][k];
+      wf_display[p+k] = src * (*primaries_linear)[ch][2-k];
     wf_display[p+3] = src;
   }
   // in place transform will preserve alpha
@@ -1167,7 +1165,6 @@ static void _lib_histogram_update_primaries(dt_lib_histogram_t *d)
   srgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   if(display_profile && srgb_profile)
-    // FIXME: should this be BGR for input? build formatter?
     xform = cmsCreateTransform(srgb_profile, TYPE_RGB_FLT, display_profile, TYPE_RGB_FLT, INTENT_PERCEPTUAL, 0);
 
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
@@ -1289,11 +1286,11 @@ void gui_init(dt_lib_module_t *self)
     dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL);
   d->profile_linear = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
 
-  // this is blue, green, red in BGRA
+  // this is red, green, blue in BGR
   float DT_ALIGNED_ARRAY primaries_srgb[3][4] = {
-    {1.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f, 0.0f},
     {0.0f, 1.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f, 0.0f}
+    {1.0f, 0.0f, 0.0f, 0.0f}
   };
   dt_ioppr_transform_image_colorspace_rgb(primaries_srgb[0], d->primaries_linear[0], 3, 1,
                                           profile_srgb, d->profile_linear, "histogram primaries to linear");
