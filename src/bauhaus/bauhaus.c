@@ -506,9 +506,8 @@ void dt_bauhaus_load_theme()
 
   GtkWidget *root_window = dt_ui_main_window(darktable.gui->ui);
   GtkStyleContext *ctx = gtk_style_context_new();
-  GtkWidgetPath *path;
-  path = gtk_widget_path_new ();
-  int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
+  GtkWidgetPath *path = gtk_widget_path_new();
+  const int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
   gtk_widget_path_iter_set_name(path, pos, "iop-plugin-ui");
   gtk_style_context_set_path(ctx, path);
   gtk_style_context_set_screen (ctx, gtk_widget_get_screen(root_window));
@@ -752,7 +751,7 @@ void dt_bauhaus_slider_set_hard_max(GtkWidget* widget, float val)
   d->max = MIN(d->max, d->hard_max);
   d->soft_max = MIN(d->soft_max, d->hard_max);
   if(val < d->hard_min) dt_bauhaus_slider_set_hard_min(widget,val);
-  if(pos > val) 
+  if(pos > val)
   {
     dt_bauhaus_slider_set_soft(widget,val);
   }
@@ -1469,7 +1468,7 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   cairo_fill(cr);
 
   // get the reference of the slider aka the position of the 0 value
-  const float origin = fmaxf(fminf((d->factor > 0 ? -d->min - d->offset/d->factor 
+  const float origin = fmaxf(fminf((d->factor > 0 ? -d->min - d->offset/d->factor
                                                   :  d->max + d->offset/d->factor)
                                                   / (d->max - d->min), 1.0f) * slider_width, 0.0f);
   const float position = d->pos * slider_width;
@@ -1869,7 +1868,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
       //calculate total widths of label and combobox
       float label_width
           = show_pango_text(w, context, cr, w->label, 0, 0, 0, FALSE, TRUE, PANGO_ELLIPSIZE_END);
-      float combo_width 
+      float combo_width
           = show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0, 0, TRUE, TRUE, combo_ellipsis);
 
       //check if they fit
@@ -2043,7 +2042,7 @@ static gboolean dt_bauhaus_slider_add_delta_internal(GtkWidget *widget, float de
   }
 
   const float min_visible = powf(10.0f, -d->digits) / (d->max - d->min);
-  if(fabsf(delta*multiplier) < min_visible) 
+  if(fabsf(delta*multiplier) < min_visible)
     multiplier = min_visible / fabsf(delta);
 
   delta *= multiplier;
@@ -2380,7 +2379,7 @@ void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(GtkWidget *se
 
   d->pos = curve(widget, d->curve(widget, d->pos  , DT_BAUHAUS_GET), DT_BAUHAUS_SET);
 
-  d->curve = curve; 
+  d->curve = curve;
 }
 
 void dt_bauhaus_slider_set_soft(GtkWidget *widget, float pos)
