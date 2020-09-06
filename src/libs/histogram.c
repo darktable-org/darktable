@@ -87,9 +87,11 @@ typedef struct dt_lib_histogram_t
   uint32_t waveform_width, waveform_height, waveform_max_width;
   dt_pthread_mutex_t lock;
   // for colorspace work
-  const dt_iop_order_iccprofile_info_t *profile_srgb, *profile_linear;
-  // blue green red primaries in BGRA
-  float DT_ALIGNED_ARRAY primaries_srgb[3][4], primaries_linear[3][4];
+  const dt_iop_order_iccprofile_info_t *profile_linear, *profile_display;
+  // blue green red primaries as BGRA
+  float DT_ALIGNED_ARRAY primaries_linear[3][4];
+  // red green blue primaries as RGB
+  float DT_ALIGNED_ARRAY primaries_display[3][3];
   // exposure params on mouse down
   float exposure, black;
   // mouse state
@@ -422,7 +424,7 @@ static void _draw_histogram_scale_toggle(cairo_t *cr, float x, float y, float wi
 }
 
 static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float width, float height, int mode,
-                                       const float primaries_display[3][4])
+                                       const float primaries_display[3][3])
 {
   cairo_save(cr);
   cairo_translate(cr, x, y);
@@ -441,13 +443,13 @@ static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float widt
     }
     case DT_LIB_HISTOGRAM_WAVEFORM_PARADE:
     {
-      cairo_set_source_rgba(cr, primaries_display[2][2], primaries_display[2][1], primaries_display[2][0], 0.33);
+      cairo_set_source_rgba(cr, primaries_display[0][0], primaries_display[0][1], primaries_display[0][2], 0.33);
       cairo_rectangle(cr, border, border, width / 3.0, height - 2.0 * border);
       cairo_fill(cr);
-      cairo_set_source_rgba(cr, primaries_display[1][2], primaries_display[1][1], primaries_display[1][0], 0.33);
+      cairo_set_source_rgba(cr, primaries_display[1][0], primaries_display[1][1], primaries_display[1][2], 0.33);
       cairo_rectangle(cr, width / 3.0, border, width / 3.0, height - 2.0 * border);
       cairo_fill(cr);
-      cairo_set_source_rgba(cr, primaries_display[0][2], primaries_display[0][1], primaries_display[0][0], 0.33);
+      cairo_set_source_rgba(cr, primaries_display[2][0], primaries_display[2][1], primaries_display[2][2], 0.33);
       cairo_rectangle(cr, width * 2.0 / 3.0, border, width / 3.0, height - 2.0 * border);
       cairo_fill(cr);
       cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
@@ -486,8 +488,7 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
 }
 
 static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
-                                          int width, int height, const uint8_t mask[3],
-                                          const float primaries[3][4])
+                                          int width, int height, const uint8_t mask[3])
 {
   if(!d->histogram_max) return;
   const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
@@ -499,15 +500,15 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      cairo_set_source_rgba(cr, primaries[2-k][2], primaries[2-k][1], primaries[2-k][0], 0.5);
+      cairo_set_source_rgba(cr, d->primaries_display[k][0], d->primaries_display[k][1],
+                            d->primaries_display[k][2], 0.5);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
 }
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
                                          int width, int height,
-                                         const uint8_t mask[3],
-                                         const dt_iop_order_iccprofile_info_t *const profile_display)
+                                         const uint8_t mask[3])
 {
   // FIXME: test this and return if it is zero?
   const int wf_width = d->waveform_width;
@@ -541,7 +542,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
       }
       // in place transform will preserve alpha
       dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
-                                              d->profile_linear, profile_display, "waveform linear to display");
+                                              d->profile_linear, d->profile_display, "waveform linear to display");
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -568,8 +569,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 }
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
-                                           int width, int height, const uint8_t mask[3],
-                                           const dt_iop_order_iccprofile_info_t *const profile_display)
+                                           int width, int height, const uint8_t mask[3])
 {
   // FIXME: test this and return if it is zero?
   const int wf_width = d->waveform_width;
@@ -605,7 +605,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
       }
       // in place transform will preserve alpha
       dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
-                                              d->profile_linear, profile_display, "rgb parade linear to display");
+                                              d->profile_linear, d->profile_display, "rgb parade linear to display");
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -683,14 +683,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
-  // FIXME: only recalculate this when display profile changes?
-  float DT_ALIGNED_ARRAY primaries_display[3][4];
-  // FIMXE: does this get the current display profile?
-  const dt_iop_order_iccprofile_info_t *const profile_display =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_DISPLAY, "", DT_INTENT_PERCEPTUAL);
-  dt_ioppr_transform_image_colorspace_rgb(d->primaries_srgb[0], primaries_display[0], 3, 1,
-                                          d->profile_srgb, profile_display, "histogram primaries to display");
-
   // FIXME: should set histogram buffer to black if have just entered tether view and nothing is displayed
   dt_pthread_mutex_lock(&d->lock);
   // darkroom view: draw scope so long as preview pipe is finished
@@ -703,13 +695,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     switch(d->scope_type)
     {
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        _lib_histogram_draw_histogram(d, cr, width, height, mask, primaries_display);
+        _lib_histogram_draw_histogram(d, cr, width, height, mask);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
-          _lib_histogram_draw_waveform(d, cr, width, height, mask, profile_display);
+          _lib_histogram_draw_waveform(d, cr, width, height, mask);
         else
-          _lib_histogram_draw_rgb_parade(d, cr, width, height, mask, profile_display);
+          _lib_histogram_draw_rgb_parade(d, cr, width, height, mask);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
@@ -730,16 +722,16 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->waveform_type,
-                                   primaries_display);
+                                   d->primaries_display);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
     }
-    cairo_set_source_rgba(cr, primaries_display[2][2], primaries_display[2][1], primaries_display[2][0], 0.33);
+    cairo_set_source_rgba(cr, d->primaries_display[0][0], d->primaries_display[0][1], d->primaries_display[0][2], 0.33);
     _draw_color_toggle(cr, d->red_x, d->button_y, d->button_w, d->button_h, d->red);
-    cairo_set_source_rgba(cr, primaries_display[1][2], primaries_display[1][1], primaries_display[1][0], 0.33);
+    cairo_set_source_rgba(cr, d->primaries_display[1][0], d->primaries_display[1][1], d->primaries_display[1][2], 0.33);
     _draw_color_toggle(cr, d->green_x, d->button_y, d->button_w, d->button_h, d->green);
-    cairo_set_source_rgba(cr, primaries_display[0][2], primaries_display[0][1], primaries_display[0][0], 0.33);
+    cairo_set_source_rgba(cr, d->primaries_display[2][0], d->primaries_display[2][1], d->primaries_display[2][2], 0.33);
     _draw_color_toggle(cr, d->blue_x, d->button_y, d->button_w, d->button_h, d->blue);
   }
 
@@ -1190,6 +1182,52 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
   dt_control_queue_redraw_widget(self->widget);
 }
 
+static void _lib_histogram_update_primaries(dt_lib_histogram_t *d)
+{
+  cmsHPROFILE display_profile = NULL;
+  cmsHPROFILE srgb_profile = NULL;
+  cmsHTRANSFORM xform = NULL;
+
+  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+
+  const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
+                                                       darktable.color_profiles->display_filename,
+                                                       DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
+  if(d_profile)
+  {
+    display_profile = d_profile->profile;
+    d->profile_display =
+      dt_ioppr_add_profile_info_to_list(darktable.develop,
+                                        d_profile->type, d_profile->filename, DT_INTENT_PERCEPTUAL);
+  }
+
+  srgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+
+  if(display_profile && srgb_profile)
+    // FIXME: should this be BGR for input? build formatter?
+    xform = cmsCreateTransform(srgb_profile, TYPE_RGB_FLT, display_profile, TYPE_RGB_FLT, INTENT_PERCEPTUAL, 0);
+
+  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
+  if(xform)
+  {
+    const float in[3][3] = {
+      {1.0f, 0.0f, 0.0f},
+      {0.0f, 1.0f, 0.0f},
+      {0.0f, 0.0f, 1.0f}
+    };
+    cmsDoTransform(xform, in[0], d->primaries_display[0], 3);
+    cmsDeleteTransform(xform);
+  }
+}
+
+static void _lib_histogram_display_profile_changed(gpointer instance, dt_lib_histogram_t *d)
+{
+  _lib_histogram_update_primaries(d);
+}
+
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
@@ -1285,13 +1323,19 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_8bit = dt_alloc_align(64, sizeof(uint8_t) * d->waveform_height * d->waveform_max_width * 4);
 
   // for linear->logarithmic transform and displaying primaries in display colorspace
-  d->profile_srgb = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *profile_srgb =
+    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL);
   d->profile_linear = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-  d->primaries_srgb[0][0] = 1.0f;
-  d->primaries_srgb[1][1] = 1.0f;
-  d->primaries_srgb[2][2] = 1.0f;
-  dt_ioppr_transform_image_colorspace_rgb(d->primaries_srgb[0], d->primaries_linear[0], 3, 1,
-                                          d->profile_srgb, d->profile_linear, "histogram primaries to linear");
+
+  // this is blue, green, red in BGRA
+  float DT_ALIGNED_ARRAY primaries_srgb[3][4] = {
+    {1.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 1.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f, 0.0f}
+  };
+  dt_ioppr_transform_image_colorspace_rgb(primaries_srgb[0], d->primaries_linear[0], 3, 1,
+                                          profile_srgb, d->profile_linear, "histogram primaries to linear");
+  _lib_histogram_update_primaries(d);
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
@@ -1329,11 +1373,19 @@ void gui_init(dt_lib_module_t *self)
   /* set size of navigation draw area */
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
   gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
+
+  // recreate primaries when the display profile changed
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,
+                            G_CALLBACK(_lib_histogram_display_profile_changed), d);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+
+  dt_control_signal_disconnect(darktable.signals,
+                               G_CALLBACK(_lib_histogram_display_profile_changed),
+                               self);
 
   free(d->histogram);
   dt_free_align(d->waveform_linear);
