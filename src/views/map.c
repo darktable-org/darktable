@@ -100,9 +100,9 @@ static void _view_map_collection_changed(gpointer instance, dt_collection_change
 /* callback when an image is selected in filmstrip, centers map */
 static void _view_map_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
-static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
-                                   GtkSelectionData *selection_data, guint target_type, guint time,
-                                   gpointer data);
+static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+                                    GtkSelectionData *selection_data, guint target_type, guint time,
+                                    gpointer data);
 /* callback when the user drags images FROM the map */
 static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
                                        GtkSelectionData *selection_data, guint target_type, guint time,
@@ -312,7 +312,7 @@ static GdkPixbuf *init_image_pin()
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
   cairo_set_source_rgba(cr, r, g, b, a);
-  dtgtk_cairo_paint_map_pin(cr, 0, 0, w, h, 0, NULL);
+  dtgtk_cairo_paint_map_pin(cr, (h-w)/2, 0, w, h, 0, NULL); // keep the pin on left
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
@@ -439,7 +439,7 @@ void init(dt_view_t *self)
     /* allow drag&drop of images from filmstrip */
     gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal,
                       GDK_ACTION_COPY);
-    g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(drag_and_drop_received), self);
+    g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(_drag_and_drop_received), self);
     g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
     g_signal_connect_after(G_OBJECT(lib->map), "button-press-event",
                            G_CALLBACK(_view_map_button_press_callback), self);
@@ -1207,7 +1207,7 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, int imgid, 
   _view_map_center_on_image(self, imgid);
 }
 
-static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
                                    GtkSelectionData *selection_data, guint target_type, guint time,
                                    gpointer data)
 {
