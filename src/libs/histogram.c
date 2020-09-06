@@ -483,33 +483,23 @@ static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventCon
   return TRUE;
 }
 
-static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
-                                          int width, int height, const uint8_t mask[3],
-                                          const float graph_rgb_display[3][4])
+static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr, int width, int height, const uint8_t mask[3])
 {
   if(!d->histogram_max) return;
   const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
                                                                        : logf(1.0 + d->histogram_max);
-
-  // blend the red/green/blue histograms to produce saturated
-  // primaries, secondaries and whites without being washed out by a
-  // lighter darktable theme
-  cairo_push_group(cr);
-
-  cairo_set_operator(cr, CAIRO_OPERATOR_COLOR_DODGE);
   cairo_translate(cr, 0, height);
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      cairo_set_source_rgba(cr, graph_rgb_display[2-k][2], graph_rgb_display[2-k][1], graph_rgb_display[2-k][0], 1.0);
+      cairo_set_source_rgba(cr, k == 0 ? 1. : 0., k == 1 ? 1. : 0., k == 2 ? 1. : 0., 0.5);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
-
-  cairo_pop_group_to_source(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-  cairo_paint_with_alpha(cr, 0.6);
+  // FIXME: this does nothing?
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 }
 
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
@@ -668,6 +658,26 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_fill(cr);
   cairo_restore(cr);
 
+  // exposure change regions
+  if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+  {
+    set_color(cr, darktable.bauhaus->graph_overlay);
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+      cairo_rectangle(cr, 0, 7.0/9.0 * height, width, height);
+    else
+      cairo_rectangle(cr, 0, 0, 0.2 * width, height);
+    cairo_fill(cr);
+  }
+  else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+  {
+    set_color(cr, darktable.bauhaus->graph_overlay);
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
+      cairo_rectangle(cr, 0, 0, width, 7.0/9.0 * height);
+    else
+      cairo_rectangle(cr, 0.2 * width, 0, width, height);
+    cairo_fill(cr);
+  }
+
   // draw grid
   set_color(cr, darktable.bauhaus->graph_grid);
   if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
@@ -705,7 +715,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     switch(d->scope_type)
     {
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        _lib_histogram_draw_histogram(d, cr, width, height, mask, graph_rgb_display);
+        _lib_histogram_draw_histogram(d, cr, width, height, mask);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
@@ -719,27 +729,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     cairo_restore(cr);
   }
   dt_pthread_mutex_unlock(&d->lock);
-
-  // exposure change regions
-  cairo_set_operator(cr, CAIRO_OPERATOR_SOFT_LIGHT);
-  if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-  {
-    set_color(cr, darktable.bauhaus->graph_fg_active);
-    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-      cairo_rectangle(cr, 0, 7.0/9.0 * height, width, height);
-    else
-      cairo_rectangle(cr, 0, 0, 0.2 * width, height);
-    cairo_fill(cr);
-  }
-  else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-  {
-    set_color(cr, darktable.bauhaus->graph_fg_active);
-    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)
-      cairo_rectangle(cr, 0, 0, width, 7.0/9.0 * height);
-    else
-      cairo_rectangle(cr, 0.2 * width, 0, width, height);
-    cairo_fill(cr);
-  }
 
   // buttons to control the display of the histogram: linear/log, r, g, b
   if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET)
