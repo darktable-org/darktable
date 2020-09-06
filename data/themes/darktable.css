@@ -1738,6 +1738,16 @@ treeview#delete-dialog:selected
   color: @plugin_bg;
 }
 
+#bauhaus-combobox *
+{
+    color: shade(@bauhaus_fg, 0.8);
+}
+
+#bauhaus-combobox *:selected
+{
+    color: shade(@bauhaus_fg_selected, 1.2);
+}
+
 /* Notebooks states */
 notebook tab:hover
 {
