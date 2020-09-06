@@ -499,12 +499,12 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
     if(mask[k])
     {
       cairo_set_source_rgba(cr, d->primaries_display[k][0], d->primaries_display[k][1],
-                            d->primaries_display[k][2], 0.5);
+                            d->primaries_display[k][2], 0.6);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
 }
 
-static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch, double alpha)
+static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch)
 {
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
@@ -529,6 +529,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
     wf_display[p+3] = src;
   }
   // in place transform will preserve alpha
+  // dt's transform is approx. 2x faster than LCMS here
   dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
                                           d->profile_linear, d->profile_display, "waveform linear to display");
 
@@ -547,7 +548,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
     = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_ARGB32,
                                              wf_width, wf_height, wf_stride);
   cairo_set_source_surface(cr, source, 0.0, 0.0);
-  cairo_paint_with_alpha(cr, alpha);
+  cairo_paint_with_alpha(cr, 0.8);
   cairo_surface_destroy(source);
 }
 
@@ -555,34 +556,25 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
                                          int width, int height,
                                          const uint8_t mask[3])
 {
-  cairo_push_group(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_scale(cr, darktable.gui->ppd*width/d->waveform_width,
               darktable.gui->ppd*height/d->waveform_height);
 
   for(int ch = 0; ch < 3; ch++)
     if(mask[2-ch])
-      _lib_histogram_draw_waveform_channel(d, cr, ch, 1.0);
-
-  cairo_pop_group_to_source(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-  cairo_paint_with_alpha(cr, 0.6);
+      _lib_histogram_draw_waveform_channel(d, cr, ch);
 }
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
                                            int width, int height, const uint8_t mask[3])
 {
-  // FIXME: is that right anymore? though this does work...
-  // don't multiply by ppd as the source isn't screen pixels
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_scale(cr, darktable.gui->ppd*width/(d->waveform_width*3),
               darktable.gui->ppd*height/d->waveform_height);
-  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-
-  // FIXME: make a single buffer with the three side-by-side images and then draw them with a single Cairo call -- to speed things up, and work at a display resolution equivalent to waveform
   for(int ch = 2; ch >= 0; ch--)
   {
     if(mask[2-ch])
-      _lib_histogram_draw_waveform_channel(d, cr, ch, 0.6);
+      _lib_histogram_draw_waveform_channel(d, cr, ch);
     cairo_translate(cr, d->waveform_width/darktable.gui->ppd, 0);
   }
 }
@@ -1172,6 +1164,7 @@ static void _lib_histogram_update_primaries(dt_lib_histogram_t *d)
 
   if(xform)
   {
+    // red, green, blue in RGB
     const float in[3][3] = {
       {1.0f, 0.0f, 0.0f},
       {0.0f, 1.0f, 0.0f},
@@ -1286,7 +1279,7 @@ void gui_init(dt_lib_module_t *self)
     dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL);
   d->profile_linear = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
 
-  // this is red, green, blue in BGR
+  // blue, green, red in RGB
   float DT_ALIGNED_ARRAY primaries_srgb[3][4] = {
     {0.0f, 0.0f, 1.0f, 0.0f},
     {0.0f, 1.0f, 0.0f, 0.0f},
