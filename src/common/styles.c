@@ -313,7 +313,7 @@ static void  _dt_style_update_iop_order(const gchar *name, const int id, const i
 
   GList *iop_list = dt_styles_module_order_list(name);
 
-  // if we update of if the style does not contains an order then the
+  // if we update or if the style does not contains an order then the
   // copy must be done using the imgid iop-order.
 
   if(update_iop_order || g_list_length(iop_list) == 0)
@@ -817,11 +817,21 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
 
     dev_dest->iop = dt_iop_load_modules_ext(dev_dest, TRUE);
 
+    // now let's deal with the iop-order (possibly merging style & target lists)
     GList *iop_list = dt_styles_module_order_list(name);
     if(iop_list)
     {
+      // the style has an iop-order, we need to merge the multi-instance from target image
+      // get target image iop-order list:
+      GList *img_iop_order_list = dt_ioppr_get_iop_order_list(newimgid, FALSE);
+      // get multi-instance modules if any:
+      GList *mi = dt_ioppr_extract_multi_instances_list(img_iop_order_list);
+      // if some where found merge them with the style list
+      if(mi) iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
+      // finaly we have the final list for the image
       dt_ioppr_write_iop_order_list(iop_list, newimgid);
       g_list_free_full(iop_list, g_free);
+      g_list_free_full(img_iop_order_list, g_free);
     }
 
     dt_dev_read_history_ext(dev_dest, newimgid, TRUE);
