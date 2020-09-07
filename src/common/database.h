@@ -37,7 +37,10 @@ void dt_database_show_error(const struct dt_database_t *db);
 /** perform pre-db-close optimizations (always call when quiting darktable) */
 void dt_database_optimize(const struct dt_database_t *);
 /** conditionally perfrom db maintenance */
-void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time);
+gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time);
+void dt_database_perform_maintenance(const struct dt_database_t *db);
+/** cleanup busy statements on closing dt, just before performing maintenance */
+void dt_database_cleanup_busy_statements(const struct dt_database_t *db);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -18,6 +18,13 @@
 
 #include "common/atomic.h"
 
+extern inline void dt_atomic_set_int(dt_atomic_int *var, int value);
+extern inline int dt_atomic_get_int(dt_atomic_int *var);
+extern inline int dt_atomic_add_int(dt_atomic_int *var, int incr);
+extern inline int dt_atomic_sub_int(dt_atomic_int *var, int decr);
+extern inline int dt_atomic_exch_int(dt_atomic_int *var, int value);
+extern inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value);
+
 #if !defined(__STDC_NO_ATOMICS__)
 // using C11 atomics, everything is handled in the header file, so we don't need to define anything in this file
 

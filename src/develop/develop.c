@@ -24,6 +24,7 @@
 #include <strings.h>
 #include <unistd.h>
 
+#include "common/atomic.h"
 #include "common/debug.h"
 #include "common/history.h"
 #include "common/image_cache.h"
@@ -1354,6 +1355,8 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
 
 static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 {
+  // NOTE: the presets/default iops will be *prepended* into the history.
+
   const int imgid = dev->image_storage.id;
 
   if(imgid <= 0) return FALSE;
@@ -1374,6 +1377,25 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
   const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
   g_free(workflow);
+
+  //  Add scene-referred workflow
+  //  Note that we cannot use the a preset for FilmicRGB as the default values are
+  //  dynamically computed depending on the actual exposure compensation
+  //  (see reload_default routine in filmicrgb.c)
+  if(dt_image_is_matrix_correction_supported(image) && is_scene_referred)
+  {
+    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+
+      if(strcmp(module->op, "filmicrgb") == 0
+         && !dt_history_check_module_exists(imgid, module->op)
+         && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
+      {
+        _dev_insert_module(dev, module, imgid);
+      }
+    }
+  }
 
   // select all presets from one of the following table and add them into memory.history. Note that
   // this is appended to possibly already present default modules.
@@ -1555,37 +1577,35 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       g_list_free(rowids);
     }
 
-    int maxhist = 0;
-    // get maximum row number in history
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MAX(num) FROM main.history", -1,
-                                &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      // if there is anything..
-      maxhist = sqlite3_column_int(stmt, 0);
-      sqlite3_finalize(stmt);
-    }
-
-    // update the end point of the history
+    // advance the current history by cnt amount, that is, make space for the preset/default iops that will be
+    // *prepended* into the history.
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.images SET history_end=history_end+?1 WHERE id=?2",
-                                -1, &stmt, NULL);
+                                "UPDATE main.history SET num=num+?1 WHERE imgid=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
     if(sqlite3_step(stmt) == SQLITE_DONE)
     {
-      // and finally append the new items
       sqlite3_finalize(stmt);
-      DT_DEBUG_SQLITE3_PREPARE_V2(
-        dt_database_get(darktable.db),
-        "INSERT INTO main.history"
-        " SELECT imgid, num+?1, module, operation, op_params, enabled, "
-        "        blendop_params, blendop_version, multi_priority, multi_name FROM memory.history",
-        -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, maxhist);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE main.images SET history_end=history_end+?1 WHERE id=?2",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+
+      if(sqlite3_step(stmt) == SQLITE_DONE)
+      {
+        // and finally prepend the rest with increasing numbers (starting at 0)
+        sqlite3_finalize(stmt);
+        DT_DEBUG_SQLITE3_PREPARE_V2(
+          dt_database_get(darktable.db),
+          "INSERT INTO main.history"
+          " SELECT imgid, num, module, operation, op_params, enabled, "
+          "        blendop_params, blendop_version, multi_priority, multi_name FROM memory.history",
+          -1, &stmt, NULL);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
     }
   }
 }
@@ -1627,7 +1647,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     // cleanup
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
 
-    // append all default modules to memory.history
+    // prepend all default modules to memory.history
     _dev_add_default_modules(dev, imgid);
     const int default_modules = _dev_get_module_nb_records();
 

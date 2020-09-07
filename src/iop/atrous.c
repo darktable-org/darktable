@@ -970,7 +970,7 @@ void init(dt_iop_module_t *module)
   dt_iop_default_init(module);
 
   dt_iop_atrous_params_t *d = module->default_params;
-  
+
   for(int k = 0; k < BANDS; k++)
   {
     d->y[atrous_Lt][k] = d->y[atrous_ct][k] = 0.0f;
@@ -1844,6 +1844,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_ui_notebook_page(c->channel_tabs, _("luma"), _("change lightness at each feature size"));
   dt_ui_notebook_page(c->channel_tabs, _("chroma"), _("change color saturation at each feature size"));
   dt_ui_notebook_page(c->channel_tabs, _("edges"), _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
+  gtk_widget_show_all(GTK_WIDGET(c->channel_tabs));
+  gtk_notebook_set_current_page(c->channel_tabs, c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 

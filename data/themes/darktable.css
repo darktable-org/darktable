@@ -497,9 +497,8 @@ overshoot.right
 #header-toolbar #control-button
 {
   min-height: 1em;
-  min-width: 0.9em;
+  min-width: 1em;
   padding: 0.15em;
-  margin: 0.15em;
 }
 
 #control-button #button-canvas,
@@ -578,6 +577,12 @@ overshoot.right
 #left #lib-plugin-ui entry /* this will avoid having too much height on entry items in filter collections modules */
 {
   margin: 8px 0px;
+}
+
+#left #lib-plugin-ui #lib-collect-entry
+{
+  margin-top: 0;
+  margin-bottom: 4px;
 }
 
 #left #lib-plugin-ui scrolledwindow entry /* this will avoid having too much height on entry items in clone manager without touching other parts of the UI */
@@ -1730,6 +1735,16 @@ treeview#delete-dialog:selected
 #bauhaus-popup:disabled
 {
   color: @plugin_bg;
+}
+
+#bauhaus-combobox *
+{
+    color: shade(@bauhaus_fg, 0.8);
+}
+
+#bauhaus-combobox *:selected
+{
+    color: shade(@bauhaus_fg_selected, 1.2);
 }
 
 /* Notebooks states */
