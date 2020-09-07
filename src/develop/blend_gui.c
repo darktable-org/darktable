@@ -1961,7 +1961,7 @@ static GtkWidget *_combobox_new_from_list(dt_iop_module_t *module, const gchar *
   dt_bauhaus_widget_set_label(combo, _("blend"), label);
   gtk_widget_set_tooltip_text(combo, tooltip);
   for(; *list->name; list++)
-    dt_bauhaus_combobox_add_full(combo, _(list->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+    dt_bauhaus_combobox_add_full(combo, list->name, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                  GUINT_TO_POINTER(list->value), NULL, TRUE);
 
   return combo;
