@@ -313,7 +313,7 @@ static void  _dt_style_update_iop_order(const gchar *name, const int id, const i
 
   GList *iop_list = dt_styles_module_order_list(name);
 
-  // if we update of if the style does not contains an order then the
+  // if we update or if the style does not contains an order then the
   // copy must be done using the imgid iop-order.
 
   if(update_iop_order || g_list_length(iop_list) == 0)
