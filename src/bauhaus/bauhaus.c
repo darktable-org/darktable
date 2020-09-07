@@ -1571,8 +1571,8 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       // only set to what's in the filtered list.
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       const int active = darktable.bauhaus->end_mouse_y >= 0
-                             ? (darktable.bauhaus->end_mouse_y / (darktable.bauhaus->line_height))
-                             : d->active;
+                 ? ((darktable.bauhaus->end_mouse_y - INNER_PADDING) / (darktable.bauhaus->line_height))
+                 : d->active;
 
       int k = 0, i = 0, kk = 0, match = 1;
 
@@ -1733,7 +1733,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       gboolean first_label = TRUE;
       gboolean show_box_label = TRUE;
       int k = 0, i = 0;
-      const int hovered = darktable.bauhaus->mouse_y / darktable.bauhaus->line_height;
+      const int hovered = (darktable.bauhaus->mouse_y - INNER_PADDING) / darktable.bauhaus->line_height;
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
       const PangoEllipsizeMode ellipsis = d->entries_ellipsis;
       wd *= d->scale;
