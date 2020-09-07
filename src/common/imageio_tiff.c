@@ -46,6 +46,45 @@ typedef struct tiff_t
 } tiff_t;
 
 
+static inline float _half_to_float(uint16_t h)
+{
+  /* see https://en.wikipedia.org/wiki/Half-precision_floating-point_format#Exponent_encoding
+     and https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding */
+
+  /* TODO: use intrinsics when possible */
+
+  uint32_t f;
+  uint32_t s = (h >> 15) & 0x1;
+  uint32_t e = (h >> 10) & 0x1f;
+  uint32_t m = h & 0x3ff;
+
+  if(0 == e)
+    if(0 == m)      /* zero */
+      f = s << 31;
+    else            /* subnormals */
+    {
+      /* figure out amount of shift needed to reach a leading 1 */
+      uint32_t sh = 0;
+      uint32_t res = m;
+      while (res > 1)
+      {
+        res = res >> 1;
+        ++sh;
+      }
+      f = (s << 31) | ((127 - 24 + sh) << 23) | ((m << (23 - sh)) & 0x7fffff);
+    }
+  else if (31 == e) /* inf & nan */
+    f = (s << 31) | (255 << 23) | (m << (23 - 10));
+  else              /* normals */
+    f = (s << 31) | ((127 + e - 15) << 23) | (m << (23 - 10));
+
+  /* must copy to obey strict aliasing rules */
+  float out;
+  memcpy(&out, &f, sizeof(uint32_t));
+
+  return out;
+}
+
 static inline int _read_planar_8(tiff_t *t)
 {
   for(uint32_t row = 0; row < t->height; row++)
@@ -100,6 +139,37 @@ static inline int _read_planar_16(tiff_t *t)
       {
         out[1] = ((float)in[1]) * (1.0f / 65535.0f);
         out[2] = ((float)in[2]) * (1.0f / 65535.0f);
+      }
+
+      out[3] = 0;
+    }
+  }
+
+  return 1;
+}
+
+static inline int _read_planar_h(tiff_t *t)
+{
+  for(uint32_t row = 0; row < t->height; row++)
+  {
+    uint16_t *in = ((uint16_t *)t->buf);
+    float *out = ((float *)t->mipbuf) + (size_t)4 * row * t->width;
+
+    /* read scanline */
+    if(TIFFReadScanline(t->tiff, in, row, 0) == -1) return -1;
+
+    for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
+    {
+      out[0] = _half_to_float(in[0]);
+
+      if(t->spp == 1)
+      {
+        out[1] = out[2] = out[0];
+      }
+      else
+      {
+        out[1] = _half_to_float(in[1]);
+        out[2] = _half_to_float(in[2]);
       }
 
       out[3] = 0;
@@ -353,6 +423,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     ok = _read_planar_8(&t);
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
     ok = _read_planar_16(&t);
+  else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_IEEEFP && config == PLANARCONFIG_CONTIG)
+    ok = _read_planar_h(&t);
   else if(t.bpp == 32 && t.sampleformat == SAMPLEFORMAT_IEEEFP && config == PLANARCONFIG_CONTIG)
     ok = _read_planar_f(&t);
   else
