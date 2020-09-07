@@ -21,7 +21,7 @@
   </indexterm>
 
   <para>
-    Drawing a mask represents the simplest approach for limiting the effect of a darktable module to a specific 
+    Drawing a mask represents the simplest approach for limiting the effect of a darktable module to a specific
     area in the developed image.
   </para>
 
@@ -335,10 +335,15 @@
         line has two anchor nodes which you can drag to change the rotation of the gradient.
       </para>
       <para>
-        Scrolling close to the center line changes the steepness of the gradient. Dotted lines
-        indicate the distance beyond which the opacity is 100% and 0%, respectively. Between
-        these dotted lines the opacity changes linearly. The gradient is best seen and modified
-        when the mask is displayed by pressing the
+        <emphasis>Scrolling</emphasis> close to the center line curves the gradient.
+      </para>
+      <para>
+        <emphasis>Shift+scrolling</emphasis> close to the center line
+        changes the steepness of the gradient. Dotted lines indicate
+        the distance beyond which the opacity is 100% and 0%,
+        respectively. Between these dotted lines the opacity changes
+        linearly. The gradient is best seen and modified when the mask
+        is displayed by pressing the
         <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
         button.
       </para>
