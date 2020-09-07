@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-06 18:29+0200\n"
-"PO-Revision-Date: 2020-09-06 18:35+0200\n"
+"POT-Creation-Date: 2020-09-07 07:48+0200\n"
+"PO-Revision-Date: 2020-09-07 07:50+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -145,7 +145,7 @@ msgstr "préserver couleur"
 #: ../src/iop/clipping.c:1885 ../src/iop/clipping.c:2146
 #: ../src/iop/clipping.c:2162 ../src/iop/clipping.c:2297
 #: ../src/iop/clipping.c:2324 ../src/iop/lens.cc:2259 ../src/iop/retouch.c:341
-#: ../src/libs/collect.c:1707 ../src/libs/export.c:625
+#: ../src/libs/collect.c:1683 ../src/libs/export.c:625
 #: ../src/libs/live_view.c:348 ../src/libs/live_view.c:373
 #: ../src/libs/live_view.c:382 ../src/libs/print_settings.c:1475
 msgid "none"
@@ -2830,7 +2830,7 @@ msgstr "Imprimer vos images"
 #: ../src/gui/preferences.c:2024 ../src/gui/presets.c:413
 #: ../src/gui/styles_dialog.c:357 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
-#: ../src/iop/lut3d.c:1568 ../src/libs/collect.c:364
+#: ../src/iop/lut3d.c:1568 ../src/libs/collect.c:365
 #: ../src/libs/copy_history.c:100 ../src/libs/geotagging.c:474
 #: ../src/libs/import.c:555 ../src/libs/import.c:661 ../src/libs/lib.c:227
 #: ../src/libs/styles.c:366 ../src/libs/styles.c:391 ../src/libs/tagging.c:2205
@@ -3083,12 +3083,12 @@ msgstr "ordre des modules"
 #: ../src/develop/lightroom.c:828 ../src/iop/bilateral.cc:321
 #: ../src/iop/channelmixer.c:446 ../src/iop/channelmixer.c:457
 #: ../src/iop/temperature.c:1805 ../src/iop/temperature.c:1941
-#: ../src/libs/collect.c:1608 ../src/views/darkroom.c:2436
+#: ../src/libs/collect.c:1584 ../src/views/darkroom.c:2436
 msgid "red"
 msgstr "rouge"
 
 #: ../src/common/collection.c:1472 ../src/develop/lightroom.c:830
-#: ../src/iop/temperature.c:1795 ../src/libs/collect.c:1608
+#: ../src/iop/temperature.c:1795 ../src/libs/collect.c:1584
 #: ../src/views/darkroom.c:2438
 msgid "yellow"
 msgstr "jaune"
@@ -3097,7 +3097,7 @@ msgstr "jaune"
 #: ../src/develop/lightroom.c:832 ../src/iop/bilateral.cc:326
 #: ../src/iop/channelmixer.c:447 ../src/iop/channelmixer.c:463
 #: ../src/iop/temperature.c:1789 ../src/iop/temperature.c:1807
-#: ../src/iop/temperature.c:1942 ../src/libs/collect.c:1608
+#: ../src/iop/temperature.c:1942 ../src/libs/collect.c:1584
 #: ../src/views/darkroom.c:2437
 msgid "green"
 msgstr "vert"
@@ -3106,41 +3106,41 @@ msgstr "vert"
 #: ../src/develop/lightroom.c:834 ../src/iop/bilateral.cc:331
 #: ../src/iop/channelmixer.c:448 ../src/iop/channelmixer.c:469
 #: ../src/iop/temperature.c:1809 ../src/iop/temperature.c:1943
-#: ../src/libs/collect.c:1608
+#: ../src/libs/collect.c:1584
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:1478 ../src/libs/collect.c:1608
+#: ../src/common/collection.c:1478 ../src/libs/collect.c:1584
 msgid "purple"
 msgstr "violet"
 
 #: ../src/common/collection.c:1492 ../src/common/collection.c:1500
-#: ../src/libs/collect.c:1555
+#: ../src/libs/collect.c:1531
 msgid "basic"
 msgstr "basique"
 
-#: ../src/common/collection.c:1494 ../src/libs/collect.c:1555
+#: ../src/common/collection.c:1494 ../src/libs/collect.c:1531
 msgid "auto applied"
 msgstr "appliqué automatiquement"
 
-#: ../src/common/collection.c:1496 ../src/libs/collect.c:1555
+#: ../src/common/collection.c:1496 ../src/libs/collect.c:1531
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:1509 ../src/libs/collect.c:1568
+#: ../src/common/collection.c:1509 ../src/libs/collect.c:1544
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1515 ../src/libs/collect.c:1580
+#: ../src/common/collection.c:1515 ../src/libs/collect.c:1556
 msgid "not copied locally"
 msgstr "non copiée localement"
 
 #. grouping
-#: ../src/common/collection.c:1757 ../src/libs/collect.c:1682
+#: ../src/common/collection.c:1757 ../src/libs/collect.c:1658
 msgid "group leaders"
 msgstr "tête de groupe"
 
-#: ../src/common/collection.c:1789 ../src/libs/collect.c:1743
+#: ../src/common/collection.c:1789 ../src/libs/collect.c:1719
 msgid "not defined"
 msgstr "non défini"
 
@@ -5463,130 +5463,130 @@ msgid "fit"
 msgstr "ajusté"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2073
+#: ../src/dtgtk/thumbtable.c:2090
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vues/miniature/pas d'étoile"
 
-#: ../src/dtgtk/thumbtable.c:2074
+#: ../src/dtgtk/thumbtable.c:2091
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vues/miniature/1 étoile"
 
-#: ../src/dtgtk/thumbtable.c:2075
+#: ../src/dtgtk/thumbtable.c:2092
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vues/miniature/2 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2076
+#: ../src/dtgtk/thumbtable.c:2093
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vues/miniature/3 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2077
+#: ../src/dtgtk/thumbtable.c:2094
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vues/miniature/4 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2078
+#: ../src/dtgtk/thumbtable.c:2095
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vues/miniature/5 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2079
+#: ../src/dtgtk/thumbtable.c:2096
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vues/miniature/rejeter"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2082
+#: ../src/dtgtk/thumbtable.c:2099
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vues/miniature/copie historique"
 
-#: ../src/dtgtk/thumbtable.c:2083
+#: ../src/dtgtk/thumbtable.c:2100
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vues/miniature/copier une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:2085
+#: ../src/dtgtk/thumbtable.c:2102
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vues/miniature/coller le développement"
 
-#: ../src/dtgtk/thumbtable.c:2086
+#: ../src/dtgtk/thumbtable.c:2103
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vues/miniature/coller une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:2088
+#: ../src/dtgtk/thumbtable.c:2105
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vues/miniature/supprimer historique"
 
-#: ../src/dtgtk/thumbtable.c:2090
+#: ../src/dtgtk/thumbtable.c:2107
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vues/miniature/cloner l'image"
 
-#: ../src/dtgtk/thumbtable.c:2091
+#: ../src/dtgtk/thumbtable.c:2108
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vues/miniature/dupliquer image vierge"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2095
+#: ../src/dtgtk/thumbtable.c:2112
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vues/miniature/couleur rouge"
 
-#: ../src/dtgtk/thumbtable.c:2096
+#: ../src/dtgtk/thumbtable.c:2113
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vues/miniature/couleur jaune"
 
-#: ../src/dtgtk/thumbtable.c:2097
+#: ../src/dtgtk/thumbtable.c:2114
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vues/miniature/couleur vert"
 
-#: ../src/dtgtk/thumbtable.c:2098
+#: ../src/dtgtk/thumbtable.c:2115
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vues/miniature/couleur bleue"
 
-#: ../src/dtgtk/thumbtable.c:2099
+#: ../src/dtgtk/thumbtable.c:2116
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vues/miniature/couleur violette"
 
-#: ../src/dtgtk/thumbtable.c:2100
+#: ../src/dtgtk/thumbtable.c:2117
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "vues/miniature/aucun label couleur"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2103
+#: ../src/dtgtk/thumbtable.c:2120
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vues/miniature/tout sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:2104
+#: ../src/dtgtk/thumbtable.c:2121
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vues/miniature/ne rien sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:2106
+#: ../src/dtgtk/thumbtable.c:2123
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vues/miniature/inverser sélection"
 
-#: ../src/dtgtk/thumbtable.c:2107
+#: ../src/dtgtk/thumbtable.c:2124
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vues/miniature/sélectionner film"
 
-#: ../src/dtgtk/thumbtable.c:2108
+#: ../src/dtgtk/thumbtable.c:2125
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vues/miniature/non développées"
@@ -6737,7 +6737,7 @@ msgid "select file to import"
 msgstr "sélectionne le fichier à importer"
 
 #: ../src/gui/preferences.c:1605 ../src/gui/preferences.c:1688
-#: ../src/libs/collect.c:365 ../src/libs/copy_history.c:101
+#: ../src/libs/collect.c:366 ../src/libs/copy_history.c:101
 #: ../src/libs/geotagging.c:475 ../src/libs/import.c:556
 #: ../src/libs/import.c:662 ../src/libs/styles.c:392
 msgid "_open"
@@ -14278,60 +14278,60 @@ msgstr "vitesse d'obturation"
 msgid "WB"
 msgstr "BdB"
 
-#: ../src/libs/collect.c:117
+#: ../src/libs/collect.c:118
 msgid "collect images"
 msgstr "filtres de collection"
 
-#: ../src/libs/collect.c:364
+#: ../src/libs/collect.c:365
 msgid "search filmroll"
 msgstr "rechercher une pellicule"
 
-#: ../src/libs/collect.c:450
+#: ../src/libs/collect.c:451
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr ""
 "problème lors de la sélection d'un nouveau chemin pour la pellicule située "
 "dans %s"
 
-#: ../src/libs/collect.c:502
+#: ../src/libs/collect.c:503
 msgid "search filmroll..."
 msgstr "rechercher une pellicule..."
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/collect.c:506
+#: ../src/libs/collect.c:507
 msgid "remove..."
 msgstr "enlever..."
 
-#: ../src/libs/collect.c:1148
+#: ../src/libs/collect.c:1124
 msgid "uncategorized"
 msgstr "sans catégorie"
 
-#: ../src/libs/collect.c:1568
+#: ../src/libs/collect.c:1544
 msgid "not tagged"
 msgstr "non positionnée"
 
-#: ../src/libs/collect.c:1580
+#: ../src/libs/collect.c:1556
 msgid "copied locally"
 msgstr "copiée localement"
 
-#: ../src/libs/collect.c:1682
+#: ../src/libs/collect.c:1658
 msgid "group followers"
 msgstr "membres du groupe"
 
-#: ../src/libs/collect.c:1942 ../src/libs/collect.c:1957
-#: ../src/libs/collect.c:2479
+#: ../src/libs/collect.c:1918 ../src/libs/collect.c:1933
+#: ../src/libs/collect.c:2455
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:1946
+#: ../src/libs/collect.c:1922
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:2002
+#: ../src/libs/collect.c:1978
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "entrer la requête, utiliser <, <=, >, >=, <>, =, [;] comme opérateurs"
 
-#: ../src/libs/collect.c:2007
+#: ../src/libs/collect.c:1983
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -14340,43 +14340,65 @@ msgstr ""
 "entrer les dates sous la forme : AAAA:MM:JJ HH:MM:SS (uniquement l'année est "
 "obligatoire)"
 
-#: ../src/libs/collect.c:2013
+#: ../src/libs/collect.c:1989
 #, no-c-format
 msgid "type your query, use `%' as wildcard and `,' to separate values"
 msgstr ""
 "saisissez votre requête, utilisez « % » en caractère joker et « , » pour "
 "séparer les valeurs"
 
-#: ../src/libs/collect.c:2018 ../src/libs/collect.c:2587
+#: ../src/libs/collect.c:1994 ../src/libs/collect.c:2602
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
 "saisissez votre requête,\n"
 "utilisez « % » en caractère joker"
 
-#: ../src/libs/collect.c:2485
+#: ../src/libs/collect.c:2461
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:2490
+#: ../src/libs/collect.c:2466
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:2495
+#: ../src/libs/collect.c:2471
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:2502
+#: ../src/libs/collect.c:2478
 msgid "change to: and"
 msgstr "changer en « et »"
 
-#: ../src/libs/collect.c:2507
+#: ../src/libs/collect.c:2483
 msgid "change to: or"
 msgstr "changer en « ou »"
 
-#: ../src/libs/collect.c:2512
+#: ../src/libs/collect.c:2488
 msgid "change to: except"
 msgstr "changer en « sauf »"
+
+#: ../src/libs/collect.c:2518
+msgid "files"
+msgstr "fichiers"
+
+#: ../src/libs/collect.c:2523 ../src/libs/export_metadata.c:289
+#: ../src/libs/image.c:398 ../src/libs/image.c:536 ../src/libs/metadata.c:421
+#: ../src/libs/metadata.c:608
+msgid "metadata"
+msgstr "métadonnées"
+
+#: ../src/libs/collect.c:2534
+msgid "times"
+msgstr "heures"
+
+#: ../src/libs/collect.c:2542
+msgid "capture details"
+msgstr "détails de prise de vue"
+
+#: ../src/libs/collect.c:2551 ../src/libs/tools/darktable.c:61
+msgid "darktable"
+msgstr "darktable"
 
 #: ../src/libs/colorpicker.c:54
 msgid "color picker"
@@ -14811,12 +14833,6 @@ msgstr "données EXIF"
 #: ../src/libs/export_metadata.c:287
 msgid "export exif metadata"
 msgstr "exporter les métadonnées exif"
-
-#: ../src/libs/export_metadata.c:289 ../src/libs/image.c:398
-#: ../src/libs/image.c:536 ../src/libs/metadata.c:421
-#: ../src/libs/metadata.c:608
-msgid "metadata"
-msgstr "métadonnées"
 
 #: ../src/libs/export_metadata.c:290
 msgid "export dt xmp metadata (from metadata editor module)"
@@ -17174,10 +17190,6 @@ msgid "clear all labels of selected images"
 msgstr ""
 "efface tous les labels\n"
 "des images sélectionnées"
-
-#: ../src/libs/tools/darktable.c:61
-msgid "darktable"
-msgstr "darktable"
 
 #: ../src/libs/tools/darktable.c:252
 #, c-format
