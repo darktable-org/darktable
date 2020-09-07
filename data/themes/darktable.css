@@ -497,9 +497,8 @@ overshoot.right
 #header-toolbar #control-button
 {
   min-height: 1em;
-  min-width: 0.9em;
+  min-width: 1em;
   padding: 0.15em;
-  margin: 0.15em;
 }
 
 #control-button #button-canvas,
