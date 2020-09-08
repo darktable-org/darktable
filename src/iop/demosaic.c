@@ -2465,7 +2465,7 @@ static void passthrough_color(float *out, const float *const in, dt_iop_roi_t *c
       for(int col = 0; col < (roi_out->width); col++)
       {
         const float val = in[col + roi_out->x + ((row + roi_out->y) * roi_in->width)];
-        const uint32_t offset = (size_t)4 * ((size_t)row * roi_out->width + col);     
+        const uint32_t offset = (size_t)4 * ((size_t)row * roi_out->width + col);
         const uint32_t ch = FC(row + roi_out->y, col + roi_out->x, filters);
 
         out[offset] = out[offset + 1] = out[offset + 2] = 0.0f;
@@ -2488,7 +2488,7 @@ static void passthrough_color(float *out, const float *const in, dt_iop_roi_t *c
       for(int col = 0; col < (roi_out->width); col++)
       {
         const float val = in[col + roi_out->x + ((row + roi_out->y) * roi_in->width)];
-        const uint32_t offset = (size_t)4 * ((size_t)row * roi_out->width + col);     
+        const uint32_t offset = (size_t)4 * ((size_t)row * roi_out->width + col);
         const uint32_t ch = FCxtrans(row, col, roi_in, xtrans);
 
         out[offset] = out[offset + 1] = out[offset + 2] = 0.0f;
@@ -2895,7 +2895,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if((qual_flags & DEMOSAIC_MEDIUM_QUAL)
   // only overwrite setting if quality << requested and in dr mode and not a special method
   && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-  && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)) 
+  && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR))
     demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   const float *const pixels = (float *)i;
@@ -4888,7 +4888,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     d->color_smoothing = 0;
     d->median_thrs = 0.0f;
   }
-  
+
   if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
   {
     d->median_thrs = 0.0f;
@@ -4983,13 +4983,13 @@ void gui_update(struct dt_iop_module_t *self)
   if((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
      (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
      (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
-     (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX))   
+     (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX))
   {
     gtk_widget_hide(g->median_thrs);
     gtk_widget_hide(g->color_smoothing);
     gtk_widget_hide(g->greeneq);
   }
-  
+
   if(p->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE || p->demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
   {
     gtk_widget_hide(g->median_thrs);
@@ -5046,7 +5046,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     (p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) &&
     (p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) &&
     (p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHR_MONOX) &&
-    (p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHR_COLORX);   
+    (p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHR_COLORX);
 
   if(w == g->demosaic_method_bayer)
   {
