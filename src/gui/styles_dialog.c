@@ -378,7 +378,6 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   GtkBox *sbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(box), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(scroll), TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(sbox));
 
   sd->name = gtk_entry_new();
@@ -406,6 +405,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   gtk_box_pack_start(box, sd->name, FALSE, TRUE, 0);
   gtk_box_pack_start(box, sd->description, FALSE, TRUE, 0);
+  gtk_box_pack_start(box, GTK_WIDGET(scroll), TRUE, TRUE, 0);
 
   /* create the list of items */
   sd->items = GTK_TREE_VIEW(gtk_tree_view_new());
