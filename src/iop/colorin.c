@@ -1946,6 +1946,8 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
+  else
+    d->type = DT_COLORSPACE_ENHANCED_MATRIX;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
