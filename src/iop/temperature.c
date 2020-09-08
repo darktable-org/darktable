@@ -831,7 +831,7 @@ int generate_preset_combo(struct dt_iop_module_t *self)
             }
 
           }
-          dt_bauhaus_combobox_add_full(g->presets, wb_preset[i].name, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, preset, free, TRUE);
+          dt_bauhaus_combobox_add_full(g->presets, _(wb_preset[i].name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, preset, free, TRUE);
           g->preset_num[g->preset_cnt] = i;
           g->preset_cnt++;
           presets_found++;
