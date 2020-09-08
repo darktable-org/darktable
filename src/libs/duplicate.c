@@ -432,7 +432,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
     GtkWidget *tb = gtk_entry_new();
     if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
-    gtk_entry_set_width_chars(GTK_ENTRY(tb), 15);
+    gtk_entry_set_width_chars(GTK_ENTRY(tb), 0);
     g_object_set_data (G_OBJECT(tb), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(tb));
@@ -442,7 +442,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 
     gtk_box_pack_start(GTK_BOX(hb), thumb->w_main, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hb), tb, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hb), tb, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
 
