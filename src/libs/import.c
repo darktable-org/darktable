@@ -773,22 +773,16 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   /* add import single image buttons */
-  GtkWidget *widget = gtk_button_new_with_label(_("image..."));
-  dt_gui_add_help_link(widget, "lighttable_panels.html#import_from_fs");
+  GtkWidget *widget = dt_ui_button_new(_("image..."), _("select one or more images to import"), "lighttable_panels.html#import_from_fs");
   d->import_file = GTK_BUTTON(widget);
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_CENTER);
-  gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_single_image_callback), d);
 
   /* adding the import folder button */
-  widget = gtk_button_new_with_label(_("folder..."));
-  dt_gui_add_help_link(widget, "lighttable_panels.html#import_from_fs");
+  widget = dt_ui_button_new(_("folder..."), _("select a folder to import as film roll"), "lighttable_panels.html#import_from_fs");
   d->import_directory = GTK_BUTTON(widget);
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_CENTER);
-  gtk_widget_set_tooltip_text(widget, _("select a folder to import as film roll"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -797,13 +791,10 @@ void gui_init(dt_lib_module_t *self)
 
 #ifdef HAVE_GPHOTO2
   /* add the rescan button */
-  GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
-  dt_gui_add_help_link(GTK_WIDGET(scan), "lighttable_panels.html#import_from_camera");
-  d->scan_devices = scan;
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_CENTER);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(scan), _("scan for newly attached devices"));
-  g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scan), TRUE, TRUE, 0);
+  widget = dt_ui_button_new(_("scan for devices"), _("scan for newly attached devices"), "lighttable_panels.html#import_from_camera");
+  d->scan_devices = GTK_BUTTON(widget);
+  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(widget), TRUE, TRUE, 0);
 
   /* add devices container for cameras */
   d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));

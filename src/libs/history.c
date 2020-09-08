@@ -144,9 +144,9 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  d->compress_button = gtk_button_new_with_label(_("compress history stack"));
-  ellipsize_button(d->compress_button);
-  gtk_widget_set_tooltip_text(d->compress_button, _("create a minimal history stack which produces the same image\nctrl-click to truncate history to the selected item"));
+  d->compress_button = dt_ui_button_new(_("compress history stack"),
+                                        _("create a minimal history stack which produces the same image\n"
+                                          "ctrl-click to truncate history to the selected item"), NULL);
   g_signal_connect(G_OBJECT(d->compress_button), "button-press-event", G_CALLBACK(_lib_history_compress_clicked_callback), self);
 
   /* add toolbar button for creating style */
@@ -703,8 +703,8 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
       {
         dt_introspection_field_t *entry = field->Struct.fields[i];
 
-        gchar *description = _(*entry->header.description ? 
-                                entry->header.description : 
+        gchar *description = _(*entry->header.description ?
+                                entry->header.description :
                                 entry->header.field_name);
 
         if(d) description = g_strdup_printf("%s.%s", d, description);
@@ -782,8 +782,8 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
     break;
   case DT_INTROSPECTION_TYPE_FLOATCOMPLEX:
     if(*(float complex*)o != *(float complex*)p)
-      return g_strdup_printf("%s\t%.4f + %.4fi\t\u2192\t%.4f + %.4fi", d, 
-                             creal(*(float complex*)o), cimag(*(float complex*)o), 
+      return g_strdup_printf("%s\t%.4f + %.4fi\t\u2192\t%.4f + %.4fi", d,
+                             creal(*(float complex*)o), cimag(*(float complex*)o),
                              creal(*(float complex*)p), cimag(*(float complex*)p));
     break;
   case DT_INTROSPECTION_TYPE_ENUM:
@@ -797,7 +797,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
           old_str = i->description;
           if(!*old_str) old_str = i->name;
         }
-        if(i->value == *(int*)p) 
+        if(i->value == *(int*)p)
         {
           new_str = i->description;
           if(!*new_str) new_str = i->name;
@@ -899,7 +899,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
                               : hitem->blend_params->mask_id == 0
                               ? g_strdup_printf(_("the drawn mask was removed"))
                               : g_strdup_printf(_("the drawn mask was changed"));
-  
+
   dt_iop_gui_blend_data_t *bd = hitem->module->blend_data;
 
   for(int in_out = 1; in_out >= 0; in_out--)
@@ -941,7 +941,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
         change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s%s\t\u2192\t%s| %s- %s| %s%s", _(b->name),
                                                     s[0][0], s[1][0], s[2][0], s[3][0], opol,
                                                     s[0][1], s[1][1], s[2][1], s[3][1], npol);
-      }   
+      }
     }
   }
 
@@ -959,7 +959,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
       gtk_widget_set_name(view, "history-tooltip");
       g_signal_connect(G_OBJECT(view), "destroy", G_CALLBACK(gtk_widget_destroyed), &view);
     }
-     
+
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
     gtk_text_buffer_set_text(buffer, tooltip_text, -1);
     gtk_tooltip_set_custom(tooltip, view);
@@ -1058,7 +1058,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
     gtk_widget_set_has_tooltip(widget, TRUE);
     g_signal_connect(G_OBJECT(widget), "query-tooltip", G_CALLBACK(_changes_tooltip_callback), (void *)hitem);
-  
+
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
     gtk_box_reorder_child(GTK_BOX(d->history_box), widget, 0);
     num++;
