@@ -1240,6 +1240,29 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
   dt_iop_gui_set_enable_button(module);
 }
 
+void dt_iop_gui_set_enable_button_icon(GtkWidget *w, dt_iop_module_t *module)
+{
+  // set on/off icon
+  if(module->default_enabled && module->hide_enable_button)
+  {
+    gtk_widget_set_name(w, "module-always-enabled-button");
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
+                                 dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+  }
+  else if(!module->default_enabled && module->hide_enable_button)
+  {
+    gtk_widget_set_name(w, "module-always-disabled-button");
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
+                                 dtgtk_cairo_paint_switch_off, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+  }
+  else
+  {
+    gtk_widget_set_name(w, "module-enable-button");
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
+                                 dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+  }
+}
+
 void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
 {
   if(module->off)
@@ -1249,6 +1272,8 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
       gtk_widget_set_sensitive(GTK_WIDGET(module->off), FALSE);
     else
       gtk_widget_set_sensitive(GTK_WIDGET(module->off), TRUE);
+
+    dt_iop_gui_set_enable_button_icon(GTK_WIDGET(module->off), module);
   }
 }
 
@@ -2106,21 +2131,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "module-preset-button");
 
   /* add enabled button */
-  if(module->default_enabled && module->hide_enable_button)
-  {
-    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
-    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-always-enabled-button");
-  }
-  else if(!module->default_enabled && module->hide_enable_button)
-  {
-    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch_off, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
-    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-always-disabled-button");
-  }
-  else
-  {
-    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
-    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-enable-button");
-  }
+  hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch,
+                                                 CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+  dt_iop_gui_set_enable_button_icon(hw[IOP_MODULE_SWITCH], module);
+
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
