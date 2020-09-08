@@ -1411,6 +1411,8 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   {
     // Search for Lightroom sidecar file, import tags if found
     dt_lightroom_import(id, NULL, TRUE);
+    // Make sure that lightroom xmp data (label in particular) are saved in dt xmp
+    dt_image_write_sidecar_file(id);
   }
 
   // add a tag with the file extension
