@@ -5020,6 +5020,13 @@ void reload_defaults(dt_iop_module_t *module)
 
   if(dt_image_is_monochrome(&module->dev->image_storage))
     d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+  else if(module->dev->image_storage.buf_dsc.filters == 9u)
+    d->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  else
+    d->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+
+  d->color_smoothing = 0;
+  d->green_eq = DT_IOP_GREEN_EQ_NO;
 
   module->hide_enable_button = 1;
 
@@ -5030,9 +5037,6 @@ void reload_defaults(dt_iop_module_t *module)
   {
     module->default_enabled = 0;
   }
-
-  if(module->dev->image_storage.buf_dsc.filters == 9u)
-    d->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   memcpy(module->params, module->default_params, sizeof(dt_iop_demosaic_params_t));
 }
