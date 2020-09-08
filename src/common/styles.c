@@ -456,8 +456,8 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
 
       snprintf(query, sizeof(query),
                "INSERT INTO data.style_items "
-               "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_"
-               "   version,multi_priority,multi_name)"
+               "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,"
+               "   multi_priority,multi_name)"
                " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,"
                "   multi_priority,multi_name"
                " FROM data.style_items"
@@ -468,10 +468,10 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
     else
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "INSERT INTO data.style_items "
-                                  "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_"
-                                  "   version,multi_priority,multi_name)"
-                                  " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,"
-                                  "   multi_priority,multi_name"
+                                  "  (styleid,num,module,operation,op_params,enabled,blendop_params,"
+                                  "   blendop_version,multi_priority,multi_name)"
+                                  " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,"
+                                  "        blendop_version,multi_priority,multi_name"
                                   " FROM data.style_items"
                                   " WHERE styleid=?2",
                                   -1, &stmt, NULL);
