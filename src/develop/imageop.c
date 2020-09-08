@@ -2134,9 +2134,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* reorder header, for now, iop are always in the right panel */
   for(int i = 0; i <= IOP_MODULE_LABEL; i++)
-    if(hw[i]) gtk_box_pack_start( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
+    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
   for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
-    if(hw[i]) gtk_box_pack_end( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
+    if(hw[i]) gtk_box_pack_end(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
 
   dt_gui_add_help_link(header, "interacting.html");
 
