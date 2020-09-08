@@ -2432,6 +2432,46 @@ void dt_database_backup(const char *filename)
   g_free(backup);
 }
 
+int _get_pragma_int_val(const struct dt_database_t *db, const char* pragma)
+{
+  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
+  int val = -1;
+  sqlite3_stmt *stmt;
+  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    val = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  return val;
+}
+
+gchar* _get_pragma_string_val(const struct dt_database_t *db, const char* pragma)
+{
+  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
+  sqlite3_stmt *stmt;
+  gchar* val = NULL;
+  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    val = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      gchar* cur_val = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+      gchar* tmp_val = g_strdup(val);
+      g_free(val);
+      val = g_strconcat(tmp_val, "\n", cur_val, NULL);
+      g_free(cur_val);
+      g_free(tmp_val);
+    }
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+  return val;
+}
+
 dt_database_t *dt_database_init(const char *alternative, const gboolean load_data, const gboolean has_gui)
 {
   /*  set the threading mode to Serialized */
@@ -2576,9 +2616,11 @@ start:
   }
   else
   {
+    gchar* data_status = _get_pragma_string_val(db, "data.quick_check");
     rc = sqlite3_prepare_v2(db->handle, "select value from data.db_info where key = 'version'", -1, &stmt, NULL);
-    if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+    if(!g_strcmp0(data_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
     {
+      g_free(data_status); // status is OK and we don't need to care :)
       // compare the version of the db with what is current for this executable
       const int db_version = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
@@ -2618,14 +2660,29 @@ start:
       // oh, bad situation. the database is corrupt and can't be read!
       // we inform the user here and let him decide what to do: exit or delete and try again.
 
+      gchar* quick_check_text = NULL;
+      if(g_strcmp0(data_status, "ok")) // data_status is not ok
+      {
+        quick_check_text = g_strdup_printf(_("quick_check said:\n"
+                                            "%s \n"), data_status);
+      }
+      else
+      {
+        quick_check_text = g_strdup("");// a trick;
+      }
+
       char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                    "\n"
                                                    "<span style=\"italic\">%s</span>\n"
                                                    "\n"
-                                                   "it seems that the database is corrupt.\n"
+                                                   "it seems that the database is corrupted.\n"
+                                                   "%s"
                                                    "do you want to close darktable now to manually restore\n"
                                                    "the database from a backup or start with a new one?"),
-                                                 dbfilename_data);
+                                                 dbfilename_data, quick_check_text);
+
+      g_free(quick_check_text);
+      g_free(data_status);
 
       gboolean shall_we_delete_the_db =
           dt_gui_show_standalone_yes_no_dialog(_("darktable - error opening database"), label_text,
@@ -2656,11 +2713,14 @@ start:
     }
   }
 
+  gchar* libdb_status = _get_pragma_string_val(db, "main.quick_check");
   // next we are looking at the library database
   // does the db contain the new 'db_info' table?
   rc = sqlite3_prepare_v2(db->handle, "select value from main.db_info where key = 'version'", -1, &stmt, NULL);
-  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  if(!g_strcmp0(libdb_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
+    g_free(libdb_status);//it's ok :)
+
     // compare the version of the db with what is current for this executable
     const int db_version = sqlite3_column_int(stmt, 0);
 
@@ -2695,19 +2755,34 @@ start:
     }
     // else: the current version, do nothing
   }
-  else if(rc == SQLITE_CORRUPT || rc == SQLITE_NOTADB)
+  else if(g_strcmp0(libdb_status, "ok") || rc == SQLITE_CORRUPT || rc == SQLITE_NOTADB)
   {
     // oh, bad situation. the database is corrupt and can't be read!
     // we inform the user here and let him decide what to do: exit or delete and try again.
+
+    gchar* quick_check_text = NULL;
+    if(g_strcmp0(libdb_status, "ok")) // data_status is not ok
+    {
+      quick_check_text = g_strdup_printf(_("quick_check said:\n"
+                                          "%s \n"), libdb_status);
+    }
+    else
+    {
+      quick_check_text = g_strdup("");// a trick;
+    }
 
     char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                   "\n"
                                                   "<span style=\"italic\">%s</span>\n"
                                                   "\n"
-                                                  "it seems that the database is corrupt.\n"
+                                                  "it seems that the database is corrupted.\n"
+                                                  "%s"
                                                   "do you want to close darktable now to manually restore\n"
                                                   "the database from a backup or start with a new one?"),
-                                               dbfilename_library);
+                                               dbfilename_library, quick_check_text);
+
+    g_free(quick_check_text);
+    g_free(libdb_status);
 
     gboolean shall_we_delete_the_db =
         dt_gui_show_standalone_yes_no_dialog(_("darktable - error opening database"), label_text,
@@ -2877,23 +2952,6 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
   return db->lock_acquired;
 }
 
-int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
-{
-  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
-  int val = -1;
-  sqlite3_stmt *stmt;
-  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
-  __DT_DEBUG_ASSERT_WITH_QUERY__(rc, query);
-  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    val = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
-  g_free(query);
-
-  return val;
-}
-
 void dt_database_cleanup_busy_statements(const struct dt_database_t *db)
 {
   sqlite3_stmt *stmt = NULL;
@@ -2917,10 +2975,10 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
 {
   char* err = NULL;
 
-  const int main_pre_free_count = _get_pragma_val(db, "main.freelist_count");
-  const int main_page_size = _get_pragma_val(db, "main.page_size");
-  const int data_pre_free_count = _get_pragma_val(db, "data.freelist_count");
-  const int data_page_size = _get_pragma_val(db, "data.page_size");
+  const int main_pre_free_count = _get_pragma_int_val(db, "main.freelist_count");
+  const int main_page_size = _get_pragma_int_val(db, "main.page_size");
+  const int data_pre_free_count = _get_pragma_int_val(db, "data.freelist_count");
+  const int data_page_size = _get_pragma_int_val(db, "data.page_size");
 
   const guint64 calc_pre_size = (main_pre_free_count*main_page_size) + (data_pre_free_count*data_page_size);
 
@@ -2952,8 +3010,8 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE", NULL, NULL, &err);
   ERRCHECK
 
-  const int main_post_free_count = _get_pragma_val(db, "main.freelist_count");
-  const int data_post_free_count = _get_pragma_val(db, "data.freelist_count");
+  const int main_post_free_count = _get_pragma_int_val(db, "main.freelist_count");
+  const int data_post_free_count = _get_pragma_int_val(db, "data.freelist_count");
 
   const guint64 calc_post_size = (main_post_free_count*main_page_size) + (data_post_free_count*data_page_size);
   const gint64 bytes_freed = calc_pre_size - calc_post_size;
@@ -2966,7 +3024,7 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   }
   else
   {
-    
+
   }
 }
 #undef ERRCHECK
@@ -3056,13 +3114,13 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gbo
   }
 
   // checking free pages
-  const int main_free_count = _get_pragma_val(db, "main.freelist_count");
-  const int main_page_count = _get_pragma_val(db, "main.page_count");
-  const int main_page_size = _get_pragma_val(db, "main.page_size");
+  const int main_free_count = _get_pragma_int_val(db, "main.freelist_count");
+  const int main_page_count = _get_pragma_int_val(db, "main.page_count");
+  const int main_page_size = _get_pragma_int_val(db, "main.page_size");
 
-  const int data_free_count = _get_pragma_val(db, "data.freelist_count");
-  const int data_page_count = _get_pragma_val(db, "data.page_count");
-  const int data_page_size = _get_pragma_val(db, "data.page_size");
+  const int data_free_count = _get_pragma_int_val(db, "data.freelist_count");
+  const int data_page_count = _get_pragma_int_val(db, "data.page_count");
+  const int data_page_size = _get_pragma_int_val(db, "data.page_size");
 
   dt_print(DT_DEBUG_SQL,
       "[db maintenance] main: [%d/%d pages], data: [%d/%d pages].\n",
@@ -3106,7 +3164,6 @@ void dt_database_optimize(const struct dt_database_t *db)
   // see: https://www.sqlite.org/pragma.html#pragma_optimize
   DT_DEBUG_SQLITE3_EXEC(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
 }
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
