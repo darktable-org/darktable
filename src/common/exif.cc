@@ -467,7 +467,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       else if(label == "Purple") // Is it really called like that in XMP files?
         dt_colorlabels_set_label(img->id, 4);
     }
-    // if Xmp.xmp.label not managed from an external app use dt colors
+    // if Xmp.xmp.Label not managed from an external app use dt colors
     else if(FIND_XMP_TAG("Xmp.darktable.colorlabels"))
     {
       // color labels
