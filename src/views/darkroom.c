@@ -421,12 +421,12 @@ void expose(
     if(dev->image_invalid_cnt)
     {
       fontsize = DT_PIXEL_APPLY_DPI(20);
-      load_txt = dt_util_dstrcat(NULL, "%s `%s', %s\n\n%s\n%s",
-          _("darktable could not load"),
-          dev->image_storage.filename,
-          _("switching to lighttable now."),
-          _("please check the image (use exiv2 or exiftool) for corrupted data. if the image seems to"),
-          _("be intact, please consider opening an issue at https://github.com/darktable-org/darktable.") );
+      load_txt = dt_util_dstrcat(
+          NULL,
+          _("darktable could not load `%s', switching to lighttable now.\n\n"
+            "please check the image (use exiv2 or exiftool) for corrupted data. if the image seems to\n"
+            "be intact, please consider opening an issue at https://github.com/darktable-org/darktable."),
+          dev->image_storage.filename);
       if(dev->image_invalid_cnt > 400)
       {
         dev->image_invalid_cnt = 0;
@@ -436,7 +436,7 @@ void expose(
     else
     {
       fontsize = DT_PIXEL_APPLY_DPI(14);
-      load_txt = dt_util_dstrcat(NULL, "%s `%s' ...", _("loading"), dev->image_storage.filename);
+      load_txt = dt_util_dstrcat(NULL, NC_("darkroom", "loading `%s' ..."), dev->image_storage.filename);
     }
 
     pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
