@@ -115,6 +115,15 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
 
+
+typedef enum dt_clipping_preview_mode_t
+{
+  DT_CLIPPING_PREVIEW_GAMUT = 0,
+  DT_CLIPPING_PREVIEW_ANYRGB = 1,
+  DT_CLIPPING_PREVIEW_LUMINANCE = 2,
+  DT_CLIPPING_PREVIEW_SATURATION = 3
+} dt_clipping_preview_mode_t;
+
 typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
@@ -258,6 +267,7 @@ typedef struct dt_develop_t
     dt_dev_overexposed_colorscheme_t colorscheme;
     float lower;
     float upper;
+    dt_clipping_preview_mode_t mode;
   } overexposed;
 
   // for the raw overexposure indicator
