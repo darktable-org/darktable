@@ -954,25 +954,20 @@ void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buf
 }
 
 
-// return the closest mipmap size
+// return index dt_mipmap_size_t having at least width & height requested instead of minimum combined diff 
 dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width,
                                                    const int32_t height)
 {
   const double ppd = (darktable.gui != NULL) ? darktable.gui->ppd : 1.0;
+  const uint32_t dx = ppd * width;
+  const uint32_t dy = ppd * height;
 
-  // find `best' match to width and height.
-  int32_t error = 0x7fffffff;
   dt_mipmap_size_t best = DT_MIPMAP_NONE;
   for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
-    // find closest l1 norm:
-    int32_t new_error = cache->max_width[k] + cache->max_height[k] - width * ppd - height * ppd;
-    // and allow the first one to be larger in pixel size to override the smaller mip
-    if(abs(new_error) < abs(error) || (error < 0 && new_error > 0))
-    {
-      best = k;
-      error = new_error;
-    }
+    best = k;
+    if((cache->max_width[k] >= dx) && (cache->max_height[k] >= dy))
+      break;
   }
   return best;
 }
