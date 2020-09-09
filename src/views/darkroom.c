@@ -1475,6 +1475,16 @@ static void upper_callback(GtkWidget *slider, gpointer user_data)
     dt_dev_reprocess_center(d);
 }
 
+static void mode_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->overexposed.mode = dt_bauhaus_combobox_get(slider);
+  if(d->overexposed.enabled == FALSE)
+    gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
+  else
+    dt_dev_reprocess_center(d);
+}
+
 /* rawoverexposed */
 static void _rawoverexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
@@ -2182,7 +2192,7 @@ void gui_init(dt_view_t *self)
     dev->overexposed.button
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
-                                _("toggle over/under exposed indication\nright click for options"));
+                                _("toggle clipping indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
                      G_CALLBACK(_overexposed_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->overexposed.button), "button-press-event",
@@ -2203,6 +2213,20 @@ void gui_init(dt_view_t *self)
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
+    /* preview mode */
+    GtkWidget *mode = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(mode, NULL, _("clipping preview mode"));
+    dt_bauhaus_combobox_add(mode, _("full gamut"));
+    dt_bauhaus_combobox_add(mode, _("any RGB channel"));
+    dt_bauhaus_combobox_add(mode, _("luminance only"));
+    dt_bauhaus_combobox_add(mode, _("saturation only"));
+    dt_bauhaus_combobox_set(mode, dev->overexposed.mode);
+    gtk_widget_set_tooltip_text(mode, _("select the metric you want to preview\n"
+                                        "full gamut is the combination of all other modes\n"));
+    g_signal_connect(G_OBJECT(mode), "value-changed", G_CALLBACK(mode_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
+    gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
+
     /* color scheme */
     GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
     dt_bauhaus_widget_set_label(colorscheme, NULL, _("color scheme"));
@@ -2210,26 +2234,35 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_combobox_add(colorscheme, _("red & blue"));
     dt_bauhaus_combobox_add(colorscheme, _("purple & green"));
     dt_bauhaus_combobox_set(colorscheme, dev->overexposed.colorscheme);
-    gtk_widget_set_tooltip_text(colorscheme, _("select colors to indicate over/under exposure"));
+    gtk_widget_set_tooltip_text(colorscheme, _("select colors to indicate clipping"));
     g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(colorscheme_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
     gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* lower */
-    GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 2.0, 2);
+    GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, -32., 0., 1., -12.69, 2);
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
-    dt_bauhaus_slider_set_format(lower, "%.0f%%");
+    dt_bauhaus_slider_set_format(lower, "%+.2f EV");
     dt_bauhaus_widget_set_label(lower, NULL, _("lower threshold"));
-    gtk_widget_set_tooltip_text(lower, _("threshold of what shall be considered underexposed"));
+    gtk_widget_set_tooltip_text(lower, _("clipping threshold for the black point,\n"
+                                         "in EV, relatively to white (0 EV).\n"
+                                         "8 bits sRGB clips blacks at -12.69 EV,\n"
+                                         "8 bits Adobe RGB clips blacks at -19.79 EV,\n"
+                                         "16 bits sRGB clips blacks at -20.69 EV,\n"
+                                         "typical fine-art mat prints produce black at -5.30 EV,\n"
+                                         "typical color glossy prints produce black at -8.00 EV,\n"
+                                         "typical B&W glossy prints produce black at -9.00 EV."
+                                         ));
     g_signal_connect(G_OBJECT(lower), "value-changed", G_CALLBACK(lower_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lower), TRUE, TRUE, 0);
 
     /* upper */
-    GtkWidget *upper = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 98.0, 2);
+    GtkWidget *upper = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 99.99, 2);
     dt_bauhaus_slider_set(upper, dev->overexposed.upper);
-    dt_bauhaus_slider_set_format(upper, "%.0f%%");
+    dt_bauhaus_slider_set_format(upper, "%.2f%%");
     dt_bauhaus_widget_set_label(upper, NULL, _("upper threshold"));
-    gtk_widget_set_tooltip_text(upper, _("threshold of what shall be considered overexposed"));
+    gtk_widget_set_tooltip_text(upper, _("clipping threshold for the white point.\n"
+                                         "100 % is peak medium luminance."));
     g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
   }
