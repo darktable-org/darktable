@@ -2240,7 +2240,7 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* lower */
-    GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, -32., 0., 1., -12.69, 2);
+    GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, -32., -4., 1., -12.69, 2);
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
     dt_bauhaus_slider_set_format(lower, "%+.2f EV");
     dt_bauhaus_widget_set_label(lower, NULL, _("lower threshold"));

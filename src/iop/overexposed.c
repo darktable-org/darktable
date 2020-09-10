@@ -172,8 +172,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     goto cleanup;
   }
 
-  const float lower = exp2f(dev->overexposed.lower);   // in EV
-  const float upper = dev->overexposed.upper / 100.0f; // in %
+  const float lower = exp2f(fminf(dev->overexposed.lower, -4.f));   // in EV
+  const float upper = dev->overexposed.upper / 100.0f;              // in %
 
   const int colorscheme = dev->overexposed.colorscheme;
   const float *const upper_color = dt_iop_overexposed_colors[colorscheme][0];
@@ -477,8 +477,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
 
-  const float lower = exp2f(dev->overexposed.lower);   // in EV
-  const float upper = dev->overexposed.upper / 100.0f; // in %
+  const float lower = exp2f(fminf(dev->overexposed.lower, -4.f));   // in EV
+  const float upper = dev->overexposed.upper / 100.0f;              // in %
   const int colorscheme = dev->overexposed.colorscheme;
 
   const float *upper_color = dt_iop_overexposed_colors[colorscheme][0];
