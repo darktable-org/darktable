@@ -1259,9 +1259,17 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       if(split[1])
       {
-        mi_name = g_strdup(split[1]);
+        gsize mi_len = 1 + strlen(split[1]);
         for(int i=2; split[i]; i++)
-          mi_name = g_strconcat(mi_name, " | ", split[i], NULL);
+          mi_len += strlen(split[i]) + strlen(" | ");
+        
+        mi_name = g_new0(gchar, mi_len);
+        gchar* tmp_ptr = g_stpcpy(mi_name, split[1]);
+        for(int i=2; split[i]; i++)
+        {
+          tmp_ptr = g_stpcpy(tmp_ptr, " | ");
+          tmp_ptr = g_stpcpy(tmp_ptr, split[i]);
+        }
       }
       else
         mi_name = g_strdup(split[0]);
