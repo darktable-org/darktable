@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-07 11:26+0200\n"
-"PO-Revision-Date: 2020-09-07 07:50+0200\n"
+"POT-Creation-Date: 2020-09-10 20:53+0200\n"
+"PO-Revision-Date: 2020-09-10 20:56+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -90,11 +90,11 @@ msgstr "spécifique"
 #: ../build/src/iop/introspection_colorin.c:301
 #: ../build/src/iop/introspection_vignette.c:262 ../src/common/history.c:840
 #: ../src/common/history.c:843 ../src/common/history.c:859
-#: ../src/common/styles.c:1079 ../src/common/styles.c:1083
+#: ../src/common/styles.c:1081 ../src/common/styles.c:1085
 #: ../src/develop/blend_gui.c:99 ../src/develop/blend_gui.c:120
 #: ../src/develop/blend_gui.c:2203 ../src/develop/develop.c:2046
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
-#: ../src/iop/ashift.c:4788 ../src/iop/demosaic.c:5082
+#: ../src/iop/ashift.c:4788 ../src/iop/demosaic.c:5086
 #: ../src/libs/live_view.c:434
 msgid "off"
 msgstr "désactivé(e)"
@@ -331,23 +331,23 @@ msgid "gamut clipping"
 msgstr "troncature gamut"
 
 #: ../build/src/iop/introspection_colorin.c:302
-#: ../build/src/iop/introspection_lut3d.c:201 ../src/common/colorspaces.c:1652
+#: ../build/src/iop/introspection_lut3d.c:201 ../src/common/colorspaces.c:1653
 msgid "sRGB"
 msgstr "sRVB"
 
 #: ../build/src/iop/introspection_colorin.c:303
-#: ../src/common/colorspaces.c:1461 ../src/common/colorspaces.c:1654
+#: ../src/common/colorspaces.c:1461 ../src/common/colorspaces.c:1655
 #: ../src/libs/print_settings.c:1042
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RVB (compatible)"
 
 #: ../build/src/iop/introspection_colorin.c:304
-#: ../src/common/colorspaces.c:1466 ../src/common/colorspaces.c:1656
+#: ../src/common/colorspaces.c:1466 ../src/common/colorspaces.c:1657
 msgid "linear Rec709 RGB"
 msgstr "RVB Rec709 linéaire"
 
 #: ../build/src/iop/introspection_colorin.c:305
-#: ../src/common/colorspaces.c:1475 ../src/common/colorspaces.c:1658
+#: ../src/common/colorspaces.c:1475 ../src/common/colorspaces.c:1659
 msgid "linear Rec2020 RGB"
 msgstr "RVB Rec2020 linéaire"
 
@@ -3177,22 +3177,22 @@ msgstr[0] "%d image sur %d sélectionnée dans la collection courante"
 msgstr[1] "%d images sur %d sélectionnées dans la collection courante"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
-#: ../src/common/colorspaces.c:1430 ../src/common/colorspaces.c:1686
+#: ../src/common/colorspaces.c:1430 ../src/common/colorspaces.c:1687
 msgid "work profile"
 msgstr "profil de travail"
 
-#: ../src/common/colorspaces.c:1433 ../src/common/colorspaces.c:1682
+#: ../src/common/colorspaces.c:1433 ../src/common/colorspaces.c:1683
 #: ../src/iop/colorout.c:893
 msgid "export profile"
 msgstr "profil d'exportation"
 
-#: ../src/common/colorspaces.c:1437 ../src/common/colorspaces.c:1684
+#: ../src/common/colorspaces.c:1437 ../src/common/colorspaces.c:1685
 #: ../src/views/darkroom.c:2312
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
 #: ../src/common/colorspaces.c:1443 ../src/common/colorspaces.c:1446
-#: ../src/common/colorspaces.c:1666 ../src/common/colorspaces.c:1688
+#: ../src/common/colorspaces.c:1667 ../src/common/colorspaces.c:1689
 msgid "system display profile"
 msgstr "système"
 
@@ -3228,16 +3228,16 @@ msgstr "RVB P3 HLG"
 msgid "linear prophoto RGB"
 msgstr "prophoto RVB linéaire"
 
-#: ../src/common/colorspaces.c:1505 ../src/common/colorspaces.c:1660
+#: ../src/common/colorspaces.c:1505 ../src/common/colorspaces.c:1661
 msgid "linear XYZ"
 msgstr "linéaire XYZ"
 
-#: ../src/common/colorspaces.c:1509 ../src/common/colorspaces.c:1662
+#: ../src/common/colorspaces.c:1509 ../src/common/colorspaces.c:1663
 #: ../src/libs/colorpicker.c:594 ../src/libs/colorpicker.c:632
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1514 ../src/common/colorspaces.c:1664
+#: ../src/common/colorspaces.c:1514 ../src/common/colorspaces.c:1665
 msgid "linear infrared BGR"
 msgstr "infrarouge linéaire BVR"
 
@@ -3245,55 +3245,55 @@ msgstr "infrarouge linéaire BVR"
 msgid "BRG (for testing)"
 msgstr "BRV (pour test)"
 
-#: ../src/common/colorspaces.c:1668
+#: ../src/common/colorspaces.c:1669
 msgid "embedded ICC profile"
 msgstr "profil ICC intégré"
 
-#: ../src/common/colorspaces.c:1670
+#: ../src/common/colorspaces.c:1671
 msgid "embedded matrix"
 msgstr "matrice intégrée"
 
-#: ../src/common/colorspaces.c:1672
+#: ../src/common/colorspaces.c:1673
 msgid "standard color matrix"
 msgstr "matrice couleur standard"
 
-#: ../src/common/colorspaces.c:1674
+#: ../src/common/colorspaces.c:1675
 msgid "enhanced color matrix"
 msgstr "matrice couleur améliorée"
 
-#: ../src/common/colorspaces.c:1676
+#: ../src/common/colorspaces.c:1677
 msgid "vendor color matrix"
 msgstr "matrice de couleur du vendeur"
 
-#: ../src/common/colorspaces.c:1678
+#: ../src/common/colorspaces.c:1679
 msgid "alternate color matrix"
 msgstr "alternative à la matrice de couleur"
 
-#: ../src/common/colorspaces.c:1680
+#: ../src/common/colorspaces.c:1681
 msgid "BRG (experimental)"
 msgstr "BRV (expérimental)"
 
-#: ../src/common/colorspaces.c:1690
+#: ../src/common/colorspaces.c:1691
 msgid "gamma22 Rec709"
 msgstr "Rec709 gamma22"
 
-#: ../src/common/colorspaces.c:1692
+#: ../src/common/colorspaces.c:1693
 msgid "ProPhoto RGB"
 msgstr "RVB ProPhoto"
 
-#: ../src/common/colorspaces.c:1694
+#: ../src/common/colorspaces.c:1695
 msgid "PQ Rec2020"
 msgstr "Rec2020 PQ"
 
-#: ../src/common/colorspaces.c:1696
+#: ../src/common/colorspaces.c:1697
 msgid "HLG Rec2020"
 msgstr "Rec2020 HLG"
 
-#: ../src/common/colorspaces.c:1698
+#: ../src/common/colorspaces.c:1699
 msgid "PQ P3"
 msgstr "P3 PQ"
 
-#: ../src/common/colorspaces.c:1700
+#: ../src/common/colorspaces.c:1701
 msgid "HLG P3"
 msgstr "P3 HLG"
 
@@ -3370,7 +3370,7 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:909 ../src/common/database.c:2991
+#: ../src/common/darktable.c:909 ../src/common/database.c:3009
 #: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:739
 #: ../src/libs/export.c:745 ../src/libs/export.c:752
@@ -3550,19 +3550,19 @@ msgstr "darktable - erreur lors de l'ouverture de la base de données"
 msgid "delete database"
 msgstr "effacer la base de données"
 
-#: ../src/common/database.c:2968
+#: ../src/common/database.c:2986
 msgid "click later to be asked on next startup"
 msgstr "sélectionner « plus tard » pour redemander au prochain démarrage"
 
-#: ../src/common/database.c:2972
+#: ../src/common/database.c:2990
 msgid "click later to be asked when closing darktable"
 msgstr "sélectionner « plus tard » pour redemander à la fermeture"
 
-#: ../src/common/database.c:2976
+#: ../src/common/database.c:2994
 msgid "click later to be asked next time when closing darktable"
 msgstr "sélectionner « plus tard » pour redemander à la prochaine fermeture"
 
-#: ../src/common/database.c:2980
+#: ../src/common/database.c:2998
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -3583,11 +3583,11 @@ msgstr ""
 "il est possible de changer les options de maintenance dans les préférences "
 "de fonctionnement"
 
-#: ../src/common/database.c:2990
+#: ../src/common/database.c:3008
 msgid "darktable - schema maintenance"
 msgstr "darktable - maintenance"
 
-#: ../src/common/database.c:2991
+#: ../src/common/database.c:3009
 msgid "later"
 msgstr "plus tard"
 
@@ -3610,7 +3610,7 @@ msgstr[0] "supprimer le répertoire vide ?"
 msgstr[1] "supprimer les répertoires vides ?"
 
 #: ../src/common/film.c:295 ../src/gui/preferences.c:812
-#: ../src/gui/styles_dialog.c:385
+#: ../src/gui/styles_dialog.c:384
 msgid "name"
 msgstr "nom"
 
@@ -3628,8 +3628,8 @@ msgstr ""
 "sur une autre"
 
 #: ../src/common/history.c:840 ../src/common/history.c:843
-#: ../src/common/history.c:859 ../src/common/styles.c:1079
-#: ../src/common/styles.c:1083 ../src/develop/blend_gui.c:121
+#: ../src/common/history.c:859 ../src/common/styles.c:1081
+#: ../src/common/styles.c:1085 ../src/develop/blend_gui.c:121
 #: ../src/develop/develop.c:2046 ../src/iop/ashift.c:4789
 #: ../src/libs/live_view.c:435
 msgid "on"
@@ -3657,59 +3657,59 @@ msgstr ""
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1681
+#: ../src/common/image.c:1683
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "accès à la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1688
+#: ../src/common/image.c:1690
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "création de la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1695
+#: ../src/common/image.c:1697
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
-#: ../src/common/image.c:1711
+#: ../src/common/image.c:1713
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erreur de déplacement « %s » : le fichier n'existe pas"
 
-#: ../src/common/image.c:1721
+#: ../src/common/image.c:1723
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erreur de déplacement « %s » → « %s » : le fichier existe"
 
-#: ../src/common/image.c:1725
+#: ../src/common/image.c:1727
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erreur lors du déplacement « %s » → « %s »"
 
-#: ../src/common/image.c:2022
+#: ../src/common/image.c:2024
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:2036
+#: ../src/common/image.c:2038
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:2108 ../src/control/jobs/control_jobs.c:664
+#: ../src/common/image.c:2110 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible."
 
-#: ../src/common/image.c:2288
+#: ../src/common/image.c:2290
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:645 ../src/common/mipmap_cache.c:1065
+#: ../src/common/imageio.c:645 ../src/common/mipmap_cache.c:1060
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image « %s » non disponible!"
@@ -3780,7 +3780,7 @@ msgstr "diffuseur"
 msgid "title"
 msgstr "titre"
 
-#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:389
+#: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:388
 #: ../src/libs/tools/filter.c:96
 msgid "description"
 msgstr "description"
@@ -3892,8 +3892,8 @@ msgstr "le style « %s » existe déjà"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:410 ../src/common/styles.c:414
 #: ../src/common/styles.c:501 ../src/common/styles.c:585
-#: ../src/common/styles.c:963 ../src/common/styles.c:1535
-#: ../src/common/styles.c:1554
+#: ../src/common/styles.c:973 ../src/common/styles.c:1537
+#: ../src/common/styles.c:1556
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -3933,17 +3933,17 @@ msgstr[1] "les styles ont été appliqués !"
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "module « %s » version non cohérente : %d != %d"
 
-#: ../src/common/styles.c:1172
+#: ../src/common/styles.c:1174
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "impossible de remplacer le style %s"
 
-#: ../src/common/styles.c:1178
+#: ../src/common/styles.c:1180
 #, c-format
 msgid "style file for %s exists"
 msgstr "le fichier du style « %s » existe"
 
-#: ../src/common/styles.c:1426
+#: ../src/common/styles.c:1428
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "le style « %s » a été importé"
@@ -5071,17 +5071,17 @@ msgstr "supprimer"
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1166 ../src/develop/imageop.c:2125
+#: ../src/develop/imageop.c:1166 ../src/develop/imageop.c:2139
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1166 ../src/develop/imageop.c:2125
+#: ../src/develop/imageop.c:1166 ../src/develop/imageop.c:2139
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1494 ../src/gui/accelerators.c:1041
+#: ../src/develop/imageop.c:1519 ../src/gui/accelerators.c:1041
 #: ../src/gui/accelerators.c:1125 ../src/gui/accelerators.c:1340
 #: ../src/gui/accelerators.c:1365 ../src/gui/import_metadata.c:162
 #: ../src/gui/preferences.c:1533 ../src/gui/preferences.c:2079
@@ -5090,38 +5090,38 @@ msgstr "%s est désactivé"
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1514
+#: ../src/develop/imageop.c:1539
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1519 ../src/libs/lib.c:648
+#: ../src/develop/imageop.c:1544 ../src/libs/lib.c:648
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1520
+#: ../src/develop/imageop.c:1545
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1521
+#: ../src/develop/imageop.c:1546
 msgctxt "accel"
 msgid "focus module"
 msgstr "module focus"
 
-#: ../src/develop/imageop.c:1523 ../src/libs/lib.c:640
+#: ../src/develop/imageop.c:1548 ../src/libs/lib.c:640
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1524 ../src/libs/lib.c:644
+#: ../src/develop/imageop.c:1549 ../src/libs/lib.c:644
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:2083
+#: ../src/develop/imageop.c:2108
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -5129,17 +5129,17 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2094 ../src/libs/lib.c:1066
+#: ../src/develop/imageop.c:2119 ../src/libs/lib.c:1066
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2102 ../src/gui/preferences.c:794
+#: ../src/develop/imageop.c:2127 ../src/gui/preferences.c:794
 #: ../src/libs/lib.c:1075
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/develop/imageop.c:2104
+#: ../src/develop/imageop.c:2129
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5147,7 +5147,7 @@ msgstr ""
 "pré-réglages\n"
 "clic-milieu pour appliquer sur une nouvelle instance"
 
-#: ../src/develop/imageop.c:2397
+#: ../src/develop/imageop.c:2411
 msgid "ERROR"
 msgstr "ERREUR"
 
@@ -6970,11 +6970,11 @@ msgstr "duplique le style avant d'appliquer les changements"
 msgid "create new style"
 msgstr "nouveau style"
 
-#: ../src/gui/styles_dialog.c:386
+#: ../src/gui/styles_dialog.c:385
 msgid "enter a name for the new style"
 msgstr "entrer un nom pour le style"
 
-#: ../src/gui/styles_dialog.c:391
+#: ../src/gui/styles_dialog.c:390
 msgid "enter a description for the new style, this description is searchable"
 msgstr "entrer une description pour le nouveau style (recherche)"
 
@@ -9517,21 +9517,21 @@ msgstr "impossible de générer le profil d'entrée"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "profil d'entrée non supporté, remplacé par linéaire RVB Rec709 !"
 
-#: ../src/iop/colorin.c:2084
+#: ../src/iop/colorin.c:2099
 msgid "input profile"
 msgstr "profil d'entrée"
 
-#: ../src/iop/colorin.c:2088
+#: ../src/iop/colorin.c:2103
 msgid "working profile"
 msgstr "profil de travail"
 
-#: ../src/iop/colorin.c:2098 ../src/iop/colorin.c:2109
+#: ../src/iop/colorin.c:2113 ../src/iop/colorin.c:2124
 #: ../src/iop/colorout.c:904
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "profils ICC dans « %s » ou « %s »"
 
-#: ../src/iop/colorin.c:2120
+#: ../src/iop/colorin.c:2135
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "cantonne les valeurs Lab au gamut de l'espace RVB"
 
@@ -9995,11 +9995,11 @@ msgstr "correction des verts"
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "matrice couleur « %s » non trouvée pour une image de bayer!"
 
-#: ../src/iop/demosaic.c:5069 ../src/iop/demosaic.c:5073
+#: ../src/iop/demosaic.c:5073 ../src/iop/demosaic.c:5077
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:5078
+#: ../src/iop/demosaic.c:5082
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -10009,35 +10009,35 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:5083
+#: ../src/iop/demosaic.c:5087
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:5084
+#: ../src/iop/demosaic.c:5088
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:5085
+#: ../src/iop/demosaic.c:5089
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:5086
+#: ../src/iop/demosaic.c:5090
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:5087
+#: ../src/iop/demosaic.c:5091
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:5088
+#: ../src/iop/demosaic.c:5092
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:5091
+#: ../src/iop/demosaic.c:5095
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:5097
+#: ../src/iop/demosaic.c:5101
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -17535,33 +17535,28 @@ msgstr "double-cliquer pour réinitialiser à « %f »"
 msgid "lua options"
 msgstr "options lua"
 
-#: ../src/views/darkroom.c:425
-msgid "darktable could not load"
-msgstr "darktable ne peut pas ouvrir l'image"
-
-#: ../src/views/darkroom.c:427
-msgid "switching to lighttable now."
-msgstr "retour vers la table lumineuse"
-
-#: ../src/views/darkroom.c:428
+#: ../src/views/darkroom.c:426
+#, c-format
 msgid ""
+"darktable could not load `%s', switching to lighttable now.\n"
+"\n"
 "please check the image (use exiv2 or exiftool) for corrupted data. if the "
-"image seems to"
-msgstr ""
-"vérifiez (avec exiv2 or exiftool) que l'image n'est pas corrompue. si "
-"l'image semble intacte"
-
-#: ../src/views/darkroom.c:429
-msgid ""
+"image seems to\n"
 "be intact, please consider opening an issue at https://github.com/darktable-"
 "org/darktable."
 msgstr ""
+"darktable n'a pas réussi à charger « %s », retour vers la table lumineuse.\n"
+"\n"
+"vérifiez (avec exiv2 or exiftool) que l'image n'est pas corrompue. si "
+"l'image semble intacte,\n"
 "alors considérez l'ouverture d'un ticket ici https://github.com/darktable-"
 "org/darktable."
 
 #: ../src/views/darkroom.c:439
-msgid "loading"
-msgstr "chargement"
+#, c-format
+msgctxt "darkroom"
+msgid "loading `%s' ..."
+msgstr "chargement « %s » ..."
 
 #: ../src/views/darkroom.c:655
 msgid "gamut check"
@@ -18328,6 +18323,29 @@ msgstr "raccourci"
 #: ../src/views/view.c:1623
 msgid "Action"
 msgstr "action"
+
+#~ msgid "darktable could not load"
+#~ msgstr "darktable ne peut pas ouvrir l'image"
+
+#~ msgid "switching to lighttable now."
+#~ msgstr "retour vers la table lumineuse"
+
+#~ msgid ""
+#~ "please check the image (use exiv2 or exiftool) for corrupted data. if the "
+#~ "image seems to"
+#~ msgstr ""
+#~ "vérifiez (avec exiv2 or exiftool) que l'image n'est pas corrompue. si "
+#~ "l'image semble intacte"
+
+#~ msgid ""
+#~ "be intact, please consider opening an issue at https://github.com/"
+#~ "darktable-org/darktable."
+#~ msgstr ""
+#~ "alors considérez l'ouverture d'un ticket ici https://github.com/darktable-"
+#~ "org/darktable."
+
+#~ msgid "loading"
+#~ msgstr "chargement"
 
 #~ msgctxt "accel"
 #~ msgid "presets"
