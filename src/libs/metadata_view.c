@@ -537,12 +537,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &tt_exif.tm_year, &tt_exif.tm_mon,
       &tt_exif.tm_mday, &tt_exif.tm_hour, &tt_exif.tm_min, &tt_exif.tm_sec) == 6)
     {
-      char datetime[200];
       tt_exif.tm_year -= 1900;
       tt_exif.tm_mon--;
       tt_exif.tm_isdst = -1;
-      mktime(&tt_exif);
-      _metadata_update_timestamp(d->metadata[md_exif_datetime], &tt_exif);
+      const time_t exif_timestamp = mktime(&tt_exif);
+      _metadata_update_timestamp(d->metadata[md_exif_datetime], &exif_timestamp);
     }
     else
       _metadata_update_value(d->metadata[md_exif_datetime], img->exif_datetime_taken);
