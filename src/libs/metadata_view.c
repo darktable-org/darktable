@@ -222,6 +222,39 @@ static void _metadata_update_value_end(GtkLabel *label, const char *value)
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
 }
 
+static void _metadata_update_timestamp(GtkLabel *label, const time_t *value)
+{
+  char datetime[200];
+  // just %c is too long and includes a time zone that we don't know from exif
+  const size_t datetime_len = strftime(datetime, sizeof(datetime), "%a %x %X", localtime(value));
+  if(datetime_len > 0)
+  {
+    const gboolean valid_utf = g_utf8_validate(datetime, datetime_len, NULL);
+    if(valid_utf)
+    {
+      _metadata_update_value(label, datetime);
+    }
+    else
+    {
+      GError *error = NULL;
+      gchar *local_datetime = g_locale_to_utf8(datetime,datetime_len,NULL,NULL, &error);
+      if(local_datetime)
+      {
+        _metadata_update_value(label, local_datetime);
+        g_free(local_datetime);
+      }
+      else
+      {
+        _metadata_update_value(label, NODATA_STRING);
+        fprintf(stderr, "[metadata timestamp] could not convert '%s' to UTF-8: %s\n", datetime, error->message);
+        g_error_free(error);
+      }
+    }
+  }
+  else
+    _metadata_update_value(label, NODATA_STRING);
+}
+
 
 #ifdef USE_LUA
 static int lua_update_metadata(lua_State*L);
@@ -290,39 +323,22 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_internal_local_copy], value);
 
     if (img->import_timestamp >=0)
-    {
-      char datetime[200];
-      // just %c is too long and includes a time zone that we don't know from exif
-      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->import_timestamp));
-      _metadata_update_value(d->metadata[md_internal_import_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
-    }
+      _metadata_update_timestamp(d->metadata[md_internal_import_timestamp], &img->import_timestamp);
     else
-      _metadata_update_value(d->metadata[md_internal_import_timestamp], "-");
+      _metadata_update_value(d->metadata[md_internal_import_timestamp], NODATA_STRING);
 
     if (img->change_timestamp >=0)
-    {
-      char datetime[200];
-      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->change_timestamp));
-      _metadata_update_value(d->metadata[md_internal_change_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
-    }
+      _metadata_update_timestamp(d->metadata[md_internal_change_timestamp], &img->change_timestamp);
     else
       _metadata_update_value(d->metadata[md_internal_change_timestamp], "-");
 
     if (img->export_timestamp >=0)
-    {
-      char datetime[200];
-      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->export_timestamp));
-      _metadata_update_value(d->metadata[md_internal_export_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
-    }
+      _metadata_update_timestamp(d->metadata[md_internal_export_timestamp], &img->export_timestamp);
     else
       _metadata_update_value(d->metadata[md_internal_export_timestamp], "-");
 
     if (img->print_timestamp >=0)
-    {
-      char datetime[200];
-      strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->print_timestamp));
-      _metadata_update_value(d->metadata[md_internal_print_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
-    }
+      _metadata_update_timestamp(d->metadata[md_internal_print_timestamp], &img->print_timestamp);
     else
       _metadata_update_value(d->metadata[md_internal_print_timestamp], "-");
 
