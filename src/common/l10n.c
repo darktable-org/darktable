@@ -144,6 +144,8 @@ static void get_language_names(GList *languages)
     goto end;
   }
 
+  char *saved_locale = strdup(setlocale(LC_ALL, NULL));
+
   int n_elements = json_reader_count_elements(reader);
   for(int i = 0; i < n_elements; i++)
   {
@@ -217,6 +219,12 @@ static void get_language_names(GList *languages)
       fprintf(stderr, "[l10n] error: element %d has no name, skipping\n", i);
 
     json_reader_end_element(reader);
+  }
+
+  if(saved_locale)
+  {
+    setlocale(LC_ALL, saved_locale);
+    free(saved_locale);
   }
 
   json_reader_end_member(reader); // 639-2
