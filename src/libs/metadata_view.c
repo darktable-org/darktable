@@ -542,9 +542,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       tt_exif.tm_mon--;
       tt_exif.tm_isdst = -1;
       mktime(&tt_exif);
-      // just %c is too long and includes a time zone that we don't know from exif
-      strftime(datetime, sizeof(datetime), "%a %x %X", &tt_exif);
-      _metadata_update_value(d->metadata[md_exif_datetime], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
+      _metadata_update_timestamp(d->metadata[md_exif_datetime], &tt_exif);
     }
     else
       _metadata_update_value(d->metadata[md_exif_datetime], img->exif_datetime_taken);
