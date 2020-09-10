@@ -330,17 +330,17 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     if (img->change_timestamp >=0)
       _metadata_update_timestamp(d->metadata[md_internal_change_timestamp], &img->change_timestamp);
     else
-      _metadata_update_value(d->metadata[md_internal_change_timestamp], "-");
+      _metadata_update_value(d->metadata[md_internal_change_timestamp], NODATA_STRING);
 
     if (img->export_timestamp >=0)
       _metadata_update_timestamp(d->metadata[md_internal_export_timestamp], &img->export_timestamp);
     else
-      _metadata_update_value(d->metadata[md_internal_export_timestamp], "-");
+      _metadata_update_value(d->metadata[md_internal_export_timestamp], NODATA_STRING);
 
     if (img->print_timestamp >=0)
       _metadata_update_timestamp(d->metadata[md_internal_print_timestamp], &img->print_timestamp);
     else
-      _metadata_update_value(d->metadata[md_internal_print_timestamp], "-");
+      _metadata_update_value(d->metadata[md_internal_print_timestamp], NODATA_STRING);
 
     // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
 
