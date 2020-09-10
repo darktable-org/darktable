@@ -23,15 +23,19 @@
   sometimes we have to store the ellipsize mode until the 
   label is created.
 */
-struct dt_lua_ellipsize_mode_info {
+struct dt_lua_ellipsize_mode_info
+{
   gboolean used;
   dt_lua_ellipsize_mode_t mode;
 };
-static struct dt_lua_ellipsize_mode_info ellipsize_store = {
+
+static struct dt_lua_ellipsize_mode_info ellipsize_store =
+{
   .used = FALSE
 };
 
-static dt_lua_widget_type_t button_type = {
+static dt_lua_widget_type_t button_type =
+{
   .name = "button",
   .gui_init = NULL,
   .gui_cleanup = NULL,
@@ -53,12 +57,14 @@ static int ellipsize_member(lua_State *L)
   lua_button button;
   luaA_to(L, lua_button, &button, 1);
   dt_lua_ellipsize_mode_t ellipsize;
-  if(lua_gettop(L) > 2) {
+  if(lua_gettop(L) > 2)
+  {
     luaA_to(L, dt_lua_ellipsize_mode_t, &ellipsize, 3);
     // check for label before trying to ellipsize it
     if(gtk_button_get_label(GTK_BUTTON(button->widget)))
       gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget))), ellipsize);
-    else {
+    else
+    {
       ellipsize_store.mode = ellipsize;
       ellipsize_store.used = TRUE;
     }
@@ -73,10 +79,12 @@ static int label_member(lua_State *L)
 {
   lua_button button;
   luaA_to(L,lua_button,&button,1);
-  if(lua_gettop(L) > 2) {
+  if(lua_gettop(L) > 2)
+  {
     const char * label = luaL_checkstring(L,3);
     gtk_button_set_label(GTK_BUTTON(button->widget),label);
-    if(ellipsize_store.used){
+    if(ellipsize_store.used)
+    {
       gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget))), ellipsize_store.mode);
       ellipsize_store.used = FALSE;
     }
