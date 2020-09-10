@@ -4101,13 +4101,24 @@ void dt_exif_init()
   Exiv2::XmpParser::initialize();
   // this has to stay with the old url (namespace already propagated outside dt)
   Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
+
   // check is Exiv2 version already knows these prefixes
-  const Exiv2::XmpPropertyInfo *pl = Exiv2::XmpProperties::propertyList("lr");
-  if(!pl)
-    Exiv2::XmpProperties::registerNs("http://ns.adobe.com/lightroom/1.0/", "lr");
-  pl = Exiv2::XmpProperties::propertyList("exifEX");
-  if(!pl)
-    Exiv2::XmpProperties::registerNs("http://cipa.jp/exif/1.0/", "exifEX");
+
+  try
+  {
+    const Exiv2::XmpPropertyInfo *pl = Exiv2::XmpProperties::propertyList("lr");
+    if(!pl)
+      Exiv2::XmpProperties::registerNs("http://ns.adobe.com/lightroom/1.0/", "lr");
+  }
+  catch(Exiv2::AnyError &e){};
+
+  try
+  {
+    const Exiv2::XmpPropertyInfo *pl = Exiv2::XmpProperties::propertyList("exifEX");
+    if(!pl)
+      Exiv2::XmpProperties::registerNs("http://cipa.jp/exif/1.0/", "exifEX");
+  }
+  catch(Exiv2::AnyError &e){};
 }
 
 void dt_exif_cleanup()
