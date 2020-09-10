@@ -294,7 +294,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       char datetime[200];
       // just %c is too long and includes a time zone that we don't know from exif
       strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->import_timestamp));
+#ifdef __APPLE__
+      _metadata_update_value(d->metadata[md_internal_import_timestamp], datetime);
+#else
       _metadata_update_value(d->metadata[md_internal_import_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
+#endif
     }
     else
       _metadata_update_value(d->metadata[md_internal_import_timestamp], "-");
@@ -303,7 +307,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       char datetime[200];
       strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->change_timestamp));
+#ifdef __APPLE__
+      _metadata_update_value(d->metadata[md_internal_change_timestamp], datetime);
+#else
       _metadata_update_value(d->metadata[md_internal_change_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
+#endif
     }
     else
       _metadata_update_value(d->metadata[md_internal_change_timestamp], "-");
@@ -312,7 +320,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       char datetime[200];
       strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->export_timestamp));
+#ifdef __APPLE__
+      _metadata_update_value(d->metadata[md_internal_export_timestamp], datetime);
+#else
       _metadata_update_value(d->metadata[md_internal_export_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
+#endif
     }
     else
       _metadata_update_value(d->metadata[md_internal_export_timestamp], "-");
@@ -321,7 +333,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       char datetime[200];
       strftime(datetime, sizeof(datetime), "%a %x %X", localtime(&img->print_timestamp));
+#ifdef __APPLE__
+      _metadata_update_value(d->metadata[md_internal_print_timestamp], datetime);
+#else
       _metadata_update_value(d->metadata[md_internal_print_timestamp], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
+#endif
     }
     else
       _metadata_update_value(d->metadata[md_internal_print_timestamp], "-");
@@ -528,7 +544,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       mktime(&tt_exif);
       // just %c is too long and includes a time zone that we don't know from exif
       strftime(datetime, sizeof(datetime), "%a %x %X", &tt_exif);
+#ifdef __APPLE__
+      _metadata_update_value(d->metadata[md_exif_datetime], datetime);
+#else
       _metadata_update_value(d->metadata[md_exif_datetime], g_locale_to_utf8(datetime,-1,NULL,NULL,NULL));
+#endif
     }
     else
       _metadata_update_value(d->metadata[md_exif_datetime], img->exif_datetime_taken);
