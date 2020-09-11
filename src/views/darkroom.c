@@ -1262,7 +1262,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
         gsize mi_len = 1 + strlen(split[1]);
         for(int i=2; split[i]; i++)
           mi_len += strlen(split[i]) + strlen(" | ");
-        
+
         mi_name = g_new0(gchar, mi_len);
         gchar* tmp_ptr = g_stpcpy(mi_name, split[1]);
         for(int i=2; split[i]; i++)
@@ -2269,8 +2269,9 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_slider_set(upper, dev->overexposed.upper);
     dt_bauhaus_slider_set_format(upper, "%.2f%%");
     dt_bauhaus_widget_set_label(upper, NULL, _("upper threshold"));
+    /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(upper, _("clipping threshold for the white point.\n"
-                                         "100 % is peak medium luminance."));
+                                         "100% is peak medium luminance."));
     g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
   }
