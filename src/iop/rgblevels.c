@@ -909,8 +909,6 @@ void init(dt_iop_module_t *self)
     d->levels[c][1] = RGBLEVELS_MID;
     d->levels[c][2] = RGBLEVELS_MAX;
   }
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_rgblevels_params_t));
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -944,8 +942,7 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rgblevels_gui_data_t));
-  dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
+  dt_iop_rgblevels_gui_data_t *c = IOP_GUI_ALLOC(rgblevels);
 
   dt_pthread_mutex_init(&c->lock, NULL);
   change_image(self);
@@ -1037,8 +1034,8 @@ void gui_cleanup(dt_iop_module_t *self)
   {
     dt_pthread_mutex_destroy(&g->lock);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,

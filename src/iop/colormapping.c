@@ -881,22 +881,16 @@ void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_colormapping_params_t *d = module->default_params;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(module->dev)
-  { 
-    dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
-    if(module->dev->gui_attached && g && g->flowback_set)
-    {
-      memcpy(d->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
-      memcpy(d->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
-      memcpy(d->source_var, g->flowback.var, sizeof(float) * MAXN * 2);
-      memcpy(d->source_weight, g->flowback.weight, sizeof(float) * MAXN);
-      d->n = g->flowback.n;
-      d->flag = HAS_SOURCE;
-    }
+  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
+  if(module->dev->gui_attached && g && g->flowback_set)
+  {
+    memcpy(d->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
+    memcpy(d->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
+    memcpy(d->source_var, g->flowback.var, sizeof(float) * MAXN * 2);
+    memcpy(d->source_weight, g->flowback.weight, sizeof(float) * MAXN);
+    d->n = g->flowback.n;
+    d->flag = HAS_SOURCE;
   }
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colormapping_params_t));
 }
 
 
@@ -1051,8 +1045,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colormapping_gui_data_t));
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_gui_data_t *g = IOP_GUI_ALLOC(colormapping);
 
   g->flag = NEUTRAL;
   g->flowback_set = 0;
@@ -1065,19 +1058,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkWidget *source = gtk_label_new(_("source clusters:"));
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(source), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("source clusters:")), TRUE, TRUE, 0);
 
   g->source_area = dtgtk_drawing_area_new_with_aspect_ratio(1.0 / 3.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->source_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->source_area), "draw", G_CALLBACK(cluster_preview_draw), self);
 
-  GtkBox *hbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkWidget *target = gtk_label_new(_("target clusters:"));
-  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(target), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("target clusters:")), TRUE, TRUE, 0);
 
   g->target_area = dtgtk_drawing_area_new_with_aspect_ratio(1.0 / 3.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_area, TRUE, TRUE, 0);
@@ -1136,8 +1123,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   cmsDeleteTransform(g->xform);
   dt_pthread_mutex_destroy(&g->lock);
   free(g->buffer);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

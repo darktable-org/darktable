@@ -417,8 +417,8 @@ static void _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_
                    G_CALLBACK(_lib_geotagging_floating_key_press), self);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *cancel_button = gtk_button_new_with_label(_("cancel"));
-  GtkWidget *ok_button = gtk_button_new_with_label(_("ok"));
+  GtkWidget *cancel_button = dt_ui_button_new(_("cancel"), NULL, NULL);
+  GtkWidget *ok_button = dt_ui_button_new(_("ok"), NULL, NULL);
 
   gtk_box_pack_start(GTK_BOX(hbox), cancel_button, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), ok_button, TRUE, TRUE, 0);
@@ -775,18 +775,17 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   GtkBox *hbox;
-  GtkWidget *button, *label;
+  GtkWidget *button;
 
   /* the offset line */
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  label = GTK_WIDGET(gtk_label_new(_("time offset")));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(hbox, label, FALSE, TRUE, 0);
+
+  gtk_box_pack_start(hbox, dt_ui_label_new(_("time offset")), FALSE, TRUE, 0);
 
   d->offset_entry = gtk_entry_new();
   dt_gui_key_accel_block_on_focus_connect(d->offset_entry);
   gtk_entry_set_max_length(GTK_ENTRY(d->offset_entry), 9);
-  gtk_entry_set_width_chars(GTK_ENTRY(d->offset_entry), 0);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->offset_entry), 6);
   gtk_box_pack_start(hbox, d->offset_entry, TRUE, TRUE, 0);
   g_signal_connect(d->offset_entry, "key-press-event", G_CALLBACK(_lib_geotagging_offset_key_press), self);
   g_signal_connect(d->offset_entry, "focus-out-event", G_CALLBACK(_lib_geotagging_offset_focus_out), self);
@@ -813,8 +812,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   /* gpx */
-  button = gtk_button_new_with_label(_("apply GPX track file..."));
-  gtk_widget_set_tooltip_text(button, _("parses a GPX file and updates location of selected images"));
+  button = dt_ui_button_new(_("apply GPX track file..."),
+                            _("parses a GPX file and updates location of selected images"), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_gpx_callback), self);
 }

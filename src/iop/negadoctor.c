@@ -399,8 +399,6 @@ void init(dt_iop_module_t *module)
   d->Dmin[0] = 1.00f;
   d->Dmin[1] = 0.45f;
   d->Dmin[2] = 0.25f;
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_negadoctor_params_t));
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -846,10 +844,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
 void gui_init(dt_iop_module_t *self)
 {
-  // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_negadoctor_gui_data_t));
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = IOP_GUI_ALLOC(negadoctor);
 
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -862,9 +857,7 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *row1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  GdkRGBA color1 = (GdkRGBA){.red = p->Dmin[0], .green = p->Dmin[0], .blue = p->Dmin[0], .alpha = 1.0 };
-
-  g->Dmin_picker = gtk_color_button_new_with_rgba(&color1);
+  g->Dmin_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->Dmin_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->Dmin_picker), _("select color of film material from a swatch"));
   gtk_box_pack_start(GTK_BOX(row1), GTK_WIDGET(g->Dmin_picker), TRUE, TRUE, 0);
@@ -936,10 +929,7 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *row3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  const float max_wb_low = fmaxf(fmaxf(p->wb_low[0], p->wb_low[1]), p->wb_low[2]);
-  GdkRGBA color3 = (GdkRGBA){.red = p->wb_low[0] / max_wb_low, .green = p->wb_low[0] / max_wb_low, .blue = p->wb_high[0] / max_wb_low, .alpha = 1.0 };
-
-  g->WB_low_picker = gtk_color_button_new_with_rgba(&color3);
+  g->WB_low_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->WB_low_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_low_picker), _("select color of shadows from a swatch"));
   gtk_box_pack_start(GTK_BOX(row3), GTK_WIDGET(g->WB_low_picker), TRUE, TRUE, 0);
@@ -976,10 +966,7 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *row2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  const float max_wb_high = fmaxf(fmaxf(p->wb_high[0], p->wb_high[1]), p->wb_high[2]);
-  GdkRGBA color2 = (GdkRGBA){.red = p->wb_high[0] / max_wb_high, .green = p->wb_high[0] / max_wb_high, .blue = p->wb_high[0] / max_wb_high, .alpha = 1.0 };
-
-  g->WB_high_picker = gtk_color_button_new_with_rgba(&color2);
+  g->WB_high_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->WB_high_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_high_picker), _("select color of illuminant from a swatch"));
   gtk_box_pack_start(GTK_BOX(row2), GTK_WIDGET(g->WB_high_picker), TRUE, TRUE, 0);
