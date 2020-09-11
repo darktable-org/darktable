@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-11 16:19+0200\n"
-"PO-Revision-Date: 2020-09-11 16:19+0200\n"
+"POT-Creation-Date: 2020-09-11 18:29+0200\n"
+"PO-Revision-Date: 2020-09-11 18:29+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -12716,11 +12716,6 @@ msgctxt "accel"
 msgid "crop height"
 msgstr "rogner hauteur"
 
-#: ../src/iop/rawprepare.c:787
-#, c-format
-msgid "raw_black_level_separate[%i]"
-msgstr ""
-
 #: ../src/iop/rawprepare.c:806
 msgid "crop from left border"
 msgstr "rogner depuis le bord gauche"
@@ -17784,13 +17779,13 @@ msgid "upper threshold"
 msgstr "seuil haut"
 
 #: ../src/views/darkroom.c:2273
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
 "100% is peak medium luminance."
 msgstr ""
 "seuil de troncature du point blanc.\n"
-"100% est la luminance moyenne de crête"
+"100% est la luminance moyenne de crête."
 
 #: ../src/views/darkroom.c:2285
 msgid ""
