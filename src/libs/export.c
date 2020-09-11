@@ -712,10 +712,10 @@ void gui_init(dt_lib_module_t *self)
 
   d->width = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->width, _("maximum output width\nset to 0 for no scaling"));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->width), 6);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->width), 5);
   d->height = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->height, _("maximum output height\nset to 0 for no scaling"));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->height), 6);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->height), 5);
 
   dt_gui_key_accel_block_on_focus_connect(d->width);
   dt_gui_key_accel_block_on_focus_connect(d->height);
@@ -835,10 +835,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // Export button
-  GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
-  d->export_button = button;
-  gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("export with current settings"));
-  gtk_box_pack_start(hbox, GTK_WIDGET(button), TRUE, TRUE, 0);
+  d->export_button = GTK_BUTTON(dt_ui_button_new(_("export"), _("export with current settings"), NULL));
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
 
   //  Add metadata exportation control
   d->metadata_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
@@ -846,7 +844,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->metadata_button, _("edit metadata exportation details"));
   gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(height_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "width");

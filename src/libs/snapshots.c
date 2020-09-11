@@ -379,13 +379,10 @@ void gui_init(dt_lib_module_t *self)
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* create take snapshot button */
-  GtkWidget *button = gtk_button_new_with_label(_("take snapshot"));
-  d->take_button = button;
-  g_signal_connect(G_OBJECT(button), "clicked",
+  d->take_button = dt_ui_button_new(_("take snapshot"), _("take snapshot to compare with another image "
+                                      "or the same image at another stage of development"), "snapshots.html#snapshots");
+  g_signal_connect(G_OBJECT(d->take_button), "clicked",
                    G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
-  gtk_widget_set_tooltip_text(button, _("take snapshot to compare with another image "
-                                        "or the same image at another stage of development"));
-  dt_gui_add_help_link(button, "snapshots.html#snapshots");
 
   /*
    * initialize snapshots
@@ -418,7 +415,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* add snapshot box and take snapshot button to widget ui*/
   gtk_box_pack_start(GTK_BOX(self->widget), d->snapshots_box, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

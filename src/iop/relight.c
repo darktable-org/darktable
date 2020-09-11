@@ -277,8 +277,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_relight_gui_data_t));
-  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
+  dt_iop_relight_gui_data_t *g = IOP_GUI_ALLOC(relight);
 
   g->exposure = dt_bauhaus_slider_from_params(self, "ev");
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));

@@ -349,13 +349,11 @@ void init(dt_iop_module_t *module)
   dt_iop_default_init(module);
 
   ((dt_iop_colorize_params_t *)module->default_params)->version = module->version();
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorize_params_t));
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorize_gui_data_t));
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
+  dt_iop_colorize_gui_data_t *g = IOP_GUI_ALLOC(colorize);
 
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, 
            dt_bauhaus_slider_from_params (self, N_("hue")));

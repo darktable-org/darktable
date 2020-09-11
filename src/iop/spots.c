@@ -670,18 +670,7 @@ void init(dt_iop_module_t *module)
   // init defaults:
   dt_iop_spots_params_t tmp = (dt_iop_spots_params_t){ { 0 }, { 2 } };
 
-  memcpy(module->params, &tmp, sizeof(dt_iop_spots_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_spots_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-  free(module->global_data); // just to be sure
-  module->global_data = NULL;
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -703,7 +692,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
         if(bd->masks_shown == DT_MASKS_EDIT_OFF) dt_masks_set_edit_mode(self, DT_MASKS_EDIT_FULL);
 
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
-                                     (bd->masks_shown != DT_MASKS_EDIT_OFF) 
+                                     (bd->masks_shown != DT_MASKS_EDIT_OFF)
                                      && (darktable.develop->gui_module == self));
       }
       else
@@ -782,16 +771,13 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_spots_gui_data_t));
-  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  dt_iop_spots_gui_data_t *g = IOP_GUI_ALLOC(spots);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *label = gtk_label_new(_("number of strokes:"));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-  g->label = GTK_LABEL(gtk_label_new("-1"));
+  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("number of strokes:")), FALSE, TRUE, 0);
+  g->label = GTK_LABEL(dt_ui_label_new("-1"));
   gtk_widget_set_tooltip_text(hbox, _("click on a shape and drag on canvas.\nuse the mouse wheel "
                                       "to adjust size.\nright click to remove a shape."));
 

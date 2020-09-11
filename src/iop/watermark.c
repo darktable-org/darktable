@@ -1379,14 +1379,11 @@ void init(dt_iop_module_t *module)
 
   g_strlcpy(d->filename, "darktable.svg", sizeof(d->filename));
   g_strlcpy(d->font, "DejaVu Sans 10", sizeof(d->font));
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_watermark_params_t));
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = calloc(1, sizeof(dt_iop_watermark_gui_data_t));
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_gui_data_t *g = IOP_GUI_ALLOC(watermark);
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1438,8 +1435,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(grid, g->color_picker_button, g->colorpick, GTK_POS_RIGHT, 1, 1);
 
   // Simple text
-  label = gtk_label_new(_("text"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  label = dt_ui_label_new(_("text"));
   g->text = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
   gtk_widget_set_tooltip_text(g->text, _("text string, tag:\n$(WATERMARK_TEXT)"));
@@ -1523,13 +1519,12 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
   dt_gui_key_accel_block_on_focus_disconnect(g->text);
   g->watermarks_filenames = NULL;
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

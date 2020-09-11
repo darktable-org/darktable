@@ -1859,9 +1859,6 @@ void reload_defaults(dt_iop_module_t *module)
 
   dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id <= 0) goto end;
-
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
@@ -1950,9 +1947,6 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = DT_COLORSPACE_ENHANCED_MATRIX;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-
-end:
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorin_params_t));
 }
 
 static void update_profile_list(dt_iop_module_t *self)
@@ -2083,8 +2077,7 @@ static void update_profile_list(dt_iop_module_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
-  self->gui_data = malloc(sizeof(dt_iop_colorin_gui_data_t));
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+  dt_iop_colorin_gui_data_t *g = IOP_GUI_ALLOC(colorin);
 
   g->image_profiles = NULL;
 
@@ -2143,8 +2136,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->image_profiles->data);
     g->image_profiles = g_list_delete_link(g->image_profiles, g->image_profiles);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

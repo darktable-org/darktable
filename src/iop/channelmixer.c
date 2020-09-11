@@ -425,15 +425,12 @@ void init(dt_iop_module_t *module)
   dt_iop_channelmixer_params_t *d = module->default_params;
 
   d->red[CHANNEL_RED] = d->green[CHANNEL_GREEN] = d->blue[CHANNEL_BLUE] = 1.0;
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_channelmixer_params_t));
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_channelmixer_gui_data_t));
-  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
+  dt_iop_channelmixer_gui_data_t *g = IOP_GUI_ALLOC(channelmixer);
+  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

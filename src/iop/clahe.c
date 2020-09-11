@@ -308,9 +308,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
-  dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t){ 64, 1.25 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_rlce_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_rlce_params_t));
+  *((dt_iop_rlce_params_t *)module->default_params) = (dt_iop_rlce_params_t){ 64, 1.25 };
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -323,9 +321,8 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rlce_gui_data_t));
-  dt_iop_rlce_gui_data_t *g = (dt_iop_rlce_gui_data_t *)self->gui_data;
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
+  dt_iop_rlce_gui_data_t *g = IOP_GUI_ALLOC(rlce);
+  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->default_params;
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 

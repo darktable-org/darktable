@@ -46,8 +46,6 @@ typedef struct dt_iop_cacorrect_gui_data_t
 {
 } dt_iop_cacorrect_gui_data_t;
 
-dt_iop_cacorrect_gui_data_t dummy;
-
 // this returns a translatable name
 const char *name()
 {
@@ -1495,9 +1493,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) return;
-
   dt_image_t *img = &module->dev->image_storage;
   // can't be switched on for non-raw or x-trans images:
   if(dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !dt_image_is_monochrome(img))
@@ -1539,15 +1534,9 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->widget = gtk_label_new("");
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
-  gtk_label_set_ellipsize(GTK_LABEL(self->widget), PANGO_ELLIPSIZE_END);
-  self->gui_data = &dummy;
-}
+  IOP_GUI_ALLOC(cacorrect);
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  self->gui_data = NULL;
+  self->widget = dt_ui_label_new("");
 }
 
 /** additional, optional callbacks to capture darkroom center events. */

@@ -520,8 +520,7 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_nlmeans_gui_data_t));
-  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
+  dt_iop_nlmeans_gui_data_t *g = IOP_GUI_ALLOC(nlmeans);
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_max(g->radius, 4.0f);

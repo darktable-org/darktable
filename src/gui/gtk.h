@@ -361,16 +361,15 @@ static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
   return label;
 };
 
-GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
-
-static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)
+static inline GtkWidget *dt_ui_label_new(const gchar *str)
 {
-  // force the notebook tabs to fill the available width
-  for(gint i = 0; i < gtk_notebook_get_n_pages(notebook); ++i)
-    gtk_container_child_set(GTK_CONTAINER(notebook),
-                            gtk_notebook_get_nth_page(notebook, i),
-                            "tab-expand", TRUE, "tab-fill", TRUE, (char *)NULL);
-}
+  GtkWidget *label = gtk_label_new(str);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  return label;
+};
+
+GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
 
 // show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.
 // this expects gtk_init() to be called already which should be the case during most of dt's init phase.
@@ -398,6 +397,16 @@ guint dt_gui_translated_key_state(GdkEventKey *event);
 
 // return modifier keys currently pressed, independent of any key event
 GdkModifierType dt_key_modifier_state();
+
+// create an ellipsized button with label, tooltip and help link
+static inline GtkWidget *dt_ui_button_new(const gchar *label, const gchar *tooltip, const gchar *help)
+{
+  GtkWidget *button = gtk_button_new_with_label(label);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
+  if(tooltip) gtk_widget_set_tooltip_text(button, tooltip);
+  if(help) dt_gui_add_help_link(button, help);
+  return button;
+};
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

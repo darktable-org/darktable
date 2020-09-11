@@ -915,8 +915,6 @@ void init(dt_iop_module_t *module)
     d->source_a[k] = d->target_a[k] = colorchecker_Lab[3*k+1];
     d->source_b[k] = d->target_b[k] = colorchecker_Lab[3*k+2];
   }
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorchecker_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1338,9 +1336,8 @@ static gboolean checker_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorchecker_gui_data_t));
-  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_gui_data_t *g = IOP_GUI_ALLOC(colorchecker);
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1424,8 +1421,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   cmsDeleteTransform(g->xform);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 #undef MAX_PATCHES

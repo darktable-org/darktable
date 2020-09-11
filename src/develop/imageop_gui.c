@@ -73,6 +73,16 @@ void dt_iop_slider_int_callback(GtkWidget *slider, int *field)
   if(*field != previous) process_changed_value(NULL, slider, &previous);
 }
 
+void dt_iop_slider_ushort_callback(GtkWidget *slider, unsigned short *field)
+{
+  if(darktable.gui->reset) return;
+
+  unsigned short previous = *field;
+  *field = dt_bauhaus_slider_get(slider);
+
+  if(*field != previous) process_changed_value(NULL, slider, &previous);
+}
+
 void dt_iop_combobox_enum_callback(GtkWidget *combobox, int *field)
 {
   if(darktable.gui->reset) return;
@@ -121,6 +131,7 @@ static void _iop_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *dat
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
+  dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
 
   size_t param_index = 0;
 
@@ -148,7 +159,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const float min = f->Float.Min;
       const float max = f->Float.Max;
-      const float defval = *(float*)self->so->get_p(p, param_name);
+      const float defval = *(float*)self->so->get_p(d, param_name);
       int digits = 2;
       float step = 0;
 
@@ -190,7 +201,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const int min = f->Int.Min;
       const int max = f->Int.Max;
-      const int defval = *(float*)self->so->get_p(p, param_name);
+      const int defval = *(int*)self->so->get_p(d, param_name);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 
@@ -198,7 +209,23 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
                        G_CALLBACK(dt_iop_slider_int_callback), 
                        p + f->header.offset + param_index * sizeof(int));
     }
+    else if(f->header.type == DT_INTROSPECTION_TYPE_USHORT)
+    {
+      const unsigned short min = f->UShort.Min;
+      const unsigned short max = f->UShort.Max;
+      const unsigned short defval = *(unsigned short*)self->so->get_p(d, param_name);
 
+      slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
+
+      g_signal_connect(G_OBJECT(slider), "value-changed", 
+                       G_CALLBACK(dt_iop_slider_ushort_callback), 
+                       p + f->header.offset + param_index * sizeof(unsigned short));
+    }
+    else f = NULL;
+  }
+
+  if(f)
+  {
     if (*f->header.description)
     {
       // we do not want to support a context as it break all translations see #5498
@@ -216,7 +243,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   }
   else
   {
-    str = g_strdup_printf("'%s' is not a float/int/slider parameter", param_name);
+    str = g_strdup_printf("'%s' is not a float/int/unsigned short/slider parameter", param_name);
 
     slider = dt_bauhaus_slider_new(self);
     dt_bauhaus_widget_set_label(slider, NULL, str);

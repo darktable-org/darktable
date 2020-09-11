@@ -909,9 +909,8 @@ static void gui_init_positions(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_borders_gui_data_t));
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_gui_data_t *g = IOP_GUI_ALLOC(borders);
+  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->default_params;
 
   g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_factor(g->size, 100);
@@ -1012,8 +1011,6 @@ void init(dt_iop_module_t *self)
   g_strlcpy(defaults->aspect_text, "constant border", sizeof(defaults->aspect_text));
   g_strlcpy(defaults->pos_h_text, "1/2", sizeof(defaults->pos_h_text));
   g_strlcpy(defaults->pos_v_text, "1/2", sizeof(defaults->pos_v_text));
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_borders_params_t));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

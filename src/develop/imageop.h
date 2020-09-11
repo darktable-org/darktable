@@ -331,8 +331,6 @@ typedef struct dt_iop_module_t
   dt_iop_colorspace_type_t histogram_cst;
   /** scale the histogram so the middle grey is at .5 */
   int histogram_middle_grey;
-  /** reference for dlopened libs. */
-  darktable_t *dt;
   /** the module is used in this develop module. */
   struct dt_develop_t *dev;
   /** non zero if this node should be processed. */
@@ -687,6 +685,9 @@ void dt_iop_refresh_all(dt_iop_module_t *module);
 void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior);
 /** cancel any previously-queued history update */
 void dt_iop_cancel_history_update(dt_iop_module_t *module);
+
+#define IOP_GUI_ALLOC(module) (dt_iop_##module##_gui_data_t *)(self->gui_data = calloc(1, sizeof(dt_iop_##module##_gui_data_t)))
+#define IOP_GUI_FREE free(self->gui_data); self->gui_data = NULL
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
