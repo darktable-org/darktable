@@ -338,8 +338,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_velvia_gui_data_t));
-  dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
+  dt_iop_velvia_gui_data_t *g = IOP_GUI_ALLOC(velvia);
 
   g->strength_scale = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_format(g->strength_scale, "%.0f%%");

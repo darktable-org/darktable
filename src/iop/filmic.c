@@ -1434,7 +1434,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_filmic_params_t);
   module->gui_data = NULL;
 
-  dt_iop_filmic_params_t tmp
+  *(dt_iop_filmic_params_t *)module->default_params
     = (dt_iop_filmic_params_t){
                                  .grey_point_source   = 18, // source grey
                                  .black_point_source  = -8.65,  // source black
@@ -1452,8 +1452,6 @@ void init(dt_iop_module_t *module)
                                  .interpolator        = CUBIC_SPLINE, //interpolator
                                  .preserve_color      = 0, // run the saturated variant
                               };
-  memcpy(module->params, &tmp, sizeof(dt_iop_filmic_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_filmic_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1606,9 +1604,8 @@ static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpoi
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_filmic_gui_data_t));
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_gui_data_t *g = IOP_GUI_ALLOC(filmic);
+  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

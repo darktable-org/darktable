@@ -1693,14 +1693,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, module->params_size);
 }
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void init_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(module->params_size);
@@ -3519,10 +3511,9 @@ void gui_update(dt_iop_module_t *module)
   update_warp_count(g);
 }
 
-void gui_init(dt_iop_module_t *module)
+void gui_init(dt_iop_module_t *self)
 {
-  module->gui_data = malloc(sizeof(dt_iop_liquify_gui_data_t));
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+  dt_iop_liquify_gui_data_t *g = IOP_GUI_ALLOC(liquify);
 
   // A dummy surface for calculations only, no drawing.
   cairo_surface_t *cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
@@ -3538,41 +3529,40 @@ void gui_init(dt_iop_module_t *module)
   dt_pthread_mutex_init(&g->lock, NULL);
   g->node_index = 0;
 
-  module->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_tooltip_text(hbox, _("use a tool to add warps.\nright-click to remove a warp."));
-  gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
-  GtkWidget *label = gtk_label_new(_("warps|nodes count:"));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  GtkWidget *label = dt_ui_label_new(_("warps|nodes count:"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-  g->label = GTK_LABEL(gtk_label_new("-"));
+  g->label = GTK_LABEL(dt_ui_label_new("-"));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(module->widget), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   g->btn_point_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_point_tool, CPF_STYLE_FLAT, NULL));
-  g_signal_connect(G_OBJECT (g->btn_point_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
+  g_signal_connect(G_OBJECT (g->btn_point_tool), "toggled", G_CALLBACK (btn_make_radio_callback), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_point_tool), _("point tool: draw points"));
   gtk_toggle_button_set_active(g->btn_point_tool, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_point_tool), FALSE, FALSE, 0);
 
   g->btn_line_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_line_tool, CPF_STYLE_FLAT, NULL));
-  g_signal_connect(G_OBJECT (g->btn_line_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
+  g_signal_connect(G_OBJECT (g->btn_line_tool), "toggled", G_CALLBACK (btn_make_radio_callback), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_line_tool), _("line tool: draw lines"));
   gtk_toggle_button_set_active(g->btn_line_tool, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_line_tool), FALSE, FALSE, 0);
 
   g->btn_curve_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_curve_tool, CPF_STYLE_FLAT, NULL));
-  g_signal_connect(G_OBJECT (g->btn_curve_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
+  g_signal_connect(G_OBJECT (g->btn_curve_tool), "toggled", G_CALLBACK (btn_make_radio_callback), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_curve_tool), _("curve tool: draw curves"));
   gtk_toggle_button_set_active(g->btn_curve_tool, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_curve_tool), FALSE, FALSE, 0);
 
   g->btn_node_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_node_tool, CPF_STYLE_FLAT, NULL));
-  g_signal_connect(G_OBJECT(g->btn_node_tool), "toggled", G_CALLBACK (btn_make_radio_callback), module);
+  g_signal_connect(G_OBJECT(g->btn_node_tool), "toggled", G_CALLBACK (btn_make_radio_callback), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_node_tool), _("node tool: edit, add and delete nodes"));
   gtk_toggle_button_set_active(g->btn_node_tool, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_node_tool), FALSE, FALSE, 0);
@@ -3601,16 +3591,14 @@ void gui_reset(dt_iop_module_t *self)
   gtk_toggle_button_set_active(g->btn_node_tool,  FALSE);
 }
 
-void gui_cleanup(dt_iop_module_t *module)
+void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  if(g)
-  {
-    cairo_destroy(g->fake_cr);
-    dt_pthread_mutex_destroy(&g->lock);
-    free(g);
-  }
-  module->gui_data = NULL;
+  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) self->gui_data;
+
+  cairo_destroy(g->fake_cr);
+  dt_pthread_mutex_destroy(&g->lock);
+
+  IOP_GUI_FREE;
 }
 
 void init_key_accels(dt_iop_module_so_t *module)
@@ -3633,18 +3621,18 @@ void connect_key_accels(dt_iop_module_t *module)
 
 // defgroup Button paint functions
 
-#define PREAMBLE                                        \
+#define PREAMBLE                                       \
   cairo_save(cr);                                      \
   const gint s = MIN(w, h);                            \
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0),       \
-                   y + (h / 2.0) - (s / 2.0));          \
+                  y + (h / 2.0) - (s / 2.0));          \
   cairo_scale(cr, s, s);                               \
   cairo_push_group(cr);                                \
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);       \
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);        \
   cairo_set_line_width(cr, 0.2);
 
-#define POSTAMBLE                                               \
+#define POSTAMBLE                                              \
   cairo_pop_group_to_source(cr);                               \
   cairo_paint_with_alpha(cr, flags & CPF_ACTIVE ? 1.0 : 0.5);  \
   cairo_restore(cr);

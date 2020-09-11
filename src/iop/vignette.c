@@ -107,7 +107,7 @@ typedef struct dt_iop_vignette_params_t
   float brightness;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: -0.5 -1 - 1 Strength of brightness reduction
   float saturation;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: -0.5 -1 - 1 Strength of saturation reduction
   dt_iop_vector_2d_t center; // Center of vignette
-  gboolean autoratio;        // $DEFAULT: FALSE
+  gboolean autoratio;        // $DEFAULT: FALSE $DESCRIPTION: "automatic ratio"
   float whratio;             // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "width/height ratio" 0-1 = width/height ratio, 1-2 = height/width ratio + 1
   float shape;               // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "shape"
   dt_iop_dither_t dithering; // $DEFAULT: DITHER_OFF if and how to perform dithering
@@ -123,7 +123,7 @@ typedef struct dt_iop_vignette_gui_data_t
   GtkWidget *saturation;
   GtkWidget *center_x;
   GtkWidget *center_y;
-  GtkToggleButton *autoratio;
+  GtkWidget *autoratio;
   GtkWidget *whratio;
   GtkWidget *shape;
   GtkWidget *dithering;
@@ -948,15 +948,12 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-static void autoratio_callback(GtkToggleButton *button, gpointer user_data)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  p->autoratio = gtk_toggle_button_get_active(button);
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
+  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
+
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -1018,7 +1015,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->saturation, p->saturation);
   dt_bauhaus_slider_set(g->center_x, p->center.x);
   dt_bauhaus_slider_set(g->center_y, p->center.y);
-  gtk_toggle_button_set_active(g->autoratio, p->autoratio);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoratio), p->autoratio);
   dt_bauhaus_slider_set(g->whratio, p->whratio);
   dt_bauhaus_slider_set(g->shape, p->shape);
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
@@ -1027,9 +1024,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_vignette_gui_data_t));
-  dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
+  dt_iop_vignette_gui_data_t *g = IOP_GUI_ALLOC(vignette);
 
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
   g->falloff_scale = dt_bauhaus_slider_from_params(self, "falloff_scale");
@@ -1038,14 +1033,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->center_x = dt_bauhaus_slider_from_params(self, "center.x");
   g->center_y = dt_bauhaus_slider_from_params(self, "center.y");
   g->shape = dt_bauhaus_slider_from_params(self, N_("shape"));
-
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *label = dtgtk_reset_label_new(_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), TRUE, TRUE, 0);
-  g->autoratio = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("automatic")));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-
+  g->autoratio = dt_bauhaus_toggle_from_params(self, "autoratio");
   g->whratio = dt_bauhaus_slider_from_params(self, "whratio");
   g->dithering = dt_bauhaus_combobox_from_params(self, N_("dithering"));
 
@@ -1058,7 +1046,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->scale, "%.02f%%");
   dt_bauhaus_slider_set_format(g->falloff_scale, "%.02f%%");
 
-  gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
   gtk_widget_set_tooltip_text(g->scale, _("the radii scale of vignette for start of fall-off"));
   gtk_widget_set_tooltip_text(g->falloff_scale, _("the radii scale of vignette for end of fall-off"));
   gtk_widget_set_tooltip_text(g->brightness, _("strength of effect on brightness"));
@@ -1070,8 +1057,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->autoratio), _("enable to have the ratio automatically follow the image size"));
   gtk_widget_set_tooltip_text(g->whratio, _("width-to-height ratio"));
   gtk_widget_set_tooltip_text(g->dithering, _("add some level of random noise to prevent banding"));
-
-  g_signal_connect(G_OBJECT(g->autoratio), "toggled", G_CALLBACK(autoratio_callback), self);
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)

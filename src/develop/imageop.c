@@ -87,7 +87,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
-  memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
+  memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_commit_blend_params(module, &_default_blendop_params);
 }
@@ -149,8 +149,7 @@ static void default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
 static void default_gui_cleanup(dt_iop_module_t *self)
 {
-  g_free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 static void default_cleanup(dt_iop_module_t *module)
@@ -230,6 +229,9 @@ void dt_iop_default_init(dt_iop_module_t *module)
     case DT_INTROSPECTION_TYPE_UINT:
       *(unsigned int*)(module->default_params + i->header.offset) = i->UInt.Default;
       break;
+    case DT_INTROSPECTION_TYPE_USHORT:
+      *(unsigned short*)(module->default_params + i->header.offset) = i->UShort.Default;
+      break;
     case DT_INTROSPECTION_TYPE_ENUM:
       *(int*)(module->default_params + i->header.offset) = i->Enum.Default;
       break;
@@ -249,14 +251,19 @@ void dt_iop_default_init(dt_iop_module_t *module)
         size_t element_size = i->Array.field->header.size;
         if(element_size % sizeof(int))
         {
-          fprintf(stderr, "trying to initialize array not multiple of sizeof(int) in dt_iop_default_init\n");
+          int8_t *p = module->default_params + i->header.offset;
+          for (size_t c = element_size; c < i->header.size; c++, p++)
+            p[element_size] = *p;
         }
-        element_size /= sizeof(int);
-        size_t num_ints = i->header.size / sizeof(int);
+        else
+        {
+          element_size /= sizeof(int);
+          size_t num_ints = i->header.size / sizeof(int);
 
-        int *p = module->default_params + i->header.offset;
-        for (size_t c = element_size; c < num_ints; c++, p++)
-          p[element_size] = *p;
+          int *p = module->default_params + i->header.offset;
+          for (size_t c = element_size; c < num_ints; c++, p++)
+            p[element_size] = *p;
+        }
       }
       break;
     case DT_INTROSPECTION_TYPE_STRUCT:
@@ -269,8 +276,6 @@ void dt_iop_default_init(dt_iop_module_t *module)
 
     i++;
   }
-
-  memcpy(module->params, module->default_params, param_size);
 }
 
 int dt_iop_load_module_so(void *m, const char *libname, const char *op)
@@ -443,7 +448,6 @@ error:
 
 int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
-  module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
   module->header = NULL;
@@ -1390,7 +1394,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-
+/*
       module->init(module);
       if(module->params_size == 0)
       {
@@ -1398,9 +1402,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-
       // we call reload_defaults() in case the module defines it
-      if(module->reload_defaults) module->reload_defaults(module);
+      if(module->reload_defaults) module->reload_defaults(module); // why not call dt_iop_reload_defaults? (if needed at all)
+*/
 
       int32_t new_params_size = module->params_size;
       void *new_params = calloc(1, new_params_size);
@@ -1565,8 +1569,6 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
     free(module);
     return 1;
   }
-  module->global_data = module_so->data;
-  module->so = module_so;
   dt_iop_reload_defaults(module);
   return 0;
 }
