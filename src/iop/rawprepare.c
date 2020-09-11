@@ -784,7 +784,7 @@ void gui_init(dt_iop_module_t *self)
 
   for(int i = 0; i < 4; i++)
   {
-    gchar *par = g_strdup_printf(_("raw_black_level_separate[%i]"), i);
+    gchar *par = g_strdup_printf("raw_black_level_separate[%i]", i);
     gchar *label = g_strdup_printf(_("black level %i"), i);
 
     g->black_level_separate[i] = dt_bauhaus_slider_from_params(self, par);
