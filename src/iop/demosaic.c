@@ -5002,7 +5002,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_demosaic_params_t *d = module->default_params;
+  dt_iop_demosaic_params_t *d = (dt_iop_demosaic_params_t *)module->default_params;
 
   if(dt_image_is_monochrome(&module->dev->image_storage))
     d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
@@ -5013,6 +5013,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   d->color_smoothing = 0;
   d->green_eq = DT_IOP_GREEN_EQ_NO;
+  d->median_thrs = 0.0f;
 
   module->hide_enable_button = 1;
 
@@ -5022,6 +5023,12 @@ void reload_defaults(dt_iop_module_t *module)
   else
   {
     module->default_enabled = 0;
+  }
+
+  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)module->gui_data;
+  if(g)
+  {
+    dt_bauhaus_slider_set_default(g->median_thrs, 0.0f);
   }
 }
 
