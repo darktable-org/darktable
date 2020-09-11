@@ -2385,6 +2385,19 @@
     <shortdescription>arange buttons as bar below temp/tint sliders</shortdescription>
     <longdescription>if enabled, the buttons in white balance module will be aranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom" section="interface">
+    <name>plugins/darkroom/colorbalance/layout</name>
+    <type>
+      <enum>
+        <option>box</option>
+        <option>notebook</option>
+        <option>grid</option>
+      </enum>
+    </type>
+    <default>box</default>
+    <shortdescription>colorbalance slider block layout</shortdescription>
+    <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nbox - all sliders are shown in one long list (with headers),\nnotebook - use tabs to switch between the blocks of sliders,\ngrid - the blocks of sliders are shown next to eachother (in narrow columns)</longdescription>
+  </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
 
