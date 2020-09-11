@@ -1959,9 +1959,9 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
       }
       // label on top of marker:
       set_color(cr, *text_color);
-      show_pango_text(w, context, cr, w->label, 0, 0,
-                      width - darktable.bauhaus->quad_width - INNER_PADDING*2.0 - value_width,
-                      FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
+      float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING * 2.0 - value_width;
+      if(label_width > 0)
+        show_pango_text(w, context, cr, w->label, 0, 0, label_width, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
     }
     break;
     default:
