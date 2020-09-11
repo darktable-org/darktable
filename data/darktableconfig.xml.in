@@ -1691,14 +1691,14 @@
   <dtconfig>
     <name>darkroom/ui/overexposed/lower</name>
     <type>float</type>
-    <default>2.0</default>
+    <default>-12.69</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/overexposed/upper</name>
     <type>float</type>
-    <default>98.0</default>
+    <default>99.99</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
