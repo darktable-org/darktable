@@ -2389,14 +2389,14 @@
     <name>plugins/darkroom/colorbalance/layout</name>
     <type>
       <enum>
-        <option>box</option>
-        <option>notebook</option>
-        <option>grid</option>
+        <option>list</option>
+        <option>tabs</option>
+        <option>columns</option>
       </enum>
     </type>
     <default>box</default>
     <shortdescription>colorbalance slider block layout</shortdescription>
-    <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nbox - all sliders are shown in one long list (with headers),\nnotebook - use tabs to switch between the blocks of sliders,\ngrid - the blocks of sliders are shown next to eachother (in narrow columns)</longdescription>
+    <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nlist - all sliders are shown in one long list (with headers),\ntabs - use tabs to switch between the blocks of sliders,\ncolumns - the blocks of sliders are shown next to each other (in narrow columns)</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
