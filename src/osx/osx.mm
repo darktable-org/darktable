@@ -26,6 +26,7 @@
 #include <gtkosxapplication.h>
 #endif
 #include "osx.h"
+#include "libintl.h"
 
 void dt_osx_autoset_dpi(GtkWidget *widget)
 {
@@ -141,8 +142,46 @@ char* dt_osx_get_bundle_res_path()
   return result;
 }
 
+static char* _get_user_locale()
+{
+  @autoreleasepool
+  {
+    NSLocale* locale_ns = [NSLocale currentLocale];
+    NSString* locale_c = [NSString stringWithFormat: @"%@_%@", [locale_ns languageCode], [locale_ns countryCode]];
+    return strdup([locale_c UTF8String]);
+  }
+}
+
 void dt_osx_prepare_environment()
 {
+  // check that LC_CTYPE is set to something sane
+  // on macOS it's usually set to UTF-8
+  // which is fine for native setlocale function
+  // but since we link with libintl
+  // we are actually using libintl_setlocale (in case of macOS)
+  // which expects LC_CTYPE to be normal locale name
+  // otherwise calling setlocale(LC_ALL, "") fails
+  const gchar* ctype = g_getenv("LC_CTYPE");
+  if(ctype)
+  {
+    char *saved_locale = strdup(setlocale(LC_ALL, NULL));
+    if(!setlocale(LC_ALL, ctype))
+    {
+      g_unsetenv("LC_CTYPE");
+    }
+    else
+    {
+      setlocale(LC_ALL, saved_locale);
+    }
+    free(saved_locale);
+  }
+  // set LANG according to user settings, unless already set
+  // otherwise we may get some non-default interface language
+  // and not even detect it
+  char* user_locale = _get_user_locale();
+  g_setenv("LANG", user_locale, FALSE);
+  free(user_locale);
+  // set all required paths if we are in the app bundle
   char* res_path = dt_osx_get_bundle_res_path();
   if(res_path)
   {
