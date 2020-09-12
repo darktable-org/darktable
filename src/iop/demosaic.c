@@ -5011,25 +5011,9 @@ void reload_defaults(dt_iop_module_t *module)
   else
     d->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
 
-  d->color_smoothing = 0;
-  d->green_eq = DT_IOP_GREEN_EQ_NO;
-  d->median_thrs = 0.0f;
-
   module->hide_enable_button = 1;
 
-  // only on for raw images:
-  if(dt_image_is_raw(&module->dev->image_storage))
-    module->default_enabled = 1;
-  else
-  {
-    module->default_enabled = 0;
-  }
-
-  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)module->gui_data;
-  if(g)
-  {
-    dt_bauhaus_slider_set_default(g->median_thrs, 0.0f);
-  }
+  module->default_enabled = dt_image_is_raw(&module->dev->image_storage);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
