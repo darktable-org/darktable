@@ -187,8 +187,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edge threshold"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "method (bayer)"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "method (xtrans)"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color smoothing"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "match greens"));
 }
@@ -198,8 +196,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "edge threshold", GTK_WIDGET(g->median_thrs));
-  dt_accel_connect_combobox_iop(self, "method (bayer)", GTK_WIDGET(g->demosaic_method_bayer));
-  dt_accel_connect_combobox_iop(self, "method (xtrans)", GTK_WIDGET(g->demosaic_method_xtrans));
   dt_accel_connect_combobox_iop(self, "color smoothing", GTK_WIDGET(g->color_smoothing));
   dt_accel_connect_combobox_iop(self, "match greens", GTK_WIDGET(g->greeneq));
 }
@@ -5002,7 +4998,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_demosaic_params_t *d = module->default_params;
+  dt_iop_demosaic_params_t *d = (dt_iop_demosaic_params_t *)module->default_params;
 
   if(dt_image_is_monochrome(&module->dev->image_storage))
     d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
@@ -5011,18 +5007,9 @@ void reload_defaults(dt_iop_module_t *module)
   else
     d->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
 
-  d->color_smoothing = 0;
-  d->green_eq = DT_IOP_GREEN_EQ_NO;
-
   module->hide_enable_button = 1;
 
-  // only on for raw images:
-  if(dt_image_is_raw(&module->dev->image_storage))
-    module->default_enabled = 1;
-  else
-  {
-    module->default_enabled = 0;
-  }
+  module->default_enabled = dt_image_is_raw(&module->dev->image_storage);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
