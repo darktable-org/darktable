@@ -48,26 +48,36 @@ void dt_osx_autoset_dpi(GtkWidget *widget)
 
 float dt_osx_get_ppd()
 {
-  NSScreen *nsscreen = [NSScreen mainScreen];
+  @autoreleasepool
+  {
+    NSScreen *nsscreen = [NSScreen mainScreen];
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-  if([nsscreen respondsToSelector: NSSelectorFromString(@"backingScaleFactor")]) {
-    return [[nsscreen valueForKey: @"backingScaleFactor"] floatValue];
-  } else {
-    return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
-  }
+    if([nsscreen respondsToSelector: NSSelectorFromString(@"backingScaleFactor")])
+    {
+      return [[nsscreen valueForKey: @"backingScaleFactor"] floatValue];
+    }
+    else
+    {
+      return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
+    }
 #else
-  return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
+    return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
 #endif
+  }
 }
 
 #if !GTK_CHECK_VERSION(3, 24, 14)
 static void dt_osx_disable_fullscreen(GtkWidget *widget)
 {
 #ifdef GDK_WINDOWING_QUARTZ
-  GdkWindow *window = gtk_widget_get_window(widget);
-  if(window) {
-    NSWindow *native = gdk_quartz_window_get_nswindow(window);
-    [native setCollectionBehavior: ([native collectionBehavior] & ~NSWindowCollectionBehaviorFullScreenPrimary) | NSWindowCollectionBehaviorFullScreenAuxiliary];
+  @autoreleasepool
+  {
+    GdkWindow *window = gtk_widget_get_window(widget);
+    if(window)
+    {
+      NSWindow *native = gdk_quartz_window_get_nswindow(window);
+      [native setCollectionBehavior: ([native collectionBehavior] & ~NSWindowCollectionBehaviorFullScreenPrimary) | NSWindowCollectionBehaviorFullScreenAuxiliary];
+    }
   }
 #endif
 }
@@ -87,7 +97,8 @@ void dt_osx_disallow_fullscreen(GtkWidget *widget)
 
 gboolean dt_osx_file_trash(const char *filename, GError **error)
 {
-  @autoreleasepool {
+  @autoreleasepool
+  {
     NSFileManager *fm = [NSFileManager defaultManager];
     NSError *err;
 
@@ -104,8 +115,8 @@ gboolean dt_osx_file_trash(const char *filename, GError **error)
         *error = g_error_new_literal(G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, "trash not supported on OS X versions < 10.8");
       return FALSE;
     }
+    return TRUE;
   }
-  return TRUE;
 }
 
 char* dt_osx_get_bundle_res_path()
