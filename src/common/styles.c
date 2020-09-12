@@ -700,6 +700,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
   {
     dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
 
+    module->dev = dev;
+
     if(dt_iop_load_module(module, mod_src->so, dev))
     {
       module = NULL;
@@ -816,6 +818,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     dt_dev_init(dev_dest, FALSE);
 
     dev_dest->iop = dt_iop_load_modules_ext(dev_dest, TRUE);
+    dev_dest->image_storage.id = imgid;
 
     // now let's deal with the iop-order (possibly merging style & target lists)
     GList *iop_list = dt_styles_module_order_list(name);
