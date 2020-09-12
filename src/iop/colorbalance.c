@@ -1773,16 +1773,20 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
 
   gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
 
-  if(!g_strcmp0(layout, "box"))
+  if(!g_strcmp0(layout, "list"))
   {
     new_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
     for(int i=0; i<3; i++)
     {
-      if(i)
-        gtk_container_add(GTK_CONTAINER(new_container), dt_ui_section_label_new(_(long_label[i])));
-      else
+      if(i == 0)
         gtk_label_set_text(GTK_LABEL(g->main_label), _(long_label[0]));
+      else
+      {
+        GtkWidget *label = dt_ui_section_label_new(_(long_label[i]));
+        gtk_container_add(GTK_CONTAINER(new_container), label);
+        gtk_widget_show(label);
+      }
 
       gtk_container_add(GTK_CONTAINER(new_container), g->blocks[i]);
     }
@@ -1800,7 +1804,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
       gtk_widget_set_hexpand(label[i], TRUE);
     }
 
-    if(!g_strcmp0(layout, "grid"))
+    if(!g_strcmp0(layout, "columns"))
     {
       new_container = gtk_grid_new();
 
@@ -1813,6 +1817,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
         gtk_style_context_add_class(gtk_widget_get_style_context(label[i]), "section_label_top");
 
         gtk_container_add(GTK_CONTAINER(new_container), label[i]);
+        gtk_widget_show(label[i]);
         gtk_grid_attach_next_to(GTK_GRID(new_container), g->blocks[i], label[i], GTK_POS_BOTTOM, 1, 1);
       }
     }
@@ -1829,7 +1834,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   for(int i=0; i<3; i++) g_object_unref(G_OBJECT(g->blocks[i]));
 
   gtk_container_add(GTK_CONTAINER(g->main_box), new_container);
-  gtk_widget_show_all(g->main_box);
+  gtk_widget_show(new_container);
 }
 
 static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_iop_module_t *self)
@@ -1837,13 +1842,12 @@ static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_i
   gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
 
   dt_conf_set_string("plugins/darkroom/colorbalance/layout",
-                     !g_strcmp0(layout, "grid") ? "notebook" :
-                     !g_strcmp0(layout, "box") ? "grid" : "box");
+                     !g_strcmp0(layout, "columns") ? "tabs" :
+                     !g_strcmp0(layout, "list") ? "columns" : "list");
 
   g_free(layout);
 
   _configure_slider_blocks(NULL, self);
-  set_visible_widgets(self->gui_data);
 }
 
 #define HSL_CALLBACK(which)                                                             \
