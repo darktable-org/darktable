@@ -38,7 +38,16 @@ static void set_locale(const char *ui_lang, const char *old_env)
 {
   if(ui_lang && *ui_lang)
   {
-    // TODO: Also set LANG
+#ifdef __APPLE__
+    char* full_locale = dt_osx_full_locale_name(ui_lang);
+    if(full_locale)
+    {
+      g_setenv("LANG", full_locale, TRUE);
+      free(full_locale);
+    }
+#else
+    // TODO: set LANG on other platforms too
+#endif
     g_setenv("LANGUAGE", ui_lang, TRUE);
     gtk_disable_setlocale();
   }

@@ -236,6 +236,39 @@ void dt_osx_focus_window()
   [NSApp activateIgnoringOtherApps:YES];
 }
 
+char* dt_osx_full_locale_name(const char* locale)
+{
+  @autoreleasepool
+  {
+    if(!strcmp(locale, "C"))
+    {
+      // C isn't in the list of locales
+      return strdup("C");
+    }
+    char *saved_locale = strdup(setlocale(LC_ALL, NULL));
+    NSString* locale_str = [NSString stringWithUTF8String: locale];
+    NSArray<NSString*>* locales = [NSLocale availableLocaleIdentifiers];
+    for(NSString* item in locales)
+    {
+      NSLocale* locale_ns = [NSLocale localeWithLocaleIdentifier: item];
+      NSString* locale_c = [NSString stringWithFormat: @"%@_%@", [locale_ns languageCode], [locale_ns countryCode]];
+      if([locale_c hasPrefix: locale_str])
+      {
+        const char* locale_utf8 = [locale_c UTF8String];
+        if(setlocale(LC_ALL, locale_utf8))
+        {
+          setlocale(LC_ALL, saved_locale);
+          free(saved_locale);
+          return strdup(locale_utf8);
+        }
+      }
+    }
+    // haven't found any matching locale
+    free(saved_locale);
+    return NULL;
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
