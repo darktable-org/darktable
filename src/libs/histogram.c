@@ -526,7 +526,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
     const float src = MIN(1.0f, wf_linear[p + ch]);
     // primaries: colors used to represent primary colors!
     for(int k = 0; k < 3; k++)
-      wf_display[p+k] = src * (*primaries_linear)[ch][2-k];
+      wf_display[p+k] = src * (*primaries_linear)[ch][k];
     wf_display[p+3] = src;
   }
   // in place transform will preserve alpha
@@ -1137,11 +1137,38 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
   dt_control_queue_redraw_widget(self->widget);
 }
 
-static void _lib_histogram_update_primaries(dt_lib_histogram_t *d)
+static void _lib_histogram_update_color(dt_lib_histogram_t *d)
 {
+  // red, green, blue in RGB
+  // FIXME: set these to reasonable primaries in a reasonable profile, perhaps via HSL, such that they add up to a neutral gray in display colorspace
+  const float srgb_primaries[3][3] = {
+    {1.0f, 0.0f, 0.0f},
+    {0.0f, 1.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f}
+  };
+
   cmsHPROFILE display_profile = NULL;
-  cmsHPROFILE srgb_profile = NULL;
-  cmsHTRANSFORM xform = NULL;
+  cmsHTRANSFORM xform_srgb_to_display = NULL;
+  cmsHPROFILE srgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+
+  // doesn't depend on display profile, only done on gui_init()
+  if(!d->profile_linear)
+  {
+    dt_develop_t *dev = darktable.develop;
+    d->profile_linear = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
+    cmsHPROFILE linear_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_ANY)->profile;
+    cmsHTRANSFORM xform_srgb_to_linear =
+      cmsCreateTransform(srgb_profile, TYPE_RGB_FLT, linear_profile, TYPE_RGB_FLT, DT_INTENT_PERCEPTUAL, 0);
+    if(xform_srgb_to_linear)
+    {
+      float out[3][3];
+      cmsDoTransform(xform_srgb_to_linear, srgb_primaries[0], out[0], 3);
+      for(int k=0; k<3; k++)
+        for(int ch=0; ch<3; ch++)
+          d->primaries_linear[2-k][2-ch] = out[k][ch];
+      cmsDeleteTransform(xform_srgb_to_linear);
+    }
+  }
 
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
@@ -1157,24 +1184,17 @@ static void _lib_histogram_update_primaries(dt_lib_histogram_t *d)
                                         d_profile->type, d_profile->filename, DT_INTENT_PERCEPTUAL);
   }
 
-  srgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_ANY)->profile;
-
-  if(display_profile && srgb_profile)
-    xform = cmsCreateTransform(srgb_profile, TYPE_RGB_FLT, display_profile, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
+  if(display_profile)
+    xform_srgb_to_display =
+      cmsCreateTransform(srgb_profile, TYPE_RGB_FLT, display_profile, TYPE_RGB_DBL, DT_INTENT_PERCEPTUAL, 0);
 
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  if(xform)
+  if(xform_srgb_to_display)
   {
-    // red, green, blue in RGB
-    const float in[3][3] = {
-      {1.0f, 0.0f, 0.0f},
-      {0.0f, 1.0f, 0.0f},
-      {0.0f, 0.0f, 1.0f}
-    };
     double out[3][3];
-    cmsDoTransform(xform, in[0], out[0], 3);
+    cmsDoTransform(xform_srgb_to_display, srgb_primaries[0], out[0], 3);
     for(int k=0; k<3; k++)
     {
       memcpy(&d->primaries_display[k], out[k], 3 * sizeof(double));
@@ -1182,14 +1202,14 @@ static void _lib_histogram_update_primaries(dt_lib_histogram_t *d)
       memcpy(&d->primaries_overlay[k], out[k], 3 * sizeof(double));
       d->primaries_overlay[k].alpha = 0.33;
     }
-    cmsDeleteTransform(xform);
+    cmsDeleteTransform(xform_srgb_to_display);
   }
 }
 
 static void _lib_histogram_display_profile_changed(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  _lib_histogram_update_primaries(d);
+  _lib_histogram_update_color(d);
   dt_control_queue_redraw_widget(self->widget);
 }
 
@@ -1212,8 +1232,6 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_develop_t *dev = darktable.develop;
-
   /* initialize ui widgets */
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc0(sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
@@ -1287,19 +1305,7 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_8bit = dt_alloc_align(64, sizeof(uint8_t) * d->waveform_height * d->waveform_max_width * 4);
 
   // for linear->logarithmic transform and displaying primaries in display colorspace
-  const dt_iop_order_iccprofile_info_t *profile_srgb =
-    dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL);
-  d->profile_linear = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-
-  // blue, green, red in RGB
-  float DT_ALIGNED_ARRAY primaries_srgb[3][4] = {
-    {0.0f, 0.0f, 1.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f, 0.0f},
-    {1.0f, 0.0f, 0.0f, 0.0f}
-  };
-  dt_ioppr_transform_image_colorspace_rgb(primaries_srgb[0], d->primaries_linear[0], 3, 1,
-                                          profile_srgb, d->profile_linear, "histogram primaries to linear");
-  _lib_histogram_update_primaries(d);
+  _lib_histogram_update_color(d);
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
