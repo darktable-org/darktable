@@ -1649,7 +1649,7 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
   if(c->loglogscale)
-    dt_draw_loglog_grid(cr, 4, 0, 0, width, height, c->loglogscale);
+    dt_draw_loglog_grid(cr, 4, 0, 0, width, height, c->loglogscale + 1.0f);
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
