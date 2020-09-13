@@ -1258,6 +1258,84 @@ filechooser row:hover,
 }
 
 /*--------------------------------
+  - module layouts manager dialog -
+  --------------------------------*/
+
+#modulegroups_editor
+{
+  color: @fg_color;
+  background-color: @plugin_bg_color;
+  padding-left: 0.5em;
+}
+#modulegroups-iop-header,
+#modulegroups-header-center,
+#modulegroups-preset,
+#modulegroups-preset-activated
+{
+  background-color: @bg_color;
+  color: @plugin_label_color;
+  padding: 0.5em 0.5em 0.5em 0.5em;
+  margin: 0 0 0.2em 0;
+}
+#modulegroups-preset-activated
+{
+  color: @fg_color;
+  background-color: @plugin_bg_color;
+}
+#modulegroups-preset,
+#modulegroups-preset-activated
+{
+  font-size: 1.1em;
+  min-width: 150px;
+}
+#modulegroups-group-icon {
+  min-height: 2em;
+  min-width: 2em;
+  margin: 0;
+  padding: 0.1em;
+  border: 0;
+}
+#modulegroups-header #dt-button,
+#modulegroups-preset #dt-button,
+#modulegroups-preset-activated #dt-button
+{
+  border: 0;
+}
+#modulegroups-groups-title
+{
+  font-size: 1.1em;
+  font-weight: bold;
+  padding: 0.5em 0.5em 0.5em 0.5em;
+}
+#modulegroups-groups-title #dt-button
+{
+  min-height: 1.2em;
+  min-width: 1.2em;
+  margin: 0 0 0 1em;
+}
+#modulegroups-groups-box
+{
+  border-top: 1px solid @plugin_label_color;
+}
+#modulegroups-presets-list
+{
+  padding-top: 1em;
+}
+#modulegroups-save
+{
+  padding: 0.5em;
+  margin: 0.5em;
+}
+#modulegroups-preset-name
+{
+  font-size: 1.1em;
+}
+#modulegroups-ro
+{
+  font-style: italic;
+}
+
+/*--------------------------------
   - Tree view (lists and tables) -
   --------------------------------*/
 /*** Set treeview header on all windows, including preferences and accels window ***/
