@@ -348,7 +348,8 @@ void gui_update(dt_iop_module_t *self)
   if(self->default_enabled)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
   else
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation only works for the sensors that need it."));
+    gtk_label_set_text(GTK_LABEL(self->widget),
+                       _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
 
 void gui_init(dt_iop_module_t *self)
