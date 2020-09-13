@@ -48,16 +48,16 @@
 
     <informaltable frame="none">
       <tgroup cols="2" colsep="0" rowsep="0">
-        <colspec colwidth="6*"/>
         <colspec colwidth="4*"/>
+        <colspec colwidth="6*"/>
         <tbody>
           <row>
             <entry>
-              Modules with blending support exhibit an additional combobox <quote>blend</quote>
-              at the bottom of their GUI.
+              Modules with blending support exhibit an additional line
+              with the different <quote>blend modes</quote> at the bottom of their GUI.
             </entry>
             <entry>
-              <graphic fileref="darkroom/concepts/images/blending.png" scalefit="1" width="80%" align="center" />
+              <graphic fileref="darkroom/concepts/images/blending.png" scalefit="1" width="90%" align="center" />
             </entry>
           </row>
         </tbody>
@@ -69,12 +69,13 @@
       <title>blend</title>
 
       <para>
-        Blending is activated with this combobox. Depending on the value selected additional
-        control elements will show up.
+        Blending is activated by clicking on one of the
+        buttons. Depending on the selected mode additional control elements will show up.
       </para>
 
       <sect5 id="blending_usage_off">
         <title>off</title>
+        <para><inlinegraphic fileref="&blend_off;" scalefit="1" width="3%" align="center"/></para>
         <para>
           module's output is passed to the next module in pixelpipe without additional
           reprocessing. No further controls are displayed.
@@ -83,6 +84,7 @@
 
       <sect5 id="blending_usage_uniform">
         <title>uniformily</title>
+        <para><inlinegraphic fileref="&blend_uniformly;" scalefit="1" width="3%" align="center"/></para>
         <para>
           reprocessing takes place with the chosen blend mode and opacity value&nbsp;&ndash; the
           same for all pixels. Additional controls to select blend mode and opacity value are
@@ -92,6 +94,7 @@
 
       <sect5 id="blending_usage_drawn_mask">
         <title>drawn mask</title>
+        <para><inlinegraphic fileref="&blend_drawn;" scalefit="1" width="3%" align="center"/></para>
         <para>
           reprocessing takes place with the chosen blend mode and opacity. Additional controls
           are displayed which allow you to draw a mask. If no mask elements are drawn all pixels
@@ -105,6 +108,7 @@
 
       <sect5 id="blending_usage_parametric_mask">
         <title>parametric mask</title>
+        <para><inlinegraphic fileref="&blend_parametric;" scalefit="1" width="3%" align="center"/></para>
         <para>
           reprocessing takes place with the chosen blend mode and opacity. Additional controls
           are displayed which allow you to adjust the opacity on a per-pixel basis determined by
@@ -115,6 +119,7 @@
 
       <sect5 id="blending_usage_drawn_parametric_mask">
         <title>drawn and parametric mask</title>
+        <para><inlinegraphic fileref="&blend_drawn_parametric;" scalefit="1" width="3%" align="center"/></para>
         <para>
           this option combines drawn and parametric masks and shows the full set of both
           controls. See <xref linkend="combined_masks"/> to learn how to best use this
@@ -122,6 +127,15 @@
         </para>
       </sect5>
 
+      <sect5 id="blending_usage_raster">
+        <title>raster mask</title>
+        <para><inlinegraphic fileref="&blend_raster;" scalefit="1" width="3%" align="center"/></para>
+        <para>
+          this option reuse a mask created in another module using a
+          parametric mask possibly combined with a drawn mask.  See
+          <xref linkend="raster_mask"/> for further details.
+        </para>
+      </sect5>
     </sect4>
 
   </sect3>
