@@ -107,6 +107,15 @@ typedef struct dt_camera_t
   dt_pthread_mutex_t live_view_synch;
 } dt_camera_t;
 
+/** A dummy camera object used for locked cameras */
+typedef struct dt_camera_locked_t
+{
+  /** A pointer to the model string of camera. */
+  char *model;
+  /** A pointer to the port string of camera. */
+  char *port;
+} dt_camera_locked_t;
+
 /** Camera control status.
   These enumerations are passed back to host application using
   listener interface function control_status().
@@ -148,6 +157,8 @@ typedef struct dt_camctl_t
   GList *listeners;
   /** List of cameras found and initialized by camera control.*/
   GList *cameras;
+  /** List of locked cameras found */
+  GList *locked_cameras;
 
   /** The actual gphoto2 context */
   GPContext *gpcontext;
@@ -223,7 +234,9 @@ void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *l
 /** start a thread job to detect cameras and update list of available cameras */
 void dt_camctl_background_detect_cameras();
 /** Check if there is any camera connected */
-int dt_camctl_have_cameras(const dt_camctl_t *c);
+gboolean dt_camctl_have_cameras(const dt_camctl_t *c);
+/** Check if there is any camera locked  */
+gboolean dt_camctl_have_locked_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Can tether...*/
