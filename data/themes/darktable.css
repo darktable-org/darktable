@@ -1334,6 +1334,10 @@ filechooser row:hover,
 {
   font-style: italic;
 }
+#modulegroups-groupbox
+{
+  padding: 0 0.5em 0 0.5em;
+}
 
 /*--------------------------------
   - Tree view (lists and tables) -
