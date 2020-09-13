@@ -1139,36 +1139,17 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
 
 static void _lib_histogram_update_color(dt_lib_histogram_t *d)
 {
-  // red, green, blue in RGB
-  // FIXME: set these to reasonable primaries in a reasonable profile, perhaps via HSL, such that they add up to a neutral gray in display colorspace
-  const float srgb_primaries[3][3] = {
-    {1.0f, 0.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f}
-  };
+  dt_develop_t *dev = darktable.develop;
 
+  cmsHPROFILE Lab_profile = NULL;
   cmsHPROFILE display_profile = NULL;
-  cmsHTRANSFORM xform_srgb_to_display = NULL;
-  cmsHPROFILE srgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  cmsHTRANSFORM xform_Lab_to_display = NULL;
+  cmsHTRANSFORM xform_Lab_to_linear = NULL;
 
   // doesn't depend on display profile, only done on gui_init()
   if(!d->profile_linear)
-  {
-    dt_develop_t *dev = darktable.develop;
+    // FIXME: this is a bit arbitrary input, and we might need an intermediary profile for gamma mapping?
     d->profile_linear = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-    cmsHPROFILE linear_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_ANY)->profile;
-    cmsHTRANSFORM xform_srgb_to_linear =
-      cmsCreateTransform(srgb_profile, TYPE_RGB_FLT, linear_profile, TYPE_RGB_FLT, DT_INTENT_PERCEPTUAL, 0);
-    if(xform_srgb_to_linear)
-    {
-      float out[3][3];
-      cmsDoTransform(xform_srgb_to_linear, srgb_primaries[0], out[0], 3);
-      for(int k=0; k<3; k++)
-        for(int ch=0; ch<3; ch++)
-          d->primaries_linear[2-k][2-ch] = out[k][ch];
-      cmsDeleteTransform(xform_srgb_to_linear);
-    }
-  }
 
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
@@ -1182,28 +1163,57 @@ static void _lib_histogram_update_color(dt_lib_histogram_t *d)
     d->profile_display =
       dt_ioppr_add_profile_info_to_list(darktable.develop,
                                         d_profile->type, d_profile->filename, DT_INTENT_PERCEPTUAL);
+    cmsCIEXYZ *wtpt = cmsReadTag(display_profile, cmsSigMediaWhitePointTag);
+    cmsCIExyY display_wtpt;
+    cmsXYZ2xyY(&display_wtpt, wtpt);
+    Lab_profile = cmsCreateLab2Profile(&display_wtpt);
   }
 
-  if(display_profile)
-    xform_srgb_to_display =
-      cmsCreateTransform(srgb_profile, TYPE_RGB_FLT, display_profile, TYPE_RGB_DBL, DT_INTENT_PERCEPTUAL, 0);
+  if(display_profile && Lab_profile)
+    xform_Lab_to_display =
+      cmsCreateTransform(Lab_profile, TYPE_Lab_DBL, display_profile, TYPE_RGB_DBL, DT_INTENT_PERCEPTUAL, 0);
 
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  if(xform_srgb_to_display)
+  // red, green, blue in Lab
+  const double Lab_primaries[3][3] = {
+    {40.0, 45.0, 35.0},
+    {45.0, -45.0, 35.0},
+    {45.0, 5.0, -62.0}
+  };
+
+  if(xform_Lab_to_display)
   {
     double out[3][3];
-    cmsDoTransform(xform_srgb_to_display, srgb_primaries[0], out[0], 3);
+    cmsDoTransform(xform_Lab_to_display, Lab_primaries[0], out[0], 3);
     for(int k=0; k<3; k++)
     {
       memcpy(&d->primaries_display[k], out[k], 3 * sizeof(double));
-      d->primaries_display[k].alpha = 0.6;
+      d->primaries_display[k].alpha = 0.5;
       memcpy(&d->primaries_overlay[k], out[k], 3 * sizeof(double));
       d->primaries_overlay[k].alpha = 0.33;
     }
-    cmsDeleteTransform(xform_srgb_to_display);
+    cmsDeleteTransform(xform_Lab_to_display);
   }
+
+  // for converting waveform in linear to logarithmic space with appropriate primaries
+  cmsHPROFILE linear_profile = dt_colorspaces_get_profile(d->profile_linear->type, d->profile_linear->filename,
+                                                          DT_PROFILE_DIRECTION_ANY)->profile;
+  if(display_profile && linear_profile)
+    xform_Lab_to_linear =
+      cmsCreateTransform(Lab_profile, TYPE_Lab_DBL, linear_profile, TYPE_RGB_FLT, DT_INTENT_PERCEPTUAL, 0);
+  if(xform_Lab_to_linear)
+  {
+    float out[3][3];
+    cmsDoTransform(xform_Lab_to_linear, Lab_primaries[0], out[0], 3);
+    for(int k=0; k<3; k++)
+      for(int ch=0; ch<3; ch++)
+        d->primaries_linear[2-k][2-ch] = out[k][ch];
+    cmsDeleteTransform(xform_Lab_to_linear);
+  }
+  if(Lab_profile)
+    cmsCloseProfile(Lab_profile);
 }
 
 static void _lib_histogram_display_profile_changed(gpointer instance, dt_lib_module_t *self)
