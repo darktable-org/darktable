@@ -37,8 +37,11 @@
           <row>
             <entry>
               <para>
-                Images which are members of a group are labeled with a <quote>G</quote> symbol
-                in their thumbnails.
+                Images which are members of a group are labeled with a
+                <inlinegraphic
+                    fileref="images/lighttable_icon_group.png"
+                    scalefit="1" width="3%"/>
+                symbol in their thumbnails.
               </para>
             </entry>
             <entry>
@@ -56,10 +59,13 @@
     in the top panel of the lightroom view toggles grouping mode on and off. If grouping is off,
     each image is displayed as an individual thumb. If grouping is on, images of a group are
     collapsed, which means they are represented by a single thumbnail. This thumbnail you see is
-    called the group head. If you press the <quote>G</quote> symbol in the group's thumbnail,
+    called the group head. If you press the
+    <inlinegraphic fileref="images/lighttable_icon_group.png" scalefit="1" width="2%"/> symbol
+    in the group's thumbnail,
     only this group gets expanded; if you then expand another group, the first group collapses.
-    To collapse an expanded group again, just click on the <quote>G</quote> symbol of its group
-    head.
+    To collapse an expanded group again, just click on the
+    <inlinegraphic fileref="images/lighttable_icon_group.png" scalefit="1" width="2%"/> symbol
+    of its group head.
   </para>
 
   <para>
@@ -87,10 +93,14 @@
 
   <para>
     You can define which image constitutes the group head, while in an expanded view of a group,
-    clicking on the <quote>G</quote> symbol of the desired image. That symbol is shown only if 
+    clicking on the <inlinegraphic
+                    fileref="images/lighttable_icon_group.png"
+                    scalefit="1" width="2%"/>
+    symbol of the desired image. That symbol is shown only if
     grouping mode is enabled, so to change the group head, you need to first enable group mode,
-    then expand the group you want to change and then click the <quote>G</quote> symbol on the
-    desired image.
+    then expand the group you want to change and then click the <inlinegraphic
+                    fileref="images/lighttable_icon_group.png"
+                    scalefit="1" width="2%"/> symbol on the desired image.
   </para>
 
   <para>
