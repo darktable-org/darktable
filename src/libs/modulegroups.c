@@ -863,7 +863,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   return 0;
 }
 
-static GtkWidget *_manage_editor_get_iop_combo(dt_lib_module_t *self, GList *exclude)
+static GtkWidget *_manage_editor_get_iop_combo(GList *exclude)
 {
   GtkWidget *combo = gtk_combo_box_text_new();
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo), "", _("add more modules"));
@@ -874,7 +874,8 @@ static GtkWidget *_manage_editor_get_iop_combo(dt_lib_module_t *self, GList *exc
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
     if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo), module->op, module->name());
+      if(!g_list_find_custom(exclude, module->op, _iop_compare))
+        gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo), module->op, module->name());
     }
     modules = g_list_previous(modules);
   }
@@ -894,14 +895,11 @@ static void _manage_editor_save(GtkWidget *widget, GdkEventButton *event, dt_lib
   // update the preset in the database
   dt_lib_presets_update(old_name, self->plugin_name, self->version(), newname, "", params, strlen(params));
 
-  // cleanup
-  _manage_editor_groups_cleanup(&d->edit_groups);
-  gtk_widget_destroy(gtk_widget_get_toplevel(widget));
-
   // update groups
   gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
   if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
     dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+  g_free(preset);
 }
 
 static void _manage_editor_module_remove(GtkWidget *widget, GdkEventButton *event, GList **modules)
@@ -959,12 +957,46 @@ static void _manage_editor_module_update_list(GList **modules, GtkWidget *vb, in
     }
     modules2 = g_list_previous(modules2);
   }
+
   gtk_widget_show_all(vb);
+}
+
+static void _manage_editor_group_update_arrows(GtkWidget *box)
+{
+  // we go throw all group collumns
+  GList *lw = gtk_container_get_children(GTK_CONTAINER(box));
+  int pos = 0;
+  const int max = g_list_length(lw) - 1;
+  while(lw)
+  {
+    GtkWidget *w = (GtkWidget *)lw->data;
+    GtkWidget *hb = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(w)), 0);
+    if(hb)
+    {
+      GList *lw2 = gtk_container_get_children(GTK_CONTAINER(hb));
+      if(g_list_length(lw2) > 2)
+      {
+        GtkWidget *left = (GtkWidget *)g_list_nth_data(lw2, 0);
+        GtkWidget *right = (GtkWidget *)g_list_nth_data(lw2, 2);
+        if(pos == 0)
+          gtk_widget_hide(left);
+        else
+          gtk_widget_show(left);
+        if(pos == max)
+          gtk_widget_hide(right);
+        else
+          gtk_widget_show(right);
+      }
+    }
+    lw = g_list_next(lw);
+    pos++;
+  }
 }
 
 static void _manage_editor_module_add(GtkWidget *widget, GList **modules)
 {
   const char *module = gtk_combo_box_get_active_id(GTK_COMBO_BOX(widget));
+  const int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   if(g_strcmp0(module, "") == 0) return;
 
   if(!g_list_find_custom(*modules, module, _iop_compare))
@@ -973,6 +1005,7 @@ static void _manage_editor_module_add(GtkWidget *widget, GList **modules)
     GtkWidget *vb = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "modules_vbox");
     _manage_editor_module_update_list(modules, vb, 0);
     gtk_combo_box_set_active_id(GTK_COMBO_BOX(widget), "");
+    gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(widget), pos);
   }
 }
 
@@ -990,6 +1023,8 @@ static void _manage_editor_group_move_right(GtkWidget *widget, GdkEventButton *e
 
   // we move the group in the ui
   gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos + 1);
+  // and we update arrows
+  _manage_editor_group_update_arrows(gtk_widget_get_parent(vb));
 }
 
 static void _manage_editor_group_move_left(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -1006,13 +1041,16 @@ static void _manage_editor_group_move_left(GtkWidget *widget, GdkEventButton *ev
 
   // we move the group in the ui
   gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos - 1);
+  // and we update arrows
+  _manage_editor_group_update_arrows(gtk_widget_get_parent(vb));
 }
 
 static void _manage_editor_group_remove(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
-  GtkWidget *vb = gtk_widget_get_parent(gtk_widget_get_parent(widget));
+  GtkWidget *vb = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
+  GtkWidget *groups_box = gtk_widget_get_parent(vb);
 
   // we remove the group from the list and destroy it
   d->edit_groups = g_list_remove(d->edit_groups, gr);
@@ -1023,6 +1061,9 @@ static void _manage_editor_group_remove(GtkWidget *widget, GdkEventButton *event
 
   // we remove the group from the ui
   gtk_widget_destroy(vb);
+
+  // and we update arrows
+  _manage_editor_group_update_arrows(groups_box);
 }
 
 static void _manage_editor_group_icon_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -1126,16 +1167,17 @@ static GtkWidget *_manage_editor_group_icon_get_popup(GtkWidget *btn, dt_lib_mod
 }
 
 static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, dt_lib_modulegroups_group_t *gr,
-                                                        int pos, int ro)
+                                                        int ro)
 {
   GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(vb2, "modulegroups-groupbox");
   // line to edit the group
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hb2, "modulegroups-header");
 
   // left arrow (not if pos == 0 which means this is the first group)
   GtkWidget *btn = NULL;
-  if(pos != 0 && !ro)
+  if(!ro)
   {
     btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_RIGHT | CPF_STYLE_FLAT,
                            NULL);
@@ -1173,7 +1215,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   gtk_box_pack_start(GTK_BOX(hb2), hb3, FALSE, TRUE, 0);
 
   // right arrow (not if pos == -1 which means this is the last group)
-  if(pos != -1 && !ro)
+  if(!ro)
   {
     btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT,
                            NULL);
@@ -1188,15 +1230,17 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   // choosen modules
   GtkWidget *vb3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *vb4 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  _manage_editor_module_update_list(&gr->modules, vb3, ro);
+  _manage_editor_module_update_list(&gr->modules, vb4, ro);
+  gtk_box_pack_start(GTK_BOX(vb3), vb4, FALSE, TRUE, 0);
 
   // combo box to add new module
   if(!ro)
   {
-    GtkWidget *combo = _manage_editor_get_iop_combo(self, gr->modules);
+    GtkWidget *combo = _manage_editor_get_iop_combo(gr->modules);
     gtk_combo_box_set_active_id(GTK_COMBO_BOX(combo), "");
-    g_object_set_data(G_OBJECT(combo), "modules_vbox", vb3);
+    g_object_set_data(G_OBJECT(combo), "modules_vbox", vb4);
     g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(_manage_editor_module_add), &gr->modules);
     gtk_box_pack_start(GTK_BOX(vb3), combo, FALSE, TRUE, 0);
   }
@@ -1215,18 +1259,14 @@ static void _manage_editor_group_add(GtkWidget *widget, GdkEventButton *event, d
   gr->icon = g_strdup("basic");
   d->edit_groups = g_list_append(d->edit_groups, gr);
 
-  // we update the group list : remove the button, add the vb and put the button back
-  g_object_ref(widget);
-  GtkWidget *hb = gtk_widget_get_parent(widget);
-  gtk_container_remove(GTK_CONTAINER(hb), widget);
+  // we update the group list
+  GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr, 0);
+  GtkWidget *groups_box = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "groups_box");
+  gtk_box_pack_start(GTK_BOX(groups_box), vb2, FALSE, TRUE, 0);
+  gtk_widget_show_all(vb2);
 
-  GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr, -1, 0);
-  gtk_box_pack_start(GTK_BOX(hb), vb2, FALSE, TRUE, 5);
-
-  gtk_box_pack_start(GTK_BOX(hb), widget, FALSE, FALSE, 0);
-  g_object_unref(widget);
-
-  gtk_widget_show_all(hb);
+  // and we update arrows
+  _manage_editor_group_update_arrows(groups_box);
 }
 
 static void _manage_editor_load(char *preset, GtkWidget *preset_box, GtkWidget *list_box, dt_lib_module_t *self)
@@ -1296,34 +1336,32 @@ static void _manage_editor_load(char *preset, GtkWidget *preset_box, GtkWidget *
   gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
   hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *groups_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hb1, "modulegroups-groups-title");
   gtk_box_pack_start(GTK_BOX(hb1), gtk_label_new(_("module groups")), FALSE, TRUE, 0);
   if(!ro)
   {
     GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
                                      CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
+    g_object_set_data(G_OBJECT(bt), "groups_box", groups_box);
     g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_group_add), self);
     gtk_box_pack_start(GTK_BOX(hb1), bt, FALSE, FALSE, 0);
   }
   gtk_widget_set_halign(hb1, GTK_ALIGN_CENTER);
   gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
-  hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(hb1, "modulegroups-groups-box");
+  gtk_widget_set_name(groups_box, "modulegroups-groups-box");
   GList *l = d->edit_groups;
-  int pos = 0;
   while(l)
   {
     dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
-    if(pos == g_list_length(d->edit_groups) - 1) pos = -1;
-    GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr, pos, ro);
-    gtk_box_pack_start(GTK_BOX(hb1), vb2, FALSE, TRUE, 5);
+    GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr, ro);
+    gtk_box_pack_start(GTK_BOX(groups_box), vb2, FALSE, TRUE, 0);
     l = g_list_next(l);
-    pos++;
   }
 
-  gtk_widget_set_halign(hb1, GTK_ALIGN_CENTER);
-  gtk_box_pack_start(GTK_BOX(vb), hb1, TRUE, TRUE, 0);
+  gtk_widget_set_halign(groups_box, GTK_ALIGN_CENTER);
+  gtk_box_pack_start(GTK_BOX(vb), groups_box, TRUE, TRUE, 0);
 
   // read-only message
   if(ro)
@@ -1350,6 +1388,9 @@ static void _manage_editor_load(char *preset, GtkWidget *preset_box, GtkWidget *
 
   gtk_container_add(GTK_CONTAINER(preset_box), vb);
   gtk_widget_show_all(preset_box);
+
+  // and we update arrows
+  if(!ro) _manage_editor_group_update_arrows(groups_box);
 }
 
 static void _manage_preset_change(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -1548,19 +1589,44 @@ static void _manage_show_window(dt_lib_module_t *self)
 
   // we load the presets list
   _manage_preset_update_list(self, vb2, presets_box);
-  // and we select the first one
-  GtkWidget *w = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(vb2)), 0);
-  if(w)
-  {
-    char *firstn = g_strdup((char *)g_object_get_data(G_OBJECT(w), "preset_name"));
-    _manage_editor_load(firstn, presets_box, vb2, self);
-  }
 
   gtk_container_add(GTK_CONTAINER(sw), vb2);
   gtk_box_pack_start(GTK_BOX(vb), sw, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), presets_box, TRUE, TRUE, 0);
+  gtk_widget_show_all(hb);
+
+  // and we select the current one
+  gboolean sel_ok = FALSE;
+  if(dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
+  {
+    gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
+    GList *l = gtk_container_get_children(GTK_CONTAINER(vb2));
+    while(l)
+    {
+      GtkWidget *w = (GtkWidget *)l->data;
+      char *tx = g_strdup((char *)g_object_get_data(G_OBJECT(w), "preset_name"));
+      if(g_strcmp0(tx, preset) == 0)
+      {
+        _manage_editor_load(preset, presets_box, vb2, self);
+        sel_ok = TRUE;
+        break;
+      }
+      l = g_list_next(l);
+    }
+    g_free(preset);
+  }
+  // or the first one if no selection found
+  if(!sel_ok)
+  {
+    GtkWidget *w = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(vb2)), 0);
+    if(w)
+    {
+      char *firstn = g_strdup((char *)g_object_get_data(G_OBJECT(w), "preset_name"));
+      _manage_editor_load(firstn, presets_box, vb2, self);
+    }
+  }
 
   gtk_container_add(GTK_CONTAINER(window), hb);
 
@@ -1571,7 +1637,7 @@ static void _manage_show_window(dt_lib_module_t *self)
 
   gtk_window_set_gravity(GTK_WINDOW(window), GDK_GRAVITY_STATIC);
   gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
-  gtk_widget_show_all(window);
+  gtk_widget_show(window);
 }
 
 
