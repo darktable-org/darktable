@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-12 08:38-0300\n"
-"PO-Revision-Date: 2020-09-12 08:39-0300\n"
+"POT-Creation-Date: 2020-09-21 06:39-0300\n"
+"PO-Revision-Date: 2020-09-21 06:41-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -95,7 +95,7 @@ msgstr "específico"
 #: ../build/src/iop/introspection_colorin.c:301
 #: ../build/src/iop/introspection_vignette.c:263 ../src/common/history.c:840
 #: ../src/common/history.c:843 ../src/common/history.c:859
-#: ../src/common/styles.c:1081 ../src/common/styles.c:1085
+#: ../src/common/styles.c:1084 ../src/common/styles.c:1088
 #: ../src/develop/blend_gui.c:99 ../src/develop/blend_gui.c:120
 #: ../src/develop/blend_gui.c:2200 ../src/develop/develop.c:2048
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
@@ -401,7 +401,7 @@ msgstr "cores saturadas"
 #: ../build/src/iop/introspection_splittoning.c:134
 #: ../build/src/iop/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1460 ../src/develop/blend_gui.c:1478
-#: ../src/iop/channelmixer.c:440 ../src/iop/colorbalance.c:2031
+#: ../src/iop/channelmixer.c:633 ../src/iop/colorbalance.c:2043
 #: ../src/iop/colorize.c:359 ../src/iop/colorreconstruction.c:1301
 #: ../src/iop/colorzones.c:2364
 msgid "hue"
@@ -425,7 +425,7 @@ msgid "process mode"
 msgstr "modo de processo"
 
 #: ../build/src/iop/introspection_colorzones.c:255
-#: ../src/develop/blend_gui.c:1448 ../src/iop/channelmixer.c:442
+#: ../src/develop/blend_gui.c:1448 ../src/iop/channelmixer.c:635
 #: ../src/iop/colorchecker.c:1372 ../src/iop/colorize.c:375
 #: ../src/iop/colorzones.c:2362
 msgid "lightness"
@@ -439,8 +439,8 @@ msgstr "luminosidade"
 #: ../build/src/iop/introspection_splittoning.c:138
 #: ../build/src/iop/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:1457 ../src/iop/basicadj.c:657
-#: ../src/iop/channelmixer.c:441 ../src/iop/colisa.c:328
-#: ../src/iop/colorbalance.c:2048 ../src/iop/colorchecker.c:1390
+#: ../src/iop/channelmixer.c:634 ../src/iop/colisa.c:328
+#: ../src/iop/colorbalance.c:2060 ../src/iop/colorchecker.c:1390
 #: ../src/iop/colorcorrection.c:270 ../src/iop/colorize.c:370
 #: ../src/iop/colorzones.c:2363 ../src/iop/lowpass.c:602
 #: ../src/iop/soften.c:676 ../src/iop/vignette.c:1032
@@ -909,7 +909,7 @@ msgstr "tendência dos meios-tons"
 
 #: ../build/src/iop/introspection_highlights.c:80
 #: ../build/src/iop/introspection_highlights.c:139 ../src/iop/exposure.c:880
-#: ../src/views/darkroom.c:2190
+#: ../src/views/darkroom.c:2207
 msgid "clipping threshold"
 msgstr "limiar de corte"
 
@@ -947,12 +947,12 @@ msgstr "detectar por 3 vizinhos"
 #: ../build/src/iop/introspection_rgbcurve.c:219
 #: ../build/src/iop/introspection_rgblevels.c:51
 #: ../build/src/iop/introspection_rgblevels.c:118 ../src/iop/bilat.c:427
-#: ../src/iop/colorbalance.c:1889 ../src/iop/denoiseprofile.c:3943
+#: ../src/iop/colorbalance.c:1901 ../src/iop/denoiseprofile.c:3943
 #: ../src/iop/exposure.c:914 ../src/iop/levels.c:709
 #: ../src/iop/profile_gamma.c:745 ../src/libs/copy_history.c:357
 #: ../src/libs/export.c:805 ../src/libs/image.c:519
 #: ../src/libs/print_settings.c:1516 ../src/libs/styles.c:566
-#: ../src/views/darkroom.c:2162
+#: ../src/views/darkroom.c:2179
 msgid "mode"
 msgstr "modo"
 
@@ -1097,7 +1097,7 @@ msgid "logarithmic"
 msgstr "logarítmico"
 
 #: ../build/src/iop/introspection_profile_gamma.c:185
-#: ../src/iop/colorbalance.c:1768 ../src/iop/profile_gamma.c:697
+#: ../src/iop/profile_gamma.c:697
 msgid "gamma"
 msgstr "gama"
 
@@ -2606,7 +2606,7 @@ msgstr ""
 
 #. tags
 #: ../build/src/preferences_gen.h:4333 ../src/develop/lightroom.c:1510
-#: ../src/gui/import_metadata.c:223 ../src/libs/export_metadata.c:310
+#: ../src/gui/import_metadata.c:230 ../src/libs/export_metadata.c:310
 #: ../src/libs/image.c:481 ../src/libs/metadata_view.c:148
 msgid "tags"
 msgstr "etiquetas"
@@ -2759,7 +2759,7 @@ msgstr ""
 "câmeras gravam para manter notas sobre imagens"
 
 #: ../build/src/preferences_gen.h:4639 ../build/src/preferences_gen.h:4642
-#: ../src/libs/import.c:90
+#: ../src/libs/import.c:91
 msgid "import"
 msgstr "importar"
 
@@ -2896,7 +2896,7 @@ msgstr "Imprimir suas imagens"
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1568 ../src/libs/collect.c:365
 #: ../src/libs/copy_history.c:100 ../src/libs/geotagging.c:474
-#: ../src/libs/import.c:555 ../src/libs/import.c:661 ../src/libs/lib.c:227
+#: ../src/libs/import.c:549 ../src/libs/import.c:655 ../src/libs/lib.c:227
 #: ../src/libs/styles.c:366 ../src/libs/styles.c:391 ../src/libs/tagging.c:2205
 #: ../src/libs/tagging.c:2246
 msgid "_cancel"
@@ -3147,30 +3147,30 @@ msgstr "ordem dos módulos"
 
 #: ../src/common/collection.c:1470 ../src/develop/blend_gui.c:1469
 #: ../src/develop/lightroom.c:828 ../src/iop/bilateral.cc:320
-#: ../src/iop/channelmixer.c:443 ../src/iop/channelmixer.c:454
+#: ../src/iop/channelmixer.c:636 ../src/iop/channelmixer.c:646
 #: ../src/iop/temperature.c:1802 ../src/iop/temperature.c:1937
-#: ../src/libs/collect.c:1584 ../src/views/darkroom.c:2478
+#: ../src/libs/collect.c:1584 ../src/views/darkroom.c:2495
 msgid "red"
 msgstr "vermelho"
 
 #: ../src/common/collection.c:1472 ../src/develop/lightroom.c:830
 #: ../src/iop/temperature.c:1792 ../src/libs/collect.c:1584
-#: ../src/views/darkroom.c:2480
+#: ../src/views/darkroom.c:2497
 msgid "yellow"
 msgstr "amarelo"
 
 #: ../src/common/collection.c:1474 ../src/develop/blend_gui.c:1472
 #: ../src/develop/lightroom.c:832 ../src/iop/bilateral.cc:325
-#: ../src/iop/channelmixer.c:444 ../src/iop/channelmixer.c:460
+#: ../src/iop/channelmixer.c:637 ../src/iop/channelmixer.c:652
 #: ../src/iop/temperature.c:1786 ../src/iop/temperature.c:1804
 #: ../src/iop/temperature.c:1938 ../src/libs/collect.c:1584
-#: ../src/views/darkroom.c:2479
+#: ../src/views/darkroom.c:2496
 msgid "green"
 msgstr "verde"
 
 #: ../src/common/collection.c:1476 ../src/develop/blend_gui.c:1475
 #: ../src/develop/lightroom.c:834 ../src/iop/bilateral.cc:330
-#: ../src/iop/channelmixer.c:445 ../src/iop/channelmixer.c:466
+#: ../src/iop/channelmixer.c:638 ../src/iop/channelmixer.c:658
 #: ../src/iop/temperature.c:1806 ../src/iop/temperature.c:1939
 #: ../src/libs/collect.c:1584
 msgid "blue"
@@ -3233,7 +3233,7 @@ msgid "export profile"
 msgstr "perfil  de exportação"
 
 #: ../src/common/colorspaces.c:1437 ../src/common/colorspaces.c:1685
-#: ../src/views/darkroom.c:2354
+#: ../src/views/darkroom.c:2371
 msgid "softproof profile"
 msgstr "perfil de impressão na tela"
 
@@ -3382,7 +3382,7 @@ msgstr "erro carregando diretório `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "arquivo `%s' é de formato desconhecido!"
 
-#: ../src/common/darktable.c:294 ../src/libs/import.c:621
+#: ../src/common/darktable.c:294 ../src/libs/import.c:615
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
@@ -3670,8 +3670,8 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 
 #: ../src/common/history.c:840 ../src/common/history.c:843
-#: ../src/common/history.c:859 ../src/common/styles.c:1081
-#: ../src/common/styles.c:1085 ../src/develop/blend_gui.c:121
+#: ../src/common/history.c:859 ../src/common/styles.c:1084
+#: ../src/common/styles.c:1088 ../src/develop/blend_gui.c:121
 #: ../src/develop/develop.c:2048 ../src/iop/ashift.c:4776
 #: ../src/libs/live_view.c:435
 msgid "on"
@@ -3935,8 +3935,8 @@ msgstr "estilo com nome '%s' já existente"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:410 ../src/common/styles.c:414
 #: ../src/common/styles.c:501 ../src/common/styles.c:585
-#: ../src/common/styles.c:973 ../src/common/styles.c:1537
-#: ../src/common/styles.c:1556
+#: ../src/common/styles.c:976 ../src/common/styles.c:1540
+#: ../src/common/styles.c:1559
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -3971,22 +3971,22 @@ msgid_plural "styles successfully applied!"
 msgstr[0] "estilo aplicado com sucesso!"
 msgstr[1] "estilos aplicados com sucesso"
 
-#: ../src/common/styles.c:746
+#: ../src/common/styles.c:748
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "módulo `%s' versão incompatível: %d != %d"
 
-#: ../src/common/styles.c:1174
+#: ../src/common/styles.c:1177
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "falha o sobrescrever arquivo de estilo para %s"
 
-#: ../src/common/styles.c:1180
+#: ../src/common/styles.c:1183
 #, c-format
 msgid "style file for %s exists"
 msgstr "arquivo de estilo para  %s existente"
 
-#: ../src/common/styles.c:1428
+#: ../src/common/styles.c:1431
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "estilo %s foi importado com sucesso"
@@ -4430,7 +4430,7 @@ msgstr[1] "importando %d imagens"
 msgid "importing image %s"
 msgstr "importando imagem %s"
 
-#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:555
+#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:549
 msgid "import image"
 msgstr "importar imagem"
 
@@ -4741,7 +4741,7 @@ msgid "sliders for gray value"
 msgstr "deslizante para valor cinza"
 
 #: ../src/develop/blend_gui.c:1466 ../src/iop/levels.c:694
-#: ../src/views/darkroom.c:2477
+#: ../src/views/darkroom.c:2494
 msgid "gray"
 msgstr "cinza"
 
@@ -5083,83 +5083,83 @@ msgstr "default para relativo à cena"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo `%s' versão incompatível: %d != %d"
 
-#: ../src/develop/imageop.c:1085
+#: ../src/develop/imageop.c:1102
 msgid "new instance"
 msgstr "nova instância"
 
-#: ../src/develop/imageop.c:1091
+#: ../src/develop/imageop.c:1108
 msgid "duplicate instance"
 msgstr "duplicar instância"
 
-#: ../src/develop/imageop.c:1097 ../src/libs/masks.c:1170
+#: ../src/develop/imageop.c:1114 ../src/libs/masks.c:1170
 msgid "move up"
 msgstr "mover para cima"
 
-#: ../src/develop/imageop.c:1103 ../src/libs/masks.c:1173
+#: ../src/develop/imageop.c:1120 ../src/libs/masks.c:1173
 msgid "move down"
 msgstr "mover para baixo"
 
-#: ../src/develop/imageop.c:1109 ../src/gui/preferences.c:1796
+#: ../src/develop/imageop.c:1126 ../src/gui/preferences.c:1796
 #: ../src/libs/image.c:168 ../src/libs/tagging.c:1300
 #: ../src/libs/tagging.c:1387
 msgid "delete"
 msgstr "excluir"
 
-#: ../src/develop/imageop.c:1116 ../src/libs/tagging.c:1811
+#: ../src/develop/imageop.c:1133 ../src/libs/tagging.c:1811
 msgid "rename"
 msgstr "renomear"
 
-#: ../src/develop/imageop.c:1170 ../src/develop/imageop.c:2141
+#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2328
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está ligado"
 
-#: ../src/develop/imageop.c:1170 ../src/develop/imageop.c:2141
+#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2328
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desligado"
 
-#: ../src/develop/imageop.c:1523 ../src/gui/accelerators.c:1041
+#: ../src/develop/imageop.c:1543 ../src/gui/accelerators.c:1041
 #: ../src/gui/accelerators.c:1125 ../src/gui/accelerators.c:1340
-#: ../src/gui/accelerators.c:1365 ../src/gui/import_metadata.c:162
+#: ../src/gui/accelerators.c:1365 ../src/gui/import_metadata.c:163
 #: ../src/gui/preferences.c:1533 ../src/gui/preferences.c:2079
 #: ../src/gui/presets.c:210 ../src/gui/presets.c:322 ../src/gui/presets.c:689
 #: ../src/libs/lib.c:338 ../src/libs/lib.c:375 ../src/libs/lib.c:1230
 msgid "preset"
 msgstr "predefinição"
 
-#: ../src/develop/imageop.c:1543
+#: ../src/develop/imageop.c:1563
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusão"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1548 ../src/libs/lib.c:647
+#: ../src/develop/imageop.c:1568 ../src/libs/lib.c:647
 msgctxt "accel"
 msgid "show module"
 msgstr "mostrar módulo"
 
-#: ../src/develop/imageop.c:1549
+#: ../src/develop/imageop.c:1569
 msgctxt "accel"
 msgid "enable module"
 msgstr "habilita módulo"
 
-#: ../src/develop/imageop.c:1550
+#: ../src/develop/imageop.c:1570
 msgctxt "accel"
 msgid "focus module"
 msgstr "focar módulo"
 
-#: ../src/develop/imageop.c:1552 ../src/libs/lib.c:639
+#: ../src/develop/imageop.c:1572 ../src/libs/lib.c:639
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "redefine parâmetros do módulo"
 
-#: ../src/develop/imageop.c:1553 ../src/libs/lib.c:643
+#: ../src/develop/imageop.c:1573 ../src/libs/lib.c:643
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "mostrar menu de predefinição"
 
-#: ../src/develop/imageop.c:2110
+#: ../src/develop/imageop.c:2297
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -5167,17 +5167,17 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "click com botão do meio cria nova instância"
 
-#: ../src/develop/imageop.c:2121 ../src/libs/lib.c:1065
+#: ../src/develop/imageop.c:2308 ../src/libs/lib.c:1065
 msgid "reset parameters"
 msgstr "redefine parâmetros"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2129 ../src/gui/preferences.c:794
+#: ../src/develop/imageop.c:2316 ../src/gui/preferences.c:794
 #: ../src/libs/lib.c:1074
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:2131
+#: ../src/develop/imageop.c:2318
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5185,7 +5185,7 @@ msgstr ""
 "pre-configurações\n"
 "click com botão do meio aplica em nova instância"
 
-#: ../src/develop/imageop.c:2413
+#: ../src/develop/imageop.c:2602
 msgid "ERROR"
 msgstr "ERRO"
 
@@ -5520,131 +5520,131 @@ msgid "fit"
 msgstr "ajustar"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2090
+#: ../src/dtgtk/thumbtable.c:2096
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "visões/miniaturas/sem estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2091
+#: ../src/dtgtk/thumbtable.c:2097
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "visões/miniaturas/1 estrela"
 
-#: ../src/dtgtk/thumbtable.c:2092
+#: ../src/dtgtk/thumbtable.c:2098
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "visões/miniaturas/2 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2093
+#: ../src/dtgtk/thumbtable.c:2099
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "visões/miniaturas/3 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2094
+#: ../src/dtgtk/thumbtable.c:2100
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "visões/miniaturas/4 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2095
+#: ../src/dtgtk/thumbtable.c:2101
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "visões/miniaturas/5 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2096
+#: ../src/dtgtk/thumbtable.c:2102
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "visões/miniaturas/rejeitada"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2099
+#: ../src/dtgtk/thumbtable.c:2105
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "visões/miniaturas/copiar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2100
+#: ../src/dtgtk/thumbtable.c:2106
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "visões/miniaturas/copia parte do histórico"
 
-#: ../src/dtgtk/thumbtable.c:2102
+#: ../src/dtgtk/thumbtable.c:2108
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "visões/miniaturas/colar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2103
+#: ../src/dtgtk/thumbtable.c:2109
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "visões/miniaturas/cola parte da histórico"
 
-#: ../src/dtgtk/thumbtable.c:2105
+#: ../src/dtgtk/thumbtable.c:2111
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "visões/miniaturas/descartar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2107
+#: ../src/dtgtk/thumbtable.c:2113
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "visões/miniaturas/duplicar imagem"
 
-#: ../src/dtgtk/thumbtable.c:2108
+#: ../src/dtgtk/thumbtable.c:2114
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr ""
 "vistas/miniaturas/duplicar imagem original (sem as modificações feitas)"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2112
+#: ../src/dtgtk/thumbtable.c:2118
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "visões/miniaturas/cor vermelha"
 
-#: ../src/dtgtk/thumbtable.c:2113
+#: ../src/dtgtk/thumbtable.c:2119
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "visões/miniaturas/cor amarela"
 
-#: ../src/dtgtk/thumbtable.c:2114
+#: ../src/dtgtk/thumbtable.c:2120
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "visões/miniaturas/cor verde"
 
-#: ../src/dtgtk/thumbtable.c:2115
+#: ../src/dtgtk/thumbtable.c:2121
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "visões/miniaturas/cor azul"
 
-#: ../src/dtgtk/thumbtable.c:2116
+#: ../src/dtgtk/thumbtable.c:2122
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "visões/miniaturas/cor roxa"
 
-#: ../src/dtgtk/thumbtable.c:2117
+#: ../src/dtgtk/thumbtable.c:2123
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "visões/miniaturas/remover etiquetas de cor"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2120
+#: ../src/dtgtk/thumbtable.c:2126
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "visões/miniaturas/seleciona tudo"
 
-#: ../src/dtgtk/thumbtable.c:2121
+#: ../src/dtgtk/thumbtable.c:2127
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "visões/minuaturas/seleciona nenhuma"
 
-#: ../src/dtgtk/thumbtable.c:2123
+#: ../src/dtgtk/thumbtable.c:2129
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "visões/miniaturas/inverte seleção"
 
-#: ../src/dtgtk/thumbtable.c:2124
+#: ../src/dtgtk/thumbtable.c:2130
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "visões/miniaturas/seleciona rolo de filme"
 
-#: ../src/dtgtk/thumbtable.c:2125
+#: ../src/dtgtk/thumbtable.c:2131
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "visões/miniaturas/seleciona não modificadas"
@@ -5761,7 +5761,7 @@ msgstr "sol da tarde"
 msgid "underwater"
 msgstr "subaquática"
 
-#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2241
+#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2258
 msgid "black & white"
 msgstr "preto & branco"
 
@@ -6001,11 +6001,11 @@ msgid "storage file"
 msgstr "arquivo de armazenamento"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:278 ../src/libs/import.c:389
+#: ../src/gui/camera_import_dialog.c:278 ../src/libs/import.c:383
 msgid "ignore JPEG files"
 msgstr "ignorar arquivos JPEG"
 
-#: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:390
+#: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:384
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -6540,15 +6540,15 @@ msgstr "aplicar metadados ao importar"
 msgid "apply some metadata to all newly imported images."
 msgstr "aplicar alguns metadados a todas imagens importadas recentemente."
 
-#: ../src/gui/import_metadata.c:165
+#: ../src/gui/import_metadata.c:166
 msgid "metadata to be applied per default"
 msgstr "metadados a ser aplicado ao importar"
 
-#: ../src/gui/import_metadata.c:175
-msgid "to be imported"
-msgstr "a ser importado"
+#: ../src/gui/import_metadata.c:178
+msgid "imported from xmp"
+msgstr "importar do xmp"
 
-#: ../src/gui/import_metadata.c:177
+#: ../src/gui/import_metadata.c:180
 msgid ""
 "selected metadata are imported from image and override the default value\n"
 " this drives also the 'look for updated xmp files' and 'load sidecar file' "
@@ -6562,7 +6562,7 @@ msgstr ""
 " CUIDADO: metadados não selecionados são limpados quando o arquivo xmp é "
 "atualizado"
 
-#: ../src/gui/import_metadata.c:230
+#: ../src/gui/import_metadata.c:237
 msgid "comma separated list of tags"
 msgstr "lista de etiquetas separadas por vírgula"
 
@@ -6792,8 +6792,8 @@ msgstr "selecione arquivo para importar"
 
 #: ../src/gui/preferences.c:1605 ../src/gui/preferences.c:1688
 #: ../src/libs/collect.c:366 ../src/libs/copy_history.c:101
-#: ../src/libs/geotagging.c:475 ../src/libs/import.c:556
-#: ../src/libs/import.c:662 ../src/libs/styles.c:392
+#: ../src/libs/geotagging.c:475 ../src/libs/import.c:550
+#: ../src/libs/import.c:656 ../src/libs/styles.c:392
 msgid "_open"
 msgstr "_abrir"
 
@@ -8278,7 +8278,7 @@ msgid "highlight compression adjustment"
 msgstr "ajuste de compresão de realces"
 
 #: ../src/iop/basicadj.c:639 ../src/iop/bilat.c:446 ../src/iop/colisa.c:326
-#: ../src/iop/colorbalance.c:1933 ../src/iop/colorbalance.c:1940
+#: ../src/iop/colorbalance.c:1945 ../src/iop/colorbalance.c:1952
 #: ../src/iop/filmic.c:1678 ../src/iop/filmicrgb.c:3521
 #: ../src/iop/lowpass.c:600
 msgid "contrast"
@@ -8441,19 +8441,19 @@ msgctxt "accel"
 msgid "radius"
 msgstr "raio"
 
-#: ../src/iop/bilateral.cc:93 ../src/iop/channelmixer.c:132
+#: ../src/iop/bilateral.cc:93 ../src/iop/channelmixer.c:145
 #: ../src/iop/temperature.c:222
 msgctxt "accel"
 msgid "red"
 msgstr "vermelho"
 
-#: ../src/iop/bilateral.cc:94 ../src/iop/channelmixer.c:133
+#: ../src/iop/bilateral.cc:94 ../src/iop/channelmixer.c:146
 #: ../src/iop/temperature.c:223
 msgctxt "accel"
 msgid "green"
 msgstr "verde"
 
-#: ../src/iop/bilateral.cc:95 ../src/iop/channelmixer.c:134
+#: ../src/iop/bilateral.cc:95 ../src/iop/channelmixer.c:147
 #: ../src/iop/temperature.c:224
 msgctxt "accel"
 msgid "blue"
@@ -8762,101 +8762,101 @@ msgstr ""
 "correção automática de aberração cromática\n"
 "somente para imagens raw."
 
-#: ../src/iop/channelmixer.c:112
+#: ../src/iop/channelmixer.c:125
 msgid "channel mixer"
 msgstr "misturador de canais"
 
-#: ../src/iop/channelmixer.c:135
+#: ../src/iop/channelmixer.c:148
 msgctxt "accel"
 msgid "destination"
 msgstr "destino"
 
-#: ../src/iop/channelmixer.c:439
+#: ../src/iop/channelmixer.c:632
 msgid "destination"
 msgstr "destino"
 
-#: ../src/iop/channelmixer.c:446
+#: ../src/iop/channelmixer.c:639
 msgctxt "channelmixer"
 msgid "gray"
 msgstr "cinza"
 
-#: ../src/iop/channelmixer.c:453
+#: ../src/iop/channelmixer.c:645
 msgid "amount of red channel in the output channel"
 msgstr "quantidade do canal vermelho no canal de saída"
 
-#: ../src/iop/channelmixer.c:459
+#: ../src/iop/channelmixer.c:651
 msgid "amount of green channel in the output channel"
 msgstr "quantidade do canal verde no canal de saída"
 
-#: ../src/iop/channelmixer.c:465
+#: ../src/iop/channelmixer.c:657
 msgid "amount of blue channel in the output channel"
 msgstr "quantidade do canal azul no canal de saída"
 
-#: ../src/iop/channelmixer.c:481
+#: ../src/iop/channelmixer.c:673
 msgid "swap R and B"
 msgstr "trocar R e B"
 
-#: ../src/iop/channelmixer.c:486
+#: ../src/iop/channelmixer.c:679
 msgid "swap G and B"
 msgstr "trocar G e B"
 
-#: ../src/iop/channelmixer.c:491
+#: ../src/iop/channelmixer.c:685
 msgid "color contrast boost"
 msgstr "ganho contraste de cor"
 
-#: ../src/iop/channelmixer.c:496
+#: ../src/iop/channelmixer.c:691
 msgid "color details boost"
 msgstr "ganho detalhes de cor"
 
-#: ../src/iop/channelmixer.c:501
+#: ../src/iop/channelmixer.c:697
 msgid "color artifacts boost"
 msgstr "ganho artefatos de cor"
 
-#: ../src/iop/channelmixer.c:506
+#: ../src/iop/channelmixer.c:703
 msgid "B/W luminance-based"
 msgstr "baseado em luminância B/P"
 
-#: ../src/iop/channelmixer.c:511
+#: ../src/iop/channelmixer.c:709
 msgid "B/W artifacts boost"
 msgstr "ganho artefatos B/P"
 
-#: ../src/iop/channelmixer.c:516
+#: ../src/iop/channelmixer.c:715
 msgid "B/W smooth skin"
 msgstr "pele suave B/P"
 
-#: ../src/iop/channelmixer.c:521
+#: ../src/iop/channelmixer.c:721
 msgid "B/W blue artifacts reduce"
 msgstr "reduzir artefatos azul B/P"
 
-#: ../src/iop/channelmixer.c:527
+#: ../src/iop/channelmixer.c:728
 msgid "B/W Ilford Delta 100-400"
 msgstr "Ilford Delta 100-400 B/P"
 
-#: ../src/iop/channelmixer.c:533
+#: ../src/iop/channelmixer.c:735
 msgid "B/W Ilford Delta 3200"
 msgstr "Ilford Delta 3200 B/P"
 
-#: ../src/iop/channelmixer.c:539
+#: ../src/iop/channelmixer.c:742
 msgid "B/W Ilford FP4"
 msgstr "Ilford FP4 B/P"
 
-#: ../src/iop/channelmixer.c:545
+#: ../src/iop/channelmixer.c:749
 msgid "B/W Ilford HP5"
 msgstr "Ilford HP5 B/P"
 
-#: ../src/iop/channelmixer.c:551
+#: ../src/iop/channelmixer.c:756
 msgid "B/W Ilford SFX"
 msgstr "Ilford SFX B/P"
 
-#: ../src/iop/channelmixer.c:557
+#: ../src/iop/channelmixer.c:763
 msgid "B/W Kodak T-Max 100"
 msgstr "Kodak T-Max 100 B/P"
 
-#: ../src/iop/channelmixer.c:563
+#: ../src/iop/channelmixer.c:770
 msgid "B/W Kodak T-max 400"
 msgstr "Kodak T-max 400 B/P"
 
-#: ../src/iop/channelmixer.c:569
+#: ../src/iop/channelmixer.c:777
 msgid "B/W Kodak Tri-X 400"
 msgstr "Kodak Tri-X 400 B/P"
 
@@ -8916,7 +8916,7 @@ msgid "flip"
 msgstr "espelhar"
 
 #: ../src/iop/clipping.c:2146 ../src/iop/clipping.c:2324
-#: ../src/iop/colorbalance.c:1897 ../src/libs/live_view.c:376
+#: ../src/iop/colorbalance.c:1909 ../src/libs/live_view.c:376
 msgid "both"
 msgstr "ambos"
 
@@ -9200,7 +9200,7 @@ msgstr "controles de cor"
 msgid "optimize luma from patches"
 msgstr "otimizar luma dos patches"
 
-#: ../src/iop/colorbalance.c:963 ../src/iop/colorbalance.c:2099
+#: ../src/iop/colorbalance.c:963 ../src/iop/colorbalance.c:2111
 msgid "optimize luma"
 msgstr "otimizar luma"
 
@@ -9208,140 +9208,162 @@ msgstr "otimizar luma"
 msgid "neutralize colors from patches"
 msgstr "neutralizar cores dos patches"
 
-#: ../src/iop/colorbalance.c:969 ../src/iop/colorbalance.c:2105
+#: ../src/iop/colorbalance.c:969 ../src/iop/colorbalance.c:2117
 msgid "neutralize colors"
 msgstr "neutralizar cores"
 
-#: ../src/iop/colorbalance.c:1768
+#: ../src/iop/colorbalance.c:1774
+msgctxt "color"
+msgid "offset"
+msgstr "deslocamento"
+
+#: ../src/iop/colorbalance.c:1774
+msgctxt "color"
+msgid "power"
+msgstr "potência"
+
+#: ../src/iop/colorbalance.c:1774
+msgctxt "color"
+msgid "slope"
+msgstr "inclinação"
+
+#: ../src/iop/colorbalance.c:1775
+msgctxt "color"
 msgid "lift"
 msgstr "levantar"
 
-#: ../src/iop/colorbalance.c:1768
+#: ../src/iop/colorbalance.c:1775
+msgctxt "color"
+msgid "gamma"
+msgstr "gama"
+
+#: ../src/iop/colorbalance.c:1775
+msgctxt "color"
 msgid "gain"
 msgstr "ganho"
 
-#: ../src/iop/colorbalance.c:1770
+#: ../src/iop/colorbalance.c:1778
 msgid "shadows : lift / offset"
 msgstr "sombras: elevação / deslocamento"
 
-#: ../src/iop/colorbalance.c:1771
+#: ../src/iop/colorbalance.c:1779
 msgid "mid-tones : gamma / power"
 msgstr "meios-tons : gama / potência"
 
-#: ../src/iop/colorbalance.c:1772
+#: ../src/iop/colorbalance.c:1780
 msgid "highlights : gain / slope"
 msgstr "tons claros: ganho / inclinação"
 
-#: ../src/iop/colorbalance.c:1792
+#: ../src/iop/colorbalance.c:1804
 msgid "shadows / mid-tones / highlights"
 msgstr "sombras / meios-tons / realces"
 
-#: ../src/iop/colorbalance.c:1890 ../src/iop/colorbalance.c:1899
+#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalance.c:1911
 msgid "color-grading mapping method"
 msgstr "método color-grading de mapeamento de cores"
 
-#: ../src/iop/colorbalance.c:1894
+#: ../src/iop/colorbalance.c:1906
 msgid "color control sliders"
 msgstr "controles de cor"
 
-#: ../src/iop/colorbalance.c:1895
+#: ../src/iop/colorbalance.c:1907
 msgid "HSL"
 msgstr "HSL"
 
-#: ../src/iop/colorbalance.c:1896
+#: ../src/iop/colorbalance.c:1908
 msgid "RGBL"
 msgstr "RGBL"
 
-#: ../src/iop/colorbalance.c:1909
+#: ../src/iop/colorbalance.c:1921
 msgid "master"
 msgstr "mestre"
 
-#: ../src/iop/colorbalance.c:1917
+#: ../src/iop/colorbalance.c:1929
 msgid "saturation correction before the color balance"
 msgstr "correção de saturação antes do balanço de cor"
 
-#: ../src/iop/colorbalance.c:1925
+#: ../src/iop/colorbalance.c:1937
 msgid "saturation correction after the color balance"
 msgstr "correção de saturação depois do balanço de cor"
 
-#: ../src/iop/colorbalance.c:1931
+#: ../src/iop/colorbalance.c:1943
 msgid "adjust to match a neutral tone"
 msgstr "ajustar para casar com tom neutro"
 
 #. is set in _configure_slider_blocks
-#: ../src/iop/colorbalance.c:1990
+#: ../src/iop/colorbalance.c:2002
 msgid "click to cycle layout"
 msgstr "clique para alternar pelos layouts"
 
-#: ../src/iop/colorbalance.c:2026
+#: ../src/iop/colorbalance.c:2038
 msgid "factor"
 msgstr "fator"
 
-#: ../src/iop/colorbalance.c:2040
+#: ../src/iop/colorbalance.c:2052
 msgid "select the hue"
 msgstr "selecionar o tom de matiz"
 
-#: ../src/iop/colorbalance.c:2052
+#: ../src/iop/colorbalance.c:2064
 msgid "select the saturation"
 msgstr "selecionar o tom de saturação"
 
-#: ../src/iop/colorbalance.c:2071
-msgid "factor of lift"
-msgstr "fator de levante"
-
-#: ../src/iop/colorbalance.c:2072
-msgid "factor of red for lift"
-msgstr "fator de vermelho para levante"
-
-#: ../src/iop/colorbalance.c:2073
-msgid "factor of green for lift"
-msgstr "fator de verde para levante"
-
-#: ../src/iop/colorbalance.c:2074
-msgid "factor of blue for lift"
-msgstr "fator de azul para levante"
-
-#: ../src/iop/colorbalance.c:2077
-msgid "factor of gamma"
-msgstr "fator de gamma"
-
-#: ../src/iop/colorbalance.c:2078
-msgid "factor of red for gamma"
-msgstr "fator de vermelho para gamma"
-
-#: ../src/iop/colorbalance.c:2079
-msgid "factor of green for gamma"
-msgstr "fator de verde para gamma"
-
-#: ../src/iop/colorbalance.c:2080
-msgid "factor of blue for gamma"
-msgstr "fator de azul para gamma"
-
 #: ../src/iop/colorbalance.c:2083
-msgid "factor of gain"
-msgstr "fator de ganho"
+msgid "factor of lift/offset"
+msgstr "fator de levante/deslocamento"
 
 #: ../src/iop/colorbalance.c:2084
-msgid "factor of red for gain"
-msgstr "fator de vermelho para ganho"
+msgid "factor of red for lift/offset"
+msgstr "fator de vermelho para levante/deslocamento"
 
 #: ../src/iop/colorbalance.c:2085
-msgid "factor of green for gain"
-msgstr "fator de verde para ganho"
+msgid "factor of green for lift/offset"
+msgstr "fator de verde para levante/deslocamento"
 
 #: ../src/iop/colorbalance.c:2086
-msgid "factor of blue for gain"
-msgstr "fator de azul para ganho"
+msgid "factor of blue for lift/offset"
+msgstr "fator de azul para levante/deslocamento"
+
+#: ../src/iop/colorbalance.c:2089
+msgid "factor of gamma/power"
+msgstr "fator de gamma/potência"
+
+#: ../src/iop/colorbalance.c:2090
+msgid "factor of red for gamma/power"
+msgstr "fator de vermelho para gamma/potência"
+
+#: ../src/iop/colorbalance.c:2091
+msgid "factor of green for gamma/power"
+msgstr "fator de verde para gamma/potência"
+
+#: ../src/iop/colorbalance.c:2092
+msgid "factor of blue for gamma/power"
+msgstr "fator de azul para gamma/potência"
 
 #: ../src/iop/colorbalance.c:2095
+msgid "factor of gain/slope"
+msgstr "fator de ganho/inclinação"
+
+#: ../src/iop/colorbalance.c:2096
+msgid "factor of red for gain/slope"
+msgstr "fator de vermelho para ganho/inclinação"
+
+#: ../src/iop/colorbalance.c:2097
+msgid "factor of green for gain/slope"
+msgstr "fator de verde para ganho/inclinação"
+
+#: ../src/iop/colorbalance.c:2098
+msgid "factor of blue for gain/slope"
+msgstr "fator de azul para ganho/inclinação"
+
+#: ../src/iop/colorbalance.c:2107
 msgid "auto optimizers"
 msgstr "otimizadores automáticos"
 
-#: ../src/iop/colorbalance.c:2100
+#: ../src/iop/colorbalance.c:2112
 msgid "fit the whole histogram and center the average luma"
 msgstr "ajustar todo o histograma e centralizar luma médio"
 
-#: ../src/iop/colorbalance.c:2106
+#: ../src/iop/colorbalance.c:2118
 msgid "optimize the RGB curves to remove color casts"
 msgstr "otimizar curvas RGB para remover color casts"
 
@@ -9702,21 +9724,21 @@ msgstr "intenção de saída"
 
 #: ../src/iop/colorout.c:867 ../src/libs/export.c:788
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:2329 ../src/views/darkroom.c:2337
+#: ../src/views/darkroom.c:2346 ../src/views/darkroom.c:2354
 #: ../src/views/lighttable.c:1397 ../src/views/lighttable.c:1405
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:868 ../src/libs/export.c:789
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:2330 ../src/views/darkroom.c:2338
+#: ../src/views/darkroom.c:2347 ../src/views/darkroom.c:2355
 #: ../src/views/lighttable.c:1398 ../src/views/lighttable.c:1406
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:790
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
-#: ../src/views/darkroom.c:2331 ../src/views/darkroom.c:2339
+#: ../src/views/darkroom.c:2348 ../src/views/darkroom.c:2356
 #: ../src/views/lighttable.c:1399 ../src/views/lighttable.c:1407
 msgctxt "rendering intent"
 msgid "saturation"
@@ -9724,7 +9746,7 @@ msgstr "saturação"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:791
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
-#: ../src/views/darkroom.c:2332 ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2349 ../src/views/darkroom.c:2357
 #: ../src/views/lighttable.c:1400 ../src/views/lighttable.c:1408
 msgid "absolute colorimetric"
 msgstr "colorimétrico relativo"
@@ -12184,7 +12206,7 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "hald cluts (png) ou 3D lut (cubo ou 3dl)"
 
 #: ../src/iop/lut3d.c:1600 ../src/libs/copy_history.c:115
-#: ../src/libs/geotagging.c:496 ../src/libs/import.c:586
+#: ../src/libs/geotagging.c:496 ../src/libs/import.c:580
 #: ../src/libs/styles.c:409
 msgid "all files"
 msgstr "todos arquivos"
@@ -12475,7 +12497,7 @@ msgstr ""
 msgid "virtual print emulation"
 msgstr "simulação de impressão virtual"
 
-#: ../src/iop/negadoctor.c:1038
+#: ../src/iop/negadoctor.c:1039
 msgid ""
 "correct the printing exposure after inversion to adjust\n"
 "the global contrast and avoid clipping highlights."
@@ -12483,7 +12505,7 @@ msgstr ""
 "corrige a exposição da impressão depois da inversão para ajustar\n"
 "o contraste global e evitar corte de realces."
 
-#: ../src/iop/negadoctor.c:1046
+#: ../src/iop/negadoctor.c:1047
 msgid "toggle on or off the color controls"
 msgstr "alterna (liga/desliga) controles de cor"
 
@@ -13037,10 +13059,13 @@ msgstr "rotacionar pixels"
 msgid "automatic pixel rotation"
 msgstr "rotação automática de pixels"
 
-#: ../src/iop/rotatepixels.c:351
-msgid "automatic pixel rotation only works for the sensors that need it."
+#: ../src/iop/rotatepixels.c:352
+msgid ""
+"automatic pixel rotation\n"
+"only works for the sensors that need it."
 msgstr ""
-"rotação automática de pixel só funciona para sensores que precisam disto."
+"rotação automática de pixel\n"
+"só funciona para sensores que precisam disto."
 
 #: ../src/iop/scalepixels.c:54
 msgctxt "modulename"
@@ -13051,11 +13076,13 @@ msgstr "escala de pixels"
 msgid "automatic pixel scaling"
 msgstr "escala automática de pixels"
 
-#: ../src/iop/scalepixels.c:267
-msgid "automatic pixel scaling only works for the sensors that need it."
+#: ../src/iop/scalepixels.c:268
+msgid ""
+"automatic pixel scaling\n"
+"only works for the sensors that need it."
 msgstr ""
-"ajuste de escala automático de pixel só funciona para sensores que precisam "
-"disto."
+"ajuste de escala automático de pixel\n"
+"só funciona para sensores que precisam disto."
 
 #: ../src/iop/shadhi.c:178
 msgid "shadows and highlights"
@@ -13377,7 +13404,7 @@ msgstr "referência da camera"
 msgid "green channel coefficient"
 msgstr "coeficiente para canal verde"
 
-#: ../src/iop/temperature.c:1788 ../src/views/darkroom.c:2482
+#: ../src/iop/temperature.c:1788 ../src/views/darkroom.c:2499
 msgid "magenta"
 msgstr "magenta"
 
@@ -13385,7 +13412,7 @@ msgstr "magenta"
 msgid "magenta channel coefficient"
 msgstr "coeficiente para canal magenta"
 
-#: ../src/iop/temperature.c:1790 ../src/views/darkroom.c:2481
+#: ../src/iop/temperature.c:1790 ../src/views/darkroom.c:2498
 msgid "cyan"
 msgstr "ciano"
 
@@ -14776,7 +14803,7 @@ msgstr "editar detalhes de exportação de metadados"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1482 ../src/libs/styles.c:73
-#: ../src/views/darkroom.c:3758
+#: ../src/views/darkroom.c:3782
 msgctxt "accel"
 msgid "export"
 msgstr "exporta"
@@ -15461,11 +15488,6 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "desagrupa"
 
-#: ../src/libs/import.c:112
-msgctxt "accel"
-msgid "scan for devices"
-msgstr "procurar por dispositivos"
-
 #: ../src/libs/import.c:113
 msgctxt "accel"
 msgid "import from camera"
@@ -15486,78 +15508,64 @@ msgctxt "accel"
 msgid "import folder"
 msgstr "importar pasta"
 
-#: ../src/libs/import.c:211
+#: ../src/libs/import.c:206
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "dispositivo \"%s\" conectado na porta \"%s\"."
 
-#: ../src/libs/import.c:221
+#: ../src/libs/import.c:216
 msgid "import from camera"
 msgstr "importar da câmera"
 
-#: ../src/libs/import.c:227
+#: ../src/libs/import.c:222
 msgid "tethered shoot"
 msgstr "disparo remoto"
 
-#. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:252
-msgid "no supported devices found"
-msgstr "nenhum dispositivo suportado encontrado"
-
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:365
+#: ../src/libs/import.c:354
 msgid "import options"
 msgstr "opções de importação"
 
 #. recursive opening.
-#: ../src/libs/import.c:382
+#: ../src/libs/import.c:376
 msgid "import folders recursively"
 msgstr "importar pastas recursivamente"
 
-#: ../src/libs/import.c:384
+#: ../src/libs/import.c:378
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr ""
 "importar subdiretórios recursivamente. cada diretório criará um novo rolo de "
 "filme."
 
-#: ../src/libs/import.c:581
+#: ../src/libs/import.c:575
 msgid "supported images"
 msgstr "imagens suportadas"
 
-#: ../src/libs/import.c:637
+#: ../src/libs/import.c:631
 msgid "file has unknown format!"
 msgstr "arquivo tem formato desconhecido!"
 
-#: ../src/libs/import.c:661
+#: ../src/libs/import.c:655
 msgid "import folder"
 msgstr "importar pasta"
 
 #. add import single image buttons
-#: ../src/libs/import.c:776
+#: ../src/libs/import.c:770
 msgid "image..."
 msgstr "imagem..."
 
-#: ../src/libs/import.c:776
+#: ../src/libs/import.c:770
 msgid "select one or more images to import"
 msgstr "selecione uma ou mais imagens para impotar"
 
 #. adding the import folder button
-#: ../src/libs/import.c:784
+#: ../src/libs/import.c:778
 msgid "folder..."
 msgstr "pasta..."
 
-#: ../src/libs/import.c:784
+#: ../src/libs/import.c:778
 msgid "select a folder to import as film roll"
 msgstr "selecione uma pasta para importar como rolo de filme"
-
-#. add the rescan button
-#: ../src/libs/import.c:794
-msgid "scan for devices"
-msgstr "procurar por dispositivos"
-
-#: ../src/libs/import.c:794
-msgid "scan for newly attached devices"
-msgstr "procurar dispositivos recentemente conectados"
 
 #: ../src/libs/ioporder.c:149
 msgid "current order"
@@ -17490,23 +17498,23 @@ msgstr "estilo aplicado `%s' na imagem atual"
 msgid "no styles have been created yet"
 msgstr "nenhum estilo foi criado ainda"
 
-#: ../src/views/darkroom.c:2098
+#: ../src/views/darkroom.c:2114
 msgid "quick access to presets of your favorites"
 msgstr "acesso rápido para as predefinições de favoritos"
 
-#: ../src/views/darkroom.c:2107
+#: ../src/views/darkroom.c:2123
 msgid "quick access for applying any of your styles"
 msgstr "acesso rápido para aplicação dos estilos"
 
-#: ../src/views/darkroom.c:2120
+#: ../src/views/darkroom.c:2136
 msgid "display a second darkroom image window"
 msgstr "mostrar uma segunda janela de darkroom"
 
-#: ../src/views/darkroom.c:2129
+#: ../src/views/darkroom.c:2146
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "alterna condições de avaliação de cores ISO 12646"
 
-#: ../src/views/darkroom.c:2139
+#: ../src/views/darkroom.c:2156
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -17514,47 +17522,47 @@ msgstr ""
 "alterna indicação de super exposto \n"
 "clique direito para opcões"
 
-#: ../src/views/darkroom.c:2163
+#: ../src/views/darkroom.c:2180
 msgid "mark with CFA color"
 msgstr "marcar com cor CFA"
 
-#: ../src/views/darkroom.c:2164
+#: ../src/views/darkroom.c:2181
 msgid "mark with solid color"
 msgstr "marcar com cor sólida"
 
-#: ../src/views/darkroom.c:2165
+#: ../src/views/darkroom.c:2182
 msgid "false color"
 msgstr "falsa cor"
 
-#: ../src/views/darkroom.c:2167
+#: ../src/views/darkroom.c:2184
 msgid "select how to mark the clipped pixels"
 msgstr "selecione como marcar os pixels cortados"
 
-#: ../src/views/darkroom.c:2174 ../src/views/darkroom.c:2240
+#: ../src/views/darkroom.c:2191 ../src/views/darkroom.c:2257
 msgid "color scheme"
 msgstr "esquema de cor"
 
-#: ../src/views/darkroom.c:2175
+#: ../src/views/darkroom.c:2192
 msgctxt "solidcolor"
 msgid "red"
 msgstr "vermelho"
 
-#: ../src/views/darkroom.c:2176
+#: ../src/views/darkroom.c:2193
 msgctxt "solidcolor"
 msgid "green"
 msgstr "verde"
 
-#: ../src/views/darkroom.c:2177
+#: ../src/views/darkroom.c:2194
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "azul"
 
-#: ../src/views/darkroom.c:2178
+#: ../src/views/darkroom.c:2195
 msgctxt "solidcolor"
 msgid "black"
 msgstr "preto"
 
-#: ../src/views/darkroom.c:2182
+#: ../src/views/darkroom.c:2199
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -17562,7 +17570,7 @@ msgstr ""
 "selecione uma cor para indicar superexposição.\n"
 "só será utilizada caso modo seja = marcar com cor sólida"
 
-#: ../src/views/darkroom.c:2192
+#: ../src/views/darkroom.c:2209
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -17572,7 +17580,7 @@ msgstr ""
 "1.0 - nível de branco\n"
 "0.0 - nível de preto"
 
-#: ../src/views/darkroom.c:2203
+#: ../src/views/darkroom.c:2220
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -17580,27 +17588,27 @@ msgstr ""
 "alterna indicação de recprte \n"
 "clique direito para opcões"
 
-#: ../src/views/darkroom.c:2226
+#: ../src/views/darkroom.c:2243
 msgid "clipping preview mode"
 msgstr "modo de pré-visualização de recorte"
 
-#: ../src/views/darkroom.c:2227
+#: ../src/views/darkroom.c:2244
 msgid "full gamut"
 msgstr "gama completa"
 
-#: ../src/views/darkroom.c:2228
+#: ../src/views/darkroom.c:2245
 msgid "any RGB channel"
 msgstr "qualquer canal RGB"
 
-#: ../src/views/darkroom.c:2229
+#: ../src/views/darkroom.c:2246
 msgid "luminance only"
 msgstr "luminância apenas"
 
-#: ../src/views/darkroom.c:2230
+#: ../src/views/darkroom.c:2247
 msgid "saturation only"
 msgstr "saturação apenas"
 
-#: ../src/views/darkroom.c:2232
+#: ../src/views/darkroom.c:2249
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes\n"
@@ -17608,23 +17616,23 @@ msgstr ""
 "selecione a métrica que quer pré-visualizar\n"
 "gama completa é a combinação de todos os outros modos\n"
 
-#: ../src/views/darkroom.c:2242
+#: ../src/views/darkroom.c:2259
 msgid "red & blue"
 msgstr "vermelho & azul"
 
-#: ../src/views/darkroom.c:2243
+#: ../src/views/darkroom.c:2260
 msgid "purple & green"
 msgstr "roxo & verde"
 
-#: ../src/views/darkroom.c:2245
+#: ../src/views/darkroom.c:2262
 msgid "select colors to indicate clipping"
 msgstr "selecione cores para indicar recorte"
 
-#: ../src/views/darkroom.c:2254
+#: ../src/views/darkroom.c:2271
 msgid "lower threshold"
 msgstr "limite inferior"
 
-#: ../src/views/darkroom.c:2255
+#: ../src/views/darkroom.c:2272
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -17644,11 +17652,11 @@ msgstr ""
 "impressão em papel colorido glossy típico produz preto em -8.00 EV,\n"
 "impressão em papel P&B glossy típico produz preto em -9.00 EV."
 
-#: ../src/views/darkroom.c:2271
+#: ../src/views/darkroom.c:2288
 msgid "upper threshold"
 msgstr "limite superior"
 
-#: ../src/views/darkroom.c:2273
+#: ../src/views/darkroom.c:2290
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -17657,7 +17665,7 @@ msgstr ""
 "limiar de recorte para ponto branco\n"
 "100 % é o pico de luminância média"
 
-#: ../src/views/darkroom.c:2285
+#: ../src/views/darkroom.c:2302
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -17665,7 +17673,7 @@ msgstr ""
 "alterna perfil de impressão na tela\n"
 "clique direito para opções"
 
-#: ../src/views/darkroom.c:2299
+#: ../src/views/darkroom.c:2316
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -17673,47 +17681,47 @@ msgstr ""
 "alterna verificação de gamut\n"
 "clique direito para opções"
 
-#: ../src/views/darkroom.c:2327 ../src/views/lighttable.c:1395
+#: ../src/views/darkroom.c:2344 ../src/views/lighttable.c:1395
 msgid "display intent"
 msgstr "intenção de visualização"
 
-#: ../src/views/darkroom.c:2335 ../src/views/lighttable.c:1403
+#: ../src/views/darkroom.c:2352 ../src/views/lighttable.c:1403
 msgid "preview display intent"
 msgstr "pré-visualizar intenção de visualização"
 
-#: ../src/views/darkroom.c:2355 ../src/views/lighttable.c:1411
+#: ../src/views/darkroom.c:2372 ../src/views/lighttable.c:1411
 msgid "display profile"
 msgstr "visualiza perfil"
 
-#: ../src/views/darkroom.c:2356 ../src/views/lighttable.c:1415
+#: ../src/views/darkroom.c:2373 ../src/views/lighttable.c:1415
 msgid "preview display profile"
 msgstr "pré-visualizar perfil do monitor"
 
-#: ../src/views/darkroom.c:2357
+#: ../src/views/darkroom.c:2374
 msgid "histogram profile"
 msgstr "perfil de histograma"
 
-#: ../src/views/darkroom.c:2411 ../src/views/lighttable.c:1445
+#: ../src/views/darkroom.c:2428 ../src/views/lighttable.c:1445
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "perfis ICC do monitor em %s ou %s"
 
-#: ../src/views/darkroom.c:2414 ../src/views/lighttable.c:1448
+#: ../src/views/darkroom.c:2431 ../src/views/lighttable.c:1448
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "pré-visualização de perfis ICC do monitor em %s ou %s"
 
-#: ../src/views/darkroom.c:2417
+#: ../src/views/darkroom.c:2434
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "perfis ICC impressão na tela em %s ou %s"
 
-#: ../src/views/darkroom.c:2420
+#: ../src/views/darkroom.c:2437
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "perfis ICC de histograma e conta-gotas em %s ou %s"
 
-#: ../src/views/darkroom.c:2455
+#: ../src/views/darkroom.c:2472
 msgid ""
 "set the color of lines that overlay the image (drawn masks, crop and rotate "
 "guides etc.)"
@@ -17721,203 +17729,203 @@ msgstr ""
 "determina cor das linhas que se sobrepões à imagem (máscaras, guias de corte "
 "e rotação etc.)"
 
-#: ../src/views/darkroom.c:2476
+#: ../src/views/darkroom.c:2493
 msgid "overlay color"
 msgstr "cor de overlay"
 
-#: ../src/views/darkroom.c:2484
+#: ../src/views/darkroom.c:2501
 msgid "set overlay color"
 msgstr "selecionar cor do overlay"
 
-#: ../src/views/darkroom.c:3708
+#: ../src/views/darkroom.c:3732
 msgid "keyboard shortcut slider precision: fine"
 msgstr "precisão do atalho de teclado para deslizadores: leve"
 
-#: ../src/views/darkroom.c:3710
+#: ../src/views/darkroom.c:3734
 msgid "keyboard shortcut slider precision: normal"
 msgstr "precisão do atalho de teclado para deslizadores: normal"
 
-#: ../src/views/darkroom.c:3712
+#: ../src/views/darkroom.c:3736
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "precisão do atalho de teclado para deslizadores: pesada"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3749
+#: ../src/views/darkroom.c:3773
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom primeiro plano"
 
-#: ../src/views/darkroom.c:3750
+#: ../src/views/darkroom.c:3774
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom preecher"
 
-#: ../src/views/darkroom.c:3751
+#: ../src/views/darkroom.c:3775
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajustado"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3754 ../src/views/lighttable.c:878
+#: ../src/views/darkroom.c:3778 ../src/views/lighttable.c:878
 msgctxt "accel"
 msgid "zoom in"
 msgstr "aproximar"
 
-#: ../src/views/darkroom.c:3755 ../src/views/lighttable.c:880
+#: ../src/views/darkroom.c:3779 ../src/views/lighttable.c:880
 msgctxt "accel"
 msgid "zoom out"
 msgstr "afastar"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3761
+#: ../src/views/darkroom.c:3785
 msgctxt "accel"
 msgid "image forward"
 msgstr "imagem adiante"
 
-#: ../src/views/darkroom.c:3762
+#: ../src/views/darkroom.c:3786
 msgctxt "accel"
 msgid "image back"
 msgstr "imagem anterior"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3765
+#: ../src/views/darkroom.c:3789
 msgctxt "accel"
 msgid "color assessment"
 msgstr "avaliação de cores"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3768
+#: ../src/views/darkroom.c:3792
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw superexposto"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3771
+#: ../src/views/darkroom.c:3795
 msgctxt "accel"
 msgid "overexposed"
 msgstr "superexposto"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3774
+#: ../src/views/darkroom.c:3798
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "passa por cores de overlay"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3777
+#: ../src/views/darkroom.c:3801
 msgctxt "accel"
 msgid "softproof"
 msgstr "impressão na tela"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3780
+#: ../src/views/darkroom.c:3804
 msgctxt "accel"
 msgid "gamut check"
 msgstr "verificação de gamut"
 
 #. toggle visability of drawn masks for current gui module
-#: ../src/views/darkroom.c:3783
+#: ../src/views/darkroom.c:3807
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "mostrar máscara desenhada"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3786
+#: ../src/views/darkroom.c:3810
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "aumentar tamanho do pincel"
 
-#: ../src/views/darkroom.c:3787
+#: ../src/views/darkroom.c:3811
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuir tamanho do pincel"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3790
+#: ../src/views/darkroom.c:3814
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "aumentar dureza do pincel"
 
-#: ../src/views/darkroom.c:3791
+#: ../src/views/darkroom.c:3815
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuir dureza do pincel"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3794
+#: ../src/views/darkroom.c:3818
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "aumentar opacidade do pincel"
 
-#: ../src/views/darkroom.c:3795
+#: ../src/views/darkroom.c:3819
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuir opacidade do pincel"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3798
+#: ../src/views/darkroom.c:3822
 msgctxt "accel"
 msgid "full preview"
 msgstr "visualização total"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3801 ../src/views/lighttable.c:870
+#: ../src/views/darkroom.c:3825 ../src/views/lighttable.c:870
 #: ../src/views/map.c:918
 msgctxt "accel"
 msgid "undo"
 msgstr "desfazer"
 
-#: ../src/views/darkroom.c:3802 ../src/views/lighttable.c:871
+#: ../src/views/darkroom.c:3826 ../src/views/lighttable.c:871
 #: ../src/views/map.c:919
 msgctxt "accel"
 msgid "redo"
 msgstr "refazer"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3805
+#: ../src/views/darkroom.c:3829
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permitir pan & zoom ao editar máscaras"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3808
+#: ../src/views/darkroom.c:3832
 msgctxt "accel"
 msgid "search modules"
 msgstr "busca módulos"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:3811
+#: ../src/views/darkroom.c:3835
 msgctxt "accel"
 msgid "change keyboard shortcut slider precision"
 msgstr "mudar a precisão dos atalhos de teclado para deslizadores"
 
-#: ../src/views/darkroom.c:3933
+#: ../src/views/darkroom.c:3957
 msgid "switch to lighttable"
 msgstr "mudar para mesa de luz"
 
-#: ../src/views/darkroom.c:3938 ../src/views/lighttable.c:1054
+#: ../src/views/darkroom.c:3962 ../src/views/lighttable.c:1054
 msgid "zoom in the image"
 msgstr "zoom na imagem"
 
-#: ../src/views/darkroom.c:3944
+#: ../src/views/darkroom.c:3968
 msgid "unbounded zoom in the image"
 msgstr "zoom ilimitado na imagem"
 
-#: ../src/views/darkroom.c:3949
+#: ../src/views/darkroom.c:3973
 msgid "zoom to 100% 200% and back"
 msgstr "zoom para 100% 200% e volta"
 
-#: ../src/views/darkroom.c:3955
+#: ../src/views/darkroom.c:3979
 msgid "[modules] expand module without closing others"
 msgstr "[módulos] expande módulo sem fechar outros"
 
-#: ../src/views/darkroom.c:3961
+#: ../src/views/darkroom.c:3985
 msgid "[modules] change module position in pipe"
 msgstr "[módulos] muda posição do módulo no fluxo"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4675 ../src/views/darkroom.c:4693
+#: ../src/views/darkroom.c:4699 ../src/views/darkroom.c:4717
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualização de sala escura"
 
@@ -18274,6 +18282,22 @@ msgstr "atalhos"
 #: ../src/views/view.c:1623
 msgid "Action"
 msgstr "Ação"
+
+#~ msgid "to be imported"
+#~ msgstr "a ser importado"
+
+#~ msgctxt "accel"
+#~ msgid "scan for devices"
+#~ msgstr "procurar por dispositivos"
+
+#~ msgid "no supported devices found"
+#~ msgstr "nenhum dispositivo suportado encontrado"
+
+#~ msgid "scan for devices"
+#~ msgstr "procurar por dispositivos"
+
+#~ msgid "scan for newly attached devices"
+#~ msgstr "procurar dispositivos recentemente conectados"
 
 #~ msgctxt "accel"
 #~ msgid "method (bayer)"
