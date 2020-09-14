@@ -59,6 +59,12 @@
               To draw a shape you need to click on one of the shape symbols. You will
               automatically be moved into the edit mode in which you generate a new instance of
               the selected shape and afterwards change its properties.
+
+              Furthermore, <emphasis>Ctrl+click</emphasis> on any shape
+              (expect the path shape) enter the continuous creation
+              mode. This mode will come handy when multiple shapes are
+              to be created. A <emphasis>Right-click</emphasis> will
+              leave the continuous creation mode.
             </entry>
             <entry>
               <graphic fileref="darkroom/concepts/images/drawn_masks.png" scalefit="1" width="80%" align="center" />

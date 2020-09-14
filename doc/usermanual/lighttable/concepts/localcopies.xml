@@ -75,7 +75,7 @@
             <entry>
               <para>
                 A local copy is identified in the lighttable view with a white marker on the
-                right of the thumbnail. In addition all local copies carry the
+                right corner of the thumbnail. In addition all local copies carry the
                 <emphasis>darktable|local-copy</emphasis> tag for selecting them easily.
               </para>
             </entry>
