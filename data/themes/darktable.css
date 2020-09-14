@@ -1338,6 +1338,16 @@ filechooser row:hover,
 {
   padding: 0 0.5em 0 0.5em;
 }
+#modulegroups-icons-popup {
+  padding: 0.5em;
+  font-size: 1.1em;
+  background-color: @grey_30;
+}
+#modulegroups-icons-popup #dt-button {
+  min-width: 1.6em;
+  min-height: 1.6em;
+  border: 0;
+}
 
 /*--------------------------------
   - Tree view (lists and tables) -
