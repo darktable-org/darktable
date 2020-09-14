@@ -92,7 +92,7 @@
     <para>
       Defines whether scrollbars should be display in central view.
     </para>
-    
+
     <bridgehead renderas="sect5">demosaicing for zoomed out darkroom mode</bridgehead>
 
     <para>
@@ -101,11 +101,30 @@
       interpolation modes specified below, <quote>full (possibly slow)</quote> will use exactly
       the settings for full-size export (default <quote>at most ppg (reasonable)</quote>).
     </para>
-    
+
     <bridgehead renderas="sect5">reduce resolution of preview image</bridgehead>
 
     <para>
-      Decrease to speed up preview rendering, may hinder accurate masking.
+      This reduces the resolution of the preview window at the
+      upper-left of the screen. Consequently, calculations for
+      re-drawing this window are reduced to 1/4, 1/9 or 1/16 of the
+      main window. Sometimes coordinates for handles are borrowed from
+      the preview, so it may rarely be useful to return to full scale.
     </para>
-    
+
+    <bridgehead renderas="sect5">white balance slider colors</bridgehead>
+
+    <para>
+      Select one of the mode (<quote>effect emulation</quote>
+      or <quote>illuminant color</quote>) for the white balance slider
+      controls or no color at all.
+    </para>
+
+    <bridgehead renderas="sect5">colorbalance slider block layout</bridgehead>
+
+    <para>
+      One of the layout for the colorbalance controls. A vertical
+      list, a tabulated or columned view.
+    </para>
+
 </sect1>
