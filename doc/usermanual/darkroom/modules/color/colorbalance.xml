@@ -65,6 +65,12 @@
 
       </itemizedlist>
 
+      Three different control layouts can be accessed by clicking on
+      the shadows label: A <emphasis>vertical</emphasis> view as shown
+      on the screenshot above, a <emphasis>tabulated</emphasis> view
+      presenting one of the three group at a single time and a
+      <emphasis>columned</emphasis> view displaying all controls
+      horizontally.
     </para>
 
     <para>
@@ -272,7 +278,7 @@
       </para>
 
       <para>
-        Similarly to the luma optimization, the color-picker next to the <emphasis>neutralize colors</emphasis> 
+        Similarly to the luma optimization, the color-picker next to the <emphasis>neutralize colors</emphasis>
         label will trigger a general optimization over the whole picture. This works fairly in
         landscape photography, or any photography with a full spectrum of colors and
         luminances. For night and events photography, this will most likely fail and you will
