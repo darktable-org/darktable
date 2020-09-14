@@ -1757,6 +1757,12 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
       old_margin_start = gtk_widget_get_margin_start(first->w_image_box);
       old_margin_top = gtk_widget_get_margin_top(first->w_image_box);
+      // if margins > thumb size, then margins are irrelevant (thumb size as just changed), better set them to 0
+      if(old_margin_start >= table->thumb_size || old_margin_top >= table->thumb_size)
+      {
+        old_margin_start = 0;
+        old_margin_top = 0;
+      }
     }
 
     // we add the thumbs
