@@ -1089,11 +1089,12 @@ static GtkWidget *_manage_editor_group_icon_get_popup(GtkWidget *btn, dt_lib_mod
 {
   GtkWidget *pop = gtk_popover_new(btn);
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(pop, "modulegroups-icons-popup");
 
   GtkWidget *eb, *hb, *ic;
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_basic, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_basic, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("basic icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "basic");
@@ -1103,8 +1104,8 @@ static GtkWidget *_manage_editor_group_icon_get_popup(GtkWidget *btn, dt_lib_mod
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_active, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_active, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("active icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "active");
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
@@ -1113,8 +1114,8 @@ static GtkWidget *_manage_editor_group_icon_get_popup(GtkWidget *btn, dt_lib_mod
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_color, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_color, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("color icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "color");
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
@@ -1123,8 +1124,8 @@ static GtkWidget *_manage_editor_group_icon_get_popup(GtkWidget *btn, dt_lib_mod
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_correct, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_correct, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("correct icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "correct");
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
@@ -1133,8 +1134,8 @@ static GtkWidget *_manage_editor_group_icon_get_popup(GtkWidget *btn, dt_lib_mod
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_effect, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_effect, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("effect icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "effect");
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
@@ -1143,8 +1144,8 @@ static GtkWidget *_manage_editor_group_icon_get_popup(GtkWidget *btn, dt_lib_mod
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_favorites, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_favorites, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("favorites icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "favorites");
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
@@ -1153,8 +1154,8 @@ static GtkWidget *_manage_editor_group_icon_get_popup(GtkWidget *btn, dt_lib_mod
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_icon_new(dtgtk_cairo_paint_modulegroup_tone, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(hb), ic, TRUE, TRUE, 0);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_tone, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("tone icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "tone");
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
