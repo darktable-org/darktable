@@ -20,6 +20,7 @@
 <!ENTITY icon_module_rawoverexposed "images/darkroom_module_icon_rawoverexposed.png">
 <!ENTITY icon_module_softproof "images/darkroom_module_icon_softproof.png">
 <!ENTITY icon_module_gamutcheck "images/darkroom_module_icon_gamutcheck.png">
+<!ENTITY icon_module_overlaycolor "images/darkroom_module_icon_overlaycolor.png">
 <!ENTITY icon_module_plus "images/darkroom_module_icon_polarity_plus.png">
 <!ENTITY icon_module_minus "images/darkroom_module_icon_polarity_minus.png">
 <!ENTITY icon_module_invert "images/darkroom_module_icon_invert.png">
@@ -78,3 +79,9 @@
 <!ENTITY masks_intersection "images/masks_intersection.png">
 <!ENTITY masks_difference "images/masks_difference.png">
 <!ENTITY masks_exclusion "images/masks_exclusion.png">
+<!ENTITY blend_off "images/blend_off.png">
+<!ENTITY blend_uniformly "images/blend_uniformly.png">
+<!ENTITY blend_drawn "images/blend_drawn.png">
+<!ENTITY blend_parametric "images/blend_parametric.png">
+<!ENTITY blend_drawn_parametric "images/blend_drawn_parametric.png">
+<!ENTITY blend_raster "images/blend_raster.png">

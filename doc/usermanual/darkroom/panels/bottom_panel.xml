@@ -284,6 +284,24 @@
 
   </sect3>
 
+  <sect3 status="final" id="overlaycolor">
+
+    <title>Line overlay color</title>
+
+    <indexterm>
+      <primary>darkroom panels</primary>
+      <secondary>overlay color</secondary>
+    </indexterm>
+
+    <para>
+      Clicking the
+      <inlinegraphic fileref="&icon_module_overlaycolor;" scalefit="1" width="2%" align="center" />
+      icon to select a color for the control lines that overlay the
+      image. You can also cycle through the different colors with the
+      keyboard shortcut <quote>Ctrl+O</quote>.
+    </para>
+  </sect3>
+
   <sect3 status="final" id="darkroom_filmstrip">
 
     <title>Filmstrip</title>
