@@ -2487,6 +2487,15 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
   // if needed, we set the selection
   if(thumb && select) dt_selection_select_range(darktable.selection, thumb->imgid);
 
+  // and we record new positions values
+  dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  table->offset = first->rowid;
+  table->offset_imgid = first->imgid;
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
+  dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
+  dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
+
   return moved;
 }
 
