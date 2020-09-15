@@ -82,7 +82,7 @@ cat > "$FONTCONFIG_FILE" <<EOF
 EOF
 
 execute 'Installing base-devel and toolchain'  pacman -S --needed --noconfirm mingw-w64-x86_64-{toolchain,clang,cmake}
-execute 'Installing dependencies (except lensfun)' pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
+execute 'Installing dependencies (except lensfun)' pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
 
 # Lensfun must be dealt with separately in an MSYS64 environment per note in Windows build instructions added in commit ca5a4fb
 execute 'Downloading known good lensfun 0.3.2-4' curl -fSs -o mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz
