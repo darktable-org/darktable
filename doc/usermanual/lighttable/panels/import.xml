@@ -31,12 +31,12 @@
       <tbody>
         <row>
           <entry>
-            This panel is for importing images into film rolls. You can either import a complete
-            folder, by pressing <quote>folder</quote>, or a single image with
-            <quote>image</quote>. You can also cause darktable to search for connected cameras
-            by pressing <quote>scan for devices</quote>. If a supported camera is connected you
-            can import directly from that camera or control the camera from within darktable in
-            tethering mode.
+            This panel is for importing images into film rolls. You
+            can either import a complete folder, by pressing
+            <quote>folder</quote>, or a single image with
+            <quote>image</quote>. If a supported camera is connected
+            you can import directly from that camera or control the
+            camera from within darktable in tethering mode.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_import_1.png" scalefit="1" width="80%" align="center" />
