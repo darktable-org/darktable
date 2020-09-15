@@ -1032,6 +1032,7 @@ void gui_init(dt_iop_module_t *self)
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
                 dt_bauhaus_slider_from_params(self, "exposure"));
   dt_bauhaus_slider_set_hard_min(g->exposure, -1.0);
+  dt_bauhaus_slider_set_soft_min(g->exposure, -1.0);
   dt_bauhaus_slider_set_hard_max(g->exposure, 1.0);
   dt_bauhaus_slider_set_default(g->exposure, 0.0);
   dt_bauhaus_slider_set_format(g->exposure, "%+.2f EV");
