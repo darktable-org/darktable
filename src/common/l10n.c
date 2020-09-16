@@ -34,6 +34,50 @@
 #include <windows.h>
 #endif
 
+static gchar* _dt_full_locale_name(const char *locale)
+{
+  // TODO: check if this works on Windows
+  // this gets languages in order of preference of user
+  // usually with full extent of charset preference
+  // also - it does include "C" lang.
+  const gchar * const * locales = g_get_language_names();
+  int i = 0,j = 0;
+  while(locales[i])
+  {
+    gchar **variants = g_get_locale_variants(locales[i]);
+    while(variants[j])
+    {
+      if(g_str_has_prefix(variants[j], locale))
+      {
+        // return first found variant - this is most likelly the best one
+        gchar *ret=g_strdup(variants[j]);
+        g_strfreev(variants);
+        return ret;
+      }
+      j++;
+    }
+    g_strfreev(variants);
+    i++;
+  }
+  // If we're here, this means user chose locale that isn't present in prefered
+  // languages/locales for user, but maaaybe the locale is installed
+  j=0;
+  gchar **variants = g_get_locale_variants(locale);
+  while(variants[j])
+  {
+    if(g_str_has_prefix(variants[j], locale))
+    {
+      gchar *ret=g_strdup(variants[j]);
+      g_strfreev(variants);
+      return ret;
+    }
+    j++;
+  }
+  g_strfreev(variants);
+  // locale isn't installed, have fun :D
+  return NULL;
+}
+
 static void set_locale(const char *ui_lang, const char *old_env)
 {
   if(ui_lang && *ui_lang)
@@ -46,7 +90,12 @@ static void set_locale(const char *ui_lang, const char *old_env)
       free(full_locale);
     }
 #else
-    // TODO: set LANG on other platforms too
+    gchar *full_locale = _dt_full_locale_name(ui_lang);
+    if(full_locale)
+    {
+      g_setenv("LANG", full_locale, TRUE);
+      g_free(full_locale);
+    }
 #endif
     g_setenv("LANGUAGE", ui_lang, TRUE);
     gtk_disable_setlocale();
