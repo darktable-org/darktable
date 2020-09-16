@@ -1297,7 +1297,8 @@ filechooser row:hover,
 }
 #modulegroups-header #dt-button,
 #modulegroups-preset #dt-button,
-#modulegroups-preset-activated #dt-button
+#modulegroups-preset-activated #dt-button,
+#modulegroups-iop-popup-name
 {
   border: 0;
 }
@@ -1347,6 +1348,13 @@ filechooser row:hover,
   min-width: 1.6em;
   min-height: 1.6em;
   border: 0;
+}
+#modulegroups-iop-popup {
+  padding: 0.2em;
+  background-color: @grey_30;
+}
+#modulegroups_iop_title {
+  font-weight: bold;
 }
 
 /*--------------------------------
