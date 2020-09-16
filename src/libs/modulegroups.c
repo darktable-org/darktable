@@ -795,15 +795,20 @@ static GList *_preset_from_string(gchar *txt)
 
 void init_presets(dt_lib_module_t *self)
 {
-  gchar *tx = "technical|basic|colorin|hazeremoval|filmicrgb|clipping|flip|lens|exposure|denoiseprofile|demosaic|highlights"
-              "ꬹgrading|color|rgblevels|colorbalance|toneequal|temperature"
-              "ꬹeffect|effect|sharpen|bilat";
+  gchar *tx = NULL;
+  tx = dt_util_dstrcat(
+      tx, "%s|%s|%s", _("technical"), "basic",
+      "colorin|hazeremoval|filmicrgb|clipping|flip|lens|exposure|denoiseprofile|demosaic|highlights");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s|%s", _("grading"), "color", "rgblevels|colorbalance|toneequal|temperature");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s|%s", _("effect"), "effect", "sharpen|bilat");
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
-  gchar *tx2 = "base|basic|basecurve|toneequal|clipping|flip|exposure|demosaic|highlights|temperature|filmicrgb"
-               "ꬹtone|tone|rgblevels|bilat"
-               "ꬹcolor|color|colorbalance|colorin"
-               "ꬹcorrect|correct|sharpen|hazeremoval|lens|denoiseprofile";
+  gchar *tx2 = NULL;
+  tx2 = dt_util_dstrcat(tx2, "%s|%s|%s", _("base"), "basic",
+                        "basecurve|toneequal|clipping|flip|exposure|demosaic|highlights|temperature|filmicrgb");
+  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s|%s", _("tone"), "tone", "rgblevels|bilat");
+  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s|%s", _("color"), "color", "colorbalance|colorin");
+  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s|%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
   dt_lib_presets_add(_("3.0 layout"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
 
   // if needed, we add a new preset, based on last user config
@@ -863,26 +868,6 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   return 0;
 }
 
-static GtkWidget *_manage_editor_get_iop_combo(GList *exclude)
-{
-  GtkWidget *combo = gtk_combo_box_text_new();
-  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo), "", _("add more modules"));
-
-  GList *modules = g_list_last(darktable.iop);
-  while(modules)
-  {
-    dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
-    if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
-    {
-      if(!g_list_find_custom(exclude, module->op, _iop_compare))
-        gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo), module->op, module->name());
-    }
-    modules = g_list_previous(modules);
-  }
-
-  return combo;
-}
-
 static void _manage_editor_save(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -920,7 +905,7 @@ static void _manage_editor_module_remove(GtkWidget *widget, GdkEventButton *even
   }
 }
 
-static void _manage_editor_module_update_list(GList **modules, GtkWidget *vb, int ro)
+static void _manage_editor_module_update_list(GList *modules, GtkWidget *vb, int ro)
 {
   // first, we remove all existing modules
   GList *lw = gtk_container_get_children(GTK_CONTAINER(vb));
@@ -936,7 +921,7 @@ static void _manage_editor_module_update_list(GList **modules, GtkWidget *vb, in
   while(modules2)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules2->data);
-    if(g_list_find_custom(*modules, module->op, _iop_compare))
+    if(g_list_find_custom(modules, module->op, _iop_compare))
     {
       GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_widget_set_name(hb, "modulegroups-iop-header");
@@ -993,20 +978,90 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
   }
 }
 
-static void _manage_editor_module_add(GtkWidget *widget, GList **modules)
+static void _manage_editor_module_add(GtkWidget *widget, gpointer data)
 {
-  const char *module = gtk_combo_box_get_active_id(GTK_COMBO_BOX(widget));
-  const int pos = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
+  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
   if(g_strcmp0(module, "") == 0) return;
 
-  if(!g_list_find_custom(*modules, module, _iop_compare))
+  if(!g_list_find_custom(gr->modules, module, _iop_compare))
   {
-    *modules = g_list_append(*modules, g_strdup(module));
+    gr->modules = g_list_append(gr->modules, g_strdup(module));
     GtkWidget *vb = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "modules_vbox");
-    _manage_editor_module_update_list(modules, vb, 0);
-    gtk_combo_box_set_active_id(GTK_COMBO_BOX(widget), "");
-    gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(widget), pos);
+    _manage_editor_module_update_list(gr->modules, vb, 0);
+    GtkWidget *pop = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "popup");
+    gtk_widget_destroy(pop);
   }
+}
+
+static void _manage_editor_module_add_popup(GtkWidget *widget, GList *exclude)
+{
+  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  GtkWidget *vb_iop = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "modules_vbox");
+
+  GtkWidget *pop = gtk_popover_new(widget);
+  gtk_widget_set_name(pop, "modulegroups-iop-popup");
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *vb1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *lb = NULL;
+
+  int rec_nb = 0;
+  GList *modules = g_list_last(darktable.iop);
+  while(modules)
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+
+    if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
+    {
+      if(!g_list_find_custom(gr->modules, module->op, _iop_compare))
+      {
+        GtkWidget *bt = gtk_button_new_with_label(module->name());
+        gtk_widget_set_name(bt, "modulegroups-iop-popup-name");
+        g_object_set_data(G_OBJECT(bt), "modules_vbox", vb_iop);
+        g_object_set_data(G_OBJECT(bt), "module_op", g_strdup(module->op));
+        g_object_set_data(G_OBJECT(bt), "group", gr);
+        g_object_set_data(G_OBJECT(bt), "popup", pop);
+        gtk_label_set_xalign(GTK_LABEL(gtk_bin_get_child(GTK_BIN(bt))), 1.0);
+        g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_module_add), NULL);
+
+        // does it belong to recommended modules ?
+        GtkWidget *vbc = vb2;
+        if(((module->default_group() & IOP_GROUP_BASIC) && g_strcmp0(gr->name, _("base")) == 0)
+           || ((module->default_group() & IOP_GROUP_COLOR) && g_strcmp0(gr->name, _("color")) == 0)
+           || ((module->default_group() & IOP_GROUP_CORRECT) && g_strcmp0(gr->name, _("correct")) == 0)
+           || ((module->default_group() & IOP_GROUP_TONE) && g_strcmp0(gr->name, _("tone")) == 0)
+           || ((module->default_group() & IOP_GROUP_EFFECT) && g_strcmp0(gr->name, _("effect")) == 0))
+        {
+          vbc = vb1;
+          rec_nb++;
+        }
+        // gtk_container_add(GTK_CONTAINER(ev), lb);
+        gtk_box_pack_start(GTK_BOX(vbc), bt, FALSE, TRUE, 0);
+      }
+    }
+    modules = g_list_previous(modules);
+  }
+
+  if(rec_nb > 0)
+  {
+    lb = gtk_label_new(_("recommended"));
+    gtk_label_set_xalign(GTK_LABEL(lb), 0);
+    gtk_widget_set_name(lb, "modulegroups_iop_title");
+    gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vb), vb1, FALSE, TRUE, 0);
+  }
+  lb = gtk_label_new(_("other"));
+  gtk_label_set_xalign(GTK_LABEL(lb), 0);
+  gtk_widget_set_name(lb, "modulegroups_iop_title");
+  gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vb), vb2, FALSE, TRUE, 0);
+  gtk_widget_set_size_request(sw, 250, 450);
+  gtk_container_add(GTK_CONTAINER(sw), vb);
+  gtk_container_add(GTK_CONTAINER(pop), sw);
+  gtk_widget_show_all(pop);
 }
 
 static void _manage_editor_group_move_right(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -1233,17 +1288,21 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *vb4 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  _manage_editor_module_update_list(&gr->modules, vb4, ro);
+  _manage_editor_module_update_list(gr->modules, vb4, ro);
   gtk_box_pack_start(GTK_BOX(vb3), vb4, FALSE, TRUE, 0);
 
   // combo box to add new module
   if(!ro)
   {
-    GtkWidget *combo = _manage_editor_get_iop_combo(gr->modules);
-    gtk_combo_box_set_active_id(GTK_COMBO_BOX(combo), "");
-    g_object_set_data(G_OBJECT(combo), "modules_vbox", vb4);
-    g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(_manage_editor_module_add), &gr->modules);
-    gtk_box_pack_start(GTK_BOX(vb3), combo, FALSE, TRUE, 0);
+    GtkWidget *hb4 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
+                                     CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
+    g_object_set_data(G_OBJECT(bt), "modules_vbox", vb4);
+    g_object_set_data(G_OBJECT(bt), "group", gr);
+    g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_module_add_popup), gr->modules);
+    gtk_widget_set_halign(hb4, GTK_ALIGN_CENTER);
+    gtk_box_pack_start(GTK_BOX(hb4), bt, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vb3), hb4, FALSE, FALSE, 0);
   }
 
   gtk_container_add(GTK_CONTAINER(sw), vb3);
@@ -1381,7 +1440,7 @@ static void _manage_editor_load(char *preset, GtkWidget *preset_box, GtkWidget *
     gtk_widget_set_name(bt, "modulegroups-save");
     gtk_button_set_label(GTK_BUTTON(bt), _("save"));
     g_object_set_data(G_OBJECT(bt), "name_entry", tb0);
-    g_object_set_data(G_OBJECT(bt), "old_name", preset);
+    g_object_set_data(G_OBJECT(bt), "old_name", g_strdup(preset));
     g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_save), self);
     gtk_box_pack_end(GTK_BOX(hb1), bt, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
