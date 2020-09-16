@@ -703,17 +703,17 @@ static gchar *_preset_retrieve_old_layout()
   {
     // group name and icon
     if(i == 0)
-      ret = dt_util_dstrcat(ret, "favorites|favorites");
+      ret = dt_util_dstrcat(ret, "ꬹ1ꬹfavorites|favorites|");
     else if(i == 1)
-      ret = dt_util_dstrcat(ret, "ꬹbasic|basic");
+      ret = dt_util_dstrcat(ret, "ꬹbasic|basic|");
     else if(i == 2)
-      ret = dt_util_dstrcat(ret, "ꬹtone|tone");
+      ret = dt_util_dstrcat(ret, "ꬹtone|tone|");
     else if(i == 3)
-      ret = dt_util_dstrcat(ret, "ꬹcolor|color");
+      ret = dt_util_dstrcat(ret, "ꬹcolor|color|");
     else if(i == 4)
-      ret = dt_util_dstrcat(ret, "ꬹcorrect|correct");
+      ret = dt_util_dstrcat(ret, "ꬹcorrect|correct|");
     else if(i == 5)
-      ret = dt_util_dstrcat(ret, "ꬹeffect|effect");
+      ret = dt_util_dstrcat(ret, "ꬹeffect|effect|");
 
     // list of modules
     GList *modules = darktable.iop;
@@ -749,11 +749,11 @@ static gchar *_preset_to_string(GList *groups)
 {
   gchar *res = NULL;
   GList *l = groups;
+  res = dt_util_dstrcat(res, "ꬹ1");
   while(l)
   {
     dt_lib_modulegroups_group_t *g = (dt_lib_modulegroups_group_t *)l->data;
-    if(res) res = dt_util_dstrcat(res, "ꬹ");
-    res = dt_util_dstrcat(res, "%s|%s", g->name, g->icon);
+    res = dt_util_dstrcat(res, "ꬹ%s|%s|", g->name, g->icon);
     GList *ll = g->modules;
     while(ll)
     {
@@ -773,20 +773,21 @@ static GList *_preset_from_string(gchar *txt)
   if(!txt) return res;
 
   gchar **gr = g_strsplit(txt, "ꬹ", -1);
-  for(int i = 0; i < g_strv_length(gr); i++)
+  for(int i = 2; i < g_strv_length(gr); i++)
   {
     gchar *tx = gr[i];
     if(tx)
     {
       gchar **gr2 = g_strsplit(tx, "|", -1);
       const int nb = g_strv_length(gr2);
-      if(nb > 1)
+      if(nb > 2)
       {
         dt_lib_modulegroups_group_t *group
             = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
         group->name = g_strdup(gr2[0]);
         group->icon = g_strdup(gr2[1]);
-        for(int j = 2; j < nb; j++)
+        // gr2[2] is reserved for eventual future use
+        for(int j = 3; j < nb; j++)
         {
           group->modules = g_list_append(group->modules, g_strdup(gr2[j]));
         }
@@ -804,18 +805,18 @@ void init_presets(dt_lib_module_t *self)
 {
   gchar *tx = NULL;
   tx = dt_util_dstrcat(
-      tx, "%s|%s|%s", _("technical"), "basic",
+      tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "basic",
       "colorin|hazeremoval|filmicrgb|clipping|flip|lens|exposure|denoiseprofile|demosaic|highlights");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s|%s", _("grading"), "color", "rgblevels|colorbalance|toneequal|temperature");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s|%s", _("effect"), "effect", "sharpen|bilat");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("grading"), "color", "rgblevels|colorbalance|toneequal|temperature");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effect"), "effect", "sharpen|bilat");
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   gchar *tx2 = NULL;
-  tx2 = dt_util_dstrcat(tx2, "%s|%s|%s", _("base"), "basic",
+  tx2 = dt_util_dstrcat(tx2, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
                         "basecurve|toneequal|clipping|flip|exposure|demosaic|highlights|temperature|filmicrgb");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s|%s", _("tone"), "tone", "rgblevels|bilat");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s|%s", _("color"), "color", "colorbalance|colorin");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s|%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
+  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("tone"), "tone", "rgblevels|bilat");
+  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("color"), "color", "colorbalance|colorin");
+  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
   dt_lib_presets_add(_("3.0 layout"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
 
   // if needed, we add a new preset, based on last user config
