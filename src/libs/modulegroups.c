@@ -1534,12 +1534,43 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
     // reload presets list
     dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
     _manage_preset_update_list(self);
-    // load the first line
-    GtkWidget *ww = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(d->presets_list)), 0);
-    if(ww)
+
+    // we try to reload previous selected preset if it still exists
+    gboolean sel_ok = FALSE;
+    GList *l = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
+    while(l)
     {
-      char *firstn = g_strdup((char *)g_object_get_data(G_OBJECT(ww), "preset_name"));
-      _manage_editor_load(firstn, self);
+      GtkWidget *ww = (GtkWidget *)l->data;
+      char *tx = g_strdup((char *)g_object_get_data(G_OBJECT(ww), "preset_name"));
+      if(g_strcmp0(tx, gtk_entry_get_text(GTK_ENTRY(d->preset_name))) == 0)
+      {
+        _manage_editor_load(tx, self);
+        sel_ok = TRUE;
+        break;
+      }
+      l = g_list_next(l);
+    }
+    // otherwise we load the first preset
+    if(!sel_ok)
+    {
+      GtkWidget *ww = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(d->presets_list)), 0);
+      if(ww)
+      {
+        char *firstn = g_strdup((char *)g_object_get_data(G_OBJECT(ww), "preset_name"));
+        _manage_editor_load(firstn, self);
+      }
+    }
+
+    // if the deleted preset was the one currently in use, load default preset
+    if(dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
+    {
+      gchar *cur = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
+      if(g_strcmp0(cur, preset) == 0)
+      {
+        dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("default"));
+        dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+      }
+      g_free(cur);
     }
   }
 }
