@@ -1246,9 +1246,8 @@
 
         <para>
           Connect your camera to your system. If your distribution tries to automount it, select
-          the option to abort the mount operation. Otherwise the camera will be locked and not
-          accessible from within darktable. If you don't see your camera in the import module,
-          hit the <quote>scan for devices</quote> button. Your camera will then appear in the
+          the option to abort the mount operation. Otherwise the camera might be locked and not
+          accessible from within darktable. Connected cameras and cards will appear in the
           same module with additional choices: <emphasis>import</emphasis> and
           <emphasis>tethering</emphasis>.
         </para>
