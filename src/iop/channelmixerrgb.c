@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "common/chromatic_adaptation.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -65,21 +66,21 @@ DT_MODULE_INTROSPECTION(2, dt_iop_channelmixer_rgb_params_t)
 
 typedef struct dt_iop_channelmixer_rgb_params_t
 {
-  float red[CHANNEL_SIZE];
-  float green[CHANNEL_SIZE];
-  float blue[CHANNEL_SIZE];
-  float saturation[CHANNEL_SIZE];
-  float lightness[CHANNEL_SIZE];
-  float grey[CHANNEL_SIZE];
-  int normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey;
-  dt_illuminant_t illuminant;
-  dt_illuminant_fluo_t illum_fluo;
-  dt_illuminant_led_t illum_led;
-  dt_adaptation_t adaptation;
-  float x, y;
-  float temperature;
-  float gamut;
-  int clip;
+  float red[CHANNEL_SIZE];         // $MIN: -2.0 $MAX: 2.0
+  float green[CHANNEL_SIZE];       // $MIN: -2.0 $MAX: 2.0
+  float blue[CHANNEL_SIZE];        // $MIN: -2.0 $MAX: 2.0
+  float saturation[CHANNEL_SIZE];  // $MIN: -1.0 $MAX: 1.0
+  float lightness[CHANNEL_SIZE];   // $MIN: -2.0 $MAX: 2.0
+  float grey[CHANNEL_SIZE];        // $MIN: -1.0 $MAX: 1.0
+  gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "normalize channels"
+  dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
+  dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
+  dt_illuminant_led_t illum_led;   // $DEFAULT: DT_ILLUMINANT_LED_B5 $DESCRIPTION: "LED source"
+  dt_adaptation_t adaptation;      // $DEFAULT: DT_ADAPTATION_LINEAR_BRADFORD
+  float x, y;                      // $DEFAULT: 0.333
+  float temperature;               // $MIN: 1667. $MAX: 25000. $DEFAULT: 5003.
+  float gamut;                     // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "gamut compression"
+  gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
 } dt_iop_channelmixer_rgb_params_t;
 
 typedef enum dt_ai_wb_model_t
@@ -1406,7 +1407,6 @@ static void update_G_colors(dt_iop_module_t *self)
   }
 
   gtk_widget_queue_draw(self->widget);
-
 }
 
 
@@ -1433,8 +1433,7 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // Margins
   static const double INNER_PADDING = 4.0;
   const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
-  cairo_translate(cr, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width), margin);
-  width -= 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width) + INNER_PADDING;
+  width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
   // Paint illuminant color - we need to recompute it in full in case camera RAW is choosen
@@ -1444,7 +1443,7 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage), &x, &y, p->temperature, p->illum_fluo, p->illum_led);
   illuminant_xy_to_RGB(x, y, RGB);
   cairo_set_source_rgb(cr, RGB[0], RGB[1], RGB[2]);
-  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_rectangle(cr, INNER_PADDING, margin, width, height);
   cairo_fill(cr);
 
   // Clean
@@ -1505,127 +1504,7 @@ static void update_approx_cct(dt_iop_module_t *self)
 }
 
 
-static void illuminant_callback(GtkWidget *combo, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-
-  p->illuminant = dt_bauhaus_combobox_get(combo);
-
-  if(p->illuminant == DT_ILLUMINANT_CAMERA)
-  {
-    // if DT_ILLUMINANT_CAMERA was already selected, we switch to the closest match between the daylight or custom
-
-    // Get camera WB and update illuminant
-    const float x = p->x;
-    const float y = p->y;
-    int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage), &(p->x), &(p->y));
-
-    if(found)
-    {
-      if(x == p->x && y == p->y)
-      {
-        // Parameters did not change, assume user wants to edit auto-set params and display controls
-        dt_control_log(_("white balance successfuly extracted from raw image"));
-
-        check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
-
-        float xyY[3] = { p->x, p->y, 1.f };
-        float Lch[3];
-        dt_xyY_to_Lch(xyY, Lch);
-
-        ++darktable.gui->reset;
-        dt_bauhaus_slider_set(g->temperature, p->temperature);
-        dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
-        dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-        dt_bauhaus_slider_set(g->illum_y, Lch[1]);
-        --darktable.gui->reset;
-      }
-    }
-    else
-    {
-      dt_control_log(_("no white balance was found in raw image"));
-    }
-  }
-  else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
-  {
-    // Get image WB
-    g->auto_detect_illuminant = TRUE;
-    if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES) g->wb_model = DT_AI_EDGES;
-    else if(p->illuminant == DT_ILLUMINANT_DETECT_SURFACES) g->wb_model = DT_AI_SURFACES;
-
-    // We need to recompute only the thumbnail
-    dt_control_log(_("auto-detection of white balance started…"));
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    return;
-  }
-
-  ++darktable.gui->reset;
-  update_illuminants(self);
-  update_approx_cct(self);
-  update_illuminant_color(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void fluo_callback(GtkWidget *combo, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->illum_fluo = dt_bauhaus_combobox_get(combo);
-
-  ++darktable.gui->reset;
-  update_illuminants(self);
-  update_approx_cct(self);
-  update_illuminant_color(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void led_callback(GtkWidget *combo, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->illum_led = dt_bauhaus_combobox_get(combo);
-
-  ++darktable.gui->reset;
-  update_illuminants(self);
-  update_approx_cct(self);
-  update_illuminant_color(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void temperature_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->temperature = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_illuminants(self);
-  update_approx_cct(self);
-  update_illuminant_color(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void gamut_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->gamut = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void illum_x_callback(GtkWidget *slider, gpointer user_data)
+static void illum_xy_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
@@ -1655,333 +1534,6 @@ static void illum_x_callback(GtkWidget *slider, gpointer user_data)
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-
-static void illum_y_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-
-  float Lch[3];
-  Lch[0] = 100.f;
-  Lch[2] = dt_bauhaus_slider_get(g->illum_x) / 180. * M_PI;
-  Lch[1] = dt_bauhaus_slider_get(g->illum_y);
-
-  float xyY[3];
-  dt_Lch_to_xyY(Lch, xyY);
-  p->x = xyY[0];
-  p->y = xyY[1];
-
-  float t = xy_to_CCT(p->x, p->y);
-  // xy_to_CCT is valid only above 3000 K
-  if(t < 3000.f) t = CCT_reverse_lookup(p->x, p->y);
-  p->temperature = t;
-
-  ++darktable.gui->reset;
-  dt_bauhaus_slider_set(g->temperature, p->temperature);
-  update_approx_cct(self);
-  update_illuminant_color(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void adaptation_callback(GtkWidget *combo, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->adaptation = dt_bauhaus_combobox_get(combo);
-
-  ++darktable.gui->reset;
-  update_illuminants(self);
-  update_R_colors(self);
-  update_G_colors(self);
-  update_B_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void red_R_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->red[0] = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_R_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void red_G_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->red[1] = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_R_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void red_B_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->red[2] = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_R_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void green_R_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->green[0] = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_G_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void green_G_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->green[1] = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_G_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void green_B_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->green[2] = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_G_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void blue_R_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->blue[0] = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_B_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void blue_G_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->blue[1] = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_B_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void blue_B_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->blue[2] = dt_bauhaus_slider_get(slider);
-
-  ++darktable.gui->reset;
-  update_B_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void saturation_R_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->saturation[0] = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void saturation_G_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->saturation[1] = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void saturation_B_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->saturation[2] = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void lightness_R_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->lightness[0] = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void lightness_G_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->lightness[1] = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void lightness_B_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->lightness[2] = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void grey_R_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->grey[0] = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void grey_G_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->grey[1] = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void grey_B_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->grey[2] = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void clip_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->clip = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void normalize_R_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->normalize_R = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
-  update_R_colors(self);
-  darktable.gui->reset = reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void normalize_G_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->normalize_G = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-
-  ++darktable.gui->reset;
-  update_G_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void normalize_B_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->normalize_B = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-
-  ++darktable.gui->reset;
-  update_B_colors(self);
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void normalize_sat_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->normalize_sat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void normalize_light_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->normalize_light = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void normalize_grey_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  p->normalize_grey = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -2060,58 +1612,133 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_grey), p->normalize_grey);
 
-  // Update colors in GUI that come from illuminants and color spaces
-  update_illuminants(self);
-  update_approx_cct(self);
-  update_illuminant_color(self);
-
-  update_R_colors(self);
-  update_G_colors(self);
-  update_B_colors(self);
+  gui_changed(self, NULL, NULL);
 
   g->auto_detect_illuminant = FALSE;
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void init(dt_iop_module_t *module)
 {
-  dt_iop_channelmixer_rgb_params_t tmp = (dt_iop_channelmixer_rgb_params_t){ { 1.f, 0.f, 0.f, 0.f },
-                                                                             { 0.f, 1.f, 0.f, 0.f },
-                                                                             { 0.f, 0.f, 1.f, 0.f },
-                                                                             { 0.f, 0.f, 0.f, 0.f },
-                                                                             { 0.f, 0.f, 0.f, 0.f },
-                                                                             { 0.f, 0.f, 0.f, 0.f },
-                                                                             FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-                                                                             DT_ILLUMINANT_D, DT_ILLUMINANT_FLUO_F3, DT_ILLUMINANT_LED_B5, DT_ADAPTATION_LINEAR_BRADFORD,
-                                                                             0.33f, 0.33f, 5003.f, 1.0f, TRUE};
+  dt_iop_default_init(module);
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id == -1) return;
-
-  if(find_temperature_from_raw_coeffs(&(module->dev->image_storage), &(tmp.x), &(tmp.y)))
-      tmp.illuminant = DT_ILLUMINANT_CAMERA;
-
-  check_if_close_to_daylight(tmp.x, tmp.y, &(tmp.temperature), &(tmp.illuminant), &(tmp.adaptation));
-
-  if(module->gui_data)
-  {
-    update_illuminants(module);
-    update_approx_cct(module);
-    update_illuminant_color(module);
-
-    update_R_colors(module);
-    update_G_colors(module);
-    update_B_colors(module);
-  }
-
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_channelmixer_rgb_params_t));
+  dt_iop_channelmixer_rgb_params_t *d = (dt_iop_channelmixer_rgb_params_t *)module->default_params;
+  d->red[0] = d->green[1] = d->blue[2] = 1.0;
 }
 
-void cleanup(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *module)
 {
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  dt_iop_channelmixer_rgb_params_t *d = (dt_iop_channelmixer_rgb_params_t *)module->default_params;
+
+  d->x = module->get_f("x")->Float.Default;
+  d->y = module->get_f("y")->Float.Default;
+  d->temperature = module->get_f("temperature")->Float.Default;
+  d->illuminant = module->get_f("illuminant")->Enum.Default;
+  d->adaptation = module->get_f("adaptation")->Enum.Default;
+
+  const dt_image_t *img = &module->dev->image_storage;
+  if(find_temperature_from_raw_coeffs(img, &(d->x), &(d->y)))
+    d->illuminant = DT_ILLUMINANT_CAMERA;
+  check_if_close_to_daylight(d->x, d->y, &(d->temperature), &(d->illuminant), &(d->adaptation));
+
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)module->gui_data;
+  if(g)
+  {
+    float xyY[3] = { d->x, d->y, 1.f };
+    float Lch[3];
+    dt_xyY_to_Lch(xyY, Lch);
+
+    dt_bauhaus_slider_set_default(g->illum_x, Lch[2] / M_PI * 180.f);
+    dt_bauhaus_slider_set_default(g->illum_y, Lch[1]);
+    dt_bauhaus_slider_set_default(g->temperature, d->temperature);
+    dt_bauhaus_combobox_set_default(g->illuminant, d->illuminant);
+    dt_bauhaus_combobox_set_default(g->adaptation, d->adaptation);
+
+    if(dt_image_is_matrix_correction_supported(img))
+    {
+      if(dt_bauhaus_combobox_length(g->illuminant) < DT_ILLUMINANT_CAMERA + 1)
+        dt_bauhaus_combobox_add(g->illuminant, _("as shot in camera"));
+    }
+    else
+      dt_bauhaus_combobox_remove_at(g->illuminant, DT_ILLUMINANT_CAMERA);
+  }
+}
+
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
+{
+  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+
+  if(w == g->illuminant)
+  {
+    if(p->illuminant == DT_ILLUMINANT_CAMERA)
+    {
+      // if DT_ILLUMINANT_CAMERA was already selected, we switch to the closest match between the daylight or custom
+
+      // Get camera WB and update illuminant
+      const float x = p->x;
+      const float y = p->y;
+      int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage), &(p->x), &(p->y));
+
+      if(found)
+      {
+        if(x == p->x && y == p->y)
+        {
+          // Parameters did not change, assume user wants to edit auto-set params and display controls
+          dt_control_log(_("white balance successfuly extracted from raw image"));
+
+          check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
+
+          float xyY[3] = { p->x, p->y, 1.f };
+          float Lch[3];
+          dt_xyY_to_Lch(xyY, Lch);
+
+          ++darktable.gui->reset;
+          dt_bauhaus_slider_set(g->temperature, p->temperature);
+          dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
+          dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
+          dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+          --darktable.gui->reset;
+        }
+      }
+      else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
+      {
+        // Get image WB
+        g->auto_detect_illuminant = TRUE;
+        if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES) g->wb_model = DT_AI_EDGES;
+        else if(p->illuminant == DT_ILLUMINANT_DETECT_SURFACES) g->wb_model = DT_AI_SURFACES;
+
+        // We need to recompute only the thumbnail
+        dt_control_log(_("auto-detection of white balance started…"));
+
+        return;
+      }
+    }
+  }
+
+  ++darktable.gui->reset;
+
+  if(!w || w == g->illuminant || w == g->illum_fluo || w == g->illum_led || g->temperature)
+  {
+    update_illuminants(self);
+    update_approx_cct(self);
+    update_illuminant_color(self);
+  }
+  if(!w || w == g->scale_red_R   || w == g->scale_red_G   || w == g->scale_red_B   || w == g->normalize_R)
+    update_R_colors(self);
+  if(!w || w == g->scale_green_R || w == g->scale_green_G || w == g->scale_green_B || w == g->normalize_G)
+    update_G_colors(self);
+  if(!w || w == g->scale_blue_R  || w == g->scale_blue_G  || w == g->scale_blue_B  || w == g->normalize_B)
+    update_B_colors(self);
+
+  if(w == g->adaptation)
+  {
+    update_illuminants(self);
+    update_R_colors(self);
+    update_G_colors(self);
+    update_B_colors(self);
+  }
+
+  --darktable.gui->reset;
 }
 
 
@@ -2172,9 +1799,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_channelmixer_rgb_gui_data_t));
-  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  dt_iop_channelmixer_rgb_gui_data_t *g = IOP_GUI_ALLOC(channelmixer_rgb);
 
   g->auto_detect_illuminant = FALSE;
   g->XYZ[0] = NAN;
@@ -2184,34 +1809,12 @@ void gui_init(struct dt_iop_module_t *self)
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   // Init GTK notebook
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
-  GtkWidget *page0 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page4 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page5 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  GtkWidget *page6 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page0, gtk_label_new(_("CAT")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page1, gtk_label_new(_("R")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page2, gtk_label_new(_("G")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("B")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page4, gtk_label_new(_("colorfulness")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page5, gtk_label_new(_("brightness")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page6, gtk_label_new(_("grey")));
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  // Page CAT
+  self->widget = dt_ui_notebook_page(g->notebook, _("CAT"), NULL);
 
-  g->adaptation = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->adaptation, NULL, _("adaptation"));
-  dt_bauhaus_combobox_add(g->adaptation, _("linear Bradford (ICC v4)"));
-  dt_bauhaus_combobox_add(g->adaptation, _("CAT16 (CIECAM16)"));
-  dt_bauhaus_combobox_add(g->adaptation, _("non-linear Bradford"));
-  dt_bauhaus_combobox_add(g->adaptation, _("XYZ "));
-  dt_bauhaus_combobox_add(g->adaptation, _("none (bypass)"));
+  g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation), _("choose the method to adapt the illuminant\n"
                                                            "and the colorspace in which the module works: \n"
                                                            "• Linear Bradford (1985) is more accurate for illuminants close to daylight\n"
@@ -2222,91 +1825,38 @@ void gui_init(struct dt_iop_module_t *self)
                                                            "it can produce better results than the linear version, but is unreliable.\n"
                                                            "• XYZ is a simple scaling is XYZ space. It is not recommended in general.\n"
                                                            "• none disables any adaptation and uses pipeline working RGB."));
-  g_signal_connect(G_OBJECT(g->adaptation), "value-changed", G_CALLBACK(adaptation_callback), self);
-  gtk_box_pack_start(GTK_BOX(page0), g->adaptation, FALSE, FALSE, 0);
 
-  GtkGrid *grid = GTK_GRID(gtk_grid_new());
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  g->approx_cct = gtk_label_new("CCT:");
-  gtk_grid_attach(grid, GTK_WIDGET(g->approx_cct), 0, 0, 1, 1);
+  g->approx_cct = dt_ui_label_new("CCT:");
+  gtk_box_pack_start(GTK_BOX(hbox), g->approx_cct, FALSE, FALSE, 0);
 
   g->illum_color = GTK_WIDGET(gtk_drawing_area_new());
-  const float size = DT_PIXEL_APPLY_DPI(2 * darktable.bauhaus->line_space + darktable.bauhaus->line_height);
-  gtk_widget_set_size_request(g->illum_color, size, size);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->illum_color), TRUE);
+  gtk_widget_set_size_request(g->illum_color, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width), -1);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->illum_color), _("this is the color of the scene illuminant before chromatic adaptation\n"
                                                             "this color will be turned into pure white by the adaptation."));
 
   g_signal_connect(G_OBJECT(g->illum_color), "draw", G_CALLBACK(illuminant_color_draw), self);
-  gtk_grid_attach(grid, GTK_WIDGET(g->illum_color), 1, 0, 1, 1);
+  gtk_box_pack_start(GTK_BOX(hbox), g->illum_color, TRUE, TRUE, 0);
 
-  g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
+  g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
   gtk_widget_set_tooltip_text(g->color_picker, _("set white balance to detected from area"));
-  //gtk_widget_set_size_request(g->color_picker, darktable.bauhaus->quad_width, darktable.bauhaus->quad_width);
-  gtk_grid_attach(grid, GTK_WIDGET(g->color_picker), 2, 0, 1, 1);
 
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(page0), GTK_WIDGET(grid), FALSE, FALSE, 2. * darktable.bauhaus->line_space);
+  g->illuminant = dt_bauhaus_combobox_from_params(self, N_("illuminant"));
 
-  g->illuminant = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->illuminant, NULL, _("illuminant"));
-  //dt_bauhaus_combobox_add_section(g->illuminant, _("selection"));
-  dt_bauhaus_combobox_add(g->illuminant, _("same as pipeline (D50)"));
-  dt_bauhaus_combobox_add(g->illuminant, _("A (incandescent)"));
-  dt_bauhaus_combobox_add(g->illuminant, _("D (daylight)"));
-  dt_bauhaus_combobox_add(g->illuminant, _("E (equi-energy)"));
-  dt_bauhaus_combobox_add(g->illuminant, _("F (fluorescent)"));
-  dt_bauhaus_combobox_add(g->illuminant, _("LED (LED light)"));
-  dt_bauhaus_combobox_add(g->illuminant, _("Planckian (black body)"));
-  dt_bauhaus_combobox_add(g->illuminant, _("custom"));
-  //dt_bauhaus_combobox_add_section(g->illuminant, _("auto-detection"));
-  dt_bauhaus_combobox_add(g->illuminant, _("(AI) detect from image surfaces..."));
-  dt_bauhaus_combobox_add(g->illuminant, _("(AI) detect from image edges..."));
-  dt_bauhaus_combobox_add(g->illuminant, _("as shot in camera"));
+  g->illum_fluo = dt_bauhaus_combobox_from_params(self, "illum_fluo");
 
-  g_signal_connect(G_OBJECT(g->illuminant), "value-changed", G_CALLBACK(illuminant_callback), self);
-  gtk_box_pack_start(GTK_BOX(page0), g->illuminant, FALSE, FALSE, 0);
+  g->illum_led = dt_bauhaus_combobox_from_params(self, "illum_led");
 
-  g->illum_fluo = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->illum_fluo, NULL, _("source"));
-  // CIE fluorescent standards : https://en.wikipedia.org/wiki/Standard_illuminant
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F1 (Daylight 6430 K) – medium CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F2 (Cool White 4230 K) – medium CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F3 (White 3450 K) – medium CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F4 (Warm White 2940 K) – medium CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F5 (Daylight 6350 K) – medium CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F6 (Lite White 4150 K) – medium CR"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F7 (D65 simulator 6500 K) – high CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F8 (D50 simulator 5000 K) – high CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F9 (Cool White Deluxe 4150 K) – high CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F10 (Tuned RGB 5000 K) – low CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F11 (Tuned RGB 4000 K) – low CRI"));
-  dt_bauhaus_combobox_add(g->illum_fluo, _("F12 (Tuned RGB 3000 K) – low CRI"));
-  g_signal_connect(G_OBJECT(g->illum_fluo), "value-changed", G_CALLBACK(fluo_callback), self);
-  gtk_box_pack_start(GTK_BOX(page0), g->illum_fluo, FALSE, FALSE, 0);
-
-  g->illum_led = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->illum_led, NULL, _("source"));
-  // CIE LED standards : https://en.wikipedia.org/wiki/Standard_illuminant
-  dt_bauhaus_combobox_add(g->illum_led, _("B1 (Blue 2733 K)"));
-  dt_bauhaus_combobox_add(g->illum_led, _("B2 (Blue 2998 K)"));
-  dt_bauhaus_combobox_add(g->illum_led, _("B3 (Blue 4103 K)"));
-  dt_bauhaus_combobox_add(g->illum_led, _("B4 (Blue 5109 K)"));
-  dt_bauhaus_combobox_add(g->illum_led, _("B5 (Blue 6598 K)"));
-  dt_bauhaus_combobox_add(g->illum_led, _("BH1 (Blue-Red hybrid 2851 K)"));
-  dt_bauhaus_combobox_add(g->illum_led, _("RGB1 (RGB 2840 K)"));
-  dt_bauhaus_combobox_add(g->illum_led, _("V1 (Violet 2724 K)"));
-  dt_bauhaus_combobox_add(g->illum_led, _("V2 (Violet 4070 K)"));
-  g_signal_connect(G_OBJECT(g->illum_led), "value-changed", G_CALLBACK(led_callback), self);
-  gtk_box_pack_start(GTK_BOX(page0), g->illum_led, FALSE, FALSE, 0);
-
-
-  const float max_temp = 25000.f;
-  const float min_temp = 1667.f;
-  g->temperature = dt_bauhaus_slider_new_with_range_and_feedback(self, min_temp, max_temp, 50., p->temperature, 0, 0);
-  dt_bauhaus_widget_set_label(g->temperature, NULL, _("temperature"));
+  g->temperature = dt_bauhaus_slider_from_params(self, N_("temperature"));
+  dt_bauhaus_slider_set_step(g->temperature, 50.);
+  dt_bauhaus_slider_set_digits(g->temperature, 0);
   dt_bauhaus_slider_set_format(g->temperature, "%.0f K");
 
+  const float max_temp = dt_bauhaus_slider_get_hard_min(g->temperature);
+  const float min_temp = dt_bauhaus_slider_get_hard_max(g->temperature);
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
     float RGB[4];
@@ -2316,166 +1866,56 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->temperature, stop, RGB[0], RGB[1], RGB[2]);
   }
 
-  g_signal_connect(G_OBJECT(g->temperature), "value-changed", G_CALLBACK(temperature_callback), self);
-  gtk_box_pack_start(GTK_BOX(page0), GTK_WIDGET(g->temperature), FALSE, FALSE, 0);
-
-  float xyY[3] = { p->x, p->y, 1.f };
-  float Lch[3];
-  dt_xyY_to_Lch(xyY, Lch);
-
-  g->illum_x = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 360., 0.5, Lch[2] / M_2_PI * 360., 1, 0);
+  g->illum_x = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 360., 0.5, 0, 1, 0);
   dt_bauhaus_widget_set_label(g->illum_x, NULL, _("hue"));
   dt_bauhaus_slider_set_format(g->illum_x, "%.1f °");
-  g_signal_connect(G_OBJECT(g->illum_x), "value-changed", G_CALLBACK(illum_x_callback), self);
-  gtk_box_pack_start(GTK_BOX(page0), GTK_WIDGET(g->illum_x), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->illum_x), "value-changed", G_CALLBACK(illum_xy_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_x), FALSE, FALSE, 0);
 
-  g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 200., 0.5, Lch[1], 1);
+  g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 180., 0.5, 0, 1);
   dt_bauhaus_widget_set_label(g->illum_y, NULL, _("chroma"));
   dt_bauhaus_slider_set_format(g->illum_y, "%.1f %%");
-  g_signal_connect(G_OBJECT(g->illum_y), "value-changed", G_CALLBACK(illum_y_callback), self);
-  gtk_box_pack_start(GTK_BOX(page0), GTK_WIDGET(g->illum_y), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->illum_y), "value-changed", G_CALLBACK(illum_xy_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_y), FALSE, FALSE, 0);
 
-  g->gamut = dt_bauhaus_slider_new_with_range(self, 0., 8., 0.01, p->gamut, 2);
-  dt_bauhaus_widget_set_label(g->gamut, NULL, _("gamut compression"));
-  g_signal_connect(G_OBJECT(g->gamut), "value-changed", G_CALLBACK(gamut_callback), self);
-  gtk_box_pack_start(GTK_BOX(page0), GTK_WIDGET(g->gamut), FALSE, FALSE, 0);
+  g->gamut = dt_bauhaus_slider_from_params(self, "gamut");
 
-  g->clip = gtk_check_button_new_with_label(_("clip negative RGB from gamut"));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->clip), p->clip);
-  g_signal_connect(G_OBJECT(g->clip), "toggled", G_CALLBACK(clip_callback), self);
-  gtk_box_pack_start(GTK_BOX(page0), g->clip, FALSE, FALSE, 2. * darktable.bauhaus->line_space);
+  g->clip = dt_bauhaus_toggle_from_params(self, "clip");
 
-  /* red */
-  g->scale_red_R = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[0], 3);
-  dt_bauhaus_widget_set_label(g->scale_red_R, NULL, _("input red"));
-  g_signal_connect(G_OBJECT(g->scale_red_R), "value-changed", G_CALLBACK(red_R_callback), self);
-  gtk_box_pack_start(GTK_BOX(page1), GTK_WIDGET(g->scale_red_R), FALSE, FALSE, 0);
+  GtkWidget *first, *second, *third;
+#define NOTEBOOK_PAGE(var, short, label, section, swap)                       \
+  self->widget = dt_ui_notebook_page(g->notebook, _(label), NULL);            \
+                                                                              \
+  first = dt_bauhaus_slider_from_params(self, swap ? #var "[2]" : #var "[0]");\
+  dt_bauhaus_slider_set_step(first, 0.005);                                   \
+  dt_bauhaus_slider_set_digits(first, 3);                                     \
+  dt_bauhaus_widget_set_label(first, section, _("input red"));                \
+                                                                              \
+  second = dt_bauhaus_slider_from_params(self, #var "[1]");                   \
+  dt_bauhaus_slider_set_step(second, 0.005);                                  \
+  dt_bauhaus_slider_set_digits(second, 3);                                    \
+  dt_bauhaus_widget_set_label(second, section, _("input green"));             \
+                                                                              \
+  third = dt_bauhaus_slider_from_params(self, swap ? #var "[0]" : #var "[2]");\
+  dt_bauhaus_slider_set_step(third, 0.005);                                   \
+  dt_bauhaus_slider_set_digits(third, 3);                                     \
+  dt_bauhaus_widget_set_label(third, section, _("input blue"));               \
+                                                                              \
+  g->scale_##var##_R = swap ? third : first;                                  \
+  g->scale_##var##_G = second;                                                \
+  g->scale_##var##_B = swap ? first : third;                                  \
+                                                                              \
+  g->normalize_##short = dt_bauhaus_toggle_from_params(self, "normalize_" #short);
 
-  g->scale_red_G = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[1], 3);
-  dt_bauhaus_widget_set_label(g->scale_red_G, NULL, _("input green"));
-  g_signal_connect(G_OBJECT(g->scale_red_G), "value-changed", G_CALLBACK(red_G_callback), self);
-  gtk_box_pack_start(GTK_BOX(page1), GTK_WIDGET(g->scale_red_G), FALSE, FALSE, 0);
+  NOTEBOOK_PAGE(red, R, N_("R"), N_("red"), FALSE)
+  NOTEBOOK_PAGE(green, G, N_("G"), N_("green"), FALSE)
+  NOTEBOOK_PAGE(blue, B, N_("B"), N_("blue"), FALSE)
+  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("colorfulness"), TRUE)
+  NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("brightness"), FALSE)
+  NOTEBOOK_PAGE(grey, grey, N_("grey"), N_("grey"), FALSE)
 
-  g->scale_red_B = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[2], 3);
-  dt_bauhaus_widget_set_label(g->scale_red_B, NULL, _("input blue"));
-  g_signal_connect(G_OBJECT(g->scale_red_B), "value-changed", G_CALLBACK(red_B_callback), self);
-  gtk_box_pack_start(GTK_BOX(page1), GTK_WIDGET(g->scale_red_B), FALSE, FALSE, 0);
-
-  g->normalize_R = gtk_check_button_new_with_label(_("normalize channels"));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->normalize_R), p->normalize_R);
-  gtk_box_pack_start(GTK_BOX(page1), g->normalize_R, FALSE, FALSE, 2. * darktable.bauhaus->line_space);
-  g_signal_connect(G_OBJECT(g->normalize_R), "toggled", G_CALLBACK(normalize_R_callback), self);
-
-  /* green */
-  g->scale_green_R = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[0], 3);
-  dt_bauhaus_widget_set_label(g->scale_green_R, NULL, _("input red"));
-  g_signal_connect(G_OBJECT(g->scale_green_R), "value-changed", G_CALLBACK(green_R_callback), self);
-  gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(g->scale_green_R), FALSE, FALSE, 0);
-
-  g->scale_green_G = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[1], 3);
-  dt_bauhaus_widget_set_label(g->scale_green_G, NULL, _("input green"));
-  g_signal_connect(G_OBJECT(g->scale_green_G), "value-changed", G_CALLBACK(green_G_callback), self);
-  gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(g->scale_green_G), FALSE, FALSE, 0);
-
-  g->scale_green_B = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[2], 3);
-  dt_bauhaus_widget_set_label(g->scale_green_B, NULL, _("input blue"));
-  g_signal_connect(G_OBJECT(g->scale_green_B), "value-changed", G_CALLBACK(green_B_callback), self);
-  gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(g->scale_green_B), FALSE, FALSE, 0);
-
-  g->normalize_G = gtk_check_button_new_with_label(_("normalize channels"));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->normalize_G), p->normalize_G);
-  gtk_box_pack_start(GTK_BOX(page2), g->normalize_G, FALSE, FALSE, 2. * darktable.bauhaus->line_space);
-  g_signal_connect(G_OBJECT(g->normalize_G), "toggled", G_CALLBACK(normalize_G_callback), self);
-
-
-  /* blue */
-  g->scale_blue_R = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[0], 3);
-  dt_bauhaus_widget_set_label(g->scale_blue_R, NULL, _("input red"));
-  g_signal_connect(G_OBJECT(g->scale_blue_R), "value-changed", G_CALLBACK(blue_R_callback), self);
-  gtk_box_pack_start(GTK_BOX(page3), GTK_WIDGET(g->scale_blue_R), FALSE, FALSE, 0);
-
-  g->scale_blue_G = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[1], 3);
-  dt_bauhaus_widget_set_label(g->scale_blue_G, NULL, _("input green"));
-  g_signal_connect(G_OBJECT(g->scale_blue_G), "value-changed", G_CALLBACK(blue_G_callback), self);
-  gtk_box_pack_start(GTK_BOX(page3), GTK_WIDGET(g->scale_blue_G), FALSE, FALSE, 0);
-
-  g->scale_blue_B = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[2], 3);
-  dt_bauhaus_widget_set_label(g->scale_blue_B, NULL, _("input blue"));
-  g_signal_connect(G_OBJECT(g->scale_blue_B), "value-changed", G_CALLBACK(blue_B_callback), self);
-  gtk_box_pack_start(GTK_BOX(page3), GTK_WIDGET(g->scale_blue_B), FALSE, FALSE, 0);
-
-  g->normalize_B = gtk_check_button_new_with_label(_("normalize channels"));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->normalize_B), p->normalize_B);
-  gtk_box_pack_start(GTK_BOX(page3), g->normalize_B, FALSE, FALSE, 2. * darktable.bauhaus->line_space);
-  g_signal_connect(G_OBJECT(g->normalize_B), "toggled", G_CALLBACK(normalize_B_callback), self);
-
-
-  /* saturation */
-  /* warning: the effect of color controls over image are inversed : blue controls red, and the other way. */
-  g->scale_saturation_B = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->saturation[2], 3);
-  dt_bauhaus_widget_set_label(g->scale_saturation_B, NULL, _("input red"));
-  g_signal_connect(G_OBJECT(g->scale_saturation_B), "value-changed", G_CALLBACK(saturation_B_callback), self);
-  gtk_box_pack_start(GTK_BOX(page4), GTK_WIDGET(g->scale_saturation_B), FALSE, FALSE, 0);
-
-  g->scale_saturation_G = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->saturation[1], 3);
-  dt_bauhaus_widget_set_label(g->scale_saturation_G, NULL, _("input green"));
-  g_signal_connect(G_OBJECT(g->scale_saturation_G), "value-changed", G_CALLBACK(saturation_G_callback), self);
-  gtk_box_pack_start(GTK_BOX(page4), GTK_WIDGET(g->scale_saturation_G), FALSE, FALSE, 0);
-
-  g->scale_saturation_R = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->saturation[0], 3);
-  dt_bauhaus_widget_set_label(g->scale_saturation_R, NULL, _("input blue"));
-  g_signal_connect(G_OBJECT(g->scale_saturation_R), "value-changed", G_CALLBACK(saturation_R_callback), self);
-  gtk_box_pack_start(GTK_BOX(page4), GTK_WIDGET(g->scale_saturation_R), FALSE, FALSE, 0);
-
-  g->normalize_sat = gtk_check_button_new_with_label(_("normalize channels"));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->normalize_sat), p->normalize_sat);
-  gtk_box_pack_start(GTK_BOX(page4), g->normalize_sat, FALSE, FALSE, 2. * darktable.bauhaus->line_space);
-  g_signal_connect(G_OBJECT(g->normalize_sat), "toggled", G_CALLBACK(normalize_sat_callback), self);
-
-
-  /* lightness */
-  g->scale_lightness_R = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->lightness[0], 3);
-  dt_bauhaus_widget_set_label(g->scale_lightness_R, NULL, _("input red"));
-  g_signal_connect(G_OBJECT(g->scale_lightness_R), "value-changed", G_CALLBACK(lightness_R_callback), self);
-  gtk_box_pack_start(GTK_BOX(page5), GTK_WIDGET(g->scale_lightness_R), FALSE, FALSE, 0);
-
-  g->scale_lightness_G = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->lightness[1], 3);
-  dt_bauhaus_widget_set_label(g->scale_lightness_G, NULL, _("input green"));
-  g_signal_connect(G_OBJECT(g->scale_lightness_G), "value-changed", G_CALLBACK(lightness_G_callback), self);
-  gtk_box_pack_start(GTK_BOX(page5), GTK_WIDGET(g->scale_lightness_G), FALSE, FALSE, 0);
-
-  g->scale_lightness_B = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->lightness[2], 3);
-  dt_bauhaus_widget_set_label(g->scale_lightness_B, NULL, _("input blue"));
-  g_signal_connect(G_OBJECT(g->scale_lightness_B), "value-changed", G_CALLBACK(lightness_B_callback), self);
-  gtk_box_pack_start(GTK_BOX(page5), GTK_WIDGET(g->scale_lightness_B), FALSE, FALSE, 0);
-
-  g->normalize_light = gtk_check_button_new_with_label(_("normalize channels"));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->normalize_light), p->normalize_light);
-  gtk_box_pack_start(GTK_BOX(page5), g->normalize_light, FALSE, FALSE, 2. * darktable.bauhaus->line_space);
-  g_signal_connect(G_OBJECT(g->normalize_light), "toggled", G_CALLBACK(normalize_light_callback), self);
-
-  /* grey */
-  g->scale_grey_R = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->grey[0], 3);
-  dt_bauhaus_widget_set_label(g->scale_grey_R, NULL, _("input red"));
-  g_signal_connect(G_OBJECT(g->scale_grey_R), "value-changed", G_CALLBACK(grey_R_callback), self);
-  gtk_box_pack_start(GTK_BOX(page6), GTK_WIDGET(g->scale_grey_R), FALSE, FALSE, 0);
-
-  g->scale_grey_G = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->grey[1], 3);
-  dt_bauhaus_widget_set_label(g->scale_grey_G, NULL, _("input green"));
-  g_signal_connect(G_OBJECT(g->scale_grey_G), "value-changed", G_CALLBACK(grey_G_callback), self);
-  gtk_box_pack_start(GTK_BOX(page6), GTK_WIDGET(g->scale_grey_G), FALSE, FALSE, 0);
-
-  g->scale_grey_B = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->grey[2], 3);
-  dt_bauhaus_widget_set_label(g->scale_grey_B, NULL, _("input blue"));
-  g_signal_connect(G_OBJECT(g->scale_grey_B), "value-changed", G_CALLBACK(grey_B_callback), self);
-  gtk_box_pack_start(GTK_BOX(page6), GTK_WIDGET(g->scale_grey_B), FALSE, FALSE, 0);
-
-  g->normalize_grey = gtk_check_button_new_with_label(_("normalize channels"));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->normalize_grey), p->normalize_grey);
-  gtk_box_pack_start(GTK_BOX(page6), g->normalize_grey, FALSE, FALSE, 2. * darktable.bauhaus->line_space);
-  g_signal_connect(G_OBJECT(g->normalize_grey), "toggled", G_CALLBACK(normalize_grey_callback), self);
+  self->widget = GTK_WIDGET(g->notebook);
 }
-
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
