@@ -769,7 +769,7 @@ void gui_init(dt_imageio_module_format_t *self)
   if(compress == 3)
   {
     compress = 2;
-    dt_conf_set_int("plugins/imageio/format/tiff/compress", compress)
+    dt_conf_set_int("plugins/imageio/format/tiff/compress", compress);
   }
 
   // TIFF compression level might actually be zero!
