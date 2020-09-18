@@ -251,6 +251,7 @@ static void _buttons_update(dt_lib_module_t *self)
     dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
     GtkWidget *bt = dtgtk_togglebutton_new(_buttons_get_icon_fct(gr->icon), CPF_STYLE_FLAT, NULL);
     g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
+    gtk_widget_set_tooltip_text(bt, gr->name);
     gr->button = bt;
     gtk_box_pack_start(GTK_BOX(d->hbox_groups), bt, TRUE, TRUE, 0);
     gtk_widget_show(bt);
