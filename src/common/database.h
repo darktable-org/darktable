@@ -41,6 +41,8 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gbo
 void dt_database_perform_maintenance(const struct dt_database_t *db);
 /** cleanup busy statements on closing dt, just before performing maintenance */
 void dt_database_cleanup_busy_statements(const struct dt_database_t *db);
+/** simply create db snapshot of both library and data */
+gboolean dt_database_snapshot(const struct dt_database_t *db);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
