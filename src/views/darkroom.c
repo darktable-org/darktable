@@ -1917,6 +1917,22 @@ static void _preference_prev_downsample_change(gpointer instance, gpointer user_
   }
 }
 
+static void _preference_changed_button_hide(gpointer instance, dt_develop_t *dev)
+{
+  GList *modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->header)
+    {
+      dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
+    }
+
+    modules = g_list_next(modules);
+  }
+}
+
 static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
 {
   GList *l = darktable.color_profiles->profiles;
@@ -2951,6 +2967,10 @@ void enter(dt_view_t *self)
 
   //connect iop accelerators
   dt_iop_connect_accels_all();
+
+  // connect to preference change for module header button hiding
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                                  G_CALLBACK(_preference_changed_button_hide), dev);
 }
 
 void leave(dt_view_t *self)
@@ -2978,6 +2998,9 @@ void leave(dt_view_t *self)
     dt_conf_set_string("plugins/darkroom/active", "");
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_preference_changed_button_hide), dev);
 
   // reset color assesment mode
   if(dev->iso_12646.enabled)
