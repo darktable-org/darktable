@@ -362,6 +362,8 @@ typedef struct dt_view_manager_t
       void (*set_map_source)(const dt_view_t *view, OsmGpsMapSource_t map_source);
       GObject *(*add_marker)(const dt_view_t *view, dt_geo_map_display_t type, GList *points);
       gboolean (*remove_marker)(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
+      gboolean (*redraw)(gpointer user_data);
+      gboolean (*display_selected)(gpointer user_data);
     } map;
 #endif
 
