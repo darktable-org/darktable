@@ -156,6 +156,7 @@ void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
   }
   sqlite3_finalize(stmt);
 
+  const gboolean write_xmp = dt_conf_get_bool("write_sidecar_files");
   // grid headers
   int line = 0;
 
@@ -172,20 +173,23 @@ void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
   g_object_unref(model);
   metadata->presets = presets;
 
-  label = gtk_label_new(_("to be imported"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(label),
-                              _("selected metadata are imported from image and override the default value"
-                                "\n this drives also the \'look for updated xmp files\' and \'load sidecar file\' actions"
-                                "\n CAUTION: not selected metadata are cleaned up when xmp file is updated"
-                              ));
-  gtk_grid_attach_next_to(GTK_GRID(grid), label, presets, GTK_POS_RIGHT, 1, 1);
-
+  if(!write_xmp)
+  {
+    label = gtk_label_new(_("imported from xmp"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(label),
+                                _("selected metadata are imported from image and override the default value"
+                                  "\n this drives also the \'look for updated xmp files\' and \'load sidecar file\' actions"
+                                  "\n CAUTION: not selected metadata are cleaned up when xmp file is updated"
+                                ));
+    gtk_grid_attach_next_to(GTK_GRID(grid), label, presets, GTK_POS_RIGHT, 1, 1);
+  }
   // grid content
   // metadata
   GtkWidget *metadata_label[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     metadata->metadata[i] = NULL;
+    metadata->imported[i] = NULL;
     if(dt_metadata_get_type_by_display_order(i) != DT_METADATA_TYPE_INTERNAL)
     {
       const gchar*metadata_name = (gchar *)dt_metadata_get_name_by_display_order(i);
@@ -208,13 +212,16 @@ void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
         gtk_grid_attach_next_to(GTK_GRID(grid), metadata->metadata[i],
                                 metadata_label[i], GTK_POS_RIGHT, 1, 1);
 
-        metadata->imported[i] = gtk_check_button_new();
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(metadata->imported[i]),
-                                     flag & DT_METADATA_FLAG_IMPORTED);
-        gtk_widget_set_name(metadata->imported[i], "import_metadata");
-        gtk_grid_attach_next_to(GTK_GRID(grid), metadata->imported[i],
-                                metadata->metadata[i], GTK_POS_RIGHT, 1, 1);
-        gtk_widget_set_halign(metadata->imported[i], GTK_ALIGN_CENTER);
+        if(!write_xmp)
+        {
+          metadata->imported[i] = gtk_check_button_new();
+          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(metadata->imported[i]),
+                                       flag & DT_METADATA_FLAG_IMPORTED);
+          gtk_widget_set_name(metadata->imported[i], "import_metadata");
+          gtk_grid_attach_next_to(GTK_GRID(grid), metadata->imported[i],
+                                  metadata->metadata[i], GTK_POS_RIGHT, 1, 1);
+          gtk_widget_set_halign(metadata->imported[i], GTK_ALIGN_CENTER);
+        }
       }
     }
   }
@@ -260,11 +267,14 @@ void dt_import_metadata_evaluate(dt_import_metadata_t *metadata)
       char *setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
       dt_conf_set_string(setting, gtk_entry_get_text(GTK_ENTRY(metadata->metadata[i])));
       g_free(setting);
-      setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
-      const gboolean imported = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(metadata->imported[i]));
-      const uint32_t flag = dt_conf_get_int(setting);
-      dt_conf_set_int(setting, imported ? flag | DT_METADATA_FLAG_IMPORTED : flag & ~DT_METADATA_FLAG_IMPORTED);
-      g_free(setting);
+      if(metadata->imported[i])
+      {
+        setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
+        const gboolean imported = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(metadata->imported[i]));
+        const uint32_t flag = dt_conf_get_int(setting);
+        dt_conf_set_int(setting, imported ? flag | DT_METADATA_FLAG_IMPORTED : flag & ~DT_METADATA_FLAG_IMPORTED);
+        g_free(setting);
+      }
     }
   }
   dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(metadata->tags)));

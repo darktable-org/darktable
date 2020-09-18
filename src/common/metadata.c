@@ -159,7 +159,7 @@ void dt_metadata_init()
     char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
     if(!dt_conf_key_exists(setting))
     {
-      // per default should be imported
+      // per default should be imported - ignored if "write_sidecar_files" set
       uint32_t flag = DT_METADATA_FLAG_IMPORTED;
       if(type == DT_METADATA_TYPE_OPTIONAL)
       {
@@ -605,8 +605,8 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
 
   if(keyid != -1) // known key
   {
-    gboolean imported = TRUE;
-    if(dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
+    gboolean imported = dt_conf_get_bool("write_sidecar_files");
+    if(!imported && dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
     {
       const gchar *name = dt_metadata_get_name(keyid);
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
