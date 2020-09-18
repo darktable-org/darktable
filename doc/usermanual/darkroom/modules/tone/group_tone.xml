@@ -13,6 +13,8 @@
 
   <xi:include href="tonecurve.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="rgbcurve.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="zonesystem.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="localcontrast.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
