@@ -959,8 +959,8 @@
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>longstring</type>
     <default>$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
-    <shortdescription>pattern for the image infos line</shortdescription>
-    <longdescription>see manual to know all the tags you can use.</longdescription>
+    <shortdescription>pattern for the image information line</shortdescription>
+    <longdescription>see manual for a list of the tags you can use.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom">
     <name>plugins/darkroom/image_infos_position</name>
@@ -974,7 +974,7 @@
       </enum>
     </type>
     <default>bottom</default>
-    <shortdescription>position of the image infos line</shortdescription>
+    <shortdescription>position of the image information line</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="darkroom">
