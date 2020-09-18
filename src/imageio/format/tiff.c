@@ -640,7 +640,10 @@ void *get_params(dt_imageio_module_format_t *self)
   // TODO: Move to legacy eventually
   d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
   if(d->compress == 3)
+  {
     d->compress = 2;
+    dt_conf_set_int("plugins/imageio/format/tiff/compress", d->compress);
+  }
 
   // TIFF compression level might actually be zero, handle this
   if(!dt_conf_key_exists("plugins/imageio/format/tiff/compresslevel"))
