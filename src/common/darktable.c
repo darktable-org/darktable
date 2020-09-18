@@ -1291,6 +1291,7 @@ void dt_cleanup()
   }
 
   dt_database_optimize(darktable.db);
+  dt_database_snapshot(darktable.db);
   dt_database_destroy(darktable.db);
 
   if(init_gui)

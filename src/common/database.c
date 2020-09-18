@@ -2432,12 +2432,12 @@ void dt_database_backup(const char *filename)
   g_free(backup);
 }
 
-int _get_pragma_int_val(const struct dt_database_t *db, const char* pragma)
+int _get_pragma_int_val(sqlite3 *db, const char* pragma)
 {
   gchar* query= g_strdup_printf("PRAGMA %s", pragma);
   int val = -1;
   sqlite3_stmt *stmt;
-  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  const int rc = sqlite3_prepare_v2(db, query,-1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
     val = sqlite3_column_int(stmt, 0);
@@ -2448,12 +2448,12 @@ int _get_pragma_int_val(const struct dt_database_t *db, const char* pragma)
   return val;
 }
 
-gchar* _get_pragma_string_val(const struct dt_database_t *db, const char* pragma)
+gchar* _get_pragma_string_val(sqlite3 *db, const char* pragma)
 {
   gchar* query= g_strdup_printf("PRAGMA %s", pragma);
   sqlite3_stmt *stmt;
   gchar* val = NULL;
-  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
+  const int rc = sqlite3_prepare_v2(db, query,-1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
     val = g_strdup((const char *)sqlite3_column_text(stmt, 0));
@@ -2616,7 +2616,7 @@ start:
   }
   else
   {
-    gchar* data_status = _get_pragma_string_val(db, "data.quick_check");
+    gchar* data_status = _get_pragma_string_val(db->handle, "data.quick_check");
     rc = sqlite3_prepare_v2(db->handle, "select value from data.db_info where key = 'version'", -1, &stmt, NULL);
     if(!g_strcmp0(data_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -2713,7 +2713,7 @@ start:
     }
   }
 
-  gchar* libdb_status = _get_pragma_string_val(db, "main.quick_check");
+  gchar* libdb_status = _get_pragma_string_val(db->handle, "main.quick_check");
   // next we are looking at the library database
   // does the db contain the new 'db_info' table?
   rc = sqlite3_prepare_v2(db->handle, "select value from main.db_info where key = 'version'", -1, &stmt, NULL);
@@ -2975,10 +2975,10 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
 {
   char* err = NULL;
 
-  const int main_pre_free_count = _get_pragma_int_val(db, "main.freelist_count");
-  const int main_page_size = _get_pragma_int_val(db, "main.page_size");
-  const int data_pre_free_count = _get_pragma_int_val(db, "data.freelist_count");
-  const int data_page_size = _get_pragma_int_val(db, "data.page_size");
+  const int main_pre_free_count = _get_pragma_int_val(db->handle, "main.freelist_count");
+  const int main_page_size = _get_pragma_int_val(db->handle, "main.page_size");
+  const int data_pre_free_count = _get_pragma_int_val(db->handle, "data.freelist_count");
+  const int data_page_size = _get_pragma_int_val(db->handle, "data.page_size");
 
   const guint64 calc_pre_size = (main_pre_free_count*main_page_size) + (data_pre_free_count*data_page_size);
 
@@ -3010,8 +3010,8 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE", NULL, NULL, &err);
   ERRCHECK
 
-  const int main_post_free_count = _get_pragma_int_val(db, "main.freelist_count");
-  const int data_post_free_count = _get_pragma_int_val(db, "data.freelist_count");
+  const int main_post_free_count = _get_pragma_int_val(db->handle, "main.freelist_count");
+  const int data_post_free_count = _get_pragma_int_val(db->handle, "data.freelist_count");
 
   const guint64 calc_post_size = (main_post_free_count*main_page_size) + (data_post_free_count*data_page_size);
   const gint64 bytes_freed = calc_pre_size - calc_post_size;
@@ -3114,13 +3114,13 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gbo
   }
 
   // checking free pages
-  const int main_free_count = _get_pragma_int_val(db, "main.freelist_count");
-  const int main_page_count = _get_pragma_int_val(db, "main.page_count");
-  const int main_page_size = _get_pragma_int_val(db, "main.page_size");
+  const int main_free_count = _get_pragma_int_val(db->handle, "main.freelist_count");
+  const int main_page_count = _get_pragma_int_val(db->handle, "main.page_count");
+  const int main_page_size = _get_pragma_int_val(db->handle, "main.page_size");
 
-  const int data_free_count = _get_pragma_int_val(db, "data.freelist_count");
-  const int data_page_count = _get_pragma_int_val(db, "data.page_count");
-  const int data_page_size = _get_pragma_int_val(db, "data.page_size");
+  const int data_free_count = _get_pragma_int_val(db->handle, "data.freelist_count");
+  const int data_page_count = _get_pragma_int_val(db->handle, "data.page_count");
+  const int data_page_size = _get_pragma_int_val(db->handle, "data.page_size");
 
   dt_print(DT_DEBUG_SQL,
       "[db maintenance] main: [%d/%d pages], data: [%d/%d pages].\n",
@@ -3163,6 +3163,96 @@ void dt_database_optimize(const struct dt_database_t *db)
   // this should be ran on every exit
   // see: https://www.sqlite.org/pragma.html#pragma_optimize
   DT_DEBUG_SQLITE3_EXEC(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
+}
+
+static void _print_backup_progress(int remaining, int total)
+{
+  dt_print(DT_DEBUG_SQL, "[db backup] %d out of %d done\n", total - remaining, total);
+}
+
+static int _backup_db(
+  sqlite3 *src_db,               /* Database handle to back up */
+  const char *src_db_name,       /* Database name to back up */
+  const char *dest_filename,      /* Name of file to back up to */
+  void(*xProgress)(int, int)  /* Progress function to invoke */     
+)
+{
+  int rc;                     /* Function return code */
+  sqlite3 *dest_db;             /* Database connection opened on zFilename */
+  sqlite3_backup *sb_dest;    /* Backup handle used to copy data */
+
+  /* Open the database file identified by zFilename. */
+  rc = sqlite3_open(dest_filename, &dest_db);
+  if(rc==SQLITE_OK)
+  {
+    /* Open the sqlite3_backup object used to accomplish the transfer */
+    sb_dest = sqlite3_backup_init(dest_db, "main", src_db, src_db_name);
+    if(sb_dest)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] %s to %s\n", src_db_name, dest_filename);
+      gchar *pragma = g_strdup_printf("%s.page_count", src_db_name);
+      const int spc = _get_pragma_int_val(src_db, pragma);
+      g_free(pragma);
+      const int pc = MIN(spc, MAX(5,spc/100));
+      do {
+        rc = sqlite3_backup_step(sb_dest, pc);
+        if(xProgress)
+          xProgress(
+            sqlite3_backup_remaining(sb_dest),
+            sqlite3_backup_pagecount(sb_dest)
+          );
+        if( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED ){
+          sqlite3_sleep(25);
+        }
+      } while( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED );
+
+      /* Release resources allocated by backup_init(). */
+      (void)sqlite3_backup_finish(sb_dest);
+    }
+    rc = sqlite3_errcode(dest_db);
+  }
+  /* Close the database connection opened on database file zFilename
+  ** and return the result of this function. */
+  (void)sqlite3_close(dest_db);
+  return rc;
+}
+
+gboolean dt_database_snapshot(const struct dt_database_t *db)
+{
+  // backing up memory db is pointelss
+  if(_is_mem_db(db))
+    return FALSE;
+  GDateTime *date_now = g_date_time_new_now_local();
+  gchar *date_suffix = g_date_time_format(date_now, "%Y%m%d%H%M%S");
+  g_date_time_unref(date_now);
+
+  const char *file_pattern = "%s_%s";
+
+  gchar *lib_backup_file = g_strdup_printf(file_pattern, db->dbfilename_library, date_suffix);
+  gchar *dat_backup_file = g_strdup_printf(file_pattern, db->dbfilename_data, date_suffix);
+
+  g_free(date_suffix);
+
+  int rc = _backup_db(db->handle, "main", lib_backup_file, _print_backup_progress);
+  if(!rc==SQLITE_OK)
+  {
+    g_unlink(lib_backup_file);
+    g_free(lib_backup_file);
+    g_free(dat_backup_file);
+    return FALSE;
+  }
+  g_free(lib_backup_file);
+
+  rc = _backup_db(db->handle, "data", dat_backup_file, _print_backup_progress);
+  if(!rc==SQLITE_OK)
+  {
+    g_unlink(dat_backup_file);
+    g_free(dat_backup_file);
+    return FALSE;
+  }
+  g_free(dat_backup_file);
+
+  return TRUE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
