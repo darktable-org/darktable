@@ -191,7 +191,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     do
     {
       dt_camera_t *camera = (dt_camera_t *)citem->data;
- 
+
       /* add camera label */
       GtkWidget *label = dt_ui_section_label_new(camera->model);
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
@@ -392,8 +392,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_met
   gtk_widget_show_all(frame);
 
 #ifdef USE_LUA
-  gtk_box_pack_start(GTK_BOX(extra),d->extra_lua_widgets , FALSE, FALSE, 0);
-  gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets),reset_child,NULL);
+  gtk_box_pack_start(GTK_BOX(extra), d->extra_lua_widgets , FALSE, FALSE, 0);
+  gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets), reset_child, NULL);
 #endif
 
   return frame;
