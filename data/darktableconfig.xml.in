@@ -2398,6 +2398,24 @@
     <shortdescription>colorbalance slider block layout</shortdescription>
     <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nlist - all sliders are shown in one long list (with headers),\ntabs - use tabs to switch between the blocks of sliders,\ncolumns - the blocks of sliders are shown next to each other (in narrow columns)</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom">
+    <name>darkroom/ui/hide_header_buttons</name>
+    <type>
+      <enum>
+        <option>always</option>
+        <option>active</option>
+        <option>dim</option>
+        <option>auto</option>
+        <option>fade</option>
+        <option>fit</option>
+        <option>smooth</option>
+        <option>glide</option>
+      </enum>
+    </type>
+    <default>always</default>
+    <shortdescription>show right-side buttons in darkroom module headers</shortdescription>
+    <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\nalways - always show all buttons,\nactive - only show the buttons when the mouse is over the module,\ndim - buttons are dimmed when mouse is away,\nauto - hide the buttons when the panel is narrow,\nfade - fade out all buttons when panel narrows,\nfit - hide all the buttons if the module name doesn't fit,\nsmooth - fade out all buttons in one header simultaneously,\nglide - gradually hide individual buttons as needed</longdescription>
+  </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
 
