@@ -2394,7 +2394,7 @@
         <option>columns</option>
       </enum>
     </type>
-    <default>box</default>
+    <default>list</default>
     <shortdescription>colorbalance slider block layout</shortdescription>
     <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nlist - all sliders are shown in one long list (with headers),\ntabs - use tabs to switch between the blocks of sliders,\ncolumns - the blocks of sliders are shown next to each other (in narrow columns)</longdescription>
   </dtconfig>
