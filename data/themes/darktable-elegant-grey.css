@@ -92,6 +92,7 @@
 @define-color thumbnail_fg_color @grey_60;
 @define-color thumbnail_selected_bg_color @grey_80;
 @define-color thumbnail_hover_bg_color @grey_95;
+@define-color thumbnail_hover_fg_color @grey_100;
 @define-color thumbnail_localcopy_color @grey_90;
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
