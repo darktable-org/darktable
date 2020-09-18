@@ -191,7 +191,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     do
     {
       dt_camera_t *camera = (dt_camera_t *)citem->data;
- 
+
       /* add camera label */
       GtkWidget *label = dt_ui_section_label_new(camera->model);
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
@@ -360,9 +360,14 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_met
   gtk_container_add(GTK_CONTAINER(frame), expander);
   d->frame = frame;
 
-  GtkWidget *extra;
-  extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(expander), extra);
+  GtkWidget *opts = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_container_add(GTK_CONTAINER(expander), opts);
+
+  GtkWidget *main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(opts), main, TRUE, TRUE, 0);
+
+  GtkWidget *extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(opts), extra, TRUE, TRUE, DT_PIXEL_APPLY_DPI(50));
 
   GtkWidget *recursive = NULL, *ignore_jpeg = NULL;
   if(import_folder == TRUE)
@@ -372,7 +377,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_met
     gtk_widget_set_tooltip_text(recursive,
                                 _("recursively import subfolders. Each folder goes into a new film roll."));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(recursive), dt_conf_get_bool("ui_last/import_recursive"));
-    gtk_box_pack_start(GTK_BOX(extra), recursive, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(main), recursive, FALSE, FALSE, 0);
 
     // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
     ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));
@@ -380,7 +385,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_met
                                                "can be useful when there are raw+JPEG in a directory."));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ignore_jpeg),
                                  dt_conf_get_bool("ui_last/import_ignore_jpegs"));
-    gtk_box_pack_start(GTK_BOX(extra), ignore_jpeg, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(main), ignore_jpeg, FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(ignore_jpeg), "clicked",
                    G_CALLBACK(_check_button_callback), ignore_jpeg);
   }
@@ -392,8 +397,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_met
   gtk_widget_show_all(frame);
 
 #ifdef USE_LUA
-  gtk_box_pack_start(GTK_BOX(extra),d->extra_lua_widgets , FALSE, FALSE, 0);
-  gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets),reset_child,NULL);
+  gtk_box_pack_start(GTK_BOX(extra), d->extra_lua_widgets , FALSE, FALSE, 0);
+  gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets), reset_child, NULL);
 #endif
 
   return frame;
