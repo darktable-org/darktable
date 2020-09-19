@@ -814,7 +814,7 @@ void init_presets(dt_lib_module_t *self)
       tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "technical",
       "colorin|hazeremoval|filmicrgb|clipping|flip|lens|exposure|denoiseprofile|demosaic|highlights");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("grading"), "grading", "rgblevels|colorbalance|toneequal|temperature");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effect"), "effect", "sharpen|bilat");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effects"), "effect", "sharpen|bilat");
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   gchar *tx2 = NULL;
@@ -1054,7 +1054,10 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
            || ((module->default_group() & IOP_GROUP_COLOR) && g_strcmp0(gr->name, _("color")) == 0)
            || ((module->default_group() & IOP_GROUP_CORRECT) && g_strcmp0(gr->name, _("correct")) == 0)
            || ((module->default_group() & IOP_GROUP_TONE) && g_strcmp0(gr->name, _("tone")) == 0)
-           || ((module->default_group() & IOP_GROUP_EFFECT) && g_strcmp0(gr->name, _("effect")) == 0))
+           || ((module->default_group() & IOP_GROUP_EFFECT) && g_strcmp0(gr->name, _("effect")) == 0)
+           || ((module->default_group() & IOP_GROUP_TECHNICAL) && g_strcmp0(gr->name, _("technical")) == 0)
+           || ((module->default_group() & IOP_GROUP_GRADING) && g_strcmp0(gr->name, _("grading")) == 0)
+           || ((module->default_group() & IOP_GROUP_EFFECTS) && g_strcmp0(gr->name, _("effects")) == 0))
         {
           vbc = vb1;
           rec_nb++;
