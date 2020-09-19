@@ -48,6 +48,9 @@ DT_MODULE(7)
 
 typedef struct dt_lib_export_t
 {
+  GtkWidget *dimensions_type, *print_dpi, *print_height, *print_width;
+  GtkBox *print_size;
+  GtkWidget *unit_label;
   GtkWidget *width, *height;
   GtkWidget *storage, *format;
   int format_lut[128];
@@ -60,6 +63,14 @@ typedef struct dt_lib_export_t
   GtkWidget *metadata_button;
   char *metadata_export;
 } dt_lib_export_t;
+
+
+typedef enum dt_dimensions_type_t
+{
+  DT_DIMENSIONS_PIXELS = 0, // set dimensions exactly in pixels
+  DT_DIMENSIONS_CM = 1,     // set dimensions from physical size in centimeters * DPI
+  DT_DIMENSIONS_INCH = 2    // same as previous for countries where the International System of Units is merely a joke
+} dt_dimensions_type_t;
 
 char *dt_lib_export_metadata_configuration_dialog(char *list, const gboolean ondisk);
 /** Updates the combo box and shows only the supported formats of current selected storage module */
@@ -213,12 +224,98 @@ void _set_dimensions(dt_lib_export_t *d, int max_width, int max_height)
   g_free(max_height_char);
 }
 
+void _set_print_dimensions(dt_lib_export_t *d, dt_dimensions_type_t type, const float width, const float height, const int dpi)
+{
+  gchar *max_width_char = g_strdup_printf("%.2f", width);
+  gchar *max_height_char = g_strdup_printf("%.2f", height);
+
+  g_signal_handlers_block_matched(d->print_width, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_block_matched(d->print_height, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_block_matched(d->print_dpi, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_block_matched(d->width, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_block_matched(d->height, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+
+  gtk_entry_set_text(GTK_ENTRY(d->print_width), max_width_char);
+  gtk_entry_set_text(GTK_ENTRY(d->print_height), max_height_char);
+  gtk_entry_set_text(GTK_ENTRY(d->print_dpi), g_strdup_printf("%d", dpi));
+
+  switch(type)
+  {
+    case(DT_DIMENSIONS_PIXELS):
+    {
+      // nothing to do - pixels sizes are handled outside
+      break;
+    }
+
+    case(DT_DIMENSIONS_CM):
+    {
+      // convert cm to px and write the output
+      const int px_w = ceilf(width * dpi / 2.54f);
+      const int px_h = ceilf(height * dpi / 2.54f);
+      dt_conf_set_int(CONFIG_PREFIX "width", px_w);
+      dt_conf_set_int(CONFIG_PREFIX "height", px_h);
+      gtk_entry_set_text(GTK_ENTRY(d->width), g_strdup_printf("%d", px_w));
+      gtk_entry_set_text(GTK_ENTRY(d->height), g_strdup_printf("%d", px_h));
+      break;
+    }
+
+    case(DT_DIMENSIONS_INCH):
+    {
+      // convert in to px and write the output
+      const int px_w = ceilf(width * dpi);
+      const int px_h = ceilf(height * dpi);
+      dt_conf_set_int(CONFIG_PREFIX "width", px_w);
+      dt_conf_set_int(CONFIG_PREFIX "height", px_h);
+      gtk_entry_set_text(GTK_ENTRY(d->width), g_strdup_printf("%d", px_w));
+      gtk_entry_set_text(GTK_ENTRY(d->height), g_strdup_printf("%d", px_h));
+      break;
+    }
+  }
+
+  g_signal_handlers_unblock_matched(d->print_width, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_unblock_matched(d->print_height, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_unblock_matched(d->print_dpi, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_unblock_matched(d->width, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_unblock_matched(d->height, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+
+  g_free(max_width_char);
+  g_free(max_height_char);
+}
+
+void _print_size_update_display(dt_lib_export_t *d)
+{
+  dt_dimensions_type_t dim_type = dt_conf_get_int(CONFIG_PREFIX "dimensions_type");
+
+  if(dim_type == DT_DIMENSIONS_PIXELS)
+  {
+    gtk_widget_set_visible(GTK_WIDGET(d->print_size), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->width), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->height), TRUE);
+  }
+  else
+  {
+    gtk_widget_set_visible(GTK_WIDGET(d->print_size), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->width), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->height), FALSE);
+
+    if(dim_type == DT_DIMENSIONS_CM)
+      gtk_label_set_text(GTK_LABEL(d->unit_label), _("cm @"));
+    else // DT_DIMENSIONS_INCH
+      gtk_label_set_text(GTK_LABEL(d->unit_label), _("in @"));
+  }
+}
+
 void gui_reset(dt_lib_module_t *self)
 {
   // make sure we don't do anything useless:
   if(!dt_control_running()) return;
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  dt_bauhaus_combobox_set(d->dimensions_type, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"));
+  _set_print_dimensions(
+      d, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"), dt_conf_get_float(CONFIG_PREFIX "print_width"),
+      dt_conf_get_float(CONFIG_PREFIX "print_height"), dt_conf_get_int(CONFIG_PREFIX "print_dpi"));
   _set_dimensions(d, dt_conf_get_int(CONFIG_PREFIX "width"), dt_conf_get_int(CONFIG_PREFIX "height"));
+  _print_size_update_display(d);
 
   // Set storage
   gchar *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
@@ -485,9 +582,31 @@ static void profile_changed(GtkWidget *widget, dt_lib_export_t *d)
   dt_conf_set_string(CONFIG_PREFIX "iccprofile", "");
 }
 
+static void dimensions_type_changed(GtkWidget *widget, dt_lib_export_t *d)
+{
+  int pos = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int(CONFIG_PREFIX "dimensions_type", pos);
+  _set_print_dimensions(d, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"), dt_conf_get_float(CONFIG_PREFIX "print_width"),
+                           dt_conf_get_float(CONFIG_PREFIX "print_height"), dt_conf_get_int(CONFIG_PREFIX "print_dpi"));
+  _validate_dimensions(d);
+  dt_conf_set_int(CONFIG_PREFIX "width", atoi(gtk_entry_get_text(GTK_ENTRY(d->width))));
+  dt_conf_set_int(CONFIG_PREFIX "height", atoi(gtk_entry_get_text(GTK_ENTRY(d->height))));
+  _print_size_update_display(d);
+}
+
 static void width_changed(GtkEditable *entry, gpointer user_data)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)user_data;
+  _validate_dimensions(d);
+  dt_conf_set_int(CONFIG_PREFIX "width", atoi(gtk_entry_get_text(GTK_ENTRY(d->width))));
+}
+
+static void print_width_changed(GtkEditable *entry, gpointer user_data)
+{
+  dt_lib_export_t *d = (dt_lib_export_t *)user_data;
+  dt_conf_set_float(CONFIG_PREFIX "print_width", atof(gtk_entry_get_text(GTK_ENTRY(d->print_width))));
+  _set_print_dimensions(d, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"), dt_conf_get_float(CONFIG_PREFIX "print_width"),
+                           dt_conf_get_float(CONFIG_PREFIX "print_height"), dt_conf_get_int(CONFIG_PREFIX "print_dpi"));
   _validate_dimensions(d);
   dt_conf_set_int(CONFIG_PREFIX "width", atoi(gtk_entry_get_text(GTK_ENTRY(d->width))));
 }
@@ -496,6 +615,27 @@ static void height_changed(GtkEditable *entry, gpointer user_data)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)user_data;
   _validate_dimensions(d);
+  dt_conf_set_int(CONFIG_PREFIX "height", atoi(gtk_entry_get_text(GTK_ENTRY(d->height))));
+}
+
+static void print_height_changed(GtkEditable *entry, gpointer user_data)
+{
+  dt_lib_export_t *d = (dt_lib_export_t *)user_data;
+  dt_conf_set_float(CONFIG_PREFIX "print_height", atof(gtk_entry_get_text(GTK_ENTRY(d->print_height))));
+  _set_print_dimensions(d, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"), dt_conf_get_float(CONFIG_PREFIX "print_width"),
+                           dt_conf_get_float(CONFIG_PREFIX "print_height"), dt_conf_get_int(CONFIG_PREFIX "print_dpi"));
+  _validate_dimensions(d);
+  dt_conf_set_int(CONFIG_PREFIX "height", atoi(gtk_entry_get_text(GTK_ENTRY(d->height))));
+}
+
+static void print_dpi_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_export_t *d = (dt_lib_export_t *)user_data;
+  dt_conf_set_int(CONFIG_PREFIX "print_dpi", atoi(gtk_entry_get_text(GTK_ENTRY(d->print_dpi))));
+  _set_print_dimensions(d, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"), dt_conf_get_float(CONFIG_PREFIX "print_width"),
+                           dt_conf_get_float(CONFIG_PREFIX "print_height"), dt_conf_get_int(CONFIG_PREFIX "print_dpi"));
+  _validate_dimensions(d);
+  dt_conf_set_int(CONFIG_PREFIX "width", atoi(gtk_entry_get_text(GTK_ENTRY(d->width))));
   dt_conf_set_int(CONFIG_PREFIX "height", atoi(gtk_entry_get_text(GTK_ENTRY(d->height))));
 }
 
@@ -513,7 +653,7 @@ static void insert_text_handler(GtkEditable *entry, char *text, int length, gpoi
 
   for (i=0; i < length; i++)
   {
-    if (!isdigit(text[i]))
+    if(!isdigit(text[i]) && strcmp(text + i, ".") != 0 && strcmp(text + i, ",") != 0)
       continue;
     result[count++] = text[i];
   }
@@ -710,6 +850,28 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
   dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
 
+  d->dimensions_type = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->dimensions_type, NULL, _("unit"));
+  gtk_widget_set_tooltip_text(d->dimensions_type, _("unit in which to input the image size"));
+  dt_bauhaus_combobox_add(d->dimensions_type, _("pixels (file size)"));
+  dt_bauhaus_combobox_add(d->dimensions_type, _("cm (print size)"));
+  dt_bauhaus_combobox_add(d->dimensions_type, _("in (print size)"));
+  dt_bauhaus_combobox_set(d->dimensions_type, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"));
+
+  d->print_width = gtk_entry_new();
+  gtk_widget_set_tooltip_text(d->print_width, _("maximum output width\nset to 0 for no scaling"));
+  gtk_entry_set_width_chars(GTK_ENTRY(d->print_width), 5);
+  d->print_height = gtk_entry_new();
+  gtk_widget_set_tooltip_text(d->print_height, _("maximum output height\nset to 0 for no scaling"));
+  gtk_entry_set_width_chars(GTK_ENTRY(d->print_height), 5);
+  d->print_dpi = gtk_entry_new();
+  gtk_widget_set_tooltip_text(d->print_dpi, _("resolution in dot per inch"));
+  gtk_entry_set_width_chars(GTK_ENTRY(d->print_dpi), 4);
+
+  dt_gui_key_accel_block_on_focus_connect(d->print_width);
+  dt_gui_key_accel_block_on_focus_connect(d->print_height);
+  dt_gui_key_accel_block_on_focus_connect(d->print_dpi);
+
   d->width = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->width, _("maximum output width\nset to 0 for no scaling"));
   gtk_entry_set_width_chars(GTK_ENTRY(d->width), 5);
@@ -726,12 +888,30 @@ void gui_init(dt_lib_module_t *self)
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
+
+  GtkBox *vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 3));
+  gtk_box_pack_start(vbox, d->dimensions_type, TRUE, TRUE, 0);
+
+  GtkBox *hbox2 = d->print_size = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3));
+  gtk_box_pack_start(hbox2, d->print_width, TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox2, gtk_label_new(_("x")), FALSE, FALSE, 0);
+  gtk_box_pack_start(hbox2, d->print_height, TRUE, TRUE, 0);
+  d->unit_label = gtk_label_new(_("cm @"));
+  gtk_box_pack_start(hbox2, d->unit_label, FALSE, FALSE, 0);
+  gtk_box_pack_start(hbox2, d->print_dpi, TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox2, gtk_label_new(_("dpi")), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox, GTK_WIDGET(hbox2), TRUE, TRUE, 0);
+
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3));
   gtk_box_pack_start(hbox1, d->width, TRUE, TRUE, 0);
   gtk_box_pack_start(hbox1, gtk_label_new(_("x")), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox1, d->height, TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(hbox1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
+  gtk_box_pack_start(hbox1, gtk_label_new(_("px")), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox, GTK_WIDGET(hbox1), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   d->upscale = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->upscale, NULL, _("allow upscaling"));
@@ -844,16 +1024,24 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->metadata_button, _("edit metadata exportation details"));
   gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
 
+  g_signal_connect(G_OBJECT(d->dimensions_type), "value_changed", G_CALLBACK(dimensions_type_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(height_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->print_width), "changed", G_CALLBACK(print_width_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->print_height), "changed", G_CALLBACK(print_height_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->print_dpi), "changed", G_CALLBACK(print_dpi_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "width");
   g_signal_connect(G_OBJECT(d->height), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "height");
+  g_signal_connect(G_OBJECT(d->print_width), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "print_width");
+  g_signal_connect(G_OBJECT(d->print_height), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "print_height");
+  g_signal_connect(G_OBJECT(d->print_dpi), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "print_height");
   g_signal_connect(G_OBJECT(d->metadata_button), "clicked", G_CALLBACK(metadata_export_clicked), (gpointer)d);
 
   // this takes care of keeping hidden widgets hidden
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(self->widget, TRUE);
+  _print_size_update_display(d);
 
   d->metadata_export = NULL;
 
