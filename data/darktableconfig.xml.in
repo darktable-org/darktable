@@ -112,19 +112,6 @@
     <shortdescription>maximum width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
-  <dtconfig>
-    <name>ui/cairo_filter</name>
-    <type>
-      <enum>
-	<option>fast</option>
-	<option>good</option>
-	<option>best</option>
-      </enum>
-    </type>
-    <default>fast</default>
-    <shortdescription>speed/quality trade-off for drawing images</shortdescription>
-    <longdescription>fast (default) - high-performance, similar to nearest neighbor filter; good - reasonable-performance, similar to bilinear (linear interpolation in two dimensions); best - highest-quality available, performance may not be suitable for interactive use. sets Cairo image scaling filter. (needs a restart)</longdescription>
-  </dtconfig>
   <dtconfig prefs="otherviews" section="slideshow">
     <name>slideshow_delay</name>
     <type>int</type>
@@ -157,6 +144,19 @@
     <default>false</default>
     <shortdescription>enable disk backend for full preview cache</shortdescription>
     <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when zooming image in full preview mode.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="cpugpu" restart="true">
+    <name>ui/cairo_filter</name>
+    <type>
+      <enum>
+	<option>fast</option>
+	<option>good</option>
+	<option>best</option>
+      </enum>
+    </type>
+    <default>fast</default>
+    <shortdescription>speed/quality trade-off for drawing images</shortdescription>
+    <longdescription>fast (default) - high-performance, similar to nearest neighbor filter; good - reasonable-performance, similar to bilinear (linear interpolation in two dimensions); best - highest-quality available, performance may not be suitable for interactive use. sets Cairo image scaling filter. (needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable">
     <name>cache_color_managed</name>
