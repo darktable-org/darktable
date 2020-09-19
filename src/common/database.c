@@ -3088,6 +3088,7 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gbo
   {
     // early bail out on "never"
     dt_print(DT_DEBUG_SQL, "[db maintenance] please consider enabling database maintenance.\n");
+    g_free(config);
     return FALSE;
   }
 
@@ -3167,6 +3168,7 @@ void dt_database_optimize(const struct dt_database_t *db)
 
 static void _print_backup_progress(int remaining, int total)
 {
+  // TODO if we have closing splashpage - this can be used to advance progressbar :)
   dt_print(DT_DEBUG_SQL, "[db backup] %d out of %d done\n", total - remaining, total);
 }
 
@@ -3226,7 +3228,7 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
   gchar *date_suffix = g_date_time_format(date_now, "%Y%m%d%H%M%S");
   g_date_time_unref(date_now);
 
-  const char *file_pattern = "%s_%s";
+  const char *file_pattern = "%s-snp-%s";
 
   gchar *lib_backup_file = g_strdup_printf(file_pattern, db->dbfilename_library, date_suffix);
   gchar *dat_backup_file = g_strdup_printf(file_pattern, db->dbfilename_data, date_suffix);
@@ -3253,6 +3255,133 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
   g_free(dat_backup_file);
 
   return TRUE;
+}
+
+gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
+{
+  if(_is_mem_db(db))
+    return FALSE;
+
+  char *config = dt_conf_get_string("database/create_snapshot");
+  if(!g_strcmp0(config, "never"))
+  {
+    // early bail out on "never"
+    dt_print(DT_DEBUG_SQL, "[db backup] please consider enabling database snapshots.\n");
+    g_free(config);
+    return FALSE;
+  }
+  if(!g_strcmp0(config, "on close"))
+  {
+    // early bail out on "on close"
+    dt_print(DT_DEBUG_SQL, "[db backup] performing unconditional snapshot.\n");
+    g_free(config);
+    return TRUE;
+  }
+
+  GTimeSpan span_from_last_snap_required;
+
+  if(!g_strcmp0(config, "once a day"))
+  {
+    span_from_last_snap_required = G_TIME_SPAN_DAY;
+  }
+  else if(!g_strcmp0(config, "once a week"))
+  {
+    span_from_last_snap_required = G_TIME_SPAN_DAY * 7;
+  }
+  else if(!g_strcmp0(config, "once a month"))
+  {
+    //average month ;)
+    span_from_last_snap_required = G_TIME_SPAN_DAY * 30;
+  }
+  else
+  {
+    // early bail out on "invalid value"
+    dt_print(DT_DEBUG_SQL, "[db backup] invalid timespan requirement expecting never/on close/once a [day/week/month], got %s.\n", config);
+    g_free(config);
+    return TRUE;
+  }
+  //we're in trouble zone - we have to determine when was the last snapshot done (including version upgrade snapshot) :/
+  //this could be easy if we wrote date of last successful backup to config, but that's not really an option since
+  //backup may done as last db operation, way after config file is closed. Plus we might be mixing dates of backups for
+  //various library.db
+
+  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.\n");
+  GFile *library = g_file_parse_name(db->dbfilename_library);
+  GFile *parent = g_file_get_parent(library);
+
+  if(parent == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get library parent!.\n");
+    g_object_unref(library);
+    return FALSE;
+  }
+
+  gchar *lib_basename = g_file_get_basename(library);
+  g_object_unref(library);
+
+  gchar *lib_snap_format = g_strdup_printf("%s-snp-", lib_basename);
+  gchar *lib_backup_format = g_strdup_printf("%s-pre-", lib_basename);
+  g_free(lib_basename);
+
+  GError *error = NULL;
+  GFileEnumerator *library_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
+
+  if(library_dir_files == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate library parent: %s.\n", error->message);
+    g_object_unref(parent);
+    g_error_free(error);
+    return FALSE;
+  }
+
+  GFileInfo *info = NULL;
+  guint64 last_snap = 0;
+
+  while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+  {
+    const char* fname = g_file_info_get_name(info);
+    if(g_str_has_prefix(fname, lib_snap_format) || g_str_has_prefix(fname, lib_backup_format)){
+      dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+      if(last_snap == 0)
+      {
+        last_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+        g_object_unref(info);
+        continue;
+      }
+      guint64 try_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_CREATED);
+      if(try_snap > last_snap)
+      {
+        last_snap = try_snap;
+      }
+    }
+    g_object_unref(info);
+  }
+  g_object_unref(parent);
+  g_free(lib_snap_format);
+  g_free(lib_backup_format);
+
+  if(error)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
+    g_error_free(error);
+    return FALSE;
+  }
+
+  GDateTime *date_now = g_date_time_new_now_local();
+  GDateTime *date_last_snap = g_date_time_new_from_unix_local(last_snap);
+
+  gchar *now_txt = g_date_time_format(date_now, "%Y%m%d%H%M%S");
+  gchar *ls_txt = g_date_time_format(date_last_snap, "%Y%m%d%H%M%S");
+  dt_print(DT_DEBUG_SQL, "[db backup] last snap: %s; curr date: %s.\n", ls_txt, now_txt);
+  g_free(now_txt);
+  g_free(ls_txt);
+
+  GTimeSpan span_from_last_snap = g_date_time_difference(date_now, date_last_snap);
+
+  g_date_time_unref(date_now);
+  g_date_time_unref(date_last_snap);
+
+  return span_from_last_snap > span_from_last_snap_required;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
