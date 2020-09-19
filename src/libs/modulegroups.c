@@ -58,6 +58,7 @@ typedef struct dt_lib_modulegroups_t
   GList *groups;
 
   GList *edit_groups;
+  gchar *edit_preset;
 
   // editor dialog
   GtkWidget *dialog;
@@ -877,27 +878,28 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   return 0;
 }
 
-static void _manage_editor_save(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _manage_editor_save(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  if(!d->edit_groups || !d->edit_preset) return;
+
   // get all the values
-  char *old_name = (char *)g_object_get_data(G_OBJECT(widget), "old_name");
   gchar *params = _preset_to_string(d->edit_groups);
   gchar *newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(d->preset_name)));
 
   // update the preset in the database
-  dt_lib_presets_update(old_name, self->plugin_name, self->version(), newname, "", params, strlen(params));
+  dt_lib_presets_update(d->edit_preset, self->plugin_name, self->version(), newname, "", params, strlen(params));
 
   // if name has changed, we need to reflect the change on the presets list too
   _manage_preset_update_list(self);
-  _manage_editor_load(newname, self);
 
   // update groups
   gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
   if(g_strcmp0(preset, newname) == 0)
   {
     // if name has changed, let's update it
-    if(g_strcmp0(old_name, newname) != 0) dt_conf_set_string("plugins/darkroom/modulegroups_preset", newname);
+    if(g_strcmp0(d->edit_preset, newname) != 0)
+      dt_conf_set_string("plugins/darkroom/modulegroups_preset", newname);
     // and we update the gui
     if(!dt_lib_presets_apply(newname, self->plugin_name, self->version()))
       dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
@@ -1319,6 +1321,15 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   return vb2;
 }
 
+static void _manage_editor_reset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  gchar *txt = g_strdup(d->edit_preset);
+  _manage_editor_load(txt, self);
+  g_free(txt);
+}
+
 static void _manage_editor_group_add(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -1339,6 +1350,12 @@ static void _manage_editor_group_add(GtkWidget *widget, GdkEventButton *event, d
 static void _manage_editor_load(char *preset, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // if we have a currently edited preset, we save it
+  if(d->edit_preset && g_strcmp0(preset, d->edit_preset) != 0)
+  {
+    _manage_editor_save(self);
+  }
 
   // we remove all widgets from the box
   GList *lw = gtk_container_get_children(GTK_CONTAINER(d->preset_box));
@@ -1364,7 +1381,9 @@ static void _manage_editor_load(char *preset, dt_lib_module_t *self)
 
   // get all presets groups
   if(d->edit_groups) _manage_editor_groups_cleanup(&d->edit_groups);
+  if(d->edit_preset) g_free(d->edit_preset);
   d->edit_groups = NULL;
+  d->edit_preset = NULL;
   int ro = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -1380,6 +1399,7 @@ static void _manage_editor_load(char *preset, dt_lib_module_t *self)
     ro = sqlite3_column_int(stmt, 0);
     const void *blob = sqlite3_column_blob(stmt, 1);
     d->edit_groups = _preset_from_string((char *)blob);
+    d->edit_preset = g_strdup(preset);
     sqlite3_finalize(stmt);
   }
   else
@@ -1427,7 +1447,10 @@ static void _manage_editor_load(char *preset, dt_lib_module_t *self)
   }
 
   gtk_widget_set_halign(d->preset_groups_box, GTK_ALIGN_CENTER);
-  gtk_box_pack_start(GTK_BOX(vb), d->preset_groups_box, TRUE, TRUE, 0);
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
+  gtk_container_add(GTK_CONTAINER(sw), d->preset_groups_box);
+  gtk_box_pack_start(GTK_BOX(vb), sw, TRUE, TRUE, 0);
 
   // read-only message
   if(ro)
@@ -1438,15 +1461,14 @@ static void _manage_editor_load(char *preset, dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
   }
 
-  // save button
+  // reset button
   if(!ro)
   {
     hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *bt = gtk_button_new();
-    gtk_widget_set_name(bt, "modulegroups-save");
-    gtk_button_set_label(GTK_BUTTON(bt), _("save"));
-    g_object_set_data(G_OBJECT(bt), "old_name", g_strdup(preset));
-    g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_save), self);
+    gtk_widget_set_name(bt, "modulegroups-reset");
+    gtk_button_set_label(GTK_BUTTON(bt), _("reset"));
+    g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_reset), self);
     gtk_box_pack_end(GTK_BOX(hb1), bt, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
   }
@@ -1650,6 +1672,20 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
   gtk_widget_show_all(d->presets_list);
 }
 
+static void _manage_editor_destroy(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // we save the last edited preset
+  _manage_editor_save(self);
+
+  // and we free editing data
+  if(d->edit_groups) _manage_editor_groups_cleanup(&d->edit_groups);
+  if(d->edit_preset) g_free(d->edit_preset);
+  d->edit_groups = NULL;
+  d->edit_preset = NULL;
+}
+
 static void _manage_show_window(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -1715,6 +1751,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(d->dialog), hb);
 
   gtk_window_set_default_size(GTK_WINDOW(d->dialog), 900, 500);
+  g_signal_connect(d->dialog, "destroy", G_CALLBACK(_manage_editor_destroy), self);
   gtk_window_set_resizable(GTK_WINDOW(d->dialog), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(d->dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   gtk_window_set_keep_above(GTK_WINDOW(d->dialog), TRUE);
