@@ -1243,7 +1243,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
   gchar *label = dt_history_item_get_name_html(module);
   gchar *tooltip = g_strdup(module->description());
   gtk_label_set_markup(GTK_LABEL(lab), label);
-  gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
   g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
   gtk_widget_set_tooltip_text(lab, tooltip);
   g_free(label);
