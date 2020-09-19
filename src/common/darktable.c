@@ -1213,6 +1213,7 @@ void dt_cleanup()
   // last chance to ask user for any input...
 
   const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
+  const gboolean perform_snapshot = dt_database_maybe_snapshot(darktable.db);
 
 #ifdef HAVE_PRINT
   dt_printers_abort_discovery();
@@ -1291,7 +1292,10 @@ void dt_cleanup()
   }
 
   dt_database_optimize(darktable.db);
-  dt_database_snapshot(darktable.db);
+  if(perform_snapshot)
+  {
+    dt_database_snapshot(darktable.db);
+  }
   dt_database_destroy(darktable.db);
 
   if(init_gui)
