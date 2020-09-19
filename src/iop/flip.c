@@ -77,7 +77,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()
@@ -417,7 +417,7 @@ void init_presets(dt_iop_module_so_t *self)
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_flip_params_t *d = self->default_params;
-  
+
   d->orientation = ORIENTATION_NULL;
 
   // report if reload_defaults was called unnecessarily => this should be considered a bug

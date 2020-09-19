@@ -106,7 +106,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -756,7 +756,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->damping, p->random.damping);
 
   gtk_widget_set_visible(g->random, p->dither_type == DITHER_RANDOM);
-} 
+}
 
 void gui_init(struct dt_iop_module_t *self)
 {
