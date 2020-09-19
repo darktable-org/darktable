@@ -83,11 +83,11 @@ typedef enum _channelmixer_algorithm_t
 typedef struct dt_iop_channelmixer_params_t
 {
   /** amount of red to mix value */
-  float red[CHANNEL_SIZE];   // $MIN: -1.0 $MAX: 1.0 
+  float red[CHANNEL_SIZE]; // $MIN: -1.0 $MAX: 1.0
   /** amount of green to mix value */
-  float green[CHANNEL_SIZE]; // $MIN: -1.0 $MAX: 1.0 
+  float green[CHANNEL_SIZE]; // $MIN: -1.0 $MAX: 1.0
   /** amount of blue to mix value */
-  float blue[CHANNEL_SIZE];  // $MIN: -1.0 $MAX: 1.0 
+  float blue[CHANNEL_SIZE]; // $MIN: -1.0 $MAX: 1.0
   /** algorithm version */
   _channelmixer_algorithm_t algorithm_version;
 } dt_iop_channelmixer_params_t;
@@ -132,7 +132,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

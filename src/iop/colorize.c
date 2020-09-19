@@ -91,7 +91,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -355,8 +355,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colorize_gui_data_t *g = IOP_GUI_ALLOC(colorize);
 
-  g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, 
-           dt_bauhaus_slider_from_params (self, N_("hue")));
+  g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, N_("hue")));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_stop(g->hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);

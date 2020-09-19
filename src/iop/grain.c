@@ -63,10 +63,10 @@ typedef enum _dt_iop_grain_channel_t
 typedef struct dt_iop_grain_params_t
 {
   _dt_iop_grain_channel_t channel; // $DEFAULT: DT_GRAIN_CHANNEL_LIGHTNESS
-  float scale;         /* $MIN: 20.0/GRAIN_SCALE_FACTOR 
-                          $MAX: 6400.0/GRAIN_SCALE_FACTOR 
-                          $DEFAULT: 1600.0/GRAIN_SCALE_FACTOR 
-                          $DESCRIPTION: "coarseness" */
+  float scale;                     /* $MIN: 20.0/GRAIN_SCALE_FACTOR
+                                      $MAX: 6400.0/GRAIN_SCALE_FACTOR
+                                      $DEFAULT: 1600.0/GRAIN_SCALE_FACTOR
+                                      $DESCRIPTION: "coarseness" */
   float strength;      // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
   float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "midtones bias"
 } dt_iop_grain_params_t;
@@ -427,7 +427,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -440,7 +440,6 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtones bias"));
-  
 }
 
 void connect_key_accels(dt_iop_module_t *self)

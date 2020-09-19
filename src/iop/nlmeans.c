@@ -111,7 +111,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -166,7 +166,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float max_L = 120.0f, max_C = 512.0f;
   const float nL = 1.0f / max_L, nC = 1.0f / max_C;
   const float norm2[4] = { nL, nC }; //luma and chroma scaling factors
-  
+
   // allocate a buffer to receive the denoised image
   const int devid = piece->pipe->devid;
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
@@ -424,7 +424,7 @@ static void process_cpu(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
 
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
   int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
-  
+
   const dt_nlmeans_param_t params = { .scattering = 0,
                                       .scale = scale,
                                       .luma = d->luma,

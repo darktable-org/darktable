@@ -55,7 +55,7 @@ typedef struct dt_iop_bilateral_params_t
   float radius;           // $MIN: 1.0 $MAX: 50.0 $DEFAULT: 15.0
   float reserved;         // $DEFAULT: 15.0
   float red, green, blue; // $MIN: 0.0001 $MAX: 1.0 $DEFAULT: 0.005
-} dt_iop_bilateral_params_t; 
+} dt_iop_bilateral_params_t;
 
 typedef struct dt_iop_bilateral_gui_data_t
 {
@@ -74,7 +74,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
