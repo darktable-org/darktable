@@ -127,4 +127,19 @@
       list, a tabulated or columned view.
     </para>
 
+    <bridgehead renderas="sect5">show right-side buttons in darkroom module headers</bridgehead>
+
+    <para>
+      Choose whether to show the three buttons on the right-hand side of the module headers.
+      The buttons for multi-instance, reset and presets, will always appear when the mouse is on the module itself.
+      At other times, they can be hidden in various situations; especially when a narrow panel width
+      would otherwise make the module name hard to read.
+      Independent of panel width or name length;
+      <quote>always</quote> (show), <quote>active</quote> (hide), <quote>dim</quote> (show dimmed).
+      Narrow panel:
+      <quote>auto</quote>, <quote>fade</quote> (gruadually dim)
+      Long name:
+      <quote>fit</quote>, <quote>smooth</quote> (gradually dim), <quote>glide</quote> (dim individual buttons)
+    </para>
+
 </sect1>
