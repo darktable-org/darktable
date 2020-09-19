@@ -711,7 +711,7 @@ static gchar *_preset_retrieve_old_layout()
     if(i == 0)
       ret = dt_util_dstrcat(ret, "ꬹ1ꬹfavorites|favorites|");
     else if(i == 1)
-      ret = dt_util_dstrcat(ret, "ꬹbasic|basic|");
+      ret = dt_util_dstrcat(ret, "ꬹbase|basic|");
     else if(i == 2)
       ret = dt_util_dstrcat(ret, "ꬹtone|tone|");
     else if(i == 3)
@@ -1145,6 +1145,14 @@ static void _manage_editor_group_remove(GtkWidget *widget, GdkEventButton *event
   _manage_editor_group_update_arrows(groups_box);
 }
 
+static void _manage_editor_group_name_changed(GtkWidget *tb, GdkEventButton *event, dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(tb), "group");
+  const gchar *txt = gtk_entry_get_text(GTK_ENTRY(tb));
+  g_free(gr->name);
+  gr->name = g_strdup(txt);
+}
+
 static void _manage_editor_group_icon_changed(GtkWidget *widget, GdkEventButton *event,
                                               dt_lib_modulegroups_group_t *gr)
 {
@@ -1294,6 +1302,8 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
 
   GtkWidget *tb = gtk_entry_new();
   gtk_widget_set_tooltip_text(tb, _("group name"));
+  g_object_set_data(G_OBJECT(tb), "group", gr);
+  g_signal_connect(G_OBJECT(tb), "changed", G_CALLBACK(_manage_editor_group_name_changed), self);
   gtk_entry_set_text(GTK_ENTRY(tb), gr->name);
   gtk_box_pack_start(GTK_BOX(hb3), tb, TRUE, TRUE, 0);
 
