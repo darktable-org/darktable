@@ -1598,13 +1598,18 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
+static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self);
+
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
   if(!w || w == g->mode)
+  {
     set_visible_widgets(g);
+    _configure_slider_blocks(NULL, self);
+  }
 
   ++darktable.gui->reset;
 
@@ -1752,6 +1757,7 @@ static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t
 
 static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
 {
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
   GtkWidget *new_container = NULL;
@@ -1765,7 +1771,9 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
 
   if(old_container) gtk_widget_destroy(old_container);
 
-  const gchar *short_label[]= { N_("lift"), N_("gamma"), N_("gain") };
+  const gchar *short_label_ops[] = { N_("offset"), N_("power"), N_("slope") };
+  const gchar *short_label_lgg[] = { N_("lift"), N_("gamma"), N_("gain") };
+  const gchar **short_label = (p->mode == SLOPE_OFFSET_POWER) ? short_label_ops : short_label_lgg;
   const gchar *long_label[]
      = { N_("shadows : lift / offset"),
          N_("mid-tones : gamma / power"),
@@ -2072,22 +2080,22 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->which##_b, 1.0, 0.0, 0.0, 1.0);             \
 
   static const char *lift_messages[]
-    = { N_("factor of lift"),
-        N_("factor of red for lift"),
-        N_("factor of green for lift"),
-        N_("factor of blue for lift") };
+    = { N_("factor of lift/offset"),
+        N_("factor of red for lift/offset"),
+        N_("factor of green for lift/offset"),
+        N_("factor of blue for lift/offset") };
 
   static const char *gamma_messages[]
-    = { N_("factor of gamma"),
-        N_("factor of red for gamma"),
-        N_("factor of green for gamma"),
-        N_("factor of blue for gamma") };
+    = { N_("factor of gamma/power"),
+        N_("factor of red for gamma/power"),
+        N_("factor of green for gamma/power"),
+        N_("factor of blue for gamma/power") };
 
   static const char *gain_messages[]
-    = { N_("factor of gain"),
-        N_("factor of red for gain"),
-        N_("factor of green for gain"),
-        N_("factor of blue for gain") };
+    = { N_("factor of gain/slope"),
+        N_("factor of red for gain/slope"),
+        N_("factor of green for gain/slope"),
+        N_("factor of blue for gain/slope") };
 
   ADD_BLOCK(0, lift,  lift_messages, 0.05f,  5.0f)
   ADD_BLOCK(1, gamma, gamma_messages, 0.5f, 20.0f)
