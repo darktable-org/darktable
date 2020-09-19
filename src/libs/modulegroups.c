@@ -227,6 +227,10 @@ static DTGTKCairoPaintIconFunc _buttons_get_icon_fct(gchar *icon)
     return dtgtk_cairo_paint_modulegroup_correct;
   else if(g_strcmp0(icon, "effect") == 0)
     return dtgtk_cairo_paint_modulegroup_effect;
+  else if(g_strcmp0(icon, "grading") == 0)
+    return dtgtk_cairo_paint_modulegroup_grading;
+  else if(g_strcmp0(icon, "technical") == 0)
+    return dtgtk_cairo_paint_modulegroup_technical;
 
   return dtgtk_cairo_paint_modulegroup_basic;
 }
@@ -807,9 +811,9 @@ void init_presets(dt_lib_module_t *self)
 {
   gchar *tx = NULL;
   tx = dt_util_dstrcat(
-      tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "basic",
+      tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "technical",
       "colorin|hazeremoval|filmicrgb|clipping|flip|lens|exposure|denoiseprofile|demosaic|highlights");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("grading"), "color", "rgblevels|colorbalance|toneequal|temperature");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("grading"), "grading", "rgblevels|colorbalance|toneequal|temperature");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effect"), "effect", "sharpen|bilat");
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
@@ -1226,6 +1230,26 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("tone icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "tone");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
+
+  eb = gtk_event_box_new();
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_grading, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("grading icon")), TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(eb), "ic_name", "grading");
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
+
+  eb = gtk_event_box_new();
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_technical, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("technical icon")), TRUE, TRUE, 0);
+  g_object_set_data(G_OBJECT(eb), "ic_name", "technical");
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_manage_editor_group_icon_changed), gr);
   gtk_container_add(GTK_CONTAINER(eb), hb);
   gtk_box_pack_start(GTK_BOX(vb), eb, FALSE, TRUE, 0);
