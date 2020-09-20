@@ -722,10 +722,57 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
   return d->current;
 }
 
+static gchar *_preset_retrieve_old_layout_updated()
+{
+  gchar *ret = NULL;
+
+  // layout with "new" 3 groups
+  for(int i = 0; i < 4; i++)
+  {
+    // group name and icon
+    if(i == 0)
+      ret = dt_util_dstrcat(ret, "ꬹ1ꬹfavorites|favorites|");
+    else if(i == 1)
+      ret = dt_util_dstrcat(ret, "ꬹtechnical|technical|");
+    else if(i == 2)
+      ret = dt_util_dstrcat(ret, "ꬹgrading|grading|");
+    else if(i == 3)
+      ret = dt_util_dstrcat(ret, "ꬹeffects|effect|");
+
+    // list of modules
+    GList *modules = darktable.iop;
+    while(modules)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+
+      if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
+      {
+        // get previous visibility values
+        const int group = module->default_group();
+        gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/visible", module->op);
+        const gboolean visi = dt_conf_get_bool(key);
+        g_free(key);
+        key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/favorite", module->op);
+        const gboolean fav = dt_conf_get_bool(key);
+        g_free(key);
+
+        if((i == 0 && fav && visi) || (i == 1 && (group & IOP_GROUP_TECHNICAL) && visi)
+           || (i == 2 && (group & IOP_GROUP_GRADING) && visi) || (i == 3 && (group & IOP_GROUP_EFFECTS) && visi))
+        {
+          ret = dt_util_dstrcat(ret, "|%s", module->op);
+        }
+      }
+      modules = g_list_next(modules);
+    }
+  }
+  return ret;
+}
+
 static gchar *_preset_retrieve_old_layout()
 {
   gchar *ret = NULL;
 
+  // layout with "old" 5 groups
   for(int i = 0; i < 6; i++)
   {
     // group name and icon
@@ -852,6 +899,9 @@ void init_presets(dt_lib_module_t *self)
     gchar *tx3 = _preset_retrieve_old_layout();
     dt_lib_presets_add(_("previous layout"), self->plugin_name, self->version(), tx3, strlen(tx3), FALSE);
     dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("previous layout"));
+
+    gchar *tx4 = _preset_retrieve_old_layout_updated();
+    dt_lib_presets_add(_("previous layout updated"), self->plugin_name, self->version(), tx4, strlen(tx4), FALSE);
   }
 }
 
