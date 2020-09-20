@@ -3005,15 +3005,60 @@ GdkModifierType dt_key_modifier_state()
   return state & gtk_accelerator_get_default_mod_mask();
 }
 
+static void notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocation, gpointer *data)
+{
+  int n = gtk_notebook_get_n_pages(notebook);
+
+  GtkRequestedSize *sizes = g_malloc_n(n, sizeof(GtkRequestedSize));
+
+  for(int i = 0; i < n; i++)
+  {
+    sizes[i].data = gtk_notebook_get_tab_label(notebook, gtk_notebook_get_nth_page(notebook, i));
+    sizes[i].minimum_size = 0;
+    GtkRequisition natural_size;
+    gtk_widget_get_preferred_size(sizes[i].data, NULL, &natural_size);
+    sizes[i].natural_size = natural_size.width;
+  }
+
+  GtkAllocation first, last;
+  gtk_widget_get_allocation(sizes[0].data, &first);
+  gtk_widget_get_allocation(sizes[n - 1].data, &last);
+
+  GtkBorder padding = { 3, 3, 3, 3 };
+/*gtk_style_context_get_padding(gtk_style_context_get_parent(gtk_widget_get_style_context(sizes[0].data)),
+                                gtk_widget_get_state_flags(sizes[0].data),
+                                &padding); // try to get tab (not label) padding*/
+
+  gint total_space = last.x + last.width - first.x
+                   - (n - 1) * (padding.left + padding.right);
+
+  if(total_space > 0)
+  {
+    gtk_distribute_natural_allocation(total_space, n, sizes);
+
+    for(int i = 0; i < n; i++)
+      gtk_widget_set_size_request(sizes[i].data, sizes[i].minimum_size, -1);
+
+    gtk_widget_size_allocate(GTK_WIDGET(notebook), allocation);
+
+    for(int i = 0; i < n; i++)
+      gtk_widget_set_size_request(sizes[i].data, -1, -1);
+  }
+
+  g_free(sizes);
+}
+
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
 {
   GtkWidget *label = gtk_label_new(text);
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  if(strlen(text) > 9) gtk_label_set_width_chars(GTK_LABEL(label), strlen(text) / 3);
-  gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
+  if(tooltip || strlen(text) > 1)
+    gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
   gtk_notebook_append_page(notebook, page, label);
   gtk_container_child_set(GTK_CONTAINER(notebook), page, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+  if(gtk_notebook_get_n_pages(notebook) == 2)
+    g_signal_connect(G_OBJECT(notebook), "size-allocate", G_CALLBACK(notebook_size_callback), NULL);
 
   return page;
 }
