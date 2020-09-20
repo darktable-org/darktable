@@ -93,6 +93,10 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self);
    tests if iop module group flags matches modulegroup.
 */
 static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, dt_iop_module_t *module);
+/* modulegroups proxy test visibility function.
+   tests if iop module is preset in one groups for current layout.
+*/
+static gboolean _lib_modulegroups_test_visible(dt_lib_module_t *self, gchar *module);
 /* modulegroups proxy switch group function.
    sets the active group which module belongs too.
 */
@@ -356,6 +360,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.test = _lib_modulegroups_test;
   darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
   darktable.develop->proxy.modulegroups.search_text_focus = _lib_modulegroups_search_text_focus;
+  darktable.develop->proxy.modulegroups.test_visible = _lib_modulegroups_test_visible;
 
   /* let's connect to view changed signal to set default group */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
@@ -405,6 +410,22 @@ static gboolean _lib_modulegroups_test_internal(dt_lib_module_t *self, uint32_t 
 static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, dt_iop_module_t *module)
 {
   return _lib_modulegroups_test_internal(self, group, module);
+}
+
+static gboolean _lib_modulegroups_test_visible(dt_lib_module_t *self, gchar *module)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  GList *l = d->groups;
+  while(l)
+  {
+    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
+    if(g_list_find_custom(gr->modules, module, _iop_compare) != NULL)
+    {
+      return TRUE;
+    }
+    l = g_list_next(l);
+  }
+  return FALSE;
 }
 
 static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)

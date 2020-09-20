@@ -2134,14 +2134,6 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return 0.0;
 }
 
-gboolean dt_dev_modulegroups_available(dt_develop_t *dev)
-{
-  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->proxy.modulegroups.get)
-    return TRUE;
-
-  return FALSE;
-}
-
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->first_load == FALSE)
@@ -2179,6 +2171,13 @@ void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.search_text_focus && dev->first_load == 0)
     dev->proxy.modulegroups.search_text_focus(dev->proxy.modulegroups.module);
+}
+
+gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test_visible)
+    return dev->proxy.modulegroups.test_visible(dev->proxy.modulegroups.module, module);
+  return FALSE;
 }
 
 void dt_dev_masks_list_change(dt_develop_t *dev)

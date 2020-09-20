@@ -2125,7 +2125,7 @@ void gui_init(dt_view_t *self)
   /* create favorite plugin preset popup tool */
   GtkWidget *favorite_presets
       = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets of your favorites"));
+  gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
   dt_gui_add_help_link(favorite_presets, dt_get_help_url("favorite_presets"));
