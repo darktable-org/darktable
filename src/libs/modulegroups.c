@@ -1071,16 +1071,19 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
 
   if(rec_nb > 0)
   {
+    // we show the list of recommended modules
     lb = gtk_label_new(_("recommended"));
     gtk_label_set_xalign(GTK_LABEL(lb), 0);
     gtk_widget_set_name(lb, "modulegroups_iop_title");
     gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vb), vb1, FALSE, TRUE, 0);
+    // and the title for the other modules
+    lb = gtk_label_new(_("other"));
+    gtk_label_set_xalign(GTK_LABEL(lb), 0);
+    gtk_widget_set_name(lb, "modulegroups_iop_title");
+    gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
   }
-  lb = gtk_label_new(_("other"));
-  gtk_label_set_xalign(GTK_LABEL(lb), 0);
-  gtk_widget_set_name(lb, "modulegroups_iop_title");
-  gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
+  // we now show all other modules
   gtk_box_pack_start(GTK_BOX(vb), vb2, FALSE, TRUE, 0);
   gtk_widget_set_size_request(sw, 250, 450);
   gtk_container_add(GTK_CONTAINER(sw), vb);
