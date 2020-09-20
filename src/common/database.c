@@ -3176,7 +3176,7 @@ static int _backup_db(
   sqlite3 *src_db,               /* Database handle to back up */
   const char *src_db_name,       /* Database name to back up */
   const char *dest_filename,      /* Name of file to back up to */
-  void(*xProgress)(int, int)  /* Progress function to invoke */     
+  void(*xProgress)(int, int)  /* Progress function to invoke */
 )
 {
   int rc;                     /* Function return code */
@@ -3340,7 +3340,8 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
   {
     const char* fname = g_file_info_get_name(info);
-    if(g_str_has_prefix(fname, lib_snap_format) || g_str_has_prefix(fname, lib_backup_format)){
+    if(g_str_has_prefix(fname, lib_snap_format) || g_str_has_prefix(fname, lib_backup_format))
+    {
       dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
       if(last_snap == 0)
       {
@@ -3348,7 +3349,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
         g_object_unref(info);
         continue;
       }
-      guint64 try_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_CREATED);
+      guint64 try_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
       if(try_snap > last_snap)
       {
         last_snap = try_snap;
@@ -3363,9 +3364,14 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   if(error)
   {
     dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
+    g_file_enumerator_close(library_dir_files, NULL, NULL);
+    g_object_unref(library_dir_files);
     g_error_free(error);
     return FALSE;
   }
+
+  g_file_enumerator_close(library_dir_files, NULL, NULL);
+  g_object_unref(library_dir_files);
 
   GDateTime *date_now = g_date_time_new_now_local();
   GDateTime *date_last_snap = g_date_time_new_from_unix_local(last_snap);
@@ -3382,6 +3388,301 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   g_date_time_unref(date_last_snap);
 
   return span_from_last_snap > span_from_last_snap_required;
+}
+
+/* Parse integers in the form d (week days), dd (hours etc), ddd (ordinal days) or dddd (years) */
+static gboolean _get_iso8601_int (const gchar *text, gsize length, gint *value)
+{
+  gsize i;
+  guint v = 0;
+
+  if (length < 1 || length > 4)
+    return FALSE;
+
+  for (i = 0; i < length; i++)
+    {
+      const gchar c = text[i];
+      if (c < '0' || c > '9')
+        return FALSE;
+      v = v * 10 + (c - '0');
+    }
+
+  *value = v;
+  return TRUE;
+}
+
+static gint _db_snap_sort(gconstpointer a, gconstpointer b, gpointer user_data)
+{
+  const gchar* e1 = (gchar *) a;
+  const gchar* e2 = (gchar *) b;
+
+  //we assume that both end with date in
+  //"%Y%m%d%H%M%S" format
+
+  gchar *datepos1 = g_strrstr(e1, "-snp-");
+  gchar *datepos2 = g_strrstr(e2, "-snp-");
+  if(!datepos1 || !datepos2)
+    return 0;
+
+  datepos1 +=5; //skip "-snp-"
+  datepos2 +=5; //skip "-snp-"
+
+  int year,month,day,hour,minute,second;
+  if(!_get_iso8601_int(datepos1,4,&year) ||
+    !_get_iso8601_int(datepos1+4,2,&month) ||
+    !_get_iso8601_int(datepos1+6,2,&day) ||
+    !_get_iso8601_int(datepos1+8,2,&hour) ||
+    !_get_iso8601_int(datepos1+10,2,&minute) ||
+    !_get_iso8601_int(datepos1+12,2,&second)
+  )
+    return 0;
+  GDateTime *d1=g_date_time_new_local(year, month, day, hour, minute, second);
+  if(!_get_iso8601_int(datepos2,4,&year) ||
+    !_get_iso8601_int(datepos2+4,2,&month) ||
+    !_get_iso8601_int(datepos2+6,2,&day) ||
+    !_get_iso8601_int(datepos2+8,2,&hour) ||
+    !_get_iso8601_int(datepos2+10,2,&second) ||
+    !_get_iso8601_int(datepos2+12,2,&second)
+  )
+  {
+    g_date_time_unref(d1);
+    return 0;
+  }
+  GDateTime *d2=g_date_time_new_local(year, month, day, hour, minute, second);
+
+  const gint ret = g_date_time_compare(d1, d2);
+  g_date_time_unref(d1);
+  g_date_time_unref(d2);
+  return ret;
+}
+
+char **dt_database_snaps_to_remove(const struct dt_database_t *db)
+{
+  if(_is_mem_db(db))
+    return NULL;
+
+  const int keep_snaps = dt_conf_get_int("database/keep_snapshots");
+
+  if(keep_snaps < 0)
+    return NULL;
+
+  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.\n");
+  GFile *lib_file = g_file_parse_name(db->dbfilename_library);
+  GFile *lib_parent = g_file_get_parent(lib_file);
+
+  if(lib_parent == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get library parent!.\n");
+    g_object_unref(lib_file);
+    return NULL;
+  }
+
+  GFile *dat_file = g_file_parse_name(db->dbfilename_data);
+  GFile *dat_parent = g_file_get_parent(dat_file);
+
+  if(dat_parent == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get data parent!.\n");
+    g_object_unref(dat_file);
+    g_object_unref(lib_file);
+    g_object_unref(lib_parent);
+  }
+
+  gchar *lib_basename = g_file_get_basename(lib_file);
+  g_object_unref(lib_file);
+  gchar *lib_snap_format = g_strdup_printf("%s-snp-", lib_basename);
+  g_free(lib_basename);
+
+  gchar *dat_basename = g_file_get_basename(dat_file);
+  g_object_unref(dat_file);
+  gchar *dat_snap_format = g_strdup_printf("%s-snp-", dat_basename);
+  g_free(dat_basename);
+
+  GQueue *lib_snaps = g_queue_new();
+  GQueue *dat_snaps = g_queue_new();
+
+
+  if(g_file_equal(lib_parent, dat_parent))
+  {
+    //slight optimization if library and data are in same dir, we only have to scan one
+    GError *error = NULL;
+    GFileEnumerator *library_dir_files = g_file_enumerate_children(lib_parent, G_FILE_ATTRIBUTE_STANDARD_NAME, G_FILE_QUERY_INFO_NONE, NULL, &error);
+
+    if(library_dir_files == NULL)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate library parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_free(lib_snap_format);
+      g_free(dat_snap_format);
+      g_queue_free(lib_snaps);
+      g_queue_free(dat_snaps);
+      g_error_free(error);
+      return NULL;
+    }
+
+    GFileInfo *info = NULL;
+
+    while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+    {
+      const char* fname = g_file_info_get_name(info);
+      if(g_str_has_prefix(fname, lib_snap_format))
+      {
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        g_queue_insert_sorted(lib_snaps, g_strdup(fname), _db_snap_sort, NULL);
+      }
+      else if(g_str_has_prefix(fname, dat_snap_format))
+      {
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        g_queue_insert_sorted(dat_snaps, g_strdup(fname), _db_snap_sort, NULL);
+      }
+      g_object_unref(info);
+    }
+    g_free(lib_snap_format);
+    g_free(dat_snap_format);
+
+    if(error)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_queue_free_full(lib_snaps, g_free);
+      g_queue_free_full(dat_snaps, g_free);
+      g_file_enumerator_close(library_dir_files, NULL, NULL);
+      g_object_unref(library_dir_files);
+      g_error_free(error);
+      return NULL;
+    }
+    g_file_enumerator_close(library_dir_files, NULL, NULL);
+    g_object_unref(library_dir_files);
+  }
+  else
+  {
+    //well... fun.
+
+    GError *error = NULL;
+    GFileEnumerator *library_dir_files = g_file_enumerate_children(lib_parent, G_FILE_ATTRIBUTE_STANDARD_NAME, G_FILE_QUERY_INFO_NONE, NULL, &error);
+    if(library_dir_files == NULL)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate library parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_free(lib_snap_format);
+      g_free(dat_snap_format);
+      g_error_free(error);
+      g_queue_free(lib_snaps);
+      g_queue_free(dat_snaps);
+      return NULL;
+    }
+
+    GFileEnumerator *data_dir_files = g_file_enumerate_children(dat_parent, G_FILE_ATTRIBUTE_STANDARD_NAME, G_FILE_QUERY_INFO_NONE, NULL, &error);
+    if(data_dir_files == NULL)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate data parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_free(lib_snap_format);
+      g_free(dat_snap_format);
+      g_file_enumerator_close(library_dir_files, NULL, NULL);
+      g_object_unref(library_dir_files);
+      g_error_free(error);
+      g_queue_free(lib_snaps);
+      g_queue_free(dat_snaps);
+      return NULL;
+    }
+
+    GFileInfo *info = NULL;
+
+    while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+    {
+      const char* fname = g_file_info_get_name(info);
+      if(g_str_has_prefix(fname, lib_snap_format))
+      {
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        g_queue_insert_sorted(lib_snaps, g_strdup(fname), _db_snap_sort, NULL);
+      }
+      g_object_unref(info);
+    }
+    g_free(lib_snap_format);
+
+    if(error)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_queue_free_full(lib_snaps, g_free);
+      g_queue_free(dat_snaps);
+      g_file_enumerator_close(library_dir_files, NULL, NULL);
+      g_object_unref(library_dir_files);
+      g_file_enumerator_close(data_dir_files, NULL, NULL);
+      g_object_unref(data_dir_files);
+      g_error_free(error);
+      return NULL;
+    }
+    g_file_enumerator_close(library_dir_files, NULL, NULL);
+    g_object_unref(library_dir_files);
+
+    while ((info = g_file_enumerator_next_file(data_dir_files, NULL, &error)))
+    {
+      const char* fname = g_file_info_get_name(info);
+      if(g_str_has_prefix(fname, dat_snap_format))
+      {
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        g_queue_insert_sorted(dat_snaps, g_strdup(fname), _db_snap_sort, NULL);
+      }
+      g_object_unref(info);
+    }
+    g_free(dat_snap_format);
+
+    if(error)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating data parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_queue_free_full(lib_snaps, g_free);
+      g_queue_free_full(dat_snaps, g_free);
+      g_file_enumerator_close(data_dir_files, NULL, NULL);
+      g_object_unref(data_dir_files);
+      g_error_free(error);
+      return NULL;
+    }
+
+    g_file_enumerator_close(data_dir_files, NULL, NULL);
+    g_object_unref(data_dir_files);
+  }
+
+  // here we have list of snapssorted in date order, now we have to
+  // create from that list of snaps to be deleted and return that :D
+
+  GPtrArray *ret = g_ptr_array_new();
+
+  gchar *lib_parent_path = g_file_get_path(lib_parent);
+  g_object_unref(lib_parent);
+
+  while(g_queue_get_length(lib_snaps) > keep_snaps)
+  {
+    gchar *head = g_queue_pop_head(lib_snaps);
+    g_ptr_array_add(ret, g_strdup_printf("%s%s%s", lib_parent_path, G_DIR_SEPARATOR_S, head));
+    g_free(head);
+  }
+  g_free(lib_parent_path);
+  g_queue_free_full(lib_snaps, g_free);
+
+  gchar *dat_parent_path = g_file_get_path(dat_parent);
+  g_object_unref(dat_parent);
+
+  while(g_queue_get_length(dat_snaps) > keep_snaps)
+  {
+    gchar *head = g_queue_pop_head(dat_snaps);
+    g_ptr_array_add(ret, g_strdup_printf("%s%s%s", dat_parent_path, G_DIR_SEPARATOR_S, head));
+    g_free(head);
+  }
+  g_free(dat_parent_path);
+  g_queue_free_full(dat_snaps, g_free);
+
+  g_ptr_array_add (ret, NULL);
+
+  return (char**)g_ptr_array_free(ret, FALSE);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
