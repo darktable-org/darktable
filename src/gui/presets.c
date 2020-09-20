@@ -949,7 +949,13 @@ void dt_gui_favorite_presets_menu_show()
 
   gtk_widget_set_name(GTK_WIDGET(menu), "quick-presets-menu");
 
-  gchar *config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
+  gboolean retrieve_list = FALSE;
+  gchar *config = NULL;
+
+  if(!dt_conf_key_exists("plugins/darkroom/quick_preset_list"))
+    retrieve_list = TRUE;
+  else
+    config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
 
   GList *modules = darktable.develop->iop;
   if(modules)
@@ -969,6 +975,15 @@ void dt_gui_favorite_presets_menu_show()
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
           const char *name = (char *)sqlite3_column_text(stmt, 0);
+          if(retrieve_list)
+          {
+            // we only show it if module is in favorite
+            gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/favorite", iop->so->op);
+            const gboolean fav = dt_conf_get_bool(key);
+            g_free(key);
+            if(fav) config = dt_util_dstrcat(config, "ꬹ%s|%sꬹ", iop->so->op, name);
+          }
+
           // check that this preset is in the config list
           gchar *txt = dt_util_dstrcat(NULL, "ꬹ%s|%sꬹ", iop->so->op, name);
           if(config && strstr(config, txt))
@@ -986,6 +1001,7 @@ void dt_gui_favorite_presets_menu_show()
 
     } while((modules = g_list_next(modules)) != NULL);
   }
+  if(retrieve_list) dt_conf_set_string("plugins/darkroom/quick_preset_list", config);
   g_free(config);
   g_free(query);
 
