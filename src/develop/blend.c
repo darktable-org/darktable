@@ -2840,7 +2840,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
           x = (x + brightness) / (1.f + brightness);
           x = fmaxf(x, -1.f);
         }
-        mask[k] = ((x * e / (1.f + (e - 1.f) * fabsf(x))) / 2.f + 0.5f) * opacity;
+        mask[k] = clamp_range_f(
+            ((x * e / (1.f + (e - 1.f) * fabsf(x))) / 2.f + 0.5f) * opacity, 0.f, 1.f);
       }
     }
   }
