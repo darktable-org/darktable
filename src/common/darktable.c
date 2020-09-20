@@ -1214,6 +1214,11 @@ void dt_cleanup()
 
   const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
   const gboolean perform_snapshot = dt_database_maybe_snapshot(darktable.db);
+  gchar **snaps_to_remove = NULL;
+  if(perform_snapshot)
+  {
+    snaps_to_remove = dt_database_snaps_to_remove(darktable.db);
+  }
 
 #ifdef HAVE_PRINT
   dt_printers_abort_discovery();
@@ -1294,7 +1299,19 @@ void dt_cleanup()
   dt_database_optimize(darktable.db);
   if(perform_snapshot)
   {
-    dt_database_snapshot(darktable.db);
+    if(dt_database_snapshot(darktable.db) && snaps_to_remove)
+    {
+      int i = 0;
+      while(snaps_to_remove[i])
+      {
+        dt_print(DT_DEBUG_SQL, "[db backup] removing old snap: %s.\n", snaps_to_remove[i]);
+        g_unlink(snaps_to_remove[i++]);
+      }
+    }
+  }
+  if(snaps_to_remove)
+  {
+    g_strfreev(snaps_to_remove);
   }
   dt_database_destroy(darktable.db);
 
