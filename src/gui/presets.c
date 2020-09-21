@@ -791,6 +791,12 @@ static gboolean menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventB
   return FALSE;
 }
 
+/* quick presets list
+  The list of presets to show is saved in darktablerc 'plugins/darkroom/quick_preset_list' key
+  the content of the key is written in the form :
+    ꬹiop_name_0|preset_name_0ꬹꬹiop_name_1|preset_name_1ꬹ...
+*/
+
 static gboolean menuitem_manage_quick_presets_traverse(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter,
                                                        gpointer data)
 {

@@ -722,6 +722,14 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
   return d->current;
 }
 
+/* presets syntax :
+  Layout presets are saved as string consisting of blocs separated by ꬹ
+  ꬹBLOC_0ꬹBLOC_1ꬹBLOC_2....
+  BLOC_0 : reserved for future use. Always 1
+  BLOC_1.... : blocs describing each group, contains :
+    name|icon_name||iop_name_0|iop_name_1....
+*/
+
 static gchar *_preset_retrieve_old_layout_updated()
 {
   gchar *ret = NULL;
