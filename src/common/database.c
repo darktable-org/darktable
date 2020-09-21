@@ -3389,31 +3389,40 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
   g_date_time_unref(date_now);
 
   const char *file_pattern = "%s-snp-%s";
+  const char *temp_pattern = "%s-tmp-%s";
 
   gchar *lib_backup_file = g_strdup_printf(file_pattern, db->dbfilename_library, date_suffix);
-  gchar *dat_backup_file = g_strdup_printf(file_pattern, db->dbfilename_data, date_suffix);
+  gchar *lib_tmpbackup_file = g_strdup_printf(temp_pattern, db->dbfilename_library, date_suffix);
 
   g_free(date_suffix);
 
-  int rc = _backup_db(db->handle, "main", lib_backup_file, _print_backup_progress);
+  int rc = _backup_db(db->handle, "main", lib_tmpbackup_file, _print_backup_progress);
   if(!(rc==SQLITE_OK))
   {
-    g_unlink(lib_backup_file);
+    g_unlink(lib_tmpbackup_file);
+    g_free(lib_tmpbackup_file);
     g_free(lib_backup_file);
-    g_free(dat_backup_file);
     return FALSE;
   }
+  g_rename(lib_tmpbackup_file, lib_backup_file);
   g_chmod(lib_backup_file, S_IRUSR);
+  g_free(lib_tmpbackup_file);
   g_free(lib_backup_file);
 
-  rc = _backup_db(db->handle, "data", dat_backup_file, _print_backup_progress);
+  gchar *dat_backup_file = g_strdup_printf(file_pattern, db->dbfilename_data, date_suffix);
+  gchar *dat_tmpbackup_file = g_strdup_printf(temp_pattern, db->dbfilename_data, date_suffix);
+
+  rc = _backup_db(db->handle, "data", dat_tmpbackup_file, _print_backup_progress);
   if(!(rc==SQLITE_OK))
   {
-    g_unlink(dat_backup_file);
+    g_unlink(dat_tmpbackup_file);
+    g_free(dat_tmpbackup_file);
     g_free(dat_backup_file);
     return FALSE;
   }
+  g_rename(dat_tmpbackup_file, dat_backup_file);
   g_chmod(dat_backup_file, S_IRUSR);
+  g_free(dat_tmpbackup_file);
   g_free(dat_backup_file);
 
   return TRUE;
@@ -3657,16 +3666,19 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
   gchar *lib_basename = g_file_get_basename(lib_file);
   g_object_unref(lib_file);
   gchar *lib_snap_format = g_strdup_printf("%s-snp-", lib_basename);
+  gchar *lib_tmp_format = g_strdup_printf("%s-tmp-", lib_basename);
   g_free(lib_basename);
 
   gchar *dat_basename = g_file_get_basename(dat_file);
   g_object_unref(dat_file);
   gchar *dat_snap_format = g_strdup_printf("%s-snp-", dat_basename);
+  gchar *dat_tmp_format = g_strdup_printf("%s-tmp-", lib_basename);
   g_free(dat_basename);
 
   GQueue *lib_snaps = g_queue_new();
   GQueue *dat_snaps = g_queue_new();
-
+  GQueue *tmplib_snaps = g_queue_new();
+  GQueue *tmpdat_snaps = g_queue_new();
 
   if(g_file_equal(lib_parent, dat_parent))
   {
@@ -3683,6 +3695,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_free(dat_snap_format);
       g_queue_free(lib_snaps);
       g_queue_free(dat_snaps);
+      g_queue_free(tmplib_snaps);
+      g_queue_free(tmpdat_snaps);
       g_error_free(error);
       return NULL;
     }
@@ -3702,6 +3716,11 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
         dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
         g_queue_insert_sorted(dat_snaps, g_strdup(fname), _db_snap_sort, NULL);
       }
+      else if(g_str_has_prefix(fname, lib_tmp_format) || g_str_has_prefix(fname, dat_tmp_format))
+      {
+        //we insert into single queue, since it's just dependent on parent
+        g_queue_push_head(tmplib_snaps, g_strdup(fname));
+      }
       g_object_unref(info);
     }
     g_free(lib_snap_format);
@@ -3714,6 +3733,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_object_unref(dat_parent);
       g_queue_free_full(lib_snaps, g_free);
       g_queue_free_full(dat_snaps, g_free);
+      g_queue_free_full(tmplib_snaps, g_free);
+      g_queue_free_full(tmpdat_snaps, g_free);
       g_file_enumerator_close(library_dir_files, NULL, NULL);
       g_object_unref(library_dir_files);
       g_error_free(error);
@@ -3738,6 +3759,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_error_free(error);
       g_queue_free(lib_snaps);
       g_queue_free(dat_snaps);
+      g_queue_free(tmplib_snaps);
+      g_queue_free(tmpdat_snaps);
       return NULL;
     }
 
@@ -3754,6 +3777,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_error_free(error);
       g_queue_free(lib_snaps);
       g_queue_free(dat_snaps);
+      g_queue_free(tmplib_snaps);
+      g_queue_free(tmpdat_snaps);
       return NULL;
     }
 
@@ -3767,6 +3792,11 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
         dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
         g_queue_insert_sorted(lib_snaps, g_strdup(fname), _db_snap_sort, NULL);
       }
+      else if(g_str_has_prefix(fname, lib_tmp_format) || g_str_has_prefix(fname, dat_tmp_format))
+      {
+        // we remove all incomplete snaps matching pattern in BOTH dirs
+        g_queue_push_head(tmplib_snaps, g_strdup(fname));
+      }
       g_object_unref(info);
     }
     g_free(lib_snap_format);
@@ -3778,6 +3808,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_object_unref(dat_parent);
       g_queue_free_full(lib_snaps, g_free);
       g_queue_free(dat_snaps);
+      g_queue_free_full(tmplib_snaps, g_free);
+      g_queue_free(tmpdat_snaps);
       g_file_enumerator_close(library_dir_files, NULL, NULL);
       g_object_unref(library_dir_files);
       g_file_enumerator_close(data_dir_files, NULL, NULL);
@@ -3796,6 +3828,11 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
         dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
         g_queue_insert_sorted(dat_snaps, g_strdup(fname), _db_snap_sort, NULL);
       }
+      else if(g_str_has_prefix(fname, lib_tmp_format) || g_str_has_prefix(fname, dat_tmp_format))
+      {
+        //we add to queue both matches - it just depends on parent
+        g_queue_push_head(tmpdat_snaps, g_strdup(fname));
+      }
       g_object_unref(info);
     }
     g_free(dat_snap_format);
@@ -3807,6 +3844,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_object_unref(dat_parent);
       g_queue_free_full(lib_snaps, g_free);
       g_queue_free_full(dat_snaps, g_free);
+      g_queue_free_full(tmplib_snaps, g_free);
+      g_queue_free_full(tmpdat_snaps, g_free);
       g_file_enumerator_close(data_dir_files, NULL, NULL);
       g_object_unref(data_dir_files);
       g_error_free(error);
@@ -3831,8 +3870,15 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     g_ptr_array_add(ret, g_strconcat(lib_parent_path, G_DIR_SEPARATOR_S, head, NULL));
     g_free(head);
   }
+  while(!g_queue_is_empty(tmplib_snaps))
+  {
+    gchar *head = g_queue_pop_head(tmplib_snaps);
+    g_ptr_array_add(ret, g_strconcat(lib_parent_path, G_DIR_SEPARATOR_S, head, NULL));
+    g_free(head);
+  }
   g_free(lib_parent_path);
   g_queue_free_full(lib_snaps, g_free);
+  g_queue_free_full(tmplib_snaps, g_free); // should be totally freed, but eh - this won't make doublefree
 
   gchar *dat_parent_path = g_file_get_path(dat_parent);
   g_object_unref(dat_parent);
@@ -3843,8 +3889,15 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     g_ptr_array_add(ret, g_strconcat(dat_parent_path, G_DIR_SEPARATOR_S, head, NULL));
     g_free(head);
   }
+  while(!g_queue_is_empty(tmpdat_snaps))
+  {
+    gchar *head = g_queue_pop_head(tmpdat_snaps);
+    g_ptr_array_add(ret, g_strconcat(dat_parent_path, G_DIR_SEPARATOR_S, head, NULL));
+    g_free(head);
+  }
   g_free(dat_parent_path);
   g_queue_free_full(dat_snaps, g_free);
+  g_queue_free_full(tmpdat_snaps, g_free);
 
   g_ptr_array_add (ret, NULL);
 
