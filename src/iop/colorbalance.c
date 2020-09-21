@@ -1771,8 +1771,8 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
 
   if(old_container) gtk_widget_destroy(old_container);
 
-  const gchar *short_label_ops[] = { N_("offset"), N_("power"), N_("slope") };
-  const gchar *short_label_lgg[] = { N_("lift"), N_("gamma"), N_("gain") };
+  const gchar *short_label_ops[] = { C_("color", "offset"), C_("color", "power"), C_("color", "slope") };
+  const gchar *short_label_lgg[] = { C_("color", "lift"), C_("color", "gamma"), C_("color", "gain") };
   const gchar **short_label = (p->mode == SLOPE_OFFSET_POWER) ? short_label_ops : short_label_lgg;
   const gchar *long_label[]
      = { N_("shadows : lift / offset"),
