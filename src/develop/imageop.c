@@ -2103,53 +2103,44 @@ static void header_size_callback(GtkWidget *widget, GdkRectangle *allocation, Gt
       button && GTK_IS_BUTTON(button->data);
       button = g_list_previous(button)) num_buttons++;
 
-  gboolean hide_all = FALSE;
+  gboolean hide_all = (allocation->width == 1);
   int num_to_unhide = (allocation->width - 2) / button_size.width;
-  double opacity = num_to_unhide > 0 ? 1.0 : (double) allocation->width / button_size.width;
-  gboolean all_opaque = FALSE;
+  double opacity_leftmost = num_to_unhide > 0 ? 1.0 : (double) allocation->width / button_size.width;
+  double opacity_others = 1.0;
 
-  if(!g_strcmp0(config, "always"))
+  if(g_strcmp0(config, "glide")) // glide uses all defaults above
   {
-    num_to_unhide = num_buttons;
-  }
-  else if(!g_strcmp0(config, "active"))
-  {
-    hide_all = TRUE;
-  }
-  else if(!g_strcmp0(config, "dim"))
-  {
-    num_to_unhide = num_buttons;
-    opacity = 0.3;
-    all_opaque = TRUE;
-  }
-  else if(!g_strcmp0(config, "glide"))
-  {
-    if(allocation->width == 1) hide_all = TRUE;
-  }
-  else
-  { // these all (un)hide all buttons at the same time
+    // these all (un)hide all buttons at the same time
     if(num_to_unhide < num_buttons) num_to_unhide = 0;
-    if(allocation->width == 1) hide_all = TRUE;
 
     if(!g_strcmp0(config, "smooth"))
     {
-      all_opaque = TRUE;
+      opacity_others = opacity_leftmost;
     }
     else
     {
-      opacity = 1.0; // "fit"
-
-      GdkRectangle total_alloc;
-      gtk_widget_get_allocation(header, &total_alloc);
-
-      if(!g_strcmp0(config, "auto"))
+      if(!g_strcmp0(config, "fit"))
       {
-        if(total_alloc.width < panel_trigger_width) hide_all = TRUE;
+        opacity_leftmost = 1.0;
       }
-      else if(!g_strcmp0(config, "fade"))
+      else
       {
-        opacity = (total_alloc.width - panel_trigger_width) / 100.;
-        all_opaque = TRUE;
+        GdkRectangle total_alloc;
+        gtk_widget_get_allocation(header, &total_alloc);
+
+        if(!g_strcmp0(config, "auto"))
+        {
+          opacity_leftmost = 1.0;
+          if(total_alloc.width < panel_trigger_width) hide_all = TRUE;
+        }
+        else if(!g_strcmp0(config, "fade"))
+        {
+          opacity_leftmost = opacity_others = (total_alloc.width - panel_trigger_width) / 100.;
+        }
+        else
+        {
+          fprintf(stderr, "unknown darkroom/ui/hide_header_buttons option %s\n", config);
+        }
       }
     }
   }
@@ -2169,12 +2160,12 @@ static void header_size_callback(GtkWidget *widget, GdkRectangle *allocation, Gt
     }
 
     gtk_widget_set_visible(b, !hide_all);
-    gtk_widget_set_opacity(b, all_opaque ? opacity : 1.0);
+    gtk_widget_set_opacity(b, opacity_others);
 
     prev_button = button;
   }
   if(prev_button && num_to_unhide == 0)
-    gtk_widget_set_opacity(GTK_WIDGET(prev_button->data), opacity);
+    gtk_widget_set_opacity(GTK_WIDGET(prev_button->data), opacity_leftmost);
 
   g_list_free(children);
   g_free(config);
@@ -2194,7 +2185,23 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
      event->mode != GDK_CROSSING_NORMAL)) return TRUE;
 
   gchar *config = dt_conf_get_string("darkroom/ui/hide_header_buttons");
-  gboolean dynamic = g_strcmp0(config, "always");
+
+  gboolean dynamic = FALSE;
+  double opacity = 1.0;
+  if(!g_strcmp0(config, "always"))
+  {
+    show_buttons = TRUE;
+  }
+  else if(!g_strcmp0(config, "dim"))
+  {
+    if(!show_buttons) opacity = 0.3;
+    show_buttons = TRUE;
+  }
+  else if(!g_strcmp0(config, "active"))
+    ;
+  else
+    dynamic = TRUE;
+
   g_free(config);
 
   GList *children = gtk_container_get_children(GTK_CONTAINER(header));
@@ -2204,24 +2211,31 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
       button && GTK_IS_BUTTON(button->data);
       button = g_list_previous(button))
   {
-    gtk_widget_set_visible(GTK_WIDGET(button->data), show_buttons);
-    gtk_widget_set_opacity(GTK_WIDGET(button->data), 1.0);
+    gtk_widget_set_visible(GTK_WIDGET(button->data), show_buttons && !always_hide);
+    gtk_widget_set_opacity(GTK_WIDGET(button->data), opacity);
   }
-  if(GTK_IS_DRAWING_AREA(button->data)) // (de)activate width trigger widget
-    gtk_widget_set_visible(GTK_WIDGET(button->data), !show_buttons && !always_hide);
+  if(GTK_IS_DRAWING_AREA(button->data))
+  {
+    // temporarily or permanently (de)activate width trigger widget
+    if(dynamic)
+      gtk_widget_set_visible(GTK_WIDGET(button->data), !show_buttons && !always_hide);
+    else
+      gtk_widget_destroy(GTK_WIDGET(button->data));
+  }
   else
   {
     if(dynamic)
     {
       GtkWidget *space = gtk_drawing_area_new();
       gtk_box_pack_end(GTK_BOX(header), space, TRUE, TRUE, 0);
+      gtk_widget_show(space);
       g_signal_connect(G_OBJECT(space), "size-allocate", G_CALLBACK(header_size_callback), header);
     }
   }
 
   g_list_free(children);
 
-  if(!show_buttons && !always_hide)
+  if(dynamic && !show_buttons && !always_hide)
   {
     GdkRectangle fake_allocation = {.width = UINT16_MAX};
     header_size_callback(NULL, &fake_allocation, header);
