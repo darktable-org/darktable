@@ -26,4 +26,6 @@
   <xi:include href="global_tonemap.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="filmicrgb.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="toneequalizer.xml"  xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </sect2>
