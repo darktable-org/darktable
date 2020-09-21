@@ -2426,6 +2426,9 @@ void dt_database_backup(const char *filename)
       if(fd < 0 || !g_close(fd, &gerror)) copyStatus = FALSE;
     }
     if(!copyStatus) fprintf(stderr, "[backup failed] %s -> %s\n", filename, backup);
+
+    g_object_unref(src);
+    g_object_unref(dest);
   }
 
   g_free(version);
@@ -2668,8 +2671,51 @@ start:
       }
       else
       {
-        quick_check_text = g_strdup("");// a trick;
+        quick_check_text = g_strdup(""); // a trick;
       }
+
+      gchar *data_snap = dt_database_get_most_recent_snap(dbfilename_data);
+
+      GtkWidget *dialog;
+      GtkDialogFlags dflags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+      const char* label_options = NULL;
+
+      if(data_snap)
+      {
+        dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                            NULL,
+                                            dflags,
+                                            _("close darktable"),
+                                            GTK_RESPONSE_CLOSE,
+                                            _("attempt restore"),
+                                            GTK_RESPONSE_ACCEPT,
+                                            _("delete database"),
+                                            GTK_RESPONSE_REJECT,
+                                            NULL);
+        gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+        label_options = _("do you want to close darktable now to manually restore\n"
+                          "the database from a backup, attempt an automatic restore\n"
+                          "from the most recent snapshot or delete the corrupted database\n"
+                          "and start with a new one?");
+      }
+      else
+      {
+        dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                            NULL,
+                                            dflags,
+                                            _("close darktable"),
+                                            GTK_RESPONSE_CLOSE,
+                                            _("delete database"),
+                                            GTK_RESPONSE_REJECT,
+                                            NULL);
+        gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
+        label_options = _("do you want to close darktable now to manually restore\n"
+                          "the database from a backup or delete the corrupted database\n"
+                          "and start with a new one?");
+      }
+
+
 
       char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                    "\n"
@@ -2677,39 +2723,76 @@ start:
                                                    "\n"
                                                    "it seems that the database is corrupted.\n"
                                                    "%s"
-                                                   "do you want to close darktable now to manually restore\n"
-                                                   "the database from a backup or start with a new one?"),
-                                                 dbfilename_data, quick_check_text);
+                                                   "%s"),
+                                                 dbfilename_data, quick_check_text, label_options);
 
       g_free(quick_check_text);
       g_free(data_status);
 
-      gboolean shall_we_delete_the_db =
-          dt_gui_show_standalone_yes_no_dialog(_("darktable - error opening database"), label_text,
-                                               _("close darktable"), _("delete database"));
-
+      GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
+      GtkWidget *label = gtk_label_new(NULL);
+      gtk_label_set_markup(GTK_LABEL(label), label_text);
       g_free(label_text);
+      gtk_container_add(GTK_CONTAINER (content_area), label);
+
+      gtk_widget_show_all(content_area);
+
+      int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+
+      gtk_widget_destroy(dialog);
 
       dt_database_destroy(db);
       db = NULL;
 
-      if(shall_we_delete_the_db)
-      {
-        fprintf(stderr, "[init] deleting `%s' on user request", dbfilename_data);
-
-        if(g_unlink(dbfilename_data) == 0)
-          fprintf(stderr, " ... ok\n");
-        else
-          fprintf(stderr, " ... failed\n");
-
-        goto start;
-      }
-      else
+      if(resp != GTK_RESPONSE_ACCEPT && resp != GTK_RESPONSE_REJECT)
       {
         fprintf(stderr, "[init] database `%s' is corrupt and can't be opened! either replace it from a backup or "
         "delete the file so that darktable can create a new one the next time. aborting\n", dbfilename_data);
+        g_free(data_snap);
         goto error;
       }
+
+      //here were sure that response is either accept (restore from snap) or reject (just delete the damaged db)
+
+      fprintf(stderr, "[init] deleting `%s' on user request", dbfilename_data);
+
+      if(g_unlink(dbfilename_data) == 0)
+        fprintf(stderr, " ... ok\n");
+      else
+        fprintf(stderr, " ... failed\n");
+
+      if(resp == GTK_RESPONSE_ACCEPT && data_snap)
+      {
+        fprintf(stderr, "[init] restoring `%s' from `%s'...", dbfilename_data, data_snap);
+        GError *gerror = NULL;
+        if(!g_file_test(dbfilename_data, G_FILE_TEST_EXISTS))
+        {
+          GFile *src = g_file_new_for_path(data_snap);
+          GFile *dest = g_file_new_for_path(dbfilename_data);
+          gboolean copyStatus = TRUE;
+          if(g_file_test(data_snap, G_FILE_TEST_EXISTS))
+          {
+            copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+            if(copyStatus) copyStatus = g_chmod(dbfilename_data, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
+          }
+          else
+          {
+            // there is nothing to restore, create an empty file
+            int fd = g_open(dbfilename_data, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            if(fd < 0 || !g_close(fd, &gerror)) copyStatus = FALSE;
+          }
+          if(copyStatus)
+            fprintf(stderr, " success!\n");
+          else
+            fprintf(stderr, " failed!\n");
+
+          g_object_unref(src);
+          g_object_unref(dest);
+        }
+      }
+      g_free(data_snap);
+      g_free(dbname);
+      goto start;
     }
   }
 
@@ -2768,48 +2851,125 @@ start:
     }
     else
     {
-      quick_check_text = g_strdup("");// a trick;
+      quick_check_text = g_strdup(""); // a trick;
+    }
+
+    gchar *data_snap = dt_database_get_most_recent_snap(dbfilename_library);
+
+    GtkWidget *dialog;
+    GtkDialogFlags dflags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+    const char* label_options = NULL;
+
+    if(data_snap)
+    {
+      dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                          NULL,
+                                          dflags,
+                                          _("close darktable"),
+                                          GTK_RESPONSE_CLOSE,
+                                          _("attempt restore"),
+                                          GTK_RESPONSE_ACCEPT,
+                                          _("delete database"),
+                                          GTK_RESPONSE_REJECT,
+                                          NULL);
+      gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+      label_options = _("do you want to close darktable now to manually restore\n"
+                        "the database from a backup, attempt an automatic restore\n"
+                        "from the most recent snapshot or delete the corrupted database\n"
+                        "and start with a new one?");
+    }
+    else
+    {
+      dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                          NULL,
+                                          dflags,
+                                          _("close darktable"),
+                                          GTK_RESPONSE_CLOSE,
+                                          _("delete database"),
+                                          GTK_RESPONSE_REJECT,
+                                          NULL);
+      gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
+      label_options = _("do you want to close darktable now to manually restore\n"
+                        "the database from a backup or delete the corrupted database\n"
+                        "and start with a new one?");
     }
 
     char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
-                                                  "\n"
-                                                  "<span style=\"italic\">%s</span>\n"
-                                                  "\n"
-                                                  "it seems that the database is corrupted.\n"
-                                                  "%s"
-                                                  "do you want to close darktable now to manually restore\n"
-                                                  "the database from a backup or start with a new one?"),
-                                               dbfilename_library, quick_check_text);
+                                                 "\n"
+                                                 "<span style=\"italic\">%s</span>\n"
+                                                 "\n"
+                                                 "it seems that the database is corrupted.\n"
+                                                 "%s"
+                                                 "%s"),
+                                               dbfilename_data, quick_check_text, label_options);
 
     g_free(quick_check_text);
     g_free(libdb_status);
 
-    gboolean shall_we_delete_the_db =
-        dt_gui_show_standalone_yes_no_dialog(_("darktable - error opening database"), label_text,
-                                              _("close darktable"), _("delete database"));
-
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
+    GtkWidget *label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label), label_text);
     g_free(label_text);
+    gtk_container_add(GTK_CONTAINER (content_area), label);
+
+    gtk_widget_show_all(content_area);
+
+    int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    gtk_widget_destroy(dialog);
 
     dt_database_destroy(db);
     db = NULL;
 
-    if(shall_we_delete_the_db)
-    {
-      fprintf(stderr, "[init] deleting `%s' on user request", dbfilename_library);
-
-      if(g_unlink(dbfilename_library) == 0)
-        fprintf(stderr, " ... ok\n");
-      else
-        fprintf(stderr, " ... failed\n");
-
-      goto start;
-    }
-    else
+    if(resp != GTK_RESPONSE_ACCEPT && resp != GTK_RESPONSE_REJECT)
     {
       fprintf(stderr, "[init] database `%s' is corrupt and can't be opened! either replace it from a backup or "
-                      "delete the file so that darktable can create a new one the next time. aborting\n", dbname);
+        "delete the file so that darktable can create a new one the next time. aborting\n", dbfilename_library);
+      g_free(data_snap);
       goto error;
     }
+
+    //here were sure that response is either accept (restore from snap) or reject (just delete the damaged db)
+
+    fprintf(stderr, "[init] deleting `%s' on user request", dbfilename_library);
+
+    if(g_unlink(dbfilename_library) == 0)
+      fprintf(stderr, " ... ok\n");
+    else
+      fprintf(stderr, " ... failed\n");
+
+    if(resp == GTK_RESPONSE_ACCEPT && data_snap)
+    {
+      fprintf(stderr, "[init] restoring `%s' from `%s'...", dbfilename_library, data_snap);
+      GError *gerror = NULL;
+      if(!g_file_test(dbfilename_library, G_FILE_TEST_EXISTS))
+      {
+        GFile *src = g_file_new_for_path(data_snap);
+        GFile *dest = g_file_new_for_path(dbfilename_library);
+        gboolean copyStatus = TRUE;
+        if(g_file_test(data_snap, G_FILE_TEST_EXISTS))
+        {
+          copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+          if(copyStatus) copyStatus = g_chmod(dbfilename_library, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
+        }
+        else
+        {
+          // there is nothing to restore, create an empty file to prevent further backup attempts
+          int fd = g_open(dbfilename_library, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+          if(fd < 0 || !g_close(fd, &gerror)) copyStatus = FALSE;
+        }
+        if(copyStatus)
+          fprintf(stderr, " success!\n");
+        else
+          fprintf(stderr, " failed!\n");
+        g_object_unref(src);
+        g_object_unref(dest);
+      }
+    }
+    g_free(data_snap);
+    g_free(dbname);
+    goto start;
   }
   else
   {
@@ -3236,22 +3396,24 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
   g_free(date_suffix);
 
   int rc = _backup_db(db->handle, "main", lib_backup_file, _print_backup_progress);
-  if(!rc==SQLITE_OK)
+  if(!(rc==SQLITE_OK))
   {
     g_unlink(lib_backup_file);
     g_free(lib_backup_file);
     g_free(dat_backup_file);
     return FALSE;
   }
+  g_chmod(lib_backup_file, S_IRUSR);
   g_free(lib_backup_file);
 
   rc = _backup_db(db->handle, "data", dat_backup_file, _print_backup_progress);
-  if(!rc==SQLITE_OK)
+  if(!(rc==SQLITE_OK))
   {
     g_unlink(dat_backup_file);
     g_free(dat_backup_file);
     return FALSE;
   }
+  g_chmod(dat_backup_file, S_IRUSR);
   g_free(dat_backup_file);
 
   return TRUE;
@@ -3300,6 +3462,8 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
     g_free(config);
     return TRUE;
   }
+  g_free(config);
+
   //we're in trouble zone - we have to determine when was the last snapshot done (including version upgrade snapshot) :/
   //this could be easy if we wrote date of last successful backup to config, but that's not really an option since
   //backup may done as last db operation, way after config file is closed. Plus we might be mixing dates of backups for
@@ -3374,6 +3538,8 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   g_object_unref(library_dir_files);
 
   GDateTime *date_now = g_date_time_new_now_local();
+
+  // Even if last_snap is 0 (didn't found any snaps) it produces proper date - unix epoch
   GDateTime *date_last_snap = g_date_time_new_from_unix_local(last_snap);
 
   gchar *now_txt = g_date_time_format(date_now, "%Y%m%d%H%M%S");
@@ -3651,7 +3817,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     g_object_unref(data_dir_files);
   }
 
-  // here we have list of snapssorted in date order, now we have to
+  // here we have list of snaps sorted in date order, now we have to
   // create from that list of snaps to be deleted and return that :D
 
   GPtrArray *ret = g_ptr_array_new();
@@ -3662,7 +3828,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
   while(g_queue_get_length(lib_snaps) > keep_snaps)
   {
     gchar *head = g_queue_pop_head(lib_snaps);
-    g_ptr_array_add(ret, g_strdup_printf("%s%s%s", lib_parent_path, G_DIR_SEPARATOR_S, head));
+    g_ptr_array_add(ret, g_strconcat(lib_parent_path, G_DIR_SEPARATOR_S, head, NULL));
     g_free(head);
   }
   g_free(lib_parent_path);
@@ -3674,7 +3840,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
   while(g_queue_get_length(dat_snaps) > keep_snaps)
   {
     gchar *head = g_queue_pop_head(dat_snaps);
-    g_ptr_array_add(ret, g_strdup_printf("%s%s%s", dat_parent_path, G_DIR_SEPARATOR_S, head));
+    g_ptr_array_add(ret, g_strconcat(dat_parent_path, G_DIR_SEPARATOR_S, head, NULL));
     g_free(head);
   }
   g_free(dat_parent_path);
@@ -3683,6 +3849,99 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
   g_ptr_array_add (ret, NULL);
 
   return (char**)g_ptr_array_free(ret, FALSE);
+}
+
+gchar *dt_database_get_most_recent_snap(const char* db_filename)
+{
+  if(!g_strcmp0(db_filename, ":memory:"))
+    return NULL;
+
+  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.\n");
+  GFile *db_file = g_file_parse_name(db_filename);
+  GFile *parent = g_file_get_parent(db_file);
+
+  if(parent == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get database parent!.\n");
+    g_object_unref(db_file);
+    return NULL;
+  }
+
+  gchar *db_basename = g_file_get_basename(db_file);
+  g_object_unref(db_file);
+
+  gchar *db_snap_format = g_strdup_printf("%s-snp-", db_basename);
+  gchar *db_backup_format = g_strdup_printf("%s-pre-", db_basename);
+  g_free(db_basename);
+
+  GError *error = NULL;
+  GFileEnumerator *db_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
+
+  if(db_dir_files == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate database parent: %s.\n", error->message);
+    g_object_unref(parent);
+    g_error_free(error);
+    return NULL;
+  }
+
+  GFileInfo *info = NULL;
+  guint64 last_snap = 0;
+  gchar *last_snap_name = NULL;
+
+  while ((info = g_file_enumerator_next_file(db_dir_files, NULL, &error)))
+  {
+    const char* fname = g_file_info_get_name(info);
+    if(g_str_has_prefix(fname, db_snap_format) || g_str_has_prefix(fname, db_backup_format))
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+      if(last_snap == 0)
+      {
+        last_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+        last_snap_name = g_strdup(fname);
+        g_object_unref(info);
+        continue;
+      }
+      guint64 try_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      if(try_snap > last_snap)
+      {
+        last_snap = try_snap;
+        g_free(last_snap_name);
+        last_snap_name = g_strdup(fname);
+      }
+    }
+    g_object_unref(info);
+  }
+  g_free(db_snap_format);
+  g_free(db_backup_format);
+
+  if(error)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating database parent: %s.\n", error->message);
+    g_file_enumerator_close(db_dir_files, NULL, NULL);
+    g_object_unref(db_dir_files);
+    g_error_free(error);
+    g_free(last_snap_name);
+    return NULL;
+  }
+
+  g_file_enumerator_close(db_dir_files, NULL, NULL);
+  g_object_unref(db_dir_files);
+
+  if(!last_snap_name)
+  {
+    g_object_unref(parent);
+    return NULL;
+  }
+
+  gchar *parent_path = g_file_get_path(parent);
+  g_object_unref(parent);
+
+  gchar *ret = g_strconcat(parent_path, G_DIR_SEPARATOR_S, last_snap_name, NULL);
+  g_free(parent_path);
+  g_free(last_snap_name);
+
+  return ret;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
