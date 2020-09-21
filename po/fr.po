@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-21 08:09+0200\n"
+"POT-Creation-Date: 2020-09-21 08:44+0200\n"
 "PO-Revision-Date: 2020-09-21 08:11+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -2031,7 +2031,7 @@ msgstr "affichage des buttons sur la droite des modules en chambre noire"
 #: ../build/src/preferences_gen.h:3189
 msgctxt "preferences"
 msgid "active"
-msgstr "acti"
+msgstr "actif"
 
 #: ../build/src/preferences_gen.h:3194
 msgctxt "preferences"
@@ -5210,12 +5210,12 @@ msgstr "supprimer"
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2314
+#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2328
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2314
+#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2328
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
@@ -5260,7 +5260,7 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:2283
+#: ../src/develop/imageop.c:2297
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -5268,17 +5268,17 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2294 ../src/libs/lib.c:1065
+#: ../src/develop/imageop.c:2308 ../src/libs/lib.c:1065
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2302 ../src/gui/preferences.c:794
+#: ../src/develop/imageop.c:2316 ../src/gui/preferences.c:794
 #: ../src/libs/lib.c:1074
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/develop/imageop.c:2304
+#: ../src/develop/imageop.c:2318
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5286,7 +5286,7 @@ msgstr ""
 "pré-réglages\n"
 "clic-milieu pour appliquer sur une nouvelle instance"
 
-#: ../src/develop/imageop.c:2588
+#: ../src/develop/imageop.c:2602
 msgid "ERROR"
 msgstr "ERREUR"
 
