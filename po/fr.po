@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-18 23:38+0200\n"
-"PO-Revision-Date: 2020-09-18 23:30+0200\n"
+"POT-Creation-Date: 2020-09-21 08:09+0200\n"
+"PO-Revision-Date: 2020-09-21 08:11+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -396,7 +396,7 @@ msgstr "couleurs saturées"
 #: ../build/src/iop/introspection_splittoning.c:134
 #: ../build/src/iop/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1460 ../src/develop/blend_gui.c:1478
-#: ../src/iop/channelmixer.c:633 ../src/iop/colorbalance.c:2035
+#: ../src/iop/channelmixer.c:633 ../src/iop/colorbalance.c:2043
 #: ../src/iop/colorize.c:359 ../src/iop/colorreconstruction.c:1301
 #: ../src/iop/colorzones.c:2364
 msgid "hue"
@@ -435,7 +435,7 @@ msgstr "clarté"
 #: ../build/src/iop/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:1457 ../src/iop/basicadj.c:657
 #: ../src/iop/channelmixer.c:634 ../src/iop/colisa.c:328
-#: ../src/iop/colorbalance.c:2052 ../src/iop/colorchecker.c:1390
+#: ../src/iop/colorbalance.c:2060 ../src/iop/colorchecker.c:1390
 #: ../src/iop/colorcorrection.c:270 ../src/iop/colorize.c:370
 #: ../src/iop/colorzones.c:2363 ../src/iop/lowpass.c:602
 #: ../src/iop/soften.c:676 ../src/iop/vignette.c:1032
@@ -942,7 +942,7 @@ msgstr "détection par 3 voisins"
 #: ../build/src/iop/introspection_rgbcurve.c:219
 #: ../build/src/iop/introspection_rgblevels.c:51
 #: ../build/src/iop/introspection_rgblevels.c:118 ../src/iop/bilat.c:427
-#: ../src/iop/colorbalance.c:1893 ../src/iop/denoiseprofile.c:3943
+#: ../src/iop/colorbalance.c:1901 ../src/iop/denoiseprofile.c:3943
 #: ../src/iop/exposure.c:914 ../src/iop/levels.c:709
 #: ../src/iop/profile_gamma.c:745 ../src/libs/copy_history.c:357
 #: ../src/libs/export.c:805 ../src/libs/image.c:519
@@ -1093,7 +1093,7 @@ msgid "logarithmic"
 msgstr "logarithmique"
 
 #: ../build/src/iop/introspection_profile_gamma.c:185
-#: ../src/iop/colorbalance.c:1768 ../src/iop/profile_gamma.c:697
+#: ../src/iop/profile_gamma.c:697
 msgid "gamma"
 msgstr "gamma"
 
@@ -2984,7 +2984,7 @@ msgstr "Imprimer vos images"
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1568 ../src/libs/collect.c:365
 #: ../src/libs/copy_history.c:100 ../src/libs/geotagging.c:474
-#: ../src/libs/import.c:544 ../src/libs/import.c:650 ../src/libs/lib.c:227
+#: ../src/libs/import.c:549 ../src/libs/import.c:655 ../src/libs/lib.c:227
 #: ../src/libs/styles.c:366 ../src/libs/styles.c:391 ../src/libs/tagging.c:2205
 #: ../src/libs/tagging.c:2246
 msgid "_cancel"
@@ -3476,7 +3476,7 @@ msgstr "erreur de chargement du dossier « %s »"
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:294 ../src/libs/import.c:610
+#: ../src/common/darktable.c:294 ../src/libs/import.c:615
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
@@ -4528,7 +4528,7 @@ msgstr[1] "importation de %d images"
 msgid "importing image %s"
 msgstr "importation de l'image %s"
 
-#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:544
+#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:549
 msgid "import image"
 msgstr "importer une image"
 
@@ -6103,11 +6103,11 @@ msgid "storage file"
 msgstr "fichier de stockage"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:278 ../src/libs/import.c:378
+#: ../src/gui/camera_import_dialog.c:278 ../src/libs/import.c:383
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:379
+#: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:384
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -6897,8 +6897,8 @@ msgstr "sélectionne le fichier à importer"
 
 #: ../src/gui/preferences.c:1605 ../src/gui/preferences.c:1688
 #: ../src/libs/collect.c:366 ../src/libs/copy_history.c:101
-#: ../src/libs/geotagging.c:475 ../src/libs/import.c:545
-#: ../src/libs/import.c:651 ../src/libs/styles.c:392
+#: ../src/libs/geotagging.c:475 ../src/libs/import.c:550
+#: ../src/libs/import.c:656 ../src/libs/styles.c:392
 msgid "_open"
 msgstr "_ouvrir"
 
@@ -8383,7 +8383,7 @@ msgid "highlight compression adjustment"
 msgstr "ajustement de la compression des hautes lumières"
 
 #: ../src/iop/basicadj.c:639 ../src/iop/bilat.c:446 ../src/iop/colisa.c:326
-#: ../src/iop/colorbalance.c:1937 ../src/iop/colorbalance.c:1944
+#: ../src/iop/colorbalance.c:1945 ../src/iop/colorbalance.c:1952
 #: ../src/iop/filmic.c:1678 ../src/iop/filmicrgb.c:3521
 #: ../src/iop/lowpass.c:600
 msgid "contrast"
@@ -9028,7 +9028,7 @@ msgid "flip"
 msgstr "symétrie miroir"
 
 #: ../src/iop/clipping.c:2146 ../src/iop/clipping.c:2324
-#: ../src/iop/colorbalance.c:1901 ../src/libs/live_view.c:376
+#: ../src/iop/colorbalance.c:1909 ../src/libs/live_view.c:376
 msgid "both"
 msgstr "les deux"
 
@@ -9311,7 +9311,7 @@ msgstr "contrôle des couleurs"
 msgid "optimize luma from patches"
 msgstr "optimiser luma à partir des patchs"
 
-#: ../src/iop/colorbalance.c:963 ../src/iop/colorbalance.c:2103
+#: ../src/iop/colorbalance.c:963 ../src/iop/colorbalance.c:2111
 msgid "optimize luma"
 msgstr "optimiser luma"
 
@@ -9319,140 +9319,162 @@ msgstr "optimiser luma"
 msgid "neutralize colors from patches"
 msgstr "neutraliser les couleurs à partir des patchs"
 
-#: ../src/iop/colorbalance.c:969 ../src/iop/colorbalance.c:2109
+#: ../src/iop/colorbalance.c:969 ../src/iop/colorbalance.c:2117
 msgid "neutralize colors"
 msgstr "neutraliser les couleurs"
 
-#: ../src/iop/colorbalance.c:1768
+#: ../src/iop/colorbalance.c:1774
+msgctxt "color"
+msgid "offset"
+msgstr "offset"
+
+#: ../src/iop/colorbalance.c:1774
+msgctxt "color"
+msgid "power"
+msgstr "power"
+
+#: ../src/iop/colorbalance.c:1774
+msgctxt "color"
+msgid "slope"
+msgstr "slope"
+
+#: ../src/iop/colorbalance.c:1775
+msgctxt "color"
 msgid "lift"
 msgstr "lift"
 
-#: ../src/iop/colorbalance.c:1768
+#: ../src/iop/colorbalance.c:1775
+msgctxt "color"
+msgid "gamma"
+msgstr "gamma"
+
+#: ../src/iop/colorbalance.c:1775
+msgctxt "color"
 msgid "gain"
 msgstr "gain"
 
-#: ../src/iop/colorbalance.c:1770
+#: ../src/iop/colorbalance.c:1778
 msgid "shadows : lift / offset"
 msgstr "ombres : lift / offset"
 
-#: ../src/iop/colorbalance.c:1771
+#: ../src/iop/colorbalance.c:1779
 msgid "mid-tones : gamma / power"
 msgstr "tons moyens : gamma / power"
 
-#: ../src/iop/colorbalance.c:1772
+#: ../src/iop/colorbalance.c:1780
 msgid "highlights : gain / slope"
 msgstr "hautes lumières : gain / slope"
 
-#: ../src/iop/colorbalance.c:1796
+#: ../src/iop/colorbalance.c:1804
 msgid "shadows / mid-tones / highlights"
 msgstr "ombres / tons moyens / hautes lumières"
 
-#: ../src/iop/colorbalance.c:1894 ../src/iop/colorbalance.c:1903
+#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalance.c:1911
 msgid "color-grading mapping method"
 msgstr "méthode d'ajustement des couleurs"
 
-#: ../src/iop/colorbalance.c:1898
+#: ../src/iop/colorbalance.c:1906
 msgid "color control sliders"
 msgstr "contrôle des couleurs"
 
-#: ../src/iop/colorbalance.c:1899
+#: ../src/iop/colorbalance.c:1907
 msgid "HSL"
 msgstr "TSL"
 
-#: ../src/iop/colorbalance.c:1900
+#: ../src/iop/colorbalance.c:1908
 msgid "RGBL"
 msgstr "RVBL"
 
-#: ../src/iop/colorbalance.c:1913
+#: ../src/iop/colorbalance.c:1921
 msgid "master"
 msgstr "maître"
 
-#: ../src/iop/colorbalance.c:1921
+#: ../src/iop/colorbalance.c:1929
 msgid "saturation correction before the color balance"
 msgstr "correction de la saturation avant la balance des couleurs"
 
-#: ../src/iop/colorbalance.c:1929
+#: ../src/iop/colorbalance.c:1937
 msgid "saturation correction after the color balance"
 msgstr "correction de la saturation après la balance des couleurs"
 
-#: ../src/iop/colorbalance.c:1935
+#: ../src/iop/colorbalance.c:1943
 msgid "adjust to match a neutral tone"
 msgstr "ajuste pour des tons neutres"
 
 #. is set in _configure_slider_blocks
-#: ../src/iop/colorbalance.c:1994
+#: ../src/iop/colorbalance.c:2002
 msgid "click to cycle layout"
 msgstr "cliquer changer la disposition"
 
-#: ../src/iop/colorbalance.c:2030
+#: ../src/iop/colorbalance.c:2038
 msgid "factor"
 msgstr "facteur"
 
-#: ../src/iop/colorbalance.c:2044
+#: ../src/iop/colorbalance.c:2052
 msgid "select the hue"
 msgstr "sélectionne la teinte"
 
-#: ../src/iop/colorbalance.c:2056
+#: ../src/iop/colorbalance.c:2064
 msgid "select the saturation"
 msgstr "sélectionne la saturation"
 
-#: ../src/iop/colorbalance.c:2075
-msgid "factor of lift"
-msgstr "facteur de lift"
-
-#: ../src/iop/colorbalance.c:2076
-msgid "factor of red for lift"
-msgstr "facteur rouge du lift"
-
-#: ../src/iop/colorbalance.c:2077
-msgid "factor of green for lift"
-msgstr "facteur vert du lift"
-
-#: ../src/iop/colorbalance.c:2078
-msgid "factor of blue for lift"
-msgstr "facteur bleu du lift"
-
-#: ../src/iop/colorbalance.c:2081
-msgid "factor of gamma"
-msgstr "facteur gamma"
-
-#: ../src/iop/colorbalance.c:2082
-msgid "factor of red for gamma"
-msgstr "facteur rouge du gamma"
-
 #: ../src/iop/colorbalance.c:2083
-msgid "factor of green for gamma"
-msgstr "facteur vert du gamma"
+msgid "factor of lift/offset"
+msgstr "facteur de lift/offset"
 
 #: ../src/iop/colorbalance.c:2084
-msgid "factor of blue for gamma"
-msgstr "facteur bleu du gamma"
+msgid "factor of red for lift/offset"
+msgstr "facteur rouge du lift/offset"
 
-#: ../src/iop/colorbalance.c:2087
-msgid "factor of gain"
-msgstr "facteur du gain"
+#: ../src/iop/colorbalance.c:2085
+msgid "factor of green for lift/offset"
+msgstr "facteur vert du lift/offset"
 
-#: ../src/iop/colorbalance.c:2088
-msgid "factor of red for gain"
-msgstr "facteur rouge du gain"
+#: ../src/iop/colorbalance.c:2086
+msgid "factor of blue for lift/offset"
+msgstr "facteur bleu du lift/offset"
 
 #: ../src/iop/colorbalance.c:2089
-msgid "factor of green for gain"
-msgstr "facteur vert du gain"
+msgid "factor of gamma/power"
+msgstr "facteur gamma/power"
 
 #: ../src/iop/colorbalance.c:2090
-msgid "factor of blue for gain"
-msgstr "facteur bleu du gain"
+msgid "factor of red for gamma/power"
+msgstr "facteur rouge du gamma/power"
 
-#: ../src/iop/colorbalance.c:2099
+#: ../src/iop/colorbalance.c:2091
+msgid "factor of green for gamma/power"
+msgstr "facteur vert du gamma/power"
+
+#: ../src/iop/colorbalance.c:2092
+msgid "factor of blue for gamma/power"
+msgstr "facteur bleu du gamma/power"
+
+#: ../src/iop/colorbalance.c:2095
+msgid "factor of gain/slope"
+msgstr "facteur du gain/slope"
+
+#: ../src/iop/colorbalance.c:2096
+msgid "factor of red for gain/slope"
+msgstr "facteur rouge du gain/slope"
+
+#: ../src/iop/colorbalance.c:2097
+msgid "factor of green for gain/slope"
+msgstr "facteur vert du gain/slope"
+
+#: ../src/iop/colorbalance.c:2098
+msgid "factor of blue for gain/slope"
+msgstr "facteur bleu du gain/slope"
+
+#: ../src/iop/colorbalance.c:2107
 msgid "auto optimizers"
 msgstr "optimiseurs automatiques"
 
-#: ../src/iop/colorbalance.c:2104
+#: ../src/iop/colorbalance.c:2112
 msgid "fit the whole histogram and center the average luma"
 msgstr "ajuste l'histogramme et centre la luminosité moyenne"
 
-#: ../src/iop/colorbalance.c:2110
+#: ../src/iop/colorbalance.c:2118
 msgid "optimize the RGB curves to remove color casts"
 msgstr "optimise les courbes RVB et supprime les dérives de couleur"
 
@@ -12321,7 +12343,7 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "hald cluts (png) ou 3D lut (cube ou 3dl)"
 
 #: ../src/iop/lut3d.c:1600 ../src/libs/copy_history.c:115
-#: ../src/libs/geotagging.c:496 ../src/libs/import.c:575
+#: ../src/libs/geotagging.c:496 ../src/libs/import.c:580
 #: ../src/libs/styles.c:409
 msgid "all files"
 msgstr "tous les fichiers"
@@ -15687,43 +15709,43 @@ msgid "import options"
 msgstr "options d'importation"
 
 #. recursive opening.
-#: ../src/libs/import.c:371
+#: ../src/libs/import.c:376
 msgid "import folders recursively"
 msgstr "importer les dossiers récursivement"
 
-#: ../src/libs/import.c:373
+#: ../src/libs/import.c:378
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr ""
 "importe les dossiers de manière récursive. chaque dossier est placé dans une "
 "nouvelle pellicule."
 
-#: ../src/libs/import.c:570
+#: ../src/libs/import.c:575
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/libs/import.c:626
+#: ../src/libs/import.c:631
 msgid "file has unknown format!"
 msgstr "le fichier possède un format inconnu !"
 
-#: ../src/libs/import.c:650
+#: ../src/libs/import.c:655
 msgid "import folder"
 msgstr "importer un dossier"
 
 #. add import single image buttons
-#: ../src/libs/import.c:765
+#: ../src/libs/import.c:770
 msgid "image..."
 msgstr "image..."
 
-#: ../src/libs/import.c:765
+#: ../src/libs/import.c:770
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
-#: ../src/libs/import.c:773
+#: ../src/libs/import.c:778
 msgid "folder..."
 msgstr "dossier..."
 
-#: ../src/libs/import.c:773
+#: ../src/libs/import.c:778
 msgid "select a folder to import as film roll"
 msgstr "sélectionner un dossier à importer"
 
