@@ -899,17 +899,18 @@ void init_presets(dt_lib_module_t *self)
   tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("tone"), "tone", "rgblevels|bilat");
   tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("color"), "color", "colorbalance|colorin");
   tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
-  dt_lib_presets_add(_("3.0 layout"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
+  dt_lib_presets_add(_("legacy layout"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
 
   // if needed, we add a new preset, based on last user config
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
     gchar *tx3 = _preset_retrieve_old_layout();
-    dt_lib_presets_add(_("previous layout"), self->plugin_name, self->version(), tx3, strlen(tx3), FALSE);
+    dt_lib_presets_add(_("my previous config"), self->plugin_name, self->version(), tx3, strlen(tx3), FALSE);
     dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("previous layout"));
 
     gchar *tx4 = _preset_retrieve_old_layout_updated();
-    dt_lib_presets_add(_("previous layout updated"), self->plugin_name, self->version(), tx4, strlen(tx4), FALSE);
+    dt_lib_presets_add(_("my previous config with new layout"), self->plugin_name, self->version(), tx4,
+                       strlen(tx4), FALSE);
   }
 }
 
