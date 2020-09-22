@@ -603,7 +603,7 @@ overshoot.right
   padding: 0.5em 0.5em 0.5em 0.5em;
 }
 
-#module-header entry 
+#module-header entry
 {
   background-color: @field_active_bg;
 }
@@ -1395,7 +1395,8 @@ cell:selected
   font-size: 0.5em;
 }
 
-#history-tooltip
+#history-tooltip,
+#colorpicker-tooltip
 {
   font-family: monospace;
   background-color: @tooltip_bg_color;
