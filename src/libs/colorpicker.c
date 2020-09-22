@@ -224,11 +224,11 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
 
   gchar **sample_parts = g_malloc0_n(12, sizeof(char*));
 
-  sample_parts[3] = g_strdup_printf("%22s(0x%02X%02X%02X)\n%s:", " ",
+  sample_parts[3] = g_strdup_printf("%22s(0x%02X%02X%02X)\n<b>%14s</b>", " ",
                                     (int)round(sample->rgb.red   * 255.f),
                                     (int)round(sample->rgb.green * 255.f),
                                     (int)round(sample->rgb.blue  * 255.f), _("RGB"));
-  sample_parts[7] = g_strdup_printf("\n%s:", _("Lab"));
+  sample_parts[7] = g_strdup_printf("\n<b>%14s</b>", _("Lab"));
 
   for(int i = 0; i < 3; i++)
   {
@@ -241,21 +241,19 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
                                       (int)round(CLAMP(rgb[1], 0.f, 1.f) * 255.f),
                                       (int)round(CLAMP(rgb[2], 0.f, 1.f) * 255.f), " ");
 
-    sample_parts[i + 4] = g_strdup_printf("%8s: "
-                                          "<span foreground='red'>%6d</span>  "
+    sample_parts[i + 4] = g_strdup_printf("<span foreground='red'>%6d</span>  "
                                           "<span foreground='green'>%6d</span>  "
-                                          "<span foreground='blue'>%6d</span>",
-                                          _(name[i]),
+                                          "<span foreground='blue'>%6d</span>  %s",
                                           (int)round(rgb[0] * 255.f),
                                           (int)round(rgb[1] * 255.f),
-                                          (int)round(rgb[2] * 255.f));
+                                          (int)round(rgb[2] * 255.f), _(name[i]));
 
     const float *lab = i == 0 ? sample->picked_color_lab_mean :
                        i == 1 ? sample->picked_color_lab_min :
                                 sample->picked_color_lab_max;
 
-    sample_parts[i + 8] = g_strdup_printf("%8s: %6.02f  %6.02f  %6.02f", _(name[i]),
-                                          lab[0], lab[1], lab[2]);
+    sample_parts[i + 8] = g_strdup_printf("%6.02f  %6.02f  %6.02f  %s",
+                                          lab[0], lab[1], lab[2], _(name[i]));
   }
 
   gchar *tooltip_text = g_strjoinv("\n", sample_parts);
@@ -529,7 +527,6 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *picker_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   data->statistic_selector = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(data->statistic_selector, NULL, _("statistic"));
   dt_bauhaus_combobox_add(data->statistic_selector, _("mean"));
   dt_bauhaus_combobox_add(data->statistic_selector, _("min"));
   dt_bauhaus_combobox_add(data->statistic_selector, _("max"));
@@ -540,7 +537,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(picker_row), data->statistic_selector, TRUE, TRUE, 0);
 
   data->color_mode_selector = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(data->color_mode_selector, NULL, _("model"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("RGB"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("Lab"));
   dt_bauhaus_combobox_set(data->color_mode_selector, dt_conf_get_int("ui_last/colorpicker_model"));
@@ -549,9 +545,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_valign(data->color_mode_selector, GTK_ALIGN_END);
   gtk_box_pack_start(GTK_BOX(picker_row), data->color_mode_selector, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(picker_row), gtk_label_new("  "), FALSE, FALSE, 0);
-
   data->picker_button = dt_color_picker_new(NULL, DT_COLOR_PICKER_POINT_AREA, picker_row);
+  gtk_widget_set_tooltip_text(data->picker_button, _("turn on color picker\nctrl+click to select an area"));
   gtk_widget_set_name(GTK_WIDGET(data->picker_button), "color-picker-button");
   g_signal_connect(G_OBJECT(data->picker_button), "toggled", G_CALLBACK(_picker_button_toggled), data);
 
