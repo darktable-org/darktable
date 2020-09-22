@@ -1,0 +1,147 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="rgblevels">
+
+  <title>RGB Levels</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>RGB levels</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>RGB levels</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>black pixels</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>blue light sources</secondary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              A tool for adjusting black, white, and mid-gray points. This module is especially
+              useful if the histogram of an image does not span the whole horizontal range, from
+              pure black to pure white.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/rgblevels.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <indexterm>
+      <primary>color picker</primary>
+    </indexterm>
+
+    <para>
+      Depending on the desired intent, you can work in two different modes:
+      <itemizedlist>
+        <listitem><para>RGB, linked channels</para></listitem>
+        <listitem><para>RGB, independent channels</para></listitem>
+      </itemizedlist>
+    </para>
+
+    <para>
+      You can move the black and white bars to match the left and right borders of the
+      histogram, which will make the output image span the full available tonal range. A
+      previously flat looking image will get more contrast and pop.
+    </para>
+
+    <para>
+      Moving the middle bar will modify the middle gray tones. Shifting it left will make the
+      image look brighter, shifting it right will make it darker. This is often referred to as a
+      change of image gamma.
+    </para>
+
+    <para>
+      There are three color pickers in <emphasis>black</emphasis>,
+      <emphasis>gray</emphasis>, and <emphasis>white</emphasis>,
+      available by pressing the respectively colored
+      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+      icon. You can use them to sample the corresponding level directly from the image.
+    </para>
+
+    <para>
+      The <quote>auto</quote> button autoadjusts the black and white point and puts the gray
+      point exactly in the mean between them.
+    </para>
+
+    <para>
+      The picker on the right of <quote>auto</quote> button
+      autoadjusts based on a selected area on the picture.
+    </para>
+
+    <para>
+      Tip: Under certain conditions, especially highly saturated blue light sources in the
+      frame, the levels module may produce black pixel artifacts. See the <emphasis>gamut
+      clipping</emphasis> option (<xref linkend="input_color_profile"/>) on how to mitigate this
+      issue.
+    </para>
+
+    <sect5>
+      <title>mode</title>
+      <para>
+        Set the mode of operation of this module. Defaults to <quote>RGB, linked channels</quote>.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>black</title>
+      <para>
+        Sets the black point in percentiles relative to the left border of the histogram.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>gray</title>
+      <para>
+        Sets the gray point in percentiles relative to the left and right borders of the
+        histogram <emphasis>after</emphasis> having applied the black point and white point
+        corrections.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>white</title>
+      <para>
+        Sets the white point in percentiles relative to the right border of the histogram.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>preserve colors</title>
+      <para>
+        Select one of the color preservation methods. The default mode
+        is <quote>luminance</quote>.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

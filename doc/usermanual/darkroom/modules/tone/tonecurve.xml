@@ -61,16 +61,16 @@
     <para>
       A color picker is activated by pressing
       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
-      and will show the picked values in the graph. You can switch between point and area
-      sampling mode from within the global color picker panel (see
-      <xref linkend="global_color_picker"/>). Numerical Lab values of input and output (see
-      below) at the selected spot or area are shown on top left of the widget.
+      and will show the picked values in the graph. You can use an area
+      sampling mode using with
+      <emphasis>Ctrl+click</emphasis>. Numerical Lab values of input
+      and output (see below) at the selected spot or area are shown on top left of the widget.
     </para>
 
     <sect5>
       <title>color spaces</title>
       <para>
-        Depending on the desired intent, you can apply the tone curve in three different color spaces:
+        Depending on the desired intent, you can apply the tone curve in four different color spaces:
         <itemizedlist>
           <listitem><para>Lab, linked channels,</para></listitem>
           <listitem><para>Lab, separated channels,</para></listitem>

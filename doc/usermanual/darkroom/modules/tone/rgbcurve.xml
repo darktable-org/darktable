@@ -1,19 +1,19 @@
 <!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
-		%darktable_dtd;
-		]>
-<sect3 status="final" id="color_zones">
+    <!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+    %darktable_dtd;
+    ]>
+<sect3 status="final" id="rgb_curve">
 
-  <title>Color zones</title>
+  <title>RGB curve</title>
 
   <indexterm>
     <primary>modules</primary>
-    <secondary>color zones</secondary>
+    <secondary>rgb curve</secondary>
   </indexterm>
 
   <indexterm>
-    <primary>color zones</primary>
+    <primary>rgb curve</primary>
   </indexterm>
 
   <sect4>
@@ -27,11 +27,11 @@
         <tbody>
           <row>
             <entry>
-              This module selectively modifies the colors in your image. It is highly versatile
-              and allows every transformation possible in the LCh colorspace.
+              This module is a classic digital photography tool. darktable's RGB curve
+              works on RGB color space.
             </entry>
             <entry>
-              <graphic fileref="darkroom/modules/images/colorzones.png" scalefit="1" width="80%" align="center" />
+              <graphic fileref="darkroom/modules/images/rgbcurve.png" scalefit="1" width="80%" align="center" />
             </entry>
           </row>
         </tbody>
@@ -49,23 +49,21 @@
     </indexterm>
 
     <para>
-      The horizontal axis represents the range of values you can work on. The vertical axis
-      shows the modifications you can apply by designing a curve. For both horizontal and
-      vertical axes you can work on lightness, saturation or hue.
-    </para>
-
-    <para>
-      You can click on any of the eight nodes on the curve and drag to adjust it vertically. A
-      circle indicates how strong adjacent nodes will be affected. Use the scroll wheel of your
-      mouse to change the circle diameter. You can also use the eight controlpoints (triangles
-      which define the vertical value of the nodes) at the bottom to adjust the curve.
+      In its default state, curves will be straight lines, defined by few anchor nodes. You can
+      move the nodes to modify the curve. You can generate new nodes by
+      <emphasis>clicking</emphasis> on the curve. With <emphasis>Ctrl+click</emphasis> you
+      generate a new node at the x-location of the mouse pointer and the corresponding
+      y-location of the current curve&nbsp;&ndash; this adds a node without risking to
+      accidentally modify the curve. Up to 20 nodes per curve can be defined. To remove a node,
+      move it out of the widget area.
     </para>
 
     <para>
       A color picker is activated by pressing
       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
-      and will show the picked values in the diagram. You can use an
-      area sampling mode by using <emphasis>Ctrl+Click</emphasis>.
+      and will show the picked values in the graph. You can use an area
+      sampling mode using with
+      <emphasis>Ctrl+click</emphasis>.
     </para>
 
     <para>
@@ -79,54 +77,26 @@
     </para>
 
     <sect5>
-      <title>tabbed controls</title>
+      <title>color spaces</title>
       <para>
-        You can define curves for each of the three channels <quote>lightness</quote>,
-        <quote>saturation</quote>, and <quote>hue</quote> individually.
+        Depending on the desired intent, you can apply the RGB curve in two different color spaces:
+        <itemizedlist>
+          <listitem><para>RGB, linked channels.</para></listitem>
+          <listitem><para>RGB, independent channels.</para></listitem>
+        </itemizedlist>
       </para>
-    </sect5>
 
-    <sect5>
-      <title>edit by area</title>
       <para>
-        Control the interaction mode with the curve. When <emphasis>edit by area</emphasis>
-        is selected the nodes' axis coordinates are fixed. This is the
-        default mode up to darktable version 2.6.
+        RGB spaces are linear color spaces designed to capture and display images in additive
+        synthesis. They are related to capture and display media and do not isolate
+        color and lightness information.
+        The <quote>RGB, linked channels,</quote> works in ProPhoto RGB and applies the L-channel
+        curve to all three channels in the RGB color space. Adding contrast in RGB space
+        is known to desaturate highlights and boost saturation in lowlights, but this has proven to
+        be the most reliable way to edit contrast, and is the standard way to do it in most
+        software.
       </para>
-    </sect5>
 
-    <sect5>
-      <title>mask display</title>
-      <para>
-        By clicking <inlinegraphic fileref="&icon_module_mask;"
-        scalefit="1" width="2%" align="center" /> the pixels affected
-        by the curve are displayed directly on center area.
-      </para>
-    </sect5>
-
-    <sect5>
-      <title>select by</title>
-      <para>
-        Defines the horizontal axis, i.e. the range of values you work on. You can choose
-        between <quote>lightness</quote>, <quote>saturation</quote>, and <quote>hue</quote>
-        (default). Changing this parameter resets any defined curve to a straight horizontal
-        line.
-      </para>
-    </sect5>
-
-    <sect5>
-      <title>process mode</title>
-      <para>
-        Choose between a <quote>smooth</quote> (default) or
-        <quote>strong</quote> processing mode which alter the final effect.
-      </para>
-    </sect5>
-
-    <sect5>
-      <title>mix</title>
-      <para>
-        Use this parameter to tune the strength of the overall effect.
-      </para>
     </sect5>
 
     <sect5>
@@ -159,6 +129,14 @@
       </para>
     </sect5>
 
+    <sect5>
+      <title>compensate middle grey</title>
+      <para>
+        Will change the histogram display on the module, this option
+        does not change the processing but may help editing the
+        picture. It is activated by default.
+      </para>
+    </sect5>
   </sect4>
 
 </sect3>
