@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-21 08:44+0200\n"
-"PO-Revision-Date: 2020-09-21 08:11+0200\n"
+"POT-Creation-Date: 2020-09-22 23:24+0200\n"
+"PO-Revision-Date: 2020-09-22 23:27+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -615,7 +615,7 @@ msgid "color mode"
 msgstr "mode couleur"
 
 #: ../build/src/iop/introspection_denoiseprofile.c:410
-#: ../src/libs/colorpicker.c:593 ../src/libs/colorpicker.c:631
+#: ../src/libs/colorpicker.c:230 ../src/libs/colorpicker.c:540
 msgid "RGB"
 msgstr "RVB"
 
@@ -3372,7 +3372,7 @@ msgid "linear XYZ"
 msgstr "linéaire XYZ"
 
 #: ../src/common/colorspaces.c:1509 ../src/common/colorspaces.c:1663
-#: ../src/libs/colorpicker.c:594 ../src/libs/colorpicker.c:632
+#: ../src/libs/colorpicker.c:231 ../src/libs/colorpicker.c:541
 msgid "Lab"
 msgstr "Lab"
 
@@ -4532,12 +4532,12 @@ msgstr "importation de l'image %s"
 msgid "import image"
 msgstr "importer une image"
 
-#: ../src/develop/blend.c:2616 ../src/develop/blend.c:2930
+#: ../src/develop/blend.c:2616 ../src/develop/blend.c:2931
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "fusion ignorée dans le module « %s » : paramètres incompatibles"
 
-#: ../src/develop/blend.c:2649 ../src/develop/blend.c:2962
+#: ../src/develop/blend.c:2649 ../src/develop/blend.c:2963
 msgid "could not allocate buffer for blending"
 msgstr "impossible d'allouer la mémoire pour la fusion"
 
@@ -5225,7 +5225,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:1365 ../src/gui/import_metadata.c:163
 #: ../src/gui/preferences.c:1533 ../src/gui/preferences.c:2079
 #: ../src/gui/presets.c:210 ../src/gui/presets.c:322 ../src/gui/presets.c:689
-#: ../src/libs/lib.c:338 ../src/libs/lib.c:375 ../src/libs/lib.c:1230
+#: ../src/libs/lib.c:338 ../src/libs/lib.c:375 ../src/libs/lib.c:1231
 msgid "preset"
 msgstr "pré-réglage"
 
@@ -5268,13 +5268,13 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2308 ../src/libs/lib.c:1065
+#: ../src/develop/imageop.c:2308 ../src/libs/lib.c:1066
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2316 ../src/gui/preferences.c:794
-#: ../src/libs/lib.c:1074
+#: ../src/libs/lib.c:1075
 msgid "presets"
 msgstr "pré-réglages"
 
@@ -14584,65 +14584,62 @@ msgstr "détails de prise de vue"
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/colorpicker.c:54
+#: ../src/libs/colorpicker.c:50
 msgid "color picker"
-msgstr "pipette"
+msgstr "pipette de couleur"
 
-#: ../src/libs/colorpicker.c:80
+#: ../src/libs/colorpicker.c:76
 msgctxt "accel"
 msgid "pick color"
 msgstr "pipette de couleur"
 
-#: ../src/libs/colorpicker.c:81
+#: ../src/libs/colorpicker.c:77
 msgctxt "accel"
 msgid "add sample"
 msgstr "ajouter un échantillon"
 
-#: ../src/libs/colorpicker.c:389
+#: ../src/libs/colorpicker.c:223 ../src/libs/colorpicker.c:530
+msgid "mean"
+msgstr "moyenne"
+
+#: ../src/libs/colorpicker.c:223 ../src/libs/colorpicker.c:531
+msgid "min"
+msgstr "min"
+
+#: ../src/libs/colorpicker.c:223 ../src/libs/colorpicker.c:532
+msgid "max"
+msgstr "max"
+
+#: ../src/libs/colorpicker.c:374
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr ""
 "survoler pour mettre en surbrillance dans l'image, cliquer pour verrouiller "
 "l'échantillon"
 
-#: ../src/libs/colorpicker.c:405
-msgid "X"
-msgstr "X"
+#: ../src/libs/colorpicker.c:517 ../src/libs/colorpicker.c:559
+msgid "click to (un)hide large color patch"
+msgstr "cacher/montrer le grand patch de couleur"
 
-#: ../src/libs/colorpicker.c:512
+#: ../src/libs/colorpicker.c:549
+msgid ""
+"turn on color picker\n"
+"ctrl+click to select an area"
+msgstr ""
+"active la pipette de couleur\n"
+"ctrl+clic pour sélectionner une zone"
+
+#. Adding the live samples section
+#: ../src/libs/colorpicker.c:585
 msgid "live samples"
 msgstr "échantillons en temps réel"
 
-#: ../src/libs/colorpicker.c:568
-msgid "point"
-msgstr "point"
-
-#: ../src/libs/colorpicker.c:569
-msgid "area"
-msgstr "zone"
-
-#: ../src/libs/colorpicker.c:582 ../src/libs/colorpicker.c:620
-msgid "mean"
-msgstr "moyenne"
-
-#: ../src/libs/colorpicker.c:583 ../src/libs/colorpicker.c:621
-msgid "min"
-msgstr "min"
-
-#: ../src/libs/colorpicker.c:584 ../src/libs/colorpicker.c:622
-msgid "max"
-msgstr "max"
-
-#: ../src/libs/colorpicker.c:606
-msgid "restrict histogram to selection"
-msgstr "histogramme sur sélection"
-
-#: ../src/libs/colorpicker.c:639 ../src/libs/export_metadata.c:160
-msgid "add"
-msgstr "ajouter"
-
-#: ../src/libs/colorpicker.c:648
+#: ../src/libs/colorpicker.c:593
 msgid "display sample areas on image"
 msgstr "afficher les zones sur l'image"
+
+#: ../src/libs/colorpicker.c:602
+msgid "restrict histogram to selection"
+msgstr "histogramme sur sélection"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
 #: ../src/libs/copy_history.c:52
@@ -14976,6 +14973,10 @@ msgstr "exporter"
 #: ../src/libs/export_metadata.c:159
 msgid "select tag"
 msgstr "sélectionner un mots-clés"
+
+#: ../src/libs/export_metadata.c:160
+msgid "add"
+msgstr "ajouter"
 
 #: ../src/libs/export_metadata.c:160
 msgid "done"
@@ -18516,6 +18517,15 @@ msgstr "raccourci"
 #: ../src/views/view.c:1623
 msgid "Action"
 msgstr "action"
+
+#~ msgid "X"
+#~ msgstr "X"
+
+#~ msgid "point"
+#~ msgstr "point"
+
+#~ msgid "area"
+#~ msgstr "zone"
 
 #~ msgctxt "preferences"
 #~ msgid "box"
