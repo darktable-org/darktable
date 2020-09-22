@@ -74,7 +74,7 @@ typedef struct dt_map_image_t
   gint width, height;
 } dt_map_image_t;
 
-static const int thumb_size = 64, thumb_border = 1, image_pin_size = 13, place_pin_size = 72;
+static const int thumb_size = 128, thumb_border = 1, image_pin_size = 13, place_pin_size = 72;
 static const uint32_t thumb_frame_color = 0x000000aa;
 static const uint32_t pin_outer_color = 0x0000aaaa;
 static const uint32_t pin_inner_color = 0xffffffee;
@@ -319,7 +319,7 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
 
   dt_gui_gtk_set_source_rgb(cr, same_loc ? DT_GUI_COLOR_MAP_COUNT_SAME_LOC
                                          : DT_GUI_COLOR_MAP_COUNT_DIFF_LOC);
-  cairo_set_font_size(cr, 10 * (1 + (darktable.gui->dpi_factor - 1) / 2));
+  cairo_set_font_size(cr, 12 * (1 + (darktable.gui->dpi_factor - 1) / 2));
   cairo_text_extents_t te;
   cairo_text_extents(cr, text, &te);
   *count_width = te.width + 4 * te.x_bearing;
@@ -665,9 +665,9 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   // get the angles corresponding to thumbs
   float dlat_min, dlon_min;
   _view_map_thumb_angles(lib, center_lat, center_lon, &dlat_min, &dlon_min);
-  // we would like to avoid overlay on more of one half of the thumb
-  dlat_min /= 2.0;
-  dlon_min /= 2.0;
+  // we would like to keep a small overlay
+  dlat_min /= 1.5;
+  dlon_min /= 1.5;
 
   if(all_good)
   {
