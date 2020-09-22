@@ -700,12 +700,23 @@ error:
 }
 #endif
 
+static void _pixelpipe_lab_2_lch(const float *const lab_data, float *lch_data, uint32_t size)
+{
+  for(int k = 0; k < size * 3; k += 3)
+  {
+    dt_Lab_2_LCH(lab_data + k, lch_data + k);
+    lch_data[k + 2] *= 360;
+  }
+}
+
 static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in,
                                        cmsHTRANSFORM xform_rgb2lab, cmsHTRANSFORM xform_rgb2rgb,
                                        const float *const pick_box, const float *const pick_point,
                                        const int pick_size, float *pick_color_rgb_min, float *pick_color_rgb_max,
                                        float *pick_color_rgb_mean, float *pick_color_lab_min,
-                                       float *pick_color_lab_max, float *pick_color_lab_mean)
+                                       float *pick_color_lab_max, float *pick_color_lab_mean,
+                                       float *pick_color_lch_min, float *pick_color_lch_max,
+                                       float *pick_color_lch_mean)
 {
   float picked_color_rgb_min[3] = { 0.0f };
   float picked_color_rgb_max[3] = { 0.0f };
@@ -796,13 +807,19 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
     }
 
     float Lab_data[9] = { 0.0f };
+    float Lch_data[9] = { 0.0f };
     cmsDoTransform(xform_rgb2lab, rgb_data, Lab_data, 3);
+    _pixelpipe_lab_2_lch(Lab_data, Lch_data, 3);
 
     for(int i = 0; i < 3; i++)
     {
       pick_color_lab_mean[i] = Lab_data[i];
       pick_color_lab_min[i] = Lab_data[i + 3];
       pick_color_lab_max[i] = Lab_data[i + 6];
+
+      pick_color_lch_mean[i] = Lch_data[i];
+      pick_color_lch_min[i] = Lch_data[i + 3];
+      pick_color_lch_max[i] = Lch_data[i + 6];
     }
   }
 }
@@ -868,7 +885,8 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
     _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
         sample->box, sample->point, sample->size,
         sample->picked_color_rgb_min, sample->picked_color_rgb_max, sample->picked_color_rgb_mean,
-        sample->picked_color_lab_min, sample->picked_color_lab_max, sample->picked_color_lab_mean);
+        sample->picked_color_lab_min, sample->picked_color_lab_max, sample->picked_color_lab_mean,
+        sample->picked_color_lch_min, sample->picked_color_lch_max, sample->picked_color_lch_mean);
 
     samples = g_slist_next(samples);
   }
@@ -925,7 +943,8 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
   _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
       dev->gui_module->color_picker_box, dev->gui_module->color_picker_point, darktable.lib->proxy.colorpicker.size,
       darktable.lib->proxy.colorpicker.picked_color_rgb_min, darktable.lib->proxy.colorpicker.picked_color_rgb_max, darktable.lib->proxy.colorpicker.picked_color_rgb_mean,
-      darktable.lib->proxy.colorpicker.picked_color_lab_min, darktable.lib->proxy.colorpicker.picked_color_lab_max, darktable.lib->proxy.colorpicker.picked_color_lab_mean);
+      darktable.lib->proxy.colorpicker.picked_color_lab_min, darktable.lib->proxy.colorpicker.picked_color_lab_max, darktable.lib->proxy.colorpicker.picked_color_lab_mean,
+      darktable.lib->proxy.colorpicker.picked_color_lch_min, darktable.lib->proxy.colorpicker.picked_color_lch_max, darktable.lib->proxy.colorpicker.picked_color_lch_mean);
 
   if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
   if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);

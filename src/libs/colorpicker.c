@@ -151,19 +151,23 @@ static void _update_picker_output(dt_lib_module_t *self)
     int m = dt_conf_get_int("ui_last/colorpicker_mode");
     float *rgb;
     float *lab;
+    float *lch;
     switch(m)
     {
       case 0: // mean
         rgb = darktable.lib->proxy.colorpicker.picked_color_rgb_mean;
         lab = darktable.lib->proxy.colorpicker.picked_color_lab_mean;
+        lch = darktable.lib->proxy.colorpicker.picked_color_lch_mean;
         break;
       case 1: // min
         rgb = darktable.lib->proxy.colorpicker.picked_color_rgb_min;
         lab = darktable.lib->proxy.colorpicker.picked_color_lab_min;
+        lch = darktable.lib->proxy.colorpicker.picked_color_lch_min;
         break;
       default:
         rgb = darktable.lib->proxy.colorpicker.picked_color_rgb_max;
         lab = darktable.lib->proxy.colorpicker.picked_color_lab_max;
+        lch = darktable.lib->proxy.colorpicker.picked_color_lab_max;
         break;
     }
 
@@ -190,6 +194,10 @@ static void _update_picker_output(dt_lib_module_t *self)
       case 1: // Lab
         snprintf(tooltip, sizeof(text), "%6.02f   %6.02f   %6.02f", lab[0], lab[1], lab[2]);
         snprintf(text, sizeof(text), "%.02f %.02f %.02f", CLAMP(lab[0], .0f, 100.0f), lab[1], lab[2]);
+        break;
+      case 2: // LCh
+        snprintf(tooltip, sizeof(text), "%6.02f   %6.02f   %6.02f", lch[0], lch[1], lch[2]);
+        snprintf(text, sizeof(text), "%.02f %.02f %.02f", CLAMP(lch[0], .0f, 100.0f), lch[1], lch[2]);
         break;
     }
     gtk_label_set_label(GTK_LABEL(data->output_label), text);
@@ -239,6 +247,7 @@ static void _update_samples_output(dt_lib_module_t *self)
   float fallback_rgb[] = { 0, 0, 0 };
   float *rgb = fallback_rgb;
   float *lab = fallback;
+  float *lch = fallback;
   char text[128] = { 0 };
   char tooltip[128] = { 0 };
   GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
@@ -256,16 +265,19 @@ static void _update_samples_output(dt_lib_module_t *self)
       case 0:
         rgb = sample->picked_color_rgb_mean;
         lab = sample->picked_color_lab_mean;
+        lch = sample->picked_color_lch_mean;
         break;
 
       case 1:
         rgb = sample->picked_color_rgb_min;
         lab = sample->picked_color_lab_min;
+        lch = sample->picked_color_lch_min;
         break;
 
       case 2:
         rgb = sample->picked_color_rgb_max;
         lab = sample->picked_color_lab_max;
+        lch = sample->picked_color_lch_max;
         break;
     }
 
@@ -297,6 +309,11 @@ static void _update_samples_output(dt_lib_module_t *self)
         // Lab
         snprintf(tooltip, sizeof(text), "%6.02f   %6.02f   %6.02f", lab[0], lab[1], lab[2]);
         snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP(lab[0], .0f, 100.0f), lab[1], lab[2]);
+        break;
+      case 2:
+        // LCh
+        snprintf(tooltip, sizeof(text), "%6.02f   %6.02f   %6.02f", lch[0], lch[1], lch[2]);
+        snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP(lch[0], .0f, 100.0f), lch[1], lch[2]);
         break;
     }
     gtk_label_set_text(GTK_LABEL(sample->output_label), text);
@@ -428,6 +445,12 @@ static void _add_sample(GtkButton *widget, gpointer self)
   for(i = 0; i < 3; i++)
     sample->picked_color_lab_min[i] = darktable.lib->proxy.colorpicker.picked_color_lab_min[i];
   for(i = 0; i < 3; i++)
+    sample->picked_color_lch_max[i] = darktable.lib->proxy.colorpicker.picked_color_lch_max[i];
+  for(i = 0; i < 3; i++)
+    sample->picked_color_lch_mean[i] = darktable.lib->proxy.colorpicker.picked_color_lch_mean[i];
+  for(i = 0; i < 3; i++)
+    sample->picked_color_lch_min[i] = darktable.lib->proxy.colorpicker.picked_color_lch_min[i];
+  for(i = 0; i < 3; i++)
     sample->picked_color_rgb_max[i] = darktable.lib->proxy.colorpicker.picked_color_rgb_max[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_rgb_mean[i] = darktable.lib->proxy.colorpicker.picked_color_rgb_mean[i];
@@ -532,6 +555,9 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.picked_color_lab_mean = (float *)malloc(sizeof(float) * 3);
   darktable.lib->proxy.colorpicker.picked_color_lab_min = (float *)malloc(sizeof(float) * 3);
   darktable.lib->proxy.colorpicker.picked_color_lab_max = (float *)malloc(sizeof(float) * 3);
+  darktable.lib->proxy.colorpicker.picked_color_lch_mean = (float *)malloc(sizeof(float) * 3);
+  darktable.lib->proxy.colorpicker.picked_color_lch_min = (float *)malloc(sizeof(float) * 3);
+  darktable.lib->proxy.colorpicker.picked_color_lch_max = (float *)malloc(sizeof(float) * 3);
   for(i = 0; i < 3; i++)
     darktable.lib->proxy.colorpicker.picked_color_rgb_mean[i]
         = darktable.lib->proxy.colorpicker.picked_color_rgb_min[i]
@@ -540,6 +566,10 @@ void gui_init(dt_lib_module_t *self)
     darktable.lib->proxy.colorpicker.picked_color_lab_mean[i]
         = darktable.lib->proxy.colorpicker.picked_color_lab_min[i]
         = darktable.lib->proxy.colorpicker.picked_color_lab_max[i] = 0;
+  for(i = 0; i < 3; i++)
+    darktable.lib->proxy.colorpicker.picked_color_lch_mean[i]
+        = darktable.lib->proxy.colorpicker.picked_color_lch_min[i]
+        = darktable.lib->proxy.colorpicker.picked_color_lch_max[i] = 0;
   darktable.lib->proxy.colorpicker.update_panel = _update_picker_output;
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;
   darktable.lib->proxy.colorpicker.set_sample_area = _set_sample_area;
@@ -592,6 +622,7 @@ void gui_init(dt_lib_module_t *self)
   data->color_mode_selector = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->color_mode_selector), _("RGB"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->color_mode_selector), _("Lab"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->color_mode_selector), _("LCh"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->color_mode_selector),
                            dt_conf_get_int("ui_last/colorpicker_model"));
   gtk_box_pack_start(GTK_BOX(output_options), data->color_mode_selector, TRUE, TRUE, 0);
@@ -630,6 +661,7 @@ void gui_init(dt_lib_module_t *self)
   data->samples_mode_selector = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_mode_selector), _("RGB"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_mode_selector), _("Lab"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_mode_selector), _("LCh"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->samples_mode_selector),
                            dt_conf_get_int("ui_last/colorsamples_model"));
   gtk_box_pack_start(GTK_BOX(samples_options_row), data->samples_mode_selector, TRUE, TRUE, 0);
@@ -672,12 +704,18 @@ void gui_cleanup(dt_lib_module_t *self)
   free(darktable.lib->proxy.colorpicker.picked_color_lab_mean);
   free(darktable.lib->proxy.colorpicker.picked_color_lab_min);
   free(darktable.lib->proxy.colorpicker.picked_color_lab_max);
+  free(darktable.lib->proxy.colorpicker.picked_color_lch_mean);
+  free(darktable.lib->proxy.colorpicker.picked_color_lch_min);
+  free(darktable.lib->proxy.colorpicker.picked_color_lch_max);
   darktable.lib->proxy.colorpicker.picked_color_rgb_mean
       = darktable.lib->proxy.colorpicker.picked_color_rgb_min
       = darktable.lib->proxy.colorpicker.picked_color_rgb_max = NULL;
   darktable.lib->proxy.colorpicker.picked_color_lab_mean
       = darktable.lib->proxy.colorpicker.picked_color_lab_min
       = darktable.lib->proxy.colorpicker.picked_color_lab_max = NULL;
+  darktable.lib->proxy.colorpicker.picked_color_lch_mean
+      = darktable.lib->proxy.colorpicker.picked_color_lch_min
+      = darktable.lib->proxy.colorpicker.picked_color_lch_max = NULL;
 
 
   while(darktable.lib->proxy.colorpicker.live_samples)
@@ -706,6 +744,10 @@ void gui_reset(dt_lib_module_t *self)
     darktable.lib->proxy.colorpicker.picked_color_lab_mean[i]
         = darktable.lib->proxy.colorpicker.picked_color_lab_min[i]
         = darktable.lib->proxy.colorpicker.picked_color_lab_max[i] = 0;
+
+    darktable.lib->proxy.colorpicker.picked_color_lch_mean[i]
+        = darktable.lib->proxy.colorpicker.picked_color_lch_min[i]
+        = darktable.lib->proxy.colorpicker.picked_color_lch_max[i] = 0;
   }
 
   data->from_proxy = FALSE;

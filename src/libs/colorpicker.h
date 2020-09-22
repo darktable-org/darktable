@@ -43,6 +43,10 @@ typedef struct dt_colorpicker_sample_t
   float picked_color_lab_min[3];
   float picked_color_lab_max[3];
 
+  float picked_color_lch_mean[3];
+  float picked_color_lch_min[3];
+  float picked_color_lch_max[3];
+
   /** The GUI elements */
   GtkWidget *container;
   GtkWidget *color_patch;
