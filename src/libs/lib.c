@@ -1056,7 +1056,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   hw[DT_MODULE_LABEL] = gtk_label_new("");
   gtk_label_set_markup(GTK_LABEL(hw[DT_MODULE_LABEL]), module->name(module));
   gtk_widget_set_tooltip_text(hw[DT_MODULE_LABEL], module->name(module));
-  gtk_label_set_ellipsize(GTK_LABEL(hw[DT_MODULE_LABEL]), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_label_set_ellipsize(GTK_LABEL(hw[DT_MODULE_LABEL]), PANGO_ELLIPSIZE_END);
+  g_object_set(G_OBJECT(hw[DT_MODULE_LABEL]), "xalign", 0.0, (gchar *)0);
   gtk_widget_set_name(hw[DT_MODULE_LABEL], "lib-panel-label");
 
   /* add reset button if module has implementation */
