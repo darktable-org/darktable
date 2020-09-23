@@ -337,7 +337,7 @@ static void _label_size_allocate_callback(GtkWidget *widget, GdkRectangle *alloc
 static gboolean _sample_enter_callback(GtkWidget *widget, GdkEvent *event, gpointer sample)
 {
   darktable.lib->proxy.colorpicker.selected_sample = (dt_colorpicker_sample_t *)sample;
-  if(darktable.lib->proxy.colorpicker.display_samples) dt_dev_invalidate_from_gui(darktable.develop);
+  dt_dev_invalidate_from_gui(darktable.develop);
 
   return FALSE;
 }
@@ -345,7 +345,7 @@ static gboolean _sample_enter_callback(GtkWidget *widget, GdkEvent *event, gpoin
 static gboolean _sample_leave_callback(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
   darktable.lib->proxy.colorpicker.selected_sample = NULL;
-  if(darktable.lib->proxy.colorpicker.display_samples) dt_dev_invalidate_from_gui(darktable.develop);
+  dt_dev_invalidate_from_gui(darktable.develop);
 
   return FALSE;
 }

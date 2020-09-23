@@ -488,10 +488,16 @@ void expose(
   }
 
   // Displaying sample areas if enabled
-  if(darktable.lib->proxy.colorpicker.live_samples && darktable.lib->proxy.colorpicker.display_samples)
+  if(darktable.lib->proxy.colorpicker.live_samples
+     && (darktable.lib->proxy.colorpicker.display_samples
+         || darktable.lib->proxy.colorpicker.selected_sample))
   {
     GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
     dt_colorpicker_sample_t *sample = NULL;
+
+    const gboolean only_selected_sample =
+      darktable.lib->proxy.colorpicker.selected_sample
+      && !darktable.lib->proxy.colorpicker.display_samples;
 
     cairo_save(cri);
     // The colorpicker samples bounding rectangle should only be displayed inside the visible image
@@ -515,6 +521,14 @@ void expose(
     while(samples)
     {
       sample = samples->data;
+
+      // only dislay selected sample, skip if not the selected sample
+      if(only_selected_sample
+         && sample != darktable.lib->proxy.colorpicker.selected_sample)
+      {
+        samples = g_slist_next(samples);
+        continue;
+      }
 
       cairo_set_line_width(cri, lw);
       if(sample == darktable.lib->proxy.colorpicker.selected_sample)
