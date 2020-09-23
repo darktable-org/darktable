@@ -1475,7 +1475,7 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
 
 static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
 {
-  const int ts = DT_PIXEL_APPLY_DPI(64);
+  const int ts = DT_PIXEL_APPLY_DPI(128);
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
