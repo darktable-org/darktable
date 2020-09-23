@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-22 22:04+0200\n"
-"PO-Revision-Date: 2020-09-22 23:07+0200\n"
+"PO-Revision-Date: 2020-09-23 22:42+0200\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -678,9 +678,8 @@ msgstr "Ziel-Wert"
 
 #: ../build/src/iop/introspection_exposure.c:91
 #: ../build/src/iop/introspection_exposure.c:154
-#, fuzzy
 msgid "compensate exposure bias"
-msgstr "Belichtungskorrektur"
+msgstr "Belichtungskorrektur kompensieren"
 
 #: ../build/src/iop/introspection_exposure.c:168
 #: ../build/src/iop/introspection_levels.c:160
@@ -977,9 +976,8 @@ msgid "TCA blue"
 msgstr "TCA Blau"
 
 #: ../build/src/iop/introspection_liquify.c:428
-#, fuzzy
 msgid "invalidated"
-msgstr "ungültiges Papierformat"
+msgstr "ungültig"
 
 #: ../build/src/iop/introspection_liquify.c:429
 msgid "move"
@@ -1137,9 +1135,8 @@ msgstr "Zuschnitt Höhe"
 #: ../build/src/iop/introspection_rawprepare.c:93
 #: ../build/src/iop/introspection_rawprepare.c:158
 #: ../build/src/iop/introspection_rawprepare.c:162
-#, fuzzy
 msgid "black level"
-msgstr "Schwarzwert %i"
+msgstr "Schwarzwert"
 
 #: ../build/src/iop/introspection_rawprepare.c:99
 #: ../build/src/iop/introspection_rawprepare.c:166 ../src/iop/rawprepare.c:800
@@ -1179,21 +1176,19 @@ msgstr "Helligkeit"
 
 #: ../build/src/iop/introspection_retouch.c:411
 msgid "clone"
-msgstr ""
+msgstr "klonen"
 
 #: ../build/src/iop/introspection_retouch.c:412
 msgid "heal"
-msgstr ""
+msgstr "heilen"
 
 #: ../build/src/iop/introspection_retouch.c:413
-#, fuzzy
 msgid "blur"
-msgstr "Maske weichzeichnen"
+msgstr "weichzeichnen"
 
 #: ../build/src/iop/introspection_retouch.c:414
-#, fuzzy
 msgid "fill"
-msgstr "Rahmen füllen"
+msgstr "füllen"
 
 #: ../build/src/iop/introspection_retouch.c:419
 msgid "bilateral"
@@ -1983,9 +1978,8 @@ msgstr ""
 "zu weniger genaue Maskierungen führen."
 
 #: ../build/src/preferences_gen.h:3071
-#, fuzzy
 msgid "white balance slider colors"
-msgstr "Weißabgleich für Kamera deaktiviert"
+msgstr "Farben der Weißabgleichregler"
 
 #: ../build/src/preferences_gen.h:3082 ../build/src/preferences_gen.h:3111
 msgctxt "preferences"
@@ -2252,7 +2246,6 @@ msgid "none"
 msgstr "keines"
 
 #: ../build/src/preferences_gen.h:3584
-#, fuzzy
 msgid ""
 "scene-referred workflow is based on linear modules and will auto-apply "
 "filmic and exposure,\n"
@@ -2264,7 +2257,7 @@ msgstr ""
 "„Belichtung” automatisch angewandt. Eine auf die Anzeige bezogene "
 "Bearbeitung basiert auf Modulen, die im Lab Farbraum arbeiten. Hierfür wird "
 "das Modul „Basiskurve” automatisch angewandt und eine veraltete "
-"Modulreihenfolge eingestellt. Bei Änderung Neustart erforderlich."
+"Modulreihenfolge eingestellt."
 
 #: ../build/src/preferences_gen.h:3592
 msgid "auto-apply per camera basecurve presets"
@@ -3137,13 +3130,13 @@ msgstr "leerer Verlaufsstapel"
 #: ../src/cli/main.c:610
 #, c-format
 msgid "too long output file extention: %s\n"
-msgstr ""
+msgstr "zu lange Dateiendung für Ausgabe: %s\n"
 
 #. no ext or empty ext, no point in wasting time
 #: ../src/cli/main.c:618
 #, c-format
 msgid "no output file extention given\n"
-msgstr ""
+msgstr "keine Dateiendung für Ausgabe gefunden\n"
 
 #: ../src/cli/main.c:657
 msgid ""
@@ -4718,7 +4711,7 @@ msgstr "gezeichnete Maske"
 #: ../src/develop/blend_gui.c:102 ../src/develop/blend_gui.c:1527
 #: ../src/develop/blend_gui.c:2224
 msgid "parametric mask"
-msgstr "Parametrische Maske"
+msgstr "parametrische Maske"
 
 #: ../src/develop/blend_gui.c:103 ../src/develop/blend_gui.c:1896
 #: ../src/develop/blend_gui.c:2245
@@ -4728,7 +4721,7 @@ msgstr "Raster-Maske"
 #. overlays and
 #: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2235
 msgid "drawn & parametric mask"
-msgstr "gezeichnet&parametrisch"
+msgstr "gezeichnet & parametrisch"
 
 #: ../src/develop/blend_gui.c:108
 msgid "exclusive"
@@ -5908,7 +5901,7 @@ msgid "warning: did you want to swap these boundaries?\n"
 msgstr "Warnung: Sollten diese Grenzen vertauscht werden?\n"
 
 #: ../src/generate-cache/main.c:218
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\n"
 "if you want to pre-generate thumbnails and for darktable to use them, you "
@@ -5916,13 +5909,13 @@ msgid ""
 "no thumbnails to be generated, done.\n"
 msgstr ""
 "Warnung: Festplattencache für Vorschaubilder ist deaktiviert "
-"(cache_disk_backend)\n"
+"(cache_disk_backend).\n"
 "Wenn Vorschaubilder erzeugt und von darktable benutzt werden sollen, dann "
-"muss der Festplattencache aktiviert werden\n"
-"Es müssen keine Vorschaubilder erzeugt werden, fertig."
+"muss der Festplattencache aktiviert werden.\n"
+"Es werden keine Vorschaubilder erzeugt, fertig.\n"
 
 #: ../src/generate-cache/main.c:229
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "warning: disk backend for full preview cache is disabled "
 "(cache_disk_backend_full)\n"
@@ -5931,10 +5924,10 @@ msgid ""
 "no thumbnails to be generated, done.\n"
 msgstr ""
 "Warnung: Festplattencache für Vorschaubilder ist deaktiviert "
-"(cache_disk_backend)\n"
+"(cache_disk_backend_full).\n"
 "Wenn Vorschaubilder erzeugt und von darktable benutzt werden sollen, dann "
-"muss der Festplattencache aktiviert werden\n"
-"Es müssen keine Vorschaubilder erzeugt werden, fertig."
+"muss der Festplattencache aktiviert werden.\n"
+"Es werden keine Vorschaubilder erzeugt, fertig.\n"
 
 #: ../src/generate-cache/main.c:239
 #, c-format
@@ -8997,12 +8990,11 @@ msgstr "Original"
 
 #: ../src/iop/clipping.c:1677
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr "Ungültiges Seitenverhältnis. Es sollte „Zahl:Zahl“ sein"
+msgstr "Ungültiges Seitenverhältnis. Es sollte „Zahl:Zahl“ sein."
 
 #: ../src/iop/clipping.c:1693
-#, fuzzy
 msgid "invalid ratio format. it should be a positive number"
-msgstr "Ungültiges Seitenverhältnis. Es sollte „Zahl:Zahl“ sein"
+msgstr "Ungültiges Seitenverhältnis. Es sollte eine positive Zahl sein."
 
 #: ../src/iop/clipping.c:1886 ../src/iop/clipping.c:2162
 msgid "full"
@@ -13964,9 +13956,8 @@ msgstr ""
 "höheren Kontrast zwischen den zu vermeidenden und ausgebrannten Bereichen."
 
 #: ../src/iop/toneequal.c:3083
-#, fuzzy
 msgid "details"
-msgstr "Detail"
+msgstr "Details"
 
 #: ../src/iop/toneequal.c:3084
 msgid "preserve details"
