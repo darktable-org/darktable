@@ -145,12 +145,13 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
 
   // Setting the output label
   char text[128] = { 0 };
+  float alt[3] = { 0 };
 
   switch(model)
   {
     case 0:
       // RGB
-      snprintf(text, sizeof(text), "%3d %3d %3d",
+      snprintf(text, sizeof(text), "%6d %6d %6d",
                 (int)round(sample->rgb.red   * 255.f),
                 (int)round(sample->rgb.green * 255.f),
                 (int)round(sample->rgb.blue  * 255.f));
@@ -159,6 +160,23 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
     case 1:
       // Lab
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP(lab[0], .0f, 100.0f), lab[1], lab[2]);
+      break;
+
+    case 2:
+      // LCh
+      dt_Lab_2_LCH(lab, alt);
+      snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP(alt[0], .0f, 100.0f), alt[1], alt[2] * 360);
+      break;
+
+    case 3:
+      // HSL
+      dt_RGB_2_HSL(rgb, alt);
+      snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", alt[0] * 360, alt[1] * 100, alt[2] * 100);
+      break;
+
+    case 4:
+      // None
+      snprintf(text, sizeof(text), "◎");
       break;
   }
 
@@ -224,11 +242,11 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
 
   gchar **sample_parts = g_malloc0_n(12, sizeof(char*));
 
-  sample_parts[3] = g_strdup_printf("%22s(0x%02X%02X%02X)\n<b>%14s</b>", " ",
+  sample_parts[3] = g_strdup_printf("%22s(0x%02X%02X%02X)\n<big><b>%14s</b></big>", " ",
                                     (int)round(sample->rgb.red   * 255.f),
                                     (int)round(sample->rgb.green * 255.f),
                                     (int)round(sample->rgb.blue  * 255.f), _("RGB"));
-  sample_parts[7] = g_strdup_printf("\n<b>%14s</b>", _("Lab"));
+  sample_parts[7] = g_strdup_printf("\n<big><b>%14s</b></big>", _("Lab"));
 
   for(int i = 0; i < 3; i++)
   {
@@ -241,9 +259,9 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
                                       (int)round(CLAMP(rgb[1], 0.f, 1.f) * 255.f),
                                       (int)round(CLAMP(rgb[2], 0.f, 1.f) * 255.f), " ");
 
-    sample_parts[i + 4] = g_strdup_printf("<span foreground='red'>%6d</span>  "
-                                          "<span foreground='green'>%6d</span>  "
-                                          "<span foreground='blue'>%6d</span>  %s",
+    sample_parts[i + 4] = g_strdup_printf("<span foreground='#FF7F7F'>%6d</span>  "
+                                          "<span foreground='#7FFF7F'>%6d</span>  "
+                                          "<span foreground='#7F7FFF'>%6d</span>  %s",
                                           (int)round(rgb[0] * 255.f),
                                           (int)round(rgb[1] * 255.f),
                                           (int)round(rgb[2] * 255.f), _(name[i]));
@@ -539,6 +557,9 @@ void gui_init(dt_lib_module_t *self)
   data->color_mode_selector = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_combobox_add(data->color_mode_selector, _("RGB"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("Lab"));
+  dt_bauhaus_combobox_add(data->color_mode_selector, _("LCh"));
+  dt_bauhaus_combobox_add(data->color_mode_selector, _("HSL"));
+  dt_bauhaus_combobox_add(data->color_mode_selector, _("none"));
   dt_bauhaus_combobox_set(data->color_mode_selector, dt_conf_get_int("ui_last/colorpicker_model"));
   dt_bauhaus_combobox_set_entries_ellipsis(data->color_mode_selector, PANGO_ELLIPSIZE_NONE);
   g_signal_connect(G_OBJECT(data->color_mode_selector), "value-changed", G_CALLBACK(_color_mode_changed), self);
