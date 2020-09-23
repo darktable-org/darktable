@@ -151,7 +151,7 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
   {
     case 0:
       // RGB
-      snprintf(text, sizeof(text), "%3d %3d %3d",
+      snprintf(text, sizeof(text), "%6d %6d %6d",
                 (int)round(sample->rgb.red   * 255.f),
                 (int)round(sample->rgb.green * 255.f),
                 (int)round(sample->rgb.blue  * 255.f));
@@ -172,6 +172,11 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
       // HSL
       dt_RGB_2_HSL(rgb, alt);
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", alt[0] * 360, alt[1] * 100, alt[2] * 100);
+      break;
+
+    case 4:
+      // None
+      snprintf(text, sizeof(text), "◎");
       break;
   }
 
@@ -554,6 +559,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(data->color_mode_selector, _("Lab"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("LCh"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("HSL"));
+  dt_bauhaus_combobox_add(data->color_mode_selector, _("none"));
   dt_bauhaus_combobox_set(data->color_mode_selector, dt_conf_get_int("ui_last/colorpicker_model"));
   dt_bauhaus_combobox_set_entries_ellipsis(data->color_mode_selector, PANGO_ELLIPSIZE_NONE);
   g_signal_connect(G_OBJECT(data->color_mode_selector), "value-changed", G_CALLBACK(_color_mode_changed), self);
