@@ -2950,7 +2950,7 @@ void dt_iop_refresh_center(dt_iop_module_t *module)
   if (dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
+    const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->pipe->cache, hash);
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
     dt_dev_invalidate(dev);
@@ -2965,7 +2965,7 @@ void dt_iop_refresh_preview(dt_iop_module_t *module)
   if (dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
+    const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview_pipe->cache, hash);
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
     dt_dev_invalidate_all(dev);
@@ -2980,7 +2980,7 @@ void dt_iop_refresh_preview2(dt_iop_module_t *module)
   if (dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
+    const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview2_pipe->cache, hash);
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
     dt_dev_invalidate_all(dev);
