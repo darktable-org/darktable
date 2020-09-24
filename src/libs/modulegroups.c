@@ -1097,6 +1097,20 @@ static void _manage_editor_module_add(GtkWidget *widget, gpointer data)
   }
 }
 
+static int _manage_editor_module_add_sort(gconstpointer a, gconstpointer b)
+{
+  dt_iop_module_so_t *ma = (dt_iop_module_so_t *)a;
+  dt_iop_module_so_t *mb = (dt_iop_module_so_t *)b;
+  gchar *s1 = g_utf8_normalize(ma->name(), -1, G_NORMALIZE_ALL);
+  gchar *sa = g_utf8_casefold(s1, -1);
+  g_free(s1);
+  s1 = g_utf8_normalize(mb->name(), -1, G_NORMALIZE_ALL);
+  gchar *sb = g_utf8_casefold(s1, -1);
+  g_free(s1);
+  return g_strcmp0(sa, sb);
+  g_free(sa);
+  g_free(sb);
+}
 static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
 {
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
@@ -1111,7 +1125,7 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
   GtkWidget *lb = NULL;
 
   int rec_nb = 0;
-  GList *modules = g_list_last(darktable.iop);
+  GList *modules = g_list_sort(darktable.iop, _manage_editor_module_add_sort);
   while(modules)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
@@ -1146,7 +1160,7 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
         gtk_box_pack_start(GTK_BOX(vbc), bt, FALSE, TRUE, 0);
       }
     }
-    modules = g_list_previous(modules);
+    modules = g_list_next(modules);
   }
 
   if(rec_nb > 0)
