@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-09-24 07:15-0300\n"
-"PO-Revision-Date: 2020-09-24 10:02-0300\n"
+"PO-Revision-Date: 2020-09-25 09:32-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -11235,19 +11235,13 @@ msgstr ""
 "presentes em uma área específica."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8963(para)
-#, fuzzy
 msgid ""
 "The sampled colors in either area or point mode can be <quote>stored</quote> "
 "as live samples by pressing the <quote>+</quote> button. darktable will then "
 "show a color swatch and numerical values for each stored sample. You can "
 "once again select which numerical value (mean, min, max) is to be displayed "
 "and if this is to be done in RGB or Lab color space."
-msgstr ""
-"As cores amostradas na área ou ponto podem ser <quote>armazenadas</quote> "
-"como amostras pressionando o botão <quote>adicionar</quote>. O darktable "
-"então mostra uma amostra e valores numéricos para cada cor armazenada. Você "
-"pode novamente selecionar qual valor numérico (média, mínimo, máximo) será "
-"mostrado e se isto deve ser feito no espaço RGB ou Lab."
+msgstr "As cores amostradas na área ou ponto podem ser <quote>armazenadas</quote> como amostras pressionando o botão <quote>+</quote>. O darktable então mostra uma amostra e valores numéricos para cada cor armazenada. Você pode novamente selecionar qual valor numérico (média, mínimo, máximo) será mostrado e se isto deve ser feito no espaço RGB ou Lab."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8970(para)
 msgid ""
@@ -14359,21 +14353,21 @@ msgid ""
 "In case your film is scanned with a DSLR, you will need to correct the color "
 "deviations of the DSLR first, in the workflow and in the pipeline, to ensure "
 "maximal reliability of the film color corrections. That is :"
-msgstr ""
+msgstr "Se seu filme foi escaneado com uma DSLR, você precisará corrigir os desvios de cor da DSLR primeiro, no fluxo de trabalho e na pipeline, para garantir a máxima confiabilidade das correções de cor no filme. Isto significa:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11843(para)
 msgid "white-balancing against the light source used to scan,"
-msgstr ""
+msgstr "ajustar balanço de branco relativo à fonte de luz usada para escanear,"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11846(para)
 msgid "applying the standard matrice in the color input profile,"
-msgstr ""
+msgstr "aplicar a matriz de cor padrão no perfil de cor de entrada,"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11849(para)
 msgid ""
 "ensuring exposure is set to use a maximum range of the histogram without "
 "clipping."
-msgstr ""
+msgstr "garantir que a exposição está definida para usar a faixa máxima do histograma sem recortes."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11855(para)
 msgid ""
@@ -14396,14 +14390,14 @@ msgstr ""
 msgid ""
 "The modules <quote>filmic</quote>, <quote>filmic RGB</quote> and <quote>base "
 "curve</quote> should better be disabled when working with scanned film."
-msgstr ""
+msgstr "É melhor desabilitar os módulos <quote>fílmico</quote>, <quote>RGB fílmico</quote> e <quote>curva base</quote> quando trabalhar com filme escaneado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11878(para)
 msgid ""
 "The working color profile, for darktable's pipeline, should be set to "
 "Rec2020 linear or to a profile that actually represents your film emulsion "
 "color space. See such ICC profiles provided here :"
-msgstr ""
+msgstr "O perfil de cor de trabalho na pipeline do darktable deve ser definido em Rec2020 linear ou um perfil que realmente represente o espaço de cores da sua emulsão de filme. Veja os perfis ICC oferecidos aqui:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11888(emphasis)
 msgid "Pixls.us Ref Msg 1"
@@ -14418,7 +14412,7 @@ msgid ""
 "It is strongly recommended that you set the parameters following the order "
 "that the GUI presents (from top to bottom, tabs from left to right) since "
 "the next settings depend on the previous."
-msgstr ""
+msgstr "É fortemente recomendado que você configure os parâmetros seguindo a ordem que a interface apresenta (de cima para baixo, abas da esquerda para a direita), porque a próxima configuração depende da anterior."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11911(para)
 msgid ""
@@ -14947,7 +14941,6 @@ msgstr ""
 "modos: <placeholder-1/>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12498(para)
-#, fuzzy
 msgid ""
 "There are three color pickers in <emphasis>black</emphasis>, <emphasis>gray</"
 "emphasis>, and <emphasis>white</emphasis>, available by pressing the "
@@ -14955,13 +14948,7 @@ msgid ""
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> icon. You can use them to sample the corresponding level directly from "
 "the image."
-msgstr ""
-"Há três seletores de cor em branco, cinza e preto, disponíveis pressionando "
-"os ícones com as respetivas cores   <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/>. Você pode usá-los para amostrar o nível correspondente diretamente da "
-"imagem. É possível mudar entre modos de amostragem ponto e área a partir do "
-"seletor de cores global (veja  <xref linkend=\"global_color_picker\"/>)."
+msgstr "Há três seletores de cor em <emphasis>branco</emphasis>, <emphasis>cinza</emphasis> e <emphasis>preto</emphasis>, disponíveis pressionando os ícones com as respetivas cores <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/>. Você pode usá-los para amostrar o nível correspondente diretamente da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12511(para)
 msgid ""
@@ -15050,7 +15037,6 @@ msgstr ""
 "Para remover um nó, remova-o da área da curva."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12620(para)
-#, fuzzy
 msgid ""
 "A color picker is activated by pressing <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
@@ -15058,14 +15044,7 @@ msgid ""
 "sampling mode using with <emphasis>Ctrl+click</emphasis>. Numerical Lab "
 "values of input and output (see below) at the selected spot or area are "
 "shown on top left of the widget."
-msgstr ""
-"Um seletor de cores é ativado ao pressionar <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/> que vai identificar, no gráfico, as cores que forem selecionadas na "
-"imagem. Você pode alternar entre os modos de seleção de ponto e área no "
-"painel do seletor de cores global (veja <xref linkend=\"global_color_picker"
-"\"/>). Valores Lab numéricos de entrada e saída (veja abaixo) no ponto "
-"selecionado são mostrados no canto superior esquerdo."
+msgstr "Um seletor de cores é ativado ao pressionar <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/>, e vai identificar os valores selecionados no gráfico. Voce pode usar o modo de seleção por área com <emphasis>Ctrl+clique</emphasis>. Valores Lab numéricos de entrada e saída (veja abaixo) no ponto selecionado são mostrados no canto superior esquerdo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12634(para)
 msgid "Lab, linked channels,"
@@ -15413,18 +15392,12 @@ msgstr ""
 "darktable trabalha no espaço de cores RGB"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12888(para)
-#, fuzzy
 msgid ""
 "A color picker is activated by pressing <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> and will show the picked values in the graph. You can use an area "
 "sampling mode using with <emphasis>Ctrl+click</emphasis>."
-msgstr ""
-"Um seletor de cor é ativado pressionando <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/> e ele mostrará os valores selecionados no diagrama. Você pode alternar "
-"entre seleção de ponto e área no painel global do seletor de cores (veja "
-"<xref linkend=\"global_color_picker\"/>)."
+msgstr "Um seletor de cor é ativado pressionando <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> e ele mostrará os valores selecionados no diagrama. Você pode usar o modo de amostragem por área com <emphasis>Ctrl+clique</emphasis>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12896(para)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15266(para)
@@ -17005,18 +16978,13 @@ msgid "display exposure mask"
 msgstr "mostrar máscara de exposição"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14183(para)
-#, fuzzy
 msgid ""
 "At the bottom of the module, you'll see Display Exposure Mask and to the "
 "right of that, an icon <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_mask.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/"
 ">. <emphasis>Click</emphasis> on this icon to see the mask which the Tone "
 "Equalizer has generated for your image."
-msgstr ""
-"Se você quiser que a janela de atalhos permaneça aberta, há um botão "
-"<inlinegraphic fileref=\"images/darkroom_module_icon_instances.png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> localizado no canto superior "
-"direito da janela."
+msgstr "Na parte inferior do módulo você verá a máscara de exibição de exposição, e à direita dela, um ícone <inlinegraphic fileref=\"images/darkroom_module_icon_mask.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/>. <emphasis>Clique</emphasis> nesse ícone para ver a máscara que o Equalizador de Tons gerou para sua imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14190(para)
 msgid ""
@@ -18132,18 +18100,12 @@ msgstr ""
 "verticais dos nós) na parte inferior para ajustar a curva."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15259(para)
-#, fuzzy
 msgid ""
 "A color picker is activated by pressing <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> and will show the picked values in the diagram. You can use an area "
 "sampling mode by using <emphasis>Ctrl+Click</emphasis>."
-msgstr ""
-"Um seletor de cor é ativado pressionando <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/> e ele mostrará os valores selecionados no diagrama. Você pode alternar "
-"entre seleção de ponto e área no painel global do seletor de cores (veja "
-"<xref linkend=\"global_color_picker\"/>)."
+msgstr "Um seletor de cor é ativado pressionando <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> e ele mostrará os valores selecionados no diagrama. Você pode usar o modo de seleção por área usando <emphasis>Ctrl+clique</emphasis>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15276(title)
 msgid "tabbed controls"
@@ -18166,23 +18128,18 @@ msgid ""
 "Control the interaction mode with the curve. When <emphasis>edit by area</"
 "emphasis> is selected the nodes' axis coordinates are fixed. This is the "
 "default mode up to darktable version 2.6."
-msgstr ""
+msgstr "Controle o modo de interação com a curva. Quando <emphasis>editar por área</emphasis> estiver selecionado, as coordenadas dos eixos dos nós ficam fixas. Este era o modo default até o darktable versão 2.6."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15293(title)
-#, fuzzy
 msgid "mask display"
-msgstr "opacidade da máscara"
+msgstr "exibição da máscara"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15294(para)
-#, fuzzy
 msgid ""
 "By clicking <inlinegraphic fileref=\"images/darkroom_module_icon_mask.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> the pixels affected by the "
 "curve are displayed directly on center area."
-msgstr ""
-"Clicar no ícone <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_instances.png\" scalefit=\"1\" width=\"4%\" align="
-"\"center\"/> fará um menu drop-down aparecer."
+msgstr "Clicar em <inlinegraphic fileref=\"images/darkroom_module_icon_mask.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> fará os pixels afetados pela curva serem mostrados diretamente na área central."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15301(title)
 msgid "select by"
