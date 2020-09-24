@@ -344,6 +344,8 @@ static gboolean _sample_enter_callback(GtkWidget *widget, GdkEvent *event, gpoin
 
 static gboolean _sample_leave_callback(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+  if(event->crossing.detail == GDK_NOTIFY_INFERIOR) return FALSE;
+
   darktable.lib->proxy.colorpicker.selected_sample = NULL;
   dt_dev_invalidate_from_gui(darktable.develop);
 
@@ -385,21 +387,25 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   sample->rgb.blue = 0.7;
   sample->rgb.alpha = 1.0;
 
-  sample->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  sample->container = gtk_event_box_new();
+  gtk_widget_add_events (sample->container, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  g_signal_connect(G_OBJECT(sample->container), "enter-notify-event", G_CALLBACK(_sample_enter_callback), sample);
+  g_signal_connect(G_OBJECT(sample->container), "leave-notify-event", G_CALLBACK(_sample_leave_callback), sample);
+
+  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_container_add(GTK_CONTAINER(sample->container), container);
 
   sample->color_patch = gtk_drawing_area_new();
-  gtk_widget_set_events(sample->color_patch, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(sample->color_patch, GDK_BUTTON_PRESS_MASK);
   gtk_widget_set_tooltip_text(sample->color_patch, _("hover to highlight sample on canvas, "
                                                      "click to lock sample"));
-  g_signal_connect(G_OBJECT(sample->color_patch), "enter-notify-event", G_CALLBACK(_sample_enter_callback), sample);
-  g_signal_connect(G_OBJECT(sample->color_patch), "leave-notify-event", G_CALLBACK(_sample_leave_callback), sample);
   g_signal_connect(G_OBJECT(sample->color_patch), "button-press-event", G_CALLBACK(_sample_lock_toggle), sample);
   g_signal_connect(G_OBJECT(sample->color_patch), "draw", G_CALLBACK(_sample_draw_callback), sample);
 
   GtkWidget *color_patch_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(color_patch_wrapper, "live-sample");
   gtk_box_pack_start(GTK_BOX(color_patch_wrapper), sample->color_patch, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(sample->container), color_patch_wrapper, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(container), color_patch_wrapper, TRUE, TRUE, 0);
 
   sample->output_label = gtk_label_new("");
   gtk_widget_set_name(sample->output_label, "live-sample-data");
@@ -407,11 +413,11 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   gtk_widget_set_has_tooltip(sample->output_label, TRUE);
   g_signal_connect(G_OBJECT(sample->output_label), "query-tooltip", G_CALLBACK(_sample_tooltip_callback), sample);
   g_signal_connect(G_OBJECT(sample->output_label), "size-allocate", G_CALLBACK(_label_size_allocate_callback), sample);
-  gtk_box_pack_start(GTK_BOX(sample->container), sample->output_label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(container), sample->output_label, TRUE, TRUE, 0);
 
   GtkWidget *delete_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(delete_button), "clicked", G_CALLBACK(_remove_sample_cb), sample);
-  gtk_box_pack_start(GTK_BOX(sample->container), delete_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), delete_button, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(data->samples_container), sample->container, TRUE, TRUE, 0);
   gtk_widget_show_all(sample->container);
