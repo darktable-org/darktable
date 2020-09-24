@@ -59,8 +59,8 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
                                            uint32_t state, dt_masks_form_t *form, int parentid,
                                            dt_masks_form_gui_t *gui, int index)
 {
-  const float max_mask_border = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 2.0f;
-  const float max_mask_size = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 2.0f;
+  const float max_mask_border = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
+  const float max_mask_size = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
 
   // add a preview when creating a circle
   if(gui->creation)
@@ -86,7 +86,6 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
     }
     else if(state == 0)
     {
-      const float max_mask_size = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 2.0f;
       float masks_size = 0.0f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
@@ -252,8 +251,8 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
     }
     else
     {
-      circle->radius = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/size", 0.001f, 2.0f);
-      circle->border = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 2.0f);
+      circle->radius = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/size", 0.001f, 1.0f);
+      circle->border = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 1.0f);
       // not used for masks
       form->source[0] = form->source[1] = 0.0f;
     }
@@ -533,8 +532,8 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       }
       else
       {
-        radius1 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/size", 0.001f, 2.0f);
-        radius2 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 2.0f);
+        radius1 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/size", 0.001f, 1.0f);
+        radius2 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 1.0f);
       }
       radius2 += radius1;
       radius1 *= min_iwd_iht;
