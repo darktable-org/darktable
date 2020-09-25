@@ -50,6 +50,9 @@ void dt_conf_set_string(const char *name, const char *val);
 int dt_conf_get_int(const char *name);
 int64_t dt_conf_get_int64(const char *name);
 float dt_conf_get_float(const char *name);
+int dt_conf_get_and_sanitize_int(const char *name, int min, int max);
+int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max);
+float dt_conf_get_and_sanitize_float(const char *name, float min, float max);
 int dt_conf_get_bool(const char *name);
 gchar *dt_conf_get_string(const char *name);
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries);
@@ -57,6 +60,10 @@ void dt_conf_cleanup(dt_conf_t *cf);
 int dt_conf_key_exists(const char *key);
 GSList *dt_conf_all_string_entries(const char *dir);
 void dt_conf_string_entry_free(gpointer data);
+
+#define DT_CONF_SET_SANITIZED_INT(name, val, min, max) dt_conf_set_int(name, CLAMPS(val, min,max));
+#define DT_CONF_SET_SANITIZED_INT6464(name, val, min, max) dt_conf_set_int(name, CLAMPS(val, min,max));
+#define DT_CONF_SET_SANITIZED_FLOAT(name, val, min, max) dt_conf_set_float(name, CLAMPS(val, min,max));
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
