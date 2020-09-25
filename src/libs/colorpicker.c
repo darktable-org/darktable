@@ -97,9 +97,9 @@ static gboolean _sample_draw_callback(GtkWidget *widget, cairo_t *cr, dt_colorpi
   // if the sample is locked we want to add a lock
   if(sample->locked)
   {
-    int border = DT_PIXEL_APPLY_DPI(2);
-    int icon_width = width - 2 * border;
-    int icon_height = height - 2 * border;
+    const int border = DT_PIXEL_APPLY_DPI(2);
+    const int icon_width = width - 2 * border;
+    const int icon_height = height - 2 * border;
     if(icon_width > 0 && icon_height > 0)
     {
       GdkRGBA fg_color;
@@ -205,7 +205,7 @@ static void _update_picker_output(dt_lib_module_t *self)
 
 static gboolean _large_patch_toggle(GtkWidget *widget, GdkEvent *event, dt_lib_colorpicker_t *data)
 {
-  gboolean show_large_patch = !dt_conf_get_bool("ui_last/colorpicker_large");
+  const gboolean show_large_patch = !dt_conf_get_bool("ui_last/colorpicker_large");
   dt_conf_set_bool("ui_last/colorpicker_large", show_large_patch);
 
   gtk_widget_set_visible(gtk_widget_get_parent(data->large_color_patch), show_large_patch);
