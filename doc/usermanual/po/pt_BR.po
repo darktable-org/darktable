@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-09-24 07:15-0300\n"
-"PO-Revision-Date: 2020-09-25 09:32-0300\n"
+"PO-Revision-Date: 2020-09-27 07:26-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -14374,7 +14374,7 @@ msgid ""
 "You are advised to take a profiling picture of the light source alone, with "
 "no film mounted, to sample the white balance. That sampled value can then be "
 "copy-pasted to all your images processed with the same setting."
-msgstr ""
+msgstr "É aconselhável tirar uma foto somente da fonte de luz como um teste, com nenhum filme montado, para amostrar o balanço de branco. Esse valor amostrado pode então ser copiado e colado em todas as suas imagens processadas com a mesma configuração."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11862(para)
 msgid ""
@@ -14384,7 +14384,7 @@ msgid ""
 "advised to take a profiling picture of the shifted film in the holder, "
 "sample the Dmin once for the film stripe on that profiling picture, and copy-"
 "paste the settings for all other edits."
-msgstr ""
+msgstr "O filme deve ser escaneado de forma que o frame (moldura) esteja visível, para que você tenha uma amostra de filme não exposto para usar o Dmin. Se o suporte que estiver usando sconder completamente essa parte, é recomendável tirar uma foto de teste do filme deslocado no suporte. Amostre o Dmin uma vez para a tira de filme naquela foto, e copie e cole as definições para a edição das outras fotos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11872(para)
 msgid ""
@@ -14421,7 +14421,7 @@ msgid ""
 "the black and white option simply removes sliders in the module which "
 "pertain to color information. This tidies up the interface by removing "
 "controls you don't need."
-msgstr ""
+msgstr "A primeira opção é o menu drop-down Filme. Aqui você escolhe se o negativo com que está trabalhando é em cores ou em preto e branco. Selecionar preto e branco simplesmente esconde os deslizadores do módulo que são referentes a informações de cor. Isto deixa a interface mais limpa, removendo controles desnecessários."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11920(para)
 msgid ""
@@ -16963,7 +16963,7 @@ msgid ""
 "from the left side cross hair. This is another way of showing you whether a "
 "positive or negative adjustment has been made for any given tonal range "
 "under the mouse at its current location."
-msgstr ""
+msgstr "Você notará também que há um arco que sobe ou desce a partir do lado esquerdo do alvo. Esta é outra aneira de mostrar se um ajuste positivo ou negativo foi feito em qualquer faixa tonal no local sob o mouse."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14174(para)
 msgid ""
@@ -16992,7 +16992,7 @@ msgid ""
 "ranges, so as to avoid creating halos. Yet, the mask is also able to create "
 "well defined edges for high contrast areas of the image. Having this mask "
 "displayed will assist in understanding the follow parameters:"
-msgstr ""
+msgstr "A idéia por trás desta máscara é criar transições suaves entre faixas tonais, de forma a evitar halos. Mesmo assim, a máscara é capaz de criar bordas bem definidas para áreas da imagem com alto contraste. Ter esta máscara exibida ajuda a compreender os seguintes parâmetros:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14200(title)
 msgid "filter diffusion"
@@ -17010,7 +17010,7 @@ msgid ""
 "as an input. As a result, the new mask is more fuzzy than when there was "
 "only one instance of the mask. Progressively higher values will diffuse the "
 "mask even further."
-msgstr ""
+msgstr "Se aumentar este valor para 2, uma segunda máscara é calculada usando a primeira como entrada. Como resultado, a nova máscara é mais difusa do que quando havia somente uma instância da máscara. Valores progressivamente mais altos deixarão a máscara ainda mais difusa."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14217(title)
 msgid "smoothing diameter"
@@ -17023,7 +17023,7 @@ msgid ""
 "transitions become smoother/softer. It should be noted that setting really "
 "large values may result in slower display times IF Denoise Profiled is also "
 "in use."
-msgstr ""
+msgstr "Com valores baixos, a transição entre áreas escuras da máscara e áreas mais iluminadas será mais pronunciada. À medida que este valor é aumentado, essas transições se tornam mais suaves. Deve ser observado que usar valores muito altos pode resultar em tempos de exibição mais lentos se o módulo de remoção de ruído (perfilado) também estiver em uso."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14230(title)
 msgid "edge refinement/feathering"
@@ -17034,7 +17034,7 @@ msgid ""
 "Higher values will force the mask to follow high contrast edges more "
 "closely. Lower values will give smoother gradients, but may introduce some "
 "halos."
-msgstr ""
+msgstr "Valores mais altos forçarão a máscara a seguir bordas de alto contraste mais de perto. Valores mais baixos resultam em gradientes mais suaves, mas podem introduzir halos."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14246(title)
 msgid "Color group"
