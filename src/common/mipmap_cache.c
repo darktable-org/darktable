@@ -955,18 +955,15 @@ void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buf
 
 
 // return index dt_mipmap_size_t having at least width & height requested instead of minimum combined diff 
+// please nothe the requested size is in pixels not dots.
 dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width,
                                                    const int32_t height)
 {
-  const double ppd = (darktable.gui != NULL) ? darktable.gui->ppd : 1.0;
-  const uint32_t dx = ppd * width;
-  const uint32_t dy = ppd * height;
-
   dt_mipmap_size_t best = DT_MIPMAP_NONE;
   for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
     best = k;
-    if((cache->max_width[k] >= dx) && (cache->max_height[k] >= dy))
+    if((cache->max_width[k] >= width) && (cache->max_height[k] >= height))
       break;
   }
   return best;

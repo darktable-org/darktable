@@ -121,7 +121,7 @@
 	<option>best</option>
       </enum>
     </type>
-    <default>fast</default>
+    <default>good</default>
     <shortdescription>speed/quality trade-off for drawing images</shortdescription>
     <longdescription>fast (default) - high-performance, similar to nearest neighbor filter; good - reasonable-performance, similar to bilinear (linear interpolation in two dimensions); best - highest-quality available, performance may not be suitable for interactive use. sets Cairo image scaling filter. (needs a restart)</longdescription>
   </dtconfig>
