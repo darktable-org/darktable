@@ -1250,6 +1250,75 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
   return res;
 }
 
+static void _dt_masks_sanitize_config(dt_masks_type_t type)
+{
+  if(type & DT_MASKS_CIRCLE)
+  {
+    if(type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
+    {
+      dt_conf_get_and_sanitize_float("plugins/darkroom/spots/circle_size", 0.001f, 0.5f);
+      dt_conf_get_and_sanitize_float("plugins/darkroom/spots/circle_border", 0.0005f, 0.5f);
+    }
+    else
+    {
+      dt_conf_get_and_sanitize_float("plugins/darkroom/masks/circle/size", 0.001f, 0.5f);
+      dt_conf_get_and_sanitize_float("plugins/darkroom/masks/circle/border", 0.0005f, 0.5f);
+    }
+  }
+  else if (type & DT_MASKS_ELLIPSE)
+  {
+    int flags = -1;
+    float radius_a = 0.0f;
+    float radius_b = 0.0f;
+    float border = 0.0f;
+    if(type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
+    {
+      dt_conf_get_and_sanitize_float("plugins/darkroom/spots/ellipse_rotation", 0.0f, 360.f);
+      flags = dt_conf_get_and_sanitize_int("plugins/darkroom/spots/ellipse_flags", DT_MASKS_ELLIPSE_EQUIDISTANT, DT_MASKS_ELLIPSE_PROPORTIONAL);
+      radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
+      radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
+      border = dt_conf_get_float("plugins/darkroom/spots/ellipse_border");
+    }
+    else
+    {
+      dt_conf_get_and_sanitize_float("plugins/darkroom/masks/ellipse_rotation", 0.0f, 360.f);
+      flags = dt_conf_get_and_sanitize_int("plugins/darkroom/masks/ellipse/flags", DT_MASKS_ELLIPSE_EQUIDISTANT, DT_MASKS_ELLIPSE_PROPORTIONAL);
+      radius_a = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_a");
+      radius_b = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_b");
+      border = dt_conf_get_float("plugins/darkroom/masks/ellipse/border");
+    }
+
+    const float ratio = radius_a / radius_b;
+
+    if(radius_a > radius_b)
+    {
+      radius_a = CLAMPS(radius_a, 0.001f, 0.5f);
+      radius_b = radius_a / ratio;
+    }
+    else
+    {
+      radius_b = CLAMPS(radius_b, 0.001f, 0.5);
+      radius_a = ratio * radius_b;
+    }
+
+    const float reference = (flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f / fmin(radius_a, radius_b) : 1.0f);
+    border = CLAMPS(border, 0.001f * reference, reference);
+
+    if(type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
+    {
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/spots/ellipse_radius_a", radius_a, 0.001f, 0.5f)
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/spots/ellipse_radius_b", radius_b, 0.001f, 0.5f);
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/spots/ellipse_border", border, 0.001f, reference);
+    }
+    else
+    {
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/masks/ellipse/radius_a", radius_a, 0.001f, 0.5f);
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/masks/ellipse/radius_b", radius_b, 0.001f, 0.5f);
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/masks/ellipse/border", border, 0.001f, reference);
+    }
+  }
+}
+
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
   dt_masks_form_t *form = (dt_masks_form_t *)calloc(1, sizeof(dt_masks_form_t));
@@ -1258,6 +1327,8 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
   form->type = type;
   form->version = dt_masks_version();
   form->formid = time(NULL);
+
+  _dt_masks_sanitize_config(type);
 
   return form;
 }
