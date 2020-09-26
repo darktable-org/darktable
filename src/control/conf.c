@@ -155,6 +155,30 @@ float dt_conf_get_float(const char *name)
   return val;
 }
 
+int dt_conf_get_and_sanitize_int(const char *name, int min, int max)
+{
+  int val = dt_conf_get_int(name);
+  val = CLAMPS(val, min, max);
+  dt_conf_set_int(name, val);
+  return val;
+}
+
+int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max)
+{
+  int64_t val = dt_conf_get_int64(name);
+  val = CLAMPS(val, min, max);
+  dt_conf_set_int64(name, val);
+  return val;
+}
+
+float dt_conf_get_and_sanitize_float(const char *name, float min, float max)
+{
+  float val = dt_conf_get_float(name);
+  val = CLAMPS(val, min, max);
+  dt_conf_set_float(name, val);
+  return val;
+}
+
 int dt_conf_get_bool(const char *name)
 {
   const char *str = dt_conf_get_var(name);
