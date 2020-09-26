@@ -36,67 +36,58 @@
 
 static gchar* _dt_full_locale_name(const char *locale)
 {
-  // TODO: check if this works on Windows
-  // this gets languages in order of preference of user
-  // usually with full extent of charset preference
-  // also - it does include "C" lang.
-  const gchar * const * locales = g_get_language_names();
-  int i = 0,j = 0;
-  while(locales[i])
+#ifdef __APPLE__
+  return dt_osx_full_locale_name(ui_lang);
+#endif
+#ifdef __linux__
+  gchar *output = NULL;
+  GError *error = NULL;
+  // This would likelly work on linux and macos
+  if(!g_spawn_command_line_sync("locale -a", &output, NULL, NULL, &error))
   {
-    gchar **variants = g_get_locale_variants(locales[i]);
-    while(variants[j])
+    if(error)
     {
-      if(g_str_has_prefix(variants[j], locale))
+      fprintf(stderr, "couldn't check locale: '%s'\n", error->message);
+      g_error_free(error);
+    }
+  }
+  else
+  {
+    if(output)
+    {
+      gchar **locales = g_strsplit (output, "\n", -1);
+      g_free(output);
+      int j = 0;
+      while(locales[j])
       {
-        // return first found variant - this is most likelly the best one
-        gchar *ret=g_strdup(variants[j]);
-        g_strfreev(variants);
-        return ret;
+        if(g_str_has_prefix(locales[j], locale))
+        {
+          // return first found variant - this is most likelly the best one
+          gchar *ret=g_strdup(locales[j]);
+          g_strfreev(locales);
+          return ret;
+        }
+        j++;
       }
-      j++;
     }
-    g_strfreev(variants);
-    i++;
   }
-  // If we're here, this means user chose locale that isn't present in prefered
-  // languages/locales for user, but maaaybe the locale is installed
-  j=0;
-  gchar **variants = g_get_locale_variants(locale);
-  while(variants[j])
-  {
-    if(g_str_has_prefix(variants[j], locale))
-    {
-      gchar *ret=g_strdup(variants[j]);
-      g_strfreev(variants);
-      return ret;
-    }
-    j++;
-  }
-  g_strfreev(variants);
-  // locale isn't installed, have fun :D
   return NULL;
+#else
+  // TODO: check a way to do above on windows
+  return NULL;
+#endif
 }
 
 static void set_locale(const char *ui_lang, const char *old_env)
 {
   if(ui_lang && *ui_lang)
   {
-#ifdef __APPLE__
-    char* full_locale = dt_osx_full_locale_name(ui_lang);
-    if(full_locale)
-    {
-      g_setenv("LANG", full_locale, TRUE);
-      free(full_locale);
-    }
-#else
     gchar *full_locale = _dt_full_locale_name(ui_lang);
     if(full_locale)
     {
       g_setenv("LANG", full_locale, TRUE);
       g_free(full_locale);
     }
-#endif
     g_setenv("LANGUAGE", ui_lang, TRUE);
     gtk_disable_setlocale();
   }
