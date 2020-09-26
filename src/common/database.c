@@ -3397,14 +3397,13 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
   gchar *lib_backup_file = g_strdup_printf(file_pattern, db->dbfilename_library, date_suffix);
   gchar *lib_tmpbackup_file = g_strdup_printf(temp_pattern, db->dbfilename_library, date_suffix);
 
-  g_free(date_suffix);
-
   int rc = _backup_db(db->handle, "main", lib_tmpbackup_file, _print_backup_progress);
   if(!(rc==SQLITE_OK))
   {
     g_unlink(lib_tmpbackup_file);
     g_free(lib_tmpbackup_file);
     g_free(lib_backup_file);
+    g_free(date_suffix);
     return FALSE;
   }
   g_rename(lib_tmpbackup_file, lib_backup_file);
@@ -3414,6 +3413,8 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
 
   gchar *dat_backup_file = g_strdup_printf(file_pattern, db->dbfilename_data, date_suffix);
   gchar *dat_tmpbackup_file = g_strdup_printf(temp_pattern, db->dbfilename_data, date_suffix);
+
+  g_free(date_suffix);
 
   rc = _backup_db(db->handle, "data", dat_tmpbackup_file, _print_backup_progress);
   if(!(rc==SQLITE_OK))
@@ -3675,7 +3676,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
   gchar *dat_basename = g_file_get_basename(dat_file);
   g_object_unref(dat_file);
   gchar *dat_snap_format = g_strdup_printf("%s-snp-", dat_basename);
-  gchar *dat_tmp_format = g_strdup_printf("%s-tmp-", lib_basename);
+  gchar *dat_tmp_format = g_strdup_printf("%s-tmp-", dat_basename);
   g_free(dat_basename);
 
   GQueue *lib_snaps = g_queue_new();
