@@ -2956,7 +2956,7 @@ start:
         else
         {
           // there is nothing to restore, create an empty file to prevent further backup attempts
-          int fd = g_open(dbfilename_library, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+          const int fd = g_open(dbfilename_library, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
           if(fd < 0 || !g_close(fd, &gerror)) copyStatus = FALSE;
         }
         if(copyStatus)
@@ -3356,17 +3356,20 @@ static int _backup_db(
       const int spc = _get_pragma_int_val(src_db, pragma);
       g_free(pragma);
       const int pc = MIN(spc, MAX(5,spc/100));
-      do {
+      do
+      {
         rc = sqlite3_backup_step(sb_dest, pc);
         if(xProgress)
           xProgress(
             sqlite3_backup_remaining(sb_dest),
             sqlite3_backup_pagecount(sb_dest)
           );
-        if( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED ){
+        if( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED )
+        {
           sqlite3_sleep(25);
         }
-      } while( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED );
+      }
+      while( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED );
 
       /* Release resources allocated by backup_init(). */
       (void)sqlite3_backup_finish(sb_dest);
@@ -3575,12 +3578,12 @@ static gboolean _get_iso8601_int (const gchar *text, gsize length, gint *value)
     return FALSE;
 
   for (i = 0; i < length; i++)
-    {
-      const gchar c = text[i];
-      if (c < '0' || c > '9')
-        return FALSE;
-      v = v * 10 + (c - '0');
-    }
+  {
+    const gchar c = text[i];
+    if (c < '0' || c > '9')
+      return FALSE;
+    v = v * 10 + (c - '0');
+  }
 
   *value = v;
   return TRUE;
