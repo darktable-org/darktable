@@ -681,10 +681,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_CONNECT; // enable debugging for signal connection
         else if(!strcmp(argv[k + 1], "disconnect"))
           darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_DISCONNECT; // enable debugging for signal disconnection
-#ifdef DT_HAVE_SIGNAL_TRACE
         else if(!strcmp(argv[k + 1], "print-trace"))
+        {
+#ifdef DT_HAVE_SIGNAL_TRACE
           darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_PRINT_TRACE; // enable printing of signal tracing
+#else
+          fprintf(stderr, _("[signal] print-trace not available, skipping\n"));
 #endif
+        }
         else
           return usage(argv[0]);
         k++;
