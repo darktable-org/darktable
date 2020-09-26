@@ -166,15 +166,6 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
   return 0;
 }
 
-static float dt_conf_get_sanitize_set(const char *name, float min, float max)
-{
-  float value = dt_conf_get_float(name);
-  value = MIN(max, value);
-  value = MAX(min, value);
-  dt_conf_set_float(name, value);
-  return value;
-}
-
 static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy,
                                            double pressure, int which, int type, uint32_t state,
                                            dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,
@@ -235,8 +226,8 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
 
     if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
     {
-      circle->radius = dt_conf_get_sanitize_set("plugins/darkroom/spots/circle_size", 0.001f, 0.5f);
-      circle->border = dt_conf_get_sanitize_set("plugins/darkroom/spots/circle_border", 0.0005f, 0.5f);
+      circle->radius = dt_conf_get_float("plugins/darkroom/spots/circle_size");
+      circle->border = dt_conf_get_float("plugins/darkroom/spots/circle_border");
 
       // calculate the source position
       if(form->type & DT_MASKS_CLONE)
@@ -251,8 +242,8 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
     }
     else
     {
-      circle->radius = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/size", 0.001f, 1.0f);
-      circle->border = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 1.0f);
+      circle->radius = dt_conf_get_float("plugins/darkroom/masks/circle/size");
+      circle->border = dt_conf_get_float("plugins/darkroom/masks/circle/border");
       // not used for masks
       form->source[0] = form->source[1] = 0.0f;
     }
@@ -527,13 +518,13 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
       float radius1 = 0.0f, radius2 = 0.0f;
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
-        radius1 = dt_conf_get_sanitize_set("plugins/darkroom/spots/circle_size", 0.001f, 0.5f);
-        radius2 = dt_conf_get_sanitize_set("plugins/darkroom/spots/circle_border", 0.0005f, 0.5f);
+        radius1 = dt_conf_get_float("plugins/darkroom/spots/circle_size");
+        radius2 = dt_conf_get_float("plugins/darkroom/spots/circle_border");
       }
       else
       {
-        radius1 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/size", 0.001f, 1.0f);
-        radius2 = dt_conf_get_sanitize_set("plugins/darkroom/masks/circle/border", 0.0005f, 1.0f);
+        radius1 = dt_conf_get_float("plugins/darkroom/masks/circle/size");
+        radius2 = dt_conf_get_float("plugins/darkroom/masks/circle/border");
       }
       radius2 += radius1;
       radius1 *= min_iwd_iht;

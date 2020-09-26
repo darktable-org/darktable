@@ -621,25 +621,11 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
 
     if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
     {
-      const float a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
-      const float b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
-      const float ratio = a/b;
-      const float ellipse_border = dt_conf_get_float("plugins/darkroom/spots/ellipse_border");
+      ellipse->radius[0] = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
+      ellipse->radius[1] = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
+      ellipse->border = dt_conf_get_float("plugins/darkroom/spots/ellipse_border");
       ellipse->rotation = dt_conf_get_float("plugins/darkroom/spots/ellipse_rotation");
       ellipse->flags = dt_conf_get_int("plugins/darkroom/spots/ellipse_flags");
-      if(a>b)
-      {
-        ellipse->radius[0] = CLAMPS(a, 0.001f, 0.5f);
-        ellipse->radius[1] = ellipse->radius[0] / ratio;
-      }
-      else
-      {
-        ellipse->radius[1] = CLAMPS(b, 0.001f, 0.5f);
-        ellipse->radius[0] = ratio * ellipse->radius[1];
-      }
-      const float min_radius = fmin(ellipse->radius[0], ellipse->radius[1]);
-      const float reference = (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f/min_radius : 1.0f);
-      ellipse->border = CLAMPS(ellipse_border, 0.005f * reference, 0.5f * reference);
       if(form->type & DT_MASKS_CLONE)
       {
         dt_masks_set_source_pos_initial_value(gui, DT_MASKS_ELLIPSE, form, pzx, pzy);
@@ -652,25 +638,11 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
     }
     else
     {
-      const float a = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_a");
-      const float b = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_b");
-      const float ratio = a/b;
-      const float ellipse_border = dt_conf_get_float("plugins/darkroom/masks/ellipse/border");
+      ellipse->radius[0] = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_a");
+      ellipse->radius[1] = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_b");
+      ellipse->border = dt_conf_get_float("plugins/darkroom/masks/ellipse/border");
       ellipse->rotation = dt_conf_get_float("plugins/darkroom/masks/ellipse/rotation");
       ellipse->flags = dt_conf_get_int("plugins/darkroom/masks/ellipse/flags");
-      if(a>b)
-      {
-        ellipse->radius[0] = CLAMPS(a, 0.001f, 1.0f);
-        ellipse->radius[1] = ellipse->radius[0] / ratio;
-      }
-      else
-      {
-        ellipse->radius[1] = CLAMPS(b, 0.001f, 1.0f);
-        ellipse->radius[0] = ratio * ellipse->radius[1];
-      }
-      const float min_radius = fmin(ellipse->radius[0], ellipse->radius[1]);
-      const float reference = (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f/min_radius : 1.0f);
-      ellipse->border = CLAMPS(ellipse_border, 0.005f * reference, 1.0f * reference);
       // not used for masks
       form->source[0] = form->source[1] = 0.0f;
     }
