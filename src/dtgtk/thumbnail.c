@@ -217,11 +217,11 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
   const float scaler = 1.0f / darktable.gui->ppd;
   cairo_scale(cr, scaler, scaler);
 
-  cairo_set_source_surface(cr, thumb->img_surf, thumb->current_zx, thumb->current_zy);
+  cairo_set_source_surface(cr, thumb->img_surf, thumb->current_zx * darktable.gui->ppd, thumb->current_zy * darktable.gui->ppd);
   cairo_paint(cr);
 
   // and eventually the image border
-  gtk_render_frame(context, cr, 0, 0, w, h);
+  gtk_render_frame(context, cr, 0, 0, w * darktable.gui->ppd, h * darktable.gui->ppd);
 }
 
 static void _thumb_retrieve_margins(dt_thumbnail_t *thumb)
@@ -366,7 +366,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       // copy preview image into final surface
       if(tmp_surface)
       {
-        const float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height);
+        const float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height) * darktable.gui->ppd;
         const int img_width = buf_width * scale;
         const int img_height = buf_height * scale;
         thumb->img_surf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
@@ -386,9 +386,14 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         cairo_paint(cr2);
 
         if(darktable.gui->show_focus_peaking)
+        {
+          cairo_save(cr2);
+          cairo_scale(cr2, 1.0f/scale, 1.0f/scale);
           dt_focuspeaking(cr2, img_width, img_height, cairo_image_surface_get_data(thumb->img_surf),
                           cairo_image_surface_get_width(thumb->img_surf),
                           cairo_image_surface_get_height(thumb->img_surf));
+          cairo_restore(cr2);
+        }
 
         cairo_surface_destroy(tmp_surface);
         cairo_destroy(cr2);
@@ -452,8 +457,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     // let save thumbnail image size
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
-    const int imgbox_w = MIN(image_w, thumb->img_width);
-    const int imgbox_h = MIN(image_h, thumb->img_height);
+    const int imgbox_w = MIN(image_w, thumb->img_width/darktable.gui->ppd);
+    const int imgbox_h = MIN(image_h, thumb->img_height/darktable.gui->ppd);
     // if the imgbox size change, this should also change the panning values
     int hh = 0;
     int ww = 0;

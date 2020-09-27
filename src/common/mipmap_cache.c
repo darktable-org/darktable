@@ -955,7 +955,7 @@ void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buf
 
 
 // return index dt_mipmap_size_t having at least width & height requested instead of minimum combined diff 
-// please nothe the requested size is in pixels not dots.
+// please note that the requested size is in pixels not dots.
 dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width,
                                                    const int32_t height)
 {
