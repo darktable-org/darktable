@@ -2214,6 +2214,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/heightview</name>
+    <type min="100" max="1000">int</type>
+    <default>300</default>
+    <shortdescription>height of mask manager view window</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/ashift/near_delta</name>
     <type>float</type>
     <default>20.0</default>
