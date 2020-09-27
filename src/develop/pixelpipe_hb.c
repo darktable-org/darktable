@@ -1873,7 +1873,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         return 1;
     }
 #else // HAVE_OPENCL
-    if (pixelpipe_process_on_CPU(pipe, dev, input, &roi_in, input_format, output, out_format, roi_out,
+    if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                  module, piece, &tiling, &pixelpipe_flow))
       return 1;
 #endif // HAVE_OPENCL

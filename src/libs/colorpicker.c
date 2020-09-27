@@ -30,6 +30,7 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "common/colorspaces_inline_conversions.h"
 
 DT_MODULE(1);
 
