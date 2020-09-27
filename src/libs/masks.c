@@ -1572,6 +1572,25 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int
   lm->gui_reset = 0;
 }
 
+static gboolean _mouse_scroll_view(GtkWidget *treeview, GdkEventScroll *event, dt_lib_module_t *self)
+{
+  if (event->state & GDK_CONTROL_MASK)
+  {
+    dt_lib_masks_t *d = (dt_lib_masks_t *)self->data;
+    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
+    const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
+    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
+    gint width, height;
+    gtk_widget_get_size_request (GTK_WIDGET(d->scroll_window), &width, &height);
+    height = height + increment * event->delta_y;
+    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+    gtk_widget_set_size_request(GTK_WIDGET(d->scroll_window), -1, (gint)height);
+    dt_conf_set_int("plugins/darkroom/masks/heightview", (gint)height);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   const int bs2 = DT_PIXEL_APPLY_DPI(13);
@@ -1720,7 +1739,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
   gtk_tree_selection_set_select_function(selection, _tree_restrict_select, d, NULL);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->treeview), FALSE);
-  gtk_widget_set_size_request(d->scroll_window, -1, DT_PIXEL_APPLY_DPI(300));
+
+  const gint height = dt_conf_get_int("plugins/darkroom/masks/heightview");
+  gtk_widget_set_size_request(d->scroll_window, -1, DT_PIXEL_APPLY_DPI(height ? height : 300));
   gtk_container_add(GTK_CONTAINER(d->scroll_window), d->treeview);
   // gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->treeview),TREE_USED_TEXT);
   g_object_set(d->treeview, "has-tooltip", TRUE, (gchar *)0);
@@ -1728,6 +1749,8 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(selection, "changed", G_CALLBACK(_tree_selection_change), d);
   g_signal_connect(d->treeview, "button-press-event", (GCallback)_tree_button_pressed, self);
+
+  g_signal_connect(G_OBJECT(d->treeview), "scroll-event", G_CALLBACK(_mouse_scroll_view), (gpointer)self);
 
   gtk_widget_show_all(self->widget);
 
