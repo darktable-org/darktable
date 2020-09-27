@@ -801,17 +801,21 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
 
-  memset(p->source_ihist, 0, sizeof(float) * HISTN);
-  memset(p->source_mean, 0, sizeof(float) * MAXN * 2);
-  memset(p->source_var, 0, sizeof(float) * MAXN * 2);
-  memset(p->source_weight, 0, sizeof(float) * MAXN);
-  memset(p->target_hist, 0, sizeof(int) * HISTN);
-  memset(p->target_mean, 0, sizeof(float) * MAXN * 2);
-  memset(p->target_var, 0, sizeof(float) * MAXN * 2);
-  memset(p->target_weight, 0, sizeof(float) * MAXN);
-  p->flag = NEUTRAL;
-  dt_control_queue_redraw_widget(g->source_area);
-  dt_control_queue_redraw_widget(g->target_area);
+  if(w == g->clusters)
+  {
+    // only reset source/target when changing number of clusters
+    memset(p->source_ihist, 0, sizeof(float) * HISTN);
+    memset(p->source_mean, 0, sizeof(float) * MAXN * 2);
+    memset(p->source_var, 0, sizeof(float) * MAXN * 2);
+    memset(p->source_weight, 0, sizeof(float) * MAXN);
+    memset(p->target_hist, 0, sizeof(int) * HISTN);
+    memset(p->target_mean, 0, sizeof(float) * MAXN * 2);
+    memset(p->target_var, 0, sizeof(float) * MAXN * 2);
+    memset(p->target_weight, 0, sizeof(float) * MAXN);
+    p->flag = NEUTRAL;
+    dt_control_queue_redraw_widget(g->source_area);
+    dt_control_queue_redraw_widget(g->target_area);
+  }
 }
 
 static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *self)
