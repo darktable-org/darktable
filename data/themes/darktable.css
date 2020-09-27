@@ -825,12 +825,16 @@ dialog combobox window
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
-  border-radius: 4px;
+  border-radius: 0.2em;
   border: 0;
   outline-style: none;
   min-height: 0.4em;
   min-width: 0.4em;
-  padding: 0.2em;
+  padding: 0.2em 0;
+}
+
+menu menuitem {
+  padding: 0 0.2em;
 }
 
 tooltip
