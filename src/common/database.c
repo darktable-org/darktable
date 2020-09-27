@@ -3607,31 +3607,39 @@ static gint _db_snap_sort(gconstpointer a, gconstpointer b, gpointer user_data)
   datepos2 +=5; //skip "-snp-"
 
   int year,month,day,hour,minute,second;
-  if(!_get_iso8601_int(datepos1,4,&year) ||
-    !_get_iso8601_int(datepos1+4,2,&month) ||
-    !_get_iso8601_int(datepos1+6,2,&day) ||
-    !_get_iso8601_int(datepos1+8,2,&hour) ||
-    !_get_iso8601_int(datepos1+10,2,&minute) ||
-    !_get_iso8601_int(datepos1+12,2,&second)
-  )
+
+  if(!_get_iso8601_int(datepos1,    4, &year)   ||
+     !_get_iso8601_int(datepos1+4,  2, &month)  ||
+     !_get_iso8601_int(datepos1+6,  2, &day)    ||
+     !_get_iso8601_int(datepos1+8,  2, &hour)   ||
+     !_get_iso8601_int(datepos1+10, 2, &minute) ||
+     !_get_iso8601_int(datepos1+12, 2, &second)
+    )
+  {
     return 0;
+  }
+
   GDateTime *d1=g_date_time_new_local(year, month, day, hour, minute, second);
-  if(!_get_iso8601_int(datepos2,4,&year) ||
-    !_get_iso8601_int(datepos2+4,2,&month) ||
-    !_get_iso8601_int(datepos2+6,2,&day) ||
-    !_get_iso8601_int(datepos2+8,2,&hour) ||
-    !_get_iso8601_int(datepos2+10,2,&second) ||
-    !_get_iso8601_int(datepos2+12,2,&second)
-  )
+
+  if(!_get_iso8601_int(datepos2,    4, &year)   ||
+     !_get_iso8601_int(datepos2+4,  2, &month)  ||
+     !_get_iso8601_int(datepos2+6,  2, &day)    ||
+     !_get_iso8601_int(datepos2+8,  2, &hour)   ||
+     !_get_iso8601_int(datepos2+10, 2, &minute) ||
+     !_get_iso8601_int(datepos2+12, 2, &second)
+    )
   {
     g_date_time_unref(d1);
     return 0;
   }
+
   GDateTime *d2=g_date_time_new_local(year, month, day, hour, minute, second);
 
   const gint ret = g_date_time_compare(d1, d2);
+
   g_date_time_unref(d1);
   g_date_time_unref(d2);
+
   return ret;
 }
 
