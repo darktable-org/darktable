@@ -122,12 +122,6 @@ static void _dispatch_camera_property_value_changed(const dt_camctl_t *c, const 
 /** Helper function to destroy a dt_camera_t object */
 static void dt_camctl_camera_destroy(dt_camera_t *cam);
 
-/** Wrapper to asynchronously look for cameras */
-static int _update_cameras_callback(dt_job_t *job);
-
-/* Starts a job to update the camera list */
-void dt_camctl_background_detect_cameras();
-
 static int logid = 0;
 
 static void _gphoto_log25(GPLogLevel level, const char *domain, const char *log, void *data)
@@ -584,16 +578,6 @@ static void _camctl_unlock(const dt_camctl_t *c)
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
 }
 
-void dt_camctl_background_detect_cameras()
-{
-  dt_job_t *job = dt_control_job_create(&_update_cameras_callback, "update connected cameras");
-  if(job)
-  {
-    dt_control_job_set_params(job, NULL, NULL);
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
-  }
-}
-
 dt_camctl_t *dt_camctl_new()
 {
   dt_camctl_t *camctl = g_malloc0(sizeof(dt_camctl_t));
@@ -917,15 +901,22 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
   }
 }
 
-static int _update_cameras_callback(dt_job_t *job)
+void *dt_update_cameras_thread(void *ptr)
 {
-  while(darktable.control->running && darktable.camctl)
+  dt_pthread_setname("gphoto_update");
+  /* make sure control is up and running */
+  for(int k = 0; k < 20; k++)
+  {
+    if(dt_control_running()) break;   
+    g_usleep(100000);
+  }
+  while(dt_control_running())
   {
     // we want to sleep in the background thread but still want to be responsive for closing down
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 40; i++)
     {
-      if(!darktable.control->running) return 0;   
-      g_usleep(50000);
+      if(!dt_control_running()) return 0;   
+      g_usleep(100000);
     }
     dt_camctl_update_cameras(darktable.camctl);
   }
