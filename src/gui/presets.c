@@ -795,6 +795,7 @@ void dt_gui_favorite_presets_menu_show()
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
   gboolean presets = FALSE; /* TRUE if we have at least one menu entry */
+  const gboolean hide_default = dt_conf_get_bool("plugins/darkroom/hide_default_presets");
 
   GList *modules = darktable.develop->iop;
   if(modules)
@@ -824,6 +825,12 @@ void dt_gui_favorite_presets_menu_show()
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
           char *name = (char *)sqlite3_column_text(stmt, 0);
+          int writeprotect = sqlite3_column_int(stmt, 2);
+          if(hide_default && writeprotect)
+          {
+            //skip default presets if told to do so
+            continue;
+          }
           GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
           g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
           g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
@@ -864,6 +871,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
   if(menu) gtk_widget_destroy(GTK_WIDGET(menu));
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
+  const gboolean hide_default = dt_conf_get_bool("plugins/darkroom/hide_default_presets");
 
   GtkWidget *mi;
   int active_preset = -1, cnt = 0, writeprotect = 0; //, selected_default = 0;
@@ -917,6 +925,12 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
   int found = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    const int chk_writeprotect = sqlite3_column_int(stmt, 2);
+    if(hide_default && chk_writeprotect)
+    {
+      //skip default module if set to hide them.
+      continue; 
+    }
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
     void *blendop_params = (void *)sqlite3_column_blob(stmt, 4);
