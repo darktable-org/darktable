@@ -3066,6 +3066,114 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const ch
   return page;
 }
 
+static gint _get_container_row_heigth(GtkWidget *w)
+{
+  gint height = DT_PIXEL_APPLY_DPI(10);
+
+  if(GTK_IS_TREE_VIEW(w))
+  {
+    gint cell_height = 0;
+    gtk_tree_view_column_cell_get_size(gtk_tree_view_get_column(GTK_TREE_VIEW(w), 0),
+                                       NULL, NULL, NULL, NULL, &cell_height);
+    GValue separation = { G_TYPE_INT };
+    gtk_widget_style_get_property(w, "vertical-separator", &separation);
+
+    if(cell_height > 0) height = cell_height + g_value_get_int(&separation);
+  }
+  else
+  {
+    GList *children = gtk_container_get_children(GTK_CONTAINER(w));
+    if(children)
+    {
+      height = gtk_widget_get_allocated_height(GTK_WIDGET(children->data));
+      g_list_free(children);
+    }
+  }
+
+  return height;
+}
+
+static void _scroll_wrap_resize(GtkWidget *w, GtkAllocation *allocation, const char *config_str)
+{
+  GtkWidget *sw = gtk_widget_get_parent(w);
+  if(GTK_IS_VIEWPORT(sw)) sw = gtk_widget_get_parent(sw);
+
+  gint increment = _get_container_row_heigth(w);
+
+  gint height = dt_conf_get_int(config_str);
+
+  gint max_height = DT_PIXEL_APPLY_DPI(1000);
+
+  height = (height < 1) ? 1 : (height > max_height) ? max_height : height;
+
+  dt_conf_set_int(config_str, height);
+
+  gint content_height;
+  gtk_widget_get_preferred_height(w, NULL, &content_height);
+
+  gint min_height = - gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(sw));
+
+  if(content_height < min_height) content_height = min_height;
+
+  if(height > content_height) height = content_height;
+
+  height += increment - 1;
+  height -= height % increment;
+
+  GtkBorder padding;
+  gtk_style_context_get_padding(gtk_widget_get_style_context(sw),
+                                gtk_widget_get_state_flags(sw),
+                                &padding);
+
+  gtk_widget_set_size_request(sw, -1, height + padding.top + padding.bottom);
+
+  GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+  gint value = gtk_adjustment_get_value(adj);
+  value -= value % increment;
+  gtk_adjustment_set_value(adj, value);
+}
+
+static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event, const char *config_str)
+{
+  GtkWidget *w = gtk_bin_get_child(GTK_BIN(sw));
+  if(GTK_IS_VIEWPORT(w)) w = gtk_bin_get_child(GTK_BIN(w));
+
+  gint increment = _get_container_row_heigth(w);
+
+  if(event->state & GDK_CONTROL_MASK)
+  {
+    dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*event->delta_y);
+
+    _scroll_wrap_resize(w, NULL, config_str);
+  }
+  else
+  {
+    GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(sw);
+
+    gint before = gtk_adjustment_get_value(adj);
+    gint value = before + increment*event->delta_y;
+    value -= value % increment;
+    gtk_adjustment_set_value(adj, value);
+    gint after = gtk_adjustment_get_value(adj);
+
+    if(after == before) return FALSE;
+  }
+
+  return TRUE;
+}
+
+GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str)
+{
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), - DT_PIXEL_APPLY_DPI(min_size));
+  g_signal_connect(G_OBJECT(sw), "scroll-event", G_CALLBACK(_scroll_wrap_scroll), config_str);
+  g_signal_connect(G_OBJECT(w), "size-allocate", G_CALLBACK(_scroll_wrap_resize), config_str);
+  gtk_container_add(GTK_CONTAINER(sw), w);
+
+  return sw;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -407,14 +407,15 @@ void gui_init(dt_lib_module_t *self)
              "%s/dt_snapshot_%d.png", localtmpdir, k);
 
     /* add button to snapshot box */
-    gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
 
     /* prevent widget to show on external show all */
     gtk_widget_set_no_show_all(d->snapshot[k].button, TRUE);
   }
 
   /* add snapshot box and take snapshot button to widget ui*/
-  gtk_box_pack_start(GTK_BOX(self->widget), d->snapshots_box, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_scroll_wrap(d->snapshots_box, 1, "plugins/darkroom/snapshots/windowheight"), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
 }
 
@@ -532,7 +533,7 @@ static gboolean _lib_snapshots_toggle_last(GtkAccelGroup *accel_group, GObject *
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  if(d->num_snapshots) 
+  if(d->num_snapshots)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button), !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button)));
 
   return TRUE;

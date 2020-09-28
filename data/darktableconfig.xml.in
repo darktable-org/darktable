@@ -2240,7 +2240,7 @@
     <type min="100" max="1000">int</type>
     <default>300</default>
     <shortdescription>height of mask manager view window</shortdescription>
-    <longdescription/>
+    <longdescription>maximum height the masks view in darkroom will grow to before scrolling</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/ashift/near_delta</name>
@@ -2468,5 +2468,54 @@
     <default>0</default>
     <shortdescription>version of the last completed performance configuration</shortdescription>
     <longdescription>what was the last performance configuration which has been completed</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/duplicate/windowheight</name>
+    <type>int</type>
+    <default>400</default>
+    <shortdescription>height of the duplicates view</shortdescription>
+    <longdescription>maximum height the duplicates view in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorpicker/windowheight</name>
+    <type>int</type>
+    <default>200</default>
+    <shortdescription>height of the color picker list</shortdescription>
+    <longdescription>maximum height the color picker samples list in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/history/windowheight</name>
+    <type>int</type>
+    <default>1000</default>
+    <shortdescription>height of the history list</shortdescription>
+    <longdescription>maximum height the history list in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata_view/windowheight</name>
+    <type>int</type>
+    <default>1000</default>
+    <shortdescription>height of the image information view</shortdescription>
+    <longdescription>maximum height the image information view in lighttable and darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/recentcollect/windowheight</name>
+    <type>int</type>
+    <default>1000</default>
+    <shortdescription>height of the recent collections list</shortdescription>
+    <longdescription>maximum height the recent collections list in lighttable will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/snapshots/windowheight</name>
+    <type>int</type>
+    <default>200</default>
+    <shortdescription>height of the snapshots list</shortdescription>
+    <longdescription>maximum height the snapshots list in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/style/windowheight</name>
+    <type>int</type>
+    <default>400</default>
+    <shortdescription>height of the styles list</shortdescription>
+    <longdescription>maximum height the styles list in lighttable will grow to before scrolling</longdescription>
   </dtconfig>
 </dtconfiglist>
