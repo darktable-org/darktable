@@ -157,7 +157,11 @@ void dt_control_shutdown(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
 
-  /* first wait for kick_on_workers_thread */
+  /* first wait for gphoto device updater */
+#ifdef HAVE_GPHOTO2
+  pthread_join(s->update_gphoto_thread, NULL);
+#endif
+  /* then wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
 
   int k;

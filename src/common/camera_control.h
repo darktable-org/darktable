@@ -222,7 +222,8 @@ typedef enum dt_camera_preview_flags_t
   CAMCTL_IMAGE_PREVIEW_DATA = 1,
 } dt_camera_preview_flags_t;
 
-
+/** gphoto2 device updating function for thread */
+void *dt_update_cameras_thread(void *ptr);
 /** Initializes the gphoto and cam control, returns NULL if failed */
 dt_camctl_t *dt_camctl_new();
 /** Destroys the camera control */
@@ -231,8 +232,6 @@ void dt_camctl_destroy(dt_camctl_t *c);
 void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Unregisters a listener of camera control */
 void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
-/** start a thread job to detect cameras and update list of available cameras */
-void dt_camctl_background_detect_cameras();
 /** Check if there is any camera connected */
 gboolean dt_camctl_have_cameras(const dt_camctl_t *c);
 /** Check if there is any camera locked  */

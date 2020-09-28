@@ -92,6 +92,7 @@ int32_t dt_control_get_threadid();
 
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
+#include "common/camera_control.h"
 #endif
 #include "control/jobs/control_jobs.h"
 #include "control/jobs/develop_jobs.h"
