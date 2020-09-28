@@ -194,8 +194,8 @@ then install it. This can usually be done in your package manager (not the appli
 customarily provided by default in your distribution) or on the internet with a search engine. 
 You may need to install a package manager first (like Synaptic on Debian/Ubuntu, or DNF Dragora on Fedora/RHEL).
 
-This process might be tedious but you only need to do it once. See this 
-[outdated page on building darktable 2.6](https://redmine.darktable.org/projects/darktable/wiki/Building_darktable_26)
+This process might be tedious but you only need to do it once. See this
+[page on building darktable](https://github.com/darktable-org/darktable/wiki/Building-darktable)
 for one-line commands that will install most dependencies on the most frequent Linux distributions.
 
 ### Get the source
@@ -332,7 +332,7 @@ Contributing
 * Share your ideas on the [developer mailing list](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)
 * Test [releases](https://www.darktable.org/install/)
 * Review [pull requests](https://github.com/darktable-org/darktable/pulls)
-* Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
+* Start [hacking on darktable](https://www.darktable.org/development/) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
 
 
 FAQ
@@ -379,7 +379,6 @@ Wiki
 ----
 
 * [GitHub wiki](https://github.com/darktable-org/darktable/wiki "github wiki")
-* [User wiki](https://www.darktable.org/redmine/projects/users/wiki "darktable user wiki")
 * [Developer wiki](https://github.com/darktable-org/darktable/wiki/Developer's-guide "darktable developer wiki")
 
 
