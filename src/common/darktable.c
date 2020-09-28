@@ -686,7 +686,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef DT_HAVE_SIGNAL_TRACE
           darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_PRINT_TRACE; // enable printing of signal tracing
 #else
-          fprintf(stderr, _("[signal] print-trace not available, skipping\n"));
+          fprintf(stderr, "[signal] print-trace not available, skipping\n");
 #endif
         }
         else
@@ -745,7 +745,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         CHKSIGDBG(DT_SIGNAL_METADATA_UPDATE);
         else
         {
-          fprintf(stderr, _("unknown signal name: '%s'. use 'ALL' to enable debug for all or use full signal name\n"), str);
+          fprintf(stderr, "unknown signal name: '%s'. use 'ALL' to enable debug for all or use full signal name\n", str);
           return usage(argv[0]);
         }
         g_free(str);
