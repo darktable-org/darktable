@@ -411,6 +411,8 @@ static inline GtkWidget *dt_ui_button_new(const gchar *label, const gchar *toolt
   return button;
 };
 
+GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
