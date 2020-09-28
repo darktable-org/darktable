@@ -501,10 +501,14 @@ overshoot.right
   padding: 0.15em;
 }
 
-#control-button #button-canvas,
-.duplicate-ui #button-canvas
+#control-button #button-canvas
 {
   margin: 12px; /* not real pixels, this is used as a percent extra space */
+}
+
+#lib-plugin-ui-main viewport
+{
+  margin-left: 2px
 }
 
 /* Adjust add button in picker module */
@@ -579,17 +583,20 @@ overshoot.right
   margin: 8px 0px;
 }
 
+#left #lib-plugin-ui .duplicate-ui entry
+{
+  margin-left: 0.5em;
+}
+
+#left .duplicate-ui .text-button
+{
+  margin-top: 4px;
+}
+
 #left #lib-plugin-ui #lib-collect-entry
 {
   margin-top: 0;
   margin-bottom: 4px;
-}
-
-#left #lib-plugin-ui scrolledwindow entry /* this will avoid having too much height on entry items in clone manager without touching other parts of the UI */
-{
-  padding: 0px;
-  margin: 45px 3px;
-  min-width: 100px;
 }
 
 #right #lib-plugin-ui entry /* this will adjust entry height on right panel */
@@ -1345,7 +1352,6 @@ progressbar progress
 {
   min-width: 80px;
   padding-left: 2px;
-  padding-bottom: 1px;
 }
 
 /* Checkbutton check state */

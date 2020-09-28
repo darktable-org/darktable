@@ -44,7 +44,6 @@ typedef struct dt_lib_masks_t
   GtkWidget *hbox;
   GtkWidget *bt_circle, *bt_path, *bt_gradient, *bt_ellipse, *bt_brush;
   GtkWidget *treeview;
-  GtkWidget *scroll_window;
 
   GdkPixbuf *ic_inverse, *ic_union, *ic_intersection, *ic_difference, *ic_exclusion, *ic_used;
   int gui_reset;
@@ -1531,12 +1530,6 @@ static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parent
   }
 }
 
-static void _lib_history_change_callback(gpointer instance, gpointer user_data)
-{
-  // dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  //_lib_masks_recreate_list(self);
-}
-
 static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int throw_event)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -1570,25 +1563,6 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int
     valid = gtk_tree_model_iter_next(model, &iter);
   }
   lm->gui_reset = 0;
-}
-
-static gboolean _mouse_scroll_view(GtkWidget *treeview, GdkEventScroll *event, dt_lib_module_t *self)
-{
-  if (event->state & GDK_CONTROL_MASK)
-  {
-    dt_lib_masks_t *d = (dt_lib_masks_t *)self->data;
-    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
-    const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
-    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
-    gint width, height;
-    gtk_widget_get_size_request (GTK_WIDGET(d->scroll_window), &width, &height);
-    height = height + increment * event->delta_y;
-    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-    gtk_widget_set_size_request(GTK_WIDGET(d->scroll_window), -1, (gint)height);
-    dt_conf_set_int("plugins/darkroom/masks/heightview", (gint)height);
-    return TRUE;
-  }
-  return FALSE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1706,11 +1680,6 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
-  d->scroll_window = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->scroll_window), GTK_POLICY_AUTOMATIC,
-                                 GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->scroll_window, TRUE, TRUE, 0);
-
   d->treeview = gtk_tree_view_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_column_set_title(col, "shapes");
@@ -1739,24 +1708,15 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
   gtk_tree_selection_set_select_function(selection, _tree_restrict_select, d, NULL);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->treeview), FALSE);
-
-  const gint height = dt_conf_get_int("plugins/darkroom/masks/heightview");
-  gtk_widget_set_size_request(d->scroll_window, -1, DT_PIXEL_APPLY_DPI(height ? height : 300));
-  gtk_container_add(GTK_CONTAINER(d->scroll_window), d->treeview);
   // gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->treeview),TREE_USED_TEXT);
   g_object_set(d->treeview, "has-tooltip", TRUE, (gchar *)0);
   g_signal_connect(d->treeview, "query-tooltip", G_CALLBACK(_tree_query_tooltip), NULL);
-
   g_signal_connect(selection, "changed", G_CALLBACK(_tree_selection_change), d);
   g_signal_connect(d->treeview, "button-press-event", (GCallback)_tree_button_pressed, self);
 
-  g_signal_connect(G_OBJECT(d->treeview), "scroll-event", G_CALLBACK(_mouse_scroll_view), (gpointer)self);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_scroll_wrap(d->treeview, 200, "plugins/darkroom/masks/heightview"), FALSE, FALSE, 0);
 
   gtk_widget_show_all(self->widget);
-
-  /* connect to history change signal for updating the history view */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
-                            G_CALLBACK(_lib_history_change_callback), self);
 
   // set proxy functions
   darktable.develop->proxy.masks.module = self;
@@ -1768,8 +1728,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_history_change_callback), self);
-
   g_free(self->data);
   self->data = NULL;
 }
