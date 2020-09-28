@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-27 07:28-0300\n"
-"PO-Revision-Date: 2020-09-27 07:37-0300\n"
+"POT-Creation-Date: 2020-09-28 07:33-0300\n"
+"PO-Revision-Date: 2020-09-28 07:37-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -150,7 +150,7 @@ msgstr "preservar cores"
 #: ../src/iop/clipping.c:1883 ../src/iop/clipping.c:2143
 #: ../src/iop/clipping.c:2159 ../src/iop/clipping.c:2294
 #: ../src/iop/clipping.c:2321 ../src/iop/lens.cc:2252 ../src/iop/retouch.c:341
-#: ../src/libs/collect.c:1683 ../src/libs/colorpicker.c:568
+#: ../src/libs/collect.c:1683 ../src/libs/colorpicker.c:569
 #: ../src/libs/export.c:625 ../src/libs/live_view.c:348
 #: ../src/libs/live_view.c:373 ../src/libs/live_view.c:382
 #: ../src/libs/print_settings.c:1475
@@ -621,7 +621,7 @@ msgid "color mode"
 msgstr "modo de cor"
 
 #: ../build/src/iop/introspection_denoiseprofile.c:410
-#: ../src/libs/colorpicker.c:248 ../src/libs/colorpicker.c:564
+#: ../src/libs/colorpicker.c:249 ../src/libs/colorpicker.c:565
 msgid "RGB"
 msgstr "RGB"
 
@@ -2022,14 +2022,18 @@ msgid ""
 "columns - the blocks of sliders are shown next to each other (in narrow "
 "columns)"
 msgstr ""
-"escolha como organizar os blocos de deslizadores para elevação, gama e ganho:\n"
-"lista - todos os deslizadores são mostrados em uma list alonga (com cabeçalhos),\n"
+"escolha como organizar os blocos de deslizadores para elevação, gama e "
+"ganho:\n"
+"lista - todos os deslizadores são mostrados em uma list alonga (com "
+"cabeçalhos),\n"
 "abas - use abas para alternar entre os blocos de deslizadores,\n"
-"colunas - os blocos de deslizadores são mostrados uns ao lado dos outros (em colunas estreitas)"
+"colunas - os blocos de deslizadores são mostrados uns ao lado dos outros (em "
+"colunas estreitas)"
 
 #: ../build/src/preferences_gen.h:3153
 msgid "show right-side buttons in darkroom module headers"
-msgstr "mostrar botões do lado direito nos cabeçalhos de módulos na sala escura"
+msgstr ""
+"mostrar botões do lado direito nos cabeçalhos de módulos na sala escura"
 
 #: ../build/src/preferences_gen.h:3169
 msgctxt "preferences"
@@ -2080,7 +2084,8 @@ msgid ""
 "smooth - fade out all buttons in one header simultaneously,\n"
 "glide - gradually hide individual buttons as needed"
 msgstr ""
-"quando o mouse não está sobre um módulo, os botões de multi-instancia, reset e preset podem ser escondidos:\n"
+"quando o mouse não está sobre um módulo, os botões de multi-instancia, reset "
+"e preset podem ser escondidos:\n"
 "sempre - sempre mostrar todos os botões,\n"
 "ativo - só mostrar os botões quando o mouse estiver sobre o módulo,\n"
 "atenuar - botões são atenuados quando o mouse está fora,\n"
@@ -3356,7 +3361,7 @@ msgid "linear XYZ"
 msgstr "linear XYZ"
 
 #: ../src/common/colorspaces.c:1509 ../src/common/colorspaces.c:1663
-#: ../src/libs/colorpicker.c:249 ../src/libs/colorpicker.c:565
+#: ../src/libs/colorpicker.c:250 ../src/libs/colorpicker.c:566
 msgid "Lab"
 msgstr "Lab"
 
@@ -3464,20 +3469,6 @@ msgstr "arquivo `%s' é de formato desconhecido!"
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
 
-#: ../src/common/darktable.c:689
-#, c-format
-msgid "[signal] print-trace not available, skipping\n"
-msgstr "[signal] print-trace não disponível, ignorando\n"
-
-#: ../src/common/darktable.c:748
-#, c-format
-msgid ""
-"unknown signal name: '%s'. use 'ALL' to enable debug for all or use full "
-"signal name\n"
-msgstr ""
-"nome de sinal desconhecido: '%s'. use 'ALL' para habilitar depuração para "
-"todos ou use o nome completo do sinal\n"
-
 #: ../src/common/darktable.c:908
 msgid "darktable - run performance configuration?"
 msgstr "darktable - executar configuração para maior performance?"
@@ -3496,7 +3487,7 @@ msgstr ""
 "especialmente caso as tenha modificado manualmente.\n"
 "gostaria de aplicar esta atualização de configuração de desempenho?\n"
 
-#: ../src/common/darktable.c:913 ../src/common/database.c:3009
+#: ../src/common/darktable.c:913 ../src/common/database.c:3227
 #: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:739
 #: ../src/libs/export.c:745 ../src/libs/export.c:752
@@ -3600,7 +3591,8 @@ msgid "darktable cannot be started because the database is locked"
 msgstr "O darktable não pode iniciar porque a base de dados está bloqueada"
 
 #: ../src/common/database.c:2210 ../src/common/database.c:2382
-#: ../src/common/database.c:2632 ../src/common/database.c:2714
+#: ../src/common/database.c:2689 ../src/common/database.c:2707
+#: ../src/common/database.c:2869 ../src/common/database.c:2887
 msgid "close darktable"
 msgstr "fechar o darktable"
 
@@ -3646,49 +3638,82 @@ msgstr "darktable - migrar esquema"
 msgid "upgrade database"
 msgstr "atualizar base de dados"
 
-#. oh, bad situation. the database is corrupt and can't be read!
-#. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:2621 ../src/common/database.c:2703
+#: ../src/common/database.c:2669 ../src/common/database.c:2849
+#, c-format
+msgid ""
+"quick_check said:\n"
+"%s \n"
+msgstr ""
+"quick_check disse:\n"
+"%s \n"
+
+#: ../src/common/database.c:2686 ../src/common/database.c:2704
+#: ../src/common/database.c:2866 ../src/common/database.c:2884
+msgid "darktable - error opening database"
+msgstr "darktable - erro ao abrir a base de dados"
+
+#: ../src/common/database.c:2691 ../src/common/database.c:2871
+msgid "attempt restore"
+msgstr "tentar recuperar"
+
+#: ../src/common/database.c:2693 ../src/common/database.c:2709
+#: ../src/common/database.c:2873 ../src/common/database.c:2889
+msgid "delete database"
+msgstr "apagar base de dados"
+
+#: ../src/common/database.c:2697 ../src/common/database.c:2877
+msgid ""
+"do you want to close darktable now to manually restore\n"
+"the database from a backup, attempt an automatic restore\n"
+"from the most recent snapshot or delete the corrupted database\n"
+"and start with a new one?"
+msgstr ""
+"quer fechar o darktable agora para restaurar manualmente\n"
+"a base de dados de um backup, tentar uma restauração automática\n"
+"do snapshot mais recente ou remover a base de dados corrompida\n"
+"e iniciar com uma nova?"
+
+#: ../src/common/database.c:2713 ../src/common/database.c:2893
+msgid ""
+"do you want to close darktable now to manually restore\n"
+"the database from a backup or delete the corrupted database\n"
+"and start with a new one?"
+msgstr ""
+"quer fechar o darktable agora para restaurar manualmente\n"
+"a base de dados de um backup ou remover a base de dados corrompida\n"
+"e iniciar com uma nova?"
+
+#: ../src/common/database.c:2720 ../src/common/database.c:2898
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
-"it seems that the database is corrupt.\n"
-"do you want to close darktable now to manually restore\n"
-"the database from a backup or start with a new one?"
+"it seems that the database is corrupted.\n"
+"%s%s"
 msgstr ""
 "um erro ocorreu ao tentar abrir a base de dados de\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
 "parece que a base de dados está corrompida.\n"
-"quer fechar o darktable agora para restaurar manualmente\n"
-"a base de dados de um backup ou começar com uma nova?"
+"%s%s"
 
-#: ../src/common/database.c:2631 ../src/common/database.c:2713
-msgid "darktable - error opening database"
-msgstr "darktable - erro ao abrir a base de dados"
-
-#: ../src/common/database.c:2632 ../src/common/database.c:2714
-msgid "delete database"
-msgstr "apagar base de dados"
-
-#: ../src/common/database.c:2986
+#: ../src/common/database.c:3204
 msgid "click later to be asked on next startup"
 msgstr "clique 'depois' para ser questionado na próxima vez que iniciar"
 
-#: ../src/common/database.c:2990
+#: ../src/common/database.c:3208
 msgid "click later to be asked when closing darktable"
 msgstr "clique 'depois' para ser questionado ao fechar o darktable"
 
-#: ../src/common/database.c:2994
+#: ../src/common/database.c:3212
 msgid "click later to be asked next time when closing darktable"
 msgstr ""
 "clique 'depois' para ser questionado na próxima vez que fechar o darktable"
 
-#: ../src/common/database.c:2998
+#: ../src/common/database.c:3216
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -3709,11 +3734,11 @@ msgstr ""
 "%s\\n\n"
 "você sempre pode mudar as preferências de manutenção nas opções do core"
 
-#: ../src/common/database.c:3008
+#: ../src/common/database.c:3226
 msgid "darktable - schema maintenance"
 msgstr "darktable - manutenção de esquema"
 
-#: ../src/common/database.c:3009
+#: ../src/common/database.c:3227
 msgid "later"
 msgstr "depois"
 
@@ -3832,7 +3857,7 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/imageio.c:645 ../src/common/mipmap_cache.c:1060
+#: ../src/common/imageio.c:645 ../src/common/mipmap_cache.c:1057
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "imagem `%s' não disponível!"
@@ -5597,7 +5622,7 @@ msgstr "representante de grupo"
 msgid "grouped images"
 msgstr "imagens agrupadas"
 
-#: ../src/dtgtk/thumbnail.c:506
+#: ../src/dtgtk/thumbnail.c:515
 msgid "fit"
 msgstr "ajustar"
 
@@ -9348,7 +9373,7 @@ msgstr "método color-grading de mapeamento de cores"
 msgid "color control sliders"
 msgstr "controles de cor"
 
-#: ../src/iop/colorbalance.c:1907 ../src/libs/colorpicker.c:567
+#: ../src/iop/colorbalance.c:1907 ../src/libs/colorpicker.c:568
 msgid "HSL"
 msgstr "HSL"
 
@@ -9736,37 +9761,37 @@ msgctxt "accel"
 msgid "acquire as target"
 msgstr "adquirir como alvo"
 
-#: ../src/iop/colormapping.c:1061
+#: ../src/iop/colormapping.c:1065
 msgid "source clusters:"
 msgstr "clusters da origem:"
 
-#: ../src/iop/colormapping.c:1067
+#: ../src/iop/colormapping.c:1071
 msgid "target clusters:"
 msgstr "clusters alvo:"
 
-#: ../src/iop/colormapping.c:1078
+#: ../src/iop/colormapping.c:1082
 msgid "acquire as source"
 msgstr "adquirir como fonte"
 
-#: ../src/iop/colormapping.c:1081
+#: ../src/iop/colormapping.c:1085
 msgid "analyze this image as a source image"
 msgstr "analisar esta imagem como imagem fonte"
 
-#: ../src/iop/colormapping.c:1085
+#: ../src/iop/colormapping.c:1089
 msgid "acquire as target"
 msgstr "adquirir como alvo"
 
-#: ../src/iop/colormapping.c:1088
+#: ../src/iop/colormapping.c:1092
 msgid "analyze this image as a target image"
 msgstr "analisar esta imagem como imagem alvo"
 
-#: ../src/iop/colormapping.c:1093
+#: ../src/iop/colormapping.c:1097
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "número de clusters a procurar na imagem. alteração de valor redefine todos "
 "os clusters"
 
-#: ../src/iop/colormapping.c:1096
+#: ../src/iop/colormapping.c:1100
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -9774,7 +9799,7 @@ msgstr ""
 "como clusters são mapeados. valores baixos: baseado em proximidade de cores, "
 "valores altos: baseados em domínio de cores"
 
-#: ../src/iop/colormapping.c:1101
+#: ../src/iop/colormapping.c:1105
 msgid "level of histogram equalization"
 msgstr "nível de equalização do histograma"
 
@@ -14509,46 +14534,46 @@ msgstr "detalhes da captura da foto"
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/colorpicker.c:50
+#: ../src/libs/colorpicker.c:51
 msgid "color picker"
 msgstr "seletor de cores"
 
-#: ../src/libs/colorpicker.c:76
+#: ../src/libs/colorpicker.c:77
 msgctxt "accel"
 msgid "pick color"
 msgstr "seleciona cor"
 
-#: ../src/libs/colorpicker.c:77
+#: ../src/libs/colorpicker.c:78
 msgctxt "accel"
 msgid "add sample"
 msgstr "adiciona amostra"
 
-#: ../src/libs/colorpicker.c:241 ../src/libs/colorpicker.c:554
+#: ../src/libs/colorpicker.c:242 ../src/libs/colorpicker.c:555
 msgid "mean"
 msgstr "média"
 
-#: ../src/libs/colorpicker.c:241 ../src/libs/colorpicker.c:555
+#: ../src/libs/colorpicker.c:242 ../src/libs/colorpicker.c:556
 msgid "min"
 msgstr "mín"
 
-#: ../src/libs/colorpicker.c:241 ../src/libs/colorpicker.c:556
+#: ../src/libs/colorpicker.c:242 ../src/libs/colorpicker.c:557
 msgid "max"
 msgstr "máx"
 
-#: ../src/libs/colorpicker.c:400
+#: ../src/libs/colorpicker.c:401
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr ""
 "passe sobre para salientar amostra na tela, clique para bloquer amostra"
 
-#: ../src/libs/colorpicker.c:541 ../src/libs/colorpicker.c:586
+#: ../src/libs/colorpicker.c:542 ../src/libs/colorpicker.c:587
 msgid "click to (un)hide large color patch"
 msgstr "clique para esconder ou mostrar o patch grande de cor"
 
-#: ../src/libs/colorpicker.c:566
+#: ../src/libs/colorpicker.c:567
 msgid "LCh"
 msgstr "LCh"
 
-#: ../src/libs/colorpicker.c:576
+#: ../src/libs/colorpicker.c:577
 msgid ""
 "turn on color picker\n"
 "ctrl+click to select an area"
@@ -14557,15 +14582,15 @@ msgstr ""
 "ctrl+clique para selecionar uma área"
 
 #. Adding the live samples section
-#: ../src/libs/colorpicker.c:612
+#: ../src/libs/colorpicker.c:613
 msgid "live samples"
 msgstr "amostra em tempo real"
 
-#: ../src/libs/colorpicker.c:620
+#: ../src/libs/colorpicker.c:621
 msgid "display sample areas on image"
 msgstr "visualiza área de amostra na imagem"
 
-#: ../src/libs/colorpicker.c:629
+#: ../src/libs/colorpicker.c:630
 msgid "restrict histogram to selection"
 msgstr "restringe histograma a seleção"
 
@@ -15883,23 +15908,23 @@ msgstr "selecionar a origem do mapa. algumas entradas podem não funcionar"
 msgid "group #%d"
 msgstr "grupo #%d"
 
-#: ../src/libs/masks.c:997 ../src/libs/masks.c:1037 ../src/libs/masks.c:1678
+#: ../src/libs/masks.c:997 ../src/libs/masks.c:1037 ../src/libs/masks.c:1697
 msgid "add circle"
 msgstr "adicionar círculo"
 
-#: ../src/libs/masks.c:1001 ../src/libs/masks.c:1041 ../src/libs/masks.c:1671
+#: ../src/libs/masks.c:1001 ../src/libs/masks.c:1041 ../src/libs/masks.c:1690
 msgid "add ellipse"
 msgstr "adiciona ellipse"
 
-#: ../src/libs/masks.c:1005 ../src/libs/masks.c:1045 ../src/libs/masks.c:1664
+#: ../src/libs/masks.c:1005 ../src/libs/masks.c:1045 ../src/libs/masks.c:1683
 msgid "add path"
 msgstr "adiciona caminho"
 
-#: ../src/libs/masks.c:1009 ../src/libs/masks.c:1049 ../src/libs/masks.c:1658
+#: ../src/libs/masks.c:1009 ../src/libs/masks.c:1049 ../src/libs/masks.c:1677
 msgid "add gradient"
 msgstr "addiciona gradiente"
 
-#: ../src/libs/masks.c:1033 ../src/libs/masks.c:1684
+#: ../src/libs/masks.c:1033 ../src/libs/masks.c:1703
 msgid "add brush"
 msgstr "adiciona pincel"
 
@@ -15943,7 +15968,7 @@ msgstr "modo : exclusão"
 msgid "cleanup unused shapes"
 msgstr "limpar formas não usadas"
 
-#: ../src/libs/masks.c:1651
+#: ../src/libs/masks.c:1670
 msgid "created shapes"
 msgstr "formas criadas"
 
@@ -18318,65 +18343,75 @@ msgstr "nova sessão iniciada '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "nenhuma câmera com acesso remoto disponível para uso..."
 
-#: ../src/views/view.c:1351
+#: ../src/views/view.c:1353
 msgid "Left click"
 msgstr "Clique esquerdo"
 
-#: ../src/views/view.c:1354
+#: ../src/views/view.c:1356
 msgid "Right click"
 msgstr "Clique direito"
 
-#: ../src/views/view.c:1357
+#: ../src/views/view.c:1359
 msgid "Middle click"
 msgstr "Clique do meio"
 
-#: ../src/views/view.c:1360
+#: ../src/views/view.c:1362
 msgid "Scroll"
 msgstr "Rolar"
 
-#: ../src/views/view.c:1363
+#: ../src/views/view.c:1365
 msgid "Left double-click"
 msgstr "clique esquerdo duplo"
 
-#: ../src/views/view.c:1366
+#: ../src/views/view.c:1368
 msgid "Right double-click"
 msgstr "clique direito duplo"
 
-#: ../src/views/view.c:1369
+#: ../src/views/view.c:1371
 msgid "Drag and drop"
 msgstr "Arrastar e soltar"
 
-#: ../src/views/view.c:1372
+#: ../src/views/view.c:1374
 msgid "Left click+Drag"
 msgstr "Clique Esquerdo+Arrastar"
 
-#: ../src/views/view.c:1375
+#: ../src/views/view.c:1377
 msgid "Right click+Drag"
 msgstr "Clique direito+Arrastar"
 
-#: ../src/views/view.c:1396
+#: ../src/views/view.c:1398
 msgid "darktable - accels window"
 msgstr "darktable - janela de atalhos"
 
-#: ../src/views/view.c:1452
+#: ../src/views/view.c:1454
 msgid "switch to a classic window which will stay open after key release."
 msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla."
 
-#: ../src/views/view.c:1568
+#: ../src/views/view.c:1570
 msgid "+Scroll"
 msgstr "+Rolar"
 
-#: ../src/views/view.c:1583
+#: ../src/views/view.c:1585
 msgid "mouse actions"
 msgstr "ações com mouse"
 
-#: ../src/views/view.c:1621
+#: ../src/views/view.c:1623
 msgid "Accel"
 msgstr "atalhos"
 
-#: ../src/views/view.c:1623
+#: ../src/views/view.c:1625
 msgid "Action"
 msgstr "Ação"
+
+#~ msgid "[signal] print-trace not available, skipping\n"
+#~ msgstr "[signal] print-trace não disponível, ignorando\n"
+
+#~ msgid ""
+#~ "unknown signal name: '%s'. use 'ALL' to enable debug for all or use full "
+#~ "signal name\n"
+#~ msgstr ""
+#~ "nome de sinal desconhecido: '%s'. use 'ALL' para habilitar depuração para "
+#~ "todos ou use o nome completo do sinal\n"
 
 #~ msgid "only draw images on map that are currently collected and filtered"
 #~ msgstr ""
