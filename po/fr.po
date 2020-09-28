@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-28 11:27+0200\n"
+"POT-Creation-Date: 2020-09-28 12:04+0200\n"
 "PO-Revision-Date: 2020-09-28 11:46+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -3528,21 +3528,6 @@ msgstr "le fichier « %s » possède un format inconnu !"
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
-
-#: ../src/common/darktable.c:689
-#, c-format
-msgid "[signal] print-trace not available, skipping\n"
-msgstr ""
-
-#: ../src/common/darktable.c:748
-#, c-format
-msgid ""
-"unknown signal name: '%s'. use 'ALL' to enable debug for all or use full "
-"signal name\n"
-msgstr ""
-"signal « %s » non reconnu. utiliser 'ALL' pour activer le mode debug pour "
-"tous les signaux ou utiliser le nom complet du signal .\n"
-"\n"
 
 #: ../src/common/darktable.c:908
 msgid "darktable - run performance configuration?"
@@ -18617,6 +18602,14 @@ msgstr "raccourci"
 #: ../src/views/view.c:1625
 msgid "Action"
 msgstr "action"
+
+#~ msgid ""
+#~ "unknown signal name: '%s'. use 'ALL' to enable debug for all or use full "
+#~ "signal name\n"
+#~ msgstr ""
+#~ "signal « %s » non reconnu. utiliser 'ALL' pour activer le mode debug pour "
+#~ "tous les signaux ou utiliser le nom complet du signal .\n"
+#~ "\n"
 
 #~ msgid ""
 #~ "an error has occurred while trying to open the database from\n"
