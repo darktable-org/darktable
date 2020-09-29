@@ -52,6 +52,9 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
 }
 
 gboolean restart_required = FALSE;
+const char* changed_label = "<b><i>%s</i></b>";
+const char* default_label = "%s";
+
 ]]></xsl:text>
 
   <!-- reset callbacks -->
@@ -301,7 +304,11 @@ gboolean restart_required = FALSE;
 <xsl:template match="dtconfig" mode="tab_block">
   <xsl:text>
   {
-    label = gtk_label_new(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
+    const gchar *format = dt_conf_is_default("</xsl:text><xsl:value-of select="name"/><xsl:text>") ? default_label : changed_label;
+    gchar *markup = g_strdup_printf(format, _("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
+    label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label), markup);
+    g_free(markup);
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);

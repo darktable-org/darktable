@@ -58,6 +58,7 @@ gchar *dt_conf_get_string(const char *name);
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries);
 void dt_conf_cleanup(dt_conf_t *cf);
 int dt_conf_key_exists(const char *key);
+gboolean dt_conf_is_default(const char *key);
 GSList *dt_conf_all_string_entries(const char *dir);
 void dt_conf_string_entry_free(gpointer data);
 

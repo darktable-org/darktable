@@ -377,6 +377,19 @@ int dt_conf_key_exists(const char *key)
   return res;
 }
 
+gboolean dt_conf_is_default(const char *key)
+{
+  const char *def_val = dt_conf_get_default_var(key);
+  if(!def_val)
+    return TRUE; // well if default doesn't know about it, it's default
+
+  const char* cur_val = dt_conf_get_var(key);
+  if(cur_val && (!g_ascii_strcasecmp(def_val, "true") || !g_ascii_strcasecmp(def_val, "false")))
+    return !g_ascii_strcasecmp(def_val, cur_val); // booleans must be compared case insensitive :/
+
+  return !g_strcmp0(def_val, cur_val);
+}
+
 static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
 {
   if(strncmp(key, d->match, strlen(d->match)) == 0)
