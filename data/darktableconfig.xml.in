@@ -1027,6 +1027,13 @@
     <longdescription>draw borders around grouped images when grouping is turned off and the mouse hovers over one of the images of the group</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom">
+    <name>plugins/darkroom/default_presets_first</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>sort built-in presets first</shortdescription>
+    <longdescription>whether to show built-in presets first before user's presets in presets menu.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom">
     <name>plugins/darkroom/hide_default_presets</name>
     <type>bool</type>
     <default>false</default>
