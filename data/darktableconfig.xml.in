@@ -189,7 +189,7 @@
   </dtconfig>
   <dtconfig prefs="cpugpu" restart="true">
     <name>worker_threads</name>
-    <type min="2" max="64">int</type>
+    <type min="1" max="64">int</type>
     <default>2</default>
     <shortdescription>number of background threads</shortdescription>
     <longdescription>this controls for example how many threads are used to create thumbnails during import. the cache will grow to a maximum of twice this number of full resolution image buffers (needs a restart).</longdescription>
