@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-09-28 07:41-0300\n"
-"PO-Revision-Date: 2020-09-28 08:56-0300\n"
+"PO-Revision-Date: 2020-09-29 09:07-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -14506,7 +14506,7 @@ msgid ""
 "clipping. If using the eye dropper, left-click and drag to draw a rectangle "
 "across only the exposed parts of the neg. Don't include the unexposed film "
 "stock in the rectangle, as this will skew the result."
-msgstr ""
+msgstr "Em seguida movemos para o deslizador D Max na seção <quote>Faixa dinâmica do filme</quote>. Este deslizador efetivamente determina o ponto branco. Deslizar para a esquerda torna o negativo mais claro. Deslizar para a direita o torna mais escuro. Se estiver ajustando manualmente, é uma boa idéia observar o histograma e certificar-se de que não levou os realces a um recorte (onde o histograma é forçado para o lado direito do gráfico). Novamente, você pode usar o conta-gotas (à direita) para permitir qe o Negadoctor automaticamente calcule este valor e garanta uso máximo do do histograma sem recortes. Se estiver usando o conta-gotas, clique com o botão esquerdo e arraste para desenhar um retângulo somente pelas partes expostas do negativo. Não inclua partes não expostas no retângulo, porque deixará o resultado enviesado."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11961(para)
 msgid ""
@@ -14568,7 +14568,7 @@ msgid ""
 "shadows color cast setting will have no effect if the <quote>scan exposure "
 "bias</quote> setting, in the <quote>film</quote> tab, is set to a non-zero "
 "value."
-msgstr ""
+msgstr "Estas configurações não devem ser necessárias para a maioria dos negativos bem preservados, e devem ser úteis principalmente para negativos velhos e mal preservados, em que alterações na base do filme induziram desvios de cor. Entenda que a configuração desvio de cor em sombras não terá efeito se a configuração <quote>viés de exposição ao escanear</quote>, na aba <quote>filme</quote>, estiver definida em um valor não-zero."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12023(para)
 msgid ""
@@ -14586,7 +14586,7 @@ msgid ""
 "This setting should not be needed if your film has been exposed with a light "
 "source close to the one for which it was balanced, for example if you shot a "
 "scene lit by daylight on a daylight-balanced film."
-msgstr ""
+msgstr "Esta configuração não deve ser necessária se seu filme foi exposto com uma fonte de luz próxima daquela para a qual for ajustado, por exemplo, se você tirou uma foto de uma cena à luz do dia co mum filme ajustado para luz do dia."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12043(title)
 msgid "print properties"
@@ -14635,7 +14635,7 @@ msgid ""
 "negative. If you can see unexposed film stock around the edges of your "
 "image, ensure that these areas are excluded from the drawn rectangle for "
 "calculating the Paper black value."
-msgstr ""
+msgstr "para o <quote>preto do papel</quote>, selecione o conta-gotas e <emphasis>clique</emphasis> e arraste somente pela parte exposta do negativo. Se você puder ver filme não exposto ao redor das bordas de sua imagem, certifique-se de que estas áreas sejam excluídas do retângulo desenhado para calcular o valor do preto do papel."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12082(para)
 msgid ""
@@ -14644,7 +14644,7 @@ msgid ""
 "non-zero luminance in the analog process, but the digital pipeline usually "
 "expects black encoded at zero (RGB value), this setting lets you remap paper "
 "black to pipeline black with an offset."
-msgstr ""
+msgstr "O preto do papel representa a densidade de halogeneto de prata mais escura disponível no papel virtual. Como a densidade do preto sempre resulta em luminância não-zero no processo analógico, mas a pipeline digital usualmente espera que o preto seja codificado como valor RGB zero, esta configuração permite remapear o preto do papel para preto do pipeline com um deslocamento."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12091(para)
 msgid ""
@@ -14665,7 +14665,7 @@ msgid ""
 "highlight values are being compressed (pushed to the left). Adjust this "
 "accordingly, so that your highlights are not clipped in the histogram or to "
 "simulate a mat printing with low-contrast highlights."
-msgstr ""
+msgstr "<quote>Brilho do papel</quote> é essencialmente uma ferramenta de compressão de realces. À medida que você leva o deslizador para a esquerda, verá no histograma que os valores dos realces estão sendo comprimidos (levados para a esquerda). Ajuste de acordo, de forma que seus realces não fiquem recortados no histograma, ou para simular uma impressão com realces em baixo contraste."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12108(para)
 msgid ""
@@ -16975,12 +16975,7 @@ msgid ""
 "Equalizer is creating for your image. This is an important distinction to "
 "understand. The aim is to get that histogram extended as far as possible to "
 "the left and right sides of the graph."
-msgstr ""
-"O histograma que aparece na aba <placeholder-1/> <placeholder-2/> representa "
-"sua imagem. Ele representa a <placeholder-3/> que o Equalizador de Tons está "
-"criando para sua imagem. Esta é uma distinção cuja compreensão é importante. "
-"O objetivo é conseguir extender esse histograma tanto quanto possível para a "
-"esquerda e a direita do gráfico."
+msgstr "O histograma que aparece na aba <placeholder-1/> <placeholder-2/> representa sua imagem. Ele representa a <placeholder-3/> que o Equalizador de Tons está criando para sua imagem. Esta é uma distinção cuja compreensão é importante. O objetivo é conseguir estender esse histograma tanto quanto possível para a esquerda e a direita do gráfico."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14118(quote)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21163(title)
@@ -16994,7 +16989,7 @@ msgid ""
 "dropper will allow the Tone Equalizer module to select the most appropriate "
 "values for you. Having done that, check the histogram in the Advanced tab "
 "again. It should now be fairly evenly distributed across the graph."
-msgstr ""
+msgstr "Para fazer isto, vá até a aba <placeholder-1/> e ajuste os deslizadores de Compensação de Exposição na Máscara e Compensação de Contraste na Máscara. Selecionar cada conta-gotas permitirá que o módulo Equalizador de Tons selecione os valores mais apropriados para você. Tendo feito isso, verifique o histograma na aba Avançado novamente. Ele deverá estar mais igualmente distribuído pelo gráfico."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14134(para)
 msgid ""
