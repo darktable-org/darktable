@@ -350,8 +350,7 @@ gboolean restart_required = FALSE;
 
   <xsl:template match="dtconfig[type='longstring']" mode="reset">
      <xsl:text>
-        const gchar *def= g_strdup("</xsl:text><xsl:value-of select="default"/><xsl:text>");
-        gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget)), def, strlen(def));
+        gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget)), "</xsl:text><xsl:value-of select="default"/><xsl:text>", strlen("</xsl:text><xsl:value-of select="default"/><xsl:text>"));
      </xsl:text>
   </xsl:template>
 
