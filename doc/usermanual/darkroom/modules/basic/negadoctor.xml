@@ -167,7 +167,7 @@
         (where the histogram is pushed off the right hand side of the
         graph).  Again, you can use the eye dropper (on the right) to
         allow Negadoctor to automatically calculate this value to
-        ensure maxiaml use of the histogram without clipping. If using
+        ensure maximal use of the histogram without clipping. If using
         the eye dropper, left-click and drag to draw a rectangle
         across only the exposed parts of the neg. Don't include the
         unexposed film stock in the rectangle, as this will skew the
