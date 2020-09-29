@@ -72,6 +72,11 @@ fin:
   return str;
 }
 
+static inline char *dt_conf_get_default_var(const char *name)
+{
+  return (char *)g_hash_table_lookup(darktable.conf->defaults, name);
+}
+
 /* set the value only if it hasn't been overridden from commandline
  * return 1 if key/value is still the one passed on commandline. */
 static int dt_conf_set_if_not_overridden(const char *name, char *str)
@@ -125,7 +130,28 @@ int dt_conf_get_int(const char *name)
 {
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
-  if(isnan(new_value)) new_value = 0.0;
+  if(isnan(new_value))
+  {
+    //we've got garbage, check default
+    const char *def_val = dt_conf_get_default_var(name);
+    if(def_val)
+    {
+      new_value = dt_calculator_solve(1, def_val);
+      if(isnan(new_value))
+        new_value = 0.0;
+      else
+      {
+        char *fix_badval = g_strdup(def_val);
+        if(dt_conf_set_if_not_overridden(name, fix_badval))
+          g_free(fix_badval);
+      }
+    }
+    else
+    {
+      new_value = 0.0;
+    }
+  }
+
   int val;
   if(new_value > 0)
     val = new_value + 0.5;
@@ -138,7 +164,28 @@ int64_t dt_conf_get_int64(const char *name)
 {
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
-  if(isnan(new_value)) new_value = 0.0;
+  if(isnan(new_value))
+  {
+    //we've got garbage, check default
+    const char *def_val = dt_conf_get_default_var(name);
+    if(def_val)
+    {
+      new_value = dt_calculator_solve(1, def_val);
+      if(isnan(new_value))
+        new_value = 0.0;
+      else
+      {
+        char *fix_badval = g_strdup(def_val);
+        if(dt_conf_set_if_not_overridden(name, fix_badval))
+          g_free(fix_badval);
+      }
+    }
+    else
+    {
+      new_value = 0.0;
+    }
+  }
+
   int64_t val;
   if(new_value > 0)
     val = new_value + 0.5;
@@ -150,9 +197,29 @@ int64_t dt_conf_get_int64(const char *name)
 float dt_conf_get_float(const char *name)
 {
   const char *str = dt_conf_get_var(name);
-  float val = dt_calculator_solve(1, str);
-  if(isnan(val)) val = 0.0;
-  return val;
+  float new_value = dt_calculator_solve(1, str);
+  if(isnan(new_value))
+  {
+    //we've got garbage, check default
+    const char *def_val = dt_conf_get_default_var(name);
+    if(def_val)
+    {
+      new_value = dt_calculator_solve(1, def_val);
+      if(isnan(new_value))
+        new_value = 0.0;
+      else
+      {
+        char *fix_badval = g_strdup(def_val);
+        if(dt_conf_set_if_not_overridden(name, fix_badval))
+          g_free(fix_badval);
+      }
+    }
+    else
+    {
+      new_value = 0.0;
+    }
+  }
+  return new_value;
 }
 
 int dt_conf_get_and_sanitize_int(const char *name, int min, int max)
