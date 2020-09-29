@@ -822,6 +822,7 @@ void dt_gui_favorite_presets_menu_show()
                                     -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
 
+        int last_wp = -1;
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
           char *name = (char *)sqlite3_column_text(stmt, 0);
@@ -830,6 +831,15 @@ void dt_gui_favorite_presets_menu_show()
           {
             //skip default presets if told to do so
             continue;
+          }
+          if(last_wp == -1)
+          {
+            last_wp = writeprotect;
+          }
+          else if(last_wp != writeprotect)
+          {
+            last_wp = writeprotect;
+            gtk_menu_shell_append(GTK_MENU_SHELL(sm), gtk_separator_menu_item_new());
           }
           GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
           g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
@@ -923,6 +933,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
   }
   // collect all presets for op from db
   int found = 0;
+  int last_wp = -1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int chk_writeprotect = sqlite3_column_int(stmt, 2);
@@ -930,6 +941,15 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     {
       //skip default module if set to hide them.
       continue; 
+    }
+    if(last_wp == -1)
+    {
+      last_wp = writeprotect;
+    }
+    else if(last_wp != writeprotect)
+    {
+      last_wp = writeprotect;
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
     }
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
