@@ -54,7 +54,7 @@ static inline char *dt_conf_get_var(const char *name)
   if(str) goto fin;
 
   // not found, try defaults
-  str = (char *)g_hash_table_lookup(darktable.conf->defaults, name);
+  str = (char *)dt_confgen_get(name, DT_DEFAULT);
   if(str)
   {
     char *str_new = g_strdup(str);
@@ -71,11 +71,6 @@ static inline char *dt_conf_get_var(const char *name)
 fin:
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return str;
-}
-
-static inline char *dt_conf_get_default_var(const char *name)
-{
-  return (char *)g_hash_table_lookup(darktable.conf->defaults, name);
 }
 
 /* set the value only if it hasn't been overridden from commandline
@@ -134,7 +129,7 @@ int dt_conf_get_int(const char *name)
   if(isnan(new_value))
   {
     //we've got garbage, check default
-    const char *def_val = dt_conf_get_default_var(name);
+    const char *def_val = dt_confgen_get(name, DT_DEFAULT);
     if(def_val)
     {
       new_value = dt_calculator_solve(1, def_val);
@@ -168,7 +163,7 @@ int64_t dt_conf_get_int64(const char *name)
   if(isnan(new_value))
   {
     //we've got garbage, check default
-    const char *def_val = dt_conf_get_default_var(name);
+    const char *def_val = dt_confgen_get(name, DT_DEFAULT);
     if(def_val)
     {
       new_value = dt_calculator_solve(1, def_val);
@@ -202,7 +197,7 @@ float dt_conf_get_float(const char *name)
   if(isnan(new_value))
   {
     //we've got garbage, check default
-    const char *def_val = dt_conf_get_default_var(name);
+    const char *def_val = dt_confgen_get(name, DT_DEFAULT);
     if(def_val)
     {
       new_value = dt_calculator_solve(1, def_val);
@@ -270,7 +265,6 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
   dt_confgen_init();
 
   cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  cf->defaults = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
   FILE *f = 0;
@@ -314,7 +308,6 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
         if(*c == '=')
         {
           *c = '\0';
-          if(i) g_hash_table_insert(darktable.conf->defaults, g_strdup(line), g_strdup(c + 1));
           if(!i || defaults) g_hash_table_insert(darktable.conf->table, g_strdup(line), g_strdup(c + 1));
         }
       }
@@ -370,7 +363,6 @@ void dt_conf_cleanup(dt_conf_t *cf)
     fclose(f);
   }
   g_hash_table_unref(cf->table);
-  g_hash_table_unref(cf->defaults);
   g_hash_table_unref(cf->override_entries);
   g_hash_table_unref(cf->x_default);
   g_hash_table_unref(cf->x_type);
