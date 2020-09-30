@@ -27,24 +27,6 @@
 #include <glib.h>
 #include <inttypes.h>
 
-typedef struct dt_conf_t
-{
-  dt_pthread_mutex_t mutex;
-  char filename[PATH_MAX];
-  GHashTable *table;
-  GHashTable *x_default;
-  GHashTable *x_min;
-  GHashTable *x_max;
-  GHashTable *x_type;
-  GHashTable *override_entries;
-} dt_conf_t;
-
-typedef struct dt_conf_string_entry_t
-{
-  char *key;
-  char *value;
-} dt_conf_string_entry_t;
-
 typedef enum dt_confgen_type_t
 {
   DT_INT,
@@ -53,6 +35,29 @@ typedef enum dt_confgen_type_t
   DT_STRING,
   DT_FLOAT
 } dt_confgen_type_t;
+
+typedef struct dt_confgen_value_t
+{
+  dt_confgen_type_t type;
+  char *def;
+  char *min;
+  char *max;
+} dt_confgen_value_t;
+
+typedef struct dt_conf_t
+{
+  dt_pthread_mutex_t mutex;
+  char filename[PATH_MAX];
+  GHashTable *table;
+  GHashTable *x_confgen;
+  GHashTable *override_entries;
+} dt_conf_t;
+
+typedef struct dt_conf_string_entry_t
+{
+  char *key;
+  char *value;
+} dt_conf_string_entry_t;
 
 typedef enum dt_confgen_value_kind_t
 {
