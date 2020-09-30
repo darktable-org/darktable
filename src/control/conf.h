@@ -33,6 +33,10 @@ typedef struct dt_conf_t
   char filename[PATH_MAX];
   GHashTable *table;
   GHashTable *defaults;
+  GHashTable *x_default;
+  GHashTable *x_min;
+  GHashTable *x_max;
+  GHashTable *x_type;
   GHashTable *override_entries;
 } dt_conf_t;
 
@@ -41,6 +45,22 @@ typedef struct dt_conf_string_entry_t
   char *key;
   char *value;
 } dt_conf_string_entry_t;
+
+typedef enum dt_confgen_type_t
+{
+  DT_INT,
+  DT_INT64,
+  DT_BOOL,
+  DT_STRING,
+  DT_FLOAT
+} dt_confgen_type_t;
+
+typedef enum dt_confgen_value_kind_t
+{
+  DT_DEFAULT,
+  DT_MIN,
+  DT_MAX
+} dt_confgen_value_kind_t;
 
 void dt_conf_set_int(const char *name, int val);
 void dt_conf_set_int64(const char *name, int64_t val);
@@ -64,6 +84,19 @@ void dt_conf_string_entry_free(gpointer data);
 #define DT_CONF_SET_SANITIZED_INT(name, val, min, max) dt_conf_set_int(name, CLAMPS(val, min,max));
 #define DT_CONF_SET_SANITIZED_INT6464(name, val, min, max) dt_conf_set_int(name, CLAMPS(val, min,max));
 #define DT_CONF_SET_SANITIZED_FLOAT(name, val, min, max) dt_conf_set_float(name, CLAMPS(val, min,max));
+
+// conf generated from darktable config XML
+
+gboolean dt_confgen_exists(const char *name);
+dt_confgen_type_t dt_confgen_type(const char *name);
+
+gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind);
+
+int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind);
+int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind);
+gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind);
+float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind);
+const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

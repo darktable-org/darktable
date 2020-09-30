@@ -24,6 +24,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/conf.h"
+#include "conf_gen.h"
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -261,6 +262,13 @@ gchar *dt_conf_get_string(const char *name)
 
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 {
+  cf->x_default = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  cf->x_min = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  cf->x_max = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  cf->x_type = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+
+  dt_confgen_init();
+
   cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->defaults = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
@@ -364,6 +372,10 @@ void dt_conf_cleanup(dt_conf_t *cf)
   g_hash_table_unref(cf->table);
   g_hash_table_unref(cf->defaults);
   g_hash_table_unref(cf->override_entries);
+  g_hash_table_unref(cf->x_default);
+  g_hash_table_unref(cf->x_type);
+  g_hash_table_unref(cf->x_min);
+  g_hash_table_unref(cf->x_max);
   dt_pthread_mutex_destroy(&darktable.conf->mutex);
 }
 
@@ -408,6 +420,78 @@ void dt_conf_string_entry_free(gpointer data)
   nv->key = NULL;
   nv->value = NULL;
   g_free(nv);
+}
+
+gboolean dt_confgen_exists(const char *name)
+{
+  return g_hash_table_lookup(darktable.conf->x_type, name) != NULL;
+}
+
+dt_confgen_type_t dt_confgen_type(const char *name)
+{
+  const char *type = g_hash_table_lookup(darktable.conf->x_type, name);
+
+  if      (!strcmp(type, "int"))   return DT_INT;
+  else if (!strcmp(type, "int64")) return DT_INT64;
+  else if (!strcmp(type, "bool"))  return DT_BOOL;
+  else if (!strcmp(type, "float")) return DT_FLOAT;
+  else                             return DT_STRING;
+}
+
+gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind)
+{
+  switch(kind)
+  {
+     case DT_DEFAULT:
+       return g_hash_table_lookup(darktable.conf->x_default, name) != NULL;
+     case DT_MIN:
+       return g_hash_table_lookup(darktable.conf->x_min, name) != NULL;
+     case DT_MAX:
+       return g_hash_table_lookup(darktable.conf->x_max, name) != NULL;
+  }
+  return FALSE;
+}
+
+int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
+{
+  const char *str = dt_confgen_get(name, kind);
+  const float value = dt_calculator_solve(1, str);
+  return (int)value;
+}
+
+int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
+{
+  const char *str = dt_confgen_get(name, kind);
+  const float value = dt_calculator_solve(1, str);
+  return (int64_t)value;
+}
+
+gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind)
+{
+  const char *str = dt_confgen_get(name, kind);
+  return !strcmp(str, "true");
+}
+
+float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
+{
+  const char *str = dt_confgen_get(name, kind);
+  const float value = dt_calculator_solve(1, str);
+  return value;
+}
+
+const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind)
+{
+  switch(kind)
+  {
+     case DT_DEFAULT:
+       return g_hash_table_lookup(darktable.conf->x_default, name);
+     case DT_MIN:
+       return g_hash_table_lookup(darktable.conf->x_min, name);
+     case DT_MAX:
+       return g_hash_table_lookup(darktable.conf->x_max, name);
+  }
+
+  return "";
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
