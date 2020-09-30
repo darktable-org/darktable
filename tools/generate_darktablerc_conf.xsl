@@ -91,25 +91,25 @@ void dt_confgen_init()
     <xsl:variable name="type" select="type"/>
 
     <xsl:for-each select="type">
-      <xsl:text>_insert_default("</xsl:text><xsl:value-of select="$name" />
+      <xsl:text>   _insert_default("</xsl:text><xsl:value-of select="$name" />
       <xsl:text>", "</xsl:text><xsl:value-of select="$default" />
       <xsl:text>");</xsl:text>
       <xsl:text>&#xA;</xsl:text>
 
-      <xsl:text>_insert_type("</xsl:text><xsl:value-of select="$name" />
+      <xsl:text>   _insert_type("</xsl:text><xsl:value-of select="$name" />
       <xsl:text>", "</xsl:text><xsl:value-of select="$type" />
       <xsl:text>");</xsl:text>
       <xsl:text>&#xA;</xsl:text>
 
       <xsl:if test="@min">
-        <xsl:text>_insert_min("</xsl:text><xsl:value-of select="$name" />
+        <xsl:text>   _insert_min("</xsl:text><xsl:value-of select="$name" />
         <xsl:text>", "</xsl:text><xsl:value-of select="@min" />
         <xsl:text>");</xsl:text>
         <xsl:text>&#xA;</xsl:text>
       </xsl:if>
 
       <xsl:if test="@max">
-        <xsl:text>_insert_max("</xsl:text><xsl:value-of select="$name" />
+        <xsl:text>   _insert_max("</xsl:text><xsl:value-of select="$name" />
         <xsl:text>", "</xsl:text><xsl:value-of select="@max" />
         <xsl:text>");</xsl:text>
         <xsl:text>&#xA;</xsl:text>
