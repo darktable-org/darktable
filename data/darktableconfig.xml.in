@@ -1009,8 +1009,8 @@
       </enum>
     </type>
     <default>show both</default>
-    <shortdescription>show search module text entry</shortdescription>
-    <longdescription/>
+    <shortdescription>show module groups and/or search text entry</shortdescription>
+    <longdescription>show module groups and/or search text entry. (needs a restart)</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
