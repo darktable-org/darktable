@@ -32,7 +32,6 @@ typedef struct dt_conf_t
   dt_pthread_mutex_t mutex;
   char filename[PATH_MAX];
   GHashTable *table;
-  GHashTable *defaults;
   GHashTable *x_default;
   GHashTable *x_min;
   GHashTable *x_max;
