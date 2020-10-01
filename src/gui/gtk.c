@@ -1564,7 +1564,7 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
   {
     if(monitor == 2)
     {
-      gui->ppd_thb = 0.5f;
+      gui->ppd_thb = 0.7f;
       gui->filter_image = CAIRO_FILTER_FAST;
     }
     else if(monitor == 3)
@@ -1574,6 +1574,7 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
     else if(monitor == 4)
     {
       gui->ppd = 2.0f;
+      gui->ppd_thb = 1.4f;
       gui->filter_image = CAIRO_FILTER_FAST;
     }
   }
