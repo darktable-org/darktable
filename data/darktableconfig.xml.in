@@ -999,7 +999,7 @@
     <shortdescription>position of the image information line</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" restart="true">
     <name>plugins/darkroom/search_iop_by_text</name>
     <type>
       <enum>
