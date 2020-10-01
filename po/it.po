@@ -6391,7 +6391,7 @@ msgstr ""
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:433
 msgid "modify selected theme with CSS tweaks below"
-msgstr "Modifica il tema selezionato con le chiavi CSS qui sotto."
+msgstr "modifica il tema selezionato con i ritocchi del CSS qui sotto"
 
 #: ../src/gui/preferences.c:441
 msgid "modify theme with CSS keyed below (saved to user.css)"
