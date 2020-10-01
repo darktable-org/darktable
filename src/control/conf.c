@@ -344,20 +344,8 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
   // check for user config
   f = g_fopen(filename, "rb");
 
-  if(!f)
-  {
-    // remember we init to default rc and try again
-    defaults = TRUE;
+  // if file has been found, parse it
 
-    // if not found, check for dt default config file
-
-    char buf[PATH_MAX] = { 0 }, defaultrc[PATH_MAX] = { 0 };
-    dt_loc_get_datadir(buf, sizeof(buf));
-    snprintf(defaultrc, sizeof(defaultrc), "%s/darktablerc", buf);
-    f = g_fopen(defaultrc, "rb");
-  }
-
-  // one file has been found, parse it
   if(f)
   {
     while(!feof(f))
@@ -385,6 +373,23 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
       }
     }
     fclose(f);
+  }
+  else
+  {
+    // this is first run, remember we init
+    defaults = TRUE;
+
+    // we initialize the conf table with default values
+    GHashTableIter iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init (&iter, darktable.conf->x_confgen);
+    while (g_hash_table_iter_next (&iter, &key, &value))
+    {
+      const char *name = (const char *)key;
+      const dt_confgen_value_t *entry = (dt_confgen_value_t *)value;
+      g_hash_table_insert(darktable.conf->table, g_strdup(name), g_strdup(entry->def));
+    }
   }
 
   // for the very first time after a fresh install
