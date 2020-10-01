@@ -1326,8 +1326,8 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
 
   _blendop_blendif_channel_mask_view(widget, module, mode);
 
-  dt_control_key_accelerators_off(darktable.control);
   gtk_widget_grab_focus(widget);
+  dt_control_key_accelerators_off(darktable.control);
   return FALSE;
 }
 
