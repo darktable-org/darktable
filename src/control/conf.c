@@ -24,6 +24,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/conf.h"
+#include "conf_gen.h"
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -39,6 +40,15 @@ typedef struct dt_conf_dreggn_t
   const char *match;
 } dt_conf_dreggn_t;
 
+static void _free_confgen_value(void *value)
+{
+  dt_confgen_value_t *s = (dt_confgen_value_t *)value;
+  g_free(s->def);
+  g_free(s->min);
+  g_free(s->max);
+  g_free(s);
+}
+
 /** return slot for this variable or newly allocated slot. */
 static inline char *dt_conf_get_var(const char *name)
 {
@@ -53,7 +63,7 @@ static inline char *dt_conf_get_var(const char *name)
   if(str) goto fin;
 
   // not found, try defaults
-  str = (char *)g_hash_table_lookup(darktable.conf->defaults, name);
+  str = (char *)dt_confgen_get(name, DT_DEFAULT);
   if(str)
   {
     char *str_new = g_strdup(str);
@@ -70,11 +80,6 @@ static inline char *dt_conf_get_var(const char *name)
 fin:
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return str;
-}
-
-static inline char *dt_conf_get_default_var(const char *name)
-{
-  return (char *)g_hash_table_lookup(darktable.conf->defaults, name);
 }
 
 /* set the value only if it hasn't been overridden from commandline
@@ -133,7 +138,7 @@ int dt_conf_get_int(const char *name)
   if(isnan(new_value))
   {
     //we've got garbage, check default
-    const char *def_val = dt_conf_get_default_var(name);
+    const char *def_val = dt_confgen_get(name, DT_DEFAULT);
     if(def_val)
     {
       new_value = dt_calculator_solve(1, def_val);
@@ -167,7 +172,7 @@ int64_t dt_conf_get_int64(const char *name)
   if(isnan(new_value))
   {
     //we've got garbage, check default
-    const char *def_val = dt_conf_get_default_var(name);
+    const char *def_val = dt_confgen_get(name, DT_DEFAULT);
     if(def_val)
     {
       new_value = dt_calculator_solve(1, def_val);
@@ -201,7 +206,7 @@ float dt_conf_get_float(const char *name)
   if(isnan(new_value))
   {
     //we've got garbage, check default
-    const char *def_val = dt_conf_get_default_var(name);
+    const char *def_val = dt_confgen_get(name, DT_DEFAULT);
     if(def_val)
     {
       new_value = dt_calculator_solve(1, def_val);
@@ -259,59 +264,132 @@ gchar *dt_conf_get_string(const char *name)
   return g_strdup(str);
 }
 
+static char *_sanitize_confgen(const char *name, const char *value)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(!item) return g_strdup(value);
+
+  char result[100] = { 0 };
+  g_strlcpy(result, value, sizeof(result));
+
+  switch(item->type)
+  {
+    case DT_INT:
+    {
+      float v = dt_calculator_solve(1, value);
+
+      const int min = item->min ? (int)dt_calculator_solve(1, item->min) : INT_MIN;
+      const int max = item->max ? (int)dt_calculator_solve(1, item->max) : INT_MAX;
+      // if garbadge, use default
+      const int val = isnan(v) ? dt_confgen_get_int(name, DT_DEFAULT) : (int)v;
+      g_snprintf(result, sizeof(result), "%d", CLAMP(val, min, max));
+    }
+    break;
+    case DT_INT64:
+    {
+      float v = dt_calculator_solve(1, value);
+
+      const int64_t min = item->min ? (int64_t)dt_calculator_solve(1, item->min) : INT64_MIN;
+      const int64_t max = item->max ? (int64_t)dt_calculator_solve(1, item->max) : INT64_MAX;
+      // if garbadge, use default
+      const int64_t val = isnan(v) ? dt_confgen_get_int64(name, DT_DEFAULT) : (int64_t)v;
+      g_snprintf(result, sizeof(result), "%ld", CLAMP(val, min, max));
+    }
+    break;
+    case DT_FLOAT:
+    {
+      float v = dt_calculator_solve(1, value);
+
+      const float min = item->min ? (float)dt_calculator_solve(1, item->min) : -FLT_MAX;
+      const float max = item->max ? (float)dt_calculator_solve(1, item->max) : FLT_MAX;
+      // if garbadge, use default
+      const float val = isnan(v) ? dt_confgen_get_float(name, DT_DEFAULT) : v;
+      g_snprintf(result, sizeof(result), "%f", CLAMP(val, min, max));
+    }
+    break;
+    case DT_BOOL:
+    {
+      if(strcmp(value, "true") && strcmp(value, "false"))
+        g_snprintf(result, sizeof(result), "%s", dt_confgen_get(name, DT_DEFAULT));
+    }
+    break;
+    default:
+      break;
+  }
+
+  return g_strdup(result);
+}
+
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 {
+  cf->x_confgen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _free_confgen_value);
+
+  dt_confgen_init();
+
   cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  cf->defaults = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
-  FILE *f = 0;
+
+  // init conf filename
+  g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
 
 #define LINE_SIZE 1023
 
   char line[LINE_SIZE + 1];
 
-  int read = 0;
-  int defaults = 0;
-  for(int i = 0; i < 2; i++)
+  FILE *f = NULL;
+  gboolean defaults = FALSE;
+
+  // check for user config
+  f = g_fopen(filename, "rb");
+
+  // if file has been found, parse it
+
+  if(f)
   {
-    // TODO: read default darktablerc into ->defaults and other into ->table!
-    if(!i)
-    {
-      g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
-      f = g_fopen(filename, "rb");
-      if(!f)
-      {
-        // remember we init to default rc and try again
-        defaults = 1;
-        continue;
-      }
-    }
-    if(i)
-    {
-      char buf[PATH_MAX] = { 0 }, defaultrc[PATH_MAX] = { 0 };
-      dt_loc_get_datadir(buf, sizeof(buf));
-      snprintf(defaultrc, sizeof(defaultrc), "%s/darktablerc", buf);
-      f = g_fopen(defaultrc, "rb");
-    }
-    if(!f) return;
     while(!feof(f))
     {
-      read = fscanf(f, "%" STR(LINE_SIZE) "[^\r\n]\r\n", line);
+      const int read = fscanf(f, "%" STR(LINE_SIZE) "[^\r\n]\r\n", line);
       if(read > 0)
       {
         char *c = line;
         char *end = line + strlen(line);
+        // check for '=' which is separator between the conf name and value
         while(*c != '=' && c < end) c++;
+
         if(*c == '=')
         {
           *c = '\0';
-          if(i) g_hash_table_insert(darktable.conf->defaults, g_strdup(line), g_strdup(c + 1));
-          if(!i || defaults) g_hash_table_insert(darktable.conf->table, g_strdup(line), g_strdup(c + 1));
+
+          char *name = g_strdup(line);
+          // ensure that numbers are properly clamped if min/max
+          // defined and if not and garbage is read then the default
+          // value is returned.
+          char *value = _sanitize_confgen(name, (const char *)(c + 1));
+
+          g_hash_table_insert(darktable.conf->table, name, value);
         }
       }
     }
     fclose(f);
+  }
+  else
+  {
+    // this is first run, remember we init
+    defaults = TRUE;
+
+    // we initialize the conf table with default values
+    GHashTableIter iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init (&iter, darktable.conf->x_confgen);
+    while (g_hash_table_iter_next (&iter, &key, &value))
+    {
+      const char *name = (const char *)key;
+      const dt_confgen_value_t *entry = (dt_confgen_value_t *)value;
+      g_hash_table_insert(darktable.conf->table, g_strdup(name), g_strdup(entry->def));
+    }
   }
 
   // for the very first time after a fresh install
@@ -362,8 +440,8 @@ void dt_conf_cleanup(dt_conf_t *cf)
     fclose(f);
   }
   g_hash_table_unref(cf->table);
-  g_hash_table_unref(cf->defaults);
   g_hash_table_unref(cf->override_entries);
+  g_hash_table_unref(cf->x_confgen);
   dt_pthread_mutex_destroy(&darktable.conf->mutex);
 }
 
@@ -408,6 +486,84 @@ void dt_conf_string_entry_free(gpointer data)
   nv->key = NULL;
   nv->value = NULL;
   g_free(nv);
+}
+
+gboolean dt_confgen_exists(const char *name)
+{
+  return g_hash_table_lookup(darktable.conf->x_confgen, name) != NULL;
+}
+
+dt_confgen_type_t dt_confgen_type(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+    return item->type;
+  else
+    return DT_STRING;
+}
+
+gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  switch(kind)
+  {
+     case DT_DEFAULT:
+       return item->def != NULL;
+     case DT_MIN:
+       return item->min != NULL;
+     case DT_MAX:
+       return item->max != NULL;
+  }
+  return FALSE;
+}
+
+const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    switch(kind)
+    {
+       case DT_DEFAULT:
+         return item->def;
+       case DT_MIN:
+         return item->min;
+       case DT_MAX:
+         return item->max;
+    }
+  }
+
+  return "";
+}
+
+int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
+{
+  const char *str = dt_confgen_get(name, kind);
+  const float value = dt_calculator_solve(1, str);
+  return (int)value;
+}
+
+int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
+{
+  const char *str = dt_confgen_get(name, kind);
+  const float value = dt_calculator_solve(1, str);
+  return (int64_t)value;
+}
+
+gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind)
+{
+  const char *str = dt_confgen_get(name, kind);
+  return !strcmp(str, "true");
+}
+
+float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
+{
+  const char *str = dt_confgen_get(name, kind);
+  const float value = dt_calculator_solve(1, str);
+  return value;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
