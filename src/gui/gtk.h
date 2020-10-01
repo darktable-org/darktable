@@ -116,7 +116,7 @@ typedef struct dt_gui_gtk_t
   gboolean show_focus_peaking;
   GtkWidget *focus_peaking_button;
 
-  double dpi, dpi_factor, ppd;
+  double dpi, dpi_factor, ppd, ppd_thb;
 
   int icon_size; // size of top panel icons
 

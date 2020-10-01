@@ -1554,31 +1554,45 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
 {
   GtkWidget *widget = gui->ui->main_window;
 
+  gui->ppd = gui->ppd_thb = 1.0f;
+  gui->filter_image = CAIRO_FILTER_GOOD;
+
   // check if in HiDPI mode
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
-  float screen_ppd_overwrite = dt_conf_get_float("screen_ppd_overwrite");
-  if(screen_ppd_overwrite > 0.0)
+  int monitor = dt_conf_get_int("ui/monitor");
+  if(monitor >= 0)
   {
-    gui->ppd = screen_ppd_overwrite;
-    dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f as specified in the configuration file\n", screen_ppd_overwrite);
+    if(monitor == 2)
+    {
+      gui->ppd_thb = 0.5f;
+      gui->filter_image = CAIRO_FILTER_FAST;
+    }
+    else if(monitor == 3)
+    {
+      gui->ppd_thb = gui->ppd = 2.0f;
+    }
+    else if(monitor == 4)
+    {
+      gui->ppd = 2.0f;
+      gui->filter_image = CAIRO_FILTER_FAST;
+    }
   }
   else
   {
-#ifndef GDK_WINDOWING_QUARTZ
-    gui->ppd = gtk_widget_get_scale_factor(widget);
-#else
-    gui->ppd = dt_osx_get_ppd();
-#endif
-    if(gui->ppd < 0.0)
+ #ifndef GDK_WINDOWING_QUARTZ
+    gui->ppd = gui->ppd_thb = gtk_widget_get_scale_factor(widget);
+ #else
+    gui->ppd = gui->ppd_thb = dt_osx_get_ppd();
+ #endif
+
+    if(gui->ppd < 0.0f)
     {
-      gui->ppd = 1.0;
+      gui->ppd = gui->ppd_thb = 1.0f;
       dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n");
     }
     else
       dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", gui->ppd);
   }
-#else
-  gui->ppd = 1.0;
 #endif
   // get the screen resolution
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
@@ -1700,18 +1714,6 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_visible(gui->scrollbars.hscrollbar, FALSE);
   gtk_widget_set_visible(gui->scrollbars.vscrollbar, FALSE);
 
-  // Fetch the cairo filter to draw scaled surfaces where exact 1:1 buffer/viewport size is not guaranteed
-  gui->filter_image = CAIRO_FILTER_FAST;
-
-  if(dt_conf_key_exists("ui/cairo_filter"))
-  {
-    if(strcmp(dt_conf_get_string("ui/cairo_filter"), "best") == 0)
-      gui->filter_image = CAIRO_FILTER_BEST;
-    else if (strcmp(dt_conf_get_string("ui/cairo_filter"), "good") == 0)
-      gui->filter_image = CAIRO_FILTER_GOOD;
-  }
-  else
-    dt_conf_set_string("ui/cairo_filter", "fast");
 }
 
 static void init_main_table(GtkWidget *container)

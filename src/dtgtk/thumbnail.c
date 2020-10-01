@@ -214,14 +214,14 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
   int h = 0;
   gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
 
-  const float scaler = 1.0f / darktable.gui->ppd;
+  const float scaler = 1.0f / darktable.gui->ppd_thb;
   cairo_scale(cr, scaler, scaler);
 
   cairo_set_source_surface(cr, thumb->img_surf, thumb->current_zx * darktable.gui->ppd, thumb->current_zy * darktable.gui->ppd);
   cairo_paint(cr);
 
   // and eventually the image border
-  gtk_render_frame(context, cr, 0, 0, w * darktable.gui->ppd, h * darktable.gui->ppd);
+  gtk_render_frame(context, cr, 0, 0, w * darktable.gui->ppd_thb, h * darktable.gui->ppd_thb);
 }
 
 static void _thumb_retrieve_margins(dt_thumbnail_t *thumb)
@@ -366,7 +366,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       // copy preview image into final surface
       if(tmp_surface)
       {
-        const float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height) * darktable.gui->ppd;
+        const float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height) * darktable.gui->ppd_thb;
         const int img_width = buf_width * scale;
         const int img_height = buf_height * scale;
         thumb->img_surf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
@@ -457,8 +457,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     // let save thumbnail image size
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
-    const int imgbox_w = MIN(image_w, thumb->img_width/darktable.gui->ppd);
-    const int imgbox_h = MIN(image_h, thumb->img_height/darktable.gui->ppd);
+    const int imgbox_w = MIN(image_w, thumb->img_width/darktable.gui->ppd_thb);
+    const int imgbox_h = MIN(image_h, thumb->img_height/darktable.gui->ppd_thb);
     // if the imgbox size change, this should also change the panning values
     int hh = 0;
     int ww = 0;
@@ -524,8 +524,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
 
     // let's sanitize and apply panning values as we are sure the zoomed image is loaded now
     // here we have to make sure to properly align according to ppd
-    thumb->zoomx = CLAMP(thumb->zoomx, (imgbox_w * darktable.gui->ppd - thumb->img_width) / darktable.gui->ppd, 0);
-    thumb->zoomy = CLAMP(thumb->zoomy, (imgbox_h * darktable.gui->ppd - thumb->img_height) / darktable.gui->ppd, 0);
+    thumb->zoomx = CLAMP(thumb->zoomx, (imgbox_w * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb, 0);
+    thumb->zoomy = CLAMP(thumb->zoomy, (imgbox_h * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
     thumb->current_zx = thumb->zoomx;
     thumb->current_zy = thumb->zoomy;
   }
@@ -1686,8 +1686,8 @@ void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb)
   int iw = 0;
   int ih = 0;
   gtk_widget_get_size_request(thumb->w_image_box, &iw, &ih);
-  thumb->zoomx = CLAMP(thumb->zoomx, (iw * darktable.gui->ppd - thumb->img_width) / darktable.gui->ppd, 0);
-  thumb->zoomy = CLAMP(thumb->zoomy, (ih * darktable.gui->ppd - thumb->img_height) / darktable.gui->ppd, 0);
+  thumb->zoomx = CLAMP(thumb->zoomx, (iw * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb, 0);
+  thumb->zoomy = CLAMP(thumb->zoomy, (ih * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
   thumb->current_zx = thumb->zoomx;
   thumb->current_zy = thumb->zoomy;
   gtk_widget_queue_draw(thumb->w_main);
