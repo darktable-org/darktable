@@ -31,9 +31,10 @@ typedef enum dt_confgen_type_t
 {
   DT_INT,
   DT_INT64,
+  DT_FLOAT,
   DT_BOOL,
   DT_STRING,
-  DT_FLOAT
+  DT_ENUM
 } dt_confgen_type_t;
 
 typedef struct dt_confgen_value_t
