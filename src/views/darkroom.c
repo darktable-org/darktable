@@ -4400,7 +4400,7 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
   {
     if(monitor == 2)
     {
-      dev->second_window.ppd_thb = 0.5f;
+      dev->second_window.ppd_thb = 0.7f;
     }
     else if(monitor == 3)
     {
@@ -4409,6 +4409,7 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
     else if(monitor == 4)
     {
       dev->second_window.ppd = 2.0f;
+      dev->second_window.ppd_thb = 1.4f;
     }
   }
   else
