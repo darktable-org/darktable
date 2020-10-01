@@ -330,56 +330,57 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
   cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
-  FILE *f = 0;
+
+  // init conf filename
+  g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
 
 #define LINE_SIZE 1023
 
   char line[LINE_SIZE + 1];
 
-  int read = 0;
-  int defaults = 0;
-  for(int i = 0; i < 2; i++)
+  FILE *f = NULL;
+  gboolean defaults = FALSE;
+
+  // check for user config
+  f = g_fopen(filename, "rb");
+
+  if(!f)
   {
-    if(!i)
-    {
-      g_strlcpy(darktable.conf->filename, filename, sizeof(darktable.conf->filename));
-      f = g_fopen(filename, "rb");
-      if(!f)
-      {
-        // remember we init to default rc and try again
-        defaults = 1;
-        continue;
-      }
-    }
-    if(i)
-    {
-      char buf[PATH_MAX] = { 0 }, defaultrc[PATH_MAX] = { 0 };
-      dt_loc_get_datadir(buf, sizeof(buf));
-      snprintf(defaultrc, sizeof(defaultrc), "%s/darktablerc", buf);
-      f = g_fopen(defaultrc, "rb");
-    }
-    if(!f) return;
+    // remember we init to default rc and try again
+    defaults = TRUE;
+
+    // if not found, check for dt default config file
+
+    char buf[PATH_MAX] = { 0 }, defaultrc[PATH_MAX] = { 0 };
+    dt_loc_get_datadir(buf, sizeof(buf));
+    snprintf(defaultrc, sizeof(defaultrc), "%s/darktablerc", buf);
+    f = g_fopen(defaultrc, "rb");
+  }
+
+  // one file has been found, parse it
+  if(f)
+  {
     while(!feof(f))
     {
-      read = fscanf(f, "%" STR(LINE_SIZE) "[^\r\n]\r\n", line);
+      const int read = fscanf(f, "%" STR(LINE_SIZE) "[^\r\n]\r\n", line);
       if(read > 0)
       {
         char *c = line;
         char *end = line + strlen(line);
+        // check for '=' which is separator between the conf name and value
         while(*c != '=' && c < end) c++;
+
         if(*c == '=')
         {
           *c = '\0';
-          if(!i || defaults)
-          {
-            char *name = g_strdup(line);
-            // ensure that numbers are properly clamped if min/max
-            // defined and if not and garbage is read then the default
-            // value is returned.
-            char *value = _sanitize_confgen(name, (const char *)(c + 1));
 
-            g_hash_table_insert(darktable.conf->table, name, value);
-          }
+          char *name = g_strdup(line);
+          // ensure that numbers are properly clamped if min/max
+          // defined and if not and garbage is read then the default
+          // value is returned.
+          char *value = _sanitize_confgen(name, (const char *)(c + 1));
+
+          g_hash_table_insert(darktable.conf->table, name, value);
         }
       }
     }
