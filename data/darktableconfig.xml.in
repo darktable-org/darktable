@@ -2319,10 +2319,10 @@
     <longdescription>if this value is &gt; 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>ui/monitor</name>
-    <type>int</type>
-    <default>0</default>
-    <shortdescription>monitor selection</shortdescription>
+    <name>ui/performance</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>performance mode for thumbs and previews</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/preview/max_in_memory_images</name>

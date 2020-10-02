@@ -1550,51 +1550,36 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_cleanup();
 }
 
+// refactored function to read current ppd, because gtk for osx has been unreliable
+// we use the specific function here. Anyway, if nothing meaningful is found we default back to 1.0
+double dt_get_system_gui_ppd(GtkWidget *widget)
+{
+  double res = 0.0f;
+#ifndef GDK_WINDOWING_QUARTZ
+  res = gtk_widget_get_scale_factor(widget);
+#else
+  res = dt_osx_get_ppd();
+#endif
+  if((res < 1.0f) || (res > 4.0f))
+  {
+    dt_print(DT_DEBUG_CONTROL, "[dt_get_system_gui_ppd] can't detect system ppd\n");
+    return 1.0f;
+  }
+  dt_print(DT_DEBUG_CONTROL, "[dt_get_system_gui_ppd] system ppd is %f\n", res);
+  return res;
+}
+
 void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
 {
   GtkWidget *widget = gui->ui->main_window;
 
-  gui->ppd = gui->ppd_thb = 1.0f;
+  gui->ppd = gui->ppd_thb = dt_get_system_gui_ppd(widget);
   gui->filter_image = CAIRO_FILTER_GOOD;
-
-  // check if in HiDPI mode
-#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
-  int monitor = dt_conf_get_int("ui/monitor");
-  if(monitor >= 0)
+  if(dt_conf_get_bool("ui/performance"))
   {
-    if(monitor == 2)
-    {
-      gui->ppd_thb = 0.7f;
+      gui->ppd_thb = 0.7f * gui->ppd;
       gui->filter_image = CAIRO_FILTER_FAST;
-    }
-    else if(monitor == 3)
-    {
-      gui->ppd_thb = gui->ppd = 2.0f;
-    }
-    else if(monitor == 4)
-    {
-      gui->ppd = 2.0f;
-      gui->ppd_thb = 1.4f;
-      gui->filter_image = CAIRO_FILTER_FAST;
-    }
   }
-  else
-  {
- #ifndef GDK_WINDOWING_QUARTZ
-    gui->ppd = gui->ppd_thb = gtk_widget_get_scale_factor(widget);
- #else
-    gui->ppd = gui->ppd_thb = dt_osx_get_ppd();
- #endif
-
-    if(gui->ppd < 0.0f)
-    {
-      gui->ppd = gui->ppd_thb = 1.0f;
-      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n");
-    }
-    else
-      dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", gui->ppd);
-  }
-#endif
   // get the screen resolution
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
   if(screen_dpi_overwrite > 0.0)
