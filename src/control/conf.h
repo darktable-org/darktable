@@ -43,6 +43,7 @@ typedef struct dt_confgen_value_t
   char *def;
   char *min;
   char *max;
+  char *enum_values;
 } dt_confgen_value_t;
 
 typedef struct dt_conf_t
