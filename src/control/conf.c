@@ -294,7 +294,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
       const int64_t max = item->max ? (int64_t)dt_calculator_solve(1, item->max) : INT64_MAX;
       // if garbadge, use default
       const int64_t val = isnan(v) ? dt_confgen_get_int64(name, DT_DEFAULT) : (int64_t)v;
-      g_snprintf(result, sizeof(result), "%ld", CLAMP(val, min, max));
+      g_snprintf(result, sizeof(result), "%"PRId64, CLAMP(val, min, max));
     }
     break;
     case DT_FLOAT:
