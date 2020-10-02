@@ -208,22 +208,10 @@ static void font_size_changed_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
-static void display_callback(GtkWidget *widget, gpointer user_data)
+static void use_performance_callback(GtkWidget *widget, gpointer user_data)
 {
-  int old = dt_conf_get_int("ui/monitor");
-  const int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  dt_conf_set_int("ui/monitor", selected);
-  gboolean restart = TRUE;
-
-  if(((old == 1) && (selected == 2)) ||
-     ((old == 2) && (selected == 1)) ||
-     ((old == 3) && (selected == 4)) ||
-     ((old == 4) && (selected == 3)) ||
-      (old == selected))
-    restart = FALSE;
-  restart_required = restart;
+  dt_conf_set_bool("ui/performance", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
   dt_configure_ppd_dpi(darktable.gui);
-  dt_bauhaus_load_theme();
 }
 
 static void dpi_scaling_changed_callback(GtkWidget *widget, gpointer user_data)
@@ -400,27 +388,17 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
-  label = gtk_label_new(_("display"));
+  GtkWidget *useperfmode = gtk_check_button_new();
+  label = gtk_label_new(_("performance mode"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  widget = gtk_combo_box_text_new();
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
-
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "default");
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "standard monitor");
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "standard monitor, (slow)");
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "high resolution monitor");
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "high resolution monitor, (slow)");
-
-  selected = dt_conf_get_int("ui/monitor");
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected);
-  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(display_callback), 0);
-  gtk_widget_set_tooltip_text(widget, _("set according to your display type and computer performance.\n"
-                                        "slow modes increase performance but decrease visual quality of thumbs and previews."
-                                        "this needs a restart to apply changes."));
+  gtk_grid_attach_next_to(GTK_GRID(grid), useperfmode, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(useperfmode, _("if switched on thumbnails and previews are rendered at lower quality but 4 times faster."));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(useperfmode), dt_conf_get_bool("ui/performance"));
+  g_signal_connect(G_OBJECT(useperfmode), "toggled", G_CALLBACK(use_performance_callback), 0);
 
   //Font size check and spin buttons
   GtkWidget *usesysfont = gtk_check_button_new();
