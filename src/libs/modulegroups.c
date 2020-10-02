@@ -748,7 +748,7 @@ static gchar *_preset_retrieve_old_layout_updated()
       ret = dt_util_dstrcat(ret, "ꬹeffects|effect|");
 
     // list of modules
-    GList *modules = darktable.iop;
+    GList *modules = g_list_first(darktable.iop);
     while(modules)
     {
       dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
@@ -798,7 +798,7 @@ static gchar *_preset_retrieve_old_layout()
       ret = dt_util_dstrcat(ret, "ꬹeffect|effect|");
 
     // list of modules
-    GList *modules = darktable.iop;
+    GList *modules = g_list_first(darktable.iop);
     while(modules)
     {
       dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
@@ -1107,9 +1107,10 @@ static int _manage_editor_module_add_sort(gconstpointer a, gconstpointer b)
   s1 = g_utf8_normalize(mb->name(), -1, G_NORMALIZE_ALL);
   gchar *sb = g_utf8_casefold(s1, -1);
   g_free(s1);
-  return g_strcmp0(sa, sb);
+  const int res = g_strcmp0(sa, sb);
   g_free(sa);
   g_free(sb);
+  return res;
 }
 static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
 {
@@ -1125,7 +1126,7 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
   GtkWidget *lb = NULL;
 
   int rec_nb = 0;
-  GList *modules = g_list_sort(darktable.iop, _manage_editor_module_add_sort);
+  GList *modules = g_list_sort(g_list_first(darktable.iop), _manage_editor_module_add_sort);
   while(modules)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
