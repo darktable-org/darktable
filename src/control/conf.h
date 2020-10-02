@@ -103,6 +103,8 @@ gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind);
 float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind);
 const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind);
 
+gboolean dt_conf_is_default(const char *name);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

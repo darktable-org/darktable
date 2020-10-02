@@ -302,6 +302,11 @@ gboolean restart_required = FALSE;
   <xsl:text>
   {
     label = gtk_label_new(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
+    if(!dt_conf_is_default("</xsl:text><xsl:value-of select="name"/><xsl:text>"))
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
+      gtk_style_context_add_class(context, "preference_non_default");
+    }
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
