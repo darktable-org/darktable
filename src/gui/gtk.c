@@ -1555,10 +1555,10 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 double dt_get_system_gui_ppd(GtkWidget *widget)
 {
   double res = 0.0f;
-#ifndef GDK_WINDOWING_QUARTZ
-  res = gtk_widget_get_scale_factor(widget);
-#else
+#ifdef GDK_WINDOWING_QUARTZ
   res = dt_osx_get_ppd();
+#else
+  res = gtk_widget_get_scale_factor(widget);
 #endif
   if((res < 1.0f) || (res > 4.0f))
   {
