@@ -270,8 +270,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
   if(!item) return g_strdup(value);
 
-  char result[100] = { 0 };
-  g_strlcpy(result, value, sizeof(result));
+  char *result = NULL;
 
   switch(item->type)
   {
@@ -283,7 +282,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
       const int max = item->max ? (int)dt_calculator_solve(1, item->max) : INT_MAX;
       // if garbadge, use default
       const int val = isnan(v) ? dt_confgen_get_int(name, DT_DEFAULT) : (int)v;
-      g_snprintf(result, sizeof(result), "%d", CLAMP(val, min, max));
+      result = g_strdup_printf("%d", CLAMP(val, min, max));
     }
     break;
     case DT_INT64:
@@ -294,7 +293,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
       const int64_t max = item->max ? (int64_t)dt_calculator_solve(1, item->max) : INT64_MAX;
       // if garbadge, use default
       const int64_t val = isnan(v) ? dt_confgen_get_int64(name, DT_DEFAULT) : (int64_t)v;
-      g_snprintf(result, sizeof(result), "%"PRId64, CLAMP(val, min, max));
+      result = g_strdup_printf("%"PRId64, CLAMP(val, min, max));
     }
     break;
     case DT_FLOAT:
@@ -305,20 +304,23 @@ static char *_sanitize_confgen(const char *name, const char *value)
       const float max = item->max ? (float)dt_calculator_solve(1, item->max) : FLT_MAX;
       // if garbadge, use default
       const float val = isnan(v) ? dt_confgen_get_float(name, DT_DEFAULT) : v;
-      g_snprintf(result, sizeof(result), "%f", CLAMP(val, min, max));
+      result = g_strdup_printf("%f", CLAMP(val, min, max));
     }
     break;
     case DT_BOOL:
     {
-      if(strcmp(value, "true") && strcmp(value, "false"))
-        g_snprintf(result, sizeof(result), "%s", dt_confgen_get(name, DT_DEFAULT));
+      if(strcasecmp(value, "true") && strcasecmp(value, "false"))
+        result = g_strdup_printf("%s", dt_confgen_get(name, DT_DEFAULT));
+      else
+        result = g_strdup(value);
     }
     break;
     default:
+      result = g_strdup(value);
       break;
   }
 
-  return g_strdup(result);
+  return result;
 }
 
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
