@@ -1291,7 +1291,7 @@ filechooser row:hover,
 #modulegroups-group-icon {
   min-height: 2em;
   min-width: 2em;
-  margin: 0;
+  margin: 0 0.5em 0 0;
   padding: 0.1em;
   border: 0;
 }
