@@ -776,7 +776,7 @@ static gchar *_preset_retrieve_old_layout_updated()
   return ret;
 }
 
-static gchar *_preset_retrieve_old_layout()
+static gchar *_preset_retrieve_old_layout(char *list, char *list_fav)
 {
   gchar *ret = NULL;
 
@@ -805,26 +805,106 @@ static gchar *_preset_retrieve_old_layout()
 
       if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
       {
+        gchar *search = dt_util_dstrcat(NULL, "|%s|", module->op);
+        gchar *key;
+
         // get previous visibility values
-        gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/modulegroup", module->op);
-        const int group = dt_conf_get_int(key);
-        g_free(key);
-        key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/visible", module->op);
-        const gboolean visi = dt_conf_get_bool(key);
-        g_free(key);
-        key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/favorite", module->op);
-        const gboolean fav = dt_conf_get_bool(key);
-        g_free(key);
+        int group = -1;
+        if(i > 0 && list)
+        {
+          // we retrieve the group from hardcoded one
+          const int gr = module->default_group();
+          if(gr & IOP_GROUP_BASIC)
+            group = 1;
+          else if(gr & IOP_GROUP_TONE)
+            group = 2;
+          else if(gr & IOP_GROUP_COLOR)
+            group = 3;
+          else if(gr & IOP_GROUP_CORRECT)
+            group = 4;
+          else if(gr & IOP_GROUP_EFFECT)
+            group = 5;
+        }
+        else if(i > 0)
+        {
+          key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/modulegroup", module->op);
+          group = dt_conf_get_int(key);
+          g_free(key);
+        }
+
+        gboolean visi = FALSE;
+        if(list)
+          visi = (strstr(list, search) != NULL);
+        else
+        {
+          key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/visible", module->op);
+          visi = dt_conf_get_bool(key);
+          g_free(key);
+        }
+
+        gboolean fav = FALSE;
+        if(i == 0 && list_fav)
+          fav = (strstr(list_fav, search) != NULL);
+        else if(i == 0)
+        {
+          key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/favorite", module->op);
+          fav = dt_conf_get_bool(key);
+          g_free(key);
+        }
 
         if((i == 0 && fav && visi) || (i == group && visi))
         {
           ret = dt_util_dstrcat(ret, "|%s", module->op);
         }
+
+        g_free(search);
       }
       modules = g_list_next(modules);
     }
   }
   return ret;
+}
+
+static void _preset_retrieve_old_presets(dt_lib_module_t *self)
+{
+  // we retrieve old modulelist presets
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name, op_params FROM data.presets WHERE operation = 'modulelist' AND "
+                              "op_version = 1 AND writeprotect = 0",
+                              -1, &stmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *pname = (char *)sqlite3_column_text(stmt, 0);
+    const char *p = (char *)sqlite3_column_blob(stmt, 1);
+    const int size = sqlite3_column_bytes(stmt, 1);
+
+    gchar *list = NULL;
+    gchar *fav = NULL;
+    int pos = 0;
+    while(pos < size)
+    {
+      const char *op = p + pos;
+      int op_len = strlen(op);
+      dt_iop_module_state_t state = p[pos + op_len + 1];
+
+      if(state == dt_iop_state_ACTIVE)
+        list = dt_util_dstrcat(list, "|%s", op);
+      else if(state == dt_iop_state_FAVORITE)
+      {
+        fav = dt_util_dstrcat(fav, "|%s", op);
+        list = dt_util_dstrcat(list, "|%s", op);
+      }
+      pos += op_len + 2;
+    }
+    list = dt_util_dstrcat(list, "|");
+    fav = dt_util_dstrcat(fav, "|");
+
+    gchar *tx = _preset_retrieve_old_layout(list, fav);
+    dt_lib_presets_add(pname, self->plugin_name, self->version(), tx, strlen(tx), FALSE);
+  }
+  sqlite3_finalize(stmt);
 }
 
 static gchar *_preset_to_string(GList *groups)
@@ -904,13 +984,15 @@ void init_presets(dt_lib_module_t *self)
   // if needed, we add a new preset, based on last user config
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
-    gchar *tx3 = _preset_retrieve_old_layout();
+    gchar *tx3 = _preset_retrieve_old_layout(NULL, NULL);
     dt_lib_presets_add(_("my previous config"), self->plugin_name, self->version(), tx3, strlen(tx3), FALSE);
     dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("previous layout"));
 
     gchar *tx4 = _preset_retrieve_old_layout_updated();
     dt_lib_presets_add(_("my previous config with new layout"), self->plugin_name, self->version(), tx4,
                        strlen(tx4), FALSE);
+
+    _preset_retrieve_old_presets(self);
   }
 }
 
