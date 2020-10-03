@@ -1149,12 +1149,6 @@ dialog scrollbar
   margin: 1px 0;
 }
 
-#preferences_notebook label.preference_non_default
-{
-  font-weight: bolder;
-  font-style: italic;
-}
-
 #preferences_notebook combobox,
 #preferences_notebook spinbutton
 {
