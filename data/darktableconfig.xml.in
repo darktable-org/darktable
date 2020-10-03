@@ -134,19 +134,6 @@
     <shortdescription>maximum width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
-  <dtconfig>
-    <name>ui/cairo_filter</name>
-    <type>
-      <enum>
-	<option>fast</option>
-	<option>good</option>
-	<option>best</option>
-      </enum>
-    </type>
-    <default>good</default>
-    <shortdescription>speed/quality trade-off for drawing images</shortdescription>
-    <longdescription>fast - high-performance, similar to nearest neighbor filter; good (default) - reasonable-performance, similar to bilinear (linear interpolation in two dimensions); best - highest-quality available, performance may not be suitable for interactive use. sets Cairo image scaling filter. (needs a restart)</longdescription>
-  </dtconfig>
   <dtconfig prefs="otherviews" section="slideshow">
     <name>slideshow_delay</name>
     <type>int</type>
@@ -2346,11 +2333,10 @@
     <longdescription>if this value is &gt; 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>screen_ppd_overwrite</name>
-    <type>float</type>
-    <default>-1.0</default>
-    <shortdescription>overwrite the screen's ppd setting</shortdescription>
-    <longdescription>if this value is &gt; 0.0 then it is used as the screen's ppd setting which is used for HiDPI support</longdescription>
+    <name>ui/performance</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>performance mode for thumbs and previews</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/preview/max_in_memory_images</name>
