@@ -46,6 +46,7 @@ static void _free_confgen_value(void *value)
   g_free(s->def);
   g_free(s->min);
   g_free(s->max);
+  g_free(s->enum_values);
   g_free(s);
 }
 
@@ -313,6 +314,16 @@ static char *_sanitize_confgen(const char *name, const char *value)
         result = g_strdup_printf("%s", dt_confgen_get(name, DT_DEFAULT));
       else
         result = g_strdup(value);
+    }
+    break;
+    case DT_ENUM:
+    {
+      char *v = g_strdup_printf("[%s]", value);
+      if(!strstr(item->enum_values, v))
+        result = g_strdup_printf("%s", dt_confgen_get(name, DT_DEFAULT));
+      else
+        result = g_strdup(value);
+      g_free(v);
     }
     break;
     default:
