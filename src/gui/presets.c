@@ -727,12 +727,12 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const void *op_params = sqlite3_column_blob(stmt, 0);
-    int op_length = sqlite3_column_bytes(stmt, 0);
-    int enabled = sqlite3_column_int(stmt, 1);
+    const int op_length = sqlite3_column_bytes(stmt, 0);
+    const int enabled = sqlite3_column_int(stmt, 1);
     const void *blendop_params = sqlite3_column_blob(stmt, 2);
-    int bl_length = sqlite3_column_bytes(stmt, 2);
-    int blendop_version = sqlite3_column_int(stmt, 3);
-    int writeprotect = sqlite3_column_int(stmt, 4);
+    const int bl_length = sqlite3_column_bytes(stmt, 2);
+    const int blendop_version = sqlite3_column_int(stmt, 3);
+    const int writeprotect = sqlite3_column_int(stmt, 4);
     if(op_params && (op_length == module->params_size))
     {
       memcpy(module->params, op_params, op_length);
@@ -848,8 +848,8 @@ void dt_gui_favorite_presets_menu_show()
         int last_wp = -1;
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          char *name = (char *)sqlite3_column_text(stmt, 0);
-          int writeprotect = sqlite3_column_int(stmt, 2);
+          const char *name = (char *)sqlite3_column_text(stmt, 0);
+          const int writeprotect = sqlite3_column_int(stmt, 2);
           if(hide_default && writeprotect)
           {
             //skip default presets if told to do so
