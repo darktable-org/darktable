@@ -159,11 +159,12 @@ static gchar *get_active_preset_name(dt_iop_module_t *module, int *writeprotect)
   // collect all presets for op from db
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    void *op_params = (void *)sqlite3_column_blob(stmt, 1);
-    int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
-    void *blendop_params = (void *)sqlite3_column_blob(stmt, 2);
-    int32_t bl_params_size = sqlite3_column_bytes(stmt, 2);
-    int enabled = sqlite3_column_int(stmt, 3);
+    const void *op_params = (void *)sqlite3_column_blob(stmt, 1);
+    const int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+    const void *blendop_params = (void *)sqlite3_column_blob(stmt, 2);
+    const int32_t bl_params_size = sqlite3_column_bytes(stmt, 2);
+    const int enabled = sqlite3_column_int(stmt, 3);
+
     if(!memcmp(module->params, op_params, MIN(op_params_size, module->params_size))
        && !memcmp(module->blend_params, blendop_params,
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))) && module->enabled == enabled)
@@ -985,15 +986,15 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
       last_wp = chk_writeprotect;
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
     }
-    void *op_params = (void *)sqlite3_column_blob(stmt, 1);
-    int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
-    void *blendop_params = (void *)sqlite3_column_blob(stmt, 4);
-    int32_t bl_params_size = sqlite3_column_bytes(stmt, 4);
-    int32_t preset_version = sqlite3_column_int(stmt, 5);
-    int32_t enabled = sqlite3_column_int(stmt, 6);
-    int32_t isdefault = 0;
-    int32_t isdisabled = (preset_version == version ? 0 : 1);
+    const void *op_params = (void *)sqlite3_column_blob(stmt, 1);
+    const int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
+    const void *blendop_params = (void *)sqlite3_column_blob(stmt, 4);
+    const int32_t bl_params_size = sqlite3_column_bytes(stmt, 4);
+    const int32_t preset_version = sqlite3_column_int(stmt, 5);
+    const int32_t enabled = sqlite3_column_int(stmt, 6);
+    const int32_t isdisabled = (preset_version == version ? 0 : 1);
     const char *name = (char *)sqlite3_column_text(stmt, 0);
+    int32_t isdefault = 0;
 
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0) found = 1;
 
