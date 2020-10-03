@@ -1577,7 +1577,7 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
   gui->filter_image = CAIRO_FILTER_GOOD;
   if(dt_conf_get_bool("ui/performance"))
   {
-      gui->ppd_thb = 0.7f * gui->ppd;
+      gui->ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
       gui->filter_image = CAIRO_FILTER_FAST;
   }
   // get the screen resolution

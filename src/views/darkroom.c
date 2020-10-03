@@ -4394,7 +4394,7 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
 
   dev->second_window.ppd = dev->second_window.ppd_thb = dt_get_system_gui_ppd(widget);
   if(dt_conf_get_bool("ui/performance"))
-    dev->second_window.ppd_thb = 0.7f * dev->second_window.ppd;
+    dev->second_window.ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
 
   // get the screen resolution
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
