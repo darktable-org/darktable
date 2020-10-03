@@ -389,13 +389,25 @@ overshoot.right
   background-color: transparent;
   outline-style:none;
   border-radius: 2px;
-  padding: 0.4em;
   color: @section_label;
+}
+
+#view_dropdown menu {
+  padding: 2px 0;
+}
+
+#view_dropdown button {
+  margin: 0.3em 0.3em 0.3em 0;
+}
+
+#view_dropdown menuitem {
+  padding: 0.1em 0.3em;
 }
 
 #view_label
 {
   margin: 0.1em 0;
+  padding: 0.4em;
 }
 
 /*------------------------------
@@ -793,14 +805,18 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
 combobox,
 combobox button
 {
-  border: 1px solid transparent;
-  padding: 1px;
   background-color: transparent;
-  border-radius: 4px;
+  border-radius: 2px;
   color: @bauhaus_fg;
   outline-style: none;
   min-height: 1em;
   min-width: 1em;
+}
+
+combobox button
+{
+  padding: 1px;
+  border: 1px solid transparent;
 }
 
 combobox entry
@@ -825,16 +841,16 @@ dialog combobox window
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
-  border-radius: 0.2em;
+  border-radius: 2px;
   border: 0;
   outline-style: none;
   min-height: 0.4em;
   min-width: 0.4em;
-  padding: 0.2em 0;
+  padding: 2px 0;
 }
 
 menu menuitem {
-  padding: 0 0.2em;
+  padding: 0 2px;
 }
 
 tooltip
@@ -870,9 +886,9 @@ menuitem check
   margin-right: 5px;
 }
 
-/* Header and footer combobox */
-#header-toolbar combobox,
-#footer-toolbar combobox
+/* Header and footer labels */
+#header-toolbar label,
+#footer-toolbar label
 {
   margin: 0 0.5em;
 }
@@ -1073,7 +1089,7 @@ dialog scrollbar
   margin: 0px; /* reset default dialog margin to all items. And needed to have an hover and selected effect on all width of categories in sidebar */
 }
 
-#preferences_notebook decoration  /* allow to resize preferences dialog window */
+#preferences_notebook dialog > decoration  /* allow to resize preferences dialog window */
 {
   margin: 1px;
 }
@@ -1148,9 +1164,13 @@ dialog scrollbar
    min-width: 180px;
 }
 
+#preferences_notebook combobox menuitem
+{
+  padding: 0.2em;
+}
+
 #preferences_notebook button
 {
-  margin: 0 2px;
   padding: 0 2px;
 }
 
