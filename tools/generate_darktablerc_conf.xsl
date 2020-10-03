@@ -32,6 +32,22 @@ static void _insert_default(const char *name, const char *value)
   item->def = g_strdup(value);
 }
 
+static void _insert_values(const char *name, const char *values)
+{
+  dt_confgen_value_t *item = (dt_confgen_value_t *)g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+     g_free(item->enum_values);
+  }
+  else
+  {
+     item = (dt_confgen_value_t *)g_malloc0(sizeof(dt_confgen_value_t));
+     g_hash_table_insert(darktable.conf->x_confgen, g_strdup(name), item);
+  }
+  item->enum_values = g_strdup(values);
+}
+
 static void _insert_min(const char *name, const char *value)
 {
   dt_confgen_value_t *item = (dt_confgen_value_t *)g_hash_table_lookup(darktable.conf->x_confgen, name);
@@ -114,6 +130,11 @@ void dt_confgen_init()
       <xsl:text>   _insert_type("</xsl:text><xsl:value-of select="../name" />
       <xsl:text>", "enum");</xsl:text>
       <xsl:text>&#xA;</xsl:text>
+
+      <xsl:text>   _insert_values("</xsl:text><xsl:value-of select="../name" />
+      <xsl:text>", "</xsl:text><xsl:apply-templates select="enum"/>
+      <xsl:text>");</xsl:text>
+      <xsl:text>&#xA;</xsl:text>
     </xsl:when>
     <xsl:otherwise>
       <xsl:text>   _insert_type("</xsl:text><xsl:value-of select="../name" />
@@ -140,6 +161,14 @@ void dt_confgen_init()
 
 <xsl:template match="default">
   <xsl:value-of select="." />
+</xsl:template>
+
+<xsl:template match="enum">
+  <xsl:for-each select="option">
+    <xsl:text>[</xsl:text>
+    <xsl:value-of select="." />
+    <xsl:text>]</xsl:text>
+  </xsl:for-each>
 </xsl:template>
 
 </xsl:stylesheet>
