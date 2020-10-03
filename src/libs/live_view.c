@@ -49,14 +49,11 @@ typedef enum dt_lib_live_view_overlay_t
 #define HANDLE_SIZE 0.02
 
 static const cairo_operator_t _overlay_modes[] = {
-  CAIRO_OPERATOR_OVER, CAIRO_OPERATOR_XOR, CAIRO_OPERATOR_ADD, CAIRO_OPERATOR_SATURATE
-#if(CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0))
-  ,
+  CAIRO_OPERATOR_OVER, CAIRO_OPERATOR_XOR, CAIRO_OPERATOR_ADD, CAIRO_OPERATOR_SATURATE,
   CAIRO_OPERATOR_MULTIPLY, CAIRO_OPERATOR_SCREEN, CAIRO_OPERATOR_OVERLAY, CAIRO_OPERATOR_DARKEN,
   CAIRO_OPERATOR_LIGHTEN, CAIRO_OPERATOR_COLOR_DODGE, CAIRO_OPERATOR_COLOR_BURN, CAIRO_OPERATOR_HARD_LIGHT,
   CAIRO_OPERATOR_SOFT_LIGHT, CAIRO_OPERATOR_DIFFERENCE, CAIRO_OPERATOR_EXCLUSION, CAIRO_OPERATOR_HSL_HUE,
   CAIRO_OPERATOR_HSL_SATURATION, CAIRO_OPERATOR_HSL_COLOR, CAIRO_OPERATOR_HSL_LUMINOSITY
-#endif
 };
 
 DT_MODULE(1)
@@ -407,7 +404,6 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "xor"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "add"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "saturate"));
-#if(CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0))
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "multiply"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "screen"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "overlay"));
@@ -423,7 +419,6 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL saturation"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL color"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL luminosity"));
-#endif
   gtk_widget_set_tooltip_text(lib->overlay_mode, _("mode of the overlay"));
   dt_bauhaus_combobox_set(lib->overlay_mode, dt_conf_get_int("plugins/lighttable/live_view/overlay_mode"));
   g_signal_connect(G_OBJECT(lib->overlay_mode), "value-changed", G_CALLBACK(_overlay_mode_changed), lib);
