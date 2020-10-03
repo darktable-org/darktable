@@ -81,6 +81,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/fast_guided_filter.h"
+#include "common/eigf.h"
 #include "common/interpolation.h"
 #include "common/luminance_mask.h"
 #include "common/opencl.h"
