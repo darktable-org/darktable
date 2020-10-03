@@ -1520,12 +1520,14 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   _manage_editor_module_update_list(gr, ro);
   gtk_box_pack_start(GTK_BOX(vb3), gr->iop_box, FALSE, TRUE, 0);
 
-  // combo box to add new module
+  // '+' button to add new module
   if(!ro)
   {
     GtkWidget *hb4 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
                                      CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(bt, _("add module to the list"));
+    gtk_widget_set_name(bt, "modulegroups-add-module-btn");
     g_object_set_data(G_OBJECT(bt), "group", gr);
     g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_module_add_popup), gr->modules);
     gtk_widget_set_halign(hb4, GTK_ALIGN_CENTER);
@@ -1817,6 +1819,19 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
   }
 }
 
+static gboolean _manage_preset_hover_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  int flags = gtk_widget_get_state_flags(gtk_widget_get_parent(widget));
+
+  if(event->type == GDK_ENTER_NOTIFY)
+    flags |= GTK_STATE_FLAG_PRELIGHT;
+  else
+    flags &= ~GTK_STATE_FLAG_PRELIGHT;
+
+  gtk_widget_set_state_flags(gtk_widget_get_parent(widget), flags, TRUE);
+  return FALSE;
+}
+
 static void _manage_preset_update_list(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -1852,7 +1867,12 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
     GtkWidget *evt = gtk_event_box_new();
     g_object_set_data(G_OBJECT(evt), "preset_name", g_strdup(name));
     g_signal_connect(G_OBJECT(evt), "button-press-event", G_CALLBACK(_manage_preset_change), self);
+    g_signal_connect(G_OBJECT(evt), "enter-notify-event", G_CALLBACK(_manage_preset_hover_callback), self);
+    g_signal_connect(G_OBJECT(evt), "leave-notify-event", G_CALLBACK(_manage_preset_hover_callback), self);
     GtkWidget *lbl = gtk_label_new(name);
+    gtk_widget_set_tooltip_text(lbl, name);
+    gtk_widget_set_size_request(lbl, 180, -1);
+    gtk_label_set_ellipsize(GTK_LABEL(lbl), PANGO_ELLIPSIZE_END);
     gtk_label_set_xalign(GTK_LABEL(lbl), 0.0);
     gtk_container_add(GTK_CONTAINER(evt), lbl);
     gtk_box_pack_start(GTK_BOX(hb), evt, TRUE, TRUE, 0);
@@ -1883,6 +1903,8 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
   GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
                                    CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_preset_add), self);
+  gtk_widget_set_name(bt, "modulegroups-preset-add-btn");
+  gtk_widget_set_tooltip_text(bt, _("add new empty preset"));
   gtk_widget_set_halign(hb2, GTK_ALIGN_CENTER);
   gtk_box_pack_start(GTK_BOX(hb2), bt, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(d->presets_list), hb2, FALSE, FALSE, 0);
@@ -1968,7 +1990,7 @@ static void _manage_show_window(dt_lib_module_t *self)
 
   gtk_container_add(GTK_CONTAINER(d->dialog), hb);
 
-  gtk_window_set_default_size(GTK_WINDOW(d->dialog), 900, 500);
+  gtk_window_set_default_size(GTK_WINDOW(d->dialog), 1100, 700);
   g_signal_connect(d->dialog, "destroy", G_CALLBACK(_manage_editor_destroy), self);
   gtk_window_set_resizable(GTK_WINDOW(d->dialog), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(d->dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
