@@ -39,17 +39,7 @@ dt_lua_widget_type_t widget_type = {
   .alloc_size = sizeof(dt_lua_widget_t),
   .parent = NULL
 };
-// commented this function as part of the widget_gc_crash fix
-/*
-static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget);
-static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget) {
-  if(widget_type->parent) 
-    cleanup_widget_sub(L,widget_type->parent,widget);
-  if(widget_type->gui_cleanup) {
-    widget_type->gui_cleanup(L,widget);
-  }
-}
-*/
+
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type);
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
   if(widget_type->parent) 
@@ -62,14 +52,7 @@ static void on_destroy(GtkWidget *widget, gpointer user_data)
 {
   free((lua_widget*) user_data);
 }
-// commented out this routine as part of the widget_gc_crash fix
-/*
-static gboolean on_destroy_wrapper(gpointer user_data)
-{
-  gtk_widget_destroy((GtkWidget*) user_data);
-  return false;
-}
-*/
+
 static int widget_gc(lua_State *L)
 {
   lua_widget lwidget;
@@ -78,16 +61,8 @@ static int widget_gc(lua_State *L)
   if(gtk_widget_get_parent(lwidget->widget)) {
     luaL_error(L,"Destroying a widget which is still parented, this should never happen (%s at %p)\n",lwidget->type->name,lwidget);
   }
+  // This should never happen because widgets should not exist at this point
   fprintf(stderr, "LUA ERROR: Trying to garbage collect a widget that hasn't been destroyed\n");
-  // commented out the following 2 lines as part of the widget_gc_crash fix
-  //cleanup_widget_sub(L,lwidget->type,lwidget);
-  //dt_lua_widget_unbind(L,lwidget);
-  // no need to drop, the pointer table is weak and the widget is already being GC, so it's not in the table anymore
-  //dt_lua_type_gpointer_drop(L,lwidget);
-  //dt_lua_type_gpointer_drop(L,lwidget->widget);
-  // commented the following lines out to avoid the widget_gc_crash
-  //g_idle_add(on_destroy_wrapper,lwidget->widget);
-  //free(lwidget);
   return 0;
 }
 
