@@ -643,7 +643,7 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
   while(kv)
   {
     const gchar *key = (const gchar *)kv->data;
-    int keyid = dt_metadata_get_keyid(key);
+    const int keyid = dt_metadata_get_keyid(key);
     if(keyid != -1) // known key
     {
       const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
