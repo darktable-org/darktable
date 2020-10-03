@@ -146,10 +146,13 @@ static gchar *get_active_preset_name(dt_iop_module_t *module, int *writeprotect)
   // if we sort by writeprotect DESC then in case user copied the writeprotected preset
   // then the preset name returned will be writeprotected and thus not deletable
   // sorting ASC prefers user created presets.
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params, blendop_params, enabled, writeprotect FROM data.presets WHERE "
-                              "operation=?1 AND op_version=?2 ORDER BY writeprotect ASC, LOWER(name), rowid",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT name, op_params, blendop_params, enabled, writeprotect"
+     " FROM data.presets"
+     " WHERE operation=?1 AND op_version=?2"
+     " ORDER BY writeprotect ASC, LOWER(name), rowid",
+     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   gchar *name = NULL;
@@ -256,7 +259,10 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
       // name:
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
-          "SELECT name FROM data.presets WHERE name = ?1 AND operation=?2 AND op_version=?3 LIMIT 1",
+          "SELECT name"
+          " FROM data.presets"
+          " WHERE name = ?1 AND operation=?2 AND op_version=?3"
+          " LIMIT 1",
           -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->module->op, -1, SQLITE_TRANSIENT);
@@ -294,7 +300,8 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     {
       // now delete old preset:
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "DELETE FROM data.presets WHERE name=?1 AND operation=?2 AND op_version=?3", -1,
+                                  "DELETE FROM data.presets"
+                                  " WHERE name=?1 AND operation=?2 AND op_version=?3", -1,
                                   &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, g->original_name, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->module->op, -1, SQLITE_TRANSIENT);
@@ -308,7 +315,8 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     {
       // delete preset, so we can re-insert the new values:
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "DELETE FROM data.presets WHERE name=?1 AND operation=?2 AND op_version=?3", -1,
+                                  "DELETE FROM data.presets"
+                                  " WHERE name=?1 AND operation=?2 AND op_version=?3", -1,
                                   &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->module->op, -1, SQLITE_TRANSIENT);
@@ -324,12 +332,15 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     // commit all the user input fields
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
-        "INSERT INTO data.presets (name, description, operation, op_version, op_params, enabled, "
-        "blendop_params, blendop_version, multi_priority, multi_name, "
-        "model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-        "focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, format) "
-        "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 0, '', ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, "
-        "?19, 0, ?20, ?21, 0, ?22)",
+        "INSERT INTO data.presets"
+        " (name, description, operation, op_version, op_params, enabled, "
+        "  blendop_params, blendop_version, multi_priority, multi_name, "
+        "  model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min,"
+        "  aperture_max, focal_length_min, focal_length_max, writeprotect, autoapply,"
+        "  filter, def, format) "
+        "VALUES"
+        " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 0, '', ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, "
+        "  ?19, 0, ?20, ?21, 0, ?22)",
         -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
@@ -543,12 +554,14 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
 
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT rowid, description, model, maker, lens, iso_min, iso_max, "
-                              "exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, "
-                              "focal_length_max, autoapply, filter, format FROM data.presets WHERE name = ?1 AND "
-                              "operation = ?2 AND op_version = ?3",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT rowid, description, model, maker, lens, iso_min, iso_max, "
+     "       exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, "
+     "       focal_length_max, autoapply, filter, format"
+     " FROM data.presets"
+     " WHERE name = ?1 AND operation = ?2 AND op_version = ?3",
+     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version());
@@ -655,8 +668,10 @@ static void menuitem_update_preset(GtkMenuItem *menuitem, dt_iop_module_t *modul
     // commit all the module fields
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE data.presets SET op_version=?2, op_params=?3, enabled=?4, "
-                                "blendop_params=?5, blendop_version=?6 WHERE name=?7 AND operation=?1",
+                                "UPDATE data.presets"
+                                " SET op_version=?2, op_params=?3, enabled=?4, "
+                                "     blendop_params=?5, blendop_version=?6"
+                                " WHERE name=?7 AND operation=?1",
                                 -1, &stmt, NULL);
 
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
@@ -677,7 +692,8 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   // add new preset
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM data.presets WHERE name=?1 AND operation=?2 AND op_version=?3", -1,
+                              "DELETE FROM data.presets"
+                              " WHERE name=?1 AND operation=?2 AND op_version=?3", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, _("new preset"), -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, -1, SQLITE_TRANSIENT);
@@ -697,10 +713,12 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT op_params, enabled, blendop_params, blendop_version, writeprotect FROM "
-                              "data.presets WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT op_params, enabled, blendop_params, blendop_version, writeprotect"
+     " FROM data.presets"
+     " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
+     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name, -1, SQLITE_TRANSIENT);
@@ -799,7 +817,7 @@ void dt_gui_favorite_presets_menu_show()
   const gboolean default_first = dt_conf_get_bool("plugins/darkroom/default_presets_first");
 
   gchar *query = g_strdup_printf("SELECT name, op_params, writeprotect,"
-                                 "  description, blendop_params, op_version"
+                                 "       description, blendop_params, op_version"
                                  " FROM data.presets"
                                  " WHERE operation=?1"
                                  " ORDER BY writeprotect %s, LOWER(name), rowid",
@@ -900,22 +918,22 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
   {
     // only matching if filter is on:
 
-    query = g_strdup_printf("SELECT name, op_params, writeprotect, description, blendop_params, "
-                            "  op_version, enabled"
-                            " FROM data.presets"
-                            " WHERE operation=?1 AND "
-                            "(filter=0 OR ( "
-                            "((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker)) AND "
-                            "?6 LIKE lens AND "
-                            "?7 BETWEEN iso_min AND iso_max AND "
-                            "?8 BETWEEN exposure_min AND exposure_max AND "
-                            "?9 BETWEEN aperture_min AND aperture_max AND "
-                            "?10 BETWEEN focal_length_min AND focal_length_max AND "
-                            "(format = 0 OR format&?11!=0)"
-                            " ) )"
-                            "ORDER BY writeprotect %s, LOWER(name), rowid", 
-                            default_first ? "DESC":"ASC"
-                           );
+    query = g_strdup_printf
+      ("SELECT name, op_params, writeprotect, description, blendop_params, "
+       "  op_version, enabled"
+       " FROM data.presets"
+       " WHERE operation=?1"
+       "   AND (filter=0"
+       "          OR"
+       "       (((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+       "        AND ?6 LIKE lens"
+       "        AND ?7 BETWEEN iso_min AND iso_max"
+       "        AND ?8 BETWEEN exposure_min AND exposure_max"
+       "        AND ?9 BETWEEN aperture_min AND aperture_max"
+       "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
+       "        AND (format = 0 OR format&?11!=0)))"
+       " ORDER BY writeprotect %s, LOWER(name), rowid",
+       default_first ? "DESC":"ASC");
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, -1, SQLITE_TRANSIENT);
@@ -936,7 +954,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     // don't know for which image. show all we got:
 
     query = g_strdup_printf("SELECT name, op_params, writeprotect, "
-                            "  description, blendop_params, op_version, enabled"
+                            "       description, blendop_params, op_version, enabled"
                             " FROM data.presets"
                             " WHERE operation=?1"
                             " ORDER BY writeprotect %s, LOWER(name), rowid",
@@ -956,7 +974,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     if(hide_default && chk_writeprotect)
     {
       //skip default module if set to hide them.
-      continue; 
+      continue;
     }
     if(last_wp == -1)
     {
