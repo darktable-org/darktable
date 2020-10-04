@@ -432,10 +432,11 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
         {
           char *value = strdup(pos->toString().c_str());
           char *adr = value;
-          if(strncmp(value, "lang=", 5) == 0)
+          // skip any lang="" or charset=xxx
+          while(!strncmp(value, "lang=", 5) || !strncmp(value, "charset=", 8))
           {
-            value = strchr(value, ' ');
-            if(value != NULL) value++;
+            while(*value != ' ' && *value) value++;
+            while(*value == ' ') value++;
           }
           dt_metadata_set_import(img->id, key, value);
           free(adr);
