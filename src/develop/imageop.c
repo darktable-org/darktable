@@ -1224,17 +1224,9 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
 
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 {
-  uint32_t additional_flags = 0;
-
   if(group == DT_MODULEGROUP_NONE) return TRUE;
 
-  /* add special group flag for module in active pipe */
-  if(module->enabled) additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
-
-  /* add special group flag for favorite */
-  if(module->so->state == dt_iop_state_FAVORITE) additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
-
-  return dt_dev_modulegroups_test(module->dev, group, dt_iop_get_group(module) | additional_flags);
+  return dt_dev_modulegroups_test(module->dev, group, module);
 }
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
@@ -2454,10 +2446,7 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
 
   if(!dt_iop_shown_in_group(module, current_group))
   {
-    if(dt_iop_shown_in_group(module, DT_MODULEGROUP_FAVORITES))
-      dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
-    else
-      dt_dev_modulegroups_switch(darktable.develop, module);
+    dt_dev_modulegroups_switch(darktable.develop, module);
   }
   else
   {
@@ -2669,10 +2658,6 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool(option, TRUE);
   }
-
-  dt_view_manager_t *vm = darktable.view_manager;
-  if(vm->proxy.more_module.module) vm->proxy.more_module.update(vm->proxy.more_module.module);
-  // dt_view_manager_reset(vm);
 }
 
 void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)

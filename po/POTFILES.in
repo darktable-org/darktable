@@ -261,7 +261,6 @@ src/libs/masks.c
 src/libs/metadata.c
 src/libs/metadata_view.c
 src/libs/modulegroups.c
-src/libs/modulelist.c
 src/libs/navigation.c
 src/libs/print_settings.c
 src/libs/recentcollect.c
