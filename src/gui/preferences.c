@@ -396,7 +396,8 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), useperfmode, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(useperfmode, _("if switched on thumbnails and previews are rendered at lower quality but 4 times faster."));
+  gtk_widget_set_tooltip_text(useperfmode,
+                              _("if switched on, thumbnails and previews are rendered at lower quality but 4 times faster"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(useperfmode), dt_conf_get_bool("ui/performance"));
   g_signal_connect(G_OBJECT(useperfmode), "toggled", G_CALLBACK(use_performance_callback), 0);
 
