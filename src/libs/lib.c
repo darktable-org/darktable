@@ -421,7 +421,9 @@ gchar *dt_lib_presets_duplicate(gchar *preset, gchar *module_name, int module_ve
     gchar *tx = dt_util_dstrcat(NULL, "%s_%d", preset, i);
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
-        "SELECT name FROM data.presets WHERE operation = ?1 AND op_version = ?2 AND name = ?3", -1, &stmt, NULL);
+        "SELECT name"
+        " FROM data.presets"
+        " WHERE operation = ?1 AND op_version = ?2 AND name = ?3", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_name, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module_version);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, tx, -1, SQLITE_TRANSIENT);
@@ -434,16 +436,19 @@ gchar *dt_lib_presets_duplicate(gchar *preset, gchar *module_name, int module_ve
   // and we duplicate the entry
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "INSERT INTO data.presets (name, description, operation, op_version, op_params, "
-      "blendop_params, blendop_version, enabled, model, maker, lens, "
-      "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-      "focal_length_min, focal_length_max, writeprotect, "
-      "autoapply, filter, def, format) "
+      "INSERT INTO data.presets"
+      " (name, description, operation, op_version, op_params, "
+      "  blendop_params, blendop_version, enabled, model, maker, lens, "
+      "  iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
+      "  focal_length_min, focal_length_max, writeprotect, "
+      "  autoapply, filter, def, format) "
       "SELECT ?1, description, operation, op_version, op_params, "
-      "blendop_params, blendop_version, enabled, model, maker, lens, "
-      "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-      "focal_length_min, focal_length_max, 0, "
-      "autoapply, filter, def, format FROM data.presets WHERE operation = ?2 AND op_version = ?3 AND name = ?4",
+      "  blendop_params, blendop_version, enabled, model, maker, lens, "
+      "  iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
+      "  focal_length_min, focal_length_max, 0, "
+      "  autoapply, filter, def, format"
+      " FROM data.presets"
+      " WHERE operation = ?2 AND op_version = ?3 AND name = ?4",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, nname, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module_name, -1, SQLITE_TRANSIENT);
@@ -460,7 +465,8 @@ void dt_lib_presets_remove(gchar *preset, gchar *module_name, int module_version
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "DELETE FROM data.presets WHERE name=?1 AND operation=?2 AND op_version=?3 AND writeprotect=0", -1, &stmt,
+      "DELETE FROM data.presets"
+      " WHERE name=?1 AND operation=?2 AND op_version=?3 AND writeprotect=0", -1, &stmt,
       NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, preset, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module_name, -1, SQLITE_TRANSIENT);
@@ -533,8 +539,9 @@ void dt_lib_presets_update(gchar *preset, gchar *module_name, int module_version
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE data.presets SET name = ?1, description = ?2, op_params = ?3 WHERE "
-                              "operation = ?4 AND op_version = ?5 AND name = ?6",
+                              "UPDATE data.presets"
+                              " SET name = ?1, description = ?2, op_params = ?3"
+                              " WHERE operation = ?4 AND op_version = ?5 AND name = ?6",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, newname, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, desc, -1, SQLITE_TRANSIENT);
