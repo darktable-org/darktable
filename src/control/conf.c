@@ -132,7 +132,7 @@ void dt_conf_set_string(const char *name, const char *val)
   if(dt_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
-int dt_conf_get_int(const char *name)
+int dt_conf_get_int_fast(const char *name)
 {
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
@@ -166,7 +166,16 @@ int dt_conf_get_int(const char *name)
   return val;
 }
 
-int64_t dt_conf_get_int64(const char *name)
+int dt_conf_get_int(const char *name)
+{
+  const int min = dt_confgen_get_int(name, DT_MIN);
+  const int max = dt_confgen_get_int(name, DT_MAX);
+  const int val = dt_conf_get_int_fast(name);
+  const int ret = CLAMP(val, min, max);
+  return ret;
+}
+
+int64_t dt_conf_get_int64_fast(const char *name)
 {
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
@@ -200,7 +209,16 @@ int64_t dt_conf_get_int64(const char *name)
   return val;
 }
 
-float dt_conf_get_float(const char *name)
+int64_t dt_conf_get_int64(const char *name)
+{
+  const int64_t min = dt_confgen_get_int64(name, DT_MIN);
+  const int64_t max = dt_confgen_get_int64(name, DT_MAX);
+  const int64_t val = dt_conf_get_int64_fast(name);
+  const int64_t ret = CLAMP(val, min, max);
+  return ret;
+}
+
+float dt_conf_get_float_fast(const char *name)
 {
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
@@ -228,28 +246,43 @@ float dt_conf_get_float(const char *name)
   return new_value;
 }
 
+float dt_conf_get_float(const char *name)
+{
+  const float min = dt_confgen_get_float(name, DT_MIN);
+  const float max = dt_confgen_get_float(name, DT_MAX);
+  const float val = dt_conf_get_float_fast(name);
+  const float ret = CLAMP(val, min, max);
+  return ret;
+}
+
 int dt_conf_get_and_sanitize_int(const char *name, int min, int max)
 {
-  int val = dt_conf_get_int(name);
-  val = CLAMPS(val, min, max);
-  dt_conf_set_int(name, val);
-  return val;
+  const int cmin = dt_confgen_get_int(name, DT_MIN);
+  const int cmax = dt_confgen_get_int(name, DT_MAX);
+  const int val = dt_conf_get_int_fast(name);
+  const int ret = CLAMPS(val, MAX(min, cmin), MIN(max, cmax));
+  dt_conf_set_int(name, ret);
+  return ret;
 }
 
 int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max)
 {
-  int64_t val = dt_conf_get_int64(name);
-  val = CLAMPS(val, min, max);
-  dt_conf_set_int64(name, val);
-  return val;
+  const int64_t cmin = dt_confgen_get_int64(name, DT_MIN);
+  const int64_t cmax = dt_confgen_get_int64(name, DT_MAX);
+  const int64_t val = dt_conf_get_int64_fast(name);
+  const int64_t ret = CLAMPS(val, MAX(min, cmin), MIN(max, cmax));
+  dt_conf_set_int64(name, ret);
+  return ret;
 }
 
 float dt_conf_get_and_sanitize_float(const char *name, float min, float max)
 {
-  float val = dt_conf_get_float(name);
-  val = CLAMPS(val, min, max);
-  dt_conf_set_float(name, val);
-  return val;
+  const float cmin = dt_confgen_get_float(name, DT_MIN);
+  const float cmax = dt_confgen_get_float(name, DT_MAX);
+  const float val = dt_conf_get_float_fast(name);
+  const float ret = CLAMPS(val, MAX(min, cmin), MIN(max, cmax));
+  dt_conf_set_float(name, ret);
+  return ret;
 }
 
 int dt_conf_get_bool(const char *name)
@@ -556,6 +589,18 @@ int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
 {
   const char *str = dt_confgen_get(name, kind);
   const float value = dt_calculator_solve(1, str);
+  switch (kind)
+  {
+  case DT_MIN:
+    return isnan(value) ? INT_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
+    break;
+  case DT_MAX:
+    return isnan(value) ? INT_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
+    break;
+  default:
+    return isnan(value) ? 0.0f : (value > 0 ? value + 0.5f : value - 0.5f);
+    break;
+  }
   return (int)value;
 }
 
@@ -563,6 +608,18 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
 {
   const char *str = dt_confgen_get(name, kind);
   const float value = dt_calculator_solve(1, str);
+  switch (kind)
+  {
+  case DT_MIN:
+    return isnan(value) ? INT64_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
+    break;
+  case DT_MAX:
+    return isnan(value) ? INT64_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
+    break;
+  default:
+    return isnan(value) ? 0.0f : (value > 0 ? value + 0.5f : value - 0.5f);
+    break;
+  }
   return (int64_t)value;
 }
 
@@ -576,6 +633,19 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
 {
   const char *str = dt_confgen_get(name, kind);
   const float value = dt_calculator_solve(1, str);
+  switch (kind)
+  {
+  case DT_MIN:
+    // to anyone askig FLT_MIN is superclose to 0, not furthest value from 0 possible in float
+    return isnan(value) ? -FLT_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
+    break;
+  case DT_MAX:
+    return isnan(value) ? FLT_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
+    break;
+  default:
+    return isnan(value) ? 0.0f : (value > 0 ? value + 0.5f : value - 0.5f);
+    break;
+  }
   return value;
 }
 
