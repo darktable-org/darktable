@@ -1,6 +1,7 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2015-2020 darktable developers.
+   copyright (c) 2015 Jeremy Rosen
+   copyright (c) 2015 tobias ellinghaus
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,6 +41,16 @@ dt_lua_widget_type_t widget_type = {
   .parent = NULL
 };
 
+
+static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget);
+static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget) {
+  if(widget_type->parent) 
+    cleanup_widget_sub(L,widget_type->parent,widget);
+  if(widget_type->gui_cleanup) {
+    widget_type->gui_cleanup(L,widget);
+  }
+}
+
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type);
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
   if(widget_type->parent) 
@@ -50,7 +61,12 @@ static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
 
 static void on_destroy(GtkWidget *widget, gpointer user_data)
 {
-  free((lua_widget*) user_data);
+}
+
+static gboolean on_destroy_wrapper(gpointer user_data)
+{
+  gtk_widget_destroy((GtkWidget*) user_data);
+  return false;
 }
 
 static int widget_gc(lua_State *L)
@@ -61,8 +77,13 @@ static int widget_gc(lua_State *L)
   if(gtk_widget_get_parent(lwidget->widget)) {
     luaL_error(L,"Destroying a widget which is still parented, this should never happen (%s at %p)\n",lwidget->type->name,lwidget);
   }
-  // This should never happen because widgets should not exist at this point
-  fprintf(stderr, "LUA ERROR: Trying to garbage collect a widget that hasn't been destroyed\n");
+  cleanup_widget_sub(L,lwidget->type,lwidget);
+  dt_lua_widget_unbind(L,lwidget);
+  // no need to drop, the pointer table is weak and the widget is already being GC, so it's not in the table anymore
+  //dt_lua_type_gpointer_drop(L,lwidget);
+  //dt_lua_type_gpointer_drop(L,lwidget->widget);
+  g_idle_add(on_destroy_wrapper,lwidget->widget);
+  free(lwidget);
   return 0;
 }
 
