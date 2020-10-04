@@ -992,11 +992,11 @@ void init_presets(dt_lib_module_t *self)
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
     gchar *tx3 = _preset_retrieve_old_layout(NULL, NULL);
-    dt_lib_presets_add(_("my previous config"), self->plugin_name, self->version(), tx3, strlen(tx3), FALSE);
+    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx3, strlen(tx3), FALSE);
     dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("previous layout"));
 
     gchar *tx4 = _preset_retrieve_old_layout_updated();
-    dt_lib_presets_add(_("my previous config with new layout"), self->plugin_name, self->version(), tx4,
+    dt_lib_presets_add(_("previous config with new layout"), self->plugin_name, self->version(), tx4,
                        strlen(tx4), FALSE);
   }
   // if they exists, we retrieve old user presets from old modulelist lib
@@ -1685,7 +1685,7 @@ static void _manage_editor_load(char *preset, dt_lib_module_t *self)
   if(ro)
   {
     GtkWidget *lb
-        = gtk_label_new(_("This is a build-in read-only preset. Duplicate it if you want to do changes"));
+        = gtk_label_new(_("this is a build-in read-only preset. duplicate it if you want to do changes"));
     gtk_widget_set_name(lb, "modulegroups-ro");
     gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
   }
