@@ -1,10 +1,10 @@
-/* 
- * svdcomp - SVD decomposition routine. 
+/*
+ * svdcomp - SVD decomposition routine.
  * Takes an mxn matrix a and decomposes it into udv, where u,v are
- * left and right orthogonal transformation matrices, and d is a 
+ * left and right orthogonal transformation matrices, and d is a
  * diagonal matrix of singular values.
  *
- * This routine is adapted from svdecomp.c in XLISP-STAT 2.1 which is 
+ * This routine is adapted from svdecomp.c in XLISP-STAT 2.1 which is
  * adapted by Luke Tierney and David Betz.
  *
  * the now dead xlisp-stat package seems to have been distributed
@@ -81,7 +81,7 @@ static inline int dsvd(
     l = i + 1;
     rv1[i] = scale * g;
     g = s = scale = 0.0;
-    if (i < m) 
+    if (i < m)
     {
       for (int k = i; k < m; k++)
         scale += fabs(a[k*str+i]);
@@ -96,7 +96,7 @@ static inline int dsvd(
         g = -SIGN(sqrt(s), f);
         h = f * g - s;
         a[i*str+i] = f - g;
-        if (i != n - 1) 
+        if (i != n - 1)
         {
           for (int j = l; j < n; j++)
           {
@@ -116,7 +116,7 @@ static inline int dsvd(
 
     /* right-hand reduction */
     g = s = scale = 0.0;
-    if (i < m && i != n - 1) 
+    if (i < m && i != n - 1)
     {
       for (int k = l; k < n; k++)
         scale += fabs(a[i*str+k]);
@@ -133,7 +133,7 @@ static inline int dsvd(
         a[i*str+l] = f - g;
         for (int k = l; k < n; k++)
           rv1[k] = a[i*str+k] / h;
-        if (i != m - 1) 
+        if (i != m - 1)
         {
           for (int j = l; j < m; j++)
           {
@@ -154,7 +154,7 @@ static inline int dsvd(
   /* accumulate the right-hand transformation */
   for (int i = n - 1; i >= 0; i--)
   {
-    if (i < n - 1) 
+    if (i < n - 1)
     {
       if (g != 0.0)
       {
@@ -183,13 +183,13 @@ static inline int dsvd(
   {
     l = i + 1;
     g = w[i];
-    if (i < n - 1) 
+    if (i < n - 1)
       for (int j = l; j < n; j++)
         a[i*str+j] = 0.0;
     if (g != 0.0)
     {
       g = 1.0 / g;
-      if (i != n - 1) 
+      if (i != n - 1)
       {
         for (int j = l; j < n; j++)
         {
@@ -204,7 +204,7 @@ static inline int dsvd(
       for (int j = i; j < m; j++)
         a[j*str+i] = a[j*str+i]*g;
     }
-    else 
+    else
     {
       for (int j = i; j < m; j++)
         a[j*str+i] = 0.0;
@@ -220,10 +220,10 @@ static inline int dsvd(
     {                         /* loop over allowed iterations */
       _Bool flag = 1;
       int nm = 0;
-      for (l = k; l >= 0; l--) 
+      for (l = k; l >= 0; l--)
       {                     /* test for splitting */
         nm = MAX(0, l - 1);
-        if (fabs(rv1[l]) + anorm == anorm) 
+        if (fabs(rv1[l]) + anorm == anorm)
         {
           flag = 0;
           break;
@@ -231,17 +231,17 @@ static inline int dsvd(
         if (l == 0 || fabs(w[nm]) + anorm == anorm)
           break;
       }
-      if (flag) 
+      if (flag)
       {
         s = 1.0;
         for (int i = l; i <= k; i++)
         {
           f = s * rv1[i];
-          if (fabs(f) + anorm != anorm) 
+          if (fabs(f) + anorm != anorm)
           {
             g = w[i];
             h = PYTHAG(f, g);
-            w[i] = h; 
+            w[i] = h;
             h = 1.0 / h;
             c = g * h;
             s = (- f * h);
@@ -256,9 +256,9 @@ static inline int dsvd(
         }
       }
       z = w[k];
-      if (l == k) 
+      if (l == k)
       {                  /* convergence */
-        if (z < 0.0) 
+        if (z < 0.0)
         {              /* make singular value nonnegative */
           w[k] = -z;
           for (int j = 0; j < n; j++)

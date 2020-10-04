@@ -612,7 +612,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
     }
 
     dt_masks_dynbuf_add_n(dpoints, rc, 2);
-    
+
     border_init[k * 6 + 4] = dborder ? -dt_masks_dynbuf_position(dborder) : 0;
 
     if(dborder)
@@ -1069,10 +1069,10 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
         dt_masks_form_gui_t *gui2 = darktable.develop->form_gui;
         if(!gui2) return 1;
         gui2->group_selected = pos2;
-        
+
         dt_masks_select_form(crea_module, dt_masks_get_from_id(darktable.develop, form->formid));
       }
-      
+
       dt_control_queue_redraw_center();
     }
   }

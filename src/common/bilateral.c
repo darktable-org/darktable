@@ -233,7 +233,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
       }
     }
   }
-  
+
   // merge the per-thread results into the final result
   for (int slice = 1 ; slice < nthreads; slice++)
   {

@@ -168,12 +168,12 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   int layers = 3;  // default are rgb images
 
   int shortmode = 0;
-  if(dt_conf_key_exists("plugins/imageio/format/tiff/shortfile")) 
+  if(dt_conf_key_exists("plugins/imageio/format/tiff/shortfile"))
     shortmode = dt_conf_get_int("plugins/imageio/format/tiff/shortfile");
 
   if((d->global.height > 4) && (d->global.width > 4) && (n_pages == 1) && shortmode)
   {
-    layers = 1;    // let's now assume a grayscale  
+    layers = 1;    // let's now assume a grayscale
     if(d->bpp == 32)
     {
       for(int y = 1; y < d->global.height-1; y++)
@@ -183,10 +183,10 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         {
           if((fabs(fmax(in[0], 0.001f) / fmax(in[1], 0.001f)) > 1.01f) ||
              (fabs(fmax(in[0], 0.001f) / fmax(in[2], 0.001f)) > 1.01f) ||
-             (fabs(fmax(in[1], 0.001f) / fmax(in[2], 0.001f)) > 1.01f)) 
+             (fabs(fmax(in[1], 0.001f) / fmax(in[2], 0.001f)) > 1.01f))
           {
             layers = 3;
-            goto checkdone;      
+            goto checkdone;
           }
         }
       }
@@ -203,7 +203,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
              (abs(in[1] - in[2]) > 100))
           {
             layers = 3;
-            goto checkdone;      
+            goto checkdone;
           }
         }
       }
@@ -227,7 +227,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
 
   }
-  checkdone:  
+  checkdone:
   if(layers == 1)
     dt_control_log(_("will export as a grayscale image"));
 
@@ -791,7 +791,7 @@ void gui_init(dt_imageio_module_format_t *self)
   const int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
 
   int shortmode = 0;
-  if(dt_conf_key_exists("plugins/imageio/format/tiff/shortfile")) 
+  if(dt_conf_key_exists("plugins/imageio/format/tiff/shortfile"))
     shortmode = dt_conf_get_int("plugins/imageio/format/tiff/shortfile");
 
   // TIFF compression level might actually be zero!

@@ -52,7 +52,7 @@ else(APPLE)
   target_link_libraries(lua dl)
 endif(WIN32)
 
-# 
+#
 # SYSLIBS="-Wl,-E -ldl -lreadline"
 # SYSLIBS="-lreadline"
 

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#ifdef __PPC64__ 
+#ifdef __PPC64__
 #ifdef NO_WARN_X86_INTRINSICS
 #include <xmmintrin.h>
 #else

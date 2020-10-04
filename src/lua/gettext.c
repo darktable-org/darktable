@@ -64,7 +64,7 @@ static int lua_bindtextdomain(lua_State*L)
 
 int dt_lua_init_gettext(lua_State *L)
 {
-  
+
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"gettext");
 

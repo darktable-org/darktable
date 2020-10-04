@@ -241,7 +241,7 @@ struct __luaA_wrap_##func { static void __luaA_##func(char* out, char* args) { \
   arg9_t a9 = *(arg9_t*)(args+sizeof(arg0_t)+sizeof(arg1_t)+sizeof(arg2_t)+sizeof(arg3_t)+sizeof(arg4_t)+sizeof(arg5_t)+sizeof(arg6_t)+sizeof(arg7_t)+sizeof(arg8_t)); \
   func(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9); }; }
 
-  
+
 #define luaA_function_register0(L, func, ret_t) \
   luaA_function_register_type(L, func, (luaA_Func)__luaA_wrap_##func::__luaA_##func, #func, luaA_type(L, ret_t), 0)
 
@@ -256,26 +256,26 @@ struct __luaA_wrap_##func { static void __luaA_##func(char* out, char* args) { \
 
 #define luaA_function_register4(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t) \
   luaA_function_register_type(L, func, (luaA_Func)__luaA_wrap_##func::__luaA_##func, #func, luaA_type(L, ret_t), 4, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t))
-  
+
 #define luaA_function_register5(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t) \
   luaA_function_register_type(L, func, (luaA_Func)__luaA_wrap_##func::__luaA_##func, #func, luaA_type(L, ret_t), 5, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t))
-  
+
 #define luaA_function_register6(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t) \
   luaA_function_register_type(L, func, (luaA_Func)__luaA_wrap_##func::__luaA_##func, #func, luaA_type(L, ret_t), 6, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t))
 
 #define luaA_function_register7(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t, arg6_t) \
   luaA_function_register_type(L, func, (luaA_Func)__luaA_wrap_##func::__luaA_##func, #func, luaA_type(L, ret_t), 7, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t), luaA_type(L, arg6_t))
-  
+
 #define luaA_function_register8(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t, arg6_t, arg7_t) \
   luaA_function_register_type(L, func, (luaA_Func)__luaA_wrap_##func::__luaA_##func, #func, luaA_type(L, ret_t), 8, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t), luaA_type(L, arg6_t), luaA_type(L, arg7_t))
-  
+
 #define luaA_function_register9(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t, arg6_t, arg7_t, arg8_t) \
   luaA_function_register_type(L, func, (luaA_Func)__luaA_wrap_##func::__luaA_##func, #func, luaA_type(L, ret_t), 9, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t), luaA_type(L, arg6_t), luaA_type(L, arg7_t), luaA_type(L, arg8_t))
-  
+
 #define luaA_function_register10(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t, arg6_t, arg7_t, arg8_t, arg9_t) \
   luaA_function_register_type(L, func, (luaA_Func)__luaA_wrap_##func::__luaA_##func, #func, luaA_type(L, ret_t), 10, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t), luaA_type(L, arg6_t), luaA_type(L, arg7_t), luaA_type(L, arg8_t), luaA_type(L, arg9_t))
 
-  
+
 #else
 
 
@@ -477,7 +477,7 @@ void __luaA_##func(void* out, void* args) { \
   arg9_t a9 = *(arg9_t*)(args+sizeof(arg0_t)+sizeof(arg1_t)+sizeof(arg2_t)+sizeof(arg3_t)+sizeof(arg4_t)+sizeof(arg5_t)+sizeof(arg6_t)+sizeof(arg7_t)+sizeof(arg8_t)); \
   func(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9); }
 
-  
+
 #define luaA_function_register0(L, func, ret_t) \
   luaA_function_register_type(L, func, __luaA_##func, #func, luaA_type(L, ret_t), 0)
 
@@ -492,26 +492,26 @@ void __luaA_##func(void* out, void* args) { \
 
 #define luaA_function_register4(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t) \
   luaA_function_register_type(L, func, __luaA_##func, #func, luaA_type(L, ret_t), 4, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t))
-  
+
 #define luaA_function_register5(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t) \
   luaA_function_register_type(L, func, __luaA_##func, #func, luaA_type(L, ret_t), 5, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t))
-  
+
 #define luaA_function_register6(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t) \
   luaA_function_register_type(L, func, __luaA_##func, #func, luaA_type(L, ret_t), 6, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t))
 
 #define luaA_function_register7(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t, arg6_t) \
   luaA_function_register_type(L, func, __luaA_##func, #func, luaA_type(L, ret_t), 7, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t), luaA_type(L, arg6_t))
-  
+
 #define luaA_function_register8(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t, arg6_t, arg7_t) \
   luaA_function_register_type(L, func, __luaA_##func, #func, luaA_type(L, ret_t), 8, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t), luaA_type(L, arg6_t), luaA_type(L, arg7_t))
-  
+
 #define luaA_function_register9(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t, arg6_t, arg7_t, arg8_t) \
   luaA_function_register_type(L, func, __luaA_##func, #func, luaA_type(L, ret_t), 9, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t), luaA_type(L, arg6_t), luaA_type(L, arg7_t), luaA_type(L, arg8_t))
-  
+
 #define luaA_function_register10(L, func, ret_t, arg0_t, arg1_t, arg2_t, arg3_t, arg4_t, arg5_t, arg6_t, arg7_t, arg8_t, arg9_t) \
   luaA_function_register_type(L, func, __luaA_##func, #func, luaA_type(L, ret_t), 10, luaA_type(L, arg0_t), luaA_type(L, arg1_t), luaA_type(L, arg2_t), luaA_type(L, arg3_t), luaA_type(L, arg4_t), luaA_type(L, arg5_t), luaA_type(L, arg6_t), luaA_type(L, arg7_t), luaA_type(L, arg8_t), luaA_type(L, arg9_t))
 
-  
+
 #endif
 
 #endif

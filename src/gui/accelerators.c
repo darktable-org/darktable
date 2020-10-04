@@ -672,7 +672,7 @@ void dt_accel_widget_toast(GtkWidget *widget)
 float dt_accel_get_slider_scale_multiplier()
 {
   const int slider_precision = dt_conf_get_int("accel/slider_precision");
-  
+
   if(slider_precision == DT_IOP_PRECISION_COARSE)
   {
     return dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
@@ -695,7 +695,7 @@ static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group, GOb
   float multiplier = dt_accel_get_slider_scale_multiplier();
 
   const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(slider));
-  if(fabsf(step*multiplier) < min_visible) 
+  if(fabsf(step*multiplier) < min_visible)
     multiplier = min_visible / fabsf(step);
 
   dt_bauhaus_slider_set(slider, value + step * multiplier);
@@ -716,7 +716,7 @@ static gboolean bauhaus_slider_decrease_callback(GtkAccelGroup *accel_group, GOb
   float multiplier = dt_accel_get_slider_scale_multiplier();
 
   const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(slider));
-  if(fabsf(step*multiplier) < min_visible) 
+  if(fabsf(step*multiplier) < min_visible)
     multiplier = min_visible / fabsf(step);
 
   dt_bauhaus_slider_set(slider, value - step * multiplier);

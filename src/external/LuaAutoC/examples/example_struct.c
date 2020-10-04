@@ -7,13 +7,13 @@ typedef struct {
 int main(int argc, char **argv) {
 	
   lua_State* L = luaL_newstate();
-  
+
   luaA_open(L);
   luaA_struct(L, vec3);
   luaA_struct_member(L, vec3, x, float);
   luaA_struct_member(L, vec3, y, float);
   luaA_struct_member(L, vec3, z, float);
-  
+
   vec3 pos = {1.0f, 2.11f, 3.16f};
 
   luaA_struct_push_member(L, vec3, x, &pos);

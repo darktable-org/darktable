@@ -33,12 +33,12 @@ int main(int argc, char **argv) {
   pair p = {20, 10};
   luaA_push(L, pair, &p);
   lua_pop(L, 2);
-  
+
   luaA_struct(L, table);
   luaA_struct_member(L, table, id, int);
   luaA_struct_member(L, table, legs, int);
   luaA_struct_member(L, table, height, float);
-  
+
   table t = {0, 4, 0.72};
 
   luaA_push(L, table, &t);
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   lua_pop(L, 1);
 
   lua_pop(L, 1);
-  
+
   luaA_close(L);
   lua_close(L);
 	

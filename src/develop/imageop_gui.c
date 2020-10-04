@@ -176,7 +176,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
         step = powf(10.f,fdigits);
         if (log10step - fdigits > .5)
           step *= 5;
-        if (fdigits < -2.f) 
+        if (fdigits < -2.f)
           digits = -fdigits;
       }
 
@@ -189,12 +189,12 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
         str = g_strdup_printf("%%%s.0%df%s", (min < 0 ? "+" : ""), digits, post);
 
         dt_bauhaus_slider_set_format(slider, str);
-      
+
         g_free(str);
       }
 
-      g_signal_connect(G_OBJECT(slider), "value-changed", 
-                       G_CALLBACK(dt_iop_slider_float_callback), 
+      g_signal_connect(G_OBJECT(slider), "value-changed",
+                       G_CALLBACK(dt_iop_slider_float_callback),
                        p + f->header.offset + param_index * sizeof(float));
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_INT)
@@ -205,8 +205,8 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 
-      g_signal_connect(G_OBJECT(slider), "value-changed", 
-                       G_CALLBACK(dt_iop_slider_int_callback), 
+      g_signal_connect(G_OBJECT(slider), "value-changed",
+                       G_CALLBACK(dt_iop_slider_int_callback),
                        p + f->header.offset + param_index * sizeof(int));
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_USHORT)
@@ -217,8 +217,8 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 
-      g_signal_connect(G_OBJECT(slider), "value-changed", 
-                       G_CALLBACK(dt_iop_slider_ushort_callback), 
+      g_signal_connect(G_OBJECT(slider), "value-changed",
+                       G_CALLBACK(dt_iop_slider_ushort_callback),
                        p + f->header.offset + param_index * sizeof(unsigned short));
     }
     else f = NULL;
@@ -235,7 +235,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     else
     {
       str = dt_util_str_replace(f->header.field_name, "_", " ");
-    
+
       dt_bauhaus_widget_set_label(slider, NULL, _(str));
 
       g_free(str);
@@ -267,7 +267,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
   GtkWidget *combobox = dt_bauhaus_combobox_new(self);
   gchar *str = NULL;
 
-  if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM || 
+  if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM ||
             f->header.type == DT_INTROSPECTION_TYPE_INT  ||
             f->header.type == DT_INTROSPECTION_TYPE_UINT ||
             f->header.type == DT_INTROSPECTION_TYPE_BOOL ))
@@ -281,7 +281,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     else
     {
       str = dt_util_str_replace(f->header.field_name, "_", " ");
-    
+
       dt_bauhaus_widget_set_label(combobox, NULL, _(str));
 
       g_free(str);
@@ -347,7 +347,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     else
     {
       str = dt_util_str_replace(f->header.field_name, "_", " ");
-    
+
       label = gtk_label_new(_(str));
 
       g_free(str);

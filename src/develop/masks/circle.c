@@ -508,8 +508,8 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   {
     const float pr_d = darktable.develop->preview_downsampling;
     float iwd = darktable.develop->preview_pipe->iwidth;
-    float iht = darktable.develop->preview_pipe->iheight;                                           
-    const float min_iwd_iht = pr_d * MIN(iwd,iht);                                                           
+    float iht = darktable.develop->preview_pipe->iheight;
+    const float min_iwd_iht = pr_d * MIN(iwd,iht);
     if(gui->guipoints_count == 0)
     {
       dt_masks_form_t *form = darktable.develop->form_visible;

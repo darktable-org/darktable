@@ -57,9 +57,9 @@ static int active_member(lua_State*L)
     return 0;
   }
   GtkWidget * child = gtk_stack_get_visible_child(GTK_STACK(stack->widget));
-  if(child) 
+  if(child)
     luaA_push(L,lua_widget,&child);
-  else 
+  else
     lua_pushnil(L);
   return 1;
 }
