@@ -25,21 +25,21 @@ int birdie_newindex(lua_State* L) {
 }
 
 int main(int argc, char **argv) {
-  
+
   test_birdie.name = "MrFlingly";
   test_birdie.num_wings = 2;
-  
+
   lua_State* L = luaL_newstate();
   luaL_openlibs(L);
   luaA_open(L);
-  
+
   luaA_struct(L, birdie);
   luaA_struct_member(L, birdie, name, char*);
   luaA_struct_member(L, birdie, num_wings, int);
-  
+
   lua_register(L, "birdie_index", birdie_index);
   lua_register(L, "birdie_newindex", birdie_newindex);
-  
+
   luaL_dostring(L, ""
     "Birdie = {}\n"
     "setmetatable(Birdie, Birdie)\n"
@@ -57,10 +57,10 @@ int main(int argc, char **argv) {
     "bird.num_wings = 3\n"
     "print(bird.num_wings)\n"
     "\n");
-  
+
   luaA_close(L);
   lua_close(L);
-  
+
   return 0;
-  
+
 }

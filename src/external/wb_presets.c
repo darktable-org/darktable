@@ -5871,7 +5871,7 @@ const wb_data wb_preset[] =
   { "Nikon", "E8700", Cloudy, 0,		{ 2.218750, 1, 1.359375, 0 } },
   { "Nikon", "E8700", Flash, 0,			{ 2.535156, 1, 1.273438, 0 } },
   { "Nikon", "E8700", Shade, 0,			{ 2.527344, 1, 1.175781, 0 } },
-  
+
   // Nikon Z6, firmware 3.0
   { "Nikon", "Z 6", DirectSunlight, -6,         { 1.582031, 1, 1.488281, 0 } },
   { "Nikon", "Z 6", DirectSunlight, -5,         { 1.609375, 1, 1.466797, 0 } },
@@ -6029,7 +6029,7 @@ const wb_data wb_preset[] =
   { "Nikon", "Z 6", Flash, 4,                   { 2.023438, 1, 1.113281, 0 } },
   { "Nikon", "Z 6", Flash, 5,                   { 2.060547, 1, 1.099609, 0 } },
   { "Nikon", "Z 6", Flash, 6,                   { 2.103516, 1, 1.085938, 0 } },
-  
+
   { "Nikon", "Z 7", DirectSunlight                 , 0, { 1.71484375, 1, 1.359375, 0 } },
   { "Nikon", "Z 7", Shade                          , 0, { 2.1171875, 1, 1.09765625, 0 } },
   { "Nikon", "Z 7", Cloudy                         , 0, { 1.837890625, 1, 1.228515625, 0 } },
@@ -7471,7 +7471,7 @@ const wb_data wb_preset[] =
   { "Olympus", "E-PL5", "3000K", 0,		{ 1.296875, 1, 3.054688, 0 } },
   { "Olympus", "E-PL5", "3300K", 0,		{ 1.429688, 1, 2.640625, 0 } },
   { "Olympus", "E-PL5", "5000K", 0,		{ 1.882813, 1, 1.984375, 0 } },
-  
+
   { "Olympus", "E-PL6", Daylight            , -7, { 1.65625, 1, 2.171875, 0 } },
   { "Olympus", "E-PL6", Daylight            , -6, { 1.6953125, 1, 2.1328125, 0 } },
   { "Olympus", "E-PL6", Daylight            , -5, { 1.734375, 1, 2.09375, 0 } },
@@ -7574,7 +7574,7 @@ const wb_data wb_preset[] =
   { "Olympus", "E-PL6", "6000K"             , 0, { 2.0546875, 1, 1.71875, 0 } },
   { "Olympus", "E-PL6", "6600K"             , 0, { 2.140625, 1, 1.859375, 0 } },
   { "Olympus", "E-PL6", "7500K"             , 0, { 2.2265625, 1, 1.4921875, 0 } },
-  
+
 
   { "Olympus", "E-PL7", Daylight, 0,		{ 1.890625, 1, 1.773438, 0 } },
   { "Olympus", "E-PL7", Shade, 0,		{ 2.250000, 1, 1.359375, 0 } },
@@ -7685,7 +7685,7 @@ const wb_data wb_preset[] =
   { "Olympus", "TG-4", Incandescent, 0,         { 1.070313, 1, 2.765625, 0 } },
   { "Olympus", "TG-4", Fluorescent, 0,          { 1.601563, 1, 2.15625, 0 } },
   { "Olympus", "TG-4", Underwater, 0,           { 1.3125, 1, 2.257813, 0 } },
-  
+
   { "Olympus", "TG-5", Daylight            , -7, { 1.4453125, 1, 2.0625, 0 } },
   { "Olympus", "TG-5", Daylight            , -6, { 1.484375, 1, 2.0234375, 0 } },
   { "Olympus", "TG-5", Daylight            , -5, { 1.515625, 1, 1.9921875, 0 } },
@@ -9156,7 +9156,7 @@ const wb_data wb_preset[] =
   { "Pentax", "K-01", CoolWhiteFluorescent, 0,        { 2.114501953125, 1, 2.139892578125, 0 } },
   { "Pentax", "K-01", Flash, 0,               { 2.490966796875, 1, 1.4849853515625, 0 } },
   { "Pentax", "K-01", WarmWhiteFluorescent, 0,        { 1.7689208984375, 1, 2.677734375, 0 } },
-  
+
   /* Pentax K-1 Firmware Version 1.52 */
   { "Pentax", "K-1", Daylight            , -7, { 2.3671875, 1, 1.49609375, 0 } },
   { "Pentax", "K-1", Daylight            , -6, { 2.33203125, 1, 1.51953125, 0 } },
@@ -9277,7 +9277,7 @@ const wb_data wb_preset[] =
   { "Pentax", "K-1", WhiteFluorescent    , 4, { 1.89453125, 1, 2.3828125, 0 } },
   { "Pentax", "K-1", WhiteFluorescent    , 5, { 1.8671875, 1, 2.421875, 0 } },
   { "Pentax", "K-1", WhiteFluorescent    , 6, { 1.83984375, 1, 2.46484375, 0 } },
-  { "Pentax", "K-1", WhiteFluorescent    , 7, { 1.8125, 1, 2.50390625, 0 } },  
+  { "Pentax", "K-1", WhiteFluorescent    , 7, { 1.8125, 1, 2.50390625, 0 } },
 
   /* Pentax K-3 Firmware version 1.00 */
   { "Pentax", "K-3", Daylight, 0,			{ 2.31250, 1, 1.48047, 0 } },
@@ -9649,8 +9649,8 @@ const wb_data wb_preset[] =
   { "Samsung", "GX10", WhiteFluorescent, 0,	{ 1.597656, 1, 1.488281, 0 } },
   { "Samsung", "GX10", Tungsten, 0,		{ 1.000000, 1, 2.558594, 0 } },
   { "Samsung", "GX10", Flash, 0,		{ 1.664062, 1, 1.046875, 0 } },
-  
-  // Samsung NX1 Firmware 1.41 
+
+  // Samsung NX1 Firmware 1.41
   { "Samsung", "NX1", Daylight           , -7, { 1.6129032258064515, 1, 2.181451612903226, 0 } },
   { "Samsung", "NX1", Daylight           , -6, { 1.6411290322580645, 1, 2.1048387096774195, 0 } },
   { "Samsung", "NX1", Daylight           , -5, { 1.6693548387096775, 1, 2.032258064516129, 0 } },

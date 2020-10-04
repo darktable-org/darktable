@@ -532,7 +532,7 @@ static gboolean _lib_snapshots_toggle_last(GtkAccelGroup *accel_group, GObject *
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  if(d->num_snapshots) 
+  if(d->num_snapshots)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button), !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button)));
 
   return TRUE;

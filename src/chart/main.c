@@ -964,13 +964,13 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   int num_tonecurve = 0;
   {
     int cnt = 0;
-    
+
     for(int i=0;i<N;i++)
     {
       double sat_in =
         colorchecker_Lab[3*i+1] * colorchecker_Lab[3*i+1] +
         colorchecker_Lab[3*i+2] * colorchecker_Lab[3*i+2];
-      double sat_out = 
+      double sat_out =
         target_a[i] * target_a[i] +
         target_b[i] * target_b[i];
       // we'll allow some artistic tint or one due to illuminants (note square scale)
@@ -1064,7 +1064,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
     gtk_label_set_text(GTK_LABEL(self->result_label), result_string);
     g_free(result_string);
   }
-  
+
   free(coeff_b);
   free(coeff_a);
   free(coeff_L);
@@ -1535,7 +1535,7 @@ static void get_xyz_sample_from_image(const image_t *const image, float shrink, 
          delta_x_bottom, delta_y_bottom, delta_x_left, delta_y_left, \
          delta_x_right, delta_y_right) \
   reduction(+ : n_samples, sample_x, sample_y, sample_z) \
-  schedule(static) 
+  schedule(static)
 #endif
   for(int y = y_start; y < y_end; y++)
     for(int x = x_start; x < x_end; x++)
