@@ -552,6 +552,8 @@ dt_confgen_type_t dt_confgen_type(const char *name)
 gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+  if(item == NULL)
+    return FALSE;
 
   switch(kind)
   {
@@ -587,8 +589,27 @@ const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind)
 
 int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
 {
+  if(!dt_confgen_value_exists(name, kind))
+  {
+    //early bail
+    switch (kind)
+    {
+    case DT_MIN:
+      return INT_MIN;
+      break;
+    case DT_MAX:
+      return INT_MAX;
+      break;
+    default:
+      return 0;
+      break;
+    }
+  }
   const char *str = dt_confgen_get(name, kind);
+
+  //if str is NULL or empty, dt_calculator_solve will return NAN
   const float value = dt_calculator_solve(1, str);
+
   switch (kind)
   {
   case DT_MIN:
@@ -606,8 +627,27 @@ int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
 
 int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
 {
+  if(!dt_confgen_value_exists(name, kind))
+  {
+    //early bail
+    switch (kind)
+    {
+    case DT_MIN:
+      return INT64_MIN;
+      break;
+    case DT_MAX:
+      return INT64_MAX;
+      break;
+    default:
+      return 0;
+      break;
+    }
+  }
   const char *str = dt_confgen_get(name, kind);
+
+  //if str is NULL or empty, dt_calculator_solve will return NAN
   const float value = dt_calculator_solve(1, str);
+
   switch (kind)
   {
   case DT_MIN:
@@ -631,8 +671,27 @@ gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind)
 
 float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
 {
+  if(!dt_confgen_value_exists(name, kind))
+  {
+    //early bail
+    switch (kind)
+    {
+    case DT_MIN:
+      return -FLT_MAX;
+      break;
+    case DT_MAX:
+      return FLT_MAX;
+      break;
+    default:
+      return 0.0f;
+      break;
+    }
+  }
   const char *str = dt_confgen_get(name, kind);
+
+  //if str is NULL or empty, dt_calculator_solve will return NAN
   const float value = dt_calculator_solve(1, str);
+
   switch (kind)
   {
   case DT_MIN:
