@@ -683,10 +683,11 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
       return FLT_MAX;
       break;
     default:
-      return 0.0f;
       break;
     }
+    return 0.0f;
   }
+
   const char *str = dt_confgen_get(name, kind);
 
   //if str is NULL or empty, dt_calculator_solve will return NAN
@@ -696,16 +697,15 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
   {
   case DT_MIN:
     // to anyone askig FLT_MIN is superclose to 0, not furthest value from 0 possible in float
-    return isnan(value) ? -FLT_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
+    return isnan(value) ? -FLT_MAX : value;
     break;
   case DT_MAX:
-    return isnan(value) ? FLT_MAX : (value > 0 ? value + 0.5f : value - 0.5f);
+    return isnan(value) ? FLT_MAX : value;
     break;
   default:
-    return isnan(value) ? 0.0f : (value > 0 ? value + 0.5f : value - 0.5f);
     break;
   }
-  return value;
+  return isnan(value) ? 0.0f : value;
 }
 
 gboolean dt_conf_is_default(const char *name)
