@@ -177,7 +177,6 @@
 /* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
 #lib-plugin-ui,
 #iop-plugin-ui,
-#lib-modulelist,
 #modules-tabs,
 #left,
 #right,
@@ -1200,6 +1199,147 @@ dialog scrollbar
   margin-left: 5px;
 }
 
+/*--------------------------------
+  - module layouts manager dialog -
+  --------------------------------*/
+
+#modulegroups_editor
+{
+  color: @fg_color;
+  background-color: @plugin_bg_color;
+  padding-left: 0.5em;
+}
+
+#modulegroups-preset,
+#modulegroups-preset-activated
+{
+  background-color: @bg_color;
+  color: @plugin_label_color;
+  border-left: 2px solid @bg_color;
+  padding: 7px 17px;
+}
+
+#modulegroups-iop-header,
+#modulegroups-header-center
+{
+  background-color: @bg_color;
+  color: @plugin_label_color;
+  padding: 0.5em;
+  margin-bottom: 0.2em;
+}
+
+#modulegroups-header
+{
+  margin-bottom: 0.4em;
+}
+
+#modulegroups-preset,
+#modulegroups-preset-activated
+{
+  font-size: 1.1em;
+  min-width: 150px;
+}
+
+#modulegroups-group-icon {
+  min-height: 2em;
+  min-width: 2em;
+  margin: 0 0.5em 0 0;
+  padding: 0.1em;
+  border: 0;
+}
+
+#modulegroups-header #dt-button,
+#modulegroups-preset #dt-button,
+#modulegroups-preset-activated #dt-button,
+#modulegroups-iop-popup-name
+{
+  border: 0;
+}
+
+#modulegroups-groups-title
+{
+  font-size: 1.1em;
+  font-weight: bold;
+  padding: 0.5em 0.5em 0.5em 0.5em;
+}
+
+#modulegroups-groups-title #dt-button
+{
+  min-height: 1.2em;
+  min-width: 1.2em;
+  margin: 0 0 0 1em;
+}
+#modulegroups-groups-box
+{
+  border-top: 1px solid @plugin_label_color;
+}
+
+#modulegroups-reset
+{
+  padding: 0.5em;
+  margin: 0.5em;
+}
+
+#modulegroups-preset-name
+{
+  font-size: 1.1em;
+  margin-top: 0.4em;
+}
+
+#modulegroups-preset-name entry
+{
+  min-width: 300px;
+}
+
+#modulegroups-ro
+{
+  font-style: italic;
+  margin: 0.4em 0;
+}
+
+#modulegroups-groupbox
+{
+  padding: 0 0.5em 0 0.5em;
+  margin-top: 0.75em;
+}
+
+#modulegroups-icons-popup
+{
+  padding: 0.5em;
+  font-size: 1.1em;
+  background-color: @grey_30;
+}
+
+#modulegroups-icons-popup #dt-button
+{
+  min-width: 1.6em;
+  min-height: 1.6em;
+  border: 0;
+}
+
+#modulegroups-iop-popup
+{
+  padding: 0.2em;
+  background-color: @grey_30;
+}
+
+#modulegroups_iop_title
+{
+  font-weight: bold;
+}
+
+#modulegroups-add-module-btn,
+#modulegroups-preset-add-btn
+{
+  margin-top: 0.4em;
+}
+
+#modulegroups-preset:hover label,
+#modulegroups-preset:hover #dt-button
+{
+  color: @button_hover_fg;
+}
+
 /*---------------------------------------------------------------
   - Set sidebars settings on preferences window and filechooser -
   ---------------------------------------------------------------*/
@@ -1238,7 +1378,8 @@ filechooser row
 filechooser .sidebar row:selected,
 filechooser .sidebar row:selected:hover .sidebar-label,
 #preferences_box .sidebar row:selected,
-#preferences_box .sidebar row:selected:hover label
+#preferences_box .sidebar row:selected:hover label,
+#modulegroups-preset-activated
 {
   color: @fg_color;
   background-color: @plugin_bg_color;
@@ -1257,13 +1398,15 @@ filechooser row:hover .sidebar-icon
   background-color: @field_hover_bg;
 }
 
-#preferences_box .sidebar row:selected
+#preferences_box .sidebar row:selected,
+#modulegroups-preset-activated
 {
   border-left-color: @field_hover_bg;   /* make the border left visible with choosed color if category on sidebar is selected */
 }
 
 filechooser row:hover,
-#preferences_box .sidebar :hover  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
+#preferences_box .sidebar :hover,  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
+#modulegroups-preset:hover
 {
   border-left-color: @button_hover_bg;
   background-color: @button_hover_bg;
