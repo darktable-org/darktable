@@ -42,7 +42,6 @@ static gchar* _dt_full_locale_name(const char *locale)
 #ifdef __linux__
   gchar *output = NULL;
   GError *error = NULL;
-  // This would likelly work on linux and macos
   if(!g_spawn_command_line_sync("locale -a", &output, NULL, NULL, &error))
   {
     if(error)
