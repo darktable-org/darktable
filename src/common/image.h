@@ -81,6 +81,12 @@ typedef enum
   DT_IMAGE_HAS_USERCROP = 65536,
   // image is an sraw
   DT_IMAGE_S_RAW = 1 << 17,
+  // image has a monochrome preview tested
+  DT_IMAGE_MONOCHROME_PREVIEW = 1 << 18,
+  // image has been set to monochrome via demosaic module
+  DT_IMAGE_MONOCHROME_BAYER = 1 << 19,
+  // image has a flag set to use the monochrome workflow in the modules supporting it
+  DT_IMAGE_MONOCHROME_WORKFLOW = 1 << 20,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
@@ -238,6 +244,10 @@ int dt_image_is_monochrome(const dt_image_t *img);
 int dt_image_is_matrix_correction_supported(const dt_image_t *img);
 /** returns non-zero if the image supports the rawprepare module */
 int dt_image_is_rawprepare_supported(const dt_image_t *img);
+/** returns the bitmask containing info about monochrome images */
+int dt_image_monochrome_flags(const dt_image_t *img);
+/** returns true if the image has been tested to be monochrome and the image wants monochrome workflow */ 
+gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 /** returns the full path name where the image was imported from. from_cache=TRUE check and return local
  * cached filename if any. */
 void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gboolean *from_cache);

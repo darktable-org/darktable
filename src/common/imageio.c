@@ -224,6 +224,39 @@ error:
   return res;
 }
 
+gboolean dt_imageio_has_mono_preview(const char *filename)
+{
+  dt_colorspaces_color_profile_type_t color_space;
+  uint8_t *tmp = NULL;
+  int32_t thumb_width, thumb_height;
+  gboolean mono = FALSE;
+
+  if(dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, &color_space))
+    goto cleanup;
+  if((thumb_width < 32) || (thumb_height < 32) || (tmp == NULL))
+    goto cleanup;
+ 
+  mono = TRUE;
+  for(int y = 0; y < thumb_height; y++)
+  {
+    uint8_t *in = (uint8_t *)tmp + (size_t)4 * y * thumb_width;
+    for(int x = 0; x < thumb_width; x++, in += 4)
+    {
+      if((in[0] != in[1]) || (in[0] != in[2]) || (in[1] != in[2]))
+      {
+        mono = FALSE;
+        goto cleanup;      
+      }
+    }
+  }
+
+  cleanup:
+
+  dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_has_mono_preview] testing `%s', yes/no %i, %ix%i\n", filename, mono, thumb_width, thumb_height);
+  if(tmp) dt_free_align(tmp);
+  return mono;
+}
+
 void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht,
                              const int fwd, const int fht, const int stride,
                              const dt_image_orientation_t orientation)
@@ -1078,14 +1111,20 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
   return DT_IMAGEIO_FILE_CORRUPTED;
 }
 
-void dt_imageio_set_bw_tag(dt_image_t *img)
+void dt_imageio_update_monochrome_workflow_tag(int32_t id, int mask)
 {
-  guint tagid = 0;
-  char tagname[64];
-  snprintf(tagname, sizeof(tagname), "darktable|mode|monochrome");
-  dt_tag_new(tagname, &tagid);
-  dt_tag_attach(tagid, img->id, FALSE, FALSE);
-  img->flags |= DT_IMAGE_MONOCHROME;
+  if(mask & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_BAYER))
+  {
+    guint tagid = 0;
+    char tagname[64];
+    snprintf(tagname, sizeof(tagname), "darktable|mode|monochrome");
+    dt_tag_new(tagname, &tagid);
+    dt_tag_attach(tagid, id, FALSE, FALSE);
+  }
+  else
+    dt_tag_detach_by_string("darktable|mode|monochrome", id, FALSE, FALSE);
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_imageio_set_hdr_tag(dt_image_t *img)
@@ -1110,7 +1149,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   /* first of all, check if file exists, don't bother to test loading if not exists */
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return !DT_IMAGEIO_OK;
   const int32_t was_hdr = (img->flags & DT_IMAGE_HDR);
-  const int32_t was_bw = (img->flags & DT_IMAGE_MONOCHROME);
+  const int32_t was_bw = dt_image_monochrome_flags(img);
 
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
   img->loader = LOADER_UNKNOWN;
@@ -1140,8 +1179,8 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   if((ret == DT_IMAGEIO_OK) && !was_hdr && (img->flags & DT_IMAGE_HDR))
     dt_imageio_set_hdr_tag(img);
 
-  if((ret == DT_IMAGEIO_OK) && !was_bw && (img->flags & DT_IMAGE_MONOCHROME))
-    dt_imageio_set_bw_tag(img);
+  if((ret == DT_IMAGEIO_OK) && (was_bw != dt_image_monochrome_flags(img)))
+    dt_imageio_update_monochrome_workflow_tag(img->id, dt_image_monochrome_flags(img));
 
   img->p_width = img->width - img->crop_x - img->crop_width;
   img->p_height = img->height - img->crop_y - img->crop_height;
