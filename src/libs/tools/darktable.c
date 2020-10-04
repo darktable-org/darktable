@@ -179,6 +179,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
   cairo_surface_destroy(d->image);
+  cairo_surface_destroy(d->text);
   free(d->image_buffer);
   g_free(self->data);
   self->data = NULL;
