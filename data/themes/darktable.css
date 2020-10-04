@@ -796,6 +796,12 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
   font-weight: normal;
 }
 
+/* about window: set different background for credits view */
+#about_dialog scrolledwindow
+{
+  background: @bg_color;
+}
+
 /*----------------------------------------
   - Context menu & tooltips & comboboxes -
   ----------------------------------------*/
