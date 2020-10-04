@@ -307,7 +307,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       description = res_desc->data;
     }
   }
-  
+
   char relfilename[PATH_MAX] = { 0 }, relthumbfilename[PATH_MAX] = { 0 };
   c = filename + strlen(filename);
   for(; c > filename && *c != '/'; c--)

@@ -20,7 +20,7 @@
 
 /*
   we can't guarantee the order of label and ellipsize calls so
-  sometimes we have to store the ellipsize mode until the 
+  sometimes we have to store the ellipsize mode until the
   label is created.
 */
 struct dt_lua_ellipsize_mode_info

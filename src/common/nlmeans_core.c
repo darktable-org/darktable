@@ -402,7 +402,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
   const float center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
-  
+
   // define the patches to be compared when denoising a pixel
   const size_t stride = 4 * roi_in->width;
   int num_patches;
@@ -628,7 +628,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
   const float center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
-  
+
   // define the patches to be compared when denoising a pixel
   const size_t stride = 4 * roi_in->width;
   int num_patches;
@@ -949,7 +949,7 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
   int hblocksize;
   int vblocksize;
   get_blocksizes(&hblocksize, &vblocksize, P, devid, params->kernel_horiz, params->kernel_vert);
-  
+
   // zero the output buffer into which we will be accumulating results
   err = nlmeans_cl_init(devid,params->kernel_init,dev_out,height,width);
   if(err != CL_SUCCESS) goto error;

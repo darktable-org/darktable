@@ -635,7 +635,7 @@ void dt_control_jobs_init(dt_control_t *control)
   }
   /* create thread taking care of connecting gphoto2 devices */
 #ifdef HAVE_GPHOTO2
-  dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);  
+  dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);
 #endif
 }
 

@@ -34,21 +34,21 @@ int C(lua_State* L) {
 int main(int argc, char **argv) {
 	
   lua_State* L = luaL_newstate();
-  
+
   luaA_open(L);
   luaA_function(L, hello_world, void);
   luaA_function(L, hello_repeat, void, int);
   luaA_function(L, hello_person, void, const char*);
   luaA_function(L, hello_subcount, int, const char*);
-  
+
   lua_register(L, "C", C);
-  
+
   luaL_dostring(L,
     "C('hello_world')\n"
     "C('hello_person', 'Daniel')\n"
     "C('hello_repeat', C('hello_subcount', 'hello hello'))\n"
   );
-  
+
   luaA_close(L);
   lua_close(L);
 	

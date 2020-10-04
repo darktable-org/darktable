@@ -859,7 +859,7 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
       }
     } while(c_lock_item && (c_lock_item = g_list_next(c_lock_item)) != NULL);
   }
- 
+
   gp_list_unref(available_cameras);
 
   /* check c->cameras in locked_cameras */
@@ -873,7 +873,7 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
       GList *citem = c->cameras;
       do
       {
-        dt_camera_t *cam = (dt_camera_t *)citem->data; 
+        dt_camera_t *cam = (dt_camera_t *)citem->data;
         if((g_strcmp0(locked_cam->model, cam->model) == 0) && (g_strcmp0(locked_cam->port, cam->port) == 0))
           remove_cam = TRUE;
       } while(citem && (citem = g_list_next(citem)) != NULL);
@@ -907,7 +907,7 @@ void *dt_update_cameras_thread(void *ptr)
   /* make sure control is up and running */
   for(int k = 0; k < 20; k++)
   {
-    if(dt_control_running()) break;   
+    if(dt_control_running()) break;
     g_usleep(100000);
   }
   while(dt_control_running())
@@ -915,7 +915,7 @@ void *dt_update_cameras_thread(void *ptr)
     // we want to sleep in the background thread but still want to be responsive for closing down
     for(int i = 0; i < 40; i++)
     {
-      if(!dt_control_running()) return 0;   
+      if(!dt_control_running()) return 0;
       g_usleep(100000);
     }
     dt_camctl_update_cameras(darktable.camctl);
