@@ -45,6 +45,11 @@ typedef struct tiff_t
   tdata_t buf;
 } tiff_t;
 
+typedef union fp32_t
+{
+  uint32_t u;
+  float f;
+} fp32_t;
 
 static inline float _half_to_float(uint16_t h)
 {
@@ -53,36 +58,26 @@ static inline float _half_to_float(uint16_t h)
 
   /* TODO: use intrinsics when possible */
 
-  uint32_t f;
-  uint32_t s = (h >> 15) & 0x1;
-  uint32_t e = (h >> 10) & 0x1f;
-  uint32_t m = h & 0x3ff;
+  /* from https://gist.github.com/rygorous/2156668 */
+  static const fp32_t magic = { 113 << 23 };
+  static const uint32_t shifted_exp = 0x7c00 << 13; // exponent mask after shift
+  fp32_t o;
 
-  if(0 == e)
-    if(0 == m)      /* zero */
-      f = s << 31;
-    else            /* subnormals */
-    {
-      /* figure out amount of shift needed to reach a leading 1 */
-      uint32_t sh = 0;
-      uint32_t res = m;
-      while (res > 1)
-      {
-        res = res >> 1;
-        ++sh;
-      }
-      f = (s << 31) | ((127 - 24 + sh) << 23) | ((m << (23 - sh)) & 0x7fffff);
-    }
-  else if (31 == e) /* inf & nan */
-    f = (s << 31) | (255 << 23) | (m << (23 - 10));
-  else              /* normals */
-    f = (s << 31) | ((127 + e - 15) << 23) | (m << (23 - 10));
+  o.u = (h & 0x7fff) << 13;     // exponent/mantissa bits
+  uint32_t exp = shifted_exp & o.u;   // just the exponent
+  o.u += (127 - 15) << 23;        // exponent adjust
 
-  /* must copy to obey strict aliasing rules */
-  float out;
-  memcpy(&out, &f, sizeof(uint32_t));
+  // handle exponent special cases
+  if (exp == shifted_exp) // Inf/NaN?
+    o.u += (128 - 16) << 23;    // extra exp adjust
+  else if (exp == 0) // Zero/Denormal?
+  {
+    o.u += 1 << 23;             // extra exp adjust
+    o.f -= magic.f;             // renormalize
+  }
 
-  return out;
+  o.u |= (h & 0x8000) << 16;    // sign bit
+  return o.f;
 }
 
 static inline int _read_planar_8(tiff_t *t)
