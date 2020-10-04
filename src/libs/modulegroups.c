@@ -870,8 +870,9 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
   // we retrieve old modulelist presets
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params FROM data.presets WHERE operation = 'modulelist' AND "
-                              "op_version = 1 AND writeprotect = 0",
+                              "SELECT name, op_params"
+                              " FROM data.presets"
+                              " WHERE operation = 'modulelist' AND op_version = 1 AND writeprotect = 0",
                               -1, &stmt, NULL);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1614,7 +1615,9 @@ static void _manage_editor_load(char *preset, dt_lib_module_t *self)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT writeprotect, op_params FROM data.presets WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
+      "SELECT writeprotect, op_params"
+      " FROM data.presets"
+      " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
@@ -1724,7 +1727,9 @@ static void _manage_preset_add(GtkWidget *widget, GdkEventButton *event, dt_lib_
     gchar *tx = dt_util_dstrcat(NULL, "new_%d", i);
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
-        "SELECT name FROM data.presets WHERE operation = ?1 AND op_version = ?2 AND name = ?3", -1, &stmt, NULL);
+        "SELECT name"
+        " FROM data.presets"
+        " WHERE operation = ?1 AND op_version = ?2 AND name = ?3", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, tx, -1, SQLITE_TRANSIENT);
@@ -1855,8 +1860,10 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
   sqlite3_stmt *stmt;
   // order: get shipped defaults first
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, writeprotect, description FROM data.presets WHERE "
-                              "operation=?1 AND op_version=?2 ORDER BY writeprotect DESC, name, rowid",
+                              "SELECT name, writeprotect, description"
+                              " FROM data.presets"
+                              " WHERE operation=?1 AND op_version=?2"
+                              " ORDER BY writeprotect DESC, name, rowid",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
