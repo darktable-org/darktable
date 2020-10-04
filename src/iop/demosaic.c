@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "common/image_cache.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -4989,6 +4990,20 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_hide(g->median_thrs);
   }
 
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
+  int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
+  if((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+     (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX))
+    img->flags |= DT_IMAGE_MONOCHROME_BAYER;
+  else
+    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;   
+  const int mask_bw = dt_image_monochrome_flags(img);
+  changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
+
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  if(changed)
+    dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
+
   dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
   dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
   dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
@@ -5027,6 +5042,19 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     gtk_widget_set_visible(g->median_thrs, p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
   }
+
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
+  int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
+  if((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+     (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX))
+    img->flags |= DT_IMAGE_MONOCHROME_BAYER;
+  else
+    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;   
+  const int mask_bw = dt_image_monochrome_flags(img);
+  changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  if(changed)
+    dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
 
   gtk_widget_set_visible(g->color_smoothing, extras);
   gtk_widget_set_visible(g->greeneq, extras);
