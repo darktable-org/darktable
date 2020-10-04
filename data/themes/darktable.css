@@ -846,11 +846,11 @@ dialog combobox window
   outline-style: none;
   min-height: 0.4em;
   min-width: 0.4em;
-  padding: 2px 0;
+  padding: 0.2em 0;
 }
 
 menu menuitem {
-  padding: 0 2px;
+  padding: 0 0.2em;
 }
 
 tooltip
@@ -1089,7 +1089,7 @@ dialog scrollbar
   margin: 0px; /* reset default dialog margin to all items. And needed to have an hover and selected effect on all width of categories in sidebar */
 }
 
-#preferences_notebook dialog > decoration  /* allow to resize preferences dialog window */
+#preferences_notebook decoration  /* allow to resize preferences dialog window */
 {
   margin: 1px;
 }
@@ -1171,7 +1171,8 @@ dialog scrollbar
 
 #preferences_notebook button
 {
-  padding: 0 2px;
+  margin-left: 1px;
+  padding: 0 1px;
 }
 
 /* Set buttons and search field on presets and shortcuts control buttons */
