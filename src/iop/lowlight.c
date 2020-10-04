@@ -48,7 +48,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_lowlight_params_t)
 typedef struct dt_iop_lowlight_params_t
 {
   float blueness; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "blue shift"
-  float transition_x[DT_IOP_LOWLIGHT_BANDS]; 
+  float transition_x[DT_IOP_LOWLIGHT_BANDS];
   float transition_y[DT_IOP_LOWLIGHT_BANDS]; // $DEFAULT: 0.5
 } dt_iop_lowlight_params_t;
 
@@ -93,7 +93,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

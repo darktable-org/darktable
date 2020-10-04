@@ -791,19 +791,149 @@ static gboolean menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventB
   return FALSE;
 }
 
-static void menuitem_favourite_toggled(GtkCheckMenuItem *checkmenuitem, gpointer user_data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  // the module is currently visible, otherwise we wouldn't show the popup. it should also stay visible.
-  dt_iop_module_state_t state = module->so->state;
-  if(state == dt_iop_state_FAVORITE)
-    state = dt_iop_state_ACTIVE;
-  else
-    state = dt_iop_state_FAVORITE;
+/* quick presets list
+  The list of presets to show is saved in darktablerc 'plugins/darkroom/quick_preset_list' key
+  the content of the key is written in the form :
+    ꬹiop_name_0|preset_name_0ꬹꬹiop_name_1|preset_name_1ꬹ...
+*/
 
-  dt_iop_gui_set_state(module, state);
-  if(state == dt_iop_state_FAVORITE)
-    dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
+static gboolean menuitem_manage_quick_presets_traverse(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter,
+                                                       gpointer data)
+{
+  gchar **txt = (gchar **)data;
+  gchar *preset = NULL;
+  gchar *iop_name = NULL;
+  gboolean active = FALSE;
+  gtk_tree_model_get(model, iter, 1, &active, 3, &iop_name, 4, &preset, -1);
+
+  if(active && preset && iop_name)
+  {
+    *txt = dt_util_dstrcat(*txt, "ꬹ%s|%sꬹ", iop_name, preset);
+  }
+
+  return FALSE;
+}
+
+static void menuitem_manage_quick_presets_toggle(GtkCellRendererToggle *cell_renderer, gchar *path,
+                                                 gpointer tree_view)
+{
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  model = gtk_tree_view_get_model(tree_view);
+  if(gtk_tree_model_get_iter_from_string(model, &iter, path))
+  {
+    if(gtk_cell_renderer_toggle_get_active(cell_renderer))
+    {
+      gtk_tree_store_set(GTK_TREE_STORE(model), &iter, 1, FALSE, -1);
+    }
+    else
+    {
+      gtk_tree_store_set(GTK_TREE_STORE(model), &iter, 1, TRUE, -1);
+    }
+  }
+
+  // and we recreate the list of activated presets
+  gchar *txt = NULL;
+  gtk_tree_model_foreach(model, menuitem_manage_quick_presets_traverse, &txt);
+
+  dt_conf_set_string("plugins/darkroom/quick_preset_list", txt);
+  g_free(txt);
+}
+
+static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
+{
+  sqlite3_stmt *stmt;
+  GtkWidget *dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(window);
+#endif
+  gtk_widget_set_name(dialog, "quick-presets_manager");
+  gtk_window_set_title(GTK_WINDOW(dialog), _("manage quick presets"));
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+  GtkTreeViewColumn *col;
+  GtkCellRenderer *renderer;
+  GtkWidget *view;
+  GtkTreeModel *model;
+
+  view = gtk_tree_view_new();
+  gtk_widget_set_name(view, "quick-presets-manager-list");
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(view)), GTK_SELECTION_NONE);
+
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(GTK_TREE_VIEW(view), col);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer, "text", 0);
+
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(GTK_TREE_VIEW(view), col);
+
+  renderer = gtk_cell_renderer_toggle_new();
+  g_signal_connect(renderer, "toggled", G_CALLBACK(menuitem_manage_quick_presets_toggle), view);
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer, "active", 1);
+  gtk_tree_view_column_add_attribute(col, renderer, "visible", 2);
+
+  GtkTreeStore *treestore;
+  GtkTreeIter toplevel, child;
+
+  treestore = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING);
+
+  GList *modules = darktable.develop->iop;
+  while(modules)
+  {
+    dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
+
+    /* check if module is visible in current layout */
+    if(dt_dev_modulegroups_is_visible(darktable.develop, iop->so->op))
+    {
+      // create top entry
+      gtk_tree_store_append(treestore, &toplevel, NULL);
+      gtk_tree_store_set(treestore, &toplevel, 0, iop->name(), 1, FALSE, 2, FALSE, -1);
+
+      /* query presets for module */
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT name"
+                                  " FROM data.presets"
+                                  " WHERE operation=?1"
+                                  " ORDER BY writeprotect DESC, LOWER(name), rowid",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
+
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        char *name = (char *)sqlite3_column_text(stmt, 0);
+        gtk_tree_store_append(treestore, &child, &toplevel);
+        gtk_tree_store_set(treestore, &child, 0, name, 1, FALSE, 2, TRUE, 3, g_strdup(iop->so->op), 4,
+                           g_strdup(name), -1);
+      }
+
+      sqlite3_finalize(stmt);
+    }
+
+    modules = g_list_next(modules);
+  }
+
+  model = GTK_TREE_MODEL(treestore);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+  g_object_unref(model);
+
+  gtk_container_add(GTK_CONTAINER(sw), view);
+  gtk_container_add(GTK_CONTAINER(dialog), sw);
+
+  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 500);
+  // g_signal_connect(d->dialog, "destroy", G_CALLBACK(_manage_editor_destroy), self);
+  gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
+  gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
+
+  gtk_window_set_gravity(GTK_WINDOW(dialog), GDK_GRAVITY_STATIC);
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+  gtk_widget_show_all(dialog);
 }
 
 void dt_gui_favorite_presets_menu_show()
@@ -813,17 +943,25 @@ void dt_gui_favorite_presets_menu_show()
   if(menu) gtk_widget_destroy(GTK_WIDGET(menu));
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
-  gboolean presets = FALSE; /* TRUE if we have at least one menu entry */
-  const gboolean hide_default = dt_conf_get_bool("plugins/darkroom/hide_default_presets");
+
   const gboolean default_first = dt_conf_get_bool("plugins/darkroom/default_presets_first");
 
-  gchar *query = g_strdup_printf("SELECT name, op_params, writeprotect,"
-                                 "       description, blendop_params, op_version"
+  gchar *query = g_strdup_printf("SELECT name"
                                  " FROM data.presets"
                                  " WHERE operation=?1"
                                  " ORDER BY writeprotect %s, LOWER(name), rowid",
                                  default_first ? "DESC" : "ASC"
                                 );
+
+  gtk_widget_set_name(GTK_WIDGET(menu), "quick-presets-menu");
+
+  gboolean retrieve_list = FALSE;
+  gchar *config = NULL;
+
+  if(!dt_conf_key_exists("plugins/darkroom/quick_preset_list"))
+    retrieve_list = TRUE;
+  else
+    config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
 
   GList *modules = darktable.develop->iop;
   if(modules)
@@ -832,66 +970,51 @@ void dt_gui_favorite_presets_menu_show()
     {
       dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
 
-      /* check if module is favorite */
-      if(iop->so->state == dt_iop_state_FAVORITE)
+      // check if module is visible in current layout
+      if(dt_dev_modulegroups_is_visible(darktable.develop, iop->so->op))
       {
-        /* create submenu for module */
-        GtkMenuItem *smi = (GtkMenuItem *)gtk_menu_item_new_with_label(iop->name());
-        GtkMenu *sm = (GtkMenu *)gtk_menu_new();
-        gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
-
         /* query presets for module */
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query,
                                     -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
 
-        int last_wp = -1;
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
           const char *name = (char *)sqlite3_column_text(stmt, 0);
-          const int writeprotect = sqlite3_column_int(stmt, 2);
-          if(hide_default && writeprotect)
+          if(retrieve_list)
           {
-            //skip default presets if told to do so
-            continue;
+            // we only show it if module is in favorite
+            gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/favorite", iop->so->op);
+            const gboolean fav = dt_conf_get_bool(key);
+            g_free(key);
+            if(fav) config = dt_util_dstrcat(config, "ꬹ%s|%sꬹ", iop->so->op, name);
           }
-          if(last_wp == -1)
+
+          // check that this preset is in the config list
+          gchar *txt = dt_util_dstrcat(NULL, "ꬹ%s|%sꬹ", iop->so->op, name);
+          if(config && strstr(config, txt))
           {
-            last_wp = writeprotect;
+            GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
+            g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
+            g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(mi));
           }
-          else if(last_wp != writeprotect)
-          {
-            last_wp = writeprotect;
-            gtk_menu_shell_append(GTK_MENU_SHELL(sm), gtk_separator_menu_item_new());
-          }
-          GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
-          g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
-          g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
-          gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mi));
+          g_free(txt);
         }
 
         sqlite3_finalize(stmt);
-
-        /* add submenu to main menu if we got any presets */
-        GList *childs = gtk_container_get_children(GTK_CONTAINER(sm));
-        if(childs)
-        {
-          gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi));
-          presets = TRUE;
-          g_list_free(childs);
-        }
       }
 
     } while((modules = g_list_next(modules)) != NULL);
   }
-
+  if(retrieve_list) dt_conf_set_string("plugins/darkroom/quick_preset_list", config);
+  g_free(config);
   g_free(query);
 
-  if(!presets)
-  {
-    gtk_widget_destroy(GTK_WIDGET(menu));
-    darktable.gui->presets_popup_menu = NULL;
-  }
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+  GtkMenuItem *smi_manage = (GtkMenuItem *)gtk_menu_item_new_with_label(_("manage quick presets list..."));
+  g_signal_connect(G_OBJECT(smi_manage), "activate", G_CALLBACK(menuitem_manage_quick_presets), NULL);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi_manage));
 }
 
 
@@ -1086,13 +1209,6 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
         g_free(markup);
       }
     }
-
-    // add a section to toggle favourite status of the module
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-    mi = gtk_check_menu_item_new_with_label(_("favourite"));
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), module->so->state == dt_iop_state_FAVORITE);
-    g_signal_connect(G_OBJECT(mi), "toggled", G_CALLBACK(menuitem_favourite_toggled), module);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
   }
 }
 

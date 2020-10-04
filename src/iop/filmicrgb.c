@@ -309,7 +309,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_TECHNICAL;
 }
 
 int flags()

@@ -212,8 +212,6 @@ file path=opt/darktable/lib/darktable/plugins/lighttable/libmodule_toolbox.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/lighttable/libmodulegroups.so \
     owner=root group=root mode=755
-file path=opt/darktable/lib/darktable/plugins/lighttable/libmodulelist.so \
-    owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/lighttable/libnavigation.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/lighttable/libratings.so \

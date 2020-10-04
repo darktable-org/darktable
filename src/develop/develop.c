@@ -1417,7 +1417,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
            "        AND (format = 0 OR format&?11!=0)"
            "        AND operation NOT IN"
-           "            ('ioporder', 'modulelist', 'metadata', 'export', 'tagging', 'collect', '%s'))"
+           "            ('ioporder', 'metadata', 'export', 'tagging', 'collect', '%s'))"
            "  OR (name = ?12)"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            preset_table[legacy],
@@ -2134,14 +2134,6 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return 0.0;
 }
 
-gboolean dt_dev_modulegroups_available(dt_develop_t *dev)
-{
-  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->proxy.modulegroups.get)
-    return TRUE;
-
-  return FALSE;
-}
-
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->first_load == FALSE)
@@ -2156,10 +2148,10 @@ uint32_t dt_dev_modulegroups_get(dt_develop_t *dev)
   return 0;
 }
 
-gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group)
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, dt_iop_module_t *module)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test)
-    return dev->proxy.modulegroups.test(dev->proxy.modulegroups.module, group, iop_group);
+    return dev->proxy.modulegroups.test(dev->proxy.modulegroups.module, group, module);
   return FALSE;
 }
 
@@ -2179,6 +2171,13 @@ void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.search_text_focus && dev->first_load == 0)
     dev->proxy.modulegroups.search_text_focus(dev->proxy.modulegroups.module);
+}
+
+gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test_visible)
+    return dev->proxy.modulegroups.test_visible(dev->proxy.modulegroups.module, module);
+  return FALSE;
 }
 
 void dt_dev_masks_list_change(dt_develop_t *dev)

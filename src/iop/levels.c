@@ -112,7 +112,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -524,7 +524,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     d->levels[0] = NAN;
     d->levels[1] = NAN;
     d->levels[2] = NAN;
-    
+
     // commit_params_late() will compute LUT later
   }
   else
@@ -691,7 +691,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->percentile_black, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_black, 0.1);
 
-  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray")); 
+  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray"));
   gtk_widget_set_tooltip_text(c->percentile_grey, _("gray percentile"));
   dt_bauhaus_slider_set_format(c->percentile_grey, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_grey, 0.1);
@@ -707,7 +707,7 @@ void gui_init(dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
   c->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
- 
+
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 }
 
