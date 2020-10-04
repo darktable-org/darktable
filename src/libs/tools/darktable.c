@@ -244,6 +244,7 @@ static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEvent
 static void _lib_darktable_show_about_dialog()
 {
   GtkWidget *dialog = gtk_about_dialog_new();
+  gtk_widget_set_name (dialog, "about_dialog");
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -255,6 +256,7 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog),
                                 _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://www.darktable.org/");
+  gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "website");
   dt_logo_season_t season = dt_util_get_logo_season();
   char *icon;
   if(season != DT_LOGO_SEASON_NONE)
@@ -270,6 +272,7 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), _("and..."), final);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
+
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
