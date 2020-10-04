@@ -158,19 +158,21 @@ typedef enum dt_iop_toneequalizer_filter_t
   DT_TONEEQ_NONE = 0,   // $DESCRIPTION: "no"
   DT_TONEEQ_AVG_GUIDED, // $DESCRIPTION: "averaged guided filter"
   DT_TONEEQ_GUIDED,     // $DESCRIPTION: "guided filter"
+  DT_TONEEQ_AVG_EIGF,   // $DESCRIPTION: "averaged eigf"
+  DT_TONEEQ_EIGF        // $DESCRIPTION: "eigf"
 } dt_iop_toneequalizer_filter_t;
 
 
 typedef struct dt_iop_toneequalizer_params_t
 {
   float noise, ultra_deep_blacks, deep_blacks, blacks, shadows, midtones, highlights, whites, speculars; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0
-  float blending; // $MIN: 0.01 $MAX: 100.0 $DEFAULT: 25.0 $DESCRIPTION: "smoothing diameter"
+  float blending; // $MIN: 0.01 $MAX: 100.0 $DEFAULT: 5.0 $DESCRIPTION: "smoothing diameter"
   float smoothing; // $DEFAULT: 1.414213562 sqrtf(2.0f)
-  float feathering; // $MIN: 0.01 $MAX: 10000.0 $DEFAULT: 10.0 $DESCRIPTION: "edges refinement/feathering"
+  float feathering; // $MIN: 0.01 $MAX: 10000.0 $DEFAULT: 5.0 $DESCRIPTION: "edges refinement/feathering"
   float quantization; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "mask quantization"
   float contrast_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast compensation"
   float exposure_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask exposure compensation"
-  dt_iop_toneequalizer_filter_t details; // $DEFAULT: DT_TONEEQ_GUIDED
+  dt_iop_toneequalizer_filter_t details; // $DEFAULT: DT_TONEEQ_EIGF
   dt_iop_luminance_mask_method_t method; // $DEFAULT: DT_TONEEQ_NORM_2 $DESCRIPTION: "luminance estimator"
   int iterations; // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter diffusion"
 } dt_iop_toneequalizer_params_t;
@@ -399,7 +401,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->smoothing = sqrtf(2.0f);
     return 0;
   }
-
   return 1;
 }
 
@@ -739,6 +740,24 @@ static inline void compute_luminance_mask(const float *const restrict in, float 
       luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost,
                       CONTRAST_FULCRUM, d->contrast_boost);
       fast_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
+                    DT_GF_BLENDING_LINEAR, d->scale, d->quantization, exp2f(-14.0f), 4.0f);
+      break;
+    }
+
+    case(DT_TONEEQ_AVG_EIGF):
+    {
+      // Still no contrast boost
+      luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost, 0.0f, 1.0f);
+      fast_eigf_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
+                    DT_GF_BLENDING_GEOMEAN, d->scale, d->quantization, exp2f(-14.0f), 4.0f);
+      break;
+    }
+
+    case(DT_TONEEQ_EIGF):
+    {
+      luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost,
+                      CONTRAST_FULCRUM, d->contrast_boost);
+      fast_eigf_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
                     DT_GF_BLENDING_LINEAR, d->scale, d->quantization, exp2f(-14.0f), 4.0f);
       break;
     }
@@ -1519,6 +1538,7 @@ void show_guiding_controls(struct dt_iop_module_t *self)
     }
 
     case(DT_TONEEQ_AVG_GUIDED):
+    case(DT_TONEEQ_AVG_EIGF):
     {
       gtk_widget_set_visible(g->blending, TRUE);
       gtk_widget_set_visible(g->feathering, TRUE);
@@ -1529,6 +1549,7 @@ void show_guiding_controls(struct dt_iop_module_t *self)
     }
 
     case(DT_TONEEQ_GUIDED):
+    case(DT_TONEEQ_EIGF):
     {
       gtk_widget_set_visible(g->blending, TRUE);
       gtk_widget_set_visible(g->feathering, TRUE);
@@ -3088,7 +3109,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->details, NULL, _("preserve details"));
   gtk_widget_set_tooltip_text(g->details, _("'no' affects global and local contrast (safe if you only add contrast)\n"
                                             "'guided filter' only affects global contrast and tries to preserve local contrast\n"
-                                            "'averaged guided filter' is a geometric mean of both methods"));
+                                            "'averaged guided filter' is a geometric mean of 'no' and 'guided filter' methods\n"
+                                            "'eigf' (exposure-independent guided filter) is a guided filter that is exposure-independent, it smooths shadows and highlights the same way (contrary to guided filter which smooths less the highlights)\n"
+                                            "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided filter' methods"));
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
   dt_bauhaus_slider_set_soft_max(g->iterations, 5);
@@ -3096,7 +3119,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                "helps diffusing the edges of the filter at the expense of speed"));
 
   g->blending = dt_bauhaus_slider_from_params(self, "blending");
-  dt_bauhaus_slider_set_soft_range(g->blending, 5.0, 45.0);
+  dt_bauhaus_slider_set_soft_range(g->blending, 1.0, 45.0);
   dt_bauhaus_slider_set_format(g->blending, "%.2f %%");
   gtk_widget_set_tooltip_text(g->blending, _("diameter of the blur in percent of the largest image size\n"
                                              "warning: big values of this parameter can make the darkroom\n"
