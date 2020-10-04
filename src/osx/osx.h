@@ -31,7 +31,6 @@ gboolean dt_osx_file_trash(const char *filename, GError **error);
 char* dt_osx_get_bundle_res_path();
 void dt_osx_prepare_environment();
 void dt_osx_focus_window();
-char* dt_osx_full_locale_name(const char* locale);
 
 #ifdef __cplusplus
 }

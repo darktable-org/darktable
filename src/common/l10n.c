@@ -36,10 +36,7 @@
 
 static gchar* _dt_full_locale_name(const char *locale)
 {
-#ifdef __APPLE__
-  return dt_osx_full_locale_name(ui_lang);
-#endif
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
   gchar *output = NULL;
   GError *error = NULL;
   if(!g_spawn_command_line_sync("locale -a", &output, NULL, NULL, &error))
