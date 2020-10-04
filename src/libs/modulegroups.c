@@ -905,6 +905,12 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
     dt_lib_presets_add(pname, self->plugin_name, self->version(), tx, strlen(tx), FALSE);
   }
   sqlite3_finalize(stmt);
+
+  // and we remove all existing modulelist presets
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "DELETE FROM data.presets"
+                        " WHERE operation = 'modulelist' AND op_version = 1",
+                        NULL, NULL, NULL);
 }
 
 static gchar *_preset_to_string(GList *groups)
@@ -991,9 +997,9 @@ void init_presets(dt_lib_module_t *self)
     gchar *tx4 = _preset_retrieve_old_layout_updated();
     dt_lib_presets_add(_("my previous config with new layout"), self->plugin_name, self->version(), tx4,
                        strlen(tx4), FALSE);
-
-    _preset_retrieve_old_presets(self);
   }
+  // if they exists, we retrieve old user presets from old modulelist lib
+  _preset_retrieve_old_presets(self);
 }
 
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
