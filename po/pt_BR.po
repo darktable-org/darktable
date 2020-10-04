@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-03 18:25-0300\n"
-"PO-Revision-Date: 2020-10-03 18:26-0300\n"
+"POT-Creation-Date: 2020-10-04 12:56-0300\n"
+"PO-Revision-Date: 2020-10-04 13:00-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -403,7 +403,7 @@ msgstr "cores saturadas"
 #: ../build/src/iop/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1460 ../src/develop/blend_gui.c:1478
 #: ../src/iop/channelmixer.c:633 ../src/iop/colorbalance.c:2043
-#: ../src/iop/colorize.c:359 ../src/iop/colorreconstruction.c:1301
+#: ../src/iop/colorize.c:358 ../src/iop/colorreconstruction.c:1301
 #: ../src/iop/colorzones.c:2364
 msgid "hue"
 msgstr "matiz"
@@ -427,7 +427,7 @@ msgstr "modo de processo"
 
 #: ../build/src/iop/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1448 ../src/iop/channelmixer.c:635
-#: ../src/iop/colorchecker.c:1372 ../src/iop/colorize.c:375
+#: ../src/iop/colorchecker.c:1372 ../src/iop/colorize.c:374
 #: ../src/iop/colorzones.c:2362
 msgid "lightness"
 msgstr "luminosidade"
@@ -442,7 +442,7 @@ msgstr "luminosidade"
 #: ../src/develop/blend_gui.c:1457 ../src/iop/basicadj.c:657
 #: ../src/iop/channelmixer.c:634 ../src/iop/colisa.c:328
 #: ../src/iop/colorbalance.c:2060 ../src/iop/colorchecker.c:1390
-#: ../src/iop/colorcorrection.c:270 ../src/iop/colorize.c:370
+#: ../src/iop/colorcorrection.c:270 ../src/iop/colorize.c:369
 #: ../src/iop/colorzones.c:2363 ../src/iop/lowpass.c:602
 #: ../src/iop/soften.c:676 ../src/iop/vignette.c:1032
 msgid "saturation"
@@ -950,7 +950,7 @@ msgstr "detectar por 3 vizinhos"
 #: ../build/src/iop/introspection_rgblevels.c:118 ../src/iop/bilat.c:427
 #: ../src/iop/colorbalance.c:1901 ../src/iop/denoiseprofile.c:3943
 #: ../src/iop/exposure.c:914 ../src/iop/levels.c:709
-#: ../src/iop/profile_gamma.c:745 ../src/libs/copy_history.c:357
+#: ../src/iop/profile_gamma.c:744 ../src/libs/copy_history.c:357
 #: ../src/libs/export.c:805 ../src/libs/image.c:519
 #: ../src/libs/print_settings.c:1516 ../src/libs/styles.c:566
 #: ../src/views/darkroom.c:2193
@@ -1055,7 +1055,7 @@ msgid "paper black (density correction)"
 msgstr "preto no papel (correção de densidade)"
 
 #: ../build/src/iop/introspection_negadoctor.c:143
-#: ../build/src/iop/introspection_negadoctor.c:238 ../src/iop/negadoctor.c:1017
+#: ../build/src/iop/introspection_negadoctor.c:238 ../src/iop/negadoctor.c:1014
 msgid "paper grade (gamma)"
 msgstr "grading do papel (gama)"
 
@@ -1075,6 +1075,7 @@ msgstr "preto & branco"
 
 #: ../build/src/iop/introspection_negadoctor.c:261
 #: ../build/src/iop/introspection_retouch.c:424 ../src/iop/watermark.c:1425
+#: ../src/libs/modulegroups.c:987 ../src/libs/modulegroups.c:1238
 msgid "color"
 msgstr "cor"
 
@@ -2798,9 +2799,11 @@ msgstr ""
 "depois de aplicar as regras acima, aplique o atalho baseando-se na sua "
 "posição na pixelpipe"
 
+#. and the title for the other modules
 #. char *italic = g_strdup_printf("<i>%s</i>", _("other"));
 #. italic
-#: ../build/src/preferences_gen.h:4649 ../src/libs/tools/viewswitcher.c:145
+#: ../build/src/preferences_gen.h:4649 ../src/libs/modulegroups.c:1265
+#: ../src/libs/tools/viewswitcher.c:145
 msgid "other"
 msgstr "outro"
 
@@ -5216,57 +5219,57 @@ msgstr "excluir"
 msgid "rename"
 msgstr "renomear"
 
-#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2328
+#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2320
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está ligado"
 
-#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2328
+#: ../src/develop/imageop.c:1189 ../src/develop/imageop.c:2320
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desligado"
 
-#: ../src/develop/imageop.c:1543 ../src/gui/accelerators.c:1041
+#: ../src/develop/imageop.c:1535 ../src/gui/accelerators.c:1041
 #: ../src/gui/accelerators.c:1125 ../src/gui/accelerators.c:1340
 #: ../src/gui/accelerators.c:1365 ../src/gui/import_metadata.c:163
 #: ../src/gui/preferences.c:1525 ../src/gui/preferences.c:2071
 #: ../src/gui/presets.c:214 ../src/gui/presets.c:331 ../src/gui/presets.c:706
-#: ../src/libs/lib.c:353 ../src/libs/lib.c:390 ../src/libs/lib.c:1267
+#: ../src/libs/lib.c:353 ../src/libs/lib.c:395 ../src/libs/lib.c:1384
 msgid "preset"
 msgstr "predefinição"
 
-#: ../src/develop/imageop.c:1563
+#: ../src/develop/imageop.c:1555
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusão"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1568 ../src/libs/lib.c:668
+#: ../src/develop/imageop.c:1560 ../src/libs/lib.c:779
 msgctxt "accel"
 msgid "show module"
 msgstr "mostrar módulo"
 
-#: ../src/develop/imageop.c:1569
+#: ../src/develop/imageop.c:1561
 msgctxt "accel"
 msgid "enable module"
 msgstr "habilita módulo"
 
-#: ../src/develop/imageop.c:1570
+#: ../src/develop/imageop.c:1562
 msgctxt "accel"
 msgid "focus module"
 msgstr "focar módulo"
 
-#: ../src/develop/imageop.c:1572 ../src/libs/lib.c:660
+#: ../src/develop/imageop.c:1564 ../src/libs/lib.c:771
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "redefine parâmetros do módulo"
 
-#: ../src/develop/imageop.c:1573 ../src/libs/lib.c:664
+#: ../src/develop/imageop.c:1565 ../src/libs/lib.c:775
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "mostrar menu de predefinição"
 
-#: ../src/develop/imageop.c:2297
+#: ../src/develop/imageop.c:2289
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -5274,17 +5277,17 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "click com botão do meio cria nova instância"
 
-#: ../src/develop/imageop.c:2308 ../src/libs/lib.c:1095
+#: ../src/develop/imageop.c:2300 ../src/libs/lib.c:1211
 msgid "reset parameters"
 msgstr "redefine parâmetros"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2316 ../src/gui/preferences.c:786
-#: ../src/libs/lib.c:1104
+#: ../src/develop/imageop.c:2308 ../src/gui/preferences.c:786
+#: ../src/libs/lib.c:1220 ../src/libs/modulegroups.c:310
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:2318
+#: ../src/develop/imageop.c:2310
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5292,7 +5295,7 @@ msgstr ""
 "pre-configurações\n"
 "click com botão do meio aplica em nova instância"
 
-#: ../src/develop/imageop.c:2602
+#: ../src/develop/imageop.c:2591
 msgid "ERROR"
 msgstr "ERRO"
 
@@ -6064,7 +6067,7 @@ msgstr "%s / %s"
 msgid "%s"
 msgstr "%s"
 
-#: ../src/gui/accelerators.c:1108 ../src/libs/lib.c:447
+#: ../src/gui/accelerators.c:1108 ../src/libs/lib.c:523
 msgid "deleting preset for obsolete module"
 msgstr "excluindo predefinição de módulo obsoleto"
 
@@ -6724,7 +6727,9 @@ msgstr "modo de desempenho"
 msgid ""
 "if switched on thumbnails and previews are rendered at lower quality but 4 "
 "times faster."
-msgstr "Se ligado as miniaturas e pré-visualizações são renderizadas com qualidade menor, mas quatro vezes mais rápido."
+msgstr ""
+"Se ligado as miniaturas e pré-visualizações são renderizadas com qualidade "
+"menor, mas quatro vezes mais rápido."
 
 #: ../src/gui/preferences.c:413 ../src/gui/preferences.c:420
 msgid "use system font size"
@@ -6865,13 +6870,15 @@ msgid "accel conflict"
 msgstr "conflito de atalhos"
 
 #: ../src/gui/preferences.c:1507 ../src/gui/preferences.c:2054
-#: ../src/gui/presets.c:202 ../src/libs/lib.c:378
+#: ../src/gui/presets.c:202 ../src/libs/lib.c:383
+#: ../src/libs/modulegroups.c:1776
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "você realmente deseja excluir a predefinição `%s'?"
 
 #: ../src/gui/preferences.c:1511 ../src/gui/preferences.c:2058
-#: ../src/gui/presets.c:206 ../src/libs/lib.c:382
+#: ../src/gui/presets.c:206 ../src/libs/lib.c:387
+#: ../src/libs/modulegroups.c:1780
 msgid "delete preset?"
 msgstr "excluir predefinição?"
 
@@ -7054,33 +7061,38 @@ msgstr "você realmente deseja atualizar a predefinição `%s'?"
 msgid "update preset?"
 msgstr "atualizar predefinição"
 
-#: ../src/gui/presets.c:1015 ../src/gui/presets.c:1028
+#: ../src/gui/presets.c:851
+msgid "manage quick presets"
+msgstr "gerenciar predefinições rápidas"
+
+#: ../src/gui/presets.c:1015
+msgid "manage quick presets list..."
+msgstr "gerenciad lista de predefinições"
+
+#: ../src/gui/presets.c:1138 ../src/gui/presets.c:1151
 msgid "(default)"
 msgstr "(padrão)"
 
-#: ../src/gui/presets.c:1039
+#: ../src/gui/presets.c:1162
 msgid "disabled: wrong module version"
 msgstr "desabilitado: versão do módulo incorreta"
 
-#: ../src/gui/presets.c:1063 ../src/libs/lib.c:536
+#: ../src/gui/presets.c:1186 ../src/libs/lib.c:644
 msgid "edit this preset.."
 msgstr "editar esta predefinição..."
 
-#: ../src/gui/presets.c:1067 ../src/libs/lib.c:540
+#: ../src/gui/presets.c:1190 ../src/libs/lib.c:648
+#: ../src/libs/modulegroups.c:1904
 msgid "delete this preset"
 msgstr "exclui esta predefinição"
 
-#: ../src/gui/presets.c:1073 ../src/libs/lib.c:547
+#: ../src/gui/presets.c:1196 ../src/libs/lib.c:655
 msgid "store new preset.."
 msgstr "armazena nova predefinição..."
 
-#: ../src/gui/presets.c:1079 ../src/libs/lib.c:559
+#: ../src/gui/presets.c:1202 ../src/libs/lib.c:667
 msgid "update preset"
 msgstr "atualizar predefinição"
-
-#: ../src/gui/presets.c:1092
-msgid "favourite"
-msgstr "favorito"
 
 #: ../src/gui/styles_dialog.c:245 ../src/libs/styles.c:379
 #, c-format
@@ -7478,7 +7490,9 @@ msgstr ""
 "foto : fotografia ao ar livre, com iluminação natural\n"
 "gráfico : image em tons discretos (gráfico, map-tile etc)"
 
-#: ../src/imageio/format/webp.c:352
+#: ../src/imageio/format/webp.c:352 ../src/libs/modulegroups.c:215
+#: ../src/libs/modulegroups.c:981 ../src/libs/modulegroups.c:1078
+#: ../src/libs/modulegroups.c:1825 ../src/libs/modulegroups.c:1826
 msgid "default"
 msgstr "padrão"
 
@@ -8620,7 +8634,7 @@ msgid "the threshold of light"
 msgstr "o limiar de luz"
 
 #: ../src/iop/bloom.c:492 ../src/iop/denoiseprofile.c:3959
-#: ../src/iop/grain.c:591 ../src/iop/hazeremoval.c:204
+#: ../src/iop/grain.c:590 ../src/iop/hazeremoval.c:204
 #: ../src/iop/hotpixels.c:385 ../src/iop/nlmeans.c:530 ../src/iop/velvia.c:343
 msgid "strength"
 msgstr "força"
@@ -9704,19 +9718,19 @@ msgctxt "accel"
 msgid "source mix"
 msgstr "mistura fonte"
 
-#: ../src/iop/colorize.c:368 ../src/iop/splittoning.c:503
+#: ../src/iop/colorize.c:367 ../src/iop/splittoning.c:503
 msgid "select the hue tone"
 msgstr "selecionar o tom de matiz"
 
-#: ../src/iop/colorize.c:373
+#: ../src/iop/colorize.c:372
 msgid "select the saturation shadow tone"
 msgstr "selecionar o tom de saturação de sombra"
 
-#: ../src/iop/colorize.c:378
+#: ../src/iop/colorize.c:377
 msgid "lightness of color"
 msgstr "luminosidade da cor"
 
-#: ../src/iop/colorize.c:383
+#: ../src/iop/colorize.c:382
 msgid "mix value of source lightness"
 msgstr "mistura valor da fonte de luminosidade"
 
@@ -10688,7 +10702,7 @@ msgstr ""
 "útil junto com \"ajustar níveis automaticamente\"."
 
 #: ../src/iop/filmic.c:1666 ../src/iop/filmicrgb.c:3435
-#: ../src/iop/profile_gamma.c:735
+#: ../src/iop/profile_gamma.c:734
 msgid "auto tune levels"
 msgstr "ajustar níveis automaticamente"
 
@@ -11483,30 +11497,30 @@ msgstr ""
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "girar o filtro -180 a 180 graus"
 
-#: ../src/iop/graduatednd.c:1178
+#: ../src/iop/graduatednd.c:1177
 msgid "select the hue tone of filter"
 msgstr "selecione o tom de matiz do filtro"
 
-#: ../src/iop/graduatednd.c:1183
+#: ../src/iop/graduatednd.c:1182
 msgid "select the saturation of filter"
 msgstr "selecione a saturação do filtro"
 
-#: ../src/iop/graduatednd.c:1197
+#: ../src/iop/graduatednd.c:1196
 #, c-format
 msgid "[%s on nodes] change line rotation"
 msgstr "[%s em nós] mudar rotação da linha"
 
-#: ../src/iop/graduatednd.c:1202
+#: ../src/iop/graduatednd.c:1201
 #, c-format
 msgid "[%s on line] move line"
 msgstr "[%s em linha] mover linha"
 
-#: ../src/iop/graduatednd.c:1208
+#: ../src/iop/graduatednd.c:1207
 #, c-format
 msgid "[%s on line] change density"
 msgstr "[%s em linha] mudar densidade"
 
-#: ../src/iop/graduatednd.c:1214
+#: ../src/iop/graduatednd.c:1213
 #, c-format
 msgid "[%s on line] change hardness"
 msgstr "[%s em linha] mudar dureza"
@@ -11520,20 +11534,20 @@ msgctxt "accel"
 msgid "midtones bias"
 msgstr "tendência dos meios-tons"
 
-#: ../src/iop/grain.c:588
+#: ../src/iop/grain.c:587
 #, c-format
 msgid "%.0f ISO"
 msgstr "%.0f ISO"
 
-#: ../src/iop/grain.c:589
+#: ../src/iop/grain.c:588
 msgid "the grain size (~ISO of the film)"
 msgstr "o tamanho do grão (~ISO do filme)"
 
-#: ../src/iop/grain.c:593
+#: ../src/iop/grain.c:592
 msgid "the strength of applied grain"
 msgstr "a força do grão aplicado"
 
-#: ../src/iop/grain.c:597
+#: ../src/iop/grain.c:596
 msgid ""
 "amount of midtones bias from the photographic paper response modeling. the "
 "greater the bias, the more pronounced the fall off of the grain in shadows "
@@ -11806,7 +11820,7 @@ msgid "find lens"
 msgstr "encontrar lentes"
 
 #. Page CORRECTIONS
-#: ../src/iop/lens.cc:2354 ../src/iop/negadoctor.c:925
+#: ../src/iop/lens.cc:2354 ../src/iop/negadoctor.c:923
 msgid "corrections"
 msgstr "correções"
 
@@ -11860,7 +11874,8 @@ msgstr "escala"
 msgid "auto scale"
 msgstr "auto escala"
 
-#: ../src/iop/lens.cc:2395
+#: ../src/iop/lens.cc:2395 ../src/libs/modulegroups.c:988
+#: ../src/libs/modulegroups.c:1239
 msgid "correct"
 msgstr "corrigir"
 
@@ -12452,7 +12467,7 @@ msgstr "D min componente azul"
 msgid "dynamic range of the film"
 msgstr "faixa dinâmica do filme"
 
-#: ../src/iop/negadoctor.c:911
+#: ../src/iop/negadoctor.c:910
 msgid ""
 "maximum density of the film, corresponding to white after inversion.\n"
 "this value depends on the film specifications, the developing process,\n"
@@ -12462,11 +12477,11 @@ msgstr ""
 "este valor depende das especificações do filme, do processo de revelação,\n"
 "e da faixa dinâmica da cena e das configurações de exposição do scanner."
 
-#: ../src/iop/negadoctor.c:915
+#: ../src/iop/negadoctor.c:914
 msgid "scanner exposure settings"
 msgstr "configurações da exposição do scanner"
 
-#: ../src/iop/negadoctor.c:921
+#: ../src/iop/negadoctor.c:919
 msgid ""
 "correct the exposure of the scanner, for all RGB channels,\n"
 "before the inversion, so blacks are neither clipped or too pale."
@@ -12475,24 +12490,24 @@ msgstr ""
 "antes da inversão, de forma que os pretos não são cortados ou muito pálidos."
 
 #. WB shadows
-#: ../src/iop/negadoctor.c:928
+#: ../src/iop/negadoctor.c:926
 msgid "shadows color cast"
 msgstr "desvio de cor em sombras"
 
-#: ../src/iop/negadoctor.c:934
+#: ../src/iop/negadoctor.c:932
 msgid "select color of shadows from a swatch"
 msgstr "selecione a cor das sombras em uma amostra"
 
-#: ../src/iop/negadoctor.c:939
+#: ../src/iop/negadoctor.c:937
 msgid "pick shadows color from image"
 msgstr "selecionar cor das sombras a partir da imagem"
 
-#: ../src/iop/negadoctor.c:944
+#: ../src/iop/negadoctor.c:942
 msgid "shadows red offset"
 msgstr "offset vermelho das sombras"
 
-#: ../src/iop/negadoctor.c:945 ../src/iop/negadoctor.c:952
-#: ../src/iop/negadoctor.c:959
+#: ../src/iop/negadoctor.c:943 ../src/iop/negadoctor.c:950
+#: ../src/iop/negadoctor.c:957
 msgid ""
 "correct the color cast in shadows so blacks are\n"
 "truly achromatic. Setting this value before\n"
@@ -12504,33 +12519,33 @@ msgstr ""
 "do balanço de branco dos realced do iluminante ajudará\n"
 "a recuperar o balanço de branco global em casos difíceis."
 
-#: ../src/iop/negadoctor.c:951
+#: ../src/iop/negadoctor.c:949
 msgid "shadows green offset"
 msgstr "offset verde das sombras"
 
-#: ../src/iop/negadoctor.c:958
+#: ../src/iop/negadoctor.c:956
 msgid "shadows blue offset"
 msgstr "offset azul das sombras"
 
 #. WB highlights
-#: ../src/iop/negadoctor.c:965
+#: ../src/iop/negadoctor.c:963
 msgid "highlights white balance"
 msgstr "balanço de branco de realces"
 
-#: ../src/iop/negadoctor.c:971
+#: ../src/iop/negadoctor.c:969
 msgid "select color of illuminant from a swatch"
 msgstr "selecione a cor do iluminante de uma amostra"
 
-#: ../src/iop/negadoctor.c:976
+#: ../src/iop/negadoctor.c:974
 msgid "pick illuminant color from image"
 msgstr "selecionar cor do iluminante a partir de uma imagem"
 
-#: ../src/iop/negadoctor.c:981
+#: ../src/iop/negadoctor.c:979
 msgid "illuminant red gain"
 msgstr "ganho vermelho do iluminante"
 
-#: ../src/iop/negadoctor.c:982 ../src/iop/negadoctor.c:989
-#: ../src/iop/negadoctor.c:996
+#: ../src/iop/negadoctor.c:980 ../src/iop/negadoctor.c:987
+#: ../src/iop/negadoctor.c:994
 msgid ""
 "correct the color of the illuminant so whites are\n"
 "truly achromatic. Setting this value after\n"
@@ -12542,25 +12557,25 @@ msgstr ""
 "da correção de desvio de cor em sombras ajudará\n"
 "a recuperar o balanço de branco global em casos difíceis."
 
-#: ../src/iop/negadoctor.c:988
+#: ../src/iop/negadoctor.c:986
 msgid "illuminant green gain"
 msgstr "ganho verde do iluminante"
 
-#: ../src/iop/negadoctor.c:995
+#: ../src/iop/negadoctor.c:993
 msgid "illuminant blue gain"
 msgstr "ganho azul do iluminante"
 
 #. Page PRINT PROPERTIES
-#: ../src/iop/negadoctor.c:1002
+#: ../src/iop/negadoctor.c:1000
 msgid "print properties"
 msgstr "propriedades de impressão"
 
 #. print corrections
-#: ../src/iop/negadoctor.c:1005
+#: ../src/iop/negadoctor.c:1003
 msgid "virtual paper properties"
 msgstr "propriedades do papel virtual"
 
-#: ../src/iop/negadoctor.c:1013
+#: ../src/iop/negadoctor.c:1010
 msgid ""
 "correct the density of black after the inversion,\n"
 "to adjust the global contrast while avoiding clipping shadows."
@@ -12568,7 +12583,7 @@ msgstr ""
 "corrige a densidade do preto após a inversão,\n"
 "para ajustar o contraste global evitando corte de sombras."
 
-#: ../src/iop/negadoctor.c:1018
+#: ../src/iop/negadoctor.c:1015
 msgid ""
 "select the grade of the virtual paper, which is actually\n"
 "equivalent to applying a gamma. it compensates the film D max\n"
@@ -12578,7 +12593,7 @@ msgstr ""
 "equivalente a aplicar gama. compensa o D max do filme\n"
 "e recupera contraste. use um grading alto para D max alto."
 
-#: ../src/iop/negadoctor.c:1026
+#: ../src/iop/negadoctor.c:1023
 msgid ""
 "gradually compress specular highlights past this value\n"
 "to avoid clipping while pushing the exposure for midtones.\n"
@@ -12588,11 +12603,11 @@ msgstr ""
 "para evitar corte enquanto força a exposição para os tons médios.\n"
 "isto reproduz, de certa forma, o comportamento de papel matte."
 
-#: ../src/iop/negadoctor.c:1030
+#: ../src/iop/negadoctor.c:1027
 msgid "virtual print emulation"
 msgstr "simulação de impressão virtual"
 
-#: ../src/iop/negadoctor.c:1039
+#: ../src/iop/negadoctor.c:1035
 msgid ""
 "correct the printing exposure after inversion to adjust\n"
 "the global contrast and avoid clipping highlights."
@@ -12600,7 +12615,7 @@ msgstr ""
 "corrige a exposição da impressão depois da inversão para ajustar\n"
 "o contraste global e evitar corte de realces."
 
-#: ../src/iop/negadoctor.c:1047
+#: ../src/iop/negadoctor.c:1043
 msgid "toggle on or off the color controls"
 msgstr "alterna (liga/desliga) controles de cor"
 
@@ -12728,11 +12743,11 @@ msgstr ""
 "aumenta ou diminui a faixa dinâmica calculada\n"
 "é útil quando o ruído perturba as medidas"
 
-#: ../src/iop/profile_gamma.c:736
+#: ../src/iop/profile_gamma.c:735
 msgid "make an optimization with some guessing"
 msgstr "tentar otimizar usando chutes"
 
-#: ../src/iop/profile_gamma.c:746
+#: ../src/iop/profile_gamma.c:745
 msgid "tone mapping method"
 msgstr "método de mapeamento de tom"
 
@@ -15680,7 +15695,11 @@ msgstr "v3.0 (padrão)"
 msgid "edit `%s'"
 msgstr "editar `%s'"
 
-#: ../src/libs/lib.c:551
+#: ../src/libs/lib.c:636
+msgid "manage presets..."
+msgstr "gerenciar predefinições..."
+
+#: ../src/libs/lib.c:659
 msgid "nothing to save"
 msgstr "nada a gravar"
 
@@ -16260,172 +16279,185 @@ msgctxt "accel"
 msgid "jump to film roll"
 msgstr "pula para rolo de filme"
 
-#: ../src/libs/modulegroups.c:88
+#: ../src/libs/modulegroups.c:118
 msgid "modulegroups"
 msgstr "grupos de módulos"
 
-#: ../src/libs/modulegroups.c:215
+#: ../src/libs/modulegroups.c:305
 msgid "show only active modules"
 msgstr "mostrar apenas módulos ativos"
 
-#: ../src/libs/modulegroups.c:222
-msgid "show only your favourite modules (selected in `more modules' below)"
-msgstr ""
-"mostrar apenas seus módulos favoritos (selecionados em `mais módulos' logo "
-"abaixo)"
-
-#: ../src/libs/modulegroups.c:228
-msgid "basic group"
-msgstr "grupo básico"
-
-#: ../src/libs/modulegroups.c:234
-msgid "tone group"
-msgstr "grupo de tom"
-
-#: ../src/libs/modulegroups.c:240
-msgid "color group"
-msgstr "grupo de cor"
-
-#: ../src/libs/modulegroups.c:246
-msgid "correction group"
-msgstr "grupo de correção"
-
-#: ../src/libs/modulegroups.c:252
-msgid "effects group"
-msgstr "grupo de efeitos"
-
 #. search box
-#: ../src/libs/modulegroups.c:264
+#: ../src/libs/modulegroups.c:314
 msgid "search module"
 msgstr "buscar módulo"
 
-#: ../src/libs/modulegroups.c:270
+#: ../src/libs/modulegroups.c:320
 msgid "search modules by name or tag"
 msgstr "procurar módulos por nome ou etiqueta"
 
-#: ../src/libs/modulegroups.c:278
+#: ../src/libs/modulegroups.c:328
 msgid "clear text"
 msgstr "limpar texto"
 
-#: ../src/libs/modulelist.c:60
-msgid "more modules"
-msgstr "outros módulos"
+#: ../src/libs/modulegroups.c:977 ../src/libs/modulegroups.c:1242
+msgid "technical"
+msgstr "técnico"
 
-#: ../src/libs/modulelist.c:387
-msgid "subset: no module"
-msgstr "subconjunto: nenhum módulo"
+#: ../src/libs/modulegroups.c:979 ../src/libs/modulegroups.c:1243
+#, fuzzy
+msgid "grading"
+msgstr "carregando"
 
-#: ../src/libs/modulelist.c:388
-msgid "subset: all modules"
-msgstr "subconjunto: todos os módulos"
+#: ../src/libs/modulegroups.c:980 ../src/libs/modulegroups.c:1244
+msgid "effects"
+msgstr "efeitos"
 
-#. basic raw handling
-#. cropping & orientation
-#. correct image issues
-#. tones
-#. colors
-#. local contrast / sharpness
-#: ../src/libs/modulelist.c:403
-msgid "subset: default modules"
-msgstr "subconjunto: módulos padrão"
+#: ../src/libs/modulegroups.c:984 ../src/libs/modulegroups.c:1237
+#, fuzzy
+msgid "base"
+msgstr "base de dados"
 
-#. default modules
-#. basic raw handling
-#. cropping & orientation
-#. correct image issues
-#. tones
-#. colors
-#. local contrast
-#. all-purpose addings
-#. tones
-#. colors
-#. sharpness
-#. image reconstruction
-#: ../src/libs/modulelist.c:419
-msgid "workspace: all-purpose"
-msgstr "área de trabalho: geral"
+#: ../src/libs/modulegroups.c:986 ../src/libs/modulegroups.c:1240
+msgid "tone"
+msgstr "tom"
 
-#. default modules
-#. basic raw handling
-#. cropping & orientation
-#. correct image issues
-#. tones
-#. colors
-#. local contrast
-#. all-purpose addings
-#. tones
-#. colors
-#. sharpness
-#. image reconstruction
-#. workspace addings
-#. colors
-#. HDR reconstruction - tones
-#: ../src/libs/modulelist.c:438
-msgid "workspace: landscape & HDR"
-msgstr "área de trabalho: paisagem & HDR"
+#: ../src/libs/modulegroups.c:989
+msgid "legacy layout"
+msgstr "layout legado"
 
-#. default modules
-#. basic raw handling
-#. cropping & orientation
-#. correct image issues
-#. tones
-#. colors
-#. local contrast
-#. all-purpose addings
-#. tones
-#. colors
-#. sharpness
-#. image reconstruction
-#. workspace addings
-#. perspective and spot removal
-#: ../src/libs/modulelist.c:457
-msgid "workspace: architecture & streets"
-msgstr "área de trabalho: arquitetura & ruas"
+#: ../src/libs/modulegroups.c:995
+msgid "my previous config"
+msgstr "minha configuração anterior"
 
-#. default modules
-#. basic raw handling
-#. cropping & orientation
-#. correct image issues
-#. tones
-#. colors
-#. local contrast
-#. all-purpose addings
-#. tones
-#. colors
-#. sharpness
-#. image reconstruction
-#. workspace addings
-#. colors
-#. skin retouch
-#: ../src/libs/modulelist.c:477
-msgid "workspace: portrait & beauty"
-msgstr "área de trabalho: retrato & beleza"
+#: ../src/libs/modulegroups.c:996
+msgid "previous layout"
+msgstr "layout anterior"
 
-#. default modules
-#. basic raw handling
-#. cropping & orientation
-#. correct image issues
-#. tones
-#. colors
-#. local contrast
-#. all-purpose addings
-#. tones
-#. colors
-#. sharpness
-#. image reconstruction
-#. workspace addings
-#. extra denoising methods
-#: ../src/libs/modulelist.c:496
-msgid "workspace: lowlight & high ISO"
-msgstr "área de trabalho: luz baixa & ISO alto"
+#: ../src/libs/modulegroups.c:999
+msgid "my previous config with new layout"
+msgstr "minha configuração anterior com novo layout"
 
-#: ../src/libs/modulelist.c:504
-msgid "subset: creative modules only"
-msgstr "subconjunto: módulos criativos apenas"
+#: ../src/libs/modulegroups.c:1129
+msgid "remove this module"
+msgstr "remover este módulo"
 
-#: ../src/libs/modulelist.c:514
-msgid "subset: technical modules only"
-msgstr "subconjunto: módulos técnicos apenas"
+#: ../src/libs/modulegroups.c:1241
+msgid "effect"
+msgstr "efeito"
+
+#. we show the list of recommended modules
+#: ../src/libs/modulegroups.c:1259
+msgid "recommended"
+msgstr "recomendados"
+
+#: ../src/libs/modulegroups.c:1369
+#, fuzzy
+msgid "basic icon"
+msgstr "potência básica"
+
+#: ../src/libs/modulegroups.c:1379
+msgid "active icon"
+msgstr "ícone ativo"
+
+#: ../src/libs/modulegroups.c:1389
+#, fuzzy
+msgid "color icon"
+msgstr "zonas de cor"
+
+#: ../src/libs/modulegroups.c:1399
+#, fuzzy
+msgid "correct icon"
+msgstr "correções"
+
+#: ../src/libs/modulegroups.c:1409
+#, fuzzy
+msgid "effect icon"
+msgstr "emulação de efeito"
+
+#: ../src/libs/modulegroups.c:1419
+#, fuzzy
+msgid "favorites icon"
+msgstr "favorito"
+
+#: ../src/libs/modulegroups.c:1429
+#, fuzzy
+msgid "tone icon"
+msgstr "mapeamento de tom"
+
+#: ../src/libs/modulegroups.c:1439
+#, fuzzy
+msgid "grading icon"
+msgstr "faixa de gradiente"
+
+#: ../src/libs/modulegroups.c:1449
+msgid "technical icon"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:1474
+#, fuzzy
+msgid "move group to the left"
+msgstr "mover para outra pasta"
+
+#: ../src/libs/modulegroups.c:1486
+#, fuzzy
+msgid "group icon"
+msgstr "identificação de grupo"
+
+#: ../src/libs/modulegroups.c:1492
+msgid "group name"
+msgstr "nome do grupo"
+
+#: ../src/libs/modulegroups.c:1501
+msgid "remove group"
+msgstr "remover grupo"
+
+#: ../src/libs/modulegroups.c:1514
+msgid "move group to the right"
+msgstr "mover grupo para a direita"
+
+#: ../src/libs/modulegroups.c:1536
+msgid "add module to the list"
+msgstr "adicionar módulo à lista"
+
+#: ../src/libs/modulegroups.c:1564 ../src/libs/tagging.c:2779
+msgid "new"
+msgstr "novo"
+
+#: ../src/libs/modulegroups.c:1646
+#, fuzzy
+msgid "preset name : "
+msgstr "predefinido/câmera"
+
+#: ../src/libs/modulegroups.c:1648
+#, fuzzy
+msgid "preset name"
+msgstr "predefinido/câmera"
+
+#: ../src/libs/modulegroups.c:1657
+msgid "module groups"
+msgstr "grupos de módulos"
+
+#: ../src/libs/modulegroups.c:1688
+msgid ""
+"This is a build-in read-only preset. Duplicate it if you want to do changes"
+msgstr ""
+
+#: ../src/libs/modulegroups.c:1699
+msgid "reset"
+msgstr "redefinir"
+
+#: ../src/libs/modulegroups.c:1895
+msgid "duplicate this preset"
+msgstr "duplicar esta predefinição"
+
+#: ../src/libs/modulegroups.c:1920
+msgid "add new empty preset"
+msgstr "adicionar nova predefinição vazia"
+
+#: ../src/libs/modulegroups.c:1951
+msgid "manage modules layouts"
+msgstr "gerenciad layout dos módulos"
 
 #: ../src/libs/navigation.c:62
 msgid "navigation"
@@ -17145,10 +17177,6 @@ msgstr ""
 "ctrol-rolar para mudar o tamanho da janela"
 
 #: ../src/libs/tagging.c:2779
-msgid "new"
-msgstr "novo"
-
-#: ../src/libs/tagging.c:2779
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -17607,8 +17635,8 @@ msgid "no styles have been created yet"
 msgstr "nenhum estilo foi criado ainda"
 
 #: ../src/views/darkroom.c:2128
-msgid "quick access to presets of your favorites"
-msgstr "acesso rápido para as predefinições de favoritos"
+msgid "quick access to presets"
+msgstr "acesso rápido para as predefinições"
 
 #: ../src/views/darkroom.c:2137
 msgid "quick access for applying any of your styles"
@@ -18391,6 +18419,53 @@ msgstr "atalhos"
 msgid "Action"
 msgstr "Ação"
 
+#~ msgid "show only your favourite modules (selected in `more modules' below)"
+#~ msgstr ""
+#~ "mostrar apenas seus módulos favoritos (selecionados em `mais módulos' "
+#~ "logo abaixo)"
+
+#~ msgid "basic group"
+#~ msgstr "grupo básico"
+
+#~ msgid "tone group"
+#~ msgstr "grupo de tom"
+
+#~ msgid "color group"
+#~ msgstr "grupo de cor"
+
+#~ msgid "correction group"
+#~ msgstr "grupo de correção"
+
+#~ msgid "subset: no module"
+#~ msgstr "subconjunto: nenhum módulo"
+
+#~ msgid "subset: all modules"
+#~ msgstr "subconjunto: todos os módulos"
+
+#~ msgid "subset: default modules"
+#~ msgstr "subconjunto: módulos padrão"
+
+#~ msgid "workspace: all-purpose"
+#~ msgstr "área de trabalho: geral"
+
+#~ msgid "workspace: landscape & HDR"
+#~ msgstr "área de trabalho: paisagem & HDR"
+
+#~ msgid "workspace: architecture & streets"
+#~ msgstr "área de trabalho: arquitetura & ruas"
+
+#~ msgid "workspace: portrait & beauty"
+#~ msgstr "área de trabalho: retrato & beleza"
+
+#~ msgid "workspace: lowlight & high ISO"
+#~ msgstr "área de trabalho: luz baixa & ISO alto"
+
+#~ msgid "subset: creative modules only"
+#~ msgstr "subconjunto: módulos criativos apenas"
+
+#~ msgid "subset: technical modules only"
+#~ msgstr "subconjunto: módulos técnicos apenas"
+
 #~ msgid "GUI thumbs and previews DPI scaling factor"
 #~ msgstr ""
 #~ "Fator de escala DPI para miniaturas e pré-visualizações na interface"
@@ -18505,16 +18580,9 @@ msgstr "Ação"
 #~ "estar intacta, por favor considere abrir um issue em https://github.com/"
 #~ "darktable-org/darktable."
 
-#~ msgid "loading"
-#~ msgstr "carregando"
-
 #~ msgctxt "accel"
 #~ msgid "presets"
 #~ msgstr "predefinições"
-
-#~ msgctxt "accel"
-#~ msgid "preset/camera"
-#~ msgstr "predefinido/câmera"
 
 #~ msgctxt "white balance"
 #~ msgid "camera"
