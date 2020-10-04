@@ -1524,7 +1524,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(dt_iop_module_t *self)
 {
   if(dt_image_is_raw(&self->dev->image_storage))
-    if(self->dev->image_storage.buf_dsc.filters != 9u && !dt_image_is_monochrome(&self->dev->image_storage))
+    if(self->dev->image_storage.buf_dsc.filters != 9u &&
+       !(dt_image_monochrome_flags(&self->dev->image_storage) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)))
       gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
     else
       gtk_label_set_text(GTK_LABEL(self->widget),
