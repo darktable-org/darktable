@@ -1214,11 +1214,21 @@ dialog scrollbar
   - module layouts manager dialog -
   --------------------------------*/
 
+#modulegroups_manager box
+{
+  margin: 0;
+}
+
 #modulegroups_editor
 {
   color: @fg_color;
   background-color: @plugin_bg_color;
   padding-left: 0.5em;
+}
+
+#modulegroups-presets-list
+{
+  background-color: @bg_color;
 }
 
 #modulegroups-preset,
@@ -1624,6 +1634,11 @@ cell:selected
 #usercss_box textview
 {
   font-family: monospace;
+}
+
+#quick-presets_manager box
+{
+  margin: 0;
 }
 
 /*---------------------
