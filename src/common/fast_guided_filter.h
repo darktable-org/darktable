@@ -221,7 +221,7 @@ static inline void variance_analyse(const float *const restrict guide, // I
       // convolution
       for(size_t c = begin_convol; c <= end_convol; c++)
       {
-        const size_t index = c * width + j;
+        const size_t index = (c * width + j) * 4;
 
 #ifdef _OPENMP
 #pragma omp simd reduction(+ : tmp) aligned(tmp : 16) aligned(input : 64)
