@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-04 13:54-0300\n"
-"PO-Revision-Date: 2020-10-05 10:59-0300\n"
+"POT-Creation-Date: 2020-10-05 11:04-0300\n"
+"PO-Revision-Date: 2020-10-05 11:10-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1075,7 +1075,7 @@ msgstr "preto & branco"
 
 #: ../build/src/iop/introspection_negadoctor.c:261
 #: ../build/src/iop/introspection_retouch.c:424 ../src/iop/watermark.c:1425
-#: ../src/libs/modulegroups.c:987 ../src/libs/modulegroups.c:1238
+#: ../src/libs/modulegroups.c:990 ../src/libs/modulegroups.c:1241
 msgid "color"
 msgstr "cor"
 
@@ -1395,6 +1395,22 @@ msgstr "borda maior"
 #: ../build/src/iop/introspection_watermark.c:287
 msgid "smaller border"
 msgstr "borda menor"
+
+#: ../build/src/libs/tools/darktable_authors.h:6
+msgid "developers"
+msgstr "desenvolvedores"
+
+#: ../build/src/libs/tools/darktable_authors.h:11
+msgid "translators"
+msgstr "tradutores"
+
+#: ../build/src/libs/tools/darktable_authors.h:16
+msgid "contributors"
+msgstr "contribuidores"
+
+#: ../build/src/libs/tools/darktable_authors.h:21
+msgid "rawspeed contributors"
+msgstr "contribuidores do rawspeed"
 
 #: ../build/src/preferences_gen.h:2151 ../src/libs/tools/lighttable.c:79
 #: ../src/views/lighttable.c:88
@@ -1868,7 +1884,8 @@ msgstr "mostrar ambos"
 
 #: ../build/src/preferences_gen.h:3017
 msgid "show module groups and/or search text entry. (needs a restart)"
-msgstr "mostrar grupos de módulos e/ou caixa de busca de texto. (precisa reiniciar)"
+msgstr ""
+"mostrar grupos de módulos e/ou caixa de busca de texto. (precisa reiniciar)"
 
 #: ../build/src/preferences_gen.h:3025
 msgid "sort built-in presets first"
@@ -1877,7 +1894,9 @@ msgstr "ordenar predefinições nativas primeiro"
 #: ../build/src/preferences_gen.h:3044
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
-msgstr "se as predefinições nativas devem ser mostradas primeiro no menu de predefinições do usuário."
+msgstr ""
+"se as predefinições nativas devem ser mostradas primeiro no menu de "
+"predefinições do usuário."
 
 #: ../build/src/preferences_gen.h:3052
 msgid "hide built-in presets"
@@ -1885,7 +1904,9 @@ msgstr "esconder predefinições nativas"
 
 #: ../build/src/preferences_gen.h:3071
 msgid "hides built-in presets of modules in both presets and favourites menu."
-msgstr "esconde predefinições nativas dos módulos nos menus de predefinições e favoritos."
+msgstr ""
+"esconde predefinições nativas dos módulos nos menus de predefinições e "
+"favoritos."
 
 #: ../build/src/preferences_gen.h:3079
 msgid "expand a single darkroom module at a time"
@@ -2642,11 +2663,17 @@ msgid ""
 "once a day - create snapshot if over 24h passed since last snapshot\n"
 "on close - create snapshot every time darktable is closed"
 msgstr ""
-"snapshots da base de dados são criados logo após o darktable ser fechado. estas opções permitem escolher quão frequentemente os snapshots devem ser feitos:\n"
-"nunca - simplesmente nunca faça snapshots. desta forma os únicos snapshots feitos são os obrigatórios durante o upgrade de versões\n"
-"uma vez por mês - crie um snapshot se um mês se passou desde o último snapshot\n"
-"uma vez por semana - crie um snapshot se 7 dias se passaram desde o último snapshot\n"
-"uma vêz por dia - crie um snapshot se 24h se passaram desde o último snapshot\n"
+"snapshots da base de dados são criados logo após o darktable ser fechado. "
+"estas opções permitem escolher quão frequentemente os snapshots devem ser "
+"feitos:\n"
+"nunca - simplesmente nunca faça snapshots. desta forma os únicos snapshots "
+"feitos são os obrigatórios durante o upgrade de versões\n"
+"uma vez por mês - crie um snapshot se um mês se passou desde o último "
+"snapshot\n"
+"uma vez por semana - crie um snapshot se 7 dias se passaram desde o último "
+"snapshot\n"
+"uma vêz por dia - crie um snapshot se 24h se passaram desde o último "
+"snapshot\n"
 "ao fechar - crie um snapshot toda vez que o darktable for fechado"
 
 #: ../build/src/preferences_gen.h:4767
@@ -2660,8 +2687,11 @@ msgid ""
 "keep in mind that snapshots do take some space and you only need the most "
 "recent one for successful restore"
 msgstr ""
-"depois de criar com sucesso um snapshot, quantos snapshots manter (excluindo os obrigatórios de atualizações de versões). entre -1 para manter todos os snapshots\n"
-"tenha em mente que os snapshots tomam algum espaço e voce só precisa do mais recente para uma recuperação."
+"depois de criar com sucesso um snapshot, quantos snapshots manter (excluindo "
+"os obrigatórios de atualizações de versões). entre -1 para manter todos os "
+"snapshots\n"
+"tenha em mente que os snapshots tomam algum espaço e voce só precisa do mais "
+"recente para uma recuperação."
 
 #: ../build/src/preferences_gen.h:4803
 msgid "xmp"
@@ -2880,7 +2910,7 @@ msgstr ""
 #. and the title for the other modules
 #. char *italic = g_strdup_printf("<i>%s</i>", _("other"));
 #. italic
-#: ../build/src/preferences_gen.h:5265 ../src/libs/modulegroups.c:1265
+#: ../build/src/preferences_gen.h:5265 ../src/libs/modulegroups.c:1268
 #: ../src/libs/tools/viewswitcher.c:145
 msgid "other"
 msgstr "outro"
@@ -3823,7 +3853,7 @@ msgstr "darktable - manutenção de esquema"
 msgid "later"
 msgstr "depois"
 
-#: ../src/common/fast_guided_filter.h:488
+#: ../src/common/fast_guided_filter.h:506
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
 "o filtro fast guided não conseguiu alocar memória, verifique sua "
@@ -4179,15 +4209,15 @@ msgstr "arquivo de estilo para  %s existente"
 msgid "style %s was successfully imported"
 msgstr "estilo %s foi importado com sucesso"
 
-#: ../src/common/utility.c:454
+#: ../src/common/utility.c:465
 msgid "above sea level"
 msgstr "acima do nível do mar"
 
-#: ../src/common/utility.c:455
+#: ../src/common/utility.c:466
 msgid "below sea level"
 msgstr "abaixo do nível do mar"
 
-#: ../src/common/utility.c:506 ../src/iop/watermark.c:828
+#: ../src/common/utility.c:517 ../src/iop/watermark.c:828
 #: ../src/libs/metadata_view.c:665
 msgid "m"
 msgstr "m"
@@ -5361,7 +5391,7 @@ msgstr "redefine parâmetros"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2308 ../src/gui/preferences.c:787
-#: ../src/libs/lib.c:1220 ../src/libs/modulegroups.c:310
+#: ../src/libs/lib.c:1220 ../src/libs/modulegroups.c:313
 msgid "presets"
 msgstr "predefinições"
 
@@ -6805,7 +6835,9 @@ msgstr "modo de desempenho"
 msgid ""
 "if switched on, thumbnails and previews are rendered at lower quality but 4 "
 "times faster"
-msgstr "se ligado as miniaturas e pré-visualizações são renderizadas com qualidade menor, mas quatro vezes mais rápido."
+msgstr ""
+"se ligado as miniaturas e pré-visualizações são renderizadas com qualidade "
+"menor, mas quatro vezes mais rápido."
 
 #: ../src/gui/preferences.c:414 ../src/gui/preferences.c:421
 msgid "use system font size"
@@ -6947,14 +6979,14 @@ msgstr "conflito de atalhos"
 
 #: ../src/gui/preferences.c:1508 ../src/gui/preferences.c:2055
 #: ../src/gui/presets.c:202 ../src/libs/lib.c:383
-#: ../src/libs/modulegroups.c:1776
+#: ../src/libs/modulegroups.c:1779
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "você realmente deseja excluir a predefinição `%s'?"
 
 #: ../src/gui/preferences.c:1512 ../src/gui/preferences.c:2059
 #: ../src/gui/presets.c:206 ../src/libs/lib.c:387
-#: ../src/libs/modulegroups.c:1780
+#: ../src/libs/modulegroups.c:1783
 msgid "delete preset?"
 msgstr "excluir predefinição?"
 
@@ -7158,7 +7190,7 @@ msgid "edit this preset.."
 msgstr "editar esta predefinição..."
 
 #: ../src/gui/presets.c:1190 ../src/libs/lib.c:648
-#: ../src/libs/modulegroups.c:1904
+#: ../src/libs/modulegroups.c:1907
 msgid "delete this preset"
 msgstr "exclui esta predefinição"
 
@@ -7566,9 +7598,9 @@ msgstr ""
 "foto : fotografia ao ar livre, com iluminação natural\n"
 "gráfico : image em tons discretos (gráfico, map-tile etc)"
 
-#: ../src/imageio/format/webp.c:352 ../src/libs/modulegroups.c:215
-#: ../src/libs/modulegroups.c:981 ../src/libs/modulegroups.c:1078
-#: ../src/libs/modulegroups.c:1825 ../src/libs/modulegroups.c:1826
+#: ../src/imageio/format/webp.c:352 ../src/libs/modulegroups.c:218
+#: ../src/libs/modulegroups.c:984 ../src/libs/modulegroups.c:1081
+#: ../src/libs/modulegroups.c:1828 ../src/libs/modulegroups.c:1829
 msgid "default"
 msgstr "padrão"
 
@@ -7869,7 +7901,7 @@ msgctxt "accel"
 msgid "guides"
 msgstr "guias"
 
-#: ../src/iop/ashift.c:542 ../src/iop/clipping.c:3459
+#: ../src/iop/ashift.c:542 ../src/iop/clipping.c:3462
 msgctxt "accel"
 msgid "automatic cropping"
 msgstr "corte automático"
@@ -9245,67 +9277,67 @@ msgstr "a margem superior não pode sobrepor a margem inferior"
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "a margem inferior não pode sobrepor a margem superior"
 
-#: ../src/iop/clipping.c:3449
+#: ../src/iop/clipping.c:3452
 msgctxt "accel"
 msgid "commit"
 msgstr "finalizar"
 
-#: ../src/iop/clipping.c:3450
+#: ../src/iop/clipping.c:3453
 msgctxt "accel"
 msgid "angle"
 msgstr "ângulo"
 
-#: ../src/iop/clipping.c:3451
+#: ../src/iop/clipping.c:3454
 msgctxt "accel"
 msgid "left"
 msgstr "esquerda"
 
-#: ../src/iop/clipping.c:3452
+#: ../src/iop/clipping.c:3455
 msgctxt "accel"
 msgid "top"
 msgstr "superior"
 
-#: ../src/iop/clipping.c:3453
+#: ../src/iop/clipping.c:3456
 msgctxt "accel"
 msgid "right"
 msgstr "direita"
 
-#: ../src/iop/clipping.c:3454
+#: ../src/iop/clipping.c:3457
 msgctxt "accel"
 msgid "bottom"
 msgstr "inferior"
 
-#: ../src/iop/clipping.c:3455
+#: ../src/iop/clipping.c:3458
 msgctxt "accel"
 msgid "aspect ratio"
 msgstr "ajuste de aspecto"
 
-#: ../src/iop/clipping.c:3456
+#: ../src/iop/clipping.c:3459
 msgctxt "accel"
 msgid "guide lines"
 msgstr "linhas-guia"
 
-#: ../src/iop/clipping.c:3457
+#: ../src/iop/clipping.c:3460
 msgctxt "accel"
 msgid "flip"
 msgstr "espelhar simetricamente"
 
-#: ../src/iop/clipping.c:3458
+#: ../src/iop/clipping.c:3461
 msgctxt "accel"
 msgid "keystone"
 msgstr "distorção de perspectiva"
 
-#: ../src/iop/clipping.c:3489
+#: ../src/iop/clipping.c:3492
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s em bordas] cortar"
 
-#: ../src/iop/clipping.c:3495
+#: ../src/iop/clipping.c:3498
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s em bordas] cortar mantendo aspecto"
 
-#: ../src/iop/clipping.c:3500
+#: ../src/iop/clipping.c:3503
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] definir/rotacionar horizonte"
@@ -11950,8 +11982,8 @@ msgstr "escala"
 msgid "auto scale"
 msgstr "auto escala"
 
-#: ../src/iop/lens.cc:2395 ../src/libs/modulegroups.c:988
-#: ../src/libs/modulegroups.c:1239
+#: ../src/iop/lens.cc:2395 ../src/libs/modulegroups.c:991
+#: ../src/libs/modulegroups.c:1242
 msgid "correct"
 msgstr "corrigir"
 
@@ -14609,7 +14641,7 @@ msgstr "hora"
 msgid "capture details"
 msgstr "detalhes da captura da foto"
 
-#: ../src/libs/collect.c:2551 ../src/libs/tools/darktable.c:61
+#: ../src/libs/collect.c:2551 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
@@ -16355,172 +16387,172 @@ msgctxt "accel"
 msgid "jump to film roll"
 msgstr "pula para rolo de filme"
 
-#: ../src/libs/modulegroups.c:118
+#: ../src/libs/modulegroups.c:121
 msgid "modulegroups"
 msgstr "grupos de módulos"
 
-#: ../src/libs/modulegroups.c:305
+#: ../src/libs/modulegroups.c:308
 msgid "show only active modules"
 msgstr "mostrar apenas módulos ativos"
 
 #. search box
-#: ../src/libs/modulegroups.c:314
+#: ../src/libs/modulegroups.c:317
 msgid "search module"
 msgstr "buscar módulo"
 
-#: ../src/libs/modulegroups.c:320
+#: ../src/libs/modulegroups.c:323
 msgid "search modules by name or tag"
 msgstr "procurar módulos por nome ou etiqueta"
 
-#: ../src/libs/modulegroups.c:328
+#: ../src/libs/modulegroups.c:331
 msgid "clear text"
 msgstr "limpar texto"
 
-#: ../src/libs/modulegroups.c:977 ../src/libs/modulegroups.c:1242
+#: ../src/libs/modulegroups.c:980 ../src/libs/modulegroups.c:1245
 msgid "technical"
 msgstr "técnico"
 
-#: ../src/libs/modulegroups.c:979 ../src/libs/modulegroups.c:1243
-#, fuzzy
+#: ../src/libs/modulegroups.c:982 ../src/libs/modulegroups.c:1246
 msgid "grading"
-msgstr "carregando"
+msgstr "calibração de cores"
 
-#: ../src/libs/modulegroups.c:980 ../src/libs/modulegroups.c:1244
+#: ../src/libs/modulegroups.c:983 ../src/libs/modulegroups.c:1247
 msgid "effects"
 msgstr "efeitos"
 
-#: ../src/libs/modulegroups.c:984 ../src/libs/modulegroups.c:1237
+#: ../src/libs/modulegroups.c:987 ../src/libs/modulegroups.c:1240
 msgid "base"
 msgstr "base"
 
-#: ../src/libs/modulegroups.c:986 ../src/libs/modulegroups.c:1240
+#: ../src/libs/modulegroups.c:989 ../src/libs/modulegroups.c:1243
 msgid "tone"
 msgstr "tom"
 
-#: ../src/libs/modulegroups.c:989
+#: ../src/libs/modulegroups.c:992
 msgid "legacy layout"
 msgstr "layout legado"
 
-#: ../src/libs/modulegroups.c:995
+#: ../src/libs/modulegroups.c:998
 msgid "previous config"
 msgstr "configuração anterior"
 
-#: ../src/libs/modulegroups.c:996
+#: ../src/libs/modulegroups.c:999
 msgid "previous layout"
 msgstr "layout anterior"
 
-#: ../src/libs/modulegroups.c:999
+#: ../src/libs/modulegroups.c:1002
 msgid "previous config with new layout"
 msgstr "configuração anterior com novo layout"
 
-#: ../src/libs/modulegroups.c:1129
+#: ../src/libs/modulegroups.c:1132
 msgid "remove this module"
 msgstr "remover este módulo"
 
-#: ../src/libs/modulegroups.c:1241
+#: ../src/libs/modulegroups.c:1244
 msgid "effect"
 msgstr "efeito"
 
 #. we show the list of recommended modules
-#: ../src/libs/modulegroups.c:1259
+#: ../src/libs/modulegroups.c:1262
 msgid "recommended"
 msgstr "recomendados"
 
-#: ../src/libs/modulegroups.c:1369
+#: ../src/libs/modulegroups.c:1372
 msgid "basic icon"
 msgstr "ícone de básico"
 
-#: ../src/libs/modulegroups.c:1379
+#: ../src/libs/modulegroups.c:1382
 msgid "active icon"
 msgstr "ícone ativo"
 
-#: ../src/libs/modulegroups.c:1389
+#: ../src/libs/modulegroups.c:1392
 msgid "color icon"
 msgstr "ícone de cor"
 
-#: ../src/libs/modulegroups.c:1399
+#: ../src/libs/modulegroups.c:1402
 msgid "correct icon"
 msgstr "ícone de correções"
 
-#: ../src/libs/modulegroups.c:1409
+#: ../src/libs/modulegroups.c:1412
 msgid "effect icon"
 msgstr "ícone de efeitos"
 
-#: ../src/libs/modulegroups.c:1419
+#: ../src/libs/modulegroups.c:1422
 msgid "favorites icon"
 msgstr "íconde de favoritos"
 
-#: ../src/libs/modulegroups.c:1429
+#: ../src/libs/modulegroups.c:1432
 msgid "tone icon"
 msgstr "ícone de tom"
 
-#: ../src/libs/modulegroups.c:1439
-#, fuzzy
+#: ../src/libs/modulegroups.c:1442
 msgid "grading icon"
-msgstr "faixa de gradiente"
+msgstr "ícone de calibração"
 
-#: ../src/libs/modulegroups.c:1449
+#: ../src/libs/modulegroups.c:1452
 msgid "technical icon"
 msgstr "ícone de técnico"
 
-#: ../src/libs/modulegroups.c:1474
+#: ../src/libs/modulegroups.c:1477
 msgid "move group to the left"
 msgstr "mover grupo para a esquerda"
 
-#: ../src/libs/modulegroups.c:1486
+#: ../src/libs/modulegroups.c:1489
 msgid "group icon"
 msgstr "ícone de grupo"
 
-#: ../src/libs/modulegroups.c:1492
+#: ../src/libs/modulegroups.c:1495
 msgid "group name"
 msgstr "nome do grupo"
 
-#: ../src/libs/modulegroups.c:1501
+#: ../src/libs/modulegroups.c:1504
 msgid "remove group"
 msgstr "remover grupo"
 
-#: ../src/libs/modulegroups.c:1514
+#: ../src/libs/modulegroups.c:1517
 msgid "move group to the right"
 msgstr "mover grupo para a direita"
 
-#: ../src/libs/modulegroups.c:1536
+#: ../src/libs/modulegroups.c:1539
 msgid "add module to the list"
 msgstr "adicionar módulo à lista"
 
-#: ../src/libs/modulegroups.c:1564 ../src/libs/tagging.c:2779
+#: ../src/libs/modulegroups.c:1567 ../src/libs/tagging.c:2779
 msgid "new"
 msgstr "novo"
 
-#: ../src/libs/modulegroups.c:1646
+#: ../src/libs/modulegroups.c:1649
 msgid "preset name : "
 msgstr "nome da predefinição : "
 
-#: ../src/libs/modulegroups.c:1648
+#: ../src/libs/modulegroups.c:1651
 msgid "preset name"
 msgstr "nome da predefinição"
 
-#: ../src/libs/modulegroups.c:1657
+#: ../src/libs/modulegroups.c:1660
 msgid "module groups"
 msgstr "grupos de módulos"
 
-#: ../src/libs/modulegroups.c:1688
+#: ../src/libs/modulegroups.c:1691
 msgid ""
 "this is a build-in read-only preset. duplicate it if you want to do changes"
-msgstr "esta é uma predefinição nativa somente de leitura. duplique se quiser fazer mudanças"
+msgstr ""
+"esta é uma predefinição nativa somente de leitura. duplique se quiser fazer "
+"mudanças"
 
-#: ../src/libs/modulegroups.c:1699
+#: ../src/libs/modulegroups.c:1702
 msgid "reset"
 msgstr "redefinir"
 
-#: ../src/libs/modulegroups.c:1895
+#: ../src/libs/modulegroups.c:1898
 msgid "duplicate this preset"
 msgstr "duplicar esta predefinição"
 
-#: ../src/libs/modulegroups.c:1920
+#: ../src/libs/modulegroups.c:1923
 msgid "add new empty preset"
 msgstr "adicionar nova predefinição vazia"
 
-#: ../src/libs/modulegroups.c:1951
+#: ../src/libs/modulegroups.c:1954
 msgid "manage modules layouts"
 msgstr "gerenciad layout dos módulos"
 
@@ -17332,20 +17364,29 @@ msgstr ""
 msgid "clear all labels of selected images"
 msgstr "remove todas etiquetas das imagens selecionadas"
 
-#: ../src/libs/tools/darktable.c:252
+#: ../src/libs/tools/darktable.c:279
 #, c-format
 msgid "copyright (c) the authors 2009-%s"
 msgstr "copyright (c) os autores 2009-%s"
 
-#: ../src/libs/tools/darktable.c:256
+#: ../src/libs/tools/darktable.c:283
 msgid "organize and develop images from digital cameras"
 msgstr "organize e trate imagens de câmeras digitais"
 
-#: ../src/libs/tools/darktable.c:271
+#: ../src/libs/tools/darktable.c:295
+msgid "all those of you that made previous releases possible"
+msgstr "e aqueles de vocês que tornaram as releases anteriores possíveis"
+
+#: ../src/libs/tools/darktable.c:300
+msgid "and..."
+msgstr "e..."
+
+#: ../src/libs/tools/darktable.c:302
 msgid "translator-credits"
 msgstr ""
-"Guilherme Brondani Torri <guitorri@gmail.com>, Frido Claudino "
-"<frido@fridoclaudino.com>, Jerônimo Pellegrini <j_p@aleph0.info>"
+"Guilherme Brondani Torri\n"
+"Frido Claudino\n"
+"Jerônimo Pellegrini"
 
 #: ../src/libs/tools/filmstrip.c:53
 msgid "filmstrip"
