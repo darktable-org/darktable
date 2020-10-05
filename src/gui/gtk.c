@@ -3093,7 +3093,7 @@ static gint _get_container_row_heigth(GtkWidget *w)
   return height;
 }
 
-static void _scroll_wrap_resize(GtkWidget *w, GtkAllocation *allocation, const char *config_str)
+static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_str)
 {
   GtkWidget *sw = gtk_widget_get_parent(w);
   if(GTK_IS_VIEWPORT(sw)) sw = gtk_widget_get_parent(sw);
@@ -3131,6 +3131,8 @@ static void _scroll_wrap_resize(GtkWidget *w, GtkAllocation *allocation, const c
   gint value = gtk_adjustment_get_value(adj);
   value -= value % increment;
   gtk_adjustment_set_value(adj, value);
+
+  return FALSE;
 }
 
 static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event, const char *config_str)
@@ -3168,7 +3170,7 @@ GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), - DT_PIXEL_APPLY_DPI(min_size));
   g_signal_connect(G_OBJECT(sw), "scroll-event", G_CALLBACK(_scroll_wrap_scroll), config_str);
-  g_signal_connect(G_OBJECT(w), "size-allocate", G_CALLBACK(_scroll_wrap_resize), config_str);
+  g_signal_connect(G_OBJECT(w), "draw", G_CALLBACK(_scroll_wrap_resize), config_str);
   gtk_container_add(GTK_CONTAINER(sw), w);
 
   return sw;
