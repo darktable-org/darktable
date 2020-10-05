@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-05 09:21+0200\n"
+"POT-Creation-Date: 2020-10-05 13:16+0200\n"
 "PO-Revision-Date: 2020-10-05 09:21+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -1391,6 +1391,22 @@ msgstr "grand coté"
 #: ../build/src/iop/introspection_watermark.c:287
 msgid "smaller border"
 msgstr "petit coté"
+
+#: ../build/src/libs/tools/darktable_authors.h:6
+msgid "developers"
+msgstr "développeurs"
+
+#: ../build/src/libs/tools/darktable_authors.h:11
+msgid "translators"
+msgstr "traducteurs"
+
+#: ../build/src/libs/tools/darktable_authors.h:16
+msgid "contributors"
+msgstr "contributeurs"
+
+#: ../build/src/libs/tools/darktable_authors.h:21
+msgid "rawspeed contributors"
+msgstr "contributeurs rawspeed"
 
 #: ../build/src/preferences_gen.h:2151 ../src/libs/tools/lighttable.c:79
 #: ../src/views/lighttable.c:88
@@ -3835,7 +3851,7 @@ msgstr "darktable - maintenance"
 msgid "later"
 msgstr "plus tard"
 
-#: ../src/common/fast_guided_filter.h:488
+#: ../src/common/fast_guided_filter.h:506
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
 "le filtre guidé n'a pas assez de mémoire, vérifier la configuration de votre "
@@ -4192,15 +4208,15 @@ msgstr "le fichier du style « %s » existe"
 msgid "style %s was successfully imported"
 msgstr "le style « %s » a été importé"
 
-#: ../src/common/utility.c:454
+#: ../src/common/utility.c:465
 msgid "above sea level"
 msgstr "au dessus du niveau de la mer"
 
-#: ../src/common/utility.c:455
+#: ../src/common/utility.c:466
 msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
-#: ../src/common/utility.c:506 ../src/iop/watermark.c:828
+#: ../src/common/utility.c:517 ../src/iop/watermark.c:828
 #: ../src/libs/metadata_view.c:665
 msgid "m"
 msgstr "m"
@@ -14685,7 +14701,7 @@ msgstr "heures"
 msgid "capture details"
 msgstr "détails de prise de vue"
 
-#: ../src/libs/collect.c:2551 ../src/libs/tools/darktable.c:61
+#: ../src/libs/collect.c:2551 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
@@ -17476,41 +17492,24 @@ msgstr ""
 "efface tous les labels\n"
 "des images sélectionnées"
 
-#: ../src/libs/tools/darktable.c:256
+#: ../src/libs/tools/darktable.c:279
 #, c-format
 msgid "copyright (c) the authors 2009-%s"
 msgstr "copyright (c) les auteurs 2009-%s"
 
-#: ../src/libs/tools/darktable.c:260
+#: ../src/libs/tools/darktable.c:283
 msgid "organize and develop images from digital cameras"
 msgstr "Organiser et développer les images d'un boîtier numérique"
 
-#. some strings are generated and we need translations for them
-#: ../src/libs/tools/darktable.c:273
-msgid "developers"
-msgstr "développeurs"
-
-#: ../src/libs/tools/darktable.c:274
-msgid "translators"
-msgstr "traducteurs"
-
-#: ../src/libs/tools/darktable.c:275
-msgid "contributors"
-msgstr "contributeurs"
-
-#: ../src/libs/tools/darktable.c:276
-msgid "rawspeed contributors"
-msgstr "contributeurs rawspeed"
-
-#: ../src/libs/tools/darktable.c:277
+#: ../src/libs/tools/darktable.c:295
 msgid "all those of you that made previous releases possible"
 msgstr "et tous ceux qui ont participé aux versions précédentes"
 
-#: ../src/libs/tools/darktable.c:282
+#: ../src/libs/tools/darktable.c:300
 msgid "and..."
 msgstr "et..."
 
-#: ../src/libs/tools/darktable.c:284
+#: ../src/libs/tools/darktable.c:302
 msgid "translator-credits"
 msgstr ""
 "Pascal Obry\n"

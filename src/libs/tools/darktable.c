@@ -267,9 +267,6 @@ static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEvent
   return TRUE;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-
 static void _lib_darktable_show_about_dialog()
 {
   GtkWidget *dialog = gtk_about_dialog_new();
@@ -295,16 +292,11 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), icon);
   g_free(icon);
 
-  // some strings are generated and we need translations for them
-  const char *s1 = N_("developers");
-  const char *s2 = N_("translators");
-  const char *s3 = N_("contributors");
-  const char *s4 = N_("rawspeed contributors");
-  const char *s5 = _("all those of you that made previous releases possible");
+  const char *str = _("all those of you that made previous releases possible");
 
 #include "libs/tools/darktable_authors.h"
 
-  const char *final[] = {s5, NULL };
+  const char *final[] = {str, NULL };
   gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), _("and..."), final);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
