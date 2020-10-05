@@ -1946,7 +1946,12 @@ static void _manage_show_window(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
-  d->dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  d->dialog = gtk_dialog_new_with_buttons(_("manage modules layouts"), win,
+                                          GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, NULL, NULL);
+
+  gtk_window_set_default_size(GTK_WINDOW(d->dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
+
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->dialog);
 #endif
@@ -2004,15 +2009,11 @@ static void _manage_show_window(dt_lib_module_t *self)
     }
   }
 
-  gtk_container_add(GTK_CONTAINER(d->dialog), hb);
+  gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(d->dialog))), hb);
 
-  gtk_window_set_default_size(GTK_WINDOW(d->dialog), 1100, 700);
   g_signal_connect(d->dialog, "destroy", G_CALLBACK(_manage_editor_destroy), self);
   gtk_window_set_resizable(GTK_WINDOW(d->dialog), TRUE);
-  gtk_window_set_transient_for(GTK_WINDOW(d->dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-  gtk_window_set_keep_above(GTK_WINDOW(d->dialog), TRUE);
 
-  gtk_window_set_gravity(GTK_WINDOW(d->dialog), GDK_GRAVITY_STATIC);
   gtk_window_set_position(GTK_WINDOW(d->dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_show(d->dialog);
 }
