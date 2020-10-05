@@ -266,7 +266,8 @@ static void _lib_darktable_show_about_dialog()
 
 #include "libs/tools/darktable_authors.h"
 
-  gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
+  static const char *final[] = {_("all those of you that made previous releases possible"), NULL };
+  gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), _("and..."), final);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
