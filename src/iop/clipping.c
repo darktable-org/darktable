@@ -3156,7 +3156,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     dt_control_change_cursor(GDK_FLEUR);
     g->straightening = g->cropping = 0;
     // or maybe keystone
-    const float ext = DT_PIXEL_APPLY_DPI(0.005f) / zoom_scale;
+    const float pr_d = darktable.develop->preview_downsampling;
+    // slightly adjust the size of keystone control area depending on the downsampling
+    const float ext = DT_PIXEL_APPLY_DPI(0.005f + ((1.0f - pr_d) / 100.0f)) / zoom_scale;
     if(g->k_show == 1 && g->k_drag == FALSE)
     {
       float pts[2] = { pzx * wd, pzy * ht };
