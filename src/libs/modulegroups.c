@@ -28,6 +28,9 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 DT_MODULE(1)
 
@@ -1945,7 +1948,7 @@ static void _manage_show_window(dt_lib_module_t *self)
 
   d->dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(window);
+  dt_osx_disallow_fullscreen(d->dialog);
 #endif
   gtk_widget_set_name(d->dialog, "modulegroups_manager");
   gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage modules layouts"));
