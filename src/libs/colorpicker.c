@@ -318,20 +318,19 @@ static void _label_size_allocate_callback(GtkWidget *widget, GdkRectangle *alloc
 {
   gint label_width;
   gtk_label_set_attributes(GTK_LABEL(widget), NULL);
-  gtk_widget_get_preferred_width(widget, NULL, &label_width);
 
-  double scale = (double)allocation->width / label_width;
+  PangoStretch stretch = PANGO_STRETCH_NORMAL;
 
-  while(label_width > allocation->width && scale > .25)
+  while(gtk_widget_get_preferred_width(widget, NULL, &label_width),
+        label_width > allocation->width && stretch != PANGO_STRETCH_ULTRA_CONDENSED)
   {
+    stretch--;
+
     PangoAttrList *attrlist = pango_attr_list_new();
-    PangoAttribute *attr = pango_attr_scale_new(scale);
+    PangoAttribute *attr = pango_attr_stretch_new(stretch);
     pango_attr_list_insert(attrlist, attr);
     gtk_label_set_attributes(GTK_LABEL(widget), attrlist);
     pango_attr_list_unref(attrlist);
-
-    gtk_widget_get_preferred_width(widget, NULL, &label_width);
-    scale *= 0.95; // find first discrete font that's small enough
   }
 }
 

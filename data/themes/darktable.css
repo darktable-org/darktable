@@ -522,10 +522,15 @@ overshoot.right
   margin-left: 2px
 }
 
-/* Adjust add button in picker module */
+/* Adjust add and remove buttons in picker module */
 .picker-module button
 {
-  padding: 0 3px;
+  padding: 0px;
+}
+
+.picker-module label
+{
+  padding-right: 3px;
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -1675,7 +1680,7 @@ cell:selected
 
 #live-sample
 {
-  padding: 2px;
+  padding: 0px;
   min-height: 1em;
   min-width: 3em;
 }
