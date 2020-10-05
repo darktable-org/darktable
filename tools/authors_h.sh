@@ -40,7 +40,7 @@ function print_section()
         echo "static const char *section${SECTIONS}[] = {" >> "$H_FILE"
         echo "$CONTENT" >> "$H_FILE"
         echo "  NULL };" >> "$H_FILE"
-        echo "gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), \"${SECTION}\", section${SECTIONS});" >> "$H_FILE"
+        echo "gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), _(\"${SECTION}\"), section${SECTIONS});" >> "$H_FILE"
         echo "" >> "$H_FILE"
     fi
 }
