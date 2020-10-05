@@ -173,28 +173,39 @@ static inline void variance_analyse(const float *const restrict guide, // I
   // p, the mask is the quantised guide I
 
   const size_t Ndim = width * height;
-  const size_t Ndimch = width * height * 4;
+  const size_t Ndimch = Ndim * 4;
 
-  float *const restrict temp = dt_alloc_sse_ps(Ndimch); // array of structs { { mean_I, mean_p, corr_I, corr_Ip } }
-  float *const restrict guide_x_mask = dt_alloc_sse_ps(Ndim);
-  float *const restrict guide_x_guide = dt_alloc_sse_ps(Ndim);
+  /*
+  * input is array of struct : { { guide , mask, guide * guide, guide * mask } }
+  * temp is array of struct : { { mean_I, mean_p, corr_I, corr_Ip } } = blur(input)
+  */
+  float *const restrict temp = dt_alloc_sse_ps(Ndimch);
+  float *const restrict input = dt_alloc_sse_ps(Ndimch);
 
-  // Pre-multiply guide and mask
+  // Pre-multiply guide and mask and pack all inputs into an array of 4×1 SIMD struct
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(guide, mask, guide_x_mask, guide_x_guide, Ndim, radius) \
-  schedule(simd:static) aligned(guide, mask, guide_x_mask, guide_x_guide:64)
+  dt_omp_firstprivate(guide, mask, Ndim, radius, input) \
+  schedule(simd:static) aligned(guide, mask, input:64)
 #endif
   for(size_t k = 0; k < Ndim; k++)
   {
-    guide_x_mask[k] = guide[k] * mask[k];
-    guide_x_guide[k] = guide[k] * guide[k];
+    const size_t index = k * 4;
+    input[index] = guide[k];
+    input[index + 1] = mask[k];
+    input[index + 2] = guide[k] * guide[k];
+    input[index + 3] = guide[k] * mask[k];
   }
+
+  /*
+  * In the following, input will be blurred horizontally in a single loop
+  * as a 4 channels image, to exploit data locality
+  */
 
   // Convolve box average along columns
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(guide, mask, temp, guide_x_mask, guide_x_guide, width, height, radius) \
+  dt_omp_firstprivate(guide, mask, temp, width, height, radius, input) \
   schedule(simd:static) collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
@@ -207,20 +218,20 @@ static inline void variance_analyse(const float *const restrict guide, // I
       const float num_elem = 1.0f / ((float)end_convol - (float)begin_convol + 1.0f);
       float tmp[4] DT_ALIGNED_PIXEL = { 0.0f }; // = { w_mean_I, w_mean_p, w_corr_I, w_corr_Ip }
 
-#ifdef _OPENMP
-#pragma omp simd reduction(+:tmp) aligned(tmp:16) aligned(guide, mask, guide_x_mask, guide_x_guide:64)
-#endif
+      // convolution
       for(size_t c = begin_convol; c <= end_convol; c++)
       {
         const size_t index = c * width + j;
-        tmp[0] += guide[index];
-        tmp[1] += mask[index];
-        tmp[2] += guide_x_guide[index];
-        tmp[3] += guide_x_mask[index];
+
+#ifdef _OPENMP
+#pragma omp simd reduction(+ : tmp) aligned(tmp : 16) aligned(input : 64)
+#endif
+        for(size_t k = 0; k < 4; ++k) tmp[k] += input[index + k];
       }
 
       const size_t index = (i * width + j) * 4;
 
+      // normalization (box blur -> coeffs = 1 / number of elements)
 #ifdef _OPENMP
 #pragma omp simd aligned(tmp:16) aligned(temp:64)
 #endif
@@ -229,8 +240,12 @@ static inline void variance_analyse(const float *const restrict guide, // I
     }
   }
 
-  if(guide_x_guide != NULL) dt_free_align(guide_x_guide);
-  if(guide_x_mask != NULL) dt_free_align(guide_x_mask);
+  if(input != NULL) dt_free_align(input);
+
+  /*
+  * In the following, temp will be blurred vertically in a single loop
+  * as a 4 channels image, to exploit data locality
+  */
 
   // Convolve box average along rows and output result
 #ifdef _OPENMP
@@ -248,22 +263,25 @@ static inline void variance_analyse(const float *const restrict guide, // I
       const float num_elem = 1.0f / ((float)end_convol - (float)begin_convol + 1.0f);
       float tmp[4] DT_ALIGNED_PIXEL = { 0.0f }; // = { w_mean_I, w_mean_p, w_corr_I, w_corr_Ip }
 
+      // convolution
       for(size_t c = begin_convol; c <= end_convol; c++)
       {
         const size_t index = (i * width + c) * 4;
+
 #ifdef _OPENMP
-#pragma omp simd aligned(temp:64) aligned(tmp:16) reduction(+:tmp)
+#pragma omp simd aligned(temp : 64) aligned(tmp : 16) reduction(+ : tmp)
 #endif
-        for(size_t k = 0; k < 4; ++k)
-          tmp[k] += temp[index + k];
+        for(size_t k = 0; k < 4; ++k) tmp[k] += temp[index + k];
       }
 
+      // normalization (box blur -> coeffs = 1 / number of elements)
 #ifdef _OPENMP
 #pragma omp simd aligned(tmp:16) reduction(*:tmp)
 #endif
       for(size_t c = 0; c < 4; c++)
         tmp[c] *= num_elem;
 
+      // compute blending coeffs and output
       const size_t index = (i * width + j) * 2;
       const float d = fmaxf((tmp[2] - tmp[0] * tmp[0]) + feathering, 1e-15f); // avoid division by 0.
       const float a = (tmp[3] - tmp[0] * tmp[1]) / d;
