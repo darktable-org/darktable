@@ -1579,19 +1579,28 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_widget_set_tooltip_text(sl->polarity, _("toggle polarity. best seen by enabling 'display mask'"));
       gtk_box_pack_end(GTK_BOX(slider_box), GTK_WIDGET(sl->polarity), FALSE, FALSE, 0);
 
-      GtkWidget *label_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      GtkWidget *label_box = gtk_grid_new();
+      gtk_grid_set_column_homogeneous(GTK_GRID(label_box), TRUE);
 
       sl->head = GTK_LABEL(dt_ui_label_new(in_out ? _("output") : _("input")));
-      gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->head), FALSE, FALSE, 0);
+      gtk_grid_attach(GTK_GRID(label_box), GTK_WIDGET(sl->head), 0, 0, 1, 1);
+
+      GtkWidget *overlay = gtk_overlay_new();
+      gtk_grid_attach(GTK_GRID(label_box), overlay, 1, 0, 3, 1);
 
       sl->picker_label = GTK_LABEL(gtk_label_new(""));
-      gtk_label_set_ellipsize(GTK_LABEL(sl->picker_label), PANGO_ELLIPSIZE_END);
-      gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->picker_label), TRUE, TRUE, 0);
+      gtk_widget_set_name(GTK_WIDGET(sl->picker_label), "blend-data");
+      gtk_label_set_xalign(sl->picker_label, .0);
+      gtk_label_set_yalign(sl->picker_label, 1.0);
+      gtk_container_add(GTK_CONTAINER(overlay), GTK_WIDGET(sl->picker_label));
 
       for(int k = 0; k < 4; k++)
       {
-        sl->label[k] = GTK_LABEL(dt_ui_label_new(NULL));
-        gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->label[k]), FALSE, FALSE, 0);
+        sl->label[k] = GTK_LABEL(gtk_label_new(NULL));
+        gtk_widget_set_name(GTK_WIDGET(sl->label[k]), "blend-data");
+        gtk_label_set_xalign(sl->label[k], .35 + k * .65/3);
+        gtk_label_set_yalign(sl->label[k], k % 2);
+        gtk_overlay_add_overlay(GTK_OVERLAY(overlay), GTK_WIDGET(sl->label[k]));
       }
 
       gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
