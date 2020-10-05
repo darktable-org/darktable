@@ -377,17 +377,11 @@ dt_logo_season_t dt_util_get_logo_season(void)
   return DT_LOGO_SEASON_NONE;
 }
 
-cairo_surface_t *dt_util_get_logo(const float size)
+static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
 {
   GError *error = NULL;
   cairo_surface_t *surface = NULL;
   char datadir[PATH_MAX] = { 0 };
-  char *logo;
-  const dt_logo_season_t season = dt_util_get_logo_season();
-  if(season != DT_LOGO_SEASON_NONE)
-    logo = g_strdup_printf("idbutton-%d.svg", (int)season);
-  else
-    logo = g_strdup("idbutton.svg");
 
   dt_loc_get_datadir(datadir, sizeof(datadir));
   char *dtlogo = g_build_filename(datadir, "pixmaps", logo, NULL);
@@ -440,6 +434,23 @@ cairo_surface_t *dt_util_get_logo(const float size)
   g_free(dtlogo);
 
   return surface;
+}
+
+cairo_surface_t *dt_util_get_logo(const float size)
+{
+  char *logo;
+  const dt_logo_season_t season = dt_util_get_logo_season();
+  if(season != DT_LOGO_SEASON_NONE)
+    logo = g_strdup_printf("idbutton-%d.svg", (int)season);
+  else
+    logo = g_strdup("idbutton.svg");
+
+  return _util_get_svg_img(logo, size);
+}
+
+cairo_surface_t *dt_util_get_logo_text(const float size)
+{
+  return _util_get_svg_img(g_strdup("dt_text.svg"), size);
 }
 
 // the following two functions (dt_util_latitude_str and dt_util_longitude_str) were taken from libosmgpsmap

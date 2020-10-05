@@ -58,6 +58,7 @@ typedef enum dt_logo_season_t
 dt_logo_season_t dt_util_get_logo_season(void);
 
 cairo_surface_t *dt_util_get_logo(const float size);
+cairo_surface_t *dt_util_get_logo_text(const float size);
 
 gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);
