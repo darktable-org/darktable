@@ -843,7 +843,11 @@ static void menuitem_manage_quick_presets_toggle(GtkCellRendererToggle *cell_ren
 static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 {
   sqlite3_stmt *stmt;
-  GtkWidget *dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("manage modules layouts"), win,
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, NULL, NULL);
+
+  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(400), DT_PIXEL_APPLY_DPI(500));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -923,15 +927,12 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
   g_object_unref(model);
 
   gtk_container_add(GTK_CONTAINER(sw), view);
-  gtk_container_add(GTK_CONTAINER(dialog), sw);
+  gtk_widget_set_vexpand(sw, TRUE);
+  gtk_widget_set_hexpand(sw, TRUE);
+  gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), sw);
 
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 500);
-  // g_signal_connect(d->dialog, "destroy", G_CALLBACK(_manage_editor_destroy), self);
   gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
-  gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-  gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
 
-  gtk_window_set_gravity(GTK_WINDOW(dialog), GDK_GRAVITY_STATIC);
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_show_all(dialog);
 }
