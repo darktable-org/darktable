@@ -845,7 +845,7 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
   sqlite3_stmt *stmt;
   GtkWidget *dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(window);
+  dt_osx_disallow_fullscreen(dialog);
 #endif
   gtk_widget_set_name(dialog, "quick-presets_manager");
   gtk_window_set_title(GTK_WINDOW(dialog), _("manage quick presets"));
