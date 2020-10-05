@@ -802,6 +802,11 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
   background: @bg_color;
 }
 
+#about_dialog grid *
+{
+    padding: 2px;
+}
+
 /*----------------------------------------
   - Context menu & tooltips & comboboxes -
   ----------------------------------------*/
