@@ -153,10 +153,7 @@ typedef struct dt_lib_metadata_view_t
 {
   GtkLabel *name[md_size];
   GtkLabel *metadata[md_size];
-  GtkWidget *scrolled_window;
 } dt_lib_metadata_view_t;
-
-static gboolean view_onMouseScroll(GtkWidget *view, GdkEventScroll *event, dt_lib_metadata_view_t *d);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -208,17 +205,6 @@ static void _metadata_update_value(GtkLabel *label, const char *value)
   gboolean validated = g_utf8_validate(value, -1, NULL);
   const gchar *str = validated ? value : NODATA_STRING;
   gtk_label_set_text(GTK_LABEL(label), str);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
-}
-
-static void _metadata_update_value_end(GtkLabel *label, const char *value)
-{
-  gboolean validated = g_utf8_validate(value, -1, NULL);
-  const gchar *str = validated ? value : NODATA_STRING;
-  gtk_label_set_text(GTK_LABEL(label), str);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), str);
 }
 
@@ -496,9 +482,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 #endif // SHOW_FLAGS
 
     /* EXIF */
-    _metadata_update_value_end(d->metadata[md_exif_model], img->camera_alias);
-    _metadata_update_value_end(d->metadata[md_exif_lens], img->exif_lens);
-    _metadata_update_value_end(d->metadata[md_exif_maker], img->camera_maker);
+    _metadata_update_value(d->metadata[md_exif_model], img->camera_alias);
+    _metadata_update_value(d->metadata[md_exif_lens], img->exif_lens);
+    _metadata_update_value(d->metadata[md_exif_maker], img->camera_maker);
 
     snprintf(value, sizeof(value), "f/%.1f", img->exif_aperture);
     _metadata_update_value(d->metadata[md_exif_aperture], value);
@@ -805,39 +791,38 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   _lib_metatdata_view_init_labels();
 
-  GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *child_grid_window = gtk_grid_new();
-  gtk_container_add(GTK_CONTAINER(scrolled_window), child_grid_window);
 
-  d->scrolled_window = GTK_WIDGET(scrolled_window);
-  self->widget = d->scrolled_window;
+  self->widget = dt_ui_scroll_wrap(child_grid_window, 200, "plugins/lighttable/metadata_view/windowheight");
 
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
 
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->scrolled_window), DT_PIXEL_APPLY_DPI(300));
-  const gint height = dt_conf_get_int("plugins/lighttable/metadata_view/windowheight");
-  gtk_widget_set_size_request(d->scrolled_window, -1, DT_PIXEL_APPLY_DPI(height));
-
   /* initialize the metadata name/value labels */
   for(int k = 0; k < md_size; k++)
   {
-    GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
-    d->name[k] = name;
+    d->name[k] = GTK_LABEL(gtk_label_new(_md_labels[k]));;
+    gtk_widget_set_halign(GTK_WIDGET(d->name[k]), GTK_ALIGN_START);
+    gtk_label_set_xalign (d->name[k], 0.0f);
+    gtk_label_set_ellipsize(d->name[k], PANGO_ELLIPSIZE_END);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(d->name[k]), _md_labels[k]);
+
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
     gtk_widget_set_name(GTK_WIDGET(d->metadata[k]), "brightbg");
     gtk_label_set_selectable(d->metadata[k], TRUE);
+    gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_FILL);
     gtk_label_set_xalign (d->metadata[k], 0.0f);
+    gtk_label_set_ellipsize(GTK_LABEL(d->metadata[k]),
+                            k == md_exif_model || k == md_exif_lens || k == md_exif_maker
+                            ? PANGO_ELLIPSIZE_END : PANGO_ELLIPSIZE_MIDDLE);
     if(k == md_internal_filmroll)
     {
       // film roll jump to:
       g_signal_connect(G_OBJECT(GTK_WIDGET(d->metadata[k])), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
     }
-    gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
-    gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_FILL);
-    gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(name), 0, k, 1, 1);
-    gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(GTK_WIDGET(d->metadata[k])), 1, k, 1, 1);
+
+    gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(d->name[k]), 0, k, 1, 1);
+    gtk_grid_attach(GTK_GRID(child_grid_window), GTK_WIDGET(d->metadata[k]), 1, k, 1, 1);
   }
 
   /* lets signup for mouse over image change signals */
@@ -860,9 +845,6 @@ void gui_init(dt_lib_module_t *self)
   /* signup for metadata changes */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_UPDATE,
                             G_CALLBACK(_mouse_over_image_callback), self);
-
-  /* adaptable window size */
-  g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(view_onMouseScroll), d);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -870,27 +852,6 @@ void gui_cleanup(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   g_free(self->data);
   self->data = NULL;
-}
-
-static gboolean view_onMouseScroll(GtkWidget *view, GdkEventScroll *event, dt_lib_metadata_view_t *d)
-{
-  if(event->state & GDK_CONTROL_MASK)
-  {
-    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
-    const gint min_height = gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(d->scrolled_window));
-    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
-    gint width, height;
-
-    gtk_widget_get_size_request(GTK_WIDGET(d->scrolled_window), &width, &height);
-    height = height + increment*event->delta_y;
-    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-
-    gtk_widget_set_size_request(GTK_WIDGET(d->scrolled_window), -1, height);
-    dt_conf_set_int("plugins/lighttable/metadata_view/windowheight", height);
-
-    return TRUE;
-  }
-  return FALSE;
 }
 
 #ifdef USE_LUA
@@ -906,7 +867,7 @@ static int lua_update_widgets(lua_State*L)
   {
     lua_getfield(L,5,lua_tostring(L,-2));
     GtkLabel *widget = lua_touserdata(L,-1);
-    _metadata_update_value_end(widget,luaL_checkstring(L,7));
+    _metadata_update_value(widget,luaL_checkstring(L,7));
     lua_pop(L,2);
   }
   return 0;

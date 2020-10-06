@@ -124,7 +124,6 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_lib(self, "truncate history stack", closure);
 }
 
-#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -140,6 +139,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_widget_set_name(self->widget, "history-ui");
+
   d->history_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -161,9 +161,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hhbox), d->create_button, FALSE, FALSE, 0);
 
   /* add history list and buttonbox to widget */
-  gtk_box_pack_start(GTK_BOX(self->widget), d->history_box, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_scroll_wrap(d->history_box, 1, "plugins/darkroom/history/windowheight"), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hhbox, FALSE, FALSE, 0);
-
 
   gtk_widget_show_all(self->widget);
 
@@ -199,9 +199,10 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
 
   /* create toggle button */
   GtkWidget *widget = gtk_toggle_button_new_with_label(label);
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
-  ellipsize_button(widget);
-
+  GtkWidget *lab = gtk_bin_get_child(GTK_BIN(widget));
+  gtk_widget_set_halign(lab, GTK_ALIGN_START);
+  gtk_label_set_xalign(GTK_LABEL(lab), 0);
+  gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_END);
   if(always_on)
   {
     onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
@@ -253,7 +254,6 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
 
   return hbox;
 }
-#undef ellipsize_button
 
 static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int multi_priority)
 {
@@ -1011,7 +1011,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   int num = -1;
   GtkWidget *widget =
     _lib_history_create_button(self, num, _("original"), FALSE, FALSE, TRUE, darktable.develop->history_end == 0, FALSE);
-  gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
   num++;
 
   d->record_history_level -= 1;
@@ -1059,7 +1059,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     gtk_widget_set_has_tooltip(widget, TRUE);
     g_signal_connect(G_OBJECT(widget), "query-tooltip", G_CALLBACK(_changes_tooltip_callback), (void *)hitem);
 
-    gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
     gtk_box_reorder_child(GTK_BOX(d->history_box), widget, 0);
     num++;
 

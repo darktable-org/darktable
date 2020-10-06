@@ -407,14 +407,15 @@ void gui_init(dt_lib_module_t *self)
              "%s/dt_snapshot_%d.png", localtmpdir, k);
 
     /* add button to snapshot box */
-    gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
 
     /* prevent widget to show on external show all */
     gtk_widget_set_no_show_all(d->snapshot[k].button, TRUE);
   }
 
   /* add snapshot box and take snapshot button to widget ui*/
-  gtk_box_pack_start(GTK_BOX(self->widget), d->snapshots_box, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_scroll_wrap(d->snapshots_box, 1, "plugins/darkroom/snapshots/windowheight"), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
 }
 
