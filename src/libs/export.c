@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
@@ -133,14 +134,14 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
   dt_lib_queue_postponed_update(self, _update);
 }
 
-static void export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
+static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
 {
   char style[128] = { 0 };
 
   // Let's get the max dimension restriction if any...
   // TODO: pass the relevant values directly, not using the conf ...
-  int max_width = dt_conf_get_int(CONFIG_PREFIX "width");
-  int max_height = dt_conf_get_int(CONFIG_PREFIX "height");
+  const uint32_t max_width = dt_conf_get_int(CONFIG_PREFIX "width");
+  const uint32_t max_height = dt_conf_get_int(CONFIG_PREFIX "height");
 
   // get the format_name and storage_name settings which are plug-ins name and not necessary what is displayed on the combobox.
   // note that we cannot take directly the combobox entry index as depending on the storage some format are not listed.
@@ -438,12 +439,12 @@ static void set_format_by_name(dt_lib_export_t *d, const char *name)
   }
 }
 
-static void format_changed(GtkWidget *widget, dt_lib_export_t *d)
+static void _format_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   const gchar *name = dt_bauhaus_combobox_get_text(d->format);
-  g_signal_handlers_block_by_func(widget, format_changed, d);
+  g_signal_handlers_block_by_func(widget, _format_changed, d);
   set_format_by_name(d, name);
-  g_signal_handlers_unblock_by_func(widget, format_changed, d);
+  g_signal_handlers_unblock_by_func(widget, _format_changed, d);
 }
 
 static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint32_t *height)
@@ -550,15 +551,15 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
     dt_bauhaus_combobox_set(d->format, 0);
 }
 
-static void storage_changed(GtkWidget *widget, dt_lib_export_t *d)
+static void _storage_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
-  g_signal_handlers_block_by_func(widget, storage_changed, d);
+  g_signal_handlers_block_by_func(widget, _storage_changed, d);
   if(name) set_storage_by_name(d, name);
-  g_signal_handlers_unblock_by_func(widget, storage_changed, d);
+  g_signal_handlers_unblock_by_func(widget, _storage_changed, d);
 }
 
-static void profile_changed(GtkWidget *widget, dt_lib_export_t *d)
+static void _profile_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   int pos = dt_bauhaus_combobox_get(widget);
   if(pos > 0)
@@ -675,13 +676,13 @@ static void _callback_bool(GtkWidget *widget, gpointer user_data)
   dt_conf_set_bool(key, dt_bauhaus_combobox_get(widget) == 1);
 }
 
-static void intent_changed(GtkWidget *widget, dt_lib_export_t *d)
+static void _intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int(CONFIG_PREFIX "iccintent", pos - 1);
 }
 
-static void style_changed(GtkWidget *widget, dt_lib_export_t *d)
+static void _style_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   if(dt_bauhaus_combobox_get(d->style) == 0)
   {
@@ -729,7 +730,7 @@ static void _update_formats_combobox(dt_lib_export_t *d)
   gtk_widget_set_sensitive(d->format, !empty);
 }
 
-static void on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
+static void _on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_export_t *d = self->data;
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage();
@@ -776,7 +777,7 @@ static void _lib_export_styles_changed_callback(gpointer instance, gpointer user
   g_list_free_full(styles, dt_style_free);
 }
 
-static void metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
+static void _metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
 {
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
   const gboolean ondisk = name && !g_strcmp0(name, _("file on disk")); // FIXME: NO!!!!!one!
@@ -820,8 +821,8 @@ void gui_init(dt_lib_module_t *self)
 
   // postponed so we can do the two steps in one loop
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
-                            G_CALLBACK(on_storage_list_changed), self);
-  g_signal_connect(G_OBJECT(d->storage), "value-changed", G_CALLBACK(storage_changed), (gpointer)d);
+                            G_CALLBACK(_on_storage_list_changed), self);
+  g_signal_connect(G_OBJECT(d->storage), "value-changed", G_CALLBACK(_storage_changed), (gpointer)d);
 
   label = dt_ui_section_label_new(_("format options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
@@ -830,7 +831,7 @@ void gui_init(dt_lib_module_t *self)
   d->format = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->format, NULL, _("file format"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->format, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->format), "value-changed", G_CALLBACK(format_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->format), "value-changed", G_CALLBACK(_format_changed), (gpointer)d);
 
   // add all format widgets to the stack widget
   d->format_extra_container = gtk_stack_new();
@@ -1002,9 +1003,9 @@ void gui_init(dt_lib_module_t *self)
                    (gpointer)CONFIG_PREFIX "high_quality_processing");
   g_signal_connect(G_OBJECT(d->export_masks), "value-changed", G_CALLBACK(_callback_bool),
                    (gpointer)CONFIG_PREFIX "export_masks");
-  g_signal_connect(G_OBJECT(d->intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(profile_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(style_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->intent), "value-changed", G_CALLBACK(_intent_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(_profile_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(_style_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_callback_bool),
                    (gpointer)CONFIG_PREFIX "style_append");
 
@@ -1025,7 +1026,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(d->dimensions_type), "value_changed", G_CALLBACK(dimensions_type_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(height_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_width), "changed", G_CALLBACK(print_width_changed), (gpointer)d);
@@ -1036,7 +1036,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->print_width), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "print_width");
   g_signal_connect(G_OBJECT(d->print_height), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "print_height");
   g_signal_connect(G_OBJECT(d->print_dpi), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "print_height");
-  g_signal_connect(G_OBJECT(d->metadata_button), "clicked", G_CALLBACK(metadata_export_clicked), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(_export_button_clicked), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->metadata_button), "clicked", G_CALLBACK(_metadata_export_clicked), (gpointer)d);
 
   // this takes care of keeping hidden widgets hidden
   gtk_widget_show_all(self->widget);
@@ -1062,7 +1063,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->width));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->height));
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(on_storage_list_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_on_storage_list_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_export_styles_changed_callback), self);
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
