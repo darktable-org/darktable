@@ -16543,7 +16543,7 @@ msgstr "tonalité"
 
 #: ../src/libs/modulegroups.c:989
 msgid "legacy layout"
-msgstr "disposition originel"
+msgstr "disposition originelle"
 
 #: ../src/libs/modulegroups.c:995
 msgid "previous config"
