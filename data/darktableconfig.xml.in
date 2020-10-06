@@ -1788,20 +1788,6 @@
     <longdescription>print resolusion in DPI.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/export/print_width</name>
-    <type>float</type>
-    <default>0</default>
-    <shortdescription>width of the exported image</shortdescription>
-    <longdescription>width of the exported image, or 0 if no scaling should be done.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/export/print_height</name>
-    <type>float</type>
-    <default>0</default>
-    <shortdescription>height of the exported image</shortdescription>
-    <longdescription>height of the exported image, or 0 if no scaling should be done.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/export/width</name>
     <type>int</type>
     <default>0</default>
