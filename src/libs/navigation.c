@@ -137,16 +137,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_lib_navigation_control_redraw_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
                             G_CALLBACK(_lib_navigation_control_redraw_callback), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   /* disconnect from signal */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
 
   g_free(self->data);
   self->data = NULL;

@@ -121,6 +121,9 @@ typedef unsigned int u_int;
 
 #include "common/usermanual_url.h"
 
+// for signal debugging symbols
+#include "control/signal.h"
+
 #define DT_MODULE_VERSION 22 // version of dt's module interface
 
 // version of current performance configuration version
@@ -223,7 +226,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_CAMERA_SUPPORT = 1 << 16,
   DT_DEBUG_IOPORDER       = 1 << 17,
   DT_DEBUG_IMAGEIO        = 1 << 18,
-  DT_DEBUG_UNDO           = 1 << 19
+  DT_DEBUG_UNDO           = 1 << 19,
+  DT_DEBUG_SIGNAL         = 1 << 20,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -283,6 +287,8 @@ typedef struct darktable_t
   GList *guides;
   double start_wtime;
   GList *themes;
+  int32_t unmuted_signal_dbg_acts;
+  gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
 } darktable_t;
 
 typedef struct

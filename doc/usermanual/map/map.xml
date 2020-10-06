@@ -93,7 +93,8 @@
 
       <para>
         Images that already have geo location attributes in their metadata are displayed as
-        small icons on the map.
+        small icons on the map. Images close to each other are
+        grouped and a count of grouped images is displayed on the bottom-left corner.
       </para>
 
       <para>

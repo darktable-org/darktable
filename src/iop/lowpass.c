@@ -136,7 +136,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -592,8 +592,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_lowpass_gui_data_t));
-  dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
+  dt_iop_lowpass_gui_data_t *g = IOP_GUI_ALLOC(lowpass);
 
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   dt_bauhaus_slider_set_step(g->radius, 0.1);

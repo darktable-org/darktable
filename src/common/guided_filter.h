@@ -18,6 +18,18 @@
 
 #pragma once
 
+#ifdef __PPC64__
+#ifdef NO_WARN_X86_INTRINSICS
+#include <xmmintrin.h>
+#else
+#define NO_WARN_X86_INTRINSICS 1
+#include <xmmintrin.h>
+#undef NO_WARN_X86_INTRINSICS
+#endif // NO_WARN_X86_INTRINSICS
+#else
+#include <xmmintrin.h>
+#endif // __PPC64__
+
 #include "common/darktable.h"
 #include "common/opencl.h"
 
@@ -67,6 +79,9 @@ static inline int max_i(int a, int b)
 }
 
 // Kahan summation algorithm
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline float Kahan_sum(const float m, float *c, const float add)
 {
    const float t1 = add - (*c);

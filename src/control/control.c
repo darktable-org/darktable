@@ -157,7 +157,11 @@ void dt_control_shutdown(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
 
-  /* first wait for kick_on_workers_thread */
+  /* first wait for gphoto device updater */
+#ifdef HAVE_GPHOTO2
+  pthread_join(s->update_gphoto_thread, NULL);
+#endif
+  /* then wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
 
   int k;
@@ -531,27 +535,27 @@ void dt_control_toast_busy_leave()
 
 void dt_control_queue_redraw()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
 }
 
 void dt_control_queue_redraw_center()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
 void dt_control_navigation_redraw()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
 }
 
 void dt_control_log_redraw()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
 }
 
 void dt_control_toast_redraw()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
 static gboolean _gtk_widget_queue_draw(gpointer user_data)
@@ -808,7 +812,7 @@ void dt_control_set_mouse_over_id(int32_t value)
   {
     darktable.control->mouse_over_id = value;
     dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
   else
     dt_pthread_mutex_unlock(&(darktable.control->global_mutex));

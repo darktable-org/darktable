@@ -597,7 +597,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -1776,7 +1776,7 @@ static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
   p[0] = MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f);
   p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
   p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
-  
+
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++)
   {
@@ -1813,7 +1813,7 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
   p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
   p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
   p[3] = 1.0f;
-  
+
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++)
   {
@@ -2510,7 +2510,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const float wb_weights[3] = { 2.0f, 1.0f, 2.0f };
   compute_wb_factors(wb,d,piece,wb_weights);
   wb[3] = 0.0f;
-  
+
   // adaptive p depending on white balance
   const float p[4] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f),
                        MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
@@ -2936,6 +2936,21 @@ static inline float infer_bias_from_profile(const float a)
   return -MAX(5 + 0.5 * logf(a), 0.0);
 }
 
+void init(dt_iop_module_t *module)
+{
+  dt_iop_default_init(module);
+
+  dt_iop_denoiseprofile_params_t *d = module->default_params;
+
+  for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
+  {
+    for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
+    {
+      d->x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.f);
+    }
+  }
+}
+
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
@@ -2987,24 +3002,23 @@ void reload_defaults(dt_iop_module_t *module)
     // set defaults depending on the profile
     // all these formulas were "guessed" and are completely empirical
     const float a = g->interpolated.a[1];
-    dt_iop_denoiseprofile_params_t *default_params = module->default_params;
-    default_params->radius = infer_radius_from_profile(a);
-    default_params->scattering = infer_scattering_from_profile(a);
-    default_params->shadows = infer_shadows_from_profile(a);
-    default_params->bias = infer_bias_from_profile(a);
+    dt_iop_denoiseprofile_params_t *d = module->default_params;
+
+    d->radius = infer_radius_from_profile(a);
+    d->scattering = infer_scattering_from_profile(a);
+    d->shadows = infer_shadows_from_profile(a);
+    d->bias = infer_bias_from_profile(a);
+
+    dt_bauhaus_slider_set_default(g->radius, d->radius);
+    dt_bauhaus_slider_set_default(g->scattering, d->scattering);
+    dt_bauhaus_slider_set_default(g->shadows, d->shadows);
+    dt_bauhaus_slider_set_default(g->bias, d->bias);
+
     for(int k = 0; k < 3; k++)
     {
-      default_params->a[k] = g->interpolated.a[k];
-      default_params->b[k] = g->interpolated.b[k];
+      d->a[k] = g->interpolated.a[k];
+      d->b[k] = g->interpolated.b[k];
     }
-    for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
-    {
-      for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
-      {
-        default_params->x[ch][k] = k / (DT_IOP_DENOISE_PROFILE_BANDS - 1.f);
-      }
-    }
-    memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
   }
 }
 
@@ -3368,10 +3382,6 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
     dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
   }
-  dt_bauhaus_slider_set_default(g->radius, infer_radius_from_profile(a));
-  dt_bauhaus_slider_set_default(g->scattering, infer_scattering_from_profile(a));
-  dt_bauhaus_slider_set_default(g->shadows, infer_shadows_from_profile(a));
-  dt_bauhaus_slider_set_default(g->bias, infer_bias_from_profile(a));
   dt_bauhaus_combobox_set(g->mode, combobox_index);
   dt_bauhaus_combobox_set(g->wavelet_color_mode, p->wavelet_color_mode);
   if(p->a[0] == -1.0)
@@ -3819,9 +3829,8 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook, GtkWidget *page, gu
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_denoiseprofile_gui_data_t));
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = IOP_GUI_ALLOC(denoiseprofile);
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->default_params;
 
   g->profiles = NULL;
 
@@ -3889,32 +3898,31 @@ void gui_init(dt_iop_module_t *self)
 
   g->box_variance = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->label_var = GTK_LABEL(gtk_label_new(_("use only with a perfectly\n"
-                                           "uniform image if you want to\n"
-                                           "estimate the noise variance.")));
-  gtk_widget_set_halign(GTK_WIDGET(g->label_var), GTK_ALIGN_START);
+  g->label_var = GTK_LABEL(dt_ui_label_new(_("use only with a perfectly\n"
+                                             "uniform image if you want to\n"
+                                             "estimate the noise variance.")));
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(g->label_var), TRUE, TRUE, 0);
 
   GtkBox *hboxR = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelR = GTK_LABEL(gtk_label_new(_("variance red: ")));
+  GtkLabel *labelR = GTK_LABEL(dt_ui_label_new(_("variance red: ")));
   gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(labelR), FALSE, FALSE, 0);
-  g->label_var_R = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  g->label_var_R = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_R), _("variance computed on the red channel"));
   gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(g->label_var_R), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxR), TRUE, TRUE, 0);
 
   GtkBox *hboxG = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelG = GTK_LABEL(gtk_label_new(_("variance green: ")));
+  GtkLabel *labelG = GTK_LABEL(dt_ui_label_new(_("variance green: ")));
   gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(labelG), FALSE, FALSE, 0);
-  g->label_var_G = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  g->label_var_G = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_G), _("variance computed on the green channel"));
   gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(g->label_var_G), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxG), TRUE, TRUE, 0);
 
   GtkBox *hboxB = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelB = GTK_LABEL(gtk_label_new(_("variance blue: ")));
+  GtkLabel *labelB = GTK_LABEL(dt_ui_label_new(_("variance blue: ")));
   gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(labelB), FALSE, FALSE, 0);
-  g->label_var_B = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  g->label_var_B = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_B), _("variance computed on the blue channel"));
   gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(g->label_var_B), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxB), TRUE, TRUE, 0);
@@ -3960,9 +3968,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
 
   g->fix_anscombe_and_nlmeans_norm = dt_bauhaus_toggle_from_params(self, "fix_anscombe_and_nlmeans_norm");
-  
+
   g->use_new_vst = dt_bauhaus_toggle_from_params(self, "use_new_vst");
-  
+
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
   gtk_widget_show_all(g->box_variance);
@@ -4027,8 +4035,8 @@ void gui_cleanup(dt_iop_module_t *self)
   g_list_free_full(g->profiles, dt_noiseprofile_free);
   dt_draw_curve_destroy(g->transition_curve);
   // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

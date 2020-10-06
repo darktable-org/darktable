@@ -522,7 +522,7 @@
 
             <listitem><para>
               A flag that defines whether to use high quality resampling during export (see
-              <xref linkend="core_options"/>). Defaults to true.
+              <xref linkend="darkroom_options"/>). Defaults to true.
             </para></listitem>
 
           </varlistentry>
@@ -867,8 +867,8 @@
 
     <informaltable frame="none">
       <tgroup cols="2" colsep="0" rowsep="0">
-        <colspec colwidth='6*'/>
         <colspec colwidth='4*'/>
+        <colspec colwidth='6*'/>
         <tbody>
           <row>
             <entry>
@@ -1031,7 +1031,7 @@
         and bottom to the center area. The left panel is typically used to provide information.
         The right panel offers functions to modify an image. The top and bottom panel give
         access to several settings and shortcuts. Each of the panels can be collapsed or
-        expanded by pressing a triangle (<inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>) 
+        expanded by pressing a triangle (<inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>)
         located at the edge of the panel.
       </para>
 
@@ -1054,7 +1054,7 @@
                 <emphasis>TAB</emphasis>
               </entry>
               <entry>
-                 temporarily expand the centre view to fill the whole window. 
+                 temporarily expand the centre view to fill the whole window.
                  Press again to return to the previous view.
               </entry>
             </row>
@@ -1246,9 +1246,8 @@
 
         <para>
           Connect your camera to your system. If your distribution tries to automount it, select
-          the option to abort the mount operation. Otherwise the camera will be locked and not
-          accessible from within darktable. If you don't see your camera in the import module,
-          hit the <quote>scan for devices</quote> button. Your camera will then appear in the
+          the option to abort the mount operation. Otherwise the camera might be locked and not
+          accessible from within darktable. Connected cameras and cards will appear in the
           same module with additional choices: <emphasis>import</emphasis> and
           <emphasis>tethering</emphasis>.
         </para>

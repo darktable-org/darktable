@@ -557,7 +557,7 @@ static void _raise_signal_tag_changed(dt_lib_module_t *self)
     // raises change only for other modules
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
     dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
     dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   }
@@ -2653,21 +2653,13 @@ void gui_init(dt_lib_module_t *self)
   // attach/detach buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  button = gtk_button_new_with_label(_("attach"));
-  d->attach_button = button;
-  gtk_widget_set_hexpand(button, TRUE);
-  gtk_widget_set_tooltip_text(button, _("attach tag to all selected images"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_attach_button_clicked), (gpointer)self);
+  d->attach_button = dt_ui_button_new(_("attach"), _("attach tag to all selected images"), "tagging.html#tagging_usage");
+  gtk_box_pack_start(hbox, d->attach_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->attach_button), "clicked", G_CALLBACK(_attach_button_clicked), (gpointer)self);
 
-  button = gtk_button_new_with_label(_("detach"));
-  d->detach_button = button;
-  gtk_widget_set_hexpand(button, TRUE);
-  gtk_widget_set_tooltip_text(button, _("detach tag from all selected images"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_detach_button_clicked), (gpointer)self);
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  d->detach_button = dt_ui_button_new(_("detach"), _("detach tag from all selected images"), "tagging.html#tagging_usage");
+  g_signal_connect(G_OBJECT(d->detach_button), "clicked", G_CALLBACK(_detach_button_clicked), (gpointer)self);
+  gtk_box_pack_start(hbox, d->detach_button, TRUE, TRUE, 0);
 
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_minus_simple, CPF_STYLE_FLAT, NULL);
   d->toggle_hide_button = button;
@@ -2705,6 +2697,7 @@ void gui_init(dt_lib_module_t *self)
   // text entry
   w = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(w), "");
+  gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   gtk_widget_set_tooltip_text(w, _("enter tag name"));
   dt_gui_add_help_link(w, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
@@ -2783,29 +2776,17 @@ void gui_init(dt_lib_module_t *self)
   // buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  button = gtk_button_new_with_label(_("new"));
-  d->new_button = button;
-  gtk_widget_set_hexpand(button, TRUE);
-  gtk_widget_set_tooltip_text(button, _("create a new tag with the\nname you entered"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_new_button_clicked), (gpointer)self);
+  d->new_button = dt_ui_button_new(_("new"), _("create a new tag with the\nname you entered"), "tagging.html#tagging_usage");
+  gtk_box_pack_start(hbox, d->new_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->new_button), "clicked", G_CALLBACK(_new_button_clicked), (gpointer)self);
 
-  button = gtk_button_new_with_label(C_("verb", "import..."));
-  d->import_button = button;
-  gtk_widget_set_hexpand(button, TRUE);
-  gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_import_button_clicked), (gpointer)self);
+  d->import_button = dt_ui_button_new(C_("verb", "import..."), _("import tags from a Lightroom keyword file"), "tagging.html#tagging_usage");
+  gtk_box_pack_start(hbox, d->import_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->import_button), "clicked", G_CALLBACK(_import_button_clicked), (gpointer)self);
 
-  button = gtk_button_new_with_label(C_("verb", "export..."));
-  d->export_button = button;
-  gtk_widget_set_hexpand(button, TRUE);
-  gtk_widget_set_tooltip_text(button, _("export all tags to a Lightroom keyword file"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_export_button_clicked), (gpointer)self);
+  d->export_button = dt_ui_button_new(C_("verb", "export..."), _("export all tags to a Lightroom keyword file"), "tagging.html#tagging_usage");
+  gtk_box_pack_start(hbox, d->export_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(_export_button_clicked), (gpointer)self);
 
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_treelist, CPF_STYLE_FLAT, NULL);
   d->toggle_tree_button = button;
@@ -2839,13 +2820,13 @@ void gui_init(dt_lib_module_t *self)
   else d->completion = NULL;
 
   /* connect to mouse over id */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_lib_tagging_redraw_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_lib_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
   d->collection = g_malloc(4096);
@@ -2862,10 +2843,10 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   g_free(d->collection);
   free(self->data);
   self->data = NULL;

@@ -21,7 +21,7 @@
   </indexterm>
 
   <para>
-    Drawing a mask represents the simplest approach for limiting the effect of a darktable module to a specific 
+    Drawing a mask represents the simplest approach for limiting the effect of a darktable module to a specific
     area in the developed image.
   </para>
 
@@ -59,6 +59,12 @@
               To draw a shape you need to click on one of the shape symbols. You will
               automatically be moved into the edit mode in which you generate a new instance of
               the selected shape and afterwards change its properties.
+
+              Furthermore, <emphasis>Ctrl+click</emphasis> on any shape
+              (expect the path shape) enter the continuous creation
+              mode. This mode will come handy when multiple shapes are
+              to be created. A <emphasis>Right-click</emphasis> will
+              leave the continuous creation mode.
             </entry>
             <entry>
               <graphic fileref="darkroom/concepts/images/drawn_masks.png" scalefit="1" width="80%" align="center" />
@@ -130,12 +136,12 @@
       <para>
         If you have a graphics tablet with pen pressure sensitivity, darktable can apply the
         recorded pen pressure to certain attributes of the brush stroke. See
-        <xref linkend="gui_options"/> for more details.
+        <xref linkend="darkroom_options"/> for more details.
       </para>
       <para>
         On lifting the tablet pen or releasing the left mouse button the drawn figure is
         converted into a number of connected nodes which define the shape. A configuration
-        option (see <xref linkend="gui_options"/>) controls how much smoothing is applied. A
+        option (see <xref linkend="darkroom_options"/>) controls how much smoothing is applied. A
         higher level of smoothing leads to less nodes&nbsp;&ndash; this eases subsequent editing
         at the expense of a lower initial accuracy.
       </para>
@@ -335,10 +341,15 @@
         line has two anchor nodes which you can drag to change the rotation of the gradient.
       </para>
       <para>
-        Scrolling close to the center line changes the steepness of the gradient. Dotted lines
-        indicate the distance beyond which the opacity is 100% and 0%, respectively. Between
-        these dotted lines the opacity changes linearly. The gradient is best seen and modified
-        when the mask is displayed by pressing the
+        <emphasis>Scrolling</emphasis> close to the center line curves the gradient.
+      </para>
+      <para>
+        <emphasis>Shift+scrolling</emphasis> close to the center line
+        changes the steepness of the gradient. Dotted lines indicate
+        the distance beyond which the opacity is 100% and 0%,
+        respectively. Between these dotted lines the opacity changes
+        linearly. The gradient is best seen and modified when the mask
+        is displayed by pressing the
         <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
         button.
       </para>

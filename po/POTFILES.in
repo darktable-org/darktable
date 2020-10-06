@@ -77,6 +77,7 @@ build/src/iop/introspection_vibrance.c
 build/src/iop/introspection_vignette.c
 build/src/iop/introspection_watermark.c
 build/src/iop/introspection_zonesystem.c
+build/src/libs/tools/darktable_authors.h
 build/src/preferences_gen.h
 data/darktable.appdata.xml.in
 data/darktable.desktop.in
@@ -261,7 +262,6 @@ src/libs/masks.c
 src/libs/metadata.c
 src/libs/metadata_view.c
 src/libs/modulegroups.c
-src/libs/modulelist.c
 src/libs/navigation.c
 src/libs/print_settings.c
 src/libs/recentcollect.c

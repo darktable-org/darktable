@@ -327,7 +327,9 @@ static void init_column_sums_sse2(float *const col_sums, const patch_t *const pa
     col_sums[col] = sum;
   }
   // clear out any columns where the patch column would be outside the RoI, as well as our overrun area
-  for (int col = col_max; col < chunk_right + radius; col++)
+  // (When the chunk is sufficiently narrow, col_max can become less than col_min, which would cause a buffer
+  // under-run if we didn't check for that condition here.)
+  for (int col = MAX(col_min,col_max); col < chunk_right + radius; col++)
   {
     col_sums[col] = 0;
 #ifdef CACHE_PIXDIFFS_SSE
@@ -374,13 +376,15 @@ static int compute_slice_width(const int width)
 {
   int sl_width = SLICE_WIDTH;
   // if there's just a sliver left over for the last column, see whether slicing a few pixels off each gives
-  // us a mostly-full final chunk
-  if (width % sl_width < SLICE_WIDTH/2)
+  // us a more nearly full final chunk
+  int rem = width % sl_width;
+  if (rem < SLICE_WIDTH/2 && (width % (sl_width-4)) > rem)
   {
-    if (width % (sl_width-4) >= SLICE_WIDTH/2)
+    sl_width -= 4;
+    // check whether removing an additional sliver improves things even more
+    rem = width % sl_width;
+    if (rem < SLICE_WIDTH/2 && (width % (sl_width-4)) > rem)
       sl_width -= 4;
-    else if (width % (sl_width-8) >= SLICE_WIDTH/2)
-      sl_width -= 8;
   }
   return sl_width;
 }
@@ -398,7 +402,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
   const float center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
-  
+
   // define the patches to be compared when denoising a pixel
   const size_t stride = 4 * roi_in->width;
   int num_patches;
@@ -624,7 +628,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
   const float center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
-  
+
   // define the patches to be compared when denoising a pixel
   const size_t stride = 4 * roi_in->width;
   int num_patches;
@@ -945,7 +949,7 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
   int hblocksize;
   int vblocksize;
   get_blocksizes(&hblocksize, &vblocksize, P, devid, params->kernel_horiz, params->kernel_vert);
-  
+
   // zero the output buffer into which we will be accumulating results
   err = nlmeans_cl_init(devid,params->kernel_init,dev_out,height,width);
   if(err != CL_SUCCESS) goto error;

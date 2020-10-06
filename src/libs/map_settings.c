@@ -50,7 +50,7 @@ uint32_t container(dt_lib_module_t *self)
 
 typedef struct dt_lib_map_settings_t
 {
-  GtkWidget *show_osd_checkbutton, *map_source_dropdown;
+  GtkWidget *show_osd_checkbutton, *filtered_images_checkbutton, *map_source_dropdown;
 } dt_lib_map_settings_t;
 
 int position()
@@ -61,6 +61,18 @@ int position()
 static void _show_osd_toggled(GtkToggleButton *button, gpointer data)
 {
   dt_view_map_show_osd(darktable.view_manager, gtk_toggle_button_get_active(button));
+}
+
+static void _filtered_images_toggled(GtkToggleButton *button, gpointer data)
+{
+  dt_conf_set_bool("plugins/map/filter_images_drawn", gtk_toggle_button_get_active(button));
+  if(darktable.view_manager->proxy.map.view)
+  {
+    if(dt_conf_get_bool("plugins/map/filter_images_drawn"))
+      darktable.view_manager->proxy.map.display_selected(darktable.view_manager->proxy.map.view);
+    else
+      darktable.view_manager->proxy.map.redraw(darktable.view_manager->proxy.map.view);
+  }
 }
 
 static void _map_source_changed(GtkWidget *widget, gpointer data)
@@ -91,12 +103,23 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *hbox;
   GtkWidget *label;
 
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+
   d->show_osd_checkbutton = gtk_check_button_new_with_label(_("show OSD"));
   gtk_widget_set_tooltip_text(d->show_osd_checkbutton, _("toggle the visibility of the map overlays"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_osd_checkbutton),
                                dt_conf_get_bool("plugins/map/show_map_osd"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->show_osd_checkbutton, TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, d->show_osd_checkbutton, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
+
+  d->filtered_images_checkbutton = gtk_check_button_new_with_label(_("filtered images"));
+  gtk_widget_set_tooltip_text(d->filtered_images_checkbutton, _("when set limit the images drawn to the current filmstrip"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->filtered_images_checkbutton),
+                               dt_conf_get_bool("plugins/map/filter_images_drawn"));
+  gtk_box_pack_start(hbox, d->filtered_images_checkbutton, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->filtered_images_checkbutton), "toggled", G_CALLBACK(_filtered_images_toggled), NULL);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 

@@ -68,6 +68,8 @@ static void _update_formats_combobox(dt_lib_export_t *d);
 static void _update_dimensions(dt_lib_export_t *d);
 /** get the max output dimension supported by combination of storage and format.. */
 static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint32_t *height);
+/** handler for inserting text in max height/width entries */
+static void insert_text_handler(GtkEditable *entry, char *text, int length, gpointer position, gpointer user_data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -201,8 +203,12 @@ void _set_dimensions(dt_lib_export_t *d, int max_width, int max_height)
 {
   gchar *max_width_char = g_strdup_printf("%d", max_width);
   gchar *max_height_char = g_strdup_printf("%d", max_height);
+  g_signal_handlers_block_matched(d->width, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_block_matched(d->height, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->width), max_width_char);
   gtk_entry_set_text(GTK_ENTRY(d->height), max_height_char);
+  g_signal_handlers_unblock_matched(d->width, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
+  g_signal_handlers_unblock_matched(d->height, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, insert_text_handler, NULL);
   g_free(max_width_char);
   g_free(max_height_char);
 }
@@ -496,7 +502,14 @@ static void height_changed(GtkEditable *entry, gpointer user_data)
 static void insert_text_handler(GtkEditable *entry, char *text, int length, gpointer position, gpointer user_data)
 {
   int i, count=0;
-  gchar *result = g_new (gchar, length);
+  gchar *result = g_try_new0(gchar, length);
+
+  if(!result)
+  {
+    // stop insert on zero length or failure to allocate mem for result
+    g_signal_stop_emission_by_name (entry, "insert-text");
+    return;
+  }
 
   for (i=0; i < length; i++)
   {
@@ -666,7 +679,7 @@ void gui_init(dt_lib_module_t *self)
   } while((it = g_list_next(it)));
 
   // postponed so we can do the two steps in one loop
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
                             G_CALLBACK(on_storage_list_changed), self);
   g_signal_connect(G_OBJECT(d->storage), "value-changed", G_CALLBACK(storage_changed), (gpointer)d);
 
@@ -699,10 +712,10 @@ void gui_init(dt_lib_module_t *self)
 
   d->width = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->width, _("maximum output width\nset to 0 for no scaling"));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->width), 6);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->width), 5);
   d->height = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->height, _("maximum output height\nset to 0 for no scaling"));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->height), 6);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->height), 5);
 
   dt_gui_key_accel_block_on_focus_connect(d->width);
   dt_gui_key_accel_block_on_focus_connect(d->height);
@@ -815,17 +828,15 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_callback_bool),
                    (gpointer)CONFIG_PREFIX "style_append");
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
                             G_CALLBACK(_lib_export_styles_changed_callback), self);
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // Export button
-  GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
-  d->export_button = button;
-  gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("export with current settings"));
-  gtk_box_pack_start(hbox, GTK_WIDGET(button), TRUE, TRUE, 0);
+  d->export_button = GTK_BUTTON(dt_ui_button_new(_("export"), _("export with current settings"), NULL));
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
 
   //  Add metadata exportation control
   d->metadata_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
@@ -833,7 +844,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->metadata_button, _("edit metadata exportation details"));
   gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(height_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "insert-text", G_CALLBACK(insert_text_handler), CONFIG_PREFIX "width");
@@ -846,11 +857,11 @@ void gui_init(dt_lib_module_t *self)
 
   d->metadata_export = NULL;
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
   self->gui_reset(self);
@@ -863,12 +874,12 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->width));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->height));
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(on_storage_list_changed), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_export_styles_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(on_storage_list_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_export_styles_changed_callback), self);
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
 
   GList *it = g_list_first(darktable.imageio->plugins_storage);
   if(it != NULL) do

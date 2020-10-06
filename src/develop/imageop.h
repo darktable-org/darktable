@@ -59,15 +59,19 @@ typedef enum dt_iop_module_header_icons_t
 typedef enum dt_iop_group_t
 {
   IOP_GROUP_NONE = 0,
+  // pre 3.4 layout
   IOP_GROUP_BASIC = 1 << 0,
   IOP_GROUP_TONE = 1 << 1,
   IOP_GROUP_COLOR = 1 << 2,
   IOP_GROUP_CORRECT = 1 << 3,
   IOP_GROUP_EFFECT = 1 << 4,
-  IOP_SPECIAL_GROUP_ACTIVE_PIPE = 1 << 5,
-  IOP_SPECIAL_GROUP_USER_DEFINED = 1 << 6
+  // post 3.4 default layout
+  IOP_GROUP_TECHNICAL = 1 << 5,
+  IOP_GROUP_GRADING = 1 << 6,
+  IOP_GROUP_EFFECTS = 1 << 7,
+  // special group
+  IOP_SPECIAL_GROUP_ACTIVE_PIPE = 1 << 8
 } dt_iop_group_t;
-#define IOP_GROUP_ALL (IOP_GROUP_BASIC | IOP_GROUP_COLOR | IOP_GROUP_CORRECT | IOP_GROUP_EFFECT)
 
 /** module tags */
 typedef enum dt_iop_tags_t
@@ -331,8 +335,6 @@ typedef struct dt_iop_module_t
   dt_iop_colorspace_type_t histogram_cst;
   /** scale the histogram so the middle grey is at .5 */
   int histogram_middle_grey;
-  /** reference for dlopened libs. */
-  darktable_t *dt;
   /** the module is used in this develop module. */
   struct dt_develop_t *dev;
   /** non zero if this node should be processed. */
@@ -676,10 +678,23 @@ dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 
+/** queue a refresh of the center (FULL), preview, or second-preview windows, rerunning the pixelpipe from */
+/** the given module */
+void dt_iop_refresh_center(dt_iop_module_t *module);
+void dt_iop_refresh_preview(dt_iop_module_t *module);
+void dt_iop_refresh_preview2(dt_iop_module_t *module);
+void dt_iop_refresh_all(dt_iop_module_t *module);
+
 /** queue a delayed call to dt_dev_add_history_item to capture module parameters */
 void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior);
 /** cancel any previously-queued history update */
 void dt_iop_cancel_history_update(dt_iop_module_t *module);
+
+/** (un)hide iop module header right side buttons */
+gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
+
+#define IOP_GUI_ALLOC(module) (dt_iop_##module##_gui_data_t *)(self->gui_data = calloc(1, sizeof(dt_iop_##module##_gui_data_t)))
+#define IOP_GUI_FREE free(self->gui_data); self->gui_data = NULL
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

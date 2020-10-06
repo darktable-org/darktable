@@ -103,7 +103,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -909,8 +909,6 @@ void init(dt_iop_module_t *self)
     d->levels[c][1] = RGBLEVELS_MID;
     d->levels[c][2] = RGBLEVELS_MAX;
   }
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_rgblevels_params_t));
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -944,8 +942,7 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rgblevels_gui_data_t));
-  dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
+  dt_iop_rgblevels_gui_data_t *c = IOP_GUI_ALLOC(rgblevels);
 
   dt_pthread_mutex_init(&c->lock, NULL);
   change_image(self);
@@ -1024,21 +1021,21 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
   // add signal handler for preview pipe finish
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   dt_iop_rgblevels_gui_data_t *g = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   if(g)
   {
     dt_pthread_mutex_destroy(&g->lock);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,

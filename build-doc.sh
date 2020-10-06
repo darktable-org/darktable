@@ -144,6 +144,9 @@ num_cpu()
         if [ $ncpu -lt 1 ] ; then
                 ncpu=1
         fi
+        if [ $ncpu -ge 8 ] ; then
+                ncpu=8
+        fi
         printf "$ncpu"
 }
 
@@ -191,7 +194,7 @@ darktable build script
 Building directory:  $BUILD_DIR
 Build tasks:         $MAKE_TASKS
 
-NOTE: dtorg languages are set in usermanual/CMakeLists.txt (dtorg_languages).
+NOTE: dtorg languages are set in doc/usermanual/DTORG.LINGUAS
 
 EOF
 

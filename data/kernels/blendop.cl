@@ -1022,7 +1022,8 @@ blendop_mask_tone_curve(__read_only image2d_t mask_in, __write_only image2d_t ma
     scaled_opacity = (scaled_opacity + brightness) / (1.f + brightness);
     scaled_opacity = fmax(scaled_opacity, -1.f);
   }
-  opacity = ((scaled_opacity * e / (1.f + (e - 1.f) * fabs(scaled_opacity))) / 2.f + 0.5f) * gopacity;
+  opacity = clamp(
+      ((scaled_opacity * e / (1.f + (e - 1.f) * fabs(scaled_opacity))) / 2.f + 0.5f) * gopacity, 0.f, 1.f);
   write_imagef(mask_out, (int2)(x, y), opacity);
 }
 

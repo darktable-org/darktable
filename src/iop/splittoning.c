@@ -89,7 +89,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -479,8 +479,8 @@ void gui_update(struct dt_iop_module_t *self)
   update_balance_slider_colors(g->balance_scale, p->shadow_hue, p->highlight_hue);
 }
 
-static inline void gui_init_section(struct dt_iop_module_t *self, char *section, GtkWidget *slider_box, 
-                                              GtkWidget *hue, GtkWidget *saturation, GtkWidget **picker, gboolean top)
+static inline void gui_init_section(struct dt_iop_module_t *self, char *section, GtkWidget *slider_box,
+                                    GtkWidget *hue, GtkWidget *saturation, GtkWidget **picker, gboolean top)
 {
   GtkWidget *label = dt_ui_section_label_new(section);
 
@@ -520,8 +520,7 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_splittoning_gui_data_t));
-  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
+  dt_iop_splittoning_gui_data_t *g = IOP_GUI_ALLOC(splittoning);
 
   GtkWidget *shadows_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   g->shadow_hue_gslider = dt_bauhaus_slider_from_params(self, "shadow_hue");

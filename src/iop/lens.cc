@@ -150,7 +150,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()
@@ -1311,9 +1311,6 @@ void reload_defaults(dt_iop_module_t *module)
   // get all we can from exif:
   dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)module->default_params;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
-
   new_lens = _lens_sanitize(img->exif_lens);
   g_strlcpy(d->lens, new_lens, sizeof(d->lens));
   free(new_lens);
@@ -1321,8 +1318,8 @@ void reload_defaults(dt_iop_module_t *module)
   d->crop = img->exif_crop;
   d->aperture = img->exif_aperture;
   d->focal = img->exif_focal_length;
-  d->scale = 1.0;  
-  d->modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING | LF_MODIFY_DISTORTION | 
+  d->scale = 1.0;
+  d->modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING | LF_MODIFY_DISTORTION |
                     LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
   // if we did not find focus_distance in EXIF, lets default to 1000
   d->distance = img->exif_focus_distance == 0.0f ? 1000.0f : img->exif_focus_distance;
@@ -1341,7 +1338,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->global_data;
 
     // just to be sure
-    if(!gd || !gd->db) goto end;
+    if(!gd || !gd->db) return;
 
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfCamera **cam = gd->db->FindCamerasExt(img->exif_maker, img->exif_model, 0);
@@ -1409,17 +1406,14 @@ void reload_defaults(dt_iop_module_t *module)
   }
 
   // if we have a gui -> reset corrections_done message
-  if(module->gui_data)
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)module->gui_data;
+  if(g)
   {
-    dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)module->gui_data;
     dt_pthread_mutex_lock(&g->lock);
     g->corrections_done = -1;
     dt_pthread_mutex_unlock(&g->lock);
     gtk_label_set_text(g->message, "");
   }
-
-end:
-  memcpy(module->params, module->default_params, sizeof(dt_iop_lensfun_params_t));
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -2238,8 +2232,7 @@ static void corrections_done(gpointer instance, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_lensfun_gui_data_t));
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lensfun_gui_data_t *g = IOP_GUI_ALLOC(lensfun);
 
   dt_pthread_mutex_init(&g->lock, NULL);
 
@@ -2425,7 +2418,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 
   /* add signal handler for preview pipe finish to update message on corrections done */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(corrections_done), self);
 }
 
@@ -2512,7 +2505,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(corrections_done), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(corrections_done), self);
 
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->lens_model));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->camera_model));
@@ -2524,8 +2517,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 }

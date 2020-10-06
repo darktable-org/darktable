@@ -84,6 +84,28 @@
     <shortdescription>database fragmentation ratio threshold</shortdescription>
     <longdescription>fragmentation ratio above which to ask or carry out automatically database maintenance</longdescription>
   </dtconfig>
+  <dtconfig prefs="storage" section="database">
+    <name>database/create_snapshot</name>
+    <type>
+      <enum>
+        <option>never</option>
+        <option>once a month</option>
+        <option>once a week</option>
+        <option>once a day</option>
+        <option>on close</option>
+      </enum>
+    </type>
+    <default>once a week</default>
+    <shortdescription>create database snapshot</shortdescription>
+    <longdescription>database snapshots are created right before closing darktable. options allow you to choose how often to make snapshots:\nnever - simply don't do snapshots. that way the only snapshots done are mandatory version-upgrade snapshots\nonce a month - create snapshot if a month has passed since last snapshot\nonce a week - create snapshot if 7 days had passed since last snapshot\nonce a day - create snapshot if over 24h passed since last snapshot\non close - create snapshot every time darktable is closed</longdescription>
+  </dtconfig>
+  <dtconfig prefs="storage" section="database">
+    <name>database/keep_snapshots</name>
+    <type>int</type>
+    <default>10</default>
+    <shortdescription>how many snapshots to keep</shortdescription>
+    <longdescription>after successfully creating snapshot, how many older snapshots to keep (excluding mandatory version update ones). enter -1 to keep all snapshots\nkeep in mind that snapshots do take some space and you only need the most recent one for successful restore</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>min_panel_width</name>
     <type>int</type>
@@ -111,19 +133,6 @@
     <default>400</default>
     <shortdescription>maximum width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>ui/cairo_filter</name>
-    <type>
-      <enum>
-	<option>fast</option>
-	<option>good</option>
-	<option>best</option>
-      </enum>
-    </type>
-    <default>fast</default>
-    <shortdescription>speed/quality trade-off for drawing images</shortdescription>
-    <longdescription>fast (default) - high-performance, similar to nearest neighbor filter; good - reasonable-performance, similar to bilinear (linear interpolation in two dimensions); best - highest-quality available, performance may not be suitable for interactive use. sets Cairo image scaling filter. (needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="otherviews" section="slideshow">
     <name>slideshow_delay</name>
@@ -167,7 +176,7 @@
   </dtconfig>
   <dtconfig prefs="cpugpu" restart="true">
     <name>worker_threads</name>
-    <type>int</type>
+    <type min="1" max="64">int</type>
     <default>2</default>
     <shortdescription>number of background threads</shortdescription>
     <longdescription>this controls for example how many threads are used to create thumbnails during import. the cache will grow to a maximum of twice this number of full resolution image buffers (needs a restart).</longdescription>
@@ -959,8 +968,8 @@
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>longstring</type>
     <default>$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
-    <shortdescription>pattern for the image infos line</shortdescription>
-    <longdescription>see manual to know all the tags you can use.</longdescription>
+    <shortdescription>pattern for the image information line</shortdescription>
+    <longdescription>see manual for a list of the tags you can use.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom">
     <name>plugins/darkroom/image_infos_position</name>
@@ -974,10 +983,10 @@
       </enum>
     </type>
     <default>bottom</default>
-    <shortdescription>position of the image infos line</shortdescription>
+    <shortdescription>position of the image information line</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" restart="true">
     <name>plugins/darkroom/search_iop_by_text</name>
     <type>
       <enum>
@@ -987,8 +996,8 @@
       </enum>
     </type>
     <default>show both</default>
-    <shortdescription>show search module text entry</shortdescription>
-    <longdescription/>
+    <shortdescription>show module groups and/or search text entry</shortdescription>
+    <longdescription>show module groups and/or search text entry. (needs a restart)</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
@@ -1003,6 +1012,20 @@
     <default>true</default>
     <shortdescription>draw borders around grouped images</shortdescription>
     <longdescription>draw borders around grouped images when grouping is turned off and the mouse hovers over one of the images of the group</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom">
+    <name>plugins/darkroom/default_presets_first</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>sort built-in presets first</shortdescription>
+    <longdescription>whether to show built-in presets first before user's presets in presets menu.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom">
+    <name>plugins/darkroom/hide_default_presets</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>hide built-in presets</shortdescription>
+    <longdescription>hides built-in presets of modules in both presets and favourites menu.</longdescription>
   </dtconfig>
 
   <dtconfig prefs="import" section="session">
@@ -1437,13 +1460,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="otherviews" section="geoloc">
-    <name>plugins/map/filter_images_drawn</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription>only draw images on map that are currently collected and filtered</shortdescription>
-    <longdescription>use the current filter settings to select the geotagged images drawn on the map, i.e. limit the images drawn to the current filmstrip. this limits the number of images drawn and thus reduces the time needed to draw the images.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="otherviews" section="geoloc">
     <name>plugins/map/max_images_drawn</name>
     <type>int</type>
     <default>100</default>
@@ -1691,14 +1707,14 @@
   <dtconfig>
     <name>darkroom/ui/overexposed/lower</name>
     <type>float</type>
-    <default>2.0</default>
+    <default>-12.69</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/overexposed/upper</name>
     <type>float</type>
-    <default>98.0</default>
+    <default>99.99</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -2221,6 +2237,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/heightview</name>
+    <type min="100" max="1000">int</type>
+    <default>300</default>
+    <shortdescription>height of mask manager view window</shortdescription>
+    <longdescription>maximum height the masks view in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/ashift/near_delta</name>
     <type>float</type>
     <default>20.0</default>
@@ -2286,7 +2309,7 @@
     </type>
     <default>display-referred</default>
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
-    <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve and the legacy module pipe order.\n(needs a restart)</longdescription>
+    <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve and the legacy module pipe order.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" restart="true">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
@@ -2310,11 +2333,10 @@
     <longdescription>if this value is &gt; 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>screen_ppd_overwrite</name>
-    <type>float</type>
-    <default>-1.0</default>
-    <shortdescription>overwrite the screen's ppd setting</shortdescription>
-    <longdescription>if this value is &gt; 0.0 then it is used as the screen's ppd setting which is used for HiDPI support</longdescription>
+    <name>ui/performance</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>performance mode for thumbs and previews</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/preview/max_in_memory_images</name>
@@ -2352,11 +2374,76 @@
     <longdescription>this is mainly useful for debugging and to add new camera support.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/modulegroups_preset</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>preset use for defining iop layout</shortdescription>
+    <longdescription>preset use for defining iop layout</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/map/geotagging_search_url</name>
     <type>string</type>
     <default>https://nominatim.openstreetmap.org/search/%s?format=xml&amp;limit=%d&amp;polygon_text=1</default>
     <shortdescription>Geotagging search URL</shortdescription>
     <longdescription>this can be changed when the default OpenStreetMap search URL is broken</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="interface">
+    <name>plugins/darkroom/temperature/colored_sliders</name>
+    <type>
+      <enum>
+        <option>no color</option>
+        <option>illuminant color</option>
+        <option>effect emulation</option>
+      </enum>
+    </type>
+    <default>no color</default>
+    <shortdescription>white balance slider colors</shortdescription>
+    <longdescription>visual indication of temperature adjustments.\nin 'illuminant color' mode slider colors represent the color of the light source,\nin 'effect emulation' slider colors represent the effect the adjustment would have on the scene</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/temperature/expand_coefficients</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show coefficients</shortdescription>
+    <longdescription>this is just for remembering whether to show coefficients or not and remember it</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/temperature/button_bar</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>arange buttons as bar below temp/tint sliders</shortdescription>
+    <longdescription>if enabled, the buttons in white balance module will be aranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="interface">
+    <name>plugins/darkroom/colorbalance/layout</name>
+    <type>
+      <enum>
+        <option>list</option>
+        <option>tabs</option>
+        <option>columns</option>
+      </enum>
+    </type>
+    <default>list</default>
+    <shortdescription>colorbalance slider block layout</shortdescription>
+    <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nlist - all sliders are shown in one long list (with headers),\ntabs - use tabs to switch between the blocks of sliders,\ncolumns - the blocks of sliders are shown next to each other (in narrow columns)</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom">
+    <name>darkroom/ui/hide_header_buttons</name>
+    <type>
+      <enum>
+        <option>always</option>
+        <option>active</option>
+        <option>dim</option>
+        <option>auto</option>
+        <option>fade</option>
+        <option>fit</option>
+        <option>smooth</option>
+        <option>glide</option>
+      </enum>
+    </type>
+    <default>always</default>
+    <shortdescription>show right-side buttons in darkroom module headers</shortdescription>
+    <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\nalways - always show all buttons,\nactive - only show the buttons when the mouse is over the module,\ndim - buttons are dimmed when mouse is away,\nauto - hide the buttons when the panel is narrow,\nfade - fade out all buttons when panel narrows,\nfit - hide all the buttons if the module name doesn't fit,\nsmooth - fade out all buttons in one header simultaneously,\nglide - gradually hide individual buttons as needed</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
@@ -2388,5 +2475,54 @@
     <default>0</default>
     <shortdescription>version of the last completed performance configuration</shortdescription>
     <longdescription>what was the last performance configuration which has been completed</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/duplicate/windowheight</name>
+    <type>int</type>
+    <default>400</default>
+    <shortdescription>height of the duplicates view</shortdescription>
+    <longdescription>maximum height the duplicates view in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorpicker/windowheight</name>
+    <type>int</type>
+    <default>200</default>
+    <shortdescription>height of the color picker list</shortdescription>
+    <longdescription>maximum height the color picker samples list in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/history/windowheight</name>
+    <type>int</type>
+    <default>1000</default>
+    <shortdescription>height of the history list</shortdescription>
+    <longdescription>maximum height the history list in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata_view/windowheight</name>
+    <type>int</type>
+    <default>1000</default>
+    <shortdescription>height of the image information view</shortdescription>
+    <longdescription>maximum height the image information view in lighttable and darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/recentcollect/windowheight</name>
+    <type>int</type>
+    <default>1000</default>
+    <shortdescription>height of the recent collections list</shortdescription>
+    <longdescription>maximum height the recent collections list in lighttable will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/snapshots/windowheight</name>
+    <type>int</type>
+    <default>200</default>
+    <shortdescription>height of the snapshots list</shortdescription>
+    <longdescription>maximum height the snapshots list in darkroom will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/style/windowheight</name>
+    <type>int</type>
+    <default>400</default>
+    <shortdescription>height of the styles list</shortdescription>
+    <longdescription>maximum height the styles list in lighttable will grow to before scrolling</longdescription>
   </dtconfig>
 </dtconfiglist>

@@ -95,7 +95,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -277,8 +277,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_relight_gui_data_t));
-  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
+  dt_iop_relight_gui_data_t *g = IOP_GUI_ALLOC(relight);
 
   g->exposure = dt_bauhaus_slider_from_params(self, "ev");
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
@@ -289,7 +288,7 @@ void gui_init(struct dt_iop_module_t *self)
 #define NEUTRAL_GRAY 0.5
   static const GdkRGBA _gradient_L[]
       = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
-      
+
   g->center = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color_and_name(_gradient_L[0], _gradient_L[1], "gslider-relight"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->center), _("select the center of fill-light\nctrl+click to select an area"));
   g_signal_connect(G_OBJECT(g->center), "value-changed", G_CALLBACK(center_callback), self);

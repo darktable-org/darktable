@@ -58,8 +58,8 @@
       darktable comes with base curve presets that mimic the curves of various manufacturers.
       These are automatically applied to raw images according to the manufacturer ID found in
       Exif data. For several camera models darktable comes with base curves adapted for that
-      specific model. A configuration option in the core preferences dialog (see
-      <xref linkend="core_options"/>) defines whether darktable by default should apply the
+      specific model. A configuration option in the processing tab in preferences dialog (see
+      <xref linkend="processing"/>) defines whether darktable by default should apply the
       per-camera base curve or the manufacturer one.
     </para>
 

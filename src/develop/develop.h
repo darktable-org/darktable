@@ -111,10 +111,19 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 13 << 3, //show module's output without processing by later iops
+  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 13 << 3,  //show module's output without processing by later iops
   DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
+
+
+typedef enum dt_clipping_preview_mode_t
+{
+  DT_CLIPPING_PREVIEW_GAMUT = 0,
+  DT_CLIPPING_PREVIEW_ANYRGB = 1,
+  DT_CLIPPING_PREVIEW_LUMINANCE = 2,
+  DT_CLIPPING_PREVIEW_SATURATION = 3
+} dt_clipping_preview_mode_t;
 
 typedef struct dt_dev_proxy_exposure_t
 {
@@ -217,13 +226,15 @@ typedef struct dt_develop_t
       /* get current module group */
       uint32_t (*get)(struct dt_lib_module_t *self);
       /* test if iop group flags matches modulegroup */
-      gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
+      gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, struct dt_iop_module_t *module);
       /* switch to modulegroup */
       void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
       /* update modulegroup visibility */
       void (*update_visibility)(struct dt_lib_module_t *self);
       /* set focus to the search module text box */
       void (*search_text_focus)(struct dt_lib_module_t *self);
+      /* test if module is preset in one of the current groups */
+      gboolean (*test_visible)(struct dt_lib_module_t *self, gchar *module);
     } modulegroups;
 
     // snapshots plugin hooks
@@ -259,6 +270,7 @@ typedef struct dt_develop_t
     dt_dev_overexposed_colorscheme_t colorscheme;
     float lower;
     float upper;
+    dt_clipping_preview_mode_t mode;
   } overexposed;
 
   // for the raw overexposure indicator
@@ -303,7 +315,7 @@ typedef struct dt_develop_t
     GtkWidget *second_wnd;
     GtkWidget *widget;
     int width, height;
-    double dpi, dpi_factor, ppd;
+    double dpi, dpi_factor, ppd, ppd_thb;
 
     GtkWidget *button;
 
@@ -391,8 +403,6 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
 /*
  * modulegroups plugin hooks
  */
-/** check if modulegroups hooks are available */
-gboolean dt_dev_modulegroups_available(dt_develop_t *dev);
 /** switch to modulegroup of module */
 void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** update modulegroup visibility */
@@ -404,9 +414,11 @@ void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */
 uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
 /** test if iop group flags matches modulegroup */
-gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group);
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, struct dt_iop_module_t *module);
 /** reorder the module list */
 void dt_dev_reorder_gui_module_list(dt_develop_t *dev);
+/** test if the iop is visible in current groups layout **/
+gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module);
 
 /** request snapshot */
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);

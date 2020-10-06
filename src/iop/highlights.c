@@ -47,7 +47,7 @@ typedef enum dt_iop_highlights_mode_t
 {
   DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "clip highlights"
   DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
-  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color" 
+  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
 } dt_iop_highlights_mode_t;
 
 typedef struct dt_iop_highlights_params_t
@@ -83,7 +83,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -1031,14 +1031,13 @@ void gui_update(struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // enable this per default if raw or sraw, 
+  // enable this per default if raw or sraw,
   module->default_enabled = dt_image_is_rawprepare_supported(&(module->dev->image_storage));
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_highlights_gui_data_t));
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = IOP_GUI_ALLOC(highlights);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("highlight reconstruction method"));

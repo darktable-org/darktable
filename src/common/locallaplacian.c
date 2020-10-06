@@ -184,7 +184,7 @@ static inline __m128 convolve14641_vert(const float *in, const int wd)
   _mm_prefetch(in+4+3*wd, _MM_HINT_T0);
   __m128 t = _mm_mul_ps(r1, _mm_load_ps(four)); // t= 4*r1+4*r2+4*r3
   _mm_prefetch(in+4+4*wd, _MM_HINT_T0);
-  return _mm_add_ps(r0, t);                   // r0+4*r1+6*r2+4*r3+r4 
+  return _mm_add_ps(r0, t);                   // r0+4*r1+6*r2+4*r3+r4
 }
 #endif
 

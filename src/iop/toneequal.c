@@ -296,7 +296,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -1771,7 +1771,8 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
     g->mask_display = !g->mask_display;
 
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
-  dt_dev_reprocess_center(self->dev);
+//  dt_dev_reprocess_center(self->dev);
+  dt_iop_refresh_center(self);
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
@@ -2985,8 +2986,7 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_toneequalizer_gui_data_t));
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_iop_toneequalizer_gui_data_t *g = IOP_GUI_ALLOC(toneequalizer);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   gui_cache_init(self);
@@ -3164,12 +3164,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget),  g->show_luminance_mask, TRUE, TRUE, 0);
 
   // Force UI redraws when pipe starts/finishes computing and switch cursors
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_develop_preview_pipe_finished_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
                             G_CALLBACK(_develop_ui_pipe_started_callback), self);
 
   show_guiding_controls(self);
@@ -3181,9 +3181,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_develop_ui_pipe_started_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_develop_preview_pipe_finished_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_started_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_preview_pipe_finished_callback), self);
 
   if(g->desc) pango_font_description_free(g->desc);
   if(g->layout) g_object_unref(g->layout);
@@ -3191,8 +3191,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   if(g->cst) cairo_surface_destroy(g->cst);
 
   dt_pthread_mutex_destroy(&g->lock);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
