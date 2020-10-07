@@ -1424,6 +1424,41 @@
     <shortdescription>ask before deleting a tag</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tagging/dttags</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show darktable internal tags</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tagging/nosuggestion</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether display suggestions</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tagging/treeview</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether display tags in list or tree</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tagging/hidehierarchy</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show/hide the tag hierarchy</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tagging/listsortedbycount</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to sort tags by count or by name</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="security">
     <name>plugins/lighttable/style/ask_before_delete_style</name>
     <type>bool</type>
