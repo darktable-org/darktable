@@ -383,7 +383,7 @@ static void _validate_dimensions(dt_lib_export_t *d)
   uint32_t height = atoi(gtk_entry_get_text(GTK_ENTRY(d->height)));
   if(width > d->max_allowed_width || height > d->max_allowed_height)
   {
-    width = width > d->max_allowed_width ? dt_conf_get_int(CONFIG_PREFIX "width"): width;
+    width = width > d->max_allowed_width ? dt_conf_get_int(CONFIG_PREFIX "width") : width;
     height = height > d->max_allowed_height ? dt_conf_get_int(CONFIG_PREFIX "height") : height;
     _set_dimensions(d, width, height);
   }
