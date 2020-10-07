@@ -348,9 +348,10 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                     N_("legacy flag. set for all new images"),
                                     N_("local copy"),
                                     N_("has .txt"),
-                                    N_("has .wav")
+                                    N_("has .wav"),
+                                    N_("monochrome")
       };
-      char *tooltip_parts[14] = { 0 };
+      char *tooltip_parts[15] = { 0 };
       int next_tooltip_part = 0;
 
       memset(value, EMPTY_FIELD, sizeof(value));
@@ -439,6 +440,12 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[10]);
       }
 
+      if(dt_image_monochrome_flags(img))
+      {
+        value[12] = 'm';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[11]);
+      }
+
       static const struct
       {
         char *tooltip;
@@ -460,11 +467,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       };
 
       const int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
-      value[12] = loaders[loader].flag;
+      value[13] = loaders[loader].flag;
       char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders[loader].tooltip));
       tooltip_parts[next_tooltip_part++] = loader_tooltip;
 
-      value[13] = '\0';
+      value[14] = '\0';
 
       flags_tooltip = g_strjoinv("\n", tooltip_parts);
       g_free(loader_tooltip);

@@ -1325,7 +1325,7 @@ void reload_defaults(dt_iop_module_t *module)
   d->distance = img->exif_focus_distance == 0.0f ? 1000.0f : img->exif_focus_distance;
   d->target_geom = LF_RECTILINEAR;
 
-  if(dt_image_is_monochrome(img)) d->modify_flags &= ~LF_MODIFY_TCA;
+  if(dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) d->modify_flags &= ~LF_MODIFY_TCA;
 
   // init crop from db:
   char model[100]; // truncate often complex descriptions.

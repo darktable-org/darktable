@@ -2339,7 +2339,14 @@
     <shortdescription>auto-apply sharpen</shortdescription>
     <longdescription>this added sharpen is not recommended on cameras without a low-pass filter. you should disable this option if you use one of those more recent cameras or sharpen your images with other means. (need a restart)</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig prefs="processing">
+    <name>ui/detect_mono_exif</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>detect monochrome previews</shortdescription>
+    <longdescription>many monochrome images can be identified via exif and preview data. beware: this slows down imports and reading exif data</longdescription>
+ </dtconfig>
+ <dtconfig>
     <name>screen_dpi_overwrite</name>
     <type>float</type>
     <default>-1.0</default>

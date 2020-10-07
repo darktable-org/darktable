@@ -146,7 +146,7 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   {
     thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     thumb->rating = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
-    thumb->is_bw = dt_image_is_monochrome(img);
+    thumb->is_bw = dt_image_monochrome_flags(img);
     thumb->is_hdr = dt_image_is_hdr(img);
 
     thumb->groupid = img->group_id;
@@ -1299,6 +1299,7 @@ void dt_thumbnail_update_infos(dt_thumbnail_t *thumb)
 {
   if(!thumb) return;
   _image_get_infos(thumb);
+  _thumb_write_extension(thumb);
   _thumb_update_icons(thumb);
   gtk_widget_queue_draw(thumb->w_main);
 }
