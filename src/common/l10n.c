@@ -34,20 +34,56 @@
 #include <windows.h>
 #endif
 
+static gchar* _dt_full_locale_name(const char *locale)
+{
+#if defined(__linux__) || defined(__APPLE__)
+  gchar *output = NULL;
+  GError *error = NULL;
+  if(!g_spawn_command_line_sync("locale -a", &output, NULL, NULL, &error))
+  {
+    if(error)
+    {
+      fprintf(stderr, "couldn't check locale: '%s'\n", error->message);
+      g_error_free(error);
+    }
+  }
+  else
+  {
+    if(output)
+    {
+      gchar **locales = g_strsplit (output, "\n", -1);
+      g_free(output);
+      int j = 0;
+      while(locales[j])
+      {
+        if(g_str_has_prefix(locales[j], locale))
+        {
+          // return first found variant - this is most likelly the best one
+          gchar *ret=g_strdup(locales[j]);
+          g_strfreev(locales);
+          return ret;
+        }
+        j++;
+      }
+    }
+  }
+  return NULL;
+#else
+  // TODO: check a way to do above on windows
+  return NULL;
+#endif
+}
+
 static void set_locale(const char *ui_lang, const char *old_env)
 {
   if(ui_lang && *ui_lang)
   {
-#ifdef __APPLE__
-    char* full_locale = dt_osx_full_locale_name(ui_lang);
+    gchar *full_locale = _dt_full_locale_name(ui_lang);
     if(full_locale)
     {
       g_setenv("LANG", full_locale, TRUE);
-      free(full_locale);
+      g_free(full_locale);
     }
-#else
-    // TODO: set LANG on other platforms too
-#endif
     g_setenv("LANGUAGE", ui_lang, TRUE);
     gtk_disable_setlocale();
   }
