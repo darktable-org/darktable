@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "common/database.h"
 #include "common/history.h"
 #include "common/image.h"
@@ -42,6 +43,7 @@ typedef enum dt_control_crawler_cols_t
   DT_CONTROL_CRAWLER_COL_XMP_PATH,
   DT_CONTROL_CRAWLER_COL_TS_XMP,
   DT_CONTROL_CRAWLER_COL_TS_DB,
+  DT_CONTROL_CRAWLER_COL_TS,    // new timestamp to db
   DT_CONTROL_CRAWLER_NUM_COLS
 } dt_control_crawler_cols_t;
 
@@ -103,7 +105,7 @@ GList *dt_control_crawler_run()
       struct stat statbuf;
       // on Windows the encoding might not be UTF8
       gchar *xmp_path_locale = g_locale_from_utf8(xmp_path, -1, NULL, NULL, NULL);
-      const int stat_res = stat(xmp_path, &statbuf);
+      const int stat_res = stat(xmp_path_locale, &statbuf);
       g_free(xmp_path_locale);
       if(stat_res == -1) continue; // TODO: shall we report these?
 
@@ -265,16 +267,33 @@ static void _reload_button_clicked(GtkButton *button, gpointer user_data)
   {
     gboolean selected;
     int id;
-    gchar *xmp_path;
-    gtk_tree_model_get(gui->model, &iter, DT_CONTROL_CRAWLER_COL_SELECTED, &selected,
-                       DT_CONTROL_CRAWLER_COL_ID, &id, DT_CONTROL_CRAWLER_COL_XMP_PATH, &xmp_path, -1);
+    gchar *xmp_path = NULL;
+    time_t timestamp;
+    gtk_tree_model_get(gui->model, &iter,
+                       DT_CONTROL_CRAWLER_COL_SELECTED, &selected,
+                       DT_CONTROL_CRAWLER_COL_ID, &id,
+                       DT_CONTROL_CRAWLER_COL_XMP_PATH, &xmp_path,
+                       DT_CONTROL_CRAWLER_COL_TS, &timestamp,
+                       -1);
     if(selected)
     {
+      // align db write timestamp on xmp file timestamp
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "UPDATE main.images SET write_timestamp = ?2 WHERE id = ?1",
+         -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, timestamp);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
       dt_history_load_and_apply(id, xmp_path, 0);
       valid = gtk_list_store_remove(GTK_LIST_STORE(gui->model), &iter);
     }
     else
       valid = gtk_tree_model_iter_next(gui->model, &iter);
+    g_free(xmp_path);
   }
   // we also want to disable the "select all" thing
   _clear_select_all(gui);
@@ -291,8 +310,10 @@ void _overwrite_button_clicked(GtkButton *button, gpointer user_data)
   {
     gboolean selected;
     int id;
-    gtk_tree_model_get(gui->model, &iter, DT_CONTROL_CRAWLER_COL_SELECTED, &selected,
-                       DT_CONTROL_CRAWLER_COL_ID, &id, -1);
+    gtk_tree_model_get(gui->model, &iter,
+                       DT_CONTROL_CRAWLER_COL_SELECTED, &selected,
+                       DT_CONTROL_CRAWLER_COL_ID, &id,
+                       -1);
     if(selected)
     {
       dt_image_write_sidecar_file(id);
@@ -322,7 +343,8 @@ void dt_control_crawler_show_image_list(GList *images)
                                            G_TYPE_STRING,  // image path
                                            G_TYPE_STRING,  // xmp path
                                            G_TYPE_STRING,  // timestamp from xmp
-                                           G_TYPE_STRING   // timestamp from db
+                                           G_TYPE_STRING,  // timestamp from db
+                                           G_TYPE_INT      // timestamp to db
                                            );
 
   gui->model = GTK_TREE_MODEL(store);
@@ -336,10 +358,15 @@ void dt_control_crawler_show_image_list(GList *images)
     strftime(timestamp_db, sizeof(timestamp_db), "%c", localtime(&item->timestamp_db));
     strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime(&item->timestamp_xmp));
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, DT_CONTROL_CRAWLER_COL_SELECTED, 0, DT_CONTROL_CRAWLER_COL_ID, item->id,
-                       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path, DT_CONTROL_CRAWLER_COL_XMP_PATH,
-                       item->xmp_path, DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
-                       DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db, -1);
+    gtk_list_store_set(store, &iter,
+                       DT_CONTROL_CRAWLER_COL_SELECTED, 0,
+                       DT_CONTROL_CRAWLER_COL_ID, item->id,
+                       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path,
+                       DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
+                       DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
+                       DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
+                       DT_CONTROL_CRAWLER_COL_TS, item->timestamp_xmp,
+                       -1);
     g_free(item->image_path);
     g_free(item->xmp_path);
     list_iter = g_list_next(list_iter);

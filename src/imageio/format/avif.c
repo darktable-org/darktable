@@ -297,6 +297,62 @@ int write_image(struct dt_imageio_module_data_t *data,
   avifImageRGBToYUV(image, &rgb);
 
   if (imgid > 0) {
+    gboolean use_icc = FALSE;
+
+#if AVIF_VERSION >= 800
+    image->colorPrimaries = AVIF_COLOR_PRIMARIES_UNKNOWN;
+    image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_UNKNOWN;
+    image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_UNSPECIFIED;
+
+    switch (over_type) {
+      case DT_COLORSPACE_SRGB:
+          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
+          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
+          break;
+      case DT_COLORSPACE_REC709:
+          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_BT470M;
+          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
+        break;
+      case DT_COLORSPACE_LIN_REC709:
+          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
+          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
+        break;
+      case DT_COLORSPACE_LIN_REC2020:
+          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
+          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
+          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
+        break;
+      case DT_COLORSPACE_PQ_REC2020:
+          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
+          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
+          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
+        break;
+      case DT_COLORSPACE_HLG_REC2020:
+          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
+          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
+          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
+        break;
+      case DT_COLORSPACE_PQ_P3:
+          image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
+          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
+          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
+        break;
+      case DT_COLORSPACE_HLG_P3:
+          image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
+          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
+          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
+        break;
+      default:
+        break;
+    }
+
+    if (image->colorPrimaries == AVIF_COLOR_PRIMARIES_UNKNOWN) {
+      use_icc = TRUE;
+    }
+#else /* AVIF_VERSION 700 */
     avifNclxColorProfile nclx = {
         .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_UNKNOWN,
     };
@@ -304,18 +360,26 @@ int write_image(struct dt_imageio_module_data_t *data,
     switch (over_type) {
       case DT_COLORSPACE_SRGB:
         nclx = (avifNclxColorProfile) {
-          .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_SRGB,
+          .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT709,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_SRGB,
-          .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_SRGB,
+          .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT709,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_REC709:
         nclx = (avifNclxColorProfile) {
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT709,
-          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_GAMMA22,
+          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT470M,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT709,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_LIN_REC709:
@@ -323,7 +387,11 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT709,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_LINEAR,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT709,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_LIN_REC2020:
@@ -331,53 +399,75 @@ int write_image(struct dt_imageio_module_data_t *data,
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT2020,
           .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_LINEAR,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT2020_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_PQ_REC2020:
         nclx = (avifNclxColorProfile) {
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT2020,
-          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_PQ,
+          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_SMPTE2084,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT2020_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_HLG_REC2020:
         nclx = (avifNclxColorProfile) {
           .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_BT2020,
-          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_HLG,
+          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_HLG,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_BT2020_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_PQ_P3:
         nclx = (avifNclxColorProfile) {
-          .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_P3,
-          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_PQ,
+          .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_SMPTE432,
+          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_SMPTE2084,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       case DT_COLORSPACE_HLG_P3:
         nclx = (avifNclxColorProfile) {
-          .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_P3,
-          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_BT2100_HLG,
+          .colourPrimaries = AVIF_NCLX_COLOUR_PRIMARIES_SMPTE432,
+          .transferCharacteristics = AVIF_NCLX_TRANSFER_CHARACTERISTICS_HLG,
           .matrixCoefficients = AVIF_NCLX_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL,
+#if AVIF_VERSION > 700
+          .range = AVIF_RANGE_FULL,
+#else
           .fullRangeFlag = AVIF_NCLX_FULL_RANGE,
+#endif
         };
         break;
       default:
         break;
     }
 
-    dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s - %s]\n",
-             dt_colorspaces_get_name(over_type, filename),
-             nclx.colourPrimaries != AVIF_NCLX_COLOUR_PRIMARIES_UNKNOWN ?
-                "nclx" : "icc");
-
     if (nclx.colourPrimaries != AVIF_NCLX_COLOUR_PRIMARIES_UNKNOWN) {
         avifImageSetProfileNCLX(image, &nclx);
-    } else {
+        use_icc = TRUE;
+    }
+#endif
+    dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s - %s]\n",
+             dt_colorspaces_get_name(over_type, filename),
+             use_icc ? "icc" : "nclx");
+
+    if (use_icc) {
       const dt_colorspaces_color_profile_t *cp =
         dt_colorspaces_get_output_profile(imgid,
                                           over_type,

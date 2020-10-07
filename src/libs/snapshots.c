@@ -156,8 +156,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
     float pzx, pzy;
     dt_dev_get_pointer_zoom_pos(darktable.develop, 0, 0, &pzx, &pzy);
-    pzx += 0.5f;
-    pzy += 0.5f;
+    pzx = fmin(pzx + 0.5f, 0.0f);
+    pzy = fmin(pzy + 0.5f, 0.0f);
 
     d->vp_width = width;
     d->vp_height = height;
@@ -379,13 +379,10 @@ void gui_init(dt_lib_module_t *self)
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* create take snapshot button */
-  GtkWidget *button = gtk_button_new_with_label(_("take snapshot"));
-  d->take_button = button;
-  g_signal_connect(G_OBJECT(button), "clicked",
+  d->take_button = dt_ui_button_new(_("take snapshot"), _("take snapshot to compare with another image "
+                                      "or the same image at another stage of development"), "snapshots.html#snapshots");
+  g_signal_connect(G_OBJECT(d->take_button), "clicked",
                    G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
-  gtk_widget_set_tooltip_text(button, _("take snapshot to compare with another image "
-                                        "or the same image at another stage of development"));
-  dt_gui_add_help_link(button, "snapshots.html#snapshots");
 
   /*
    * initialize snapshots
@@ -410,15 +407,16 @@ void gui_init(dt_lib_module_t *self)
              "%s/dt_snapshot_%d.png", localtmpdir, k);
 
     /* add button to snapshot box */
-    gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
 
     /* prevent widget to show on external show all */
     gtk_widget_set_no_show_all(d->snapshot[k].button, TRUE);
   }
 
   /* add snapshot box and take snapshot button to widget ui*/
-  gtk_box_pack_start(GTK_BOX(self->widget), d->snapshots_box, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_scroll_wrap(d->snapshots_box, 1, "plugins/darkroom/snapshots/windowheight"), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -431,6 +429,7 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_MIDDLE);
 static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -467,6 +466,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   }
   g_snprintf(label, sizeof(label), "%s (%d)", name, darktable.develop->history_end);
   gtk_button_set_label(GTK_BUTTON(d->snapshot[0].button), label);
+  ellipsize_button(d->snapshot[0].button);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->snapshot[0].button)), GTK_ALIGN_START);
 
   dt_lib_snapshot_t *s = d->snapshot + 0;
@@ -485,6 +485,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   /* request a new snapshot for top slot */
   dt_dev_snapshot_request(darktable.develop, (const char *)&d->snapshot[0].filename);
 }
+#undef ellipsize_button
 
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer user_data)
 {
@@ -531,11 +532,9 @@ static gboolean _lib_snapshots_toggle_last(GtkAccelGroup *accel_group, GObject *
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+
   if(d->num_snapshots)
-  {
-    gtk_widget_activate(d->snapshot[0].button);
-    _lib_snapshots_toggled_callback((GtkToggleButton *)(d->snapshot[0].button), data);
-  }
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button), !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button)));
 
   return TRUE;
 

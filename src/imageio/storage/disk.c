@@ -141,6 +141,7 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
     gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
 
     gtk_entry_set_text(GTK_ENTRY(d->entry), escaped); // the signal handler will write this to conf
+    gtk_editable_set_position(GTK_EDITABLE(d->entry), strlen(escaped));
     g_free(dir);
     g_free(composed);
     g_free(escaped);
@@ -174,6 +175,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), dir);
+    gtk_editable_set_position(GTK_EDITABLE(widget), strlen(dir));
     g_free(dir);
   }
 
@@ -190,7 +192,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
 
-  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
+  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  gtk_widget_set_name(widget, "non-flat");
   gtk_widget_set_tooltip_text(widget, _("select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
@@ -385,6 +388,7 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   if(size != self->params_size(self)) return 1;
 
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
+  gtk_editable_set_position(GTK_EDITABLE(g->entry), strlen(d->filename));
   dt_bauhaus_combobox_set(g->onsave_action, d->onsave_action);
   return 0;
 }

@@ -19,6 +19,9 @@
 #include "dtgtk/thumbnail.h"
 #include <gtk/gtk.h>
 
+// number of images per row in zoomable mode
+#define DT_ZOOMABLE_NB_PER_ROW 13
+
 typedef enum dt_thumbtable_mode_t
 {
   DT_THUMBTABLE_MODE_FILEMANAGER,
@@ -45,6 +48,8 @@ typedef struct dt_thumbtable_t
 {
   dt_thumbtable_mode_t mode;
   dt_thumbnail_overlay_t overlays;
+  int overlays_block_timeout;
+  gboolean show_tooltips;
 
   GtkWidget *widget; // GtkLayout -- main widget
 
@@ -111,6 +116,8 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, int oldzoom, int newzoom
 
 // ensure that the mentionned image is visible by moving the view if needed
 gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid);
+// check if the mentioned image is visible
+gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, int imgid);
 
 // move by key actions.
 // this key accels are not managed here but inside view
@@ -130,6 +137,8 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view);
 
 // change the type of overlays that should be shown (over or under the image)
 void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over);
+// change the timeout of the overlays block
+void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table, const int timeout);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

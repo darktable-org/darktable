@@ -27,7 +27,6 @@
 /** The struct for live color picker samples */
 typedef struct dt_colorpicker_sample_t
 {
-
   /** The sample area or point */
   float point[2];
   float box[4];
@@ -47,8 +46,6 @@ typedef struct dt_colorpicker_sample_t
   GtkWidget *container;
   GtkWidget *color_patch;
   GtkWidget *output_label;
-  GtkWidget *delete_button;
-  GtkWidget *patch_box;
   GdkRGBA rgb;
 } dt_colorpicker_sample_t;
 

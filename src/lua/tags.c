@@ -18,8 +18,9 @@
 #include "lua/tags.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/tags.h"
 #include "common/image.h"
+#include "common/tags.h"
+#include "control/signal.h"
 #include "lua/image.h"
 #include "lua/types.h"
 
@@ -160,7 +161,8 @@ static int tag_delete(lua_State *L)
   }
   sqlite3_finalize(stmt);
 
-  dt_tag_remove(tagid, TRUE);
+  if(dt_tag_remove(tagid, TRUE))
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   GList *list_iter;
   if((list_iter = g_list_first(tagged_images)) != NULL)
@@ -190,8 +192,11 @@ int dt_lua_tag_attach(lua_State *L)
     luaA_to(L, dt_lua_tag_t, &tagid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_tag_attach_from_gui(tagid, imgid, TRUE, TRUE);
-  dt_image_synch_xmp(imgid);
+  if(dt_tag_attach(tagid, imgid, TRUE, TRUE))
+  {
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    dt_image_synch_xmp(imgid);
+  }
   return 0;
 }
 
@@ -209,8 +214,11 @@ int dt_lua_tag_detach(lua_State *L)
     luaA_to(L, dt_lua_tag_t, &tagid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_tag_detach(tagid, imgid, TRUE, TRUE);
-  dt_image_synch_xmp(imgid);
+  if(dt_tag_detach(tagid, imgid, TRUE, TRUE))
+  {
+    dt_image_synch_xmp(imgid);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  }
   return 0;
 }
 

@@ -125,10 +125,26 @@
             </row>
             <row>
               <entry>
-                <code>$(SEQUENCE)</code>
+                <code>$(VERSION_IF_MULTI)</code>
               </entry>
               <entry>
-                a sequence number within export job
+                same as $(VERSION) but null string if only one version exists
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(VERSION_NAME)</code>
+              </entry>
+              <entry>
+                version name from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(SEQUENCEn)</code>
+              </entry>
+              <entry>
+                a sequence number within export job, 4 digits if n is not specified
               </entry>
             </row>
             <row>
@@ -245,10 +261,26 @@
             </row>
             <row>
               <entry>
+                <code>$(EXIF_ISO)</code>
+              </entry>
+              <entry>
+                ISO value
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <code>$(EXIF_EXPOSURE)</code>
               </entry>
               <entry>
                 Exif exposure
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_EXPOSURE_BIAS)</code>
+              </entry>
+              <entry>
+                Exif exposure bias
               </entry>
             </row>
             <row>
@@ -333,6 +365,14 @@
             </row>
             <row>
               <entry>
+                <code>$(LENS)</code>
+              </entry>
+              <entry>
+                lens
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <code>$(TITLE)</code>
               </entry>
               <entry>
@@ -373,14 +413,6 @@
             </row>
             <row>
               <entry>
-                <code>$(USERNAME)</code>
-              </entry>
-              <entry>
-                user name
-              </entry>
-            </row>
-            <row>
-              <entry>
                 <code>$(PICTURES_FOLDER)</code>
               </entry>
               <entry>
@@ -401,6 +433,14 @@
               </entry>
               <entry>
                 desktop folder
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(OPENCL)</code>
+              </entry>
+              <entry>
+                whether OpenCL is activated
               </entry>
             </row>
             <row>
@@ -699,6 +739,15 @@
         your can tweak the export metadata configuration.
       </para>
 
+      <para>
+        Exported grayscale TIFF images - either originating from a monochrome camera or after
+        conversion - can either contain all valid RGB channels (default) or just one intensity
+        channel, you can select this in the menu.
+
+        The second option leads to smaller files but at least some windows printer drivers
+        don't like them.
+      </para>
+
     </sect4>
 
     <sect4 id="export_selected_usage_size">
@@ -730,6 +779,34 @@
         defined maximum width and height exceed the original dimensions. If set to
         <quote>no</quote> the exported image's dimensions will not exceed the original ones
         (after cropping).
+      </para>
+
+    </sect4>
+
+    <sect4 id="export_selected_usage_hq">
+
+      <title>high quality resampling</title>
+
+      <para>
+        If set to <quote>yes</quote> darktable will process the image
+        at full format. The resizing will be done as the very final
+        step. If set to <quote>no</quote> the image is first resized
+        to its final size before being processed.
+      </para>
+
+    </sect4>
+
+    <sect4 id="export_selected_usage_store_masks">
+
+      <title>store masks</title>
+
+      <para>
+        Only apply to <emphasis>TIFF</emphasis> format. If set to
+        <quote>yes</quote> darktable creates a TIFF layer for every
+        module using a mask (<quote>drawn</quote>,
+        <quote>parametric</quote> or <quote>raster</quote>). Each mask layer
+        is named after the module and contains a black and white image
+        representing the opacity mask as created by darktable.
       </para>
 
     </sect4>

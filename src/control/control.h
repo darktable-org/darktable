@@ -57,8 +57,11 @@ int dt_control_key_released(guint key, guint state);
 int dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
+void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_log_busy_enter();
+void dt_control_toast_busy_enter();
 void dt_control_log_busy_leave();
+void dt_control_toast_busy_leave();
 // disable the possibility to change the cursor shape with dt_control_change_cursor
 void dt_control_forbid_change_cursor();
 // enable the possibility to change the cursor shape with dt_control_change_cursor
@@ -96,6 +99,11 @@ void dt_control_navigation_redraw();
  */
 void dt_control_log_redraw();
 
+/** \brief request redraw of the toast widget.
+    This redraws the message label.
+ */
+void dt_control_toast_redraw();
+
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(const char *mode);
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
@@ -121,13 +129,15 @@ typedef struct dt_control_accels_t
       lighttable_sel_pagedown, lighttable_sel_start, lighttable_sel_end, lighttable_center, lighttable_preview,
       lighttable_preview_display_focus, lighttable_timeline, lighttable_preview_zoom_100,
       lighttable_preview_zoom_fit, global_focus_peaking, global_sideborders, global_accels_window,
-      darkroom_preview, slideshow_start, global_zoom_in, global_zoom_out, darkroom_skip_mouse_events,
-      darkroom_search_modules_focus;
+      darkroom_preview, slideshow_start, darkroom_skip_mouse_events;
 } dt_control_accels_t;
 
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
 #define DT_CTL_LOG_TIMEOUT 5000
+#define DT_CTL_TOAST_SIZE 10
+#define DT_CTL_TOAST_MSG_SIZE 200
+#define DT_CTL_TOAST_TIMEOUT 1500
 /**
  * this manages everything time-consuming.
  * distributes the jobs on all processors,
@@ -176,6 +186,13 @@ typedef struct dt_control_t
   int log_busy;
   dt_pthread_mutex_t log_mutex;
 
+  // toast log
+  int toast_pos, toast_ack;
+  char toast_message[DT_CTL_TOAST_SIZE][DT_CTL_TOAST_MSG_SIZE];
+  guint toast_message_timeout_id;
+  int toast_busy;
+  dt_pthread_mutex_t toast_mutex;
+
   // gui settings
   dt_pthread_mutex_t global_mutex, image_mutex;
   double last_expose_time;
@@ -187,7 +204,7 @@ typedef struct dt_control_t
   dt_pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
-  pthread_t *thread, kick_on_workers_thread;
+  pthread_t *thread, kick_on_workers_thread, update_gphoto_thread;
   dt_job_t **job;
 
   GList *queues[DT_JOB_QUEUE_MAX];

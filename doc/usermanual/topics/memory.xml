@@ -138,7 +138,7 @@
 
     <para>
       If this is the case, take a minute to optimize the preference settings in this case. You
-      will find them under <quote>core options</quote> (<xref linkend="core_options"/>) in
+      will find them under <quote>cpu / gpu / memory</quote> (<xref linkend="cpugpumemory"/>) in
       darktable's preference dialog. You should also find these parameters as configuration
       variables in $HOME/.config/darktable/darktablerc and edit them there.
     </para>

@@ -848,6 +848,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
   {
     xmlNodePtr tagNode = node;
 
+    gboolean tag_change = FALSE;
     while(tagNode)
     {
       if(!xmlStrcmp(tagNode->name, (const xmlChar *)"li"))
@@ -856,12 +857,13 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
         guint tagid = 0;
         if(!dt_tag_exists((char *)cvalue, &tagid)) dt_tag_new((char *)cvalue, &tagid);
 
-        dt_tag_attach_from_gui(tagid, imgid, FALSE, FALSE);
+        if(dt_tag_attach(tagid, imgid, FALSE, FALSE)) tag_change = TRUE;
         data->has_tags = TRUE;
         xmlFree(cvalue);
       }
       tagNode = tagNode->next;
     }
+    if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
   else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"RetouchInfo"))
   {
@@ -1140,7 +1142,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     xmlNodePtr xnode = xnodes->nodeTab[0];
     xmlChar *value = xmlNodeListGetString(doc, xnode->xmlChildrenNode, 1);
 
-    if(!strstr((char *)value, "Lightroom"))
+    if(!strstr((char *)value, "Lightroom") && !strstr((char *)value, "Camera Raw"))
     {
       xmlXPathFreeContext(xpathCtx);
       xmlXPathFreeObject(xpathObj);
@@ -1551,7 +1553,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
       /* update xmp file */
       dt_image_synch_xmp(imgid);
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     }
   }
 }

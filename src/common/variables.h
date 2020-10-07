@@ -38,6 +38,9 @@ typedef struct dt_variables_params_t
   /** internal variables data */
   struct dt_variables_data_t *data;
 
+  /** do we need to escape variables text for markup ? */
+  gboolean escape_markup;
+
 } dt_variables_params_t;
 
 /** allocate and initializes a dt_variables_params_t. */

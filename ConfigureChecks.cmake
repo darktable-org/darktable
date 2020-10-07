@@ -10,6 +10,8 @@ if (HAVE_CPUID_H)
     check_symbol_exists(__get_cpuid "cpuid.h" HAVE___GET_CPUID)
 endif()
 
+check_include_file(execinfo.h HAVE_EXECINFO_H)
+
 if (OpenMP_FOUND)
 
 set(CMAKE_REQUIRED_FLAGS ${OpenMP_C_FLAGS})

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "ThreadSafetyAnalysis.h"
+#include "external/ThreadSafetyAnalysis.h"
 #include <assert.h>
 #include <errno.h>
 #include <float.h>

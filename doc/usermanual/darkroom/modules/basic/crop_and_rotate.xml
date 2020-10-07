@@ -50,8 +50,7 @@
     <para>
       Some of the tools of this module, namely adjustment of angle and corrections of
       perspective distortion, will require the original image data to be interpolated. For best
-      sharpness results set <quote>lanczos3</quote> as pixel interpolator in <emphasis>core
-      options</emphasis> (see <xref linkend="core_options"/>).
+      sharpness results set <quote>lanczos3</quote> as pixel interpolator in <emphasis>processing</emphasis> tab in preferences dialog (see <xref linkend="processing"/>).
     </para>
 
   </sect4>
@@ -75,14 +74,14 @@
     </para>
 
     <sect5>
-      <title>flip</title>
+      <title>flip (main tab)</title>
       <para>
         This tool is used to flip the image on the horizontal,vertical or both axis.
       </para>
     </sect5>
 
     <sect5>
-      <title>angle</title>
+      <title>angle (main tab)</title>
       <para>
         This tool corrects the rotation angle helping you level an image. You can either set a
         numerical value or use your mouse directly on the image. To use your mouse, right-click,
@@ -93,7 +92,7 @@
     </sect5>
 
     <sect5>
-      <title>keystone</title>
+      <title>keystone (main tab)</title>
       <para>
         This tool is used to correct perspective distortions in your image. Useful for example
         when you shoot a high building from ground with a short focal length, aiming upwards
@@ -123,7 +122,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>free</emphasis>
+                  <emphasis>full</emphasis>
                 </entry>
                 <entry>
                   if you want to correct horizontal and vertical lines
@@ -174,7 +173,7 @@
     </sect5>
 
     <sect5>
-      <title>automatic cropping</title>
+      <title>automatic cropping (main tab)</title>
       <para>
         Use this options to avoid black edges on the image borders. Useful when you rotate the
         image.
@@ -182,7 +181,7 @@
     </sect5>
 
     <sect5>
-      <title>aspect</title>
+      <title>aspect (main tab)</title>
       <para>
         Here you can change what aspect ratio you want to have on the result, thus constraining
         the proportion of width and height of the crop rectangle to the aspect ratio of your
@@ -197,7 +196,7 @@
             <tbody>
               <row>
                 <entry>
-                  <emphasis>free</emphasis>
+                  <emphasis>freehand</emphasis>
                 </entry>
                 <entry>
                   free forming the rectangle without any ratio restrictions
@@ -205,18 +204,10 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>image</emphasis>
+                  <emphasis>original image</emphasis>
                 </entry>
                 <entry>
                   this option constrains the ratio to be equal to image ratio
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <emphasis>golden cut</emphasis>
-                </entry>
-                <entry>
-                  this option constrains the ratio to be equal the golden number
                 </entry>
               </row>
               <row>
@@ -225,6 +216,14 @@
                 </entry>
                 <entry>
                   this option constrains the ratio to be 1
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <emphasis>golden cut</emphasis>
+                </entry>
+                <entry>
+                  this option constrains the ratio to be equal the golden number
                 </entry>
               </row>
             </tbody>
@@ -249,17 +248,27 @@
     </sect5>
 
     <sect5>
-      <title>guides</title>
+      <title>guides (main tab)</title>
       <para>
         Many self-explaining guides are available to help you compose your image.
       </para>
     </sect5>
 
     <sect5>
-      <title>guides flip</title>
+      <title>guides flip (main tab)</title>
       <para>
         In case the chosen guidelines are not symmetrical relative to the image frame, you can
         flip them on the horizontal,vertical or both axis.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>margins tab</title>
+      <para>
+        In the margins tab, you can directly set the distance between the border of the uncropped image
+        and the crop rectangle for the four margins. The values are specified in percent of the width/height
+        of the uncropped image. These values will be updated if you move or resize the crop rectangle with
+        the mouse.
       </para>
     </sect5>
 

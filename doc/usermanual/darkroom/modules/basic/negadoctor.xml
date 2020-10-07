@@ -1,0 +1,339 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="negadoctor">
+
+  <title>Nega-Doctor</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>nega-doctor</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>nega-doctor</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              Negadoctor is a module designed to help you process a scanned film negative.
+              Whether the negative was scanned on a film scanner, held up to a white
+              light source like a computer screen, or back lit with off-camera flash
+              is irrelevant.
+            </entry>
+            <entry>
+              <graphic
+                  fileref="darkroom/modules/images/negadoctor_film.png"
+                  scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Preparation</title>
+
+    <para>
+      In case your film is scanned with a DSLR, you will need to
+      correct the color deviations of the DSLR first, in the workflow
+      and in the pipeline, to ensure maximal reliability of the film
+      color corrections. That is :
+    </para>
+
+    <itemizedlist>
+      <listitem><para>
+	white-balancing against the light source used to scan,
+      </para></listitem>
+      <listitem><para>
+	applying the standard matrice in the color input profile,
+      </para></listitem>
+      <listitem><para>
+	ensuring exposure is set to use a maximum range
+	of the histogram without clipping.
+      </para></listitem>
+    </itemizedlist>
+
+    <para>
+      You are advised to take a profiling picture of the light source
+      alone, with no film mounted, to sample the white balance. That
+      sampled value can then be copy-pasted to all your images
+      processed with the same setting.
+    </para>
+
+    <para>
+      The film should be scanned such that the frame is visible, so
+      you have a visible sample of the unexposed film base (substrate
+      ?) that you can use to set the Dmin. If your film holder
+      completely hides this mask, you are advised to take a profiling
+      picture of the shifted film in the holder, sample the Dmin once
+      for the film stripe on that profiling picture, and copy-paste
+      the settings for all other edits.
+    </para>
+
+    <para>
+      The modules <quote>filmic</quote>, <quote>filmic RGB</quote> and
+      <quote>base curve</quote> should better be disabled when working
+      with scanned film.
+    </para>
+
+    <para>
+      The working color profile, for darktable's pipeline, should be
+      set to Rec2020 linear or to a profile that actually represents
+      your film emulsion color space. See such ICC profiles provided
+      here :
+    </para>
+
+    <itemizedlist>
+      <listitem><para>
+	<ulink url="https://discuss.pixls.us/t/any-interest-in-a-film-negative-feature-in-rt/12569/177">
+	  <emphasis>Pixls.us Ref Msg 1</emphasis>
+	</ulink>
+    </para></listitem>
+
+    <listitem><para>
+	<ulink url="https://discuss.pixls.us/t/input-color-profile-to-use-for-negatives/20271/13">
+	  <emphasis>Pixls.us Ref Msg 2</emphasis>
+	</ulink>
+    </para></listitem>
+    </itemizedlist>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      It is strongly recommended that you set the parameters following
+      the order that the GUI presents (from top to bottom, tabs from
+      left to right) since the next settings depend on the previous.
+    </para>
+
+    <para>
+      The first option is the drop-down menu, Film Stock. Here, you
+      choose whether the negative you are working with is color, or
+      black and white. Selecting the black and white option simply
+      removes sliders in the module which pertain to color
+      information. This tidies up the interface by removing controls
+      you don't need.
+    </para>
+
+    <para>
+      Next are 3 tabs: <quote>Film Properties</quote>,
+      <quote>Corrections</quote>, and <quote>Print Properties</quote>.
+    </para>
+
+    <sect5>
+      <title>film properties</title>
+      <para>
+        The <quote>Colour of the film base</quote> section allows you
+        to sample an area from your scan which comprises the base film
+        stock. This is the area just outside of the image (IE. an
+        unexposed part of the film).  When working with black and
+        white negatives, you can leave this at its default value of
+        white.  If working on color film, click the eye dropper to the
+        right of the color bar. This will create a bounding box which
+        covers about 98% of your image. Then, left-click and drag
+        across an area of your negative which only has unexposed film
+        stock in it.  This will automatically calculate values for the
+        <quote>D min red component</quote>, <quote>D min green
+        component</quote> and <quote>D min blue component</quote>
+        sliders. At this point, it is likely that your image will
+        still look too dark.
+      </para>
+
+      <para>
+        Next we move to the D Max slider in the <quote>Dynamic range
+        of the film</quote> section. This slider effectively sets our
+        white point. Dragging this to the left will make the neg
+        brighter. Dragging to the right will make the neg darker. If
+        adjusting manually, it's a good idea to watch your histogram
+        and ensure that you don't push the highlights into clipping
+        (where the histogram is pushed off the right hand side of the
+        graph).  Again, you can use the eye dropper (on the right) to
+        allow Negadoctor to automatically calculate this value to
+        ensure maximal use of the histogram without clipping. If using
+        the eye dropper, left-click and drag to draw a rectangle
+        across only the exposed parts of the neg. Don't include the
+        unexposed film stock in the rectangle, as this will skew the
+        result.
+      </para>
+
+      <para>
+        Then, the <quote>Scan exposure bias</quote> slider under <quote>Scanner exposure
+        settings</quote> allows us to set a black point. Dragging this to the
+        left will make the neg brighter. Dragging to the right will
+        make the neg darker. If adjusting manually, it's a good idea
+        to watch your histogram and ensure that you don't push the
+        shadows into clipping (where the histogram is pushed off the
+        left hand side of the graph).  Again, you can use the eye
+        dropper to allow Negadoctor to automatically calculate any
+        needed offset.
+      </para>
+
+      <para>
+        By now, your neg should be looking pretty close to what you
+        were expecting to see. However, for color negs, you might need
+        an extra step.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>corrections</title>
+
+      <para>
+        <informaltable frame="none">
+          <tgroup cols="2" colsep="0" rowsep="0">
+            <colspec colwidth="6*"/>
+            <colspec colwidth="4*"/>
+            <tbody>
+              <row>
+                <entry>
+                  Moving to the <quote>Corrections</quote> tab, we
+                  have sliders which allow for corrections within both
+                  the shadows regions, and the highlight
+                  regions. Again, there are eye droppers to allow for
+                  automatic definition of shadow color casts, and/or
+                  highlight color casts.  For shadows, select the eye
+                  dropper, and left-click and drag a large rectangle
+                  across the majority of your image. Negadoctor will
+                  calculate appropriate values, and these will be
+                  displayed under <quote>shadows red offset</quote>,
+                  <quote>shadows green offset</quote>,and
+                  <quote>shadows blue offset</quote>.
+                </entry>
+                <entry>
+                  <graphic
+                      fileref="darkroom/modules/images/negadoctor_correction.png"
+                      scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+
+      <para>
+	This settings should not be needed for most well-preserved
+	negatives and will mostly be useful for old and
+	poorly-preserved negatives having a decayed film base that
+	induces undesirable color casts. Be aware that the shadows
+	color cast setting will have no effect if the <quote>scan
+	exposure bias</quote> setting, in the <quote>film</quote> tab,
+	is set to a non-zero value.
+      </para>
+
+      <para>
+        It's important to understand that the Highlights white balance
+        should always be calculated <emphasis>after</emphasis> shadows
+        color cast, as the values of the shadows color cast sliders
+        play a role in the values chosen for Highlights white balance
+        (if using the eye dropper to have Negadoctor calculate those
+        values).  For highlight color casts, select the eye dropper
+        and <emphasis>click</emphasis> and drag a rectangle across the
+        brightest area of your image.
+      </para>
+
+      <para>
+	This setting should not be needed if your film has been
+	exposed with a light source close to the one for which it was
+	balanced, for example if you shot a scene lit by daylight on a
+	daylight-balanced film.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>print properties</title>
+
+      <para>
+        <informaltable frame="none">
+          <tgroup cols="2" colsep="0" rowsep="0">
+            <colspec colwidth="6*"/>
+            <colspec colwidth="4*"/>
+            <tbody>
+              <row>
+                <entry>
+                  On the <quote>Print Properties</quote> tab, we have
+                  sliders for <quote>paper black</quote>, <quote>paper
+                  grade</quote>, <quote>paper gloss</quote>, and
+                  <quote>print exposure</quote> adjustment.
+                </entry>
+                <entry>
+                  <graphic
+                      fileref="darkroom/modules/images/negadoctor_print.png"
+                      scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+
+      <para>
+	These settings will mimic the tonal effect of photochemical
+	papers that will finally create the real image, in the analog
+	process.
+      </para>
+
+      <para>
+        For the <quote>paper black</quote>, select the eye dropper, and
+        <emphasis>click</emphasis> and drag across only the exposed
+        part of the negative. If you can see unexposed film stock
+        around the edges of your image, ensure that these areas are
+        excluded from the drawn rectangle for calculating the Paper
+        black value.
+      </para>
+
+      <para>
+	Paper black represents the density of the blackest
+	silver-halide cristal available on the virtual paper. Since
+	that black density always results in non-zero luminance in the
+	analog process, but the digital pipeline usually expects black
+	encoded at zero (RGB value), this setting lets you remap paper
+	black to pipeline black with an offset.
+      </para>
+
+      <para>
+        <quote>Paper grade</quote> is your gamma (contrast) control,
+        and defaults to a value of 4. If all has gone well, this value
+        (4) minus the value of D max (from the <quote>Film
+        Properties</quote> tab) should leave you with a value between
+        2 and 3.
+      </para>
+
+      <para>
+        <quote>Paper gloss</quote> is essentially a highlights
+        compression tool. As you drag this slider to the left, you
+        will see in the histogram that the highlight values are being
+        compressed (pushed to the left). Adjust this accordingly, so
+        that your highlights are not clipped in the histogram or to
+        simulate a mat printing with low-contrast highlights.
+      </para>
+
+      <para>
+        The <quote>Print exposure adjustment</quote> slider is to
+        correct any last minute clipping of highlights, although if
+        you have followed all prior instructions, you shouldn't need
+        it. It is also possible to increate print exposure while
+        deccreasing the paper gloss to brighten midtones without
+        losing highlights.
+      </para>
+    </sect5>
+  </sect4>
+
+</sect3>

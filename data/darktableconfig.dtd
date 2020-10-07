@@ -1,8 +1,9 @@
 <!ELEMENT dtconfiglist (dtconfig)*>
 <!ELEMENT dtconfig (name,type,default,capability?,shortdescription?,longdescription?)>
 <!ATTLIST dtconfig
-	prefs (core|gui|session) #IMPLIED
-        section (import|lighttable|darkroom|geoloc|security|cpugpu|xmp|quality) #IMPLIED
+	prefs (import|lighttable|darkroom|otherviews|processing|security|cpugpu|storage|misc) #IMPLIED
+        section (import|session|interface|other|tags|geoloc|slideshow|cpugpu|database|xmp|accel) #IMPLIED
+        restart (true|false) #IMPLIED
         capability CDATA #IMPLIED
 >
 <!ELEMENT name (#PCDATA)>

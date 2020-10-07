@@ -9,6 +9,7 @@ include(CheckCSourceCompiles)
 #
 FILE(GLOB SOURCE_FILES
   "bauhaus/bauhaus.c"
+  "common/atomic.c"
   "common/bilateral.c"
   "common/bilateralcl.c"
   "common/cache.c"
@@ -46,6 +47,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_pnm.c"
   "common/imageio_rgbe.c"
   "common/imageio_tiff.c"
+  "common/imageio_im.c"
   "common/imageio_gm.c"
   "common/imageio_rawspeed.cc"
   "common/import_session.c"
@@ -58,6 +60,7 @@ FILE(GLOB SOURCE_FILES
   "common/mipmap_cache.c"
   "common/module.c"
   "common/noiseprofiles.c"
+  "common/nlmeans_core.c"
   "common/pdf.c"
   "common/presets.c"
   "common/styles.c"
@@ -92,6 +95,7 @@ FILE(GLOB SOURCE_FILES
   "develop/develop.c"
   "develop/imageop.c"
   "develop/imageop_math.c"
+  "develop/imageop_gui.c"
   "develop/lightroom.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
@@ -102,6 +106,7 @@ FILE(GLOB SOURCE_FILES
   "develop/masks/masks.c"
   "develop/format.c"
   "dtgtk/button.c"
+  "dtgtk/culling.c"
   "dtgtk/drawingarea.c"
   "dtgtk/expander.c"
   "dtgtk/gradientslider.c"
@@ -122,6 +127,7 @@ FILE(GLOB SOURCE_FILES
   "gui/presets.c"
   "gui/styles_dialog.c"
   "gui/color_picker_proxy.c"
+  "gui/import_metadata.c"
   "libs/lib.c"
   "views/view.c"
   )
@@ -284,7 +290,7 @@ include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
 list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
-# used to launch a tiny http server, used by facebook exporter
+# used to launch a tiny http server, which could be used by OAuth services
 find_package(LibSoup2)
 if(LibSoup2_FOUND)
   include_directories(SYSTEM ${LibSoup2_INCLUDE_DIRS})
@@ -321,7 +327,7 @@ if(USE_WEBP)
 endif(USE_WEBP)
 
 if (USE_AVIF)
-    find_package(libavif 0.6.0 CONFIG)
+    find_package(libavif 0.7.2 CONFIG)
     if (TARGET avif)
         list(APPEND LIBS avif)
         add_definitions(-DHAVE_LIBAVIF=1)
@@ -409,11 +415,11 @@ endif(USE_KWALLET)
 
 if(USE_MAC_INTEGRATION)
   find_package(MacIntegration)
-  if(MACINTEGRATION_FOUND)
+  if(MacIntegration_FOUND)
     include_directories(SYSTEM ${MacIntegration_INCLUDE_DIRS})
     list(APPEND LIBS ${MacIntegration_LIBRARIES})
     add_definitions("-DMAC_INTEGRATION")
-  endif(MACINTEGRATION_FOUND)
+  endif(MacIntegration_FOUND)
 endif(USE_MAC_INTEGRATION)
 
 if(USE_UNITY)
@@ -434,6 +440,21 @@ if(USE_GRAPHICSMAGICK)
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
+
+if(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
+  # Do not use find_package(): module is not working with ImageMagick 7
+  find_package(PkgConfig)
+  pkg_check_modules(ImageMagick MagickWand QUIET)
+  if(ImageMagick_FOUND)
+    add_definitions(-DHAVE_IMAGEMAGICK ${ImageMagick_CFLAGS_OTHER})
+    if(NOT ImageMagick_VERSION VERSION_GREATER 7)
+      message(FATAL "ImageMagick version must be >= 7")
+    endif(NOT ImageMagick_VERSION VERSION_GREATER 7)
+    include_directories(SYSTEM ${ImageMagick_INCLUDE_DIRS})
+    find_library(ImageMagick_LIBRARY ${ImageMagick_LIBRARIES} HINTS ${ImageMagick_LIBDIR})
+    list(APPEND LIBS ${ImageMagick_LIBRARY})
+  endif(ImageMagick_FOUND)
+endif(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
 
 if(USE_GMIC)
   find_package(GMIC)
@@ -756,6 +777,13 @@ else(USE_GAME)
   message(STATUS "Game: no")
 endif(USE_GAME)
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if(HAVE_EXECINFO_H)
+    add_definitions("-DDT_HAVE_SIGNAL_TRACE")
+    message(STATUS "Signal debug: print-trace possible")
+  endif(HAVE_EXECINFO_H)
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
 #
 # set development flags for our code
 #
@@ -774,6 +802,12 @@ if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
     COMMAND ${Xsltproc_BIN} --nonet --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
     COMMENT "Generating preferences"
   )
+  add_custom_command(
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_conf.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/conf_gen.h
+    COMMAND ${Xsltproc_BIN} --nonet --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_conf.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/conf_gen.h
+    COMMENT "Generating configuration min/max/default/type"
+  )
 else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
     add_custom_command(
@@ -781,6 +815,12 @@ else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
       COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl HAVE_OPENCL=${HAVE_OPENCL} > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
       COMMENT "Generating preferences"
+    )
+    add_custom_command(
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_conf.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/conf_gen.h
+      COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_conf.xsl HAVE_OPENCL=${HAVE_OPENCL} > ${CMAKE_CURRENT_BINARY_DIR}/conf_gen.h
+      COMMENT "Generating configuration min/max/default/type"
     )
   else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
     message(FATAL_ERROR "Don't know how to generate preferences")
@@ -792,8 +832,13 @@ add_custom_target(
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+add_custom_target(
+  generate_conf ALL
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_conf.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/conf_gen.h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 if(USE_XMLLINT)
-  add_dependencies(generate_preferences validate_darktableconfig_xml)
+  add_dependencies(generate_preferences validate_darktableconfig_xml generate_conf)
 endif(USE_XMLLINT)
 
 #

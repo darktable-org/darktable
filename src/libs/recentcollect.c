@@ -304,7 +304,8 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)calloc(1, sizeof(dt_lib_recentcollect_t));
   self->data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  self->widget = dt_ui_scroll_wrap(box, 50, "plugins/lighttable/recentcollect/windowheight");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   d->inited = 0;
 
@@ -312,7 +313,7 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < NUM_LINES; k++)
   {
     d->item[k].button = gtk_button_new();
-    gtk_box_pack_start(GTK_BOX(self->widget), d->item[k].button, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(box), d->item[k].button, FALSE, TRUE, 0);
     g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_name(GTK_WIDGET(d->item[k].button), "recent-collection-button");
@@ -321,7 +322,7 @@ void gui_init(dt_lib_module_t *self)
   _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, NULL, -1, self);
 
   /* connect collection changed signal */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_lib_recentcollection_updated), (gpointer)self);
 }
 
@@ -329,7 +330,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   const int curr_pos = dt_ui_thumbtable(darktable.gui->ui)->offset;
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_recentcollection_updated), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_recentcollection_updated), self);
   free(self->data);
   self->data = NULL;
 }

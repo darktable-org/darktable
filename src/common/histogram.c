@@ -91,11 +91,11 @@ inline static void __attribute__((__unused__)) histogram_helper_cs_rgb_helper_pr
 }
 
 inline static void __attribute__((__unused__)) histogram_helper_cs_rgb_helper_process_pixel_float_compensated(
-    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram, 
+    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram,
     const dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  const float rgb[3] = { dt_ioppr_compensate_middle_grey(pixel[0], profile_info), 
-      dt_ioppr_compensate_middle_grey(pixel[1], profile_info), 
+  const float rgb[3] = { dt_ioppr_compensate_middle_grey(pixel[0], profile_info),
+      dt_ioppr_compensate_middle_grey(pixel[1], profile_info),
       dt_ioppr_compensate_middle_grey(pixel[2], profile_info) };
   const uint32_t R = PS(rgb[0], histogram_params);
   const uint32_t G = PS(rgb[1], histogram_params);
@@ -131,11 +131,11 @@ inline static void histogram_helper_cs_rgb_helper_process_pixel_m128(
 }
 
 inline static void histogram_helper_cs_rgb_helper_process_pixel_m128_compensated(
-    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram, 
+    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram,
     const dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  const __m128 rgb = { dt_ioppr_compensate_middle_grey(pixel[0], profile_info), 
-      dt_ioppr_compensate_middle_grey(pixel[1], profile_info), 
+  const __m128 rgb = { dt_ioppr_compensate_middle_grey(pixel[0], profile_info),
+      dt_ioppr_compensate_middle_grey(pixel[1], profile_info),
       dt_ioppr_compensate_middle_grey(pixel[2], profile_info), 1.f };
   const __m128 scale = _mm_set1_ps(histogram_params->mul);
   const __m128 val_min = _mm_setzero_ps();
@@ -181,7 +181,7 @@ inline static void histogram_helper_cs_rgb(const dt_dev_histogram_collection_par
 }
 
 inline static void histogram_helper_cs_rgb_compensated(const dt_dev_histogram_collection_params_t *const histogram_params,
-                                           const void *pixel, uint32_t *histogram, int j, 
+                                           const void *pixel, uint32_t *histogram, int j,
                                            const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;

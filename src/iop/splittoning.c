@@ -25,6 +25,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/resetlabel.h"
@@ -45,12 +46,12 @@ DT_MODULE_INTROSPECTION(1, dt_iop_splittoning_params_t)
 
 typedef struct dt_iop_splittoning_params_t
 {
-  float shadow_hue;
-  float shadow_saturation;
-  float highlight_hue;
-  float highlight_saturation;
-  float balance;  // center luminance of gradient
-  float compress; // Compress range
+  float shadow_hue;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+  float shadow_saturation;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "saturation"
+  float highlight_hue;        // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2 $DESCRIPTION: "hue"
+  float highlight_saturation; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "saturation"
+  float balance;              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 center luminance of gradient
+  float compress;             // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 33.0 Compress range
 } dt_iop_splittoning_params_t;
 
 typedef struct dt_iop_splittoning_gui_data_t
@@ -59,7 +60,6 @@ typedef struct dt_iop_splittoning_gui_data_t
   GtkWidget *shadow_colorpick, *highlight_colorpick;
   GtkWidget *shadow_hue_gslider, *shadow_sat_gslider;
   GtkWidget *highlight_hue_gslider, *highlight_sat_gslider;
-  dt_iop_color_picker_t color_picker;
 } dt_iop_splittoning_gui_data_t;
 
 typedef struct dt_iop_splittoning_data_t
@@ -77,14 +77,6 @@ typedef struct dt_iop_splittoning_global_data_t
   int kernel_splittoning;
 } dt_iop_splittoning_global_data_t;
 
-typedef enum dt_iop_splittoning_picker_t
-{
-  DT_SPLITTONING_NONE = 0,
-  DT_SPLITTONING_HIGHLIGHTS,
-  DT_SPLITTONING_SHADOWS
-} dt_iop_splittoning_picker_data_t;
-
-
 const char *name()
 {
   return _("split-toning");
@@ -97,7 +89,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -288,27 +280,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-
-static void balance_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  p->balance = 1.0f - dt_bauhaus_slider_get(slider) / 100.0f;
-  dt_iop_color_picker_reset(self, TRUE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void compress_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  p->compress = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(self, TRUE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 static inline void update_colorpicker_color(GtkWidget *colorpicker, float hue, float sat)
 {
   float rgb[3];
@@ -341,83 +312,44 @@ static inline void update_balance_slider_colors(
     hsl2rgb(rgb, highlight_hue, 1.0, 0.5);
     dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
   }
+
+  gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
 
-static void hue_callback(GtkWidget *slider, gpointer user_data)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
 
-  dt_iop_color_picker_reset(self, TRUE);
-
-  double hue = 0;
-  double saturation = 0;
-  GtkWidget *colorpicker;
-  GtkWidget *sat_slider = NULL;
-  if(slider == g->shadow_hue_gslider)
+  if(w == g->shadow_sat_gslider || w == g->shadow_hue_gslider)
   {
-    // Shadows
-    hue = p->shadow_hue = dt_bauhaus_slider_get(slider);
-    saturation = p->shadow_saturation;
-    colorpicker = GTK_WIDGET(g->shadow_colorpick);
-    sat_slider = g->shadow_sat_gslider;
-    update_balance_slider_colors(g->balance_scale, hue, -1);
+    update_colorpicker_color(g->shadow_colorpick, p->shadow_hue, p->shadow_saturation);
+
+    if(w == g->shadow_hue_gslider)
+    {
+      update_balance_slider_colors(g->balance_scale, p->shadow_hue, -1);
+      update_saturation_slider_end_color(g->shadow_sat_gslider, p->shadow_hue);
+
+      gtk_widget_queue_draw(GTK_WIDGET(g->shadow_sat_gslider));
+    }
   }
-  else
+  else if(w == g->highlight_sat_gslider || w == g->highlight_hue_gslider)
   {
-    hue = p->highlight_hue = dt_bauhaus_slider_get(slider);
-    saturation = p->highlight_saturation;
-    colorpicker = GTK_WIDGET(g->highlight_colorpick);
-    sat_slider = g->highlight_sat_gslider;
-    update_balance_slider_colors(g->balance_scale, -1, hue);
+    update_colorpicker_color(g->highlight_colorpick, p->highlight_hue, p->highlight_saturation);
+
+    if(w == g->highlight_hue_gslider)
+    {
+      update_balance_slider_colors(g->balance_scale, -1, p->highlight_hue);
+      update_saturation_slider_end_color(g->highlight_sat_gslider, p->highlight_hue);
+
+      gtk_widget_queue_draw(GTK_WIDGET(g->highlight_sat_gslider));
+    }
   }
-
-  update_colorpicker_color(colorpicker, hue, saturation);
-  update_saturation_slider_end_color(sat_slider, hue);
-
-  if(self->dt->gui->reset) return;
-
-  gtk_widget_queue_draw(GTK_WIDGET(sat_slider));
-  gtk_widget_queue_draw(GTK_WIDGET(g->balance_scale));
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void saturation_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
-
-  dt_iop_color_picker_reset(self, TRUE);
-
-  double hue = 0;
-  double saturation = 0;
-  GtkWidget *colorpicker;
-  if(slider == g->shadow_sat_gslider)
-  {
-    // Shadows
-    hue = dt_bauhaus_slider_get(g->shadow_hue_gslider);
-    p->shadow_saturation = saturation = dt_bauhaus_slider_get(slider);
-    colorpicker = GTK_WIDGET(g->shadow_colorpick);
-  }
-  else
-  {
-    hue = dt_bauhaus_slider_get(g->highlight_hue_gslider);
-    p->highlight_saturation = saturation = dt_bauhaus_slider_get(slider);
-    colorpicker = GTK_WIDGET(g->highlight_colorpick);
-  }
-
-  update_colorpicker_color(colorpicker, hue, saturation);
-
-  if(self->dt->gui->reset) return;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void colorpick_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
 
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
 
@@ -448,26 +380,7 @@ static void colorpick_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
-{
-  dt_iop_splittoning_gui_data_t *g =  (dt_iop_splittoning_gui_data_t *)self->gui_data;
-
-  const int current_picker = g->color_picker.current_picker;
-
-  g->color_picker.current_picker = DT_SPLITTONING_NONE;
-
-  if(button == g->shadow_hue_gslider)
-    g->color_picker.current_picker = DT_SPLITTONING_SHADOWS;
-  else if(button == g->highlight_hue_gslider)
-    g->color_picker.current_picker = DT_SPLITTONING_HIGHLIGHTS;
-
-  if (current_picker == g->color_picker.current_picker)
-    return DT_COLOR_PICKER_ALREADY_SELECTED;
-  else
-    return g->color_picker.current_picker;
-}
-
-static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
@@ -479,7 +392,7 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpi
   float H = .0f, S = .0f, L = .0f;
   rgb2hsl(self->picked_color, &H, &S, &L);
 
-  if(g->color_picker.current_picker == DT_SPLITTONING_HIGHLIGHTS)
+  if(picker == g->highlight_hue_gslider)
   {
     p_hue = &p->highlight_hue;
     p_saturation = &p->highlight_saturation;
@@ -507,24 +420,16 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpi
   *p_hue        = H;
   *p_saturation = S;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(hue, H);
   dt_bauhaus_slider_set(sat, S);
   update_colorpicker_color(colorpicker, H, S);
   update_saturation_slider_end_color(sat, H);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 
   gtk_widget_queue_draw(GTK_WIDGET(g->balance_scale));
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _iop_color_picker_update(dt_iop_module_t *self)
-{
-  dt_iop_splittoning_gui_data_t *g =  (dt_iop_splittoning_gui_data_t *)self->gui_data;
-  dt_bauhaus_widget_set_quad_active(g->shadow_hue_gslider, g->color_picker.current_picker == DT_SPLITTONING_SHADOWS);
-  dt_bauhaus_widget_set_quad_active(g->highlight_hue_gslider, g->color_picker.current_picker == DT_SPLITTONING_HIGHLIGHTS);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -563,7 +468,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->shadow_sat_gslider, p->shadow_saturation);
   dt_bauhaus_slider_set(g->highlight_hue_gslider, p->highlight_hue);
   dt_bauhaus_slider_set(g->highlight_sat_gslider, p->highlight_saturation);
-  dt_bauhaus_slider_set(g->balance_scale, (1 - p->balance) * 100.0);
+  dt_bauhaus_slider_set(g->balance_scale, p->balance);
   dt_bauhaus_slider_set(g->compress_scale, p->compress);
 
   update_colorpicker_color(GTK_WIDGET(g->shadow_colorpick), p->shadow_hue, p->shadow_saturation);
@@ -574,141 +479,81 @@ void gui_update(struct dt_iop_module_t *self)
   update_balance_slider_colors(g->balance_scale, p->shadow_hue, p->highlight_hue);
 }
 
-void init(dt_iop_module_t *module)
+static inline void gui_init_section(struct dt_iop_module_t *self, char *section, GtkWidget *slider_box,
+                                    GtkWidget *hue, GtkWidget *saturation, GtkWidget **picker, gboolean top)
 {
-  module->params = calloc(1, sizeof(dt_iop_splittoning_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_splittoning_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_splittoning_params_t);
-  module->gui_data = NULL;
-  dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t){ 0, 0.5, 0.2, 0.5, 0.5, 33.0 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_splittoning_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_splittoning_params_t));
-}
+  GtkWidget *label = dt_ui_section_label_new(section);
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
+    gtk_style_context_add_class(context, "section_label_top");
+  }
 
-static inline int gui_init_tab(
-    struct dt_iop_module_t *self,
-    int line,
-    const char *name,
-    GtkWidget **ppcolor,
-    const GdkRGBA *c,
-    GtkWidget **pphue,
-    GtkWidget **ppsaturation)
-{
-  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
-  GtkGrid *grid = GTK_GRID(self->widget);
-  gtk_grid_attach(grid, dt_ui_section_label_new(name), 0, line++, 2, 1);
-
-  // color button
-  GtkWidget *color;
-  *ppcolor = color = gtk_color_button_new_with_rgba(c);
-  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(color), FALSE);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(color), _("select tone color"));
-  g_signal_connect(G_OBJECT(color), "color-set", G_CALLBACK(colorpick_callback), self);
-
-  // hue slider
-  GtkWidget *hue;
-  *pphue = hue = (dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.01f, 0.0f, 2, 0));
-  dt_bauhaus_slider_set_stop(hue, 0.0f, 1.0f, 0.0f, 0.0f);
-  dt_bauhaus_widget_set_label(hue, NULL, _("hue"));
+  dt_bauhaus_slider_set_feedback(hue, 0);
+  dt_bauhaus_slider_set_stop(hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.322f, 0.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.498f, 0.0f, 1.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 0.664f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 0.830f, 1.0f, 0.0f, 1.0f);
-  dt_bauhaus_slider_set_stop(hue, 1.0f, 1.0f, 0.0f, 0.0f);
+  dt_bauhaus_slider_set_stop(hue, 1.0f  , 1.0f, 0.0f, 0.0f);
   gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
-  dt_bauhaus_widget_set_quad_paint(hue, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(hue, TRUE);
-  g_signal_connect(G_OBJECT(hue), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-  g_signal_connect(G_OBJECT(hue), "value-changed", G_CALLBACK(hue_callback), self);
+  dt_color_picker_new(self, DT_COLOR_PICKER_POINT, hue);
 
-  // saturation slider
-  GtkWidget *saturation;
-  *ppsaturation = saturation = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
-  dt_bauhaus_widget_set_label(saturation, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(saturation, _("select the saturation tone"));
-  g_signal_connect(G_OBJECT(saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
-  // pack the widgets
-  gtk_widget_set_hexpand(hue, TRUE); // make sure that the color picker doesn't become HUGE
-  gtk_grid_attach(grid, hue, 0, line, 1, 1);
-  gtk_grid_attach(grid, color, 1, line++, 1, 2);
-  gtk_grid_attach(grid, saturation, 0, line++, 1, 1);
+  *picker = gtk_color_button_new();
+  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(*picker), FALSE);
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(*picker), _("select tone color"));
+  g_signal_connect(G_OBJECT(*picker), "color-set", G_CALLBACK(colorpick_callback), self);
 
-  return line;
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), slider_box, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), *picker, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_splittoning_gui_data_t));
-  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
-  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
+  dt_iop_splittoning_gui_data_t *g = IOP_GUI_ALLOC(splittoning);
 
-  int line = 0;
-  self->widget = gtk_grid_new();
-  GtkGrid *grid = GTK_GRID(self->widget);
-  gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_spacing(grid, DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_homogeneous(grid, FALSE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  GtkWidget *shadows_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(self, "shadow_hue");
+  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(self, "shadow_saturation");
 
-  float rgb[3];
+  GtkWidget *highlights_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(self, "highlight_hue");
+  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(self, "highlight_saturation");
 
-  // Shadows
-  hsl2rgb(rgb, p->shadow_hue, p->shadow_saturation, 0.5f);
-  GdkRGBA sh_color = (GdkRGBA){.red = rgb[0], .green = rgb[1], .blue = rgb[2], .alpha = 1.0 };
-  line = gui_init_tab(self, line, _("shadows"), &g->shadow_colorpick, &sh_color, &g->shadow_hue_gslider, &g->shadow_sat_gslider);
+  // start building top level widget
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  // Highlights
-  hsl2rgb(rgb, p->highlight_hue, p->highlight_saturation, 0.5f);
-  GdkRGBA hi_color = (GdkRGBA){.red = rgb[0], .green = rgb[1], .blue = rgb[2], .alpha = 1.0 };
-  line = gui_init_tab(self, line, _("highlights"), &g->highlight_colorpick, &hi_color, &g->highlight_hue_gslider, &g->highlight_sat_gslider);
+  gui_init_section(self, _("shadows"), shadows_box, g->shadow_hue_gslider, g->shadow_sat_gslider, &g->shadow_colorpick, TRUE);
+
+  gui_init_section(self, _("highlights"), highlights_box, g->highlight_hue_gslider, g->highlight_sat_gslider, &g->highlight_colorpick, FALSE);
 
   // Additional parameters
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 0);
 
-  gtk_grid_attach(grid, dt_ui_section_label_new(_("properties")), 0, line++, 2, 1);
-
-  g->balance_scale = dt_bauhaus_slider_new_with_range_and_feedback(
-      self, 0.0, 100.0, 0.1, (1- p->balance) * 100.0, 2, 0);
+  g->balance_scale = dt_bauhaus_slider_from_params(self, N_("balance"));
+  dt_bauhaus_slider_set_feedback(g->balance_scale, 0);
+  dt_bauhaus_slider_set_step(g->balance_scale, 0.001);
+  dt_bauhaus_slider_set_digits(g->balance_scale, 4);
+  dt_bauhaus_slider_set_factor(g->balance_scale, -100.0);
+  dt_bauhaus_slider_set_offset(g->balance_scale, +100.0);
   dt_bauhaus_slider_set_format(g->balance_scale, "%.2f");
   dt_bauhaus_slider_set_stop(g->balance_scale, 0.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_slider_set_stop(g->balance_scale, 1.0f, 0.5f, 0.5f, 0.5f);
-  dt_bauhaus_widget_set_label(g->balance_scale, NULL, _("balance"));
   gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of split-toning"));
-  g_signal_connect(G_OBJECT(g->balance_scale), "value-changed", G_CALLBACK(balance_callback), self);
-  gtk_grid_attach(grid, g->balance_scale, 0, line++, 2, 1);
 
-  g->compress_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compress, 2);
+  g->compress_scale = dt_bauhaus_slider_from_params(self, N_("compress"));
   dt_bauhaus_slider_set_format(g->compress_scale, "%.2f%%");
-  dt_bauhaus_widget_set_label(g->compress_scale, NULL, _("compress"));
-  gtk_grid_attach(grid, g->compress_scale, 0, line++, 2, 1);
   gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve midtones"));
-  g_signal_connect(G_OBJECT(g->compress_scale), "value-changed", G_CALLBACK(compress_callback), self);
-
-  dt_iop_init_picker(&g->color_picker,
-              self,
-              DT_COLOR_PICKER_POINT,
-              _iop_color_picker_get_set,
-              _iop_color_picker_apply,
-              _iop_color_picker_update);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

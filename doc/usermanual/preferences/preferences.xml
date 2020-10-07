@@ -38,17 +38,45 @@
     </screenshot>
   </para>
 
-<!-- gui options -->
+<!-- general options -->
 
-  <xi:include href="gui_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="general.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<!-- core options -->
+<!-- import options -->
 
-  <xi:include href="core_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="import.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<!-- session options -->
+<!-- lighttable options -->
 
-  <xi:include href="session_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="lighttable_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
+<!-- darkroom options -->
+
+  <xi:include href="darkroom_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- other views options -->
+
+  <xi:include href="otherviews.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- processing options -->
+
+  <xi:include href="processing.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
+<!-- security options -->
+
+  <xi:include href="security.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- cpu / gpu / memory options -->
+
+  <xi:include href="cpugpumemory.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- storage options -->
+
+  <xi:include href="storage.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
+<!-- miscenallious options -->
+
+  <xi:include href="misc.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Keyaccelerators/shortcuts -->
 
@@ -57,5 +85,9 @@
 <!-- presets -->
 
   <xi:include href="presets.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  
+<!-- lua -->
+
+  <xi:include href="lua.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </chapter>

@@ -18,7 +18,7 @@
 #
 ################
 # sudo pacman -S base-devel cmake intltool lensfun curl exiv2 lcms2 librsvg libxslt sqlite pugixml
-# sudo pacman -S openexr libwebp flickcurl graphicsmagick libcups libsoup libgphoto2 sdl mesa-libgl dbus-glib osm-gps-map
+# sudo pacman -S openexr libwebp graphicsmagick libcups libsoup libgphoto2 sdl mesa-libgl dbus-glib osm-gps-map
 # sudo pacman -S jdk10-openjdk gnome-doc-utils fop imagemagick extra/docbook-xml extra/docbook-xsl po4a
 #
 # cd ~/aur
@@ -144,6 +144,9 @@ num_cpu()
         if [ $ncpu -lt 1 ] ; then
                 ncpu=1
         fi
+        if [ $ncpu -ge 8 ] ; then
+                ncpu=8
+        fi
         printf "$ncpu"
 }
 
@@ -186,12 +189,12 @@ fi
 # ---------------------------------------------------------------------------
 
 cat <<EOF
-Darktable build script
+darktable build script
 
 Building directory:  $BUILD_DIR
 Build tasks:         $MAKE_TASKS
 
-NOTE: dtorg languages are set in usermanual/CMakeLists.txt (dtorg_languages).
+NOTE: dtorg languages are set in doc/usermanual/DTORG.LINGUAS
 
 EOF
 

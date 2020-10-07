@@ -77,7 +77,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()
@@ -416,10 +416,18 @@ void init_presets(dt_iop_module_so_t *self)
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_flip_params_t tmp = (dt_iop_flip_params_t){ .orientation = ORIENTATION_NULL };
+  dt_iop_flip_params_t *d = self->default_params;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
+  d->orientation = ORIENTATION_NULL;
+
+  // report if reload_defaults was called unnecessarily => this should be considered a bug
+  // the whole point of reload_defaults is to update defaults _based on current image_
+  // any required initialisation should go in init (and not be performed repeatedly here)
+  if(!self->dev)
+  {
+    fprintf(stderr, "reload_defaults should not be called without image.\n");
+    return;
+  }
 
   self->default_enabled = 1;
 
@@ -435,39 +443,17 @@ void reload_defaults(dt_iop_module_t *self)
     {
       // convert the old legacy flip bits to a proper parameter set:
       self->default_enabled = 1;
-      tmp.orientation
+      d->orientation
           = merge_two_orientations(dt_image_orientation(&self->dev->image_storage),
                                    (dt_image_orientation_t)(self->dev->image_storage.legacy_flip.user_flip));
     }
     sqlite3_finalize(stmt);
   }
-
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_flip_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_flip_params_t));
 }
 
 void gui_update(struct dt_iop_module_t *self)
 {
   // nothing to do
-}
-
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_flip_data_t));
-  module->params = calloc(1, sizeof(dt_iop_flip_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_flip_params_t));
-  module->default_enabled = 1;
-  module->params_size = sizeof(dt_iop_flip_params_t);
-  module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)
@@ -523,17 +509,16 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   GtkWidget *label = dtgtk_reset_label_new(_("rotate"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CCW"));
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 1, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | 1, NULL);
   gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CW"));
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);

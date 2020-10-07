@@ -56,6 +56,35 @@ typedef struct dt_lib_select_t
       *select_untouched_button;
 } dt_lib_select_t;
 
+static void _update(dt_lib_module_t *self)
+{
+  dt_lib_select_t *d = (dt_lib_select_t *)self->data;
+
+  const uint32_t collection_cnt =  dt_collection_get_count_no_group(darktable.collection);
+  const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_all_button), selected_cnt < collection_cnt);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_none_button), selected_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_invert_button), collection_cnt > 0);
+
+  //theoretically can count if there are unaltered in collection but no need to waste CPU cycles on that.
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_untouched_button), collection_cnt > 0);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->select_film_roll_button), selected_cnt > 0);
+}
+
+static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+                                        int next, dt_lib_module_t *self)
+{
+  _update(self);
+}
+
 static void button_clicked(GtkWidget *widget, gpointer user_data)
 {
   switch(GPOINTER_TO_INT(user_data))
@@ -84,7 +113,6 @@ int position()
   return 800;
 }
 
-#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
@@ -95,49 +123,39 @@ void gui_init(dt_lib_module_t *self)
   GtkGrid *grid = GTK_GRID(self->widget);
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
-  GtkWidget *button;
 
-  button = gtk_button_new_with_label(_("select all"));
-  ellipsize_button(button);
-  d->select_all_button = button;
-  gtk_widget_set_tooltip_text(button, _("select all images in current collection"));
-  gtk_grid_attach(grid, button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
+  d->select_all_button = dt_ui_button_new(_("select all"), _("select all images in current collection"), NULL);
+  gtk_grid_attach(grid, d->select_all_button, 0, line, 1, 1);
+  g_signal_connect(G_OBJECT(d->select_all_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
-  button = gtk_button_new_with_label(_("select none"));
-  ellipsize_button(button);
-  d->select_none_button = button;
-  gtk_widget_set_tooltip_text(button, _("clear selection"));
-  gtk_grid_attach(grid, button, 1, line++, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
+  d->select_none_button = dt_ui_button_new(_("select none"), _("clear selection"), NULL);
+  gtk_grid_attach(grid, d->select_none_button, 1, line++, 1, 1);
+  g_signal_connect(G_OBJECT(d->select_none_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
 
+  d->select_invert_button = dt_ui_button_new(_("invert selection"), _("select unselected images\nin current collection"), NULL);
+  gtk_grid_attach(grid, d->select_invert_button, 0, line, 1, 1);
+  g_signal_connect(G_OBJECT(d->select_invert_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(2));
 
-  button = gtk_button_new_with_label(_("invert selection"));
-  ellipsize_button(button);
-  gtk_widget_set_tooltip_text(button, _("select unselected images\nin current collection"));
-  d->select_invert_button = button;
-  gtk_grid_attach(grid, button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(2));
+  d->select_film_roll_button = dt_ui_button_new(_("select film roll"), _("select all images which are in the same\nfilm roll as the selected images"), NULL);
+  gtk_grid_attach(grid, d->select_film_roll_button, 1, line++, 1, 1);
+  g_signal_connect(G_OBJECT(d->select_film_roll_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
-  button = gtk_button_new_with_label(_("select film roll"));
-  ellipsize_button(button);
-  d->select_film_roll_button = button;
-  gtk_widget_set_tooltip_text(button, _("select all images which are in the same\nfilm roll as the selected images"));
-  gtk_grid_attach(grid, button, 1, line++, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
+  d->select_untouched_button = dt_ui_button_new(_("select untouched"), _("select untouched images in\ncurrent collection"), NULL);
+  gtk_grid_attach(grid, d->select_untouched_button, 0, line, 2, 1);
+  g_signal_connect(G_OBJECT(d->select_untouched_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(_collection_updated_callback), self);
 
-  button = gtk_button_new_with_label(_("select untouched"));
-  ellipsize_button(button);
-  d->select_untouched_button = button;
-  gtk_widget_set_tooltip_text(button, _("select untouched images in\ncurrent collection"));
-  gtk_grid_attach(grid, button, 0, line, 2, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
+  _update(self);
 }
-#undef ellipsize_button
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   free(self->data);
   self->data = NULL;
 }

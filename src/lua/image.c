@@ -23,9 +23,10 @@
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/collection.h"
 #include "common/metadata.h"
-#include "common/mipmap_cache.h"
-#include "common/metadata.h"
+#include "common/ratings.h"
+#include "views/view.h"
 #include "lua/database.h"
 #include "lua/film.h"
 #include "lua/glist.h"
@@ -84,6 +85,7 @@ static int history_delete(lua_State *L)
   dt_lua_image_t imgid = -1;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
   dt_history_delete_on_image(imgid);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return 0;
 }
 
@@ -183,9 +185,11 @@ static int rating_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    int score = my_image->flags & 0x7;
+    int score = my_image->flags & DT_VIEW_RATINGS_MASK;
     if(score > 6) score = 5;
-    if(score == 6) score = -1;
+    if(score == DT_VIEW_REJECT) score = -1;
+    // check the reject flag just to be sure
+    if(my_image->flags & DT_IMAGE_REJECTED) score = -1;
 
     lua_pushinteger(L, score);
     releasereadimage(L, my_image);
@@ -200,15 +204,23 @@ static int rating_member(lua_State *L)
       releasewriteimage(L, my_image);
       return luaL_error(L, "rating too high : %d", my_score);
     }
-    if(my_score == -1) my_score = 6;
     if(my_score < -1)
     {
       releasewriteimage(L, my_image);
       return luaL_error(L, "rating too low : %d", my_score);
     }
-    my_image->flags &= ~0x7;
+    if(my_score == -1)
+    {
+      my_score = DT_VIEW_REJECT;
+      my_image->flags = my_image->flags | DT_IMAGE_REJECTED;
+    }
+    if(my_score < DT_VIEW_REJECT && my_image->flags & DT_IMAGE_REJECTED)
+      my_image->flags = my_image->flags & ~DT_IMAGE_REJECTED;
+    my_image->flags &= ~DT_VIEW_RATINGS_MASK;
     my_image->flags |= my_score;
     releasewriteimage(L, my_image);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                               g_list_append(NULL, GINT_TO_POINTER(my_image->id)));
     return 0;
   }
 }
@@ -235,12 +247,14 @@ static int has_txt_member(lua_State *L)
   }
 }
 
-static int creator_member(lua_State *L)
+static int metadata_member(lua_State *L)
 {
+  const char *member_name = luaL_checkstring(L, 2);
+  const char *key= dt_metadata_get_key_by_subkey(member_name);
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.creator", NULL);
+    GList *res = dt_metadata_get(my_image->id, key, NULL);
     if(res)
       lua_pushstring(L, (char *)res->data);
     else
@@ -252,103 +266,7 @@ static int creator_member(lua_State *L)
   else
   {
     dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.creator", luaL_checkstring(L, 3), TRUE, TRUE);
-    dt_image_synch_xmp(my_image->id);
-    releasewriteimage(L, my_image);
-    return 0;
-  }
-}
-
-static int publisher_member(lua_State *L)
-{
-  if(lua_gettop(L) != 3)
-  {
-    const dt_image_t *my_image = checkreadimage(L, 1);
-    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.publisher", NULL);
-    if(res)
-      lua_pushstring(L, (char *)res->data);
-    else
-      lua_pushstring(L, "");
-    releasereadimage(L, my_image);
-    g_list_free_full(res, g_free);
-    return 1;
-  }
-  else
-  {
-    dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.publisher", luaL_checkstring(L, 3), TRUE, TRUE);
-    dt_image_synch_xmp(my_image->id);
-    releasewriteimage(L, my_image);
-    return 0;
-  }
-}
-
-static int title_member(lua_State *L)
-{
-  if(lua_gettop(L) != 3)
-  {
-    const dt_image_t *my_image = checkreadimage(L, 1);
-    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.title", NULL);
-    if(res)
-      lua_pushstring(L, (char *)res->data);
-    else
-      lua_pushstring(L, "");
-    releasereadimage(L, my_image);
-    g_list_free_full(res, g_free);
-    return 1;
-  }
-  else
-  {
-    dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.title", luaL_checkstring(L, 3), TRUE, TRUE);
-    dt_image_synch_xmp(my_image->id);
-    releasewriteimage(L, my_image);
-    return 0;
-  }
-}
-
-static int description_member(lua_State *L)
-{
-  if(lua_gettop(L) != 3)
-  {
-    const dt_image_t *my_image = checkreadimage(L, 1);
-    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.description", NULL);
-    if(res)
-      lua_pushstring(L, (char *)res->data);
-    else
-      lua_pushstring(L, "");
-    releasereadimage(L, my_image);
-    g_list_free_full(res, g_free);
-    return 1;
-  }
-  else
-  {
-    dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.description", luaL_checkstring(L, 3), TRUE, TRUE);
-    dt_image_synch_xmp(my_image->id);
-    releasewriteimage(L, my_image);
-    return 0;
-  }
-}
-
-static int rights_member(lua_State *L)
-{
-  if(lua_gettop(L) != 3)
-  {
-    const dt_image_t *my_image = checkreadimage(L, 1);
-    GList *res = dt_metadata_get(my_image->id, "Xmp.dc.rights", NULL);
-    if(res)
-      lua_pushstring(L, (char *)res->data);
-    else
-      lua_pushstring(L, "");
-    releasereadimage(L, my_image);
-    g_list_free_full(res, g_free);
-    return 1;
-  }
-  else
-  {
-    dt_image_t *my_image = checkwriteimage(L, 1);
-    dt_metadata_set(my_image->id, "Xmp.dc.rights", luaL_checkstring(L, 3), TRUE, TRUE);
+    dt_metadata_set(my_image->id, key, luaL_checkstring(L, 3), FALSE);
     dt_image_synch_xmp(my_image->id);
     releasewriteimage(L, my_image);
     return 0;
@@ -403,6 +321,8 @@ static int colorlabel_member(lua_State *L)
     {
       dt_colorlabels_remove_label(imgid, colorlabel_index);
     }
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                               g_list_append(NULL, GINT_TO_POINTER(imgid)));
     return 0;
   }
 }
@@ -562,16 +482,6 @@ int dt_lua_init_image(lua_State *L)
   dt_lua_type_register(L, dt_lua_image_t, "has_txt");
   lua_pushcfunction(L, rating_member);
   dt_lua_type_register(L, dt_lua_image_t, "rating");
-  lua_pushcfunction(L, creator_member);
-  dt_lua_type_register(L, dt_lua_image_t, "creator");
-  lua_pushcfunction(L, publisher_member);
-  dt_lua_type_register(L, dt_lua_image_t, "publisher");
-  lua_pushcfunction(L, title_member);
-  dt_lua_type_register(L, dt_lua_image_t, "title");
-  lua_pushcfunction(L, description_member);
-  dt_lua_type_register(L, dt_lua_image_t, "description");
-  lua_pushcfunction(L, rights_member);
-  dt_lua_type_register(L, dt_lua_image_t, "rights");
   lua_pushcfunction(L, local_copy_member);
   dt_lua_type_register(L, dt_lua_image_t, "local_copy");
   const char **name = dt_colorlabels_name;
@@ -580,6 +490,15 @@ int dt_lua_init_image(lua_State *L)
     lua_pushcfunction(L, colorlabel_member);
     dt_lua_type_register(L, dt_lua_image_t, *name);
     name++;
+  }
+  // metadata
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
+    {
+      lua_pushcfunction(L, metadata_member);
+      dt_lua_type_register(L, dt_lua_image_t, dt_metadata_get_subkey(i));
+    }
   }
   // constant functions (i.e class methods)
   lua_pushcfunction(L, dt_lua_duplicate_image);

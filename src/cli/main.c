@@ -55,9 +55,12 @@
 
 #define DT_MAX_STYLE_NAME_LENGTH 128
 
+// Make sure it's OK to limit output extension length
+#define DT_MAX_OUTPUT_EXT_LENGTH 5
+
 static void usage(const char *progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [options] [--core <darktable options>]\n", progname);
+  fprintf(stderr, "usage: %s [<input file or dir>] [<xmp file>] <output destination> [options] [--core <darktable options>]\n", progname);
   fprintf(stderr, "\n");
   fprintf(stderr, "options:\n");
   fprintf(stderr, "   --width <max width> default: 0 = full resolution\n");
@@ -69,10 +72,107 @@ static void usage(const char *progname)
   fprintf(stderr, "   --style <style name>\n");
   fprintf(stderr, "   --style-overwrite\n");
   fprintf(stderr, "   --apply-custom-presets <0|1|false|true>, default: true\n");
+  fprintf(stderr, "                          disable for multiple instances\n");
+  fprintf(stderr, "   --out-ext <extension>, default from output destination or '.jpg'\n");
+  fprintf(stderr, "                          if specified, takes preference over output\n");
+  fprintf(stderr, "   --import <file or dir> specify input file or dir, can be used'\n");
+  fprintf(stderr, "                          multiple times instead of input file\n");
+  fprintf(stderr, "   --icc-type <type> specify icc type, default to NONE\n");
+  fprintf(stderr, "                     use --help icc-type for list of supported types\n");
+  fprintf(stderr, "   --icc-file <file> specify icc filename, default to NONE\n");
+  fprintf(stderr, "   --icc-intent <intent> specify icc intent, default to LAST\n");
+  fprintf(stderr, "                     use --help icc-intent for list of supported intents\n");
   fprintf(stderr, "   --verbose\n");
-  fprintf(stderr, "   --help,-h\n");
+  fprintf(stderr, "   --help,-h [option]\n");
   fprintf(stderr, "   --version\n");
 }
+
+static void icc_types()
+{
+  // TODO: Can this be automated to keep in sync with colorspaces.h?
+  fprintf(stderr, "available ICC types:\n");
+  fprintf(stderr, " NONE\n");
+  fprintf(stderr, " FILE\n");
+  fprintf(stderr, " SRGB\n");
+  fprintf(stderr, " ADOBERGB\n");
+  fprintf(stderr, " LIN_REC709\n");
+  fprintf(stderr, " LIN_REC2020\n");
+  fprintf(stderr, " XYZ\n");
+  fprintf(stderr, " LAB\n");
+  fprintf(stderr, " INFRARED\n");
+  fprintf(stderr, " DISPLAY\n");
+  fprintf(stderr, " EMBEDDED_ICC\n");
+  fprintf(stderr, " EMBEDDED_MATRIX\n");
+  fprintf(stderr, " STANDARD_MATRIX\n");
+  fprintf(stderr, " ENHANCED_MATRIX\n");
+  fprintf(stderr, " VENDOR_MATRIX\n");
+  fprintf(stderr, " ALTERNATE_MATRIX\n");
+  fprintf(stderr, " BRG\n");
+  fprintf(stderr, " EXPORT\n"); // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
+  fprintf(stderr, " SOFTPROOF\n");
+  fprintf(stderr, " WORK\n");
+  fprintf(stderr, " DISPLAY2\n");
+  fprintf(stderr, " REC709\n");
+  fprintf(stderr, " PROPHOTO_RGB\n");
+  fprintf(stderr, " PQ_REC2020\n");
+  fprintf(stderr, " HLG_REC2020\n");
+  fprintf(stderr, " PQ_P3\n");
+  fprintf(stderr, " HLG_P3\n");
+}
+
+#define ICC_FROM_STR(name) if(!strcmp(option, #name)) return DT_COLORSPACE_ ## name;
+static dt_colorspaces_color_profile_type_t get_icc_type(const char* option)
+{
+  ICC_FROM_STR(NONE);
+  ICC_FROM_STR(FILE);
+  ICC_FROM_STR(SRGB);
+  ICC_FROM_STR(ADOBERGB);
+  ICC_FROM_STR(LIN_REC709);
+  ICC_FROM_STR(LIN_REC2020);
+  ICC_FROM_STR(XYZ);
+  ICC_FROM_STR(LAB);
+  ICC_FROM_STR(INFRARED);
+  ICC_FROM_STR(DISPLAY);
+  ICC_FROM_STR(EMBEDDED_ICC);
+  ICC_FROM_STR(EMBEDDED_MATRIX);
+  ICC_FROM_STR(STANDARD_MATRIX);
+  ICC_FROM_STR(ENHANCED_MATRIX);
+  ICC_FROM_STR(VENDOR_MATRIX);
+  ICC_FROM_STR(ALTERNATE_MATRIX);
+  ICC_FROM_STR(BRG);
+  ICC_FROM_STR(EXPORT); // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
+  ICC_FROM_STR(SOFTPROOF);
+  ICC_FROM_STR(WORK);
+  ICC_FROM_STR(DISPLAY2);
+  ICC_FROM_STR(REC709);
+  ICC_FROM_STR(PROPHOTO_RGB);
+  ICC_FROM_STR(PQ_REC2020);
+  ICC_FROM_STR(HLG_REC2020);
+  ICC_FROM_STR(PQ_P3);
+  ICC_FROM_STR(HLG_P3);
+  return DT_COLORSPACE_LAST;
+}
+#undef ICC_FROM_STR
+
+static void icc_intents()
+{
+  // TODO: Can this be automated to keep in sync with colorspaces.h?
+  fprintf(stderr, "available ICC intents:\n");
+  fprintf(stderr, " PERCEPTUAL\n");
+  fprintf(stderr, " RELATIVE_COLORIMETRIC\n");
+  fprintf(stderr, " SATURATION\n");
+  fprintf(stderr, " ABSOLUTE_COLORIMETRIC\n");
+}
+#define ICC_INTENT_FROM_STR(name) if(!strcmp(option, #name)) return DT_INTENT_ ## name;
+static dt_iop_color_intent_t get_icc_intent(const char* option)
+{
+  ICC_INTENT_FROM_STR(PERCEPTUAL);
+  ICC_INTENT_FROM_STR(RELATIVE_COLORIMETRIC);
+  ICC_INTENT_FROM_STR(SATURATION);
+  ICC_INTENT_FROM_STR(ABSOLUTE_COLORIMETRIC);
+  return DT_INTENT_LAST;
+}
+#undef ICC_INTENT_FROM_STR
 
 int main(int argc, char *arg[])
 {
@@ -88,12 +188,20 @@ int main(int argc, char *arg[])
   // parse command line arguments
   char *input_filename = NULL;
   char *xmp_filename = NULL;
-  char *output_filename = NULL;
+  gchar *output_filename = NULL;
+  gchar *output_ext = NULL;
   char *style = NULL;
   int file_counter = 0;
   int width = 0, height = 0, bpp = 0;
   gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE,
-           style_overwrite = FALSE, custom_presets = TRUE, export_masks = FALSE;
+           style_overwrite = FALSE, custom_presets = TRUE, export_masks = FALSE,
+           output_to_dir = FALSE;
+
+  GList* inputs = NULL;
+
+  dt_colorspaces_color_profile_type_t icc_type = DT_COLORSPACE_NONE;
+  gchar *icc_filename = NULL;
+  dt_iop_color_intent_t icc_intent = DT_INTENT_LAST;
 
   int k;
   for(k = 1; k < argc; k++)
@@ -103,6 +211,12 @@ int main(int argc, char *arg[])
       if(!strcmp(arg[k], "--help") || !strcmp(arg[k], "-h"))
       {
         usage(arg[0]);
+        if(k+1 < argc) {
+          if(!strcmp(arg[k+1], "icc-type"))
+            icc_types();
+          if(!strcmp(arg[k+1], "icc-intent"))
+            icc_intents();
+        }
         exit(1);
       }
       else if(!strcmp(arg[k], "--version"))
@@ -201,7 +315,68 @@ int main(int argc, char *arg[])
         }
         g_free(str);
       }
-
+      else if(!strcmp(arg[k], "--out-ext") && argc > k + 1)
+      {
+        k++;
+        if(strlen(arg[k])> DT_MAX_OUTPUT_EXT_LENGTH)
+        {
+          fprintf(stderr, "%s: %s\n", _("too long ext for --out-ext"), arg[k]);
+          usage(arg[0]);
+          exit(1);
+        }
+        if (*arg[k] == '.')
+        {
+          //remove dot ;)
+          arg[k]++;
+        }
+        output_ext = g_strdup(arg[k]);
+      }
+      else if(!strcmp(arg[k], "--import") && argc > k + 1)
+      {
+        k++;
+        if(g_file_test(arg[k], G_FILE_TEST_EXISTS))
+          inputs = g_list_prepend(inputs, g_strdup(arg[k]));
+        else
+          fprintf(stderr, _("notice: input file or dir '%s' doesn't exist, skipping\n"), arg[k]);
+      }
+      else if(!strcmp(arg[k], "--icc-type") && argc > k + 1)
+      {
+        k++;
+        gchar *str = g_ascii_strup(arg[k], -1);
+        icc_type = get_icc_type(str);
+        g_free(str);
+        if(icc_type >= DT_COLORSPACE_LAST){
+          fprintf(stderr, _("incorrect ICC type for --icc-type: '%s'\n"), arg[k]);
+          icc_types();
+          usage(arg[0]);
+          exit(1);
+        }
+      }
+      else if(!strcmp(arg[k], "--icc-file") && argc > k + 1)
+      {
+        k++;
+        if(g_file_test(arg[k], G_FILE_TEST_EXISTS) && ! g_file_test(arg[k], G_FILE_TEST_IS_DIR))
+        {
+          if(icc_filename)
+            g_free(icc_filename);
+          icc_filename = g_strdup(arg[k]);
+        }
+        else
+          fprintf(stderr, _("notice: ICC file '%s' doesn't exist, skipping\n"), arg[k]);
+      }
+      else if(!strcmp(arg[k], "--icc-intent") && argc > k + 1)
+      {
+        k++;
+        gchar *str = g_ascii_strup(arg[k], -1);
+        icc_intent = get_icc_intent(str);
+        g_free(str);
+        if(icc_intent >= DT_INTENT_LAST){
+          fprintf(stderr, _("incorrect ICC intent for --icc-intent: '%s'\n"), arg[k]);
+          icc_intents();
+          usage(arg[0]);
+          exit(1);
+        }
+      }
       else if(!strcmp(arg[k], "-v") || !strcmp(arg[k], "--verbose"))
       {
         verbose = TRUE;
@@ -220,7 +395,9 @@ int main(int argc, char *arg[])
       else if(file_counter == 1)
         xmp_filename = arg[k];
       else if(file_counter == 2)
-        output_filename = arg[k];
+      {
+        output_filename = g_strdup(arg[k]);
+      }
       file_counter++;
     }
   }
@@ -235,74 +412,146 @@ int main(int argc, char *arg[])
   for(; k < argc; k++) m_arg[m_argc++] = arg[k];
   m_arg[m_argc] = NULL;
 
-  if(file_counter < 2 || file_counter > 3)
+  if( (inputs && file_counter < 1) || (!inputs && file_counter < 2) || file_counter > 3)
   {
     usage(arg[0]);
     free(m_arg);
+    if(output_filename)
+      g_free(output_filename);
+    if(output_ext)
+      g_free(output_ext);
+    if(inputs)
+      g_list_free_full(inputs, g_free);
+    exit(1);
+  }
+  else if(inputs && file_counter == 1)
+  {
+    //user specified inputs as options, and only dest is present
+    if(output_filename)
+      g_free(output_filename);
+    output_filename = g_strdup(input_filename);
+    input_filename = xmp_filename = NULL;
+  }
+  else if (inputs && file_counter == 2)
+  {
+    // inputs as options, xmp & output specified
+    if(output_filename)
+      g_free(output_filename);
+    output_filename = g_strdup(xmp_filename);
+    xmp_filename = input_filename;
+    input_filename = NULL;
+  }
+  else if (inputs && file_counter == 3)
+  {
+    fprintf(stderr, _("error: input file and import opts specified! that's not supported!\n"));
+    usage(arg[0]);
+    free(m_arg);
+    if(output_filename)
+      g_free(output_filename);
+    if(output_ext)
+      g_free(output_ext);
+    if(inputs)
+      g_list_free_full(inputs, g_free);
     exit(1);
   }
   else if(file_counter == 2)
   {
-    // no xmp file given
-    output_filename = xmp_filename;
+    // assume no xmp file given
+    if(output_filename)
+      g_free(output_filename);
+    output_filename = g_strdup(xmp_filename);
     xmp_filename = NULL;
+  }
+
+  if(!inputs && input_filename)
+  {
+    // input is present as param
+    inputs = g_list_prepend(inputs, g_strdup(input_filename));
+    input_filename = NULL;
   }
 
   if(g_file_test(output_filename, G_FILE_TEST_IS_DIR))
   {
-    fprintf(stderr, _("error: output file is a directory. please specify file name"));
+    output_to_dir = TRUE;
+    if(!output_ext)
+    {
+      output_ext = g_strdup("jpg");
+    }
+    fprintf(stderr, _("notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output pattern"), output_filename, output_ext);
     fprintf(stderr, "\n");
-    free(m_arg);
-    exit(1);
+    gchar* temp_of = g_strdup(output_filename);
+    g_free(output_filename);
+    if(g_str_has_suffix(temp_of, "/"))
+      temp_of[strlen(temp_of) - 1] = '\0';
+    output_filename = g_strconcat(temp_of, "/$(FILE_NAME)", NULL);
+    g_free(temp_of);
   }
 
   // the output file already exists, so there will be a sequence number added
-  if(g_file_test(output_filename, G_FILE_TEST_EXISTS))
+  if(g_file_test(output_filename, G_FILE_TEST_EXISTS) && !output_to_dir)
   {
-    fprintf(stderr, "%s\n", _("output file already exists, it will get renamed"));
+    if(!output_ext || (output_ext && g_str_has_suffix(output_filename, output_ext) && !g_strcmp0(output_ext,strrchr(output_filename, '.')+1))){
+      //output file exists or there's output ext specified and it's same as file...
+      fprintf(stderr, "%s\n", _("output file already exists, it will get renamed"));
+    }
+    //TODO: test if file with replaced ext exists
+    // or not if we decide we don't replace file ext with output ext specified
   }
 
   // init dt without gui and without data.db:
   if(dt_init(m_argc, m_arg, FALSE, custom_presets, NULL))
   {
     free(m_arg);
+    g_free(output_filename);
+    if(output_ext)
+      g_free(output_ext);
+    if(inputs)
+      g_list_free_full(inputs, g_free);
     exit(1);
   }
 
   GList *id_list = NULL;
 
-  if(g_file_test(input_filename, G_FILE_TEST_IS_DIR))
+  for(GList *l = inputs; l != NULL; l=g_list_next(l))
   {
-    const int filmid = dt_film_import(input_filename);
-    if(!filmid)
-    {
-      fprintf(stderr, _("error: can't open folder %s"), input_filename);
-      fprintf(stderr, "\n");
-      free(m_arg);
-      exit(1);
-    }
-    id_list = dt_film_get_image_ids(filmid);
-  }
-  else
-  {
-    dt_film_t film;
-    int id = 0;
-    int filmid = 0;
+    gchar* input = l->data;
 
-    gchar *directory = g_path_get_dirname(input_filename);
-    filmid = dt_film_new(&film, directory);
-    id = dt_image_import(filmid, input_filename, TRUE);
-    if(!id)
+    if(g_file_test(input, G_FILE_TEST_IS_DIR))
     {
-      fprintf(stderr, _("error: can't open file %s"), input_filename);
-      fprintf(stderr, "\n");
-      free(m_arg);
-      exit(1);
+      const int filmid = dt_film_import(input);
+      if(!filmid)
+      {
+        // one of inputs was a failure, no prob
+        fprintf(stderr, _("error: can't open folder %s"), input);
+        fprintf(stderr, "\n");
+        continue;
+      }
+      id_list = g_list_concat(id_list, dt_film_get_image_ids(filmid));
     }
-    g_free(directory);
+    else
+    {
+      dt_film_t film;
+      int id = 0;
+      int filmid = 0;
 
-    id_list = g_list_append(id_list, GINT_TO_POINTER(id));
+      gchar *directory = g_path_get_dirname(input);
+      filmid = dt_film_new(&film, directory);
+      id = dt_image_import(filmid, input, TRUE);
+      g_free(directory);
+      if(!id)
+      {
+        fprintf(stderr, _("error: can't open file %s"), input);
+        fprintf(stderr, "\n");
+        continue;
+      }
+      id_list = g_list_append(id_list, GINT_TO_POINTER(id));
+    }
   }
+
+  //we no longer need inputs
+  if(inputs)
+      g_list_free_full(inputs, g_free);
+  inputs = NULL;
 
   const int total = g_list_length(id_list);
 
@@ -310,6 +559,9 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("no images to export, aborting\n"));
     free(m_arg);
+    g_free(output_filename);
+    if(output_ext)
+      g_free(output_ext);
     exit(1);
   }
 
@@ -325,6 +577,9 @@ int main(int argc, char *arg[])
         fprintf(stderr, _("error: can't open xmp file %s"), xmp_filename);
         fprintf(stderr, "\n");
         free(m_arg);
+        g_free(output_filename);
+        if(output_ext)
+          g_free(output_ext);
         exit(1);
       }
       // don't write new xmp:
@@ -343,15 +598,51 @@ int main(int argc, char *arg[])
       printf("[%s]\n", _("empty history stack"));
   }
 
-  // try to find out the export format from the output_filename
-  char *ext = output_filename + strlen(output_filename);
-  while(ext > output_filename && *ext != '.') ext--;
-  *ext = '\0';
-  ext++;
+  if(!output_ext)
+  {
+    // by this point we're sure output is not dir, there's no output ext specified
+    // so only place to look for it is in filename
+    // try to find out the export format from the output_filename
+    char *ext = strrchr(output_filename, '.');
+    if(ext && strlen(ext) > DT_MAX_OUTPUT_EXT_LENGTH)
+    {
+      // too long ext, no point in wasting time
+      fprintf(stderr, _("too long output file extention: %s\n"), ext);
+      usage(arg[0]);
+      g_free(output_filename);
+      exit(1);
+    }
+    else if(!ext || strlen(ext) <= 1)
+    {
+      // no ext or empty ext, no point in wasting time
+      fprintf(stderr, _("no output file extention given\n"));
+      usage(arg[0]);
+      g_free(output_filename);
+      exit(1);
+    }
+    *ext = '\0';
+    ext++;
+    output_ext = g_strdup(ext);
+  } else {
+    // check and remove redundant file ext
+    char *ext = strrchr(output_filename, '.');
+    if(ext && !strcmp(output_ext, ext+1))
+    {
+      *ext = '\0';
+    }
+  }
 
-  if(!strcmp(ext, "jpg")) ext = "jpeg";
+  if(!strcmp(output_ext, "jpg"))
+  {
+    g_free(output_ext);
+    output_ext = g_strdup("jpeg");
+  }
 
-  if(!strcmp(ext, "tif")) ext = "tiff";
+  if(!strcmp(output_ext, "tif"))
+  {
+    g_free(output_ext);
+    output_ext = g_strdup("tiff");
+  }
 
   // init the export data structures
   dt_imageio_module_format_t *format;
@@ -365,6 +656,8 @@ int main(int argc, char *arg[])
         stderr, "%s\n",
         _("cannot find disk storage module. please check your installation, something seems to be broken."));
     free(m_arg);
+    g_free(output_filename);
+    g_free(output_ext);
     exit(1);
   }
 
@@ -373,6 +666,8 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
     free(m_arg);
+    g_free(output_filename);
+    g_free(output_ext);
     exit(1);
   }
 
@@ -381,12 +676,14 @@ int main(int argc, char *arg[])
   g_strlcpy((char *)sdata, output_filename, DT_MAX_PATH_FOR_PARAMS);
   // all is good now, the last line didn't happen.
 
-  format = dt_imageio_get_format_by_name(ext);
+  format = dt_imageio_get_format_by_name(output_ext);
   if(format == NULL)
   {
-    fprintf(stderr, _("unknown extension '.%s'"), ext);
+    fprintf(stderr, _("unknown extension '.%s'"), output_ext);
     fprintf(stderr, "\n");
     free(m_arg);
+    g_free(output_filename);
+    g_free(output_ext);
     exit(1);
   }
 
@@ -395,6 +692,8 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
     free(m_arg);
+    g_free(output_filename);
+    g_free(output_ext);
     exit(1);
   }
 
@@ -436,12 +735,6 @@ int main(int argc, char *arg[])
     storage->set_params(storage, sdata, storage->params_size(storage));
   }
 
-  // TODO: do we want to use the settings from conf?
-  // TODO: expose these via command line arguments
-  dt_colorspaces_color_profile_type_t icc_type = DT_COLORSPACE_NONE;
-  const gchar *icc_filename = NULL;
-  dt_iop_color_intent_t icc_intent = DT_INTENT_LAST;
-
   // TODO: add a callback to set the bpp without going through the config
 
   int num = 1;
@@ -461,6 +754,9 @@ int main(int argc, char *arg[])
   storage->free_params(storage, sdata);
   format->free_params(format, fdata);
   g_list_free(id_list);
+
+  if(icc_filename)
+    g_free(icc_filename);
 
   dt_cleanup();
 

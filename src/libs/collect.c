@@ -17,6 +17,7 @@
 */
 
 #include "libs/collect.h"
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -36,7 +37,7 @@
 #include "osx/osx.h"
 #endif
 
-DT_MODULE(1)
+DT_MODULE(3)
 
 #define MAX_RULES 10
 
@@ -46,7 +47,7 @@ typedef struct dt_lib_collect_rule_t
 {
   int num;
   GtkWidget *hbox;
-  GtkComboBox *combo;
+  GtkWidget *combo;
   GtkWidget *text;
   GtkWidget *button;
   gboolean typing;
@@ -110,10 +111,133 @@ static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr);
 static void collection_updated(gpointer instance, dt_collection_change_t query_change, gpointer imgs, int next,
                                gpointer self);
 static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d);
+static int is_time_property(int property);
 
 const char *name(dt_lib_module_t *self)
 {
   return _("collect images");
+}
+
+void *legacy_params(struct dt_lib_module_t *self,
+                    const void *const old_params, const size_t old_params_size, const int old_version,
+                    int *new_version, size_t *new_size)
+{
+  if(old_version == 1)
+  {
+    /* from v1 to v2 we have reordered the filters */
+    dt_lib_collect_params_t *o = (dt_lib_collect_params_t *)old_params;
+
+    if(o->rules > MAX_RULES)
+	/* preset is corrupted, return NULL and drop the preset */
+	return NULL;
+
+    dt_lib_collect_params_t *n = (dt_lib_collect_params_t *)malloc(old_params_size);
+
+    const int table[DT_COLLECTION_PROP_LAST] =
+    {
+      DT_COLLECTION_PROP_FILMROLL,
+      DT_COLLECTION_PROP_FOLDERS,
+      DT_COLLECTION_PROP_CAMERA,
+      DT_COLLECTION_PROP_TAG,
+      DT_COLLECTION_PROP_DAY,
+      DT_COLLECTION_PROP_TIME,
+      DT_COLLECTION_PROP_HISTORY,
+      DT_COLLECTION_PROP_COLORLABEL,
+
+      // spaces for the metadata, see metadata.h
+      DT_COLLECTION_PROP_COLORLABEL + 1,
+      DT_COLLECTION_PROP_COLORLABEL + 2,
+      DT_COLLECTION_PROP_COLORLABEL + 3,
+      DT_COLLECTION_PROP_COLORLABEL + 4,
+      DT_COLLECTION_PROP_COLORLABEL + 5,
+
+      DT_COLLECTION_PROP_LENS,
+      DT_COLLECTION_PROP_FOCAL_LENGTH,
+      DT_COLLECTION_PROP_ISO,
+      DT_COLLECTION_PROP_APERTURE,
+      DT_COLLECTION_PROP_EXPOSURE,
+      DT_COLLECTION_PROP_ASPECT_RATIO,
+      DT_COLLECTION_PROP_FILENAME,
+      DT_COLLECTION_PROP_GEOTAGGING,
+      DT_COLLECTION_PROP_GROUPING,
+      DT_COLLECTION_PROP_LOCAL_COPY,
+      DT_COLLECTION_PROP_MODULE,
+      DT_COLLECTION_PROP_ORDER
+    };
+
+    n->rules = o->rules;
+
+    for(int r=0; r<o->rules; r++)
+    {
+      n->rule[r].item = table[o->rule[r].item];
+      n->rule[r].mode = o->rule[r].mode;
+      memcpy(n->rule[r].string, o->rule[r].string, PARAM_STRING_SIZE);
+    }
+
+    *new_size = old_params_size;
+    *new_version = 2;
+
+    return (void *)n;
+  }
+  else if(old_version == 2)
+  {
+    /* from v2 to v3 we have added 4 new timestamp filters and 2 metadata filters */
+    dt_lib_collect_params_t *old = (dt_lib_collect_params_t *)old_params;
+
+    if(old->rules > MAX_RULES)
+	/* preset is corrupted, return NULL and drop the preset */
+	return NULL;
+
+    dt_lib_collect_params_t *new = (dt_lib_collect_params_t *)malloc(old_params_size);
+
+    const int table[DT_COLLECTION_PROP_LAST] =
+      {
+      DT_COLLECTION_PROP_FILMROLL,
+      DT_COLLECTION_PROP_FOLDERS,
+      DT_COLLECTION_PROP_FILENAME,
+      DT_COLLECTION_PROP_CAMERA,
+      DT_COLLECTION_PROP_LENS,
+      DT_COLLECTION_PROP_APERTURE,
+      DT_COLLECTION_PROP_EXPOSURE,
+      DT_COLLECTION_PROP_FOCAL_LENGTH,
+      DT_COLLECTION_PROP_ISO,
+      DT_COLLECTION_PROP_DAY,
+      DT_COLLECTION_PROP_TIME,
+      DT_COLLECTION_PROP_GEOTAGGING,
+      DT_COLLECTION_PROP_ASPECT_RATIO,
+      DT_COLLECTION_PROP_TAG,
+      DT_COLLECTION_PROP_COLORLABEL,
+
+      // spaces for the metadata, see metadata.h
+      DT_COLLECTION_PROP_COLORLABEL + 1,
+      DT_COLLECTION_PROP_COLORLABEL + 2,
+      DT_COLLECTION_PROP_COLORLABEL + 3,
+      DT_COLLECTION_PROP_COLORLABEL + 4,
+      DT_COLLECTION_PROP_COLORLABEL + 5,
+
+      DT_COLLECTION_PROP_GROUPING,
+      DT_COLLECTION_PROP_LOCAL_COPY,
+      DT_COLLECTION_PROP_HISTORY,
+      DT_COLLECTION_PROP_MODULE,
+      DT_COLLECTION_PROP_ORDER
+      };
+
+    new->rules = old->rules;
+
+    for(int r = 0; r < old->rules; r++)
+    {
+      new->rule[r].item = table[old->rule[r].item];
+      new->rule[r].mode = old->rule[r].mode;
+      memcpy(new->rule[r].string, old->rule[r].string, PARAM_STRING_SIZE);
+    }
+
+    *new_size = old_params_size;
+    *new_version = 3;
+
+    return (void *)new;
+  }
+
+  return NULL;
 }
 
 void init_presets(dt_lib_module_t *self)
@@ -264,9 +388,14 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
     if(new_path)
     {
       gchar *old = NULL;
-      query = dt_util_dstrcat(query, "SELECT id, folder FROM main.film_rolls WHERE folder LIKE '%s%%'", tree_path);
+
+      gchar *q_tree_path = NULL;
+      q_tree_path = dt_util_dstrcat(q_tree_path, "%s%%", tree_path);
+      query = "SELECT id, folder FROM main.film_rolls WHERE folder LIKE ?1";
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      g_free(query);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, q_tree_path, -1, SQLITE_TRANSIENT);
+      g_free(q_tree_path);
+      q_tree_path = NULL;
       query = NULL;
 
       while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -306,7 +435,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
       /* update collection to view missing filmroll */
       _lib_folders_update_collection(new_path);
 
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
     }
     else
       goto error;
@@ -405,10 +534,15 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
                                      NULL))
     {
       if(d->singleclick && (event->state & GDK_SHIFT_MASK) && gtk_tree_selection_count_selected_rows(selection) > 0
-         && (d->view_rule == DT_COLLECTION_PROP_DAY || d->view_rule == DT_COLLECTION_PROP_TIME
-             || d->view_rule == DT_COLLECTION_PROP_APERTURE || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
-             || d->view_rule == DT_COLLECTION_PROP_ISO || d->view_rule == DT_COLLECTION_PROP_EXPOSURE
-             || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO))
+         && (d->view_rule == DT_COLLECTION_PROP_DAY
+             || is_time_property(d->view_rule)
+             || d->view_rule == DT_COLLECTION_PROP_APERTURE
+             || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
+             || d->view_rule == DT_COLLECTION_PROP_ISO
+             || d->view_rule == DT_COLLECTION_PROP_EXPOSURE
+             || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO
+            )
+         )
       {
         // range selection
         GList *sels = gtk_tree_selection_get_selected_rows(selection, NULL);
@@ -434,9 +568,13 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
 
     gtk_tree_path_free(path);
 
-    if((d->view_rule == DT_COLLECTION_PROP_DAY || d->view_rule == DT_COLLECTION_PROP_TIME
-        || d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_TAG)
-       && !(event->state & GDK_SHIFT_MASK))
+    if((d->view_rule == DT_COLLECTION_PROP_DAY
+        || is_time_property(d->view_rule)
+        || d->view_rule == DT_COLLECTION_PROP_FOLDERS
+        || d->view_rule == DT_COLLECTION_PROP_TAG
+       )
+       && !(event->state & GDK_SHIFT_MASK)
+      )
       return FALSE; /* we allow propagation (expand/collapse row) */
     else
       return TRUE; /* we stop propagation */
@@ -535,40 +673,15 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
   return FALSE;
 }
 
-const int _combo_get_active_collection(GtkComboBox *combo)
+const int _combo_get_active_collection(GtkWidget *combo)
 {
-  int value = -1;
-  GtkTreeModel *model = gtk_combo_box_get_model(combo);
-  GtkTreeIter iter;
-  if(gtk_combo_box_get_active_iter(combo, &iter))
-    gtk_tree_model_get(model, &iter, 1, &value, -1);
-  return value;
+  return GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(combo)) - 1;
 }
 
-const gboolean _combo_set_active_collection(GtkComboBox *combo, const int property)
+const gboolean _combo_set_active_collection(GtkWidget *combo, const int property)
 {
-  gboolean found = FALSE;
-  GtkTreeModel *model = gtk_combo_box_get_model(combo);
-  GtkTreeIter active, iter;
-  gboolean valid = gtk_tree_model_get_iter_first(model, &active);
-  if(property != -1)
-  {
-    iter = active;
-    while(valid)
-    {
-      int value;
-      gtk_tree_model_get(model, &iter, 1, &value, -1);
-      if(value == property)
-      {
-        active = iter;
-        found = TRUE;
-        break;
-      }
-      valid = gtk_tree_model_iter_next(model, &iter);
-    }
-  }
-  gtk_combo_box_set_active_iter(combo, &active);
-  return found;
+  dt_bauhaus_combobox_set_from_value(combo, property + 1);
+  return TRUE;
 }
 
 static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
@@ -598,13 +711,15 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
     if(g_str_has_suffix(needle, "/")) needle[strlen(needle) - 1] = '\0';
     if(g_str_has_suffix(haystack, "/")) haystack[strlen(haystack) - 1] = '\0';
   }
-  else if(_combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_DAY
-          || _combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_TIME)
+  else
   {
-    if(g_str_has_suffix(needle, ":")) needle[strlen(needle) - 1] = '\0';
-    if(g_str_has_suffix(haystack, ":")) haystack[strlen(haystack) - 1] = '\0';
+    const int temp = _combo_get_active_collection(dr->combo);
+    if(DT_COLLECTION_PROP_DAY == temp || is_time_property(temp))
+    {
+      if(g_str_has_suffix(needle, ":")) needle[strlen(needle) - 1] = '\0';
+      if(g_str_has_suffix(haystack, ":")) haystack[strlen(haystack) - 1] = '\0';
+    }
   }
-
   if(dr->typing && g_strrstr(txt2, needle) != NULL)
   {
     gtk_tree_view_expand_to_path(d->view, path);
@@ -698,10 +813,9 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   }
   else if (property == DT_COLLECTION_PROP_FILENAME)
   {
-    GList *list, *l;
-    list = dt_util_str_to_glist(",", needle);
+    GList *list = dt_util_str_to_glist(",", needle);
 
-    for (l = list; l != NULL; l = l->next)
+    for (GList *l = list; l != NULL; l = l->next)
     {
       if(g_str_has_prefix((char *)l->data, "%"))
       {
@@ -812,7 +926,7 @@ static void _lib_folders_update_collection(const gchar *filmroll)
   if(!darktable.collection->clone)
   {
     dt_collection_memory_update();
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_NEW_QUERY, NULL,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_NEW_QUERY, NULL,
                             -1);
   }
 }
@@ -973,7 +1087,7 @@ static gint neg_sort_folder_tag(gconstpointer a, gconstpointer b)
 // behind their parent
 static char *tag_collate_key(char *tag)
 {
-  size_t len = strlen(tag);
+  const size_t len = strlen(tag);
   char *result = g_malloc(len + 2);
   if(g_str_has_prefix(tag, "darktable|"))
     *result = '\1';
@@ -1013,11 +1127,26 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
   const int property = _combo_get_active_collection(dr->combo);
-  const gboolean folders = (property == DT_COLLECTION_PROP_FOLDERS);
-  const gboolean tags = (property == DT_COLLECTION_PROP_TAG);
-  const gboolean days = (property == DT_COLLECTION_PROP_DAY);
-  const gboolean times = (property == DT_COLLECTION_PROP_TIME);
-  const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S : days || times ? "%s:" : "%s|";
+  char *format_separator = "";
+
+  switch(property)
+  {
+    case DT_COLLECTION_PROP_FOLDERS:
+      format_separator = "%s" G_DIR_SEPARATOR_S;
+      break;
+    case DT_COLLECTION_PROP_TAG:
+      format_separator = "%s|";
+      break;
+    case DT_COLLECTION_PROP_DAY:
+    case DT_COLLECTION_PROP_TIME:
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
+      format_separator = "%s:";
+      break;
+  }
+
   const gint sort_descend = dt_conf_get_bool("plugins/collect/descending");
 
   set_properties(dr);
@@ -1040,35 +1169,62 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     /* query construction */
     gchar *where_ext = dt_collection_get_extended_where(darktable.collection, dr->num);
-    gchar *query = g_strdup_printf(
-      folders ?
-        "SELECT folder, film_rolls_id, COUNT(*) AS count"
-        " FROM main.images AS mi"
-        " JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls)"
-        "   ON film_id = film_rolls_id "
-        " WHERE %s"
-        " GROUP BY folder, film_rolls_id":
-      tags ?
-        "SELECT name, tag_id, COUNT(*) AS count"
-        " FROM main.images AS mi"
-        " JOIN main.tagged_images"
-        "   ON id = imgid "
-        " JOIN (SELECT name, id AS tag_id FROM data.tags)"
-        "   ON tagid = tag_id"
-        " WHERE %s"
-        " GROUP BY name,tag_id" :
-      days ?
-        "SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
-        " FROM main.images AS mi"
-        " WHERE %s"
-        " GROUP BY date" :
-      times ?
-        "SELECT datetime_taken AS date, 1, COUNT(*) AS count"
-        " FROM main.images AS mi"
-        " WHERE %s"
-        " GROUP BY date" :
-      NULL,
-      where_ext);
+    gchar *query = 0;
+    switch (property)
+    {
+      case DT_COLLECTION_PROP_FOLDERS:
+        query = g_strdup_printf("SELECT folder, film_rolls_id, COUNT(*) AS count"
+                                " FROM main.images AS mi"
+                                " JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls)"
+                                "   ON film_id = film_rolls_id "
+                                " WHERE %s"
+                                " GROUP BY folder, film_rolls_id", where_ext);
+        break;
+      case DT_COLLECTION_PROP_TAG:
+        query = g_strdup_printf("SELECT name, tag_id, COUNT(*) AS count"
+                                " FROM main.images AS mi"
+                                " JOIN main.tagged_images"
+                                "   ON id = imgid "
+                                " JOIN (SELECT name, id AS tag_id FROM data.tags)"
+                                "   ON tagid = tag_id"
+                                " WHERE %s"
+                                " GROUP BY name,tag_id", where_ext);
+        break;
+      case DT_COLLECTION_PROP_DAY:
+        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
+                                " FROM main.images AS mi"
+                                " WHERE %s"
+                                " GROUP BY date", where_ext);
+        break;
+      case DT_COLLECTION_PROP_TIME:
+        query = g_strdup_printf("SELECT datetime_taken AS date, 1, COUNT(*) AS count"
+                                " FROM main.images AS mi"
+                                " WHERE %s"
+                                " GROUP BY date", where_ext);
+        break;
+      case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
+      case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
+      case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
+      case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
+        {
+        const int local_property = property;
+        char *colname = NULL;
+
+        switch(local_property)
+        {
+          case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+          case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+          case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+          case DT_COLLECTION_PROP_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
+        }
+        query = g_strdup_printf("SELECT strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') AS date, 1, COUNT(*) AS count"
+                                " FROM main.images AS mi"
+                                " WHERE %s <> -1"
+                                " AND %s"
+                                " GROUP BY date", colname, colname, where_ext);
+        break;
+        }
+    }
 
     g_free(where_ext);
 
@@ -1089,7 +1245,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
       const int count = sqlite3_column_int(stmt, 2);
 
-      if(folders)
+      if(property == DT_COLLECTION_PROP_FOLDERS)
       {
         char *name_folded_slash = g_strconcat(name_folded, G_DIR_SEPARATOR_S, NULL);
         collate_key = g_utf8_collate_key_for_filename(name_folded_slash, -1);
@@ -1097,6 +1253,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       }
       else
         collate_key = tag_collate_key(name_folded);
+
       g_free(name_folded);
       name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
       tuple->name = name;
@@ -1106,8 +1263,12 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     }
     sqlite3_finalize(stmt);
     g_free(query);
-    sorted_names = g_list_sort(sorted_names,(sort_descend && (folders || days || times))
-        ? neg_sort_folder_tag : sort_folder_tag);
+    sorted_names = g_list_sort(sorted_names, (sort_descend && (property == DT_COLLECTION_PROP_FOLDERS
+                                                              || property == DT_COLLECTION_PROP_DAY
+                                                              || is_time_property(property)
+                                                              )
+                                             ) ? neg_sort_folder_tag : sort_folder_tag
+                              );
 
     for(GList *names = sorted_names; names; names = g_list_next(names))
     {
@@ -1116,7 +1277,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       const int count = tuple->count;
       if(name == NULL) continue; // safeguard against degenerated db entries
 
-      if(tags && strchr(name, '|') == 0 && (last_tokens_length == 0 || strcmp(name, *last_tokens)))
+      if(property == DT_COLLECTION_PROP_TAG && strchr(name, '|') == 0 && (last_tokens_length == 0 || strcmp(name, *last_tokens)))
       {
         /* add uncategorized root iter if not exists */
         if(!uncategorized.stamp)
@@ -1136,11 +1297,11 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       else
       {
         char **tokens;
-        if(folders)
+        if(property == DT_COLLECTION_PROP_FOLDERS)
           tokens = split_path(name);
-        else if(days)
+        else if(property == DT_COLLECTION_PROP_DAY)
           tokens = g_strsplit(name, ":", -1);
-        else if(times)
+        else if(is_time_property(property))
           tokens = g_strsplit_set(name, ": ", 4);
         else
           tokens = g_strsplit(name, "|", -1);
@@ -1149,7 +1310,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         {
           // find the number of common parts at the beginning of tokens and last_tokens
           GtkTreeIter parent = last_parent;
-          int tokens_length = string_array_length(tokens);
+          const int tokens_length = string_array_length(tokens);
           int common_length = 0;
           if(last_tokens)
           {
@@ -1171,7 +1332,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
           char *pth = NULL;
 #ifndef _WIN32
-          if(folders) pth = g_strdup("/");
+          if(property == DT_COLLECTION_PROP_FOLDERS) pth = g_strdup("/");
 #endif
           for(int i = 0; i < common_length; i++)
             pth = dt_util_dstrcat(pth, format_separator, tokens[i]);
@@ -1181,7 +1342,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             GtkTreeIter iter;
 
             pth = dt_util_dstrcat(pth, format_separator, *token);
-            if(times && !*(token + 1)) pth[10] = ' ';
+            if(is_time_property(property) && !*(token + 1))
+              pth[10] = ' ';
 
             gchar *pth2 = g_strdup(pth);
             pth2[strlen(pth2) - 1] = '\0';
@@ -1191,7 +1353,10 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                DT_LIB_COLLECT_COL_COUNT, (*(token + 1)?0:count), -1);
 
             // also add the item count to parents
-            if((folders || days || times) && !*(token + 1))
+            if((property == DT_COLLECTION_PROP_FOLDERS
+                || property == DT_COLLECTION_PROP_DAY
+                ||  is_time_property(property)
+                ) && !*(token + 1))
             {
               guint parentcount;
               GtkTreeIter parent2, child = iter;
@@ -1204,7 +1369,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
               }
             }
 
-            if(folders)
+            if(property == DT_COLLECTION_PROP_FOLDERS)
               gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_UNREACHABLE,
                                  !(g_file_test(pth, G_FILE_TEST_IS_DIR)), -1);
             common_length++;
@@ -1229,7 +1394,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     d->treefilter = _create_filtered_model(model, dr);
 
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
-    if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+    if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
     {
       gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
     }
@@ -1253,7 +1418,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
   gtk_tree_view_collapse_all(d->view);
 
-  if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+  if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
     // test selection range [xxx;xxx]
     GRegex *regex;
@@ -1329,8 +1494,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
-          char *exif_model = (char *)sqlite3_column_text(stmt, 1);
+          const char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
+          const char *exif_model = (char *)sqlite3_column_text(stmt, 1);
           const int count = sqlite3_column_int(stmt, 2);
 
           gchar *value =  dt_collection_get_makermodel(exif_maker, exif_model);
@@ -1556,6 +1721,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
         }
         else
         {
+          gchar *order_by = NULL;
+          if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "id") == 0)
+            order_by = g_strdup("ORDER BY film_rolls_id DESC");
+          else
+            order_by = g_strdup("ORDER BY folder");
+
           // filmroll
           g_snprintf(query, sizeof(query),
                      "SELECT folder, film_rolls_id, COUNT(*) AS count"
@@ -1564,8 +1735,9 @@ static void list_view(dt_lib_collect_rule_t *dr)
                      "       FROM main.film_rolls)"
                      "   ON film_id = film_rolls_id "
                      " WHERE %s"
-                     " GROUP BY folder"
-                     " ORDER BY film_rolls_id DESC", where_ext);
+                     " GROUP BY folder %s", where_ext, order_by);
+
+          g_free(order_by);
         }
         break;
     }
@@ -1585,7 +1757,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         {
           folder = dt_image_film_roll_name(folder);
         }
-        gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
+        const gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
         const int count = sqlite3_column_int(stmt, 2);
 
         // replace invalid utf8 characters if any
@@ -1687,8 +1859,11 @@ static void update_view(dt_lib_collect_rule_t *dr)
 {
   const int property = _combo_get_active_collection(dr->combo);
 
-  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG
-     || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+  if(property == DT_COLLECTION_PROP_FOLDERS
+     || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_DAY
+     || is_time_property(property)
+    )
     tree_view(dr);
   else
     list_view(dr);
@@ -1702,8 +1877,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   // we check if something as change since last call
   if(d->view_rule != -1) return;
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1;
   const int active = CLAMP(_a, 0, (MAX_RULES - 1));
   d->nb_rules = active + 1;
@@ -1723,7 +1897,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     gtk_widget_set_visible(d->rule[i].hbox, TRUE);
     gtk_widget_show_all(d->rule[i].hbox);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
-    _combo_set_active_collection(GTK_COMBO_BOX(d->rule[i].combo), dt_conf_get_int(confname));
+    _combo_set_active_collection(d->rule[i].combo, dt_conf_get_int(confname));
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
     gchar *text = dt_conf_get_string(confname);
     if(text)
@@ -1762,7 +1936,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
 
   // update list of proposals
   update_view(d->rule + d->active_rule);
-  darktable.gui->reset = reset;
+  --darktable.gui->reset;
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -1778,7 +1952,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
 }
 
-static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
+static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
 {
   if(darktable.gui->reset) return;
   g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
@@ -1788,8 +1962,11 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   c->active_rule = d->num;
   const int property = _combo_get_active_collection(d->combo);
 
-  if(property == DT_COLLECTION_PROP_FOLDERS || property == DT_COLLECTION_PROP_TAG
-     || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+  if(property == DT_COLLECTION_PROP_FOLDERS
+     || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_DAY
+     || is_time_property(property)
+    )
   {
     d->typing = FALSE;
   }
@@ -1800,7 +1977,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   {
     gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
   }
-  else if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+  else if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
     gtk_widget_set_tooltip_text(d->text,
                                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
@@ -1817,8 +1994,32 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
     gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard"));
   }
 
+  gboolean order_request = FALSE;
+  uint32_t order = 0;
+  if(c->active_rule == 0)
+  {
+    const int prev_property = dt_conf_get_int("plugins/lighttable/collect/item0");
+
+    if(prev_property != DT_COLLECTION_PROP_TAG && property == DT_COLLECTION_PROP_TAG)
+    {
+      // save global order
+      const uint32_t sort = dt_collection_get_sort_field(darktable.collection);
+      const gboolean descending = dt_collection_get_sort_descending(darktable.collection);
+      dt_conf_set_int("plugins/lighttable/collect/order", sort | (descending ? DT_COLLECTION_ORDER_FLAG : 0));
+    }
+    else if(prev_property == DT_COLLECTION_PROP_TAG && property != DT_COLLECTION_PROP_TAG)
+    {
+      // restore global order
+      order = dt_conf_get_int("plugins/lighttable/collect/order");
+      order_request = TRUE;
+      dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
+    }
+  }
+
   set_properties(d);
   c->view_rule = -1;
+  if(order_request)
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
 }
 
@@ -1834,19 +2035,27 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   if(!gtk_tree_model_get_iter(model, &iter, path1)) return;
 
   gchar *text;
+  gboolean order_request = FALSE;
+  int order;
 
   const int active = d->active_rule;
   d->rule[active].typing = FALSE;
 
-  const int item = _combo_get_active_collection(GTK_COMBO_BOX(d->rule[active].combo));
+  const int item = _combo_get_active_collection(d->rule[active].combo);
   gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
   if(text && strlen(text) > 0)
   {
     if(gtk_tree_selection_count_selected_rows(selection) > 1
-       && (item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME || item == DT_COLLECTION_PROP_APERTURE
-           || item == DT_COLLECTION_PROP_FOCAL_LENGTH || item == DT_COLLECTION_PROP_ISO
-           || item == DT_COLLECTION_PROP_EXPOSURE || item == DT_COLLECTION_PROP_ASPECT_RATIO))
+       && (item == DT_COLLECTION_PROP_DAY
+           || is_time_property(item)
+           || item == DT_COLLECTION_PROP_APERTURE
+           || item == DT_COLLECTION_PROP_FOCAL_LENGTH
+           || item == DT_COLLECTION_PROP_ISO
+           || item == DT_COLLECTION_PROP_EXPOSURE
+           || item == DT_COLLECTION_PROP_ASPECT_RATIO
+          )
+      )
     {
       /* this is a range selection */
       GtkTreeIter iter2;
@@ -1857,7 +2066,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       gtk_tree_model_get(model, &iter2, DT_LIB_COLLECT_COL_PATH, &text2, -1);
 
       gchar *n_text;
-      if(item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME)
+      if(item == DT_COLLECTION_PROP_DAY || is_time_property(item))
         n_text = g_strdup_printf("[%s;%s]", text2, text); /* dates are in reverse order */
       else
         n_text = g_strdup_printf("[%s;%s]", text, text2);
@@ -1866,22 +2075,48 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       g_free(text2);
       text = n_text;
     }
-    else if(item == DT_COLLECTION_PROP_TAG && gtk_tree_model_iter_has_child(model, &iter))
+    else if(item == DT_COLLECTION_PROP_TAG)
     {
-      /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
-      if(event->state & GDK_CONTROL_MASK)
+      if(gtk_tree_model_iter_has_child(model, &iter))
       {
-        gchar *n_text = g_strconcat(text, "|%", NULL);
-        g_free(text);
-        text = n_text;
+        /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
+        if(event->state & GDK_CONTROL_MASK)
+        {
+          gchar *n_text = g_strconcat(text, "|%", NULL);
+          g_free(text);
+          text = n_text;
+        }
+        /* if a tag has children, shift-clicking on a parent node should display all images in and under this
+         * hierarchy. */
+        else if(event->state & GDK_SHIFT_MASK)
+        {
+          gchar *n_text = g_strconcat(text, "%", NULL);
+          g_free(text);
+          text = n_text;
+        }
       }
-      /* if a tag has children, shift-clicking on a parent node should display all images in and under this
-       * hierarchy. */
-      else if(event->state & GDK_SHIFT_MASK)
+      else if(active == 0) // first filter is tag and the row is a leave
       {
-        gchar *n_text = g_strconcat(text, "%", NULL);
-        g_free(text);
-        text = n_text;
+        uint32_t sort = DT_COLLECTION_SORT_NONE;
+        gboolean descending = FALSE;
+        const uint32_t tagid = dt_tag_get_tag_id_by_name(text);
+        if(tagid)
+        {
+          order_request = TRUE;
+          if(dt_tag_get_tag_order_by_id(tagid, &sort, &descending))
+          {
+            order = sort | (descending  ? DT_COLLECTION_ORDER_FLAG : 0);
+          }
+          else
+          {
+            // the tag order is not set yet - default order (filename)
+            order = DT_COLLECTION_SORT_FILENAME;
+            dt_tag_set_tag_order_by_id(tagid, order & ~DT_COLLECTION_ORDER_FLAG,
+                                       order & DT_COLLECTION_ORDER_FLAG);
+          }
+          dt_collection_set_tag_id((dt_collection_t *)darktable.collection, tagid);
+        }
+        else dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
       }
     }
   }
@@ -1892,17 +2127,24 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   g_signal_handlers_unblock_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   g_free(text);
 
-  if(item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS
-     || item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME
-     || item == DT_COLLECTION_PROP_COLORLABEL || item == DT_COLLECTION_PROP_GEOTAGGING
-     || item == DT_COLLECTION_PROP_HISTORY ||  item == DT_COLLECTION_PROP_LOCAL_COPY
-     || item == DT_COLLECTION_PROP_GROUPING)
+  if(item == DT_COLLECTION_PROP_TAG
+     || item == DT_COLLECTION_PROP_FOLDERS
+     || item == DT_COLLECTION_PROP_DAY
+     || is_time_property(item)
+     || item == DT_COLLECTION_PROP_COLORLABEL
+     || item == DT_COLLECTION_PROP_GEOTAGGING
+     || item == DT_COLLECTION_PROP_HISTORY
+     || item == DT_COLLECTION_PROP_LOCAL_COPY
+     || item == DT_COLLECTION_PROP_GROUPING
+    )
     set_properties(d->rule + active); // we just have to set the selection
   else
     update_view(d->rule + active); // we have to update visible items too
 
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
+  if(order_request)
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
@@ -1920,8 +2162,11 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 
   const int property = _combo_get_active_collection(d->combo);
 
-  if(property != DT_COLLECTION_PROP_FOLDERS && property != DT_COLLECTION_PROP_TAG
-     && property != DT_COLLECTION_PROP_DAY && property != DT_COLLECTION_PROP_TIME)
+  if(property != DT_COLLECTION_PROP_FOLDERS
+      && property != DT_COLLECTION_PROP_TAG
+      && property != DT_COLLECTION_PROP_DAY
+      && !is_time_property(property)
+    )
   {
     view = c->view;
     model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
@@ -2044,6 +2289,11 @@ static void filmrolls_imported(gpointer instance, int film_id, gpointer self)
   _lib_collect_gui_update(self);
 }
 
+static void preferences_changed(gpointer instance, gpointer self)
+{
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+}
+
 static void filmrolls_removed(gpointer instance, gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
@@ -2062,13 +2312,36 @@ static void tag_changed(gpointer instance, gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-
   // update tree
-  if(_combo_get_active_collection(GTK_COMBO_BOX(d->rule[d->active_rule].combo)) == DT_COLLECTION_PROP_TAG)
+  if(_combo_get_active_collection(d->rule[d->active_rule].combo) == DT_COLLECTION_PROP_TAG)
   {
     d->view_rule = -1;
     d->rule[d->active_rule].typing = FALSE;
     _lib_collect_gui_update(self);
+
+    //need to reload collection since we have tags as active collection filter
+    dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                    darktable.view_manager->proxy.module_collect.module);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                      darktable.view_manager->proxy.module_collect.module);
+  }
+  else
+  {
+    // currently tag filter isn't the one selected but it might be in one of rules. needs check
+    gboolean needs_update = FALSE;
+    for(int i = 0; i < d->nb_rules && !needs_update; i++)
+    {
+      needs_update = needs_update || _combo_get_active_collection(d->rule[i].combo) == DT_COLLECTION_PROP_TAG;
+    }
+    if(needs_update){
+      // we have tags as one of rules, needs reload.
+      dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                      darktable.view_manager->proxy.module_collect.module);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+      dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                        darktable.view_manager->proxy.module_collect.module);
+    }
   }
 }
 
@@ -2082,7 +2355,7 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
     for(int i = 0; i < MAX_RULES; i++)
     {
       g_signal_handlers_block_matched(d->rule[i].combo, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, combo_changed, NULL);
-      const int property = _combo_get_active_collection(GTK_COMBO_BOX(d->rule[i].combo));
+      const int property = _combo_get_active_collection(d->rule[i].combo);
       GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(d->rule[i].combo));
       gtk_list_store_clear(GTK_LIST_STORE(model));
       for(int k = 0; k < DT_COLLECTION_PROP_LAST; k++)
@@ -2095,7 +2368,7 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
           gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, name, 1, k, -1);
         }
       }
-      if(property != -1 && !_combo_set_active_collection(GTK_COMBO_BOX(d->rule[i].combo), property))
+      if(property != -1 && !_combo_set_active_collection(d->rule[i].combo, property))
       {
         // this one has been hidden - remove entry
         g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
@@ -2109,7 +2382,7 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
   }
 
   // update metadata if metadata have been hidden or a metadata collection is active
-  const int prop = _combo_get_active_collection(GTK_COMBO_BOX(d->rule[d->active_rule].combo));
+  const int prop = _combo_get_active_collection(d->rule[d->active_rule].combo);
   if(type == DT_METADATA_SIGNAL_HIDDEN || (prop >= DT_COLLECTION_PROP_METADATA
      && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER))
   {
@@ -2236,6 +2509,55 @@ static void view_set_click(gpointer instance, gpointer user_data)
   d->singleclick = dt_conf_get_bool("plugins/lighttable/collect/single-click");
 }
 
+static void _populate_collect_combo(GtkWidget *w)
+{
+#define ADD_COLLECT_ENTRY(value)                                                              \
+  dt_bauhaus_combobox_add_full(w, dt_collection_name(value), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, \
+                               GUINT_TO_POINTER(value + 1), NULL, TRUE)
+
+    dt_bauhaus_combobox_add_section(w, _("files"));
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILMROLL);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOLDERS);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILENAME);
+
+    dt_bauhaus_combobox_add_section(w, _("metadata"));
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_TITLE);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_DESCRIPTION);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_CREATOR);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_PUBLISHER);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_RIGHTS);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_ACDSEE_NOTES);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
+
+    dt_bauhaus_combobox_add_section(w, _("times"));
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);
+
+    dt_bauhaus_combobox_add_section(w, _("capture details"));
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
+
+    dt_bauhaus_combobox_add_section(w, _("darktable"));
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
+
+#undef ADD_COLLECT_ENTRY
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
@@ -2249,35 +2571,26 @@ void gui_init(dt_lib_module_t *self)
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
   view_set_click(NULL, self);
 
-  GtkBox *box;
-  GtkWidget *w;
+  GtkBox *box = NULL;
+  GtkWidget *w = NULL;
 
   for(int i = 0; i < MAX_RULES; i++)
   {
     d->rule[i].num = i;
     d->rule[i].typing = FALSE;
+
     box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
     d->rule[i].hbox = GTK_WIDGET(box);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
-    GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
-    w = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(w), renderer, FALSE);
-    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(w), renderer, "text", 0, NULL);
-    d->rule[i].combo = GTK_COMBO_BOX(w);
+    gtk_widget_set_name(GTK_WIDGET(box), "lib-dtbutton");
 
-    for(int k = 0; k < DT_COLLECTION_PROP_LAST; k++)
-    {
-      const char *name = dt_collection_name(k);
-      if(name)
-      {
-        GtkTreeIter iter;
-        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-        gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, name, 1, k, -1);
-      }
-    }
-    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
-    gtk_box_pack_start(box, w, FALSE, FALSE, 0);
+    d->rule[i].combo = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_combobox_set_popup_scale(d->rule[i].combo, 2);
+    dt_bauhaus_combobox_set_selected_text_align(d->rule[i].combo, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+    _populate_collect_combo(d->rule[i].combo);
+
+    g_signal_connect(G_OBJECT(d->rule[i].combo), "value-changed", G_CALLBACK(combo_changed), d->rule + i);
+    gtk_box_pack_start(box, d->rule[i].combo, TRUE, TRUE, 0);
 
     w = gtk_entry_new();
     d->rule[i].text = w;
@@ -2290,10 +2603,12 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
+    gtk_widget_set_name(GTK_WIDGET(w), "lib-collect-entry");
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
 
-    w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_name(GTK_WIDGET(w), "control-button");
     d->rule[i].button = w;
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);
@@ -2351,27 +2666,36 @@ void gui_init(dt_lib_module_t *self)
 
   _lib_collect_gui_update(self);
 
+  if(_combo_get_active_collection(d->rule[0].combo) == DT_COLLECTION_PROP_TAG)
+  {
+    gchar *tag = dt_conf_get_string("plugins/lighttable/collect/string0");
+    dt_collection_set_tag_id((dt_collection_t *)darktable.collection, dt_tag_get_tag_id_by_name(tag));
+  }
+
   // force redraw collection images because of late update of the table memory.darktable_iop_names
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
                             self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED, G_CALLBACK(filmrolls_updated),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED, G_CALLBACK(filmrolls_updated),
                             self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(filmrolls_imported),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(preferences_changed),
                             self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED, G_CALLBACK(filmrolls_removed),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(filmrolls_imported),
                             self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(tag_changed),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED, G_CALLBACK(filmrolls_removed),
                             self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_METADATA_CHANGED, G_CALLBACK(metadata_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(tag_changed),
+                            self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_CHANGED, G_CALLBACK(metadata_changed), self);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -2380,12 +2704,13 @@ void gui_cleanup(dt_lib_module_t *self)
 
   for(int i = 0; i < MAX_RULES; i++) dt_gui_key_accel_block_on_focus_disconnect(d->rule[i].text);
 
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(tag_changed), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(view_set_click), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(collection_updated), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_updated), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_imported), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(preferences_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_removed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(tag_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(view_set_click), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   free(d->params);
 
@@ -2400,6 +2725,14 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+static int is_time_property(int property)
+{
+  return (property == DT_COLLECTION_PROP_TIME
+      || property == DT_COLLECTION_PROP_IMPORT_TIMESTAMP
+      || property == DT_COLLECTION_PROP_CHANGE_TIMESTAMP
+      || property == DT_COLLECTION_PROP_EXPORT_TIMESTAMP
+      || property == DT_COLLECTION_PROP_PRINT_TIMESTAMP);
+}
 
 #ifdef USE_LUA
 static int new_rule_cb(lua_State*L)
@@ -2409,6 +2742,7 @@ static int new_rule_cb(lua_State*L)
   luaA_push(L,dt_lib_collect_params_rule_t,&rule);
   return 1;
 }
+
 static int filter_cb(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
@@ -2417,19 +2751,21 @@ static int filter_cb(lua_State *L)
   dt_lib_collect_params_t *p = get_params(self,&size);
   // put it in stack so memory is not lost if a lua exception is raised
 
-
-
-  if(lua_gettop(L) > 0) {
+  if(lua_gettop(L) > 0)
+  {
     luaL_checktype(L,1,LUA_TTABLE);
     dt_lib_collect_params_t *new_p = get_params(self,&size);
     new_p->rules = 0;
-    do {
+
+    do
+    {
       lua_pushinteger(L,new_p->rules + 1);
       lua_gettable(L,1);
       if(lua_isnil(L,-1)) break;
       luaA_to(L,dt_lib_collect_params_rule_t,&new_p->rule[new_p->rules],-1);
       new_p->rules++;
-    }while(new_p->rules < MAX_RULES);
+    } while(new_p->rules < MAX_RULES);
+
     if(new_p->rules == MAX_RULES) {
       lua_pushinteger(L,new_p->rules + 1);
       lua_gettable(L,1);
@@ -2441,8 +2777,10 @@ static int filter_cb(lua_State *L)
     free(new_p);
 
   }
+
   lua_newtable(L);
-  for(int i = 0; i < p->rules; i++) {
+  for(int i = 0; i < p->rules; i++)
+  {
     luaA_push(L,dt_lib_collect_params_rule_t,&p->rule[i]);
     luaL_ref(L,-2);
   }
@@ -2453,12 +2791,15 @@ static int filter_cb(lua_State *L)
 static int mode_member(lua_State *L)
 {
   dt_lib_collect_params_rule_t *rule = luaL_checkudata(L,1,"dt_lib_collect_params_rule_t");
-  if(lua_gettop(L) > 2) {
+
+  if(lua_gettop(L) > 2)
+  {
     dt_lib_collect_mode_t value;
     luaA_to(L,dt_lib_collect_mode_t,&value,3);
     rule->mode = value;
     return 0;
   }
+
   const dt_lib_collect_mode_t tmp = rule->mode; // temp buffer because of bitfield in the original struct
   luaA_push(L,dt_lib_collect_mode_t,&tmp);
   return 1;
@@ -2468,12 +2809,14 @@ static int item_member(lua_State *L)
 {
   dt_lib_collect_params_rule_t *rule = luaL_checkudata(L,1,"dt_lib_collect_params_rule_t");
 
-  if(lua_gettop(L) > 2) {
+  if(lua_gettop(L) > 2)
+  {
     dt_collection_properties_t value;
     luaA_to(L,dt_collection_properties_t,&value,3);
     rule->item = value;
     return 0;
   }
+
   const dt_collection_properties_t tmp = rule->item; // temp buffer because of bitfield in the original struct
   luaA_push(L,dt_collection_properties_t,&tmp);
   return 1;
@@ -2483,7 +2826,8 @@ static int data_member(lua_State *L)
 {
   dt_lib_collect_params_rule_t *rule = luaL_checkudata(L,1,"dt_lib_collect_params_rule_t");
 
-  if(lua_gettop(L) > 2) {
+  if(lua_gettop(L) > 2)
+  {
     size_t tgt_size;
     const char*data = luaL_checklstring(L,3,&tgt_size);
     if(tgt_size > PARAM_STRING_SIZE)
@@ -2493,11 +2837,10 @@ static int data_member(lua_State *L)
     g_strlcpy(rule->string, data, sizeof(rule->string));
     return 0;
   }
+
   lua_pushstring(L,rule->string);
   return 1;
 }
-
-
 
 void init(struct dt_lib_module_t *self)
 {
@@ -2534,8 +2877,13 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_TAG);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_DAY);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_TIME);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_PRINT_TIMESTAMP);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_HISTORY);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_COLORLABEL);
+
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
@@ -2544,10 +2892,12 @@ void init(struct dt_lib_module_t *self)
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
       const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
       g_free(setting);
+
       if(!hidden)
         luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_METADATA + i);
     }
   }
+
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LENS);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FOCAL_LENGTH);
   luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ISO);

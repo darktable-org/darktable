@@ -25,44 +25,48 @@
 
 typedef enum dt_collection_query_t
 {
-  COLLECTION_QUERY_SIMPLE = 0,                 // a query with only select and where statement
-  COLLECTION_QUERY_USE_SORT = 1 << 0,          // if query should include order by statement
-  COLLECTION_QUERY_USE_LIMIT = 1 << 1,         // if query should include "limit ?1,?2" part
-  COLLECTION_QUERY_USE_WHERE_EXT = 1 << 2,     // if query should include extended where part
-  COLLECTION_QUERY_USE_ONLY_WHERE_EXT = 1 << 3 // if query should only use extended where part
+  COLLECTION_QUERY_SIMPLE             = 0,      // a query with only select and where statement
+  COLLECTION_QUERY_USE_SORT           = 1 << 0, // if query should include order by statement
+  COLLECTION_QUERY_USE_LIMIT          = 1 << 1, // if query should include "limit ?1,?2" part
+  COLLECTION_QUERY_USE_WHERE_EXT      = 1 << 2, // if query should include extended where part
+  COLLECTION_QUERY_USE_ONLY_WHERE_EXT = 1 << 3  // if query should only use extended where part
 } dt_collection_query_t;
 #define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT | COLLECTION_QUERY_USE_LIMIT)
 
 typedef enum dt_collection_filter_comparator_t
 {
-  COLLECTION_FILTER_NONE = 0,
-  COLLECTION_FILTER_FILM_ID = 1 << 0,        // use film_id in filter
-  COLLECTION_FILTER_ATLEAST_RATING = 1 << 1, // show all stars including and above selected star filter
-  COLLECTION_FILTER_EQUAL_RATING = 1 << 2,   // show only selected star filter
-  COLLECTION_FILTER_ALTERED = 1 << 3,        // show only altered images
-  COLLECTION_FILTER_UNALTERED = 1 << 4,      // show only unaltered images
-  COLLECTION_FILTER_CUSTOM_COMPARE
-  = 1 << 5 // use the comparator defined in the comparator field to filter stars
+  COLLECTION_FILTER_NONE            = 0,
+  COLLECTION_FILTER_FILM_ID         = 1 << 0, // use film_id in filter
+  COLLECTION_FILTER_ATLEAST_RATING  = 1 << 1, // show all stars including and above selected star filter
+  COLLECTION_FILTER_EQUAL_RATING    = 1 << 2, // show only selected star filter
+  COLLECTION_FILTER_ALTERED         = 1 << 3, // show only altered images
+  COLLECTION_FILTER_UNALTERED       = 1 << 4, // show only unaltered images
+  COLLECTION_FILTER_REJECTED        = 1 << 5, // show only rejected images
+  COLLECTION_FILTER_CUSTOM_COMPARE  = 1 << 6  // use the comparator defined in the comparator field to filter stars
 } dt_collection_filter_comparator_t;
 
 typedef enum dt_collection_filter_t
 {
-  DT_COLLECTION_FILTER_ALL = 0,
-  DT_COLLECTION_FILTER_STAR_NO = 1,
-  DT_COLLECTION_FILTER_STAR_1 = 2,
-  DT_COLLECTION_FILTER_STAR_2 = 3,
-  DT_COLLECTION_FILTER_STAR_3 = 4,
-  DT_COLLECTION_FILTER_STAR_4 = 5,
-  DT_COLLECTION_FILTER_STAR_5 = 6,
-  DT_COLLECTION_FILTER_REJECT = 7,
+  DT_COLLECTION_FILTER_ALL        = 0,
+  DT_COLLECTION_FILTER_STAR_NO    = 1,
+  DT_COLLECTION_FILTER_STAR_1     = 2,
+  DT_COLLECTION_FILTER_STAR_2     = 3,
+  DT_COLLECTION_FILTER_STAR_3     = 4,
+  DT_COLLECTION_FILTER_STAR_4     = 5,
+  DT_COLLECTION_FILTER_STAR_5     = 6,
+  DT_COLLECTION_FILTER_REJECT     = 7,
   DT_COLLECTION_FILTER_NOT_REJECT = 8
 } dt_collection_filter_t;
 
 typedef enum dt_collection_sort_t
 {
-  DT_COLLECTION_SORT_NONE = -1,
+  DT_COLLECTION_SORT_NONE     = -1,
   DT_COLLECTION_SORT_FILENAME = 0,
   DT_COLLECTION_SORT_DATETIME,
+  DT_COLLECTION_SORT_IMPORT_TIMESTAMP,
+  DT_COLLECTION_SORT_CHANGE_TIMESTAMP,
+  DT_COLLECTION_SORT_EXPORT_TIMESTAMP,
+  DT_COLLECTION_SORT_PRINT_TIMESTAMP,
   DT_COLLECTION_SORT_RATING,
   DT_COLLECTION_SORT_ID,
   DT_COLLECTION_SORT_COLOR,
@@ -75,6 +79,9 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_SHUFFLE
 } dt_collection_sort_t;
 
+#define DT_COLLECTION_ORDER_FLAG 0x8000
+
+/* NOTE: any reordeing in this module require a legacy_preset entry in src/libs/collect.c */
 typedef enum dt_collection_properties_t
 {
   DT_COLLECTION_PROP_FILMROLL = 0,
@@ -83,7 +90,6 @@ typedef enum dt_collection_properties_t
 
   DT_COLLECTION_PROP_CAMERA,
   DT_COLLECTION_PROP_LENS,
-
   DT_COLLECTION_PROP_APERTURE,
   DT_COLLECTION_PROP_EXPOSURE,
   DT_COLLECTION_PROP_FOCAL_LENGTH,
@@ -91,9 +97,13 @@ typedef enum dt_collection_properties_t
 
   DT_COLLECTION_PROP_DAY,
   DT_COLLECTION_PROP_TIME,
+  DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
+  DT_COLLECTION_PROP_CHANGE_TIMESTAMP,
+  DT_COLLECTION_PROP_EXPORT_TIMESTAMP,
+  DT_COLLECTION_PROP_PRINT_TIMESTAMP,
+
   DT_COLLECTION_PROP_GEOTAGGING,
   DT_COLLECTION_PROP_ASPECT_RATIO,
-
   DT_COLLECTION_PROP_TAG,
   DT_COLLECTION_PROP_COLORLABEL,
   DT_COLLECTION_PROP_METADATA,
@@ -103,26 +113,27 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_HISTORY,
   DT_COLLECTION_PROP_MODULE,
   DT_COLLECTION_PROP_ORDER,
+
   DT_COLLECTION_PROP_LAST
 } dt_collection_properties_t;
 
 typedef enum dt_collection_rating_comperator_t
 {
-  DT_COLLECTION_RATING_COMP_LT = 0,
+  DT_COLLECTION_RATING_COMP_LT  = 0,
   DT_COLLECTION_RATING_COMP_LEQ = 1,
-  DT_COLLECTION_RATING_COMP_EQ = 2,
+  DT_COLLECTION_RATING_COMP_EQ  = 2,
   DT_COLLECTION_RATING_COMP_GEQ = 3,
-  DT_COLLECTION_RATING_COMP_GT = 4,
-  DT_COLLECTION_RATING_COMP_NE = 5,
-  DT_COLLECTION_RATING_N_COMPS = 6
+  DT_COLLECTION_RATING_COMP_GT  = 4,
+  DT_COLLECTION_RATING_COMP_NE  = 5,
+  DT_COLLECTION_RATING_N_COMPS  = 6
 } dt_collection_rating_comperator_t;
 
 typedef enum dt_collection_change_t
 {
-  DT_COLLECTION_CHANGE_NONE = 0,
+  DT_COLLECTION_CHANGE_NONE      = 0,
   DT_COLLECTION_CHANGE_NEW_QUERY = 1, // a completly different query
-  DT_COLLECTION_CHANGE_FILTER = 2,    // base query has been finetuned (filter, ...)
-  DT_COLLECTION_CHANGE_RELOAD = 3 // we have just reload the collection after images changes (query is identical)
+  DT_COLLECTION_CHANGE_FILTER    = 2, // base query has been finetuned (filter, ...)
+  DT_COLLECTION_CHANGE_RELOAD    = 3  // we have just reload the collection after images changes (query is identical)
 } dt_collection_change_t;
 
 typedef struct dt_collection_params_t
@@ -153,6 +164,7 @@ typedef struct dt_collection_t
   gchar *query, *query_no_group;
   gchar **where_ext;
   unsigned int count, count_no_group;
+  unsigned int tagid;
   dt_collection_params_t params;
   dt_collection_params_t store;
 } dt_collection_t;
@@ -194,7 +206,9 @@ uint32_t dt_collection_get_query_flags(const dt_collection_t *collection);
 void dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t flags);
 
 /** set the film_id of collection */
-void dt_collection_set_film_id(const dt_collection_t *collection, uint32_t film_id);
+void dt_collection_set_film_id(const dt_collection_t *collection, const uint32_t film_id);
+/** set the tagid of collection */
+void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid);
 /** set the star level for filter */
 void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating);
 /** get the star level for filter. The value returned starts on 0 **/
@@ -248,8 +262,9 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 void dt_collection_split_operator_datetime(const gchar *input, char **number1, char **number2, char **op);
 void dt_collection_split_operator_exposure(const gchar *input, char **number1, char **number2, char **op);
 
-int64_t dt_collection_get_image_position(const int32_t image_id);
-void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position);
+int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t tagid);
+void dt_collection_shift_image_positions(const unsigned int length, const int64_t image_position,
+                                         const int32_t tagid);
 
 /* move images with drag and drop */
 void dt_collection_move_before(const int32_t image_id, GList * selected_images);

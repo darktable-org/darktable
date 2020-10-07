@@ -22,6 +22,7 @@
 #include "common/image_cache.h"
 #include "control/signal.h"
 #include "gui/gtk.h"
+#include "views/view.h"
 
 typedef struct dt_selection_t
 {
@@ -32,6 +33,19 @@ typedef struct dt_selection_t
      the start of a selection range */
   uint32_t last_single_id;
 } dt_selection_t;
+
+const dt_collection_t *dt_selection_get_collection(struct dt_selection_t *selection)
+{
+  return selection->collection;
+}
+
+static void _selection_raise_signal()
+{
+  // discard cached images_to_act_on list
+  darktable.view_manager->act_on.ok = FALSE;
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+}
 
 /* updates the internal collection of an selection */
 static void _selection_update_collection(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
@@ -57,8 +71,10 @@ static void _selection_select(dt_selection_t *selection, uint32_t imgid)
       else
       {
         query = dt_util_dstrcat(query,
-                                "INSERT OR IGNORE INTO main.selected_images SELECT id FROM main.images "
-                                "WHERE group_id = %d AND id IN (%s)",
+                                "INSERT OR IGNORE INTO main.selected_images"
+                                "  SELECT id"
+                                "  FROM main.images "
+                                "  WHERE group_id = %d AND id IN (%s)",
                                 img_group_id, dt_collection_get_query_no_group(selection->collection));
       }
 
@@ -67,7 +83,7 @@ static void _selection_select(dt_selection_t *selection, uint32_t imgid)
     }
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -103,13 +119,16 @@ const dt_selection_t *dt_selection_new()
   if(dt_collection_get_selected_count(darktable.collection) >= 1)
   {
     GList *selected_image = dt_collection_get_selected(darktable.collection, 1);
-    s->last_single_id = GPOINTER_TO_INT(selected_image->data);
-    g_list_free(selected_image);
+    if(selected_image)
+    {
+      s->last_single_id = GPOINTER_TO_INT(selected_image->data);
+      g_list_free(selected_image);
+    }
   }
 
   /* setup signal handler for darktable collection update
    to update the internal collection of the selection */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_selection_update_collection), (gpointer)s);
 
   return s;
@@ -141,7 +160,7 @@ void dt_selection_invert(dt_selection_t *selection)
 
   g_free(fullq);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -151,7 +170,7 @@ void dt_selection_clear(const dt_selection_t *selection)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -193,7 +212,7 @@ void dt_selection_deselect(dt_selection_t *selection, uint32_t imgid)
     }
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -231,7 +250,7 @@ void dt_selection_toggle(dt_selection_t *selection, uint32_t imgid)
     selection->last_single_id = imgid;
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -253,7 +272,7 @@ void dt_selection_select_all(dt_selection_t *selection)
 
   g_free(fullq);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -263,12 +282,12 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 {
   gchar *fullq = NULL;
 
-  if(!selection->collection || selection->last_single_id == -1) return;
+  if(!selection->collection) return;
 
   /* get start and end rows for range selection */
   sqlite3_stmt *stmt;
   int rc = 0;
-  uint32_t sr = -1, er = -1;
+  int sr = -1, er = -1;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), dt_collection_get_query_no_group(selection->collection),
                               -1, &stmt, NULL);
 
@@ -283,8 +302,31 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 
     rc++;
   }
-
   sqlite3_finalize(stmt);
+
+  // if imgid not in collection, nothing to do
+  if(er < 0) return;
+
+  // if last_single_id not in collection, we either use last selected image or first collected one
+  int srid = selection->last_single_id;
+  if(sr < 0)
+  {
+    sr = 0;
+    srid = -1;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "SELECT m.rowid, m.imgid FROM memory.collected_images AS m, main.selected_images AS s"
+        " WHERE m.imgid=s.imgid"
+        " ORDER BY m.rowid DESC"
+        " LIMIT 1",
+        -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      sr = sqlite3_column_int(stmt, 0);
+      srid = sqlite3_column_int(stmt, 1);
+    }
+    sqlite3_finalize(stmt);
+  }
 
   /* select the images in range from start to end */
   const uint32_t old_flags = dt_collection_get_query_flags(selection->collection);
@@ -310,7 +352,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   dt_collection_update(selection->collection);
 
   // The logic above doesn't handle groups, so explicitly select the beginning and end to make sure those are selected properly
-  dt_selection_select(selection, selection->last_single_id);
+  dt_selection_select(selection, srid);
   dt_selection_select(selection, imgid);
 
   g_free(fullq);
@@ -334,6 +376,11 @@ void dt_selection_select_filmroll(dt_selection_t *selection)
   dt_collection_update(selection->collection);
 
   selection->last_single_id = -1;
+
+  _selection_raise_signal();
+
+  /* update hint message */
+  dt_collection_hint_message(darktable.collection);
 }
 
 void dt_selection_select_unaltered(dt_selection_t *selection)
@@ -364,6 +411,10 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
   g_free(fullq);
 
   selection->last_single_id = -1;
+  _selection_raise_signal();
+
+  /* update hint message */
+  dt_collection_hint_message(darktable.collection);
 }
 
 
@@ -387,14 +438,12 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
       query = dt_util_dstrcat(query, ",(%d)", imgid);
       list = g_list_next(list);
     }
-    char *result = NULL;
-
-    sqlite3_exec(dt_database_get(darktable.db), query, NULL, NULL, &result);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
     g_free(query);
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  _selection_raise_signal();
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);

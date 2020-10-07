@@ -171,9 +171,9 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
       continue;
     }
     module->gui_data = NULL;
-    if(darktable.gui) darktable.gui->reset = 1;
+    if(darktable.gui) ++darktable.gui->reset;
     module->gui_init(module);
-    if(darktable.gui) darktable.gui->reset = 0;
+    if(darktable.gui) --darktable.gui->reset;
     if(module->widget) g_object_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_format);
@@ -434,7 +434,7 @@ void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage)
 {
   darktable.imageio->plugins_storage
       = g_list_insert_sorted(darktable.imageio->plugins_storage, storage, dt_imageio_sort_modules_storage);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

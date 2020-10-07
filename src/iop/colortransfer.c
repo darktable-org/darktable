@@ -65,14 +65,14 @@ typedef enum dt_iop_colortransfer_flag_t
 
 typedef struct dt_iop_colortransfer_params_t
 {
-  dt_iop_colortransfer_flag_t flag;
+  dt_iop_colortransfer_flag_t flag; // $DEFAULT: NEUTRAL
   // hist matching table
   float hist[HISTN];
   // n-means (max 5?) with mean/variance
   float2 mean[MAXN];
   float2 var[MAXN];
   // number of gaussians used.
-  int n;
+  int n; // $DEFAULT: 3
 } dt_iop_colortransfer_params_t;
 
 typedef struct dt_iop_colortransfer_gui_data_t
@@ -104,7 +104,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_EFFECTS;
 }
 
 int flags()
@@ -338,7 +338,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(data->flag == ACQUIRE)
   {
-    if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     {
       // only get stuff from the preview pipe, rest stays untouched.
       int hist[HISTN];
@@ -396,7 +396,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ch, mapio, mean, roi_out, var) \
     shared(data, in, out) \
-    schedule(static) 
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -566,32 +566,6 @@ void gui_update(struct dt_iop_module_t *self)
 #endif
 }
 
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_colortransfer_data_t));
-  module->params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_colortransfer_params_t);
-  module->gui_data = NULL;
-  dt_iop_colortransfer_params_t tmp;
-  tmp.flag = NEUTRAL;
-  memset(tmp.hist, 0, sizeof(float) * HISTN);
-  memset(tmp.mean, 0, sizeof(float) * MAXN * 2);
-  memset(tmp.var, 0, sizeof(float) * MAXN * 2);
-  tmp.n = 3;
-  memcpy(module->params, &tmp, sizeof(dt_iop_colortransfer_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colortransfer_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 #if 0
 static gboolean
 cluster_preview_draw (GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
@@ -654,15 +628,13 @@ cluster_preview_draw (GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
+  IOP_GUI_ALLOC(colortransfer);
 
-  self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
-  self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
-                                 "switch it off\nand move to the new color mapping module."));
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  self->widget = dt_ui_label_new(_("this module will be removed in the future\nand is only here so you can "
+                                   "switch it off\nand move to the new color mapping module."));
 
 #if 0
-  self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
-  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+  dt_iop_colortransfer_gui_data_t *g = IOP_GUI_ALLOC(colortransfer);
   // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
 
   g->flowback_set = 0;
@@ -705,14 +677,6 @@ void gui_init(struct dt_iop_module_t *self)
   }
   else gtk_widget_set_sensitive(GTK_WIDGET(g->apply_button), FALSE);
 #endif
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  //  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
-  //  cmsDeleteTransform(g->xform);
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

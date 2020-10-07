@@ -291,13 +291,14 @@ static gboolean ask_and_delete(gpointer user_data)
 
   GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
-
+  gtk_widget_set_name(GTK_WIDGET(tree), "delete-dialog");
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), gtk_cell_renderer_text_new(),
                                                                        "text", 0, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   gtk_container_add(GTK_CONTAINER(scroll), tree);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(25));
 
   gtk_container_add(GTK_CONTAINER(content_area), scroll);
 
@@ -345,7 +346,7 @@ void dt_film_remove_empty()
     }
   }
   sqlite3_finalize(stmt);
-  if(raise_signal) dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED);
+  if(raise_signal) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED);
 
   // dispatch asking for deletion (and subsequent deletion) to the gui thread
   if(empty_dirs)
@@ -457,7 +458,7 @@ void dt_film_remove(const int id)
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
 }
 
 GList *dt_film_get_image_ids(const int filmid)
@@ -472,6 +473,7 @@ GList *dt_film_get_image_ids(const int filmid)
     int id = sqlite3_column_int(stmt, 0);
     result = g_list_append(result, GINT_TO_POINTER(id));
   }
+  sqlite3_finalize(stmt);
   return result;
 }
 
