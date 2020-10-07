@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-05 11:04-0300\n"
-"PO-Revision-Date: 2020-10-05 11:10-0300\n"
+"POT-Creation-Date: 2020-10-07 07:13-0300\n"
+"PO-Revision-Date: 2020-10-07 07:15-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -151,7 +151,7 @@ msgstr "preservar cores"
 #: ../src/iop/clipping.c:2159 ../src/iop/clipping.c:2294
 #: ../src/iop/clipping.c:2321 ../src/iop/lens.cc:2252 ../src/iop/retouch.c:341
 #: ../src/libs/collect.c:1683 ../src/libs/colorpicker.c:569
-#: ../src/libs/export.c:625 ../src/libs/live_view.c:345
+#: ../src/libs/export.c:808 ../src/libs/live_view.c:345
 #: ../src/libs/live_view.c:370 ../src/libs/live_view.c:379
 #: ../src/libs/print_settings.c:1475
 msgid "none"
@@ -823,9 +823,9 @@ msgstr "versão do gerador de splines"
 #: ../build/src/iop/introspection_filmicrgb.c:524
 #: ../build/src/iop/introspection_toneequal.c:360 ../src/common/darktable.c:913
 #: ../src/common/variables.c:520 ../src/imageio/format/pdf.c:670
-#: ../src/imageio/format/pdf.c:695 ../src/libs/export.c:738
-#: ../src/libs/export.c:744 ../src/libs/export.c:751
-#: ../src/libs/metadata_view.c:322
+#: ../src/imageio/format/pdf.c:695 ../src/libs/export.c:964
+#: ../src/libs/export.c:970 ../src/libs/export.c:977
+#: ../src/libs/metadata_view.c:308
 msgid "no"
 msgstr "não"
 
@@ -951,8 +951,8 @@ msgstr "detectar por 3 vizinhos"
 #: ../src/iop/colorbalance.c:1901 ../src/iop/denoiseprofile.c:3943
 #: ../src/iop/exposure.c:914 ../src/iop/levels.c:709
 #: ../src/iop/profile_gamma.c:744 ../src/libs/copy_history.c:357
-#: ../src/libs/export.c:805 ../src/libs/image.c:519
-#: ../src/libs/print_settings.c:1516 ../src/libs/styles.c:566
+#: ../src/libs/export.c:1031 ../src/libs/image.c:519
+#: ../src/libs/print_settings.c:1516 ../src/libs/styles.c:561
 #: ../src/views/darkroom.c:2193
 msgid "mode"
 msgstr "modo"
@@ -3326,7 +3326,7 @@ msgid "grouping"
 msgstr "agrupar"
 
 #: ../src/common/collection.c:695 ../src/libs/metadata_view.c:108
-#: ../src/libs/metadata_view.c:363
+#: ../src/libs/metadata_view.c:349
 msgid "local copy"
 msgstr "cópia local"
 
@@ -3600,9 +3600,9 @@ msgstr ""
 
 #: ../src/common/darktable.c:913 ../src/common/database.c:3227
 #: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
-#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:739
-#: ../src/libs/export.c:745 ../src/libs/export.c:752
-#: ../src/libs/metadata_view.c:322
+#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:965
+#: ../src/libs/export.c:971 ../src/libs/export.c:978
+#: ../src/libs/metadata_view.c:308
 msgid "yes"
 msgstr "sim"
 
@@ -4094,7 +4094,8 @@ msgstr "perfil de escalonamento OpenCL ajustado para default."
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1293
+#: ../src/common/pdf.h:89 ../src/libs/export.c:308 ../src/libs/export.c:945
+#: ../src/libs/print_settings.c:1293
 msgid "cm"
 msgstr "cm"
 
@@ -4218,7 +4219,7 @@ msgid "below sea level"
 msgstr "abaixo do nível do mar"
 
 #: ../src/common/utility.c:517 ../src/iop/watermark.c:828
-#: ../src/libs/metadata_view.c:665
+#: ../src/libs/metadata_view.c:651
 msgid "m"
 msgstr "m"
 
@@ -5309,11 +5310,11 @@ msgstr "nova instância"
 msgid "duplicate instance"
 msgstr "duplicar instância"
 
-#: ../src/develop/imageop.c:1114 ../src/libs/masks.c:1170
+#: ../src/develop/imageop.c:1114 ../src/libs/masks.c:1169
 msgid "move up"
 msgstr "mover para cima"
 
-#: ../src/develop/imageop.c:1120 ../src/libs/masks.c:1173
+#: ../src/develop/imageop.c:1120 ../src/libs/masks.c:1172
 msgid "move down"
 msgstr "mover para baixo"
 
@@ -5665,7 +5666,7 @@ msgstr "%s: versão de máscara incompatível: %d != %d"
 msgid "opacity: %d%%"
 msgstr "opacidade: %d%%"
 
-#: ../src/develop/masks/masks.c:2232 ../src/libs/masks.c:1053
+#: ../src/develop/masks/masks.c:2232 ../src/libs/masks.c:1052
 msgid "add existing shape"
 msgstr "adicionar forma existente"
 
@@ -6790,7 +6791,7 @@ msgid "normal images"
 msgstr "imagens normais"
 
 #: ../src/gui/preferences.c:94 ../src/gui/presets.c:57
-#: ../src/libs/metadata_view.c:358
+#: ../src/libs/metadata_view.c:344
 msgid "raw"
 msgstr "raw"
 
@@ -6953,7 +6954,7 @@ msgstr ""
 "clique ou pressione enter novamente para circular pelos resultados"
 
 #. export button
-#: ../src/gui/preferences.c:958 ../src/libs/styles.c:600
+#: ../src/gui/preferences.c:958 ../src/libs/styles.c:595
 msgid "export..."
 msgstr "exportar..."
 
@@ -7169,36 +7170,41 @@ msgstr "você realmente deseja atualizar a predefinição `%s'?"
 msgid "update preset?"
 msgstr "atualizar predefinição"
 
-#: ../src/gui/presets.c:851
+#: ../src/gui/presets.c:847 ../src/libs/modulegroups.c:1950
+#: ../src/libs/modulegroups.c:1959
+msgid "manage modules layouts"
+msgstr "gerenciad layout dos módulos"
+
+#: ../src/gui/presets.c:855
 msgid "manage quick presets"
 msgstr "gerenciar predefinições rápidas"
 
-#: ../src/gui/presets.c:1015
+#: ../src/gui/presets.c:1016
 msgid "manage quick presets list..."
 msgstr "gerenciad lista de predefinições"
 
-#: ../src/gui/presets.c:1138 ../src/gui/presets.c:1151
+#: ../src/gui/presets.c:1139 ../src/gui/presets.c:1152
 msgid "(default)"
 msgstr "(padrão)"
 
-#: ../src/gui/presets.c:1162
+#: ../src/gui/presets.c:1163
 msgid "disabled: wrong module version"
 msgstr "desabilitado: versão do módulo incorreta"
 
-#: ../src/gui/presets.c:1186 ../src/libs/lib.c:644
+#: ../src/gui/presets.c:1187 ../src/libs/lib.c:644
 msgid "edit this preset.."
 msgstr "editar esta predefinição..."
 
-#: ../src/gui/presets.c:1190 ../src/libs/lib.c:648
+#: ../src/gui/presets.c:1191 ../src/libs/lib.c:648
 #: ../src/libs/modulegroups.c:1907
 msgid "delete this preset"
 msgstr "exclui esta predefinição"
 
-#: ../src/gui/presets.c:1196 ../src/libs/lib.c:655
+#: ../src/gui/presets.c:1197 ../src/libs/lib.c:655
 msgid "store new preset.."
 msgstr "armazena nova predefinição..."
 
-#: ../src/gui/presets.c:1202 ../src/libs/lib.c:667
+#: ../src/gui/presets.c:1203 ../src/libs/lib.c:667
 msgid "update preset"
 msgstr "atualizar predefinição"
 
@@ -7410,7 +7416,7 @@ msgstr ""
 "exemplos: 10 mm, 1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:654
+#: ../src/imageio/format/pdf.c:654 ../src/libs/export.c:948
 msgid "dpi"
 msgstr "dpi"
 
@@ -7616,7 +7622,7 @@ msgstr "foto"
 msgid "graphic"
 msgstr "gráfico"
 
-#: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:642
+#: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:825
 msgid "file on disk"
 msgstr "arquivo no disco"
 
@@ -7640,7 +7646,7 @@ msgid "create unique filename"
 msgstr "criar nome de arquivo único"
 
 #: ../src/imageio/storage/disk.c:204 ../src/libs/copy_history.c:359
-#: ../src/libs/image.c:521 ../src/libs/styles.c:568
+#: ../src/libs/image.c:521 ../src/libs/styles.c:563
 msgid "overwrite"
 msgstr "sobrescrever"
 
@@ -7901,7 +7907,7 @@ msgctxt "accel"
 msgid "guides"
 msgstr "guias"
 
-#: ../src/iop/ashift.c:542 ../src/iop/clipping.c:3462
+#: ../src/iop/ashift.c:542 ../src/iop/clipping.c:3464
 msgctxt "accel"
 msgid "automatic cropping"
 msgstr "corte automático"
@@ -9277,67 +9283,67 @@ msgstr "a margem superior não pode sobrepor a margem inferior"
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "a margem inferior não pode sobrepor a margem superior"
 
-#: ../src/iop/clipping.c:3452
+#: ../src/iop/clipping.c:3454
 msgctxt "accel"
 msgid "commit"
 msgstr "finalizar"
 
-#: ../src/iop/clipping.c:3453
+#: ../src/iop/clipping.c:3455
 msgctxt "accel"
 msgid "angle"
 msgstr "ângulo"
 
-#: ../src/iop/clipping.c:3454
+#: ../src/iop/clipping.c:3456
 msgctxt "accel"
 msgid "left"
 msgstr "esquerda"
 
-#: ../src/iop/clipping.c:3455
+#: ../src/iop/clipping.c:3457
 msgctxt "accel"
 msgid "top"
 msgstr "superior"
 
-#: ../src/iop/clipping.c:3456
+#: ../src/iop/clipping.c:3458
 msgctxt "accel"
 msgid "right"
 msgstr "direita"
 
-#: ../src/iop/clipping.c:3457
+#: ../src/iop/clipping.c:3459
 msgctxt "accel"
 msgid "bottom"
 msgstr "inferior"
 
-#: ../src/iop/clipping.c:3458
+#: ../src/iop/clipping.c:3460
 msgctxt "accel"
 msgid "aspect ratio"
 msgstr "ajuste de aspecto"
 
-#: ../src/iop/clipping.c:3459
+#: ../src/iop/clipping.c:3461
 msgctxt "accel"
 msgid "guide lines"
 msgstr "linhas-guia"
 
-#: ../src/iop/clipping.c:3460
+#: ../src/iop/clipping.c:3462
 msgctxt "accel"
 msgid "flip"
 msgstr "espelhar simetricamente"
 
-#: ../src/iop/clipping.c:3461
+#: ../src/iop/clipping.c:3463
 msgctxt "accel"
 msgid "keystone"
 msgstr "distorção de perspectiva"
 
-#: ../src/iop/clipping.c:3492
+#: ../src/iop/clipping.c:3494
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s em bordas] cortar"
 
-#: ../src/iop/clipping.c:3498
+#: ../src/iop/clipping.c:3500
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s em bordas] cortar mantendo aspecto"
 
-#: ../src/iop/clipping.c:3503
+#: ../src/iop/clipping.c:3505
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] definir/rotacionar horizonte"
@@ -9939,21 +9945,21 @@ msgstr "perfil de saída não suportado foi substituido por linear sRGB!"
 msgid "output intent"
 msgstr "intenção de saída"
 
-#: ../src/iop/colorout.c:867 ../src/libs/export.c:788
+#: ../src/iop/colorout.c:867 ../src/libs/export.c:1014
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2360 ../src/views/darkroom.c:2368
 #: ../src/views/lighttable.c:1397 ../src/views/lighttable.c:1405
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:868 ../src/libs/export.c:789
+#: ../src/iop/colorout.c:868 ../src/libs/export.c:1015
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2361 ../src/views/darkroom.c:2369
 #: ../src/views/lighttable.c:1398 ../src/views/lighttable.c:1406
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
-#: ../src/iop/colorout.c:869 ../src/libs/export.c:790
+#: ../src/iop/colorout.c:869 ../src/libs/export.c:1016
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2362 ../src/views/darkroom.c:2370
 #: ../src/views/lighttable.c:1399 ../src/views/lighttable.c:1407
@@ -9961,7 +9967,7 @@ msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
-#: ../src/iop/colorout.c:870 ../src/libs/export.c:791
+#: ../src/iop/colorout.c:870 ../src/libs/export.c:1017
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2363 ../src/views/darkroom.c:2371
 #: ../src/views/lighttable.c:1400 ../src/views/lighttable.c:1408
@@ -10061,7 +10067,7 @@ msgstr "analisar esta imagem"
 
 #. apply button
 #: ../src/iop/colortransfer.c:668 ../src/libs/metadata.c:721
-#: ../src/libs/styles.c:605
+#: ../src/libs/styles.c:600
 msgid "apply"
 msgstr "aplicar"
 
@@ -10114,7 +10120,7 @@ msgid "HSL base setting"
 msgstr "configuração de base HSL"
 
 #: ../src/iop/colorzones.c:2208 ../src/iop/retouch.c:1687
-#: ../src/iop/toneequal.c:1762
+#: ../src/iop/toneequal.c:1765
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "não é possível mostrar máscaras quando a máscara de mesclagem é mostrada"
@@ -10402,7 +10408,7 @@ msgstr "variância de azul: "
 msgid "variance computed on the blue channel"
 msgstr "variância calculada no canal azul"
 
-#: ../src/iop/denoiseprofile.c:3936 ../src/libs/export.c:764
+#: ../src/iop/denoiseprofile.c:3936 ../src/libs/export.c:990
 #: ../src/libs/print_settings.c:1189 ../src/libs/print_settings.c:1409
 msgid "profile"
 msgstr "perfil"
@@ -10889,7 +10895,7 @@ msgstr ""
 "especificamente em luminâncias extremas\n"
 "diminua se sombras e/ou realces estão saturados demais."
 
-#: ../src/iop/filmic.c:1730 ../src/libs/export.c:786
+#: ../src/iop/filmic.c:1730 ../src/libs/export.c:1012
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1457
 msgid "intent"
 msgstr "intenção"
@@ -11143,11 +11149,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:3410 ../src/iop/filmicrgb.c:3420
 #: ../src/iop/filmicrgb.c:3453 ../src/iop/filmicrgb.c:3463
-#: ../src/iop/toneequal.c:2999 ../src/iop/toneequal.c:3004
-#: ../src/iop/toneequal.c:3009 ../src/iop/toneequal.c:3014
-#: ../src/iop/toneequal.c:3019 ../src/iop/toneequal.c:3024
-#: ../src/iop/toneequal.c:3029 ../src/iop/toneequal.c:3034
-#: ../src/iop/toneequal.c:3039 ../src/libs/metadata_view.c:516
+#: ../src/iop/toneequal.c:3002 ../src/iop/toneequal.c:3007
+#: ../src/iop/toneequal.c:3012 ../src/iop/toneequal.c:3017
+#: ../src/iop/toneequal.c:3022 ../src/iop/toneequal.c:3027
+#: ../src/iop/toneequal.c:3032 ../src/iop/toneequal.c:3037
+#: ../src/iop/toneequal.c:3042 ../src/libs/metadata_view.c:502
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -12491,7 +12497,7 @@ msgstr "interpolação"
 msgid "select the interpolation method"
 msgstr "selecione o modo de interpolação"
 
-#: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
+#: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:55
 msgid "mask manager"
 msgstr "gerenciador de máscara"
 
@@ -13193,7 +13199,7 @@ msgctxt "accel"
 msgid "show or hide shapes"
 msgstr "mostrar ou esconder formas"
 
-#: ../src/iop/retouch.c:3783 ../src/iop/retouch.c:4640
+#: ../src/iop/retouch.c:3784 ../src/iop/retouch.c:4641
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "a escala máxima é %i para este tamanho de imagem"
@@ -13901,15 +13907,15 @@ msgstr ""
 "o buffer de entrada/saída doequalizador de tons está mal alinhado, por favor "
 "reporte o bug aos desenvolvedores"
 
-#: ../src/iop/toneequal.c:1614 ../src/iop/toneequal.c:1974
+#: ../src/iop/toneequal.c:1617 ../src/iop/toneequal.c:1977
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "a interpolação está instável, diminua a suavização da curva"
 
-#: ../src/iop/toneequal.c:1658 ../src/iop/toneequal.c:1720
+#: ../src/iop/toneequal.c:1661 ../src/iop/toneequal.c:1723
 msgid "wait for the preview to finish recomputing"
 msgstr "aguardar a pré-visualização para terminar de recomputar"
 
-#: ../src/iop/toneequal.c:1830 ../src/iop/toneequal.c:2292
+#: ../src/iop/toneequal.c:1833 ../src/iop/toneequal.c:2295
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -13918,86 +13924,86 @@ msgstr ""
 "shift+scroll para mudar em passos largos; ctrl+scroll para mudar em passos "
 "curtos"
 
-#: ../src/iop/toneequal.c:1979
+#: ../src/iop/toneequal.c:1982
 msgid "some parameters are out-of-bounds"
 msgstr "alguns parâmetros estão fora dos limites"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2253
+#: ../src/iop/toneequal.c:2256
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:2906
+#: ../src/iop/toneequal.c:2909
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sobre a imagem] mudar exposição do tom"
 
-#: ../src/iop/toneequal.c:2912
+#: ../src/iop/toneequal.c:2915
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos largos"
 
-#: ../src/iop/toneequal.c:2918
+#: ../src/iop/toneequal.c:2921
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos curtos"
 
 #. Simple view
-#: ../src/iop/toneequal.c:2995
+#: ../src/iop/toneequal.c:2998
 msgid "simple"
 msgstr "simples"
 
-#: ../src/iop/toneequal.c:3000
+#: ../src/iop/toneequal.c:3003
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3005
+#: ../src/iop/toneequal.c:3008
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3010
+#: ../src/iop/toneequal.c:3013
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3015
+#: ../src/iop/toneequal.c:3018
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3020
+#: ../src/iop/toneequal.c:3023
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3025
+#: ../src/iop/toneequal.c:3028
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3030
+#: ../src/iop/toneequal.c:3033
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3035
+#: ../src/iop/toneequal.c:3038
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3040
+#: ../src/iop/toneequal.c:3043
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3044
+#: ../src/iop/toneequal.c:3047
 msgid "advanced"
 msgstr "avançado"
 
-#: ../src/iop/toneequal.c:3059
+#: ../src/iop/toneequal.c:3062
 msgid "double-click to reset the curve"
 msgstr "clique duplo para redefinir curva"
 
-#: ../src/iop/toneequal.c:3066
+#: ../src/iop/toneequal.c:3069
 msgid "curve smoothing"
 msgstr "suavização de curva"
 
-#: ../src/iop/toneequal.c:3067
+#: ../src/iop/toneequal.c:3070
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -14010,11 +14016,11 @@ msgstr ""
 "mas podem produzir transições de tons brutais e danificar o contraste local."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3076
+#: ../src/iop/toneequal.c:3079
 msgid "masking"
 msgstr "máscaras"
 
-#: ../src/iop/toneequal.c:3080
+#: ../src/iop/toneequal.c:3083
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -14022,15 +14028,15 @@ msgstr ""
 "pré-visualiza a máscara e escolhe o estimador que te dá o\n"
 "maior contraste entre áreas a aclarar e áreas a escurecer"
 
-#: ../src/iop/toneequal.c:3083
+#: ../src/iop/toneequal.c:3086
 msgid "details"
 msgstr "detalhes"
 
-#: ../src/iop/toneequal.c:3084
+#: ../src/iop/toneequal.c:3087
 msgid "preserve details"
 msgstr "preservar detalhes"
 
-#: ../src/iop/toneequal.c:3085
+#: ../src/iop/toneequal.c:3088
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -14042,7 +14048,7 @@ msgstr ""
 "'filtro guiado' só afeta contraste global e tenta preservar contraste local\n"
 "'filtro de média guiado' é a média geométrica dos dois métodos"
 
-#: ../src/iop/toneequal.c:3091
+#: ../src/iop/toneequal.c:3094
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -14050,7 +14056,7 @@ msgstr ""
 "número de passos do filtro guiado a aplicar\n"
 "ajuda a dispersão das bordas do filtro, mas é lento"
 
-#: ../src/iop/toneequal.c:3097
+#: ../src/iop/toneequal.c:3100
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -14060,7 +14066,7 @@ msgstr ""
 "atenção: valores altos deste parâmetro podem fazer a pré-visualização\n"
 "do darkroom muito mais lenta se o módulo de redução de ruído é usado."
 
-#: ../src/iop/toneequal.c:3104
+#: ../src/iop/toneequal.c:3107
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -14074,11 +14080,11 @@ msgstr ""
 "valores baixos dão gradientes mais suaves e melhor suavização\n"
 "mas podem levar a arestas imprecisas e halos"
 
-#: ../src/iop/toneequal.c:3110
+#: ../src/iop/toneequal.c:3113
 msgid "mask post-processing"
 msgstr "pós-processamento de máscara"
 
-#: ../src/iop/toneequal.c:3116
+#: ../src/iop/toneequal.c:3119
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -14088,7 +14094,7 @@ msgstr ""
 "a linha central mostra a média. as barras laranja aparecem nos extremos se "
 "houver corte."
 
-#: ../src/iop/toneequal.c:3123
+#: ../src/iop/toneequal.c:3126
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -14099,7 +14105,7 @@ msgstr ""
 "para produzir áreas mais suaves quando valores altos de enevoamento são "
 "usados"
 
-#: ../src/iop/toneequal.c:3130
+#: ../src/iop/toneequal.c:3133
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -14109,7 +14115,7 @@ msgstr ""
 "para melhor controle da correção de exposição com os nós disponíveis.\n"
 "o seletor ajustará automaticamente a exposição média em -4EV."
 
-#: ../src/iop/toneequal.c:3140
+#: ../src/iop/toneequal.c:3143
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -14121,7 +14127,7 @@ msgstr ""
 "isto permite espalhar o histograma de exposição sobre mais canais\n"
 "para um controle melhor da correção de exposição."
 
-#: ../src/iop/toneequal.c:3155 ../src/iop/toneequal.c:3159
+#: ../src/iop/toneequal.c:3158 ../src/iop/toneequal.c:3162
 msgid "display exposure mask"
 msgstr "mostrar máscara de exposição"
 
@@ -14697,11 +14703,11 @@ msgstr ""
 msgid "live samples"
 msgstr "amostra em tempo real"
 
-#: ../src/libs/colorpicker.c:621
+#: ../src/libs/colorpicker.c:623
 msgid "display sample areas on image"
 msgstr "visualiza área de amostra na imagem"
 
-#: ../src/libs/colorpicker.c:630
+#: ../src/libs/colorpicker.c:632
 msgid "restrict histogram to selection"
 msgstr "restringe histograma a seleção"
 
@@ -14825,11 +14831,11 @@ msgstr ""
 "descarta histórico de\n"
 "todas imagens selecionadas"
 
-#: ../src/libs/copy_history.c:358 ../src/libs/styles.c:567
+#: ../src/libs/copy_history.c:358 ../src/libs/styles.c:562
 msgid "append"
 msgstr "anexa"
 
-#: ../src/libs/copy_history.c:360 ../src/libs/styles.c:569
+#: ../src/libs/copy_history.c:360 ../src/libs/styles.c:564
 msgid "how to handle existing history"
 msgstr "como gerenciar histórico existente"
 
@@ -14888,47 +14894,78 @@ msgstr "escreve arquivo associado"
 msgid "duplicate manager"
 msgstr "gerenciar duplicatas"
 
-#: ../src/libs/duplicate.c:535
-msgid "existing duplicates"
-msgstr "duplicatas existentes"
+#: ../src/libs/duplicate.c:532 ../src/libs/history.c:1013
+#: ../src/libs/snapshots.c:457
+msgid "original"
+msgstr "original"
 
-#: ../src/libs/duplicate.c:538
+#: ../src/libs/duplicate.c:532
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "cria uma duplicata da imagem sem nenhum desenvolvimento"
 
-#: ../src/libs/duplicate.c:542
+#: ../src/libs/duplicate.c:535 ../src/libs/image.c:423
+msgid "duplicate"
+msgstr "duplicar"
+
+#: ../src/libs/duplicate.c:535
 msgid "create a duplicate of the image with same history stack"
 msgstr "cria uma duplicata da imagem com o memso histórico"
 
-#: ../src/libs/export.c:76
+#: ../src/libs/export.c:148
 msgid "export selected"
 msgstr "exportar selecionados"
 
-#: ../src/libs/export.c:169
+#: ../src/libs/export.c:241
 msgid "export to disk"
 msgstr "exportar para o disco"
 
-#: ../src/libs/export.c:656
+#. DT_DIMENSIONS_INCH
+#: ../src/libs/export.c:310
+msgctxt "unit"
+msgid "in"
+msgstr "in"
+
+#: ../src/libs/export.c:839
 msgid "storage options"
 msgstr "opções de armazenamento"
 
-#: ../src/libs/export.c:663
+#: ../src/libs/export.c:846
 msgid "target storage"
 msgstr "armazenar em"
 
-#: ../src/libs/export.c:686
+#: ../src/libs/export.c:869
 msgid "format options"
 msgstr "opções de formato"
 
-#: ../src/libs/export.c:691
+#: ../src/libs/export.c:874
 msgid "file format"
 msgstr "formato do arquivo"
 
-#: ../src/libs/export.c:709
+#: ../src/libs/export.c:892
 msgid "global options"
 msgstr "opções globais"
 
-#: ../src/libs/export.c:714
+#: ../src/libs/export.c:897
+msgid "unit"
+msgstr "unidade"
+
+#: ../src/libs/export.c:898
+msgid "unit in which to input the image size"
+msgstr "unidade para medida do tamanho da imagem"
+
+#: ../src/libs/export.c:899
+msgid "pixels (file size)"
+msgstr "pixels (tamanho do arquivo)"
+
+#: ../src/libs/export.c:900
+msgid "cm (print size)"
+msgstr "cm (tamanho da impressão)"
+
+#: ../src/libs/export.c:901
+msgid "in (print size)"
+msgstr "in (tamanho da impressão)"
+
+#: ../src/libs/export.c:905 ../src/libs/export.c:922
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -14936,7 +14973,7 @@ msgstr ""
 "máxima largura de saída\n"
 "0 para manter dimensão"
 
-#: ../src/libs/export.c:717
+#: ../src/libs/export.c:908 ../src/libs/export.c:925
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -14944,63 +14981,71 @@ msgstr ""
 "máxima altura de saída\n"
 "0 para manter dimensão"
 
-#: ../src/libs/export.c:725
+#: ../src/libs/export.c:911
+msgid "resolution in dot per inch"
+msgstr "resolução em pontos por polegada"
+
+#: ../src/libs/export.c:933
 msgid "max size"
 msgstr "tamanho máx"
 
-#: ../src/libs/export.c:731
+#: ../src/libs/export.c:943 ../src/libs/export.c:953
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:737
+#: ../src/libs/export.c:955 ../src/libs/tools/global_toolbox.c:223
+msgid "px"
+msgstr "px"
+
+#: ../src/libs/export.c:963
 msgid "allow upscaling"
 msgstr "permitir aumentar a escala"
 
-#: ../src/libs/export.c:743
+#: ../src/libs/export.c:969
 msgid "high quality resampling"
 msgstr "reamostragem de alta qualidade"
 
-#: ../src/libs/export.c:746
+#: ../src/libs/export.c:972
 msgid "do high quality resampling during export"
 msgstr "fazer reamostragem de alta qualidade durante exportação"
 
-#: ../src/libs/export.c:750
+#: ../src/libs/export.c:976
 msgid "store masks"
 msgstr "armazenar máscaras"
 
-#: ../src/libs/export.c:753
+#: ../src/libs/export.c:979
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "armazena máscaras como camadas nas imagens exportadas. só funciona com "
 "alguns formatos."
 
-#: ../src/libs/export.c:766 ../src/libs/export.c:787
+#: ../src/libs/export.c:992 ../src/libs/export.c:1013
 #: ../src/libs/print_settings.c:1412 ../src/libs/print_settings.c:1459
 msgid "image settings"
 msgstr "configurações da imagem"
 
-#: ../src/libs/export.c:777 ../src/libs/print_settings.c:1448
+#: ../src/libs/export.c:1003 ../src/libs/print_settings.c:1448
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "perfil ICC de saída em  %s ou %s"
 
-#: ../src/libs/export.c:797 ../src/libs/print_settings.c:1473
+#: ../src/libs/export.c:1023 ../src/libs/print_settings.c:1473
 msgid "style"
 msgstr "estilo"
 
-#: ../src/libs/export.c:800
+#: ../src/libs/export.c:1026
 msgid "temporary style to use while exporting"
 msgstr "estilo temporário a ser usado ao exportar"
 
-#: ../src/libs/export.c:809 ../src/libs/print_settings.c:1518
+#: ../src/libs/export.c:1035 ../src/libs/print_settings.c:1518
 msgid "replace history"
 msgstr "colar histórico, eliminando a original"
 
-#: ../src/libs/export.c:810 ../src/libs/print_settings.c:1519
+#: ../src/libs/export.c:1036 ../src/libs/print_settings.c:1519
 msgid "append history"
 msgstr "adicionar histórico ao final"
 
-#: ../src/libs/export.c:815 ../src/libs/print_settings.c:1526
+#: ../src/libs/export.c:1041 ../src/libs/print_settings.c:1526
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
@@ -15008,20 +15053,20 @@ msgstr ""
 "o histórico"
 
 #. Export button
-#: ../src/libs/export.c:838
+#: ../src/libs/export.c:1064
 msgid "export"
 msgstr "exportar"
 
-#: ../src/libs/export.c:838
+#: ../src/libs/export.c:1064
 msgid "export with current settings"
 msgstr "exporta com configuração atual (ctrl-e)"
 
-#: ../src/libs/export.c:844
+#: ../src/libs/export.c:1070
 msgid "edit metadata exportation details"
 msgstr "editar detalhes de exportação de metadados"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1482 ../src/libs/styles.c:73
+#: ../src/libs/export.c:1712 ../src/libs/styles.c:73
 #: ../src/views/darkroom.c:3796
 msgctxt "accel"
 msgid "export"
@@ -15406,20 +15451,20 @@ msgstr ""
 msgid "create a style from the current history stack"
 msgstr "criar estilo do histórico atual"
 
-#: ../src/libs/history.c:211
+#: ../src/libs/history.c:212
 msgid "always-on module"
 msgstr "módulo sempre-ligado"
 
-#: ../src/libs/history.c:219
+#: ../src/libs/history.c:220
 msgid "default enabled module"
 msgstr "módulo habilitado por default"
 
-#: ../src/libs/history.c:227
+#: ../src/libs/history.c:228
 msgid "deprecated module"
 msgstr "módulo descontinuado"
 
-#: ../src/libs/history.c:792 ../src/libs/metadata_view.c:462
-#: ../src/libs/snapshots.c:464
+#: ../src/libs/history.c:792 ../src/libs/metadata_view.c:448
+#: ../src/libs/snapshots.c:465
 msgid "unknown"
 msgstr "desconhecido"
 
@@ -15446,10 +15491,6 @@ msgstr "máscara paramétrica de saída:"
 msgid "parametric input mask:"
 msgstr "máscara paramétrica de entrada:"
 
-#: ../src/libs/history.c:1013 ../src/libs/snapshots.c:456
-msgid "original"
-msgstr "original"
-
 #: ../src/libs/history.c:1203
 msgid "do you really want to clear history of current image?"
 msgstr "você realmente deseja remover o histórico da imagem atual?"
@@ -15475,7 +15516,7 @@ msgid "physically delete from disk"
 msgstr "excluir fisicamente do disco"
 
 #. delete
-#: ../src/libs/image.c:403 ../src/libs/styles.c:590
+#: ../src/libs/image.c:403 ../src/libs/styles.c:585
 msgid "remove"
 msgstr "remover"
 
@@ -15502,10 +15543,6 @@ msgstr "criar HDR"
 #: ../src/libs/image.c:419
 msgid "create a high dynamic range image from selected shots"
 msgstr "criar imagem de grande alcance dinâmico dos disparos selecionados"
-
-#: ../src/libs/image.c:423
-msgid "duplicate"
-msgstr "duplicar"
 
 #: ../src/libs/image.c:423
 msgid "add a duplicate to the collection, including its history stack"
@@ -16018,72 +16055,72 @@ msgstr "origem do mapa"
 msgid "select the source of the map. some entries might not work"
 msgstr "selecionar a origem do mapa. algumas entradas podem não funcionar"
 
-#: ../src/libs/masks.c:246
+#: ../src/libs/masks.c:245
 #, c-format
 msgid "group #%d"
 msgstr "grupo #%d"
 
-#: ../src/libs/masks.c:997 ../src/libs/masks.c:1037 ../src/libs/masks.c:1697
+#: ../src/libs/masks.c:996 ../src/libs/masks.c:1036 ../src/libs/masks.c:1671
 msgid "add circle"
 msgstr "adicionar círculo"
 
-#: ../src/libs/masks.c:1001 ../src/libs/masks.c:1041 ../src/libs/masks.c:1690
+#: ../src/libs/masks.c:1000 ../src/libs/masks.c:1040 ../src/libs/masks.c:1664
 msgid "add ellipse"
 msgstr "adiciona ellipse"
 
-#: ../src/libs/masks.c:1005 ../src/libs/masks.c:1045 ../src/libs/masks.c:1683
+#: ../src/libs/masks.c:1004 ../src/libs/masks.c:1044 ../src/libs/masks.c:1657
 msgid "add path"
 msgstr "adiciona caminho"
 
-#: ../src/libs/masks.c:1009 ../src/libs/masks.c:1049 ../src/libs/masks.c:1677
+#: ../src/libs/masks.c:1008 ../src/libs/masks.c:1048 ../src/libs/masks.c:1651
 msgid "add gradient"
 msgstr "addiciona gradiente"
 
-#: ../src/libs/masks.c:1033 ../src/libs/masks.c:1703
+#: ../src/libs/masks.c:1032 ../src/libs/masks.c:1677
 msgid "add brush"
 msgstr "adiciona pincel"
 
-#: ../src/libs/masks.c:1123
+#: ../src/libs/masks.c:1122
 msgid "duplicate this shape"
 msgstr "duplicar esta forma"
 
-#: ../src/libs/masks.c:1127
+#: ../src/libs/masks.c:1126
 msgid "delete this shape"
 msgstr "exclui esta forma"
 
-#: ../src/libs/masks.c:1133
+#: ../src/libs/masks.c:1132
 msgid "remove from group"
 msgstr "remover do grupo"
 
-#: ../src/libs/masks.c:1141
+#: ../src/libs/masks.c:1140
 msgid "group the forms"
 msgstr "agrupar as formas"
 
-#: ../src/libs/masks.c:1150
+#: ../src/libs/masks.c:1149
 msgid "use inverted shape"
 msgstr "usar forma invertida"
 
-#: ../src/libs/masks.c:1156
+#: ../src/libs/masks.c:1155
 msgid "mode : union"
 msgstr "modo : união"
 
-#: ../src/libs/masks.c:1159
+#: ../src/libs/masks.c:1158
 msgid "mode : intersection"
 msgstr "modo : intersecção"
 
-#: ../src/libs/masks.c:1162
+#: ../src/libs/masks.c:1161
 msgid "mode : difference"
 msgstr "modo : diferença"
 
-#: ../src/libs/masks.c:1165
+#: ../src/libs/masks.c:1164
 msgid "mode : exclusion"
 msgstr "modo : exclusão"
 
-#: ../src/libs/masks.c:1179
+#: ../src/libs/masks.c:1178
 msgid "cleanup unused shapes"
 msgstr "limpar formas não usadas"
 
-#: ../src/libs/masks.c:1670
+#: ../src/libs/masks.c:1644
 msgid "created shapes"
 msgstr "formas criadas"
 
@@ -16273,11 +16310,11 @@ msgstr "elevação"
 msgid "categories"
 msgstr "categorias"
 
-#: ../src/libs/metadata_view.c:163
+#: ../src/libs/metadata_view.c:160
 msgid "image information"
 msgstr "informação da imagem"
 
-#: ../src/libs/metadata_view.c:304
+#: ../src/libs/metadata_view.c:290
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -16286,103 +16323,103 @@ msgstr ""
 "clique duplo para pular para rolo de filme\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:355
+#: ../src/libs/metadata_view.c:341
 msgid "unused"
 msgstr "não utilizado"
 
-#: ../src/libs/metadata_view.c:356
+#: ../src/libs/metadata_view.c:342
 msgid "unused/deprecated"
 msgstr "não utilizado/obsoleto"
 
-#: ../src/libs/metadata_view.c:357
+#: ../src/libs/metadata_view.c:343
 msgid "ldr"
 msgstr "ldr"
 
-#: ../src/libs/metadata_view.c:359
+#: ../src/libs/metadata_view.c:345
 msgid "hdr"
 msgstr "hdr"
 
-#: ../src/libs/metadata_view.c:360
+#: ../src/libs/metadata_view.c:346
 msgid "marked for deletion"
 msgstr "marcado para remoção"
 
-#: ../src/libs/metadata_view.c:361
+#: ../src/libs/metadata_view.c:347
 msgid "auto-applying presets applied"
 msgstr "predefinições automáticas aplicadas"
 
-#: ../src/libs/metadata_view.c:362
+#: ../src/libs/metadata_view.c:348
 msgid "legacy flag. set for all new images"
 msgstr "flag de legado. selecione para todas as novas imagens"
 
-#: ../src/libs/metadata_view.c:364
+#: ../src/libs/metadata_view.c:350
 msgid "has .txt"
 msgstr "possui .txt"
 
-#: ../src/libs/metadata_view.c:365
+#: ../src/libs/metadata_view.c:351
 msgid "has .wav"
 msgstr "possui .wav"
 
-#: ../src/libs/metadata_view.c:377
+#: ../src/libs/metadata_view.c:363
 msgid "image rejected"
 msgstr "imagem rejeitada"
 
-#: ../src/libs/metadata_view.c:382
+#: ../src/libs/metadata_view.c:368
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
 msgstr[0] "a imagem tem %d estrela"
 msgstr[1] "a imagem tem %d estrelas"
 
-#: ../src/libs/metadata_view.c:463
+#: ../src/libs/metadata_view.c:449
 msgid "tiff"
 msgstr "tiff"
 
-#: ../src/libs/metadata_view.c:464
+#: ../src/libs/metadata_view.c:450
 msgid "png"
 msgstr "png"
 
-#: ../src/libs/metadata_view.c:465
+#: ../src/libs/metadata_view.c:451
 msgid "j2k"
 msgstr "j2k"
 
-#: ../src/libs/metadata_view.c:466
+#: ../src/libs/metadata_view.c:452
 msgid "jpeg"
 msgstr "jpeg"
 
-#: ../src/libs/metadata_view.c:467
+#: ../src/libs/metadata_view.c:453
 msgid "exr"
 msgstr "exr"
 
-#: ../src/libs/metadata_view.c:468
+#: ../src/libs/metadata_view.c:454
 msgid "rgbe"
 msgstr "rgbe"
 
-#: ../src/libs/metadata_view.c:469
+#: ../src/libs/metadata_view.c:455
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/libs/metadata_view.c:470
+#: ../src/libs/metadata_view.c:456
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
-#: ../src/libs/metadata_view.c:471
+#: ../src/libs/metadata_view.c:457
 msgid "rawspeed"
 msgstr "rawspeed"
 
-#: ../src/libs/metadata_view.c:472
+#: ../src/libs/metadata_view.c:458
 msgid "netpnm"
 msgstr "netpnm"
 
-#: ../src/libs/metadata_view.c:473
+#: ../src/libs/metadata_view.c:459
 msgid "avif"
 msgstr "avif"
 
-#: ../src/libs/metadata_view.c:478
+#: ../src/libs/metadata_view.c:464
 #, c-format
 msgid "loader: %s"
 msgstr "carregador: %s"
 
-#: ../src/libs/metadata_view.c:792
+#: ../src/libs/metadata_view.c:778
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "pula para rolo de filme"
@@ -16551,10 +16588,6 @@ msgstr "duplicar esta predefinição"
 #: ../src/libs/modulegroups.c:1923
 msgid "add new empty preset"
 msgstr "adicionar nova predefinição vazia"
-
-#: ../src/libs/modulegroups.c:1954
-msgid "manage modules layouts"
-msgstr "gerenciad layout dos módulos"
 
 #: ../src/libs/navigation.c:62
 msgid "navigation"
@@ -16920,7 +16953,7 @@ msgstr "selecionar estilo"
 msgid "darktable style files"
 msgstr "arquivos de estilo do darktable"
 
-#: ../src/libs/styles.c:533
+#: ../src/libs/styles.c:532
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -16928,55 +16961,55 @@ msgstr ""
 "estilos disponíveis,\n"
 "clique duplo para aplicar"
 
-#: ../src/libs/styles.c:540
+#: ../src/libs/styles.c:539
 msgid "filter style names"
 msgstr "nomes dos estilos de filtro"
 
-#: ../src/libs/styles.c:556
+#: ../src/libs/styles.c:551
 msgid "create duplicate"
 msgstr "cria duplicata"
 
-#: ../src/libs/styles.c:562
+#: ../src/libs/styles.c:557
 msgid "creates a duplicate of the image before applying style"
 msgstr "cria uma duplicata da imagem antes de aplica o estilo"
 
 #. create
-#: ../src/libs/styles.c:580
+#: ../src/libs/styles.c:575
 msgid "create..."
 msgstr "criar..."
 
-#: ../src/libs/styles.c:580
+#: ../src/libs/styles.c:575
 msgid "create styles from history stack of selected images"
 msgstr "cria estilos a partir do histórico das imagens selecionadas"
 
 #. edit
-#: ../src/libs/styles.c:585
+#: ../src/libs/styles.c:580
 msgid "edit..."
 msgstr "editar..."
 
-#: ../src/libs/styles.c:585
+#: ../src/libs/styles.c:580
 msgid "edit the selected styles in list above"
 msgstr "edita os estilos selecionados na lista acima"
 
-#: ../src/libs/styles.c:590
+#: ../src/libs/styles.c:585
 msgid "removes the selected styles in list above"
 msgstr "exclui os estilos selecionados na lista acima"
 
 #. import button
-#: ../src/libs/styles.c:595 ../src/libs/tagging.c:2783
+#: ../src/libs/styles.c:590 ../src/libs/tagging.c:2783
 msgctxt "verb"
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/libs/styles.c:595
+#: ../src/libs/styles.c:590
 msgid "import styles from a style files"
 msgstr "importa estilo de um arquivo de estilo"
 
-#: ../src/libs/styles.c:600
+#: ../src/libs/styles.c:595
 msgid "export the selected styles into a style files"
 msgstr "exportar os estilos selecionados em um arquivo de estilo"
 
-#: ../src/libs/styles.c:605
+#: ../src/libs/styles.c:600
 msgid "apply the selected styles in list above to selected images"
 msgstr "aplica os estilos selecionados na lista acima às imagens selecionadas"
 
@@ -17438,10 +17471,6 @@ msgstr "preferências"
 #: ../src/libs/tools/global_toolbox.c:221
 msgid "thumbnails overlays for size"
 msgstr "sobreposições para tamanho"
-
-#: ../src/libs/tools/global_toolbox.c:223
-msgid "px"
-msgstr "px"
 
 #: ../src/libs/tools/global_toolbox.c:255
 #: ../src/libs/tools/global_toolbox.c:318
@@ -18524,6 +18553,9 @@ msgstr "atalhos"
 #: ../src/views/view.c:1625
 msgid "Action"
 msgstr "Ação"
+
+#~ msgid "existing duplicates"
+#~ msgstr "duplicatas existentes"
 
 #~ msgid "show only your favourite modules (selected in `more modules' below)"
 #~ msgstr ""
