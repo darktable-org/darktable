@@ -2346,28 +2346,16 @@ static void _update_layout(dt_lib_module_t *self)
 
 static void _toggle_suggestion_button_callback(GtkToggleButton *source, dt_lib_module_t *self)
 {
-  if (dt_conf_get_bool("plugins/lighttable/tagging/nosuggestion"))
-  {
-    dt_conf_set_bool("plugins/lighttable/tagging/nosuggestion", FALSE);
-  }
-  else
-  {
-    dt_conf_set_bool("plugins/lighttable/tagging/nosuggestion", TRUE);
-  }
+  const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/nosuggestion");
+  dt_conf_set_bool("plugins/lighttable/tagging/nosuggestion", new_state);
   _update_layout(self);
   _init_treeview(self, 1);
 }
 
 static void _toggle_tree_button_callback(GtkToggleButton *source, dt_lib_module_t *self)
 {
-  if (dt_conf_get_bool("plugins/lighttable/tagging/treeview"))
-  {
-    dt_conf_set_bool("plugins/lighttable/tagging/treeview", FALSE);
-  }
-  else
-  {
-    dt_conf_set_bool("plugins/lighttable/tagging/treeview", TRUE);
-  }
+  const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/treeview");
+  dt_conf_set_bool("plugins/lighttable/tagging/treeview", new_state);
   _update_layout(self);
   _init_treeview(self, 1);
 }
@@ -2425,14 +2413,8 @@ static gint _sort_tree_path_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
 
 static void _toggle_sort_button_callback(GtkToggleButton *source, dt_lib_module_t *self)
 {
-  if (dt_conf_get_bool("plugins/lighttable/tagging/listsortedbycount"))
-  {
-    dt_conf_set_bool("plugins/lighttable/tagging/listsortedbycount", FALSE);
-  }
-  else
-  {
-    dt_conf_set_bool("plugins/lighttable/tagging/listsortedbycount", TRUE);
-  }
+  const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/listsortedbycount");
+  dt_conf_set_bool("plugins/lighttable/tagging/listsortedbycount", new_state);
   _update_layout(self);
   _sort_attached_list(self, FALSE);
   _sort_dictionary_list(self, FALSE);
@@ -2440,14 +2422,8 @@ static void _toggle_sort_button_callback(GtkToggleButton *source, dt_lib_module_
 
 static void _toggle_hide_button_callback(GtkToggleButton *source, dt_lib_module_t *self)
 {
-  if (dt_conf_get_bool("plugins/lighttable/tagging/hidehierarchy"))
-  {
-    dt_conf_set_bool("plugins/lighttable/tagging/hidehierarchy", FALSE);
-  }
-  else
-  {
-    dt_conf_set_bool("plugins/lighttable/tagging/hidehierarchy", TRUE);
-  }
+  const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/hidehierarchy");
+  dt_conf_set_bool("plugins/lighttable/tagging/hidehierarchy", new_state);
   _update_layout(self);
   _sort_attached_list(self, TRUE);
   _sort_dictionary_list(self, TRUE);
