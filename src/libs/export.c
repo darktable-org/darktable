@@ -303,10 +303,14 @@ void _print_size_update_display(dt_lib_export_t *self)
     gtk_widget_set_sensitive(GTK_WIDGET(self->width), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(self->height), FALSE);
 
+    char str[20];
     if(d_type == DT_DIMENSIONS_CM)
-      gtk_label_set_text(GTK_LABEL(self->unit_label), _("cm @"));
+      g_strlcpy(str, _("cm"), sizeof(str));
     else // DT_DIMENSIONS_INCH
-      gtk_label_set_text(GTK_LABEL(self->unit_label), _("in @"));
+      g_strlcpy(str, C_("unit", "in"), sizeof(str));
+
+    g_strlcat(str, " @", sizeof(str));
+    gtk_label_set_text(GTK_LABEL(self->unit_label), str);
   }
 }
 
@@ -938,7 +942,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox2, d->print_width, TRUE, TRUE, 0);
   gtk_box_pack_start(hbox2, gtk_label_new(_("x")), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox2, d->print_height, TRUE, TRUE, 0);
-  d->unit_label = gtk_label_new(_("cm @"));
+  d->unit_label = gtk_label_new(_("cm"));
   gtk_box_pack_start(hbox2, d->unit_label, FALSE, FALSE, 0);
   gtk_box_pack_start(hbox2, d->print_dpi, TRUE, TRUE, 0);
   gtk_box_pack_start(hbox2, gtk_label_new(_("dpi")), FALSE, FALSE, 0);
