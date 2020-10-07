@@ -50,6 +50,7 @@ typedef struct dt_lib_tagging_t
   GtkWidget *attach_button, *detach_button, *new_button, *import_button, *export_button, *attached_window, *dictionary_window;
   GtkWidget *toggle_tree_button, *toggle_suggestion_button, *toggle_sort_button, *toggle_hide_button, *toggle_dttags_button;
   gulong tree_button_handler, suggestion_button_handler, sort_button_handler, hide_button_handler;
+  gulong dttags_button_handler;
   GtkListStore *attached_liststore, *dictionary_liststore;
   GtkTreeStore *dictionary_treestore;
   GtkTreeModelFilter *dictionary_listfilter, *dictionary_treefilter;
@@ -2342,6 +2343,15 @@ static void _update_layout(dt_lib_module_t *self)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_hide_button), d->hide_path_flag);
     g_signal_handler_unblock (d->toggle_hide_button, d->hide_button_handler);
   }
+
+  const gboolean active_d = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button));
+  d->dttags_flag = dt_conf_get_bool("plugins/lighttable/tagging/dttags");
+  if (active_d != d->dttags_flag)
+  {
+    g_signal_handler_block (d->toggle_dttags_button, d->dttags_button_handler);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button), d->dttags_flag);
+    g_signal_handler_unblock (d->toggle_dttags_button, d->dttags_button_handler);
+  }
 }
 
 static void _toggle_suggestion_button_callback(GtkToggleButton *source, dt_lib_module_t *self)
@@ -2431,6 +2441,8 @@ static void _toggle_hide_button_callback(GtkToggleButton *source, dt_lib_module_
 
 static void _toggle_dttags_button_callback(GtkToggleButton *source, dt_lib_module_t *self)
 {
+  const gboolean new_state = !dt_conf_get_bool("plugins/lighttable/tagging/dttags");
+  dt_conf_set_bool("plugins/lighttable/tagging/dttags", new_state);
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   d->dttags_flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button));
   _init_treeview(self, 0);
@@ -2660,7 +2672,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(button, _("toggle show or not darktable tags"));
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_toggle_dttags_button_callback), (gpointer)self);
+  d->dttags_button_handler =
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_toggle_dttags_button_callback), (gpointer)self);
 
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
