@@ -755,10 +755,25 @@
       <title>max size</title>
 
       <para>
-        Set the maximum width and height of the output images in pixels. Set both to a value of
-        <quote>0</quote> to export with the original dimensions (after cropping). If the values
-        exceed the original dimensions darktable will either export with the original dimensions
-        or perform an upscaling step, depending on the setting of the following parameter.
+	The unit can be set to either a size expressed in pixels, or a
+	print size in cm or inch.
+      </para>
+
+      <para>
+	When pixels unit is selected, set the maximum width and height
+	of the output images in pixels. Set both to a value of
+	<quote>0</quote> to export with the original dimensions (after
+	cropping). If the values exceed the original dimensions
+	darktable will either export with the original dimensions or
+	perform an upscaling step, depending on the setting of the
+	following parameter.
+      </para>
+
+      <para>
+	When a print unit is selected, set the maximum width and
+	height of the final print in cm or inch and the DPI
+	needed. The corresponding size in pixels is still displayed
+	but not editable in this mode.
       </para>
 
       <para>
