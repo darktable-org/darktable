@@ -63,6 +63,7 @@ typedef struct dt_map_image_t
   int group;
   int group_count;
   gboolean group_same_loc;
+  gboolean selected_in_group;
   OsmGpsMapImage *image;
   gint width, height;
 } dt_map_image_t;
@@ -70,6 +71,7 @@ typedef struct dt_map_image_t
 static const int thumb_size = 128, thumb_border = 1, image_pin_size = 13, place_pin_size = 72;
 static const float thumb_overlap = 1.2f;
 static const uint32_t thumb_frame_color = 0x000000aa;
+static const uint32_t thumb_frame_sel_color = 0xffffffee;
 static const uint32_t pin_outer_color = 0x0000aaaa;
 static const uint32_t pin_inner_color = 0xffffffee;
 static const uint32_t pin_line_color = 0x000000ff;
@@ -91,9 +93,11 @@ static GObject *_view_map_add_marker(const dt_view_t *view, dt_geo_map_display_t
 /* proxy function to remove a marker from the map */
 static gboolean _view_map_remove_marker(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
 
-/* callback when the collection changs */
+/* callback when the collection changes */
 static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
                                          int next, gpointer user_data);
+/* callback when the selection changes */
+static void _view_map_selection_changed(gpointer instance, gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
 static void _view_map_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
@@ -507,6 +511,9 @@ void init(dt_view_t *self)
   /* connect collection changed signal */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_view_map_collection_changed), (gpointer)self);
+  /* connect selection changed signal */
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_view_map_selection_changed), (gpointer)self);
   /* connect preference changed signal */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                             G_CALLBACK(_view_map_check_preference_changed), (gpointer)self);
@@ -517,6 +524,7 @@ void cleanup(dt_view_t *self)
   dt_map_t *lib = (dt_map_t *)self->data;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_selection_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_check_preference_changed), self);
 
   if(darktable.gui)
@@ -666,6 +674,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   if(all_good)
   {
     // set the groups
+    const GList *sel_imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
     for(GSList *iter = lib->images; iter; iter = g_slist_next(iter))
     {
       dt_map_image_t *entry = (dt_map_image_t *)iter->data;
@@ -674,6 +683,11 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
         entry->group = entry->imgid;
         entry->group_count = 1;
         entry->group_same_loc = TRUE;
+        entry->selected_in_group = sel_imgs
+                                   ? g_list_find((GList *)sel_imgs,
+                                                 GINT_TO_POINTER(entry->imgid))
+                                     ? TRUE : FALSE
+                                   : FALSE;
         for(GSList *iter2 = iter; iter2; iter2 = g_slist_next(iter2))
         {
           dt_map_image_t *entry2 = (dt_map_image_t *)iter2->data;
@@ -687,6 +701,10 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
               entry->group_count++;
               if(dlat != 0.0 || dlon != 0.0)
                 entry->group_same_loc = FALSE;
+              if(sel_imgs && !entry->selected_in_group)
+                entry->selected_in_group = g_list_find((GList *)sel_imgs,
+                                                       GINT_TO_POINTER(entry2->imgid))
+                                           ? TRUE : FALSE;
             }
           }
         }
@@ -726,7 +744,8 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
           thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w + 2 * _thumb_border,
                                  h + 2 * _thumb_border + _pin_size);
           if(!thumb) goto map_changed_failure;
-          gdk_pixbuf_fill(thumb, thumb_frame_color);
+          gdk_pixbuf_fill(thumb, entry->selected_in_group ? thumb_frame_sel_color
+                                                          : thumb_frame_color);
 
           // put the image onto the frame
           gdk_pixbuf_scale(source, thumb, _thumb_border, _thumb_border, w, h,
@@ -1290,6 +1309,15 @@ static void _view_map_collection_changed(gpointer instance, dt_collection_change
     /* only redraw when map mode is currently active, otherwise enter() does the magic */
     if(darktable.view_manager->proxy.map.view) g_signal_emit_by_name(lib->map, "changed");
   }
+}
+
+static void _view_map_selection_changed(gpointer instance, gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_map_t *lib = (dt_map_t *)self->data;
+
+  /* only redraw when map mode is currently active, otherwise enter() does the magic */
+  if(darktable.view_manager->proxy.map.view) g_signal_emit_by_name(lib->map, "changed");
 }
 
 static void _view_map_center_on_image(dt_view_t *self, const int32_t imgid)
