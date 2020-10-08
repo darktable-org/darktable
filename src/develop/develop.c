@@ -1384,7 +1384,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   //  Note that we cannot use the a preset for FilmicRGB as the default values are
   //  dynamically computed depending on the actual exposure compensation
   //  (see reload_default routine in filmicrgb.c)
-  if(dt_image_is_matrix_correction_supported(image) && is_scene_referred)
+
+  const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
+  if(has_matrix && is_scene_referred)
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
@@ -1424,9 +1426,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            is_display_referred?"":"basecurve");
   // query for all modules at once:
   sqlite3_stmt *stmt;
-  const char *workflow_preset = is_display_referred
+  const char *workflow_preset = has_matrix && is_display_referred
                                 ? _("display-referred default")
-                                : (is_scene_referred
+                                : (has_matrix && is_scene_referred
                                    ?_("scene-referred default")
                                    :"\t\n");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);

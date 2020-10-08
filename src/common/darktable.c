@@ -119,9 +119,9 @@ static int usage(const char *argv0)
   printf("  --cachedir <user cache directory>\n");
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
-  printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
-  printf("      lua,masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder,\n");
-  printf("      imageio,undo,signal}\n");
+  printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n");
+  printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,\n");
+  printf("      pwstorage,print,signal,sql,undo}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
 #ifdef DT_HAVE_SIGNAL_TRACE
@@ -665,6 +665,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_UNDO; // undo/redo
         else if(!strcmp(argv[k + 1], "signal"))
           darktable.unmuted |= DT_DEBUG_SIGNAL; // signal information on console
+        else if(!strcmp(argv[k + 1], "params"))
+          darktable.unmuted |= DT_DEBUG_PARAMS; // iop module params checks on console
         else
           return usage(argv[0]);
         k++;
