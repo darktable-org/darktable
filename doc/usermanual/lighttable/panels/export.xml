@@ -752,22 +752,38 @@
 
     <sect4 id="export_selected_usage_size">
 
-      <title>max size</title>
+      <title>set size</title>
 
       <para>
-        Set the maximum width and height of the output images in pixels. Set both to a value of
-        <quote>0</quote> to export with the original dimensions (after cropping). If the values
-        exceed the original dimensions darktable will either export with the original dimensions
-        or perform an upscaling step, depending on the setting of the following parameter.
+	The exported size can be a size expressed in pixels, a
+	print size in cm or inch, or a scaling factor.
       </para>
 
       <para>
-        <emphasis>Caution: it's a frequent pitfall to accidentally put low values, like 1 or 10,
-        in these fields, causing darktable to produce miniature output files. You might think
-        darktable's output is broken, but in fact it only generated what you asked
-        for.</emphasis>
+	When pixels unit is selected, set the maximum width and height
+	of the output images in pixels. Set both to a value of
+	<quote>0</quote> to export with the original dimensions (after
+	cropping). If the values exceed the original dimensions
+	darktable will either export with the original dimensions or
+	perform an upscaling step, depending on the setting of the
+	following parameter.
       </para>
 
+      <para>
+	When a print unit is selected, set the maximum width and
+	height of the final print in cm or inch and the DPI
+	needed. The corresponding size in pixels is still displayed
+	but not editable in this mode.
+      </para>
+
+      <para>
+	When a scale is selected, set the maximum width and height
+	based on a scaling factor of the original size. A scale of 1
+	will export a file with it's full size. A scale of 2 will
+	export twice the original size if <quote>allow
+	upscaling</quote> is set. A fraction 1/2 or a float like 0.3
+	can be specified.
+      </para>
     </sect4>
 
     <sect4 id="export_selected_usage_upscaling">
