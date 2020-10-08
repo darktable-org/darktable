@@ -38,13 +38,6 @@
 
 DT_MODULE(1)
 
-typedef struct dt_undo_geotag_t
-{
-  int imgid;
-  dt_image_geoloc_t before;
-  dt_image_geoloc_t after;
-} dt_undo_geotag_t;
-
 typedef struct dt_map_t
 {
   gboolean entering;
@@ -75,6 +68,7 @@ typedef struct dt_map_image_t
 } dt_map_image_t;
 
 static const int thumb_size = 128, thumb_border = 1, image_pin_size = 13, place_pin_size = 72;
+static const float thumb_overlap = 1.2f;
 static const uint32_t thumb_frame_color = 0x000000aa;
 static const uint32_t pin_outer_color = 0x0000aaaa;
 static const uint32_t pin_inner_color = 0xffffffee;
@@ -339,7 +333,7 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
   return pixbuf;
 }
 
-static GdkPixbuf *init_image_pin()
+static GdkPixbuf *_init_image_pin()
 {
   int w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border), h = DT_PIXEL_APPLY_DPI(image_pin_size);
   float r, g, b, a;
@@ -364,7 +358,7 @@ static GdkPixbuf *init_image_pin()
   return pixbuf;
 }
 
-static GdkPixbuf *init_place_pin()
+static GdkPixbuf *_init_place_pin()
 {
   int w = DT_PIXEL_APPLY_DPI(place_pin_size), h = DT_PIXEL_APPLY_DPI(place_pin_size);
   float r, g, b, a;
@@ -433,8 +427,8 @@ void init(dt_view_t *self)
 
   if(darktable.gui)
   {
-    lib->image_pin = init_image_pin();
-    lib->place_pin = init_place_pin();
+    lib->image_pin = _init_image_pin();
+    lib->place_pin = _init_place_pin();
     lib->drop_filmstrip_activated = FALSE;
     lib->thumb_lat_angle = 0.01, lib->thumb_lon_angle = 0.01;
 
@@ -666,8 +660,8 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   float dlat_min, dlon_min;
   _view_map_thumb_angles(lib, center_lat, center_lon, &dlat_min, &dlon_min);
   // we would like to keep a small overlay
-  dlat_min /= 1.5;
-  dlon_min /= 1.5;
+  dlat_min /= thumb_overlap;
+  dlon_min /= thumb_overlap;
 
   if(all_good)
   {
@@ -1084,14 +1078,30 @@ void init_key_accels(dt_view_t *self)
 static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
+  dt_view_t *self = (dt_view_t *)data;
+  dt_map_t *lib = (dt_map_t *)self->data;
+
+  // let current map view unchanged (avoid to center the map on collection)
+  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), data);
   dt_undo_do_undo(darktable.undo, DT_UNDO_MAP);
+  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), data);
+  g_signal_emit_by_name(lib->map, "changed");
+
   return TRUE;
 }
 
 static gboolean _view_map_redo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
+  dt_view_t *self = (dt_view_t *)data;
+  dt_map_t *lib = (dt_map_t *)self->data;
+
+  // let current map view unchanged (avoid to center the map on collection)
+  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), data);
   dt_undo_do_redo(darktable.undo, DT_UNDO_MAP);
+  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), data);
+  g_signal_emit_by_name(lib->map, "changed");
+
   return TRUE;
 }
 
