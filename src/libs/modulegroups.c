@@ -907,6 +907,7 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
 
     gchar *tx = _preset_retrieve_old_layout(list, fav);
     dt_lib_presets_add(pname, self->plugin_name, self->version(), tx, strlen(tx), FALSE);
+    g_free(tx);
   }
   sqlite3_finalize(stmt);
 
@@ -982,25 +983,29 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("grading"), "grading", "rgblevels|colorbalance|toneequal|temperature");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effects"), "effect", "sharpen|bilat");
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
 
-  gchar *tx2 = NULL;
-  tx2 = dt_util_dstrcat(tx2, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
                         "basecurve|toneequal|clipping|flip|exposure|demosaic|highlights|temperature|filmicrgb");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("tone"), "tone", "rgblevels|bilat");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("color"), "color", "colorbalance|colorin");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
-  dt_lib_presets_add(_("legacy layout"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("tone"), "tone", "rgblevels|bilat");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("color"), "color", "colorbalance|colorin");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
+  dt_lib_presets_add(_("legacy layout"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
 
   // if needed, we add a new preset, based on last user config
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
-    gchar *tx3 = _preset_retrieve_old_layout(NULL, NULL);
-    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx3, strlen(tx3), FALSE);
+    tx = _preset_retrieve_old_layout(NULL, NULL);
+    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx, strlen(tx), FALSE);
     dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("previous layout"));
+    g_free(tx);
 
-    gchar *tx4 = _preset_retrieve_old_layout_updated();
-    dt_lib_presets_add(_("previous config with new layout"), self->plugin_name, self->version(), tx4,
-                       strlen(tx4), FALSE);
+    tx = _preset_retrieve_old_layout_updated();
+    dt_lib_presets_add(_("previous config with new layout"), self->plugin_name, self->version(), tx,
+                       strlen(tx), FALSE);
+    g_free(tx);
   }
   // if they exists, we retrieve old user presets from old modulelist lib
   _preset_retrieve_old_presets(self);
@@ -1065,6 +1070,7 @@ static void _manage_editor_save(dt_lib_module_t *self)
 
   // update the preset in the database
   dt_lib_presets_update(d->edit_preset, self->plugin_name, self->version(), newname, "", params, strlen(params));
+  g_free(params);
 
   // if name has changed, we need to reflect the change on the presets list too
   _manage_preset_update_list(self);
