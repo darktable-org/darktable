@@ -23,7 +23,7 @@ To start working on your translation you need to:
 
     This will create a translation template with POT file extension. Now start poedit and in the menu choose "File > New catalog from POT file...". Point it to the newly created POT file.
 
-    The next thing that will happen is that you will be asked to define various settings. All of them are pretty much self-explanatory. It should noted here that you don't have to fill in "Team" and "Team's email address" fields. darktable doesn't currently use plural forms anywhere, but if you use `Lokalize` instead of `poedit`, this field will be automagically filled for you.
+    The next thing that will happen is that you will be asked to define various settings. All of them are pretty much self-explanatory. It should be noted here that you don't have to fill in "Team" and "Team's email address" fields. darktable doesn't currently use plural forms anywhere, but if you use `Lokalize` instead of `poedit`, this field will be automagically filled for you.
 
     Then you will be asked to save the newly created PO file. Give it a name like fr.po for French translation, de.po for German translation and so on. If you are not sure about the two-letter code for your language, use the one that local websites in your native language use.
 
