@@ -1007,96 +1007,81 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
 
 void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *images)
 {
-  // dt_camctl_t *camctl=(dt_camctl_t *)c;
   _camctl_lock(c, cam);
-
+  const gboolean sdcard = !strncmp(c->active_camera->port, "disk:", 5);
+    
   GList *ifile = g_list_first(images);
-
   if(ifile) do
+  {
+    // Split file into folder and filename
+    char *eos;
+    char folder[PATH_MAX] = { 0 };
+    char filename[PATH_MAX] = { 0 };
+    char sdfilename[PATH_MAX] = { 0 };
+    char *file = (char *)ifile->data;
+    eos = file + strlen(file);
+    while(--eos > file && *eos != '/')
+      ;
+    char *_file = g_strndup(file, eos - file);
+    g_strlcat(folder, _file, sizeof(folder));
+    g_strlcat(filename, eos + 1, sizeof(filename));
+    g_free(_file);
+
+    CameraFile* camfile;
+    int res = GP_OK;
+    char *data = NULL;
+    size_t size;
+    time_t exif_time;
+    if(!sdcard)
     {
-      // Split file into folder and filename
-      char *eos;
-      char folder[PATH_MAX] = { 0 };
-      char filename[PATH_MAX] = { 0 };
-      char *file = (char *)ifile->data;
-      eos = file + strlen(file);
-      while(--eos > file && *eos != '/')
-        ;
-      char *_file = g_strndup(file, eos - file);
-      g_strlcat(folder, _file, sizeof(folder));
-      g_strlcat(filename, eos + 1, sizeof(filename));
-      g_free(_file);
-
-      CameraFile* camfile;
-      int res = GP_OK;
-      const uint8_t* data = NULL;
-      unsigned long int size;
-
       gp_file_new(&camfile);
-      if ((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK) {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] import failed: %s\n", gp_result_as_string(res));
+      if((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK)
+      {
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto import failed: %s\n", gp_result_as_string(res));
         gp_file_free(camfile);
         continue;
       }
-      if ((res = gp_file_get_data_and_size(camfile, (const char**)&data, &size)) < GP_OK) {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] import failed: %s\n", gp_result_as_string(res));
+      if((res = gp_file_get_data_and_size(camfile, (const char**)&data, &size)) < GP_OK)
+      {
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto import failed: %s\n", gp_result_as_string(res));
         gp_file_free(camfile);
         continue;
       }
-
-      time_t exif_time;
-      gboolean have_exif_time = dt_exif_get_datetime_taken(data, size, &exif_time);
-
-      const char *output_path = _dispatch_request_image_path(c, have_exif_time ? &exif_time : NULL, cam);
-      const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
-      if(!fname) continue;
-
-      char *output = g_build_filename(output_path, fname, (char *)NULL);
-
-      int handle = g_open(output, O_CREAT | O_WRONLY, 0666);
-      if(handle > 0)
+    }
+    else
+    {
+      g_strlcat(sdfilename, c->active_camera->port +5, sizeof(sdfilename));
+      g_strlcat(sdfilename, file, sizeof(sdfilename));
+      if(!g_file_get_contents(sdfilename, &data, &size, NULL))
       {
-        size_t written = 0;
-
-        while(written < size)
-        {
-          ssize_t ret = write(handle, data + written, size - written);
-
-          if(ret < 0)
-          {
-            if(errno == EINTR)
-            {
-              continue;
-            }
-            else
-            {
-              break;
-            }
-          }
-
-          written += ret;
-        }
-
-        close(handle);
-
-        if(written < size)
-        {
-          // If the file was not copied successfully we remove it.
-          g_unlink(output);
-          dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
-        }
-        else
-        {
-          _dispatch_camera_image_downloaded(c, cam, output);
-        }
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to read disk mounted file `%s`\n", sdfilename);
+        continue;
       }
-      else
-      {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
-      }
-      gp_file_free(camfile);
-      g_free(output);
-    } while((ifile = g_list_next(ifile)));
+    }
+
+    const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
+
+    const char *output_path = _dispatch_request_image_path(c, have_exif_time ? &exif_time : NULL, cam);
+    const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
+    if(!fname)
+    {
+      if(sdcard) g_free(data);
+      else gp_file_free(camfile);
+      continue;
+    }
+
+    char *output = g_build_filename(output_path, fname, (char *)NULL);
+
+    if(!g_file_set_contents(output, data, size, NULL))
+       dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to write file %s\n", output);
+    else
+      _dispatch_camera_image_downloaded(c, cam, output);
+
+    if(sdcard) g_free(data);
+    else gp_file_free(camfile);
+    g_free(output);
+
+  } while((ifile = g_list_next(ifile)));
 
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
   _camctl_unlock(c);
