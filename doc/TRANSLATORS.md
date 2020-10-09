@@ -14,7 +14,7 @@ To start working on your translation you need to:
 
 2. Build darktable and install it
 
-3. Create a new PO file for your language. For this you will need a package called `intltool` and some PO editor, preferably poedit.
+3. Create a new PO file for your language. For this you will need a package called `intltool` and some PO editor, preferably poedit(formerly known as poEdit).
 
     ```
     $ cd darktable/po/
