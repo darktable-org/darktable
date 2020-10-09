@@ -976,6 +976,7 @@ static GList *_preset_from_string(gchar *txt)
 
 void init_presets(dt_lib_module_t *self)
 {
+  // default
   gchar *tx = NULL;
   tx = dt_util_dstrcat(
       tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "technical",
@@ -985,6 +986,7 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
+  // legacy layout
   tx = NULL;
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
                         "basecurve|toneequal|clipping|flip|exposure|demosaic|highlights|temperature|filmicrgb");
@@ -992,6 +994,28 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("color"), "color", "colorbalance|colorin");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
   dt_lib_presets_add(_("legacy layout"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // all modules
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
+                       "basecurve|basicadj|clipping|colisa|colorreconstruct|demosaic|exposure|finalscale"
+                       "|flip|highlights|invert|mask_manager|negadoctor|overexposed|rawoverexposed|rawprepare"
+                       "|shadhi|temperature|toneequal");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("tone"),
+                       "tone", "bilat|filmicrgb|globaltonemap|levels"
+                       "|relight|rgbcurve|rgblevels|tonecurve|tonemap|zonesystem");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("color"), "color",
+                       "channelmixer|colorbalance|colorchecker|colorcontrast|colorcorrection|colorin|colorout"
+                       "|colorzones|lut3d|monochrome|profile_gamma|velvia|vibrance");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("correct"), "correct",
+                       "ashift|atrous|bilateral|cacorrect|defringe|denoiseprofile|dither"
+                       "|hazeremoval|hotpixels|lens|liquify|nlmeans|rawdenoise|retouch|rotatepixels"
+                       "|scalepixels|sharpen|spots");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effect"), "effect",
+                       "bloom|borders|colorize|colormapping|graduatednd|grain|highpass|lowlight"
+                       "|lowpass|soften|splittoning|vignette|watermark");
+  dt_lib_presets_add(_("all modules"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // if needed, we add a new preset, based on last user config
