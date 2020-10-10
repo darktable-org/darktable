@@ -34,6 +34,9 @@
 
 DT_MODULE(1)
 
+#define FALLBACK_PRESET_NAME "default"
+// if a preset cannot be loaded or the current preset deleted, this is the fallabck preset
+
 #define PADDING 2
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
@@ -215,7 +218,7 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
     // and we initialize the buttons too
     gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
     if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
-      dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+      dt_lib_presets_apply(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version());
     g_free(preset);
   }
 }
@@ -1025,7 +1028,7 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("scene referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
-  // 3 tabs
+  // default / 3 tabs based on Aurélien's proposal
   tx = NULL;
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "technical",
                        "ashift|basecurve|bilateral|cacorrect|clipping|colorchecker|colorin|colorout"
@@ -1042,7 +1045,7 @@ void init_presets(dt_lib_module_t *self)
                        "atrous|bilat|bloom|borders|clahe|colormapping"
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
                        "|soften|spots|vignette|watermark");
-  dt_lib_presets_add(_("three tabs"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // if needed, we add a new preset, based on last user config
@@ -1135,7 +1138,7 @@ static void _manage_editor_save(dt_lib_module_t *self)
       dt_conf_set_string("plugins/darkroom/modulegroups_preset", newname);
     // and we update the gui
     if(!dt_lib_presets_apply(newname, self->plugin_name, self->version()))
-      dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+      dt_lib_presets_apply(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version());
   }
   g_free(preset);
   g_free(newname);
@@ -1882,8 +1885,8 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
       gchar *cur = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
       if(g_strcmp0(cur, preset) == 0)
       {
-        dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("default"));
-        dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+        dt_conf_set_string("plugins/darkroom/modulegroups_preset", _(FALLBACK_PRESET_NAME));
+        dt_lib_presets_apply(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version());
       }
       g_free(cur);
     }
