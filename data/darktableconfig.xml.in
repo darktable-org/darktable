@@ -1951,7 +1951,7 @@
   <dtconfig>
     <name>plugins/imageio/format/tiff/compresslevel</name>
     <type>int</type>
-    <default>5</default>
+    <default>6</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
