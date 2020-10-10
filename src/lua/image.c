@@ -209,7 +209,7 @@ static int rating_member(lua_State *L)
       releasewriteimage(L, my_image);
       return luaL_error(L, "rating too low : %d", my_score);
     }
-    if(my_score == -1) 
+    if(my_score == -1)
     {
       my_score = DT_VIEW_REJECT;
       my_image->flags = my_image->flags | DT_IMAGE_REJECTED;

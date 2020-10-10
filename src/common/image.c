@@ -138,6 +138,17 @@ int dt_image_is_rawprepare_supported(const dt_image_t *img)
   return (img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW));
 }
 
+gboolean dt_image_use_monochrome_workflow(const dt_image_t *img)
+{
+  return ((img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_BAYER)) &&
+          (img->flags & DT_IMAGE_MONOCHROME_WORKFLOW));
+}
+
+int dt_image_monochrome_flags(const dt_image_t *img)
+{
+  return (img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_BAYER));
+}
+
 const char *dt_image_film_roll_name(const char *path)
 {
   const char *folder = path + strlen(path);
@@ -1411,6 +1422,8 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   {
     // Search for Lightroom sidecar file, import tags if found
     dt_lightroom_import(id, NULL, TRUE);
+    // Make sure that lightroom xmp data (label in particular) are saved in dt xmp
+    dt_image_write_sidecar_file(id);
   }
 
   // add a tag with the file extension

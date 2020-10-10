@@ -194,7 +194,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -831,7 +831,7 @@ int generate_preset_combo(struct dt_iop_module_t *self)
             }
 
           }
-          dt_bauhaus_combobox_add_full(g->presets, wb_preset[i].name, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, preset, free, TRUE);
+          dt_bauhaus_combobox_add_full(g->presets, _(wb_preset[i].name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, preset, free, TRUE);
           g->preset_num[g->preset_cnt] = i;
           g->preset_cnt++;
           presets_found++;
@@ -1430,7 +1430,7 @@ void reload_defaults(dt_iop_module_t *module)
   *d = (dt_iop_temperature_params_t){ 1.0, 1.0, 1.0, 1.0 };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id == -1) goto end;
+  if(!module->dev || module->dev->image_storage.id == -1) return;
 
   const int is_raw = dt_image_is_matrix_correction_supported(&module->dev->image_storage);
 
@@ -1518,9 +1518,6 @@ void reload_defaults(dt_iop_module_t *module)
 
     gui_sliders_update(module);
   }
-
-end:
-  memcpy(module->params, module->default_params, sizeof(dt_iop_temperature_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1580,7 +1577,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 static void btn_toggled(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
 
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
@@ -1873,8 +1870,7 @@ static void _preference_changed(gpointer instance, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = calloc(1, sizeof(dt_iop_temperature_gui_data_t));
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_gui_data_t *g = IOP_GUI_ALLOC(temperature);
 
   gchar *config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
   g->colored_sliders = g_strcmp0(config, "no color"); // true if config != "no color"
@@ -1946,6 +1942,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->scale_g, 3);
   dt_bauhaus_slider_set_digits(g->scale_b, 3);
   dt_bauhaus_slider_set_digits(g->scale_g2, 3);
+  dt_bauhaus_slider_set_step(g->scale_r, 0.05);
+  dt_bauhaus_slider_set_step(g->scale_g, 0.05);
+  dt_bauhaus_slider_set_step(g->scale_b, 0.05);
+  dt_bauhaus_slider_set_step(g->scale_g2, 0.05);
 
   gtk_widget_set_no_show_all(g->scale_g2, TRUE);
 
@@ -2012,8 +2012,8 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_preference_changed), self);
-  g_free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 void gui_reset(struct dt_iop_module_t *self)

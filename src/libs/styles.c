@@ -514,7 +514,6 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "styles.html#styles_usage");
   GtkWidget *w;
-  GtkWidget *scrolled;
 
   /* tree */
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -538,21 +537,19 @@ void gui_init(dt_lib_module_t *self)
   w = gtk_entry_new();
   d->entry = GTK_ENTRY(w);
   gtk_widget_set_tooltip_text(w, _("filter style names"));
+  gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   g_signal_connect(d->entry, "changed", G_CALLBACK(entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(entry_activated), d);
 
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
 
-  scrolled = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scrolled), DT_PIXEL_APPLY_DPI(250));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->entry), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scrolled), TRUE, FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(scrolled), GTK_WIDGET(d->tree));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->entry), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_scroll_wrap(GTK_WIDGET(d->tree), 250, "plugins/lighttable/style/windowheight"),
+                     FALSE, FALSE, 0);
 
   d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->duplicate))), PANGO_ELLIPSIZE_START);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->duplicate), TRUE, FALSE, 0);
   g_signal_connect(d->duplicate, "toggled", G_CALLBACK(duplicate_callback), d);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate),
@@ -575,46 +572,34 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox3, TRUE, FALSE, 0);
 
   // create
-  GtkWidget *widget = gtk_button_new_with_label(_("create..."));
-  d->create_button = widget;
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(create_clicked), d);
-  gtk_widget_set_tooltip_text(widget, _("create styles from history stack of selected images"));
-  gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
+  d->create_button = dt_ui_button_new(_("create..."), _("create styles from history stack of selected images"), NULL);
+  g_signal_connect(G_OBJECT(d->create_button), "clicked", G_CALLBACK(create_clicked), d);
+  gtk_box_pack_start(GTK_BOX(hbox1), d->create_button, TRUE, TRUE, 0);
 
   // edit
-  widget = gtk_button_new_with_label(_("edit..."));
-  d->edit_button = widget;
-  g_signal_connect(widget, "clicked", G_CALLBACK(edit_clicked), d);
-  gtk_widget_set_tooltip_text(widget, _("edit the selected styles in list above"));
-  gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
+  d->edit_button = dt_ui_button_new(_("edit..."), _("edit the selected styles in list above"), NULL);
+  g_signal_connect(d->edit_button, "clicked", G_CALLBACK(edit_clicked), d);
+  gtk_box_pack_start(GTK_BOX(hbox1), d->edit_button, TRUE, TRUE, 0);
 
   // delete
-  widget = gtk_button_new_with_label(_("remove"));
-  d->delete_button = widget;
-  g_signal_connect(widget, "clicked", G_CALLBACK(delete_clicked), d);
-  gtk_widget_set_tooltip_text(widget, _("removes the selected styles in list above"));
-  gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
+  d->delete_button = dt_ui_button_new(_("remove"), _("removes the selected styles in list above"), NULL);
+  g_signal_connect(d->delete_button, "clicked", G_CALLBACK(delete_clicked), d);
+  gtk_box_pack_start(GTK_BOX(hbox1), d->delete_button, TRUE, TRUE, 0);
 
   // import button
-  GtkWidget *importButton = gtk_button_new_with_label(C_("verb", "import..."));
-  d->import_button = importButton;
-  gtk_widget_set_tooltip_text(importButton, _("import styles from a style files"));
-  g_signal_connect(importButton, "clicked", G_CALLBACK(import_clicked), d);
-  gtk_box_pack_start(GTK_BOX(hbox2), importButton, TRUE, TRUE, 0);
+  d->import_button = dt_ui_button_new(C_("verb", "import..."), _("import styles from a style files"), NULL);
+  g_signal_connect(d->import_button, "clicked", G_CALLBACK(import_clicked), d);
+  gtk_box_pack_start(GTK_BOX(hbox2), d->import_button, TRUE, TRUE, 0);
 
   // export button
-  GtkWidget *exportButton = gtk_button_new_with_label(_("export..."));
-  d->export_button = exportButton;
-  gtk_widget_set_tooltip_text(exportButton, _("export the selected styles into a style files"));
-  g_signal_connect(exportButton, "clicked", G_CALLBACK(export_clicked), d);
-  gtk_box_pack_start(GTK_BOX(hbox2), exportButton, TRUE, TRUE, 0);
+  d->export_button = dt_ui_button_new(_("export..."), _("export the selected styles into a style files"), NULL);
+  g_signal_connect(d->export_button, "clicked", G_CALLBACK(export_clicked), d);
+  gtk_box_pack_start(GTK_BOX(hbox2), d->export_button, TRUE, TRUE, 0);
 
   // apply button
-  widget = gtk_button_new_with_label(_("apply"));
-  d->apply_button = widget;
-  g_signal_connect(widget, "clicked", G_CALLBACK(apply_clicked), d);
-  gtk_widget_set_tooltip_text(widget, _("apply the selected styles in list above to selected images"));
-  gtk_box_pack_start(GTK_BOX(hbox3), widget, TRUE, TRUE, 0);
+  d->apply_button = dt_ui_button_new(_("apply"), _("apply the selected styles in list above to selected images"), NULL);
+  g_signal_connect(d->apply_button, "clicked", G_CALLBACK(apply_clicked), d);
+  gtk_box_pack_start(GTK_BOX(hbox3), d->apply_button, TRUE, TRUE, 0);
 
   // add entry completion
   GtkEntryCompletion *completion = gtk_entry_completion_new();

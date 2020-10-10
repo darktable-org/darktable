@@ -201,7 +201,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* select the last selected value */
 
-  const dt_collection_filter_t sort = dt_collection_get_sort_field(darktable.collection);
+  const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),_filter_get_items(sort));
 
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(_lib_filter_sort_combobox_changed), (gpointer)self);
@@ -414,7 +414,7 @@ static int sort_cb(lua_State *L)
     dt_collection_sort_t value;
     luaA_to(L,dt_collection_sort_t,&value,1);
     dt_collection_set_sort(darktable.collection, (uint32_t)value, 0);
-    const dt_collection_filter_t sort = dt_collection_get_sort_field(darktable.collection);
+    const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), _filter_get_items(sort));
     _lib_filter_update_query(self);
   }
@@ -433,7 +433,7 @@ static int sort_order_cb(lua_State *L)
     luaA_to(L,dt_collection_sort_order_t,&value,1);
     dt_collection_sort_t sort_value = dt_collection_get_sort_field(darktable.collection);
     dt_collection_set_sort(darktable.collection, sort_value, value);
-    const dt_collection_filter_t sort = dt_collection_get_sort_field(darktable.collection);
+    const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), _filter_get_items(sort));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),
                                dt_collection_get_sort_descending(darktable.collection));

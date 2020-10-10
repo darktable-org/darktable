@@ -64,9 +64,9 @@ typedef struct dt_iop_colorout_global_data_t
 
 typedef struct dt_iop_colorout_params_t
 {
-  dt_colorspaces_color_profile_type_t type;
+  dt_colorspaces_color_profile_type_t type; // $DEFAULT: DT_COLORSPACE_SRGB
   char filename[DT_IOP_COLOR_ICC_LEN];
-  dt_iop_color_intent_t intent;
+  dt_iop_color_intent_t intent; // $DEFAULT: DT_INTENT_PERCEPTUAL
 } dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
@@ -82,7 +82,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -823,23 +823,10 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_colorout_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorout_params_t));
-  module->params_size = sizeof(dt_iop_colorout_params_t);
-  module->gui_data = NULL;
+  dt_iop_default_init(module);
+
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){ DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL};
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 static void _preference_changed(gpointer instance, gpointer user_data)
@@ -864,8 +851,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-  self->gui_data = calloc(1, sizeof(dt_iop_colorout_gui_data_t));
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  dt_iop_colorout_gui_data_t *g = IOP_GUI_ALLOC(colorout);
 
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
@@ -923,8 +909,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_changed), self->dev);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_preference_changed), self);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -67,7 +67,7 @@ static void _ratings_apply_to_image(const int imgid, const int rating)
     }
     else
     {
-      if(!dt_conf_get_bool("rating_one_double_tap") 
+      if(!dt_conf_get_bool("rating_one_double_tap")
           && (previous_rating == DT_VIEW_STAR_1) && (new_rating == DT_VIEW_STAR_1))
       {
         new_rating = DT_VIEW_DESERT;

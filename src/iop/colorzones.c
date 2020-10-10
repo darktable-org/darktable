@@ -145,7 +145,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -2323,9 +2323,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorzones_gui_data_t));
-  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+  dt_iop_colorzones_gui_data_t *c = IOP_GUI_ALLOC(colorzones);
+  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->default_params;
 
   self->histogram_cst = iop_cs_LCh;
 
@@ -2493,8 +2492,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++) dt_draw_curve_destroy(c->minmax_curve[ch]);
 
   dt_iop_cancel_history_update(self);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -2655,8 +2654,6 @@ void init(dt_iop_module_t *module)
   module->request_histogram |= (DT_REQUEST_ON);
 
   _reset_parameters(module->default_params, DT_IOP_COLORZONES_h, DT_IOP_COLORZONES_SPLINES_V2);
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorzones_params_t));
 }
 
 #undef DT_IOP_COLORZONES_INSET

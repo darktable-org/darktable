@@ -49,13 +49,13 @@ static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
     {
       if(self->pick_pos[k] != self->module->color_picker_point[k])
       {
-      
+
         self->pick_pos[k] = self->module->color_picker_point[k];
         selection_changed = TRUE;
       }
 
     }
-    for(int k = 0; k < 4; k++) 
+    for(int k = 0; k < 4; k++)
     {
       if (self->pick_box[k] != self->module->color_picker_box[k])
       {
@@ -100,7 +100,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *module, dt_dev_pixelpipe_io
   {
     if(!module->blend_data || !blend_color_picker_apply(module, module->picker->colorpick, piece))
     {
-      if(module->color_picker_apply) 
+      if(module->color_picker_apply)
         module->color_picker_apply(module, module->picker->colorpick, piece);
     }
   }
@@ -141,7 +141,7 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
   picker->kind       = kind;
   picker->picker_cst = iop_cs_NONE;
   picker->colorpick  = button;
-  
+
   for(int j = 0; j<2; j++) picker->pick_pos[j] = NAN;
   for(int j = 0; j < 4; j++) picker->pick_box[j] = NAN;
 
@@ -152,7 +152,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
 {
   dt_iop_module_t *module = self->module ? self->module : dt_iop_get_colorout_module();
 
-  if(!module || module->dt->gui->reset) return FALSE;
+  if(!module || darktable.gui->reset) return FALSE;
 
   // set module active if not yet the case
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
@@ -162,9 +162,10 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   const gboolean ctrl_key_pressed = (state == GDK_CONTROL_MASK);
   dt_iop_color_picker_kind_t kind = self->kind;
 
+  _iop_color_picker_reset(module->picker);
+
   if (module->picker != self || (ctrl_key_pressed && kind == DT_COLOR_PICKER_POINT_AREA))
   {
-    _iop_color_picker_reset(module->picker);
     module->picker = self;
 
     ++darktable.gui->reset;
@@ -202,7 +203,6 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   }
   else
   {
-    _iop_color_picker_reset(module->picker);
     module->picker = NULL;
     module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
@@ -219,7 +219,7 @@ static void _iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t 
 
 void dt_iop_color_picker_set_cst(dt_iop_module_t *module, const dt_iop_colorspace_type_t picker_cst)
 {
-  if(module->picker) 
+  if(module->picker)
     module->picker->picker_cst = picker_cst;
 }
 
@@ -256,7 +256,7 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
   {
     GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
     _iop_init_picker(color_picker, module, kind, button);
-    g_signal_connect_data(G_OBJECT(button), "button-press-event", 
+    g_signal_connect_data(G_OBJECT(button), "button-press-event",
                           G_CALLBACK(_iop_color_picker_callback_button_press), color_picker, (GClosureNotify)g_free, 0);
     if (w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
 
@@ -267,7 +267,7 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
     dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
     dt_bauhaus_widget_set_quad_toggle(w, TRUE);
     _iop_init_picker(color_picker, module, kind, w);
-    g_signal_connect_data(G_OBJECT(w), "quad-pressed", 
+    g_signal_connect_data(G_OBJECT(w), "quad-pressed",
                           G_CALLBACK(_iop_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
 
     return w;

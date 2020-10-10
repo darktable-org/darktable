@@ -150,7 +150,6 @@ static gboolean start_kwallet(backend_kwallet_context_t *context)
 
   if(check_error(error))
   {
-    g_variant_unref(ret);
     return FALSE;
   }
 

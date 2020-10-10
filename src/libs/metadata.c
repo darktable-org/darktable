@@ -664,8 +664,7 @@ void gui_init(dt_lib_module_t *self)
 
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    GtkWidget *label = gtk_label_new(_(dt_metadata_get_name_by_display_order(i)));
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    GtkWidget *label = dt_ui_label_new(_(dt_metadata_get_name_by_display_order(i)));
     gtk_grid_attach(grid, label, 0, i, 1, 1);
     gtk_widget_set_tooltip_text(GTK_WIDGET(label),
               _("metadata text. ctrl-wheel scroll to resize the text box"
@@ -713,32 +712,23 @@ void gui_init(dt_lib_module_t *self)
 
   // clear/apply buttons
 
-  grid = (GtkGrid *)gtk_grid_new();
-  gtk_grid_set_column_homogeneous(grid, FALSE);
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  GtkWidget *button = gtk_button_new_with_label(_("clear"));
-  d->clear_button = button;
-  gtk_widget_set_tooltip_text(button, _("remove metadata from selected images"));
-  gtk_grid_attach(grid, button, 0, 0, 1, 1);
-  gtk_widget_set_hexpand(button, TRUE);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_clear_button_clicked), self);
+  d->clear_button = dt_ui_button_new(_("clear"), _("remove metadata from selected images"), NULL);
+  gtk_box_pack_start(hbox, d->clear_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->clear_button), "clicked", G_CALLBACK(_clear_button_clicked), self);
 
-  button = gtk_button_new_with_label(_("apply"));
-  d->apply_button = button;
-  gtk_widget_set_tooltip_text(button, _("write metadata for selected images"));
-  gtk_grid_attach(grid, button, 1, 0, 1, 1);
-  gtk_widget_set_hexpand(button, TRUE);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_apply_button_clicked), self);
+  d->apply_button = dt_ui_button_new(_("apply"), _("write metadata for selected images"), NULL);
+  gtk_box_pack_start(hbox, d->apply_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->apply_button), "clicked", G_CALLBACK(_apply_button_clicked), self);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
-  d->config_button = button;
-  gtk_widget_set_name(button, "non-flat");
-  gtk_widget_set_tooltip_text(button, _("configure metadata"));
-  gtk_grid_attach(grid, button, 2, 0, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_config_button_clicked), self);
+  d->config_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
+  gtk_widget_set_name(d->config_button, "non-flat");
+  gtk_widget_set_tooltip_text(d->config_button, _("configure metadata"));
+  gtk_box_pack_start(hbox, d->config_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->config_button), "clicked", G_CALLBACK(_config_button_clicked), self);
 
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, 1, 1, 1);
-  gtk_widget_set_hexpand(GTK_WIDGET(grid), TRUE);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(hbox), 0, 1, 1, 1);
 
   /* lets signup for mouse over image change signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
@@ -777,7 +767,7 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 
   char *params = calloc(sizeof(char), params_size);
   memcpy(params + 4, string, params_size - metadata_nb);
-  dt_lib_presets_add(name, self->plugin_name, self->version(), params, params_size);
+  dt_lib_presets_add(name, self->plugin_name, self->version(), params, params_size, TRUE);
   free(params);
 }
 

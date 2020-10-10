@@ -129,7 +129,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()
@@ -4134,7 +4134,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 #endif
   do_crop(self, p);
   commit_crop_box(p,g);
-  
+
   if(w == g->mode)
   {
     gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
@@ -4543,12 +4543,11 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   ((dt_iop_ashift_params_t *)module->default_params)->f_length = f_length;
   ((dt_iop_ashift_params_t *)module->default_params)->crop_factor = crop_factor;
-  memcpy(module->params, module->default_params, sizeof(dt_iop_ashift_params_t));
 
   // reset gui elements
-  if(module->gui_data)
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+  if(g)
   {
-    dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
     char string_v[256];
     char string_h[256];
@@ -4623,14 +4622,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_ashift_bicubic = dt_opencl_create_kernel(program, "ashift_bicubic");
   gd->kernel_ashift_lanczos2 = dt_opencl_create_kernel(program, "ashift_lanczos2");
   gd->kernel_ashift_lanczos3 = dt_opencl_create_kernel(program, "ashift_lanczos3");
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -4719,9 +4710,7 @@ static float log2_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_ashift_gui_data_t));
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = IOP_GUI_ALLOC(ashift);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   dt_pthread_mutex_lock(&g->lock);
@@ -4766,8 +4755,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->lastx = g->lasty = -1.0f;
   g->crop_cx = g->crop_cy = 1.0f;
 
-  shadow_crop_box(p,g);
-
   g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
@@ -4803,7 +4790,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->f_length, "%.0fmm");
   dt_bauhaus_slider_set_step(g->f_length, 1.0);
 
-  g->crop_factor = dt_bauhaus_slider_from_params(self, "crop_factor"); 
+  g->crop_factor = dt_bauhaus_slider_from_params(self, "crop_factor");
   dt_bauhaus_slider_set_soft_range(g->crop_factor, 1.0f, 2.0f);
 
   g->orthocorr = dt_bauhaus_slider_from_params(self, "orthocorr");
@@ -4819,16 +4806,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = saved_widget;
   gtk_box_pack_start(GTK_BOX(self->widget), g->specifics, TRUE, TRUE, 0);
-  gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(grid, 2 * DT_BAUHAUS_SPACE);
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
-  GtkWidget *label1 = gtk_label_new(_("automatic fit"));
-  gtk_label_set_ellipsize(GTK_LABEL(label1), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_halign(label1, GTK_ALIGN_START);
-  gtk_grid_attach(grid, label1, 0, 0, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("automatic fit")), 0, 0, 1, 1);
 
   g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
@@ -4842,10 +4825,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
   gtk_grid_attach(grid, g->fit_both, 3, 0, 1, 1);
 
-  GtkWidget *label2 = gtk_label_new(_("get structure"));
-  gtk_label_set_ellipsize(GTK_LABEL(label2), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_halign(label2, GTK_ALIGN_START);
-  gtk_grid_attach(grid, label2, 0, 1, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("get structure")), 0, 1, 1, 1);
 
   g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
@@ -4920,8 +4900,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(g->buf);
   free(g->points);
   free(g->points_idx);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)

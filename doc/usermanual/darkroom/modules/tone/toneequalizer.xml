@@ -1,0 +1,230 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+    <!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+    %darktable_dtd;
+    ]>
+<sect3 status="final" id="tone_equalizer">
+
+  <title>Tone equalizer</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>tone equalizer</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>tone equalizer</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              The Tone Equalizer module is designed to replace the
+              Base Curve module, the Shadows/Highlights module, and
+              the Zone System module.  It allows us to brighten or
+              darken up to 9 different ranges of luminosity within our
+              image.
+            </entry>
+            <entry>
+              <graphic
+                  fileref="darkroom/modules/images/toneequalizer_simple.png"
+                  scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      It is recommended that you look at all 3 tabs
+      (<quote>Simple</quote>, <quote>Advanced</quote>,
+      <quote>Masking</quote>) before attempting to use the Tone
+      Equalizer module.
+    </para>
+
+    <para>
+      The 9 sliders on the <quote>Simple</quote> tab (see screenshot
+      above) correlate to the 9 control points
+      which appear across the centre of the graph on the
+      <quote>Advanced</quote> tab.
+    </para>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                The histogram which appears on the
+                <quote>Advanced</quote> tab does
+                <emphasis>not</emphasis> represent your image. It
+                represents the <emphasis>mask</emphasis> which the
+                Tone Equalizer is creating for your image. This is an
+                important distinction to understand.  The aim is to
+                get that histogram extended as far as possible to the
+                left and right sides of the graph.
+              </entry>
+              <entry>
+                <graphic
+                    fileref="darkroom/modules/images/toneequalizer_advanced.png"
+                    scalefit="1" width="90%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                To do that, we go to the <quote>Masking</quote> tab, and adjust the Mask
+                Exposure Compensation and Mask Contrast Compensation sliders.
+                Selecting each eye dropper will allow the Tone Equalizer module
+                to select the most appropriate values for you. Having done that,
+                check the histogram in the Advanced tab again. It should now be
+                fairly evenly distributed across the graph.
+              </entry>
+              <entry>
+                <graphic
+                    fileref="darkroom/modules/images/toneequalizer_masking.png"
+                    scalefit="1" width="90%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      Now, you can <emphasis>Click+drag</emphasis> the control points (on the
+      <quote>Advanced</quote> tab) to increase or decrease any part of the tonal
+      range of your image.  Adjust control points on the left side to
+      brighten/darken shadow tones. Adjust control points on the right
+      side to brighten/darken highlight tones.  Alternatively, you can
+      use the Simple tab and control the adjustment through the use of
+      your mouse wheel over the image.
+    </para>
+
+    <sect5>
+      <title>the cursor</title>
+
+      <para>
+        <graphic fileref="darkroom/modules/images/toneequalizer_cursor.png"
+            scalefit="1" width="20%" />
+      </para>
+
+      <para>
+        The cursor in the Tone Equalizer contains a lot of
+        information.  You'll see some cross hairs, with what appears
+        to be a single grey circle in the middle.  But it's not a
+        single circle. It's 2 concentric circles.  The outer circle
+        will <emphasis>always</emphasis> represent the tonal value
+        under the mouse pointer, as it was before any adjustment was
+        made. The inner circle will show the tonal value under the
+        mouse pointer <emphasis>after</emphasis> any adjustment has
+        been made.  So if the inner circle is brighter than the outer
+        circle, it means a brightening adjustment has been made to
+        that part of the tonal range of the image.  If the inner
+        circle is darker than the outer circle, then that tonal range
+        has been darkened.
+      </para>
+
+      <para>
+        You will also notice that there is an arc which either climbs, or
+        descends, from the left side cross hair. This is another way of
+        showing you whether a positive or negative adjustment has been made
+        for any given tonal range under the mouse at its current location.
+      </para>
+
+      <para>
+        There is also a text box near the right side cross hair which also
+        shows what adjustments have been made, but in numeric text form.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>display exposure mask</title>
+
+      <para>
+        At the bottom of the module, you'll see Display Exposure Mask
+        and to the right of that, an icon <inlinegraphic
+        fileref="&icon_module_mask;" scalefit="1" width="2%"
+        align="center"/>. <emphasis>Click</emphasis> on this icon to
+        see the mask which the Tone Equalizer has generated for your
+        image.
+      </para>
+
+      <para>
+        The idea behind this mask is to create smooth transitions
+        between tonal ranges, so as to avoid creating halos. Yet, the
+        mask is also able to create well defined edges for high
+        contrast areas of the image.  Having this mask displayed will
+        assist in understanding the follow parameters:
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>filter diffusion</title>
+
+      <para>
+        This defaults to a value of 1, meaning there is one instance
+        of the mask generated.
+      </para>
+
+      <para>
+        If you increase this to 2, a second mask is calculated using
+        the first mask as an input. As a result, the new mask is more
+        fuzzy than when there was only one instance of the mask.
+        Progressively higher values will diffuse the mask even
+        further.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>smoothing diameter</title>
+
+      <para>
+        With lower values, the transition between dark areas of the
+        mask and lighter areas of the mask will be more pronounced. As
+        this value is increased, those transitions become
+        smoother/softer.  It should be noted that setting really large
+        values may result in slower display times IF Denoise Profiled
+        is also in use.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>edge refinement/feathering</title>
+
+      <para>
+        Higher values will force the mask to follow high contrast
+        edges more closely.  Lower values will give smoother
+        gradients, but may introduce some halos.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

@@ -223,7 +223,7 @@ static int collection_numindex(lua_State *L)
   if (imgid >0)
   {
     luaA_push(L, dt_lua_image_t, &imgid);
-  } else { 
+  } else {
     lua_pushnil(L);
   }
   return 1;

@@ -41,6 +41,14 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gbo
 void dt_database_perform_maintenance(const struct dt_database_t *db);
 /** cleanup busy statements on closing dt, just before performing maintenance */
 void dt_database_cleanup_busy_statements(const struct dt_database_t *db);
+/** simply create db snapshot of both library and data */
+gboolean dt_database_snapshot(const struct dt_database_t *db);
+/** check if creating database snapshot is recommended */
+gboolean dt_database_maybe_snapshot(const struct dt_database_t *db);
+/** get list of snapshot files to remove after successful snapshot */
+char **dt_database_snaps_to_remove(const struct dt_database_t *db);
+/** get possibly the freshest snapshot to restore */
+gchar *dt_database_get_most_recent_snap(const char* db_filename);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -50,6 +50,7 @@
 #include <assert.h>
 #include <gmodule.h>
 #include <math.h>
+#include <complex.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -87,7 +88,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
-  memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
+  memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_commit_blend_params(module, &_default_blendop_params);
 }
@@ -149,8 +150,7 @@ static void default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
 static void default_gui_cleanup(dt_iop_module_t *self)
 {
-  g_free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 static void default_cleanup(dt_iop_module_t *module)
@@ -230,6 +230,9 @@ void dt_iop_default_init(dt_iop_module_t *module)
     case DT_INTROSPECTION_TYPE_UINT:
       *(unsigned int*)(module->default_params + i->header.offset) = i->UInt.Default;
       break;
+    case DT_INTROSPECTION_TYPE_USHORT:
+      *(unsigned short*)(module->default_params + i->header.offset) = i->UShort.Default;
+      break;
     case DT_INTROSPECTION_TYPE_ENUM:
       *(int*)(module->default_params + i->header.offset) = i->Enum.Default;
       break;
@@ -249,14 +252,19 @@ void dt_iop_default_init(dt_iop_module_t *module)
         size_t element_size = i->Array.field->header.size;
         if(element_size % sizeof(int))
         {
-          fprintf(stderr, "trying to initialize array not multiple of sizeof(int) in dt_iop_default_init\n");
+          int8_t *p = module->default_params + i->header.offset;
+          for (size_t c = element_size; c < i->header.size; c++, p++)
+            p[element_size] = *p;
         }
-        element_size /= sizeof(int);
-        size_t num_ints = i->header.size / sizeof(int);
+        else
+        {
+          element_size /= sizeof(int);
+          size_t num_ints = i->header.size / sizeof(int);
 
-        int *p = module->default_params + i->header.offset;
-        for (size_t c = element_size; c < num_ints; c++, p++)
-          p[element_size] = *p;
+          int *p = module->default_params + i->header.offset;
+          for (size_t c = element_size; c < num_ints; c++, p++)
+            p[element_size] = *p;
+        }
       }
       break;
     case DT_INTROSPECTION_TYPE_STRUCT:
@@ -269,8 +277,6 @@ void dt_iop_default_init(dt_iop_module_t *module)
 
     i++;
   }
-
-  memcpy(module->params, module->default_params, param_size);
 }
 
 int dt_iop_load_module_so(void *m, const char *libname, const char *op)
@@ -443,7 +449,6 @@ error:
 
 int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
-  module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
   module->header = NULL;
@@ -595,6 +600,21 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
   piece->blendop_data = calloc(1, sizeof(dt_develop_blend_params_t));
   /// FIXME: Commit params is already done in module
   dt_iop_commit_params(module, module->default_params, module->default_blendop_params, pipe, piece);
+}
+
+static gboolean _header_motion_notify_show_callback(GtkWidget *eventbox, GdkEventCrossing *event, GtkWidget *header)
+{
+  return dt_iop_show_hide_header_buttons(header, event, TRUE, FALSE);
+}
+
+static gboolean _header_motion_notify_hide_callback(GtkWidget *eventbox, GdkEventCrossing *event, GtkWidget *header)
+{
+  return dt_iop_show_hide_header_buttons(header, event, FALSE, FALSE);
+}
+
+static gboolean _header_menu_deactivate_callback(GtkMenuShell *menushell, GtkWidget *header)
+{
+  return dt_iop_show_hide_header_buttons(header, NULL, FALSE, FALSE);
 }
 
 static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
@@ -1007,6 +1027,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
   {
     g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_rename_module_key_press), module);
     gtk_widget_destroy(entry);
+    dt_iop_show_hide_header_buttons(module->header, NULL, TRUE, FALSE); // after removing entry
     dt_iop_gui_update_header(module);
 
     return TRUE;
@@ -1051,6 +1072,7 @@ static void _iop_gui_rename_module(dt_iop_module_t *module)
   g_signal_connect(entry, "style-updated", G_CALLBACK(_rename_module_resize), module);
   g_signal_connect(entry, "changed", G_CALLBACK(_rename_module_resize), module);
 
+  dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, TRUE); // before adding entry
   gtk_box_pack_start(GTK_BOX(module->header), entry, TRUE, TRUE, 0);
   gtk_widget_show(entry);
   gtk_widget_grab_focus(entry);
@@ -1115,9 +1137,11 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
+  g_signal_connect(G_OBJECT(menu), "deactivate", G_CALLBACK(_header_menu_deactivate_callback), module->header);
+
   // popup
 #if GTK_CHECK_VERSION(3, 22, 0)
-  gtk_menu_popup_at_pointer(GTK_MENU(menu), NULL);
+  gtk_menu_popup_at_widget(GTK_MENU(menu), GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST, NULL);
 #else
   gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
 #endif
@@ -1201,17 +1225,9 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
 
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 {
-  uint32_t additional_flags = 0;
-
   if(group == DT_MODULEGROUP_NONE) return TRUE;
 
-  /* add special group flag for module in active pipe */
-  if(module->enabled) additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
-
-  /* add special group flag for favorite */
-  if(module->so->state == dt_iop_state_FAVORITE) additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
-
-  return dt_dev_modulegroups_test(module->dev, group, dt_iop_get_group(module) | additional_flags);
+  return dt_dev_modulegroups_test(module->dev, group, module);
 }
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
@@ -1220,7 +1236,8 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
   gchar *label = dt_history_item_get_name_html(module);
   gchar *tooltip = g_strdup(module->description());
   gtk_label_set_markup(GTK_LABEL(lab), label);
-  gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
+  g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
   gtk_widget_set_tooltip_text(lab, tooltip);
   g_free(label);
   g_free(tooltip);
@@ -1240,6 +1257,29 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
   dt_iop_gui_set_enable_button(module);
 }
 
+void dt_iop_gui_set_enable_button_icon(GtkWidget *w, dt_iop_module_t *module)
+{
+  // set on/off icon
+  if(module->default_enabled && module->hide_enable_button)
+  {
+    gtk_widget_set_name(w, "module-always-enabled-button");
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
+                                 dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+  }
+  else if(!module->default_enabled && module->hide_enable_button)
+  {
+    gtk_widget_set_name(w, "module-always-disabled-button");
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
+                                 dtgtk_cairo_paint_switch_off, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+  }
+  else
+  {
+    gtk_widget_set_name(w, "module-enable-button");
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
+                                 dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+  }
+}
+
 void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
 {
   if(module->off)
@@ -1249,6 +1289,8 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
       gtk_widget_set_sensitive(GTK_WIDGET(module->off), FALSE);
     else
       gtk_widget_set_sensitive(GTK_WIDGET(module->off), TRUE);
+
+    dt_iop_gui_set_enable_button_icon(GTK_WIDGET(module->off), module);
   }
 }
 
@@ -1365,7 +1407,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-
+/*
       module->init(module);
       if(module->params_size == 0)
       {
@@ -1373,9 +1415,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-
       // we call reload_defaults() in case the module defines it
-      if(module->reload_defaults) module->reload_defaults(module);
+      if(module->reload_defaults) module->reload_defaults(module); // why not call dt_iop_reload_defaults? (if needed at all)
+*/
 
       int32_t new_params_size = module->params_size;
       void *new_params = calloc(1, new_params_size);
@@ -1540,8 +1582,6 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
     free(module);
     return 1;
   }
-  module->global_data = module_so->data;
-  module->so = module_so;
   dt_iop_reload_defaults(module);
   return 0;
 }
@@ -1660,6 +1700,116 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_
   module->raster_mask.sink.id = 0;
 }
 
+gboolean _iop_validate_params(dt_introspection_field_t *field, dt_iop_params_t *params, gboolean report)
+{
+  dt_iop_params_t *p = params + field->header.offset;
+
+  gboolean all_ok = TRUE;
+
+  switch(field->header.type)
+  {
+  case DT_INTROSPECTION_TYPE_STRUCT:
+    for(int i = 0; i < field->Struct.entries; i++)
+    {
+      dt_introspection_field_t *entry = field->Struct.fields[i];
+
+      all_ok &= _iop_validate_params(entry, params, report);
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_UNION:
+    all_ok = FALSE;
+    for(int i = field->Union.entries - 1; i >= 0 ; i--)
+    {
+      dt_introspection_field_t *entry = field->Union.fields[i];
+
+      if(_iop_validate_params(entry, params, report && i == 0))
+      {
+        all_ok = TRUE;
+        break;
+      }
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_ARRAY:
+    if(field->Array.type == DT_INTROSPECTION_TYPE_CHAR)
+    {
+      if(!memchr(p, '\0', field->Array.count))
+      {
+        if(report)
+          fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\"; string not null terminated.\n",
+                          field->header.type_name);
+        all_ok = FALSE;
+      }
+    }
+    else
+    {
+      for(int i = 0, item_offset = 0; i < field->Array.count; i++, item_offset += field->Array.field->header.size)
+      {
+        if(!_iop_validate_params(field->Array.field, params + item_offset, report))
+        {
+          if(report)
+            fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\", for array element \"%d\"\n",
+                            field->header.type_name, i);
+          all_ok = FALSE;
+          break;
+        }
+      }
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_FLOAT:
+    all_ok = isnan(*(float*)p) || ((*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max));
+    break;
+  case DT_INTROSPECTION_TYPE_INT:
+    all_ok = (*(int*)p >= field->Int.Min && *(int*)p <= field->Int.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_UINT:
+    all_ok = (*(unsigned int*)p >= field->UInt.Min && *(unsigned int*)p <= field->UInt.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_USHORT:
+    all_ok = (*(unsigned short int*)p >= field->UShort.Min && *(unsigned short int*)p <= field->UShort.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_INT8:
+    all_ok = (*(uint8_t*)p >= field->Int8.Min && *(uint8_t*)p <= field->Int8.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_CHAR:
+    all_ok = (*(char*)p >= field->Char.Min && *(char*)p <= field->Char.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_FLOATCOMPLEX:
+    all_ok = creal(*(float complex*)p) >= creal(field->FloatComplex.Min) &&
+             creal(*(float complex*)p) <= creal(field->FloatComplex.Max) &&
+             cimag(*(float complex*)p) >= cimag(field->FloatComplex.Min) &&
+             cimag(*(float complex*)p) <= cimag(field->FloatComplex.Max);
+    break;
+  case DT_INTROSPECTION_TYPE_ENUM:
+    all_ok = FALSE;
+    for(dt_introspection_type_enum_tuple_t *i = field->Enum.values; i && i->name; i++)
+    {
+      if(i->value == *(int*)p)
+      {
+        all_ok = TRUE;
+        break;
+      }
+    }
+    break;
+  case DT_INTROSPECTION_TYPE_BOOL:
+    // *(gboolean*)p
+    break;
+  case DT_INTROSPECTION_TYPE_OPAQUE:
+    // TODO: special case float2
+    break;
+  default:
+    fprintf(stderr, "unsupported introspection type \"%s\" encountered in _iop_validate_params (field %s)\n",
+                    field->header.type_name, field->header.name);
+    all_ok = FALSE;
+    break;
+  }
+
+  if(!all_ok && report)
+    fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\"%s%s\n",
+                    field->header.type_name, (*field->header.name ? ", field: " : ""), field->header.name);
+
+  return all_ok;
+}
+
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
@@ -1695,6 +1845,9 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
 
     // register if module allows tiling, commit_params can overwrite this.
     if(module->flags() & IOP_FLAGS_ALLOW_TILING) piece->process_tiling_ready = 1;
+
+    if(darktable.unmuted & DT_DEBUG_PARAMS && module->so->get_introspection())
+      _iop_validate_params(module->so->get_introspection()->field, params, TRUE);
 
     module->commit_params(module, params, pipe, piece);
     uint64_t hash = 5381;
@@ -1787,10 +1940,10 @@ static void popup_callback(GtkButton *button, GdkEventButton *event, dt_iop_modu
     dt_gui_presets_popup_menu_show_for_module(module);
     gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
+  g_signal_connect(G_OBJECT(darktable.gui->presets_popup_menu), "deactivate", G_CALLBACK(_header_menu_deactivate_callback), module->header);
+
 #if GTK_CHECK_VERSION(3, 22, 0)
-    gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
-                             dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), GDK_GRAVITY_SOUTH_EAST,
-                             GDK_GRAVITY_NORTH_EAST, NULL);
+    gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu, GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST, NULL);
 #else
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
                    gtk_get_current_event_time());
@@ -2025,6 +2178,8 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     dt_gui_presets_popup_menu_show_for_module(module);
     gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
+  g_signal_connect(G_OBJECT(darktable.gui->presets_popup_menu), "deactivate", G_CALLBACK(_header_menu_deactivate_callback), module->header);
+
 #if GTK_CHECK_VERSION(3, 22, 0)
     gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, (GdkEvent *)e);
 #else
@@ -2034,6 +2189,165 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     return TRUE;
   }
   return FALSE;
+}
+
+static void header_size_callback(GtkWidget *widget, GdkRectangle *allocation, GtkWidget *header)
+{
+  gchar *config = dt_conf_get_string("darkroom/ui/hide_header_buttons");
+
+  GList *children = gtk_container_get_children(GTK_CONTAINER(header));
+
+  const gint panel_trigger_width = 250;
+
+  GList *button = g_list_first(children);
+  GtkRequisition button_size;
+  gtk_widget_show(GTK_WIDGET(button->data));
+  gtk_widget_get_preferred_size(GTK_WIDGET(button->data), &button_size, NULL);
+
+  int num_buttons = 0;
+  for(button = g_list_last(children);
+      button && GTK_IS_BUTTON(button->data);
+      button = g_list_previous(button)) num_buttons++;
+
+  gboolean hide_all = (allocation->width == 1);
+  int num_to_unhide = (allocation->width - 2) / button_size.width;
+  double opacity_leftmost = num_to_unhide > 0 ? 1.0 : (double) allocation->width / button_size.width;
+  double opacity_others = 1.0;
+
+  if(g_strcmp0(config, "glide")) // glide uses all defaults above
+  {
+    // these all (un)hide all buttons at the same time
+    if(num_to_unhide < num_buttons) num_to_unhide = 0;
+
+    if(!g_strcmp0(config, "smooth"))
+    {
+      opacity_others = opacity_leftmost;
+    }
+    else
+    {
+      if(!g_strcmp0(config, "fit"))
+      {
+        opacity_leftmost = 1.0;
+      }
+      else
+      {
+        GdkRectangle total_alloc;
+        gtk_widget_get_allocation(header, &total_alloc);
+
+        if(!g_strcmp0(config, "auto"))
+        {
+          opacity_leftmost = 1.0;
+          if(total_alloc.width < panel_trigger_width) hide_all = TRUE;
+        }
+        else if(!g_strcmp0(config, "fade"))
+        {
+          opacity_leftmost = opacity_others = (total_alloc.width - panel_trigger_width) / 100.;
+        }
+        else
+        {
+          fprintf(stderr, "unknown darkroom/ui/hide_header_buttons option %s\n", config);
+        }
+      }
+    }
+  }
+
+  GList *prev_button = NULL;
+
+  for(button = g_list_last(children);
+      button && GTK_IS_BUTTON(button->data);
+      button = g_list_previous(button))
+  {
+    GtkWidget *b = GTK_WIDGET(button->data);
+
+    if(!gtk_widget_get_visible(b))
+    {
+      if(num_to_unhide == 0) break;
+      --num_to_unhide;
+    }
+
+    gtk_widget_set_visible(b, !hide_all);
+    gtk_widget_set_opacity(b, opacity_others);
+
+    prev_button = button;
+  }
+  if(prev_button && num_to_unhide == 0)
+    gtk_widget_set_opacity(GTK_WIDGET(prev_button->data), opacity_leftmost);
+
+  g_list_free(children);
+  g_free(config);
+
+  GtkAllocation header_allocation;
+  gtk_widget_get_allocation(header, &header_allocation);
+  if(header_allocation.width > 1) gtk_widget_size_allocate(header, &header_allocation);
+}
+
+gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide)
+{
+  // check if Entry widget for module name edit exists
+  if(gtk_container_get_focus_child(GTK_CONTAINER(header))) return TRUE;
+
+  if(event && (darktable.develop->darkroom_skip_mouse_events ||
+     event->detail == GDK_NOTIFY_INFERIOR ||
+     event->mode != GDK_CROSSING_NORMAL)) return TRUE;
+
+  gchar *config = dt_conf_get_string("darkroom/ui/hide_header_buttons");
+
+  gboolean dynamic = FALSE;
+  double opacity = 1.0;
+  if(!g_strcmp0(config, "always"))
+  {
+    show_buttons = TRUE;
+  }
+  else if(!g_strcmp0(config, "dim"))
+  {
+    if(!show_buttons) opacity = 0.3;
+    show_buttons = TRUE;
+  }
+  else if(!g_strcmp0(config, "active"))
+    ;
+  else
+    dynamic = TRUE;
+
+  g_free(config);
+
+  GList *children = gtk_container_get_children(GTK_CONTAINER(header));
+
+  GList *button;
+  for(button = g_list_last(children);
+      button && GTK_IS_BUTTON(button->data);
+      button = g_list_previous(button))
+  {
+    gtk_widget_set_visible(GTK_WIDGET(button->data), show_buttons && !always_hide);
+    gtk_widget_set_opacity(GTK_WIDGET(button->data), opacity);
+  }
+  if(GTK_IS_DRAWING_AREA(button->data))
+  {
+    // temporarily or permanently (de)activate width trigger widget
+    if(dynamic)
+      gtk_widget_set_visible(GTK_WIDGET(button->data), !show_buttons && !always_hide);
+    else
+      gtk_widget_destroy(GTK_WIDGET(button->data));
+  }
+  else
+  {
+    if(dynamic)
+    {
+      GtkWidget *space = gtk_drawing_area_new();
+      gtk_box_pack_end(GTK_BOX(header), space, TRUE, TRUE, 0);
+      gtk_widget_show(space);
+      g_signal_connect(G_OBJECT(space), "size-allocate", G_CALLBACK(header_size_callback), header);
+    }
+  }
+
+  g_list_free(children);
+
+  if(dynamic && !show_buttons && !always_hide)
+  {
+    GdkRectangle fake_allocation = {.width = UINT16_MAX};
+    header_size_callback(NULL, &fake_allocation, header);
+  }
+
+  return TRUE;
 }
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
@@ -2056,9 +2370,15 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* setup the header box */
   g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_iop_plugin_header_button_press), module);
+  gtk_widget_add_events(header_evb, GDK_POINTER_MOTION_MASK);
+  g_signal_connect(G_OBJECT(header_evb), "enter-notify-event", G_CALLBACK(_header_motion_notify_show_callback), header);
+  g_signal_connect(G_OBJECT(header_evb), "leave-notify-event", G_CALLBACK(_header_motion_notify_hide_callback), header);
 
   /* connect mouse button callbacks for focus and presets */
   g_signal_connect(G_OBJECT(body_evb), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
+  gtk_widget_add_events(body_evb, GDK_POINTER_MOTION_MASK);
+  g_signal_connect(G_OBJECT(body_evb), "enter-notify-event", G_CALLBACK(_header_motion_notify_show_callback), header);
+  g_signal_connect(G_OBJECT(body_evb), "leave-notify-event", G_CALLBACK(_header_motion_notify_hide_callback), header);
 
   /*
    * initialize the header widgets
@@ -2106,21 +2426,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "module-preset-button");
 
   /* add enabled button */
-  if(module->default_enabled && module->hide_enable_button)
-  {
-    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
-    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-always-enabled-button");
-  }
-  else if(!module->default_enabled && module->hide_enable_button)
-  {
-    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch_off, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
-    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-always-disabled-button");
-  }
-  else
-  {
-    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
-    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-enable-button");
-  }
+  hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch,
+                                                 CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+  dt_iop_gui_set_enable_button_icon(hw[IOP_MODULE_SWITCH], module);
+
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
@@ -2134,9 +2443,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* reorder header, for now, iop are always in the right panel */
   for(int i = 0; i <= IOP_MODULE_LABEL; i++)
-    if(hw[i]) gtk_box_pack_start( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
+    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
   for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
-    if(hw[i]) gtk_box_pack_end( GTK_BOX(header), hw[i], FALSE, FALSE, 0);
+    if(hw[i]) gtk_box_pack_end(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
+
+  dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
 
   dt_gui_add_help_link(header, "interacting.html");
 
@@ -2249,10 +2560,7 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
 
   if(!dt_iop_shown_in_group(module, current_group))
   {
-    if(dt_iop_shown_in_group(module, DT_MODULEGROUP_FAVORITES))
-      dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
-    else
-      dt_dev_modulegroups_switch(darktable.develop, module);
+    dt_dev_modulegroups_switch(darktable.develop, module);
   }
   else
   {
@@ -2464,10 +2772,6 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool(option, TRUE);
   }
-
-  dt_view_manager_t *vm = darktable.view_manager;
-  if(vm->proxy.more_module.module) vm->proxy.more_module.update(vm->proxy.more_module.module);
-  // dt_view_manager_reset(vm);
 }
 
 void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
@@ -2745,7 +3049,7 @@ void dt_iop_refresh_center(dt_iop_module_t *module)
   if (dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
+    const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->pipe->cache, hash);
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
     dt_dev_invalidate(dev);
@@ -2760,7 +3064,7 @@ void dt_iop_refresh_preview(dt_iop_module_t *module)
   if (dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
+    const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview_pipe->cache, hash);
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
     dt_dev_invalidate_all(dev);
@@ -2775,7 +3079,7 @@ void dt_iop_refresh_preview2(dt_iop_module_t *module)
   if (dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
+    const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview2_pipe->cache, hash);
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
     dt_dev_invalidate_all(dev);

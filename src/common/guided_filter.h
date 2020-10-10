@@ -18,7 +18,17 @@
 
 #pragma once
 
+#ifdef __PPC64__
+#ifdef NO_WARN_X86_INTRINSICS
 #include <xmmintrin.h>
+#else
+#define NO_WARN_X86_INTRINSICS 1
+#include <xmmintrin.h>
+#undef NO_WARN_X86_INTRINSICS
+#endif // NO_WARN_X86_INTRINSICS
+#else
+#include <xmmintrin.h>
+#endif // __PPC64__
 
 #include "common/darktable.h"
 #include "common/opencl.h"

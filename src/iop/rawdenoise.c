@@ -58,12 +58,9 @@ typedef struct dt_iop_rawdenoise_params_t
 
 typedef struct dt_iop_rawdenoise_gui_data_t
 {
-  GtkWidget *stack;
   dt_draw_curve_t *transition_curve; // curve for gui to draw
 
-  GtkWidget *box_raw;
   GtkWidget *threshold;
-  GtkWidget *label_non_raw;
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
   double mouse_x, mouse_y, mouse_pick;
@@ -131,7 +128,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -523,19 +520,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void init(dt_iop_module_t *module)
 {
+  dt_iop_default_init(module);
+
   dt_iop_rawdenoise_params_t *d = module->default_params;
+
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
   {
     for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++)
     {
-      d->x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.0);
+      d->x[ch][k] = k / (DT_IOP_RAWDENOISE_BANDS - 1.f);
     }
   }
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
+}
 
+void reload_defaults(dt_iop_module_t *module)
+{
   // can't be switched on for non-raw images:
   if(dt_image_is_raw(&module->dev->image_storage))
     module->hide_enable_button = 0;
@@ -543,9 +544,6 @@ void reload_defaults(dt_iop_module_t *module)
     module->hide_enable_button = 1;
 
   module->default_enabled = 0;
-
-end:
- memcpy(module->params, module->default_params, sizeof(dt_iop_rawdenoise_params_t));
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -599,7 +597,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
   dt_iop_cancel_history_update(self);
   dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
-  gtk_stack_set_visible_child_name(GTK_STACK(g->stack), self->hide_enable_button ? "non_raw" : "raw");
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -853,14 +851,13 @@ static gboolean rawdenoise_button_press(GtkWidget *widget, GdkEventButton *event
     // reset current curve
     dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
     dt_iop_rawdenoise_params_t *d = (dt_iop_rawdenoise_params_t *)self->default_params;
-    /*   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data; */
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
     {
       p->x[ch][k] = d->x[ch][k];
       p->y[ch][k] = d->y[ch][k];
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    gtk_widget_queue_draw(c->box_raw);
+    gtk_widget_queue_draw(self->widget);
   }
   else if(event->button == 1)
   {
@@ -927,12 +924,8 @@ static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint 
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rawdenoise_gui_data_t));
-  dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
-
-  c->stack = gtk_stack_new();
-  gtk_stack_set_homogeneous(GTK_STACK(c->stack), FALSE);
+  dt_iop_rawdenoise_gui_data_t *c = IOP_GUI_ALLOC(rawdenoise);
+  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->default_params;
 
   c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
@@ -960,12 +953,12 @@ void gui_init(dt_iop_module_t *self)
   self->timeout_handle = 0;
   c->mouse_radius = 1.0 / (DT_IOP_RAWDENOISE_BANDS * 2);
 
-  c->box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
 
-  gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(c->box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -981,31 +974,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_max(c->threshold, 0.1);
   dt_bauhaus_slider_set_digits(c->threshold, 3);
 
-  c->label_non_raw = gtk_label_new(_("raw denoising\nonly works for raw images."));
-  gtk_widget_set_halign(c->label_non_raw, GTK_ALIGN_START);
-
-  // This is done so that if we use several instances, the newly created ones
-  // use the same graphical interface as the original one.
-  // In other words, if the original one is in "non_raw" mode, we have to put
-  // "non_raw" in the stack first, so that when we add a new instance, we see
-  // the label_non_raw
-  if(self->hide_enable_button)
-  {
-    gtk_stack_add_named(GTK_STACK(c->stack), c->label_non_raw, "non_raw");
-    gtk_stack_add_named(GTK_STACK(c->stack), c->box_raw, "raw");
-  }
-  else
-  {
-    gtk_stack_add_named(GTK_STACK(c->stack), c->box_raw, "raw");
-    gtk_stack_add_named(GTK_STACK(c->stack), c->label_non_raw, "non_raw");
-  }
-
-  gtk_stack_set_visible_child_name(GTK_STACK(c->stack), self->hide_enable_button ? "non_raw" : "raw");
-
   // start building top level widget
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  self->widget = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), c->stack, TRUE, TRUE, 0);
+  GtkWidget *label_non_raw = dt_ui_label_new(_("raw denoising\nonly works for raw images."));
+
+  gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
+  gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -1014,8 +990,8 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", c->channel);
   dt_draw_curve_destroy(c->transition_curve);
   dt_iop_cancel_history_update(self);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

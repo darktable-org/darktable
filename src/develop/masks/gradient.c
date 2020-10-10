@@ -499,7 +499,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   {
     const float pr_dn = darktable.develop->preview_downsampling;
     const float iwd = pr_dn * darktable.develop->preview_pipe->iwidth;
-    const float iht = pr_dn * darktable.develop->preview_pipe->iheight;                                                   
+    const float iht = pr_dn * darktable.develop->preview_pipe->iheight;
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
     const float distance = 0.1f * MIN(iwd, iht);
     const float scale = sqrtf(iwd * iwd + iht * iht);

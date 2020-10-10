@@ -138,7 +138,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1286,9 +1286,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorreconstruct_gui_data_t));
-  dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
+  dt_iop_colorreconstruct_gui_data_t *g = IOP_GUI_ALLOC(colorreconstruct);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->can = NULL;
@@ -1313,8 +1311,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_show_all(g->hue);
   gtk_widget_set_no_show_all(g->hue, TRUE);
 
-  gtk_widget_set_visible(g->hue, p->precedence == COLORRECONSTRUCT_PRECEDENCE_HUE);
-
   gtk_widget_set_tooltip_text(g->threshold, _("pixels with lightness values above this threshold are corrected"));
   gtk_widget_set_tooltip_text(g->spatial, _("how far to look for replacement colors in spatial dimensions"));
   gtk_widget_set_tooltip_text(g->range, _("how far to look for replacement colors in the luminance dimension"));
@@ -1327,8 +1323,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
   dt_iop_colorreconstruct_bilateral_dump(g->can);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

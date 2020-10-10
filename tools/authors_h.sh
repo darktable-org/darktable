@@ -30,11 +30,44 @@ H_FILE="$2"
 echo "#pragma once" > "$H_FILE"
 echo "" >> "$H_FILE"
 
-echo "static const char *authors[] = {" >> "$H_FILE"
+# category counter
+SECTIONS=0
 
-sed -e "s/^/\"/g" -e "s/$/\",/g" "$AUTHORS" >> "$H_FILE"
+function print_section()
+{
+    # only add if non empty
+    if [ -n "${CONTENT}" ]; then
+        echo "static const char *section${SECTIONS}[] = {" >> "$H_FILE"
+        echo "$CONTENT" >> "$H_FILE"
+        echo "  NULL };" >> "$H_FILE"
+        echo "gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), _(\"${SECTION}\"), section${SECTIONS});" >> "$H_FILE"
+        echo "" >> "$H_FILE"
+    fi
+}
 
-echo "NULL };" >> "$H_FILE"
+# extract section name
+section="\* (.*):"
+
+while IFS="" read -r p || [ -n "$p" ]; do
+  if [[ $p =~ $section ]]; then
+      if [ $SECTIONS -gt 0 ]; then
+          print_section
+      fi
+
+      SECTIONS=$((SECTIONS+1))
+      # only select short name
+      SECTION=$(echo "${BASH_REMATCH[1]}" | sed 's/Sub-module //' | sed 's/ (.*)//')
+      CONTENT=""
+  else
+      # general thanks for previous contributors are hardcoded
+      if [ "$p" = "" ] || [ "${p:0:13}" = "And all those" ]; then
+          continue
+      fi
+      CONTENT="\"$p\",$CONTENT"
+  fi
+done < "$AUTHORS"
+
+print_section
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
 # kate: tab-width: 2; replace-tabs on; indent-width 2; tab-indents: off;

@@ -43,7 +43,7 @@ dt_lua_widget_type_t widget_type = {
 
 static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget);
 static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua_widget widget) {
-  if(widget_type->parent) 
+  if(widget_type->parent)
     cleanup_widget_sub(L,widget_type->parent,widget);
   if(widget_type->gui_cleanup) {
     widget_type->gui_cleanup(L,widget);
@@ -52,15 +52,14 @@ static void cleanup_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type,lua
 
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type);
 static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
-  if(widget_type->parent) 
+  if(widget_type->parent)
     init_widget_sub(L,widget_type->parent);
-  if(widget_type->gui_init) 
+  if(widget_type->gui_init)
     widget_type->gui_init(L);
 }
 
 static void on_destroy(GtkWidget *widget, gpointer user_data)
 {
-  free((lua_widget*) user_data);
 }
 
 static gboolean on_destroy_wrapper(gpointer user_data)
@@ -246,7 +245,7 @@ static int gtk_signal_member(lua_State *L)
   return 1;
 }
 
-void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,const char* signal_name, const char* lua_name,GCallback callback) 
+void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,const char* signal_name, const char* lua_name,GCallback callback)
 {
   lua_pushstring(L,signal_name);
   lua_pushcclosure(L,gtk_signal_member,1);
@@ -257,7 +256,7 @@ void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,con
   lua_pushlightuserdata(L,callback);
   lua_setfield(L,-2,signal_name);
   lua_pop(L,2);
-  
+
 }
 
 int widget_call(lua_State *L)

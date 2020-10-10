@@ -43,9 +43,9 @@ typedef struct dt_iop_basicadj_params_t
   float exposure;       // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
   float hlcompr;        /* $MIN: 0 $MAX: 500.0 $DEFAULT: 0.0
                            $DESCRIPTION:"highlight compression" */
-  float hlcomprthresh;  
+  float hlcomprthresh;
   float contrast;       // $MIN: -1.0 $MAX: 5.0 $DEFAULT: 0.0
-  dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE 
+  dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE
                                          $DESCRIPTION:"preserve colors" */
   float middle_grey;    // $MIN: 0.05 $MAX: 100 $DEFAULT: 18.42 $DESCRIPTION: "middle grey"
   float brightness;     // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0
@@ -146,7 +146,7 @@ const char *description()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -610,8 +610,7 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_basicadj_gui_data_t));
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = IOP_GUI_ALLOC(basicadj);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
@@ -644,7 +643,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors") ;
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
-  g->sl_middle_grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+  g->sl_middle_grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                       dt_bauhaus_slider_from_params(self, "middle_grey"));
   dt_bauhaus_slider_set_step(g->sl_middle_grey, .5);
   dt_bauhaus_slider_set_format(g->sl_middle_grey, "%.2f %%");
@@ -660,11 +659,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->sl_vibrance = dt_bauhaus_slider_from_params(self, N_("vibrance"));
   gtk_widget_set_tooltip_text(g->sl_vibrance, _("vibrance adjustment"));
- 
+
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
 
-  g->bt_auto_levels = gtk_button_new_with_label(_("auto"));
-  gtk_widget_set_tooltip_text(g->bt_auto_levels, _("apply auto exposure based on the entire image"));
+  g->bt_auto_levels = dt_ui_button_new(_("auto"), _("apply auto exposure based on the entire image"), NULL);
   g_signal_connect(G_OBJECT(g->bt_auto_levels), "clicked", G_CALLBACK(_auto_levels_callback), self);
   gtk_widget_set_size_request(g->bt_auto_levels, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
@@ -701,8 +699,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   {
     dt_pthread_mutex_destroy(&g->lock);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 static inline int64_t doubleToRawLongBits(double d)

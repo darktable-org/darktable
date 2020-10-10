@@ -806,7 +806,6 @@ static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, 
   if(cst_old != _blendop_blendif_get_picker_colorspace(data) &&
      (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))))
-
   {
     dt_iop_color_picker_set_cst(data->module, _blendop_blendif_get_picker_colorspace(data));
     dt_dev_reprocess_all(data->module->dev);
@@ -1327,8 +1326,8 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
 
   _blendop_blendif_channel_mask_view(widget, module, mode);
 
-  dt_control_key_accelerators_off(darktable.control);
   gtk_widget_grab_focus(widget);
+  dt_control_key_accelerators_off(darktable.control);
   return FALSE;
 }
 
@@ -1580,21 +1579,28 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_widget_set_tooltip_text(sl->polarity, _("toggle polarity. best seen by enabling 'display mask'"));
       gtk_box_pack_end(GTK_BOX(slider_box), GTK_WIDGET(sl->polarity), FALSE, FALSE, 0);
 
-      GtkWidget *label_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      GtkWidget *label_box = gtk_grid_new();
+      gtk_grid_set_column_homogeneous(GTK_GRID(label_box), TRUE);
 
-      sl->head = GTK_LABEL(gtk_label_new(in_out ? _("output") : _("input")));
-      gtk_label_set_ellipsize(GTK_LABEL(sl->head), PANGO_ELLIPSIZE_END);
-      gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->head), FALSE, FALSE, 0);
+      sl->head = GTK_LABEL(dt_ui_label_new(in_out ? _("output") : _("input")));
+      gtk_grid_attach(GTK_GRID(label_box), GTK_WIDGET(sl->head), 0, 0, 1, 1);
+
+      GtkWidget *overlay = gtk_overlay_new();
+      gtk_grid_attach(GTK_GRID(label_box), overlay, 1, 0, 3, 1);
 
       sl->picker_label = GTK_LABEL(gtk_label_new(""));
-      gtk_label_set_ellipsize(GTK_LABEL(sl->picker_label), PANGO_ELLIPSIZE_END);
-      gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->picker_label), TRUE, TRUE, 0);
+      gtk_widget_set_name(GTK_WIDGET(sl->picker_label), "blend-data");
+      gtk_label_set_xalign(sl->picker_label, .0);
+      gtk_label_set_yalign(sl->picker_label, 1.0);
+      gtk_container_add(GTK_CONTAINER(overlay), GTK_WIDGET(sl->picker_label));
 
       for(int k = 0; k < 4; k++)
       {
         sl->label[k] = GTK_LABEL(gtk_label_new(NULL));
-        gtk_label_set_ellipsize(GTK_LABEL(sl->label[k]), PANGO_ELLIPSIZE_END);
-        gtk_box_pack_start(GTK_BOX(label_box), GTK_WIDGET(sl->label[k]), FALSE, FALSE, 0);
+        gtk_widget_set_name(GTK_WIDGET(sl->label[k]), "blend-data");
+        gtk_label_set_xalign(sl->label[k], .35 + k * .65/3);
+        gtk_label_set_yalign(sl->label[k], k % 2);
+        gtk_overlay_add_overlay(GTK_OVERLAY(overlay), GTK_WIDGET(sl->label[k]));
       }
 
       gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
@@ -1961,7 +1967,7 @@ static GtkWidget *_combobox_new_from_list(dt_iop_module_t *module, const gchar *
   dt_bauhaus_widget_set_label(combo, _("blend"), label);
   gtk_widget_set_tooltip_text(combo, tooltip);
   for(; *list->name; list++)
-    dt_bauhaus_combobox_add_full(combo, list->name, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+    dt_bauhaus_combobox_add_full(combo, _(list->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                  GUINT_TO_POINTER(list->value), NULL, TRUE);
 
   return combo;

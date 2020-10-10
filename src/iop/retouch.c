@@ -64,6 +64,7 @@ typedef enum dt_iop_retouch_blur_types_t {
 } dt_iop_retouch_blur_types_t;
 
 typedef enum dt_iop_retouch_algo_type_t {
+  DT_IOP_RETOUCH_NONE = 0,  // $DESCRIPTION: "unused"
   DT_IOP_RETOUCH_CLONE = 1, // $DESCRIPTION: "clone"
   DT_IOP_RETOUCH_HEAL = 2,  // $DESCRIPTION: "heal"
   DT_IOP_RETOUCH_BLUR = 3,  // $DESCRIPTION: "blur"
@@ -196,7 +197,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_EFFECTS;
 }
 
 int flags()
@@ -1764,12 +1765,10 @@ void init(dt_iop_module_t *module)
   dt_iop_default_init(module);
 
   dt_iop_retouch_params_t *d = module->default_params;
-  
+
   d->preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
   d->preview_levels[1] = 0.f;
   d->preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_retouch_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1990,9 +1989,8 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_retouch_gui_data_t));
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
+  dt_iop_retouch_gui_data_t *g = IOP_GUI_ALLOC(retouch);
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->default_params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
@@ -2000,9 +1998,7 @@ void gui_init(dt_iop_module_t *self)
   // shapes toolbar
   GtkWidget *hbox_shapes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *label = gtk_label_new(_("shapes:"));
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_box_pack_start(GTK_BOX(hbox_shapes), label, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_shapes), dt_ui_label_new(_("shapes:")), FALSE, TRUE, 0);
   g->label_form = GTK_LABEL(gtk_label_new("-1"));
   gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_tooltip_text(hbox_shapes,
@@ -2046,9 +2042,7 @@ void gui_init(dt_iop_module_t *self)
   // algorithm toolbar
   GtkWidget *hbox_algo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *label2 = gtk_label_new(_("algorithms:"));
-  gtk_label_set_ellipsize(GTK_LABEL(label2), PANGO_ELLIPSIZE_END);
-  gtk_box_pack_start(GTK_BOX(hbox_algo), label2, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_algo), dt_ui_label_new(_("algorithms:")), FALSE, TRUE, 0);
 
   g->bt_fill
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_fill, CPF_STYLE_FLAT, NULL);
@@ -2083,33 +2077,20 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *grid_wd_labels = gtk_grid_new();
   gtk_grid_set_column_homogeneous(GTK_GRID(grid_wd_labels), FALSE);
 
-  GtkWidget *lbl_num_scales = gtk_label_new(_("scales:"));
-  gtk_widget_set_halign(lbl_num_scales, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid_wd_labels), lbl_num_scales, 0, 0, 1, 1);
-
-  g->lbl_num_scales = GTK_LABEL(gtk_label_new(NULL));
-  gtk_widget_set_halign(GTK_WIDGET(g->lbl_num_scales), GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), dt_ui_label_new(_("scales:")), 0, 0, 1, 1);
+  g->lbl_num_scales = GTK_LABEL(dt_ui_label_new(NULL));
   gtk_label_set_width_chars(g->lbl_num_scales, 2);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_num_scales), lbl_num_scales, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_num_scales), 1, 0, 1, 1);
 
-  GtkWidget *lbl_curr_scale = gtk_label_new(_("current:"));
-  gtk_widget_set_halign(lbl_curr_scale, GTK_ALIGN_START);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), lbl_curr_scale, lbl_num_scales, GTK_POS_BOTTOM, 1, 1);
-
-  g->lbl_curr_scale = GTK_LABEL(gtk_label_new(NULL));
-  gtk_widget_set_halign(GTK_WIDGET(g->lbl_curr_scale), GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), dt_ui_label_new(_("current:")), 0, 1, 1, 1);
+  g->lbl_curr_scale = GTK_LABEL(dt_ui_label_new(NULL));
   gtk_label_set_width_chars(g->lbl_curr_scale, 2);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_curr_scale), lbl_curr_scale, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_curr_scale), 1, 1, 1, 1);
 
-  GtkWidget *lbl_merge_from_scale = gtk_label_new(_("merge from:"));
-  gtk_widget_set_halign(lbl_merge_from_scale, GTK_ALIGN_START);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), lbl_merge_from_scale, lbl_curr_scale, GTK_POS_BOTTOM, 1, 1);
-
-  g->lbl_merge_from_scale = GTK_LABEL(gtk_label_new(NULL));
-  gtk_widget_set_halign(GTK_WIDGET(g->lbl_merge_from_scale), GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), dt_ui_label_new(_("merge from:")), 0, 2, 1, 1);
+  g->lbl_merge_from_scale = GTK_LABEL(dt_ui_label_new(NULL));
   gtk_label_set_width_chars(g->lbl_merge_from_scale, 2);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_merge_from_scale), lbl_merge_from_scale,
-                          GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_merge_from_scale), 1, 2, 1, 1);
 
   // wavelet decompose bar
   g->wd_bar = gtk_drawing_area_new();
@@ -2241,7 +2222,7 @@ void gui_init(dt_iop_module_t *self)
       = (GdkRGBA){.red = p->fill_color[0], .green = p->fill_color[1], .blue = p->fill_color[2], .alpha = 1.0 };
 
   g->hbox_color_pick = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *lbl_fill_color = gtk_label_new(_("fill color: "));
+  GtkWidget *lbl_fill_color = dt_ui_label_new(_("fill color: "));
   gtk_box_pack_start(GTK_BOX(g->hbox_color_pick), lbl_fill_color, FALSE, TRUE, 0);
 
   g->colorpick = gtk_color_button_new_with_rgba(&color);
@@ -2327,8 +2308,6 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_show_all(g->vbox_preview_scale);
   gtk_widget_set_no_show_all(g->vbox_preview_scale, TRUE);
-
-  rt_show_hide_controls(self, g, p, g);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
@@ -2346,8 +2325,8 @@ void gui_cleanup(dt_iop_module_t *self)
   {
     dt_pthread_mutex_destroy(&g->lock);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
@@ -3784,12 +3763,13 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g && g->mask_display && self->dev->gui_attached
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g
+     && (g->mask_display || display_wavelet_scale) && self->dev->gui_attached
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
     for(size_t j = 0; j < roi_rt->width * roi_rt->height * ch; j += ch) in_retouch[j + 3] = 0.f;
 
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    piece->pipe->mask_display = g->mask_display ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     piece->pipe->bypass_blendif = 1;
     usr_data.mask_display = 1;
   }

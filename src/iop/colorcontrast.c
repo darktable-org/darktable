@@ -95,7 +95,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -332,8 +332,7 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorcontrast_gui_data_t));
-  dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
+  dt_iop_colorcontrast_gui_data_t *g = IOP_GUI_ALLOC(colorcontrast);
 
   g->a_scale = dt_bauhaus_slider_from_params(self, "a_steepness");
   gtk_widget_set_tooltip_text(g->a_scale, _("steepness of the a* curve in Lab"));

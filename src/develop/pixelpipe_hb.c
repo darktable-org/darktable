@@ -1117,11 +1117,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     return 1;
   }
-  int cache_available = 0;
+  gboolean cache_available = FALSE;
   uint64_t basichash = 0;
   uint64_t hash = 0;
   // do not get gamma from cache on preview pipe so we can compute the final histogram
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW || module == NULL
+  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW
+     || module == NULL
      || strcmp(module->op, "gamma") != 0)
   {
     dt_dev_pixelpipe_cache_fullhash(pipe->image.id, roi_out, pipe, pos, &basichash, &hash);
@@ -1270,12 +1271,17 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     dt_pixelpipe_flow_t pixelpipe_flow = (PIXELPIPE_FLOW_NONE | PIXELPIPE_FLOW_HISTOGRAM_NONE);
 
-    // special case: user requests to see channel data in the parametric mask of a module. In that case
-    // we skip all modules manipulating pixel content and only process image distorting modules. Finally
-    // "gamma" is responsible to display channel data accordingly.
-    if(strcmp(module->op, "gamma") && (pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY) && !(module->operation_tags() & IOP_TAG_DISTORT) &&
-      (in_bpp == out_bpp) && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
+    // special case: user requests to see channel data in the parametric mask of a module, or the blending
+    // mask. In that case we skip all modules manipulating pixel content and only process image distorting
+    // modules. Finally "gamma" is responsible for displaying channel/mask data accordingly.
+    if(strcmp(module->op, "gamma") != 0
+       && (pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_ANY | DT_DEV_PIXELPIPE_DISPLAY_MASK))
+       && !(module->operation_tags() & IOP_TAG_DISTORT)
+       && (in_bpp == out_bpp) && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
     {
+      // since we're not actually running the module, the output format is the same as the input format
+      **out_format = pipe->dsc = piece->dsc_out = piece->dsc_in;
+
 #ifdef HAVE_OPENCL
       if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0 && (cl_mem_input != NULL))
       {
@@ -1499,7 +1505,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           {
             // we abuse the empty output buffer on host for intermediate storage of data in
             // pixelpipe_picker_cl()
-            size_t outbufsize = roi_out->width * roi_out->height * bpp;
+            const size_t outbufsize = roi_out->width * roi_out->height * bpp;
 
             pixelpipe_picker_cl(pipe->devid, module, &piece->dsc_in, cl_mem_input, &roi_in, module->picked_color,
                                 module->picked_color_min, module->picked_color_max, *output, outbufsize,
@@ -1872,7 +1878,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         return 1;
     }
 #else // HAVE_OPENCL
-    if (pixelpipe_process_on_CPU(pipe, dev, input, &roi_in, input_format, output, out_format, roi_out,
+    if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                  module, piece, &tiling, &pixelpipe_flow))
       return 1;
 #endif // HAVE_OPENCL
@@ -2189,7 +2195,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->forms = dt_masks_dup_forms_deep(dev->forms, NULL);
 
   //  go through list of modules from the end:
-  guint pos = g_list_length(pipe->iop);
+  const guint pos = g_list_length(pipe->iop);
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
 
@@ -2212,11 +2218,12 @@ restart:
   dt_iop_buffer_dsc_t *out_format = &_out_format;
 
   // run pixelpipe recursively and get error status
-  int err = dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_format, &roi, modules,
-                                                      pieces, pos);
+  const int err =
+    dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_format, &roi, modules,
+                                              pieces, pos);
 
   // get status summary of opencl queue by checking the eventlist
-  int oclerr = (pipe->devid >= 0) ? (dt_opencl_events_flush(pipe->devid, 1) != 0) : 0;
+  const int oclerr = (pipe->devid >= 0) ? (dt_opencl_events_flush(pipe->devid, 1) != 0) : 0;
 
   // Check if we had opencl errors ....
   // remark: opencl errors can come in two ways: pipe->opencl_error is TRUE (and err is TRUE) OR oclerr is

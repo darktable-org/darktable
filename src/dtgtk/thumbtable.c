@@ -1475,7 +1475,7 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
 
 static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
 {
-  const int ts = DT_PIXEL_APPLY_DPI(64);
+  const int ts = DT_PIXEL_APPLY_DPI(128);
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
@@ -1757,6 +1757,12 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
       old_margin_start = gtk_widget_get_margin_start(first->w_image_box);
       old_margin_top = gtk_widget_get_margin_top(first->w_image_box);
+      // if margins > thumb size, then margins are irrelevant (thumb size as just changed), better set them to 0
+      if(old_margin_start >= table->thumb_size || old_margin_top >= table->thumb_size)
+      {
+        old_margin_start = 0;
+        old_margin_top = 0;
+      }
     }
 
     // we add the thumbs
@@ -2480,6 +2486,15 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
   if(thumb) dt_control_set_mouse_over_id(thumb->imgid);
   // if needed, we set the selection
   if(thumb && select) dt_selection_select_range(darktable.selection, thumb->imgid);
+
+  // and we record new positions values
+  dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  table->offset = first->rowid;
+  table->offset_imgid = first->imgid;
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
+  dt_conf_set_int("lighttable/zoomable/last_offset", table->offset);
+  dt_conf_set_int("lighttable/zoomable/last_pos_x", table->thumbs_area.x);
+  dt_conf_set_int("lighttable/zoomable/last_pos_y", table->thumbs_area.y);
 
   return moved;
 }

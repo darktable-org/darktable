@@ -421,12 +421,12 @@ void expose(
     if(dev->image_invalid_cnt)
     {
       fontsize = DT_PIXEL_APPLY_DPI(20);
-      load_txt = dt_util_dstrcat(NULL, "%s `%s', %s\n\n%s\n%s",
-          _("darktable could not load"),
-          dev->image_storage.filename,
-          _("switching to lighttable now."),
-          _("please check the image (use exiv2 or exiftool) for corrupted data. if the image seems to"),
-          _("be intact, please consider opening an issue at https://github.com/darktable-org/darktable.") );
+      load_txt = dt_util_dstrcat(
+          NULL,
+          _("darktable could not load `%s', switching to lighttable now.\n\n"
+            "please check the image (use exiv2 or exiftool) for corrupted data. if the image seems to\n"
+            "be intact, please consider opening an issue at https://github.com/darktable-org/darktable."),
+          dev->image_storage.filename);
       if(dev->image_invalid_cnt > 400)
       {
         dev->image_invalid_cnt = 0;
@@ -436,7 +436,7 @@ void expose(
     else
     {
       fontsize = DT_PIXEL_APPLY_DPI(14);
-      load_txt = dt_util_dstrcat(NULL, "%s `%s' ...", _("loading"), dev->image_storage.filename);
+      load_txt = dt_util_dstrcat(NULL, NC_("darkroom", "loading `%s' ..."), dev->image_storage.filename);
     }
 
     pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
@@ -482,16 +482,22 @@ void expose(
     /* Store current image surface to snapshot file.
        FIXME: add checks so that we don't make snapshots of preview pipe image surface.
     */
-    int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY | O_BINARY, 0600);
+    const int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY | O_BINARY, 0600);
     cairo_surface_write_to_png_stream(image_surface, write_snapshot_data, GINT_TO_POINTER(fd));
     close(fd);
   }
 
   // Displaying sample areas if enabled
-  if(darktable.lib->proxy.colorpicker.live_samples && darktable.lib->proxy.colorpicker.display_samples)
+  if(darktable.lib->proxy.colorpicker.live_samples
+     && (darktable.lib->proxy.colorpicker.display_samples
+         || darktable.lib->proxy.colorpicker.selected_sample))
   {
     GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
     dt_colorpicker_sample_t *sample = NULL;
+
+    const gboolean only_selected_sample =
+      darktable.lib->proxy.colorpicker.selected_sample
+      && !darktable.lib->proxy.colorpicker.display_samples;
 
     cairo_save(cri);
     // The colorpicker samples bounding rectangle should only be displayed inside the visible image
@@ -515,6 +521,14 @@ void expose(
     while(samples)
     {
       sample = samples->data;
+
+      // only dislay selected sample, skip if not the selected sample
+      if(only_selected_sample
+         && sample != darktable.lib->proxy.colorpicker.selected_sample)
+      {
+        samples = g_slist_next(samples);
+        continue;
+      }
 
       cairo_set_line_width(cri, lw);
       if(sample == darktable.lib->proxy.colorpicker.selected_sample)
@@ -1259,9 +1273,17 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       if(split[1])
       {
-        mi_name = g_strdup(split[1]);
+        gsize mi_len = 1 + strlen(split[1]);
         for(int i=2; split[i]; i++)
-          mi_name = g_strconcat(mi_name, " | ", split[i], NULL);
+          mi_len += strlen(split[i]) + strlen(" | ");
+
+        mi_name = g_new0(gchar, mi_len);
+        gchar* tmp_ptr = g_stpcpy(mi_name, split[1]);
+        for(int i=2; split[i]; i++)
+        {
+          tmp_ptr = g_stpcpy(tmp_ptr, " | ");
+          tmp_ptr = g_stpcpy(tmp_ptr, split[i]);
+        }
       }
       else
         mi_name = g_strdup(split[0]);
@@ -1469,6 +1491,16 @@ static void upper_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.upper = dt_bauhaus_slider_get(slider);
+  if(d->overexposed.enabled == FALSE)
+    gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
+  else
+    dt_dev_reprocess_center(d);
+}
+
+static void mode_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  d->overexposed.mode = dt_bauhaus_combobox_get(slider);
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
@@ -1899,6 +1931,22 @@ static void _preference_prev_downsample_change(gpointer instance, gpointer user_
   }
 }
 
+static void _preference_changed_button_hide(gpointer instance, dt_develop_t *dev)
+{
+  GList *modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+
+    if(module->header)
+    {
+      dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
+    }
+
+    modules = g_list_next(modules);
+  }
+}
+
 static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
 {
   GList *l = darktable.color_profiles->profiles;
@@ -2077,7 +2125,7 @@ void gui_init(dt_view_t *self)
   /* create favorite plugin preset popup tool */
   GtkWidget *favorite_presets
       = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets of your favorites"));
+  gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
   dt_gui_add_help_link(favorite_presets, dt_get_help_url("favorite_presets"));
@@ -2102,7 +2150,8 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
-  const int dialog_width = 350;
+  const int dialog_width       = 350;
+  const int large_dialog_width = 450; // for dialog with profile names
 
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button
@@ -2182,7 +2231,7 @@ void gui_init(dt_view_t *self)
     dev->overexposed.button
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
-                                _("toggle over/under exposed indication\nright click for options"));
+                                _("toggle clipping indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
                      G_CALLBACK(_overexposed_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->overexposed.button), "button-press-event",
@@ -2203,6 +2252,20 @@ void gui_init(dt_view_t *self)
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
+    /* preview mode */
+    GtkWidget *mode = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(mode, NULL, _("clipping preview mode"));
+    dt_bauhaus_combobox_add(mode, _("full gamut"));
+    dt_bauhaus_combobox_add(mode, _("any RGB channel"));
+    dt_bauhaus_combobox_add(mode, _("luminance only"));
+    dt_bauhaus_combobox_add(mode, _("saturation only"));
+    dt_bauhaus_combobox_set(mode, dev->overexposed.mode);
+    gtk_widget_set_tooltip_text(mode, _("select the metric you want to preview\n"
+                                        "full gamut is the combination of all other modes\n"));
+    g_signal_connect(G_OBJECT(mode), "value-changed", G_CALLBACK(mode_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
+    gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
+
     /* color scheme */
     GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
     dt_bauhaus_widget_set_label(colorscheme, NULL, _("color scheme"));
@@ -2210,26 +2273,36 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_combobox_add(colorscheme, _("red & blue"));
     dt_bauhaus_combobox_add(colorscheme, _("purple & green"));
     dt_bauhaus_combobox_set(colorscheme, dev->overexposed.colorscheme);
-    gtk_widget_set_tooltip_text(colorscheme, _("select colors to indicate over/under exposure"));
+    gtk_widget_set_tooltip_text(colorscheme, _("select colors to indicate clipping"));
     g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(colorscheme_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
     gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* lower */
-    GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 2.0, 2);
+    GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, -32., -4., 1., -12.69, 2);
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
-    dt_bauhaus_slider_set_format(lower, "%.0f%%");
+    dt_bauhaus_slider_set_format(lower, "%+.2f EV");
     dt_bauhaus_widget_set_label(lower, NULL, _("lower threshold"));
-    gtk_widget_set_tooltip_text(lower, _("threshold of what shall be considered underexposed"));
+    gtk_widget_set_tooltip_text(lower, _("clipping threshold for the black point,\n"
+                                         "in EV, relatively to white (0 EV).\n"
+                                         "8 bits sRGB clips blacks at -12.69 EV,\n"
+                                         "8 bits Adobe RGB clips blacks at -19.79 EV,\n"
+                                         "16 bits sRGB clips blacks at -20.69 EV,\n"
+                                         "typical fine-art mat prints produce black at -5.30 EV,\n"
+                                         "typical color glossy prints produce black at -8.00 EV,\n"
+                                         "typical B&W glossy prints produce black at -9.00 EV."
+                                         ));
     g_signal_connect(G_OBJECT(lower), "value-changed", G_CALLBACK(lower_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lower), TRUE, TRUE, 0);
 
     /* upper */
-    GtkWidget *upper = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 98.0, 2);
+    GtkWidget *upper = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 99.99, 2);
     dt_bauhaus_slider_set(upper, dev->overexposed.upper);
-    dt_bauhaus_slider_set_format(upper, "%.0f%%");
+    dt_bauhaus_slider_set_format(upper, "%.2f%%");
     dt_bauhaus_widget_set_label(upper, NULL, _("upper threshold"));
-    gtk_widget_set_tooltip_text(upper, _("threshold of what shall be considered overexposed"));
+    /* xgettext:no-c-format */
+    gtk_widget_set_tooltip_text(upper, _("clipping threshold for the white point.\n"
+                                         "100% is peak medium luminance."));
     g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
   }
@@ -2266,7 +2339,7 @@ void gui_init(dt_view_t *self)
 
     // and the popup window, which is shared between the two profile buttons
     dev->profile.floating_window = gtk_popover_new(NULL);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), dialog_width, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), large_dialog_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->profile.floating_window), "transitions-enabled", FALSE, NULL);
 #endif
@@ -2908,6 +2981,10 @@ void enter(dt_view_t *self)
 
   //connect iop accelerators
   dt_iop_connect_accels_all();
+
+  // connect to preference change for module header button hiding
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                                  G_CALLBACK(_preference_changed_button_hide), dev);
 }
 
 void leave(dt_view_t *self)
@@ -2935,6 +3012,9 @@ void leave(dt_view_t *self)
     dt_conf_set_string("plugins/darkroom/active", "");
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_preference_changed_button_hide), dev);
 
   // reset color assesment mode
   if(dev->iso_12646.enabled)
@@ -4312,34 +4392,10 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
 {
   GtkWidget *widget = dev->second_window.second_wnd;
 
-// check if in HiDPI mode
-#if(CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
-  float screen_ppd_overwrite = dt_conf_get_float("screen_ppd_overwrite");
-  if(screen_ppd_overwrite > 0.0)
-  {
-    dev->second_window.ppd = screen_ppd_overwrite;
-    dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f as specified in the configuration file\n",
-             screen_ppd_overwrite);
-  }
-  else
-  {
-#ifndef GDK_WINDOWING_QUARTZ
-    dev->second_window.ppd = gtk_widget_get_scale_factor(widget);
-#else
-    // this do not depends on the window, so we can use the main window value
-    dev->second_window.ppd = darktable.gui->ppd;
-#endif
-    if(dev->second_window.ppd < 0.0)
-    {
-      dev->second_window.ppd = 1.0;
-      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n");
-    }
-    else
-      dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", dev->second_window.ppd);
-  }
-#else
-  dev->second_window.ppd = 1.0;
-#endif
+  dev->second_window.ppd = dev->second_window.ppd_thb = dt_get_system_gui_ppd(widget);
+  if(dt_conf_get_bool("ui/performance"))
+    dev->second_window.ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
+
   // get the screen resolution
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
   if(screen_dpi_overwrite > 0.0)

@@ -70,7 +70,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -514,14 +514,6 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_rawoverexposed_t);
   module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

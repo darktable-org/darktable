@@ -456,8 +456,8 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
 
       snprintf(query, sizeof(query),
                "INSERT INTO data.style_items "
-               "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_"
-               "   version,multi_priority,multi_name)"
+               "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,"
+               "   multi_priority,multi_name)"
                " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,"
                "   multi_priority,multi_name"
                " FROM data.style_items"
@@ -468,10 +468,10 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
     else
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "INSERT INTO data.style_items "
-                                  "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_"
-                                  "   version,multi_priority,multi_name)"
-                                  " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,"
-                                  "   multi_priority,multi_name"
+                                  "  (styleid,num,module,operation,op_params,enabled,blendop_params,"
+                                  "   blendop_version,multi_priority,multi_name)"
+                                  " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,"
+                                  "        blendop_version,multi_priority,multi_name"
                                   " FROM data.style_items"
                                   " WHERE styleid=?2",
                                   -1, &stmt, NULL);
@@ -700,6 +700,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
   {
     dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
 
+    module->dev = dev;
+
     if(dt_iop_load_module(module, mod_src->so, dev))
     {
       module = NULL;
@@ -816,6 +818,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     dt_dev_init(dev_dest, FALSE);
 
     dev_dest->iop = dt_iop_load_modules_ext(dev_dest, TRUE);
+    dev_dest->image_storage.id = imgid;
 
     // now let's deal with the iop-order (possibly merging style & target lists)
     GList *iop_list = dt_styles_module_order_list(name);
@@ -1010,15 +1013,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
           "        main.history.num,0,multi_name, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
-          "   AND (main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1)"
-          "       OR (main.history.op_params"
-          "           NOT IN (SELECT op_params FROM data.style_items"
-                              " WHERE styleid=?1"
-          "                     AND operation=main.history.operation))"
-          "       OR (main.history.blendop_params"
-          "           NOT IN (SELECT blendop_params"
-          "                   FROM data.style_items"
-          "                   WHERE styleid=?1 AND operation=main.history.operation)))"
+          "   AND (main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
           " GROUP BY operation HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }

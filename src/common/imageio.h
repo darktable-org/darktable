@@ -53,11 +53,12 @@ typedef enum dt_imageio_levels_t
 
 // Checks that the image is indeed an ldr image
 gboolean dt_imageio_is_ldr(const char *filename);
-// Set te darktable/mode/monochrome tag
-void dt_imageio_set_bw_tag(dt_image_t *img);
-// Set te darktable/mode/hdr tag
+// checks that the image has a monochrome preview attached
+gboolean dt_imageio_has_mono_preview(const char *filename);
+// Set the darktable/mode/hdr tag
 void dt_imageio_set_hdr_tag(dt_image_t *img);
-
+// Update the tag for b&w workflow
+void dt_imageio_update_monochrome_workflow_tag(int32_t id, int mask);
 // opens the file using pfm, hdr, exr.
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
 // opens file using imagemagick

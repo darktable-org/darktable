@@ -405,7 +405,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *hb = gtk_grid_new();
     const int imgid = sqlite3_column_int(stmt, 1);
 
     GtkStyleContext *context = gtk_widget_get_style_context(hb);
@@ -432,24 +432,24 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
     GtkWidget *tb = gtk_entry_new();
     if(path) gtk_entry_set_text(GTK_ENTRY(tb), path);
-    gtk_entry_set_width_chars(GTK_ENTRY(tb), 15);
+    gtk_entry_set_width_chars(GTK_ENTRY(tb), 0);
+    gtk_widget_set_hexpand(tb, TRUE);
     g_object_set_data (G_OBJECT(tb), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(tb));
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
+    gtk_widget_set_hexpand(lb, TRUE);
     bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+//    gtk_widget_set_halign(bt, GTK_ALIGN_END);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 
-    gtk_box_pack_start(GTK_BOX(hb), thumb->w_main, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hb), tb, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
+    gtk_grid_attach(GTK_GRID(hb), thumb->w_main, 0, 0, 1, 2);
+    gtk_grid_attach(GTK_GRID(hb), bt, 2, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(hb), lb, 1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(hb), tb, 1, 1, 2, 1);
 
-    gtk_widget_show(tb);
-    gtk_widget_show(lb);
-    gtk_widget_show(bt);
-    gtk_widget_show(hb);
+    gtk_widget_show_all(hb);
 
     gtk_box_pack_start(GTK_BOX(d->duplicate_box), hb, FALSE, FALSE, 0);
     d->thumbs = g_list_append(d->thumbs, thumb);
@@ -526,28 +526,20 @@ void gui_init(dt_lib_module_t *self)
   gtk_style_context_add_class(context, "duplicate-ui");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), DT_PIXEL_APPLY_DPI(300));
   d->duplicate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *bt = gtk_label_new(_("existing duplicates"));
-  gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
-  bt = dtgtk_button_new(dtgtk_cairo_paint_plus, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(bt), "tooltip-text", _("create a 'virgin' duplicate of the image without any development"), (char *)NULL);
-  g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_lib_duplicate_new_clicked_callback), self);
-  gtk_box_pack_end(GTK_BOX(hb), bt, FALSE, FALSE, 0);
-  bt = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(bt), "tooltip-text", _("create a duplicate of the image with same history stack"), (char *)NULL);
-  g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
-  gtk_box_pack_end(GTK_BOX(hb), bt, FALSE, FALSE, 0);
-
+  GtkWidget *bt = dt_ui_button_new(_("original"), _("create a 'virgin' duplicate of the image without any development"), NULL);
+  g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_new_clicked_callback), self);
+  gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
+  bt = dt_ui_button_new(_("duplicate"), _("create a duplicate of the image with same history stack"), (char *)NULL);
+  g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
+  gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
 
   /* add duplicate list and buttonbox to widget */
-  gtk_box_pack_start(GTK_BOX(self->widget), hb, FALSE, FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(sw), d->duplicate_box);
-  gtk_box_pack_start(GTK_BOX(self->widget), sw, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_scroll_wrap(d->duplicate_box, 1, "plugins/darkroom/duplicate/windowheight"), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hb, TRUE, TRUE, 0);
 
   gtk_widget_show_all(self->widget);
 

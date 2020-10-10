@@ -117,6 +117,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->rawoverexposed.threshold = dt_conf_get_float("darkroom/ui/rawoverexposed/threshold");
 
   dev->overexposed.enabled = FALSE;
+  dev->overexposed.mode = dt_conf_get_int("darkroom/ui/overexposed/mode");
   dev->overexposed.colorscheme = dt_conf_get_int("darkroom/ui/overexposed/colorscheme");
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
@@ -192,6 +193,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_conf_set_int("darkroom/ui/rawoverexposed/colorscheme", dev->rawoverexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/rawoverexposed/threshold", dev->rawoverexposed.threshold);
 
+  dt_conf_set_int("darkroom/ui/overexposed/mode", dev->overexposed.mode);
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/overexposed/lower", dev->overexposed.lower);
   dt_conf_set_float("darkroom/ui/overexposed/upper", dev->overexposed.upper);
@@ -1382,7 +1384,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   //  Note that we cannot use the a preset for FilmicRGB as the default values are
   //  dynamically computed depending on the actual exposure compensation
   //  (see reload_default routine in filmicrgb.c)
-  if(dt_image_is_matrix_correction_supported(image) && is_scene_referred)
+
+  const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
+  if(has_matrix && is_scene_referred)
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
@@ -1415,16 +1419,16 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
            "        AND (format = 0 OR format&?11!=0)"
            "        AND operation NOT IN"
-           "            ('ioporder', 'modulelist', 'metadata', 'export', 'tagging', 'collect', '%s'))"
+           "            ('ioporder', 'metadata', 'export', 'tagging', 'collect', '%s'))"
            "  OR (name = ?12)"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            preset_table[legacy],
            is_display_referred?"":"basecurve");
   // query for all modules at once:
   sqlite3_stmt *stmt;
-  const char *workflow_preset = is_display_referred
+  const char *workflow_preset = has_matrix && is_display_referred
                                 ? _("display-referred default")
-                                : (is_scene_referred
+                                : (has_matrix && is_scene_referred
                                    ?_("scene-referred default")
                                    :"\t\n");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -2132,14 +2136,6 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return 0.0;
 }
 
-gboolean dt_dev_modulegroups_available(dt_develop_t *dev)
-{
-  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->proxy.modulegroups.get)
-    return TRUE;
-
-  return FALSE;
-}
-
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->first_load == FALSE)
@@ -2154,10 +2150,10 @@ uint32_t dt_dev_modulegroups_get(dt_develop_t *dev)
   return 0;
 }
 
-gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group)
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, dt_iop_module_t *module)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test)
-    return dev->proxy.modulegroups.test(dev->proxy.modulegroups.module, group, iop_group);
+    return dev->proxy.modulegroups.test(dev->proxy.modulegroups.module, group, module);
   return FALSE;
 }
 
@@ -2177,6 +2173,13 @@ void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.search_text_focus && dev->first_load == 0)
     dev->proxy.modulegroups.search_text_focus(dev->proxy.modulegroups.module);
+}
+
+gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test_visible)
+    return dev->proxy.modulegroups.test_visible(dev->proxy.modulegroups.module, module);
+  return FALSE;
 }
 
 void dt_dev_masks_list_change(dt_develop_t *dev)
@@ -2435,7 +2438,7 @@ gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
     label = g_strdup_printf("%s", module->name());
   else
-    label = g_strdup_printf("%s <span size=\"smaller\">%s</span>", module->name(), module->multi_name);
+    label = g_markup_printf_escaped("%s <span size=\"smaller\">%s</span>", module->name(), module->multi_name);
   return label;
 }
 

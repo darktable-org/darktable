@@ -107,6 +107,9 @@ typedef struct dt_iop_colorbalance_gui_data_t
 {
   dt_pthread_mutex_t lock;
   GtkWidget *master_box;
+  GtkWidget *main_label;
+  GtkWidget *main_box;
+  GtkWidget *blocks[3];
   GtkWidget *optimizer_box;
   GtkWidget *mode;
   GtkWidget *controls;
@@ -162,7 +165,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -293,6 +296,15 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "output saturation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast fulcrum"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows factor"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones factor"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights factor"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights hue"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights saturation"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
   dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color control sliders"));
 }
@@ -305,6 +317,15 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "output saturation", GTK_WIDGET(g->saturation_out));
   dt_accel_connect_slider_iop(self, "contrast fulcrum", GTK_WIDGET(g->grey));
   dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->contrast));
+  dt_accel_connect_slider_iop(self, "shadows factor", GTK_WIDGET(g->lift_factor));
+  dt_accel_connect_slider_iop(self, "shadows hue", GTK_WIDGET(g->hue_lift));
+  dt_accel_connect_slider_iop(self, "shadows saturation", GTK_WIDGET(g->sat_lift));
+  dt_accel_connect_slider_iop(self, "mid-tones factor", GTK_WIDGET(g->gamma_factor));
+  dt_accel_connect_slider_iop(self, "mid-tones hue", GTK_WIDGET(g->hue_gamma));
+  dt_accel_connect_slider_iop(self, "mid-tones saturation", GTK_WIDGET(g->sat_gamma));
+  dt_accel_connect_slider_iop(self, "highlights factor", GTK_WIDGET(g->gain_factor));
+  dt_accel_connect_slider_iop(self, "highlights hue", GTK_WIDGET(g->hue_gain));
+  dt_accel_connect_slider_iop(self, "highlights saturation", GTK_WIDGET(g->sat_gain));
   dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
   dt_accel_connect_combobox_iop(self, "color control sliders", GTK_WIDGET(g->controls));
 }
@@ -1514,6 +1535,9 @@ void set_visible_widgets(dt_iop_colorbalance_gui_data_t *g)
 
   gtk_widget_set_visible(g->master_box, mode != LEGACY);
 
+  dt_conf_set_string("plugins/darkroom/colorbalance/controls",
+                     control_mode == RGBL ? "RGBL" :
+                     control_mode == BOTH ? "BOTH" : "HSL");
   gboolean show_rgbl = (control_mode == RGBL) || (control_mode == BOTH);
   gboolean show_hsl  = (control_mode == HSL)  || (control_mode == BOTH);
 
@@ -1592,13 +1616,18 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
+static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self);
+
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
   if(!w || w == g->mode)
+  {
     set_visible_widgets(g);
+    _configure_slider_blocks(NULL, self);
+  }
 
   ++darktable.gui->reset;
 
@@ -1617,7 +1646,7 @@ static void controls_callback(GtkWidget *combo, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
 
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  
+
   set_visible_widgets(g);
 
   dt_iop_color_picker_reset(self, TRUE);
@@ -1744,6 +1773,109 @@ static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t
 }
 #endif
 
+static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
+{
+  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
+  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+
+  GtkWidget *new_container = NULL;
+  GtkWidget *old_container = gtk_bin_get_child(GTK_BIN(g->main_box));
+
+  for(int i=0; i<3; i++)
+  {
+    g_object_ref(G_OBJECT(g->blocks[i]));
+    if(old_container) gtk_container_remove(GTK_CONTAINER(old_container), g->blocks[i]);
+  }
+
+  if(old_container) gtk_widget_destroy(old_container);
+
+  const gchar *short_label_ops[] = { C_("color", "offset"), C_("color", "power"), C_("color", "slope") };
+  const gchar *short_label_lgg[] = { C_("color", "lift"), C_("color", "gamma"), C_("color", "gain") };
+  const gchar **short_label = (p->mode == SLOPE_OFFSET_POWER) ? short_label_ops : short_label_lgg;
+  const gchar *long_label[]
+     = { N_("shadows : lift / offset"),
+         N_("mid-tones : gamma / power"),
+         N_("highlights : gain / slope") };
+
+  gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
+
+  if(!g_strcmp0(layout, "list"))
+  {
+    new_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+    for(int i=0; i<3; i++)
+    {
+      if(i == 0)
+        gtk_label_set_text(GTK_LABEL(g->main_label), _(long_label[0]));
+      else
+      {
+        GtkWidget *label = dt_ui_section_label_new(_(long_label[i]));
+        gtk_container_add(GTK_CONTAINER(new_container), label);
+        gtk_widget_show(label);
+      }
+
+      gtk_container_add(GTK_CONTAINER(new_container), g->blocks[i]);
+    }
+  }
+  else
+  {
+    gtk_label_set_text(GTK_LABEL(g->main_label), _("shadows / mid-tones / highlights"));
+
+    GtkWidget *label[3];
+    for(int i=0; i<3; i++)
+    {
+      label[i] = gtk_label_new(_(short_label[i]));
+      gtk_widget_set_tooltip_text(label[i], _(long_label[i]));
+      gtk_label_set_ellipsize(GTK_LABEL(label[i]), PANGO_ELLIPSIZE_END);
+      gtk_widget_set_hexpand(label[i], TRUE);
+    }
+
+    if(!g_strcmp0(layout, "columns"))
+    {
+      new_container = gtk_grid_new();
+
+      gtk_grid_set_column_homogeneous(GTK_GRID(new_container), TRUE);
+      gtk_grid_set_column_spacing(GTK_GRID(new_container), 8);
+
+      for(int i=0; i<3; i++)
+      {
+        gtk_widget_set_name(label[i], "section_label");
+        gtk_style_context_add_class(gtk_widget_get_style_context(label[i]), "section_label_top");
+
+        gtk_container_add(GTK_CONTAINER(new_container), label[i]);
+        gtk_widget_show(label[i]);
+        gtk_grid_attach_next_to(GTK_GRID(new_container), g->blocks[i], label[i], GTK_POS_BOTTOM, 1, 1);
+      }
+    }
+    else
+    {
+      new_container = gtk_notebook_new();
+
+      for(int i=0; i<3; i++) gtk_notebook_append_page(GTK_NOTEBOOK(new_container), g->blocks[i], label[i]);
+    }
+  }
+
+  g_free(layout);
+
+  for(int i=0; i<3; i++) g_object_unref(G_OBJECT(g->blocks[i]));
+
+  gtk_container_add(GTK_CONTAINER(g->main_box), new_container);
+  gtk_widget_show(new_container);
+}
+
+static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_iop_module_t *self)
+{
+  gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
+
+  dt_conf_set_string("plugins/darkroom/colorbalance/layout",
+                     !g_strcmp0(layout, "columns") ? "tabs" :
+                     !g_strcmp0(layout, "list") ? "columns" : "list");
+
+  g_free(layout);
+
+  _configure_slider_blocks(NULL, self);
+}
+
 #define HSL_CALLBACK(which)                                                             \
 static void which##_callback(GtkWidget *slider, gpointer user_data)                     \
 {                                                                                       \
@@ -1771,8 +1903,7 @@ HSL_CALLBACK(gain)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorbalance_gui_data_t));
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_gui_data_t *g = IOP_GUI_ALLOC(colorbalance);
 
   g->mode = NULL;
 
@@ -1794,10 +1925,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->controls, _("HSL"));
   dt_bauhaus_combobox_add(g->controls, _("RGBL"));
   dt_bauhaus_combobox_add(g->controls, _("both"));
-  dt_bauhaus_combobox_set_default(g->controls, HSL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->controls), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->controls, _("color-grading mapping method"));
   g_signal_connect(G_OBJECT(g->controls), "value-changed", G_CALLBACK(controls_callback), self);
+
+  gchar *mode = dt_conf_get_string("plugins/darkroom/colorbalance/controls");
+  dt_bauhaus_combobox_set(g->controls, !g_strcmp0(mode, "RGBL") ? RGBL :
+                                       !g_strcmp0(mode, "BOTH") ? BOTH : HSL);
+  g_free(mode);
 
   g->master_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1819,7 +1954,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->saturation_out, "%.2f %%");
   gtk_widget_set_tooltip_text(g->saturation_out, _("saturation correction after the color balance"));
 
-  g->grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+  g->grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
             dt_bauhaus_slider_from_params(self, "grey"));
   dt_bauhaus_slider_set_format(g->grey, "%.2f %%");
   dt_bauhaus_slider_set_step(g->grey, .5);
@@ -1881,9 +2016,13 @@ void gui_init(dt_iop_module_t *self)
 //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 #endif
 
-  GtkWidget *main_sliders = dt_conf_get_bool("plugins/darkroom/colorbalance/use_notebook")
-                          ? GTK_WIDGET(gtk_notebook_new())
-                          : (self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  g->main_label = dt_ui_section_label_new(""); // is set in _configure_slider_blocks
+  gtk_widget_set_tooltip_text(g->main_label, _("click to cycle layout"));
+  GtkWidget *main_label_box = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(main_label_box), g->main_label);
+  g_signal_connect(G_OBJECT(main_label_box), "button-release-event", G_CALLBACK(_cycle_layout_callback), self);
+
+  g->main_box = gtk_event_box_new(); // is filled in _configure_slider_blocks
 
   char field_name[10];
 
@@ -1898,13 +2037,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->which##_##c, _(text[CHANNEL_##N]));        \
   dt_bauhaus_widget_set_label(g->which##_##c, _(#which), _(#n));            \
 
-#define ADD_BLOCK(which, text, span, satspan)                               \
-  if(GTK_IS_NOTEBOOK(main_sliders))                                         \
-    self->widget = dt_ui_notebook_page(                                     \
-                   GTK_NOTEBOOK(main_sliders), _(text[4]), _(text[5]));     \
-  else                                                                      \
-    gtk_box_pack_start(GTK_BOX(self->widget),                               \
-                   dt_ui_section_label_new(_(text[5])), FALSE, FALSE, 0);   \
+#define ADD_BLOCK(blk, which, text, span, satspan)                          \
+  g->blocks[blk] = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
                                                                             \
   sprintf(field_name, "%s[%d]", #which, CHANNEL_FACTOR);                    \
   g->which##_factor = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,       \
@@ -1963,33 +2097,28 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->which##_b, 0.5, 1.0, 1.0, 1.0);             \
   dt_bauhaus_slider_set_stop(g->which##_b, 1.0, 0.0, 0.0, 1.0);             \
 
-  static const char *lift_messages[] = 
-    { N_("factor of lift"),
-      N_("factor of red for lift"),
-      N_("factor of green for lift"),
-      N_("factor of blue for lift"),
-      N_("lift"),
-      N_("shadows : lift / offset") };
+  static const char *lift_messages[]
+    = { N_("factor of lift/offset"),
+        N_("factor of red for lift/offset"),
+        N_("factor of green for lift/offset"),
+        N_("factor of blue for lift/offset") };
 
-  static const char *gamma_messages[] = 
-    { N_("factor of gamma"),
-      N_("factor of red for gamma"),
-      N_("factor of green for gamma"),
-      N_("factor of blue for gamma"),
-      N_("gamma"),
-      N_("mid-tones : gamma / power") };
+  static const char *gamma_messages[]
+    = { N_("factor of gamma/power"),
+        N_("factor of red for gamma/power"),
+        N_("factor of green for gamma/power"),
+        N_("factor of blue for gamma/power") };
 
-  static const char *gain_messages[] = 
-    { N_("factor of gain"), 
-      N_("factor of red for gain"), 
-      N_("factor of green for gain"), 
-      N_("factor of blue for gain"), 
-      N_("gain"),
-      N_("highlights : gain / slope") };
+  static const char *gain_messages[]
+    = { N_("factor of gain/slope"),
+        N_("factor of red for gain/slope"),
+        N_("factor of green for gain/slope"),
+        N_("factor of blue for gain/slope") };
 
-  ADD_BLOCK(lift,  lift_messages, 0.05f,  5.0f)
-  ADD_BLOCK(gamma, gamma_messages, 0.5f, 20.0f)
-  ADD_BLOCK(gain,  gain_messages,  0.5f, 25.0f)
+  ADD_BLOCK(0, lift,  lift_messages, 0.05f,  5.0f)
+  ADD_BLOCK(1, gamma, gamma_messages, 0.5f, 20.0f)
+  ADD_BLOCK(2, gain,  gain_messages,  0.5f, 25.0f)
+  _configure_slider_blocks(NULL, self);
 
   g->optimizer_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -2001,7 +2130,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->auto_luma, _("fit the whole histogram and center the average luma"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_luma, FALSE, FALSE, 0);
 
-  g->auto_color = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, 
+  g->auto_color = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                   dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_color, NULL, _("neutralize colors"));
   gtk_widget_set_tooltip_text(g->auto_color, _("optimize the RGB curves to remove color casts"));
@@ -2012,8 +2141,19 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(mode_box), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->master_box), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(main_sliders), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(main_label_box), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->main_box), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->optimizer_box), TRUE, TRUE, 0);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                                  G_CALLBACK(_configure_slider_blocks), (gpointer)self);
+}
+
+void gui_cleanup(struct dt_iop_module_t *self)
+{
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_configure_slider_blocks), self);
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

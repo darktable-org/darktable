@@ -1643,63 +1643,64 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
 const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
                                     const char *filename)
 {
-  switch (type) {
-  case DT_COLORSPACE_NONE:
-    return NULL;
-  case DT_COLORSPACE_FILE:
-    return filename;
-  case DT_COLORSPACE_SRGB:
-    return _("sRGB");
-  case DT_COLORSPACE_ADOBERGB:
-    return _("Adobe RGB (compatible)");
-  case DT_COLORSPACE_LIN_REC709:
-    return _("linear Rec709 RGB");
-  case DT_COLORSPACE_LIN_REC2020:
-    return _("linear Rec2020 RGB");
-  case DT_COLORSPACE_XYZ:
-    return _("linear XYZ");
-  case DT_COLORSPACE_LAB:
-    return _("Lab");
-  case DT_COLORSPACE_INFRARED:
-    return _("linear infrared BGR");
-  case DT_COLORSPACE_DISPLAY:
-    return _("system display profile");
-  case DT_COLORSPACE_EMBEDDED_ICC:
-    return _("embedded ICC profile");
-  case DT_COLORSPACE_EMBEDDED_MATRIX:
-    return _("embedded matrix");
-  case DT_COLORSPACE_STANDARD_MATRIX:
-    return _("standard color matrix");
-  case DT_COLORSPACE_ENHANCED_MATRIX:
-    return _("enhanced color matrix");
-  case DT_COLORSPACE_VENDOR_MATRIX:
-    return _("vendor color matrix");
-  case DT_COLORSPACE_ALTERNATE_MATRIX:
-    return _("alternate color matrix");
-  case DT_COLORSPACE_BRG:
-    return _("BRG (experimental)");
-  case DT_COLORSPACE_EXPORT:
-    return _("export profile");
-  case DT_COLORSPACE_SOFTPROOF:
-    return _("softproof profile");
-  case DT_COLORSPACE_WORK:
-    return _("work profile");
-  case DT_COLORSPACE_DISPLAY2:
-    return _("system display profile");
-  case DT_COLORSPACE_REC709:
-    return _("gamma22 Rec709");
-  case DT_COLORSPACE_PROPHOTO_RGB:
-    return _("ProPhoto RGB");
-  case DT_COLORSPACE_PQ_REC2020:
-    return _("PQ Rec2020");
-  case DT_COLORSPACE_HLG_REC2020:
-    return _("HLG Rec2020");
-  case DT_COLORSPACE_PQ_P3:
-    return _("PQ P3");
-  case DT_COLORSPACE_HLG_P3:
-    return _("HLG P3");
-  case DT_COLORSPACE_LAST:
-    break;
+  switch (type)
+  {
+     case DT_COLORSPACE_NONE:
+       return NULL;
+     case DT_COLORSPACE_FILE:
+       return filename;
+     case DT_COLORSPACE_SRGB:
+       return _("sRGB");
+     case DT_COLORSPACE_ADOBERGB:
+       return _("Adobe RGB (compatible)");
+     case DT_COLORSPACE_LIN_REC709:
+       return _("linear Rec709 RGB");
+     case DT_COLORSPACE_LIN_REC2020:
+       return _("linear Rec2020 RGB");
+     case DT_COLORSPACE_XYZ:
+       return _("linear XYZ");
+     case DT_COLORSPACE_LAB:
+       return _("Lab");
+     case DT_COLORSPACE_INFRARED:
+       return _("linear infrared BGR");
+     case DT_COLORSPACE_DISPLAY:
+       return _("system display profile");
+     case DT_COLORSPACE_EMBEDDED_ICC:
+       return _("embedded ICC profile");
+     case DT_COLORSPACE_EMBEDDED_MATRIX:
+       return _("embedded matrix");
+     case DT_COLORSPACE_STANDARD_MATRIX:
+       return _("standard color matrix");
+     case DT_COLORSPACE_ENHANCED_MATRIX:
+       return _("enhanced color matrix");
+     case DT_COLORSPACE_VENDOR_MATRIX:
+       return _("vendor color matrix");
+     case DT_COLORSPACE_ALTERNATE_MATRIX:
+       return _("alternate color matrix");
+     case DT_COLORSPACE_BRG:
+       return _("BRG (experimental)");
+     case DT_COLORSPACE_EXPORT:
+       return _("export profile");
+     case DT_COLORSPACE_SOFTPROOF:
+       return _("softproof profile");
+     case DT_COLORSPACE_WORK:
+       return _("work profile");
+     case DT_COLORSPACE_DISPLAY2:
+       return _("system display profile");
+     case DT_COLORSPACE_REC709:
+       return _("gamma22 Rec709");
+     case DT_COLORSPACE_PROPHOTO_RGB:
+       return _("ProPhoto RGB");
+     case DT_COLORSPACE_PQ_REC2020:
+       return _("PQ Rec2020");
+     case DT_COLORSPACE_HLG_REC2020:
+       return _("HLG Rec2020");
+     case DT_COLORSPACE_PQ_P3:
+       return _("PQ P3");
+     case DT_COLORSPACE_HLG_P3:
+       return _("HLG P3");
+     case DT_COLORSPACE_LAST:
+       break;
   }
 
   return NULL;

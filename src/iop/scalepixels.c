@@ -36,7 +36,7 @@ typedef struct dt_iop_scalepixels_params_t
   // Aspect ratio of the pixels, usually 1 but some cameras need scaling
   // <1 means the image needs to be stretched vertically, (0.5 means 2x)
   // >1 means the image needs to be stretched horizontally (2 mean 2x)
-  float pixel_aspect_ratio;
+  float pixel_aspect_ratio; // $DEFAULT: 1.0f
 } dt_iop_scalepixels_params_t;
 
 typedef struct dt_iop_scalepixels_gui_data_t
@@ -48,8 +48,6 @@ typedef struct dt_iop_scalepixels_data_t {
   float x_scale;
   float y_scale;
 } dt_iop_scalepixels_data_t;
-
-static dt_iop_scalepixels_gui_data_t dummy;
 
 const char *name()
 {
@@ -63,7 +61,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()
@@ -246,24 +244,18 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_scalepixels_params_t tmp = (dt_iop_scalepixels_params_t){ .pixel_aspect_ratio = 1.0f };
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
+  dt_iop_scalepixels_params_t *d = self->default_params;
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp.pixel_aspect_ratio = image->pixel_aspect_ratio;
+  d->pixel_aspect_ratio = image->pixel_aspect_ratio;
 
-  self->default_enabled
-      = (!isnan(tmp.pixel_aspect_ratio) && tmp.pixel_aspect_ratio > 0.0f && tmp.pixel_aspect_ratio != 1.0f);
+  self->default_enabled = (!isnan(d->pixel_aspect_ratio) &&
+                           d->pixel_aspect_ratio > 0.0f &&
+                           d->pixel_aspect_ratio != 1.0f);
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
-
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_scalepixels_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_scalepixels_params_t));
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -272,39 +264,17 @@ void gui_update(dt_iop_module_t *self)
   if(self->default_enabled)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling"));
   else
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling only works for the sensors that need it."));
-}
-
-void init(dt_iop_module_t *self)
-{
-  const dt_image_t *const image = &(self->dev->image_storage);
-
-  self->params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
-  self->default_enabled = (!isnan(image->pixel_aspect_ratio) && image->pixel_aspect_ratio > 0.0f
-                           && image->pixel_aspect_ratio != 1.0f);
-  self->params_size = sizeof(dt_iop_scalepixels_params_t);
-  self->gui_data = &dummy;
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
+    gtk_label_set_text(GTK_LABEL(self->widget),
+                       _("automatic pixel scaling\nonly works for the sensors that need it."));
 }
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->widget = gtk_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
-}
+  IOP_GUI_ALLOC(scalepixels);
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  self->gui_data = NULL;
+  self->widget = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
+
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

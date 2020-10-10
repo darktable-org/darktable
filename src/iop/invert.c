@@ -112,7 +112,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -499,8 +499,6 @@ void reload_defaults(dt_iop_module_t *self)
 {
   self->hide_enable_button = 0;
 
-  if(!self->dev) return;
-
   if(dt_image_is_monochrome(&self->dev->image_storage))
   {
     self->hide_enable_button = 0;
@@ -591,8 +589,7 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = g_malloc0(sizeof(dt_iop_invert_gui_data_t));
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
+  dt_iop_invert_gui_data_t *g = IOP_GUI_ALLOC(invert);
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

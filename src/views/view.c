@@ -964,10 +964,12 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
   }
 
   // so we create a new image surface to return
-  const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht);
+  const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht) * darktable.gui->ppd_thb ;
   const int img_width = buf_wd * scale;
   const int img_height = buf_ht * scale;
   *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
+
+  dt_print(DT_DEBUG_LIGHTTABLE, "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i, surf %ix%i\n", imgid, width, height, buf_wd, buf_ht, img_width, img_height);
 
   // we transfer cached image on a cairo_surface (with colorspace transform if needed)
   cairo_surface_t *tmp_surface = NULL;

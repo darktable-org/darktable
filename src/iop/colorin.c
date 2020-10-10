@@ -127,7 +127,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -1786,6 +1786,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
+
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
 
   update_profile_list(self);
@@ -1796,18 +1797,21 @@ void gui_update(struct dt_iop_module_t *self)
   while(prof)
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
-    if(pp->work_pos > -1 &&
-       pp->type == p->type_work && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename_work)))
+    if(pp->work_pos > -1
+       && pp->type == p->type_work
+       && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename_work)))
     {
       idx = pp->work_pos;
       break;
     }
     prof = g_list_next(prof);
   }
+
   if(idx < 0)
   {
     idx = 0;
-    fprintf(stderr, "[colorin] could not find requested working profile `%s'!\n", dt_colorspaces_get_name(p->type_work, p->filename_work));
+    fprintf(stderr, "[colorin] could not find requested working profile `%s'!\n",
+            dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
   dt_bauhaus_combobox_set(g->work_combobox, idx);
 
@@ -1816,19 +1820,22 @@ void gui_update(struct dt_iop_module_t *self)
   while(prof)
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
-    if(pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
+    if(pp->type == p->type
+       && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
     {
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos);
       return;
     }
     prof = g_list_next(prof);
   }
+
   prof = darktable.color_profiles->profiles;
   while(prof)
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
-    if(pp->in_pos > -1 &&
-       pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
+    if(pp->in_pos > -1
+       && pp->type == p->type
+       && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
     {
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos + g->n_image_profiles);
       return;
@@ -1838,7 +1845,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
 
   if(p->type != DT_COLORSPACE_ENHANCED_MATRIX)
-    fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", dt_colorspaces_get_name(p->type, p->filename));
+    fprintf(stderr, "[colorin] could not find requested profile `%s'!\n",
+            dt_colorspaces_get_name(p->type, p->filename));
 }
 
 // FIXME: update the gui when we add/remove the eprofile or ematrix
@@ -1851,13 +1859,11 @@ void reload_defaults(dt_iop_module_t *module)
 
   dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id <= 0) goto end;
-
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, module->dev->image_storage.id, 'w');
+
   if(!img->profile)
   {
     char filename[PATH_MAX] = { 0 };
@@ -1867,6 +1873,7 @@ void reload_defaults(dt_iop_module_t *module)
     for(; *cc != '.' && cc > filename; cc--)
       ;
     gchar *ext = g_ascii_strdown(cc + 1, -1);
+
     if(!strcmp(ext, "jpg") || !strcmp(ext, "jpeg"))
     {
       dt_imageio_jpeg_t jpg;
@@ -1902,9 +1909,12 @@ void reload_defaults(dt_iop_module_t *module)
       };
 
       img->profile_size = dt_imageio_avif_read_color_profile(filename, &cp);
-      if (cp.type != DT_COLORSPACE_NONE) {
+      if (cp.type != DT_COLORSPACE_NONE)
+      {
         color_profile = cp.type;
-      } else {
+      }
+      else
+      {
         img->profile_size = cp.icc_profile_size;
         img->profile      = cp.icc_profile;
 
@@ -1933,11 +1943,10 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = DT_COLORSPACE_SRGB;
   else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
+  else
+    d->type = DT_COLORSPACE_ENHANCED_MATRIX;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-
-end:
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorin_params_t));
 }
 
 static void update_profile_list(dt_iop_module_t *self)
@@ -2068,8 +2077,7 @@ static void update_profile_list(dt_iop_module_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
-  self->gui_data = malloc(sizeof(dt_iop_colorin_gui_data_t));
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+  dt_iop_colorin_gui_data_t *g = IOP_GUI_ALLOC(colorin);
 
   g->image_profiles = NULL;
 
@@ -2128,8 +2136,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->image_profiles->data);
     g->image_profiles = g_list_delete_link(g->image_profiles, g->image_profiles);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
