@@ -1030,7 +1030,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     CameraFile* camfile;
     int res = GP_OK;
     char *data = NULL;
-    size_t size;
+    unsigned long int size;
     time_t exif_time;
     if(!sdcard)
     {
