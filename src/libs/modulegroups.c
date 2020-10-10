@@ -1025,6 +1025,26 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("scene referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
+  // 3 tabs
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "technical",
+                       "ashift|basecurve|bilateral|cacorrect|clipping|colorchecker|colorin|colorout"
+                       "|colorreconstruct|defringe|demosaic|denoiseprofile|dither|exposure"
+                       "|filmicrgb|finalscale|flip|gamma|hazeremoval|highlights|hotpixels|invert|lens"
+                       "|lut3d|mask_manager|negadoctor|nlmeans|overexposed|rawdenoise"
+                       "|rawoverexposed|rotatepixels|scalepixels");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("grading"), "grading",
+                       "basicadj|channelmixer|colisa|colorbalance|colorcontrast|colorcorrection"
+                       "|colorize|colorzones|globaltonemap|graduatednd|levels|relight|rgbcurve"
+                       "|rgblevels|shadhi|splittoning|temperature|tonecurve|toneequal|tonemap"
+                       "|velvia|vibrance|zonesystem");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effects"), "effects",
+                       "atrous|bilat|bloom|borders|clahe|colormapping"
+                       "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
+                       "|soften|spots|vignette|watermark");
+  dt_lib_presets_add(_("three tabs"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
   // if needed, we add a new preset, based on last user config
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
