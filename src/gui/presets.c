@@ -844,7 +844,7 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 {
   sqlite3_stmt *stmt;
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("manage modules layouts"), win,
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("manage module layouts"), win,
                                                   GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, NULL, NULL);
 
   gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(400), DT_PIXEL_APPLY_DPI(500));
