@@ -1030,7 +1030,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     CameraFile* camfile;
     int res = GP_OK;
     char *data = NULL;
-    gsize size;
+    gsize size = 0;
     time_t exif_time;
     if(!sdcard)
     {
@@ -1041,7 +1041,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
         gp_file_free(camfile);
         continue;
       }
-      unsigned long int gpsize;
+      unsigned long int gpsize = 0;
       if((res = gp_file_get_data_and_size(camfile, (const char**)&data, &gpsize)) < GP_OK)
       {
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto import failed: %s\n", gp_result_as_string(res));
