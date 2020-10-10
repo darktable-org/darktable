@@ -979,6 +979,16 @@ static GList *_preset_from_string(gchar *txt)
 
 void init_presets(dt_lib_module_t *self)
 {
+  /*
+    For the record, one can create the preset list by using the following code:
+
+    $ cat <( git grep "return.*IOP_GROUP_TONE" -- src/iop/ | cut -d':' -f1 ) \
+          <( git grep IOP_FLAGS_DEPRECATED -- src/iop/ | cut -d':' -f1 ) | \
+          grep -E -v "useless|mask_manager|gamma" | sort | uniq --unique | \
+          while read file; do BN=$(basename $(basename $file .cc) .c); \
+            echo ${BN:0:16} ; done | xargs echo | sed 's/ /|/g'
+  */
+
   // all modules
   gchar *tx = NULL;
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
