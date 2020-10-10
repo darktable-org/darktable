@@ -976,28 +976,8 @@ static GList *_preset_from_string(gchar *txt)
 
 void init_presets(dt_lib_module_t *self)
 {
-  // default
-  gchar *tx = NULL;
-  tx = dt_util_dstrcat(
-      tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "technical",
-      "colorin|hazeremoval|filmicrgb|clipping|flip|lens|exposure|denoiseprofile|demosaic|highlights");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("grading"), "grading", "rgblevels|colorbalance|toneequal|temperature");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effects"), "effect", "sharpen|bilat");
-  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-  g_free(tx);
-
-  // legacy layout
-  tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
-                        "basecurve|toneequal|clipping|flip|exposure|demosaic|highlights|temperature|filmicrgb");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("tone"), "tone", "rgblevels|bilat");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("color"), "color", "colorbalance|colorin");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
-  dt_lib_presets_add(_("legacy layout"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-  g_free(tx);
-
   // all modules
-  tx = NULL;
+  gchar *tx = NULL;
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
                        "basecurve|basicadj|clipping|colisa|colorreconstruct|demosaic|exposure|finalscale"
                        "|flip|highlights|invert|mask_manager|negadoctor|overexposed|rawoverexposed|rawprepare"
