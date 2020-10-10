@@ -29,7 +29,6 @@ static inline gchar *g_realpath(const char *path)
   char buffer[PATH_MAX] = { 0 };
 
   char* res = realpath(path, buffer);
-  // fprintf(stderr, "* g_realpath. before %s, after %s\n", path, res);
 
   if(res) 
   {

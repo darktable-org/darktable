@@ -44,10 +44,10 @@ add_subdirectory(rawspeed ${DARKTABLE_LIBDIR}/rawspeed)
 # Copying rawspeed resources to where dt expects them
 add_custom_target("deploy" ALL)
 SET(RAWSPEED_DATADIR "${CMAKE_CURRENT_SOURCE_DIR}/rawspeed/data")
-add_custom_command(TARGET "deploy" PRE_BUILD
-  COMMAND mkdir -p ${DARKTABLE_DATADIR}/rawspeed/
-  COMMAND cp ${RAWSPEED_DATADIR}/cameras.xml ${RAWSPEED_DATADIR}/showcameras.xsl ${DARKTABLE_DATADIR}/rawspeed/
-  )
+add_custom_command(TARGET "deploy" PRE_BUILD  
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_DATADIR}/rawspeed/
+  COMMAND ${CMAKE_COMMAND} -E copy ${RAWSPEED_DATADIR}/cameras.xml ${RAWSPEED_DATADIR}/showcameras.xsl ${DARKTABLE_DATADIR}/rawspeed/
+)
 
 set(CMAKE_INSTALL_DATAROOTDIR "${CMAKE_INSTALL_DATAROOTDIR_SAVE}")
 

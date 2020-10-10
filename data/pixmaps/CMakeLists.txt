@@ -1,5 +1,3 @@
-
-
 #
 # Install fixed sized icons
 #

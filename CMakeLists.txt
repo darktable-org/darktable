@@ -44,6 +44,8 @@ include(DefineOptions.cmake)
 include(GNUInstallDirs)
 include(FeatureSummary)
 
+# https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
+
 # given
 # /games/bin/darktable.exe
 # /lib/darktable/{libdarktable.so, plugins/, views}

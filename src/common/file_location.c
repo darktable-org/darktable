@@ -118,11 +118,9 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
 {
   gchar *result = NULL;
   gchar *path = NULL;
-  fprintf(stderr, "\tabsolute value: %s,\n\tapplication_directory: %s,\n\tdefault_value: %s\n", absolute_value, application_directory, default_value);
   
   if(absolute_value)
   {
-    fprintf(stderr, "* absolute value. \n");
     // the only adjustment the absolute path needs is transforming the possible tilde '~' to an absolute path
     path = dt_util_fix_path(absolute_value);
   }
@@ -135,12 +133,10 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
       // combine basename (application_directory) and relative path (default_value).
       gchar complete_path[PATH_MAX] = { 0 };
 #if defined(__APPLE__)
-      // fprintf(stderr, "* checking for bundle\n");
       char *bundle_path = dt_osx_get_bundle_res_path();
       if(bundle_path)
       {
         /// bundle detected ...
-        fprintf(stderr, "(bundle detected)\n");
 
         // on a mac inside the bundle the executables are in <bundleroot>/Contents/MacOS/
         // all other directories are a subdirectory of <bundleroot>/Contents/Resources:
@@ -155,11 +151,9 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
 
         // +2: removes the two dots '..'
         g_snprintf(complete_path, sizeof(complete_path), "%s/../Resources%s", application_directory, default_value + 2);
-        fprintf(stderr, "-> %s\n", complete_path);
       }
       else
       {
-        fprintf(stderr, "(no bundle detected)\n");
         /// outside a bundle. Apply standard linux path rules
         g_snprintf(complete_path, sizeof(complete_path), "%s/%s", application_directory, default_value);
       }
@@ -167,12 +161,9 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
       g_snprintf(complete_path, sizeof(complete_path), "%s/%s", application_directory, default_value);
 #endif
       path = g_strdup(complete_path);
-      fprintf(stderr, "-> complete_path: %s\n\tpath: %s\n", complete_path, path);
     }
     else
     {
-      fprintf(stderr, "-> default_value: %s\n", default_value);
-
       // default_value is absolute
       path = g_strdup(default_value);
     }
@@ -183,7 +174,6 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
   
   // removes '.', '..', and extra '/' characters.
   result = g_realpath(path);
-  fprintf(stderr, "g_realpath('%s'): %s\n", path, result);
 
   g_free(path);
   return result;
@@ -279,7 +269,7 @@ void dt_loc_get_kerneldir(char *kerneldir, size_t bufsize)
 
 void dt_loc_get_plugindir(char *plugindir, size_t bufsize)
 {
-  g_strlcpy(plugindir, darktable.plugindir, bufsize);  
+  g_strlcpy(plugindir, darktable.plugindir, bufsize);
 }
 
 void dt_loc_get_localedir(char *localedir, size_t bufsize)
