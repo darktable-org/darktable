@@ -1688,7 +1688,7 @@ static void _manage_editor_load(char *preset, dt_lib_module_t *self)
   if(ro)
   {
     GtkWidget *lb
-        = gtk_label_new(_("this is a build-in read-only preset. duplicate it if you want to do changes"));
+        = gtk_label_new(_("this is a built-in read-only preset. duplicate it if you want to make changes"));
     gtk_widget_set_name(lb, "modulegroups-ro");
     gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
   }
@@ -1947,7 +1947,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-  d->dialog = gtk_dialog_new_with_buttons(_("manage modules layouts"), win,
+  d->dialog = gtk_dialog_new_with_buttons(_("manage module layouts"), win,
                                           GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, NULL, NULL);
 
   gtk_window_set_default_size(GTK_WINDOW(d->dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
@@ -1956,7 +1956,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   dt_osx_disallow_fullscreen(d->dialog);
 #endif
   gtk_widget_set_name(d->dialog, "modulegroups_manager");
-  gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage modules layouts"));
+  gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage module layouts"));
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
