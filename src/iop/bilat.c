@@ -111,7 +111,7 @@ int flags()
 // where does it appear in the gui?
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_EFFECTS;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -422,8 +422,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_bilat_gui_data_t));
-  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
+  dt_iop_bilat_gui_data_t *g = IOP_GUI_ALLOC(bilat);
 
   g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));

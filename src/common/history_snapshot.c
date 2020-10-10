@@ -115,7 +115,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
   sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
 
   dt_history_delete_on_image_ext(imgid, FALSE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   // copy undo_history snapshot back as current history state
 

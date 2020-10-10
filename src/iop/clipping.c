@@ -318,7 +318,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -1613,8 +1613,6 @@ void reload_defaults(dt_iop_module_t *self)
   d->cy = img->usercrop[0];
   d->cw = img->usercrop[3];
   d->ch = img->usercrop[2];
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_clipping_params_t));
 }
 
 static void _float_to_fract(const char *num, int *n, int *d)
@@ -2118,8 +2116,7 @@ static gchar *format_aspect(gchar *original, int adim, int bdim)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = calloc(1, sizeof(dt_iop_clipping_gui_data_t));
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_gui_data_t *g = IOP_GUI_ALLOC(clipping);
 
   g->aspect_list = NULL;
   g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
@@ -2376,8 +2373,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   g_list_free_full(g->aspect_list, free_aspect);
   g->aspect_list = NULL;
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 static _grab_region_t get_grab(float pzx, float pzy, dt_iop_clipping_gui_data_t *g, const float border,
@@ -2884,14 +2881,14 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   // we don't do anything if the image is not ready
   if((self->dev->preview_pipe->backbuf_width == g->old_width
       && self->dev->preview_pipe->backbuf_height == g->old_height)
-    ||self->dev->preview_loading
-    )
+     || self->dev->preview_loading)
     return 0;
+
   g->old_width = g->old_height = -1;
 
   const float wd = self->dev->preview_pipe->backbuf_width;
   const float ht = self->dev->preview_pipe->backbuf_height;
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
   const float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 1);
   float pzx, pzy;
@@ -2964,6 +2961,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       dt_control_queue_redraw_center();
       return 1;
     }
+
     // case when we drag a segment for keystone
     if(g->k_drag == TRUE && g->k_selected_segment >= 0)
     {
@@ -3094,10 +3092,12 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         if(g->clip_y + g->clip_h > g->clip_max_h + g->clip_max_y)
           g->clip_h = g->clip_max_h + g->clip_max_y - g->clip_y;
       }
+
       apply_box_aspect(self, grab);
       // we save crop params too
       float points[4]
           = { g->clip_x * wd, g->clip_y * ht, (g->clip_x + g->clip_w) * wd, (g->clip_y + g->clip_h) * ht };
+
       if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2))
       {
         dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
@@ -3156,7 +3156,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     dt_control_change_cursor(GDK_FLEUR);
     g->straightening = g->cropping = 0;
     // or maybe keystone
-    const float ext = DT_PIXEL_APPLY_DPI(0.005f) / zoom_scale;
+    const float pr_d = darktable.develop->preview_downsampling;
+    // slightly adjust the size of keystone control area depending on the downsampling
+    const float ext = DT_PIXEL_APPLY_DPI(0.005f + ((1.0f - pr_d) / 100.0f)) / zoom_scale;
     if(g->k_show == 1 && g->k_drag == FALSE)
     {
       float pts[2] = { pzx * wd, pzy * ht };

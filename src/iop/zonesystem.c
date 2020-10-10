@@ -125,7 +125,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -519,8 +519,7 @@ static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation,
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_zonesystem_gui_data_t));
-  dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
+  dt_iop_zonesystem_gui_data_t *g = IOP_GUI_ALLOC(zonesystem);
   g->in_preview_buffer = g->out_preview_buffer = NULL;
   g->is_dragging = FALSE;
   g->hilite_zone = FALSE;
@@ -562,7 +561,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->zones, TRUE, TRUE, 0);
 
   /* add signal handler for preview pipe finish to redraw the preview */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_iop_zonesystem_redraw_preview_callback), self);
 
 
@@ -574,7 +573,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_iop_zonesystem_redraw_preview_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_iop_zonesystem_redraw_preview_callback), self);
 
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   g_free(g->in_preview_buffer);
@@ -582,8 +581,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   if(g->image) cairo_surface_destroy(g->image);
   free(g->image_buffer);
   dt_pthread_mutex_destroy(&g->lock);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 #define DT_ZONESYSTEM_INSET DT_PIXEL_APPLY_DPI(5)

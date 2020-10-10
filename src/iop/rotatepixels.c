@@ -83,7 +83,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()
@@ -330,23 +330,16 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_rotatepixels_params_t tmp = { 0 };
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
+  dt_iop_rotatepixels_params_t *d = self->default_params;
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
+  *d = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
 
-  self->default_enabled = ((tmp.rx != 0u) || (tmp.ry != 0u));
+  self->default_enabled = ((d->rx != 0u) || (d->ry != 0u));
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
-
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_rotatepixels_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_rotatepixels_params_t));
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -355,35 +348,17 @@ void gui_update(dt_iop_module_t *self)
   if(self->default_enabled)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
   else
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation only works for the sensors that need it."));
-}
-
-void init(dt_iop_module_t *self)
-{
-  self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  self->params_size = sizeof(dt_iop_rotatepixels_params_t);
-  self->gui_data = &dummy;
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
+    gtk_label_set_text(GTK_LABEL(self->widget),
+                       _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->widget = gtk_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
-}
+  IOP_GUI_ALLOC(rotatepixels);
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  self->gui_data = NULL;
+  self->widget = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
+
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

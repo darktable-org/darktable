@@ -145,7 +145,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -744,7 +744,7 @@ static void _reset_display_selection(dt_iop_module_t *self)
     if(c->display_mask)
     {
       c->display_mask = FALSE;
-      dt_dev_reprocess_center(self->dev);
+      dt_iop_refresh_center(self);
     }
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->bt_showmask)))
     {
@@ -817,7 +817,7 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
                                const float *const picker_max)
 {
   if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) || 
+     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
   {
     // the global live samples ...
@@ -909,7 +909,7 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
   }
 
   if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) || 
+     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
   {
     // draw marker for currently selected color:
@@ -2142,7 +2142,8 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook, GtkWidget *page
   --darktable.gui->reset;
 
   dt_iop_color_picker_reset(self, TRUE);
-  if(c->display_mask) dt_dev_reprocess_center(self->dev);
+  if(c->display_mask)
+    dt_iop_refresh_center(self);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -2216,8 +2217,7 @@ static void _display_mask_callback(GtkToggleButton *togglebutton, dt_iop_module_
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
-
-  dt_dev_reprocess_center(module->dev);
+  dt_iop_refresh_center(module);
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
@@ -2323,9 +2323,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorzones_gui_data_t));
-  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+  dt_iop_colorzones_gui_data_t *c = IOP_GUI_ALLOC(colorzones);
+  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->default_params;
 
   self->histogram_cst = iop_cs_LCh;
 
@@ -2364,6 +2363,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_ui_notebook_page(c->channel_tabs, _("saturation"), NULL);
   dt_ui_notebook_page(c->channel_tabs, _("hue"), NULL);
 
+  gtk_widget_show_all(GTK_WIDGET(c->channel_tabs));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(_channel_tabs_switch_callback), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), TRUE, TRUE, 0);
@@ -2492,8 +2492,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++) dt_draw_curve_destroy(c->minmax_curve[ch]);
 
   dt_iop_cancel_history_update(self);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -2654,8 +2654,6 @@ void init(dt_iop_module_t *module)
   module->request_histogram |= (DT_REQUEST_ON);
 
   _reset_parameters(module->default_params, DT_IOP_COLORZONES_h, DT_IOP_COLORZONES_SPLINES_V2);
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_colorzones_params_t));
 }
 
 #undef DT_IOP_COLORZONES_INSET

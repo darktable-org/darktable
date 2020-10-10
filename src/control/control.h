@@ -204,7 +204,7 @@ typedef struct dt_control_t
   dt_pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
-  pthread_t *thread, kick_on_workers_thread;
+  pthread_t *thread, kick_on_workers_thread, update_gphoto_thread;
   dt_job_t **job;
 
   GList *queues[DT_JOB_QUEUE_MAX];

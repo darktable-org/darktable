@@ -113,7 +113,6 @@ int position()
   return 800;
 }
 
-#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
@@ -124,58 +123,39 @@ void gui_init(dt_lib_module_t *self)
   GtkGrid *grid = GTK_GRID(self->widget);
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
-  GtkWidget *button;
 
-  button = gtk_button_new_with_label(_("select all"));
-  ellipsize_button(button);
-  d->select_all_button = button;
-  gtk_widget_set_tooltip_text(button, _("select all images in current collection"));
-  gtk_grid_attach(grid, button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
+  d->select_all_button = dt_ui_button_new(_("select all"), _("select all images in current collection"), NULL);
+  gtk_grid_attach(grid, d->select_all_button, 0, line, 1, 1);
+  g_signal_connect(G_OBJECT(d->select_all_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
-  button = gtk_button_new_with_label(_("select none"));
-  ellipsize_button(button);
-  d->select_none_button = button;
-  gtk_widget_set_tooltip_text(button, _("clear selection"));
-  gtk_grid_attach(grid, button, 1, line++, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
+  d->select_none_button = dt_ui_button_new(_("select none"), _("clear selection"), NULL);
+  gtk_grid_attach(grid, d->select_none_button, 1, line++, 1, 1);
+  g_signal_connect(G_OBJECT(d->select_none_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
 
+  d->select_invert_button = dt_ui_button_new(_("invert selection"), _("select unselected images\nin current collection"), NULL);
+  gtk_grid_attach(grid, d->select_invert_button, 0, line, 1, 1);
+  g_signal_connect(G_OBJECT(d->select_invert_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(2));
 
-  button = gtk_button_new_with_label(_("invert selection"));
-  ellipsize_button(button);
-  gtk_widget_set_tooltip_text(button, _("select unselected images\nin current collection"));
-  d->select_invert_button = button;
-  gtk_grid_attach(grid, button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(2));
+  d->select_film_roll_button = dt_ui_button_new(_("select film roll"), _("select all images which are in the same\nfilm roll as the selected images"), NULL);
+  gtk_grid_attach(grid, d->select_film_roll_button, 1, line++, 1, 1);
+  g_signal_connect(G_OBJECT(d->select_film_roll_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
-  button = gtk_button_new_with_label(_("select film roll"));
-  ellipsize_button(button);
-  d->select_film_roll_button = button;
-  gtk_widget_set_tooltip_text(button, _("select all images which are in the same\nfilm roll as the selected images"));
-  gtk_grid_attach(grid, button, 1, line++, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
+  d->select_untouched_button = dt_ui_button_new(_("select untouched"), _("select untouched images in\ncurrent collection"), NULL);
+  gtk_grid_attach(grid, d->select_untouched_button, 0, line, 2, 1);
+  g_signal_connect(G_OBJECT(d->select_untouched_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 
-
-  button = gtk_button_new_with_label(_("select untouched"));
-  ellipsize_button(button);
-  d->select_untouched_button = button;
-  gtk_widget_set_tooltip_text(button, _("select untouched images in\ncurrent collection"));
-  gtk_grid_attach(grid, button, 0, line, 2, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
-
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
   _update(self);
 }
-#undef ellipsize_button
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   free(self->data);
   self->data = NULL;
 }

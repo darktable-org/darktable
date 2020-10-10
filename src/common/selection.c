@@ -44,7 +44,7 @@ static void _selection_raise_signal()
   // discard cached images_to_act_on list
   darktable.view_manager->act_on.ok = FALSE;
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 }
 
 /* updates the internal collection of an selection */
@@ -128,7 +128,7 @@ const dt_selection_t *dt_selection_new()
 
   /* setup signal handler for darktable collection update
    to update the internal collection of the selection */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_selection_update_collection), (gpointer)s);
 
   return s;
@@ -282,12 +282,12 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 {
   gchar *fullq = NULL;
 
-  if(!selection->collection || selection->last_single_id == -1) return;
+  if(!selection->collection) return;
 
   /* get start and end rows for range selection */
   sqlite3_stmt *stmt;
   int rc = 0;
-  uint32_t sr = -1, er = -1;
+  int sr = -1, er = -1;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), dt_collection_get_query_no_group(selection->collection),
                               -1, &stmt, NULL);
 
@@ -302,8 +302,31 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 
     rc++;
   }
-
   sqlite3_finalize(stmt);
+
+  // if imgid not in collection, nothing to do
+  if(er < 0) return;
+
+  // if last_single_id not in collection, we either use last selected image or first collected one
+  int srid = selection->last_single_id;
+  if(sr < 0)
+  {
+    sr = 0;
+    srid = -1;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "SELECT m.rowid, m.imgid FROM memory.collected_images AS m, main.selected_images AS s"
+        " WHERE m.imgid=s.imgid"
+        " ORDER BY m.rowid DESC"
+        " LIMIT 1",
+        -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      sr = sqlite3_column_int(stmt, 0);
+      srid = sqlite3_column_int(stmt, 1);
+    }
+    sqlite3_finalize(stmt);
+  }
 
   /* select the images in range from start to end */
   const uint32_t old_flags = dt_collection_get_query_flags(selection->collection);
@@ -329,7 +352,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   dt_collection_update(selection->collection);
 
   // The logic above doesn't handle groups, so explicitly select the beginning and end to make sure those are selected properly
-  dt_selection_select(selection, selection->last_single_id);
+  dt_selection_select(selection, srid);
   dt_selection_select(selection, imgid);
 
   g_free(fullq);

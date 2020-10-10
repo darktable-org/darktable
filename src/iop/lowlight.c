@@ -48,7 +48,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_lowlight_params_t)
 typedef struct dt_iop_lowlight_params_t
 {
   float blueness; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "blue shift"
-  float transition_x[DT_IOP_LOWLIGHT_BANDS]; 
+  float transition_x[DT_IOP_LOWLIGHT_BANDS];
   float transition_y[DT_IOP_LOWLIGHT_BANDS]; // $DEFAULT: 0.5
 } dt_iop_lowlight_params_t;
 
@@ -93,7 +93,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -301,8 +301,6 @@ void init(dt_iop_module_t *module)
   dt_iop_lowlight_params_t *d = module->default_params;
 
   for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++) d->transition_x[k] = k / (DT_IOP_LOWLIGHT_BANDS - 1.0);
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_lowlight_params_t));
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -745,7 +743,6 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
     // reset current curve
     dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
     dt_iop_lowlight_params_t *d = (dt_iop_lowlight_params_t *)self->default_params;
-    /*   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data; */
     for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++)
     {
       p->transition_x[k] = d->transition_x[k];
@@ -811,9 +808,8 @@ static gboolean lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoi
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_lowlight_gui_data_t));
-  dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
-  dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
+  dt_iop_lowlight_gui_data_t *c = IOP_GUI_ALLOC(lowlight);
+  dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->default_params;
 
   c->transition_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   (void)dt_draw_curve_add_point(c->transition_curve, p->transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0,
@@ -854,8 +850,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
   dt_iop_cancel_history_update(self);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

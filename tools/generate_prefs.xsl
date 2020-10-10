@@ -302,6 +302,11 @@ gboolean restart_required = FALSE;
   <xsl:text>
   {
     label = gtk_label_new(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
+    if(!dt_conf_is_default("</xsl:text><xsl:value-of select="name"/><xsl:text>"))
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
+      gtk_style_context_add_class(context, "preference_non_default");
+    }
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
@@ -350,8 +355,7 @@ gboolean restart_required = FALSE;
 
   <xsl:template match="dtconfig[type='longstring']" mode="reset">
      <xsl:text>
-        const gchar *def= g_strdup("</xsl:text><xsl:value-of select="default"/><xsl:text>");
-        gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget)), def, strlen(def));
+        gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget)), "</xsl:text><xsl:value-of select="default"/><xsl:text>", strlen("</xsl:text><xsl:value-of select="default"/><xsl:text>"));
      </xsl:text>
   </xsl:template>
 

@@ -608,10 +608,18 @@ int main(int argc, char *arg[])
     // so only place to look for it is in filename
     // try to find out the export format from the output_filename
     char *ext = strrchr(output_filename, '.');
-    if(!ext || strlen(ext) > DT_MAX_OUTPUT_EXT_LENGTH)
+    if(ext && strlen(ext) > DT_MAX_OUTPUT_EXT_LENGTH)
     {
       // too long ext, no point in wasting time
-      fprintf(stderr, "%s: %s\n", _("too long output ext"), ext);
+      fprintf(stderr, _("too long output file extention: %s\n"), ext);
+      usage(arg[0]);
+      g_free(output_filename);
+      exit(1);
+    }
+    else if(!ext || strlen(ext) <= 1)
+    {
+      // no ext or empty ext, no point in wasting time
+      fprintf(stderr, _("no output file extention given\n"));
       usage(arg[0]);
       g_free(output_filename);
       exit(1);

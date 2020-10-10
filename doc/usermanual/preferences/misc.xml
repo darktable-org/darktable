@@ -1,0 +1,120 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="miscellaneous">
+
+  <title>Miscellaneous</title>
+
+  <sect2 id="interface">
+
+    <title>interface</title>
+
+    <bridgehead renderas="sect5">mouse wheel scrolls modules side panel by default</bridgehead>
+
+    <para>
+      When enabled, mouse wheel scroll modules side panel, and Ctrl+Alt+mouse wheel scroll data entry.
+      When disabled, this behavior is reversed (default off).
+    </para>
+
+    <bridgehead renderas="sect5">always show panels scrollbars</bridgehead>
+
+    <para>
+      Defines whether the panel scrollbars should be always visible or activated only depending on the content (default on).
+      (need a restart)
+    </para>
+
+    <bridgehead renderas="sect5">method to use for getting the display profile</bridgehead>
+
+    <para>
+      This option allows to force a specific way of getting the current display profile for color
+      management (see <xref linkend="rendering_method"/>). In the default setting
+      <quote>all</quote> darktable will either query the X display server's xatom or the
+      <emphasis>colord</emphasis> system service. You can set this option to <quote>xatom</quote>
+      or <quote>colord</quote> to enforce a specific method if the alternative gives wrong
+      results.
+    </para>
+  </sect2>
+  
+  <sect2 id="tags">
+    
+    <title>tags</title>
+    
+    <bridgehead renderas="sect5">omit hierarchy in simple tag list</bridgehead>
+
+    <para>
+      When creating XMP file, the hierarchical tags are also added as a simple list of non-hierarchical ones
+      to make them visible to some other programs. When this option is checked darktable will only include
+      their last part and ignore the rest, so 'foo|bar|baz' will only add 'baz'.
+    </para>
+    
+    <bridgehead renderas="sect5">disable the entry completion</bridgehead>
+
+    <para>
+      The entry completion is useful for those who enter tags from keyboard only. For others, the entry completion
+      can be embarrassing. (need to restart darktable)
+    </para>
+    
+  </sect2>
+
+  <sect2 id="keyboard_shortcuts_with_multiple_instances">
+
+    <title>keyboard shortcuts with multiple instances</title>
+    
+    <para>
+      Where multiple module instances are present, these preferences control rules that are applied (in order)
+      to decide which module instance keyboard shortcuts will be applied to.
+    </para>
+          
+    <bridgehead renderas="sect5">prefer expanded instances</bridgehead>
+
+    <para>
+      If instances of the module are expanded, ignore collapsed instances.
+    </para>
+    
+    <bridgehead renderas="sect5">prefer enabled instances</bridgehead>
+
+    <para>
+      After applying the above rule, if instances of the module are active, ignore inactive instances.
+    </para>
+        
+    <bridgehead renderas="sect5">prefer unmasked instances</bridgehead>
+
+    <para>
+      After applying the above rule, if instances are unmasked, ignore masked instances.
+    </para>
+    
+    <bridgehead renderas="sect5">selection order</bridgehead>
+
+    <para>
+      After applying the above rule, apply the shortcut based on its position in pixelpipe.
+    </para>
+    
+  </sect2>
+
+  <sect2 id="other">
+      
+    <title>other</title>
+    
+    <bridgehead renderas="sect5">do not show april 1st game</bridgehead>
+
+    <para>
+      Select it to hide april 1st game.
+    </para>
+    
+    <bridgehead renderas="sect5">password backend to use</bridgehead>
+
+    <para>
+      The storage backend for password storage to use: auto, none, libsecret, kwallet.
+    </para>
+        
+    <bridgehead renderas="sect5">executable for playing audio files</bridgehead>
+
+    <para>
+      This external program is used to play audio files some cameras record to keep notes for images.
+    </para>
+
+  </sect2>
+  
+</sect1>

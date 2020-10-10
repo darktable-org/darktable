@@ -9,7 +9,7 @@ add_custom_command(
   DEPENDS ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tools/
-  COMMAND ${CMAKE_COMMAND} -E env LANG=C LC_ALL=C sh ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
+  COMMAND ${CMAKE_COMMAND} -E env LANG=C LC_ALL=C bash ${CMAKE_SOURCE_DIR}/tools/authors_h.sh ${CMAKE_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/tools/darktable_authors.h
   COMMENT "Generating authors.h for about dialog."
 )
 
@@ -20,7 +20,7 @@ add_custom_target(
 )
 
 # The modules
-set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker masks session duplicate ioporder)
+set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulegroups backgroundjobs colorpicker masks session duplicate ioporder)
 
 # The tools
 set(MODULES ${MODULES} viewswitcher)
@@ -57,7 +57,6 @@ add_library(navigation MODULE "navigation.c")
 add_library(histogram MODULE "histogram.c")
 add_library(history MODULE "history.c")
 add_library(snapshots MODULE "snapshots.c")
-add_library(modulelist MODULE "modulelist.c")
 add_library(modulegroups MODULE "modulegroups.c")
 add_library(backgroundjobs MODULE "backgroundjobs.c")
 add_library(colorpicker MODULE "colorpicker.c")

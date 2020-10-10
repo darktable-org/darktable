@@ -112,7 +112,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -524,7 +524,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     d->levels[0] = NAN;
     d->levels[1] = NAN;
     d->levels[2] = NAN;
-    
+
     // commit_params_late() will compute LUT later
   }
   else
@@ -588,17 +588,17 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-void reload_defaults(dt_iop_module_t *self)
+void init(dt_iop_module_t *module)
 {
-  self->request_histogram |= (DT_REQUEST_ON);
+  dt_iop_default_init(module);
 
-  dt_iop_levels_params_t *d = self->default_params;
+  module->request_histogram |= (DT_REQUEST_ON);
+
+  dt_iop_levels_params_t *d = module->default_params;
 
   d->levels[0] = 0.0f;
   d->levels[1] = 0.5f;
   d->levels[2] = 1.0f;
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_levels_params_t));
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -620,8 +620,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_levels_gui_data_t));
-  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_gui_data_t *c = IOP_GUI_ALLOC(levels);
 
   dt_pthread_mutex_init(&c->lock, NULL);
 
@@ -692,7 +691,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->percentile_black, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_black, 0.1);
 
-  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray")); 
+  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray"));
   gtk_widget_set_tooltip_text(c->percentile_grey, _("gray percentile"));
   dt_bauhaus_slider_set_format(c->percentile_grey, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_grey, 0.1);
@@ -708,10 +707,8 @@ void gui_init(dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
   c->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
- 
-  gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 
-  gui_changed(self, c->mode, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -721,8 +718,7 @@ void gui_cleanup(dt_iop_module_t *self)
 
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)

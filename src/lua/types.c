@@ -345,7 +345,7 @@ static void full_tofunc(lua_State *L, luaA_Type type_id, void *cout, int index)
     char error_msg[256];
     snprintf(error_msg,sizeof(error_msg),"%s expected",luaA_typename(L,type_id));
     luaL_argerror(L,index,error_msg);
-  } 
+  }
   void* udata = lua_touserdata(L,index);
   memcpy(cout, udata, luaA_typesize(L, type_id));
 }
@@ -385,7 +385,7 @@ static void int_tofunc(lua_State *L, luaA_Type type_id, void *cout, int index)
     char error_msg[256];
     snprintf(error_msg,sizeof(error_msg),"%s expected",luaA_typename(L,type_id));
     luaL_argerror(L,index,error_msg);
-  } 
+  }
   void* udata = lua_touserdata(L,index);
   memcpy(cout, udata, sizeof(int));
 }
@@ -428,7 +428,7 @@ static void gpointer_tofunc(lua_State *L, luaA_Type type_id, void *cout, int ind
     char error_msg[256];
     snprintf(error_msg,sizeof(error_msg),"%s expected",luaA_typename(L,type_id));
     luaL_argerror(L,index,error_msg);
-  } 
+  }
   gpointer* udata = lua_touserdata(L,index);
   memcpy(cout, udata, sizeof(gpointer));
   if(!*udata) {
@@ -780,7 +780,7 @@ luaA_Type dt_lua_init_int_type_type(lua_State *L, luaA_Type type_id)
   return type_id;
 }
 
-static int gpointer_wrapper(lua_State*L) 
+static int gpointer_wrapper(lua_State*L)
 {
   gpointer *udata = (gpointer*)lua_touserdata(L,1);
   if(!*udata) {
@@ -888,7 +888,7 @@ gboolean dt_lua_typeisa_type(lua_State *L, luaA_Type obj_type, luaA_Type type_id
 void dt_lua_type_setmetafield_type(lua_State*L,luaA_Type type_id,const char* method_name)
 {
   // These metafields should never be overridden by user code
-  if( 
+  if(
       !strcmp(method_name,"__index") ||
       !strcmp(method_name,"__newindex") ||
       !strcmp(method_name,"__number_index") ||

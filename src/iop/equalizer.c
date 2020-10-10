@@ -91,7 +91,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_EFFECTS;
 }
 
 int flags()
@@ -274,23 +274,13 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0; // we're a rather slow and rare op.
   module->params_size = sizeof(dt_iop_equalizer_params_t);
   module->gui_data = NULL;
-  dt_iop_equalizer_params_t tmp;
+  dt_iop_equalizer_params_t *d = module->default_params;
   for(int ch = 0; ch < 3; ch++)
   {
     for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++)
-      tmp.equalizer_x[ch][k] = k / (float)(DT_IOP_EQUALIZER_BANDS - 1);
-    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++) tmp.equalizer_y[ch][k] = 0.5f;
+      d->equalizer_x[ch][k] = k / (float)(DT_IOP_EQUALIZER_BANDS - 1);
+    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++) d->equalizer_y[ch][k] = 0.5f;
   }
-  memcpy(module->params, &tmp, sizeof(dt_iop_equalizer_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_equalizer_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 #if 0
@@ -351,10 +341,10 @@ void init_presets (dt_iop_module_so_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_equalizer_gui_data_t));
-  self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
-                                 "switch it off\nand move to the new equalizer."));
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  IOP_GUI_ALLOC(equalizer);
+
+  self->widget = dt_ui_label_new(_("this module will be removed in the future\nand is only here so you can "
+                                   "switch it off\nand move to the new equalizer."));
 
 #if 0
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;

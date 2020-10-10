@@ -146,7 +146,7 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   {
     thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     thumb->rating = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
-    thumb->is_bw = dt_image_is_monochrome(img);
+    thumb->is_bw = dt_image_monochrome_flags(img);
     thumb->is_hdr = dt_image_is_hdr(img);
 
     thumb->groupid = img->group_id;
@@ -213,11 +213,15 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
   int w = 0;
   int h = 0;
   gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
-  cairo_set_source_surface(cr, thumb->img_surf, thumb->current_zx, thumb->current_zy);
+
+  const float scaler = 1.0f / darktable.gui->ppd_thb;
+  cairo_scale(cr, scaler, scaler);
+
+  cairo_set_source_surface(cr, thumb->img_surf, thumb->current_zx * darktable.gui->ppd, thumb->current_zy * darktable.gui->ppd);
   cairo_paint(cr);
 
   // and eventually the image border
-  gtk_render_frame(context, cr, 0, 0, w, h);
+  gtk_render_frame(context, cr, 0, 0, w * darktable.gui->ppd_thb, h * darktable.gui->ppd_thb);
 }
 
 static void _thumb_retrieve_margins(dt_thumbnail_t *thumb)
@@ -362,7 +366,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       // copy preview image into final surface
       if(tmp_surface)
       {
-        const float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height);
+        const float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height) * darktable.gui->ppd_thb;
         const int img_width = buf_width * scale;
         const int img_height = buf_height * scale;
         thumb->img_surf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
@@ -382,9 +386,14 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         cairo_paint(cr2);
 
         if(darktable.gui->show_focus_peaking)
+        {
+          cairo_save(cr2);
+          cairo_scale(cr2, 1.0f/scale, 1.0f/scale);
           dt_focuspeaking(cr2, img_width, img_height, cairo_image_surface_get_data(thumb->img_surf),
                           cairo_image_surface_get_width(thumb->img_surf),
                           cairo_image_surface_get_height(thumb->img_surf));
+          cairo_restore(cr2);
+        }
 
         cairo_surface_destroy(tmp_surface);
         cairo_destroy(cr2);
@@ -397,7 +406,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
-        thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
+        if(thumb->zoom > 1.0f) thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
         res = dt_view_image_get_surface(thumb->imgid, image_w * thumb->zoom, image_h * thumb->zoom, &img_surf, FALSE);
       }
       else
@@ -448,8 +457,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     // let save thumbnail image size
     thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
     thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
-    const int imgbox_w = MIN(image_w, thumb->img_width);
-    const int imgbox_h = MIN(image_h, thumb->img_height);
+    const int imgbox_w = MIN(image_w, thumb->img_width/darktable.gui->ppd_thb);
+    const int imgbox_h = MIN(image_h, thumb->img_height/darktable.gui->ppd_thb);
     // if the imgbox size change, this should also change the panning values
     int hh = 0;
     int ww = 0;
@@ -514,8 +523,9 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     }
 
     // let's sanitize and apply panning values as we are sure the zoomed image is loaded now
-    thumb->zoomx = CLAMP(thumb->zoomx, imgbox_w - thumb->img_width, 0);
-    thumb->zoomy = CLAMP(thumb->zoomy, imgbox_h - thumb->img_height, 0);
+    // here we have to make sure to properly align according to ppd
+    thumb->zoomx = CLAMP(thumb->zoomx, (imgbox_w * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb, 0);
+    thumb->zoomy = CLAMP(thumb->zoomy, (imgbox_h * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
     thumb->current_zx = thumb->zoomx;
     thumb->current_zy = thumb->zoomy;
   }
@@ -1002,17 +1012,17 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event", G_CALLBACK(_event_main_release), thumb);
 
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
                               G_CALLBACK(_dt_active_images_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                               G_CALLBACK(_dt_selection_changed_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                               G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                               G_CALLBACK(_dt_preview_updated_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
                               G_CALLBACK(_dt_image_info_changed_callback), thumb);
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                               G_CALLBACK(_dt_collection_changed_callback), thumb);
 
     // the background
@@ -1269,12 +1279,12 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 {
   if(thumb->overlay_timeout_id > 0) g_source_remove(thumb->overlay_timeout_id);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_image_info_changed_callback), thumb);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_changed_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_preview_updated_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_image_info_changed_callback), thumb);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_changed_callback), thumb);
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
     cairo_surface_destroy(thumb->img_surf);
   thumb->img_surf = NULL;
@@ -1289,6 +1299,7 @@ void dt_thumbnail_update_infos(dt_thumbnail_t *thumb)
 {
   if(!thumb) return;
   _image_get_infos(thumb);
+  _thumb_write_extension(thumb);
   _thumb_update_icons(thumb);
   gtk_widget_queue_draw(thumb->w_main);
 }
@@ -1672,11 +1683,12 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over
 void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb)
 {
   // let's sanitize and apply panning values
+  // here we have to make sure to properly align according to ppd
   int iw = 0;
   int ih = 0;
   gtk_widget_get_size_request(thumb->w_image_box, &iw, &ih);
-  thumb->zoomx = CLAMP(thumb->zoomx, iw - thumb->img_width, 0);
-  thumb->zoomy = CLAMP(thumb->zoomy, ih - thumb->img_height, 0);
+  thumb->zoomx = CLAMP(thumb->zoomx, (iw * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb, 0);
+  thumb->zoomy = CLAMP(thumb->zoomy, (ih * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
   thumb->current_zx = thumb->zoomx;
   thumb->current_zy = thumb->zoomy;
   gtk_widget_queue_draw(thumb->w_main);

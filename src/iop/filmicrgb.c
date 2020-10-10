@@ -150,7 +150,7 @@ typedef enum dt_iop_filmic_rgb_gui_mode_t
   DT_FILMIC_GUI_LAST
 } dt_iop_filmic_rgb_gui_mode_t;
 
-
+// clang-format off
 typedef struct dt_iop_filmicrgb_params_t
 {
   float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle grey luminance"
@@ -160,8 +160,7 @@ typedef struct dt_iop_filmicrgb_params_t
   float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
   float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "bloom/reconstruct"
   float reconstruct_grey_vs_color; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "grey/colorful details"
-  float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION:
-                                          // "structure/texture"
+  float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "structure/texture"
   float security_factor;                  // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
   float grey_point_target;                // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle grey"
   float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
@@ -172,20 +171,18 @@ typedef struct dt_iop_filmicrgb_params_t
   float saturation;         // $MIN: -50 $MAX: 200 $DEFAULT: 10 $DESCRIPTION: "extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows/highlights balance"
   float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.1f $DESCRIPTION: "add noise in highlights"
-  dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve
-                                                  // chrominance"
+  dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve chrominance"
   dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V2 $DESCRIPTION: "color science"
   gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
   gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-grey values"
-  int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality
-                                         // reconstruction"
+  int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
   int noise_distribution;                // $DEFAULT: DT_NOISE_POISSONIAN $DESCRIPTION: "type of noise"
   dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in shadows"
-  dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in
-                                            // highlights"
+  dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in highlights"
   gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
   gint internal_version;         // $DEFAULT: 2020 $DESCRIPTION: "version of the spline generator"
 } dt_iop_filmicrgb_params_t;
+// clang-format on
 
 
 // custom buttons in graph views
@@ -312,7 +309,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -1933,7 +1930,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 static void show_mask_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
   g->show_mask = !(g->show_mask);
@@ -2307,9 +2304,6 @@ void reload_defaults(dt_iop_module_t *module)
 
   module->default_enabled = FALSE;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id == -1) goto end;
-
   gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
   g_free(workflow);
@@ -2328,9 +2322,6 @@ void reload_defaults(dt_iop_module_t *module)
     d->output_power = logf(d->grey_point_target / 100.0f)
                       / logf(-d->black_point_source / (d->white_point_source - d->black_point_source));
   }
-
-end:
-  memcpy(module->params, module->default_params, sizeof(dt_iop_filmicrgb_params_t));
 }
 
 
@@ -2358,45 +2349,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
-}
-
-void init_presets (dt_iop_module_so_t *self)
-{
-  // For scene-referred workflow (the preset name is used in develop.c)
-  dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
-                             &(dt_iop_filmicrgb_params_t)
-                             {
-                               .grey_point_source                = 18.45,
-                               .black_point_source               = -7.75,
-                               .white_point_source               = 4.40,
-                               .reconstruct_threshold            = 3.0,
-                               .reconstruct_feather              = 3.0,
-                               .reconstruct_bloom_vs_details     = 100.0,
-                               .reconstruct_grey_vs_color        = 100.0,
-                               .reconstruct_structure_vs_texture = 0.0,
-                               .security_factor                  = 0,
-                               .grey_point_target                = 18.45,
-                               .black_point_target               = 0.01517634,
-                               .white_point_target               = 100,
-                               .output_power                     = 4.0,
-                               .latitude                         = 25.0,
-                               .contrast                         = 1.35,
-                               .saturation                       = 10,
-                               .balance                          = 0.0,
-                               .noise_level                      = 0.1f,
-                               .preserve_color                   = DT_FILMIC_METHOD_POWER_NORM,
-                               .version                          = DT_FILMIC_COLORSCIENCE_V2,
-                               .auto_hardness                    = TRUE,
-                               .custom_grey                      = FALSE,
-                               .high_quality_reconstruction      = 1,
-                               .noise_distribution               = DT_NOISE_POISSONIAN,
-                               .shadows                          = DT_FILMIC_CURVE_POLY_4,
-                               .highlights                       = DT_FILMIC_CURVE_POLY_4,
-                               .compensate_icc_black             = FALSE,
-                               .internal_version                 = 2020
-                              },
-                             sizeof(dt_iop_filmicrgb_params_t), 1);
-  dt_gui_presets_update_ldr(_("scene-referred default"), self->op, self->version(), FOR_RAW);
 }
 
 #define LOGBASE 20.f
@@ -3415,12 +3367,9 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
 }
 
 
-
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_filmicrgb_gui_data_t));
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  dt_iop_filmicrgb_params_t *p = self->params;
+  dt_iop_filmicrgb_gui_data_t *g = IOP_GUI_ALLOC(filmicrgb);
 
   g->show_mask = FALSE;
   g->gui_mode = DT_FILMIC_GUI_LOOK;
@@ -3576,7 +3525,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve\n"
                                              "affects mostly the mid-tones"));
 
-
   // brightness slider
   g->output_power = dt_bauhaus_slider_from_params(self, "output_power");
   gtk_widget_set_tooltip_text(g->output_power, _("equivalent to paper grade in analog.\n"
@@ -3606,10 +3554,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
                                                "specifically at extreme luminances.\n"
                                                "increase if shadows and/or highlights are under-saturated."));
-  if(p->version == DT_FILMIC_COLORSCIENCE_V1)
-    dt_bauhaus_widget_set_label(g->saturation, NULL, _("extreme luminance saturation"));
-  else if(p->version == DT_FILMIC_COLORSCIENCE_V2)
-    dt_bauhaus_widget_set_label(g->saturation, NULL, _("middle tones saturation"));
 
   // Page DISPLAY
   self->widget = dt_ui_notebook_page(g->notebook, _("display"), NULL);

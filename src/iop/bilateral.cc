@@ -55,7 +55,7 @@ typedef struct dt_iop_bilateral_params_t
   float radius;           // $MIN: 1.0 $MAX: 50.0 $DEFAULT: 15.0
   float reserved;         // $DEFAULT: 15.0
   float red, green, blue; // $MIN: 0.0001 $MAX: 1.0 $DEFAULT: 0.005
-} dt_iop_bilateral_params_t; 
+} dt_iop_bilateral_params_t;
 
 typedef struct dt_iop_bilateral_gui_data_t
 {
@@ -74,7 +74,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -209,7 +209,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
     for(int k = 0; k < 5; k++) sigma[k] = 1.0f / sigma[k];
-    PermutohedralLattice<5, 4> lattice((size_t)roi_in->width * roi_in->height, omp_get_max_threads());
+    PermutohedralLattice<5, 4> lattice((size_t)roi_in->width * roi_in->height, dt_get_num_threads());
 
 // splat into the lattice
 #ifdef _OPENMP
@@ -218,7 +218,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int j = 0; j < roi_in->height; j++)
     {
       const float *in = (const float *)ivoid + (size_t)j * roi_in->width * ch;
-      const int thread = omp_get_thread_num();
+      const int thread = dt_get_thread_num();
       size_t index = (size_t)j * roi_in->width;
       for(int i = 0; i < roi_in->width; i++, index++)
       {
@@ -310,8 +310,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = (dt_iop_gui_data_t *)malloc(sizeof(dt_iop_bilateral_gui_data_t));
-  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
+  dt_iop_bilateral_gui_data_t *g = IOP_GUI_ALLOC(bilateral);
 
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the gaussian"));

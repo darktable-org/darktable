@@ -210,14 +210,10 @@ static void font_size_changed_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
-static void gui_scaling_changed_callback(GtkWidget *widget, gpointer user_data)
+static void use_performance_callback(GtkWidget *widget, gpointer user_data)
 {
-  float ppd = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
-  if(ppd > 0.0) ppd = fmax(0.5, ppd); // else <= 0 -> use system default
-  dt_conf_set_float("screen_ppd_overwrite", ppd);
-  restart_required = TRUE;
+  dt_conf_set_bool("ui/performance", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
   dt_configure_ppd_dpi(darktable.gui);
-  dt_bauhaus_load_theme();
 }
 
 static void dpi_scaling_changed_callback(GtkWidget *widget, gpointer user_data)
@@ -394,6 +390,19 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
+  GtkWidget *useperfmode = gtk_check_button_new();
+  label = gtk_label_new(_("performance mode"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), useperfmode, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_tooltip_text(useperfmode,
+                              _("if switched on, thumbnails and previews are rendered at lower quality but 4 times faster"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(useperfmode), dt_conf_get_bool("ui/performance"));
+  g_signal_connect(G_OBJECT(useperfmode), "toggled", G_CALLBACK(use_performance_callback), 0);
+
   //Font size check and spin buttons
   GtkWidget *usesysfont = gtk_check_button_new();
   GtkWidget *fontsize = gtk_spin_button_new_with_range(5.0f, 30.0f, 0.2f);
@@ -430,22 +439,6 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_widget_set_tooltip_text(fontsize, _("font size in points"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(fontsize), dt_conf_get_float("font_size"));
   g_signal_connect(G_OBJECT(fontsize), "value_changed", G_CALLBACK(font_size_changed_callback), 0);
-
-  GtkWidget *screen_ppd_overwrite = gtk_spin_button_new_with_range(-1.0f, 8.0f, 0.2f);
-  label = gtk_label_new(_("GUI thumbs and previews DPI scaling factor"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  labelev = gtk_event_box_new();
-  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-  gtk_container_add(GTK_CONTAINER(labelev), label);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(grid), screen_ppd_overwrite, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(screen_ppd_overwrite, _("scale the thumbnails and previews resolutions for high DPI screens.\n"
-                                                      "increase if thumbnails look blurry, decrease if lighttable is too slow.\n"
-                                                      "set to -1.0 to use the system-defined global scaling.\n"
-                                                      "default is 1.0 on most systems, or 2.0 when using resolutions above 1920×1080 px.\n"
-                                                      "this needs a restart to apply changes."));
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_ppd_overwrite), dt_conf_get_float("screen_ppd_overwrite"));
-  g_signal_connect(G_OBJECT(screen_ppd_overwrite), "value_changed", G_CALLBACK(gui_scaling_changed_callback), 0);
 
   GtkWidget *screen_dpi_overwrite = gtk_spin_button_new_with_range(-1.0f, 360, 1.f);
   label = gtk_label_new(_("GUI controls and text DPI"));
@@ -637,7 +630,7 @@ void dt_gui_preferences_show()
     darktable.control->accel_remap_path = NULL;
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
 }
 
 static void cairo_destroy_from_pixbuf(guchar *pixels, gpointer data)
@@ -1494,11 +1487,22 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
     gint rowid;
     gchar *name;
     GdkPixbuf *editable;
-    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name, P_EDITABLE_COLUMN,
-                       &editable, -1);
+    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name,
+                       P_EDITABLE_COLUMN, &editable, -1);
     if(editable == NULL)
     {
       sqlite3_stmt *stmt;
+      gchar* operation = NULL;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name, operation FROM data.presets WHERE rowid = ?1",
+                              -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        operation = g_strdup( (const char*)sqlite3_column_text(stmt,1));
+      }
+      sqlite3_finalize(stmt);
 
       GtkWidget *dialog = gtk_message_dialog_new
         (GTK_WINDOW(_preferences_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
@@ -1508,9 +1512,29 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
       dt_osx_disallow_fullscreen(dialog);
 #endif
       gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
+
       if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
       {
-        // TODO: remove accel
+        //deregistering accel...
+        if(operation)
+        {
+          gchar accel[256];
+          gchar datadir[PATH_MAX] = { 0 };
+          gchar accelpath[PATH_MAX] = { 0 };
+
+          dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+          snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
+
+          gchar* tmp_path = g_strdup_printf("%s/%s", _("preset"), name);
+          g_strlcpy(accel, "<Darktable>", sizeof(accel));
+          dt_accel_path_iop(accel, sizeof(accel), operation, tmp_path);
+          g_free(tmp_path);
+          gtk_accel_map_change_entry(accel, 0, 0, TRUE);
+
+          // Saving the changed bindings
+          gtk_accel_map_save(accelpath);
+        }
+
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "DELETE FROM data.presets WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
@@ -1521,6 +1545,8 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
         tree_insert_presets(tree_store);
       }
       gtk_widget_destroy(dialog);
+      if(operation)
+        g_free(operation);
     }
     else
       g_object_unref(editable);
@@ -1762,6 +1788,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
                                        GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                        _("_cancel"), GTK_RESPONSE_CANCEL,
                                        _("_save"), GTK_RESPONSE_YES,
+                                       _("delete"), GTK_RESPONSE_REJECT,
                                        _("_ok"), GTK_RESPONSE_OK, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -2006,6 +2033,63 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     }
 
     gtk_widget_destroy(GTK_WIDGET(filechooser));
+  }
+  else if(response_id == GTK_RESPONSE_REJECT)
+  {
+    const gchar *name = gtk_label_get_text(g->name);
+
+    sqlite3_stmt *stmt;
+    gchar* operation = NULL;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name, operation FROM data.presets WHERE rowid = ?1",
+                              -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->rowid);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        operation = g_strdup( (const char*)sqlite3_column_text(stmt,1));
+      }
+      sqlite3_finalize(stmt);
+
+      GtkWidget *win = gtk_message_dialog_new
+        (GTK_WINDOW(_preferences_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+         GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+         _("do you really want to delete the preset `%s'?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(win);
+#endif
+      gtk_window_set_title(GTK_WINDOW(win), _("delete preset?"));
+      if(gtk_dialog_run(GTK_DIALOG(win)) == GTK_RESPONSE_YES)
+      {
+        //deregistering accel...
+        if(operation)
+        {
+          gchar accel[256];
+          gchar datadir[PATH_MAX] = { 0 };
+          gchar accelpath[PATH_MAX] = { 0 };
+
+          dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+          snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
+
+          gchar* tmp_path = g_strdup_printf("%s/%s", _("preset"), name);
+          g_strlcpy(accel, "<Darktable>", sizeof(accel));
+          dt_accel_path_iop(accel, sizeof(accel), operation, tmp_path);
+          g_free(tmp_path);
+          gtk_accel_map_change_entry(accel, 0, 0, TRUE);
+
+          // Saving the changed bindings
+          gtk_accel_map_save(accelpath);
+        }
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "DELETE FROM data.presets WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->rowid);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+      gtk_widget_destroy(win);
+      if(operation)
+        g_free(operation);
   }
 
   GtkTreeStore *tree_store = GTK_TREE_STORE(gtk_tree_view_get_model(g->tree));
