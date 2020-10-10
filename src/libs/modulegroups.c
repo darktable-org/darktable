@@ -1018,6 +1018,20 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("all modules"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
+  // display referred
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
+                       "basecurve|toneequal|clipping|flip|exposure|temperature"
+                       "|rgbcurve|rgblevels|bilat|shadhi|highlights");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("color"), "color",
+                       "colorbalance|colorcorrection|colorzones|monochrome|velvia|vibrance");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("correct"), "correct",
+                       "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels|lens|retouch|sharpen|nlmeans");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effect"), "effect",
+                       "borders|colorize|graduatednd|grain|splittoning|vignette|watermark");
+  dt_lib_presets_add(_("display referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
   // if needed, we add a new preset, based on last user config
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
