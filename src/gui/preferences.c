@@ -55,7 +55,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   GtkWidget *exposure_min, *exposure_max;
   GtkWidget *aperture_min, *aperture_max;
   GtkSpinButton *focal_length_min, *focal_length_max;
-  GtkWidget *format_btn[3];
+  GtkWidget *format_btn[5];
 } dt_gui_presets_edit_dialog_t;
 
 typedef struct dt_gui_accel_search_t
@@ -90,10 +90,12 @@ static const char *dt_gui_presets_aperture_value_str[]
         "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
 
 // format string and corresponding flag stored into the database
-static const char *dt_gui_presets_format_value_str[3] = { N_("normal images"),
+static const char *dt_gui_presets_format_value_str[5] = { N_("normal images"),
                                                           N_("raw"),
-                                                          N_("HDR")};
-static const int dt_gui_presets_format_flag[3] = { FOR_LDR, FOR_RAW, FOR_HDR };
+                                                          N_("HDR"),
+                                                          N_("monochrome"),
+                                                          N_("color")};
+static const int dt_gui_presets_format_flag[5] = { FOR_LDR, FOR_RAW, FOR_HDR, FOR_NOT_MONO, FOR_NOT_COLOR };
 
 // Values for the accelerators/presets treeview
 
@@ -1907,12 +1909,13 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   gtk_widget_set_hexpand(GTK_WIDGET(g->focal_length_min), TRUE);
   gtk_widget_set_hexpand(GTK_WIDGET(g->focal_length_max), TRUE);
 
-  // raw/hdr/ldr
+  // raw/hdr/ldr/monochrome/color
   label = gtk_label_new(_("format"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line, 1, 1);
+  gtk_widget_set_tooltip_text(label, _("select image types you want this preset to be available for"));
 
-  for(int i = 0; i < 3; i++)
+  for(int i = 0; i < 5; i++)
   {
     g->format_btn[i] = gtk_check_button_new_with_label(_(dt_gui_presets_format_value_str[i]));
     gtk_grid_attach(GTK_GRID(g->details), g->format_btn[i], 1, line + i, 2, 1);
@@ -1957,8 +1960,8 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
     gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 11));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), sqlite3_column_int(stmt, 12));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), sqlite3_column_int(stmt, 13));
-    const int format = sqlite3_column_int(stmt, 14);
-    for(k = 0; k < 3; k++)
+    const int format = (sqlite3_column_int(stmt, 14)) ^ DT_PRESETS_FOR_NOT;
+    for(k = 0; k < 5; k++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), format & (dt_gui_presets_format_flag[k]));
   }
   sqlite3_finalize(stmt);
@@ -1999,8 +2002,9 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
     int format = 0;
-    for(int k = 0; k < 3; k++)
+    for(int k = 0; k < 5; k++)
       format += gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[k])) * dt_gui_presets_format_flag[k];
+    format ^= DT_PRESETS_FOR_NOT;  
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, format);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, g->rowid);
     sqlite3_step(stmt);
