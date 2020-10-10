@@ -1417,10 +1417,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "        AND ?8 BETWEEN exposure_min AND exposure_max"
            "        AND ?9 BETWEEN aperture_min AND aperture_max"
            "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "        AND (format = 0 OR format&?11!=0)"
+           "        AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
            "        AND operation NOT IN"
            "            ('ioporder', 'metadata', 'export', 'tagging', 'collect', '%s'))"
-           "  OR (name = ?12)"
+           "  OR (name = ?13)"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            preset_table[legacy],
            is_display_referred?"":"basecurve");
@@ -1431,6 +1431,15 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                                 : (has_matrix && is_scene_referred
                                    ?_("scene-referred default")
                                    :"\t\n");
+  int iformat = 0;
+  if(dt_image_is_rawprepare_supported(image)) iformat |= FOR_RAW;
+  else iformat |= FOR_LDR;
+  if(dt_image_is_hdr(image)) iformat |= FOR_HDR;
+
+  int excluded = 0;
+  if(dt_image_monochrome_flags(image)) excluded |= FOR_NOT_MONO;
+  else excluded |= FOR_NOT_COLOR;
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
@@ -1442,10 +1451,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
-  // 0: dontcare, 1: ldr, 2: raw
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11,
-                               dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR));
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 12, workflow_preset, -1, SQLITE_TRANSIENT);
+  // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, workflow_preset, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -1460,7 +1469,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                               "       AND ?8 BETWEEN exposure_min AND exposure_max"
                               "       AND ?9 BETWEEN aperture_min AND aperture_max"
                               "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
-                              "       AND (format = 0 OR format&?11!=0)"
+                              "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
                               "       AND operation = 'ioporder'"
                               " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
                               -1, &stmt, NULL);
@@ -1474,9 +1483,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
-  // 0: dontcare, 1: ldr, 2: raw
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11,
-                               dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR));
+  // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *params = (char *)sqlite3_column_blob(stmt, 0);
