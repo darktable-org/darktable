@@ -16,24 +16,28 @@
     <itemizedlist>
 
       <listitem><para>
-        Input color specifications are taken from embedded or user supplied ICC profiles
-        or&nbsp;&ndash; in the case of raw files&nbsp;&ndash; from a library of camera specific
-        color matrices.
+        Input color specifications are taken from embedded or user supplied
+        <ulink url="https://en.wikipedia.org/wiki/ICC_profile">ICC profiles</ulink>
+        or, in the case of raw files, from a library of camera specific color matrices.
       </para></listitem>
 
       <listitem><para>
         darktable automatically reads the display profile of your monitor (if properly
         configured) for an accurate color rendition on screen. Multi-screen setups are fully
-        supported as long as a system service like
+        supported as long as a system service such as
         <ulink url="https://www.freedesktop.org/software/colord/intro.html"><emphasis>colord</emphasis></ulink>
         is in place and properly set up to inform darktable about the correct monitor profile.
       </para></listitem>
 
       <listitem><para>
-        Output files can be encoded in one of darktable's built-in profiles, like
-        <ulink url="http://en.wikipedia.org/wiki/SRGB">sRGB (web safe)</ulink> or
-        <ulink url="https://en.wikipedia.org/wiki/Adobe_RGB_color_space">Adobe RGB (compatible)</ulink>,
-        or into any other output color space that the user supplies to darktable as an ICC profile.
+        Output files can be encoded in one of darktable's built-in profiles, including
+        <ulink url="http://en.wikipedia.org/wiki/SRGB">sRGB</ulink>,
+        <ulink url="https://en.wikipedia.org/wiki/Adobe_RGB_color_space">Adobe</ulink>,
+        <ulink url="https://en.wikipedia.org/wiki/ProPhoto_RGB_color_space">ProPhoto</ulink>,
+        <ulink url="https://en.wikipedia.org/wiki/Rec._2020">Rec. 2020</ulink>,
+        <ulink url="https://en.wikipedia.org/wiki/Rec._709">Rec. 709</ulink>
+        and other standard RGB color spaces, or into a color space supplied by the user as
+        an ICC profile.
       </para></listitem>
 
     </itemizedlist>
