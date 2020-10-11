@@ -95,4 +95,11 @@
    The default is to not add any sharpening automatically as most recent cameras have no low-pass filter. (need a restart)
   </para>
 
+  <bridgehead renderas="sect5">detect monochrome previews</bridgehead>
+
+  <para>
+   If switched on, darktable analyses the preview image available via exif data during import or refreshing exif for being monochrome
+   and sets the darktable|mode|monochrome tag accordingly. As this reduces performance it is turned off by default.
+   Turn on for better monochrome image workflow support.
+  </para>
 </sect1>
