@@ -68,7 +68,7 @@ typedef struct dt_map_image_t
   gint width, height;
 } dt_map_image_t;
 
-static const int thumb_size = 128, thumb_border = 1, image_pin_size = 13, place_pin_size = 72;
+static const int thumb_size = 128, thumb_border = 2, image_pin_size = 13, place_pin_size = 72;
 static const float thumb_overlap = 1.2f;
 static const uint32_t thumb_frame_color = 0x000000aa;
 static const uint32_t thumb_frame_sel_color = 0xffffffee;
