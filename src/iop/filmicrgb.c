@@ -3560,20 +3560,25 @@ void gui_init(dt_iop_module_t *self)
 
   // Black slider
   g->black_point_target = dt_bauhaus_slider_from_params(self, "black_point_target");
-  dt_bauhaus_slider_set_format(g->black_point_target, "%.3f %%");
-  dt_bauhaus_slider_set_step(g->black_point_target, .05);
+  dt_bauhaus_slider_set_step(g->black_point_target, .001);
+  dt_bauhaus_slider_set_digits(g->black_point_target, 4);
+  dt_bauhaus_slider_set_format(g->black_point_target, "%.4f %%");
   gtk_widget_set_tooltip_text(g->black_point_target, _("luminance of output pure black, "
                                                        "this should be 0%\nexcept if you want a faded look"));
 
   g->grey_point_target = dt_bauhaus_slider_from_params(self, "grey_point_target");
-  dt_bauhaus_slider_set_format(g->grey_point_target, "%.3f %%");
+  dt_bauhaus_slider_set_step(g->grey_point_target, .01);
+  dt_bauhaus_slider_set_digits(g->grey_point_target, 4);
+  dt_bauhaus_slider_set_format(g->grey_point_target, "%.4f %%");
   gtk_widget_set_tooltip_text(g->grey_point_target,
                               _("midde grey value of the target display or color space.\n"
                                 "you should never touch that unless you know what you are doing."));
 
   g->white_point_target = dt_bauhaus_slider_from_params(self, "white_point_target");
   dt_bauhaus_slider_set_soft_max(g->white_point_target, 100.0);
-  dt_bauhaus_slider_set_format(g->white_point_target, "%.3f %%");
+  dt_bauhaus_slider_set_step(g->white_point_target, .01);
+  dt_bauhaus_slider_set_digits(g->white_point_target, 4);
+  dt_bauhaus_slider_set_format(g->white_point_target, "%.4f %%");
   gtk_widget_set_tooltip_text(g->white_point_target, _("luminance of output pure white, "
                                                        "this should be 100%\nexcept if you want a faded look"));
 
