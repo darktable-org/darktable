@@ -30,6 +30,12 @@
   </para>
 
   <para>
+    You can further refine the automatic preset selection on the image type like being raw, hdr or monochrome.
+    (For automatic detection of monochrome images switch on <quote>detect monochrome previews</quote>
+    in darktable preferences.)
+  </para>
+
+  <para>
     As a convenience, a preset can be applied to a new module instance by pressing the
     middle-click.
   </para>
