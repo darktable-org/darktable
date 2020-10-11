@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 21:08+0200\n"
-"PO-Revision-Date: 2020-10-10 21:12+0200\n"
+"POT-Creation-Date: 2020-10-11 17:15+0200\n"
+"PO-Revision-Date: 2020-10-11 17:17+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -45,8 +45,8 @@ msgstr "cisaillement"
 #. focal length
 #: ../build/src/iop/introspection_ashift.c:138
 #: ../build/src/iop/introspection_ashift.c:257 ../src/common/collection.c:687
-#: ../src/gui/preferences.c:833 ../src/gui/preferences.c:1896
-#: ../src/gui/presets.c:532 ../src/libs/camera.c:581
+#: ../src/gui/preferences.c:835 ../src/gui/preferences.c:1898
+#: ../src/gui/presets.c:536 ../src/libs/camera.c:581
 #: ../src/libs/metadata_view.c:124
 msgid "focal length"
 msgstr "focale"
@@ -92,7 +92,7 @@ msgstr "spécifique"
 #: ../src/common/history.c:843 ../src/common/history.c:859
 #: ../src/common/styles.c:1084 ../src/common/styles.c:1088
 #: ../src/develop/blend_gui.c:99 ../src/develop/blend_gui.c:120
-#: ../src/develop/blend_gui.c:2209 ../src/develop/develop.c:2050
+#: ../src/develop/blend_gui.c:2209 ../src/develop/develop.c:2059
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4775 ../src/iop/demosaic.c:5084
 #: ../src/libs/live_view.c:429
@@ -751,7 +751,7 @@ msgstr "dureté"
 
 #: ../build/src/iop/introspection_filmicrgb.c:287
 #: ../build/src/iop/introspection_filmicrgb.c:462 ../src/iop/filmic.c:1716
-#: ../src/iop/filmicrgb.c:3696
+#: ../src/iop/filmicrgb.c:3701
 msgid "extreme luminance saturation"
 msgstr "saturation luminance extrême"
 
@@ -998,7 +998,7 @@ msgstr "adoucir avec"
 
 #: ../build/src/iop/introspection_lowpass.c:189
 #: ../build/src/iop/introspection_retouch.c:421
-#: ../build/src/iop/introspection_shadhi.c:267 ../src/iop/filmicrgb.c:3634
+#: ../build/src/iop/introspection_shadhi.c:267 ../src/iop/filmicrgb.c:3639
 msgid "gaussian"
 msgstr "gaussien"
 
@@ -1070,7 +1070,8 @@ msgid "black and white"
 msgstr "noir et blanc"
 
 #: ../build/src/iop/introspection_negadoctor.c:261
-#: ../build/src/iop/introspection_retouch.c:427 ../src/iop/watermark.c:1425
+#: ../build/src/iop/introspection_retouch.c:427 ../src/gui/preferences.c:97
+#: ../src/gui/presets.c:60 ../src/iop/watermark.c:1425
 #: ../src/libs/modulegroups.c:990 ../src/libs/modulegroups.c:1241
 msgid "color"
 msgstr "couleur"
@@ -1139,8 +1140,8 @@ msgstr "point blanc"
 #. exposure
 #: ../build/src/iop/introspection_relight.c:43
 #: ../build/src/iop/introspection_relight.c:98 ../src/common/collection.c:690
-#: ../src/gui/preferences.c:825 ../src/gui/preferences.c:1866
-#: ../src/gui/presets.c:502 ../src/iop/basicadj.c:629 ../src/iop/exposure.c:108
+#: ../src/gui/preferences.c:827 ../src/gui/preferences.c:1868
+#: ../src/gui/presets.c:506 ../src/iop/basicadj.c:629 ../src/iop/exposure.c:108
 #: ../src/iop/exposure.c:869 ../src/libs/metadata_view.c:122
 msgid "exposure"
 msgstr "exposition"
@@ -2236,7 +2237,7 @@ msgid "3D lut root folder"
 msgstr "répertoire 3D lut racine"
 
 #: ../build/src/preferences_gen.h:3836 ../src/control/jobs/control_jobs.c:1555
-#: ../src/control/jobs/control_jobs.c:1618 ../src/gui/preferences.c:2017
+#: ../src/control/jobs/control_jobs.c:1618 ../src/gui/preferences.c:2021
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:180
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:179
@@ -2547,7 +2548,7 @@ msgstr "profil de planification OpenCL"
 
 #. Adding the restore defaults button
 #: ../build/src/preferences_gen.h:4558 ../build/src/preferences_gen.h:4587
-#: ../src/gui/preferences.c:946
+#: ../src/gui/preferences.c:948
 msgctxt "preferences"
 msgid "default"
 msgstr "défaut"
@@ -3091,9 +3092,9 @@ msgstr "Imprimer vos images"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1555
 #: ../src/control/jobs/control_jobs.c:1618 ../src/gui/hist_dialog.c:187
-#: ../src/gui/preferences.c:1572 ../src/gui/preferences.c:1598
-#: ../src/gui/preferences.c:1681 ../src/gui/preferences.c:1787
-#: ../src/gui/preferences.c:2017 ../src/gui/presets.c:425
+#: ../src/gui/preferences.c:1574 ../src/gui/preferences.c:1600
+#: ../src/gui/preferences.c:1683 ../src/gui/preferences.c:1789
+#: ../src/gui/preferences.c:2021 ../src/gui/presets.c:429
 #: ../src/gui/styles_dialog.c:357 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1568 ../src/libs/collect.c:365
@@ -3104,8 +3105,8 @@ msgstr "Imprimer vos images"
 msgid "_cancel"
 msgstr "_annuler"
 
-#: ../src/chart/main.c:504 ../src/gui/preferences.c:1572
-#: ../src/gui/preferences.c:1788 ../src/gui/styles_dialog.c:360
+#: ../src/chart/main.c:504 ../src/gui/preferences.c:1574
+#: ../src/gui/preferences.c:1790 ../src/gui/styles_dialog.c:360
 #: ../src/libs/styles.c:367
 msgid "_save"
 msgstr "_enregistrer"
@@ -3304,22 +3305,22 @@ msgstr "historique"
 msgid "color label"
 msgstr "label couleur"
 
-#: ../src/common/collection.c:686 ../src/gui/preferences.c:817
-#: ../src/gui/preferences.c:1847 ../src/gui/presets.c:483
+#: ../src/common/collection.c:686 ../src/gui/preferences.c:819
+#: ../src/gui/preferences.c:1849 ../src/gui/presets.c:487
 #: ../src/libs/metadata_view.c:120
 msgid "lens"
 msgstr "objectif"
 
 #. iso
-#: ../src/common/collection.c:688 ../src/gui/preferences.c:821
-#: ../src/gui/preferences.c:1853 ../src/gui/presets.c:489
+#: ../src/common/collection.c:688 ../src/gui/preferences.c:823
+#: ../src/gui/preferences.c:1855 ../src/gui/presets.c:493
 #: ../src/libs/camera.c:589 ../src/libs/metadata_view.c:126
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:689 ../src/gui/preferences.c:829
-#: ../src/gui/preferences.c:1881 ../src/gui/presets.c:517
+#: ../src/common/collection.c:689 ../src/gui/preferences.c:831
+#: ../src/gui/preferences.c:1883 ../src/gui/presets.c:521
 #: ../src/libs/camera.c:576 ../src/libs/camera.c:578
 #: ../src/libs/metadata_view.c:121
 msgid "aperture"
@@ -3344,7 +3345,7 @@ msgstr "groupe"
 msgid "local copy"
 msgstr "copie locale"
 
-#: ../src/common/collection.c:696 ../src/gui/preferences.c:797
+#: ../src/common/collection.c:696 ../src/gui/preferences.c:799
 msgid "module"
 msgstr "module"
 
@@ -3887,7 +3888,7 @@ msgid_plural "remove empty directories?"
 msgstr[0] "supprimer le répertoire vide ?"
 msgstr[1] "supprimer les répertoires vides ?"
 
-#: ../src/common/film.c:295 ../src/gui/preferences.c:805
+#: ../src/common/film.c:295 ../src/gui/preferences.c:807
 #: ../src/gui/styles_dialog.c:384
 msgid "name"
 msgstr "nom"
@@ -3908,7 +3909,7 @@ msgstr ""
 #: ../src/common/history.c:840 ../src/common/history.c:843
 #: ../src/common/history.c:859 ../src/common/styles.c:1084
 #: ../src/common/styles.c:1088 ../src/develop/blend_gui.c:121
-#: ../src/develop/develop.c:2050 ../src/iop/ashift.c:4776
+#: ../src/develop/develop.c:2059 ../src/iop/ashift.c:4776
 #: ../src/libs/live_view.c:430
 msgid "on"
 msgstr "activé(e)"
@@ -5317,7 +5318,7 @@ msgstr "relatif à l'affichage"
 msgid "scene-referred default"
 msgstr "défaut pour relatif à la scène"
 
-#: ../src/develop/develop.c:1811
+#: ../src/develop/develop.c:1820
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : module « %s » version non cohérente : %d != %d"
@@ -5340,7 +5341,7 @@ msgstr "monter"
 msgid "move down"
 msgstr "descendre"
 
-#: ../src/develop/imageop.c:1127 ../src/gui/preferences.c:1789
+#: ../src/develop/imageop.c:1127 ../src/gui/preferences.c:1791
 #: ../src/libs/image.c:168 ../src/libs/tagging.c:1301
 #: ../src/libs/tagging.c:1388
 msgid "delete"
@@ -5363,8 +5364,8 @@ msgstr "%s est désactivé"
 #: ../src/develop/imageop.c:1536 ../src/gui/accelerators.c:1041
 #: ../src/gui/accelerators.c:1125 ../src/gui/accelerators.c:1340
 #: ../src/gui/accelerators.c:1365 ../src/gui/import_metadata.c:163
-#: ../src/gui/preferences.c:1526 ../src/gui/preferences.c:2072
-#: ../src/gui/presets.c:214 ../src/gui/presets.c:331 ../src/gui/presets.c:706
+#: ../src/gui/preferences.c:1528 ../src/gui/preferences.c:2076
+#: ../src/gui/presets.c:216 ../src/gui/presets.c:333 ../src/gui/presets.c:711
 #: ../src/libs/lib.c:353 ../src/libs/lib.c:395 ../src/libs/lib.c:1384
 msgid "preset"
 msgstr "préréglage"
@@ -5413,7 +5414,7 @@ msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2422 ../src/gui/preferences.c:787
+#: ../src/develop/imageop.c:2422 ../src/gui/preferences.c:789
 #: ../src/libs/lib.c:1220 ../src/libs/modulegroups.c:313
 msgid "presets"
 msgstr "préréglages"
@@ -6749,8 +6750,8 @@ msgstr "tout"
 msgid "select _none"
 msgstr "aucu_ne"
 
-#: ../src/gui/hist_dialog.c:190 ../src/gui/preferences.c:1790
-#: ../src/gui/presets.c:425 ../src/libs/lib.c:235
+#: ../src/gui/hist_dialog.c:190 ../src/gui/preferences.c:1792
+#: ../src/gui/presets.c:429 ../src/libs/lib.c:235
 msgid "_ok"
 msgstr "_ok"
 
@@ -6824,20 +6825,25 @@ msgstr "raw"
 msgid "HDR"
 msgstr "HDR"
 
-#: ../src/gui/preferences.c:331
+#: ../src/gui/preferences.c:96 ../src/gui/presets.c:59
+#: ../src/iop/monochrome.c:77 ../src/libs/metadata_view.c:352
+msgid "monochrome"
+msgstr "monochrome"
+
+#: ../src/gui/preferences.c:333
 msgid "general"
 msgstr "général"
 
 #. language
-#: ../src/gui/preferences.c:335
+#: ../src/gui/preferences.c:337
 msgid "interface language"
 msgstr "langue pour l'interface"
 
-#: ../src/gui/preferences.c:350
+#: ../src/gui/preferences.c:352
 msgid "double click to reset to the system language"
 msgstr "double-cliquer pour réinitialiser à la langue du système"
 
-#: ../src/gui/preferences.c:352
+#: ../src/gui/preferences.c:354
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* (needs a restart)"
@@ -6845,19 +6851,19 @@ msgstr ""
 "règle la langue pour l'interface utilisateur, la langue système par défaut "
 "est marquée avec un * (nécessite un redémarrage)"
 
-#: ../src/gui/preferences.c:361
+#: ../src/gui/preferences.c:363
 msgid "theme"
 msgstr "thème"
 
-#: ../src/gui/preferences.c:389
+#: ../src/gui/preferences.c:391
 msgid "set the theme for the user interface"
 msgstr "choisir le thème de l'interface utilisateur"
 
-#: ../src/gui/preferences.c:392
+#: ../src/gui/preferences.c:394
 msgid "performance mode"
 msgstr "mode performance"
 
-#: ../src/gui/preferences.c:400
+#: ../src/gui/preferences.c:402
 msgid ""
 "if switched on, thumbnails and previews are rendered at lower quality but 4 "
 "times faster"
@@ -6865,19 +6871,19 @@ msgstr ""
 "si activée, les miniatures et prévisualisations sont générées en basse "
 "qualité mais 4 fois plus rapidement"
 
-#: ../src/gui/preferences.c:414 ../src/gui/preferences.c:421
+#: ../src/gui/preferences.c:416 ../src/gui/preferences.c:423
 msgid "use system font size"
 msgstr "utiliser la police système"
 
-#: ../src/gui/preferences.c:430 ../src/gui/preferences.c:437
+#: ../src/gui/preferences.c:432 ../src/gui/preferences.c:439
 msgid "font size in points"
 msgstr "taille de la police en point"
 
-#: ../src/gui/preferences.c:442
+#: ../src/gui/preferences.c:444
 msgid "GUI controls and text DPI"
 msgstr "contrôles et texte DPI"
 
-#: ../src/gui/preferences.c:449
+#: ../src/gui/preferences.c:451
 msgid ""
 "adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
 "increase for a magnified GUI, decrease to fit more content in window.\n"
@@ -6894,27 +6900,27 @@ msgstr ""
 "nécessite un redémarrage."
 
 #. checkbox to allow user to modify theme with user.css
-#: ../src/gui/preferences.c:458
+#: ../src/gui/preferences.c:460
 msgid "modify selected theme with CSS tweaks below"
 msgstr "modifier le thème via les ajustements CSS ci-dessous"
 
-#: ../src/gui/preferences.c:466
+#: ../src/gui/preferences.c:468
 msgid "modify theme with CSS keyed below (saved to user.css)"
 msgstr ""
 "modifier le thème avec le CSS entré ci-dessous (sauvegarder dans user.css)"
 
-#: ../src/gui/preferences.c:486
+#: ../src/gui/preferences.c:488
 msgctxt "usercss"
 msgid "save and apply"
 msgstr "sauvegarder et appliquer"
 
 #. load default text with some pointers
-#: ../src/gui/preferences.c:509
+#: ../src/gui/preferences.c:511
 msgid "/* ERROR Loading user.css */"
 msgstr "/* ERREUR lors du chargement de user.css */"
 
 #. load default text
-#: ../src/gui/preferences.c:516
+#: ../src/gui/preferences.c:518
 msgid ""
 "/* Enter CSS theme tweaks here */\n"
 "\n"
@@ -6922,56 +6928,56 @@ msgstr ""
 "/* Entrer ici les modifications du thème CSS */\n"
 "\n"
 
-#: ../src/gui/preferences.c:542
+#: ../src/gui/preferences.c:544
 msgid "darktable preferences"
 msgstr "préférences"
 
-#: ../src/gui/preferences.c:622
+#: ../src/gui/preferences.c:624
 msgid "darktable needs to be restarted for settings to take effect"
 msgstr "darktable doit être redémarré pour prendre en compte les changements"
 
 #. exif
-#: ../src/gui/preferences.c:809 ../src/gui/preferences.c:1831
-#: ../src/gui/presets.c:469 ../src/libs/metadata_view.c:118
+#: ../src/gui/preferences.c:811 ../src/gui/preferences.c:1833
+#: ../src/gui/presets.c:473 ../src/libs/metadata_view.c:118
 msgid "model"
 msgstr "modèle"
 
-#: ../src/gui/preferences.c:813 ../src/gui/preferences.c:1839
-#: ../src/gui/presets.c:476 ../src/libs/metadata_view.c:119
+#: ../src/gui/preferences.c:815 ../src/gui/preferences.c:1841
+#: ../src/gui/presets.c:480 ../src/libs/metadata_view.c:119
 msgid "maker"
 msgstr "fabricant"
 
-#: ../src/gui/preferences.c:838 ../src/iop/basicadj.c:665
+#: ../src/gui/preferences.c:840 ../src/iop/basicadj.c:665
 #: ../src/iop/borders.c:932 ../src/iop/levels.c:663 ../src/iop/rgblevels.c:1002
 msgid "auto"
 msgstr "auto"
 
 #. Adding the import/export buttons
-#: ../src/gui/preferences.c:847 ../src/gui/preferences.c:953
+#: ../src/gui/preferences.c:849 ../src/gui/preferences.c:955
 msgctxt "preferences"
 msgid "import..."
 msgstr "importer..."
 
 #. Adding the outer container
-#: ../src/gui/preferences.c:888
+#: ../src/gui/preferences.c:890
 msgid "shortcuts"
 msgstr "raccourcis"
 
-#: ../src/gui/preferences.c:899
+#: ../src/gui/preferences.c:901
 msgid "shortcut"
 msgstr "raccourci"
 
-#: ../src/gui/preferences.c:903
+#: ../src/gui/preferences.c:905
 msgid "binding"
 msgstr "lien"
 
 #. Adding the search button
-#: ../src/gui/preferences.c:937
+#: ../src/gui/preferences.c:939
 msgctxt "preferences"
 msgid "search"
 msgstr "rechercher"
 
-#: ../src/gui/preferences.c:938
+#: ../src/gui/preferences.c:940
 msgid ""
 "click or press enter to search\n"
 "click or press enter again to cycle through results"
@@ -6980,16 +6986,16 @@ msgstr ""
 "cliquer ou ré-appuyer sur entrée pour rechercher les occurrences suivantes"
 
 #. export button
-#: ../src/gui/preferences.c:958 ../src/libs/styles.c:595
+#: ../src/gui/preferences.c:960 ../src/libs/styles.c:595
 msgid "export..."
 msgstr "exporter..."
 
 #. Setting the notification text
-#: ../src/gui/preferences.c:1301
+#: ../src/gui/preferences.c:1303
 msgid "press key combination to remap..."
 msgstr "entrer la nouvelle combinaison de touches..."
 
-#: ../src/gui/preferences.c:1402
+#: ../src/gui/preferences.c:1404
 #, c-format
 msgid ""
 "%s accel is already mapped to\n"
@@ -7000,41 +7006,41 @@ msgstr ""
 "« %s »\n"
 "voulez-vous le remplacer ?"
 
-#: ../src/gui/preferences.c:1408
+#: ../src/gui/preferences.c:1410
 msgid "accel conflict"
 msgstr "conflit de raccourci"
 
-#: ../src/gui/preferences.c:1508 ../src/gui/preferences.c:2055
-#: ../src/gui/presets.c:202 ../src/libs/lib.c:383
+#: ../src/gui/preferences.c:1510 ../src/gui/preferences.c:2059
+#: ../src/gui/presets.c:204 ../src/libs/lib.c:383
 #: ../src/libs/modulegroups.c:1779
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "voulez-vous réellement supprimer le préréglage « %s » ?"
 
-#: ../src/gui/preferences.c:1512 ../src/gui/preferences.c:2059
-#: ../src/gui/presets.c:206 ../src/libs/lib.c:387
+#: ../src/gui/preferences.c:1514 ../src/gui/preferences.c:2063
+#: ../src/gui/presets.c:208 ../src/libs/lib.c:387
 #: ../src/libs/modulegroups.c:1783
 msgid "delete preset?"
 msgstr "supprimer ce préréglage ?"
 
 #. Non-zero value indicates export
-#: ../src/gui/preferences.c:1571
+#: ../src/gui/preferences.c:1573
 msgid "select file to export"
 msgstr "sélectionne le fichier à exporter"
 
 #. Zero value indicates import
-#: ../src/gui/preferences.c:1597
+#: ../src/gui/preferences.c:1599
 msgid "select file to import"
 msgstr "sélectionne le fichier à importer"
 
-#: ../src/gui/preferences.c:1598 ../src/gui/preferences.c:1681
+#: ../src/gui/preferences.c:1600 ../src/gui/preferences.c:1683
 #: ../src/libs/collect.c:366 ../src/libs/copy_history.c:101
 #: ../src/libs/geotagging.c:475 ../src/libs/import.c:550
 #: ../src/libs/import.c:656 ../src/libs/styles.c:392
 msgid "_open"
 msgstr "_ouvrir"
 
-#: ../src/gui/preferences.c:1639
+#: ../src/gui/preferences.c:1641
 msgid ""
 "are you sure you want to restore the default keybindings?  this will erase "
 "any modifications you have made."
@@ -7043,32 +7049,32 @@ msgstr ""
 "les modifications que vous avez faites."
 
 #. Zero value indicates import
-#: ../src/gui/preferences.c:1680
+#: ../src/gui/preferences.c:1682
 msgid "select preset to import"
 msgstr "sélectionne le préréglage à importer"
 
-#: ../src/gui/preferences.c:1699
+#: ../src/gui/preferences.c:1701
 msgid "failed to import preset"
 msgstr "échec d'importation du préréglage"
 
-#: ../src/gui/preferences.c:1784 ../src/gui/presets.c:423
+#: ../src/gui/preferences.c:1786 ../src/gui/presets.c:427
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "éditer « %s » pour le module « %s »"
 
-#: ../src/gui/preferences.c:1808 ../src/gui/presets.c:446 ../src/libs/lib.c:259
+#: ../src/gui/preferences.c:1810 ../src/gui/presets.c:450 ../src/libs/lib.c:259
 msgid "description or further information"
 msgstr "description ou information complémentaire"
 
-#: ../src/gui/preferences.c:1811 ../src/gui/presets.c:449
+#: ../src/gui/preferences.c:1813 ../src/gui/presets.c:453
 msgid "auto apply this preset to matching images"
 msgstr "appliquer automatiquement ce préréglage aux images correspondantes"
 
-#: ../src/gui/preferences.c:1814 ../src/gui/presets.c:452
+#: ../src/gui/preferences.c:1816 ../src/gui/presets.c:456
 msgid "only show this preset for matching images"
 msgstr "n'afficher ce préréglage qu'aux images correspondantes"
 
-#: ../src/gui/preferences.c:1816 ../src/gui/presets.c:453
+#: ../src/gui/preferences.c:1818 ../src/gui/presets.c:457
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -7076,91 +7082,97 @@ msgstr ""
 "soyez vigilant avec cette option, ce pourrait être la dernière fois que vous "
 "voyez votre préréglage."
 
-#: ../src/gui/preferences.c:1830 ../src/gui/presets.c:468
+#: ../src/gui/preferences.c:1832 ../src/gui/presets.c:472
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "nom du modèle (utiliser % comme joker)"
 
-#: ../src/gui/preferences.c:1838 ../src/gui/presets.c:475
+#: ../src/gui/preferences.c:1840 ../src/gui/presets.c:479
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "nom du fabricant (utiliser % comme joker)"
 
-#: ../src/gui/preferences.c:1846 ../src/gui/presets.c:482
+#: ../src/gui/preferences.c:1848 ../src/gui/presets.c:486
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "nom de l'objectif (utiliser % comme joker)"
 
-#: ../src/gui/preferences.c:1856 ../src/gui/presets.c:492
+#: ../src/gui/preferences.c:1858 ../src/gui/presets.c:496
 msgid "minimum ISO value"
 msgstr "valeur d'ISO minimale"
 
-#: ../src/gui/preferences.c:1859 ../src/gui/presets.c:495
+#: ../src/gui/preferences.c:1861 ../src/gui/presets.c:499
 msgid "maximum ISO value"
 msgstr "valeur d'ISO maximale"
 
-#: ../src/gui/preferences.c:1870 ../src/gui/presets.c:506
+#: ../src/gui/preferences.c:1872 ../src/gui/presets.c:510
 msgid "minimum exposure time"
 msgstr "temps d'exposition maximum"
 
-#: ../src/gui/preferences.c:1871 ../src/gui/presets.c:507
+#: ../src/gui/preferences.c:1873 ../src/gui/presets.c:511
 msgid "maximum exposure time"
 msgstr "temps d'exposition maximum"
 
-#: ../src/gui/preferences.c:1885 ../src/gui/presets.c:521
+#: ../src/gui/preferences.c:1887 ../src/gui/presets.c:525
 msgid "minimum aperture value"
 msgstr "valeur d'ouverture minimale"
 
-#: ../src/gui/preferences.c:1886 ../src/gui/presets.c:522
+#: ../src/gui/preferences.c:1888 ../src/gui/presets.c:526
 msgid "maximum aperture value"
 msgstr "valeur d'ouverture maximale"
 
-#: ../src/gui/preferences.c:1901 ../src/gui/presets.c:538
+#: ../src/gui/preferences.c:1903 ../src/gui/presets.c:542
 msgid "minimum focal length"
 msgstr "longueur focale minimale"
 
-#: ../src/gui/preferences.c:1902 ../src/gui/presets.c:539
+#: ../src/gui/preferences.c:1904 ../src/gui/presets.c:543
 msgid "maximum focal length"
 msgstr "longueur focale maximale"
 
-#. raw/hdr/ldr
-#: ../src/gui/preferences.c:1911 ../src/gui/presets.c:545
+#. raw/hdr/ldr/monochrome/color
+#. raw/hdr/ldr/mono/color
+#: ../src/gui/preferences.c:1913 ../src/gui/presets.c:549
 #: ../src/imageio/format/j2k.c:645
 msgid "format"
 msgstr "format"
 
-#: ../src/gui/preferences.c:2018 ../src/imageio/storage/disk.c:122
+#: ../src/gui/preferences.c:1916 ../src/gui/presets.c:552
+msgid "select image types you want this preset to be available for"
+msgstr ""
+"sélectionner les types d'images pour lesquels ce préréglage doit être proposé"
+
+#: ../src/gui/preferences.c:2022 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
 msgid "_select as output destination"
 msgstr "_sélectionner comme destination de sortie"
 
-#: ../src/gui/preferences.c:2029
+#: ../src/gui/preferences.c:2033
 #, c-format
 msgid "preset %s was successfully saved"
 msgstr "le préréglage « %s » a été sauvegardé"
 
-#: ../src/gui/presets.c:190
+#: ../src/gui/presets.c:192
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
 msgstr "le préréglage « %s » est protégé, impossible à supprimer !"
 
 #. then show edit dialog
-#: ../src/gui/presets.c:241 ../src/gui/presets.c:699 ../src/gui/presets.c:706
-#: ../src/gui/presets.c:708 ../src/gui/presets.c:710 ../src/libs/lib.c:329
+#: ../src/gui/presets.c:243 ../src/gui/presets.c:704 ../src/gui/presets.c:711
+#: ../src/gui/presets.c:713 ../src/gui/presets.c:715 ../src/libs/lib.c:329
 #: ../src/libs/lib.c:345 ../src/libs/lib.c:353 ../src/libs/lib.c:355
 #: ../src/libs/lib.c:357
 msgid "new preset"
 msgstr "nouveau préréglage"
 
-#: ../src/gui/presets.c:247
+#: ../src/gui/presets.c:249
 msgid "please give preset a name"
 msgstr "merci de donner un nom au préréglage"
 
-#: ../src/gui/presets.c:252
+#: ../src/gui/presets.c:254
 msgid "unnamed preset"
 msgstr "préréglage sans nom"
 
-#: ../src/gui/presets.c:280 ../src/libs/lib.c:154
+#: ../src/gui/presets.c:282 ../src/libs/lib.c:154
 #, c-format
 msgid ""
 "preset `%s' already exists.\n"
@@ -7169,63 +7181,63 @@ msgstr ""
 "le préréglage « %s » existe déjà.\n"
 "voulez-vous le remplacer ?"
 
-#: ../src/gui/presets.c:285 ../src/libs/lib.c:158
+#: ../src/gui/presets.c:287 ../src/libs/lib.c:158
 msgid "overwrite preset?"
 msgstr "remplacer ce préréglage ?"
 
-#: ../src/gui/presets.c:411
+#: ../src/gui/presets.c:415
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
 msgstr "le préréglage « %s » est protégé, impossible à éditer !"
 
-#: ../src/gui/presets.c:442 ../src/libs/lib.c:255
+#: ../src/gui/presets.c:446 ../src/libs/lib.c:255
 msgid "name of the preset"
 msgstr "nom du préréglage"
 
-#: ../src/gui/presets.c:658 ../src/libs/lib.c:293
+#: ../src/gui/presets.c:663 ../src/libs/lib.c:293
 #, c-format
 msgid "do you really want to update the preset `%s'?"
 msgstr "voulez-vous réellement mettre à jour le préréglage « %s » ?"
 
-#: ../src/gui/presets.c:662 ../src/libs/lib.c:297
+#: ../src/gui/presets.c:667 ../src/libs/lib.c:297
 msgid "update preset?"
 msgstr "mettre à jour le préréglage ?"
 
-#: ../src/gui/presets.c:847 ../src/libs/modulegroups.c:1950
+#: ../src/gui/presets.c:852 ../src/libs/modulegroups.c:1950
 #: ../src/libs/modulegroups.c:1959
-msgid "manage modules layouts"
+msgid "manage module layouts"
 msgstr "gérer les dispositions de modules"
 
-#: ../src/gui/presets.c:855
+#: ../src/gui/presets.c:860
 msgid "manage quick presets"
 msgstr "gérer les préréglages"
 
-#: ../src/gui/presets.c:1016
+#: ../src/gui/presets.c:1021
 msgid "manage quick presets list..."
 msgstr "gérer la liste des préréglages..."
 
-#: ../src/gui/presets.c:1139 ../src/gui/presets.c:1152
+#: ../src/gui/presets.c:1152 ../src/gui/presets.c:1165
 msgid "(default)"
 msgstr "(défaut)"
 
-#: ../src/gui/presets.c:1163
+#: ../src/gui/presets.c:1176
 msgid "disabled: wrong module version"
 msgstr "désactivé : version du module non cohérente"
 
-#: ../src/gui/presets.c:1187 ../src/libs/lib.c:644
+#: ../src/gui/presets.c:1200 ../src/libs/lib.c:644
 msgid "edit this preset.."
 msgstr "modifier ce préréglage..."
 
-#: ../src/gui/presets.c:1191 ../src/libs/lib.c:648
+#: ../src/gui/presets.c:1204 ../src/libs/lib.c:648
 #: ../src/libs/modulegroups.c:1907
 msgid "delete this preset"
 msgstr "supprimer ce préréglage"
 
-#: ../src/gui/presets.c:1197 ../src/libs/lib.c:655
+#: ../src/gui/presets.c:1210 ../src/libs/lib.c:655
 msgid "store new preset.."
 msgstr "nouveau préréglage..."
 
-#: ../src/gui/presets.c:1203 ../src/libs/lib.c:667
+#: ../src/gui/presets.c:1216 ../src/libs/lib.c:667
 msgid "update preset"
 msgstr "mettre à jour le préréglage"
 
@@ -11024,7 +11036,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "destination/affichage"
 
-#: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:3565
+#: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:3566
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -11032,7 +11044,7 @@ msgstr ""
 "luminance du noir pur de sortie, devrait être 0%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1780 ../src/iop/filmicrgb.c:3571
+#: ../src/iop/filmic.c:1780 ../src/iop/filmicrgb.c:3574
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -11040,7 +11052,7 @@ msgstr ""
 "valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
 "ne jamais toucher sauf si vous savez ce que vous faites."
 
-#: ../src/iop/filmic.c:1789 ../src/iop/filmicrgb.c:3577
+#: ../src/iop/filmic.c:1789 ../src/iop/filmicrgb.c:3582
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -11404,11 +11416,11 @@ msgstr ""
 "augmenter si les ombres et/ou les hautes lumières sont sous-saturées."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:3581
+#: ../src/iop/filmicrgb.c:3586
 msgid "options"
 msgstr "options"
 
-#: ../src/iop/filmicrgb.c:3586
+#: ../src/iop/filmicrgb.c:3591
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -11418,7 +11430,7 @@ msgstr ""
 "v4 est la nouvelle méthode de désaturation basée sur la pureté du spectre de "
 "la lumière."
 
-#: ../src/iop/filmicrgb.c:3590
+#: ../src/iop/filmicrgb.c:3595
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -11428,7 +11440,7 @@ msgstr ""
 "peut renforcer les aberrations chromatiques et le bruit chromatique,\n"
 "il est nécessaire de s'assurer qu'ils sont correctement corrigés avant.\n"
 
-#: ../src/iop/filmicrgb.c:3596
+#: ../src/iop/filmicrgb.c:3601
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -11438,7 +11450,7 @@ msgstr ""
 "dur pour une compression tonale plus importante.\n"
 "doux pour une compression tonale plus faible."
 
-#: ../src/iop/filmicrgb.c:3601
+#: ../src/iop/filmicrgb.c:3606
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -11448,7 +11460,7 @@ msgstr ""
 "dur pour une compression tonale plus importante.\n"
 "doux pour une compression tonale plus faible."
 
-#: ../src/iop/filmicrgb.c:3606
+#: ../src/iop/filmicrgb.c:3611
 #, c-format
 msgid ""
 "enable to input custom middle-grey values.\n"
@@ -11461,7 +11473,7 @@ msgstr ""
 "préférez la modification de l'exposition globale dans le module exposition.\n"
 "désactiver pour utiliser un gris moyen standard de 18.45 %%."
 
-#: ../src/iop/filmicrgb.c:3613
+#: ../src/iop/filmicrgb.c:3618
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -11473,7 +11485,7 @@ msgstr ""
 "cela conserve le gris moyen à l'identique et améliore les réglages rapides.\n"
 "désactiver pour contrôler manuellement."
 
-#: ../src/iop/filmicrgb.c:3619
+#: ../src/iop/filmicrgb.c:3624
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -11486,7 +11498,7 @@ msgstr ""
 "c'est plus lent mais donnera des hautes lumières plus neutres.\n"
 "cela aide aussi dans les cas difficiles de hautes-lumières magenta."
 
-#: ../src/iop/filmicrgb.c:3626
+#: ../src/iop/filmicrgb.c:3631
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -11497,15 +11509,15 @@ msgstr ""
 "cela évite des hautes-lumières lisses alors que l'image est un peu bruitée,\n"
 "alors les hautes-lumières se fondent mieux avec le reste de l'image."
 
-#: ../src/iop/filmicrgb.c:3633
+#: ../src/iop/filmicrgb.c:3638
 msgid "uniform"
 msgstr "uniforme"
 
-#: ../src/iop/filmicrgb.c:3635
+#: ../src/iop/filmicrgb.c:3640
 msgid "poissonian"
 msgstr "poissonien"
 
-#: ../src/iop/filmicrgb.c:3636
+#: ../src/iop/filmicrgb.c:3641
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -11513,7 +11525,7 @@ msgstr ""
 "sélectionner la distribution statistique du bruit.\n"
 "cela est utile pour se fondre avec le bruit naturel du capteur.\n"
 
-#: ../src/iop/filmicrgb.c:3698
+#: ../src/iop/filmicrgb.c:3703
 msgid "middle tones saturation"
 msgstr "saturation tons moyens"
 
@@ -12596,10 +12608,6 @@ msgstr "sélectionner la méthode d'interpolation"
 #: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:55
 msgid "mask manager"
 msgstr "gestion des masques"
-
-#: ../src/iop/monochrome.c:77 ../src/libs/metadata_view.c:352
-msgid "monochrome"
-msgstr "monochrome"
 
 #: ../src/iop/monochrome.c:130
 msgid "red filter"
@@ -16740,7 +16748,7 @@ msgstr "module des groupes"
 
 #: ../src/libs/modulegroups.c:1691
 msgid ""
-"this is a build-in read-only preset. duplicate it if you want to do changes"
+"this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
 "c'est un préréglage interne en lecture seul. dupliquer pour faire des "
 "changements"
