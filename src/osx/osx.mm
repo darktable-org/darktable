@@ -128,17 +128,12 @@ char* dt_osx_get_bundle_res_path()
 
 #ifdef GTK_TYPE_OSX_APPLICATION
   bundle_id = quartz_application_get_bundle_id();
-  
   if(bundle_id)
-  {
     result = quartz_application_get_resource_path();
-  }
 #else
   bundle_id = gtkosx_application_get_bundle_id();
   if(bundle_id)
-  {
     result = gtkosx_application_get_resource_path();
-  }
 #endif
   g_free(bundle_id);
 
@@ -188,7 +183,6 @@ void dt_osx_prepare_environment()
   free(user_locale);
   // set all required paths if we are in the app bundle
   char* res_path = dt_osx_get_bundle_res_path();
-
   if(res_path)
   {
     g_setenv("GTK_DATA_PREFIX", res_path, TRUE);

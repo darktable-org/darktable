@@ -44,12 +44,7 @@ include(DefineOptions.cmake)
 include(GNUInstallDirs)
 include(FeatureSummary)
 
-# https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
-
-include(CMakePrintHelpers)
-
 # we transform the variables to CMAKE_PATH(slash based)
-file(TO_CMAKE_PATH "${CMAKE_INSTALL_FULL_BINDIR}" CMAKE_INSTALL_BINDIR_CMAKE_PATH)
 file(TO_CMAKE_PATH "${CMAKE_INSTALL_FULL_LIBDIR}" CMAKE_INSTALL_LIBDIR_CMAKE_PATH)
 file(TO_CMAKE_PATH "${CMAKE_INSTALL_FULL_DATADIR}" CMAKE_INSTALL_DATADIR_CMAKE_PATH)
 file(TO_CMAKE_PATH "${CMAKE_INSTALL_FULL_LOCALEDIR}" CMAKE_INSTALL_LOCALEDIR_CMAKE_PATH)
@@ -63,6 +58,8 @@ set(DARKTABLE_LIBDIR    "${DARKTABLE_BINDIR}/${REL_BIN_TO_LIB}")
 set(DARKTABLE_DATADIR   "${DARKTABLE_BINDIR}/${REL_BIN_TO_DATADIR}") # DATAROOTDIR == DATADIR == SHAREDIR # darktablerc, themes, icons, ... Cannot use ${CMAKE_BINDIR}/data because not everything resides there. Like icons (pixmaps)
 set(DARKTABLE_SHAREDIR  "${DARKTABLE_DATADIR}") # DATAROOTDIR == DATADIR == SHAREDIR
 set(DARKTABLE_LOCALEDIR "${DARKTABLE_BINDIR}/${REL_BIN_TO_LOCALEDIR}")
+
+# https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
 
 if(${FORCE_COLORED_OUTPUT})
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
