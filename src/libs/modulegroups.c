@@ -993,7 +993,7 @@ void init_presets(dt_lib_module_t *self)
   gchar *tx = NULL;
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
                        "basecurve|basicadj|clipping|colisa|colorreconstruct|demosaic|exposure|finalscale"
-                       "|flip|highlights|invert|mask_manager|negadoctor|overexposed|rawoverexposed|rawprepare"
+                       "|flip|highlights|invert|negadoctor|overexposed|rawoverexposed|rawprepare"
                        "|shadhi|temperature|toneequal");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"),
                        "tone", "bilat|filmicrgb|globaltonemap|levels"
