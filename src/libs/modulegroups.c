@@ -1031,9 +1031,10 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
                        "filmicrgb|toneequal|clipping|flip|exposure|temperature|rgbcurve|rgblevels|bilat");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "colorbalance|colorcorrection|colorzones|monochrome|velvia|vibrance");
+                       "channelmixer|colorbalance|colorzones|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
-                       "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels|lens|retouch|sharpen|nlmeans");
+                       "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
+                       "|lens|retouch|sharpen|nlmeans");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
                        "borders|colorize|graduatednd|grain|splittoning|vignette|watermark");
   dt_lib_presets_add(_("scene referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
