@@ -999,8 +999,8 @@ void init_presets(dt_lib_module_t *self)
                        "tone", "bilat|filmicrgb|globaltonemap|levels"
                        "|relight|rgbcurve|rgblevels|tonecurve|tonemap|zonesystem");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixer|colorbalance|colorchecker|colorcontrast|colorcorrection|colorin|colorout"
-                       "|colorzones|lut3d|monochrome|profile_gamma|velvia|vibrance");
+                       "channelmixer|colorbalance|colorchecker|colorcontrast|colorcorrection"
+                       "|colorin|colorout|colorzones|lut3d|monochrome|profile_gamma|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
                        "ashift|atrous|bilateral|cacorrect|defringe|denoiseprofile|dither"
                        "|hazeremoval|hotpixels|lens|liquify|nlmeans|rawdenoise|retouch|rotatepixels"
