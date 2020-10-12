@@ -580,6 +580,50 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   dt_control_queue_redraw_center();
   return 0;
 }
+static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  const int32_t mode = params->flag;
+  GList *t = params->index;
+  const guint total = g_list_length(t);
+  char message[512] = { 0 };
+
+  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+
+  if(mode == 0)
+    snprintf(message, sizeof(message), ngettext("set %d color image", "setting %d color images", total), total);
+  else
+    snprintf(message, sizeof(message), ngettext("set %d monochrome image", "setting %d monochrome images", total), total);
+  dt_control_job_set_progress_message(job, message);
+  while(t)
+  {
+    const int imgid = GPOINTER_TO_INT(t->data);
+
+    dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+
+    if(mode == 0)
+      img->flags &= ~(DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
+    else
+    {
+      img->flags |= DT_IMAGE_MONOCHROME_PREVIEW;
+      if(mode == 2)
+        img->flags |= DT_IMAGE_MONOCHROME_WORKFLOW;
+    }
+    const int mask_bw = dt_image_monochrome_flags(img);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_imageio_update_monochrome_workflow_tag(imgid, mask_bw);
+
+    t = g_list_next(t);
+    const double fraction = 1.0 / total;
+    dt_control_job_set_progress(job, fraction);
+  }
+
+  dt_undo_end_group(darktable.undo);
+
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_control_queue_redraw_center();
+  return 0;
+}
 
 static char *_get_image_list(GList *l)
 {
@@ -1410,6 +1454,13 @@ void dt_control_flip_images(const int32_t cw)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_flip_images_job_run, N_("flip images"), cw,
+                                                          NULL, PROGRESS_SIMPLE, TRUE));
+}
+
+void dt_control_monochrome_images(const int32_t mode)
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&dt_control_monochrome_images_job_run, N_("set monochrome images"), mode,
                                                           NULL, PROGRESS_SIMPLE, TRUE));
 }
 
