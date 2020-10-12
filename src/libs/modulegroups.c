@@ -34,6 +34,9 @@
 
 DT_MODULE(1)
 
+#define FALLBACK_PRESET_NAME "default"
+// if a preset cannot be loaded or the current preset deleted, this is the fallabck preset
+
 #define PADDING 2
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
@@ -215,7 +218,7 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
     // and we initialize the buttons too
     gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
     if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
-      dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+      dt_lib_presets_apply(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version());
     g_free(preset);
   }
 }
@@ -907,6 +910,7 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
 
     gchar *tx = _preset_retrieve_old_layout(list, fav);
     dt_lib_presets_add(pname, self->plugin_name, self->version(), tx, strlen(tx), FALSE);
+    g_free(tx);
   }
   sqlite3_finalize(stmt);
 
@@ -975,32 +979,112 @@ static GList *_preset_from_string(gchar *txt)
 
 void init_presets(dt_lib_module_t *self)
 {
-  gchar *tx = NULL;
-  tx = dt_util_dstrcat(
-      tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "technical",
-      "colorin|hazeremoval|filmicrgb|clipping|flip|lens|exposure|denoiseprofile|demosaic|highlights");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("grading"), "grading", "rgblevels|colorbalance|toneequal|temperature");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effects"), "effect", "sharpen|bilat");
-  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  /*
+    For the record, one can create the preset list by using the following code:
 
-  gchar *tx2 = NULL;
-  tx2 = dt_util_dstrcat(tx2, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
-                        "basecurve|toneequal|clipping|flip|exposure|demosaic|highlights|temperature|filmicrgb");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("tone"), "tone", "rgblevels|bilat");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("color"), "color", "colorbalance|colorin");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
-  dt_lib_presets_add(_("legacy layout"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
+    $ cat <( git grep "return.*IOP_GROUP_TONE" -- src/iop/ | cut -d':' -f1 ) \
+          <( git grep IOP_FLAGS_DEPRECATED -- src/iop/ | cut -d':' -f1 ) | \
+          grep -E -v "useless|mask_manager|gamma" | sort | uniq --unique | \
+          while read file; do BN=$(basename $(basename $file .cc) .c); \
+            echo ${BN:0:16} ; done | xargs echo | sed 's/ /|/g'
+  */
+
+  // all modules
+  gchar *tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
+                       "basecurve|basicadj|clipping|colisa|colorreconstruct|demosaic|exposure|finalscale"
+                       "|flip|highlights|invert|negadoctor|overexposed|rawoverexposed|rawprepare"
+                       "|shadhi|temperature|toneequal");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"),
+                       "tone", "bilat|filmicrgb|globaltonemap|levels"
+                       "|relight|rgbcurve|rgblevels|tonecurve|tonemap|zonesystem");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
+                       "channelmixer|colorbalance|colorchecker|colorcontrast|colorcorrection"
+                       "|colorin|colorout|colorzones|lut3d|monochrome|profile_gamma|velvia|vibrance");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
+                       "ashift|atrous|bilateral|cacorrect|defringe|denoiseprofile|dither"
+                       "|hazeremoval|hotpixels|lens|liquify|nlmeans|rawdenoise|retouch|rotatepixels"
+                       "|scalepixels|sharpen|spots");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
+                       "bloom|borders|colorize|colormapping|graduatednd|grain|highpass|lowlight"
+                       "|lowpass|soften|splittoning|vignette|watermark");
+  dt_lib_presets_add(_("all modules"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // minimal / 3 tabs
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
+                       "basicadj|ashift|basecurve|clipping"
+                       "|denoiseprofile|exposure|flip|lens|temperature");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
+                       "channelmixer|colorbalance|colorzones|graduatednd|rgbcurve"
+                       "|rgblevels|splittoning");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
+                       "bordersmonochrome|retouch|sharpen|vignette|watermark");
+  dt_lib_presets_add(_("minimal"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // display referred
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
+                       "basecurve|toneequal|clipping|flip|exposure|temperature"
+                       "|rgbcurve|rgblevels|bilat|shadhi|highlights");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
+                       "channelmixer|colorbalance|colorcorrection|colorzones|monochrome|velvia|vibrance");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
+                       "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
+                       "|lens|retouch|sharpen|nlmeans");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
+                       "borders|colorize|graduatednd|grain|splittoning|vignette|watermark");
+  dt_lib_presets_add(_("display referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // scene referred
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
+                       "filmicrgb|toneequal|clipping|flip|exposure|temperature|rgbcurve|rgblevels|bilat");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
+                       "channelmixer|colorbalance|colorzones|vibrance");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
+                       "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
+                       "|lens|retouch|sharpen|nlmeans");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
+                       "borders|colorize|graduatednd|grain|splittoning|vignette|watermark");
+  dt_lib_presets_add(_("scene referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // default / 3 tabs based on Aurélien's proposal
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "technical"), "technical",
+                       "ashift|basecurve|bilateral|cacorrect|clipping|colorchecker|colorin|colorout"
+                       "|colorreconstruct|defringe|demosaic|denoiseprofile|dither|exposure"
+                       "|filmicrgb|finalscale|flip|hazeremoval|highlights|hotpixels|invert|lens"
+                       "|lut3d|negadoctor|nlmeans|overexposed|rawdenoise"
+                       "|rawoverexposed|rotatepixels|scalepixels");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
+                       "basicadj|channelmixer|colisa|colorbalance|colorcontrast|colorcorrection"
+                       "|colorize|colorzones|globaltonemap|graduatednd|levels|relight|rgbcurve"
+                       "|rgblevels|shadhi|splittoning|temperature|tonecurve|toneequal|tonemap"
+                       "|velvia|vibrance|zonesystem");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
+                       "atrous|bilat|bloom|borders|clahe|colormapping"
+                       "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
+                       "|soften|spots|vignette|watermark");
+  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
 
   // if needed, we add a new preset, based on last user config
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
-    gchar *tx3 = _preset_retrieve_old_layout(NULL, NULL);
-    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx3, strlen(tx3), FALSE);
+    tx = _preset_retrieve_old_layout(NULL, NULL);
+    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx, strlen(tx), FALSE);
     dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("previous layout"));
+    g_free(tx);
 
-    gchar *tx4 = _preset_retrieve_old_layout_updated();
-    dt_lib_presets_add(_("previous config with new layout"), self->plugin_name, self->version(), tx4,
-                       strlen(tx4), FALSE);
+    tx = _preset_retrieve_old_layout_updated();
+    dt_lib_presets_add(_("previous config with new layout"), self->plugin_name, self->version(), tx,
+                       strlen(tx), FALSE);
+    g_free(tx);
   }
   // if they exists, we retrieve old user presets from old modulelist lib
   _preset_retrieve_old_presets(self);
@@ -1065,6 +1149,7 @@ static void _manage_editor_save(dt_lib_module_t *self)
 
   // update the preset in the database
   dt_lib_presets_update(d->edit_preset, self->plugin_name, self->version(), newname, "", params, strlen(params));
+  g_free(params);
 
   // if name has changed, we need to reflect the change on the presets list too
   _manage_preset_update_list(self);
@@ -1078,7 +1163,8 @@ static void _manage_editor_save(dt_lib_module_t *self)
       dt_conf_set_string("plugins/darkroom/modulegroups_preset", newname);
     // and we update the gui
     if(!dt_lib_presets_apply(newname, self->plugin_name, self->version()))
-      dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+      dt_lib_presets_apply((gchar *)C_("modulegroup", FALLBACK_PRESET_NAME),
+                           self->plugin_name, self->version());
   }
   g_free(preset);
   g_free(newname);
@@ -1825,8 +1911,9 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
       gchar *cur = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
       if(g_strcmp0(cur, preset) == 0)
       {
-        dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("default"));
-        dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+        dt_conf_set_string("plugins/darkroom/modulegroups_preset", C_("modulegroup", FALLBACK_PRESET_NAME));
+        dt_lib_presets_apply((gchar *)C_("modulegroup", FALLBACK_PRESET_NAME),
+                             self->plugin_name, self->version());
       }
       g_free(cur);
     }
