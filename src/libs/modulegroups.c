@@ -1011,6 +1011,19 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("all modules"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
+  // minimal / 3 tabs
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
+                       "basicadj|ashift|basecurve|clipping"
+                       "|denoiseprofile|exposure|flip|lens|temperature");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
+                       "channelmixer|colorbalance|colorzones|graduatednd|rgbcurve"
+                       "|rgblevels|splittoning");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
+                       "bordersmonochrome|retouch|sharpen|vignette|watermark");
+  dt_lib_presets_add(_("minimal"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
   // display referred
   tx = NULL;
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
