@@ -1045,15 +1045,15 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "technical"), "technical",
                        "ashift|basecurve|bilateral|cacorrect|clipping|colorchecker|colorin|colorout"
                        "|colorreconstruct|defringe|demosaic|denoiseprofile|dither|exposure"
-                       "|filmicrgb|finalscale|flip|gamma|hazeremoval|highlights|hotpixels|invert|lens"
-                       "|lut3d|mask_manager|negadoctor|nlmeans|overexposed|rawdenoise"
+                       "|filmicrgb|finalscale|flip|hazeremoval|highlights|hotpixels|invert|lens"
+                       "|lut3d|negadoctor|nlmeans|overexposed|rawdenoise"
                        "|rawoverexposed|rotatepixels|scalepixels");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
                        "basicadj|channelmixer|colisa|colorbalance|colorcontrast|colorcorrection"
                        "|colorize|colorzones|globaltonemap|graduatednd|levels|relight|rgbcurve"
                        "|rgblevels|shadhi|splittoning|temperature|tonecurve|toneequal|tonemap"
                        "|velvia|vibrance|zonesystem");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effects",
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
                        "atrous|bilat|bloom|borders|clahe|colormapping"
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
                        "|soften|spots|vignette|watermark");
