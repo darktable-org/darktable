@@ -871,7 +871,13 @@ dialog combobox window
   padding: 0.2em 0;
 }
 
-menu menuitem {
+popover
+{
+  padding: 0.4em;
+}
+
+menu menuitem
+{
   padding: 0 0.2em;
 }
 
