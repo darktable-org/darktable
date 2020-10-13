@@ -1434,7 +1434,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
         !(oldmono & DT_IMAGE_MONOCHROME_PREVIEW))
       {
         if(dt_imageio_has_mono_preview(path))
-          img->flags |= DT_IMAGE_MONOCHROME_PREVIEW;
+          img->flags |= (DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
       }
       if(oldmono != dt_image_monochrome_flags(img))
         dt_imageio_update_monochrome_workflow_tag(img->id, dt_image_monochrome_flags(img));
