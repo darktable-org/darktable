@@ -1076,7 +1076,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
   return 0;
 }
 
-char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw)
+char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow)
 {
   char* upcase = g_ascii_strup(name, -1);  // extension in capital letters to avoid character descenders
 
@@ -1092,6 +1092,13 @@ char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const g
     g_free(upcase);
     upcase = fullname;
   }
+  if(is_bw_flow)
+  {
+    gchar* fullname = g_strdup_printf("%s+",upcase);
+    g_free(upcase);
+    upcase = fullname;
+  }
+
   return upcase;
 }
 
