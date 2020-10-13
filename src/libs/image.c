@@ -50,7 +50,7 @@ typedef struct dt_lib_image_t
   GtkWidget *rotate_cw_button, *rotate_ccw_button, *remove_button, *delete_button, *create_hdr_button,
       *duplicate_button, *reset_button, *move_button, *copy_button, *group_button, *ungroup_button,
       *cache_button, *uncache_button, *refresh_button,
-      *set_monochrome_button, *set_color_button, *set_monoflow_button,
+      *set_monochrome_button, *set_color_button,
       *copy_metadata_button, *paste_metadata_button, *clear_metadata_button,
       *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
   GtkWidget *page1; // saved here for lua extensions
@@ -215,8 +215,6 @@ static void _update(dt_lib_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->set_monoflow_button), act_on_cnt > 0);
-
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -346,17 +344,13 @@ static void clear_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 
 static void set_monochrome_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_control_monochrome_images(1);
+
+  dt_control_monochrome_images(2);
 }
 
 static void set_color_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_control_monochrome_images(0);
-}
-
-static void set_monochrome_workflow_callback(GtkWidget *widget, dt_lib_module_t *self)
-{
-  dt_control_monochrome_images(2);
 }
 
 static void ratings_flag_callback(GtkWidget *widget, dt_lib_module_t *self)
@@ -549,17 +543,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->refresh_button, 0, line++, 6, 1);
   g_signal_connect(G_OBJECT(d->refresh_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(14));
 
-  d->set_monochrome_button = dt_ui_button_new(_("monochrome"), _("set selection as monochrome images"), NULL);
-  gtk_grid_attach(grid, d->set_monochrome_button, 0, line, 2, 1);
+  d->set_monochrome_button = dt_ui_button_new(_("monochrome"), _("set selection as monochrome images and activate monochrome workflow"), NULL);
+  gtk_grid_attach(grid, d->set_monochrome_button, 0, line, 3, 1);
   g_signal_connect(G_OBJECT(d->set_monochrome_button), "clicked", G_CALLBACK(set_monochrome_callback), self);
 
   d->set_color_button = dt_ui_button_new(_("color"), _("set selection as color images"), NULL);
-  gtk_grid_attach(grid, d->set_color_button, 2, line, 2, 1);
+  gtk_grid_attach(grid, d->set_color_button, 3, line++, 3, 1);
   g_signal_connect(G_OBJECT(d->set_color_button), "clicked", G_CALLBACK(set_color_callback), self);
-
-  d->set_monoflow_button = dt_ui_button_new(_("mono workflow"), _("set selection as monochrome images and activate monochrome optimised code on supported modules"), NULL);
-  gtk_grid_attach(grid, d->set_monoflow_button, 4, line++, 2, 1);
-  g_signal_connect(G_OBJECT(d->set_monoflow_button), "clicked", G_CALLBACK(set_monochrome_workflow_callback), self);
 
   /* connect preference changed signal */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(
@@ -639,7 +629,6 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "refresh exif", d->refresh_button);
   dt_accel_connect_button_lib(self, "set monochrome image", d->set_monochrome_button);
   dt_accel_connect_button_lib(self, "set color image", d->set_color_button);
-  dt_accel_connect_button_lib(self, "set monochrome workflow", d->set_monoflow_button);
   dt_accel_connect_button_lib(self, "copy metadata", d->copy_metadata_button);
   dt_accel_connect_button_lib(self, "paste metadata", d->paste_metadata_button);
   dt_accel_connect_button_lib(self, "clear metadata", d->clear_metadata_button);

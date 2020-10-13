@@ -588,7 +588,7 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
   const guint total = g_list_length(t);
   char message[512] = { 0 };
 
-  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY | DT_UNDO_TAGS);
 
   if(mode == 0)
     snprintf(message, sizeof(message), ngettext("set %d color image", "setting %d color images", total), total);

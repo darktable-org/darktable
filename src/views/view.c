@@ -1082,21 +1082,21 @@ char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const g
 
   if(is_hdr)
   {
-    gchar* fullname = g_strdup_printf("%s HDR",upcase);
+    gchar* fullname = g_strdup_printf("%s HDR", upcase);
     g_free(upcase);
     upcase = fullname;
   }
   if(is_bw)
   {
-    gchar* fullname = g_strdup_printf("%s B&W",upcase);
+    gchar* fullname = g_strdup_printf("%s B&W", upcase);
     g_free(upcase);
     upcase = fullname;
-  }
-  if(is_bw_flow)
-  {
-    gchar* fullname = g_strdup_printf("%s+",upcase);
-    g_free(upcase);
-    upcase = fullname;
+    if(!is_bw_flow)
+    {
+      fullname = g_strdup_printf("%s-", upcase);
+      g_free(upcase);
+      upcase = fullname;
+    }
   }
 
   return upcase;
