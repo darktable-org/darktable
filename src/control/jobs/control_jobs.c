@@ -604,11 +604,8 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
     if(mode == 0)
       img->flags &= ~(DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
     else
-    {
-      img->flags |= DT_IMAGE_MONOCHROME_PREVIEW;
-      if(mode == 2)
-        img->flags |= DT_IMAGE_MONOCHROME_WORKFLOW;
-    }
+      img->flags |= (DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
+
     const int mask_bw = dt_image_monochrome_flags(img);
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     dt_imageio_update_monochrome_workflow_tag(imgid, mask_bw);
