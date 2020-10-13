@@ -103,7 +103,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_NO_HISTORY_STACK   = 1 << 9,  // This iop will never show up in the history stack
   IOP_FLAGS_NO_MASKS           = 1 << 10, // The module doesn't support masks (used with SUPPORT_BLENDING)
   IOP_FLAGS_FENCE              = 1 << 11, // No module can be moved pass this one
-  IOP_FLAGS_ALLOW_FAST_PIPE    = 1 << 12  // Module can work with a fast pipe
+  IOP_FLAGS_ALLOW_FAST_PIPE    = 1 << 12, // Module can work with a fast pipe
+  IOP_FLAGS_UNSAFE_COPY        = 1 << 13  // Unsafe to copy as part of history
 } dt_iop_flags_t;
 
 /** status of a module*/
