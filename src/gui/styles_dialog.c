@@ -195,11 +195,27 @@ static void _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, 
     /* create the style from imageid */
     const gchar *name = gtk_entry_get_text(GTK_ENTRY(g->name));
     if(name && *name)
+    {
       if(dt_styles_create_from_image(name, gtk_entry_get_text(GTK_ENTRY(g->description)),
                                      g->imgid, result, _gui_styles_is_copy_module_order_set(g)))
       {
         dt_control_log(_("style named '%s' successfully created"), name);
       };
+    }
+    else
+    {
+      GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+      GtkWidget *dlg_changename
+                    = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING,
+                                             GTK_BUTTONS_OK, _("please give style a name"));
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(dlg_changename);
+#endif
+      gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
+      gtk_dialog_run(GTK_DIALOG(dlg_changename));
+      gtk_widget_destroy(dlg_changename);
+      return;
+    }
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g->nameorig);
@@ -243,6 +259,20 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog, gint response_id,
                          _gui_styles_is_update_module_order_set(g));
       }
       dt_control_log(_("style %s was successfully saved"), name);
+    }
+    else
+    {
+      GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+      GtkWidget *dlg_changename
+                    = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING,
+                                             GTK_BUTTONS_OK, _("please give style a name"));
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(dlg_changename);
+#endif
+      gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
+      gtk_dialog_run(GTK_DIALOG(dlg_changename));
+      gtk_widget_destroy(dlg_changename);
+      return;
     }
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
