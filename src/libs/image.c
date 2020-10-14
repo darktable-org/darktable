@@ -212,9 +212,24 @@ static void _update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->clear_metadata_button), act_on_cnt > 0);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_cnt > 0);
-
-  gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), act_on_cnt > 0);
+  if(act_on_cnt > 1)
+  {
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), true);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), true);
+  }
+  else if(act_on_cnt == 0)
+  {
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), false);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), false);
+  }
+  else
+  {
+    dt_image_t *img = dt_image_cache_get(darktable.image_cache, dt_view_get_image_to_act_on(), 'r');
+    const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), !is_bw);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), is_bw);
+  }
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -602,7 +617,8 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "copy the image locally"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "resync the local copy"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "refresh exif"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "copy metadata"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "set monochrome image"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "set color image"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "replace metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "clear metadata"), 0, 0);
