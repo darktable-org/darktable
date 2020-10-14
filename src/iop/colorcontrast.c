@@ -335,10 +335,10 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorcontrast_gui_data_t *g = IOP_GUI_ALLOC(colorcontrast);
 
   g->a_scale = dt_bauhaus_slider_from_params(self, "a_steepness");
-  gtk_widget_set_tooltip_text(g->a_scale, _("steepness of the a* curve in Lab"));
+  gtk_widget_set_tooltip_text(g->a_scale, _("steepness of the a* curve in Lab\nlower values desaturate greens and magenta while higher saturate them"));
 
   g->b_scale = dt_bauhaus_slider_from_params(self, "b_steepness");
-  gtk_widget_set_tooltip_text(g->b_scale, _("steepness of the b* curve in Lab"));
+  gtk_widget_set_tooltip_text(g->b_scale, _("steepness of the b* curve in Lab\nlower values desaturate blues and yellows while higher saturate them"));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
