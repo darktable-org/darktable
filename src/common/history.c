@@ -486,6 +486,11 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   return module_added;
 }
 
+static inline gboolean _is_module_to_skip(const int flags)
+{
+  return flags & (IOP_FLAGS_DEPRECATED | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN);
+}
+
 static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_imgid, GList *ops)
 {
   GList *modules_used = NULL;
@@ -558,6 +563,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
          && !(mod_src->default_enabled && mod_src->enabled
               && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) // it's not a enabled by default module with unmodified settings
               && !dt_iop_is_hidden(mod_src))
+         && !_is_module_to_skip(mod_src->flags())
         )
       {
         mod_list = g_list_append(mod_list, mod_src);
@@ -626,20 +632,47 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
   // the user wants an exact duplicate of the history, so just copy the db
   if(!ops)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.history "
-                                "            (imgid,num,module,operation,op_params,enabled,blendop_params, "
-                                "             blendop_version,multi_priority,multi_name)"
-                                " SELECT ?1,num,module,operation,op_params,enabled,blendop_params, "
-                                "        blendop_version,multi_priority,multi_name "
-                                " FROM main.history"
-                                " WHERE imgid=?2"
-                                " ORDER BY num",
-                                -1, &stmt, NULL);
+    // let's build the list of IOP to not copy
+    GList *modules = darktable.iop;
+    gchar *skip_modules = NULL;
+    while(modules)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
+
+      if(_is_module_to_skip(module->flags()))
+      {
+        if(skip_modules)
+          skip_modules = dt_util_dstrcat(skip_modules, ",");
+
+        skip_modules = dt_util_dstrcat(skip_modules, "'%s'", module->op);
+      }
+
+      modules = g_list_next(modules);
+    }
+
+    if(!skip_modules)
+      skip_modules = dt_util_dstrcat(skip_modules, "@");
+
+    gchar *query = g_strdup_printf
+      ("INSERT INTO main.history "
+       "            (imgid,num,module,operation,op_params,enabled,blendop_params, "
+       "             blendop_version,multi_priority,multi_name)"
+       " SELECT ?1,num,module,operation,op_params,enabled,blendop_params, "
+       "        blendop_version,multi_priority,multi_name "
+       " FROM main.history"
+       " WHERE imgid=?2"
+       "       AND operation NOT IN (%s)"
+       " ORDER BY num", skip_modules);
+    g_free(skip_modules);
+
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    g_free(query);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO main.masks_history "
