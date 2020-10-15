@@ -5,8 +5,8 @@ Building manual
 To build the usermanual you need to install the following tools:
   xsltproc (plus optionally saxon), fop and gnome-doc-utils (for xml2po)
 
-XSLT processor saxon is able to give a nicely looking html usermanual with
-correctly displayed images and screenshots. If saxon is not found, xsltproc
+XSLT processor Saxon is able to give a nicely looking html usermanual with
+correctly displayed images and screenshots. If Saxon is not found, xsltproc
 will be used as a fallback. Expect inconsistent screenshot and image dimensions in
 that case.
 
