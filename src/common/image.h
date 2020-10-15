@@ -246,7 +246,7 @@ int dt_image_is_matrix_correction_supported(const dt_image_t *img);
 int dt_image_is_rawprepare_supported(const dt_image_t *img);
 /** returns the bitmask containing info about monochrome images */
 int dt_image_monochrome_flags(const dt_image_t *img);
-/** returns true if the image has been tested to be monochrome and the image wants monochrome workflow */ 
+/** returns true if the image has been tested to be monochrome and the image wants monochrome workflow */
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
 /** returns the full path name where the image was imported from. from_cache=TRUE check and return local
  * cached filename if any. */
