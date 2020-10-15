@@ -1304,7 +1304,9 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
   GtkWidget *lb = NULL;
 
   int rec_nb = 0;
-  GList *modules = g_list_sort(g_list_first(darktable.iop), _manage_editor_module_add_sort);
+
+  GList *m2 = g_list_copy(g_list_first(darktable.iop));
+  GList *modules = g_list_sort(m2, _manage_editor_module_add_sort);
   while(modules)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
@@ -1341,6 +1343,7 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
     }
     modules = g_list_next(modules);
   }
+  g_list_free(m2);
 
   if(rec_nb > 0)
   {
