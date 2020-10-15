@@ -214,14 +214,16 @@ static void _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, 
         gtk_widget_destroy(dlg_overwrite);
 
 
-        // if result is BUTTON_NO exit without destroy dialog, to permit other name
-        if(dlg_ret == GTK_RESPONSE_NO)
+        /* on button yes delete style name for overwriting
+         * else statement: on RESPONSE_NO and escape key
+         */
+        if(dlg_ret == GTK_RESPONSE_YES) 
+        {
+          dt_styles_delete_by_name(name);
+        }
+        else 
         {
           return;
-        }
-        else if(dlg_ret == GTK_RESPONSE_YES) {
-          // delete style
-          dt_styles_delete_by_name(name);
         }
       }
 
