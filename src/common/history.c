@@ -491,7 +491,7 @@ static inline gboolean _is_module_to_skip(const int flags)
   return flags & (IOP_FLAGS_DEPRECATED | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN);
 }
 
-static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_imgid, GList *ops)
+static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_imgid, GList *ops, const gboolean copy_full)
 {
   GList *modules_used = NULL;
 
@@ -563,7 +563,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
          && !(mod_src->default_enabled && mod_src->enabled
               && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) // it's not a enabled by default module with unmodified settings
               && !dt_iop_is_hidden(mod_src))
-         && !_is_module_to_skip(mod_src->flags())
+         && (copy_full || !_is_module_to_skip(mod_src->flags()))
         )
       {
         mod_list = g_list_append(mod_list, mod_src);
@@ -601,7 +601,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   return 0;
 }
 
-static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const int32_t dest_imgid, GList *ops)
+static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const int32_t dest_imgid, GList *ops, const gboolean copy_full)
 {
   int ret_val = 0;
   sqlite3_stmt *stmt;
@@ -633,25 +633,29 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
   if(!ops)
   {
     // let's build the list of IOP to not copy
-    GList *modules = darktable.iop;
     gchar *skip_modules = NULL;
-    while(modules)
+
+    if(!copy_full)
     {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
-
-      if(_is_module_to_skip(module->flags()))
+      GList *modules = darktable.iop;
+      while(modules)
       {
-        if(skip_modules)
-          skip_modules = dt_util_dstrcat(skip_modules, ",");
+        dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
 
-        skip_modules = dt_util_dstrcat(skip_modules, "'%s'", module->op);
+        if(_is_module_to_skip(module->flags()))
+        {
+          if(skip_modules)
+            skip_modules = dt_util_dstrcat(skip_modules, ",");
+
+          skip_modules = dt_util_dstrcat(skip_modules, "'%s'", module->op);
+        }
+
+        modules = g_list_next(modules);
       }
-
-      modules = g_list_next(modules);
     }
 
     if(!skip_modules)
-      skip_modules = dt_util_dstrcat(skip_modules, "@");
+      skip_modules = dt_util_dstrcat(skip_modules, "'@'");
 
     gchar *query = g_strdup_printf
       ("INSERT INTO main.history "
@@ -674,13 +678,15 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
 
     g_free(query);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO main.masks_history "
-                                "           (imgid, num, formid, form, name, version, points, points_count, source)"
-                                " SELECT ?1, num, formid, form, name, version, points, points_count, source "
-                                " FROM main.masks_history"
-                                " WHERE imgid = ?2",
-                                -1, &stmt, NULL);
+    query = g_strdup_printf
+      ("INSERT INTO main.masks_history "
+       "           (imgid, num, formid, form, name, version, points, points_count, source)"
+       " SELECT ?1, num, formid, form, name, version, points, points_count, source "
+       "  FROM main.masks_history"
+       "  WHERE imgid = ?2"
+       "    AND num NOT IN (SELECT num FROM history WHERE imgid=?2 AND OPERATION IN (%s))", skip_modules);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
@@ -746,14 +752,15 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
   else
   {
     // since the history and masks where deleted we can do a merge
-    ret_val = _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops);
+    ret_val = _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_full);
   }
 
   return ret_val;
 }
 
 int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_imgid,
-                                       const gboolean merge, GList *ops, const gboolean copy_iop_order)
+                                       const gboolean merge, GList *ops,
+                                       const gboolean copy_iop_order, const gboolean copy_full)
 {
   if(imgid == dest_imgid) return 1;
 
@@ -782,9 +789,9 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
 
   int ret_val = 0;
   if(merge)
-    ret_val = _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops);
+    ret_val = _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_full);
   else
-    ret_val = _history_copy_and_paste_on_image_overwrite(imgid, dest_imgid, ops);
+    ret_val = _history_copy_and_paste_on_image_overwrite(imgid, dest_imgid, ops, copy_full);
 
   dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
@@ -1609,9 +1616,14 @@ const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
 
 gboolean dt_history_copy(int imgid)
 {
+  // note that this routine does not copy anything, it just setup the copy_paste proxy
+  // with the needed information that will be used while pasting.
+
   if(imgid <= 0) return FALSE;
+
   darktable.view_manager->copy_paste.copied_imageid = imgid;
-  darktable.view_manager->copy_paste.partial = FALSE;
+  darktable.view_manager->copy_paste.full_copy = FALSE;
+
   if(darktable.view_manager->copy_paste.selops)
   {
     g_list_free(darktable.view_manager->copy_paste.selops);
@@ -1620,6 +1632,7 @@ gboolean dt_history_copy(int imgid)
 
   // check if images is currently loaded in darkroom
   if(dt_dev_is_current_image(darktable.develop, imgid)) dt_dev_write_history(darktable.develop);
+
   return TRUE;
 }
 
@@ -1627,6 +1640,11 @@ gboolean dt_history_copy_parts(int imgid)
 {
   if(dt_history_copy(imgid))
   {
+    // we want to copy all history and let user select the parts needed
+    darktable.view_manager->copy_paste.full_copy = TRUE;
+
+    // run dialog, it will insert into selops the selected moduel
+
     if(dt_gui_hist_dialog_new(&(darktable.view_manager->copy_paste), imgid, TRUE) == GTK_RESPONSE_CANCEL)
       return FALSE;
     return TRUE;
@@ -1649,8 +1667,11 @@ gboolean dt_history_paste_on_list(const GList *list, gboolean undo)
   while(l)
   {
     const int dest = GPOINTER_TO_INT(l->data);
-    dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid, dest, merge,
-                                       darktable.view_manager->copy_paste.selops, darktable.view_manager->copy_paste.copy_iop_order);
+    dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
+                                       dest, merge,
+                                       darktable.view_manager->copy_paste.selops,
+                                       darktable.view_manager->copy_paste.copy_iop_order,
+                                       darktable.view_manager->copy_paste.full_copy);
     l = g_list_next(l);
   }
   if(undo) dt_undo_end_group(darktable.undo);
@@ -1686,9 +1707,11 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
   while(l)
   {
     const int dest = GPOINTER_TO_INT(l->data);
-    dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid, dest, merge,
+    dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
+                                       dest, merge,
                                        darktable.view_manager->copy_paste.selops,
-                                       darktable.view_manager->copy_paste.copy_iop_order);
+                                       darktable.view_manager->copy_paste.copy_iop_order,
+                                       darktable.view_manager->copy_paste.full_copy);
     l = g_list_next(l);
   }
   if(undo) dt_undo_end_group(darktable.undo);
