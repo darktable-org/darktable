@@ -289,8 +289,11 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
         gint dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
         gtk_widget_destroy(dlg_overwrite);
 
-        // if result is BUTTON_NO exit without destroy dialog, to permit other name
-        if(dlg_ret == GTK_RESPONSE_NO) return;
+        // if result is BUTTON_NO or ESCAPE keypress exit without destroying dialog, to permit other name
+        if(dlg_ret != GTK_RESPONSE_YES) 
+        {
+          return;
+        }
       }
       else
       {
