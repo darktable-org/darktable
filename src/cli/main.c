@@ -30,6 +30,7 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/film.h"
+#include "common/file_location.h"
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -179,9 +180,12 @@ int main(int argc, char *arg[])
 #ifdef __APPLE__
   dt_osx_prepare_environment();
 #endif
-  bindtextdomain(GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
-  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-  textdomain(GETTEXT_PACKAGE);
+
+  // get valid locale dir
+  dt_loc_init(NULL, NULL, NULL, NULL, NULL, NULL);
+  char localedir[PATH_MAX] = { 0 };
+  dt_loc_get_localedir(localedir, sizeof(localedir));
+  bindtextdomain(GETTEXT_PACKAGE, localedir);
 
   if(!gtk_parse_args(&argc, &arg)) exit(1);
 

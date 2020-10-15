@@ -6,6 +6,13 @@
 #pragma once
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <glib.h>
+
+#ifdef _WIN32
+#include <fileapi.h>
+#endif
 
 /**
  * g_realpath:
@@ -20,10 +27,18 @@ static inline gchar *g_realpath(const char *path)
 #define PATH_MAX 4096
 #endif
   char buffer[PATH_MAX] = { 0 };
-  if(realpath(path, buffer))
+
+  char* res = realpath(path, buffer);
+
+  if(res) 
+  {
     return g_strdup(buffer);
-  else
-    return NULL;
+  }
+  else 
+  {     
+    fprintf(stderr, "path lookup '%s' fails with: '%s'\n", path, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
 #else
   char *buffer;
   char dummy;
