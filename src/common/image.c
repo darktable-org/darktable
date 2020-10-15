@@ -128,6 +128,47 @@ int dt_image_is_monochrome(const dt_image_t *img)
   return (img->flags & DT_IMAGE_MONOCHROME);
 }
 
+void _image_set_monochrome_flag(const int32_t imgid, gboolean monochrome, gboolean undo_on)
+{
+  dt_image_t *img = NULL;
+  gboolean changed = FALSE;
+
+  img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  if(img)
+  {
+    const int mask_bw = dt_image_monochrome_flags(img);
+    dt_image_cache_read_release(darktable.image_cache, img);
+
+    if((!monochrome) && (mask_bw & DT_IMAGE_MONOCHROME_PREVIEW))
+    {
+      // wanting it to be color found preview
+      img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+      img->flags &= ~(DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
+      changed = TRUE;
+    }
+    if(monochrome && ((mask_bw == 0) || (mask_bw == DT_IMAGE_MONOCHROME_PREVIEW)))
+    {
+      // wanting monochrome and found color or just preview without workflow activation
+      img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+      img->flags |= (DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
+      changed = TRUE;
+    }
+    if(changed)
+    {
+      const int mask = dt_image_monochrome_flags(img);
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+      dt_imageio_update_monochrome_workflow_tag(imgid, mask);
+    }
+  }
+  else
+    fprintf(stderr,"[image] could not dt_image_cache_get imgid %i\n", imgid);
+}
+
+void dt_image_set_monochrome_flag(const int32_t imgid, gboolean monochrome)
+{
+  _image_set_monochrome_flag(imgid, monochrome, TRUE);
+}
+
 int dt_image_is_matrix_correction_supported(const dt_image_t *img)
 {
   return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW )) && !(img->flags & DT_IMAGE_MONOCHROME) );
