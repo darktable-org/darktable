@@ -104,7 +104,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
-  dt_history_copy_and_paste_on_image(imgid,newid,FALSE,NULL, TRUE);
+  dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }

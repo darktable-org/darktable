@@ -235,7 +235,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
     goto cleanup;
   if((thumb_width < 32) || (thumb_height < 32) || (tmp == NULL))
     goto cleanup;
- 
+
   mono = TRUE;
   for(int y = 0; y < thumb_height; y++)
   {
@@ -245,7 +245,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
       if((in[0] != in[1]) || (in[0] != in[2]) || (in[1] != in[2]))
       {
         mono = FALSE;
-        goto cleanup;      
+        goto cleanup;
       }
     }
   }
