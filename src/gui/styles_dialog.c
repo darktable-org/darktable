@@ -196,6 +196,35 @@ static void _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, 
     const gchar *name = gtk_entry_get_text(GTK_ENTRY(g->name));
     if(name && *name)
     {
+        
+      /* style already exists */
+      if(name && (dt_styles_exists(name)) != 0)
+      {
+        GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+        GtkWidget *dlg_overwrite = gtk_message_dialog_new(
+            GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
+            _("style `%s' already exists.\ndo you want to overwrite?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+        dt_osx_disallow_fullscreen(dlg_overwrite);
+#endif
+
+        gtk_window_set_title(GTK_WINDOW(dlg_overwrite), _("overwrite style?"));
+
+        gint dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
+        gtk_widget_destroy(dlg_overwrite);
+
+
+        // if result is BUTTON_NO exit without destroy dialog, to permit other name
+        if(dlg_ret == GTK_RESPONSE_NO)
+        {
+          return;
+        }
+        else if(dlg_ret == GTK_RESPONSE_YES) {
+          // delete style
+          dt_styles_delete_by_name(name);
+        }
+      }
+
       if(dt_styles_create_from_image(name, gtk_entry_get_text(GTK_ENTRY(g->description)),
                                      g->imgid, result, _gui_styles_is_copy_module_order_set(g)))
       {
