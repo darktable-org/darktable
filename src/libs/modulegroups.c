@@ -1200,10 +1200,10 @@ static void _manage_editor_module_update_list(dt_lib_modulegroups_group_t *gr, i
   }
 
   // and we add the ones from the list
-  GList *modules2 = g_list_last(darktable.iop);
+  GList *modules2 = g_list_last(darktable.develop->iop);
   while(modules2)
   {
-    dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules2->data);
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules2->data);
     if(g_list_find_custom(gr->modules, module->op, _iop_compare))
     {
       GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
