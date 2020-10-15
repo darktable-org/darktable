@@ -71,6 +71,7 @@ typedef struct
   gboolean has_audio;
   gboolean is_grouped;
   gboolean is_bw;
+  gboolean is_bw_flow;
   gboolean is_hdr;
   gboolean has_localcopy;
   int groupid;
