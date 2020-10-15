@@ -28,7 +28,7 @@ if(${Fop_BIN} STREQUAL "Fop_BIN-NOTFOUND")
 endif()
 
 if((NOT Saxon_FOUND) AND (${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND"))
-    message("No Xslt processor found")
+    message("No Xslt processor (Saxon) found")
     set(can_build_usermanual OFF)
 endif()
 
