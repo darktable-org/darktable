@@ -37,4 +37,9 @@ if (TESTBUILD_OPENCL_PROGRAMS)
 endif()
 
 install(FILES ${DT_OPENCL_KERNELS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/kernels COMPONENT DTApplication)
+# Need to copy to have kernels all in one path like after installing
+file(COPY ${DT_OPENCL_KERNELS} DESTINATION ${DARKTABLE_DATADIR}/kernels)
+
 install(FILES ${DT_OPENCL_EXTRA} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/kernels COMPONENT DTApplication)
+# Need to copy to have kernels all in one path like after installing
+file(COPY ${DT_OPENCL_EXTRA} DESTINATION ${DARKTABLE_DATADIR}/kernels)

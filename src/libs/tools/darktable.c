@@ -294,7 +294,7 @@ static void _lib_darktable_show_about_dialog()
 
   const char *str = _("all those of you that made previous releases possible");
 
-#include "libs/tools/darktable_authors.h"
+#include "tools/darktable_authors.h"
 
   const char *final[] = {str, NULL };
   gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), _("and..."), final);
