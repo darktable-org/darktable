@@ -238,6 +238,8 @@ int dt_image_is_ldr(const dt_image_t *img);
 int dt_image_is_raw(const dt_image_t *img);
 /** returns non-zero if the image contains float data. */
 int dt_image_is_hdr(const dt_image_t *img);
+/** set the monochrome flags if monochrome is TRUE and clear it otherwise */
+void dt_image_set_monochrome_flag(const int32_t imgid, gboolean monochrome);
 /** returns non-zero if this image was taken using a monochrome camera */
 int dt_image_is_monochrome(const dt_image_t *img);
 /** returns non-zero if the image supports a color correction matrix */
