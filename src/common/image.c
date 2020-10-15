@@ -140,8 +140,8 @@ int dt_image_is_rawprepare_supported(const dt_image_t *img)
 
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img)
 {
-  return ((img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_BAYER)) &&
-          (img->flags & DT_IMAGE_MONOCHROME_WORKFLOW));
+  return ((img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ||
+          ((img->flags & DT_IMAGE_MONOCHROME_PREVIEW) && (img->flags & DT_IMAGE_MONOCHROME_WORKFLOW)));
 }
 
 int dt_image_monochrome_flags(const dt_image_t *img)

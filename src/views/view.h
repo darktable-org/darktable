@@ -194,7 +194,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
 int dt_view_get_image_to_act_on();
 
 /** returns an uppercase string of file extension **plus** some flag information **/
-char* dt_view_extend_modes_str(const char * name, const int is_hdr, const int is_bw);
+char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow);
 /** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
 int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality);
 

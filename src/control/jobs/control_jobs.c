@@ -580,6 +580,71 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   dt_control_queue_redraw_center();
   return 0;
 }
+static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  const int32_t mode = params->flag;
+  GList *t = params->index;
+  const guint total = g_list_length(t);
+  char message[512] = { 0 };
+  double fraction = 0.0f;
+
+  if(mode == 0)
+    snprintf(message, sizeof(message), ngettext("set %d color image", "setting %d color images", total), total);
+  else
+    snprintf(message, sizeof(message), ngettext("set %d monochrome image", "setting %d monochrome images", total), total);
+
+  dt_control_job_set_progress_message(job, message);
+  while(t)
+  {
+    const int imgid = GPOINTER_TO_INT(t->data);
+    if(imgid >= 0)
+    {
+      dt_image_t *img = NULL;
+      gboolean changed = false;
+
+      img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      if(img)
+      {
+        const int mask_bw = dt_image_monochrome_flags(img);
+        dt_image_cache_read_release(darktable.image_cache, img);
+
+        if((mode == 0) && (mask_bw & DT_IMAGE_MONOCHROME_PREVIEW))
+        {
+          // wanting it to be color found preview
+          img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+          img->flags &= ~(DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
+          changed = true;
+        }
+        if((mode != 0) && ((mask_bw == 0) || (mask_bw == DT_IMAGE_MONOCHROME_PREVIEW)))
+        {
+          // wanting monochrome and found color or just preview without workflow activation
+          img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+          img->flags |= (DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
+          changed = true;
+        }
+        if(changed)
+        {
+          const int mask = dt_image_monochrome_flags(img);
+          dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+          dt_imageio_update_monochrome_workflow_tag(imgid, mask);
+        }
+      }
+      else
+        fprintf(stderr,"[dt_control_monochrome_images_job_run] could not dt_image_cache_get imgid %i\n", imgid);
+    }
+    else
+      fprintf(stderr,"[dt_control_monochrome_images_job_run] got illegal imgid %i\n", imgid);
+
+    t = g_list_next(t);
+    fraction += 1.0 / total;
+    dt_control_job_set_progress(job, fraction);
+  }
+
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_control_queue_redraw_center();
+  return 0;
+}
 
 static char *_get_image_list(GList *l)
 {
@@ -1179,26 +1244,40 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->index;
   guint total = g_list_length(t);
+  double fraction = 0.0f;
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("refreshing info for %d image", "refreshing info for %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   while(t)
   {
     const int imgid = GPOINTER_TO_INT(t->data);
-    gboolean from_cache = TRUE;
-    char sourcefile[PATH_MAX];
-    dt_image_full_path(imgid, sourcefile, sizeof(sourcefile), &from_cache);
+    if(imgid >= 0)
+    {
+      gboolean from_cache = TRUE;
+      char sourcefile[PATH_MAX];
+      dt_image_full_path(imgid, sourcefile, sizeof(sourcefile), &from_cache);
 
-    dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-    dt_exif_read(img, sourcefile);
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+      if(img)
+      {
+        dt_exif_read(img, sourcefile);
+        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+      }
+      else
+        fprintf(stderr,"[dt_control_refresh_exif_run] couldn't dt_image_cache_get for imgid %i\n", imgid);
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+    }
+    else
+      fprintf(stderr,"[dt_control_refresh_exif_run] illegal imgid %i\n", imgid);
 
     t = g_list_next(t);
-    const double fraction = 1.0 / total;
+    fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -1410,6 +1489,13 @@ void dt_control_flip_images(const int32_t cw)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_flip_images_job_run, N_("flip images"), cw,
+                                                          NULL, PROGRESS_SIMPLE, TRUE));
+}
+
+void dt_control_monochrome_images(const int32_t mode)
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&dt_control_monochrome_images_job_run, N_("set monochrome images"), mode,
                                                           NULL, PROGRESS_SIMPLE, TRUE));
 }
 

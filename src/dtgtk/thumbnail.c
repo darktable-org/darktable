@@ -147,6 +147,7 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
     thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     thumb->rating = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
     thumb->is_bw = dt_image_monochrome_flags(img);
+    thumb->is_bw_flow = dt_image_use_monochrome_workflow(img);
     thumb->is_hdr = dt_image_is_hdr(img);
 
     thumb->groupid = img->group_id;
@@ -249,7 +250,7 @@ static void _thumb_write_extension(dt_thumbnail_t *thumb)
   gchar *ext2 = NULL;
   while(ext > thumb->filename && *ext != '.') ext--;
   ext++;
-  gchar *uext = dt_view_extend_modes_str(ext, thumb->is_hdr, thumb->is_bw);
+  gchar *uext = dt_view_extend_modes_str(ext, thumb->is_hdr, thumb->is_bw, thumb->is_bw_flow);
   ext2 = dt_util_dstrcat(ext2, "%s", uext);
   gtk_label_set_text(GTK_LABEL(thumb->w_ext), ext2);
   g_free(uext);
