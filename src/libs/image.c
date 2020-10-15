@@ -214,13 +214,13 @@ static void _update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_cnt > 0);
   if(act_on_cnt > 1)
   {
-    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), true);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), true);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), TRUE);
   }
   else if(act_on_cnt == 0)
   {
-    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), false);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), false);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), FALSE);
   }
   else
   {

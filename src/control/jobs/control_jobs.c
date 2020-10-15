@@ -603,7 +603,7 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
     if(imgid >= 0)
     {
       dt_image_t *img = NULL;
-      gboolean changed = false;
+      gboolean changed = FALSE;
 
       img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       if(img)
@@ -616,14 +616,14 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
           // wanting it to be color found preview
           img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
           img->flags &= ~(DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
-          changed = true;
+          changed = TRUE;
         }
         if((mode != 0) && ((mask_bw == 0) || (mask_bw == DT_IMAGE_MONOCHROME_PREVIEW)))
         {
           // wanting monochrome and found color or just preview without workflow activation
           img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
           img->flags |= (DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
-          changed = true;
+          changed = TRUE;
         }
         if(changed)
         {
