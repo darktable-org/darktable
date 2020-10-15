@@ -281,6 +281,9 @@ void _set_dimensions(dt_lib_export_t *d, uint32_t max_width, uint32_t max_height
   gtk_entry_set_text(GTK_ENTRY(d->height), max_height_char);
   --darktable.gui->reset;
 
+  dt_conf_set_int(CONFIG_PREFIX "width", max_width);
+  dt_conf_set_int(CONFIG_PREFIX "height", max_height);
+
   g_free(max_width_char);
   g_free(max_height_char);
   _resync_print_dimensions(d);
