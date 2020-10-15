@@ -1427,7 +1427,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
     if(!exifData.empty())
     {
       res = _exif_decode_exif_data(img, exifData);
- 
+
       const int oldmono = dt_image_monochrome_flags(img);
 
       if(dt_conf_get_bool("ui/detect_mono_exif") &&

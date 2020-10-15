@@ -2004,7 +2004,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     int format = 0;
     for(int k = 0; k < 5; k++)
       format += gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[k])) * dt_gui_presets_format_flag[k];
-    format ^= DT_PRESETS_FOR_NOT;  
+    format ^= DT_PRESETS_FOR_NOT;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, format);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, g->rowid);
     sqlite3_step(stmt);
