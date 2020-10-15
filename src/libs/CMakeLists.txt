@@ -1,4 +1,4 @@
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/../")
+include_directories("${DARKTABLE_BINDIR}/")
 
 include(manage-symbol-visibility)
 
@@ -127,5 +127,5 @@ foreach(module ${MODULES})
                               PROPERTIES
                               INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
     endif(WIN32)
-    install(TARGETS  ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable COMPONENT DTApplication)
+    install(TARGETS ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable COMPONENT DTApplication)
 endforeach(module)

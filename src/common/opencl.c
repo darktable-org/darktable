@@ -192,7 +192,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   char *devname = calloc(1024, sizeof(char));
   char *drvversion = calloc(1024, sizeof(char));
 
-  char *dtpath = calloc(PATH_MAX, sizeof(char));
+  char kerneldir[PATH_MAX] = { 0 };
   char *filename = calloc(PATH_MAX, sizeof(char));
   char *confentry = calloc(PATH_MAX, sizeof(char));
   char *binname = calloc(PATH_MAX, sizeof(char));
@@ -392,10 +392,11 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     goto end;
   }
 
-  dt_loc_get_datadir(dtpath, PATH_MAX * sizeof(char));
-  snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "programs.conf", dtpath);
-  char kerneldir[PATH_MAX] = { 0 };
-  snprintf(kerneldir, sizeof(kerneldir), "%s" G_DIR_SEPARATOR_S "kernels", dtpath);
+  dt_loc_get_kerneldir(kerneldir, sizeof(kerneldir));
+  dt_print(DT_DEBUG_DEV, "kernel directory: %s\n", kerneldir);
+
+  snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "programs.conf", kerneldir);
+
   char *escapedkerneldir = NULL;
 #ifndef __APPLE__
   escapedkerneldir = g_strdup_printf("\"%s\"", kerneldir);
@@ -469,7 +470,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
         continue;
       }
 
-      snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "%s", dtpath, programname);
+      snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "%s", kerneldir, programname);
       snprintf(binname, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
       int loaded_cached;
@@ -516,7 +517,6 @@ end:
   free(devname);
   free(drvversion);
 
-  free(dtpath);
   free(filename);
   free(confentry);
   free(binname);
@@ -1504,9 +1504,9 @@ static FILE *fopen_stat(const char *filename, struct stat *st)
 
 void dt_opencl_md5sum(const char **files, char **md5sums)
 {
-  char dtpath[PATH_MAX] = { 0 };
+  char kerneldir[PATH_MAX] = { 0 };
   char filename[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(dtpath, sizeof(dtpath));
+  dt_loc_get_kerneldir(kerneldir, sizeof(kerneldir));
 
   for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++, files++, md5sums++)
   {
@@ -1516,7 +1516,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
       continue;
     }
 
-    snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "%s", dtpath, *files);
+    snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "%s", kerneldir, *files);
 
     struct stat filestat;
     FILE *f = fopen_stat(filename, &filestat);
@@ -1555,7 +1555,6 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
     free(file);
   }
 }
-
 
 int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char *binname,
                            const char *cachedir, char *md5sum, char **includemd5, int *loaded_cached)
