@@ -803,7 +803,8 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     if(duplicate)
     {
       newimgid = dt_image_duplicate(imgid);
-      if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE);
+      if(newimgid != -1)
+        dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE);
     }
     else
       newimgid = imgid;
