@@ -602,38 +602,7 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
     const int imgid = GPOINTER_TO_INT(t->data);
     if(imgid >= 0)
     {
-      dt_image_t *img = NULL;
-      gboolean changed = FALSE;
-
-      img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      if(img)
-      {
-        const int mask_bw = dt_image_monochrome_flags(img);
-        dt_image_cache_read_release(darktable.image_cache, img);
-
-        if((mode == 0) && (mask_bw & DT_IMAGE_MONOCHROME_PREVIEW))
-        {
-          // wanting it to be color found preview
-          img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-          img->flags &= ~(DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
-          changed = TRUE;
-        }
-        if((mode != 0) && ((mask_bw == 0) || (mask_bw == DT_IMAGE_MONOCHROME_PREVIEW)))
-        {
-          // wanting monochrome and found color or just preview without workflow activation
-          img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-          img->flags |= (DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
-          changed = TRUE;
-        }
-        if(changed)
-        {
-          const int mask = dt_image_monochrome_flags(img);
-          dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-          dt_imageio_update_monochrome_workflow_tag(imgid, mask);
-        }
-      }
-      else
-        fprintf(stderr,"[dt_control_monochrome_images_job_run] could not dt_image_cache_get imgid %i\n", imgid);
+      dt_image_set_monochrome_flag(imgid, mode == 2);
     }
     else
       fprintf(stderr,"[dt_control_monochrome_images_job_run] got illegal imgid %i\n", imgid);
