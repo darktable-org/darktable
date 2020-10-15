@@ -52,8 +52,9 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 
     Make sure you have JAVA runtime installed in Windows (https://www.java.com/en/download/)
 
-	Manually install SAXON: https://sourceforge.net/projects/saxon/files/Saxon-HE/
+	Manually install Saxon: https://sourceforge.net/projects/saxon/files/Saxon-HE/
     Copy files into ~/java/saxon/
+    Copy the .jar file (e.g. saxon-he-10.2.jar) to ~/java/saxon/saxon.jar
 
     Manually install DocBook Extension to Saxon:
 	Download the file docbook-xsl-saxon-1.00.zip from https://sourceforge.net/projects/docbook/files/docbook-xsl-saxon/1.00/
