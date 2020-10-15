@@ -53,6 +53,15 @@
 #endif
 #include <glib/gstdio.h>
 
+typedef struct dt_undo_monochrome_t
+{
+  int32_t imgid;
+  gboolean before;
+  gboolean after;
+} dt_undo_monochrome_t;
+
+static void _pop_undo_execute(const int imgid, const gboolean before, const gboolean after);
+
 static int64_t max_image_position()
 {
   sqlite3_stmt *stmt = NULL;
@@ -128,6 +137,19 @@ int dt_image_is_monochrome(const dt_image_t *img)
   return (img->flags & DT_IMAGE_MONOCHROME);
 }
 
+static void _pop_mono_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
+{
+  if(type == DT_UNDO_FLAGS)
+  {
+    dt_undo_monochrome_t *undomono = (dt_undo_monochrome_t *)data;
+
+    const gboolean before = (action == DT_ACTION_UNDO) ? undomono->after : undomono->before;
+    const gboolean after  = (action == DT_ACTION_UNDO) ? undomono->before : undomono->after;
+    _pop_undo_execute(undomono->imgid, before, after);
+    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undomono->imgid));
+  }
+}
+
 void _image_set_monochrome_flag(const int32_t imgid, gboolean monochrome, gboolean undo_on)
 {
   dt_image_t *img = NULL;
@@ -158,6 +180,15 @@ void _image_set_monochrome_flag(const int32_t imgid, gboolean monochrome, gboole
       const int mask = dt_image_monochrome_flags(img);
       dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
       dt_imageio_update_monochrome_workflow_tag(imgid, mask);
+
+      if(undo_on)
+      {
+        dt_undo_monochrome_t *undomono = (dt_undo_monochrome_t *)malloc(sizeof(dt_undo_monochrome_t));
+        undomono->imgid = imgid;
+        undomono->before = mask_bw;
+        undomono->after = mask;
+        dt_undo_record(darktable.undo, NULL, DT_UNDO_FLAGS, undomono, _pop_mono_undo, g_free);
+      }
     }
   }
   else
@@ -167,6 +198,11 @@ void _image_set_monochrome_flag(const int32_t imgid, gboolean monochrome, gboole
 void dt_image_set_monochrome_flag(const int32_t imgid, gboolean monochrome)
 {
   _image_set_monochrome_flag(imgid, monochrome, TRUE);
+}
+
+static void _pop_undo_execute(const int32_t imgid, const gboolean before, const gboolean after)
+{
+  _image_set_monochrome_flag(imgid, after, FALSE);
 }
 
 int dt_image_is_matrix_correction_supported(const dt_image_t *img)
