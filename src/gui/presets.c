@@ -374,7 +374,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     int format = 0;
     for(int k = 0; k < 5; k++)
       format += gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[k])) * dt_gui_presets_format_flag[k];
-    format ^= DT_PRESETS_FOR_NOT;  
+    format ^= DT_PRESETS_FOR_NOT;
 
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, format);
     sqlite3_step(stmt);
@@ -1055,7 +1055,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     int excluded = 0;
     if(dt_image_monochrome_flags(image)) excluded |= FOR_NOT_MONO;
     else excluded |= FOR_NOT_COLOR;
-   
+
     query = g_strdup_printf
       ("SELECT name, op_params, writeprotect, description, blendop_params, "
        "  op_version, enabled"

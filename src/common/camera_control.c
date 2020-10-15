@@ -1009,7 +1009,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
 {
   _camctl_lock(c, cam);
   const gboolean sdcard = !strncmp(c->active_camera->port, "disk:", 5);
-    
+
   GList *ifile = g_list_first(images);
   if(ifile) do
   {
