@@ -531,6 +531,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   const guint total = g_list_length(t);
+  double fraction = 0.0f;
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("duplicating %d image", "duplicating %d images", total), total);
   dt_control_job_set_progress_message(job, message);
@@ -544,7 +545,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
     }
     t = g_list_next(t);
-    const double fraction = 1.0 / total;
+    fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
@@ -558,6 +559,7 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
   const int cw = params->flag;
   GList *t = params->index;
   const guint total = g_list_length(t);
+  double fraction = 0.0f;
   char message[512] = { 0 };
 
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
@@ -569,7 +571,7 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
     const int imgid = GPOINTER_TO_INT(t->data);
     dt_image_flip(imgid, cw);
     t = g_list_next(t);
-    const double fraction = 1.0 / total;
+    fraction += 1.0 / total;
     dt_image_set_aspect_ratio(imgid, FALSE);
     dt_control_job_set_progress(job, fraction);
   }
@@ -741,12 +743,13 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   free(imgs);
 
+  double fraction = 0.0f;
   while(t)
   {
     int imgid = GPOINTER_TO_INT(t->data);
     dt_image_remove(imgid);
     t = g_list_next(t);
-    const double fraction = 1.0 / total;
+    fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
 
@@ -964,6 +967,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   char *imgs = _get_image_list(t);
   char imgidstr[25] = { 0 };
   guint total = g_list_length(t);
+  double fraction = 0.0f;
   char message[512] = { 0 };
   gboolean delete_on_trash_error = FALSE;
   if (dt_conf_get_bool("send_to_trash"))
@@ -1058,7 +1062,7 @@ delete_next_file:
     g_free(dirname);
 #endif
     t = g_list_next(t);
-    const double fraction = 1.0 / total;
+    fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
     if (delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
       break;
