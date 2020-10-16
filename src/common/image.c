@@ -695,7 +695,10 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid)
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT op_params, enabled FROM main.history WHERE imgid=?1 AND operation='flip' ORDER BY num DESC LIMIT 1", -1,
+      "SELECT op_params, enabled"
+      " FROM main.history"
+      " WHERE imgid=?1 AND operation='flip'"
+      " ORDER BY num DESC LIMIT 1", -1,
       &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 1) != 0)
