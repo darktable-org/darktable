@@ -591,6 +591,8 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
   char message[512] = { 0 };
   double fraction = 0.0f;
 
+  dt_undo_start_group(darktable.undo, DT_UNDO_FLAGS);
+
   if(mode == 0)
     snprintf(message, sizeof(message), ngettext("set %d color image", "setting %d color images", total), total);
   else
@@ -600,40 +602,10 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
   while(t)
   {
     const int imgid = GPOINTER_TO_INT(t->data);
+
     if(imgid >= 0)
     {
-      dt_image_t *img = NULL;
-      gboolean changed = FALSE;
-
-      img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      if(img)
-      {
-        const int mask_bw = dt_image_monochrome_flags(img);
-        dt_image_cache_read_release(darktable.image_cache, img);
-
-        if((mode == 0) && (mask_bw & DT_IMAGE_MONOCHROME_PREVIEW))
-        {
-          // wanting it to be color found preview
-          img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-          img->flags &= ~(DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
-          changed = TRUE;
-        }
-        if((mode != 0) && ((mask_bw == 0) || (mask_bw == DT_IMAGE_MONOCHROME_PREVIEW)))
-        {
-          // wanting monochrome and found color or just preview without workflow activation
-          img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-          img->flags |= (DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
-          changed = TRUE;
-        }
-        if(changed)
-        {
-          const int mask = dt_image_monochrome_flags(img);
-          dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-          dt_imageio_update_monochrome_workflow_tag(imgid, mask);
-        }
-      }
-      else
-        fprintf(stderr,"[dt_control_monochrome_images_job_run] could not dt_image_cache_get imgid %i\n", imgid);
+      dt_image_set_monochrome_flag(imgid, mode == 2);
     }
     else
       fprintf(stderr,"[dt_control_monochrome_images_job_run] got illegal imgid %i\n", imgid);
@@ -642,6 +614,8 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
+
+  dt_undo_end_group(darktable.undo);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
   dt_control_queue_redraw_center();
