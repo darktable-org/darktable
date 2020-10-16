@@ -94,7 +94,7 @@ static void _view_capture_filmstrip_activate_callback(gpointer instance, int img
 
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
-static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
+static int32_t _capture_view_get_selected_imgid(const dt_view_t *view);
 
 const char *name(const dt_view_t *self)
 {
@@ -140,7 +140,7 @@ void cleanup(dt_view_t *self)
 }
 
 
-static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view)
+static int32_t _capture_view_get_selected_imgid(const dt_view_t *view)
 {
   g_assert(view != NULL);
   dt_capture_t *cv = (dt_capture_t *)view->data;
