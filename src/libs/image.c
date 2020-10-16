@@ -224,11 +224,20 @@ static void _update(dt_lib_module_t *self)
   }
   else
   {
-    dt_image_t *img = dt_image_cache_get(darktable.image_cache, dt_view_get_image_to_act_on(), 'r');
-    const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
-    dt_image_cache_read_release(darktable.image_cache, img);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), !is_bw);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), is_bw);
+    const int imgid = dt_view_get_image_to_act_on();
+    if(imgid > 0)
+    {
+      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
+      dt_image_cache_read_release(darktable.image_cache, img);
+      gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), !is_bw);
+      gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), is_bw);
+    }
+    else
+    {
+      gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), FALSE);
+      gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), FALSE);
+    }
   }
 }
 
