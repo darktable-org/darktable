@@ -206,7 +206,7 @@ uint32_t dt_collection_get_query_flags(const dt_collection_t *collection);
 void dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t flags);
 
 /** set the film_id of collection */
-void dt_collection_set_film_id(const dt_collection_t *collection, const uint32_t film_id);
+void dt_collection_set_film_id(const dt_collection_t *collection, const int32_t film_id);
 /** set the tagid of collection */
 void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid);
 /** set the star level for filter */

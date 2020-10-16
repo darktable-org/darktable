@@ -100,7 +100,7 @@ static void _update_softproof_gamut_checking(dt_develop_t *d);
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
-static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
+static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid);
 
 static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
@@ -699,7 +699,7 @@ void reset(dt_view_t *self)
 
 int try_enter(dt_view_t *self)
 {
-  int imgid = dt_view_get_image_to_act_on();
+  int32_t imgid = dt_view_get_image_to_act_on();
 
   if(imgid < 0)
   {
@@ -733,7 +733,7 @@ static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
   dt_accel_cleanup_locals_iop(module);
 }
 
-static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
+static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
@@ -1023,7 +1023,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_iop_connect_accels_all();
 }
 
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_t imgid, gpointer user_data)
 {
   if(imgid > 0)
   {
@@ -1043,7 +1043,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 {
   if(dev->image_loading) return;
 
-  const int imgid = dev->image_storage.id;
+  const int32_t imgid = dev->image_storage.id;
   int new_offset = 1;
   int new_id = -1;
 

@@ -334,7 +334,7 @@ typedef struct dt_view_manager_t
       struct dt_view_t *view;
       const char *(*get_job_code)(const dt_view_t *view);
       void (*set_job_code)(const dt_view_t *view, const char *name);
-      uint32_t (*get_selected_imgid)(const dt_view_t *view);
+      int32_t (*get_selected_imgid)(const dt_view_t *view);
     } tethering;
 
     /* timeline module proxy */

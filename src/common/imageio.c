@@ -629,7 +629,7 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
   }
 }
 
-int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_module_format_t *format,
+int dt_imageio_export(const int32_t imgid, const char *filename, dt_imageio_module_format_t *format,
                       dt_imageio_module_data_t *format_params, const gboolean high_quality, const gboolean upscale,
                       const gboolean copy_metadata, const gboolean export_masks,
                       dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
@@ -647,7 +647,7 @@ int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_mod
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
-int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
+int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params,
                                  const gboolean ignore_exif, const gboolean display_byteorder,
                                  const gboolean high_quality, const gboolean upscale, const gboolean thumbnail_export,

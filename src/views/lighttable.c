@@ -974,7 +974,7 @@ static gboolean _accel_culling_zoom_fit(GtkAccelGroup *accel_group, GObject *acc
 static gboolean _accel_select_toggle(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  const uint32_t id = dt_control_get_mouse_over_id();
+  const int32_t id = dt_control_get_mouse_over_id();
   dt_selection_toggle(darktable.selection, id);
   return TRUE;
 }
@@ -982,7 +982,7 @@ static gboolean _accel_select_toggle(GtkAccelGroup *accel_group, GObject *accele
 static gboolean _accel_select_single(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  const uint32_t id = dt_control_get_mouse_over_id();
+  const int32_t id = dt_control_get_mouse_over_id();
   dt_selection_select_single(darktable.selection, id);
   return TRUE;
 }
