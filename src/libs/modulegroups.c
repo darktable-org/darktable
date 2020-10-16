@@ -1188,6 +1188,15 @@ static void _manage_editor_module_remove(GtkWidget *widget, GdkEventButton *even
   }
 }
 
+static int _manage_editor_module_find_multi(gconstpointer a, gconstpointer b)
+{
+  // we search for a other instance of module with lower priority
+  dt_iop_module_t *ma = (dt_iop_module_t *)a;
+  dt_iop_module_t *mb = (dt_iop_module_t *)b;
+  if(g_strcmp0(ma->op, mb->op) != 0) return 1;
+  if(ma->multi_priority >= mb->multi_priority) return 0;
+  return 1;
+}
 static void _manage_editor_module_update_list(dt_lib_modulegroups_group_t *gr, int ro)
 {
   // first, we remove all existing modules
@@ -1200,27 +1209,32 @@ static void _manage_editor_module_update_list(dt_lib_modulegroups_group_t *gr, i
   }
 
   // and we add the ones from the list
-  GList *modules2 = g_list_last(darktable.iop);
+  GList *modules2 = g_list_last(darktable.develop->iop);
   while(modules2)
   {
-    dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules2->data);
-    if(g_list_find_custom(gr->modules, module->op, _iop_compare))
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules2->data);
+    if(g_list_find_custom(gr->modules, module->op, _iop_compare) && !dt_iop_is_hidden(module))
     {
-      GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-      gtk_widget_set_name(hb, "modulegroups-iop-header");
-      GtkWidget *lb = gtk_label_new(module->name());
-      gtk_widget_set_name(lb, "iop-panel-label");
-      gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, TRUE, 0);
-      if(!ro)
+      // we want to avoid showing multiple instances of the same module
+      if(module->multi_priority <= 0
+         || g_list_find_custom(darktable.develop->iop, module, _manage_editor_module_find_multi) == NULL)
       {
-        GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-        gtk_widget_set_name(btn, "module-reset-button");
-        gtk_widget_set_tooltip_text(btn, _("remove this module"));
-        g_object_set_data(G_OBJECT(btn), "module_name", module->op);
-        g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_module_remove), gr);
-        gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, TRUE, 0);
+        GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_widget_set_name(hb, "modulegroups-iop-header");
+        GtkWidget *lb = gtk_label_new(module->name());
+        gtk_widget_set_name(lb, "iop-panel-label");
+        gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, TRUE, 0);
+        if(!ro)
+        {
+          GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+          gtk_widget_set_name(btn, "module-reset-button");
+          gtk_widget_set_tooltip_text(btn, _("remove this module"));
+          g_object_set_data(G_OBJECT(btn), "module_name", module->op);
+          g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_module_remove), gr);
+          gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, TRUE, 0);
+        }
+        gtk_box_pack_start(GTK_BOX(gr->iop_box), hb, FALSE, TRUE, 0);
       }
-      gtk_box_pack_start(GTK_BOX(gr->iop_box), hb, FALSE, TRUE, 0);
     }
     modules2 = g_list_previous(modules2);
   }
@@ -1304,7 +1318,9 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
   GtkWidget *lb = NULL;
 
   int rec_nb = 0;
-  GList *modules = g_list_sort(g_list_first(darktable.iop), _manage_editor_module_add_sort);
+
+  GList *m2 = g_list_copy(g_list_first(darktable.iop));
+  GList *modules = g_list_sort(m2, _manage_editor_module_add_sort);
   while(modules)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
@@ -1341,6 +1357,7 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
     }
     modules = g_list_next(modules);
   }
+  g_list_free(m2);
 
   if(rec_nb > 0)
   {
