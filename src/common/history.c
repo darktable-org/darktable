@@ -667,8 +667,6 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
        " WHERE imgid=?2"
        "       AND operation NOT IN (%s)"
        " ORDER BY num", skip_modules);
-    g_free(skip_modules);
-
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
@@ -691,6 +689,8 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    g_free(skip_modules);
 
     int history_end = 0;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
