@@ -43,35 +43,30 @@ env:
     - INSTALL_PREFIX=/build/darktable-install
     - CFLAGS=-pipe CXXFLAGS=-pipe
 
-matrix:
+jobs:
   fast_finish: true
   include:
-  - os: linux
-    sudo: required
+  - name: "GCC 9"
+    os: linux
     services:
       - docker
     env: CC=gcc-9 CXX=g++-9 TARGET=build
   #- os: osx
   #  env: CC=cc CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
-  - os: linux
-    sudo: required
+  - name: "Clang 10"
+    os: linux
     services:
       - docker
     env: CC=clang-10 CXX=clang++-10 TARGET=build
-  - os: linux
-    sudo: required
+  - name: "Clang 10, disabled openmp, opencl and lua"
+    os: linux
     services:
       - docker
-    env: CC=clang-10 CXX=clang++-10 TARGET=build ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF"
-  - os: linux
-    sudo: required
-    services:
-      - docker
-    env: CC=clang-10 CXX=clang++-10 TARGET=build ECO="-DUSE_LUA=OFF"
+    env: CC=clang-10 CXX=clang++-10 TARGET=build ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
   #- os: osx
   #  env: CC=gcc-9 CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
-  - os: linux
-    sudo: required
+  - name: "User Manual"
+    os: linux
     services:
       - docker
     env: CC=gcc-9 CXX=g++-9 TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
