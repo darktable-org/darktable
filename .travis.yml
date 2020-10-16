@@ -63,6 +63,11 @@ matrix:
     services:
       - docker
     env: CC=clang-10 CXX=clang++-10 TARGET=build ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF"
+  - os: linux
+    sudo: required
+    services:
+      - docker
+    env: CC=clang-10 CXX=clang++-10 TARGET=build ECO="-DUSE_LUA=OFF"
   #- os: osx
   #  env: CC=gcc-9 CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
   - os: linux
