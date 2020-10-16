@@ -569,7 +569,7 @@ void dt_collection_set_extended_where(const dt_collection_t *collection, gchar *
   ((dt_collection_t *)collection)->where_ext = g_strdupv(extended_where);
 }
 
-void dt_collection_set_film_id(const dt_collection_t *collection, const uint32_t film_id)
+void dt_collection_set_film_id(const dt_collection_t *collection, const int32_t film_id)
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
   params->film_id = film_id;
