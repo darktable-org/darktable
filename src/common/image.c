@@ -304,7 +304,7 @@ gboolean dt_image_safe_remove(const int32_t imgid)
   }
 }
 
-void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gboolean *from_cache)
+void dt_image_full_path(const int32_t imgid, char *pathname, size_t pathname_len, gboolean *from_cache)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -330,7 +330,7 @@ void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gb
   }
 }
 
-static void _image_local_copy_full_path(const int imgid, char *pathname, size_t pathname_len)
+static void _image_local_copy_full_path(const int32_t imgid, char *pathname, size_t pathname_len)
 {
   sqlite3_stmt *stmt;
 
@@ -387,7 +387,7 @@ void dt_image_path_append_version_no_db(int version, char *pathname, size_t path
   }
 }
 
-void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len)
+void dt_image_path_append_version(const int32_t imgid, char *pathname, size_t pathname_len)
 {
   // get duplicate suffix
   int version = 0;
@@ -443,7 +443,7 @@ void dt_image_set_xmp_rating(dt_image_t *img, const int rating)
     }
 }
 
-void dt_image_get_location(int imgid, dt_image_geoloc_t *geoloc)
+void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc)
 {
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   geoloc->longitude = img->geoloc.longitude;
@@ -454,12 +454,12 @@ void dt_image_get_location(int imgid, dt_image_geoloc_t *geoloc)
 
 typedef struct dt_undo_geotag_t
 {
-  int imgid;
+  int32_t imgid;
   dt_image_geoloc_t before;
   dt_image_geoloc_t after;
 } dt_undo_geotag_t;
 
-static void _set_location(const int imgid, const dt_image_geoloc_t *geoloc)
+static void _set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
@@ -501,7 +501,7 @@ void _image_set_location(GList *imgs, const dt_image_geoloc_t *geoloc, GList **u
   GList *images = imgs;
   while(images)
   {
-    const int imgid = GPOINTER_TO_INT(images->data);
+    const int32_t imgid = GPOINTER_TO_INT(images->data);
 
     if(undo_on)
     {
@@ -668,7 +668,7 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   dt_image_write_sidecar_file(imgid);
 }
 
-dt_image_orientation_t dt_image_get_orientation(const int imgid)
+dt_image_orientation_t dt_image_get_orientation(const int32_t imgid)
 {
   // find the flip module -- the pointer stays valid until darktable shuts down
   static dt_iop_module_so_t *flip = NULL;
@@ -1135,13 +1135,13 @@ void dt_image_remove(const int32_t imgid)
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 }
 
-gboolean dt_image_altered(const uint32_t imgid)
+gboolean dt_image_altered(const int32_t imgid)
 {
   dt_history_hash_t status = dt_history_hash_get_status(imgid);
   return status & DT_HISTORY_HASH_CURRENT;
 }
 
-gboolean dt_image_basic(const uint32_t imgid)
+gboolean dt_image_basic(const int32_t imgid)
 {
   dt_history_hash_t status = dt_history_hash_get_status(imgid);
   return status & DT_HISTORY_HASH_BASIC;
@@ -2252,7 +2252,7 @@ int dt_image_local_copy_reset(const int32_t imgid)
 // xmp stuff
 // *******************************************************
 
-void dt_image_write_sidecar_file(int imgid)
+void dt_image_write_sidecar_file(const int32_t imgid)
 {
   // TODO: compute hash and don't write if not needed!
   // write .xmp file
@@ -2363,7 +2363,7 @@ void dt_image_local_copy_synch(void)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int imgid = sqlite3_column_int(stmt, 0);
+    const int32_t imgid = sqlite3_column_int(stmt, 0);
     gboolean from_cache = FALSE;
     char filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
@@ -2384,7 +2384,7 @@ void dt_image_local_copy_synch(void)
   }
 }
 
-void dt_image_add_time_offset(const int imgid, const long int offset)
+void dt_image_add_time_offset(const int32_t imgid, const long int offset)
 {
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(!cimg) return;
