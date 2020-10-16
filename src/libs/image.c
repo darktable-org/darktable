@@ -225,7 +225,7 @@ static void _update(dt_lib_module_t *self)
   else
   {
     const int imgid = dt_view_get_image_to_act_on();
-    if(imgid > 0)
+    if(imgid >= 0)
     {
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
