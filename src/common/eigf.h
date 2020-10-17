@@ -60,116 +60,117 @@
  * just like what is done in fast_guided_filter.h
 **/
 
-static inline void exposure_independent_guided_filter(const float *const restrict guide, // I
+/* computes average and variance of guide and mask, and put them in out.
+ * out has 4 channels:
+ * - average of guide
+ * - variance of guide
+ * - average of mask
+ * - covariance of mask and guide. */
+static inline void eigf_variance_analysis(const float *const restrict guide, // I
                                     const float *const restrict mask, //p
-                                    float *const restrict ab,
+                                    float *const restrict out,
                                     const size_t width, const size_t height,
-                                    const float sigma, const float feathering)
+                                    const float sigma)
 {
   // We also use gaussian blurs instead of the square blurs of the guided filter
   const size_t Ndim = width * height;
-  float *const restrict blurred_guide = dt_alloc_sse_ps(Ndim);
-  // guide_x_guide = (guide - blurred_guide)^2
-  float *const restrict guide_x_guide = dt_alloc_sse_ps(Ndim);
-  // guide_variance = blur(guide_x_guide)
-  float *const restrict guide_variance = dt_alloc_sse_ps(Ndim);
-  float *const restrict guide_x_mask = dt_alloc_sse_ps(Ndim);
-  // guide_mask_covariance = blur(guide_x_mask)
-  float *const restrict guide_mask_covariance = dt_alloc_sse_ps(Ndim);
-  float *const restrict blurred_mask = dt_alloc_sse_ps(Ndim);
+  float *const restrict in = dt_alloc_sse_ps(Ndim * 4);
 
   float ming = 10000000.0f;
   float maxg = 0.0f;
   float minm = 10000000.0f;
   float maxm = 0.0f;
+  float ming2 = 10000000.0f;
+  float maxg2 = 0.0f;
+  float minmg = 10000000.0f;
+  float maxmg = 0.0f;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(guide, mask, Ndim) \
-  schedule(simd:static) aligned(guide, mask:64) \
-  reduction(max:maxg, maxm)\
-  reduction(min:ming, minm)
+dt_omp_firstprivate(guide, mask, in, Ndim) \
+  schedule(simd:static) aligned(guide, mask, in:64) \
+  reduction(max:maxg, maxm, maxg2, maxmg)\
+  reduction(min:ming, minm, ming2, minmg)
 #endif
   for(size_t k = 0; k < Ndim; k++)
   {
     const float pixelg = guide[k];
     const float pixelm = mask[k];
+    const float pixelg2 = pixelg * pixelg;
+    const float pixelmg = pixelm * pixelg;
+    in[k * 4] = pixelg;
+    in[k * 4 + 1] = pixelg2;
+    in[k * 4 + 2] = pixelm;
+    in[k * 4 + 3] = pixelmg;
     if(pixelg < ming) ming = pixelg;
     if(pixelg > maxg) maxg = pixelg;
     if(pixelm < minm) minm = pixelm;
     if(pixelm > maxm) maxm = pixelm;
+    if(pixelg2 < ming2) ming2 = pixelg2;
+    if(pixelg2 > maxg2) maxg2 = pixelg2;
+    if(pixelmg < minmg) minmg = pixelmg;
+    if(pixelmg > maxmg) maxmg = pixelmg;
   }
 
-  dt_gaussian_t *g = dt_gaussian_init(width, height, 1, &maxg, &ming, sigma, 0);
+  float max[4] = {maxg, maxg2, maxm, maxmg};
+  float min[4] = {ming, ming2, minm, minmg};
+  dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
   if(!g) return;
-  dt_gaussian_blur(g, guide, blurred_guide);
-  dt_gaussian_free(g);
-
-  g = dt_gaussian_init(width, height, 1, &maxm, &minm, sigma, 0);
-  if(!g) return;
-  dt_gaussian_blur(g, mask, blurred_mask);
-  dt_gaussian_free(g);
-
-  float mingg = 10000000.0f;
-  float maxgg = 0.0f;
-  float mingm = 10000000.0f;
-  float maxgm = 0.0f;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(guide, mask, blurred_guide, blurred_mask, guide_x_guide, guide_x_mask, Ndim) \
-  schedule(simd:static) aligned(guide, mask, blurred_guide, blurred_mask, guide_x_guide, guide_x_mask:64) \
-  reduction(max:maxgg, maxgm)\
-  reduction(min:mingg, mingm)
-#endif
-  for(size_t k = 0; k < Ndim; k++)
-  {
-    const float deviation = guide[k] - blurred_guide[k];
-    const float squared_deviation = deviation * deviation;
-    guide_x_guide[k] = squared_deviation;
-    if(squared_deviation < mingg) mingg = squared_deviation;
-    if(squared_deviation > maxgg) maxgg = squared_deviation;
-    const float cov = (guide[k] - blurred_guide[k]) * (mask[k] - blurred_mask[k]);
-    guide_x_mask[k] = cov;
-    if(cov < mingm) mingm = cov;
-    if(cov > maxgm) maxgm = cov;
-  }
-
-  g = dt_gaussian_init(width, height, 1, &maxgg, &mingg, sigma, 0);
-  if(!g) return;
-  dt_gaussian_blur(g, guide_x_guide, guide_variance);
-  dt_gaussian_free(g);
-
-  g = dt_gaussian_init(width, height, 1, &maxgm, &mingm, sigma, 0);
-  if(!g) return;
-  dt_gaussian_blur(g, guide_x_mask, guide_mask_covariance);
+  dt_gaussian_blur_4c(g, in, out);
   dt_gaussian_free(g);
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(guide, mask, blurred_guide, guide_variance, blurred_mask, guide_mask_covariance, ab, Ndim, feathering) \
-  schedule(simd:static) aligned(guide, mask, blurred_guide, guide_variance, blurred_mask, guide_mask_covariance, ab:64)
+dt_omp_firstprivate(out, Ndim) \
+  schedule(simd:static) aligned(out:64)
 #endif
   for(size_t k = 0; k < Ndim; k++)
   {
-    const float normg = fmaxf(blurred_guide[k] * guide[k], 1E-6);
-    const float normm = fmaxf(blurred_mask[k] * mask[k], 1E-6);
-    const float normalized_var_guide = guide_variance[k] / normg;
-    const float normalized_covar = guide_mask_covariance[k] / sqrtf(normg * normm);
-    ab[2 * k] = normalized_covar / (normalized_var_guide + feathering);
-    ab[2 * k + 1] = blurred_mask[k] - ab[2 * k] * blurred_guide[k];
+    out[4 * k + 1] -= out[4 * k] * out[4 * k];
+    out[4 * k + 3] -= out[4 * k] * out[4 * k + 2];
   }
 
-  dt_free_align(blurred_guide);
-  dt_free_align(guide_x_guide);
-  dt_free_align(guide_variance);
-  dt_free_align(guide_x_mask);
-  dt_free_align(guide_mask_covariance);
-  dt_free_align(blurred_mask);
+  dt_free_align(in);
+}
+
+void eigf_blending(float *const restrict image, const float *const restrict mask,
+                  const float *const restrict av, const size_t Ndim,
+                  const dt_iop_guided_filter_blending_t filter,
+                  const float feathering)
+{
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(image, mask, av, Ndim, feathering, filter) \
+  schedule(simd:static) aligned(image, mask, av:64)
+#endif
+  for(size_t k = 0; k < Ndim; k++)
+  {
+    const float avg_g = av[k * 4];
+    const float avg_m = av[k * 4 + 2];
+    const float var_g = av[k * 4 + 1];
+    const float covar_mg = av[k * 4 + 3];
+    const float norm_g = fmaxf(avg_g * image[k], 1E-6);
+    const float norm_m = fmaxf(avg_m * mask[k], 1E-6);
+    const float normalized_var_guide = var_g / norm_g;
+    const float normalized_covar = covar_mg / sqrtf(norm_g * norm_m);
+    const float a = normalized_covar / (normalized_var_guide + feathering);
+    const float b = avg_m - a * avg_g;
+    if(filter == DT_GF_BLENDING_LINEAR)
+    {
+      image[k] = fmaxf(image[k] * a + b, MIN_FLOAT);
+    }
+    else
+    {
+      // filter == DT_GF_BLENDING_GEOMEAN
+      image[k] *= fmaxf(image[k] * a + b, MIN_FLOAT);
+      image[k] = sqrtf(image[k]);
+    }
+  }
 }
 
 __DT_CLONE_TARGETS__
 static inline void fast_eigf_surface_blur(float *const restrict image,
                                       const size_t width, const size_t height,
-                                      const int radius, float feathering, const int iterations,
+                                      const float sigma, float feathering, const int iterations,
                                       const dt_iop_guided_filter_blending_t filter, const float scale,
                                       const float quantization, const float quantize_min, const float quantize_max)
 {
@@ -178,8 +179,8 @@ static inline void fast_eigf_surface_blur(float *const restrict image,
 
   // A down-scaling of 4 seems empirically safe and consistent no matter the image zoom level
   // see reference paper above for proof.
-  const float scaling = 1.0f;
-  const float ds_sigma = fmaxf((float)radius / scaling, 1.0f);
+  const float scaling = fmaxf(fminf(sigma, 4.0f), 1.0f);
+  const float ds_sigma = fmaxf(sigma / scaling, 1.0f);
 
   const size_t ds_height = height / scaling;
   const size_t ds_width = width / scaling;
@@ -187,48 +188,46 @@ static inline void fast_eigf_surface_blur(float *const restrict image,
   const size_t num_elem_ds = ds_width * ds_height;
   const size_t num_elem = width * height;
 
+  float *const restrict mask = dt_alloc_sse_ps(dt_round_size_sse(num_elem));
   float *const restrict ds_image = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds));
   float *const restrict ds_mask = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds));
-  float *const restrict ds_ab = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds * 2));
-  float *const restrict ab = dt_alloc_sse_ps(dt_round_size_sse(num_elem * 2));
+  // average - variance arrays: store the guide and mask averages and variances
+  float *const restrict ds_av = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds * 4));
+  float *const restrict av = dt_alloc_sse_ps(dt_round_size_sse(num_elem * 4));
 
-  if(!ds_image || !ds_mask || !ds_ab || !ab)
+  if(!ds_image || !ds_mask || !ds_av || !av)
   {
     dt_control_log(_("fast exposure independent guided filter failed to allocate memory, check your RAM settings"));
     goto clean;
   }
 
-  // Downsample the image for speed-up
-  interpolate_bilinear(image, width, height, ds_image, ds_width, ds_height, 1);
-
-  // empirical formula to have consistent smoothing when increasing the radius
-  const float adapted_feathering = feathering * radius * sqrt(radius) / 40.0f;
   // Iterations of filter models the diffusion, sort of
   for(int i = 0; i < iterations; i++)
   {
     // (Re)build the mask from the quantized image to help guiding
-    quantize(ds_image, ds_mask, ds_width * ds_height, quantization, quantize_min, quantize_max);
-    exposure_independent_guided_filter(ds_mask, ds_image, ds_ab, ds_width, ds_height, ds_sigma, adapted_feathering);
-
+    quantize(image, mask, width * height, quantization, quantize_min, quantize_max);
+    // Downsample the image for speed-up
+    interpolate_bilinear(image, width, height, ds_image, ds_width, ds_height, 1);
+    interpolate_bilinear(mask, width, height, ds_mask, ds_width, ds_height, 1);
+    eigf_variance_analysis(ds_mask, ds_image, ds_av, ds_width, ds_height, ds_sigma);
+    // Upsample the variances and averages
+    interpolate_bilinear(ds_av, ds_width, ds_height, av, width, height, 4);
     if(i != iterations - 1)
     {
       // Process the intermediate filtered image
-      apply_linear_blending(ds_image, ds_ab, num_elem_ds);
+      eigf_blending(image, mask, av, num_elem, DT_GF_BLENDING_LINEAR, feathering);
+    }
+    else
+    {
+      // Finally, blend the guided image
+      eigf_blending(image, mask, av, num_elem, filter, feathering);
     }
   }
 
-  // Upsample the blending parameters a and b
-  interpolate_bilinear(ds_ab, ds_width, ds_height, ab, width, height, 2);
-
-  // Finally, blend the guided image
-  if(filter == DT_GF_BLENDING_LINEAR)
-    apply_linear_blending(image, ab, num_elem);
-  else if(filter == DT_GF_BLENDING_GEOMEAN)
-    apply_linear_blending_w_geomean(image, ab, num_elem);
-
 clean:
-  if(ab) dt_free_align(ab);
-  if(ds_ab) dt_free_align(ds_ab);
+  if(av) dt_free_align(av);
+  if(ds_av) dt_free_align(ds_av);
   if(ds_mask) dt_free_align(ds_mask);
   if(ds_image) dt_free_align(ds_image);
+  if(mask) dt_free_align(mask);
 }
