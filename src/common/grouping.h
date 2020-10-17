@@ -19,6 +19,7 @@
 #pragma once
 
 #include <glib.h>
+#include <stdint.h>
 
 /** add an image to a group */
 void dt_grouping_add_to_group(int group_id, int32_t image_id);
