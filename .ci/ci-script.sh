@@ -27,8 +27,6 @@
 
 set -ex
 
-CMAKE_BUILD_TYPE="RelWithDebInfo"
-GENERATOR="Ninja"
 VERBOSE="-v"
 KEEPGOING="-k0"
 

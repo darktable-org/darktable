@@ -30,54 +30,165 @@ notifications:
     on_success: always
     on_failure: always
 
-language: generic
+language: c
 
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then travis_retry travis_wait 10 docker pull darktable/darktable; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew tap Homebrew/bundle && cd .ci && brew bundle --verbose; fi
+dist: focal
+
+os:
+ - linux
+ - osx
+ - windows
+
+compiler:
+ - clang
+ - gcc
 
 env:
   global:
-    - SRC_DIR=/build/darktable
-    - BUILD_DIR=/build/darktable-build
-    - INSTALL_PREFIX=/build/darktable-install
+    - SRC_DIR=$TRAVIS_BUILD_DIR
+    - BUILD_DIR="$SRC_DIR/build"
+    - INSTALL_PREFIX="$SRC_DIR/install"
     - CFLAGS=-pipe CXXFLAGS=-pipe
+    - CMAKE_BUILD_TYPE="RelWithDebInfo"
+    - GENERATOR="Ninja"
+    - TARGET=build
 
-matrix:
-  fast_finish: true
-  include:
+jobs:
+ fast_finish: true
+ exclude:
+  - os: osx
+    compiler: gcc
+  - os: windows
+    compiler: clang
+ #temporary
+ allow_failures:
+  - os: osx
+  - os: windows
+ include:
+  - os: windows
+    env: GENERATOR="MSYS Makefiles"
   - os: linux
-    sudo: required
-    services:
-      - docker
-    env: CC=gcc-9 CXX=g++-9 TARGET=build
-  #- os: osx
-  #  env: CC=cc CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
+    env: ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
   - os: linux
-    sudo: required
-    services:
-      - docker
-    env: CC=clang-10 CXX=clang++-10 TARGET=build
-  - os: linux
-    sudo: required
-    services:
-      - docker
-    env: CC=clang-10 CXX=clang++-10 TARGET=build ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF"
-  #- os: osx
-  #  env: CC=gcc-9 CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
-  - os: linux
-    sudo: required
-    services:
-      - docker
-    env: CC=gcc-9 CXX=g++-9 TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
+    env: TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
+
+addons:
+  apt:
+    update: true
+
+before_install:
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
+        choco uninstall -y mingw
+        choco upgrade --no-progress -y msys2
+        export msys2='cmd //C RefreshEnv.cmd '
+        export msys2+='& set MSYS=winsymlinks:nativestrict '
+        export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
+        export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
+        export msys2+=" -msys2 -c "\"\$@"\" --"
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-{toolchain,clang,cmake}
+        ## Install more MSYS2 packages from https://packages.msys2.org/base here
+        $msys2 pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
+        $msys2 curl -fSs -o mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz
+        $msys2 pacman -U --needed --noconfirm mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz
+        $msys2 cp -R /mingw64/lib/python3.6/site-packages/lensfun* /mingw64/lib/python3.8/site-packages
+        ## $msys2 lensfun-update-data
+        $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-openmp
+        $msys2 ar x /mingw64/lib/libomp.a
+        $msys2 cp libomp.dll.a /mingw64/lib/
+        taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
+        export PATH=/C/tools/msys64/mingw64/bin:$PATH
+        export MAKE=mingw32-make  # so that Autotools can find it
+        ;;
+      linux)
+        apt-get install \
+          appstream-util \
+          desktop-file-utils \
+          gettext \
+          git \
+          intltool \
+          libatk1.0-dev \
+          libcairo2-dev \
+          libcolord-dev \
+          libcolord-gtk-dev \
+          libcmocka-dev \
+          libcups2-dev \
+          libcurl4-gnutls-dev \
+          libexiv2-dev \
+          libflickcurl-dev \
+          libgdk-pixbuf2.0-dev \
+          libglib2.0-dev \
+          libgphoto2-dev \
+          libgraphicsmagick1-dev \
+          libgtk-3-dev \
+          libjpeg-dev \
+          libjson-glib-dev \
+          liblcms2-dev \
+          liblensfun-dev \
+          liblua5.2-dev \
+          liblua5.3-dev \
+          libomp-$LLVM_VER-dev \
+          libopenexr-dev \
+          libopenjp2-7-dev \
+          libosmgpsmap-1.0-dev \
+          libpango1.0-dev \
+          libpng-dev \
+          libpugixml-dev \
+          librsvg2-dev \
+          libsaxon-java \
+          libsecret-1-dev \
+          libsoup2.4-dev \
+          libsqlite3-dev \
+          libtiff5-dev \
+          libwebp-dev \
+          libx11-dev \
+          libxml2-dev \
+          libxml2-utils \
+          ninja-build \
+          perl \
+          po4a \
+          python3-jsonschema \
+          xsltproc \
+          zlib1g-dev;
+        apt-get install default-jdk-headless default-jre-headless docbook \
+          docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick \
+          libsaxon-java xsltproc;
+        ;;
+      osx)
+        brew update && brew tap Homebrew/bundle && cd .ci && brew bundle --verbose;
+        ;;
+    esac
+
+before_cache:
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        # https://unix.stackexchange.com/a/137322/107554
+        $msys2 pacman --sync --clean --noconfirm
+        ;;
+    esac
+
+cache:
+  directories:
+    - $HOME/AppData/Local/Temp/chocolatey
+    - /C/tools/msys64
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR:exec --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX $EXTRA_TMPFS --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX --env TARGET --env ECO darktable/darktable sh -c "$SRC_DIR/.ci/ci-script.sh"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      export SRC_DIR="$TRAVIS_BUILD_DIR";
-      export BUILD_DIR="$SRC_DIR/build";
-      export INSTALL_PREFIX="$SRC_DIR/install";
-      mkdir "$BUILD_DIR";
-      mkdir "$INSTALL_PREFIX";
-      "$SRC_DIR/.ci/ci-script.sh";
-    fi
+- |-
+    case $TRAVIS_OS_NAME in
+      linux)
+        mkdir "$BUILD_DIR";
+        mkdir "$INSTALL_PREFIX";
+        "$SRC_DIR/.ci/ci-script.sh";
+        ;;
+      osx)
+        mkdir "$BUILD_DIR";
+        mkdir "$INSTALL_PREFIX";
+        "$SRC_DIR/.ci/ci-script.sh";
+        ;;
+      windows)
+        $msys2 "$SRC_DIR/.ci/ci-script.sh";
+        ;;
+    esac
