@@ -58,6 +58,17 @@ jobs:
  include:
   - os: linux
     compiler: clang
+    addons:
+      apt:
+        sources:
+          - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
+            key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+        packages:
+          - clang-10
+          - libc++-10-dev
+          - libomp-10-dev
+          - libclang-common-10-dev
+          - llvm-10-dev
   - os: linux
     compiler: gcc
   - os: osx
