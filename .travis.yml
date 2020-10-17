@@ -82,12 +82,11 @@ jobs:
   - os: linux
     dist: xenial
     env: TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
-    addons:
-      apt:
-        sources:
-          - universe
-          - multiverse
-    before_install: sudo apt-get install default-jdk-headless default-jre-headless docbook \
+    before_install: 
+      - sudo add-apt-repository -y universe
+      - sudo add-apt-repository - multiverse
+      - sudo apt-get update
+      - sudo apt-get install default-jdk-headless default-jre-headless docbook \
           docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick \
           libsaxon-java xsltproc;
 
