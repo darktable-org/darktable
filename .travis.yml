@@ -82,13 +82,14 @@ jobs:
   - os: linux
     dist: bionic
     compiler: gcc
-    env: TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
+    env: TARGET=usermanual CXX=g++-9 CC=gcc-9 # EXTRA_TMPFS="--tmpfs /tmp"
     addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages:
             - gcc-9
+            - g++-9
     install: 
       - sudo add-apt-repository -y universe
       - sudo add-apt-repository -y multiverse
