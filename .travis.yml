@@ -68,7 +68,11 @@ jobs:
   - os: linux
     env: ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
   - os: linux
+    dist: xenial
     env: TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
+    before_install: sudo apt-get install default-jdk-headless default-jre-headless docbook \
+          docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick \
+          libsaxon-java xsltproc;
 
 addons:
   apt:
@@ -150,9 +154,6 @@ before_install:
           python3-jsonschema \
           xsltproc \
           zlib1g-dev;
-        sudo apt-get install default-jdk-headless default-jre-headless docbook \
-          docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick \
-          libsaxon-java xsltproc;
         ;;
       osx)
         brew update && brew tap Homebrew/bundle && cd .ci && brew bundle --verbose;
