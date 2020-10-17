@@ -81,6 +81,7 @@ jobs:
     env: ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
   - os: linux
     dist: xenial
+    compiler: gcc #if that works its dum
     env: TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
     before_install: 
       - sudo add-apt-repository -y universe
@@ -116,7 +117,7 @@ before_install:
         $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-openmp
         ## $msys2 ar x /mingw64/lib/libomp.a
         ## $msys2 cp libomp.dll.a /mingw64/lib/
-        taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
+        ## taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
         export PATH=/C/tools/msys64/mingw64/bin:$PATH
         export MAKE=mingw32-make  # so that Autotools can find it
         ;;
