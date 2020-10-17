@@ -103,7 +103,7 @@ before_install:
         export MAKE=mingw32-make  # so that Autotools can find it
         ;;
       linux)
-        apt-get install \
+        sudo apt-get install \
           appstream-util \
           desktop-file-utils \
           gettext \
@@ -152,7 +152,7 @@ before_install:
           python3-jsonschema \
           xsltproc \
           zlib1g-dev;
-        apt-get install default-jdk-headless default-jre-headless docbook \
+        sudo apt-get install default-jdk-headless default-jre-headless docbook \
           docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick \
           libsaxon-java xsltproc;
         ;;
