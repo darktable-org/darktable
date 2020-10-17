@@ -551,8 +551,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         case DT_MODULEGROUP_NONE:
         {
           /* show all except hidden ones */
-          if((module->so->state != dt_iop_state_HIDDEN || module->enabled)
-             && (!(module->flags() & IOP_FLAGS_DEPRECATED)))
+          if(_lib_modulegroups_test_visible(self, module->op) || module->enabled)
           {
             if(w) gtk_widget_show(w);
           }
