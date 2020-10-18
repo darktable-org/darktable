@@ -74,7 +74,9 @@ jobs:
     compiler: gcc
   - os: osx
     osx_image: xcode11
-    env: ECO="-DUSE_OPENMP=OFF"
+    env:
+      - TARGET=notest
+      - ECO="-DUSE_OPENMP=OFF"
   - os: windows
     compiler: gcc
     env: GENERATOR="MSYS Makefiles"
@@ -208,6 +210,8 @@ script:
         "$SRC_DIR/.ci/ci-script.sh";
         ;;
       windows)
+        $msys2 mkdir "$BUILD_DIR";
+        $msys2 mkdir "$INSTALL_PREFIX";
         $msys2 "$SRC_DIR/.ci/ci-script.sh";
         ;;
     esac
