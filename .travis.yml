@@ -49,8 +49,6 @@ jobs:
  exclude:
   - os: osx
     compiler: gcc
-  - os: windows
-    compiler: clang
  #temporary
  allow_failures:
   - os: windows
@@ -77,7 +75,7 @@ jobs:
       - TARGET=notest
       - ECO="-DUSE_OPENMP=OFF"
   - os: windows
-    compiler: gcc
+    compiler: clang
     env: 
       - GENERATOR="MSYS Makefiles"
       - CC=clang-10 CXX=clang++-10
