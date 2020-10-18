@@ -78,7 +78,7 @@ jobs:
     compiler: clang
     env: 
       - GENERATOR="MSYS Makefiles"
-      #- CC=clang-10 CXX=clang++-10
+      - CC=clang CXX=clang++
   - os: linux
     env: ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
   - os: linux
