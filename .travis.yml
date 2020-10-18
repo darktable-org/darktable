@@ -133,7 +133,8 @@ before_install:
         ## $msys2 cp libomp.dll.a /mingw64/lib/
         ## taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
         export PATH=/C/tools/msys64/mingw64/bin:$PATH
-        export MAKE=mingw32-make  # so that Autotools can find it
+        export PATH=/mingw64/bin:$PATH
+        ## export MAKE=mingw32-make  # so that Autotools can find it
         ;;
       linux)
         sudo apt-get install \
