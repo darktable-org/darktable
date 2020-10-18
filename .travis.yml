@@ -80,7 +80,7 @@ jobs:
     compiler: gcc
     env: 
       - GENERATOR="MSYS Makefiles"
-      - CXX=g++ CC=gcc
+      - CC=clang-10 CXX=clang++-10
   - os: linux
     env: ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
   - os: linux
@@ -121,6 +121,7 @@ before_install:
         $msys2 pacman --sync --noconfirm --needed base-devel
         $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-toolchain
         $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-clang
+        $msys2 pacman -Ql mingw-w64-x86_64-clang
         $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-cmake
         $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-nsis
         ## Install more MSYS2 packages from https://packages.msys2.org/base here
