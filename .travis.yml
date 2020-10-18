@@ -53,7 +53,6 @@ jobs:
     compiler: clang
  #temporary
  allow_failures:
-  - os: osx
   - os: windows
  include:
   - os: linux
@@ -116,8 +115,9 @@ before_install:
         export msys2+='& set MSYS=winsymlinks:nativestrict '
         export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
         export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
-        export msys2+=" -msys2 -c "\"\$@"\" --"
-        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-{toolchain,clang,cmake}
+        export msys2+=" -msys2 -full-path -here -c "\"\$@"\" --"
+        $msys2 pacman --sync --noconfirm --needed base-devel
+        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-{toolchain,clang,cmake,nsis}
         ## Install more MSYS2 packages from https://packages.msys2.org/base here
         $msys2 pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
         ## $msys2 curl -fSs -o mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz
@@ -216,5 +216,5 @@ script:
         ;;
     esac
 
-after_script:
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then taskkill //F //PID $(ps -Wla | tr -s ' ' | grep gpg | cut -f2 -d' ') ; fi
+# after_script:
+#  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then taskkill //F //PID $(ps -Wla | tr -s ' ' | grep gpg | cut -f2 -d' ') ; fi

@@ -22,7 +22,7 @@
 #   INSTALL_DIR - the installation prefix.
 #   SRC_DIR - read-only directory with git checkout to compile
 #   CC, CXX, CFLAGS, CXXFLAGS are not required, should make sense too
-#   TARGET - either build or usermanual
+#   TARGET - either build, notest or usermanual
 #   ECO - some other flags for cmake
 
 set -ex
