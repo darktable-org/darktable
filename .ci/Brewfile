@@ -17,8 +17,6 @@
 brew 'cmake'
 brew 'desktop-file-utils'
 brew 'exiv2'
-brew 'flickcurl'
-brew 'gcc@7'
 brew 'gettext'
 brew 'git'
 brew 'glib'

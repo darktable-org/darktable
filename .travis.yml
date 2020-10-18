@@ -74,6 +74,7 @@ jobs:
     compiler: gcc
   - os: osx
     osx_image: xcode11
+    env: ECO="-DUSE_OPENMP=OFF"
   - os: windows
     compiler: gcc
     env: GENERATOR="MSYS Makefiles"
