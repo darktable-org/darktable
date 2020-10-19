@@ -1,0 +1,44 @@
+<sect2 status="final" id="effects_group">
+
+  <title>Effects group</title>
+
+  <para>
+    The effects group contain the weird kids
+    (local contrast, sharpness, high/low-freq, retouch, liquify, etc.)
+  </para>
+
+  <xi:include href="watermark.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="framing.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="vignetting.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="soften.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="grain.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="monochrome.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="lowlight.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="bloom.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="localcontrast.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="colormapping.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="sharpen.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="highpass.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="lowpass.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="equalizer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="retouch.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="spotremoval.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="liquify.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+</sect2>

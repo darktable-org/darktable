@@ -1,0 +1,54 @@
+<sect2 status="final" id="grading_group">
+
+  <title>Grading group</title>
+
+  <para>
+    The grading group contains every module to be used artistically and doing color
+    and tones corrective and creative work (including chromatic adaptation / white balance)
+  </para>
+
+  <xi:include href="splittoning.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="colorize.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="colorzones.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="vibrance.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="velvia.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="colorcontrast.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="colorcorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="filllight.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="global_tonemap.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="zonesystem.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="shadhi.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="levels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="tonecurve.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="colisa.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="rgblevels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="rgbcurve.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="colorbalance.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="channelmixer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="graduatedneutraldensity.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="toneequalizer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="tonemapping.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="whitebalance.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+</sect2>

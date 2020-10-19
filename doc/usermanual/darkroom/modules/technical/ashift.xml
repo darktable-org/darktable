@@ -187,7 +187,7 @@
         When activated the automatic cropping feature clips the image to get rid of any black
         corners. At your choice you can either clip to the <quote>largest area</quote> or to the
         largest rectangle maintaining the original aspect ratio (<quote>original
-        format</quote>). In the latter case you can manually adjust the automatic cropping result: 
+        format</quote>). In the latter case you can manually adjust the automatic cropping result:
         left click into to clip region and move it around. The size of the region gets modified
         automatically excluding any black corners.
       </para>
