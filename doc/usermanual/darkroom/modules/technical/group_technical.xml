@@ -1,0 +1,68 @@
+<sect2 status="final" id="technical_group">
+
+  <title>Technical group</title>
+
+  <para>
+    The technical group contains every module bounded by some physical reality:
+    lens, sensor, in/out color spaces and various signal reconstructions (highlights, noise, etc.)
+  </para>
+
+  <xi:include href="dithering.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="outputcolorprofile.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="color_reconstruction.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="filmicrgb.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="basecurve.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="lut3d.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="defringe.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="colorchecker.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="denoise_nlm.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="negadoctor.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="inputcolorprofile.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="exposure.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="crop_and_rotate.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="orientation.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="ashift.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="hazeremoval.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="unbreakinputprofile.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="lenscorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="scalepixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="rotatepixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="denoise_bilateral.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="denoise_profiled.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="demosaic.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="rawdenoise.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="hotpixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="chromatic.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="highlightreconstruction.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="invert.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="raw_black_white.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+</sect2>
