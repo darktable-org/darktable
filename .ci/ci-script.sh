@@ -89,7 +89,10 @@ diskspace()
   df
   du -hcs "$SRC_DIR"
   du -hcs "$BUILD_DIR"
-  du -hcs "$INSTALL_PREFIX"
+  if [ -f "$INSTALL_PREFIX" ];
+  then
+    du -hcs "$INSTALL_PREFIX";  
+  fi;
 }
 
 diskspace
