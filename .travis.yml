@@ -69,6 +69,14 @@ jobs:
     env: CC=clang-10 CXX=clang++-10
   - os: linux
     compiler: gcc
+  - os: linux
+    compiler: gcc
+    env:
+      - CMAKE_BUILD_TYPE="Release"
+  - os: linux
+    compiler: gcc
+    env:
+      - CMAKE_BUILD_TYPE="Debug"
   - os: osx
     osx_image: xcode11
     env:
