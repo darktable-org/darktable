@@ -508,7 +508,9 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   int k = -1;
   GList *it = g_list_first(darktable.imageio->plugins_storage);
   dt_imageio_module_storage_t *module = NULL;
-  if(it != NULL) do
+
+  if(it != NULL)
+    do
     {
       k++;
       if(strcmp(((dt_imageio_module_storage_t *)it->data)->name(((dt_imageio_module_storage_t *)it->data)),
@@ -519,13 +521,18 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
       }
     } while((it = g_list_next(it)));
 
-  if(!module) {
+  if(!module)
+  {
     gtk_widget_hide(d->storage_extra_container);
     return;
-  } else if(module->widget) {
+  }
+  else if(module->widget)
+  {
     gtk_widget_show_all(d->storage_extra_container);
     gtk_stack_set_visible_child(GTK_STACK(d->storage_extra_container),module->widget);
-  } else {
+  }
+  else
+  {
     gtk_widget_hide(d->storage_extra_container);
   }
   dt_bauhaus_combobox_set(d->storage, k);
@@ -837,9 +844,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
-  GtkWidget *label;
-
-  label = dt_ui_section_label_new(_("storage options"));
+  GtkWidget *label = dt_ui_section_label_new(_("storage options"));
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
   gtk_style_context_add_class(context, "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
@@ -856,7 +861,7 @@ void gui_init(dt_lib_module_t *self)
   GList *it = g_list_first(darktable.imageio->plugins_storage);
   if(it != NULL) do
   {
-    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    const dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
     dt_bauhaus_combobox_add(d->storage, module->name(module));
     if(module->widget)
     {
