@@ -49,11 +49,13 @@ jobs:
   exclude:
     - os: osx
       compiler: gcc
+      
   include:
   - name: "window gcc"
     os: windows
     compiler: gcc
     env:
+      - TARGET=notest
       - GENERATOR="MSYS Makefiles"
       - MATRIX_EVAL="CC=/mingw64/bin/gcc && CXX=/mingw64/bin/g++"
         
@@ -61,6 +63,7 @@ jobs:
     os: windows
     compiler: clang
     env:
+      - TARGET=notest
       - GENERATOR="MSYS Makefiles"
       - MATRIX_EVAL="CC=/mingw64/bin/clang && CXX=/mingw64/bin/clang++"
 
