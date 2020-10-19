@@ -45,23 +45,24 @@ env:
     - TARGET=build
 
 jobs:
- fast_finish: true
- exclude:
-  - os: osx
+  fast_finish: true
+  exclude:
+    - os: osx
+      compiler: gcc
+  include:
+  - name: "window gcc"
+    os: windows
     compiler: gcc
- #temporary
- include:
-   - name: "window gcc"
-     os: windows
-     env:
-       - GENERATOR="MSYS Makefiles"
-       - MATRIX_EVAL="CC=/mingw64/bin/gcc && CXX=/mingw64/bin/g++"
-
-   - name: "Windows clang"
-     os: windows
-     env: 
-       - GENERATOR="MSYS Makefiles"
-       - MATRIX_EVAL="CC=/mingw64/bin/clang && CXX=/mingw64/bin/clang++"
+    env:
+      - GENERATOR="MSYS Makefiles"
+      - MATRIX_EVAL="CC=/mingw64/bin/gcc && CXX=/mingw64/bin/g++"
+        
+  - name: "Windows clang"
+    os: windows
+    compiler: clang
+    env:
+      - GENERATOR="MSYS Makefiles"
+      - MATRIX_EVAL="CC=/mingw64/bin/clang && CXX=/mingw64/bin/clang++"
 
   - name: "Linux Clang10"
     os: linux
