@@ -7,7 +7,6 @@ cmake_policy(SET CMP0048 NEW)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
-include(CMakePrintSystemInformation)
 
 ### Add defaults for cmake
 # These defaults need to be included before the project() call.
@@ -536,3 +535,4 @@ add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
 feature_summary(WHAT ALL)
+include(CMakePrintSystemInformation)
