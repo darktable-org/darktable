@@ -56,6 +56,7 @@ fi
 
 target_build()
 {
+  echo "target_build"
   # to get as much of the issues into the log as possible
   cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
 
@@ -67,6 +68,8 @@ target_build()
 
 target_notest()
 {
+  echo "target_notest"
+
   # to get as much of the issues into the log as possible
   cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
 
@@ -76,6 +79,8 @@ target_notest()
 
 target_usermanual()
 {
+  echo "target_usermanual"
+
   cmake --build "$BUILD_DIR" -- -j1 -v -k0 validate_usermanual_xml
 
   # # to get as much of the issues into the log as possible
