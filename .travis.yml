@@ -36,7 +36,7 @@ dist: focal
 
 env:
   global:
-    - SRC_DIR=$TRAVIS_BUILD_DIR
+    - SRC_DIR="$TRAVIS_BUILD_DIR"
     - BUILD_DIR="$SRC_DIR/build"
     - INSTALL_PREFIX="$SRC_DIR/install"
     - CFLAGS=-pipe CXXFLAGS=-pipe
@@ -114,7 +114,12 @@ jobs:
     compiler: clang
     env: 
       - GENERATOR="MSYS Makefiles"
-      - CC=clang CXX=clang++
+      - MATRIX_EVAL="CC=/mingw64/bin/gcc && CXX=/mingw64/bin/g++"
+
+  - os: windows
+    env: 
+      - GENERATOR="MSYS Makefiles"
+      - MATRIX_EVAL="CC=/mingw64/bin/clang && CXX=/mingw64/bin/clang++"
 
 addons:
   apt:
@@ -124,6 +129,7 @@ before_install:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
+        eval "${MATRIX_EVAL}"
         [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
         choco uninstall -y mingw
         choco upgrade --no-progress -y msys2
