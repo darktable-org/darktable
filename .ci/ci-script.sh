@@ -28,11 +28,11 @@
 set -exv
 
 if [[ -z "$CMAKE_BUILD_TYPE" ]]; then
-  CMAKE_BUILD_TYPE="RelWithDebInfo"
+CMAKE_BUILD_TYPE="RelWithDebInfo"
 fi;
 
 if [[ -z "$GENERATOR" ]]; then
-  GENERATOR="Ninja"
+GENERATOR="Ninja"
 fi;
 
 if [[ -z "$VERBOSE" ]]; then
