@@ -53,7 +53,8 @@ jobs:
  allow_failures:
   - os: windows
  include:
-  - os: linux
+  - name: "Linux Clang10"
+    os: linux
     compiler: clang
     addons:
       apt:
@@ -67,31 +68,26 @@ jobs:
           - libclang-common-10-dev
           - llvm-10-dev
     env: CC=clang-10 CXX=clang++-10
-  - os: linux
+  - name: "Linux GCC 9"
+    os: linux
     compiler: gcc
-  - os: linux
+  - name: "GCC9 Release"
+    os: linux
     compiler: gcc
     env:
       - CMAKE_BUILD_TYPE="Release"
-  - os: linux
+  - name: "GCC9 Debug"
+    os: linux
     compiler: gcc
     env:
       - TARGET=notest
       - CMAKE_BUILD_TYPE="Debug"
-  - os: osx
-    osx_image: xcode11
-    env:
-      - TARGET=notest
-      - ECO="-DUSE_OPENMP=OFF"
-  - os: windows
-    compiler: clang
-    env: 
-      - GENERATOR="MSYS Makefiles"
-      - CC=clang CXX=clang++
-  - os: linux
+  - name: "No OMP/OCL/LUA"
+    os: linux
     compiler: gcc
     env: ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
-  - os: linux
+  - name: "Usermanual"
+    os: linux
     dist: bionic
     compiler: gcc
     env: TARGET=usermanual CXX=g++-9 CC=gcc-9 # EXTRA_TMPFS="--tmpfs /tmp"
@@ -109,6 +105,16 @@ jobs:
       - sudo apt-get -y install default-jdk-headless default-jre-headless
       - sudo apt-get -y install docbook docbook-xml docbook-xsl docbook-xsl-saxon
       - sudo apt-get -y install fop gnome-doc-utils imagemagick libsaxon-java xsltproc
+  - os: osx
+    osx_image: xcode11
+    env:
+      - TARGET=notest
+      - ECO="-DUSE_OPENMP=OFF"
+  - os: windows
+    compiler: clang
+    env: 
+      - GENERATOR="MSYS Makefiles"
+      - CC=clang CXX=clang++
 
 addons:
   apt:
