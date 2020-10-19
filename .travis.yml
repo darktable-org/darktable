@@ -76,6 +76,7 @@ jobs:
   - os: linux
     compiler: gcc
     env:
+      - TARGET=notest
       - CMAKE_BUILD_TYPE="Debug"
   - os: osx
     osx_image: xcode11
