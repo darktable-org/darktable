@@ -50,8 +50,6 @@ jobs:
   - os: osx
     compiler: gcc
  #temporary
- allow_failures:
-  - os: windows
  include:
   - name: "Linux Clang10"
     os: linux
