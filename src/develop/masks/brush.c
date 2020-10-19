@@ -1418,6 +1418,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     form->points = g_list_remove(form->points, point);
     free(point);
     gui->point_selected = -1;
+    gui->point_edited = -1;
     _brush_init_ctrl_points(form);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
