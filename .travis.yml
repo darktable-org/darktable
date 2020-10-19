@@ -36,7 +36,7 @@ dist: focal
 
 env:
   global:
-    - SRC_DIR=$TRAVIS_BUILD_DIR
+    - SRC_DIR="$TRAVIS_BUILD_DIR"
     - BUILD_DIR="$SRC_DIR/build"
     - INSTALL_PREFIX="$SRC_DIR/install"
     - CFLAGS=-pipe CXXFLAGS=-pipe
