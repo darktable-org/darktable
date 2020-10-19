@@ -31,6 +31,9 @@ jobs:
  include:
   - os: windows
     compiler: clang
+    compiler:
+      - clang
+      - gcc
     env: 
       - GENERATOR="MSYS Makefiles"
       - CC=clang CXX=clang++
