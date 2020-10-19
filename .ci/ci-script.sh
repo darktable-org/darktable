@@ -72,9 +72,9 @@ target_usermanual()
 diskspace()
 {
   df
-  du -hcs "$SRC_DIR"
-  du -hcs "$BUILD_DIR"
-  du -hcs "$INSTALL_PREFIX"
+  du -hcs "$SRC_DIR" || :
+  du -hcs "$BUILD_DIR" || :
+  du -hcs "$INSTALL_PREFIX" || :
 }
 
 diskspace
