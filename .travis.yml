@@ -14,13 +14,11 @@ jobs:
  fast_finish: true
  include:
   - os: windows
-    compiler: clang
     compiler:
       - clang
       - gcc
     env: 
       - GENERATOR="MSYS Makefiles"
-      - CC=clang CXX=clang++
 
 before_install:
 - |-
