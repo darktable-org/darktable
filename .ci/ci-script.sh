@@ -25,7 +25,7 @@
 #   TARGET - either build, notest or usermanual
 #   ECO - some other flags for cmake
 
-set -ex
+set -exv
 
 VERBOSE="-v"
 KEEPGOING="-k0"
