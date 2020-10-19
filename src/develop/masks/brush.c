@@ -931,7 +931,7 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
     int nb = 0;
     for(int i = corner_count * 3; i < gpt->border_count; i++)
     {
-      float yy = gpt->border[i * 2 + 1];
+      const float yy = gpt->border[i * 2 + 1];
       if (((yf<=yy && yf>last) || (yf>=yy && yf<last)) && (gpt->border[i * 2] > x)) nb++;
       last = yy;
     }
@@ -950,8 +950,8 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
         current_seg = (current_seg + 1) % corner_count;
       }
       //distance from tested point to current form point
-      float yy = gpt->points[i * 2 + 1];
-      float xx = gpt->points[i * 2];
+      const float yy = gpt->points[i * 2 + 1];
+      const float xx = gpt->points[i * 2];
       if ((yy-yf)<as && (yy-yf)>-as && (xx-x)<as && (xx-x)>-as)
       {
         if(current_seg == 0)
@@ -996,12 +996,12 @@ static float _brush_get_position_in_segment(float x, float y, dt_masks_form_t *f
 
   for(int i = 0; i <= 100; i++)
   {
-    float t = i / 100.0f;
+    const float t = i / 100.0f;
     float sx, sy;
     _brush_get_XY(point0->corner[0], point0->corner[1], point1->corner[0], point1->corner[1],
                   point2->corner[0], point2->corner[1], point3->corner[0], point3->corner[1], t, &sx, &sy);
 
-    float d = (x - sx) * (x - sx) + (y - sy) * (y - sy);
+    const float d = (x - sx) * (x - sx) + (y - sy) * (y - sy);
     if(d < dmin)
     {
       dmin = d;
