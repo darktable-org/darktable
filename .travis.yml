@@ -14,16 +14,20 @@ jobs:
  fast_finish: true
  include:
   - os: windows
-    compiler:
-      - clang
-      - gcc
     env: 
       - GENERATOR="MSYS Makefiles"
+      - MATRIX_EVAL="CC=/mingw64/bin/gcc && CXX=/mingw64/bin/g++"
+
+  - os: windows
+    env: 
+      - GENERATOR="MSYS Makefiles"
+      - MATRIX_EVAL="CC=/mingw64/bin/clang && CXX=/mingw64/bin/clang++"
 
 before_install:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
+        eval "${MATRIX_EVAL}"
         [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
         choco uninstall -y mingw
         choco upgrade --no-progress -y msys2
