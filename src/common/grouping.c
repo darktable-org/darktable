@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdint.h>
 #include "control/signal.h"
 #include "common/grouping.h"
 #include "common/darktable.h"
