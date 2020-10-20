@@ -140,14 +140,13 @@ before_install:
         export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
         export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
         export msys2+=" -msys2 -full-path -here -c "\"\$@"\" --"
-        $msys2 pacman --sync --noconfirm --needed base-devel
-        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-toolchain
-        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-clang
+        $msys2 pacman -S --needed --noconfirm base-devel
+        $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-toolchain
+        $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-clang
         $msys2 pacman -Ql mingw-w64-x86_64-clang
-        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-cmake
-        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-nsis
-        $msys2 pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,cmocka}
-        $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-openmp
+        $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-cmake
+        $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-nsis
+        $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,cmocka, openmp}
         taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
         export PATH=/C/tools/msys64/mingw64/bin:$PATH
         export PATH=/mingw64/bin:$PATH
