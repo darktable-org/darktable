@@ -234,7 +234,7 @@ script:
         ;;
       windows)
         echo "building windows"
-        echo "msys2: $msys2"
+        echo "msys2: " $msys2
         $msys2 mkdir -p "$BUILD_DIR";
         echo "1"
         $msys2 mkdir -p "$INSTALL_PREFIX";
