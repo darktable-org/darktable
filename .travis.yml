@@ -14,23 +14,23 @@
 #    You should have received a copy of the GNU General Public License
 #    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 
-notifications:
-  irc:
-    channels:
-#     - "chat.freenode.net#darktable"
-      - secure: "fCQRwV2kMc5ycWjuuim0q+u9DS8D64oIWpfDipvrJDcIsS+MfkfkKrF68kDhNbDNtZHUfvP2Se/0hxUWw825VnyzNZZImrK+giOIGS588apxBPzNY3YMWMzwc4RaCKfyOWvFZDRGJwFzAwPWdSSQh7KMGJj7VibgoyhDTSSJYAk="
-    skip_join: true
-    template:
-      - "%{repository}#%{build_number} (\x037%{branch}\x03 - \x02%{commit}\x02 : \x033%{author}\x03): \x1f\x02%{message}\x02\x1f"
-      - "Build details : <%{build_url}>"
-  email:
-    recipients:
-#     - darktable-ci@lists.darktable.org
-      - secure: "Fvo7jlL8jpV+asdCmHHeJUK4BYw1JQvAxFpKUPZ/FWjkBfZ3W6is8jRBJVGfnt9TTvD1W2vsaLqeClv1SUfYw0t0keRSP0+0TB5R9ULIfC6/3bFLmp2aDPhBHLRjH3byxiJ46PvADcZ7MC+6jtf0YEEqy6uLbjaX4PiIXINM7Bo="
-    on_success: always
-    on_failure: always
+# notifications:
+#   irc:
+#     channels:
+# #     - "chat.freenode.net#darktable"
+#       - secure: "fCQRwV2kMc5ycWjuuim0q+u9DS8D64oIWpfDipvrJDcIsS+MfkfkKrF68kDhNbDNtZHUfvP2Se/0hxUWw825VnyzNZZImrK+giOIGS588apxBPzNY3YMWMzwc4RaCKfyOWvFZDRGJwFzAwPWdSSQh7KMGJj7VibgoyhDTSSJYAk="
+#     skip_join: true
+#     template:
+#       - "%{repository}#%{build_number} (\x037%{branch}\x03 - \x02%{commit}\x02 : \x033%{author}\x03): \x1f\x02%{message}\x02\x1f"
+#       - "Build details : <%{build_url}>"
+#   email:
+#     recipients:
+# #     - darktable-ci@lists.darktable.org
+#       - secure: "Fvo7jlL8jpV+asdCmHHeJUK4BYw1JQvAxFpKUPZ/FWjkBfZ3W6is8jRBJVGfnt9TTvD1W2vsaLqeClv1SUfYw0t0keRSP0+0TB5R9ULIfC6/3bFLmp2aDPhBHLRjH3byxiJ46PvADcZ7MC+6jtf0YEEqy6uLbjaX4PiIXINM7Bo="
+#     on_success: always
+#     on_failure: always
 
-language: c++
+language: c++ c
 
 dist: focal
 
@@ -65,63 +65,63 @@ jobs:
       - GENERATOR="MSYS Makefiles"
       - MATRIX_EVAL="CC=/mingw64/bin/clang && CXX=/mingw64/bin/clang++"
 
-  - name: "Linux Clang10"
-    os: linux
-    compiler: clang
-    addons:
-      apt:
-        sources:
-          - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
-            key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
-        packages:
-          - clang-10
-          - libc++-10-dev
-          - libomp-10-dev
-          - libclang-common-10-dev
-          - llvm-10-dev
-    env: CC=clang-10 CXX=clang++-10
-  - name: "Linux GCC 9"
-    os: linux
-    compiler: gcc
-  - name: "GCC9 Release"
-    os: linux
-    compiler: gcc
-    env:
-      - CMAKE_BUILD_TYPE="Release"
-  - name: "GCC9 Debug"
-    os: linux
-    compiler: gcc
-    env:
-      - TARGET=notest
-      - CMAKE_BUILD_TYPE="Debug"
-  - name: "No OMP/OCL/LUA"
-    os: linux
-    compiler: gcc
-    env: ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
-  - name: "Usermanual"
-    os: linux
-    dist: bionic
-    compiler: gcc
-    env: TARGET=usermanual CXX=g++-9 CC=gcc-9 # EXTRA_TMPFS="--tmpfs /tmp"
-    addons:
-        apt:
-          sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
-          packages:
-            - gcc-9
-            - g++-9
-    install: 
-      - sudo add-apt-repository -y universe
-      - sudo add-apt-repository -y multiverse
-      - sudo apt-get update
-      - sudo apt-get -y install default-jdk-headless default-jre-headless
-      - sudo apt-get -y install docbook docbook-xml docbook-xsl docbook-xsl-saxon
-      - sudo apt-get -y install fop gnome-doc-utils imagemagick libsaxon-java xsltproc
-  - os: osx
-    osx_image: xcode11
-    env:
-      - TARGET=notest
-      - ECO="-DUSE_OPENMP=OFF"
+  # - name: "Linux Clang10"
+  #   os: linux
+  #   compiler: clang
+  #   addons:
+  #     apt:
+  #       sources:
+  #         - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
+  #           key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+  #       packages:
+  #         - clang-10
+  #         - libc++-10-dev
+  #         - libomp-10-dev
+  #         - libclang-common-10-dev
+  #         - llvm-10-dev
+  #   env: CC=clang-10 CXX=clang++-10
+  # - name: "Linux GCC 9"
+  #   os: linux
+  #   compiler: gcc
+  # - name: "GCC9 Release"
+  #   os: linux
+  #   compiler: gcc
+  #   env:
+  #     - CMAKE_BUILD_TYPE="Release"
+  # - name: "GCC9 Debug"
+  #   os: linux
+  #   compiler: gcc
+  #   env:
+  #     - TARGET=notest
+  #     - CMAKE_BUILD_TYPE="Debug"
+  # - name: "No OMP/OCL/LUA"
+  #   os: linux
+  #   compiler: gcc
+  #   env: ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
+  # - name: "Usermanual"
+  #   os: linux
+  #   dist: bionic
+  #   compiler: gcc
+  #   env: TARGET=usermanual CXX=g++-9 CC=gcc-9 # EXTRA_TMPFS="--tmpfs /tmp"
+  #   addons:
+  #       apt:
+  #         sources:
+  #           - sourceline: 'ppa:ubuntu-toolchain-r/test'
+  #         packages:
+  #           - gcc-9
+  #           - g++-9
+  #   install: 
+  #     - sudo add-apt-repository -y universe
+  #     - sudo add-apt-repository -y multiverse
+  #     - sudo apt-get update
+  #     - sudo apt-get -y install default-jdk-headless default-jre-headless
+  #     - sudo apt-get -y install docbook docbook-xml docbook-xsl docbook-xsl-saxon
+  #     - sudo apt-get -y install fop gnome-doc-utils imagemagick libsaxon-java xsltproc
+  # - os: osx
+  #   osx_image: xcode11
+  #   env:
+  #     - TARGET=notest
+  #     - ECO="-DUSE_OPENMP=OFF"
 
 addons:
   apt:
@@ -232,9 +232,18 @@ script:
         "$SRC_DIR/.ci/ci-script.sh";
         ;;
       windows)
-        $msys2 mkdir "$BUILD_DIR";
-        $msys2 mkdir "$INSTALL_PREFIX";
-        $msys2 "$SRC_DIR/.ci/ci-script.sh";
+        $msys2 mkdir -p "$BUILD_DIR";
+        $msys2 mkdir -p "$INSTALL_PREFIX";
+        # $msys2 "$SRC_DIR/.ci/ci-script.sh";
+        $msys2 df
+        $msys2 du -hcs "$SRC_DIR"
+        $msys2 du -hcs "$BUILD_DIR"
+        $msys2 du -hcs "$INSTALL_PREFIX"
+        $msys2 export KEEPGOING="-k"
+        $msys2 cmake --build "$BUILD_DIR" "$MAKEFLAGS" || cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
+        $msys2 ctest --output-on-failure || ctest --rerun-failed -V -VV
+        $msys2 # and now check that it installs where told and only there.
+        $msys2 cmake --build "$BUILD_DIR" --target install "$MAKEFLAGS" || cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
         ;;
     esac
 
