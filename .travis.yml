@@ -239,10 +239,11 @@ script:
         $msys2 du -hcs "$BUILD_DIR"
         $msys2 du -hcs "$INSTALL_PREFIX"
         $msys2 export KEEPGOING="-k"
-        $msys2 cmake --build "$BUILD_DIR" "$MAKEFLAGS" || cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
+        $msys2 export VERBOSE="-v"
+        $msys2 VERBOSE=1 cmake --build "$BUILD_DIR" "$MAKEFLAGS" || VERBOSE=1 cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
         $msys2 ctest --output-on-failure || ctest --rerun-failed -V -VV
         $msys2 # and now check that it installs where told and only there.
-        $msys2 cmake --build "$BUILD_DIR" --target install "$MAKEFLAGS" || cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
+        $msys2 VERBOSE=1 cmake --build "$BUILD_DIR" --target install "$MAKEFLAGS" || VERBOSE=1 cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
         ;;
     esac
 
