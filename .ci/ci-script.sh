@@ -41,8 +41,8 @@ if [ -z "$VERBOSE" ]
 then
   VERBOSE="-v"
 fi
-
-if [ -z "$KEEPGOING" ]
+env
+if [ -z "$KEEPGOING" ] && [ "$GENERATOR" != "MSYS Makefiles" ]
 then
   KEEPGOING="-k0"
 fi
