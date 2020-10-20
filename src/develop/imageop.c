@@ -2985,8 +2985,6 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
       if(accel_mod_new->connect_key_accels) accel_mod_new->connect_key_accels(accel_mod_new);
       dt_iop_connect_common_accels(accel_mod_new);
     }
-
-    dt_dynamic_accel_get_valid_list();
   }
 }
 
