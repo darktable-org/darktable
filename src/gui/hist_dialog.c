@@ -250,12 +250,15 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
     do
     {
       const dt_history_item_t *item = (dt_history_item_t *)items->data;
+      const int flags = get_module_flags(item->op);
 
-      if(!(get_module_flags(item->op) & IOP_FLAGS_HIDDEN))
+      if(!(flags & IOP_FLAGS_HIDDEN))
       {
+        const gboolean is_safe = ((flags & IOP_FLAGS_UNSAFE_COPY) == 0);
+
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
-                           DT_HIST_ITEMS_COL_ENABLED, iscopy ? TRUE : _gui_is_set(d->selops, item->num),
+                           DT_HIST_ITEMS_COL_ENABLED, iscopy ? is_safe : _gui_is_set(d->selops, item->num),
                            DT_HIST_ITEMS_COL_NAME, item->name,
                            DT_HIST_ITEMS_COL_NUM, (gint)item->num,
                            -1);
