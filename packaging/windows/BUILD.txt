@@ -27,17 +27,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 	export CAMLIBS="/mingw64/lib/libgphoto2/2.5.23/"
 	export IOLIBS="/mingw64/lib/libgphoto2_port/0.12.0/"
 
-   	NOTE: at the moment, the lensfun version provided by MSYS2 (0.3.95-1) is broken. If you get errors in the build process, manually downgrade lensfun to version 0.3.2-4:
-    Download the file mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz from http://repo.msys2.org/mingw/x86_64/
-    Put the file in your MSYS2 home folder, then from MSYS2 terminal:
-    $ pacman -U mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz
-    Also in order to prevent pacman from updating the lensfun package, open the file /etc/pacman.conf, find the line:
-	#Pacman won’t upgrade packages listed in IgnorePkg and members of IgnoreGroup
-    and below, add the following line
-	IgnorePkg = mingw-w64-x86_64-lensfun
-    Copy the lensfun folder and the lensfun-0.3.2-py3.6.egg-info file from /mingw64/lib/python3.6/site-packages to /mingw64/lib/python3.8/site-packages.
-
-	From MINGW64 terminal, update your lensfun database:
+ 	From MINGW64 terminal, update your lensfun database:
 	$ lensfun-update-data
 
     Also use this program to install USB driver on Windows for your camera:

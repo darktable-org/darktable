@@ -168,7 +168,7 @@ typedef struct dt_view_t
   GSList *(*mouse_actions)(const struct dt_view_t *self);
 
   GSList *accel_closures;
-  struct dt_accel_dynamic_t *dynamic_accel_current;
+  GtkWidget *dynamic_accel_current;
 } dt_view_t;
 
 typedef enum dt_view_image_over_t
