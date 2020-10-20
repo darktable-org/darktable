@@ -62,12 +62,12 @@ target_build()
 {
   echo "target_build"
   # to get as much of the issues into the log as possible
-  cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
+  cmake --build "$BUILD_DIR" $MAKEFLAGS || cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
 
   ctest --output-on-failure || ctest --rerun-failed -V -VV
 
   # and now check that it installs where told and only there.
-  cmake --build "$BUILD_DIR" --target install -- $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
+  cmake --build "$BUILD_DIR" --target install $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
 }
 
 target_notest()
@@ -75,20 +75,20 @@ target_notest()
   echo "target_notest"
 
   # to get as much of the issues into the log as possible
-  cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
+  cmake --build "$BUILD_DIR" $MAKEFLAGS || cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
 
   # and now check that it installs where told and only there.
-  cmake --build "$BUILD_DIR" --target install -- $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
+  cmake --build "$BUILD_DIR" --target install $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
 }
 
 target_usermanual()
 {
   echo "target_usermanual"
 
-  cmake --build "$BUILD_DIR" -- -j1 -v -k0 validate_usermanual_xml
+  cmake --build "$BUILD_DIR" -j1 -v -k0 validate_usermanual_xml
 
   # # to get as much of the issues into the log as possible
-  # cmake --build "$BUILD_DIR" -- $PARALLEL -v darktable-usermanual || cmake --build "$BUILD_DIR" -- -j1 -v -k0 darktable-usermanual
+  # cmake --build "$BUILD_DIR" $PARALLEL -v darktable-usermanual || cmake --build "$BUILD_DIR" -j1 -v -k0 darktable-usermanual
   # test -r doc/usermanual/darktable-usermanual.pdf
   # ls -lah doc/usermanual/darktable-usermanual.pdf
 }
