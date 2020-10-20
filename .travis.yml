@@ -53,14 +53,14 @@ jobs:
   include:
   - name: "window gcc"
     os: windows
-    compiler: gcc
+    # compiler: gcc
     env:
       - GENERATOR="MSYS Makefiles"
       - MATRIX_EVAL="CC=/mingw64/bin/gcc && CXX=/mingw64/bin/g++"
         
   - name: "Windows clang"
     os: windows
-    compiler: clang
+    # compiler: clang
     env:
       - GENERATOR="MSYS Makefiles"
       - MATRIX_EVAL="CC=/mingw64/bin/clang && CXX=/mingw64/bin/clang++"
