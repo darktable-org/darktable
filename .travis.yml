@@ -49,6 +49,7 @@ jobs:
  exclude:
   - os: osx
     compiler: gcc
+  - os: windows
  #temporary
  allow_failures:
   - os: windows
