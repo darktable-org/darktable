@@ -147,69 +147,69 @@ before_install:
         export MAKE=mingw32-make  # so that Autotools can find it        
         echo "done before_install"
         ;;
-      linux)
-        sudo apt-get install \
-          appstream-util \
-          desktop-file-utils \
-          gettext \
-          git \
-          intltool \
-          libatk1.0-dev \
-          libcairo2-dev \
-          libcolord-dev \
-          libcolord-gtk-dev \
-          libcmocka-dev \
-          libcups2-dev \
-          libcurl4-gnutls-dev \
-          libexiv2-dev \
-          libflickcurl-dev \
-          libgdk-pixbuf2.0-dev \
-          libglib2.0-dev \
-          libgphoto2-dev \
-          libgraphicsmagick1-dev \
-          libgtk-3-dev \
-          libjpeg-dev \
-          libjson-glib-dev \
-          liblcms2-dev \
-          liblensfun-dev \
-          liblua5.2-dev \
-          liblua5.3-dev \
-          libopenexr-dev \
-          libopenjp2-7-dev \
-          libosmgpsmap-1.0-dev \
-          libpango1.0-dev \
-          libpng-dev \
-          libpugixml-dev \
-          librsvg2-dev \
-          libsaxon-java \
-          libsecret-1-dev \
-          libsoup2.4-dev \
-          libsqlite3-dev \
-          libtiff5-dev \
-          libwebp-dev \
-          libx11-dev \
-          libxml2-dev \
-          libxml2-utils \
-          ninja-build \
-          perl \
-          po4a \
-          python3-jsonschema \
-          xsltproc \
-          zlib1g-dev;
-        ;;
-      osx)
-        brew update && brew tap Homebrew/bundle && cd .ci && brew bundle --verbose;
-        ;;
+      # linux)
+      #   sudo apt-get install \
+      #     appstream-util \
+      #     desktop-file-utils \
+      #     gettext \
+      #     git \
+      #     intltool \
+      #     libatk1.0-dev \
+      #     libcairo2-dev \
+      #     libcolord-dev \
+      #     libcolord-gtk-dev \
+      #     libcmocka-dev \
+      #     libcups2-dev \
+      #     libcurl4-gnutls-dev \
+      #     libexiv2-dev \
+      #     libflickcurl-dev \
+      #     libgdk-pixbuf2.0-dev \
+      #     libglib2.0-dev \
+      #     libgphoto2-dev \
+      #     libgraphicsmagick1-dev \
+      #     libgtk-3-dev \
+      #     libjpeg-dev \
+      #     libjson-glib-dev \
+      #     liblcms2-dev \
+      #     liblensfun-dev \
+      #     liblua5.2-dev \
+      #     liblua5.3-dev \
+      #     libopenexr-dev \
+      #     libopenjp2-7-dev \
+      #     libosmgpsmap-1.0-dev \
+      #     libpango1.0-dev \
+      #     libpng-dev \
+      #     libpugixml-dev \
+      #     librsvg2-dev \
+      #     libsaxon-java \
+      #     libsecret-1-dev \
+      #     libsoup2.4-dev \
+      #     libsqlite3-dev \
+      #     libtiff5-dev \
+      #     libwebp-dev \
+      #     libx11-dev \
+      #     libxml2-dev \
+      #     libxml2-utils \
+      #     ninja-build \
+      #     perl \
+      #     po4a \
+      #     python3-jsonschema \
+      #     xsltproc \
+      #     zlib1g-dev;
+      #   ;;
+      # osx)
+      #   brew update && brew tap Homebrew/bundle && cd .ci && brew bundle --verbose;
+      #   ;;
     esac
 
-before_cache:
-- |-
-    case $TRAVIS_OS_NAME in
-      windows)
-        # https://unix.stackexchange.com/a/137322/107554
-        $msys2 pacman --sync --clean --noconfirm
-        ;;
-    esac
+# before_cache:
+# - |-
+#     case $TRAVIS_OS_NAME in
+#       windows)
+#         # https://unix.stackexchange.com/a/137322/107554
+#         $msys2 pacman --sync --clean --noconfirm
+#         ;;
+#     esac
 
 cache:
   directories:
@@ -232,7 +232,6 @@ script:
         echo "1"
         $msys2 mkdir -p "$INSTALL_PREFIX";
         echo "2"
-        # $msys2 "$SRC_DIR/.ci/ci-script.sh";
         $msys2 df
         echo "3"
         $msys2 du -hcs "$SRC_DIR"
