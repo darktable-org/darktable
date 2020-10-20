@@ -131,6 +131,7 @@ before_install:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
+        echo "starting before_install"
         eval "${MATRIX_EVAL}"
         [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
         choco uninstall -y mingw
@@ -146,11 +147,12 @@ before_install:
         $msys2 pacman -Ql mingw-w64-x86_64-clang
         $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-cmake
         $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-nsis
-        taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
         $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,cmocka,openmp}
+        # taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
         export PATH=/C/tools/msys64/mingw64/bin:$PATH
         export PATH=/mingw64/bin:$PATH
         export MAKE=mingw32-make  # so that Autotools can find it
+        echo "done before_install"
         ;;
       linux)
         sudo apt-get install \
