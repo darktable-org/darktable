@@ -150,8 +150,6 @@ typedef struct dt_control_t
 
   // Accelerator group path lists
   GSList *accelerator_list;
-  GSList *dynamic_accelerator_list;
-  GSList *dynamic_accelerator_valid;
 
   // Cached accelerator keys for key_pressed shortcuts
   dt_control_accels_t accels;

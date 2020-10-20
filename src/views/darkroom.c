@@ -1917,9 +1917,6 @@ static void _preference_changed(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(display_intent, TRUE);
     gtk_widget_set_visible(display_intent, FALSE);
   }
-
-  // reconstruct dynamic accels list
-  dt_dynamic_accel_get_valid_list();
 }
 
 static void _preference_prev_downsample_change(gpointer instance, gpointer user_data)
@@ -3450,9 +3447,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
   int handled = 0;
   // dynamic accels
-  if(self->dynamic_accel_current && self->dynamic_accel_current->widget)
+  if(self->dynamic_accel_current)
   {
-    GtkWidget *widget = self->dynamic_accel_current->widget;
+    GtkWidget *widget = self->dynamic_accel_current;
     dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
 
     if(w->type == DT_BAUHAUS_SLIDER)
@@ -3466,9 +3463,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
         multiplier = min_visible / fabsf(step);
 
       if(up)
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step * multiplier);
+        dt_bauhaus_slider_set(widget, value + step * multiplier);
       else
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step * multiplier);
+        dt_bauhaus_slider_set(widget, value - step * multiplier);
     }
     else
     {
@@ -3486,8 +3483,8 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       }
 
     }
-    g_signal_emit_by_name(G_OBJECT(self->dynamic_accel_current->widget), "value-changed");
-    dt_accel_widget_toast(self->dynamic_accel_current->widget);
+    g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
+    dt_accel_widget_toast(widget);
     return;
   }
   // masks
@@ -3955,9 +3952,6 @@ void connect_key_accels(dt_view_t *self)
   // change the precision for adjusting sliders with keyboard shortcuts
   closure = g_cclosure_new(G_CALLBACK(change_slider_accel_precision), (gpointer)self, NULL);
   dt_accel_connect_view(self, "change keyboard shortcut slider precision", closure);
-
-  // dynamics accels
-  dt_dynamic_accel_get_valid_list();
 }
 
 GSList *mouse_actions(const dt_view_t *self)

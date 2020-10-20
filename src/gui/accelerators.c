@@ -317,18 +317,6 @@ void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, cons
   accel_dynamic->views = DT_VIEW_DARKROOM;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel_dynamic);
 
-  dt_accel_dynamic_t *daccel = (dt_accel_dynamic_t *)g_malloc0(sizeof(dt_accel_dynamic_t));
-
-  g_strlcpy(daccel->path, accel_dynamic_path, sizeof(daccel->path));
-  g_strlcpy(daccel->translated_path, accel_dynamic_path_trans, sizeof(daccel->translated_path));
-  g_strlcpy(daccel->module, so->op, sizeof(daccel->module));
-  daccel->local = local;
-  daccel->views = DT_VIEW_DARKROOM;
-  daccel->mod_so = so;
-
-  darktable.control->dynamic_accelerator_list
-      = g_slist_prepend(darktable.control->dynamic_accelerator_list, daccel);
-
   g_free(module_name_fixed);
 }
 
@@ -367,19 +355,6 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const 
 
     darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
   }
-
-  // dynamic accel
-  dt_accel_dynamic_t *daccel = (dt_accel_dynamic_t *)g_malloc0(sizeof(dt_accel_dynamic_t));
-
-  g_strlcpy(daccel->path, paths[4], sizeof(daccel->path));
-  g_strlcpy(daccel->translated_path, paths_trans[4], sizeof(daccel->translated_path));
-  g_strlcpy(daccel->module, so->op, sizeof(daccel->module));
-  daccel->local = local;
-  daccel->views = DT_VIEW_DARKROOM;
-  daccel->mod_so = so;
-
-  darktable.control->dynamic_accelerator_list
-      = g_slist_prepend(darktable.control->dynamic_accelerator_list, daccel);
 }
 
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods)
@@ -740,6 +715,27 @@ static gboolean bauhaus_slider_reset_callback(GtkAccelGroup *accel_group, GObjec
   return TRUE;
 }
 
+static gboolean bauhaus_dynamic_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                         guint keyval, GdkModifierType modifier, gpointer data)
+{
+  if(DT_IS_BAUHAUS_WIDGET(data))
+  {
+    dt_bauhaus_widget_t *widget = DT_BAUHAUS_WIDGET(data);
+
+    darktable.view_manager->current_view->dynamic_accel_current = GTK_WIDGET(widget);
+
+    gchar *txt = g_strdup_printf (_("scroll to change <b>%s</b> of module %s %s"),
+                                  dt_bauhaus_widget_get_label(GTK_WIDGET(widget)),
+                                  widget->module->name(), widget->module->multi_name);
+    dt_control_hinter_message(darktable.control, txt);
+    g_free(txt);
+  }
+  else
+    dt_control_hinter_message(darktable.control, "");
+
+  return TRUE;
+}
+
 static gboolean bauhaus_combobox_next_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                  guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -799,20 +795,10 @@ void dt_accel_connect_combobox_iop(dt_iop_module_t *module, const gchar *path, G
   //dynamic
   snprintf(accel_dynamic_path, 256, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), module->so->op, path,
            NC_("accel", "dynamic"));
-
-  // dynamic accel : no closure, as we'll use key_press/release/scroll
-  GSList *l = darktable.control->dynamic_accelerator_list;
-  while(l)
-  {
-    dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)l->data;
-    if(da && !strcmp(da->path, accel_dynamic_path))
-    {
-      da->widget = combobox;
-      break;
-    }
-    l = g_slist_next(l);
-  }
+  closure = g_cclosure_new(G_CALLBACK(bauhaus_dynamic_callback), (gpointer)combobox, NULL);
   accel = _lookup_accel(accel_dynamic_path);
+  if(accel) accel->closure = closure;
+  gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_dynamic_path, closure);
   module->accel_closures = g_slist_prepend(module->accel_closures, accel);
 }
 
@@ -893,20 +879,21 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, Gtk
     module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
-  // dynamic accel : no closure, as we'll use key_press/release/scroll
-  GSList *l = darktable.control->dynamic_accelerator_list;
-  while(l)
-  {
-    dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)l->data;
-    if(da && !strcmp(da->path, dynamic_path))
-    {
-      da->widget = slider;
-      break;
-    }
-    l = g_slist_next(l);
-  }
+  closure = g_cclosure_new(G_CALLBACK(bauhaus_dynamic_callback), (gpointer)slider, NULL);
+
   accel = _lookup_accel(dynamic_path);
-  module->accel_closures = g_slist_prepend(module->accel_closures, accel);
+
+  if(accel) accel->closure = closure;
+
+  if(accel && accel->local)
+  {
+    _connect_local_accel(module, accel);
+  }
+  else
+  {
+    gtk_accel_group_connect_by_path(darktable.control->accelerators, dynamic_path, closure);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
+  }
 }
 
 void dt_accel_connect_locals_iop(dt_iop_module_t *module)
@@ -1182,23 +1169,6 @@ void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path)
       l = g_slist_next(l);
     }
   }
-  l = darktable.control->dynamic_accelerator_list;
-  while(l)
-  {
-    dt_accel_t *accel = (dt_accel_t *)l->data;
-    if(accel && !strncmp(accel->path, build_path, 1024))
-    {
-      darktable.control->dynamic_accelerator_list
-          = g_slist_delete_link(darktable.control->dynamic_accelerator_list, l);
-      l = NULL;
-      g_free(accel);
-    }
-    else
-    {
-      l = g_slist_next(l);
-    }
-  }
-  dt_dynamic_accel_get_valid_list();
 }
 
 void dt_accel_deregister_lib(dt_lib_module_t *module, const gchar *path)
@@ -1423,57 +1393,6 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_path)
     {
       l = g_slist_next(l);
     }
-  }
-}
-
-static gint _dynamic_accel_find(gconstpointer a, gconstpointer b)
-{
-  dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)a;
-  GtkAccelKey *ak = (GtkAccelKey *)b;
-  if(da->accel_key.accel_key == ak->accel_key && da->accel_key.accel_mods == ak->accel_mods) return 0;
-  // not the right one
-  return 1;
-}
-
-dt_accel_dynamic_t *dt_dynamic_accel_find_by_key(guint accel_key, GdkModifierType mods)
-{
-  GtkAccelKey ak = { 0 };
-  ak.accel_key = gdk_keyval_to_lower(accel_key);
-  ak.accel_mods = mods;
-  GSList *da = g_slist_find_custom(darktable.control->dynamic_accelerator_valid, &ak, _dynamic_accel_find);
-  if(da && da->data) return (dt_accel_dynamic_t *)da->data;
-  return NULL;
-}
-
-void dt_dynamic_accel_get_valid_list()
-{
-  // remove all elements from the valid list (no need to free them, as they are in the norml list anyway)
-  if (darktable.control->dynamic_accelerator_valid)
-  {
-    g_slist_free(darktable.control->dynamic_accelerator_valid);
-    darktable.control->dynamic_accelerator_valid = NULL;
-  }
-
-  GSList *l = darktable.control->dynamic_accelerator_list;
-  while(l)
-  {
-    dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)l->data;
-    if(da && da->mod_so->state != dt_iop_state_HIDDEN)
-    {
-      GtkAccelKey ak;
-      if(gtk_accel_map_lookup_entry(da->path, &ak))
-      {
-        if(ak.accel_key > 0)
-        {
-          da->accel_key.accel_key = ak.accel_key;
-          da->accel_key.accel_mods = ak.accel_mods;
-          da->accel_key.accel_flags = ak.accel_flags;
-          darktable.control->dynamic_accelerator_valid
-              = g_slist_append(darktable.control->dynamic_accelerator_valid, da);
-        }
-      }
-    }
-    l = g_slist_next(l);
   }
 }
 
