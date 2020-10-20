@@ -234,6 +234,7 @@ script:
         ;;
       windows)
         echo "building windows"
+        echo "msys2: $msys2"
         $msys2 mkdir -p "$BUILD_DIR";
         echo "1"
         $msys2 mkdir -p "$INSTALL_PREFIX";
@@ -251,13 +252,13 @@ script:
         echo "7"
         $msys2 export VERBOSE="-v"
         echo "8"
-        $msys2 VERBOSE=1 cmake --build "$BUILD_DIR" "$MAKEFLAGS" || VERBOSE=1 cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
+        $msys2 cmake --build "$BUILD_DIR" "$MAKEFLAGS" || cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
         echo "9"
         $msys2 ctest --output-on-failure || ctest --rerun-failed -V -VV
         echo "10"
         $msys2 # and now check that it installs where told and only there.
         echo "11"
-        $msys2 VERBOSE=1 cmake --build "$BUILD_DIR" --target install "$MAKEFLAGS" || VERBOSE=1 cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
+        $msys2 cmake --build "$BUILD_DIR" --target install "$MAKEFLAGS" || cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
         echo "12"
         ;;
     esac
