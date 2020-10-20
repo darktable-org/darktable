@@ -226,45 +226,45 @@ script:
         "$SRC_DIR/.ci/ci-script.sh";
         ;;
       windows)
-        echo "building windows"
-        echo "msys2: \"$msys2\""
-        echo "BUILD_DIR: \"$BUILD_DIR\""
-        echo "MAKEFLAGS: \"$MAKEFLAGS\""
-        echo "VERBOSE: \"$VERBOSE\""
-        echo "KEEPGOING: \"$KEEPGOING\""
+        $mingw64 echo "building windows"
+        $mingw64 echo "msys2: \"$msys2\""
+        $mingw64 echo "BUILD_DIR: \"$BUILD_DIR\""
+        $mingw64 echo "MAKEFLAGS: \"$MAKEFLAGS\""
+        $mingw64 echo "VERBOSE: \"$VERBOSE\""
+        $mingw64 echo "KEEPGOING: \"$KEEPGOING\""
 
-        echo "$msys2 mkdir -p \"$BUILD_DIR\";"
-        $msys2 mkdir -p "$BUILD_DIR";
+        $mingw64 echo "$mingw64 mkdir -p \"$BUILD_DIR\";"
+        $mingw64 mkdir -p "$BUILD_DIR";
         
-        echo "$msys2 mkdir -p \"$INSTALL_PREFIX\";"
-        $msys2 mkdir -p "$INSTALL_PREFIX";
+        $mingw64 echo "$mingw64 mkdir -p \"$INSTALL_PREFIX\";"
+        $mingw64 mkdir -p "$INSTALL_PREFIX";
         
-        echo "$msys2 df"
-        $msys2 df
+        $mingw64 echo "$mingw64 df"
+        $mingw64 df
         
-        echo "$msys2 du -hcs \"$SRC_DIR\""
-        $msys2 du -hcs "$SRC_DIR"
+        $mingw64 echo "$mingw64 du -hcs \"$SRC_DIR\""
+        $mingw64 du -hcs "$SRC_DIR"
         
-        echo "$msys2 du -hcs \"$BUILD_DIR\""
-        $msys2 du -hcs "$BUILD_DIR"
+        $mingw64 "$mingw64 du -hcs \"$BUILD_DIR\""
+        $mingw64 du -hcs "$BUILD_DIR"
         
-        echo "$msys2 du -hcs \"$INSTALL_PREFIX\""
-        $msys2 du -hcs "$INSTALL_PREFIX"
+        $mingw64 "$mingw64 du -hcs \"$INSTALL_PREFIX\""
+        $mingw64 du -hcs "$INSTALL_PREFIX"
         
-        echo "export KEEPGOING=\"-k\""
-        export KEEPGOING="-k"
+        $mingw64 echo "export KEEPGOING=\"-k\""
+        $mingw64 export KEEPGOING="-k"
         
-        echo "export VERBOSE=\"-v\""
-        export VERBOSE="-v"
+        $mingw64 echo "export VERBOSE=\"-v\""
+        $mingw64 export VERBOSE="-v"
         
-        echo "$msys2 cmake --build \"$BUILD_DIR\" \"$MAKEFLAGS\" || cmake --build \"$BUILD_DIR\" -j1 \"$VERBOSE\" \"$KEEPGOING\""
-        $msys2 cmake --build "$BUILD_DIR" "$MAKEFLAGS" || cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
+        $mingw64 echo "$mingw64 cmake --build \"$BUILD_DIR\" \"$MAKEFLAGS\" || cmake --build \"$BUILD_DIR\" -j1 \"$VERBOSE\" \"$KEEPGOING\""
+        $mingw64 cmake --build "$BUILD_DIR" "$MAKEFLAGS" || cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
         
-        echo "$msys2 ctest --output-on-failure || ctest --rerun-failed -V -VV
-        $msys2 ctest --output-on-failure || ctest --rerun-failed -V -VV
+        $mingw64 echo "$mingw64 ctest --output-on-failure || ctest --rerun-failed -V -VV
+        $mingw64 ctest --output-on-failure || ctest --rerun-failed -V -VV
 
-        echo "$msys2 cmake --build \"$BUILD_DIR\" --target install \"$MAKEFLAGS\" || cmake --build \"$BUILD_DIR\" --target install -j1 \"$VERBOSE\" \"$KEEPGOING\""
-        $msys2 cmake --build "$BUILD_DIR" --target install "$MAKEFLAGS" || cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
+        $mingw64 echo "$mingw64 cmake --build \"$BUILD_DIR\" --target install \"$MAKEFLAGS\" || cmake --build \"$BUILD_DIR\" --target install -j1 \"$VERBOSE\" \"$KEEPGOING\""
+        $mingw64 cmake --build "$BUILD_DIR" --target install "$MAKEFLAGS" || cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
         ;;
     esac
 
