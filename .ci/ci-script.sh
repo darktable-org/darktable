@@ -41,10 +41,15 @@ if [ -z "$VERBOSE" ]
 then
   VERBOSE="-v"
 fi
-env
+
 if [ -z "$KEEPGOING" ] && [ "$GENERATOR" != "MSYS Makefiles" ]
 then
   KEEPGOING="-k0"
+fi
+
+if [ "$GENERATOR" = "MSYS Makefiles" ]
+then
+  CMAKE_CXX_FLAGS="-Wno-pass-failed"
 fi
 
 if [ "$GENERATOR" = "Unix Makefiles" ]
