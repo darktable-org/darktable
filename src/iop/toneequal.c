@@ -168,7 +168,7 @@ typedef struct dt_iop_toneequalizer_params_t
   float noise, ultra_deep_blacks, deep_blacks, blacks, shadows, midtones, highlights, whites, speculars; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0
   float blending; // $MIN: 0.01 $MAX: 100.0 $DEFAULT: 5.0 $DESCRIPTION: "smoothing diameter"
   float smoothing; // $DEFAULT: 1.414213562 sqrtf(2.0f)
-  float feathering; // $MIN: 0.01 $MAX: 10000.0 $DEFAULT: 5.0 $DESCRIPTION: "edges refinement/feathering"
+  float feathering; // $MIN: 0.01 $MAX: 10000.0 $DEFAULT: 1.0 $DESCRIPTION: "edges refinement/feathering"
   float quantization; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "mask quantization"
   float contrast_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast compensation"
   float exposure_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask exposure compensation"
@@ -404,6 +404,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+static void compress_shadows_highlight_preset_set_exposure_params(dt_iop_toneequalizer_params_t* p, const float step)
+{
+  // this function is used to set the exposure params for the 4 "compress shadows
+  // highlights" presets, which use basically the same curve, centered around
+  // -4EV with an exposure compensation that puts middle-grey at -4EV.
+  p->noise = 1.47f * step;
+  p->ultra_deep_blacks = 2.0f * step;
+  p->deep_blacks = 2.0f * step;
+  p->blacks = 1.47f * step;
+  p->shadows = 0.0f;
+  p->midtones = -step;
+  p->highlights = -2.0f * step;
+  p->whites = -2.53f * step;
+  p->speculars = -2.13f * step;
+}
+
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_toneequalizer_params_t p;
@@ -425,76 +441,55 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("mask blending : none"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Simple utils blendings
-  p.details = DT_TONEEQ_GUIDED;
+  p.details = DT_TONEEQ_EIGF;
   p.method = DT_TONEEQ_NORM_2;
 
-  p.blending = 33.0f;
-  p.feathering = 10.0f;
+  p.blending = 5.0f;
+  p.feathering = 1.0f;
   p.iterations = 1;
-  p.quantization = 0.0f;
-  p.exposure_boost = 0.0f;
-  p.contrast_boost = 0.0f;
-  dt_gui_presets_add_generic(_("mask blending : landscapes"), self->op, self->version(), &p, sizeof(p), 1);
-
-  p.blending = 25.0f;
-  p.feathering = 25.0f;
-  p.iterations = 2;
   p.quantization = 0.0f;
   p.exposure_boost = 0.0f;
   p.contrast_boost = 0.0f;
   dt_gui_presets_add_generic(_("mask blending : all purposes"), self->op, self->version(), &p, sizeof(p), 1);
 
-  p.blending = 25.0f;
-  p.feathering = 25.0f;
-  p.iterations = 4;
-  p.quantization = 0.0f;
-  p.exposure_boost = -0.5f;
-  p.contrast_boost = 1.0f;
-  dt_gui_presets_add_generic(_("mask blending : isolated subjects"), self->op, self->version(), &p, sizeof(p), 1);
+  p.blending = 1.0f;
+  p.feathering = 10.0f;
+  p.iterations = 3;
+  dt_gui_presets_add_generic(_("mask blending : people with backlight"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Shadows/highlights presets
+  // move middle-grey to the center of the range
+  // helps to have a monotonous curve
+  p.exposure_boost = -1.57f;
+  p.contrast_boost = 0.0f;
 
-  p.blending = 25.0f;
-  p.feathering = 25.0f;
-  p.iterations = 2;
+  p.blending = 2.0f;
+  p.feathering = 50.0f;
+  p.iterations = 5;
   p.quantization = 0.0f;
-  p.exposure_boost = -0.5f;
-  p.contrast_boost = 1.0f;
 
-  p.noise = 0.05f;
-  p.ultra_deep_blacks = 0.15f;
-  p.deep_blacks = 0.25f;
-  p.blacks = 0.55f;
-  p.shadows = 0.72f;
-  p.midtones = 0.55f;
-  p.highlights = 0.0f;
-  p.whites = -0.33f;
-  p.speculars = 0.0f;
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.7f);
+  // slight modification to give higher compression
+  p.speculars = -2.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights : very strong"), self->op, self->version(), &p, sizeof(p), 1);
 
-  dt_gui_presets_add_generic(_("compress shadows/highlights : soft"), self->op, self->version(), &p, sizeof(p), 1);
-
-  p.blending = 25.0f;
-  p.feathering = 10.0f;
-  p.iterations = 2;
-  p.quantization = 0.0f;
-  p.exposure_boost = -0.5f;
-  p.contrast_boost = 1.0f;
-
-  p.noise = 0.5f;
-  p.ultra_deep_blacks = 0.9f;
-  p.deep_blacks = 1.25f;
-  p.blacks = 1.40f;
-  p.shadows = 1.25f;
-  p.midtones = 0.72f;
-  p.highlights = -0.15f;
-  p.whites = -0.55f;
-  p.speculars = -0.2f;
-
+  p.feathering = 20.0f;
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.60f);
   dt_gui_presets_add_generic(_("compress shadows/highlights : strong"), self->op, self->version(), &p, sizeof(p), 1);
 
-  p.blending = 25.0f;
-  p.feathering = 25.0f;
-  p.iterations = 2;
+  p.blending = 3.0f;
+  p.feathering = 7.0f;
+  p.iterations = 3;
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
+  dt_gui_presets_add_generic(_("compress shadows/highlights : medium"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.blending = 5.0f;
+  p.feathering = 1.0f;
+  p.iterations = 1;
+
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.30f);
+  dt_gui_presets_add_generic(_("compress shadows/highlights : soft"), self->op, self->version(), &p, sizeof(p), 1);
+
   p.quantization = 0.0f;
   p.exposure_boost = 0.0f;
   p.contrast_boost = 0.0f;
