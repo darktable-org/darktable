@@ -39,9 +39,10 @@ env:
     - SRC_DIR="$TRAVIS_BUILD_DIR"
     - BUILD_DIR="$SRC_DIR/build"
     - INSTALL_PREFIX="$SRC_DIR/install"
-    - CFLAGS=-pipe CXXFLAGS=-pipe
+    - CFLAGS=-pipe
+    - CXXFLAGS=-pipe
     - CMAKE_BUILD_TYPE="RelWithDebInfo"
-    - GENERATOR="Ninja"
+    # - GENERATOR="Ninja"
     - TARGET=build
 
 jobs:
@@ -230,8 +231,6 @@ script:
         $mingw64 echo "msys2: \"$msys2\""
         $mingw64 echo "BUILD_DIR: \"$BUILD_DIR\""
         $mingw64 echo "MAKEFLAGS: \"$MAKEFLAGS\""
-        $mingw64 echo "VERBOSE: \"$VERBOSE\""
-        $mingw64 echo "KEEPGOING: \"$KEEPGOING\""
 
         $mingw64 echo "$mingw64 mkdir -p \"$BUILD_DIR\""
         $mingw64 mkdir -p "$BUILD_DIR"
@@ -250,21 +249,15 @@ script:
         
         $mingw64 "$mingw64 du -hcs \"$INSTALL_PREFIX\""
         $mingw64 du -hcs "$INSTALL_PREFIX"
-        
-        $mingw64 echo "export KEEPGOING=\"-k\""
-        $mingw64 export KEEPGOING="-k"
-        
-        $mingw64 echo "export VERBOSE=\"-v\""
-        $mingw64 export VERBOSE="-v"
-        
-        $mingw64 echo "$mingw64 cmake --build \"$BUILD_DIR\" \"$MAKEFLAGS\" || cmake --build \"$BUILD_DIR\" -j1 \"$VERBOSE\" \"$KEEPGOING\""
-        $mingw64 cmake --build "$BUILD_DIR" "$MAKEFLAGS" || cmake --build "$BUILD_DIR" -j1 "$VERBOSE" "$KEEPGOING"
+               
+        $mingw64 echo "$mingw64 cmake --build \"$BUILD_DIR\" \"$MAKEFLAGS\" || cmake --build \"$BUILD_DIR\" -j1 -v"
+        $mingw64 cmake --build "$BUILD_DIR" "$MAKEFLAGS" || cmake --build "$BUILD_DIR" -j1 -v
         
         $mingw64 echo "$mingw64 ctest --output-on-failure || ctest --rerun-failed -V -VV"
         $mingw64 ctest --output-on-failure || ctest --rerun-failed -V -VV
 
-        $mingw64 echo "$mingw64 cmake --build \"$BUILD_DIR\" --target install \"$MAKEFLAGS\" || cmake --build \"$BUILD_DIR\" --target install -j1 \"$VERBOSE\" \"$KEEPGOING\""
-        $mingw64 cmake --build "$BUILD_DIR" --target install "$MAKEFLAGS" || cmake --build "$BUILD_DIR" --target install -j1 "$VERBOSE" "$KEEPGOING"
+        $mingw64 echo "$mingw64 cmake --build \"$BUILD_DIR\" --target install \"$MAKEFLAGS\" || cmake --build \"$BUILD_DIR\" --target install -j1 -v"
+        $mingw64 cmake --build "$BUILD_DIR" --target install "$MAKEFLAGS" || cmake --build "$BUILD_DIR" --target install -j1 -v
         ;;
     esac
 
