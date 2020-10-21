@@ -536,7 +536,7 @@ void gui_init(dt_lib_module_t *self)
   /* filter entry */
   w = gtk_entry_new();
   d->entry = GTK_ENTRY(w);
-  gtk_entry_set_placeholder_text(GTK_ENTRY(d->entry), _("filter styles name"));
+  gtk_entry_set_placeholder_text(GTK_ENTRY(d->entry), _("filter style names"));
   gtk_widget_set_tooltip_text(w, _("filter style names"));
   gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   g_signal_connect(d->entry, "changed", G_CALLBACK(entry_callback), d);
