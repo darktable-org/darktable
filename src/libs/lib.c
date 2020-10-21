@@ -951,10 +951,8 @@ static void _preset_popup_posistion(GtkMenu *menu, gint *x, gint *y, gboolean *p
 }
 #endif
 
-static void popup_callback(GtkButton *button, GdkEventButton *event, dt_lib_module_t *module)
+static void popup_callback(GtkButton *button, dt_lib_module_t *module)
 {
-  if(event->button != 1 && event->button != 2) return;
-
   dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
 
   mi->plugin_name = g_strdup(module->plugin_name);
@@ -1168,7 +1166,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     if(module->presets_button)
     {
       // if presets btn has been loaded to be shown outside expander
-      g_signal_connect(G_OBJECT(module->presets_button), "button-press-event", G_CALLBACK(popup_callback), module);
+      g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(popup_callback), module);
     }
     module->expander = NULL;
     return NULL;
@@ -1218,7 +1216,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
   module->presets_button = GTK_WIDGET(hw[DT_MODULE_PRESETS]);
   gtk_widget_set_tooltip_text(hw[DT_MODULE_PRESETS], _("presets"));
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "button-press-event", G_CALLBACK(popup_callback), module);
+  g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "clicked", G_CALLBACK(popup_callback), module);
 
   if(!module->get_params) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_PRESETS]), FALSE);
   gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_PRESETS]), "module-preset-button");
