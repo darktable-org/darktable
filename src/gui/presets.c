@@ -290,7 +290,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
         gtk_widget_destroy(dlg_overwrite);
 
         // if result is BUTTON_NO or ESCAPE keypress exit without destroying dialog, to permit other name
-        if(dlg_ret != GTK_RESPONSE_YES) 
+        if(dlg_ret != GTK_RESPONSE_YES)
         {
           return;
         }
@@ -848,6 +848,22 @@ static void menuitem_manage_quick_presets_toggle(GtkCellRendererToggle *cell_ren
   g_free(txt);
 }
 
+static int menuitem_manage_quick_presets_sort(gconstpointer a, gconstpointer b)
+{
+  dt_iop_module_so_t *ma = (dt_iop_module_so_t *)a;
+  dt_iop_module_so_t *mb = (dt_iop_module_so_t *)b;
+  gchar *s1 = g_utf8_normalize(ma->name(), -1, G_NORMALIZE_ALL);
+  gchar *sa = g_utf8_casefold(s1, -1);
+  g_free(s1);
+  s1 = g_utf8_normalize(mb->name(), -1, G_NORMALIZE_ALL);
+  gchar *sb = g_utf8_casefold(s1, -1);
+  g_free(s1);
+  const int res = g_strcmp0(sa, sb);
+  g_free(sa);
+  g_free(sb);
+  return res;
+}
+
 static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 {
   sqlite3_stmt *stmt;
@@ -895,13 +911,14 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 
   treestore = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING);
 
-  GList *modules = darktable.develop->iop;
+  GList *m2 = g_list_copy(darktable.iop);
+  GList *modules = g_list_sort(m2, menuitem_manage_quick_presets_sort);
   while(modules)
   {
-    dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
+    dt_iop_module_so_t *iop = (dt_iop_module_so_t *)modules->data;
 
     /* check if module is visible in current layout */
-    if(dt_dev_modulegroups_is_visible(darktable.develop, iop->so->op))
+    if(dt_dev_modulegroups_is_visible(darktable.develop, iop->op))
     {
       // create top entry
       gtk_tree_store_append(treestore, &toplevel, NULL);
@@ -916,19 +933,25 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
                                   -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
 
+      int nb = 0;
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
+        nb++;
         char *name = (char *)sqlite3_column_text(stmt, 0);
         gtk_tree_store_append(treestore, &child, &toplevel);
-        gtk_tree_store_set(treestore, &child, 0, name, 1, FALSE, 2, TRUE, 3, g_strdup(iop->so->op), 4,
-                           g_strdup(name), -1);
+        gtk_tree_store_set(treestore, &child, 0, name, 1, FALSE, 2, TRUE, 3, g_strdup(iop->op), 4, g_strdup(name),
+                           -1);
       }
 
       sqlite3_finalize(stmt);
+
+      // we don't show modules with no presets
+      if(nb == 0) gtk_tree_store_remove(treestore, &toplevel);
     }
 
     modules = g_list_next(modules);
   }
+  g_list_free(m2);
 
   model = GTK_TREE_MODEL(treestore);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
