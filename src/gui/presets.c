@@ -911,6 +911,8 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 
   treestore = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING);
 
+  gchar *config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
+
   GList *m2 = g_list_copy(darktable.iop);
   GList *modules = g_list_sort(m2, menuitem_manage_quick_presets_sort);
   while(modules)
@@ -938,8 +940,12 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
       {
         nb++;
         char *name = (char *)sqlite3_column_text(stmt, 0);
+        // is this preset part of the list ?
+        gchar *txt = dt_util_dstrcat(NULL, "ꬹ%s|%sꬹ", iop->op, name);
+        gboolean inlist = (config && strstr(config, txt));
+        g_free(txt);
         gtk_tree_store_append(treestore, &child, &toplevel);
-        gtk_tree_store_set(treestore, &child, 0, name, 1, FALSE, 2, TRUE, 3, g_strdup(iop->op), 4, g_strdup(name),
+        gtk_tree_store_set(treestore, &child, 0, name, 1, inlist, 2, TRUE, 3, g_strdup(iop->op), 4, g_strdup(name),
                            -1);
       }
 
@@ -951,6 +957,7 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 
     modules = g_list_next(modules);
   }
+  g_free(config);
   g_list_free(m2);
 
   model = GTK_TREE_MODEL(treestore);
