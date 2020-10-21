@@ -670,12 +670,16 @@ static float gaussian_func(const float radius, const float denominator)
 // this is the version currently used, as using a lut gives a
 // big performance speedup on some cpus
 __DT_CLONE_TARGETS__
-static inline void compute_correction(const float *const restrict luminance,
-                                      float *const restrict correction,
-                                      const float *const restrict factors,
-                                      const float sigma,
-                                      const size_t num_elem)
+static inline void apply_toneequalizer(const float *const restrict in,
+                                       const float *const restrict luminance,
+                                       float *const restrict out,
+                                       const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                       const size_t ch,
+                                       const dt_iop_toneequalizer_data_t *const d)
 {
+  const size_t num_elem = roi_in->width * roi_in->height;
+  const float *const restrict factors = d->factors;
+  const float sigma = d->smoothing;
   const float gauss_denom = gaussian_denom(sigma);
   const int min_ev = -8;
   const int max_ev = 0;
@@ -695,13 +699,21 @@ static inline void compute_correction(const float *const restrict luminance,
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) \
-  dt_omp_firstprivate(correction, num_elem, luminance, factors, lut, min_ev, max_ev, lut_resolution)
+  dt_omp_firstprivate(in, out, num_elem, luminance, factors, lut, min_ev, max_ev, lut_resolution, ch)
 #endif
   for(size_t k = 0; k < num_elem; ++k)
   {
     // The radial-basis interpolation is valid in [-8; 0] EV and can quickely diverge outside
     const float exposure = fast_clamp(log2f(luminance[k]), min_ev, max_ev);
-    correction[k] = lut[(unsigned)roundf((exposure - min_ev) * lut_resolution)];
+    float correction = lut[(unsigned)roundf((exposure - min_ev) * lut_resolution)];
+    // apply correction
+    for(size_t c = 0; c < ch; c++)
+    {
+      if(c == 3)
+        out[k * ch + c] = in[k * ch + c];
+      else
+        out[k * ch + c] = correction * in[k * ch + c];
+    }
   }
   dt_free_align(lut);
 }
@@ -711,17 +723,21 @@ static inline void compute_correction(const float *const restrict luminance,
 // we keep this version for further reference (e.g. for implementing
 // a gpu version)
 __DT_CLONE_TARGETS__
-static inline void compute_correction(const float *const restrict luminance,
-                                      float *const restrict correction,
-                                      const float *const restrict factors,
-                                      const float sigma,
-                                      const size_t num_elem)
+static inline void apply_toneequalizer(const float *const restrict in,
+                                       const float *const restrict luminance,
+                                       float *const restrict out,
+                                       const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                       const size_t ch,
+                                       const dt_iop_toneequalizer_data_t *const d)
 {
+  const size_t num_elem = roi_in->width * roi_in->height;
+  const float *const restrict factors = d->factors;
+  const float sigma = d->smoothing;
   const float gauss_denom = gaussian_denom(sigma);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) \
-  dt_omp_firstprivate(correction, num_elem, luminance, factors, centers_ops, gauss_denom)
+  dt_omp_firstprivate(in, out, num_elem, luminance, factors, centers_ops, gauss_denom, ch)
 #endif
   for(size_t k = 0; k < num_elem; ++k)
   {
@@ -739,7 +755,16 @@ static inline void compute_correction(const float *const restrict luminance,
       result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
 
     // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
-    correction[k] = fast_clamp(result, 0.25f, 4.0f);
+    float correction = fast_clamp(result, 0.25f, 4.0f);
+
+    // apply correction
+    for(size_t c = 0; c < ch; c++)
+    {
+      if(c == 3)
+        out[k * ch + c] = in[k * ch + c];
+      else
+        out[k * ch + c] = correction * in[k * ch + c];
+    }
   }
 }
 #endif // USE_LUT
@@ -862,61 +887,6 @@ schedule(static) aligned(luminance, out, in:64) collapse(3)
       for(size_t c = 0; c < ch; ++c)
         out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]
                                                      : luminance[(i + offset_y) * in_width  + (j + offset_x)];
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void apply_exposure(const float *const restrict in, float *const restrict out,
-                                  const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                                  const size_t ch,
-                                  const float *const restrict correction)
-{
-  const size_t offset_x = (roi_in->x < roi_out->x) ? -roi_in->x + roi_out->x : 0;
-  const size_t offset_y = (roi_in->y < roi_out->y) ? -roi_in->y + roi_out->y : 0;
-
-  // The output dimensions need to be smaller or equal to the input ones
-  // there is no logical reason they shouldn't, except some weird bug in the pipe
-  // in this case, ensure we don't segfault
-  const size_t in_width = roi_in->width;
-  const size_t out_width = (roi_in->width > roi_out->width) ? roi_out->width : roi_in->width;
-  const size_t out_height = (roi_in->height > roi_out->height) ? roi_out->height : roi_in->height;
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) \
-  dt_omp_firstprivate(in, out, in_width, out_height, out_width, offset_x, offset_y, ch, correction) \
-  aligned(in, out, correction:64) collapse(3)
-#endif
-  for(size_t i = 0 ; i < out_height; ++i)
-    for(size_t j = 0; j < out_width; ++j)
-      for(size_t c = 0; c < ch; ++c)
-        out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]  // pass-through alpha mask
-                                                     : in[((i + offset_y) * in_width + (j + offset_x)) * ch + c] *
-                                                       correction[(i + offset_y) * in_width + (j + offset_x)];
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void apply_toneequalizer(const float *const restrict in,
-                                       const float *const restrict luminance,
-                                       float *const restrict out,
-                                       const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                                       const size_t ch,
-                                       const dt_iop_toneequalizer_data_t *const d)
-{
-  const size_t num_elem = roi_in->width * roi_in->height;
-  float *const restrict correction = dt_alloc_sse_ps(dt_round_size_sse(num_elem));
-
-  if(correction)
-  {
-    compute_correction(luminance, correction, d->factors, d->smoothing, num_elem);
-    apply_exposure(in, out, roi_in, roi_out, ch, correction);
-    dt_free_align(correction);
-  }
-  else
-  {
-    dt_control_log(_("tone equalizer failed to allocate memory, check your RAM settings"));
-    return;
-  }
 }
 
 
