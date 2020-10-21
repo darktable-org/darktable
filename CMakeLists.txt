@@ -463,6 +463,7 @@ if(BUILD_TESTING)
   find_package(cmocka 1.1.0 CONFIG REQUIRED)
   include(AddCMockaTest)
   include(AddCMockaMockTest)
+  include_directories(${CMOCKA_INCLUDE_DIR} include)
 endif(BUILD_TESTING)
 
 #
