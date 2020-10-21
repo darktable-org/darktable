@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-21 13:26-0300\n"
-"PO-Revision-Date: 2020-10-21 13:26-0300\n"
+"PO-Revision-Date: 2020-10-21 15:52-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -7257,7 +7257,7 @@ msgstr "gerenciar predefinições rápidas"
 
 #: ../src/gui/presets.c:1024
 msgid "manage quick presets list..."
-msgstr "gerenciad lista de predefinições"
+msgstr "gerenciar lista de predefinições"
 
 #: ../src/gui/presets.c:1155 ../src/gui/presets.c:1168
 msgid "(default)"
