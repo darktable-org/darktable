@@ -22,13 +22,11 @@
 #   INSTALL_DIR - the installation prefix.
 #   SRC_DIR - read-only directory with git checkout to compile
 #   CC, CXX, CFLAGS, CXXFLAGS are not required, should make sense too
-#   TARGET - either build or usermanual
+#   TARGET - either build, notest or usermanual
 #   ECO - some other flags for cmake
 
 set -ex
 
-CMAKE_BUILD_TYPE="RelWithDebInfo"
-GENERATOR="Ninja"
 VERBOSE="-v"
 KEEPGOING="-k0"
 
@@ -49,6 +47,15 @@ target_build()
   cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
 
   ctest --output-on-failure || ctest --rerun-failed -V -VV
+
+  # and now check that it installs where told and only there.
+  cmake --build "$BUILD_DIR" --target install -- $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
+}
+
+target_notest()
+{
+  # to get as much of the issues into the log as possible
+  cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
 
   # and now check that it installs where told and only there.
   cmake --build "$BUILD_DIR" --target install -- $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
@@ -75,13 +82,18 @@ diskspace()
 diskspace
 
 cd "$BUILD_DIR"
-cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" -DVALIDATE_APPDATA_FILE=ON -DBUILD_TESTING=ON "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
 
 case "$TARGET" in
   "build")
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" -DVALIDATE_APPDATA_FILE=ON -DBUILD_TESTING=ON "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
     target_build
     ;;
+  "notest")
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
+    target_notest
+    ;;
   "usermanual")
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
     target_usermanual
     ;;
   *)
