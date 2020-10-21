@@ -939,7 +939,7 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         nb++;
-        char *name = (char *)sqlite3_column_text(stmt, 0);
+        const char *name = (char *)sqlite3_column_text(stmt, 0);
         // is this preset part of the list ?
         gchar *txt = dt_util_dstrcat(NULL, "ꬹ%s|%sꬹ", iop->op, name);
         gboolean inlist = (config && strstr(config, txt));
