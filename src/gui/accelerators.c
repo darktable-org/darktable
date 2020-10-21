@@ -86,14 +86,14 @@ static void dt_accel_path_view_translated(char *s, size_t n, dt_view_t *module, 
 static void dt_accel_path_iop_translated(char *s, size_t n, dt_iop_module_so_t *module, const char *path)
 {
   gchar *module_name_fixed = dt_util_str_replace(module->name(), "/", "-");
-  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path));
   g_free(module_name_fixed);
 }
 
 static void dt_accel_path_lib_translated(char *s, size_t n, dt_lib_module_t *module, const char *path)
 {
-  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "modules"), module->name(module),
+  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "utility modules"), module->name(module),
            g_dpgettext2(NULL, "accel", path));
 }
 
@@ -101,15 +101,15 @@ static void dt_accel_paths_slider_iop_translated(char *s[], size_t n, dt_iop_mod
                                                  const char *path)
 {
   gchar *module_name_fixed = dt_util_str_replace(module->name(), "/", "-");
-  snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+  snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "increase"));
-  snprintf(s[1], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+  snprintf(s[1], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "decrease"));
-  snprintf(s[2], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+  snprintf(s[2], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "reset"));
-  snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+  snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "edit"));
-  snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+  snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "dynamic"));
   g_free(module_name_fixed);
 }
@@ -281,7 +281,7 @@ void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, cons
   //accel to select next value
   snprintf(accel_next_path, 256, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), so->op, path,
            NC_("accel", "next"));
-  snprintf(accel_next_path_trans, 256, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+  snprintf(accel_next_path_trans, 256, "<Darktable>/%s/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "next"));
   gtk_accel_map_add_entry(accel_next_path, 0, 0);
   g_strlcpy(accel_next->path, accel_next_path, sizeof(accel_next->path));
@@ -294,7 +294,7 @@ void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, cons
   //accel to select previous value
   snprintf(accel_prev_path, 256, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), so->op, path,
            NC_("accel", "previous"));
-  snprintf(accel_prev_path_trans, 256, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+  snprintf(accel_prev_path_trans, 256, "<Darktable>/%s/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "previous"));
   gtk_accel_map_add_entry(accel_prev_path, 0, 0);
   g_strlcpy(accel_prev->path, accel_prev_path, sizeof(accel_prev->path));
@@ -307,7 +307,7 @@ void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, cons
   // dynamic accel
   snprintf(accel_dynamic_path, 256, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), so->op, path,
            NC_("accel", "dynamic"));
-  snprintf(accel_dynamic_path_trans, 256, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
+  snprintf(accel_dynamic_path_trans, 256, "<Darktable>/%s/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "dynamic"));
   gtk_accel_map_add_entry(accel_dynamic_path, 0, 0);
   g_strlcpy(accel_dynamic->path, accel_dynamic_path, sizeof(accel_dynamic->path));
