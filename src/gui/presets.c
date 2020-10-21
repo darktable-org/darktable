@@ -895,7 +895,7 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
-  gtk_tree_view_column_add_attribute(col, renderer, "text", 0);
+  gtk_tree_view_column_add_attribute(col, renderer, "markup", 0);
 
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), col);
@@ -1002,7 +1002,7 @@ void dt_gui_favorite_presets_menu_show()
   else
     config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
 
-  GList *modules = darktable.develop->iop;
+  GList *modules = g_list_last(darktable.develop->iop);
   if(modules)
   {
     do
@@ -1034,6 +1034,9 @@ void dt_gui_favorite_presets_menu_show()
           if(config && strstr(config, txt))
           {
             GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
+            gchar *tt = dt_util_dstrcat(NULL, "<b>%s %s</b> %s", iop->name(), iop->multi_name, name);
+            gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
+            g_free(tt);
             g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
             g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
             gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(mi));
@@ -1044,7 +1047,7 @@ void dt_gui_favorite_presets_menu_show()
         sqlite3_finalize(stmt);
       }
 
-    } while((modules = g_list_next(modules)) != NULL);
+    } while((modules = g_list_previous(modules)) != NULL);
   }
   if(retrieve_list) dt_conf_set_string("plugins/darkroom/quick_preset_list", config);
   g_free(config);
