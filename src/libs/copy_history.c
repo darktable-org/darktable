@@ -322,23 +322,23 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 
-  d->copy_parts_button = dt_ui_button_new(_("copy..."),
+  d->copy_parts_button = dt_ui_button_new(_("copy parts..."),
                                           _("copy part history stack of\nfirst selected image"),
                                           "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, d->copy_parts_button, 0, line, 3, 1);
 
-  d->copy_button = dt_ui_button_new(_("copy all"),
+  d->copy_button = dt_ui_button_new(_("copy"),
                                     _("copy history stack of\nfirst selected image"),
                                     "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, d->copy_button, 3, line++, 3, 1);
 
-  d->paste_parts = dt_ui_button_new(_("paste..."),
+  d->paste_parts = dt_ui_button_new(_("paste parts..."),
                                     _("paste part history stack to\nall selected images"),
                                     "history_stack.html#history_stack_usage");
   gtk_widget_set_sensitive(d->paste_parts, FALSE);
   gtk_grid_attach(grid, d->paste_parts, 0, line, 3, 1);
 
-  d->paste = dt_ui_button_new(_("paste all"),
+  d->paste = dt_ui_button_new(_("paste"),
                               _("paste history stack to\nall selected images"),
                               "history_stack.html#history_stack_usage");
   gtk_widget_set_sensitive(d->paste, FALSE);
