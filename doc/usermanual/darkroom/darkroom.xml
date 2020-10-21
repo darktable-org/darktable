@@ -40,8 +40,7 @@
       On the left hand side you have navigation, snapshot, history stack, color picker, tagging,
       image information and mask manager panels, described in <xref linkend="darkroom_panels"/>.
       In the right hand panel you can see the histogram and a list of modules available for
-      working with the image. At the bottom of the right hand panel you can enable/disable the
-      view of individual modules.
+      working with the image.
     </para>
 
     <indexterm>
