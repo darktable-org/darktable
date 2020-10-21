@@ -471,24 +471,43 @@ void init_presets(dt_iop_module_so_t *self)
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.7f);
   // slight modification to give higher compression
   p.speculars = -2.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights : very strong"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : very strong"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_GUIDED;
+  p.feathering = 1000.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : very strong"), self->op, self->version(), &p, sizeof(p), 1);
 
+  p.details = DT_TONEEQ_EIGF;
   p.feathering = 20.0f;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.60f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights : strong"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : strong"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_GUIDED;
+  p.feathering = 500.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : strong"), self->op, self->version(), &p, sizeof(p), 1);
 
+  p.details = DT_TONEEQ_EIGF;
   p.blending = 3.0f;
   p.feathering = 7.0f;
   p.iterations = 3;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights : medium"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : medium"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_GUIDED;
+  p.feathering = 500.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : medium"), self->op, self->version(), &p, sizeof(p), 1);
 
+  p.details = DT_TONEEQ_EIGF;
   p.blending = 5.0f;
   p.feathering = 1.0f;
   p.iterations = 1;
-
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.30f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights : soft"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : soft"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_GUIDED;
+  p.feathering = 500.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : soft"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.details = DT_TONEEQ_EIGF;
+  p.blending = 5.0f;
+  p.feathering = 1.0f;
+  p.iterations = 1;
 
   p.quantization = 0.0f;
   p.exposure_boost = 0.0f;
