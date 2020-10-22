@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-10-08 18:49+0200\n"
-"PO-Revision-Date: 2020-02-03 18:34+0100\n"
+"PO-Revision-Date: 2020-10-10 16:09+0200\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -12,13 +12,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.4.1\n"
 "X-Poedit-Bookmarks: 2169,1480,-1,416,182,458,465,290,-1,1846\n"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
-#, fuzzy
 msgid "darktable 3.2"
-msgstr "darktable 3.0"
+msgstr "darktable 3.2"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10(para)
 msgid "The founder of the darktable project is Johannes Hanika."
@@ -175,7 +174,6 @@ msgid "preface"
 msgstr "préface"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:105(para)
-#, fuzzy
 msgid ""
 "User manual version and applicable darktable version are listed below: "
 "<informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\" "
@@ -194,7 +192,6 @@ msgstr ""
 "entry><entry> décembre 2019 </entry></row></tbody></tgroup></informaltable>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:149(para)
-#, fuzzy
 msgid ""
 "Translations of this manual to local languages are brought to you by "
 "Federico Bruni, Maurizio Paglia, Matteo Mardegan, Victor Lamoine, Michel "
@@ -609,7 +606,6 @@ msgstr ""
 "paramètres suivants de la ligne de commande :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:342(synopsis)
-#, fuzzy
 msgid ""
 "darktable [-d {all,cache,camctl,camsupport,control,dev, fswatch,imageio,"
 "input,ioporder,lighttable,lua,masks, memory,nan,opencl,params,perf,pwstorage,"
@@ -621,15 +617,15 @@ msgid ""
 "&lt;lua command&gt;] [--noiseprofiles &lt;noiseprofiles json file&gt;] [--"
 "conf &lt;key&gt;=&lt;value&gt;]"
 msgstr ""
-"darktable [-d {all,cache,camctl,camsupport,control,dev, fswatch,input,"
-"lighttable,lua,masks,memory,nan, opencl,perf,pwstorage,print,sql}] [&lt;"
-"input file&gt;|&lt;image folder&gt;] [--version] [--disable-opencl] [--"
-"library &lt;library file&gt;] [--datadir &lt;data directory&gt;] [--"
-"moduledir &lt;module directory&gt;] [--tmpdir &lt;tmp directory&gt;] [--"
-"configdir &lt;user config directory&gt;] [--cachedir &lt;user cache "
-"directory&gt;] [--localedir &lt;locale directory&gt;] [--luacmd &lt;lua "
-"command&gt;] [--noiseprofiles &lt;noiseprofiles json file&gt;] [--conf &lt;"
-"key&gt;=&lt;value&gt;]"
+"darktable [-d {all,cache,camctl,camsupport,control,dev, fswatch,imageio,"
+"input,ioporder,lighttable,lua,masks, memory,nan,opencl,params,perf,pwstorage,"
+"print,signal,sql,undo}] [&lt;input file&gt;|&lt;image folder&gt;] [--"
+"version] [--disable-opencl] [--library &lt;library file&gt;] [--datadir &lt;"
+"data directory&gt;] [--moduledir &lt;module directory&gt;] [--tmpdir &lt;tmp "
+"directory&gt;] [--configdir &lt;user config directory&gt;] [--cachedir &lt;"
+"user cache directory&gt;] [--localedir &lt;locale directory&gt;] [--luacmd "
+"&lt;lua command&gt;] [--noiseprofiles &lt;noiseprofiles json file&gt;] [--"
+"conf &lt;key&gt;=&lt;value&gt;]"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:366(term)
 msgid "-d"
@@ -1033,14 +1029,13 @@ msgid "--hq &lt;0|1|true|false&gt;"
 msgstr "--hq &lt;0|1|true|false&gt;"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:682(para)
-#, fuzzy
 msgid ""
 "A flag that defines whether to use high quality resampling during export "
 "(see <xref linkend=\"darkroom_options\"/>). Defaults to true."
 msgstr ""
 "Indicateur définissant s’il faut utiliser un ré-échantillonnage de haute "
-"qualité lors de l’exportation (voir <xref linkend=\"core_options\"/>). Vrai "
-"par défaut."
+"qualité lors de l’exportation (voir <xref linkend=\"darkroom_options\"/>). "
+"Vrai par défaut."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:691(term)
 msgid "--upscale &lt;0|1|true|false&gt;"
@@ -1558,7 +1553,6 @@ msgid "Screen layout"
 msgstr "Disposition de l’affichage"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1187(para)
-#, fuzzy
 msgid ""
 "The general screen layout of all views is similar. There is a center area "
 "which contains most of the relevant information of that view. Then there are "
@@ -1578,7 +1572,7 @@ msgstr ""
 "différents paramètres et raccourcis. Chacun de ces panneaux peut être masqué "
 "ou affiché en pressant un triangle comme celui-ci <inlinegraphic fileref="
 "\"images/general_icon_collapse.png\" scalefit=\"1\" width=\"2%\"/> situé "
-"près du panneau."
+"près du bord du panneau."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1197(para)
 msgid ""
@@ -1586,94 +1580,97 @@ msgid ""
 "their borders. Size and visibility of panels are stored independently for "
 "each view."
 msgstr ""
+"Les panneaux gauche, droit et pellicule/chronologie peuvent être "
+"redimensionnés en faisant glisser leurs bordures. La taille et la visibilité "
+"des panneaux sont stockées indépendamment pour chaque vue."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1202(para)
 msgid ""
 "Panel visibility can also be toggled using keyboard shortcuts, as follows:"
 msgstr ""
+"La visibilité d'un panneau peut également être changée à l'aide de "
+"raccourcis clavier, comme suit :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1213(emphasis)
 msgid "TAB"
-msgstr ""
+msgstr "TAB"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1215(entry)
 msgid ""
 "temporarily expand the centre view to fill the whole window. Press again to "
 "return to the previous view."
 msgstr ""
+"agrandissez temporairement la partie centrale de la vue pour remplir toute "
+"la fenêtre. Appuyez à nouveau pour revenir à la vue précédente."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1222(emphasis)
 msgid "F11"
 msgstr "F11"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1224(entry)
-#, fuzzy
 msgid "toggle fullscreen mode"
-msgstr "options globales/activer|désactiver le plein écran"
+msgstr "activer/désactiver le plein écran"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1230(emphasis)
-#, fuzzy
 msgid "Shift+Ctrl+t"
-msgstr "Maj+G"
+msgstr "Shift+Ctrl+t"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1232(entry)
 msgid "show/hide top panel (between the image and the top banner)"
 msgstr ""
+"montrer/cacher le panneau supérieur (entre l'image et la bannière supérieure)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1238(emphasis)
-#, fuzzy
 msgid "Shift+Ctrl+b"
-msgstr "Maj+G"
+msgstr "Shift+Ctrl+b"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1240(entry)
 msgid ""
 "show/hide the bottom panel (beween the image and the filmstrip/timeline)"
 msgstr ""
+"montrer/cacher le panneau inférieur (entre l'image et la pellicule/ la "
+"chronologie)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1246(emphasis)
-#, fuzzy
 msgid "Shift+Ctrl+l"
-msgstr "Maj+G"
+msgstr "Shift+Ctrl+l"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1248(entry)
 msgid "show/hide the left panel"
-msgstr ""
+msgstr "montrer/cacher le panneau gauche"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1254(emphasis)
-#, fuzzy
 msgid "Shift+Ctrl+r"
-msgstr "Maj+G"
+msgstr "Shift+Ctrl+r"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1256(entry)
-#, fuzzy
 msgid "show/hide the right panel"
-msgstr "Panneaux du mode capture"
+msgstr "montrer/cacher le panneau de droite"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1262(emphasis)
-#, fuzzy
 msgid "Ctrl+f"
-msgstr "Ctrl+W"
+msgstr "Ctrl+f"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1264(entry)
 msgid "show/hide the filmstrip/timeline"
-msgstr ""
+msgstr "montrer/cacher la pellicule/la chronologie"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1270(emphasis)
-#, fuzzy
 msgid "Ctrl+h"
-msgstr "Ctrl+W"
+msgstr "Ctrl+h"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1272(entry)
 msgid "show/hide the top banner"
-msgstr ""
+msgstr "montrer/cacher la bannière supérieure"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1278(emphasis)
 msgid "b"
-msgstr ""
+msgstr "b"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1280(entry)
 msgid "show/hide all borders and panel-collapse controls"
 msgstr ""
+"montrer/cacher toutes les bordures et les boutons de réduction des panneaux"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1292(title)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10102(title)
@@ -6685,18 +6682,16 @@ msgid "the duplicate version (see <xref linkend=\"sidecar_files\"/>)"
 msgstr "la version clonée (voir <xref linkend=\"sidecar_files\"/>)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5274(code)
-#, fuzzy
 msgid "$(VERSION_IF_MULTI)"
-msgstr "$(VERSION)"
+msgstr "$(VERSION_IF_MULTI)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5276(entry)
 msgid "same as $(VERSION) but null string if only one version exists"
 msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5282(code)
-#, fuzzy
 msgid "$(VERSION_NAME)"
-msgstr "$(VERSION)"
+msgstr "$(VERSION_NAME)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5284(entry)
 #, fuzzy
@@ -6704,9 +6699,8 @@ msgid "version name from metadata"
 msgstr "description d'après les métadonnées"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5290(code)
-#, fuzzy
 msgid "$(SEQUENCEn)"
-msgstr "$(SEQUENCE)"
+msgstr "$(SEQUENCEn)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5292(entry)
 #, fuzzy
@@ -6860,9 +6854,8 @@ msgid "Exif exposure"
 msgstr "Exposition EXIF"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5426(code)
-#, fuzzy
 msgid "$(EXIF_EXPOSURE_BIAS)"
-msgstr "$(EXIF_EXPOSURE)"
+msgstr "$(EXIF_EXPOSURE_BIAS)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5428(entry)
 #, fuzzy
@@ -6951,7 +6944,7 @@ msgstr "modèle du boîtier"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5514(code)
 msgid "$(LENS)"
-msgstr ""
+msgstr "$(LENS)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5516(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17360(title)
@@ -7028,7 +7021,7 @@ msgstr "dossier <quote>bureau</quote>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5586(code)
 msgid "$(OPENCL)"
-msgstr ""
+msgstr "$(OPENCL)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5588(entry)
 msgid "whether OpenCL is activated"
@@ -7043,9 +7036,8 @@ msgid "tags list (Xmp.dc.Subject)"
 msgstr "liste des mots-clés(Xmp.dc.Subject)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5602(code)
-#, fuzzy
 msgid "$(CATEGORYn(category))"
-msgstr "$(CATEGORYn$(category))"
+msgstr "$(CATEGORYn(category))"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5604(entry)
 #, fuzzy
@@ -18991,11 +18983,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15779(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
