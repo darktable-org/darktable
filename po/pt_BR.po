@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-21 13:26-0300\n"
-"PO-Revision-Date: 2020-10-21 15:52-0300\n"
+"POT-Creation-Date: 2020-10-22 20:47-0300\n"
+"PO-Revision-Date: 2020-10-22 20:53-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3898,7 +3898,7 @@ msgstr "darktable - manutenção de esquema"
 msgid "later"
 msgstr "depois"
 
-#: ../src/common/fast_guided_filter.h:506
+#: ../src/common/fast_guided_filter.h:508
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
 "o filtro fast guided não conseguiu alocar memória, verifique sua "
@@ -5386,12 +5386,12 @@ msgstr "excluir"
 msgid "rename"
 msgstr "renomear"
 
-#: ../src/develop/imageop.c:1190 ../src/develop/imageop.c:2434
+#: ../src/develop/imageop.c:1190 ../src/develop/imageop.c:2429
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está ligado"
 
-#: ../src/develop/imageop.c:1190 ../src/develop/imageop.c:2434
+#: ../src/develop/imageop.c:1190 ../src/develop/imageop.c:2429
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desligado"
@@ -5401,7 +5401,7 @@ msgstr "%s está desligado"
 #: ../src/gui/accelerators.c:1335 ../src/gui/import_metadata.c:163
 #: ../src/gui/preferences.c:1530 ../src/gui/preferences.c:2078
 #: ../src/gui/presets.c:216 ../src/gui/presets.c:336 ../src/gui/presets.c:714
-#: ../src/libs/lib.c:353 ../src/libs/lib.c:395 ../src/libs/lib.c:1384
+#: ../src/libs/lib.c:353 ../src/libs/lib.c:395 ../src/libs/lib.c:1382
 msgid "preset"
 msgstr "predefinição"
 
@@ -5436,7 +5436,7 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "mostrar menu de predefinição"
 
-#: ../src/develop/imageop.c:2403
+#: ../src/develop/imageop.c:2398
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -5444,17 +5444,17 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "click com botão do meio cria nova instância"
 
-#: ../src/develop/imageop.c:2414 ../src/libs/lib.c:1211
+#: ../src/develop/imageop.c:2409 ../src/libs/lib.c:1209
 msgid "reset parameters"
 msgstr "redefine parâmetros"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2422 ../src/gui/preferences.c:791
-#: ../src/libs/lib.c:1220 ../src/libs/modulegroups.c:316
+#: ../src/develop/imageop.c:2417 ../src/gui/preferences.c:791
+#: ../src/libs/lib.c:1218 ../src/libs/modulegroups.c:316
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:2424
+#: ../src/develop/imageop.c:2419
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5462,7 +5462,7 @@ msgstr ""
 "pre-configurações\n"
 "click com botão do meio aplica em nova instância"
 
-#: ../src/develop/imageop.c:2705
+#: ../src/develop/imageop.c:2700
 msgid "ERROR"
 msgstr "ERRO"
 
@@ -6142,19 +6142,14 @@ msgstr "vistas"
 #: ../src/gui/accelerators.c:43 ../src/gui/accelerators.c:53
 #: ../src/gui/accelerators.c:55 ../src/gui/accelerators.c:57
 #: ../src/gui/accelerators.c:59 ../src/gui/accelerators.c:61
-#: ../src/gui/accelerators.c:89 ../src/gui/accelerators.c:104
-#: ../src/gui/accelerators.c:106 ../src/gui/accelerators.c:108
-#: ../src/gui/accelerators.c:110 ../src/gui/accelerators.c:112
-#: ../src/gui/accelerators.c:282 ../src/gui/accelerators.c:284
-#: ../src/gui/accelerators.c:295 ../src/gui/accelerators.c:297
-#: ../src/gui/accelerators.c:308 ../src/gui/accelerators.c:310
-#: ../src/gui/accelerators.c:778 ../src/gui/accelerators.c:787
-#: ../src/gui/accelerators.c:796
+#: ../src/gui/accelerators.c:282 ../src/gui/accelerators.c:295
+#: ../src/gui/accelerators.c:308 ../src/gui/accelerators.c:778
+#: ../src/gui/accelerators.c:787 ../src/gui/accelerators.c:796
 msgctxt "accel"
 msgid "image operations"
 msgstr "operações de imagem"
 
-#: ../src/gui/accelerators.c:48 ../src/gui/accelerators.c:96
+#: ../src/gui/accelerators.c:48
 msgctxt "accel"
 msgid "modules"
 msgstr "módulos"
@@ -6191,6 +6186,20 @@ msgstr "dinâmico"
 msgctxt "accel"
 msgid "lua"
 msgstr "lua"
+
+#: ../src/gui/accelerators.c:89 ../src/gui/accelerators.c:104
+#: ../src/gui/accelerators.c:106 ../src/gui/accelerators.c:108
+#: ../src/gui/accelerators.c:110 ../src/gui/accelerators.c:112
+#: ../src/gui/accelerators.c:284 ../src/gui/accelerators.c:297
+#: ../src/gui/accelerators.c:310
+msgctxt "accel"
+msgid "processing modules"
+msgstr "módulos de processamento"
+
+#: ../src/gui/accelerators.c:96
+msgctxt "accel"
+msgid "utility modules"
+msgstr "módulos utilitários"
 
 #: ../src/gui/accelerators.c:283 ../src/gui/accelerators.c:285
 #: ../src/gui/accelerators.c:779
@@ -7246,41 +7255,41 @@ msgstr "você realmente deseja atualizar a predefinição `%s'?"
 msgid "update preset?"
 msgstr "atualizar predefinição"
 
-#: ../src/gui/presets.c:855 ../src/libs/modulegroups.c:2053
+#: ../src/gui/presets.c:871 ../src/libs/modulegroups.c:2053
 #: ../src/libs/modulegroups.c:2062
 msgid "manage module layouts"
 msgstr "gerenciar layout dos módulos"
 
-#: ../src/gui/presets.c:863
+#: ../src/gui/presets.c:879
 msgid "manage quick presets"
 msgstr "gerenciar predefinições rápidas"
 
-#: ../src/gui/presets.c:1024
+#: ../src/gui/presets.c:1057
 msgid "manage quick presets list..."
 msgstr "gerenciar lista de predefinições"
 
-#: ../src/gui/presets.c:1155 ../src/gui/presets.c:1168
+#: ../src/gui/presets.c:1188 ../src/gui/presets.c:1201
 msgid "(default)"
 msgstr "(padrão)"
 
-#: ../src/gui/presets.c:1179
+#: ../src/gui/presets.c:1212
 msgid "disabled: wrong module version"
 msgstr "desabilitado: versão do módulo incorreta"
 
-#: ../src/gui/presets.c:1203 ../src/libs/lib.c:644
+#: ../src/gui/presets.c:1236 ../src/libs/lib.c:644
 msgid "edit this preset.."
 msgstr "editar esta predefinição..."
 
-#: ../src/gui/presets.c:1207 ../src/libs/lib.c:648
+#: ../src/gui/presets.c:1240 ../src/libs/lib.c:648
 #: ../src/libs/modulegroups.c:2010
 msgid "delete this preset"
 msgstr "exclui esta predefinição"
 
-#: ../src/gui/presets.c:1213 ../src/libs/lib.c:655
+#: ../src/gui/presets.c:1246 ../src/libs/lib.c:655
 msgid "store new preset.."
 msgstr "armazena nova predefinição..."
 
-#: ../src/gui/presets.c:1219 ../src/libs/lib.c:667
+#: ../src/gui/presets.c:1252 ../src/libs/lib.c:667
 msgid "update preset"
 msgstr "atualizar predefinição"
 
@@ -8670,12 +8679,12 @@ msgid "coarseness"
 msgstr "aspereza"
 
 #: ../src/iop/bilat.c:127 ../src/iop/monochrome.c:97 ../src/iop/shadhi.c:278
-#: ../src/iop/toneequal.c:320
+#: ../src/iop/toneequal.c:325
 msgctxt "accel"
 msgid "highlights"
 msgstr "realces"
 
-#: ../src/iop/bilat.c:128 ../src/iop/shadhi.c:277 ../src/iop/toneequal.c:316
+#: ../src/iop/bilat.c:128 ../src/iop/shadhi.c:277 ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "shadows"
 msgstr "sombras"
@@ -10267,7 +10276,7 @@ msgid "HSL base setting"
 msgstr "configuração de base HSL"
 
 #: ../src/iop/colorzones.c:2208 ../src/iop/retouch.c:1688
-#: ../src/iop/toneequal.c:1765
+#: ../src/iop/toneequal.c:1831
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "não é possível mostrar máscaras quando a máscara de mesclagem é mostrada"
@@ -11296,11 +11305,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:3410 ../src/iop/filmicrgb.c:3420
 #: ../src/iop/filmicrgb.c:3453 ../src/iop/filmicrgb.c:3463
-#: ../src/iop/toneequal.c:3002 ../src/iop/toneequal.c:3007
-#: ../src/iop/toneequal.c:3012 ../src/iop/toneequal.c:3017
-#: ../src/iop/toneequal.c:3022 ../src/iop/toneequal.c:3027
-#: ../src/iop/toneequal.c:3032 ../src/iop/toneequal.c:3037
-#: ../src/iop/toneequal.c:3042 ../src/libs/metadata_view.c:509
+#: ../src/iop/toneequal.c:3068 ../src/iop/toneequal.c:3073
+#: ../src/iop/toneequal.c:3078 ../src/iop/toneequal.c:3083
+#: ../src/iop/toneequal.c:3088 ../src/iop/toneequal.c:3093
+#: ../src/iop/toneequal.c:3098 ../src/iop/toneequal.c:3103
+#: ../src/iop/toneequal.c:3108 ../src/libs/metadata_view.c:509
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -13918,115 +13927,135 @@ msgstr "curva de tom para canal a"
 msgid "tonecurve for b channel"
 msgstr "curva de tom para canal b"
 
-#: ../src/iop/toneequal.c:294
+#: ../src/iop/toneequal.c:299
 msgid "tone equalizer"
 msgstr "equalizador de tons"
 
-#: ../src/iop/toneequal.c:314
+#: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "blacks"
 msgstr "pretos"
 
-#: ../src/iop/toneequal.c:315
+#: ../src/iop/toneequal.c:320
 msgctxt "accel"
 msgid "deep shadows"
 msgstr "sombras profundas"
 
-#: ../src/iop/toneequal.c:317
+#: ../src/iop/toneequal.c:322
 msgctxt "accel"
 msgid "light shadows"
 msgstr "sombras leves"
 
-#: ../src/iop/toneequal.c:318
+#: ../src/iop/toneequal.c:323
 msgctxt "accel"
 msgid "midtones"
 msgstr "tendência dos meios-tons"
 
-#: ../src/iop/toneequal.c:319
+#: ../src/iop/toneequal.c:324
 msgctxt "accel"
 msgid "dark highlights"
 msgstr "realces escuros"
 
-#: ../src/iop/toneequal.c:321
+#: ../src/iop/toneequal.c:326
 msgctxt "accel"
 msgid "whites"
 msgstr "brancos"
 
-#: ../src/iop/toneequal.c:322
+#: ../src/iop/toneequal.c:327
 msgctxt "accel"
 msgid "speculars"
 msgstr "especulares"
 
-#: ../src/iop/toneequal.c:323
+#: ../src/iop/toneequal.c:328
 msgctxt "accel"
 msgid "filter diffusion"
 msgstr "difusão do filtro"
 
-#: ../src/iop/toneequal.c:324
+#: ../src/iop/toneequal.c:329
 msgctxt "accel"
 msgid "smoothing diameter"
 msgstr "filtro de suavização"
 
-#: ../src/iop/toneequal.c:325
+#: ../src/iop/toneequal.c:330
 msgctxt "accel"
 msgid "edges refinement or feathering"
 msgstr "afinar ou desfocar bordas"
 
-#: ../src/iop/toneequal.c:326
+#: ../src/iop/toneequal.c:331
 msgctxt "accel"
 msgid "mask quantization"
 msgstr "quantização de máscara"
 
-#: ../src/iop/toneequal.c:327
+#: ../src/iop/toneequal.c:332
 msgctxt "accel"
 msgid "mask exposure compensation"
 msgstr "compensação de exposição na máscara"
 
-#: ../src/iop/toneequal.c:328
+#: ../src/iop/toneequal.c:333
 msgctxt "accel"
 msgid "mask contrast compensation"
 msgstr "compressão de contraste de máscara"
 
-#: ../src/iop/toneequal.c:329
+#: ../src/iop/toneequal.c:334
 msgctxt "accel"
 msgid "luminance estimator"
 msgstr "estimador de luminância"
 
-#: ../src/iop/toneequal.c:330
+#: ../src/iop/toneequal.c:335
 msgctxt "accel"
 msgid "preserve details"
 msgstr "preservar detalhes"
 
 #. No blending
-#: ../src/iop/toneequal.c:423
+#: ../src/iop/toneequal.c:443
 msgid "mask blending : none"
 msgstr "modo de mesclagem: nenhum"
 
-#: ../src/iop/toneequal.c:435
-msgid "mask blending : landscapes"
-msgstr "mesclagem de máscara : paisagens"
-
-#: ../src/iop/toneequal.c:443
+#: ../src/iop/toneequal.c:455
 msgid "mask blending : all purposes"
 msgstr "mesclagem de máscara : propósito geral"
 
-#: ../src/iop/toneequal.c:451
-msgid "mask blending : isolated subjects"
-msgstr "mesclagem de máscara : objetos isolados"
+#: ../src/iop/toneequal.c:460
+msgid "mask blending : people with backlight"
+msgstr "mesclagem de máscara : pessoas com luz de fundo"
 
-#: ../src/iop/toneequal.c:472
-msgid "compress shadows/highlights : soft"
-msgstr "comprimir sombras e realces :_suave"
+#: ../src/iop/toneequal.c:476
+msgid "compress shadows/highlights (eigf) : very strong"
+msgstr "comprime o efeito em sombras/realces (eigf):_muito forte"
 
-#: ../src/iop/toneequal.c:491
-msgid "compress shadows/highlights : strong"
-msgstr "comprime o efeito em sombras/realces: _forte"
+#: ../src/iop/toneequal.c:479
+msgid "compress shadows/highlights (gf) : very strong"
+msgstr "comprime o efeito em sombras/realces (gf):_muito forte"
 
-#: ../src/iop/toneequal.c:510
+#: ../src/iop/toneequal.c:484
+msgid "compress shadows/highlights (eigf) : strong"
+msgstr "comprime o efeito em sombras/realces (eigf):_forte"
+
+#: ../src/iop/toneequal.c:487
+msgid "compress shadows/highlights (gf) : strong"
+msgstr "comprime o efeito em sombras/realces (gf):_forte"
+
+#: ../src/iop/toneequal.c:494
+msgid "compress shadows/highlights (eigf) : medium"
+msgstr "comprimir sombras e realces (eigf) : médio"
+
+#: ../src/iop/toneequal.c:497
+msgid "compress shadows/highlights (gf) : medium"
+msgstr "comprimir sombras e realces (gf) : médio"
+
+#: ../src/iop/toneequal.c:504
+msgid "compress shadows/highlights (eigf) : soft"
+msgstr "comprimir sombras e realces (eigf) :_suave"
+
+#: ../src/iop/toneequal.c:507
+msgid "compress shadows/highlights (gf) : soft"
+msgstr "comprimir sombras e realces (gf) : suave"
+
+#: ../src/iop/toneequal.c:528
 msgid "relight : fill-in"
 msgstr "reiluminação : preenchimento"
 
-#: ../src/iop/toneequal.c:561
+#: ../src/iop/toneequal.c:579
 msgid ""
 "tone equalizer needs to be after distorsion modules in the pipeline – "
 "disabled"
@@ -14034,14 +14063,8 @@ msgstr ""
 "o equalizador de tons precisa estar depois dos módulos de distorção - "
 "desativado"
 
-#: ../src/iop/toneequal.c:837 ../src/iop/toneequal.c:958
-msgid "tone equalizer failed to allocate memory, check your RAM settings"
-msgstr ""
-"o equalizador de tons não conseguiu alocar memória, verifique sua "
-"configuração de RAM"
-
 #. Pointers are not 64-bits aligned, and SSE code will segfault
-#: ../src/iop/toneequal.c:859
+#: ../src/iop/toneequal.c:900
 msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
@@ -14049,15 +14072,21 @@ msgstr ""
 "o buffer de entrada/saída doequalizador de tons está mal alinhado, por favor "
 "reporte o bug aos desenvolvedores"
 
-#: ../src/iop/toneequal.c:1617 ../src/iop/toneequal.c:1977
+#: ../src/iop/toneequal.c:999
+msgid "tone equalizer failed to allocate memory, check your RAM settings"
+msgstr ""
+"o equalizador de tons não conseguiu alocar memória, verifique sua "
+"configuração de RAM"
+
+#: ../src/iop/toneequal.c:1683 ../src/iop/toneequal.c:2043
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "a interpolação está instável, diminua a suavização da curva"
 
-#: ../src/iop/toneequal.c:1661 ../src/iop/toneequal.c:1723
+#: ../src/iop/toneequal.c:1727 ../src/iop/toneequal.c:1789
 msgid "wait for the preview to finish recomputing"
 msgstr "aguardar a pré-visualização para terminar de recomputar"
 
-#: ../src/iop/toneequal.c:1833 ../src/iop/toneequal.c:2295
+#: ../src/iop/toneequal.c:1899 ../src/iop/toneequal.c:2361
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -14066,86 +14095,86 @@ msgstr ""
 "shift+scroll para mudar em passos largos; ctrl+scroll para mudar em passos "
 "curtos"
 
-#: ../src/iop/toneequal.c:1982
+#: ../src/iop/toneequal.c:2048
 msgid "some parameters are out-of-bounds"
 msgstr "alguns parâmetros estão fora dos limites"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2256
+#: ../src/iop/toneequal.c:2322
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:2909
+#: ../src/iop/toneequal.c:2975
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sobre a imagem] mudar exposição do tom"
 
-#: ../src/iop/toneequal.c:2915
+#: ../src/iop/toneequal.c:2981
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos largos"
 
-#: ../src/iop/toneequal.c:2921
+#: ../src/iop/toneequal.c:2987
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos curtos"
 
 #. Simple view
-#: ../src/iop/toneequal.c:2998
+#: ../src/iop/toneequal.c:3064
 msgid "simple"
 msgstr "simples"
 
-#: ../src/iop/toneequal.c:3003
+#: ../src/iop/toneequal.c:3069
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3008
+#: ../src/iop/toneequal.c:3074
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3013
+#: ../src/iop/toneequal.c:3079
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3018
+#: ../src/iop/toneequal.c:3084
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3023
+#: ../src/iop/toneequal.c:3089
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3028
+#: ../src/iop/toneequal.c:3094
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3033
+#: ../src/iop/toneequal.c:3099
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3038
+#: ../src/iop/toneequal.c:3104
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3043
+#: ../src/iop/toneequal.c:3109
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3047
+#: ../src/iop/toneequal.c:3113
 msgid "advanced"
 msgstr "avançado"
 
-#: ../src/iop/toneequal.c:3062
+#: ../src/iop/toneequal.c:3128
 msgid "double-click to reset the curve"
 msgstr "clique duplo para redefinir curva"
 
-#: ../src/iop/toneequal.c:3069
+#: ../src/iop/toneequal.c:3135
 msgid "curve smoothing"
 msgstr "suavização de curva"
 
-#: ../src/iop/toneequal.c:3070
+#: ../src/iop/toneequal.c:3136
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -14158,11 +14187,11 @@ msgstr ""
 "mas podem produzir transições de tons brutais e danificar o contraste local."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3079
+#: ../src/iop/toneequal.c:3145
 msgid "masking"
 msgstr "máscaras"
 
-#: ../src/iop/toneequal.c:3083
+#: ../src/iop/toneequal.c:3149
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -14170,27 +14199,34 @@ msgstr ""
 "pré-visualiza a máscara e escolhe o estimador que te dá o\n"
 "maior contraste entre áreas a aclarar e áreas a escurecer"
 
-#: ../src/iop/toneequal.c:3086
+#: ../src/iop/toneequal.c:3152
 msgid "details"
 msgstr "detalhes"
 
-#: ../src/iop/toneequal.c:3087
+#: ../src/iop/toneequal.c:3153
 msgid "preserve details"
 msgstr "preservar detalhes"
 
-#: ../src/iop/toneequal.c:3088
+#: ../src/iop/toneequal.c:3154
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
 "contrast\n"
-"'averaged guided filter' is a geometric mean of both methods"
+"'averaged guided filter' is a geometric mean of 'no' and 'guided filter' "
+"methods\n"
+"'eigf' (exposure-independent guided filter) is a guided filter that is "
+"exposure-independent, it smooths shadows and highlights the same way "
+"(contrary to guided filter which smooths less the highlights)\n"
+"'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided "
+"filter' methods"
 msgstr ""
-"'não' afeta contraste global e local (é seguro se você só adicionou "
-"contraste)\n"
-"'filtro guiado' só afeta contraste global e tenta preservar contraste local\n"
-"'filtro de média guiado' é a média geométrica dos dois métodos"
+"'não' afeta contraste global e local (seguro se você só adicionar contraste)\n"
+"'gf' (filtro guiado) só afeta  contraste global e tenta preservar contraste local\n"
+"'filtro guiado por média' é uma média geométrica dos métodos 'não' e 'filtro guiado'\n"
+"'eigf' (exposure-independent guided filter) é um filtro guiado que é independente de exposição, e suaviza sombras e realces da mesma forma (ao contrário do filtro guiado que suaviza menos os realces)\n"
+"'averaged eigf' é uma mędia geométrica dos métodos 'não' e 'eigf'"
 
-#: ../src/iop/toneequal.c:3094
+#: ../src/iop/toneequal.c:3162
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -14198,7 +14234,7 @@ msgstr ""
 "número de passos do filtro guiado a aplicar\n"
 "ajuda a dispersão das bordas do filtro, mas é lento"
 
-#: ../src/iop/toneequal.c:3100
+#: ../src/iop/toneequal.c:3168
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -14208,7 +14244,7 @@ msgstr ""
 "atenção: valores altos deste parâmetro podem fazer a pré-visualização\n"
 "do darkroom muito mais lenta se o módulo de redução de ruído é usado."
 
-#: ../src/iop/toneequal.c:3107
+#: ../src/iop/toneequal.c:3175
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -14222,11 +14258,11 @@ msgstr ""
 "valores baixos dão gradientes mais suaves e melhor suavização\n"
 "mas podem levar a arestas imprecisas e halos"
 
-#: ../src/iop/toneequal.c:3113
+#: ../src/iop/toneequal.c:3181
 msgid "mask post-processing"
 msgstr "pós-processamento de máscara"
 
-#: ../src/iop/toneequal.c:3119
+#: ../src/iop/toneequal.c:3187
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -14236,7 +14272,7 @@ msgstr ""
 "a linha central mostra a média. as barras laranja aparecem nos extremos se "
 "houver corte."
 
-#: ../src/iop/toneequal.c:3126
+#: ../src/iop/toneequal.c:3194
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -14247,7 +14283,7 @@ msgstr ""
 "para produzir áreas mais suaves quando valores altos de enevoamento são "
 "usados"
 
-#: ../src/iop/toneequal.c:3133
+#: ../src/iop/toneequal.c:3201
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -14257,7 +14293,7 @@ msgstr ""
 "para melhor controle da correção de exposição com os nós disponíveis.\n"
 "o seletor ajustará automaticamente a exposição média em -4EV."
 
-#: ../src/iop/toneequal.c:3143
+#: ../src/iop/toneequal.c:3211
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -14269,7 +14305,7 @@ msgstr ""
 "isto permite espalhar o histograma de exposição sobre mais canais\n"
 "para um controle melhor da correção de exposição."
 
-#: ../src/iop/toneequal.c:3158 ../src/iop/toneequal.c:3162
+#: ../src/iop/toneequal.c:3226 ../src/iop/toneequal.c:3230
 msgid "display exposure mask"
 msgstr "mostrar máscara de exposição"
 
@@ -18758,6 +18794,21 @@ msgstr "atalhos"
 #: ../src/views/view.c:1632
 msgid "Action"
 msgstr "Ação"
+
+#~ msgid "mask blending : landscapes"
+#~ msgstr "mesclagem de máscara : paisagens"
+
+#~ msgid ""
+#~ "'no' affects global and local contrast (safe if you only add contrast)\n"
+#~ "'guided filter' only affects global contrast and tries to preserve local "
+#~ "contrast\n"
+#~ "'averaged guided filter' is a geometric mean of both methods"
+#~ msgstr ""
+#~ "'não' afeta contraste global e local (é seguro se você só adicionou "
+#~ "contraste)\n"
+#~ "'filtro guiado' só afeta contraste global e tenta preservar contraste "
+#~ "local\n"
+#~ "'filtro de média guiado' é a média geométrica dos dois métodos"
 
 #~ msgctxt "accel"
 #~ msgid "copy all"
