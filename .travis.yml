@@ -54,6 +54,19 @@ jobs:
  allow_failures:
   - os: windows
  include:
+  # order long jobs first - probably this could speed up travis builds
+  - name: "OSX"
+    os: osx
+    osx_image: xcode11
+    env:
+      - TARGET=notest
+      - ECO="-DUSE_OPENMP=OFF"
+  - name: "Worst OS Evar"
+    os: windows
+    compiler: clang
+    env: 
+      - GENERATOR="MSYS Makefiles"
+      - CC=clang CXX=clang++
   - name: "Linux Clang10"
     os: linux
     compiler: clang
@@ -106,18 +119,6 @@ jobs:
       - sudo apt-get -y install default-jdk-headless default-jre-headless
       - sudo apt-get -y install docbook docbook-xml docbook-xsl docbook-xsl-saxon
       - sudo apt-get -y install fop gnome-doc-utils imagemagick libsaxon-java xsltproc
-  - name: "OSX"
-    os: osx
-    osx_image: xcode11
-    env:
-      - TARGET=notest
-      - ECO="-DUSE_OPENMP=OFF"
-  - name: "Worst OS Evar"
-    os: windows
-    compiler: clang
-    env: 
-      - GENERATOR="MSYS Makefiles"
-      - CC=clang CXX=clang++
 
 addons:
   apt:
