@@ -81,6 +81,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/fast_guided_filter.h"
+#include "common/eigf.h"
 #include "common/interpolation.h"
 #include "common/luminance_mask.h"
 #include "common/opencl.h"
@@ -137,6 +138,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)
 
 #define CHANNELS 9
 #define PIXEL_CHAN 8
+#define LUT_RESOLUTION 10000
 
 // radial distances used for pixel ops
 static const float centers_ops[PIXEL_CHAN] DT_ALIGNED_ARRAY = {-56.0f / 7.0f, // = -8.0f
@@ -157,19 +159,21 @@ typedef enum dt_iop_toneequalizer_filter_t
   DT_TONEEQ_NONE = 0,   // $DESCRIPTION: "no"
   DT_TONEEQ_AVG_GUIDED, // $DESCRIPTION: "averaged guided filter"
   DT_TONEEQ_GUIDED,     // $DESCRIPTION: "guided filter"
+  DT_TONEEQ_AVG_EIGF,   // $DESCRIPTION: "averaged eigf"
+  DT_TONEEQ_EIGF        // $DESCRIPTION: "eigf"
 } dt_iop_toneequalizer_filter_t;
 
 
 typedef struct dt_iop_toneequalizer_params_t
 {
   float noise, ultra_deep_blacks, deep_blacks, blacks, shadows, midtones, highlights, whites, speculars; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0
-  float blending; // $MIN: 0.01 $MAX: 100.0 $DEFAULT: 25.0 $DESCRIPTION: "smoothing diameter"
+  float blending; // $MIN: 0.01 $MAX: 100.0 $DEFAULT: 5.0 $DESCRIPTION: "smoothing diameter"
   float smoothing; // $DEFAULT: 1.414213562 sqrtf(2.0f)
-  float feathering; // $MIN: 0.01 $MAX: 10000.0 $DEFAULT: 10.0 $DESCRIPTION: "edges refinement/feathering"
+  float feathering; // $MIN: 0.01 $MAX: 10000.0 $DEFAULT: 1.0 $DESCRIPTION: "edges refinement/feathering"
   float quantization; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "mask quantization"
   float contrast_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast compensation"
   float exposure_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask exposure compensation"
-  dt_iop_toneequalizer_filter_t details; // $DEFAULT: DT_TONEEQ_GUIDED
+  dt_iop_toneequalizer_filter_t details; // $DEFAULT: DT_TONEEQ_EIGF
   dt_iop_luminance_mask_method_t method; // $DEFAULT: DT_TONEEQ_NORM_2 $DESCRIPTION: "luminance estimator"
   int iterations; // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter diffusion"
 } dt_iop_toneequalizer_params_t;
@@ -178,6 +182,7 @@ typedef struct dt_iop_toneequalizer_params_t
 typedef struct dt_iop_toneequalizer_data_t
 {
   float factors[PIXEL_CHAN] DT_ALIGNED_ARRAY;
+  float correction_lut[PIXEL_CHAN * LUT_RESOLUTION + 1] DT_ALIGNED_ARRAY;
   float blending, feathering, contrast_boost, exposure_boost, quantization, smoothing;
   float scale;
   int radius;
@@ -398,8 +403,23 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->smoothing = sqrtf(2.0f);
     return 0;
   }
-
   return 1;
+}
+
+static void compress_shadows_highlight_preset_set_exposure_params(dt_iop_toneequalizer_params_t* p, const float step)
+{
+  // this function is used to set the exposure params for the 4 "compress shadows
+  // highlights" presets, which use basically the same curve, centered around
+  // -4EV with an exposure compensation that puts middle-grey at -4EV.
+  p->noise = 1.47f * step;
+  p->ultra_deep_blacks = 2.0f * step;
+  p->deep_blacks = 2.0f * step;
+  p->blacks = 1.47f * step;
+  p->shadows = 0.0f;
+  p->midtones = -step;
+  p->highlights = -2.0f * step;
+  p->whites = -2.53f * step;
+  p->speculars = -2.13f * step;
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -423,76 +443,74 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("mask blending : none"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Simple utils blendings
-  p.details = DT_TONEEQ_GUIDED;
+  p.details = DT_TONEEQ_EIGF;
   p.method = DT_TONEEQ_NORM_2;
 
-  p.blending = 33.0f;
-  p.feathering = 10.0f;
+  p.blending = 5.0f;
+  p.feathering = 1.0f;
   p.iterations = 1;
-  p.quantization = 0.0f;
-  p.exposure_boost = 0.0f;
-  p.contrast_boost = 0.0f;
-  dt_gui_presets_add_generic(_("mask blending : landscapes"), self->op, self->version(), &p, sizeof(p), 1);
-
-  p.blending = 25.0f;
-  p.feathering = 25.0f;
-  p.iterations = 2;
   p.quantization = 0.0f;
   p.exposure_boost = 0.0f;
   p.contrast_boost = 0.0f;
   dt_gui_presets_add_generic(_("mask blending : all purposes"), self->op, self->version(), &p, sizeof(p), 1);
 
-  p.blending = 25.0f;
-  p.feathering = 25.0f;
-  p.iterations = 4;
-  p.quantization = 0.0f;
-  p.exposure_boost = -0.5f;
-  p.contrast_boost = 1.0f;
-  dt_gui_presets_add_generic(_("mask blending : isolated subjects"), self->op, self->version(), &p, sizeof(p), 1);
+  p.blending = 1.0f;
+  p.feathering = 10.0f;
+  p.iterations = 3;
+  dt_gui_presets_add_generic(_("mask blending : people with backlight"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Shadows/highlights presets
+  // move middle-grey to the center of the range
+  // helps to have a monotonous curve
+  p.exposure_boost = -1.57f;
+  p.contrast_boost = 0.0f;
 
-  p.blending = 25.0f;
-  p.feathering = 25.0f;
-  p.iterations = 2;
+  p.blending = 2.0f;
+  p.feathering = 50.0f;
+  p.iterations = 5;
   p.quantization = 0.0f;
-  p.exposure_boost = -0.5f;
-  p.contrast_boost = 1.0f;
 
-  p.noise = 0.05f;
-  p.ultra_deep_blacks = 0.15f;
-  p.deep_blacks = 0.25f;
-  p.blacks = 0.55f;
-  p.shadows = 0.72f;
-  p.midtones = 0.55f;
-  p.highlights = 0.0f;
-  p.whites = -0.33f;
-  p.speculars = 0.0f;
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.7f);
+  // slight modification to give higher compression
+  p.speculars = -2.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : very strong"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_GUIDED;
+  p.feathering = 1000.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : very strong"), self->op, self->version(), &p, sizeof(p), 1);
 
-  dt_gui_presets_add_generic(_("compress shadows/highlights : soft"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_EIGF;
+  p.feathering = 20.0f;
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.60f);
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : strong"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_GUIDED;
+  p.feathering = 500.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : strong"), self->op, self->version(), &p, sizeof(p), 1);
 
-  p.blending = 25.0f;
-  p.feathering = 10.0f;
-  p.iterations = 2;
-  p.quantization = 0.0f;
-  p.exposure_boost = -0.5f;
-  p.contrast_boost = 1.0f;
+  p.details = DT_TONEEQ_EIGF;
+  p.blending = 3.0f;
+  p.feathering = 7.0f;
+  p.iterations = 3;
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : medium"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_GUIDED;
+  p.feathering = 500.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : medium"), self->op, self->version(), &p, sizeof(p), 1);
 
-  p.noise = 0.5f;
-  p.ultra_deep_blacks = 0.9f;
-  p.deep_blacks = 1.25f;
-  p.blacks = 1.40f;
-  p.shadows = 1.25f;
-  p.midtones = 0.72f;
-  p.highlights = -0.15f;
-  p.whites = -0.55f;
-  p.speculars = -0.2f;
+  p.details = DT_TONEEQ_EIGF;
+  p.blending = 5.0f;
+  p.feathering = 1.0f;
+  p.iterations = 1;
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.30f);
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : soft"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_GUIDED;
+  p.feathering = 500.0f;
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : soft"), self->op, self->version(), &p, sizeof(p), 1);
 
-  dt_gui_presets_add_generic(_("compress shadows/highlights : strong"), self->op, self->version(), &p, sizeof(p), 1);
+  p.details = DT_TONEEQ_EIGF;
+  p.blending = 5.0f;
+  p.feathering = 1.0f;
+  p.iterations = 1;
 
-  p.blending = 25.0f;
-  p.feathering = 25.0f;
-  p.iterations = 2;
   p.quantization = 0.0f;
   p.exposure_boost = 0.0f;
   p.contrast_boost = 0.0f;
@@ -648,18 +666,64 @@ static float gaussian_func(const float radius, const float denominator)
   return expf(- radius * radius / denominator);
 }
 
+#define DT_TONEEQ_USE_LUT TRUE
+#if DT_TONEEQ_USE_LUT
+
+// this is the version currently used, as using a lut gives a
+// big performance speedup on some cpus
 __DT_CLONE_TARGETS__
-static inline void compute_correction(const float *const restrict luminance,
-                                      float *const restrict correction,
-                                      const float *const restrict factors,
-                                      const float sigma,
-                                      const size_t num_elem)
+static inline void apply_toneequalizer(const float *const restrict in,
+                                       const float *const restrict luminance,
+                                       float *const restrict out,
+                                       const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                       const size_t ch,
+                                       const dt_iop_toneequalizer_data_t *const d)
 {
+  const size_t num_elem = roi_in->width * roi_in->height;
+  const int min_ev = -8;
+  const int max_ev = 0;
+  const float* restrict lut = d->correction_lut;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) \
+  dt_omp_firstprivate(in, out, num_elem, luminance, lut, min_ev, max_ev, ch)
+#endif
+  for(size_t k = 0; k < num_elem; ++k)
+  {
+    // The radial-basis interpolation is valid in [-8; 0] EV and can quickely diverge outside
+    const float exposure = fast_clamp(log2f(luminance[k]), min_ev, max_ev);
+    float correction = lut[(unsigned)roundf((exposure - min_ev) * LUT_RESOLUTION)];
+    // apply correction
+    for(size_t c = 0; c < ch; c++)
+    {
+      if(c == 3)
+        out[k * ch + c] = in[k * ch + c];
+      else
+        out[k * ch + c] = correction * in[k * ch + c];
+    }
+  }
+}
+
+#else
+
+// we keep this version for further reference (e.g. for implementing
+// a gpu version)
+__DT_CLONE_TARGETS__
+static inline void apply_toneequalizer(const float *const restrict in,
+                                       const float *const restrict luminance,
+                                       float *const restrict out,
+                                       const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                       const size_t ch,
+                                       const dt_iop_toneequalizer_data_t *const d)
+{
+  const size_t num_elem = roi_in->width * roi_in->height;
+  const float *const restrict factors = d->factors;
+  const float sigma = d->smoothing;
   const float gauss_denom = gaussian_denom(sigma);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) \
-  dt_omp_firstprivate(correction, num_elem, luminance, factors, centers_ops, gauss_denom)
+  dt_omp_firstprivate(in, out, num_elem, luminance, factors, centers_ops, gauss_denom, ch)
 #endif
   for(size_t k = 0; k < num_elem; ++k)
   {
@@ -677,10 +741,19 @@ static inline void compute_correction(const float *const restrict luminance,
       result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
 
     // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
-    correction[k] = fast_clamp(result, 0.25f, 4.0f);
+    float correction = fast_clamp(result, 0.25f, 4.0f);
+
+    // apply correction
+    for(size_t c = 0; c < ch; c++)
+    {
+      if(c == 3)
+        out[k * ch + c] = in[k * ch + c];
+      else
+        out[k * ch + c] = correction * in[k * ch + c];
+    }
   }
 }
-
+#endif // USE_LUT
 
 __DT_CLONE_TARGETS__
 static inline float pixel_correction(const float exposure,
@@ -742,6 +815,24 @@ static inline void compute_luminance_mask(const float *const restrict in, float 
       break;
     }
 
+    case(DT_TONEEQ_AVG_EIGF):
+    {
+      // Still no contrast boost
+      luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost, 0.0f, 1.0f);
+      fast_eigf_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
+                    DT_GF_BLENDING_GEOMEAN, d->scale, d->quantization, exp2f(-14.0f), 4.0f);
+      break;
+    }
+
+    case(DT_TONEEQ_EIGF):
+    {
+      luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost,
+                      CONTRAST_FULCRUM, d->contrast_boost);
+      fast_eigf_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
+                    DT_GF_BLENDING_LINEAR, d->scale, d->quantization, exp2f(-14.0f), 4.0f);
+      break;
+    }
+
     default:
     {
       luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost, 0.0f, 1.0f);
@@ -780,63 +871,13 @@ schedule(static) aligned(luminance, out, in:64) collapse(3)
   for(size_t i = 0 ; i < out_height; ++i)
     for(size_t j = 0; j < out_width; ++j)
       for(size_t c = 0; c < ch; ++c)
+      {
+        // normalize the mask intensity between -8 EV and 0 EV for clarity, 
+        // and add a "gamma" 2.0 for better legibility in shadows
+        const float intensity = sqrtf(fminf(fmaxf(luminance[(i + offset_y) * in_width  + (j + offset_x)] - 0.00390625f, 0.f) / 0.99609375f, 1.f));
         out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]
-                                                     : luminance[(i + offset_y) * in_width  + (j + offset_x)];
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void apply_exposure(const float *const restrict in, float *const restrict out,
-                                  const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                                  const size_t ch,
-                                  const float *const restrict correction)
-{
-  const size_t offset_x = (roi_in->x < roi_out->x) ? -roi_in->x + roi_out->x : 0;
-  const size_t offset_y = (roi_in->y < roi_out->y) ? -roi_in->y + roi_out->y : 0;
-
-  // The output dimensions need to be smaller or equal to the input ones
-  // there is no logical reason they shouldn't, except some weird bug in the pipe
-  // in this case, ensure we don't segfault
-  const size_t in_width = roi_in->width;
-  const size_t out_width = (roi_in->width > roi_out->width) ? roi_out->width : roi_in->width;
-  const size_t out_height = (roi_in->height > roi_out->height) ? roi_out->height : roi_in->height;
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static) \
-  dt_omp_firstprivate(in, out, in_width, out_height, out_width, offset_x, offset_y, ch, correction) \
-  aligned(in, out, correction:64) collapse(3)
-#endif
-  for(size_t i = 0 ; i < out_height; ++i)
-    for(size_t j = 0; j < out_width; ++j)
-      for(size_t c = 0; c < ch; ++c)
-        out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]  // pass-through alpha mask
-                                                     : in[((i + offset_y) * in_width + (j + offset_x)) * ch + c] *
-                                                       correction[(i + offset_y) * in_width + (j + offset_x)];
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void apply_toneequalizer(const float *const restrict in,
-                                       const float *const restrict luminance,
-                                       float *const restrict out,
-                                       const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                                       const size_t ch,
-                                       const dt_iop_toneequalizer_data_t *const d)
-{
-  const size_t num_elem = roi_in->width * roi_in->height;
-  float *const restrict correction = dt_alloc_sse_ps(dt_round_size_sse(num_elem));
-
-  if(correction)
-  {
-    compute_correction(luminance, correction, d->factors, d->smoothing, num_elem);
-    apply_exposure(in, out, roi_in, roi_out, ch, correction);
-    dt_free_align(correction);
-  }
-  else
-  {
-    dt_control_log(_("tone equalizer failed to allocate memory, check your RAM settings"));
-    return;
-  }
+                                                     : intensity;
+      }
 }
 
 
@@ -1095,6 +1136,23 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
  *
  ***/
 
+static void compute_correction_lut(float* restrict lut, const float sigma, const float *const restrict factors)
+{
+  const float gauss_denom = gaussian_denom(sigma);
+  const int min_ev = -8;
+  assert(PIXEL_CHAN == -min_ev);
+  for(int j = 0; j <= LUT_RESOLUTION * PIXEL_CHAN; j++)
+  {
+    // build the correction for each pixel
+    // as the sum of the contribution of each luminance channelcorrection
+    float exposure = (float)j / (float)LUT_RESOLUTION + min_ev;
+    float result = 0.0f;
+    for(int i = 0; i < PIXEL_CHAN; ++i)
+      result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
+    // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
+    lut[j] = fast_clamp(result, 0.25f, 4.0f);
+  }
+}
 
 static void get_channels_gains(float factors[CHANNELS], const dt_iop_toneequalizer_params_t *p)
 {
@@ -1484,6 +1542,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     dt_simd_memcpy(factors, d->factors, PIXEL_CHAN);
   }
+
+  // compute the correction LUT here to spare some time in process
+  // when computing several times toneequalizer with same parameters
+  compute_correction_lut(d->correction_lut, d->smoothing, d->factors);
 }
 
 
@@ -1518,6 +1580,7 @@ void show_guiding_controls(struct dt_iop_module_t *self)
     }
 
     case(DT_TONEEQ_AVG_GUIDED):
+    case(DT_TONEEQ_AVG_EIGF):
     {
       gtk_widget_set_visible(g->blending, TRUE);
       gtk_widget_set_visible(g->feathering, TRUE);
@@ -1528,6 +1591,7 @@ void show_guiding_controls(struct dt_iop_module_t *self)
     }
 
     case(DT_TONEEQ_GUIDED):
+    case(DT_TONEEQ_EIGF):
     {
       gtk_widget_set_visible(g->blending, TRUE);
       gtk_widget_set_visible(g->feathering, TRUE);
@@ -3087,7 +3151,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->details, NULL, _("preserve details"));
   gtk_widget_set_tooltip_text(g->details, _("'no' affects global and local contrast (safe if you only add contrast)\n"
                                             "'guided filter' only affects global contrast and tries to preserve local contrast\n"
-                                            "'averaged guided filter' is a geometric mean of both methods"));
+                                            "'averaged guided filter' is a geometric mean of 'no' and 'guided filter' methods\n"
+                                            "'eigf' (exposure-independent guided filter) is a guided filter that is exposure-independent, it smooths shadows and highlights the same way (contrary to guided filter which smooths less the highlights)\n"
+                                            "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided filter' methods"));
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
   dt_bauhaus_slider_set_soft_max(g->iterations, 5);
@@ -3095,14 +3161,14 @@ void gui_init(struct dt_iop_module_t *self)
                                                "helps diffusing the edges of the filter at the expense of speed"));
 
   g->blending = dt_bauhaus_slider_from_params(self, "blending");
-  dt_bauhaus_slider_set_soft_range(g->blending, 5.0, 45.0);
+  dt_bauhaus_slider_set_soft_range(g->blending, 1.0, 45.0);
   dt_bauhaus_slider_set_format(g->blending, "%.2f %%");
   gtk_widget_set_tooltip_text(g->blending, _("diameter of the blur in percent of the largest image size\n"
                                              "warning: big values of this parameter can make the darkroom\n"
                                              "preview much slower if denoise profiled is used."));
 
   g->feathering = dt_bauhaus_slider_from_params(self, "feathering");
-  dt_bauhaus_slider_set_soft_range(g->feathering, 1.0, 50.0);
+  dt_bauhaus_slider_set_soft_range(g->feathering, 0.1, 50.0);
   dt_bauhaus_slider_set_step(g->feathering, 0.2);
   gtk_widget_set_tooltip_text(g->feathering, _("precision of the feathering :\n"
                                                "higher values force the mask to follow edges more closely\n"
