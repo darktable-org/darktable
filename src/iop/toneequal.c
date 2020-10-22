@@ -871,8 +871,13 @@ schedule(static) aligned(luminance, out, in:64) collapse(3)
   for(size_t i = 0 ; i < out_height; ++i)
     for(size_t j = 0; j < out_width; ++j)
       for(size_t c = 0; c < ch; ++c)
+      {
+        // normalize the mask intensity between -8 EV and 0 EV for clarity, 
+        // and add a "gamma" 2.0 for better legibility in shadows
+        const float intensity = sqrtf(fminf(fmaxf(luminance[(i + offset_y) * in_width  + (j + offset_x)] - 0.00390625f, 0.f) / 0.99609375f, 1.f));
         out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]
-                                                     : luminance[(i + offset_y) * in_width  + (j + offset_x)];
+                                                     : intensity;
+      }
 }
 
 
