@@ -42,12 +42,14 @@
 
 DT_MODULE(1)
 
-enum avif_compression_type_e {
+enum avif_compression_type_e
+{
   AVIF_COMP_LOSSLESS = 0,
   AVIF_COMP_LOSSY = 1,
 };
 
-enum avif_tiling_e {
+enum avif_tiling_e
+{
   AVIF_TILING_ON = 0,
   AVIF_TILING_OFF
 };
@@ -58,7 +60,8 @@ enum avif_color_mode_e
   AVIF_COLOR_MODE_GRAYSCALE,
 };
 
-typedef struct dt_imageio_avif_t {
+typedef struct dt_imageio_avif_t
+{
   dt_imageio_module_data_t global;
   uint32_t bit_depth;
   uint32_t color_mode;
@@ -67,7 +70,8 @@ typedef struct dt_imageio_avif_t {
   uint32_t tiling;
 } dt_imageio_avif_t;
 
-typedef struct dt_imageio_avif_gui_t {
+typedef struct dt_imageio_avif_gui_t
+{
   GtkWidget *bit_depth;
   GtkWidget *color_mode;
   GtkWidget *compression_type;
@@ -75,7 +79,8 @@ typedef struct dt_imageio_avif_gui_t {
   GtkWidget *tiling;
 } dt_imageio_avif_gui_t;
 
-static const struct {
+static const struct
+{
   char     *name;
   uint32_t bit_depth;
 } avif_bit_depth[] = {
