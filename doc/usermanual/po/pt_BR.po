@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
-"POT-Creation-Date: 2020-10-22 05:30-0300\n"
-"PO-Revision-Date: 2020-10-22 05:48-0300\n"
+"POT-Creation-Date: 2020-10-22 20:55-0300\n"
+"PO-Revision-Date: 2020-10-22 21:01-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -313,7 +313,7 @@ msgstr "aplicativo"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21780(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22116(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22246(title)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26210(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26209(title)
 msgid "Overview"
 msgstr "Visão geral"
 
@@ -1201,7 +1201,7 @@ msgstr "O binário <filename moreinfo=\"none\">darktable-chart</filename>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:854(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11582(filename)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26205(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26204(primary)
 msgid "darktable-chart"
 msgstr "darktable-chart"
 
@@ -4332,7 +4332,7 @@ msgstr ""
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22022(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22136(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22299(title)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26234(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26233(title)
 msgid "Usage"
 msgstr "Uso"
 
@@ -5536,7 +5536,7 @@ msgstr ""
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5154(secondary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5158(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6017(title)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26402(quote)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26401(quote)
 msgid "export"
 msgstr "exportar"
 
@@ -6768,7 +6768,7 @@ msgstr "$(LENS)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5512(entry)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13284(title)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24054(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24053(bridgehead)
 msgid "lens"
 msgstr "lente"
 
@@ -6907,8 +6907,8 @@ msgid "var"
 msgstr "var"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5630(code)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25957(entry)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25988(quote)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25956(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25987(quote)
 msgid "default"
 msgstr "default"
 
@@ -8130,8 +8130,8 @@ msgid "Module presets"
 msgstr "Predefinições de módulo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6557(primary)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23992(secondary)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23996(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23991(secondary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23995(primary)
 msgid "presets"
 msgstr "predefinições"
 
@@ -11958,7 +11958,7 @@ msgstr ""
 "princípio geral, o darktable aplica módulos em uma sequência pré-definida."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9660(title)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23988(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23987(title)
 msgid "Presets"
 msgstr "predefinições"
 
@@ -12008,7 +12008,24 @@ msgid ""
 "\" scalefit=\"1\" width=\"20%\" align=\"center\"/></entry><entry> Effects </"
 "entry><entry> contain the weird kids (local contrast, sharpness, high/low-"
 "freq, retouch, liquify, etc.) </entry></row></tbody></tgroup></informaltable>"
-msgstr "Esta predefinição mostra os módulos organizados em 3 grupos : <informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"2*\"/><colspec colwidth=\"2*\"/><colspec colwidth=\"6*\"/><tbody><row><entry><graphic fileref=\"darkroom/images/darkroom_group_technical.png\" scalefit=\"1\" width=\"20%\" align=\"center\"/></entry><entry> Técnico </entry><entry> contém todo módulo relativo a alguma realidade física: lente, sensor, espaços de cor de entrada/saída e várias reconstruções de sinal (relaces, ruído etc). </entry></row><row><entry><graphic \"fileref=\"darkroom/images/darkroom_group_grading.png\" scalefit=\"1\" width=\"20%\" align=\"center\"/></entry><entry> Grading </entry><entry> contém todos os módulos usados artisticamente e para realizar correção de cores e tons, e trabalho criativo (incluindo adaptação cromática / balanço de branco) </entry></row><row><entry><graphic fileref=\"darkroom/images/darkroom_group_effects.png\" scalefit=\"1\" width=\"20%\" align=\"center\"/></entry><entry> Efeitos </entry><entry> contém os estranhos (contraste local, nitidez, alta/baixa frequência, retoques, liquefazer etc).</entry></row></tbody></tgroup></informaltable>"
+msgstr ""
+"Esta predefinição mostra os módulos organizados em 3 grupos : <informaltable "
+"frame=\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\" rowsep="
+"\"0\"><colspec colwidth=\"2*\"/><colspec colwidth=\"2*\"/><colspec colwidth="
+"\"6*\"/><tbody><row><entry><graphic fileref=\"darkroom/images/"
+"darkroom_group_technical.png\" scalefit=\"1\" width=\"20%\" align=\"center\"/"
+"></entry><entry> Técnico </entry><entry> contém todo módulo relativo a "
+"alguma realidade física: lente, sensor, espaços de cor de entrada/saída e "
+"várias reconstruções de sinal (relaces, ruído etc). </entry></"
+"row><row><entry><graphic \"fileref=\"darkroom/images/darkroom_group_grading."
+"png\" scalefit=\"1\" width=\"20%\" align=\"center\"/></entry><entry> Grading "
+"</entry><entry> contém todos os módulos usados artisticamente e para "
+"realizar correção de cores e tons, e trabalho criativo (incluindo adaptação "
+"cromática / balanço de branco) </entry></row><row><entry><graphic fileref="
+"\"darkroom/images/darkroom_group_effects.png\" scalefit=\"1\" width=\"20%\" "
+"align=\"center\"/></entry><entry> Efeitos </entry><entry> contém os "
+"estranhos (contraste local, nitidez, alta/baixa frequência, retoques, "
+"liquefazer etc).</entry></row></tbody></tgroup></informaltable>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9738(title)
 msgid "Display referred"
@@ -12068,7 +12085,10 @@ msgid ""
 "Inside each presets (excpet built-in ones which are read-only) you can "
 "create, remove or move groups, define its icon and name, and set which "
 "module should appear under which group."
-msgstr "Em cada predefinição (exceto as nativas que são somente de leitura) voce pode criar, remover ou mover grupos, definir seu ícone e nome, e definir que módulo deve aparecer em cada grupo."
+msgstr ""
+"Em cada predefinição (exceto as nativas que são somente de leitura) voce "
+"pode criar, remover ou mover grupos, definir seu ícone e nome, e definir que "
+"módulo deve aparecer em cada grupo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9778(para)
 msgid "Same modules can belong to multiple groups."
@@ -12593,7 +12613,6 @@ msgstr "Módulos"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19940(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20202(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20333(primary)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23952(title)
 msgid "modules"
 msgstr "módulos"
 
@@ -12602,7 +12621,11 @@ msgid ""
 "With the default preset, modules are organized into three functional groups: "
 "technical, grading and effects. You either view all modules in one long list "
 "or instead click on a group to just display modules belonging to that group."
-msgstr "Com a predefinição default, módulos são organizados em cinco grupos funcionais: básico, tom, cor, correção e efeito. Você pode ver todos os módulos em uma longa lista ou clicar em um grupo para mostrar somente os módulos pertencentes àquele grupo."
+msgstr ""
+"Com a predefinição default, módulos são organizados em cinco grupos "
+"funcionais: básico, tom, cor, correção e efeito. Você pode ver todos os "
+"módulos em uma longa lista ou clicar em um grupo para mostrar somente os "
+"módulos pertencentes àquele grupo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10233(title)
 msgid "Technical group"
@@ -15113,7 +15136,7 @@ msgstr "Exposição"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12223(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12357(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15094(title)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24067(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24066(bridgehead)
 msgid "exposure"
 msgstr "exposição"
 
@@ -15954,7 +15977,7 @@ msgstr ""
 "podem ser escolhidos manualmente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12960(title)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24082(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24081(bridgehead)
 msgid "focal length"
 msgstr "distância focal"
 
@@ -17555,7 +17578,10 @@ msgid ""
 "The grading group contains every module to be used artistically and doing "
 "color and tones corrective and creative work (including chromatic "
 "adaptation / white balance)"
-msgstr "contém todos os módulos usados artisticamente e para realizar correção de cores e tons, e trabalho criativo (incluindo adaptação cromática / balanço de branco)"
+msgstr ""
+"contém todos os módulos usados artisticamente e para realizar correção de "
+"cores e tons, e trabalho criativo (incluindo adaptação cromática / balanço "
+"de branco)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14443(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14447(secondary)
@@ -24823,8 +24849,8 @@ msgstr "Preferências e configurações"
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23422(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23512(primary)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23702(primary)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23991(primary)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24098(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23990(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24097(primary)
 msgid "preferences and settings"
 msgstr "preferências e configurações"
 
@@ -26128,7 +26154,7 @@ msgid "These options control how darktable use your system resources."
 msgstr "Estas opções controlam como o darktable usa os recursos do sistema."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23430(bridgehead)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25178(term)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25177(term)
 msgid "memory in megabytes to use for thumbnail cache"
 msgstr "memória em megabytes usada para o cache de miniaturas"
 
@@ -26182,7 +26208,7 @@ msgstr ""
 "imagem para modo de pré-visualização cheia. (default: desligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23456(bridgehead)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25137(term)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25136(term)
 msgid "number of background threads"
 msgstr "número de threads em background"
 
@@ -26197,7 +26223,7 @@ msgstr ""
 "recomendado definir como 1. Precisa reiniciar se modificado (o default é 2)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23464(bridgehead)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25150(term)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25149(term)
 msgid "host memory limit (in MB) for tiling"
 msgstr "limite de memória (em Mb) para ladrilhamento"
 
@@ -26221,7 +26247,7 @@ msgstr ""
 "modificado. (default: 1500)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23475(bridgehead)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25165(term)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25164(term)
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr ""
 "quantidade mínima de memória (em MB) para processamento de ladrilhos em "
@@ -26258,7 +26284,7 @@ msgstr ""
 "efeito imediato. (default: ligado)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23493(bridgehead)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25940(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25939(title)
 msgid "OpenCL scheduling profile"
 msgstr "perfil de escalonamento OpenCL"
 
@@ -26708,30 +26734,24 @@ msgstr ""
 "aplicáveis somente na vista selecionada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23812(title)
-msgid "image operations"
-msgstr "operações em imagem"
+msgid "processing modules"
+msgstr "módulos de processamento"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23814(para)
 msgid ""
-"Shortcuts in this section are only applicable to the ‘image operations’ "
-"modules in the darktable view (i.e. those modules to the right of the edited "
-"image below the histogram and above the ‘module order’ module). A section is "
-"provided for each image operation module."
-msgstr ""
-"Atalhos nesta seção são aplicáveis apenas aos módulos de operações em "
-"imagens na vista da sala escura (ou seja, os módulos à direita da imagem, "
-"abaixo do histograma e acima do módulo 'ordem dos módulos'). Há uma seção "
-"para cada módulo de operação em imagem."
+"Shortcuts in this section are only applicable to the ‘processing’ modules in "
+"the darktable view (i.e. those modules to the right of the edited image "
+"below the histogram and above the ‘module order’ module). A section is "
+"provided for each processing module."
+msgstr "Atalhos nesta seção são aplicáveis apenas aos módulos de processamento na vista da sala escura (ou seja, os módulos à direita da imagem, abaixo do histograma e acima do módulo 'ordem dos módulos'). Há uma seção para cada módulo de processamento."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23820(bridgehead)
 msgid "common shortcuts"
 msgstr "atalhos comuns"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23822(para)
-msgid ""
-"Every image operation module provides the following shortcuts by default"
-msgstr ""
-"Todo módulo de operação em imagens provê os atalhos a seguir por default"
+msgid "Every processing module provides the following shortcuts by default"
+msgstr "Todo módulo de processamento provê os atalhos a seguir por default"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23827(para)
 msgid ""
@@ -26758,7 +26778,7 @@ msgstr ""
 "<emphasis>focar módulo<emphasis> - faz o módulo receber ou perder o foco"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23839(para)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23968(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23967(para)
 msgid ""
 "<emphasis>reset module parameters</emphasis> - reset the module to its "
 "default state"
@@ -26767,7 +26787,7 @@ msgstr ""
 "estado default"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23842(para)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23971(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23970(para)
 msgid ""
 "<emphasis>show preset menu</emphasis> - show the presets menu for the module"
 msgstr ""
@@ -26786,13 +26806,10 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23854(para)
 msgid ""
-"All sliders in image operation modules can be edited via keyboard shortcuts "
+"All sliders in processing modules can be edited via keyboard shortcuts "
 "(regardless of whether the module is currently shown or enabled). The "
 "following actions are provided:"
-msgstr ""
-"Todos os deslizadores em módulos de operações em imagens podem ser editados "
-"via atalhos de teclado (independentemente do módulo estar atualmente sendo "
-"exibido ou habilitado). As ações a seguir são possíveis:"
+msgstr "Todos os deslizadores em módulos de processamento podem ser editados via atalhos de teclado (independentemente do módulo estar atualmente sendo exibido ou habilitado). As ações a seguir são possíveis:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23860(para)
 msgid ""
@@ -26848,12 +26865,9 @@ msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23890(para)
 msgid ""
-"As with sliders, all comboboxes in image operation modules can be edited via "
+"As with sliders, all comboboxes in processing modules can be edited via "
 "keyboard shortcuts. The following actions are provided:"
-msgstr ""
-"Assim como deslizadores, todas as comboboxes em módulos de operação em "
-"imagens podem ser editadas usando atalhos de teclado. As ações a seguir são "
-"oferecidas:"
+msgstr "Assim como deslizadores, todas as comboboxes em módulos de processamento podem ser editadas usando atalhos de teclado. As ações a seguir são oferecidas:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23896(para)
 msgid ""
@@ -26897,19 +26911,13 @@ msgstr "lidando com múltiplas instâncias de módulos"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23918(para)
 msgid ""
-"It is possible to create multiple instances of many image operations "
-"modules. In this scenario it is not always obvious which instance should be "
-"controlled by keyboard shortcut operations. Some additional options are "
-"present in the miscellaneous tab of the preferences dialog. These options "
-"control rules that are applied (in order) to decide which module instance "
-"keyboard shortcuts will be applied to."
-msgstr ""
-"É possível criar múltiplas instâncias de muitos dos módulos de operações em "
-"imagens. Neste cenário não é sempre óbvio qual instância deveria ser "
-"controlada pelas operações de atalho de teclado. Algumas opções adicionais "
-"estão presentes na aba de miscelânea no diálogo de preferências. Estas "
-"opções controlam regras que são aplicadas (em ordem) para decidir sobre qual "
-"instância do módulo os atalhos de teclados serão aplicados."
+"It is possible to create multiple instances of many processing modules. In "
+"this scenario it is not always obvious which instance should be controlled "
+"by keyboard shortcut operations. Some additional options are present in the "
+"miscellaneous tab of the preferences dialog. These options control rules "
+"that are applied (in order) to decide which module instance keyboard "
+"shortcuts will be applied to."
+msgstr "É possível criar múltiplas instâncias de muitos dos módulos de processamento. Neste cenário não é sempre óbvio qual instância deveria ser controlada pelas operações de atalho de teclado. Algumas opções adicionais estão presentes na aba de miscelânea no diálogo de preferências. Estas opções controlam regras que são aplicadas (em ordem) para decidir sobre qual instância do módulo os atalhos de teclados serão aplicados."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23927(para)
 msgid ""
@@ -26952,33 +26960,30 @@ msgstr ""
 "Estas regras também são usadas ao clicar e arrastar no histograma para mudar "
 "a exposição."
 
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23952(title)
+msgid "utility modules"
+msgstr "módulos utilitários"
+
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23954(para)
 msgid ""
-"Shortcuts in the modules section apply to what are known as library (or lib) "
-"modules. These are modules that are not used for image operations, may "
-"appear on either side of the screen and may apply to one or more views."
-msgstr ""
-"Atalhos na seção de módulos se aplicam ao que se chama de módulos de "
-"biblioteca (lib). Estes são módulos que não são usados para operações em "
-"imagens, e podem aparecer em qualquer lado da tela e podem ser aplicados em "
-"mais de uma vista."
+"Shortcuts in the utility modules section apply to modules that are not used "
+"for image processing, may appear on either side of the screen and may apply "
+"to one or more views."
+msgstr "Atalhos na seção de módulos utilitários se aplicam aos módulos que não são usados para operações em imagens, e podem aparecer em qualquer lado da tela e podem ser aplicados em mais de uma vista."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23960(para)
-msgid ""
-"As with image operation modules, some shortcuts are provided by default:"
-msgstr ""
-"Assim como para módulos de operações em imagens, alguns atalhos são "
-"oferecidos por default:"
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23959(para)
+msgid "As with processing modules, some shortcuts are provided by default:"
+msgstr "Assim como para módulos de processamento, alguns atalhos são oferecidos por default:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23965(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23964(para)
 msgid "<emphasis>show module</emphasis> - expand or collapse the module"
 msgstr "<emphasis>mostrar módulo</emphasis> - expandir ou recolher o módulo"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23976(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23975(para)
 msgid "Some of the above options may not be applicable to all modules."
 msgstr "Algumas das opções acima podem não ser aplicáveis a todos os módulos."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23999(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23998(para)
 msgid ""
 "This menu gives you an overview of the presets that are defined for "
 "darktable's modules. In this dialog you can select whether a certain user "
@@ -26992,7 +26997,7 @@ msgstr ""
 "critérios. Você pode pressionar o botão <quote>importar</quote> na parte "
 "inferior da janela para importar um conjunto gravado de predefinições."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24006(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24005(para)
 msgid ""
 "darktable already comes with a set of pre-defined presets for several "
 "modules. In addition you can define your own presets from within each module "
@@ -27002,7 +27007,7 @@ msgstr ""
 "módulos. Além disso você pode escolher suas próprias predefinições para cada "
 "módulo na sala escura (veja <xref linkend=\"module_presets\"/>)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24012(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24011(para)
 msgid ""
 "Pre-defined presets are shown with a lock symbol. Their auto-apply "
 "properties can not be changed."
@@ -27010,7 +27015,7 @@ msgstr ""
 "predefinições pré-configuradas são mostradas com um símbolo de cadeado. Suas "
 "propriedades de autoaplicar não pode ser modificadas."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24017(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24016(para)
 msgid ""
 "Double clicking on a user-defined preset will open a menu. This allows "
 "editing the preset or saving it to an external .dtpreset file."
@@ -27018,13 +27023,13 @@ msgstr ""
 "Clique duplo em uma predefinição configurada por usuário abre um menu. Isto "
 "permite editar o valor ou armazenar em um arquivo externo .dtpreset."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24026(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24025(bridgehead)
 msgid "auto apply this preset to matching images"
 msgstr ""
 "auto aplicar esta predefinição para imagens que combinam com os padrões "
 "definidos"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24028(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24027(para)
 msgid ""
 "activate this checkbutton to automatically apply the preset on newly "
 "imported images; a set of fields is displayed where you can define patterns "
@@ -27034,13 +27039,13 @@ msgstr ""
 "importadas; um conjunto de campos será mostrado onde você pode definir "
 "padrões para combinar com os dados Exif."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24033(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24032(bridgehead)
 msgid "only show this preset for matching images"
 msgstr ""
 "somente mostre esta predefinição apenas para imagens que combinam com os "
 "padrões definidos"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24035(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24034(para)
 msgid ""
 "activate this checkbutton to hide the preset in darkroom mode if it does not "
 "match the defined patterns."
@@ -27048,11 +27053,11 @@ msgstr ""
 "ative este botão para esconder a pré-configuração na sala escura se não "
 "combinarem com os padrões definidos."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24040(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24039(bridgehead)
 msgid "model"
 msgstr "modelo"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24042(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24041(para)
 msgid ""
 "a pattern to be matched against the Exif field that describes your camera "
 "model; use \"%\" as wildcard."
@@ -27060,11 +27065,11 @@ msgstr ""
 "um padrão para combinar com o campo Exif que descreve o modelo da câmera; "
 "use \"%\" como curinga."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24047(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24046(bridgehead)
 msgid "maker"
 msgstr "fabricante"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24049(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24048(para)
 msgid ""
 "a pattern to be matched against the Exif field that describes the maker of "
 "your camera; use \"%\" as wildcard."
@@ -27072,7 +27077,7 @@ msgstr ""
 "um padrão para combinar com o campo Exif que descreve o fabricante da "
 "câmera; use \"%\" como curinga."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24056(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24055(para)
 msgid ""
 "a pattern to be matched against the Exif field that describes your lens; use "
 "\"%\" as wildcard."
@@ -27080,18 +27085,18 @@ msgstr ""
 "um padrão para combinar com o campo Exif que descreve sua lente; use \"%\" "
 "como curinga."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24061(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24060(bridgehead)
 msgid "iso"
 msgstr "iso"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24063(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24062(para)
 msgid ""
 "only apply the preset if the ISO value of your image lies within the given "
 "range."
 msgstr ""
 "somente aplica a predefinição se o valor ISO da imagem estiver na faixa dada."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24069(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24068(para)
 msgid ""
 "only apply the preset if the exposure time of your image lies within the "
 "given range; set \"+\" as the upper value to match arbitrarily long "
@@ -27101,11 +27106,11 @@ msgstr ""
 "estiver na faixa dada; use \"+\" como valor máximo para combinar com "
 "exposições arbitrariamente longas."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24074(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24073(bridgehead)
 msgid "aperture"
 msgstr "abertura"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24076(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24075(para)
 msgid ""
 "only apply the preset if the aperture of your image lies within the given "
 "range; set \"f/0\" as the lower value to match arbitrarily open apertures; "
@@ -27116,7 +27121,7 @@ msgstr ""
 "aberturas arbitrariamente abertas; use \"f/+\" como valor superior para "
 "combinar com aberturas arbitrariamente fechadas.\""
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24084(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24083(para)
 msgid ""
 "only apply the preset if the focal length of your image lies within the "
 "given range (from 0 to 1000)."
@@ -27124,23 +27129,23 @@ msgstr ""
 "somente aplique a pré-configuração se a distância focal da imagem estiver na "
 "faixa dada (de 0 a 100)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24095(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24094(title)
 msgid "Lua options"
 msgstr "Opções para Lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24099(secondary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24098(secondary)
 msgid "lua options"
 msgstr "opções para lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24102(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24101(para)
 msgid "This option control lua scripts installator."
 msgstr "esta opção controla o instalador de scripts Lua."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24106(bridgehead)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24105(bridgehead)
 msgid "lua scripts installer don't show again"
 msgstr "instalador de scripts lua - não mostrar novamente"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24108(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24107(para)
 msgid ""
 "Choose to show again, or not, the lua scripts installer in lighttable left "
 "panel."
@@ -27148,24 +27153,24 @@ msgstr ""
 "Escolha mostrar ou não, novamente, o instalador de scripts lua no painel da "
 "esquerda da mesa de luz."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24122(keyword)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24134(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24121(keyword)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24133(primary)
 msgid "scripting"
 msgstr "scripting"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24123(keyword)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24122(keyword)
 msgid "lua"
 msgstr "lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24127(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24126(title)
 msgid "Scripting with Lua"
 msgstr "Scripting com Lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24130(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24129(primary)
 msgid "Lua"
 msgstr "Lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24137(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24136(para)
 msgid ""
 "darktable comes with a versatile scripting interface for functionality "
 "enhancement."
@@ -27173,15 +27178,15 @@ msgstr ""
 "O darktable vem com uma interface de scripting versátil para melhoria de "
 "funcionalidade."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24144(screeninfo)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24143(screeninfo)
 msgid "Scipting with Lua"
 msgstr "Scripting com Lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24153(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24152(title)
 msgid "Lua usage"
 msgstr "Uso de Lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24155(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24154(para)
 msgid ""
 "Lua can be used to define actions which darktable will perform whenever a "
 "specified event is triggered. One example might be calling an external "
@@ -27193,7 +27198,7 @@ msgstr ""
 "externa durante a exportação para aplicar passos de processamento adicional "
 "fora do darktable."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24161(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24160(para)
 msgid ""
 "darktable uses <ulink url=\"http://www.lua.org/\"><emphasis>Lua</emphasis></"
 "ulink>, which is an independent project founded in 1993, providing a "
@@ -27207,7 +27212,7 @@ msgstr ""
 "amplamente usada em aplicações open source, em programas comerciais, e para "
 "programação de jogos."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24168(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24167(para)
 msgid ""
 "darktable uses Lua version 5.3. Describing the principles and syntax of Lua "
 "is beyond the scope of this usermanual. For a detailed introduction see the "
@@ -27219,15 +27224,15 @@ msgstr ""
 "url=\"http://www.lua.org/manual/5.2/manual.html\">Manual de referência de "
 "Lua</ulink>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24176(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24175(title)
 msgid "Basic principles"
 msgstr "Princípios básicos"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24178(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24177(para)
 msgid "At startup, darktable will automatically run two Lua scripts:"
 msgstr "Ao iniciar, o darktable executará dois scripts Lua:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24184(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24183(para)
 msgid ""
 "a script called <emphasis>luarc</emphasis> in <emphasis>$DARKTABLE/share/"
 "darktable</emphasis>"
@@ -27235,7 +27240,7 @@ msgstr ""
 "um script chamado <emphasis>luarc</emphasis> em <emphasis>$DARKTABLE/share/"
 "darktable</emphasis>"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24189(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24188(para)
 msgid ""
 "a script called <emphasis>luarc</emphasis> in the user's configuration "
 "directory"
@@ -27243,7 +27248,7 @@ msgstr ""
 "um script chamado <emphasis>luarc</emphasis> na pasta de configuração do "
 "usuário"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24195(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24194(para)
 msgid ""
 "$DARKTABLE is used here to represent your system's darktable installation "
 "directory."
@@ -27251,7 +27256,7 @@ msgstr ""
 "$DARKTABLE é usado aqui para representar a pasta de instalação do darktable "
 "no seu sistema."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24199(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24198(para)
 msgid ""
 "This is the only time darktable will run Lua scripts by itself. The script "
 "can register callbacks to perform actions on various darktable events. This "
@@ -27262,11 +27267,11 @@ msgstr ""
 "eventos do darktable. Este mecanismo de callback é a maneira primária de "
 "disparar ações Lua."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24209(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24208(title)
 msgid "A simple lua example"
 msgstr "Um exemplo simples em Lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24211(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24210(para)
 msgid ""
 "Let's start with a simple example. We will print some code on the console. "
 "Create a file called <emphasis>luarc</emphasis> in darktable's configuration "
@@ -27278,11 +27283,11 @@ msgstr ""
 "darktable (normalmente <command moreinfo=\"none\">~/.config/darktable/</"
 "command>) e adicione a seguinte linha ao arquivo:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24218(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24217(programlisting)
 msgid "print(\"Hello World !\")"
 msgstr "print(\"Hello World !\")"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24221(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24220(para)
 msgid ""
 "Start darktable and you will see the sentence <emphasis>Hello World !</"
 "emphasis> printed on the console. Nothing fancy but it's a start..."
@@ -27290,7 +27295,7 @@ msgstr ""
 "Inicie o darktable e você verá a sentença <emphasis>Hello World !</emphasis> "
 "escrita no console. Nada demais, mas é um começo..."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24226(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24225(para)
 msgid ""
 "At this point, there is nothing specific to darktable in the script. We "
 "simply use the standard <code>print</code> function to print a string. "
@@ -27308,7 +27313,7 @@ msgstr ""
 "subcampos do objeto retornado. Tudo isto está documentado no manual de "
 "referência da API Lua do darktable (veja <xref linkend=\"lua_api\"/>)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24239(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24238(programlisting)
 msgid ""
 "local darktable = require \"darktable\" darktable.print_log(\"Hello World !"
 "\")"
@@ -27316,7 +27321,7 @@ msgstr ""
 "local darktable = require \"darktable\" darktable.print_error(\"Hello World !"
 "\")"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24243(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24242(para)
 msgid ""
 "Run the script ... and nothing happens. The function <code>darktable."
 "print_log</code> is just like print but will only print the message if you "
@@ -27329,11 +27334,11 @@ msgstr ""
 "traces com <command moreinfo=\"none\">-d lua</command> na linha de comando. "
 "Esta é a maneira recomendada de fazer traces em um script Lua do darktable."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24255(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24254(title)
 msgid "Printing labeled images"
 msgstr "Mostrando imagens etiquetadas"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24257(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24256(para)
 msgid ""
 "This first example showed us the very basics of lua and allowed us to check "
 "that everything is working properly. Let's do something a little bit more "
@@ -27345,7 +27350,7 @@ msgstr ""
 "Tentaremos escrever a lista de imagens que tem uma etiqueta vermelha "
 "anexada. Mas antes de mais nada, o que é uma imagem?"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24265(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24264(programlisting)
 msgid ""
 "local darktable = require \"darktable\" local debug = require \"darktable."
 "debug\" print(darktable.debug.dump(darktable.database[1]))"
@@ -27353,7 +27358,7 @@ msgstr ""
 "local darktable = require \"darktable\" local debug = require \"darktable."
 "debug\" print(darktable.debug.dump(darktable.database[1]))"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24271(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24270(para)
 msgid ""
 "Running the code above will produce a lot of output. We will look at it in a "
 "moment, but first let's look at the code itself."
@@ -27361,7 +27366,7 @@ msgstr ""
 "Executar o código acima produzirá muita saída. Nós a examinaremos em um "
 "momento, mas primeiro veremos o próprio código."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24276(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24275(para)
 msgid ""
 "We know about requiring <code>darktable</code> . Here, we need to separately "
 "require <code>darktable.debug</code> which is an optional section of the API "
@@ -27371,7 +27376,7 @@ msgstr ""
 "separadamente requerer <code>derktable.debug</code> que é uma seção opcional "
 "da API que provê funções auxiliares para ajudar a depurar scripts Lua."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24285(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24284(para)
 msgid ""
 "<code>darktable.database</code> is a table provided by the API that contains "
 "all images in the database (currently visible or not, duplicate or not...). "
@@ -27395,7 +27400,7 @@ msgstr ""
 "são objetos complexos que referenciam indiretamente outros objetos, o "
 "resultado da saída é enorme. A seguir está um exemplo reduzido dessa saída."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24302(code)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24301(code)
 msgid ""
 "toplevel (userdata,dt_lua_image_t) : /images/100.JPG publisher (string) : "
 "\"\" path (string) : \"/images\" move (function) exif_aperture (number) : "
@@ -27443,7 +27448,7 @@ msgstr ""
 "local_copy (boolean) : false copy (function): toplevel.film.2.copy "
 "group_leader (userdata,dt_lua_image_t): .toplevel"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24360(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24359(para)
 msgid ""
 "As we can see, an image has a large number of fields which provide all sort "
 "of information about it. We are interested in the red label. This field is a "
@@ -27455,7 +27460,7 @@ msgstr ""
 "Este campo é um booleano, e a documentação nos diz que pode ser escrito. "
 "Agora só precisamos encontrar as imagens com este campo e mostrá-las."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24368(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24367(programlisting)
 msgid ""
 "darktable = require \"darktable\" for _,v in ipairs(darktable.database) do "
 "if v.red then print(tostring(v)) end end"
@@ -27463,7 +27468,7 @@ msgstr ""
 "darktable = require \"darktable\" for _,v in ipairs(darktable.database) do "
 "if v.red then print(tostring(v)) end end"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24382(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24381(para)
 msgid ""
 "<code>ipairs</code> is a standard lua function that will iterate through all "
 "numeric indices of a table. We use it here because <code>darktable.database</"
@@ -27475,7 +27480,7 @@ msgstr ""
 "tem índices não-numéricos que são funções para manipular a própria base de "
 "dados (adicionar ou remover imagens, por exemplo)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24391(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24390(para)
 msgid ""
 "Iterating through a table will return both the key and the value used. It is "
 "conventional in lua to use a variable named <quote><code>_</code></quote> to "
@@ -27485,7 +27490,7 @@ msgstr ""
 "convencional em Lua usar uma variável chamada <quote><code>_</code></quote> "
 "para guardar valores que não nos interessam."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24398(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24397(para)
 msgid ""
 "Note that we use the standard lua function <code>tostring</code> here and "
 "not the darktable specific <code>darktable.debug.dump</code> . The standard "
@@ -27500,7 +27505,7 @@ msgstr ""
 "uma excelente ferramenta para depuração, mas não deve ser usada pra mais "
 "nada."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24377(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24376(para)
 msgid ""
 "This code should be quite simple to understand at this point, but it "
 "contains a few interesting aspects about lua that are worth highlighting: "
@@ -27509,11 +27514,11 @@ msgstr ""
 "Este código deve ser bem simples de entender neste ponto, mas contém alguns "
 "aspectos interessantes sobre Lua que vale a pena destacar: <placeholder-1/>"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24415(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24414(title)
 msgid "Adding a simple shortcut"
 msgstr "Adicionando um atalho simples"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24417(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24416(para)
 msgid ""
 "So far, all our scripts have done things during startup. This is of limited "
 "use and doesn't allow us to react to real user actions. To do more advanced "
@@ -27525,7 +27530,7 @@ msgstr ""
 "mais avançado precisamos registrar uma função que será chamada em um dado "
 "evento. O evento mais comum para reagir é um atalho de teclado."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24425(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24424(programlisting)
 msgid ""
 "darktable = require \"darktable\" local function hello_shortcut(event, "
 "shortcut) darktable.print(\"Hello, I just received '\"..event.. \"' with "
@@ -27537,7 +27542,7 @@ msgstr ""
 "'\"..shortcut..\"'\") end darktable.register_event(\"shortcut\","
 "hello_shortcut, \"Um atalho que mostra seus parâmetros\")"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24438(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24437(para)
 msgid ""
 "Now start darktable, go to <code> preferences =&gt; shortcut =&gt; lua =&gt; "
 "A shortcut that prints its parameters </code> assign a shortcut and try it. "
@@ -27547,7 +27552,7 @@ msgstr ""
 "=&gt; Um atalho que mostra seus parâmetros </code> , associe-o com um atalho "
 "e use-o. Você deverá ver uma mensagem mostrada na tela."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24444(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24443(para)
 msgid ""
 "Let's look at the code in detail. We first define a function with two "
 "parameters. These parameters are strings. The first one is the type of event "
@@ -27563,7 +27568,7 @@ msgstr ""
 "função chama <code>darktable.print</code> que imprimirá a mensagem como "
 "sobreposição na janela principal."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24455(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24454(para)
 msgid ""
 "Once that function is defined, we register it as a shortcut callback. To do "
 "that we call <code>darktable.register_event</code> which is a generic "
@@ -27578,7 +27583,7 @@ msgstr ""
 "finalmente, damos a string que deve ser usada para o atalho na janela de "
 "preferências."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24463(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24462(para)
 msgid ""
 "Let's try a shortcut that is a little more interactive. This one will look "
 "at the images the user is currently interested in (selected or moused-over) "
@@ -27588,7 +27593,7 @@ msgstr ""
 "em que o usuário está atualmente interessado (selecionadas ou sob o mouse) e "
 "aumentará sua classificação."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24470(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24469(programlisting)
 msgid ""
 "darktable = require \"darktable\" darktable.register_event(\"shortcut\","
 "function(event,shortcut) local images = darktable.gui.action_images for _,v "
@@ -27600,7 +27605,7 @@ msgstr ""
 "in pairs(images) do v.rating = v.rating + 1 end end,\"aumenta classificação "
 "da imagem\")"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24486(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24485(para)
 msgid ""
 "Instead of declaring a function and referencing it, we declare it directly "
 "in the call to <code>darktable.register_event</code> this is strictly "
@@ -27610,7 +27615,7 @@ msgstr ""
 "diretamente na chamada a <code>darktable.register_event</code> que é "
 "estritamente equivalente, mas mais compacto."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24493(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24492(para)
 msgid ""
 "<code>image.rating</code> is a field of any image that gives its rating "
 "(between 0 and 5 stars, -1 means rejected)."
@@ -27618,7 +27623,7 @@ msgstr ""
 "<code>image.rating</code> é o campo das imagens que contém sua classificação "
 "(entre 0 e 5 estrelas, ou -1 para rejeitada)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24499(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24498(para)
 msgid ""
 "<code>darktable.gui.action_images</code> is a table containing all the "
 "images of interest. darktable will act on selected images if any image is "
@@ -27631,7 +27636,7 @@ msgstr ""
 "Esta função permite facilmente seguir a lógida da interface do darktable em "
 "Lua."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24482(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24481(para)
 msgid ""
 "At this point, most of this code should be self explanatory. Just a couple "
 "of notes: <placeholder-1/>"
@@ -27639,7 +27644,7 @@ msgstr ""
 "Neste ponto, a maioria deste código deveria ser auto-evidente. Só algumas "
 "notas:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24509(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24508(para)
 msgid ""
 "If you select an image and press your shortcut a couple of time, it will "
 "work correctly at first but when you have reached five stars, darktable will "
@@ -27649,7 +27654,7 @@ msgstr ""
 "funcionará corretamente na primeira vez, mas quando chegar a cinco estrelas, "
 "o darktable começará a mostrar o seguinte erro no console:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24518(code)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24517(code)
 msgid ""
 "LUA ERROR : rating too high : 6 stack traceback: [C]: in ? [C]: in function "
 "'__newindex' ./configdir/luarc:10: in function &lt;./configdir/luarc:7&gt; "
@@ -27659,7 +27664,7 @@ msgstr ""
 "'__newindex' ./configdir/luarc:10: in function &lt;./configdir/luarc:7&gt; "
 "LUA ERROR : rating too high : 6"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24534(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24533(para)
 msgid ""
 "This is lua's way of reporting errors. We have attempted to set a rating of "
 "6 to an image, but a rating can only go as high as 5. It would be trivial to "
@@ -27670,7 +27675,7 @@ msgstr ""
 "trivial adicionar uma verificação, mas vamos seguir o caminho mais "
 "complicado e, ao invés disso, capturar o erro."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24541(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24540(programlisting)
 msgid ""
 "darktable.register_event(\"shortcut\",function(event,shortcut) local images "
 "= darktable.gui.action_images for _,v in pairs(images) do result,message = "
@@ -27684,7 +27689,7 @@ msgstr ""
 "print_error(\"não pude aumentar a classificação da imagem \".. tostring(v).."
 "\" : \"..message) end end end,\"Aumentar a classificação da imagem\")"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24556(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24555(para)
 msgid ""
 "<code>pcall</code> will run its first argument and catch any exception "
 "thrown by it. If there is no exception it will return <code>true</code> plus "
@@ -27698,11 +27703,11 @@ msgstr ""
 "retornará <code>false</code> e a mensagem de erro da exceção. Simplesmente "
 "testamos os resultados e os mostramos no console..."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24571(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24570(title)
 msgid "Exporting images with Lua"
 msgstr "Exportando imagens com Lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24573(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24572(para)
 msgid ""
 "We have learned to use lua to adapt darktable to our particular workflow, "
 "now let's look at how to use lua to easily export images. darktable can "
@@ -27717,7 +27722,7 @@ msgstr ""
 "linha de comando, pode usar Lua para integrá-lo à interface de usuário do "
 "darktable."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24581(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24580(para)
 msgid ""
 "In this next example we will use lua to export via <command moreinfo=\"none"
 "\">scp</command>. A new storage will appear in darktable's UI which will "
@@ -27728,7 +27733,7 @@ msgstr ""
 "do darktable que exportará imagens a uma máquina remota usando o mecanismo "
 "ssh."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24588(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24587(programlisting)
 msgid ""
 "darktable = require \"darktable\" darktable.preferences.register(\"scp_export"
 "\",\"export_path\", \"string\",\"target SCP path\", \"Complete path to copy "
@@ -27748,7 +27753,7 @@ msgstr ""
 "preferences.read(\"scp_export\", \"export_path\",\"string\")) then darktable."
 "print_error(\"scp failed for \"..tostring(image)) end end)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24606(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24605(para)
 msgid ""
 "<code>darktable.preferences.register</code> will add a new preference to "
 "darktable's preference menu. <code>scp_export</code> and <code>export_path</"
@@ -27770,7 +27775,7 @@ msgstr ""
 "etiqueta para preferência no menu de preferências, as janelas de dica quando "
 "o mouse passar pelo valor, e um valor default."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24622(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24621(para)
 msgid ""
 "<code>darktable.register_storage</code> is the call that actually registers "
 "a new storage. The first argument is a name for the storage, the second is "
@@ -27786,7 +27791,7 @@ msgstr ""
 "<code>filename</code> é o único que usamos neste exemplo. Ele contém o nome "
 "de um arquivo temporário onde a imagem é exportada pelo darktable."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24637(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24636(para)
 msgid ""
 "We use preferences to configure the target path. It would be nicer to add an "
 "element to the export UI in darktable. We will detail how to do that in the "
@@ -27796,7 +27801,7 @@ msgstr ""
 "adicionar um elemento para a interface de exportação do darktable. Vamos "
 "detalhar como fazer isso na próxima seção."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24642(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24641(para)
 msgid ""
 "We do not check the returned value of scp. That command might fail, in "
 "particular if the user has not correctly set the preference."
@@ -27804,7 +27809,7 @@ msgstr ""
 "Não verificamos o valor de retorno do scp. Este comando pode falhar, em "
 "particular se o usuário não tiver configurado corretamente a preferência."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24647(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24646(para)
 msgid ""
 "This script can't read input from the user. The remote scp must use password-"
 "less copy. Scp can't be provided a password easily, so we will leave it that "
@@ -27814,7 +27819,7 @@ msgstr ""
 "fazer cópia sem usar senha. O scp não pode receber uma senha facilmente, "
 "então deixamos da maneira como está."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24652(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24651(para)
 msgid ""
 "There is no message displayed once the example is done, only the progressbar "
 "on the lower left side tells the user that the job is done."
@@ -27822,7 +27827,7 @@ msgstr ""
 "Nenhuma mensagem é mostrada depois que o exemplo termina, somente a barra de "
 "progresso no canto inferior esquerdo diz ao usuário que o trabalho terminou."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24657(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24656(para)
 msgid ""
 "We use <code>darktable.control.execute</code> to call an external program. "
 "The normal <code>os.execute</code> would block other lua codes from "
@@ -27831,7 +27836,7 @@ msgstr ""
 "Usamos <code>corouteine.yield</code> para chamar um programa externo. O "
 "usual <code>os.execute</code> bloquearia outros códigos Lua."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24632(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24631(para)
 msgid ""
 "This code will work but it has a couple of limitations. This is just a "
 "simple example after all: <placeholder-1/>"
@@ -27839,11 +27844,11 @@ msgstr ""
 "Este código funciona, mas tem algumas limitações. Este é só um exemplo "
 "simples, afinal de contas: <placeholder-1/>"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24672(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24671(title)
 msgid "Building User Interface elements"
 msgstr "Construindo elementos de interface com o usuário"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24674(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24673(para)
 msgid ""
 "Our previous example was a bit limited. In particular the use of a "
 "preference for the export path wasn't very nice. We can do better than that "
@@ -27853,7 +27858,7 @@ msgstr ""
 "preferência para o caminho de exportação não é bom. Podemos fazer melhor "
 "adicionando elementos à interface de usuário no diálogo de exportação."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24680(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24679(para)
 msgid ""
 "UI elements are created via the <code>darktable_new_widget</code> function. "
 "This function takes a type of widget as a parameter and returns a new object "
@@ -27869,7 +27874,7 @@ msgstr ""
 "várias funções que o adicionarão à interface do darktable. O exemplo simples "
 "a seguir adiciona uma lib na vista da mesa de luz com um rótulo simples."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24690(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24689(programlisting)
 msgid ""
 "local my_label = darktable.new_widget(\"label\") my_label.label = \"Hello, "
 "world !\" dt.register_lib(\"test\",\"test\",false,{ [dt.gui.views."
@@ -27879,7 +27884,7 @@ msgstr ""
 "world !\" dt.register_lib(\"test\",\"test\",false,{ [dt.gui.views."
 "lighttable] = {\"DT_UI_CONTAINER_PANEL_LEFT_CENTER\",20}, },my_label)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24700(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24699(para)
 msgid ""
 "There is a nice syntactic trick to make UI element code easier to read and "
 "write. You can call these objects as functions with a table of key values as "
@@ -27892,7 +27897,7 @@ msgstr ""
 "a seguir funcione. Ele cria um widget container com dois subwidgets. Um "
 "rótulo e uma entrada de texto."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24707(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24706(programlisting)
 msgid ""
 "local my_widget = darktable.new_widget(\"box\"){ orientation = \"horizontal"
 "\", darktable.new_widget(\"label\"){ label = \"here =&gt; \" }, darktable."
@@ -27902,11 +27907,11 @@ msgstr ""
 "\", darktable.new_widget(\"label\"){ label = \"here =&gt; \" }, darktable."
 "new_widget(\"entry\"){ tooltip = \"please enter text here\" } }"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24715(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24714(para)
 msgid "Now that we know that, let's improve our script a bit."
 msgstr "Agora que sabemos isso, vamos melhorar um pouco nosso script."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24719(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24718(programlisting)
 msgid ""
 "darktable = require \"darktable\" local scp_path = darktable."
 "new_widget(\"entry\"){ tooltip =\"Complete path to copy to. Can include user "
@@ -27930,11 +27935,11 @@ msgstr ""
 "darktable.new_widget(\"box\") { orientation =\"horizontal\", darktable."
 "new_widget(\"label\"){label = \"target SCP PATH \"}, scp_path, })"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24752(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24751(title)
 msgid "Sharing scripts"
 msgstr "Compartilhando scripts"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24754(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24753(para)
 msgid ""
 "So far, our lua code was in <emphasis>luarc</emphasis>. That's a good way to "
 "develop your script but not very practical for distribution. We need to make "
@@ -27947,7 +27952,7 @@ msgstr ""
 "gravamos o código em um arquivo separado (<command moreinfo=\"none\">scp-"
 "storage.lua</command> no nosso caso):"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24762(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24761(programlisting)
 msgid ""
 "--[[ SCP STORAGE a simple storage to export images via scp AUTHOR Jérémy "
 "Rosen (jeremy.rosen@enst-bretagne.fr) INSTALLATION * copy this file in "
@@ -27984,7 +27989,7 @@ msgstr ""
 "\", darktable.new_widget(\"label\"){label = \"target SCP PATH \"}, "
 "scp_path, })"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24824(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24823(para)
 msgid ""
 "The function <code>darktable.configuration.check_version</code> will check "
 "compatibility for you. The <code>...</code> will turn into your script's "
@@ -27998,7 +28003,7 @@ msgstr ""
 "seu script. Você pode adicionar múltiplas versões de API se quiser atualizar "
 "seu script para múltiplas versões do darktable."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24835(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24834(para)
 msgid ""
 "Make sure to declare all your functions as <code>local</code> to not pollute "
 "the general namespace."
@@ -28006,7 +28011,7 @@ msgstr ""
 "Certifique-se de declarar todas as suas funções como <code>local</code> para "
 "não poluir o espaço de nomes geral."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24841(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24840(para)
 msgid ""
 "Make sure you do not leave debug prints in your code. <code>darktable."
 "print_log</code> in particular allows you to leave debug prints in your "
@@ -28016,7 +28021,7 @@ msgstr ""
 "<code>darktable.print_error</code>, em particular, permite que você deixe "
 "prints de depuração no seu código final sem atrapalhar o console."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24848(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24847(para)
 msgid ""
 "You are free to choose any license for your script but scripts that are "
 "uploaded on darktable's website need to be GPLv2."
@@ -28024,7 +28029,7 @@ msgstr ""
 "Você é livre para escolher qualquer licença para seu script, mas os scripts "
 "que são enviados ao website do darktable devem ser GPLv2."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24815(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24814(para)
 msgid ""
 "darktable will look for scripts (following the normal lua rules) in the "
 "standard directories plus <code>$CONFIGDIR/lua/?.lua</code> . So our script "
@@ -28042,11 +28047,11 @@ msgstr ""
 "pode enviá-lo para nossa página de scripts <ulink url=\"https://darktable."
 "org/redmine/projects/darktable/wiki/LuaScripts\">here</ulink>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24863(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24862(title)
 msgid "Calling Lua from DBus"
 msgstr "Chamando Lua através do DBus"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24865(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24864(para)
 msgid ""
 "It is possible to send a lua command to darktable via its DBus interface. "
 "The method <emphasis>org.darktable.service.Remote.Lua</emphasis> takes a "
@@ -28062,7 +28067,7 @@ msgstr ""
 "<emphasis>nil</emphasis> ou uma string. O resultado será passado de volta "
 "como resultado do método DBus."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24873(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24872(para)
 msgid ""
 "If the Lua call results in an error, the DBus method call will return an "
 "error <emphasis>org.darktable.Error.LuaError</emphasis> with the lua error "
@@ -28072,11 +28077,11 @@ msgstr ""
 "erro <emphasis>org.darktable.Error.LuaError</emphasis> com a mensagem de "
 "erro de Lua como mensagem anexada no erro DBus."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24883(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24882(title)
 msgid "Using darktable from a lua script"
 msgstr "Usando o darktable a partir de um script Lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24886(emphasis)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24885(emphasis)
 msgid ""
 "Warning: This feature is very experimental. It is known that several "
 "elements don't work in library mode yet. Careful testing is highly "
@@ -28086,7 +28091,7 @@ msgstr ""
 "elementos não funcionam no modo biblioteca ainda. Teste cuidadoso é "
 "altamente recomendado."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24890(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24889(para)
 msgid ""
 "The lua interface allows you to use darktable from any lua script. This will "
 "load darktable as a library and provide you with most of the lua API "
@@ -28098,7 +28103,7 @@ msgstr ""
 "de Lua (o darktable é configurado no modo headless, então as funções "
 "relacionadas a interface gráfica não estarão disponíveis)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24896(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24895(para)
 msgid ""
 "As an example, the following program will print the list of all images in "
 "your library:"
@@ -28106,7 +28111,7 @@ msgstr ""
 "Como um exemplo, o programa a seguir mostra a lista de todas as imagens em "
 "sua biblioteca:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24901(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24900(programlisting)
 msgid ""
 "#!/usr/bin/env lua package = require \"package\" package.cpath=package."
 "cpath..\";./lib/darktable/lib?.so\" dt = require(\"darktable\")( \"--library"
@@ -28122,7 +28127,7 @@ msgstr ""
 "\"cachedir\", \"--g-fatal-warnings\") require(\"darktable.debug\") for k,v "
 "in ipairs(dt.database) do print(tostring(v)) end"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24921(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24920(para)
 msgid ""
 "Note the third line that points to the location of the <filename moreinfo="
 "\"none\">libdarktable.so</filename> file."
@@ -28130,7 +28135,7 @@ msgstr ""
 "Note que a terceira linha aponta para a localização do arquivo <filename "
 "moreinfo=\"none\">libdarktable.so</filename>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24926(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24925(para)
 msgid ""
 "Also note that the call to <function moreinfo=\"none\">require</function> "
 "returns a function that can be called only once and allows you to set "
@@ -28145,12 +28150,12 @@ msgstr ""
 "library</function> é útil aqui se você não quiser trabalhar em sua "
 "biblioteca pessoal."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24943(title)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24946(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24942(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24945(primary)
 msgid "Lua API"
 msgstr "API Lua"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24949(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24948(para)
 msgid ""
 "darktable's Lua API is documented in its own manual with a detailed "
 "description of all data structures and functions. You can download the API "
@@ -28162,19 +28167,19 @@ msgstr ""
 "manual da API da <ulink url=\"https://www.darktable.org/resources/\">página "
 "web do darktable</ulink>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24965(keyword)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24964(keyword)
 msgid "topics"
 msgstr "tópicos"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24966(keyword)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24965(keyword)
 msgid "special"
 msgstr "especial"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24970(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24969(title)
 msgid "Special topics"
 msgstr "Tópicos especiais"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24972(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24971(para)
 msgid ""
 "This chapter touches several technical topics which might help you to get "
 "darktable running on specific hardware or optimize its performance. A lot of "
@@ -28188,21 +28193,21 @@ msgstr ""
 "também são cobertos por um extensivo blog que você pode encontrar na "
 "nossa<ulink url=\"https://www.darktable.org\">página</ulink>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24982(screeninfo)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24981(screeninfo)
 msgid "The darktable blog"
 msgstr "O blog darktable"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24993(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24992(title)
 msgid "darktable and memory"
 msgstr "darktable e memória"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24996(primary)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25100(primary)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25201(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24995(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25099(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25200(primary)
 msgid "memory setup"
 msgstr "configuração de memória"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24999(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24998(para)
 msgid ""
 "darktable's memory requirements are high. A simple calculation makes this "
 "clear. If you have a 20MPix image, darktable for precision reasons will "
@@ -28234,11 +28239,11 @@ msgstr ""
 "maneira geral, o darktable precisa de um mínimo de 4Gb para funcionar de "
 "maneira feliz."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25015(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25014(title)
 msgid "Total system memory"
 msgstr "Memória total do sistema"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25017(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25016(para)
 msgid ""
 "From what I said before, it is evident that your computer needs a sane "
 "memory setup to properly run darktable. We suggest that you have a least 4GB "
@@ -28253,7 +28258,7 @@ msgstr ""
 "para o swap dados temporariamente desnecessários para poder liberar memória "
 "RAM física."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25024(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25023(para)
 msgid ""
 "Theoretically, you could also run darktable with lower amounts of physical "
 "RAM and balance this with enough swap space. However, you should be prepared "
@@ -28269,11 +28274,11 @@ msgstr ""
 "de e para o disco. Temos relatos positivos de que isto funciona para vários "
 "usuários, mas ainda pode ser extremamente lento para outros."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25036(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25035(title)
 msgid "Available address space"
 msgstr "Espaço de endereçamento disponível"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25038(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25037(para)
 msgid ""
 "Besides the total amount of system memory there is another limiting factor: "
 "the available address space of your hardware architecture. How much memory "
@@ -28291,7 +28296,7 @@ msgstr ""
 "absoluto de memória que pode ser usado por um processo e constitui uma "
 "situação bem justa para o darktable como vimos acima."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25047(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25046(para)
 msgid ""
 "darktable's escape route is called tiling. Instead of processing an image in "
 "one big chunk, we split the image into smaller parts for every processing "
@@ -28305,11 +28310,11 @@ msgstr ""
 "buffer completo de entrada e um de saída, mas os buffers intermediários "
 "podem ser pequenos o suficiente para que tudo caiba nos limites do hardware."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25058(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25057(title)
 msgid "Memory fragmentation"
 msgstr "Fragmentação de memória"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25060(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25059(para)
 msgid ""
 "Unfortunately this is not the full story yet. There is an effect called "
 "memory fragmentation, which can and will hit software that needs to do "
@@ -28338,11 +28343,11 @@ msgstr ""
 "problema é ainda maior. Por este motivo, começando com o darktable 2.0, "
 "suporte a 32 bits está em processo de obsolescência."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25077(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25076(title)
 msgid "Further limitations"
 msgstr "Outras limitações"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25079(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25078(para)
 msgid ""
 "As if this were not challenging enough, there are further things that might "
 "limit your access to memory. On some older boards you need to activate BIOS "
@@ -28373,19 +28378,19 @@ msgstr ""
 "3Gb ou menos. Você precisa consultar o manual da sua BIOS e a informação da "
 "sua variante de linux para obter mais ajuda."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25097(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25096(title)
 msgid "Setting up darktable on 32-bit systems"
 msgstr "Configurando o darktable em sistemas de 32-bits"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25101(secondary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25100(secondary)
 msgid "32-bit systems"
 msgstr "sistemas de 32-bits"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25105(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25104(primary)
 msgid "tiling"
 msgstr "ladrilhamento"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25108(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25107(para)
 msgid ""
 "As we've seen 32-bit systems are difficult environments for darktable. Still "
 "some users are running darktable on them, if the basic requirements in terms "
@@ -28397,7 +28402,7 @@ msgstr ""
 "requerimentos básicos em termos de memória total do sistema e tratando "
 "apropriadamente dos tópicos mencionados nos parágrafos acima."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25114(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25113(para)
 msgid ""
 "There are several adjustment parameters to get it running. If you install "
 "fresh, darktable will detect your system and set conservative values by "
@@ -28417,7 +28422,7 @@ msgstr ""
 "conseguindo importar um rolo de filme. Como um sintoma frequente, você terá "
 "caveiras mostradas ao invés de miniaturas para muitas de suas imagens."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25124(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25123(para)
 msgid ""
 "If this is the case, take a minute to optimize the preference settings in "
 "this case. You will find them under <quote>cpu / gpu / memory</quote> (<xref "
@@ -28431,7 +28436,7 @@ msgstr ""
 "pode encontrar estas preferências como variáveis de configuração em $HOME/."
 "config/darktable/darktablerc e editá-las ali."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25139(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25138(para)
 msgid ""
 "This parameter defines the maximum number of threads that are allowed in "
 "parallel when importing film rolls or doing other background stuff. For "
@@ -28445,7 +28450,7 @@ msgstr ""
 "Assim, você precisa definir este parâmetro em 1; qualquer coisa acima disso "
 "o matará."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25152(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25151(para)
 msgid ""
 "This parameter tells darktable how much memory (in MB) it should assume is "
 "available to store image buffers during module operations. If an image can "
@@ -28462,7 +28467,7 @@ msgstr ""
 "partida. Você pode experimentar depois, para verificar se consegue aumentar "
 "um pouco o valor para reduzir a sobrecarga do ladrilhamento."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25167(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25166(para)
 msgid ""
 "This is a second parameter that controls tiling. It sets a lower limit for "
 "the size of intermediate image buffers in megabytes. The parameter is needed "
@@ -28475,7 +28480,7 @@ msgstr ""
 "alguns casos (para alguns módulos). Defina em um valor baixo perto de 8. "
 "Você pode, tentativamente, aumentar para 16 depois."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25180(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25179(para)
 msgid ""
 "This controls how many thumbnails (or mip maps) can be stored in memory at a "
 "time. As a starting point set this to something like 256MB. Since darktable "
@@ -28491,7 +28496,7 @@ msgstr ""
 "sistemas de 32 bits. Por esse motivo, desde o darktable 2.0 suporte a "
 "sistemas de 32 bits está em obsolescência."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25131(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25130(para)
 msgid ""
 "Here is a short explanation of the relevant parameters and their proposed "
 "settings: <placeholder-1/>"
@@ -28499,15 +28504,15 @@ msgstr ""
 "Aqui está uma explicação dos parâmetros relevantes e suas definições "
 "propostas: <placeholder-1/>"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25198(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25197(title)
 msgid "darktable on 64-bit systems"
 msgstr "darktable em sistemas de 64-bits"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25202(secondary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25201(secondary)
 msgid "64-bit systems"
 msgstr "sistemas de 64-bits"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25205(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25204(para)
 msgid ""
 "There's not much to be said here. Of course also 64-bit systems require a "
 "sufficient amount of main memory, so the 4GB plus swap recommendation holds "
@@ -28521,7 +28526,7 @@ msgstr ""
 "limitações específicas de 32 bits, como espaço de endereçamento pequeno e a "
 "insanidade da fragmentação."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25212(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25211(para)
 msgid ""
 "Most modern Intel or AMD 64-bit CPUs will have available address space in "
 "the range of several Terabytes. The word <quote>modern</quote> is relative "
@@ -28535,7 +28540,7 @@ msgstr ""
 "e 2004, respectivamente, oferecem modo de 64 bits. Linux para 64 bits tem "
 "estado disponível por muitos anos."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25219(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25218(para)
 msgid ""
 "All relevant Linux distributions give you the choice to install a 32-bit or "
 "a 64-bit version with no added costs. You can even run old 32-bit binaries "
@@ -28550,7 +28555,7 @@ msgstr ""
 "fortemente mudar para uma versão 64 bits de Linux. Realmente não há motivo "
 "para não mudar para 64 bits."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25227(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25226(para)
 msgid ""
 "On a 64-bit system you can safely leave the tiling related configuration "
 "parameters at their defaults: <quote>host memory limit (in MB) for tiling</"
@@ -28567,7 +28572,7 @@ msgstr ""
 "64 bits, você precisa verificar estas configurações e mudá-las manualmente "
 "se necessário no diálogo de preferências do darktable."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25236(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25235(para)
 msgid ""
 "Typically there is no need to restrict oneself in the number of background "
 "threads on a 64-bit system. On a multi-processor system a number of two to "
@@ -28583,15 +28588,15 @@ msgstr ""
 "todos os núcleos da CPU - a pixelpipe do darktable de qualquer maneira já "
 "usa todos eles em paralelo - mas esconder latência de entrada e saída."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25245(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25244(primary)
 msgid "panoramas"
 msgstr "imagens panorâmicas"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25249(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25248(primary)
 msgid "stitched panoramas"
 msgstr "imagens panorâmicas"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25252(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25251(para)
 msgid ""
 "One exception is worth to be mentioned. If you use darktable to process "
 "stitched panoramas, e.g. TIFFs as generated by Hugin, these images can reach "
@@ -28608,29 +28613,29 @@ msgstr ""
 "rapidamente levar mesmo um sistema bem equipado de 64 bits à exaustão de "
 "memória. Neste caso, diminua o número de threads para somente uma."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25268(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25267(title)
 msgid "darktable and OpenCL"
 msgstr "darktable e OpenCL"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25271(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25270(primary)
 msgid "OpenCL"
 msgstr "OpenCL"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25275(primary)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25274(primary)
 msgid "GPU computing"
 msgstr "Computação com GPU"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25278(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25277(para)
 msgid "darktable can use GPU acceleration via OpenCL to improve performance."
 msgstr ""
 "O darktable pode usar aceleração de GPU via OpenCL para melhorar o "
 "desempenho."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25284(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25283(title)
 msgid "The background"
 msgstr "O background"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25286(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25285(para)
 msgid ""
 "Processing high resolution images is a demanding task needing a modern "
 "computer. Both in terms of memory requirements and in terms of CPU power, "
@@ -28642,7 +28647,7 @@ msgstr ""
 "em termos de poder de CPU, conseguir o máximo de uma imagem de 15, 20 ou 25 "
 "Megapixels pode rapidamente levar seu computador ao seu limite."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25292(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25291(para)
 msgid ""
 "darktable's requirements are no exception. Our decision to not compromise "
 "processing quality, has led to all calculations being done on 4 x 32bit "
@@ -28656,7 +28661,7 @@ msgstr ""
 "<quote>ordinária</quote> de inteiros com 8 ou 16 bits, mas elimina os "
 "problemas de quebra tonal ou perda de informação."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25299(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25298(para)
 msgid ""
 "A lot of hand optimization has been invested to make darktable as fast as "
 "possible. If you run a current version of darktable on a modern computer, "
@@ -28671,7 +28676,7 @@ msgstr ""
 "ventoinha da sua CPU) quanto seu pobre processador de múltiplos cores tem "
 "que se esforçar."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25307(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25306(para)
 msgid ""
 "That's where OpenCL comes in. OpenCL allows us to take advantage of the "
 "enormous power of modern graphics cards. Gamer's demand for high detailed 3D "
@@ -28688,7 +28693,7 @@ msgstr ""
 "GPUS altamente paralelizadas, para calcular rapidamente superfícies e "
 "texturas em altas frame rates."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25315(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25314(para)
 msgid ""
 "You are not a gamer and you don't take advantage of that power? Well, then "
 "you should at least use it in darktable! For the task of highly parallel "
@@ -28703,11 +28708,11 @@ msgstr ""
 "passos de processamento em alguns milhões de itens. Típico caso de uso: "
 "processar imagens de muitos megapixels."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25327(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25326(title)
 msgid "How OpenCL works"
 msgstr "Como o OpenCL funciona"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25329(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25328(para)
 msgid ""
 "As you can imagine, hardware architectures of GPUs can vary significantly. "
 "There are different manufacturers, and even different generations of GPUs "
@@ -28724,7 +28729,7 @@ msgstr ""
 "de drivers proprietários em Linux, se você quiser tomar vantagem completa de "
 "sua placa gráfica."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25337(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25336(para)
 msgid ""
 "Fortunately an industry consortium lead by The Khronos Group has developed "
 "an open, standardized interface called OpenCL. It allows the use of your GPU "
@@ -28750,11 +28755,11 @@ msgstr ""
 "O código OpenCL compilado é carregado na sua GPU e - com certas chamadas a "
 "uma API - fica pronto para fazer cálculos para você."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25354(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25353(title)
 msgid "How to activate OpenCL in darktable"
 msgstr "Como configurar o OpenCL no darktable"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25356(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25355(para)
 msgid ""
 "Using OpenCL in darktable requires that your PC is equipped with a suitable "
 "graphics card and that it has the required libraries in place. Namely modern "
@@ -28772,7 +28777,7 @@ msgstr ""
 "deve estar em uma pasta em que possa ser encontrada pelo linker dinâmico do "
 "sistema."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25365(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25364(para)
 msgid ""
 "When darktable starts, it will first try to find and load libOpenCL.so and – "
 "on success – check if the available graphics card comes with OpenCL support. "
@@ -28794,7 +28799,7 @@ msgstr ""
 "incluídas (chamadas kernels OpenCL) precisam estar preparadas para os "
 "módulos do darktable. Se tudo isso for feito, a preparação está terminada."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25376(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25375(para)
 msgid ""
 "Per default OpenCL support is activated in darktable if all the above steps "
 "were successful. If you want to de-activate it you can do so in <quote>core "
@@ -28809,7 +28814,7 @@ msgstr ""
 "de configuração também informa se a inicialização do OpenCL falhou: neste "
 "caso a opção estará inabilitada, em cinza."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25384(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25383(para)
 msgid ""
 "You can at any time switch OpenCL support off and on; this will happen "
 "immediately. Depending on the type of modules you are using, you will notice "
@@ -28838,7 +28843,7 @@ msgstr ""
 "e <link linkend=\"denoise_profiled\"><emphasis>remoção de ruído (perfilado)</"
 "emphasis></link>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25398(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25397(para)
 msgid ""
 "If you are interested in profiling figures, you can start darktable with "
 "command line parameters <quote>-d opencl -d perf</quote>. After each run of "
@@ -28851,7 +28856,7 @@ msgstr ""
 "do tempo de processamento de cada módulo mas um profiling muito detalhado de "
 "cada kernel OpenCL."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25405(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25404(para)
 msgid ""
 "Besides the speed-up you should not see any difference in the results "
 "between CPU and GPU processing. Except of rounding errors, the results are "
@@ -28866,11 +28871,11 @@ msgstr ""
 "em GPU, ele normalmente perceberá e automaticamente (transparentemente, "
 "também) reverterá para processamento em CPU."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25416(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25415(title)
 msgid "Setting up OpenCL on your system"
 msgstr "Configurando OpenCL no seu sistema"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25418(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25417(para)
 msgid ""
 "The huge diversity of systems and the marked differences between OpenCL "
 "vendors and driver versions makes it impossible to give an comprehensive "
@@ -28885,11 +28890,11 @@ msgstr ""
 "um sistema Ubuntu 14.04. Esperamos que isto seja útil como primeira "
 "impressão e que o ajude a resolver possíveis problemas de seu sistema."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25426(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25425(para)
 msgid "The principle OpenCL function flow is like this:"
 msgstr "O fluxo de funções do OpenCL é assim:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25430(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25429(para)
 msgid ""
 "darktable -&gt; libOpenCL.so -&gt; libnvidia-opencl.so.1 -&gt; kernel driver "
 "module(s) -&gt; GPU"
@@ -28897,7 +28902,7 @@ msgstr ""
 "darktable -&gt; libOpenCL.so -&gt; libnvidia-opencl.so.1 -&gt;módulo driver "
 "do kernel-&gt; GPU"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25437(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25436(para)
 msgid ""
 "darktable dynamically loads <filename moreinfo=\"none\">libOpenCL.so</"
 "filename>, a system library which must be accessible to the system's dynamic "
@@ -28907,7 +28912,7 @@ msgstr ""
 "filename>, uma biblioteca de sistema que deve ser acessível pelo loader "
 "dinâmico do sistema (<filename moreinfo=\"none\">ld.so</filename>)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25442(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25441(para)
 msgid ""
 "<filename moreinfo=\"none\">libOpenCL.so</filename> will read the vendor "
 "specific information file (<filename moreinfo=\"none\">/etc/OpenCL/vendors/"
@@ -28919,7 +28924,7 @@ msgstr ""
 "OpenCL/vendors/nvidia.icd</filename>) para encontrar a biblioteca que contém "
 "a implementação específica de openCL."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25448(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25447(para)
 msgid ""
 "The vendor specific OpenCL implementation comes as a library <filename "
 "moreinfo=\"none\">libnvidia-opencl.so.1</filename> (which in our case is a "
@@ -28931,7 +28936,7 @@ msgstr ""
 "caso é um link simbólico para <filename moreinfo=\"none\">libnvidia-opencl."
 "so.331.89</filename>)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25454(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25453(para)
 msgid ""
 "<filename moreinfo=\"none\">libnvidia-opencl.so.1</filename> needs to talk "
 "to the vendor specific kernel modules <filename moreinfo=\"none\">nvidia</"
@@ -28947,7 +28952,7 @@ msgstr ""
 "filename>, <filename moreinfo=\"none\">/dev/nvidiactl</filename>, e "
 "<filename moreinfo=\"none\">/dev/nvidia-uvm</filename>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25464(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25463(para)
 msgid ""
 "At system startup the required device special files (/dev/nvidia*) need to "
 "be created. If this does not happen on your system by default, the easiest "
@@ -28967,7 +28972,7 @@ msgstr ""
 "quote>). Você pode obtê-lo <ulink url=\"http://packages.ubuntu.com/utopic/"
 "nvidia-modprobe\">neste site</ulink>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25473(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25472(para)
 msgid ""
 "A user account which wants to make use of OpenCL from within darktable needs "
 "to have read-write access to NVIDIA's device special files. On some systems "
@@ -28984,50 +28989,50 @@ msgstr ""
 "a um grupo de usuários, por exemplo <quote>video</quote>. Neste caso, a "
 "conta do usuário deve ser membro daquele grupo."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25485(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25484(para)
 msgid "nvidia-331 (331.89-0ubuntu1~xedgers14.04.2)"
 msgstr "nvidia-331 (331.89-0ubuntu1~xedgers14.04.2)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25489(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25488(para)
 msgid "nvidia-331-dev (331.89-0ubuntu1~xedgers14.04.2)"
 msgstr "nvidia-331-dev (331.89-0ubuntu1~xedgers14.04.2)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25493(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25492(para)
 msgid "nvidia-331-uvm (331.89-0ubuntu1~xedgers14.04.2)"
 msgstr "nvidia-331-uvm (331.89-0ubuntu1~xedgers14.04.2)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25497(para)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25521(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25496(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25520(para)
 msgid "nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)"
 msgstr "nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25501(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25500(para)
 msgid "nvidia-modprobe (340.24-1)"
 msgstr "nvidia-modprobe (340.24-1)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25505(para)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25525(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25504(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25524(para)
 msgid "nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)"
 msgstr "nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25509(para)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25529(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25508(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25528(para)
 msgid "nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)"
 msgstr "nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25513(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25512(para)
 msgid "nvidia-settings (340.24-0ubuntu1~xedgers14.04.1)"
 msgstr "nvidia-settings (340.24-0ubuntu1~xedgers14.04.1)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25517(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25516(para)
 msgid "nvidia-settings-304 (340.24-0ubuntu1~xedgers14.04.1)"
 msgstr "nvidia-settings-304 (340.24-0ubuntu1~xedgers14.04.1)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25533(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25532(para)
 msgid "opencl-headers (1.2-2013.10.23-1)"
 msgstr "opencl-headers (1.2-2013.10.23-1)"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25481(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25480(para)
 msgid ""
 "To summarise, the packages which needed to be installed in this specific "
 "case were: <placeholder-1/>"
@@ -29035,7 +29040,7 @@ msgstr ""
 "Resumindo, os pacotes que precisam estar instalados neste caso específico "
 "são: <placeholder-1/>"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25540(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25539(para)
 msgid ""
 "The list of NVIDIA related kernel modules as reported by <filename moreinfo="
 "\"none\">lsmod</filename> is:"
@@ -29043,11 +29048,11 @@ msgstr ""
 "A lista de módulos de kernel relacionados a NVIDIA reportada por <filename "
 "moreinfo=\"none\">lsmod</filename> é:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25545(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25544(programlisting)
 msgid "nvidia nvidia_uvm"
 msgstr "nvidia nvidia_uvm"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25550(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25549(para)
 msgid ""
 "The list of NVIDIA related device special files (<filename moreinfo=\"none"
 "\">ls -l /dev/nvidia*</filename>) should read like:"
@@ -29055,7 +29060,7 @@ msgstr ""
 "A lista de arquivos de dispositivos especiais NVIDIA (<filename moreinfo="
 "\"none\">ls -l /dev/nvidia*</filename>) deveria se parecer com:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25556(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25555(programlisting)
 msgid ""
 "crw-rw-rw- 1 root root 195, 0 Jul 28 21:13 /dev/nvidia0 crw-rw-rw- 1 root "
 "root 195, 255 Jul 28 21:13 /dev/nvidiactl crw-rw-rw- 1 root root 250, 0 Jul "
@@ -29065,7 +29070,7 @@ msgstr ""
 "root 195, 255 Jul 28 21:13 /dev/nvidiactl crw-rw-rw- 1 root root 250, 0 Jul "
 "28 21:13 /dev/nvidia-uvm"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25562(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25561(para)
 msgid ""
 "Beware that the major/minor numbers (e.g. 250/0 for <filename moreinfo=\"none"
 "\">/dev/nvidia-uvm</filename> in this example) may vary depending on your "
@@ -29075,11 +29080,11 @@ msgstr ""
 "\"none\">/dev/nvidia-uvm</filename> neste exemplo) podem variar dependendo "
 "do seu sistema."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25571(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25570(title)
 msgid "Possible problems and solutions"
 msgstr "Possíveis problemas e soluções"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25573(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25572(para)
 msgid ""
 "darktable will detect OpenCL run-time problems automatically. It will then "
 "reprocess everything on CPU; only speed is affected, the final result should "
@@ -29089,7 +29094,7 @@ msgstr ""
 "irá então reprocessar tudo na CPU; somente a velocidade é afetada, o "
 "resultado final não deverá ser comprometido."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25578(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25577(para)
 msgid ""
 "There can be various reasons why OpenCL could fail during initialization "
 "phase. We depend on hardware requirements and on the presence of certain "
@@ -29106,16 +29111,16 @@ msgstr ""
 "combina com a versão da sua libOpenCL.so -- o suporte a OpenCL provavelmente "
 "não estará disponível."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25586(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25585(para)
 msgid ""
 "In that case, the best thing to do is start darktable from a console with"
 msgstr "Neste caso, o melhor é iniciar o darktable no console com"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25591(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25590(programlisting)
 msgid "darktable -d opencl"
 msgstr "darktable -d opencl"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25595(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25594(para)
 msgid ""
 "This will give additional debugging output about the initialization and use "
 "of OpenCL. First see if you find a line that starts with "
@@ -29136,11 +29141,11 @@ msgstr ""
 "<quote>could not be created</quote>. Cerifique se há alguma dica sobre onde "
 "foi a falha."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25604(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25603(para)
 msgid "Here are a few cases observed in the past:"
 msgstr "Aqui estão alguns casos observados no passado:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25610(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25609(para)
 msgid ""
 "darktable might tell you that no OpenCL aware graphics card is detected or "
 "that the available memory on your GPU is too low and the device is "
@@ -29152,7 +29157,7 @@ msgstr ""
 "dispositivo foi descartado. Neste caso, você pode ter que comprar uma placa "
 "nova, se realmente quiser suporte a OpenCL."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25616(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25615(para)
 msgid ""
 "darktable might find your libOpenCL.so but then tell you that it couldn't "
 "get a platform. NVIDIA drivers will often give error code -1001 in that "
@@ -29175,7 +29180,7 @@ msgstr ""
 "Frequentemente as bibliotecas não são achadas pelo dynamic loader do seu "
 "sistema. Dar caminhos completos pode ajudar."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25627(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25626(para)
 msgid ""
 "darktable might also tell you that a context could not be created. This "
 "often indicates a version mismatch between (loaded) graphics driver and "
@@ -29194,7 +29199,7 @@ msgstr ""
 "combinar com a biblioteca recentemente instalada: nesta caso reinicie o "
 "sistema."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25636(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25635(para)
 msgid ""
 "darktable might crash in very rare cases directly during startup. This can "
 "happen if your OpenCL setup is completely broken or if driver/library "
@@ -29208,7 +29213,7 @@ msgstr ""
 "problema, pode ainda pode iniciar o darktable com a opção <quote>--disable-"
 "opencl</quote>, que pulará totalmente a inicialização do OpenCL."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25643(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25642(para)
 msgid ""
 "darktable might fail to compile its OpenCL source files at run-time. In that "
 "case you will get a number of error messages looking like typical compiler "
@@ -29229,7 +29234,7 @@ msgstr ""
 "perceber diferenças significativas entre o processamento de uma imagem pela "
 "CPU e pela GPU!"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25655(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25654(para)
 msgid ""
 "There also exists a few on-CPU implementations of OpenCL. These come as "
 "drivers provided by INTEL or AMD. We observed that they do not give us any "
@@ -29244,11 +29249,11 @@ msgstr ""
 "pode ser mudado definindo a variável de configuração opencl_use_cpu_devices "
 "como TRUE."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25667(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25666(title)
 msgid "Setting up OpenCL for AMD/ATI devices"
 msgstr "Configurando OpenCL para dispositivos AMD/ATI"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25669(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25668(para)
 msgid ""
 "While NVIDIA devices and most modern AMD/ATI devices will most often run out "
 "of the box, there is more to do for older AMD/ATI graphics cards, namely "
@@ -29266,7 +29271,7 @@ msgstr ""
 "darktable, em sua configuração padrão, recusa como não sendo suficiente para "
 "suas tarefas. Consequência: o dispositivo não será usado."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25678(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25677(para)
 msgid ""
 "On the web you might find as a tip to set environment variable "
 "GPU_MAX_HEAP_SIZE to a value of 100 in this case. Indeed this will cause the "
@@ -29286,7 +29291,7 @@ msgstr ""
 "da ordem de 10x ou mais em desempenho e tornará o OpenCL inútil a você, "
 "especialmente quando estiver exportando arquivos."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25688(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25687(para)
 msgid ""
 "Another environment variable which changes driver behavior is "
 "GPU_MAX_ALLOC_PERCENT. You could set this to 100 in order to allow memory "
@@ -29298,11 +29303,11 @@ msgstr ""
 "alocações de memória grandes como 1Gb em sua placa AMI/ATI. O problema é que "
 "isto tende a fazer o darktable travar, cedo ou tarde."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25705(computeroutput)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25704(computeroutput)
 msgid "opencl_memory_requirement"
 msgstr "opencl_memory_requirement"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25709(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25708(para)
 msgid ""
 "Set this parameter to 500 so that darktable will accept your 512MB graphics "
 "memory as being sufficient in memory."
@@ -29310,11 +29315,11 @@ msgstr ""
 "Defina este parâmetro para 500 para que o darktable aceite sua placa gráfica "
 "com 512Mb de memória como sendo suficiente."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25720(computeroutput)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25719(computeroutput)
 msgid "opencl_memory_headroom"
 msgstr "opencl_memory_headroom"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25724(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25723(para)
 msgid ""
 "This parameter controls how much graphics memory (out of the reported one) "
 "darktable should leave untouched for driver and display use. As for AMD/ATI "
@@ -29327,11 +29332,11 @@ msgstr ""
 "seguro deixar este parâmetro definido em zero. Assim, todos os 512Mg podem "
 "ser usados pelo darktable."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25737(computeroutput)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25736(computeroutput)
 msgid "opencl_avoid_atomics"
 msgstr "opencl_avoid_atomics"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25741(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25740(para)
 msgid ""
 "Atomic operations in OpenCL are a special way of data synchronization. They "
 "are only used in a few kernels. Unfortunately, some (most?) AMD/ATI devices "
@@ -29356,7 +29361,7 @@ msgstr ""
 "\"global_tonemap\"><emphasis>mapa de tons global</emphasis></link> ou se "
 "percebe congelamentos intermitentes."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25694(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25693(para)
 msgid ""
 "Our recommendation is to leave these settings untouched. Often your card "
 "will be recognized with 512MB memory and a maximum allocation size of 128MB. "
@@ -29369,7 +29374,7 @@ msgstr ""
 "configuração que você pode definir em $HOME/.config/darktable/darktablerc "
 "para conseguir que tudo funcione. Aqui estão os detalhes: <placeholder-1/>"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25760(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25759(para)
 msgid ""
 "These recommendations do not apply to the more recent Radeon HD7xxx series "
 "with GCN architecture. Besides being very fast in terms of GPU computing "
@@ -29382,11 +29387,11 @@ msgstr ""
 "elas normalmente funcionam sem necessidade de ajustes. Você pode talvez "
 "considerar algumas de optimizações de desempenho descritas na próxima seção."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25771(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25770(title)
 msgid "OpenCL performance optimization"
 msgstr "Otimização de desempenho do OpenCL"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25773(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25772(para)
 msgid ""
 "There are some configuration parameters in $HOME/.config/darktable/"
 "darktablerc that help to finetune your system's OpenCL performance. "
@@ -29401,16 +29406,16 @@ msgstr ""
 "reprocessar a pixelpipe. Para um fluxo de trabalho confortável é essencial "
 "manter a latência baixa."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25780(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25779(para)
 msgid "In order to get profiling info you start darktable from a terminal with"
 msgstr ""
 "Para obter informação de profiling você inicia o darktable em um terminal com"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25785(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25784(programlisting)
 msgid "darktable -d opencl -d perf"
 msgstr "darktable -d opencl -d perf"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25789(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25788(para)
 msgid ""
 "After each reprocessing of pixelpipe – caused by module parameter change, "
 "zooming, panning, etc. – you will get the total time and the time spent in "
@@ -29426,7 +29431,7 @@ msgstr ""
 "individual não são confiáveis quando usando a pixelpipe OpenCL de maneira "
 "assíncrona (veja opencl_async_pixelpipe abaixo)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25797(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25796(para)
 msgid ""
 "To allow for a fast pixelpipe processing with OpenCL it is essential that we "
 "keep the GPU busy. Any interrupts or a stalled data flow will add to the "
@@ -29443,7 +29448,7 @@ msgstr ""
 "entanto, mesmo paradas pequenas da pixelpipe podem facilmente se tornar um "
 "gargalo."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25805(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25804(para)
 msgid ""
 "On the other hand darktable's performance during file exports is more or "
 "less only governed by the speed of our algorithms and the horse-power of "
@@ -29455,11 +29460,11 @@ msgstr ""
 "potência de sua GPU. Paradas de curto prazo não terão efeito perceptível no "
 "tempo total de exportação."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25821(computeroutput)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25820(computeroutput)
 msgid "opencl_async_pixelpipe"
 msgstr "opencl_async_pixelpipe"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25825(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25824(para)
 msgid ""
 "This boolean flag controls how often we block the OpenCL pixelpipe and get a "
 "status on success/failure of all the kernels that have been run. For optimum "
@@ -29482,11 +29487,11 @@ msgstr ""
 "produzir saída embaralhada quando este parâmetro é TRUE. Em dúvida, deixe no "
 "default, FALSE."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25842(computeroutput)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25841(computeroutput)
 msgid "opencl_number_event_handles"
 msgstr "opencl_number_event_handles"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25846(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25845(para)
 msgid ""
 "Event handles are used so we can monitor success/failure of kernels and "
 "profiling info even if the pixelpipe is run asynchronously. The number of "
@@ -29525,11 +29530,11 @@ msgstr ""
 "-1, que significa que o darktable presumirá que não há restrições ao número "
 "de manipuladores de eventos; isto não é recomendado."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25871(computeroutput)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25870(computeroutput)
 msgid "opencl_synch_cache"
 msgstr "opencl_synch_cache"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25875(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25874(para)
 msgid ""
 "This parameter, if set to \"true\", will force darktable to fetch image "
 "buffers from your GPU after each module and store them in its pixelpipe "
@@ -29551,11 +29556,11 @@ msgstr ""
 "definido em \"active module\" (default), o que somente guardará em cache a "
 "entrada do módulo em foco."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25892(computeroutput)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25891(computeroutput)
 msgid "opencl_micro_nap"
 msgstr "opencl_micro_nap"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25896(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25895(para)
 msgid ""
 "In an ideal case you keep your GPU busy at 100% when reprocessing the "
 "pixelpipe. That's good. On the other hand your GPU is also needed to do "
@@ -29580,11 +29585,11 @@ msgstr ""
 "encontrar o valor ótimo para seu sistema. Valores de 0, 100, 500 e 1000 são "
 "bons pontos de partida. O default é 1000."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25914(computeroutput)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25913(computeroutput)
 msgid "opencl_use_pinned_memory"
 msgstr "opencl_use_pinned_memory"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25918(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25917(para)
 msgid ""
 "During tiling huge amounts of memory need to be transferred between host and "
 "device. On some devices (namely AMD) direct memory transfers to and from an "
@@ -29612,7 +29617,7 @@ msgstr ""
 "saída errada, opencl_use_pinned_memory deveria ser deixado em seu estado "
 "default FALSE para estes dispositivos."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25811(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25810(para)
 msgid ""
 "darktable comes with default settings that should deliver a decent GPU "
 "performance on most systems. However, if you want to fiddle around a bit by "
@@ -29624,7 +29629,7 @@ msgstr ""
 "pouco e tentar otimizar mais, aqui está uma descrição dos parâmetros "
 "relevantes de configuração. <placeholder-1/>"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25942(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25941(para)
 msgid ""
 "darktable can use the CPU and one or several OpenCL capable GPUs. Depending "
 "on the relative performance users can choose among certain scheduling "
@@ -29640,12 +29645,12 @@ msgstr ""
 "<quote>opções do core</quote>  (<xref linkend=\"cpugpumemory\"/>), que "
 "oferece as seguintes opções:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25966(quote)
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25989(quote)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25965(quote)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25988(quote)
 msgid "opencl_device_priority"
 msgstr "opencl_device_priority"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25960(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25959(entry)
 msgid ""
 "If an OpenCL capable GPU is found darktable uses it for processing the "
 "center image view while the preview window (see <xref linkend=\"navigation\"/"
@@ -29662,11 +29667,11 @@ msgstr ""
 "pode ser ajustada de maneira mais fina com o parâmetro de configuração "
 "<placeholder-1/> (veja abaixo)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25970(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25969(entry)
 msgid "very fast GPU"
 msgstr "GPU muito rápida"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25973(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25972(entry)
 msgid ""
 "With this scheduling profile darktable processes the center image view and "
 "the preview window on the GPU sequentially. This is the preferred setting "
@@ -29677,11 +29682,11 @@ msgstr ""
 "configuração preferida para sistemas com uma GPU que é muito mais rápida que "
 "a CPU."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25980(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25979(entry)
 msgid "multiple GPUs"
 msgstr "múltiplas GPUs"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25983(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25982(entry)
 msgid ""
 "This setting addresses systems with multiple GPUs whose relative performance "
 "does not differ significantly. Whenever a processing job is started "
@@ -29698,7 +29703,7 @@ msgstr ""
 "selecionar o perfil <placeholder-1/> e fazer o ajuste fino do sistema com o "
 "parâmetro de configuração <placeholder-2/> (veja abaixo)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25997(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25996(para)
 msgid ""
 "On first start-up or after any detected change in the GPU configuration of "
 "your system darktable tries to identify the best suited profile for you. You "
@@ -29710,11 +29715,11 @@ msgstr ""
 "para você. É possível mudá-lo a qualquer tempo no diálogo de <quote>cpu / "
 "gpu / memory</quote> (<xref linkend=\"cpugpumemory\"/>), com efeito imediato."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26008(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26007(title)
 msgid "Multiple OpenCL devices – manual settings"
 msgstr "Múltiplos dispositivos OpenCL - configurações manuais"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26010(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26009(para)
 msgid ""
 "The scheduling of OpenCL devices on most typical systems can be optimized "
 "using the <quote>OpenCL scheduling profile</quote> settings. However, if "
@@ -29731,7 +29736,7 @@ msgstr ""
 "de escalonamento <quote>default</quote> e fazer as configurações no "
 "parâmetro <quote>opencl_device_priority</quote>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26018(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26017(para)
 msgid ""
 "It is important to understand how darktable uses OpenCL devices. Each "
 "processing sequence of an image – to convert an input to the final output "
@@ -29759,7 +29764,7 @@ msgstr ""
 "disponível, o darktable o aloca dinamicamente para uma das pixelpipes "
 "específicas para uma execução e o libera logo após ele terminar."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26031(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26030(para)
 msgid ""
 "The computational demand depends a lot on the pixelpipe type. Preview image "
 "and thumbnails have a low resolution and can be processed quickly; center "
@@ -29770,7 +29775,7 @@ msgstr ""
 "rapidamente; a imagem na visão central é mais demandante, e mais ainda uma "
 "pixelpipe trabalhando na exportação para arquivo."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26037(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26036(para)
 msgid ""
 "Configuration parameter <quote>opencl_device_priority</quote> holds a string "
 "with the following structure:"
@@ -29778,11 +29783,11 @@ msgstr ""
 "O parâmetro de configuração <quote>opencl_device_priority</quote> contém uma "
 "string com a estrutura a seguir:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26043(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26042(programlisting)
 msgid "a,b,c.../k,l,m.../o,p,q.../x,y,z..."
 msgstr "a,b,c.../k,l,m.../o,p,q.../x,y,z..."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26047(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26046(para)
 msgid ""
 "Each letter represents one specific OpenCL device. There are four fields in "
 "the parameter string separated by a slash, each representing one type of "
@@ -29803,7 +29808,7 @@ msgstr ""
 "pixelpipes de miniaturas. Um campo vazio significa que nenhum dispositivo "
 "OpenCL pode servir aquele tipo de pixelpipe."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26057(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26056(para)
 msgid ""
 "darktable has an internal numbering system, where the first available OpenCL "
 "device will receive number <quote>0</quote>. All further devices are "
@@ -29822,7 +29827,7 @@ msgstr ""
 "espaços não importam). Se tiver mais de um dispositivo - todos com o mesmo "
 "nome - você precisa usar os números de dispositivos para diferenciá-los."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26067(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26066(para)
 msgid ""
 "A device specifier can be prefixed with an exclamation mark <quote>!</"
 "quote>, in which case the device is excluded from processing this pixelpipe. "
@@ -29835,7 +29840,7 @@ msgstr ""
 "<quote>*</quote>, como curinga, representando todos os dispositivos não "
 "mencionados explicitamente naquele grupo."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26074(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26073(para)
 msgid ""
 "Sequence order within a group matters. darktable will read the list from "
 "left to right and whenever it tries to allocate an OpenCL device to a "
@@ -29846,7 +29851,7 @@ msgstr ""
 "esquerda para a direita sempre que tentar alocar um dispositivo OpenCL para "
 "a pixelpipe, e escolherá o primeiro que encontrar."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26080(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26079(para)
 msgid ""
 "If a pixelpipe process is about to be started and if all GPUs in the "
 "corresponding group are busy, darktable automatically processes the image on "
@@ -29862,16 +29867,16 @@ msgstr ""
 "usará a CPU, e ao invés disso suspenderá o processamento até que o próximo "
 "dispositivo OpenCL esteja disponível."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26088(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26087(para)
 msgid ""
 "darktable's default setting for <quote>opencl_device_priority</quote> is:"
 msgstr "A configuração default de <quote>opencl_device_priority</quote> é:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26093(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26092(programlisting)
 msgid "*/!0,*/*/*"
 msgstr "*/!0,*/*/*"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26097(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26096(para)
 msgid ""
 "Any detected OpenCL device is allowed to process our center view image. The "
 "first OpenCL device (0) is not allowed to process the preview pixelpipe. As "
@@ -29889,7 +29894,7 @@ msgstr ""
 "imagem central. Esta é uma configuração razoável para a maioria dos "
 "sistemas. Não há restrições para as pixelpipes de exportação e miniaturas."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26106(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26105(para)
 msgid ""
 "The default is a good choice if you have only one device. If you have "
 "several devices it forms a reasonable starting point. However, as your "
@@ -29901,7 +29906,7 @@ msgstr ""
 "podem ter níveis diferentes de poder de processamento, faz sentido investir "
 "um pouco de tempo e otimizar sua lista de prioridades."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26113(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26112(para)
 msgid ""
 "Here is an example. Let's assume we have a system with two devices, a fast "
 "Radeon HD7950 and an older and slower GeForce GTS450. darktable (started "
@@ -29912,7 +29917,7 @@ msgstr ""
 "lenta. O darktable (iniciado com <quote>darktable -d opencl</quote> "
 "reportará os dispositivos:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26120(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26119(programlisting)
 msgid ""
 "[opencl_init] successfully initialized. [opencl_init] here are the internal "
 "numbers and names of OpenCL devices available to darktable: [opencl_init] 0 "
@@ -29924,7 +29929,7 @@ msgstr ""
 "'GeForce GTS 450' [opencl_init] 1 'Tahiti' [opencl_init] FINALLY: opencl is "
 "AVAILABLE on this system."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26129(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26128(para)
 msgid ""
 "So the GeForce GTS 450 is detected as the first device; the Radeon HD7950 "
 "('Tahiti') as the second one. This order will normally not change unless the "
@@ -29936,7 +29941,7 @@ msgstr ""
 "que a configuração do driver ou do hardware seja modificada. Mas é melhor "
 "usar nomes de dispositivos ao invés de números por segurança."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26136(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26135(para)
 msgid ""
 "As the GTS450 is slower than the HD7950, an optimized opencl_device_priority "
 "could look like:"
@@ -29944,11 +29949,11 @@ msgstr ""
 "Como a GTS450 é mais lenta que a HD7950, um opencl_device_priority otimizado "
 "poderia se parecer com:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26142(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26141(programlisting)
 msgid "!GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*"
 msgstr "!GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26146(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26145(para)
 msgid ""
 "The GTS450 is explicitly excluded from doing the center image pixelpipe; "
 "this is reserved to <quote>all</quote> other devices (i.e. the HD7950/"
@@ -29961,7 +29966,7 @@ msgstr ""
 "visualização. Ali, a Tahiti é excluída, já que somente permitimos que a "
 "GTS450 faça o trabalho."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26153(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26152(para)
 msgid ""
 "For file export and thumbnail generation we want all hands on deck. However, "
 "darktable should first look if device Tahiti is free, because it's faster. "
@@ -29973,11 +29978,11 @@ msgstr ""
 "Tahiti está livre, porque é o mais rápido. Se não for o caso, outros "
 "dispositivos - de gato somente a GTS450 - são verificados."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26163(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26162(title)
 msgid "OpenCL still does not run for me!"
 msgstr "O OpenCL ainda não funciona para mim!"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26165(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26164(para)
 msgid ""
 "As has been said before OpenCL systems come with a huge variety of setups: "
 "different GPU manufacturers, different GPU models, varying amounts of GPU "
@@ -29991,7 +29996,7 @@ msgstr ""
 "diferentes, distribuições diferentes etc. Muitos dos problemas só aparecerão "
 "com uma combinação específica desses fatores."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26172(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26171(para)
 msgid ""
 "As we developers of darktable on our computers only have access to a small "
 "fraction of those variations, please understand that we might not be able to "
@@ -30003,15 +30008,15 @@ msgstr ""
 "ser que não consigamos resolver seu problema específico. Não há muito o que "
 "possamos fazer, se não há como possamos reproduzir sua configuração."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26178(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26177(para)
 msgid "If nothing else helps, the best option might be to start darktable with"
 msgstr "Se nada mais ajudar, a melhor opção é iniciar o darktable com"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26183(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26182(programlisting)
 msgid "darktable --disable-opencl"
 msgstr "darktable --disable-opencl"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26187(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26186(para)
 msgid ""
 "In the end there is nothing in darktable which only runs on GPU. Don't let "
 "OpenCL discourage you; also darktable's CPU code is highly optimized for "
@@ -30021,11 +30026,11 @@ msgstr ""
 "desencorajar; além disso, o código do darktable para CPU é altamente "
 "otimizado para desempenho!"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26200(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26199(title)
 msgid "Using <filename moreinfo=\"none\">darktable-chart</filename>"
 msgstr "Usando o <filename moreinfo=\"none\">darktable-chart</filename>"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26212(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26211(para)
 msgid ""
 "With <filename moreinfo=\"none\">darktable-chart</filename> we provide a "
 "tool for extracting luminance and color values out of images taken from "
@@ -30051,7 +30056,7 @@ msgstr ""
 "emphasis> para isso (veja <xref linkend=\"tone_curve\"/>, <xref linkend="
 "\"input_color_profile\"/>, and <xref linkend=\"color_look_up_table\"/>)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26224(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26223(para)
 msgid ""
 "Some cameras are particularly advanced in offering various film simulation "
 "modes of your choice. With the help of <filename moreinfo=\"none\">darktable-"
@@ -30063,7 +30068,7 @@ msgstr ""
 "\">darktable-chart</filename> e os módulos que ele usa, você agora pode "
 "criar estilos que replicam essas simulações de filme no darktable."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26243(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26242(entry)
 msgid ""
 "The tool is organized into three tabs in the upper part and a text output "
 "frame in the lower part."
@@ -30071,7 +30076,7 @@ msgstr ""
 "Esta ferramenta está organizada em três abas na parte superior e um quadro "
 "de saída de texto na parte inferior."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26256(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26255(para)
 msgid ""
 "The first tab is used to define the source image, the second tab defines the "
 "reference (target) and the third tab contains the controls to generate the "
@@ -30081,11 +30086,11 @@ msgstr ""
 "(alvo), e a terceira contém os controles para gerar o estilo darktable "
 "resultante."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26266(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26265(title)
 msgid "Source image"
 msgstr "Imagem fonte"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26268(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26267(para)
 msgid ""
 "In the <quote>source image</quote> tab you set your source image which "
 "requires two elements. The first element is an input file in Lab Portable "
@@ -30108,7 +30113,7 @@ msgstr ""
 "normalmente incluídos com seu cartão de referência de cores, ou podem ser "
 "baixados da Internet."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26279(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26278(para)
 msgid ""
 "In real life the photo taken from the color reference card will show some "
 "perspective distortions relative to the layout defined in the chart file. "
@@ -30119,7 +30124,7 @@ msgstr ""
 "de perspectiva relativas ao layout definido no cartão. Por isso, o layout é "
 "mostrado como grade sobre uma imagem, e pode ser modificado."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26292(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26291(entry)
 msgid ""
 "You can move the corners of the grid using the mouse to reach best alignment "
 "of grid and image."
@@ -30127,7 +30132,7 @@ msgstr ""
 "Você pode mover os cantos da grade usando o mouse para chegar ao melhor "
 "alinhamento possível entre imagem e grade."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26305(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26304(para)
 msgid ""
 "A rectangular frame is displayed for each patch and defines the area from "
 "which <filename moreinfo=\"none\">darktable-chart</filename> will actually "
@@ -30144,11 +30149,11 @@ msgstr ""
 "quote> na parte superior da interface. Valores maiores resultam em tamanhos "
 "menores."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26317(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26316(title)
 msgid "Reference values"
 msgstr "Valores de referência"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26319(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26318(para)
 msgid ""
 "The <quote>reference values</quote> tab determines the target values to "
 "which the source image is to be modified by the resulting style. You can "
@@ -30173,7 +30178,7 @@ msgstr ""
 "definido em <quote>imagem fonte</quote>. Você só precisa alinhar o layout da "
 "grade e o da imagem e talvez ajustar o deslizador de <quote>tamanho</quote>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26331(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26330(para)
 msgid ""
 "In a typical use case the second image will be based on a JPEG file produced "
 "in-camera. This way you can create a style to simulate the in-camera "
@@ -30183,7 +30188,7 @@ msgstr ""
 "produzido pela própria câmera. desta forma você pode criar um estilo que "
 "simula o processamento da câmera no darktable."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26336(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26335(para)
 msgid ""
 "In the lower text output frame you see the color values extracted from the "
 "available data for each individual color patch. The first column gives the "
@@ -30203,23 +30208,23 @@ msgstr ""
 "fortemente os valores de fonte e referência desviam, em termos de valores "
 "delta E."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26350(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26349(title)
 msgid "Process"
 msgstr "Processar"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26360(quote)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26359(quote)
 msgid "source image"
 msgstr "imagem fonte"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26360(quote)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26359(quote)
 msgid "reference values"
 msgstr "valores de referência"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26361(quote)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26360(quote)
 msgid "process"
 msgstr "processar"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26359(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26358(entry)
 msgid ""
 "If all required settings in <placeholder-1/> and <placeholder-2/> are ready "
 "you can move to the <placeholder-3/> tab."
@@ -30227,7 +30232,7 @@ msgstr ""
 "Se todas as definições necessárias em <placeholder-1/> e <placeholder-2/> "
 "estão prontas, você pode ir para a aba <placeholder-3/>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26372(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26371(para)
 msgid ""
 "You first need to tell <filename moreinfo=\"none\">darktable-chart</"
 "filename> which of the patches represent the gray ramp. In the screenshot "
@@ -30239,7 +30244,7 @@ msgstr ""
 "mostrada acima a escala de cinzas está posicionada na parte inferior do "
 "cartão de referência de cores, denotada <quote>GS00...GS23</quote>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26378(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26377(para)
 msgid ""
 "The input <quote>number of final patches</quote> defines how many editable "
 "color patches the resulting style will use within the <emphasis>color look "
@@ -30251,12 +30256,12 @@ msgstr ""
 "cores<emphasis> (para mais detalhes veja <xref linkend=\"color_look_up_table"
 "\"/>)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26384(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26383(para)
 msgid ""
 "By clicking the <quote>process</quote> button you start the calculation."
 msgstr "Ao clicar no botão <quote>processar</quote> você inicia o cálculo."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26388(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26387(para)
 msgid ""
 "The quality of the result in terms of average delta E and maximum delta E "
 "are displayed below the button. These data show how close the resulting "
@@ -30268,7 +30273,7 @@ msgstr ""
 "fonte conseguirá combinar com os valores de referência - quanto menor, "
 "melhor."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26401(entry)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26400(entry)
 msgid ""
 "Once you are happy with the result you can click on <placeholder-1/> and "
 "save the generated style."
@@ -30276,7 +30281,7 @@ msgstr ""
 "Uma vez que esteja satisfeito com o resultado você pode clicar em "
 "<placeholder-1/> e gravar o estilo gerado."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26414(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26413(para)
 msgid ""
 "You supply a style name and a style description under which the style will "
 "later appear in darktable. <filename moreinfo=\"none\">darktable-chart</"
@@ -30290,7 +30295,7 @@ msgstr ""
 "pode ser importado no darktable (veja <xref linkend=\"styles\"/>) e "
 "compartilhado com outras pessoas."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26421(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26420(para)
 msgid ""
 "The <quote>export raw data as csv</quote> button allows you to save the "
 "extracted raw data as a CSV file for debugging purposes or later usage. "
@@ -30305,7 +30310,7 @@ msgstr ""
 "produzir um estilo com o número desejado de patches finais a partir de um "
 "arquivo SV (veja <xref linkend=\"darktable_chart_commandline_parameters\"/>)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26432(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26431(title)
 msgid ""
 "Making input images for <filename moreinfo=\"none\">darktable-chart</"
 "filename>"
@@ -30313,7 +30318,7 @@ msgstr ""
 "Fazendo imagens de entrada para  <filename moreinfo=\"none\">darktable-"
 "chart</filename>"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26436(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26435(para)
 msgid ""
 "To start with, you need a suitable photo of your color reference card in RAW"
 "+JPEG format. It goes beyond the scope of this manual to explain the details "
@@ -30340,7 +30345,7 @@ msgstr ""
 "parte da área da foto. Use uma lente com distância focal <quote>normal</"
 "quote> (50mm), e com abertura da lente um pouco fechada para evitar vinheta."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26449(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26448(para)
 msgid ""
 "You then open the raw file in darktable and disable most modules, especially "
 "<emphasis>base curve</emphasis>. Select the standard input matrix in the "
@@ -30357,7 +30362,7 @@ msgstr ""
 "\"base_curve\"/>, <xref linkend=\"input_color_profile\"/>, e <xref linkend="
 "\"whitebalance\"/>)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26458(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26457(para)
 msgid ""
 "There is a special situation if your camera automatically applies some lens "
 "corrections, namely vignetting correction, to the resulting JPEG file. In "
@@ -30375,7 +30380,7 @@ msgstr ""
 "da realizada pela câmera, é melhor desabilitar esta correção na câmera se "
 "possível."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26467(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26466(para)
 msgid ""
 "To output your image you go to the <quote>export</quote> module in darktable "
 "(see <xref linkend=\"export_selected\"/>)."
@@ -30383,7 +30388,7 @@ msgstr ""
 "Para exportar sua imagem vá até o módulo <quote>exportar</quote> no "
 "darktable (veja <xref linkend=\"export_selected\"/>)."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26472(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26471(para)
 msgid ""
 "You need to select <quote>Lab</quote> as output color profile. This color "
 "space is not visible in the combobox by default. You first need to enable it "
@@ -30397,11 +30402,11 @@ msgstr ""
 "\">$HOME/.config/darktable/darktablerc</filename>. Alternativamente, você "
 "pode iniciar o darktable assim:"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26480(programlisting)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26479(programlisting)
 msgid "darktable --conf allow_lab_output=true"
 msgstr "darktable --conf allow_lab_output=true"
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26484(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26483(para)
 msgid ""
 "Then select <quote>PFM (float)</quote> as output format and press "
 "<quote>export</quote> to generate the source image file."
@@ -30409,7 +30414,7 @@ msgstr ""
 "Então selecione <quote>PFM (float)</quote> como formato de saída e pressione "
 "<quote>exportar</quote> para gerar o arquivo fonte da imagem."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26489(para)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26488(para)
 msgid ""
 "In a similar way you produce the corresponding reference (target) image from "
 "the JPEG. Also this time you need to disable all modules and export with "
@@ -30420,9 +30425,12 @@ msgstr ""
 "e exportar com perfil de cor de saída <quote>Lab</quote> em formato "
 "<quote>PFM (float)</quote>."
 
-#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26504(title)
+#: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:26503(title)
 msgid "Index"
 msgstr "Índice"
+
+#~ msgid "image operations"
+#~ msgstr "operações em imagem"
 
 #~ msgid "copy all"
 #~ msgstr "copiar tudo"
