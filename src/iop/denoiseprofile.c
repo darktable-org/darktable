@@ -206,9 +206,9 @@ typedef struct dt_iop_denoiseprofile_params_t
   float bias;       /* allows to reduce backtransform bias
                        $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "bias correction" */
   float scattering; /* spread the patch search zone without increasing number of patches
-                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering (coarse-grain noise)" */
+                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering" */
   float central_pixel_weight; /* increase central pixel's weight in patch comparison
-                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight (details)" */
+                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight" */
   float overshooting; /* adjusts the way parameters are autoset
                          $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.

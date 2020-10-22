@@ -1522,8 +1522,24 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
 static void init_key_accels(dt_iop_module_so_t *module)
 {
-  // Calling the accelerator initialization callback, if present
-  if(module->init_key_accels) (module->init_key_accels)(module);
+  // create a gui and have the widgets register their accelerators
+  if(module->gui_init)
+  {
+    dt_iop_module_t *module_instance = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+
+    if(!dt_iop_load_module_by_so(module_instance, module, NULL))
+    {
+      ++darktable.gui->reset;
+      module->gui_init(module_instance);
+      --darktable.gui->reset;
+      module->gui_cleanup(module_instance);
+
+      dt_iop_cleanup_module(module_instance);
+    }
+
+    free(module_instance);
+  }
+
   /** load shortcuts for presets **/
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1532,9 +1548,11 @@ static void init_key_accels(dt_iop_module_so_t *module)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    char *name_fixed = dt_util_str_replace((const char *)sqlite3_column_text(stmt, 0), "/", "-");
     char path[1024];
-    snprintf(path, sizeof(path), "%s/%s", _("preset"), (const char *)sqlite3_column_text(stmt, 0));
+    snprintf(path, sizeof(path), "%s/%s", _("preset"), name_fixed);
     dt_accel_register_iop(module, FALSE, NC_("accel", path), 0, 0);
+    g_free(name_fixed);
   }
   sqlite3_finalize(stmt);
 }
@@ -1570,8 +1588,12 @@ static void dt_iop_init_module_so(void *m)
 
 void dt_iop_load_modules_so(void)
 {
+  darktable.control->accel_initialising = TRUE;
+
   darktable.iop = dt_module_load_modules("/plugins", sizeof(dt_iop_module_so_t), dt_iop_load_module_so,
                                          dt_iop_init_module_so, NULL);
+
+  darktable.control->accel_initialising = FALSE;
 }
 
 int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, dt_develop_t *dev)
@@ -2834,25 +2856,6 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *op
   return mod_ret;
 }
 
-/** get the module that accelerators are attached to for the current so */
-dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module)
-{
-  GList *iop_mods = NULL;                 //All modules in iop
-  dt_iop_module_t *mod = NULL;            //Used while iterating module lists
-
-  iop_mods = g_list_last(darktable.develop->iop);
-  while(iop_mods)
-  {
-    mod = (dt_iop_module_t *)iop_mods->data;
-    if(mod->so == module && mod->accel_closures)
-    {
-      break;
-    }
-    iop_mods = g_list_previous(iop_mods);
-  }
-  return mod;
-}
-
 /** adds keyboard accels to the first module in the pipe to handle where there are multiple instances */
 void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 {
@@ -2863,7 +2866,6 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
     - prefer unmasked instances (when selected, after applying the above rules, if instances of the module are unmasked, masked instances will be ignored)
     - selection order (after applying the above rules, apply the shortcut to the first or last instance remaining)
   */
-  dt_iop_module_t *accel_mod_curr = NULL; //The module to which accelerators are currently attached
   dt_iop_module_t *accel_mod_new = NULL;  //The module to which accelerators are to be attached
   dt_iop_module_t *mod = NULL;            //Used while iterating module lists
 
@@ -2885,102 +2887,96 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 
   if(darktable.develop->gui_attached)
   {
-    if(module->state != dt_iop_state_HIDDEN)
+    //filter out only matching modules
+    //count expanded instances
+    iop_mods = g_list_last(darktable.develop->iop);
+    while(iop_mods)
     {
-      //filter out only matching modules
-      //count expanded instances
-      iop_mods = g_list_last(darktable.develop->iop);
-      while(iop_mods)
+      mod = (dt_iop_module_t *)iop_mods->data;
+      //modules with iop_order of INT_MAX are outside of the current pipe
+      //FIXME: why not enable accelerators if not in _current_ pipe?
+      if(mod->so == module && mod->iop_order != INT_MAX)
       {
-        mod = (dt_iop_module_t *)iop_mods->data;
-        //modules with iop_order of INT_MAX are outside of the current pipe
-        if(mod->so == module && mod->iop_order != INT_MAX)
+        all_instances = g_list_prepend(all_instances, mod);
+        count_all++;
+        if(prefer_expanded && mod->expanded) count_expanded++;
+      }
+      iop_mods = g_list_previous(iop_mods);
+    }
+
+    if(count_all == 1)
+      final_matches = g_list_first(all_instances);
+    else
+    {
+      //filter out expanded if necessary
+      //count enabled instances
+      all_instances = g_list_last(all_instances);
+      while(all_instances)
+      {
+        mod = (dt_iop_module_t *)all_instances->data;
+
+        if(!prefer_expanded || count_expanded == 0 ||  mod->expanded)
         {
-          all_instances = g_list_prepend(all_instances, mod);
-          count_all++;
-          if(prefer_expanded && mod->expanded) count_expanded++;
+          filtered_expanded = g_list_prepend(filtered_expanded, mod);
+          if(prefer_enabled && mod->enabled) count_enabled++;
         }
-        iop_mods = g_list_previous(iop_mods);
+        all_instances = g_list_previous(all_instances);
       }
 
-      if(count_all == 1)
-        final_matches = g_list_first(all_instances);
+//memory leak all_instances etc  ??
+
+      if(count_expanded == 1)
+        final_matches = g_list_first(filtered_expanded);
       else
       {
-        //filter out expanded if necessary
-        //count enabled instances
-        all_instances = g_list_last(all_instances);
-        while(all_instances)
+        //filter out enabled if necessary
+        //count masked instances
+        filtered_expanded = g_list_last(filtered_expanded);
+        while(filtered_expanded)
         {
-          mod = (dt_iop_module_t *)all_instances->data;
-          if(!prefer_expanded || count_expanded == 0 ||  mod->expanded)
+          mod = (dt_iop_module_t *)filtered_expanded->data;
+          if(!prefer_enabled || count_enabled == 0 ||  mod->enabled)
           {
-            filtered_expanded = g_list_prepend(filtered_expanded, mod);
-            if(prefer_enabled && mod->enabled) count_enabled++;
+            filtered_enabled = g_list_prepend(filtered_enabled, mod);
+            if(prefer_unmasked && (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
+                                    || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED)) count_unmasked++;
           }
-          all_instances = g_list_previous(all_instances);
+          filtered_expanded = g_list_previous(filtered_expanded);
         }
 
-        if(count_expanded == 1)
-          final_matches = g_list_first(filtered_expanded);
+        if(count_enabled == 1)
+          final_matches = g_list_first(filtered_enabled);
         else
         {
-          //filter out enabled if necessary
-          //count masked instances
-          filtered_expanded = g_list_last(filtered_expanded);
-          while(filtered_expanded)
+          //filter out masked if necessary
+          //to generate final matches list
+          filtered_enabled = g_list_last(filtered_enabled);
+          while(filtered_enabled)
           {
-            mod = (dt_iop_module_t *)filtered_expanded->data;
-            if(!prefer_enabled || count_enabled == 0 ||  mod->enabled)
-            {
-              filtered_enabled = g_list_prepend(filtered_enabled, mod);
-              if(prefer_unmasked && (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
-                                     || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED)) count_unmasked++;
-            }
-            filtered_expanded = g_list_previous(filtered_expanded);
-          }
-
-          if(count_enabled == 1)
-            final_matches = g_list_first(filtered_enabled);
-          else
-          {
-            //filter out masked if necessary
-            //to generate final matches list
-            filtered_enabled = g_list_last(filtered_enabled);
-            while(filtered_enabled)
-            {
-              mod = (dt_iop_module_t *)filtered_enabled->data;
-              //n.b. DISABLED and ENABLED below represent blend modes 'off' and 'uniformly'
-              if(!prefer_unmasked || count_unmasked == 0 || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED
-                                                         || mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED)
-                final_matches = g_list_prepend(final_matches, mod);
-              filtered_enabled = g_list_previous(filtered_enabled);
-            }
+            mod = (dt_iop_module_t *)filtered_enabled->data;
+            //n.b. DISABLED and ENABLED below represent blend modes 'off' and 'uniformly'
+            if(!prefer_unmasked || count_unmasked == 0 || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED
+                                                        || mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED)
+              final_matches = g_list_prepend(final_matches, mod);
+            filtered_enabled = g_list_previous(filtered_enabled);
           }
         }
       }
-
-      if(strcmp(select_order, "first instance") == 0 && final_matches)
-        accel_mod_new = (dt_iop_module_t *)(g_list_first(final_matches)->data);
-      else if(final_matches)
-        accel_mod_new = (dt_iop_module_t *)(g_list_last(final_matches)->data);
     }
 
-    accel_mod_curr = dt_iop_get_module_accel_curr(module);
+    if(strcmp(select_order, "first instance") == 0 && final_matches)
+      accel_mod_new = (dt_iop_module_t *)(g_list_first(final_matches)->data);
+    else if(final_matches)
+      accel_mod_new = (dt_iop_module_t *)(g_list_last(final_matches)->data);
+  }
 
-    //no need to change anything
-    if(accel_mod_curr == accel_mod_new) return;
-
-    //remove accelerators from current module
-    if(accel_mod_curr) dt_accel_disconnect_list(&accel_mod_curr->accel_closures);
-
-    //attach accelerators to new module
-    if(accel_mod_new)
-    {
-      //add accelerators to new module
-      if(accel_mod_new->connect_key_accels) accel_mod_new->connect_key_accels(accel_mod_new);
-      dt_iop_connect_common_accels(accel_mod_new);
-    }
+  //attach accelerators to new module
+  if(accel_mod_new)
+  {
+    //add accelerators to new module
+    dt_accel_connect_list_iop(accel_mod_new);
+    // FIXME: not special case? i.e. make sure they are in list
+    dt_iop_connect_common_accels(accel_mod_new);
   }
 }
 

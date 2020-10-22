@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -852,6 +853,29 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, co
 
   if(w->module)
   {
+    if(darktable.control->accel_initialising)
+    {
+      if(w->type == DT_BAUHAUS_SLIDER)
+      {
+        dt_accel_register_slider_iop(w->module->so, FALSE, label);
+      }
+      else if(w->type == DT_BAUHAUS_COMBOBOX)
+      {
+        dt_accel_register_combobox_iop(w->module->so, FALSE, label);
+      }
+    }
+    else
+    {
+      if(w->type == DT_BAUHAUS_SLIDER)
+      {
+        dt_accel_connect_slider_iop(w->module, label, widget);
+      }
+      else if(w->type == DT_BAUHAUS_COMBOBOX)
+      {
+        dt_accel_connect_combobox_iop(w->module, label, widget);
+      }
+    }
+
     // construct control path name and insert into keymap:
     gchar *path;
     if(section && section[0] != '\0')

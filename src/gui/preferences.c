@@ -1527,10 +1527,7 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
           dt_loc_get_user_config_dir(datadir, sizeof(datadir));
           snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
 
-          gchar* tmp_path = g_strdup_printf("%s/%s", _("preset"), name);
-          g_strlcpy(accel, "<Darktable>", sizeof(accel));
-          dt_accel_path_iop(accel, sizeof(accel), operation, tmp_path);
-          g_free(tmp_path);
+          dt_accel_path_sub_iop(accel, sizeof(accel), operation, "preset", name);
           gtk_accel_map_change_entry(accel, 0, 0, TRUE);
 
           // Saving the changed bindings
@@ -2075,10 +2072,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
           dt_loc_get_user_config_dir(datadir, sizeof(datadir));
           snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
 
-          gchar* tmp_path = g_strdup_printf("%s/%s", _("preset"), name);
-          g_strlcpy(accel, "<Darktable>", sizeof(accel));
-          dt_accel_path_iop(accel, sizeof(accel), operation, tmp_path);
-          g_free(tmp_path);
+          dt_accel_path_sub_iop(accel, sizeof(accel), operation, "preset", name);
           gtk_accel_map_change_entry(accel, 0, 0, TRUE);
 
           // Saving the changed bindings
