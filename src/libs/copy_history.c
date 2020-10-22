@@ -322,23 +322,23 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 
-  d->copy_parts_button = dt_ui_button_new(_("copy..."),
+  d->copy_parts_button = dt_ui_button_new(_("copy parts..."),
                                           _("copy part history stack of\nfirst selected image"),
                                           "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, d->copy_parts_button, 0, line, 3, 1);
 
-  d->copy_button = dt_ui_button_new(_("copy all"),
+  d->copy_button = dt_ui_button_new(_("copy"),
                                     _("copy history stack of\nfirst selected image"),
                                     "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, d->copy_button, 3, line++, 3, 1);
 
-  d->paste_parts = dt_ui_button_new(_("paste..."),
+  d->paste_parts = dt_ui_button_new(_("paste parts..."),
                                     _("paste part history stack to\nall selected images"),
                                     "history_stack.html#history_stack_usage");
   gtk_widget_set_sensitive(d->paste_parts, FALSE);
   gtk_grid_attach(grid, d->paste_parts, 0, line, 3, 1);
 
-  d->paste = dt_ui_button_new(_("paste all"),
+  d->paste = dt_ui_button_new(_("paste"),
                               _("paste history stack to\nall selected images"),
                               "history_stack.html#history_stack_usage");
   gtk_widget_set_sensitive(d->paste, FALSE);
@@ -405,12 +405,12 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "copy all"), GDK_KEY_c, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy parts"), GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "compress"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "paste all"), GDK_KEY_v, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "paste"), GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste"), GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste parts"), GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "load sidecar files"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "write sidecar files"), 0, 0);
 }
@@ -419,12 +419,12 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "copy all", GTK_WIDGET(d->copy_button));
-  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_parts_button));
+  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_button));
+  dt_accel_connect_button_lib(self, "copy parts", GTK_WIDGET(d->copy_parts_button));
   dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->discard_button));
   dt_accel_connect_button_lib(self, "compress", GTK_WIDGET(d->compress_button));
-  dt_accel_connect_button_lib(self, "paste all", GTK_WIDGET(d->paste));
-  dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste_parts));
+  dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste));
+  dt_accel_connect_button_lib(self, "paste parts", GTK_WIDGET(d->paste_parts));
   dt_accel_connect_button_lib(self, "load sidecar files", GTK_WIDGET(d->load_button));
   dt_accel_connect_button_lib(self, "write sidecar files", GTK_WIDGET(d->write_button));
 }

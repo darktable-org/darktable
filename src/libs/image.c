@@ -50,6 +50,7 @@ typedef struct dt_lib_image_t
   GtkWidget *rotate_cw_button, *rotate_ccw_button, *remove_button, *delete_button, *create_hdr_button,
       *duplicate_button, *reset_button, *move_button, *copy_button, *group_button, *ungroup_button,
       *cache_button, *uncache_button, *refresh_button,
+      *set_monochrome_button, *set_color_button,
       *copy_metadata_button, *paste_metadata_button, *clear_metadata_button,
       *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
   GtkWidget *page1; // saved here for lua extensions
@@ -211,6 +212,33 @@ static void _update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->clear_metadata_button), act_on_cnt > 0);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_cnt > 0);
+  if(act_on_cnt > 1)
+  {
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), TRUE);
+  }
+  else if(act_on_cnt == 0)
+  {
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), FALSE);
+  }
+  else
+  {
+    const int imgid = dt_view_get_image_to_act_on();
+    if(imgid >= 0)
+    {
+      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
+      dt_image_cache_read_release(darktable.image_cache, img);
+      gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), !is_bw);
+      gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), is_bw);
+    }
+    else
+    {
+      gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), FALSE);
+      gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), FALSE);
+    }
+  }
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -336,6 +364,17 @@ static void paste_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 static void clear_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   _execute_metadata(self, DT_MA_CLEAR);
+}
+
+static void set_monochrome_callback(GtkWidget *widget, dt_lib_module_t *self)
+{
+
+  dt_control_monochrome_images(2);
+}
+
+static void set_color_callback(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_control_monochrome_images(0);
 }
 
 static void ratings_flag_callback(GtkWidget *widget, dt_lib_module_t *self)
@@ -528,6 +567,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->refresh_button, 0, line++, 6, 1);
   g_signal_connect(G_OBJECT(d->refresh_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(14));
 
+  d->set_monochrome_button = dt_ui_button_new(_("monochrome"), _("set selection as monochrome images and activate monochrome workflow"), NULL);
+  gtk_grid_attach(grid, d->set_monochrome_button, 0, line, 3, 1);
+  g_signal_connect(G_OBJECT(d->set_monochrome_button), "clicked", G_CALLBACK(set_monochrome_callback), self);
+
+  d->set_color_button = dt_ui_button_new(_("color"), _("set selection as color images"), NULL);
+  gtk_grid_attach(grid, d->set_color_button, 3, line++, 3, 1);
+  g_signal_connect(G_OBJECT(d->set_color_button), "clicked", G_CALLBACK(set_color_callback), self);
+
   /* connect preference changed signal */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(
       darktable.signals,
@@ -579,7 +626,8 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "copy the image locally"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "resync the local copy"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "refresh exif"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "copy metadata"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "set monochrome image"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "set color image"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "replace metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "clear metadata"), 0, 0);
@@ -604,6 +652,8 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "copy the image locally", d->cache_button);
   dt_accel_connect_button_lib(self, "resync the local copy", d->uncache_button);
   dt_accel_connect_button_lib(self, "refresh exif", d->refresh_button);
+  dt_accel_connect_button_lib(self, "set monochrome image", d->set_monochrome_button);
+  dt_accel_connect_button_lib(self, "set color image", d->set_color_button);
   dt_accel_connect_button_lib(self, "copy metadata", d->copy_metadata_button);
   dt_accel_connect_button_lib(self, "paste metadata", d->paste_metadata_button);
   dt_accel_connect_button_lib(self, "clear metadata", d->clear_metadata_button);

@@ -100,7 +100,7 @@ static void _update_softproof_gamut_checking(dt_develop_t *d);
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
-static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
+static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid);
 
 static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
@@ -699,7 +699,7 @@ void reset(dt_view_t *self)
 
 int try_enter(dt_view_t *self)
 {
-  int imgid = dt_view_get_image_to_act_on();
+  int32_t imgid = dt_view_get_image_to_act_on();
 
   if(imgid < 0)
   {
@@ -733,7 +733,7 @@ static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
   dt_accel_cleanup_locals_iop(module);
 }
 
-static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
+static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
@@ -1023,7 +1023,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_iop_connect_accels_all();
 }
 
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_t imgid, gpointer user_data)
 {
   if(imgid > 0)
   {
@@ -1043,7 +1043,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 {
   if(dev->image_loading) return;
 
-  const int imgid = dev->image_storage.id;
+  const int32_t imgid = dev->image_storage.id;
   int new_offset = 1;
   int new_id = -1;
 
@@ -1917,9 +1917,6 @@ static void _preference_changed(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(display_intent, TRUE);
     gtk_widget_set_visible(display_intent, FALSE);
   }
-
-  // reconstruct dynamic accels list
-  dt_dynamic_accel_get_valid_list();
 }
 
 static void _preference_prev_downsample_change(gpointer instance, gpointer user_data)
@@ -3450,9 +3447,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
   int handled = 0;
   // dynamic accels
-  if(self->dynamic_accel_current && self->dynamic_accel_current->widget)
+  if(self->dynamic_accel_current)
   {
-    GtkWidget *widget = self->dynamic_accel_current->widget;
+    GtkWidget *widget = self->dynamic_accel_current;
     dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
 
     if(w->type == DT_BAUHAUS_SLIDER)
@@ -3466,9 +3463,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
         multiplier = min_visible / fabsf(step);
 
       if(up)
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step * multiplier);
+        dt_bauhaus_slider_set(widget, value + step * multiplier);
       else
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step * multiplier);
+        dt_bauhaus_slider_set(widget, value - step * multiplier);
     }
     else
     {
@@ -3486,8 +3483,8 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       }
 
     }
-    g_signal_emit_by_name(G_OBJECT(self->dynamic_accel_current->widget), "value-changed");
-    dt_accel_widget_toast(self->dynamic_accel_current->widget);
+    g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
+    dt_accel_widget_toast(widget);
     return;
   }
   // masks
@@ -3955,9 +3952,6 @@ void connect_key_accels(dt_view_t *self)
   // change the precision for adjusting sliders with keyboard shortcuts
   closure = g_cclosure_new(G_CALLBACK(change_slider_accel_precision), (gpointer)self, NULL);
   dt_accel_connect_view(self, "change keyboard shortcut slider precision", closure);
-
-  // dynamics accels
-  dt_dynamic_accel_get_valid_list();
 }
 
 GSList *mouse_actions(const dt_view_t *self)

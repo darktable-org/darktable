@@ -250,11 +250,11 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
     }
   }
 
-  gboolean upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale");
-  gboolean high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing");
-  gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
+  const gboolean upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale");
+  const gboolean high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing");
+  const gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
   char *tmp = dt_conf_get_string(CONFIG_PREFIX "style");
-  gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
+  const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
   if(tmp)
   {
     g_strlcpy(style, tmp, sizeof(style));
@@ -280,6 +280,9 @@ void _set_dimensions(dt_lib_export_t *d, uint32_t max_width, uint32_t max_height
   gtk_entry_set_text(GTK_ENTRY(d->width), max_width_char);
   gtk_entry_set_text(GTK_ENTRY(d->height), max_height_char);
   --darktable.gui->reset;
+
+  dt_conf_set_int(CONFIG_PREFIX "width", max_width);
+  dt_conf_set_int(CONFIG_PREFIX "height", max_height);
 
   g_free(max_width_char);
   g_free(max_height_char);
@@ -505,7 +508,9 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   int k = -1;
   GList *it = g_list_first(darktable.imageio->plugins_storage);
   dt_imageio_module_storage_t *module = NULL;
-  if(it != NULL) do
+
+  if(it != NULL)
+    do
     {
       k++;
       if(strcmp(((dt_imageio_module_storage_t *)it->data)->name(((dt_imageio_module_storage_t *)it->data)),
@@ -516,13 +521,18 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
       }
     } while((it = g_list_next(it)));
 
-  if(!module) {
+  if(!module)
+  {
     gtk_widget_hide(d->storage_extra_container);
     return;
-  } else if(module->widget) {
+  }
+  else if(module->widget)
+  {
     gtk_widget_show_all(d->storage_extra_container);
     gtk_stack_set_visible_child(GTK_STACK(d->storage_extra_container),module->widget);
-  } else {
+  }
+  else
+  {
     gtk_widget_hide(d->storage_extra_container);
   }
   dt_bauhaus_combobox_set(d->storage, k);
@@ -720,7 +730,7 @@ static void _callback_bool(GtkWidget *widget, gpointer user_data)
 
 static void _intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
-  int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int(CONFIG_PREFIX "iccintent", pos - 1);
 }
 
@@ -810,7 +820,7 @@ static void _lib_export_styles_changed_callback(gpointer instance, gpointer user
   GList *styles = dt_styles_get_list("");
   while(styles)
   {
-    dt_style_t *style = (dt_style_t *)styles->data;
+    const dt_style_t *style = (dt_style_t *)styles->data;
     dt_bauhaus_combobox_add(d->style, style->name);
     styles = g_list_next(styles);
   }
@@ -834,9 +844,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
-  GtkWidget *label;
-
-  label = dt_ui_section_label_new(_("storage options"));
+  GtkWidget *label = dt_ui_section_label_new(_("storage options"));
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
   gtk_style_context_add_class(context, "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
@@ -853,7 +861,7 @@ void gui_init(dt_lib_module_t *self)
   GList *it = g_list_first(darktable.imageio->plugins_storage);
   if(it != NULL) do
   {
-    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    const dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
     dt_bauhaus_combobox_add(d->storage, module->name(module));
     if(module->widget)
     {
@@ -1154,10 +1162,10 @@ void init_presets(dt_lib_module_t *self)
       "SELECT rowid, op_version, op_params, name FROM data.presets WHERE operation='export'", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int rowid = sqlite3_column_int(stmt, 0);
-    int op_version = sqlite3_column_int(stmt, 1);
-    void *op_params = (void *)sqlite3_column_blob(stmt, 2);
-    size_t op_params_size = sqlite3_column_bytes(stmt, 2);
+    const int rowid = sqlite3_column_int(stmt, 0);
+    const int op_version = sqlite3_column_int(stmt, 1);
+    const void *op_params = (void *)sqlite3_column_blob(stmt, 2);
+    const size_t op_params_size = sqlite3_column_bytes(stmt, 2);
     const char *name = (char *)sqlite3_column_text(stmt, 3);
 
     if(op_version != version)
@@ -1714,7 +1722,7 @@ void init_key_accels(dt_lib_module_t *self)
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+  const dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   dt_accel_connect_button_lib(self, "export", GTK_WIDGET(d->export_button));
 }

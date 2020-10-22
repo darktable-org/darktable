@@ -134,12 +134,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   else if(d->compress == 2)
   {
     TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
-    TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_HORIZONTAL);
-    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
-  }
-  else if(d->compress == 3)
-  {
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
     if(d->bpp == 32)
       TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_FLOATINGPOINT);
     else
@@ -242,7 +236,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
 
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
   TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
   int resolution = dt_conf_get_int("metadata/resolution");
@@ -406,12 +400,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         else if(d->compress == 2)
         {
           TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
-          TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_HORIZONTAL);
-          TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
-        }
-        else if(d->compress == 3)
-        {
-          TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
           if(d->bpp == 32)
             TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_FLOATINGPOINT);
           else
@@ -435,7 +423,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)w);
         TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)h);
         TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-        TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
         TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
 #ifdef MASKS_USE_SAME_FORMAT
@@ -443,6 +430,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)(d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT));
         TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+        TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
 
         free(rowdata);
         const size_t _rowsize = (w * 3) * d->bpp / 8;
@@ -513,6 +501,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)32);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)SAMPLEFORMAT_IEEEFP);
         TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
+        TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
 
         for(int y = 0; y < h; y++)
         {
@@ -605,8 +594,8 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     g_strlcpy(n->global.style, o->style, sizeof(o->style));
     n->global.style_append = FALSE;
     n->bpp = o->bpp;
-    n->compress = o->compress;
-    n->compresslevel = 9;
+    n->compress = o->compress == 3 ? 2 : o->compress;  // drop redundant float case
+    n->compresslevel = 6;
     n->handle = o->handle;
     *new_size = self->params_size(self);
     return n;
@@ -634,8 +623,8 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     g_strlcpy(n->global.style, o->style, sizeof(o->style));
     n->global.style_append = o->style_append;
     n->bpp = o->bpp;
-    n->compress = o->compress;
-    n->compresslevel = 9;
+    n->compress = o->compress == 3 ? 2 : o->compress;  // drop redundant float case
+    n->compresslevel = 6;
     n->handle = o->handle;
     *new_size = self->params_size(self);
     return n;
@@ -653,15 +642,23 @@ void *get_params(dt_imageio_module_format_t *self)
     d->bpp = 32;
   else
     d->bpp = 8;
+
+  // Drop redundant float case from existing config
+  // TODO: Move to legacy eventually
   d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  if(d->compress == 3)
+  {
+    d->compress = 2;
+    dt_conf_set_int("plugins/imageio/format/tiff/compress", d->compress);
+  }
 
   // TIFF compression level might actually be zero, handle this
   if(!dt_conf_key_exists("plugins/imageio/format/tiff/compresslevel"))
-    d->compresslevel = 5;
+    d->compresslevel = 6;
   else
   {
     d->compresslevel = dt_conf_get_int("plugins/imageio/format/tiff/compresslevel");
-    if(d->compresslevel < 0 || d->compresslevel > 9) d->compresslevel = 5;
+    if(d->compresslevel < 0 || d->compresslevel > 9) d->compresslevel = 6;
   }
 
   // TIFF shortfile
@@ -788,14 +785,21 @@ void gui_init(dt_imageio_module_format_t *self)
 
   const int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
 
-  const int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  // Drop redundant float case from existing config
+  // TODO: Move to legacy eventually
+  int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  if(compress == 3)
+  {
+    compress = 2;
+    dt_conf_set_int("plugins/imageio/format/tiff/compress", compress);
+  }
 
   int shortmode = 0;
   if(dt_conf_key_exists("plugins/imageio/format/tiff/shortfile"))
     shortmode = dt_conf_get_int("plugins/imageio/format/tiff/shortfile");
 
   // TIFF compression level might actually be zero!
-  int compresslevel = 5;
+  int compresslevel = 6;
   if(dt_conf_key_exists("plugins/imageio/format/tiff/compresslevel"))
     compresslevel = dt_conf_get_int("plugins/imageio/format/tiff/compresslevel");
 
@@ -822,12 +826,11 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(gui->compress, _("uncompressed"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor"));
-  dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor (float)"));
   dt_bauhaus_combobox_set(gui->compress, compress);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
 
   // Compression level slider
-  gui->compresslevel = dt_bauhaus_slider_new_with_range(NULL, 0, 9, 1, 5, 0);
+  gui->compresslevel = dt_bauhaus_slider_new_with_range(NULL, 0, 9, 1, 6, 0);
   dt_bauhaus_widget_set_label(gui->compresslevel, NULL, _("compression level"));
   dt_bauhaus_slider_set(gui->compresslevel, compresslevel);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compresslevel), TRUE, TRUE, 0);

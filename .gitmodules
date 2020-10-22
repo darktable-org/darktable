@@ -8,3 +8,6 @@
 [submodule "src/external/libxcf"]
 	path = src/external/libxcf
 	url = https://github.com/houz/libxcf.git
+[submodule "src/external/whereami"]
+	path = src/external/whereami
+	url = https://github.com/gpakosz/whereami

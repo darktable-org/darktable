@@ -69,7 +69,7 @@
       more details see <xref linkend="darktable_commandline_parameters"/>. If you generate your
       own noise profiles don't forget to share your results with the darktable team!
     </para>
-    
+
     <para>
       /!\ WARNING /!\
       The darkroom zoomed out preview is not completely accurate. Always check your result at 100% zoom level!
@@ -145,7 +145,7 @@
         parameter. A lower value will make execution faster, a higher value will make it slower.
       </para>
     </sect5>
-    
+
     <sect5>
       <title>scattering</title>
       <para>
@@ -157,7 +157,7 @@
         chroma noise.
       </para>
     </sect5>
-    
+
     <sect5>
       <title>central pixel weight</title>
       <para>
@@ -221,7 +221,7 @@
         within your image.
       </para>
     </sect5>
-    
+
     <sect5>
       <title>preserve shadows</title>
       <para>
@@ -231,7 +231,7 @@
         value.
       </para>
     </sect5>
-    
+
     <sect5>
       <title>bias correction</title>
       <para>

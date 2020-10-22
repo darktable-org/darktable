@@ -34,6 +34,9 @@
 
 DT_MODULE(1)
 
+#define FALLBACK_PRESET_NAME "default"
+// if a preset cannot be loaded or the current preset deleted, this is the fallabck preset
+
 #define PADDING 2
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
@@ -215,7 +218,7 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
     // and we initialize the buttons too
     gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
     if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
-      dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+      dt_lib_presets_apply(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version());
     g_free(preset);
   }
 }
@@ -548,8 +551,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         case DT_MODULEGROUP_NONE:
         {
           /* show all except hidden ones */
-          if((module->so->state != dt_iop_state_HIDDEN || module->enabled)
-             && (!(module->flags() & IOP_FLAGS_DEPRECATED)))
+          if(_lib_modulegroups_test_visible(self, module->op) || module->enabled)
           {
             if(w) gtk_widget_show(w);
           }
@@ -907,6 +909,7 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
 
     gchar *tx = _preset_retrieve_old_layout(list, fav);
     dt_lib_presets_add(pname, self->plugin_name, self->version(), tx, strlen(tx), FALSE);
+    g_free(tx);
   }
   sqlite3_finalize(stmt);
 
@@ -975,32 +978,112 @@ static GList *_preset_from_string(gchar *txt)
 
 void init_presets(dt_lib_module_t *self)
 {
-  gchar *tx = NULL;
-  tx = dt_util_dstrcat(
-      tx, "ꬹ1ꬹ%s|%s||%s", _("technical"), "technical",
-      "colorin|hazeremoval|filmicrgb|clipping|flip|lens|exposure|denoiseprofile|demosaic|highlights");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("grading"), "grading", "rgblevels|colorbalance|toneequal|temperature");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", _("effects"), "effect", "sharpen|bilat");
-  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  /*
+    For the record, one can create the preset list by using the following code:
 
-  gchar *tx2 = NULL;
-  tx2 = dt_util_dstrcat(tx2, "ꬹ1ꬹ%s|%s||%s", _("base"), "basic",
-                        "basecurve|toneequal|clipping|flip|exposure|demosaic|highlights|temperature|filmicrgb");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("tone"), "tone", "rgblevels|bilat");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("color"), "color", "colorbalance|colorin");
-  tx2 = dt_util_dstrcat(tx2, "ꬹ%s|%s||%s", _("correct"), "correct", "sharpen|hazeremoval|lens|denoiseprofile");
-  dt_lib_presets_add(_("legacy layout"), self->plugin_name, self->version(), tx2, strlen(tx2), TRUE);
+    $ cat <( git grep "return.*IOP_GROUP_TONE" -- src/iop/ | cut -d':' -f1 ) \
+          <( git grep IOP_FLAGS_DEPRECATED -- src/iop/ | cut -d':' -f1 ) | \
+          grep -E -v "useless|mask_manager|gamma" | sort | uniq --unique | \
+          while read file; do BN=$(basename $(basename $file .cc) .c); \
+            echo ${BN:0:16} ; done | xargs echo | sed 's/ /|/g'
+  */
+
+  // all modules
+  gchar *tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
+                       "basecurve|basicadj|clipping|colisa|colorreconstruct|demosaic|exposure|finalscale"
+                       "|flip|highlights|invert|negadoctor|overexposed|rawoverexposed|rawprepare"
+                       "|shadhi|temperature|toneequal");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"),
+                       "tone", "bilat|filmicrgb|globaltonemap|levels"
+                       "|relight|rgbcurve|rgblevels|tonecurve|tonemap|zonesystem");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
+                       "channelmixer|colorbalance|colorchecker|colorcontrast|colorcorrection"
+                       "|colorin|colorout|colorzones|lut3d|monochrome|profile_gamma|velvia|vibrance");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
+                       "ashift|atrous|bilateral|cacorrect|defringe|denoiseprofile|dither"
+                       "|hazeremoval|hotpixels|lens|liquify|nlmeans|rawdenoise|retouch|rotatepixels"
+                       "|scalepixels|sharpen|spots");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
+                       "bloom|borders|colorize|colormapping|graduatednd|grain|highpass|lowlight"
+                       "|lowpass|soften|splittoning|vignette|watermark");
+  dt_lib_presets_add(_("all modules"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // minimal / 3 tabs
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
+                       "basicadj|ashift|basecurve|clipping"
+                       "|denoiseprofile|exposure|flip|lens|temperature");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
+                       "channelmixer|colorbalance|colorzones|graduatednd|rgbcurve"
+                       "|rgblevels|splittoning");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
+                       "bordersmonochrome|retouch|sharpen|vignette|watermark");
+  dt_lib_presets_add(_("minimal"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // display referred
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
+                       "basecurve|toneequal|clipping|flip|exposure|temperature"
+                       "|rgbcurve|rgblevels|bilat|shadhi|highlights");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
+                       "channelmixer|colorbalance|colorcorrection|colorzones|monochrome|velvia|vibrance");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
+                       "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
+                       "|lens|retouch|sharpen|nlmeans");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
+                       "borders|colorize|graduatednd|grain|splittoning|vignette|watermark");
+  dt_lib_presets_add(_("display referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // scene referred
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
+                       "filmicrgb|toneequal|clipping|flip|exposure|temperature|rgbcurve|rgblevels|bilat");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
+                       "channelmixer|colorbalance|colorzones|vibrance");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
+                       "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
+                       "|lens|retouch|sharpen|nlmeans");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
+                       "borders|colorize|graduatednd|grain|splittoning|vignette|watermark");
+  dt_lib_presets_add(_("scene referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // default / 3 tabs based on Aurélien's proposal
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "technical"), "technical",
+                       "ashift|basecurve|bilateral|cacorrect|clipping|colorchecker|colorin|colorout"
+                       "|colorreconstruct|defringe|demosaic|denoiseprofile|dither|exposure"
+                       "|filmicrgb|finalscale|flip|hazeremoval|highlights|hotpixels|invert|lens"
+                       "|lut3d|negadoctor|nlmeans|overexposed|rawdenoise"
+                       "|rawoverexposed|rotatepixels|scalepixels");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
+                       "basicadj|channelmixer|colisa|colorbalance|colorcontrast|colorcorrection"
+                       "|colorize|colorzones|globaltonemap|graduatednd|levels|relight|rgbcurve"
+                       "|rgblevels|shadhi|splittoning|temperature|tonecurve|toneequal|tonemap"
+                       "|velvia|vibrance|zonesystem");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
+                       "atrous|bilat|bloom|borders|clahe|colormapping"
+                       "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
+                       "|soften|spots|vignette|watermark");
+  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
 
   // if needed, we add a new preset, based on last user config
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
-    gchar *tx3 = _preset_retrieve_old_layout(NULL, NULL);
-    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx3, strlen(tx3), FALSE);
+    tx = _preset_retrieve_old_layout(NULL, NULL);
+    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx, strlen(tx), FALSE);
     dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("previous layout"));
+    g_free(tx);
 
-    gchar *tx4 = _preset_retrieve_old_layout_updated();
-    dt_lib_presets_add(_("previous config with new layout"), self->plugin_name, self->version(), tx4,
-                       strlen(tx4), FALSE);
+    tx = _preset_retrieve_old_layout_updated();
+    dt_lib_presets_add(_("previous config with new layout"), self->plugin_name, self->version(), tx,
+                       strlen(tx), FALSE);
+    g_free(tx);
   }
   // if they exists, we retrieve old user presets from old modulelist lib
   _preset_retrieve_old_presets(self);
@@ -1065,6 +1148,7 @@ static void _manage_editor_save(dt_lib_module_t *self)
 
   // update the preset in the database
   dt_lib_presets_update(d->edit_preset, self->plugin_name, self->version(), newname, "", params, strlen(params));
+  g_free(params);
 
   // if name has changed, we need to reflect the change on the presets list too
   _manage_preset_update_list(self);
@@ -1078,7 +1162,8 @@ static void _manage_editor_save(dt_lib_module_t *self)
       dt_conf_set_string("plugins/darkroom/modulegroups_preset", newname);
     // and we update the gui
     if(!dt_lib_presets_apply(newname, self->plugin_name, self->version()))
-      dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+      dt_lib_presets_apply((gchar *)C_("modulegroup", FALLBACK_PRESET_NAME),
+                           self->plugin_name, self->version());
   }
   g_free(preset);
   g_free(newname);
@@ -1102,6 +1187,15 @@ static void _manage_editor_module_remove(GtkWidget *widget, GdkEventButton *even
   }
 }
 
+static int _manage_editor_module_find_multi(gconstpointer a, gconstpointer b)
+{
+  // we search for a other instance of module with lower priority
+  dt_iop_module_t *ma = (dt_iop_module_t *)a;
+  dt_iop_module_t *mb = (dt_iop_module_t *)b;
+  if(g_strcmp0(ma->op, mb->op) != 0) return 1;
+  if(ma->multi_priority >= mb->multi_priority) return 0;
+  return 1;
+}
 static void _manage_editor_module_update_list(dt_lib_modulegroups_group_t *gr, int ro)
 {
   // first, we remove all existing modules
@@ -1114,27 +1208,32 @@ static void _manage_editor_module_update_list(dt_lib_modulegroups_group_t *gr, i
   }
 
   // and we add the ones from the list
-  GList *modules2 = g_list_last(darktable.iop);
+  GList *modules2 = g_list_last(darktable.develop->iop);
   while(modules2)
   {
-    dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules2->data);
-    if(g_list_find_custom(gr->modules, module->op, _iop_compare))
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules2->data);
+    if(g_list_find_custom(gr->modules, module->op, _iop_compare) && !dt_iop_is_hidden(module))
     {
-      GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-      gtk_widget_set_name(hb, "modulegroups-iop-header");
-      GtkWidget *lb = gtk_label_new(module->name());
-      gtk_widget_set_name(lb, "iop-panel-label");
-      gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, TRUE, 0);
-      if(!ro)
+      // we want to avoid showing multiple instances of the same module
+      if(module->multi_priority <= 0
+         || g_list_find_custom(darktable.develop->iop, module, _manage_editor_module_find_multi) == NULL)
       {
-        GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-        gtk_widget_set_name(btn, "module-reset-button");
-        gtk_widget_set_tooltip_text(btn, _("remove this module"));
-        g_object_set_data(G_OBJECT(btn), "module_name", module->op);
-        g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_module_remove), gr);
-        gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, TRUE, 0);
+        GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_widget_set_name(hb, "modulegroups-iop-header");
+        GtkWidget *lb = gtk_label_new(module->name());
+        gtk_widget_set_name(lb, "iop-panel-label");
+        gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, TRUE, 0);
+        if(!ro)
+        {
+          GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+          gtk_widget_set_name(btn, "module-reset-button");
+          gtk_widget_set_tooltip_text(btn, _("remove this module"));
+          g_object_set_data(G_OBJECT(btn), "module_name", module->op);
+          g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_module_remove), gr);
+          gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, TRUE, 0);
+        }
+        gtk_box_pack_start(GTK_BOX(gr->iop_box), hb, FALSE, TRUE, 0);
       }
-      gtk_box_pack_start(GTK_BOX(gr->iop_box), hb, FALSE, TRUE, 0);
     }
     modules2 = g_list_previous(modules2);
   }
@@ -1218,7 +1317,9 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
   GtkWidget *lb = NULL;
 
   int rec_nb = 0;
-  GList *modules = g_list_sort(g_list_first(darktable.iop), _manage_editor_module_add_sort);
+
+  GList *m2 = g_list_copy(g_list_first(darktable.iop));
+  GList *modules = g_list_sort(m2, _manage_editor_module_add_sort);
   while(modules)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
@@ -1255,6 +1356,7 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
     }
     modules = g_list_next(modules);
   }
+  g_list_free(m2);
 
   if(rec_nb > 0)
   {
@@ -1688,7 +1790,7 @@ static void _manage_editor_load(char *preset, dt_lib_module_t *self)
   if(ro)
   {
     GtkWidget *lb
-        = gtk_label_new(_("this is a build-in read-only preset. duplicate it if you want to do changes"));
+        = gtk_label_new(_("this is a built-in read-only preset. duplicate it if you want to make changes"));
     gtk_widget_set_name(lb, "modulegroups-ro");
     gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
   }
@@ -1825,8 +1927,9 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
       gchar *cur = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
       if(g_strcmp0(cur, preset) == 0)
       {
-        dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("default"));
-        dt_lib_presets_apply(_("default"), self->plugin_name, self->version());
+        dt_conf_set_string("plugins/darkroom/modulegroups_preset", C_("modulegroup", FALLBACK_PRESET_NAME));
+        dt_lib_presets_apply((gchar *)C_("modulegroup", FALLBACK_PRESET_NAME),
+                             self->plugin_name, self->version());
       }
       g_free(cur);
     }
@@ -1947,7 +2050,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-  d->dialog = gtk_dialog_new_with_buttons(_("manage modules layouts"), win,
+  d->dialog = gtk_dialog_new_with_buttons(_("manage module layouts"), win,
                                           GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, NULL, NULL);
 
   gtk_window_set_default_size(GTK_WINDOW(d->dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
@@ -1956,7 +2059,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   dt_osx_disallow_fullscreen(d->dialog);
 #endif
   gtk_widget_set_name(d->dialog, "modulegroups_manager");
-  gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage modules layouts"));
+  gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage module layouts"));
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

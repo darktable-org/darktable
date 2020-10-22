@@ -12,21 +12,17 @@
   </indexterm>
 
   <para>
-    Modules are organized into five functional groups: basic, tone, color, correction and
-    effect. You either view all modules in one long list or instead click on a group to just
+    With the default preset, modules are organized into three functional groups: technical, grading and effects.
+    You either view all modules in one long list or instead click on a group to just
     display modules belonging to that group.
   </para>
 
 <!-- Modules groups -->
 
-  <xi:include href="basic/group_basic.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="technical/group_technical.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-  <xi:include href="tone/group_tone.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="grading/group_grading.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-  <xi:include href="color/group_color.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-  <xi:include href="correction/group_correction.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-  <xi:include href="effect/group_effect.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="effects/group_effects.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </sect1>

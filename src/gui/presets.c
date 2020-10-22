@@ -53,10 +53,12 @@ static const char *dt_gui_presets_aperture_value_str[]
         "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
 
 // format string and corresponding flag stored into the database
-static const char *dt_gui_presets_format_value_str[3] = { N_("normal images"),
+static const char *dt_gui_presets_format_value_str[5] = { N_("normal images"),
                                                           N_("raw"),
-                                                          N_("HDR")};
-static const int dt_gui_presets_format_flag[3] = { FOR_LDR, FOR_RAW, FOR_HDR };
+                                                          N_("HDR"),
+                                                          N_("monochrome"),
+                                                          N_("color")};
+static const int dt_gui_presets_format_flag[5] = { FOR_LDR, FOR_RAW, FOR_HDR, FOR_NOT_MONO, FOR_NOT_COLOR };
 
 typedef struct dt_gui_presets_edit_dialog_t
 {
@@ -71,7 +73,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   GtkWidget *focal_length_min, *focal_length_max;
   gchar *original_name;
   gint old_id;
-  GtkWidget *format_btn[3];
+  GtkWidget *format_btn[5];
 } dt_gui_presets_edit_dialog_t;
 
 // this is also called for non-gui applications linking to libdarktable!
@@ -287,8 +289,11 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
         gint dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
         gtk_widget_destroy(dlg_overwrite);
 
-        // if result is BUTTON_NO exit without destroy dialog, to permit other name
-        if(dlg_ret == GTK_RESPONSE_NO) return;
+        // if result is BUTTON_NO or ESCAPE keypress exit without destroying dialog, to permit other name
+        if(dlg_ret != GTK_RESPONSE_YES)
+        {
+          return;
+        }
       }
       else
       {
@@ -370,8 +375,10 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 21, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
     int format = 0;
-    for(int k = 0; k < 3; k++)
+    for(int k = 0; k < 5; k++)
       format += gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[k])) * dt_gui_presets_format_flag[k];
+    format ^= DT_PRESETS_FOR_NOT;
+
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, format);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -541,12 +548,13 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->focal_length_min, label, GTK_POS_RIGHT, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->focal_length_max, g->focal_length_min, GTK_POS_RIGHT, 1, 1);
 
-  // raw/hdr/ldr
+  // raw/hdr/ldr/mono/color
   label = gtk_label_new(_("format"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line, 1, 1);
+  gtk_widget_set_tooltip_text(label, _("select image types you want this preset to be available for"));
 
-  for(int i = 0; i < 3; i++)
+  for(int i = 0; i < 5; i++)
   {
     g->format_btn[i] = gtk_check_button_new_with_label(_(dt_gui_presets_format_value_str[i]));
     gtk_grid_attach(GTK_GRID(g->details), g->format_btn[i], 1, line + i, 2, 1);
@@ -597,8 +605,8 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), sqlite3_column_double(stmt, 12));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), sqlite3_column_int(stmt, 13));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), sqlite3_column_int(stmt, 14));
-    const int format = sqlite3_column_int(stmt, 15);
-    for(k = 0; k < 3; k++)
+    const int format = (sqlite3_column_int(stmt, 15)) ^ DT_PRESETS_FOR_NOT;
+    for(k = 0; k < 5; k++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), format & (dt_gui_presets_format_flag[k]));
   }
   else
@@ -631,7 +639,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), 1000);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), 0);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), 0);
-    for(k = 0; k < 3; k++) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), TRUE);
+    for(k = 0; k < 5; k++) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), TRUE);
   }
   sqlite3_finalize(stmt);
 
@@ -840,11 +848,27 @@ static void menuitem_manage_quick_presets_toggle(GtkCellRendererToggle *cell_ren
   g_free(txt);
 }
 
+static int menuitem_manage_quick_presets_sort(gconstpointer a, gconstpointer b)
+{
+  dt_iop_module_so_t *ma = (dt_iop_module_so_t *)a;
+  dt_iop_module_so_t *mb = (dt_iop_module_so_t *)b;
+  gchar *s1 = g_utf8_normalize(ma->name(), -1, G_NORMALIZE_ALL);
+  gchar *sa = g_utf8_casefold(s1, -1);
+  g_free(s1);
+  s1 = g_utf8_normalize(mb->name(), -1, G_NORMALIZE_ALL);
+  gchar *sb = g_utf8_casefold(s1, -1);
+  g_free(s1);
+  const int res = g_strcmp0(sa, sb);
+  g_free(sa);
+  g_free(sb);
+  return res;
+}
+
 static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 {
   sqlite3_stmt *stmt;
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("manage modules layouts"), win,
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("manage module layouts"), win,
                                                   GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, NULL, NULL);
 
   gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(400), DT_PIXEL_APPLY_DPI(500));
@@ -871,7 +895,7 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
-  gtk_tree_view_column_add_attribute(col, renderer, "text", 0);
+  gtk_tree_view_column_add_attribute(col, renderer, "markup", 0);
 
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), col);
@@ -887,13 +911,16 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 
   treestore = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING);
 
-  GList *modules = darktable.develop->iop;
+  gchar *config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
+
+  GList *m2 = g_list_copy(darktable.iop);
+  GList *modules = g_list_sort(m2, menuitem_manage_quick_presets_sort);
   while(modules)
   {
-    dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
+    dt_iop_module_so_t *iop = (dt_iop_module_so_t *)modules->data;
 
     /* check if module is visible in current layout */
-    if(dt_dev_modulegroups_is_visible(darktable.develop, iop->so->op))
+    if(dt_dev_modulegroups_is_visible(darktable.develop, iop->op))
     {
       // create top entry
       gtk_tree_store_append(treestore, &toplevel, NULL);
@@ -908,19 +935,30 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
                                   -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
 
+      int nb = 0;
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        char *name = (char *)sqlite3_column_text(stmt, 0);
+        nb++;
+        const char *name = (char *)sqlite3_column_text(stmt, 0);
+        // is this preset part of the list ?
+        gchar *txt = dt_util_dstrcat(NULL, "ꬹ%s|%sꬹ", iop->op, name);
+        gboolean inlist = (config && strstr(config, txt));
+        g_free(txt);
         gtk_tree_store_append(treestore, &child, &toplevel);
-        gtk_tree_store_set(treestore, &child, 0, name, 1, FALSE, 2, TRUE, 3, g_strdup(iop->so->op), 4,
-                           g_strdup(name), -1);
+        gtk_tree_store_set(treestore, &child, 0, name, 1, inlist, 2, TRUE, 3, g_strdup(iop->op), 4, g_strdup(name),
+                           -1);
       }
 
       sqlite3_finalize(stmt);
+
+      // we don't show modules with no presets
+      if(nb == 0) gtk_tree_store_remove(treestore, &toplevel);
     }
 
     modules = g_list_next(modules);
   }
+  g_free(config);
+  g_list_free(m2);
 
   model = GTK_TREE_MODEL(treestore);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
@@ -964,7 +1002,7 @@ void dt_gui_favorite_presets_menu_show()
   else
     config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
 
-  GList *modules = darktable.develop->iop;
+  GList *modules = g_list_last(darktable.develop->iop);
   if(modules)
   {
     do
@@ -996,6 +1034,9 @@ void dt_gui_favorite_presets_menu_show()
           if(config && strstr(config, txt))
           {
             GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
+            gchar *tt = dt_util_dstrcat(NULL, "<b>%s %s</b> %s", iop->name(), iop->multi_name, name);
+            gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
+            g_free(tt);
             g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
             g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
             gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(mi));
@@ -1006,7 +1047,7 @@ void dt_gui_favorite_presets_menu_show()
         sqlite3_finalize(stmt);
       }
 
-    } while((modules = g_list_next(modules)) != NULL);
+    } while((modules = g_list_previous(modules)) != NULL);
   }
   if(retrieve_list) dt_conf_set_string("plugins/darkroom/quick_preset_list", config);
   g_free(config);
@@ -1042,6 +1083,14 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
   if(image)
   {
     // only matching if filter is on:
+    int iformat = 0;
+    if(dt_image_is_rawprepare_supported(image)) iformat |= FOR_RAW;
+    else iformat |= FOR_LDR;
+    if(dt_image_is_hdr(image)) iformat |= FOR_HDR;
+
+    int excluded = 0;
+    if(dt_image_monochrome_flags(image)) excluded |= FOR_NOT_MONO;
+    else excluded |= FOR_NOT_COLOR;
 
     query = g_strdup_printf
       ("SELECT name, op_params, writeprotect, description, blendop_params, "
@@ -1056,7 +1105,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
        "        AND ?8 BETWEEN exposure_min AND exposure_max"
        "        AND ?9 BETWEEN aperture_min AND aperture_max"
        "        AND ?10 BETWEEN focal_length_min AND focal_length_max"
-       "        AND (format = 0 OR format&?11!=0)))"
+       "        AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
        " ORDER BY writeprotect %s, LOWER(name), rowid",
        default_first ? "DESC":"ASC");
 
@@ -1071,8 +1120,8 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_exposure);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, image->exif_aperture);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, image->exif_focal_length);
-    int ldr = dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, ldr);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
   }
   else
   {

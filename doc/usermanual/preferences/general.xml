@@ -42,12 +42,11 @@
     The font size will be changed immediately.
   </para>
   
-  <bridgehead renderas="sect5">GUI thumbs and previews DPI scaling factor</bridgehead>
+  <bridgehead renderas="sect5">performance mode</bridgehead>
 
   <para>
-    Scale the thumbnails and previews resolutions for high DPI screens. Increase if thumbnails look blurry, 
-    decrease if lighttable is too slow. Set to -1.0 to use the system-defined global scaling. Default is 1.0 
-    on most systems, or 2.0 when using resolutions above 1920×1080 px. This needs a restart to apply changes.
+    If performance mode is switched on, thumbnails and previews are rendered at lower quality but 4 times faster.
+    Use this while working on a slower computer.
   </para>
   
     <bridgehead renderas="sect5">GUI control and text DPI</bridgehead>
