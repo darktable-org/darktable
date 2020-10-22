@@ -138,6 +138,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)
 
 #define CHANNELS 9
 #define PIXEL_CHAN 8
+#define LUT_RESOLUTION 10000
 
 // radial distances used for pixel ops
 static const float centers_ops[PIXEL_CHAN] DT_ALIGNED_ARRAY = {-56.0f / 7.0f, // = -8.0f
@@ -181,6 +182,7 @@ typedef struct dt_iop_toneequalizer_params_t
 typedef struct dt_iop_toneequalizer_data_t
 {
   float factors[PIXEL_CHAN] DT_ALIGNED_ARRAY;
+  float correction_lut[PIXEL_CHAN * LUT_RESOLUTION + 1] DT_ALIGNED_ARRAY;
   float blending, feathering, contrast_boost, exposure_boost, quantization, smoothing;
   float scale;
   int radius;
@@ -678,34 +680,19 @@ static inline void apply_toneequalizer(const float *const restrict in,
                                        const dt_iop_toneequalizer_data_t *const d)
 {
   const size_t num_elem = roi_in->width * roi_in->height;
-  const float *const restrict factors = d->factors;
-  const float sigma = d->smoothing;
-  const float gauss_denom = gaussian_denom(sigma);
   const int min_ev = -8;
   const int max_ev = 0;
-  const size_t lut_resolution = 10000; // 10000 points per EV
-  float* restrict lut = dt_alloc_sse_ps(lut_resolution * (max_ev - min_ev) + 1);
-  for(int j = 0; j <= lut_resolution * (max_ev - min_ev); j++)
-  {
-    // build the correction for each pixel
-    // as the sum of the contribution of each luminance channelcorrection
-    float exposure = (float)j / (float)lut_resolution + min_ev;
-    float result = 0.0f;
-    for(int i = 0; i < PIXEL_CHAN; ++i)
-      result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
-    // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
-    lut[j] = fast_clamp(result, 0.25f, 4.0f);
-  }
+  const float* restrict lut = d->correction_lut;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) \
-  dt_omp_firstprivate(in, out, num_elem, luminance, factors, lut, min_ev, max_ev, lut_resolution, ch)
+  dt_omp_firstprivate(in, out, num_elem, luminance, lut, min_ev, max_ev, ch)
 #endif
   for(size_t k = 0; k < num_elem; ++k)
   {
     // The radial-basis interpolation is valid in [-8; 0] EV and can quickely diverge outside
     const float exposure = fast_clamp(log2f(luminance[k]), min_ev, max_ev);
-    float correction = lut[(unsigned)roundf((exposure - min_ev) * lut_resolution)];
+    float correction = lut[(unsigned)roundf((exposure - min_ev) * LUT_RESOLUTION)];
     // apply correction
     for(size_t c = 0; c < ch; c++)
     {
@@ -715,7 +702,6 @@ static inline void apply_toneequalizer(const float *const restrict in,
         out[k * ch + c] = correction * in[k * ch + c];
     }
   }
-  dt_free_align(lut);
 }
 
 #else
@@ -1145,6 +1131,23 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
  *
  ***/
 
+static void compute_correction_lut(float* restrict lut, const float sigma, const float *const restrict factors)
+{
+  const float gauss_denom = gaussian_denom(sigma);
+  const int min_ev = -8;
+  assert(PIXEL_CHAN == -min_ev);
+  for(int j = 0; j <= LUT_RESOLUTION * PIXEL_CHAN; j++)
+  {
+    // build the correction for each pixel
+    // as the sum of the contribution of each luminance channelcorrection
+    float exposure = (float)j / (float)LUT_RESOLUTION + min_ev;
+    float result = 0.0f;
+    for(int i = 0; i < PIXEL_CHAN; ++i)
+      result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
+    // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
+    lut[j] = fast_clamp(result, 0.25f, 4.0f);
+  }
+}
 
 static void get_channels_gains(float factors[CHANNELS], const dt_iop_toneequalizer_params_t *p)
 {
@@ -1534,6 +1537,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     dt_simd_memcpy(factors, d->factors, PIXEL_CHAN);
   }
+
+  // compute the correction LUT here to spare some time in process
+  // when computing several times toneequalizer with same parameters
+  compute_correction_lut(d->correction_lut, d->smoothing, d->factors);
 }
 
 
