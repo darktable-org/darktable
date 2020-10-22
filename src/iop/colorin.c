@@ -2097,7 +2097,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
 
   // now generate the list of profiles applicable to the current image and update the list
-  update_profile_list(self);
+//  update_profile_list(self);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
   {

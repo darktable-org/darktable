@@ -332,9 +332,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     }
 
     // rename accelerators
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/%s", _("preset"), g->original_name);
-    dt_accel_rename_preset_iop(g->module, path, name);
+    dt_accel_rename_preset_iop(g->module, g->original_name, name);
     // commit all the user input fields
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
