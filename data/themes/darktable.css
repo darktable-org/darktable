@@ -1213,7 +1213,7 @@ dialog scrollbar
 #preferences_notebook button
 {
   margin-left: 1px;
-  padding: 0 1px;
+  padding: 0 2px;
 }
 
 /* Set buttons and search field on presets and shortcuts control buttons */
@@ -1226,6 +1226,11 @@ dialog scrollbar
 #preferences_box #shortcut_controls
 {
   margin-left: 5px;
+}
+
+#preferences_box #shortcut_controls button
+{
+margin: 0 2px;
 }
 
 /*--------------------------------
