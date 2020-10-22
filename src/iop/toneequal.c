@@ -3156,7 +3156,7 @@ void gui_init(struct dt_iop_module_t *self)
                                              "preview much slower if denoise profiled is used."));
 
   g->feathering = dt_bauhaus_slider_from_params(self, "feathering");
-  dt_bauhaus_slider_set_soft_range(g->feathering, 1.0, 50.0);
+  dt_bauhaus_slider_set_soft_range(g->feathering, 0.1, 50.0);
   dt_bauhaus_slider_set_step(g->feathering, 0.2);
   gtk_widget_set_tooltip_text(g->feathering, _("precision of the feathering :\n"
                                                "higher values force the mask to follow edges more closely\n"
