@@ -46,19 +46,10 @@ typedef enum dt_accel_iop_slider_scale_t
 // Accel path string building functions
 void dt_accel_path_global(char *s, size_t n, const char *path);
 void dt_accel_path_view(char *s, size_t n, char *module, const char *path);
-void dt_accel_path_iop(char *s, size_t n, char *module, const char *path);
+void dt_accel_path_sub_iop(char *s, size_t n, char *module, const char *path, const char *sub);
 void dt_accel_path_lib(char *s, size_t n, char *module, const char *path);
 void dt_accel_path_lua(char *s, size_t n, const char *path);
 void dt_accel_path_manual(char *s, size_t n, const char *full_path);
-/**
- * Accepts an array of 5 char*, writes the following paths to them
- * 0 - Slider increase path
- * 1 - Slider decrease path
- * 2 - Slider reset path
- * 3 - Slider edit path
- * 4 - Slider dynamic path
- */
-void dt_accel_paths_slider_iop(char *s[], size_t n, char *module, const char *path);
 
 // Accelerator search functions
 dt_accel_t *dt_accel_find_by_path(const gchar *path);
@@ -93,6 +84,7 @@ void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, Gtk
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *slider);
 void dt_accel_connect_combobox_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *combobox);
+void dt_accel_connect_list_iop(dt_iop_module_t *module);
 void dt_accel_connect_locals_iop(dt_iop_module_t *module);
 void dt_accel_connect_preset_iop(dt_iop_module_t *so, const gchar *path);
 void dt_accel_connect_preset_lib(dt_lib_module_t *so, const gchar *path);
