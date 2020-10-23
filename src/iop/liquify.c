@@ -2003,8 +2003,8 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
           const float rot = get_rot(pwarp->type);
           draw_circle(cr, pwarp->point, GET_UI_WIDTH(GIZMO_SMALL));
           draw_triangle(cr, pwarp->strength,
-                         carg(pwarp->strength - pwarp->point) + rot,
-                         GET_UI_WIDTH(GIZMO_SMALL) / 3.0);
+                        carg(pwarp->strength - pwarp->point) + rot,
+                        GET_UI_WIDTH(GIZMO_SMALL) / 3.0);
         }
         BG_COLOR;
         cairo_fill_preserve(cr);
@@ -2220,7 +2220,7 @@ hit:
   return hit;
 }
 
-static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, float scale, dt_iop_liquify_params_t *params)
+static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, const float scale, dt_iop_liquify_params_t *params)
 {
   const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   GList *layers = NULL;
@@ -2247,10 +2247,10 @@ static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, float scale,
 }
 
 static dt_liquify_hit_t hit_test_paths(struct dt_iop_module_t *module,
-                                        float scale,
-                                        cairo_t *cr,
-                                        dt_iop_liquify_params_t *params,
-                                        float complex pt)
+                                       const float scale,
+                                       cairo_t *cr,
+                                       dt_iop_liquify_params_t *params,
+                                       float complex pt)
 {
   dt_liquify_hit_t hit = NOWHERE;
   GList *layers = NULL;
@@ -2807,8 +2807,9 @@ int mouse_moved(struct dt_iop_module_t *module,
   {
     dt_liquify_hit_t hit = hit_test_paths(module, scale, g->fake_cr, &g->params, pt);
     dt_liquify_path_data_t *last_hovered = find_hovered(&g->params);
-    if(hit.elem != last_hovered ||
-        (last_hovered && hit.elem && hit.elem->header.hovered != last_hovered->header.hovered))
+    if(hit.elem != last_hovered
+       || (last_hovered && hit.elem
+           && hit.elem->header.hovered != last_hovered->header.hovered))
     {
       if(hit.elem)
         hit.elem->header.hovered = hit.layer;
