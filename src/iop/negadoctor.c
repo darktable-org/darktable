@@ -149,15 +149,15 @@ typedef struct dt_iop_negadoctor_params_t
   float D_max;                              /* max density of film
                                                $MIN: 0.1 $MAX: 6 $DEFAULT: 2.046 */
   float offset;                             /* inversion offset
-                                               $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "scan exposure bias" */
+                                               $MIN: -1.0 $MAX: 1.0 $DEFAULT: -0.05 $DESCRIPTION: "scan exposure bias" */
   float black;                              /* display black level
-                                               $MIN: -0.5 $MAX: 0.5 $DEFAULT:0.0755 $DESCRIPTION: "paper black (density correction)" */
+                                               $MIN: -0.5 $MAX: 0.5 $DEFAULT: 0.0755 $DESCRIPTION: "paper black (density correction)" */
   float gamma;                              /* display gamma
                                                $MIN: 1.0 $MAX: 8.0 $DEFAULT: 4.0 $DESCRIPTION: "paper grade (gamma)" */
   float soft_clip;                          /* highlights roll-off
-                                               $MIN: 0.0001 $MAX: 1.0 $DEFAULT: 0.9 $DESCRIPTION: "paper gloss (specular highlights)" */
+                                               $MIN: 0.0001 $MAX: 1.0 $DEFAULT: 0.75 $DESCRIPTION: "paper gloss (specular highlights)" */
   float exposure;                           /* extra exposure
-                                               $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "print exposure adjustment" */
+                                               $MIN: 0.5 $MAX: 2.0 $DEFAULT: 0.9245 $DESCRIPTION: "print exposure adjustment" */
 } dt_iop_negadoctor_params_t;
 
 
@@ -408,10 +408,10 @@ void init_presets(dt_iop_module_so_t *self)
                                                                  .wb_high = { 1.0f, 1.0f, 1.0f, 0.0f },
                                                                  .wb_low = { 1.0f, 1.0f, 1.0f, 0.0f },
                                                                  .D_max = 1.6f,
-                                                                 .offset = 0.0f,
+                                                                 .offset = -0.05f,
                                                                  .gamma = 4.0f,
-                                                                 .soft_clip = 0.92f,
-                                                                 .exposure = 1.0f,
+                                                                 .soft_clip = 0.75f,
+                                                                 .exposure = 0.9245f,
                                                                  .black = 0.0755f };
 
 
@@ -422,11 +422,11 @@ void init_presets(dt_iop_module_so_t *self)
                                                                  .wb_high = { 1.0f, 1.0f, 1.0f, 0.0f },
                                                                  .wb_low = { 1.0f, 1.0f, 1.0f, 0.0f },
                                                                  .D_max = 2.2f,
-                                                                 .offset = 0.2f,
-                                                                 .gamma = 4.0f,
-                                                                 .soft_clip = 0.92f,
-                                                                 .exposure = 1.0f,
-                                                                 .black = 0.1f };
+                                                                 .offset = -0.05f,
+                                                                 .gamma = 5.0f,
+                                                                 .soft_clip = 0.75f,
+                                                                 .exposure = 1.f,
+                                                                 .black = 0.0755f };
 
 
   dt_gui_presets_add_generic(_("black and white film"), self->op, self->version(), &tmq, sizeof(tmq), 1);
