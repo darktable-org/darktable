@@ -370,13 +370,27 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 #endif
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+
     for (GList *style = style_names; style != NULL; style = style->next)
     {
-      dt_styles_save_to_file((char*)style->data, filedir, FALSE);
-      dt_control_log(_("style %s was successfully saved"), (char*)style->data);
+      char stylename[520];
+
+      /* check if file exists before overwriting */
+      snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle", filedir, (char*)style->data);
+
+      if(g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE)
+      {
+        dt_styles_save_to_file((char*)style->data, filedir, TRUE);
+      }
+      else
+      {
+        dt_styles_save_to_file((char*)style->data, filedir, FALSE);
+      }
+      dt_control_log(_("style %s was successfully exported"), (char*)style->data);
     }
     g_free(filedir);
   }
