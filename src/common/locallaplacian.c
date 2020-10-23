@@ -572,6 +572,8 @@ void local_laplacian_internal(
     const int use_sse2,         // flag whether to use SSE version
     local_laplacian_boundary_t *b)
 {
+  if(wd <= 1 || ht <= 1) return;
+
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
   int last_level = num_levels-1;
