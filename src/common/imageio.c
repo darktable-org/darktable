@@ -852,7 +852,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
       if (!thumbnail_export)
       {
-          scale = scale_factor;
+        scale = fmin(scale_factor, max_scale);
       }
     }
 
