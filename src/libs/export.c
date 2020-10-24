@@ -507,8 +507,9 @@ void _print_size_update_display(dt_lib_export_t *self)
   }
   else
   {
-    if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"),"scaling") != 0)
-    { // max size
+    if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"), "scaling") != 0)
+    {
+      // max size
       gtk_widget_set_visible(GTK_WIDGET(self->print_size), TRUE);
     }
     gtk_widget_set_sensitive(GTK_WIDGET(self->width), FALSE);
@@ -838,7 +839,6 @@ static void _dimensions_type_changed(GtkWidget *widget, dt_lib_export_t *d)
     dt_conf_set_string(CONFIG_PREFIX "resizing", "scaling");
   }
   _size_in_px_update(d);
-
 }
 
 static void _resync_print_dimensions(dt_lib_export_t *self)
@@ -1362,14 +1362,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(self->widget, TRUE);
   _print_size_update_display(d);
 
-  if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"),"scaling") == 0)
-  {  // scaling
+  if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"), "scaling") == 0)
+  {
+    // scaling
     gtk_widget_show(GTK_WIDGET(d->scale));
     gtk_widget_hide(GTK_WIDGET(d->hbox1));
     gtk_widget_hide(GTK_WIDGET(d->hbox2));
   }
   else
-  { // max size
+  {
+    // max size
     gtk_widget_hide(GTK_WIDGET(d->scale));
     gtk_widget_show(GTK_WIDGET(d->hbox1));
     gtk_widget_show(GTK_WIDGET(d->hbox2));
