@@ -22,6 +22,7 @@
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/masks.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -271,10 +272,18 @@ static gboolean _add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_iop
 {
   if(darktable.gui->reset) return FALSE;
 
+  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) self->gui_data;
+
   GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
   const int creation_continuous = ((e->state & modifiers) == GDK_CONTROL_MASK);
 
-  return _add_shape(widget, creation_continuous, self);
+  _add_shape(widget, creation_continuous, self);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), _shape_is_being_added(self, DT_MASKS_CIRCLE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), _shape_is_being_added(self, DT_MASKS_ELLIPSE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), _shape_is_being_added(self, DT_MASKS_PATH));
+
+  return TRUE;
 }
 
 static gboolean _edit_masks(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
@@ -781,32 +790,21 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(hbox, _("click on a shape and drag on canvas.\nuse the mouse wheel "
                                       "to adjust size.\nright click to remove a shape."));
 
-  g->bt_edit_masks
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_edit_masks), "button-press-event", G_CALLBACK(_edit_masks), self);
-  gtk_widget_set_tooltip_text(g->bt_edit_masks, _("show and edit shapes"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), g->bt_edit_masks, FALSE, FALSE, 0);
+  g->bt_edit_masks = dt_iop_togglebutton_new(self, N_("show and edit shapes"), NULL,
+                                             G_CALLBACK(_edit_masks), TRUE, 0, 0,
+                                             dtgtk_cairo_paint_masks_eye, hbox);
 
-  g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_path, _("add path\nctrl+click to add multiple paths"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), g->bt_path, FALSE, FALSE, 0);
+  g->bt_path = dt_iop_togglebutton_new(self, N_("add path"), N_("add multiple paths"),
+                                       G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_masks_path, hbox);
 
-  g->bt_ellipse
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_ellipse, _("add ellipse\nctrl+click to add multiple ellipses"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), g->bt_ellipse, FALSE, FALSE, 0);
+  g->bt_ellipse = dt_iop_togglebutton_new(self, N_("add ellipse"), N_("add multiple ellipses"),
+                                       G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_masks_ellipse, hbox);
 
-  g->bt_circle
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_circle, _("add circle\nctrl+click to add multiple circles"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), g->bt_circle, FALSE, FALSE, 0);
+  g->bt_circle = dt_iop_togglebutton_new(self, N_("add circle"), N_("add multiple circles"),
+                                       G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_masks_circle, hbox);
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);

@@ -1074,24 +1074,20 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->target_area), "draw", G_CALLBACK(cluster_preview_draw), self);
 
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
-  GtkWidget *button;
+  g->acquire_source_button = dt_iop_button_new(self, N_("acquire as source"),
+                                               G_CALLBACK(acquire_source_button_pressed), FALSE, 0, 0,
+                                               NULL, 0, box);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->acquire_source_button))), PANGO_ELLIPSIZE_START);
+  gtk_widget_set_tooltip_text(g->acquire_source_button, _("analyze this image as a source image"));
 
-  button = gtk_button_new_with_label(_("acquire as source"));
-  g->acquire_source_button = button;
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_START);
-  gtk_widget_set_tooltip_text(button, _("analyze this image as a source image"));
-  gtk_box_pack_start(box, button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_source_button_pressed), (gpointer)self);
-
-  button = gtk_button_new_with_label(_("acquire as target"));
-  g->acquire_target_button = button;
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_START);
-  gtk_widget_set_tooltip_text(button, _("analyze this image as a target image"));
-  gtk_box_pack_start(box, button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_target_button_pressed), (gpointer)self);
+  g->acquire_target_button = dt_iop_button_new(self, N_("acquire as target"),
+                                               G_CALLBACK(acquire_target_button_pressed), FALSE, 0, 0,
+                                               NULL, 0, box);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->acquire_target_button))), PANGO_ELLIPSIZE_START);
+  gtk_widget_set_tooltip_text(g->acquire_target_button, _("analyze this image as a target image"));
 
   g->clusters = dt_bauhaus_slider_from_params(self, "n");
   gtk_widget_set_tooltip_text(g->clusters, _("number of clusters to find in image. value change resets all clusters"));
@@ -1108,7 +1104,6 @@ void gui_init(struct dt_iop_module_t *self)
   /* add signal handler for preview pipe finished: process clusters if requested */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(process_clusters), self);
-
 
   FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "rb");
   if(f)
