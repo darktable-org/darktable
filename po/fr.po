@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-24 23:09+0200\n"
-"PO-Revision-Date: 2020-10-24 23:16+0200\n"
+"POT-Creation-Date: 2020-10-24 23:18+0200\n"
+"PO-Revision-Date: 2020-10-24 23:18+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -14896,7 +14896,7 @@ msgid "in cm (for print)"
 msgstr "en cm (pour impression)"
 
 #: ../src/libs/export.c:1142
-msgid "in inchs (for print)"
+msgid "in inch (for print)"
 msgstr "en pouce (pour impression)"
 
 #: ../src/libs/export.c:1143
@@ -14933,7 +14933,7 @@ msgstr "px"
 
 #: ../src/libs/export.c:1197
 msgid ""
-"it can be an integer, decimal fraction or simple fraction.\n"
+"it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
 "click middle mouse button to reset to 1."
 msgstr ""
