@@ -1201,7 +1201,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(GTK_WIDGET(d->scale), GTK_ALIGN_END);
   gtk_widget_add_events(d->scale, GDK_BUTTON_PRESS_MASK);
 
-  d->size_in_px=gtk_label_new("");
+  d->size_in_px = gtk_label_new("");
   gtk_widget_set_sensitive(GTK_WIDGET(d->size_in_px), FALSE);
 
   GtkGrid *grid_outer = GTK_GRID(gtk_grid_new());
