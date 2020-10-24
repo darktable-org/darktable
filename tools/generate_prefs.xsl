@@ -43,6 +43,8 @@
 #include <gtk/gtk.h>
 #include "control/conf.h"
 
+#define NON_DEF_CHAR "●"
+
 static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
   guint keyval;
@@ -96,7 +98,7 @@ static void set_widget_label_default(GtkWidget *widget, const char *confstr, Gtk
   else
   {
     // replace space with *
-    gtk_label_set_text(GTK_LABEL(label), "*");
+    gtk_label_set_text(GTK_LABEL(label), NON_DEF_CHAR);
     g_object_set(label, "tooltip-text", _("this setting has been modified"), (gchar *)0);
   }
 }
@@ -361,7 +363,7 @@ gboolean restart_required = FALSE;
     }
     else
     {
-       labdef = gtk_label_new("*");
+       labdef = gtk_label_new(NON_DEF_CHAR);
        g_object_set(labdef, "tooltip-text", _("this setting has been modified"), (gchar *)0);
     }
     gtk_widget_set_name(labdef, "preference_non_default");
