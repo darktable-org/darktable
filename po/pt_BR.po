@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-22 20:47-0300\n"
-"PO-Revision-Date: 2020-10-22 20:53-0300\n"
+"POT-Creation-Date: 2020-10-24 18:35-0300\n"
+"PO-Revision-Date: 2020-10-24 19:50-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -153,7 +153,7 @@ msgstr "preservar cores"
 #: ../src/iop/clipping.c:2143 ../src/iop/clipping.c:2159
 #: ../src/iop/clipping.c:2294 ../src/iop/clipping.c:2321
 #: ../src/iop/lens.cc:2253 ../src/iop/retouch.c:342 ../src/libs/collect.c:1683
-#: ../src/libs/colorpicker.c:568 ../src/libs/export.c:818
+#: ../src/libs/colorpicker.c:568 ../src/libs/export.c:1051
 #: ../src/libs/live_view.c:345 ../src/libs/live_view.c:370
 #: ../src/libs/live_view.c:379 ../src/libs/print_settings.c:1475
 msgid "none"
@@ -838,8 +838,8 @@ msgstr "versão do gerador de splines"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:360
 #: ../src/common/darktable.c:913 ../src/common/variables.c:520
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
-#: ../src/libs/export.c:972 ../src/libs/export.c:978 ../src/libs/export.c:985
-#: ../src/libs/metadata_view.c:308
+#: ../src/libs/export.c:1231 ../src/libs/export.c:1237
+#: ../src/libs/export.c:1244 ../src/libs/metadata_view.c:308
 msgid "no"
 msgstr "não"
 
@@ -968,7 +968,7 @@ msgstr "detectar por 3 vizinhos"
 #: ../src/iop/bilat.c:427 ../src/iop/colorbalance.c:1919
 #: ../src/iop/denoiseprofile.c:3943 ../src/iop/exposure.c:914
 #: ../src/iop/levels.c:709 ../src/iop/profile_gamma.c:744
-#: ../src/libs/copy_history.c:357 ../src/libs/export.c:1039
+#: ../src/libs/copy_history.c:357 ../src/libs/export.c:1298
 #: ../src/libs/image.c:558 ../src/libs/print_settings.c:1516
 #: ../src/libs/styles.c:562 ../src/views/darkroom.c:2190
 msgid "mode"
@@ -3645,8 +3645,8 @@ msgstr ""
 
 #: ../src/common/darktable.c:913 ../src/common/database.c:3227
 #: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
-#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:973
-#: ../src/libs/export.c:979 ../src/libs/export.c:986
+#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:1232
+#: ../src/libs/export.c:1238 ../src/libs/export.c:1245
 #: ../src/libs/metadata_view.c:308
 msgid "yes"
 msgstr "sim"
@@ -4139,7 +4139,7 @@ msgstr "perfil de escalonamento OpenCL ajustado para default."
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:311 ../src/libs/export.c:953
+#: ../src/common/pdf.h:89 ../src/libs/export.c:520 ../src/libs/export.c:1184
 #: ../src/libs/print_settings.c:1293
 msgid "cm"
 msgstr "cm"
@@ -7523,7 +7523,7 @@ msgstr ""
 "exemplos: 10 mm, 1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:654 ../src/libs/export.c:956
+#: ../src/imageio/format/pdf.c:654 ../src/libs/export.c:1187
 msgid "dpi"
 msgstr "dpi"
 
@@ -7723,7 +7723,7 @@ msgstr "foto"
 msgid "graphic"
 msgstr "gráfico"
 
-#: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:835
+#: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:1068
 msgid "file on disk"
 msgstr "arquivo no disco"
 
@@ -10101,21 +10101,21 @@ msgstr "perfil de saída não suportado foi substituido por linear sRGB!"
 msgid "output intent"
 msgstr "intenção de saída"
 
-#: ../src/iop/colorout.c:867 ../src/libs/export.c:1022
+#: ../src/iop/colorout.c:867 ../src/libs/export.c:1281
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2357 ../src/views/darkroom.c:2365
 #: ../src/views/lighttable.c:1397 ../src/views/lighttable.c:1405
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:868 ../src/libs/export.c:1023
+#: ../src/iop/colorout.c:868 ../src/libs/export.c:1282
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2358 ../src/views/darkroom.c:2366
 #: ../src/views/lighttable.c:1398 ../src/views/lighttable.c:1406
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
-#: ../src/iop/colorout.c:869 ../src/libs/export.c:1024
+#: ../src/iop/colorout.c:869 ../src/libs/export.c:1283
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2359 ../src/views/darkroom.c:2367
 #: ../src/views/lighttable.c:1399 ../src/views/lighttable.c:1407
@@ -10123,7 +10123,7 @@ msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
-#: ../src/iop/colorout.c:870 ../src/libs/export.c:1025
+#: ../src/iop/colorout.c:870 ../src/libs/export.c:1284
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2360 ../src/views/darkroom.c:2368
 #: ../src/views/lighttable.c:1400 ../src/views/lighttable.c:1408
@@ -10564,7 +10564,7 @@ msgstr "variância de azul: "
 msgid "variance computed on the blue channel"
 msgstr "variância calculada no canal azul"
 
-#: ../src/iop/denoiseprofile.c:3936 ../src/libs/export.c:998
+#: ../src/iop/denoiseprofile.c:3936 ../src/libs/export.c:1257
 #: ../src/libs/print_settings.c:1189 ../src/libs/print_settings.c:1409
 msgid "profile"
 msgstr "perfil"
@@ -11051,7 +11051,7 @@ msgstr ""
 "especificamente em luminâncias extremas\n"
 "diminua se sombras e/ou realces estão saturados demais."
 
-#: ../src/iop/filmic.c:1730 ../src/libs/export.c:1020
+#: ../src/iop/filmic.c:1730 ../src/libs/export.c:1279
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1457
 msgid "intent"
 msgstr "intenção"
@@ -14220,10 +14220,15 @@ msgid ""
 "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided "
 "filter' methods"
 msgstr ""
-"'não' afeta contraste global e local (seguro se você só adicionar contraste)\n"
-"'gf' (filtro guiado) só afeta  contraste global e tenta preservar contraste local\n"
-"'filtro guiado por média' é uma média geométrica dos métodos 'não' e 'filtro guiado'\n"
-"'eigf' (exposure-independent guided filter) é um filtro guiado que é independente de exposição, e suaviza sombras e realces da mesma forma (ao contrário do filtro guiado que suaviza menos os realces)\n"
+"'não' afeta contraste global e local (seguro se você só adicionar "
+"contraste)\n"
+"'gf' (filtro guiado) só afeta  contraste global e tenta preservar contraste "
+"local\n"
+"'filtro guiado por média' é uma média geométrica dos métodos 'não' e 'filtro "
+"guiado'\n"
+"'eigf' (exposure-independent guided filter) é um filtro guiado que é "
+"independente de exposição, e suaviza sombras e realces da mesma forma (ao "
+"contrário do filtro guiado que suaviza menos os realces)\n"
 "'averaged eigf' é uma mędia geométrica dos métodos 'não' e 'eigf'"
 
 #: ../src/iop/toneequal.c:3162
@@ -15085,141 +15090,151 @@ msgstr "duplicar"
 msgid "create a duplicate of the image with same history stack"
 msgstr "cria uma duplicata da imagem com o memso histórico"
 
-#: ../src/libs/export.c:148
+#: ../src/libs/export.c:157
 msgid "export selected"
 msgstr "exportar selecionados"
 
-#: ../src/libs/export.c:241
+#: ../src/libs/export.c:317
 msgid "export to disk"
 msgstr "exportar para o disco"
 
 #. DT_DIMENSIONS_INCH
-#: ../src/libs/export.c:313
+#: ../src/libs/export.c:522
 msgctxt "unit"
 msgid "in"
 msgstr "in"
 
-#: ../src/libs/export.c:847
+#: ../src/libs/export.c:1080
 msgid "storage options"
 msgstr "opções de armazenamento"
 
-#: ../src/libs/export.c:854
+#: ../src/libs/export.c:1087
 msgid "target storage"
 msgstr "armazenar em"
 
-#: ../src/libs/export.c:877
+#: ../src/libs/export.c:1110
 msgid "format options"
 msgstr "opções de formato"
 
-#: ../src/libs/export.c:882
+#: ../src/libs/export.c:1115
 msgid "file format"
 msgstr "formato do arquivo"
 
-#: ../src/libs/export.c:900
+#: ../src/libs/export.c:1133
 msgid "global options"
 msgstr "opções globais"
 
-#: ../src/libs/export.c:905
-msgid "unit"
-msgstr "unidade"
+#: ../src/libs/export.c:1138
+msgid "set size"
+msgstr "definir tamanho"
 
-#: ../src/libs/export.c:906
-msgid "unit in which to input the image size"
-msgstr "unidade para medida do tamanho da imagem"
+#: ../src/libs/export.c:1139
+msgid "choose a method for setting the output size"
+msgstr "escolha um método para determinar o tamanho da saída"
 
-#: ../src/libs/export.c:907
-msgid "pixels (file size)"
-msgstr "pixels (tamanho do arquivo)"
+#: ../src/libs/export.c:1140
+msgid "in pixels (for file)"
+msgstr "em pixels (para arquivo)"
 
-#: ../src/libs/export.c:908
-msgid "cm (print size)"
-msgstr "cm (tamanho da impressão)"
+#: ../src/libs/export.c:1141
+msgid "in cm (for print)"
+msgstr "em cm (para impressão)"
 
-#: ../src/libs/export.c:909
-msgid "in (print size)"
-msgstr "in (tamanho da impressão)"
+#: ../src/libs/export.c:1142
+msgid "in inch (for print)"
+msgstr "em polegadas (para impressão)"
 
-#: ../src/libs/export.c:913 ../src/libs/export.c:930
+#: ../src/libs/export.c:1143
+msgid "by scale (for file)"
+msgstr "por escala (para arquivo)"
+
+#: ../src/libs/export.c:1147 ../src/libs/export.c:1166
 msgid ""
-"maximum output width\n"
-"set to 0 for no scaling"
+"maximum output width limit.\n"
+"click middle mouse button to reset to 0."
 msgstr ""
-"máxima largura de saída\n"
-"0 para manter dimensão"
+"limite máximo para largura da saída.\n"
+"clique com o botão do meio para redefinir como 0."
 
-#: ../src/libs/export.c:916 ../src/libs/export.c:933
+#: ../src/libs/export.c:1151 ../src/libs/export.c:1170
 msgid ""
-"maximum output height\n"
-"set to 0 for no scaling"
+"maximum output height limit.\n"
+"click middle mouse button to reset to 0."
 msgstr ""
-"máxima altura de saída\n"
-"0 para manter dimensão"
+"limite máximo para altura da saída.\n"
+"clique com o botão do meio para redefinir como 0."
 
-#: ../src/libs/export.c:919
+#: ../src/libs/export.c:1155
 msgid "resolution in dot per inch"
 msgstr "resolução em pontos por polegada"
 
-#: ../src/libs/export.c:941
-msgid "max size"
-msgstr "tamanho máx"
-
-#: ../src/libs/export.c:951 ../src/libs/export.c:961
+#: ../src/libs/export.c:1182 ../src/libs/export.c:1191
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:963 ../src/libs/tools/global_toolbox.c:223
+#: ../src/libs/export.c:1193 ../src/libs/tools/global_toolbox.c:223
 msgid "px"
 msgstr "px"
 
-#: ../src/libs/export.c:971
+#: ../src/libs/export.c:1197
+msgid ""
+"it can be an integer, decimal number or simple fraction.\n"
+"zero or empty values are equal to 1.\n"
+"click middle mouse button to reset to 1."
+msgstr ""
+"pode ser um inteiro, número decimal ou fração simples.\n"
+"zero ou vazio são iguais a 1.\n"
+"clique com o botão do meio para redefinir em 1."
+
+#: ../src/libs/export.c:1230
 msgid "allow upscaling"
 msgstr "permitir aumentar a escala"
 
-#: ../src/libs/export.c:977
+#: ../src/libs/export.c:1236
 msgid "high quality resampling"
 msgstr "reamostragem de alta qualidade"
 
-#: ../src/libs/export.c:980
+#: ../src/libs/export.c:1239
 msgid "do high quality resampling during export"
 msgstr "fazer reamostragem de alta qualidade durante exportação"
 
-#: ../src/libs/export.c:984
+#: ../src/libs/export.c:1243
 msgid "store masks"
 msgstr "armazenar máscaras"
 
-#: ../src/libs/export.c:987
+#: ../src/libs/export.c:1246
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "armazena máscaras como camadas nas imagens exportadas. só funciona com "
 "alguns formatos."
 
-#: ../src/libs/export.c:1000 ../src/libs/export.c:1021
+#: ../src/libs/export.c:1259 ../src/libs/export.c:1280
 #: ../src/libs/print_settings.c:1412 ../src/libs/print_settings.c:1459
 msgid "image settings"
 msgstr "configurações da imagem"
 
-#: ../src/libs/export.c:1011 ../src/libs/print_settings.c:1448
+#: ../src/libs/export.c:1270 ../src/libs/print_settings.c:1448
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "perfil ICC de saída em  %s ou %s"
 
-#: ../src/libs/export.c:1031 ../src/libs/print_settings.c:1473
+#: ../src/libs/export.c:1290 ../src/libs/print_settings.c:1473
 msgid "style"
 msgstr "estilo"
 
-#: ../src/libs/export.c:1034
+#: ../src/libs/export.c:1293
 msgid "temporary style to use while exporting"
 msgstr "estilo temporário a ser usado ao exportar"
 
-#: ../src/libs/export.c:1043 ../src/libs/print_settings.c:1518
+#: ../src/libs/export.c:1302 ../src/libs/print_settings.c:1518
 msgid "replace history"
 msgstr "colar histórico, eliminando a original"
 
-#: ../src/libs/export.c:1044 ../src/libs/print_settings.c:1519
+#: ../src/libs/export.c:1303 ../src/libs/print_settings.c:1519
 msgid "append history"
 msgstr "adicionar histórico ao final"
 
-#: ../src/libs/export.c:1049 ../src/libs/print_settings.c:1526
+#: ../src/libs/export.c:1308 ../src/libs/print_settings.c:1526
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
@@ -15227,20 +15242,20 @@ msgstr ""
 "o histórico"
 
 #. Export button
-#: ../src/libs/export.c:1072
+#: ../src/libs/export.c:1331
 msgid "export"
 msgstr "exportar"
 
-#: ../src/libs/export.c:1072
+#: ../src/libs/export.c:1331
 msgid "export with current settings"
 msgstr "exporta com configuração atual (ctrl-e)"
 
-#: ../src/libs/export.c:1078
+#: ../src/libs/export.c:1337
 msgid "edit metadata exportation details"
 msgstr "editar detalhes de exportação de metadados"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1720 ../src/libs/styles.c:73
+#: ../src/libs/export.c:2004 ../src/libs/styles.c:73
 #: ../src/views/darkroom.c:3793
 msgctxt "accel"
 msgid "export"
@@ -18794,6 +18809,32 @@ msgstr "atalhos"
 #: ../src/views/view.c:1632
 msgid "Action"
 msgstr "Ação"
+
+#~ msgid "unit"
+#~ msgstr "unidade"
+
+#~ msgid "unit in which to input the image size"
+#~ msgstr "unidade para medida do tamanho da imagem"
+
+#~ msgid "in (print size)"
+#~ msgstr "in (tamanho da impressão)"
+
+#~ msgid ""
+#~ "maximum output width\n"
+#~ "set to 0 for no scaling"
+#~ msgstr ""
+#~ "máxima largura de saída\n"
+#~ "0 para manter dimensão"
+
+#~ msgid ""
+#~ "maximum output height\n"
+#~ "set to 0 for no scaling"
+#~ msgstr ""
+#~ "máxima altura de saída\n"
+#~ "0 para manter dimensão"
+
+#~ msgid "max size"
+#~ msgstr "tamanho máx"
 
 #~ msgid "mask blending : landscapes"
 #~ msgstr "mesclagem de máscara : paisagens"
