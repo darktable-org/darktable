@@ -91,11 +91,13 @@ static void set_widget_label_default(GtkWidget *widget, const char *confstr, Gtk
   {
     // replace * with space
     gtk_label_set_text(GTK_LABEL(label), "");
+    g_object_set(label, "tooltip-text", NULL, (gchar *)0);
   }
   else
   {
     // replace space with *
     gtk_label_set_text(GTK_LABEL(label), "*");
+    g_object_set(label, "tooltip-text", _("this setting has been modified"), (gchar *)0);
   }
 }
 
@@ -352,7 +354,16 @@ gboolean restart_required = FALSE;
   <xsl:text>
   {
     const gboolean is_default = dt_conf_is_default("</xsl:text><xsl:value-of select="name"/><xsl:text>");
-    GtkWidget *labdef = gtk_label_new(is_default?" ":"*");
+    GtkWidget *labdef;
+    if(is_default)
+    {
+       labdef = gtk_label_new("");
+    }
+    else
+    {
+       labdef = gtk_label_new("*");
+       g_object_set(labdef, "tooltip-text", _("this setting has been modified"), (gchar *)0);
+    }
     gtk_widget_set_name(labdef, "preference_non_default");
     label = gtk_label_new("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>");
     gtk_widget_set_halign(label, GTK_ALIGN_START);
