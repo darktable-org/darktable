@@ -1149,6 +1149,13 @@ dialog scrollbar
   margin: 1px 0;
 }
 
+#preference_non_default
+{
+  font-weight: bolder;
+  margin: 1px;
+  min-width: 1em;
+}
+
 #preferences_notebook combobox,
 #preferences_notebook spinbutton
 {
