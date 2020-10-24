@@ -1139,7 +1139,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->dimensions_type, _("choose a method for setting the output size"));
   dt_bauhaus_combobox_add(d->dimensions_type, _("in pixels (for file)"));
   dt_bauhaus_combobox_add(d->dimensions_type, _("in cm (for print)"));
-  dt_bauhaus_combobox_add(d->dimensions_type, _("in inchs (for print)"));
+  dt_bauhaus_combobox_add(d->dimensions_type, _("in inch (for print)"));
   dt_bauhaus_combobox_add(d->dimensions_type, _("by scale (for file)"));
   dt_bauhaus_combobox_set(d->dimensions_type, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"));
 
@@ -1194,7 +1194,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->scale = gtk_entry_new();
   gtk_entry_set_text (GTK_ENTRY(d->scale), dt_conf_get_string(CONFIG_PREFIX "resizing_factor"));
-  gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal fraction or simple fraction.\n"
+  gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal number or simple fraction.\n"
                                           "zero or empty values are equal to 1.\n"
                                           "click middle mouse button to reset to 1."));
   dt_gui_key_accel_block_on_focus_connect(d->scale);
