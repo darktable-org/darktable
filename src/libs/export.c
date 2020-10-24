@@ -203,7 +203,7 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
   dt_lib_queue_postponed_update(self, _update);
 }
 
-bool _is_int(double value)
+gboolean _is_int(double value)
 {
     return (value == (int)value);
 }
