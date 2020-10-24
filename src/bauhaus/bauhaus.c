@@ -857,22 +857,22 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, co
     {
       if(w->type == DT_BAUHAUS_SLIDER)
       {
-        dt_accel_register_slider_iop(w->module->so, FALSE, label);
+        dt_accel_register_slider_iop(w->module->so, FALSE, label_orig);
       }
       else if(w->type == DT_BAUHAUS_COMBOBOX)
       {
-        dt_accel_register_combobox_iop(w->module->so, FALSE, label);
+        dt_accel_register_combobox_iop(w->module->so, FALSE, label_orig);
       }
     }
     else
     {
       if(w->type == DT_BAUHAUS_SLIDER)
       {
-        dt_accel_connect_slider_iop(w->module, label, widget);
+        dt_accel_connect_slider_iop(w->module, label_orig, widget);
       }
       else if(w->type == DT_BAUHAUS_COMBOBOX)
       {
-        dt_accel_connect_combobox_iop(w->module, label, widget);
+        dt_accel_connect_combobox_iop(w->module, label_orig, widget);
       }
     }
 
