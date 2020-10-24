@@ -1193,10 +1193,11 @@ dialog scrollbar
   margin: 1px 0;
 }
 
-#preferences_notebook label.preference_non_default
+#preference_non_default
 {
   font-weight: bolder;
-  font-style: italic;
+  margin: 1px;
+  min-width: 1em;
 }
 
 #preferences_notebook combobox,
