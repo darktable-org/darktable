@@ -841,17 +841,18 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     scale = fmin(width >  0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale,
                  height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale);
 
-    if (strcmp(dt_conf_get_string("plugins/lighttable/export/resizing"),"scaling") == 0)
-    { // scaling
+    if (strcmp(dt_conf_get_string("plugins/lighttable/export/resizing"), "scaling") == 0)
+    {
+      // scaling
       double scale_factor = 1;
       double _num, _denum;
       dt_imageio_resizing_factor_get_and_parsing(&_num, &_denum);
 
-      scale_factor = _num/_denum;
+      scale_factor = _num / _denum;
 
       if (!thumbnail_export)
       {
-          scale = scale_factor;
+        scale = fmin(scale_factor, max_scale);
       }
     }
 
