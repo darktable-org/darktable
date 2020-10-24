@@ -103,9 +103,9 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkWidget *lens_param_box;
   GtkWidget *detection_warning;
   GtkWidget *cbe[3];
-  GtkButton *camera_model;
+  GtkWidget *camera_model;
   GtkMenu *camera_menu;
-  GtkButton *lens_model;
+  GtkWidget *lens_model;
   GtkMenu *lens_menu;
   GtkWidget *modflags, *target_geom, *reverse, *tca_r, *tca_b, *scale;
   GtkWidget *find_lens_button;
@@ -2301,28 +2301,26 @@ void gui_init(struct dt_iop_module_t *self)
 
   // camera selector
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  g->camera_model = GTK_BUTTON(gtk_button_new_with_label(""));
+  g->camera_model = dt_iop_button_new(self, N_("camera model"),
+                                      G_CALLBACK(camera_menusearch_clicked), FALSE, 0, (GdkModifierType)0,
+                                      NULL, 0, hbox);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->camera_model));
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
-  g_signal_connect(G_OBJECT(g->camera_model), "clicked", G_CALLBACK(camera_menusearch_clicked), self);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->camera_model), TRUE, TRUE, 0);
-  g->find_camera_button = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_STYLE_FLAT | CPF_DIRECTION_DOWN, NULL);
+  g->find_camera_button = dt_iop_button_new(self, N_("find camera"),
+                                            G_CALLBACK(camera_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
+                                            dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), g->find_camera_button, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(g->find_camera_button, _("find camera"));
-  g_signal_connect(G_OBJECT(g->find_camera_button), "clicked", G_CALLBACK(camera_autosearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   // lens selector
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  g->lens_model = GTK_BUTTON(gtk_button_new_with_label(""));
+  g->lens_model = dt_iop_button_new(self, N_("lens model"),
+                                    G_CALLBACK(lens_menusearch_clicked), FALSE, 0, (GdkModifierType)0,
+                                    NULL, 0, hbox);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->lens_model));
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
-  g_signal_connect(G_OBJECT(g->lens_model), "clicked", G_CALLBACK(lens_menusearch_clicked), self);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->lens_model), TRUE, TRUE, 0);
-  g->find_lens_button = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_STYLE_FLAT | CPF_DIRECTION_DOWN, NULL);
+  g->find_lens_button = dt_iop_button_new(self, N_("find lens"),
+                                          G_CALLBACK(lens_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
+                                          dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), g->find_lens_button, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(g->find_lens_button, _("find lens"));
-  g_signal_connect(G_OBJECT(g->find_lens_button), "clicked", G_CALLBACK(lens_autosearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   // lens properties
@@ -2442,12 +2440,12 @@ void gui_update(struct dt_iop_module_t *self)
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   // these are the wrong (untranslated) strings in general but that's ok, they will be overwritten further
   // down
-  gtk_button_set_label(g->camera_model, p->camera);
-  gtk_button_set_label(g->lens_model, p->lens);
+  gtk_button_set_label(GTK_BUTTON(g->camera_model), p->camera);
+  gtk_button_set_label(GTK_BUTTON(g->lens_model), p->lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->camera_model), "");
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->lens_model), "");
+  gtk_widget_set_tooltip_text(g->camera_model, "");
+  gtk_widget_set_tooltip_text(g->lens_model, "");
 
   int modflag = p->modify_flags & LENSFUN_MODFLAG_MASK;
   GList *modifiers = g->modifiers;
