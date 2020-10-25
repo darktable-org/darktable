@@ -169,42 +169,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "TCA R"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "TCA B"));
-
-  dt_accel_register_iop(self, FALSE, NC_("accel", "find camera"), 0, (GdkModifierType)0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "find lens"), 0, (GdkModifierType)0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "camera model"), 0, (GdkModifierType)0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "lens model"), 0, (GdkModifierType)0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "select corrections"), 0, (GdkModifierType)0);
-
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "corrections"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "geometry"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_button_iop(self, "find camera", GTK_WIDGET(g->find_camera_button));
-  dt_accel_connect_button_iop(self, "find lens", GTK_WIDGET(g->find_lens_button));
-  dt_accel_connect_button_iop(self, "camera model", GTK_WIDGET(g->camera_model));
-  dt_accel_connect_button_iop(self, "lens model", GTK_WIDGET(g->lens_model));
-  dt_accel_connect_button_iop(self, "select corrections", GTK_WIDGET(g->modflags));
-
-  dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
-  dt_accel_connect_slider_iop(self, "TCA R", GTK_WIDGET(g->tca_r));
-  dt_accel_connect_slider_iop(self, "TCA B", GTK_WIDGET(g->tca_b));
-
-  dt_accel_connect_combobox_iop(self, "corrections", GTK_WIDGET(g->modflags));
-  dt_accel_connect_combobox_iop(self, "geometry", GTK_WIDGET(g->target_geom));
-  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->reverse));
-}
-
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {

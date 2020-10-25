@@ -81,20 +81,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_RAW;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->threshold));
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
-}
-
 /* Detect hot sensor pixels based on the 4 surrounding sites. Pixels
  * having 3 or 4 (depending on permissive setting) surrounding pixels that
  * than value*multiplier are considered "hot", and are replaced by the maximum of

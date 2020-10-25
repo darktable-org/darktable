@@ -322,50 +322,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blacks"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "deep shadows"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "light shadows"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtones"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dark highlights"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "whites"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "speculars"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "filter diffusion"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "smoothing diameter"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edges refinement or feathering"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask quantization"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask exposure compensation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask contrast compensation"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "luminance estimator"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve details"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "blacks", GTK_WIDGET(g->noise));
-  dt_accel_connect_slider_iop(self, "deep shadows", GTK_WIDGET(g->ultra_deep_blacks));
-  dt_accel_connect_slider_iop(self, "shadows", GTK_WIDGET(g->deep_blacks));
-  dt_accel_connect_slider_iop(self, "light shadows", GTK_WIDGET(g->blacks));
-  dt_accel_connect_slider_iop(self, "midtones", GTK_WIDGET(g->shadows));
-  dt_accel_connect_slider_iop(self, "dark highlights", GTK_WIDGET(g->midtones));
-  dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->highlights));
-  dt_accel_connect_slider_iop(self, "whites", GTK_WIDGET(g->whites));
-  dt_accel_connect_slider_iop(self, "speculars", GTK_WIDGET(g->speculars));
-  dt_accel_connect_slider_iop(self, "filter diffusion", GTK_WIDGET(g->iterations));
-  dt_accel_connect_slider_iop(self, "smoothing diameter", GTK_WIDGET(g->blending));
-  dt_accel_connect_slider_iop(self, "edges refinement or feathering", GTK_WIDGET(g->feathering));
-  dt_accel_connect_slider_iop(self, "mask quantization", GTK_WIDGET(g->quantization));
-  dt_accel_connect_slider_iop(self, "mask exposure compensation", GTK_WIDGET(g->exposure_boost));
-  dt_accel_connect_slider_iop(self, "mask contrast compensation", GTK_WIDGET(g->contrast_boost));
-  dt_accel_connect_combobox_iop(self, "luminance estimator", GTK_WIDGET(g->method));
-  dt_accel_connect_combobox_iop(self, "preserve details", GTK_WIDGET(g->details));
-}
-
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
@@ -3074,47 +3030,50 @@ void gui_init(struct dt_iop_module_t *self)
   g->noise = dt_bauhaus_slider_from_params(self, "noise");
   dt_bauhaus_slider_set_step(g->noise, .05);
   dt_bauhaus_slider_set_format(g->noise, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->noise, NULL, N_("-8 EV"));
 
   g->ultra_deep_blacks = dt_bauhaus_slider_from_params(self, "ultra_deep_blacks");
   dt_bauhaus_slider_set_step(g->ultra_deep_blacks, .05);
   dt_bauhaus_slider_set_format(g->ultra_deep_blacks, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->ultra_deep_blacks, NULL, N_("-7 EV"));
 
   g->deep_blacks = dt_bauhaus_slider_from_params(self, "deep_blacks");
   dt_bauhaus_slider_set_step(g->deep_blacks, .05);
   dt_bauhaus_slider_set_format(g->deep_blacks, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->deep_blacks, NULL, N_("-6 EV"));
 
   g->blacks = dt_bauhaus_slider_from_params(self, "blacks");
   dt_bauhaus_slider_set_step(g->blacks, .05);
   dt_bauhaus_slider_set_format(g->blacks, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->blacks, NULL, N_("-5 EV"));
 
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
   dt_bauhaus_slider_set_step(g->shadows, .05);
   dt_bauhaus_slider_set_format(g->shadows, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->shadows, NULL, N_("-4 EV"));
 
   g->midtones = dt_bauhaus_slider_from_params(self, "midtones");
   dt_bauhaus_slider_set_step(g->midtones, .05);
   dt_bauhaus_slider_set_format(g->midtones, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->midtones, NULL, N_("-3 EV"));
 
   g->highlights = dt_bauhaus_slider_from_params(self, "highlights");
   dt_bauhaus_slider_set_step(g->highlights, .05);
   dt_bauhaus_slider_set_format(g->highlights, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->highlights, NULL, N_("-2 EV"));
 
   g->whites = dt_bauhaus_slider_from_params(self, "whites");
   dt_bauhaus_slider_set_step(g->whites, .05);
   dt_bauhaus_slider_set_format(g->whites, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->whites, NULL, N_("-1 EV"));
 
   g->speculars = dt_bauhaus_slider_from_params(self, "speculars");
   dt_bauhaus_slider_set_step(g->speculars, .05);
   dt_bauhaus_slider_set_format(g->speculars, _("%+.2f EV"));
+
+  ++darktable.bauhaus->skip_accel;
+  dt_bauhaus_widget_set_label(g->noise, NULL, N_("-8 EV"));
+  dt_bauhaus_widget_set_label(g->ultra_deep_blacks, NULL, N_("-7 EV"));
+  dt_bauhaus_widget_set_label(g->deep_blacks, NULL, N_("-6 EV"));
+  dt_bauhaus_widget_set_label(g->blacks, NULL, N_("-5 EV"));
+  dt_bauhaus_widget_set_label(g->shadows, NULL, N_("-4 EV"));
+  dt_bauhaus_widget_set_label(g->midtones, NULL, N_("-3 EV"));
+  dt_bauhaus_widget_set_label(g->highlights, NULL, N_("-2 EV"));
+  dt_bauhaus_widget_set_label(g->whites, NULL, N_("-1 EV"));
   dt_bauhaus_widget_set_label(g->speculars, NULL, N_("+0 EV"));
+  --darktable.bauhaus->skip_accel;
 
   // Advanced view
 

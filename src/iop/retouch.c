@@ -2227,7 +2227,7 @@ void gui_init(dt_iop_module_t *self)
 
   // mask opacity
   g->sl_mask_opacity = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.05, 1., 3);
-  dt_bauhaus_widget_set_label(g->sl_mask_opacity, N_("mask opacity"), N_("mask opacity"));
+  dt_bauhaus_widget_set_label(g->sl_mask_opacity, NULL, N_("mask opacity"));
   gtk_widget_set_tooltip_text(g->sl_mask_opacity, _("set the opacity on the selected shape"));
   g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed", G_CALLBACK(rt_mask_opacity_callback), self);
 
@@ -2603,153 +2603,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 void init_key_accels(dt_iop_module_so_t *module)
 {
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool circle"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool ellipse"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool path"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool brush"), 0, 0);
-
-  dt_accel_register_iop(module, TRUE, NC_("accel", "continuous add circle"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "continuous add ellipse"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "continuous add path"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "continuous add brush"), 0, 0);
-
-  dt_accel_register_iop(module, TRUE, NC_("accel", "show or hide shapes"), 0, 0);
-}
-
-static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_circle), FALSE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_being_added(module, DT_MASKS_CIRCLE));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                       GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_ellipse), FALSE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_being_added(module, DT_MASKS_ELLIPSE));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _add_brush_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_brush), FALSE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_being_added(module, DT_MASKS_BRUSH));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_path), FALSE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_being_added(module, DT_MASKS_PATH));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _continuous_add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                                 GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_circle), TRUE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_being_added(module, DT_MASKS_CIRCLE));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _continuous_add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                                  GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_ellipse), TRUE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_being_added(module, DT_MASKS_ELLIPSE));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _continuous_add_brush_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_brush), TRUE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_being_added(module, DT_MASKS_BRUSH));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _continuous_add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                               GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_path), TRUE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_being_added(module, DT_MASKS_PATH));
-
-  --darktable.gui->reset;
-
-  return TRUE;
+  dt_accel_register_iop(module, TRUE, N_("show or hide shapes"), 0, 0);
 }
 
 static gboolean _show_or_hide_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -2810,32 +2664,6 @@ static gboolean _show_or_hide_accel(GtkAccelGroup *accel_group, GObject *acceler
 void connect_key_accels(dt_iop_module_t *module)
 {
   GClosure *closure;
-
-  // single add
-  closure = g_cclosure_new(G_CALLBACK(_add_circle_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "retouch tool circle", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "retouch tool elipse", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_add_brush_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "retouch tool brush", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "retouch tool path", closure);
-
-  // continuous add
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_circle_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "continuous add circle", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "continuous add ellipse", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_brush_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "continuous add brush", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_path_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "continuous add path", closure);
 
   //show or hide
   closure = g_cclosure_new(G_CALLBACK(_show_or_hide_accel), (gpointer)module, NULL);

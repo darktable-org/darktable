@@ -119,30 +119,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "detail"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtone range"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "detail", GTK_WIDGET(g->detail));
-  dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->spatial));
-  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->range));
-  dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->highlights));
-  dt_accel_connect_slider_iop(self, "shadows", GTK_WIDGET(g->shadows));
-  dt_accel_connect_slider_iop(self, "midtone range", GTK_WIDGET(g->midtone));
-  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
-}
-
 int legacy_params(
     dt_iop_module_t *self, const void *const old_params, const int old_version,
     void *new_params, const int new_version)
@@ -434,26 +410,29 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->detail, "%.0f%%");
   gtk_widget_set_tooltip_text(g->detail, _("changes the local contrast"));
 
+  ++darktable.bauhaus->skip_accel;
   g->spatial = dt_bauhaus_slider_from_params(self, "sigma_s");
+  g->range = dt_bauhaus_slider_from_params(self, "sigma_r");
+  g->highlights = dt_bauhaus_slider_from_params(self, "sigma_r");
+  g->shadows = dt_bauhaus_slider_from_params(self, "sigma_s");
+  --darktable.bauhaus->skip_accel;
+
   dt_bauhaus_slider_set_default(g->spatial, 50.0);
   dt_bauhaus_slider_set_digits(g->spatial, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, N_("coarseness"));
   gtk_widget_set_tooltip_text(g->spatial, _("feature size of local details (spatial sigma of bilateral filter)"));
 
-  g->range = dt_bauhaus_slider_from_params(self, "sigma_r");
   dt_bauhaus_slider_set_default(g->range, 20.0);
   dt_bauhaus_slider_set_digits(g->range, 0);
   dt_bauhaus_widget_set_label(g->range, NULL, N_("contrast"));
   gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
-  g->highlights = dt_bauhaus_slider_from_params(self, "sigma_r");
   dt_bauhaus_slider_set_step(g->highlights, 0.01);
   dt_bauhaus_widget_set_label(g->highlights, NULL, N_("highlights"));
   dt_bauhaus_slider_set_factor(g->highlights, 100);
   dt_bauhaus_slider_set_format(g->highlights, "%.0f%%");
   gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
 
-  g->shadows = dt_bauhaus_slider_from_params(self, "sigma_s");
   dt_bauhaus_slider_set_step(g->shadows, 0.01);
   dt_bauhaus_widget_set_label(g->shadows, NULL, N_("shadows"));
   dt_bauhaus_slider_set_factor(g->shadows, 100);

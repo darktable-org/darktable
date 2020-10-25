@@ -290,46 +290,6 @@ void init_presets(dt_iop_module_so_t *self)
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "input saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "output saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast fulcrum"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows factor"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones factor"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights factor"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights saturation"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color control sliders"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "input saturation", GTK_WIDGET(g->saturation));
-  dt_accel_connect_slider_iop(self, "output saturation", GTK_WIDGET(g->saturation_out));
-  dt_accel_connect_slider_iop(self, "contrast fulcrum", GTK_WIDGET(g->grey));
-  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->contrast));
-  dt_accel_connect_slider_iop(self, "shadows factor", GTK_WIDGET(g->lift_factor));
-  dt_accel_connect_slider_iop(self, "shadows hue", GTK_WIDGET(g->hue_lift));
-  dt_accel_connect_slider_iop(self, "shadows saturation", GTK_WIDGET(g->sat_lift));
-  dt_accel_connect_slider_iop(self, "mid-tones factor", GTK_WIDGET(g->gamma_factor));
-  dt_accel_connect_slider_iop(self, "mid-tones hue", GTK_WIDGET(g->hue_gamma));
-  dt_accel_connect_slider_iop(self, "mid-tones saturation", GTK_WIDGET(g->sat_gamma));
-  dt_accel_connect_slider_iop(self, "highlights factor", GTK_WIDGET(g->gain_factor));
-  dt_accel_connect_slider_iop(self, "highlights hue", GTK_WIDGET(g->hue_gain));
-  dt_accel_connect_slider_iop(self, "highlights saturation", GTK_WIDGET(g->sat_gain));
-  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
-  dt_accel_connect_combobox_iop(self, "color control sliders", GTK_WIDGET(g->controls));
-}
-
 static inline float CDL(float x, float slope, float offset, float power)
 {
   float out;

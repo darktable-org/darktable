@@ -125,48 +125,6 @@ void init_presets(dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  for(int i = 0; i < 4; i++)
-  {
-    gchar *label = g_strdup_printf(_("black level %i"), i);
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", label));
-    g_free(label);
-  }
-
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white point"));
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop x"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop y"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop width"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop height"));
-  }
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
-
-  for(int i = 0; i < 4; i++)
-  {
-    gchar *label = g_strdup_printf(_("black level %i"), i);
-    dt_accel_connect_slider_iop(self, label, g->black_level_separate[i]);
-    g_free(label);
-  }
-
-  dt_accel_connect_slider_iop(self, "white point", g->white_point);
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    dt_accel_connect_slider_iop(self, "crop x", g->x);
-    dt_accel_connect_slider_iop(self, "crop y", g->y);
-    dt_accel_connect_slider_iop(self, "crop width", g->width);
-    dt_accel_connect_slider_iop(self, "crop height", g->height);
-  }
-}
-
 // value to round,   reference on how to round:
 //  if ref was even, returned value will be even
 //  if ref was odd,  returned value will be odd

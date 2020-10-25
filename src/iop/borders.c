@@ -197,33 +197,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "border size"));
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick border color from image"), 0, 0);
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "frame line size"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "frame line offset"));
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick frame line color from image"), 0, 0);
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "aspect"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "orientation"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "horizontal position"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "vertical position"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  dt_accel_connect_button_iop(self, "pick border color from image", GTK_WIDGET(g->colorpick));
-  dt_accel_connect_slider_iop(self, "border size", GTK_WIDGET(g->size));
-  dt_accel_connect_button_iop(self, "pick frame line color from image", GTK_WIDGET(g->frame_colorpick));
-  dt_accel_connect_slider_iop(self, "frame line size", GTK_WIDGET(g->frame_size));
-  dt_accel_connect_slider_iop(self, "frame line offset", GTK_WIDGET(g->frame_offset));
-  dt_accel_connect_combobox_iop(self, "aspect", GTK_WIDGET(g->aspect));
-  dt_accel_connect_combobox_iop(self, "orientation", GTK_WIDGET(g->aspect_orient));
-  dt_accel_connect_combobox_iop(self, "horizontal position", GTK_WIDGET(g->pos_h));
-  dt_accel_connect_combobox_iop(self, "vertical position", GTK_WIDGET(g->pos_v));
-}
-
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;

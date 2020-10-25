@@ -1522,6 +1522,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
 
 static void init_key_accels(dt_iop_module_so_t *module)
 {
+  // Calling the accelerator initialization callback, if present
+  if(module->init_key_accels) (module->init_key_accels)(module);
+
   // create a gui and have the widgets register their accelerators
   if(module->gui_init)
   {
@@ -2975,7 +2978,9 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
   {
     //add accelerators to new module
     dt_accel_connect_list_iop(accel_mod_new);
+
     // FIXME: not special case? i.e. make sure they are in list
+    if(accel_mod_new->connect_key_accels) accel_mod_new->connect_key_accels(accel_mod_new);
     dt_iop_connect_common_accels(accel_mod_new);
   }
 }

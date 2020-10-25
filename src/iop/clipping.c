@@ -3451,37 +3451,12 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, TRUE, NC_("accel", "commit"), GDK_KEY_Return, 0);
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "angle"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "left"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "top"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "right"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bottom"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "aspect ratio"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "guide lines"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "flip"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "keystone"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "automatic cropping"));
+  dt_accel_register_iop(self, TRUE, N_("commit"), GDK_KEY_Return, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  GClosure *closure;
-
-  closure = g_cclosure_new(G_CALLBACK(key_commit_callback), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "commit", closure);
-
-  dt_accel_connect_slider_iop(self, "angle", GTK_WIDGET(g->angle));
-  dt_accel_connect_slider_iop(self, "left", GTK_WIDGET(g->cx));
-  dt_accel_connect_slider_iop(self, "top", GTK_WIDGET(g->cy));
-  dt_accel_connect_slider_iop(self, "right", GTK_WIDGET(g->cw));
-  dt_accel_connect_slider_iop(self, "bottom", GTK_WIDGET(g->ch));
-  dt_accel_connect_combobox_iop(self, "guide lines", GTK_WIDGET(g->guide_lines));
-  dt_accel_connect_combobox_iop(self, "aspect ratio", GTK_WIDGET(g->aspect_presets));
-  dt_accel_connect_combobox_iop(self, "flip", GTK_WIDGET(g->hvflip));
-  dt_accel_connect_combobox_iop(self, "keystone", GTK_WIDGET(g->keystone_type));
-  dt_accel_connect_combobox_iop(self, "automatic cropping", GTK_WIDGET(g->crop_auto));
+  dt_accel_connect_iop(self, "commit", g_cclosure_new(G_CALLBACK(key_commit_callback), (gpointer)self, NULL));
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)
