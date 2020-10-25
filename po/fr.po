@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-24 23:18+0200\n"
+"POT-Creation-Date: 2020-10-25 16:50+0100\n"
 "PO-Revision-Date: 2020-10-24 23:18+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -1503,6 +1503,10 @@ msgstr "ce paramètre a été modifié"
 msgid "lighttable"
 msgstr "table lumineuse"
 
+#: ../build/bin/preferences_gen.h:2730
+msgid "color manage cached thumbnails"
+msgstr "miniatures avec gestion de la couleur"
+
 #: ../build/bin/preferences_gen.h:2741 ../build/bin/preferences_gen.h:2776
 #: ../build/bin/preferences_gen.h:2880 ../build/bin/preferences_gen.h:2915
 #: ../build/bin/preferences_gen.h:3009 ../build/bin/preferences_gen.h:3048
@@ -1577,6 +1581,10 @@ msgstr ""
 "gestion de la couleur pour un rendu parfait des couleurs. sinon l'affichage "
 "peut être faux lorsque le profil d'affichage est changé."
 
+#: ../build/bin/preferences_gen.h:2765
+msgid "don't use embedded preview JPEG but half-size raw"
+msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
+
 #: ../build/bin/preferences_gen.h:2776 ../build/bin/preferences_gen.h:3167
 #: ../build/bin/preferences_gen.h:3202 ../build/bin/preferences_gen.h:3237
 #: ../build/bin/preferences_gen.h:3272 ../build/bin/preferences_gen.h:3307
@@ -1602,6 +1610,10 @@ msgstr ""
 "l'image à afficher à partir du raw. cela ralentit le logiciel mais affiche "
 "des miniatures plus exactes."
 
+#: ../build/bin/preferences_gen.h:2800
+msgid "number of folder levels to show in lists"
+msgstr "nombre de niveaux de dossiers à afficher"
+
 #: ../build/bin/preferences_gen.h:2821 ../build/bin/preferences_gen.h:3964
 #: ../build/bin/preferences_gen.h:4423 ../build/bin/preferences_gen.h:4510
 #: ../build/bin/preferences_gen.h:5430 ../build/bin/preferences_gen.h:5474
@@ -1620,6 +1632,10 @@ msgstr ""
 "nombre de niveaux de dossier à afficher dans les noms, en partant de la "
 "droite"
 
+#: ../build/bin/preferences_gen.h:2845
+msgid "sort film rolls by"
+msgstr "trier les pellicules par"
+
 #: ../build/bin/preferences_gen.h:2856 ../build/bin/preferences_gen.h:2880
 msgctxt "preferences"
 msgid "id"
@@ -1634,6 +1650,10 @@ msgstr "dossier"
 msgid "sets the collections-list order for film rolls"
 msgstr "indique l'ordre de tri pour la collection sur les pellicules"
 
+#: ../build/bin/preferences_gen.h:2904
+msgid "sort collection recent to older"
+msgstr "trie les collections du plus récent au plus ancien"
+
 #: ../build/bin/preferences_gen.h:2918
 msgid ""
 "changes the default collections-list order for folders, times and dates to "
@@ -1641,6 +1661,10 @@ msgid ""
 msgstr ""
 "change l'ordre par défaut des collections par dossier, heure et date pour "
 "aller du plus récent au plus ancien."
+
+#: ../build/bin/preferences_gen.h:2939
+msgid "high quality thumb processing from size"
+msgstr "miniature de haute qualité à partir de la taille"
 
 #: ../build/bin/preferences_gen.h:2950 ../build/bin/preferences_gen.h:4295
 #: ../build/bin/preferences_gen.h:4349 ../build/bin/preferences_gen.h:5991
@@ -1698,6 +1722,10 @@ msgstr ""
 "créée en utilisant le développement de haute qualité (meilleur mais plus "
 "lent)."
 
+#: ../build/bin/preferences_gen.h:3033
+msgid "delimiters for sizes categories"
+msgstr "séparateurs de catégorie des tailles"
+
 #: ../build/bin/preferences_gen.h:3051
 msgid ""
 "sizes categories are used to be able to set different overlays and css "
@@ -1707,9 +1735,21 @@ msgstr ""
 "superposition et présentation graphique en fonction de la taille des "
 "miniatures."
 
+#: ../build/bin/preferences_gen.h:3072
+msgid "pattern for the thumbnail extended overlay text"
+msgstr "patron pour les surimpressions des miniatures"
+
 #: ../build/bin/preferences_gen.h:3093 ../build/bin/preferences_gen.h:3135
 msgid "see manual to know all the tags you can use."
 msgstr "voir le manuel pour connaître toutes les étiquettes utilisables."
+
+#: ../build/bin/preferences_gen.h:3114
+msgid "pattern for the thumbnail tooltip (empty to disable)"
+msgstr "patron pour les infos bulles des miniatures (vide pour désactiver)"
+
+#: ../build/bin/preferences_gen.h:3156
+msgid "use single-click in the collect panel"
+msgstr "utiliser un seul clic pour les collections"
 
 #: ../build/bin/preferences_gen.h:3170
 msgid ""
@@ -1719,6 +1759,10 @@ msgstr ""
 "positionner cette option permet d'utiliser un seul clic pour sélectionner un "
 "élément du module de collection. cela permet aussi de pouvoir sélectionner "
 "des étendues de dates et de valeurs numériques."
+
+#: ../build/bin/preferences_gen.h:3191
+msgid "overlay txt sidecar over zoomed images"
+msgstr "superpose le txt aux images agrandies"
 
 #: ../build/bin/preferences_gen.h:3205
 msgid ""
@@ -1730,10 +1774,20 @@ msgstr ""
 "images agrandies dans la table lumineuse. le fichier txt doit être présent "
 "lors de l'import ou la recherche doit être activée."
 
+#: ../build/bin/preferences_gen.h:3226
+msgid "expand a single lighttable module at a time"
+msgstr "déplier un seul module de la table lumineuse à la fois"
+
 #: ../build/bin/preferences_gen.h:3240
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "cette option échange le comportement du shift-clic de la table lumineuse"
+
+#: ../build/bin/preferences_gen.h:3261
+msgid "scroll to lighttable modules when expanded/collapsed"
+msgstr ""
+"positionne les modules de la table lumineuse lorsque qu'ils sont déplier/"
+"repliés"
 
 #: ../build/bin/preferences_gen.h:3275 ../build/bin/preferences_gen.h:3923
 msgid ""
@@ -1743,6 +1797,10 @@ msgstr ""
 "lorsque cette option est activée darktable essaiera de positionner le module "
 "pour qu'il soit entièrement visible"
 
+#: ../build/bin/preferences_gen.h:3296
+msgid "rating an image one star twice will not zero out the rating"
+msgstr "appliquer une étoile deux fois à une image ne supprimera pas l'étoile"
+
 #: ../build/bin/preferences_gen.h:3310
 msgid ""
 "do not have the rating of one star behave as documented in the manual--an "
@@ -1751,6 +1809,10 @@ msgstr ""
 "ne pas se conformer à la documentation pour les étoiles -- appliquer une "
 "étoile deux fois à une image positionnera aucune étoile."
 
+#: ../build/bin/preferences_gen.h:3331 ../build/bin/preferences_gen.h:3988
+msgid "show scrollbars for central view"
+msgstr "affiche les barres de défilement pour la vue centrale"
+
 #: ../build/bin/preferences_gen.h:3345 ../build/bin/preferences_gen.h:4002
 msgid "defines whether scrollbars should be displayed"
 msgstr "défini si les barres de défilement doivent apparaître"
@@ -1758,6 +1820,10 @@ msgstr "défini si les barres de défilement doivent apparaître"
 #: ../build/bin/preferences_gen.h:3373 ../src/views/darkroom.c:110
 msgid "darkroom"
 msgstr "chambre noire"
+
+#: ../build/bin/preferences_gen.h:3388
+msgid "pen pressure control for brush masks"
+msgstr "contrôle de la pression du pinceau du masque"
 
 #: ../build/bin/preferences_gen.h:3399 ../build/bin/preferences_gen.h:3443
 msgctxt "preferences"
@@ -1799,6 +1865,10 @@ msgstr ""
 "contrôle l'attribut spécifié, absolue/relative - la pression est directement "
 "utilisée comme valeur de l'attribut ou multipliée avec la valeur pré-définie."
 
+#: ../build/bin/preferences_gen.h:3467
+msgid "smoothing of brush strokes"
+msgstr "lissage du pinceau"
+
 #: ../build/bin/preferences_gen.h:3478
 msgctxt "preferences"
 msgid "low"
@@ -1822,6 +1892,10 @@ msgstr ""
 "indique le niveau de lissage du pinceau. un lissage haut crée moins de nœud "
 "de contrôle et sera plus facile à éditer mais sera moins précis."
 
+#: ../build/bin/preferences_gen.h:3531
+msgid "display of individual color channels"
+msgstr "affiche les différents canaux de couleur"
+
 #: ../build/bin/preferences_gen.h:3542 ../build/bin/preferences_gen.h:3566
 msgctxt "preferences"
 msgid "false color"
@@ -1840,9 +1914,17 @@ msgstr ""
 "défini comment les canaux de couleur sont affichés lorsque activés dans les "
 "masques paramétriques."
 
+#: ../build/bin/preferences_gen.h:3590
+msgid "pattern for the image information line"
+msgstr "format de la ligne d'information sur l'image"
+
 #: ../build/bin/preferences_gen.h:3611
 msgid "see manual for a list of the tags you can use."
 msgstr "voir le manuel pour connaître toutes les étiquettes utilisables."
+
+#: ../build/bin/preferences_gen.h:3632
+msgid "position of the image information line"
+msgstr "position de la ligne d'information de l'image"
 
 #: ../build/bin/preferences_gen.h:3643
 msgctxt "preferences"
@@ -1869,6 +1951,10 @@ msgctxt "preferences"
 msgid "hidden"
 msgstr "caché"
 
+#: ../build/bin/preferences_gen.h:3705
+msgid "show module groups and/or search text entry"
+msgstr "afficher les groupes de module et/ou la recherche"
+
 #: ../build/bin/preferences_gen.h:3716
 msgctxt "preferences"
 msgid "show search text"
@@ -1889,6 +1975,10 @@ msgid "show module groups and/or search text entry. (needs a restart)"
 msgstr ""
 "affiche les groupes de module et/ou la recherche. (nécessite un redémarrage)"
 
+#: ../build/bin/preferences_gen.h:3769
+msgid "sort built-in presets first"
+msgstr "trier les préréglages internes en premier"
+
 #: ../build/bin/preferences_gen.h:3783
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
@@ -1896,15 +1986,27 @@ msgstr ""
 "choisir de montrer les préréglages internes avant les préréglages "
 "utilisateurs dans le menu des préréglages."
 
+#: ../build/bin/preferences_gen.h:3804
+msgid "hide built-in presets"
+msgstr "cacher les préréglages internes"
+
 #: ../build/bin/preferences_gen.h:3818
 msgid "hides built-in presets of modules in both presets and favourites menu."
 msgstr ""
 "cacher les préréglages internes des modules dans le menu des préréglages et "
 "les favoris."
 
+#: ../build/bin/preferences_gen.h:3839
+msgid "expand a single darkroom module at a time"
+msgstr "déplier un seul module de la chambre noire à la fois"
+
 #: ../build/bin/preferences_gen.h:3853
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr "cette option échange le comportement du shift-clic de la chambre noire"
+
+#: ../build/bin/preferences_gen.h:3874
+msgid "expand the module when it is activated, and collapse it when disabled"
+msgstr "développer le module lorsqu'activé, et réduire lorsque désactivé"
 
 #: ../build/bin/preferences_gen.h:3888
 msgid ""
@@ -1914,6 +2016,16 @@ msgstr ""
 "permet de développer ou réduire automatiquement un module lorsqu'il est "
 "activé ou désactivé."
 
+#: ../build/bin/preferences_gen.h:3909
+msgid "scroll to darkroom modules when expanded/collapsed"
+msgstr ""
+"positionne les modules de la chambre noire lorsque qu'ils sont dépliés/"
+"repliés"
+
+#: ../build/bin/preferences_gen.h:3944
+msgid "border around image in darkroom mode"
+msgstr "bordure autour de l'image dans la chambre noire"
+
 #: ../build/bin/preferences_gen.h:3967
 msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
@@ -1921,6 +2033,10 @@ msgid ""
 msgstr ""
 "affiche l'image dans la chambre noire avec une petite bordure. positionner à "
 "0 pour supprimer la bordure."
+
+#: ../build/bin/preferences_gen.h:4023
+msgid "demosaicing for zoomed out darkroom mode"
+msgstr "méthode de dématriçage pour la vue en chambre noire"
 
 #: ../build/bin/preferences_gen.h:4034
 msgctxt "preferences"
@@ -1951,6 +2067,10 @@ msgstr ""
 "\" (section traitement) . 'full' utilise les réglages de l'exportation. Les "
 "capteurs X-Trans utilisent VNG plutôt que PPG en réglage moyen."
 
+#: ../build/bin/preferences_gen.h:4087
+msgid "reduce resolution of preview image"
+msgstr "réduire la résolution de la pré-visualisation"
+
 #: ../build/bin/preferences_gen.h:4098 ../build/bin/preferences_gen.h:4132
 msgctxt "preferences"
 msgid "original"
@@ -1976,6 +2096,10 @@ msgid "decrease to speed up preview rendering, may hinder accurate masking"
 msgstr ""
 "diminuer pour accélérer le rendu de la pré-visualisation, peut diminuer la "
 "précision des masques"
+
+#: ../build/bin/preferences_gen.h:4156
+msgid "white balance slider colors"
+msgstr "contrôles colorés de la balance des blancs"
 
 #: ../build/bin/preferences_gen.h:4167 ../build/bin/preferences_gen.h:4196
 msgctxt "preferences"
@@ -2005,6 +2129,10 @@ msgstr ""
 "lumière\n"
 "« effet d'émulation » représente l'effet que l'ajustement aurait sur la scène"
 
+#: ../build/bin/preferences_gen.h:4220
+msgid "colorbalance slider block layout"
+msgstr "disposition des contrôles du module balance des couleurs"
+
 #: ../build/bin/preferences_gen.h:4231 ../build/bin/preferences_gen.h:4260
 msgctxt "preferences"
 msgid "list"
@@ -2032,6 +2160,10 @@ msgstr ""
 "liste  - tous les contrôles sont disposées en une seule longue liste,\n"
 "onglet - utilise des onglets pour sélectionner le bloc de contrôles,\n"
 "colonne - chaque bloc est placé dans une colonne."
+
+#: ../build/bin/preferences_gen.h:4284
+msgid "show right-side buttons in darkroom module headers"
+msgstr "affichage des buttons sur la droite des modules en chambre noire"
 
 #: ../build/bin/preferences_gen.h:4300
 msgctxt "preferences"
@@ -2101,6 +2233,10 @@ msgstr "autres vues"
 msgid "map / geolocalisation"
 msgstr "carte / géolocalisation"
 
+#: ../build/bin/preferences_gen.h:4403
+msgid "maximum number of images drawn on map"
+msgstr "nombre maximum d'images affichées sur la carte"
+
 #: ../build/bin/preferences_gen.h:4426
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
@@ -2108,6 +2244,10 @@ msgid ""
 msgstr ""
 "nombre maximum d'images géolocalisées affichées sur la carte. augmenter ce "
 "nombre peut ralentir l'affichage de la carte."
+
+#: ../build/bin/preferences_gen.h:4447
+msgid "pretty print the image location"
+msgstr "affichage plus clair de la localisation d'image"
 
 #: ../build/bin/preferences_gen.h:4461
 msgid ""
@@ -2121,6 +2261,14 @@ msgstr ""
 msgid "slideshow"
 msgstr "diaporama"
 
+#: ../build/bin/preferences_gen.h:4490
+msgid "waiting time between each picture in slideshow"
+msgstr "temporisation entre chaque image du diaporama"
+
+#: ../build/bin/preferences_gen.h:4533
+msgid "do high quality processing for slideshow"
+msgstr "développement de haute qualité lors du diaporama"
+
 #: ../build/bin/preferences_gen.h:4547
 msgid "same option as for export, but applies to slideshow."
 msgstr "même option que pour l'exportation, mais pour le diaporama."
@@ -2129,9 +2277,17 @@ msgstr "même option que pour l'exportation, mais pour le diaporama."
 msgid "processing"
 msgstr "traitement"
 
+#: ../build/bin/preferences_gen.h:4590
+msgid "always use LittleCMS 2 to apply output color profile"
+msgstr "toujours utiliser LittleCMS 2 pour le profil couleur de sortie"
+
 #: ../build/bin/preferences_gen.h:4604
 msgid "this is slower than the default."
 msgstr "plus lent que l'option par défaut."
+
+#: ../build/bin/preferences_gen.h:4625
+msgid "pixel interpolator"
+msgstr "algorithme d'interpolation"
 
 #: ../build/bin/preferences_gen.h:4636
 msgctxt "preferences"
@@ -2161,6 +2317,10 @@ msgstr ""
 "algorithme d'interpolation utilisé pour la rotation et la correction des "
 "objectifs (bilinéaire, bicubique, lanczos2, lanczos3)"
 
+#: ../build/bin/preferences_gen.h:4694
+msgid "3D lut root folder"
+msgstr "répertoire 3D lut racine"
+
 #: ../build/bin/preferences_gen.h:4699 ../src/control/jobs/control_jobs.c:1619
 #: ../src/control/jobs/control_jobs.c:1682 ../src/gui/preferences.c:2023
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:197
@@ -2177,6 +2337,10 @@ msgid ""
 msgstr ""
 "ce répertoire (et sous répertoires) comportent les fichiers Lut utilisés par "
 "les modules 3D lut. nécessite un redémarrage de darktable."
+
+#: ../build/bin/preferences_gen.h:4734
+msgid "auto-apply pixel workflow defaults"
+msgstr "flux de travail par défaut"
 
 #: ../build/bin/preferences_gen.h:4745
 msgctxt "preferences"
@@ -2205,6 +2369,10 @@ msgstr ""
 "le flux de travail relatif à l'affichage est basé sur des modules Lab et "
 "activera automatiquement la courbe de base et l'ancien ordre des modules."
 
+#: ../build/bin/preferences_gen.h:4798
+msgid "auto-apply per camera basecurve presets"
+msgstr "applique le préréglage de la courbe de base pour le boîtier"
+
 #: ../build/bin/preferences_gen.h:4812
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
@@ -2221,6 +2389,10 @@ msgstr ""
 "pour ne pas utiliser de courbe de base par défaut, l'option \"flux de "
 "travail par défaut\" doit être positionnée à \"aucun\"."
 
+#: ../build/bin/preferences_gen.h:4833
+msgid "auto-apply sharpen"
+msgstr "applique automatiquement de la netteté"
+
 #: ../build/bin/preferences_gen.h:4847
 msgid ""
 "this added sharpen is not recommended on cameras without a low-pass filter. "
@@ -2231,6 +2403,10 @@ msgstr ""
 "pas de filtre passe-bas. vous devriez désactiver cette option si vous "
 "utilisez un appareil photo récent ou si vous renforcez la netteté par "
 "d'autres moyens. (nécessite un redémarrage)"
+
+#: ../build/bin/preferences_gen.h:4868
+msgid "detect monochrome previews"
+msgstr "détecter les miniatures monochromes"
 
 #: ../build/bin/preferences_gen.h:4882
 msgid ""
@@ -2246,17 +2422,33 @@ msgstr ""
 msgid "security"
 msgstr "sécurité"
 
+#: ../build/bin/preferences_gen.h:4925
+msgid "ask before removing images from database"
+msgstr "demander avant d'enlever des images"
+
 #: ../build/bin/preferences_gen.h:4939
 msgid "always ask the user before any image is removed from DB."
 msgstr "toujours demander avant d'enlever une image de la base de données."
+
+#: ../build/bin/preferences_gen.h:4960
+msgid "ask before erasing images from disk"
+msgstr "demander avant de supprimer les images du disque"
 
 #: ../build/bin/preferences_gen.h:4974
 msgid "always ask the user before any image file is deleted"
 msgstr "toujours demander avant de supprimer une image"
 
+#: ../build/bin/preferences_gen.h:4995
+msgid "ask before discarding history stack"
+msgstr "demander avant de supprimer l'historique"
+
 #: ../build/bin/preferences_gen.h:5009
 msgid "always ask the user before history stack is discarded on any image"
 msgstr "toujours demander avant de supprimer l'historique"
+
+#: ../build/bin/preferences_gen.h:5030
+msgid "send files to trash when erasing images"
+msgstr "déplace les fichiers vers la poubelle lors de l'effacement"
 
 #: ../build/bin/preferences_gen.h:5044
 msgid ""
@@ -2266,13 +2458,25 @@ msgstr ""
 "déplace les fichiers vers la poubelle au lieu de définitivement les "
 "supprimer sur les système qui le supporte"
 
+#: ../build/bin/preferences_gen.h:5065
+msgid "ask before moving images from film roll folder"
+msgstr "demander avant de déplacer des images vers un autre dossier"
+
 #: ../build/bin/preferences_gen.h:5079
 msgid "always ask the user before any image file is moved."
 msgstr "toujours demander avant de déplacer une image."
 
+#: ../build/bin/preferences_gen.h:5100
+msgid "ask before copying images to new film roll folder"
+msgstr "demander avant de copier des images vers un nouveau dossier"
+
 #: ../build/bin/preferences_gen.h:5114
 msgid "always ask the user before any image file is copied."
 msgstr "toujours demander avant de copier une image."
+
+#: ../build/bin/preferences_gen.h:5135
+msgid "ask before removing empty folders"
+msgstr "demander avant d'enlever les répertoires vides"
 
 #: ../build/bin/preferences_gen.h:5149
 msgid ""
@@ -2281,6 +2485,18 @@ msgid ""
 msgstr ""
 "toujours demander à l'utilisateur avant de supprimer un répertoire vide. "
 "ceci peut arriver lors du déplacement ou de la suppression d'image."
+
+#: ../build/bin/preferences_gen.h:5170
+msgid "ask before deleting a tag"
+msgstr "demander avant de supprimer un mot-clé"
+
+#: ../build/bin/preferences_gen.h:5204
+msgid "ask before deleting a style"
+msgstr "demander avant de supprimer un style"
+
+#: ../build/bin/preferences_gen.h:5238
+msgid "ask before deleting a preset"
+msgstr "demander avant de supprimer un préréglage"
 
 #: ../build/bin/preferences_gen.h:5252
 msgid "will ask for confirmation before deleting or overwritting a preset"
@@ -2292,6 +2508,10 @@ msgstr ""
 msgid "cpu / gpu / memory"
 msgstr "cpu / gpu / mémoire"
 
+#: ../build/bin/preferences_gen.h:5295
+msgid "memory in megabytes to use for thumbnail cache"
+msgstr "mémoire en mégaoctets à utiliser pour le cache des miniatures"
+
 #: ../build/bin/preferences_gen.h:5318
 msgid ""
 "this controls how much memory is going to be used for thumbnails and other "
@@ -2299,6 +2519,10 @@ msgid ""
 msgstr ""
 "contrôle la mémoire maximale qui sera utilisée pour les miniatures et autres "
 "caches (nécessite un redémarrage)."
+
+#: ../build/bin/preferences_gen.h:5339
+msgid "enable disk backend for thumbnail cache"
+msgstr "utilisation du disque pour le cache des miniatures"
 
 #: ../build/bin/preferences_gen.h:5353
 msgid ""
@@ -2317,6 +2541,10 @@ msgstr ""
 "importante. pour générer toutes les miniatures de toutes les collections "
 "hors-ligne exécuter 'darktable-generate-cache'."
 
+#: ../build/bin/preferences_gen.h:5374
+msgid "enable disk backend for full preview cache"
+msgstr "utilisation du disque pour le cache des images 100%"
+
 #: ../build/bin/preferences_gen.h:5388
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
@@ -2332,6 +2560,10 @@ msgstr ""
 "si désiré. la table lumineuse serra beaucoup plus fluide lors du zoom 100% "
 "sur les images."
 
+#: ../build/bin/preferences_gen.h:5409
+msgid "number of background threads"
+msgstr "nombre de fils d’exécution"
+
 #: ../build/bin/preferences_gen.h:5433
 msgid ""
 "this controls for example how many threads are used to create thumbnails "
@@ -2341,6 +2573,10 @@ msgstr ""
 "permet de contrôler par exemple le nombre de fils d’exécution utilisés pour "
 "la création des aperçus pendant l'importation. le cache augmentera jusqu'à "
 "deux fois ce chiffre (nécessite un redémarrage)."
+
+#: ../build/bin/preferences_gen.h:5454
+msgid "host memory limit (in MB) for tiling"
+msgstr "mémoire limite (en Mo) pour le tuilage"
 
 #: ../build/bin/preferences_gen.h:5477
 msgid ""
@@ -2355,6 +2591,11 @@ msgstr ""
 "valeurs inférieures à 500 sont considérées égales à 500. nécessite un "
 "redémarrage."
 
+#: ../build/bin/preferences_gen.h:5498
+msgid "minimum amount of memory (in MB) for a single buffer in tiling"
+msgstr ""
+"quantité minimale de mémoire (en Mo) pour la mémoire-tampon d'une tuile"
+
 #: ../build/bin/preferences_gen.h:5522
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
@@ -2364,6 +2605,10 @@ msgstr ""
 "si une valeur strictement positive est entrée, elle est utilisée comme "
 "quantité de mémoire minimale (en Mo) que le tuilage doit utiliser pour la "
 "mémoire-tampon. surcharge « host_memory_limit ». nécessite un redémarrage."
+
+#: ../build/bin/preferences_gen.h:5543
+msgid "activate OpenCL support"
+msgstr "activer le support d'OpenCL"
 
 #: ../build/bin/preferences_gen.h:5557
 msgid ""
@@ -2381,6 +2626,10 @@ msgstr "non disponible"
 #: ../build/bin/preferences_gen.h:5632 ../build/bin/preferences_gen.h:5636
 msgid "not available on this system"
 msgstr "non disponible sur cette plateforme"
+
+#: ../build/bin/preferences_gen.h:5585
+msgid "OpenCL scheduling profile"
+msgstr "profil de planification OpenCL"
 
 #. Adding the restore defaults button
 #: ../build/bin/preferences_gen.h:5596 ../build/bin/preferences_gen.h:5625
@@ -2422,6 +2671,10 @@ msgstr "stockage"
 msgid "database"
 msgstr "base de données"
 
+#: ../build/bin/preferences_gen.h:5686
+msgid "check for database maintenance"
+msgstr "vérifier pour la maintenance des bases de données"
+
 #: ../build/bin/preferences_gen.h:5702
 msgctxt "preferences"
 msgid "on startup"
@@ -2461,6 +2714,10 @@ msgstr ""
 "cette option indique quand vérifier la fragmentation de la base de données "
 "et lancer la maintenance"
 
+#: ../build/bin/preferences_gen.h:5770
+msgid "database fragmentation ratio threshold"
+msgstr "seuil de fragmentation de la base de données"
+
 #: ../build/bin/preferences_gen.h:5793
 msgid ""
 "fragmentation ratio above which to ask or carry out automatically database "
@@ -2468,6 +2725,10 @@ msgid ""
 msgstr ""
 "le seuil de fragmentation au dessus duquel la maintenance de la base de "
 "données est lancée"
+
+#: ../build/bin/preferences_gen.h:5814
+msgid "create database snapshot"
+msgstr "faire une sauvegarde de la base de données"
 
 #: ../build/bin/preferences_gen.h:5830
 msgctxt "preferences"
@@ -2508,6 +2769,10 @@ msgstr ""
 "dernière sauvegarde\n"
 "à la fermeture - fait une sauvegarde à chaque fermeture de darktable"
 
+#: ../build/bin/preferences_gen.h:5888
+msgid "how many snapshots to keep"
+msgstr "nombre de sauvegarde à conserver"
+
 #: ../build/bin/preferences_gen.h:5911
 msgid ""
 "after successfully creating snapshot, how many older snapshots to keep "
@@ -2525,6 +2790,10 @@ msgstr ""
 msgid "xmp"
 msgstr "xmp"
 
+#: ../build/bin/preferences_gen.h:5940
+msgid "write sidecar file for each image"
+msgstr "écrire un fichier xmp redondant pour chaque image"
+
 #: ../build/bin/preferences_gen.h:5954
 msgid ""
 "these redundant files can later be re-imported into a different database, "
@@ -2532,6 +2801,10 @@ msgid ""
 msgstr ""
 "ces fichiers pourront être réimportés dans une base de données différente "
 "par la suite, tout en préservant les modifications apportées aux images."
+
+#: ../build/bin/preferences_gen.h:5975
+msgid "store xmp tags in compressed format"
+msgstr "enregistre les mots-clés xmp avec un format compressé"
 
 #: ../build/bin/preferences_gen.h:5996 ../build/bin/preferences_gen.h:6015
 msgctxt "preferences"
@@ -2547,6 +2820,10 @@ msgstr ""
 "les données des mots-clés xmp peuvent être larges et dépasser la place "
 "disponible pour enregistrer les données de développement dans le fichier. "
 "cette option permet de compresser les mots-clés xmp pour gagner de la place."
+
+#: ../build/bin/preferences_gen.h:6039
+msgid "look for updated xmp files on startup"
+msgstr "vérifie les fichiers xmp modifiés au démarrage"
 
 #: ../build/bin/preferences_gen.h:6053
 msgid ""
@@ -2564,6 +2841,10 @@ msgstr "divers"
 msgid "interface"
 msgstr "interface"
 
+#: ../build/bin/preferences_gen.h:6104
+msgid "mouse wheel scrolls modules side panel by default"
+msgstr "déplacement des panneaux latéraux avec la molette"
+
 #: ../build/bin/preferences_gen.h:6118
 msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
@@ -2573,6 +2854,10 @@ msgstr ""
 "utiliser ctrl-alt + molette pour changer les réglettes. lorsque désactivé le "
 "comportement est inversé"
 
+#: ../build/bin/preferences_gen.h:6139
+msgid "always show panels' scrollbars"
+msgstr "toujours montrer les ascenseurs des panneaux"
+
 #: ../build/bin/preferences_gen.h:6153
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
@@ -2580,6 +2865,10 @@ msgid ""
 msgstr ""
 "indique si les ascenseurs des panneaux latéraux sont toujours visibles ou "
 "seulement lorsque nécessaire. (nécessite un redémarrage)"
+
+#: ../build/bin/preferences_gen.h:6174
+msgid "method to use for getting the display profile"
+msgstr "méthode à utiliser pour récupérer le profil d'affichage"
 
 #: ../build/bin/preferences_gen.h:6185 ../build/bin/preferences_gen.h:6214
 msgctxt "preferences"
@@ -2612,6 +2901,10 @@ msgstr ""
 msgid "tags"
 msgstr "mots-clés"
 
+#: ../build/bin/preferences_gen.h:6246
+msgid "omit hierarchy in simple tag lists"
+msgstr "ignore la hiérarchie des mots-clés"
+
 #: ../build/bin/preferences_gen.h:6260
 msgid ""
 "when creating XMP file the hierarchical tags are also added as a simple list "
@@ -2624,6 +2917,10 @@ msgstr ""
 "applications. lorsque cette option est sélectionnée, darktable inclura "
 "seulement leur dernière partie et ignorera le reste : ainsi 'faune|insecte|"
 "syrphe' ajoutera uniquement 'syrphe'."
+
+#: ../build/bin/preferences_gen.h:6281
+msgid "disable the entry completion"
+msgstr "désactiver l'auto-complétion"
 
 #: ../build/bin/preferences_gen.h:6295
 msgid ""
@@ -2649,10 +2946,18 @@ msgstr ""
 "de contrôler l'ordre des règles pour le choix de l'instance qui recevra le "
 "raccourcis clavier."
 
+#: ../build/bin/preferences_gen.h:6326
+msgid "prefer expanded instances"
+msgstr "préférence aux instances développées"
+
 #: ../build/bin/preferences_gen.h:6340
 msgid "if instances of the module are expanded, ignore collapsed instances"
 msgstr ""
 "si des instances du module sont dépliées, ignore les instances repliées"
+
+#: ../build/bin/preferences_gen.h:6361
+msgid "prefer enabled instances"
+msgstr "préférence aux instances actives"
 
 #: ../build/bin/preferences_gen.h:6375
 msgid ""
@@ -2662,6 +2967,10 @@ msgstr ""
 "après l'application de la règles ci-dessus, si des instances du module sont "
 "actives, ignore les instances non actives"
 
+#: ../build/bin/preferences_gen.h:6396
+msgid "prefer unmasked instances"
+msgstr "préférence aux instances visibles"
+
 #: ../build/bin/preferences_gen.h:6410
 msgid ""
 "after applying the above rules, if instances of the module are unmasked, "
@@ -2669,6 +2978,10 @@ msgid ""
 msgstr ""
 "après l'application de la règles ci-dessus, si des instances du modules sont "
 "visibles, ignore les instances cachées"
+
+#: ../build/bin/preferences_gen.h:6431
+msgid "selection order"
+msgstr "ordre de sélection"
 
 #: ../build/bin/preferences_gen.h:6442
 msgctxt "preferences"
@@ -2697,6 +3010,14 @@ msgstr ""
 msgid "other"
 msgstr "autre"
 
+#: ../build/bin/preferences_gen.h:6498
+msgid "do not show april 1st game"
+msgstr "ne jamais afficher le jeu du 1er avril"
+
+#: ../build/bin/preferences_gen.h:6532
+msgid "password storage backend to use"
+msgstr "stockage à utiliser pour les mots de passe"
+
 #: ../build/bin/preferences_gen.h:6553
 msgctxt "preferences"
 msgid "libsecret"
@@ -2714,6 +3035,10 @@ msgstr ""
 "interface pour trousseau de mots de passe : automatique, aucun, libsecret, "
 "kwallet"
 
+#: ../build/bin/preferences_gen.h:6603
+msgid "executable for playing audio files"
+msgstr "exécutable pour jouer les fichiers audio"
+
 #: ../build/bin/preferences_gen.h:6621
 msgid ""
 "this external program is used to play audio files some cameras record to "
@@ -2727,6 +3052,10 @@ msgstr ""
 msgid "import"
 msgstr "importer"
 
+#: ../build/bin/preferences_gen.h:6672
+msgid "ignore JPEG images when importing film rolls"
+msgstr "ignorer les fichiers JPEG lors de l'importation d'un dossier"
+
 #: ../build/bin/preferences_gen.h:6686
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
@@ -2736,6 +3065,30 @@ msgstr ""
 "n'a pas de sens d'importer les deux. en activant cette option les fichiers "
 "JPEG sont ignorés."
 
+#: ../build/bin/preferences_gen.h:6707
+msgid "recursive directory traversal when importing filmrolls"
+msgstr "importer les dossiers de manière récursive"
+
+#: ../build/bin/preferences_gen.h:6741
+msgid "creator to be applied when importing"
+msgstr "auteur par défaut lors de l'importation"
+
+#: ../build/bin/preferences_gen.h:6779
+msgid "publisher to be applied when importing"
+msgstr "diffuseur par défaut lors de l'importation"
+
+#: ../build/bin/preferences_gen.h:6817
+msgid "rights to be applied when importing"
+msgstr "droits par défaut lors de l'importation"
+
+#: ../build/bin/preferences_gen.h:6855
+msgid "comma separated tags to be applied when importing"
+msgstr "mots-clés séparés par des virgules à appliquer à l'importation"
+
+#: ../build/bin/preferences_gen.h:6893
+msgid "initial import rating"
+msgstr "étoile(s) à l'importation"
+
 #: ../build/bin/preferences_gen.h:6917
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "étoile(s) attribuée(s) lors de l'importation"
@@ -2744,9 +3097,21 @@ msgstr "étoile(s) attribuée(s) lors de l'importation"
 msgid "session options"
 msgstr "options de session"
 
+#: ../build/bin/preferences_gen.h:6946
+msgid "base directory naming pattern"
+msgstr "nommage du répertoire de base"
+
 #: ../build/bin/preferences_gen.h:6964 ../build/bin/preferences_gen.h:7003
 msgid "part of full import path for an import session"
 msgstr "partie du chemin complet pour la session d'importation"
+
+#: ../build/bin/preferences_gen.h:6985
+msgid "sub directory naming pattern"
+msgstr "nommage du sous répertoire"
+
+#: ../build/bin/preferences_gen.h:7024
+msgid "keep original filename"
+msgstr "garder le nom d'origine"
 
 #: ../build/bin/preferences_gen.h:7038
 msgid ""
@@ -2755,6 +3120,10 @@ msgid ""
 msgstr ""
 "garder le nom de fichier d'origine à la place du patron lors de "
 "l'importation depuis un appareil photo ou une carte mémoire"
+
+#: ../build/bin/preferences_gen.h:7059
+msgid "file naming pattern"
+msgstr "nommage des fichiers"
 
 #: ../build/bin/preferences_gen.h:7077
 msgid "file naming pattern used for a import session"
@@ -18658,287 +19027,6 @@ msgstr "action"
 
 #~ msgid "max size"
 #~ msgstr "taille max"
-
-#~ msgid "color manage cached thumbnails"
-#~ msgstr "miniatures avec gestion de la couleur"
-
-#~ msgid "don't use embedded preview JPEG but half-size raw"
-#~ msgstr ""
-#~ "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
-
-#~ msgid "number of folder levels to show in lists"
-#~ msgstr "nombre de niveaux de dossiers à afficher"
-
-#~ msgid "sort film rolls by"
-#~ msgstr "trier les pellicules par"
-
-#~ msgid "sort collection recent to older"
-#~ msgstr "trie les collections du plus récent au plus ancien"
-
-#~ msgid "high quality thumb processing from size"
-#~ msgstr "miniature de haute qualité à partir de la taille"
-
-#~ msgid "delimiters for sizes categories"
-#~ msgstr "séparateurs de catégorie des tailles"
-
-#~ msgid "pattern for the thumbnail extended overlay text"
-#~ msgstr "patron pour les surimpressions des miniatures"
-
-#~ msgid "pattern for the thumbnail tooltip (empty to disable)"
-#~ msgstr "patron pour les infos bulles des miniatures (vide pour désactiver)"
-
-#~ msgid "use single-click in the collect panel"
-#~ msgstr "utiliser un seul clic pour les collections"
-
-#~ msgid "overlay txt sidecar over zoomed images"
-#~ msgstr "superpose le txt aux images agrandies"
-
-#~ msgid "expand a single lighttable module at a time"
-#~ msgstr "déplier un seul module de la table lumineuse à la fois"
-
-#~ msgid "scroll to lighttable modules when expanded/collapsed"
-#~ msgstr ""
-#~ "positionne les modules de la table lumineuse lorsque qu'ils sont déplier/"
-#~ "repliés"
-
-#~ msgid "rating an image one star twice will not zero out the rating"
-#~ msgstr ""
-#~ "appliquer une étoile deux fois à une image ne supprimera pas l'étoile"
-
-#~ msgid "show scrollbars for central view"
-#~ msgstr "affiche les barres de défilement pour la vue centrale"
-
-#~ msgid "pen pressure control for brush masks"
-#~ msgstr "contrôle de la pression du pinceau du masque"
-
-#~ msgid "smoothing of brush strokes"
-#~ msgstr "lissage du pinceau"
-
-#~ msgid "display of individual color channels"
-#~ msgstr "affiche les différents canaux de couleur"
-
-#~ msgid "pattern for the image information line"
-#~ msgstr "format de la ligne d'information sur l'image"
-
-#~ msgid "position of the image information line"
-#~ msgstr "position de la ligne d'information de l'image"
-
-#~ msgid "show module groups and/or search text entry"
-#~ msgstr "afficher les groupes de module et/ou la recherche"
-
-#~ msgid "sort built-in presets first"
-#~ msgstr "trier les préréglages internes en premier"
-
-#~ msgid "hide built-in presets"
-#~ msgstr "cacher les préréglages internes"
-
-#~ msgid "expand a single darkroom module at a time"
-#~ msgstr "déplier un seul module de la chambre noire à la fois"
-
-#~ msgid ""
-#~ "expand the module when it is activated, and collapse it when disabled"
-#~ msgstr "développer le module lorsqu'activé, et réduire lorsque désactivé"
-
-#~ msgid "scroll to darkroom modules when expanded/collapsed"
-#~ msgstr ""
-#~ "positionne les modules de la chambre noire lorsque qu'ils sont dépliés/"
-#~ "repliés"
-
-#~ msgid "border around image in darkroom mode"
-#~ msgstr "bordure autour de l'image dans la chambre noire"
-
-#~ msgid "demosaicing for zoomed out darkroom mode"
-#~ msgstr "méthode de dématriçage pour la vue en chambre noire"
-
-#~ msgid "reduce resolution of preview image"
-#~ msgstr "réduire la résolution de la pré-visualisation"
-
-#~ msgid "white balance slider colors"
-#~ msgstr "contrôles colorés de la balance des blancs"
-
-#~ msgid "colorbalance slider block layout"
-#~ msgstr "disposition des contrôles du module balance des couleurs"
-
-#~ msgid "show right-side buttons in darkroom module headers"
-#~ msgstr "affichage des buttons sur la droite des modules en chambre noire"
-
-#~ msgid "maximum number of images drawn on map"
-#~ msgstr "nombre maximum d'images affichées sur la carte"
-
-#~ msgid "pretty print the image location"
-#~ msgstr "affichage plus clair de la localisation d'image"
-
-#~ msgid "waiting time between each picture in slideshow"
-#~ msgstr "temporisation entre chaque image du diaporama"
-
-#~ msgid "do high quality processing for slideshow"
-#~ msgstr "développement de haute qualité lors du diaporama"
-
-#~ msgid "always use LittleCMS 2 to apply output color profile"
-#~ msgstr "toujours utiliser LittleCMS 2 pour le profil couleur de sortie"
-
-#~ msgid "pixel interpolator"
-#~ msgstr "algorithme d'interpolation"
-
-#~ msgid "3D lut root folder"
-#~ msgstr "répertoire 3D lut racine"
-
-#~ msgid "auto-apply pixel workflow defaults"
-#~ msgstr "flux de travail par défaut"
-
-#~ msgid "auto-apply per camera basecurve presets"
-#~ msgstr "applique le préréglage de la courbe de base pour le boîtier"
-
-#~ msgid "auto-apply sharpen"
-#~ msgstr "applique automatiquement de la netteté"
-
-#~ msgid "detect monochrome previews"
-#~ msgstr "détecter les miniatures monochromes"
-
-#~ msgid "ask before removing images from database"
-#~ msgstr "demander avant d'enlever des images"
-
-#~ msgid "ask before erasing images from disk"
-#~ msgstr "demander avant de supprimer les images du disque"
-
-#~ msgid "ask before discarding history stack"
-#~ msgstr "demander avant de supprimer l'historique"
-
-#~ msgid "send files to trash when erasing images"
-#~ msgstr "déplace les fichiers vers la poubelle lors de l'effacement"
-
-#~ msgid "ask before moving images from film roll folder"
-#~ msgstr "demander avant de déplacer des images vers un autre dossier"
-
-#~ msgid "ask before copying images to new film roll folder"
-#~ msgstr "demander avant de copier des images vers un nouveau dossier"
-
-#~ msgid "ask before removing empty folders"
-#~ msgstr "demander avant d'enlever les répertoires vides"
-
-#~ msgid "ask before deleting a tag"
-#~ msgstr "demander avant de supprimer un mot-clé"
-
-#~ msgid "ask before deleting a style"
-#~ msgstr "demander avant de supprimer un style"
-
-#~ msgid "ask before deleting a preset"
-#~ msgstr "demander avant de supprimer un préréglage"
-
-#~ msgid "memory in megabytes to use for thumbnail cache"
-#~ msgstr "mémoire en mégaoctets à utiliser pour le cache des miniatures"
-
-#~ msgid "enable disk backend for thumbnail cache"
-#~ msgstr "utilisation du disque pour le cache des miniatures"
-
-#~ msgid "enable disk backend for full preview cache"
-#~ msgstr "utilisation du disque pour le cache des images 100%"
-
-#~ msgid "number of background threads"
-#~ msgstr "nombre de fils d’exécution"
-
-#~ msgid "host memory limit (in MB) for tiling"
-#~ msgstr "mémoire limite (en Mo) pour le tuilage"
-
-#~ msgid "minimum amount of memory (in MB) for a single buffer in tiling"
-#~ msgstr ""
-#~ "quantité minimale de mémoire (en Mo) pour la mémoire-tampon d'une tuile"
-
-#~ msgid "activate OpenCL support"
-#~ msgstr "activer le support d'OpenCL"
-
-#~ msgid "OpenCL scheduling profile"
-#~ msgstr "profil de planification OpenCL"
-
-#~ msgid "check for database maintenance"
-#~ msgstr "vérifier pour la maintenance des bases de données"
-
-#~ msgid "database fragmentation ratio threshold"
-#~ msgstr "seuil de fragmentation de la base de données"
-
-#~ msgid "create database snapshot"
-#~ msgstr "faire une sauvegarde de la base de données"
-
-#~ msgid "how many snapshots to keep"
-#~ msgstr "nombre de sauvegarde à conserver"
-
-#~ msgid "write sidecar file for each image"
-#~ msgstr "écrire un fichier xmp redondant pour chaque image"
-
-#~ msgid "store xmp tags in compressed format"
-#~ msgstr "enregistre les mots-clés xmp avec un format compressé"
-
-#~ msgid "look for updated xmp files on startup"
-#~ msgstr "vérifie les fichiers xmp modifiés au démarrage"
-
-#~ msgid "mouse wheel scrolls modules side panel by default"
-#~ msgstr "déplacement des panneaux latéraux avec la molette"
-
-#~ msgid "always show panels' scrollbars"
-#~ msgstr "toujours montrer les ascenseurs des panneaux"
-
-#~ msgid "method to use for getting the display profile"
-#~ msgstr "méthode à utiliser pour récupérer le profil d'affichage"
-
-#~ msgid "omit hierarchy in simple tag lists"
-#~ msgstr "ignore la hiérarchie des mots-clés"
-
-#~ msgid "disable the entry completion"
-#~ msgstr "désactiver l'auto-complétion"
-
-#~ msgid "prefer expanded instances"
-#~ msgstr "préférence aux instances développées"
-
-#~ msgid "prefer enabled instances"
-#~ msgstr "préférence aux instances actives"
-
-#~ msgid "prefer unmasked instances"
-#~ msgstr "préférence aux instances visibles"
-
-#~ msgid "selection order"
-#~ msgstr "ordre de sélection"
-
-#~ msgid "do not show april 1st game"
-#~ msgstr "ne jamais afficher le jeu du 1er avril"
-
-#~ msgid "password storage backend to use"
-#~ msgstr "stockage à utiliser pour les mots de passe"
-
-#~ msgid "executable for playing audio files"
-#~ msgstr "exécutable pour jouer les fichiers audio"
-
-#~ msgid "ignore JPEG images when importing film rolls"
-#~ msgstr "ignorer les fichiers JPEG lors de l'importation d'un dossier"
-
-#~ msgid "recursive directory traversal when importing filmrolls"
-#~ msgstr "importer les dossiers de manière récursive"
-
-#~ msgid "creator to be applied when importing"
-#~ msgstr "auteur par défaut lors de l'importation"
-
-#~ msgid "publisher to be applied when importing"
-#~ msgstr "diffuseur par défaut lors de l'importation"
-
-#~ msgid "rights to be applied when importing"
-#~ msgstr "droits par défaut lors de l'importation"
-
-#~ msgid "comma separated tags to be applied when importing"
-#~ msgstr "mots-clés séparés par des virgules à appliquer à l'importation"
-
-#~ msgid "initial import rating"
-#~ msgstr "étoile(s) à l'importation"
-
-#~ msgid "base directory naming pattern"
-#~ msgstr "nommage du répertoire de base"
-
-#~ msgid "sub directory naming pattern"
-#~ msgstr "nommage du sous répertoire"
-
-#~ msgid "keep original filename"
-#~ msgstr "garder le nom d'origine"
-
-#~ msgid "file naming pattern"
-#~ msgstr "nommage des fichiers"
 
 #~ msgid "mask blending : landscapes"
 #~ msgstr "fusion masque : paysages"
