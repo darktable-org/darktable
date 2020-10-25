@@ -777,6 +777,12 @@ void gui_update(dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
+const gchar *black_label[]
+  =  { N_("black level 0"),
+       N_("black level 1"),
+       N_("black level 2"),
+       N_("black level 3") };
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_rawprepare_gui_data_t *g = IOP_GUI_ALLOC(rawprepare);
@@ -786,14 +792,12 @@ void gui_init(dt_iop_module_t *self)
   for(int i = 0; i < 4; i++)
   {
     gchar *par = g_strdup_printf("raw_black_level_separate[%i]", i);
-    gchar *label = g_strdup_printf(_("black level %i"), i);
 
     g->black_level_separate[i] = dt_bauhaus_slider_from_params(self, par);
-    dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, label);
-    gtk_widget_set_tooltip_text(g->black_level_separate[i], label);
+    dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, black_label[i]);
+    gtk_widget_set_tooltip_text(g->black_level_separate[i], _(black_label[i]));
     dt_bauhaus_slider_set_soft_max(g->black_level_separate[i], 16384);
 
-    g_free(label);
     g_free(par);
   }
 

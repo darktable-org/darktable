@@ -134,6 +134,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
 
   size_t param_index = 0;
+  gboolean skip_label = FALSE;
 
   const size_t param_length = strlen(param) + 1;
   char *param_name = g_malloc(param_length);
@@ -141,6 +142,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   if(sscanf(param, "%[^[][%zu]", base_name, &param_index) == 2)
   {
     sprintf(param_name, "%s[0]", base_name);
+    skip_label = TRUE;
   }
   else
   {
@@ -226,19 +228,22 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
   if(f)
   {
-    if (*f->header.description)
+    if(!skip_label)
     {
-      // we do not want to support a context as it break all translations see #5498
-      // dt_bauhaus_widget_set_label(slider, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
-      dt_bauhaus_widget_set_label(slider, NULL, gettext(f->header.description));
-    }
-    else
-    {
-      str = dt_util_str_replace(f->header.field_name, "_", " ");
+      if (*f->header.description)
+      {
+        // we do not want to support a context as it break all translations see #5498
+        // dt_bauhaus_widget_set_label(slider, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
+        dt_bauhaus_widget_set_label(slider, NULL, f->header.description);
+      }
+      else
+      {
+        str = dt_util_str_replace(f->header.field_name, "_", " ");
 
-      dt_bauhaus_widget_set_label(slider, NULL, _(str));
+        dt_bauhaus_widget_set_label(slider,  NULL, str);
 
-      g_free(str);
+        g_free(str);
+      }
     }
   }
   else
@@ -276,13 +281,13 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     {
       // we do not want to support a context as it break all translations see #5498
       // dt_bauhaus_widget_set_label(combobox, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
-      dt_bauhaus_widget_set_label(combobox, NULL, gettext(f->header.description));
+      dt_bauhaus_widget_set_label(combobox, NULL, f->header.description);
     }
     else
     {
       str = dt_util_str_replace(f->header.field_name, "_", " ");
 
-      dt_bauhaus_widget_set_label(combobox, NULL, _(str));
+      dt_bauhaus_widget_set_label(combobox,  NULL, str);
 
       g_free(str);
     }
