@@ -105,21 +105,21 @@ static GtkWidget *_guides_gui_grid(dt_iop_module_t *self, void *user_data)
 
   GtkWidget *grid_horizontal = dt_bauhaus_slider_new_with_range(self, 0, 12, 1, data->horizontal, 0);
   dt_bauhaus_slider_set_hard_max(grid_horizontal, 36);
-  dt_bauhaus_widget_set_label(grid_horizontal, NULL, _("horizontal lines"));
+  dt_bauhaus_widget_set_label(grid_horizontal, NULL, N_("horizontal lines"));
   gtk_widget_set_tooltip_text(grid_horizontal, _("number of horizontal guide lines"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_horizontal), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(grid_horizontal), "value-changed", G_CALLBACK(_grid_horizontal_changed), user_data);
 
   GtkWidget *grid_vertical = dt_bauhaus_slider_new_with_range(self, 0, 12, 1, data->vertical, 0);
   dt_bauhaus_slider_set_hard_max(grid_vertical, 36);
-  dt_bauhaus_widget_set_label(grid_vertical, NULL, _("vertical lines"));
+  dt_bauhaus_widget_set_label(grid_vertical, NULL, N_("vertical lines"));
   gtk_widget_set_tooltip_text(grid_vertical, _("number of vertical guide lines"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_vertical), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(grid_vertical), "value-changed", G_CALLBACK(_grid_vertical_changed), user_data);
 
   GtkWidget *grid_subdiv = dt_bauhaus_slider_new_with_range(self, 0, 10, 1, data->subdiv, 0);
   dt_bauhaus_slider_set_hard_max(grid_subdiv, 30);
-  dt_bauhaus_widget_set_label(grid_subdiv, NULL, _("subdivisions"));
+  dt_bauhaus_widget_set_label(grid_subdiv, NULL, N_("subdivisions"));
   gtk_widget_set_tooltip_text(grid_subdiv, _("number of subdivisions per grid rectangle"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_subdiv), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(grid_subdiv), "value-changed", G_CALLBACK(_grid_subdiv_changed), user_data);
@@ -437,7 +437,7 @@ static GtkWidget *_guides_gui_golden_mean(dt_iop_module_t *self, void *user_data
 {
   _golden_mean_t *data = (_golden_mean_t *)user_data;
   GtkWidget *golden_extras = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(golden_extras, NULL, _("extra"));
+  dt_bauhaus_widget_set_label(golden_extras, NULL, N_("extra"));
   dt_bauhaus_combobox_add(golden_extras, _("golden sections"));
   dt_bauhaus_combobox_add(golden_extras, _("golden spiral sections"));
   dt_bauhaus_combobox_add(golden_extras, _("golden spiral"));

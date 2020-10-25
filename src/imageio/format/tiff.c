@@ -807,7 +807,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // Bit depth combo box
   gui->bpp = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->bpp, NULL, _("bit depth"));
+  dt_bauhaus_widget_set_label(gui->bpp, NULL, N_("bit depth"));
   dt_bauhaus_combobox_add(gui->bpp, _("8 bit"));
   dt_bauhaus_combobox_add(gui->bpp, _("16 bit"));
   dt_bauhaus_combobox_add(gui->bpp, _("32 bit (float)"));
@@ -822,7 +822,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // Compression method combo box
   gui->compress = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->compress, NULL, _("compression"));
+  dt_bauhaus_widget_set_label(gui->compress, NULL, N_("compression"));
   dt_bauhaus_combobox_add(gui->compress, _("uncompressed"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor"));
@@ -831,7 +831,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // Compression level slider
   gui->compresslevel = dt_bauhaus_slider_new_with_range(NULL, 0, 9, 1, 6, 0);
-  dt_bauhaus_widget_set_label(gui->compresslevel, NULL, _("compression level"));
+  dt_bauhaus_widget_set_label(gui->compresslevel, NULL, N_("compression level"));
   dt_bauhaus_slider_set(gui->compresslevel, compresslevel);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compresslevel), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->compresslevel), "value-changed", G_CALLBACK(compress_level_changed), NULL);
@@ -843,7 +843,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // shortfile option combo box
   gui->shortfiles = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->shortfiles, NULL, _("b&w image"));
+  dt_bauhaus_widget_set_label(gui->shortfiles, NULL, N_("b&w image"));
   dt_bauhaus_combobox_add(gui->shortfiles, _("write rgb colors"));
   dt_bauhaus_combobox_add(gui->shortfiles, _("write grayscale"));
   dt_bauhaus_combobox_set(gui->shortfiles, shortmode);

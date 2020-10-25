@@ -481,13 +481,13 @@ static void toggle_stock_controls(dt_iop_module_t *const self)
   {
     // Hide color controls
     setup_color_variables(g, FALSE);
-    dt_bauhaus_widget_set_label(g->Dmin_R, NULL, _("D min"));
+    dt_bauhaus_widget_set_label(g->Dmin_R, NULL, N_("D min"));
   }
   else if(p->film_stock == DT_FILMSTOCK_COLOR)
   {
     // Show color controls
     setup_color_variables(g, TRUE);
-    dt_bauhaus_widget_set_label(g->Dmin_R, NULL, _("D min red component"));
+    dt_bauhaus_widget_set_label(g->Dmin_R, NULL, N_("D min red component"));
   }
   else
   {
@@ -873,7 +873,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->Dmin_R, 0.0025);
   dt_bauhaus_slider_set_format(g->Dmin_R, "%.2f %%");
   dt_bauhaus_slider_set_factor(g->Dmin_R, 100);
-  dt_bauhaus_widget_set_label(g->Dmin_R, NULL, _("D min red component"));
+  dt_bauhaus_widget_set_label(g->Dmin_R, NULL, N_("D min red component"));
   gtk_widget_set_tooltip_text(g->Dmin_R, _("adjust the color and shade of the film transparent base.\n"
                                            "this value depends on the film material, \n"
                                            "the chemical fog produced while developing the film,\n"
@@ -884,7 +884,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->Dmin_G, 0.0025);
   dt_bauhaus_slider_set_format(g->Dmin_G, "%.2f %%");
   dt_bauhaus_slider_set_factor(g->Dmin_G, 100);
-  dt_bauhaus_widget_set_label(g->Dmin_G, NULL, _("D min green component"));
+  dt_bauhaus_widget_set_label(g->Dmin_G, NULL, N_("D min green component"));
   gtk_widget_set_tooltip_text(g->Dmin_G, _("adjust the color and shade of the film transparent base.\n"
                                            "this value depends on the film material, \n"
                                            "the chemical fog produced while developing the film,\n"
@@ -895,7 +895,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->Dmin_B, 0.0025);
   dt_bauhaus_slider_set_format(g->Dmin_B, "%.2f %%");
   dt_bauhaus_slider_set_factor(g->Dmin_B, 100);
-  dt_bauhaus_widget_set_label(g->Dmin_B, NULL, _("D min blue component"));
+  dt_bauhaus_widget_set_label(g->Dmin_B, NULL, N_("D min blue component"));
   gtk_widget_set_tooltip_text(g->Dmin_B, _("adjust the color and shade of the film transparent base.\n"
                                            "this value depends on the film material, \n"
                                            "the chemical fog produced while developing the film,\n"
@@ -939,21 +939,21 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row3), FALSE, FALSE, 0);
 
   g->wb_low_R = dt_bauhaus_slider_from_params(self, "wb_low[0]");
-  dt_bauhaus_widget_set_label(g->wb_low_R, NULL, _("shadows red offset"));
+  dt_bauhaus_widget_set_label(g->wb_low_R, NULL, N_("shadows red offset"));
   gtk_widget_set_tooltip_text(g->wb_low_R, _("correct the color cast in shadows so blacks are\n"
                                              "truly achromatic. Setting this value before\n"
                                              "the highlights illuminant white balance will help\n"
                                              "recovering the global white balance in difficult cases."));
 
   g->wb_low_G = dt_bauhaus_slider_from_params(self, "wb_low[1]");
-  dt_bauhaus_widget_set_label(g->wb_low_G, NULL, _("shadows green offset"));
+  dt_bauhaus_widget_set_label(g->wb_low_G, NULL, N_("shadows green offset"));
   gtk_widget_set_tooltip_text(g->wb_low_G, _("correct the color cast in shadows so blacks are\n"
                                              "truly achromatic. Setting this value before\n"
                                              "the highlights illuminant white balance will help\n"
                                              "recovering the global white balance in difficult cases."));
 
   g->wb_low_B = dt_bauhaus_slider_from_params(self, "wb_low[2]");
-  dt_bauhaus_widget_set_label(g->wb_low_B, NULL, _("shadows blue offset"));
+  dt_bauhaus_widget_set_label(g->wb_low_B, NULL, N_("shadows blue offset"));
   gtk_widget_set_tooltip_text(g->wb_low_B, _("correct the color cast in shadows so blacks are\n"
                                              "truly achromatic. Setting this value before\n"
                                              "the highlights illuminant white balance will help\n"
@@ -976,21 +976,21 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row2), FALSE, FALSE, 0);
 
   g->wb_high_R = dt_bauhaus_slider_from_params(self, "wb_high[0]");
-  dt_bauhaus_widget_set_label(g->wb_high_R, NULL, _("illuminant red gain"));
+  dt_bauhaus_widget_set_label(g->wb_high_R, NULL, N_("illuminant red gain"));
   gtk_widget_set_tooltip_text(g->wb_high_R, _("correct the color of the illuminant so whites are\n"
                                               "truly achromatic. Setting this value after\n"
                                               "the shadows color cast will help\n"
                                               "recovering the global white balance in difficult cases."));
 
   g->wb_high_G = dt_bauhaus_slider_from_params(self, "wb_high[1]");
-  dt_bauhaus_widget_set_label(g->wb_high_G, NULL, _("illuminant green gain"));
+  dt_bauhaus_widget_set_label(g->wb_high_G, NULL, N_("illuminant green gain"));
   gtk_widget_set_tooltip_text(g->wb_high_G, _("correct the color of the illuminant so whites are\n"
                                               "truly achromatic. Setting this value after\n"
                                               "the shadows color cast will help\n"
                                               "recovering the global white balance in difficult cases."));
 
   g->wb_high_B = dt_bauhaus_slider_from_params(self, "wb_high[2]");
-  dt_bauhaus_widget_set_label(g->wb_high_B, NULL, _("illuminant blue gain"));
+  dt_bauhaus_widget_set_label(g->wb_high_B, NULL, N_("illuminant blue gain"));
   gtk_widget_set_tooltip_text(g->wb_high_B, _("correct the color of the illuminant so whites are\n"
                                               "truly achromatic. Setting this value after\n"
                                               "the shadows color cast will help\n"
@@ -1011,7 +1011,7 @@ void gui_init(dt_iop_module_t *self)
                                           "to adjust the global contrast while avoiding clipping shadows."));
 
   g->gamma = dt_bauhaus_slider_from_params(self, "gamma");
-  dt_bauhaus_widget_set_label(g->gamma, NULL, _("paper grade (gamma)"));
+  dt_bauhaus_widget_set_label(g->gamma, NULL, N_("paper grade (gamma)"));
   gtk_widget_set_tooltip_text(g->gamma, _("select the grade of the virtual paper, which is actually\n"
                                           "equivalent to applying a gamma. it compensates the film D max\n"
                                           "and recovers the contrast. use a high grade for high D max."));
