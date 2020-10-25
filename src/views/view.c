@@ -1079,6 +1079,25 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
 char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow)
 {
   char* upcase = g_ascii_strup(name, -1);  // extension in capital letters to avoid character descenders
+  // convert to canonical format extension
+  if(0 == g_ascii_strcasecmp(upcase, "JPG"))
+  {
+      gchar* canonical = g_strdup("JPEG");
+      g_free(upcase);
+      upcase = canonical;
+  }
+  else if(0 == g_ascii_strcasecmp(upcase, "HDR"))
+  {
+      gchar* canonical = g_strdup("RGBE");
+      g_free(upcase);
+      upcase = canonical;
+  }
+  else if(0 == g_ascii_strcasecmp(upcase, "TIF"))
+  {
+      gchar* canonical = g_strdup("TIFF");
+      g_free(upcase);
+      upcase = canonical;
+  }
 
   if(is_hdr)
   {
