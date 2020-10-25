@@ -367,7 +367,7 @@ gboolean restart_required = FALSE;
        g_object_set(labdef, "tooltip-text", _("this setting has been modified"), (gchar *)0);
     }
     gtk_widget_set_name(labdef, "preference_non_default");
-    label = gtk_label_new("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>");
+    label = gtk_label_new(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
