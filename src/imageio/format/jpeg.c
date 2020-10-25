@@ -589,7 +589,7 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = box;
   // quality slider
   g->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
-  dt_bauhaus_widget_set_label(g->quality, NULL, _("quality"));
+  dt_bauhaus_widget_set_label(g->quality, NULL, N_("quality"));
   dt_bauhaus_slider_set_default(g->quality, 95);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
