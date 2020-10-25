@@ -121,23 +121,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green-magenta contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue-yellow contrast"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorcontrast_gui_data_t *g =
-    (dt_iop_colorcontrast_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "green-magenta contrast",
-                              GTK_WIDGET(g->a_scale));
-  dt_accel_connect_slider_iop(self, "blue-yellow contrast",
-                              GTK_WIDGET(g->b_scale));
-}
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {

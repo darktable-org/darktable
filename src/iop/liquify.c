@@ -3612,24 +3612,6 @@ void gui_cleanup(dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-void init_key_accels(dt_iop_module_so_t *module)
-{
-  dt_accel_register_iop(module, FALSE, NC_("accel", "point tool"),     0, 0);
-  dt_accel_register_iop(module, FALSE, NC_("accel", "line tool"),      0, 0);
-  dt_accel_register_iop(module, FALSE, NC_("accel", "curve tool"),     0, 0);
-  dt_accel_register_iop(module, FALSE, NC_("accel", "node tool"),      0, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *module)
-{
-  const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-
-  dt_accel_connect_button_iop(module, "point tool",    GTK_WIDGET(g->btn_point_tool));
-  dt_accel_connect_button_iop(module, "line tool",     GTK_WIDGET(g->btn_line_tool));
-  dt_accel_connect_button_iop(module, "curve tool",    GTK_WIDGET(g->btn_curve_tool));
-  dt_accel_connect_button_iop(module, "node tool",     GTK_WIDGET(g->btn_node_tool));
-}
-
 // defgroup Button paint functions
 
 #define PREAMBLE                                       \
