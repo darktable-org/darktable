@@ -127,7 +127,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick color of film material from image"), 0, 0);
+  dt_accel_register_iop(self, FALSE, N_("pick color of film material from image"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)

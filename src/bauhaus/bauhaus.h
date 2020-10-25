@@ -203,6 +203,9 @@ typedef struct dt_bauhaus_t
   GList *key_val;     // for autocomplete, after the point: .value
   char key_history[64][256];
 
+  // initialise or connect accelerators in set_label
+  int skip_accel;
+
   // appearance relevant stuff:
   // sizes and fonts:
   float scale;                           // gui scale multiplier

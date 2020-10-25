@@ -198,22 +198,6 @@ typedef struct dt_iop_basecurve_gui_data_t
   GtkWidget *logbase;
 } dt_iop_basecurve_gui_data_t;
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "graph scale"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "exposure fusion"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "graph scale", GTK_WIDGET(g->logbase));
-  dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->cmb_preserve_colors));
-  dt_accel_connect_combobox_iop(self, "exposure fusion", GTK_WIDGET(g->fusion));
-}
-
 static const char neutral[] = N_("neutral");
 static const char canon_eos[] = N_("canon eos like");
 static const char canon_eos_alt[] = N_("canon eos like alternate");

@@ -97,34 +97,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick primary color"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick secondary color"), 0, 0);
-
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows-hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows-saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights-hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights-saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "balance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compress"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_button_iop(self, "pick primary color", GTK_WIDGET(g->shadow_colorpick));
-  dt_accel_connect_button_iop(self, "pick secondary color", GTK_WIDGET(g->highlight_colorpick));
-
-  dt_accel_connect_slider_iop(self, "shadows-hue", GTK_WIDGET(g->shadow_hue_gslider));
-  dt_accel_connect_slider_iop(self, "shadows-saturation", GTK_WIDGET(g->shadow_sat_gslider));
-  dt_accel_connect_slider_iop(self, "highlights-hue", GTK_WIDGET(g->highlight_hue_gslider));
-  dt_accel_connect_slider_iop(self, "highlights-saturation", GTK_WIDGET(g->highlight_sat_gslider));
-  dt_accel_connect_slider_iop(self, "balance", GTK_WIDGET(g->balance_scale));
-  dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->compress_scale));
-}
-
 void init_presets(dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);

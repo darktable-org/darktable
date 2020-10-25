@@ -140,25 +140,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "destination"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_channelmixer_gui_data_t *g =
-    (dt_iop_channelmixer_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_red));
-  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_green));
-  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_blue));
-  dt_accel_connect_combobox_iop(self, "destination", GTK_WIDGET(g->output_channel));
-}
-
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
