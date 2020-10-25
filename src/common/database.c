@@ -3501,7 +3501,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   g_free(lib_basename);
 
   GError *error = NULL;
-  GFileEnumerator *library_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
+  GFileEnumerator *library_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_STANDARD_NAME "," G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
 
   if(library_dir_files == NULL)
   {
@@ -3940,7 +3940,7 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   g_free(db_basename);
 
   GError *error = NULL;
-  GFileEnumerator *db_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
+  GFileEnumerator *db_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_STANDARD_NAME "," G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
 
   if(db_dir_files == NULL)
   {

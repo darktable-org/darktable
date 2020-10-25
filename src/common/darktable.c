@@ -1307,8 +1307,12 @@ void dt_cleanup()
       int i = 0;
       while(snaps_to_remove[i])
       {
-        dt_print(DT_DEBUG_SQL, "[db backup] removing old snap: %s.\n", snaps_to_remove[i]);
-        g_unlink(snaps_to_remove[i++]);
+        // make file to remove writable, mostly problem on windows.
+        g_chmod(snaps_to_remove[i], S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+
+        dt_print(DT_DEBUG_SQL, "[db backup] removing old snap: %s... ", snaps_to_remove[i]);
+        const int retunlink = g_remove(snaps_to_remove[i++]);
+        dt_print(DT_DEBUG_SQL, "%s\n", retunlink == 0 ? "success" : "failed!");
       }
     }
   }
