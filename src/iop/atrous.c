@@ -142,17 +142,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_accel_connect_slider_iop(self, "mix", ((dt_iop_atrous_gui_data_t *)self->gui_data)->mix);
-}
-
-
 #if defined(__SSE2__)
 
 #define ALIGNED(a) __attribute__((aligned(a)))

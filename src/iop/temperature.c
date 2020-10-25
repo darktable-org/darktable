@@ -217,36 +217,12 @@ static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *accelerata
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "temperature"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "emerald"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "settings"));
-
-  dt_accel_register_iop(self, FALSE, NC_("accel", "settings/as shot"), 0, 0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "settings/from image area"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "settings/user modified"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "settings/camera reference"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "tint", GTK_WIDGET(g->scale_tint));
-  dt_accel_connect_slider_iop(self, "temperature", GTK_WIDGET(g->scale_k));
-  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_r));
-  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
-  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
-  dt_accel_connect_slider_iop(self, "emerald", GTK_WIDGET(g->scale_g2));
-  dt_accel_connect_combobox_iop(self, "settings", GTK_WIDGET(g->presets));
-
-  dt_accel_connect_button_iop(self, "settings/as shot", GTK_WIDGET(g->btn_asshot));
   dt_accel_connect_iop(self, "settings/from image area", g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL));
-  dt_accel_connect_button_iop(self, "settings/user modified", GTK_WIDGET(g->btn_user));
-  dt_accel_connect_button_iop(self, "settings/camera reference", GTK_WIDGET(g->btn_d65));
 }
 
 /*
@@ -1958,11 +1934,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->colorpicker, _(color_picker_label));
-
-  if(darktable.control->accel_initialising)
-    dt_accel_register_iop(self->so, FALSE, color_picker_label, 0, 0);
-  else
-    dt_accel_connect_iop(self, color_picker_label, g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL));
 
   g->btn_asshot = dt_iop_togglebutton_new(self, N_("set white balance to as shot"), NULL,
                                           G_CALLBACK(btn_toggled), FALSE, 0, 0,

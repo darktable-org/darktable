@@ -304,32 +304,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, FALSE, NC_("accel", "refresh"), 0, 0);
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "opacity"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "x offset"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "y offset"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "marker"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale on"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_button_iop(self, "refresh", GTK_WIDGET(g->refresh));
-  dt_accel_connect_slider_iop(self, "opacity", GTK_WIDGET(g->opacity));
-  dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
-  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotate));
-  dt_accel_connect_slider_iop(self, "x offset", GTK_WIDGET(g->x_offset));
-  dt_accel_connect_slider_iop(self, "y offset", GTK_WIDGET(g->y_offset));
-  dt_accel_connect_combobox_iop(self, "marker", GTK_WIDGET(g->watermarks));
-  dt_accel_connect_combobox_iop(self, "scale on", GTK_WIDGET(g->sizeto));
-}
-
 static void _combo_box_set_active_text(dt_iop_watermark_gui_data_t *g, gchar *text)
 {
   int i = 0;

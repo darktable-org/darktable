@@ -103,21 +103,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "exposure"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "width"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->exposure));
-  dt_accel_connect_slider_iop(self, "width", GTK_WIDGET(g->width));
-}
-
-
 #define GAUSS(a, b, c, x) (a * pow(2.718281828, (-pow((x - b), 2) / (pow(c, 2)))))
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,

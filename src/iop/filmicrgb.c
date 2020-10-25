@@ -528,43 +528,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 }
 
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white exposure"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black exposure"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "middle grey luminance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dynamic range scaling"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "latitude"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows highlights balance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "extreme luminance saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target black luminance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target middle grey"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target white luminance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target power transfer function"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve chrominance"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "white exposure", GTK_WIDGET(g->white_point_source));
-  dt_accel_connect_slider_iop(self, "black exposure", GTK_WIDGET(g->black_point_source));
-  dt_accel_connect_slider_iop(self, "middle grey luminance", GTK_WIDGET(g->grey_point_source));
-  dt_accel_connect_slider_iop(self, "dynamic range scaling", GTK_WIDGET(g->security_factor));
-  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->contrast));
-  dt_accel_connect_slider_iop(self, "latitude", GTK_WIDGET(g->latitude));
-  dt_accel_connect_slider_iop(self, "shadows highlights balance", GTK_WIDGET(g->balance));
-  dt_accel_connect_slider_iop(self, "extreme luminance saturation", GTK_WIDGET(g->saturation));
-  dt_accel_connect_slider_iop(self, "target black luminance", GTK_WIDGET(g->black_point_target));
-  dt_accel_connect_slider_iop(self, "target middle grey", GTK_WIDGET(g->grey_point_target));
-  dt_accel_connect_slider_iop(self, "target white luminance", GTK_WIDGET(g->white_point_target));
-  dt_accel_connect_slider_iop(self, "target power transfer function", GTK_WIDGET(g->output_power));
-  dt_accel_connect_combobox_iop(self, "preserve chrominance", GTK_WIDGET(g->preserve_color));
-}
-
-
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
