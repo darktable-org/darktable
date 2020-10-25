@@ -767,7 +767,7 @@ void gui_init(struct dt_iop_module_t *self)
 #if 0
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 0.1, p->random.radius, 2);
   gtk_widget_set_tooltip_text(g->radius, _("radius for blurring step"));
-  dt_bauhaus_widget_set_label(g->radius, NULL, _("radius"));
+  dt_bauhaus_widget_set_label(g->radius, NULL, N_("radius"));
 
   g->range = dtgtk_gradient_slider_multivalue_new(4);
   dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->range), GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);

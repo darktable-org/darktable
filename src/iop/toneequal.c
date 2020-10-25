@@ -166,7 +166,15 @@ typedef enum dt_iop_toneequalizer_filter_t
 
 typedef struct dt_iop_toneequalizer_params_t
 {
-  float noise, ultra_deep_blacks, deep_blacks, blacks, shadows, midtones, highlights, whites, speculars; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0
+  float noise; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0  $DESCRIPTION: "blacks"
+  float ultra_deep_blacks; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0  $DESCRIPTION: "deep shadows"
+  float deep_blacks; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0  $DESCRIPTION: "shadows"
+  float blacks; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0  $DESCRIPTION: "light shadows"
+  float shadows; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0  $DESCRIPTION: "midtones"
+  float midtones; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0  $DESCRIPTION: "dark highlights"
+  float highlights; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0  $DESCRIPTION: "highlights"
+  float whites; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0  $DESCRIPTION: "whites"
+  float speculars; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0  $DESCRIPTION: "speculars"
   float blending; // $MIN: 0.01 $MAX: 100.0 $DEFAULT: 5.0 $DESCRIPTION: "smoothing diameter"
   float smoothing; // $DEFAULT: 1.414213562 sqrtf(2.0f)
   float feathering; // $MIN: 0.01 $MAX: 10000.0 $DEFAULT: 1.0 $DESCRIPTION: "edges refinement/feathering"
@@ -3066,47 +3074,47 @@ void gui_init(struct dt_iop_module_t *self)
   g->noise = dt_bauhaus_slider_from_params(self, "noise");
   dt_bauhaus_slider_set_step(g->noise, .05);
   dt_bauhaus_slider_set_format(g->noise, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->noise, NULL, _("-8 EV"));
+  dt_bauhaus_widget_set_label(g->noise, NULL, N_("-8 EV"));
 
   g->ultra_deep_blacks = dt_bauhaus_slider_from_params(self, "ultra_deep_blacks");
   dt_bauhaus_slider_set_step(g->ultra_deep_blacks, .05);
   dt_bauhaus_slider_set_format(g->ultra_deep_blacks, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->ultra_deep_blacks, NULL, _("-7 EV"));
+  dt_bauhaus_widget_set_label(g->ultra_deep_blacks, NULL, N_("-7 EV"));
 
   g->deep_blacks = dt_bauhaus_slider_from_params(self, "deep_blacks");
   dt_bauhaus_slider_set_step(g->deep_blacks, .05);
   dt_bauhaus_slider_set_format(g->deep_blacks, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->deep_blacks, NULL, _("-6 EV"));
+  dt_bauhaus_widget_set_label(g->deep_blacks, NULL, N_("-6 EV"));
 
   g->blacks = dt_bauhaus_slider_from_params(self, "blacks");
   dt_bauhaus_slider_set_step(g->blacks, .05);
   dt_bauhaus_slider_set_format(g->blacks, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->blacks, NULL, _("-5 EV"));
+  dt_bauhaus_widget_set_label(g->blacks, NULL, N_("-5 EV"));
 
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
   dt_bauhaus_slider_set_step(g->shadows, .05);
   dt_bauhaus_slider_set_format(g->shadows, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->shadows, NULL, _("-4 EV"));
+  dt_bauhaus_widget_set_label(g->shadows, NULL, N_("-4 EV"));
 
   g->midtones = dt_bauhaus_slider_from_params(self, "midtones");
   dt_bauhaus_slider_set_step(g->midtones, .05);
   dt_bauhaus_slider_set_format(g->midtones, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->midtones, NULL, _("-3 EV"));
+  dt_bauhaus_widget_set_label(g->midtones, NULL, N_("-3 EV"));
 
   g->highlights = dt_bauhaus_slider_from_params(self, "highlights");
   dt_bauhaus_slider_set_step(g->highlights, .05);
   dt_bauhaus_slider_set_format(g->highlights, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->highlights, NULL, _("-2 EV"));
+  dt_bauhaus_widget_set_label(g->highlights, NULL, N_("-2 EV"));
 
   g->whites = dt_bauhaus_slider_from_params(self, "whites");
   dt_bauhaus_slider_set_step(g->whites, .05);
   dt_bauhaus_slider_set_format(g->whites, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->whites, NULL, _("-1 EV"));
+  dt_bauhaus_widget_set_label(g->whites, NULL, N_("-1 EV"));
 
   g->speculars = dt_bauhaus_slider_from_params(self, "speculars");
   dt_bauhaus_slider_set_step(g->speculars, .05);
   dt_bauhaus_slider_set_format(g->speculars, _("%+.2f EV"));
-  dt_bauhaus_widget_set_label(g->speculars, NULL, _("+0 EV"));
+  dt_bauhaus_widget_set_label(g->speculars, NULL, N_("+0 EV"));
 
   // Advanced view
 
@@ -3132,7 +3140,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->smoothing = dt_bauhaus_slider_new_with_range(self, -1.0f, +1.0f, 0.1, 0.0f, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->smoothing, -2.33f, 1.67f);
-  dt_bauhaus_widget_set_label(g->smoothing, NULL, _("curve smoothing"));
+  dt_bauhaus_widget_set_label(g->smoothing, NULL, N_("curve smoothing"));
   gtk_widget_set_tooltip_text(g->smoothing, _("positive values will produce more progressive tone transitions\n"
                                               "but the curve might become oscillatory in some settings.\n"
                                               "negative values will avoid oscillations and behave more robustly\n"
@@ -3150,7 +3158,7 @@ void gui_init(struct dt_iop_module_t *self)
                                            "higher contrast between areas to dodge and areas to burn"));
 
   g->details = dt_bauhaus_combobox_from_params(self, N_("details"));
-  dt_bauhaus_widget_set_label(g->details, NULL, _("preserve details"));
+  dt_bauhaus_widget_set_label(g->details, NULL, N_("preserve details"));
   gtk_widget_set_tooltip_text(g->details, _("'no' affects global and local contrast (safe if you only add contrast)\n"
                                             "'guided filter' only affects global contrast and tries to preserve local contrast\n"
                                             "'averaged guided filter' is a geometric mean of 'no' and 'guided filter' methods\n"
@@ -3223,7 +3231,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
   g->show_luminance_mask = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->show_luminance_mask, NULL, _("display exposure mask"));
+  dt_bauhaus_widget_set_label(g->show_luminance_mask, NULL, N_("display exposure mask"));
   dt_bauhaus_widget_set_quad_paint(g->show_luminance_mask, dtgtk_cairo_paint_showmask,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->show_luminance_mask, TRUE);

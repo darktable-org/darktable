@@ -3478,7 +3478,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Auto tune slider
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
-  dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
+  dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
                                                 "works better for landscapes and evenly-lit pictures\n"
@@ -3514,7 +3514,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Highlight Reconstruction Mask
   g->show_highlight_mask = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->show_highlight_mask, NULL, _("display highlight reconstruction mask"));
+  dt_bauhaus_widget_set_label(g->show_highlight_mask, NULL, N_("display highlight reconstruction mask"));
   dt_bauhaus_widget_set_quad_paint(g->show_highlight_mask, dtgtk_cairo_paint_showmask,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->show_highlight_mask, TRUE);
@@ -3744,9 +3744,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(!w || w == g->version)
   {
     if(p->version == DT_FILMIC_COLORSCIENCE_V1)
-      dt_bauhaus_widget_set_label(g->saturation, NULL, _("extreme luminance saturation"));
+      dt_bauhaus_widget_set_label(g->saturation, NULL, N_("extreme luminance saturation"));
     else if(p->version == DT_FILMIC_COLORSCIENCE_V2)
-      dt_bauhaus_widget_set_label(g->saturation, NULL, _("middle tones saturation"));
+      dt_bauhaus_widget_set_label(g->saturation, NULL, N_("middle tones saturation"));
   }
 
   if(!w || w == g->reconstruct_bloom_vs_details)

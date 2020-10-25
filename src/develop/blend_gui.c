@@ -1696,7 +1696,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     GtkWidget *abox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     bd->masks_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_combo, _("blend"), _("drawn mask"));
+    dt_bauhaus_widget_set_label(bd->masks_combo, N_("blend"), N_("drawn mask"));
     dt_bauhaus_combobox_add(bd->masks_combo, _("no mask used"));
     dt_bauhaus_combobox_set(bd->masks_combo, 0);
     g_signal_connect(G_OBJECT(bd->masks_combo), "value-changed",
@@ -1902,7 +1902,7 @@ void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     bd->raster_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->raster_combo, _("blend"), _("raster mask"));
+    dt_bauhaus_widget_set_label(bd->raster_combo, N_("blend"), N_("raster mask"));
     dt_bauhaus_combobox_add(bd->raster_combo, _("no mask used"));
     dt_bauhaus_combobox_set(bd->raster_combo, 0);
     g_signal_connect(G_OBJECT(bd->raster_combo), "value-changed",
@@ -1964,7 +1964,7 @@ static GtkWidget *_combobox_new_from_list(dt_iop_module_t *module, const gchar *
 {
   GtkWidget *combo = dt_bauhaus_combobox_new(module);
 
-  dt_bauhaus_widget_set_label(combo, _("blend"), label);
+  dt_bauhaus_widget_set_label(combo, N_("blend"), label);
   gtk_widget_set_tooltip_text(combo, tooltip);
   for(; *list->name; list++)
     dt_bauhaus_combobox_add_full(combo, _(list->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
@@ -2263,7 +2263,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                         g_list_index(bd->masks_modes, (gconstpointer)DEVELOP_MASK_DISABLED)));
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend"), _("blend mode"));
+    dt_bauhaus_widget_set_label(bd->blend_modes_combo, N_("blend"), N_("blend mode"));
     gtk_widget_set_tooltip_text(bd->blend_modes_combo, _("choose blending mode"));
 
     if(bd->csp == iop_cs_Lab ||
@@ -2333,7 +2333,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo), "blending.html#blending_operators");
 
     bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);
-    dt_bauhaus_widget_set_label(bd->opacity_slider, _("blend"), _("opacity"));
+    dt_bauhaus_widget_set_label(bd->opacity_slider, N_("blend"), N_("opacity"));
     dt_bauhaus_slider_set_format(bd->opacity_slider, "%.0f%%");
     module->fusion_slider = bd->opacity_slider;
     gtk_widget_set_tooltip_text(bd->opacity_slider, _("set the opacity of the blending"));
@@ -2355,21 +2355,21 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                      G_CALLBACK(dt_iop_combobox_enum_callback), &module->blend_params->feathering_guide);
 
     bd->feathering_radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 250.0, 0.1, 0.0, 1);
-    dt_bauhaus_widget_set_label(bd->feathering_radius_slider, _("blend"), _("feathering radius"));
+    dt_bauhaus_widget_set_label(bd->feathering_radius_slider, N_("blend"), N_("feathering radius"));
     dt_bauhaus_slider_set_format(bd->feathering_radius_slider, "%.1f");
     gtk_widget_set_tooltip_text(bd->feathering_radius_slider, _("spatial radius of feathering"));
     g_signal_connect(G_OBJECT(bd->feathering_radius_slider), "value-changed",
                      G_CALLBACK(dt_iop_slider_float_callback), &module->blend_params->feathering_radius);
 
     bd->blur_radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0.1, 0.0, 1);
-    dt_bauhaus_widget_set_label(bd->blur_radius_slider, _("blend"), _("mask blur"));
+    dt_bauhaus_widget_set_label(bd->blur_radius_slider, N_("blend"), N_("mask blur"));
     dt_bauhaus_slider_set_format(bd->blur_radius_slider, "%.1f");
     gtk_widget_set_tooltip_text(bd->blur_radius_slider, _("radius for gaussian blur of blend mask"));
     g_signal_connect(G_OBJECT(bd->blur_radius_slider), "value-changed",
                      G_CALLBACK(dt_iop_slider_float_callback), &module->blend_params->blur_radius);
 
     bd->brightness_slider = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0.01, 0.0, 2);
-    dt_bauhaus_widget_set_label(bd->brightness_slider, _("blend"), _("mask opacity"));
+    dt_bauhaus_widget_set_label(bd->brightness_slider, N_("blend"), N_("mask opacity"));
     dt_bauhaus_slider_set_format(bd->brightness_slider, "%.2f");
     gtk_widget_set_tooltip_text(bd->brightness_slider, _("shifts and tilts the tone curve of the blend mask to adjust its "
                                                          "brightness without affecting fully transparent/fully opaque "
@@ -2378,7 +2378,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                      G_CALLBACK(dt_iop_slider_float_callback), &module->blend_params->brightness);
 
     bd->contrast_slider = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0.01, 0.0, 2);
-    dt_bauhaus_widget_set_label(bd->contrast_slider, _("blend"), _("mask contrast"));
+    dt_bauhaus_widget_set_label(bd->contrast_slider, N_("blend"), N_("mask contrast"));
     dt_bauhaus_slider_set_format(bd->contrast_slider, "%.2f");
     gtk_widget_set_tooltip_text(bd->contrast_slider, _("gives the tone curve of the blend mask an s-like shape to "
                                                        "adjust its contrast"));

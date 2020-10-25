@@ -4771,7 +4771,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->shear, -SHEAR_RANGE, SHEAR_RANGE);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
+  dt_bauhaus_widget_set_label(g->guide_lines, NULL, N_("guides"));
   dt_bauhaus_combobox_add(g->guide_lines, _("off"));
   dt_bauhaus_combobox_add(g->guide_lines, _("on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);

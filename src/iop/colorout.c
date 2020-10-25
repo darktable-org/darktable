@@ -863,7 +863,7 @@ void gui_init(struct dt_iop_module_t *self)
   // TODO:
   g->output_intent = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_intent, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->output_intent, NULL, _("output intent"));
+  dt_bauhaus_widget_set_label(g->output_intent, NULL, N_("output intent"));
   dt_bauhaus_combobox_add(g->output_intent, _("perceptual"));
   dt_bauhaus_combobox_add(g->output_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(g->output_intent, C_("rendering intent", "saturation"));
@@ -876,7 +876,7 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   g->output_profile = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->output_profile, NULL, _("export profile"));
+  dt_bauhaus_widget_set_label(g->output_profile, NULL, N_("export profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {

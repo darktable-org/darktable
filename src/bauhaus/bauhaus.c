@@ -841,8 +841,11 @@ void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min,
   d->hard_max = hard_max;
 }
 
-void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
+void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, const char *label_orig)
 {
+  const char *section = _(section_orig);
+  const char *label = _(label_orig);
+
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
   g_strlcpy(w->label, label, sizeof(w->label));

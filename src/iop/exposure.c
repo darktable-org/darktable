@@ -877,7 +877,7 @@ void gui_init(struct dt_iop_module_t *self)
                 dt_bauhaus_slider_new_with_range(self, 0.0, 0.2, .001, 0.01, 3));
   gtk_widget_set_tooltip_text(g->autoexpp, _("percentage of bright values clipped out, toggle color picker to activate"));
   dt_bauhaus_slider_set_format(g->autoexpp, "%.3f%%");
-  dt_bauhaus_widget_set_label(g->autoexpp, NULL, _("clipping threshold"));
+  dt_bauhaus_widget_set_label(g->autoexpp, NULL, N_("clipping threshold"));
   g_signal_connect(G_OBJECT(g->autoexpp), "value-changed", G_CALLBACK(autoexpp_callback), self);
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
 
