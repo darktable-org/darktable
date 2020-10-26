@@ -1779,9 +1779,11 @@ static void set_line_width(cairo_t *cr, double scale, dt_liquify_ui_width_enum_t
 
 static gboolean detect_drag(const dt_iop_liquify_gui_data_t *g, const double scale, const float complex pt)
 {
+  const float pr_d = darktable.develop->preview_downsampling;
+
   // g->last_button1_pressed_pos is valid only while BUTTON1 is down
   return g->last_button1_pressed_pos != -1.0 &&
-    cabs(pt - g->last_button1_pressed_pos) >= GET_UI_WIDTH(MIN_DRAG);
+    cabs(pt - g->last_button1_pressed_pos) >= (GET_UI_WIDTH(MIN_DRAG) * pr_d / scale);
 }
 
 static void update_warp_count(const dt_iop_liquify_gui_data_t *g)
@@ -1879,11 +1881,12 @@ static GList *interpolate_paths(dt_iop_liquify_params_t *p)
 #define FILL_TEST \
   if(do_hit_test) { if(cairo_in_fill(cr, creal(*pt), cimag(*pt)) || cairo_in_stroke(cr, creal(*pt), cimag(*pt))) goto hit; continue; }
 
-#define FG_COLOR  set_source_rgba(cr, fg_color);
-#define BG_COLOR  set_source_rgba(cr, bg_color);
-#define VERYTHINLINE  set_line_width (cr, scale, DT_LIQUIFY_UI_WIDTH_THINLINE / 2.0);
-#define THINLINE  set_line_width (cr, scale, DT_LIQUIFY_UI_WIDTH_THINLINE);
-#define THICKLINE set_line_width (cr, scale, DT_LIQUIFY_UI_WIDTH_THICKLINE);
+#define FG_COLOR  set_source_rgba(cr, fg_color)
+#define BG_COLOR  set_source_rgba(cr, bg_color)
+#define VERYTHINLINE  set_line_width (cr, (scale * pr_d) / 2.0f, DT_LIQUIFY_UI_WIDTH_THINLINE)
+#define THINLINE  set_line_width (cr, scale * pr_d, DT_LIQUIFY_UI_WIDTH_THINLINE)
+#define THICKLINE set_line_width (cr, scale * pr_d, DT_LIQUIFY_UI_WIDTH_THICKLINE)
+#define GET_UI_WIDTH_HITTEST(item) (GET_UI_WIDTH(item) * (do_hit_test ? 5.0f * darktable.develop->preview_downsampling / scale : 1.0f))
 
 static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
                                      cairo_t *cr,
@@ -1892,8 +1895,10 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
                                      GList *layers,
                                      const float complex *pt)
 {
-  dt_liquify_hit_t hit = NOWHERE;
   const gboolean do_hit_test = pt != NULL;
+  const float pr_d = do_hit_test ? 5.0f * darktable.develop->preview_downsampling / scale : 1.0f;
+
+  dt_liquify_hit_t hit = NOWHERE;
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
@@ -1998,8 +2003,8 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
           const float rot = get_rot(pwarp->type);
           draw_circle(cr, pwarp->point, GET_UI_WIDTH(GIZMO_SMALL));
           draw_triangle(cr, pwarp->strength,
-                         carg(pwarp->strength - pwarp->point) + rot,
-                         GET_UI_WIDTH(GIZMO_SMALL) / 3.0);
+                        carg(pwarp->strength - pwarp->point) + rot,
+                        GET_UI_WIDTH(GIZMO_SMALL) / 3.0);
         }
         BG_COLOR;
         cairo_fill_preserve(cr);
@@ -2036,7 +2041,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
             || data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1
             || data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
-          const float w = GET_UI_WIDTH(GIZMO);
+          const float w = GET_UI_WIDTH_HITTEST(GIZMO);
           switch (data->header.node_type)
           {
              case DT_LIQUIFY_NODE_TYPE_CUSP:
@@ -2084,7 +2089,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
             !(prev && prev->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH))
         {
           THINLINE; BG_COLOR;
-          draw_circle(cr, data->node.ctrl1, GET_UI_WIDTH(GIZMO_SMALL));
+          draw_circle(cr, data->node.ctrl1, GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
           FILL_TEST;
           cairo_fill_preserve(cr);
           FG_COLOR;
@@ -2094,7 +2099,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
             data->header.node_type != DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH)
         {
           THINLINE; BG_COLOR;
-          draw_circle(cr, data->node.ctrl2, GET_UI_WIDTH(GIZMO_SMALL));
+          draw_circle(cr, data->node.ctrl2, GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
           FILL_TEST;
           cairo_fill_preserve(cr);
           FG_COLOR;
@@ -2116,7 +2121,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
       if(layer == DT_LIQUIFY_LAYER_RADIUSPOINT)
       {
         THINLINE; BG_COLOR;
-        draw_circle(cr, warp->radius, GET_UI_WIDTH(GIZMO_SMALL));
+        draw_circle(cr, warp->radius, GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
         FILL_TEST;
         cairo_fill_preserve(cr);
         FG_COLOR;
@@ -2144,8 +2149,8 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
       if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT1)
       {
         draw_triangle(cr, cmix(point, warp->radius, warp->control1),
-                       carg(warp->radius - point),
-                       GET_UI_WIDTH(GIZMO_SMALL));
+                      carg(warp->radius - point),
+                      GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
         THINLINE; BG_COLOR;
         FILL_TEST;
         cairo_fill_preserve(cr);
@@ -2156,8 +2161,8 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
       if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT2)
       {
         draw_triangle(cr, cmix(point, warp->radius, warp->control2),
-                       carg(-(warp->radius - point)),
-                       GET_UI_WIDTH(GIZMO_SMALL));
+                      carg(-(warp->radius - point)),
+                      GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
         THINLINE; BG_COLOR;
         FILL_TEST;
         cairo_fill_preserve(cr);
@@ -2170,9 +2175,10 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
         cairo_move_to(cr, creal(point), cimag(point));
         if(warp->type == DT_LIQUIFY_WARP_TYPE_LINEAR)
         {
-          float complex pt = cmix(point, warp->strength, 1.0 - 0.5 *
-                                   (GET_UI_WIDTH(GIZMO_SMALL) /
-                                    cabs(warp->strength - point)));
+          const float complex pt = cmix(point, warp->strength,
+                                        1.0 - 0.5
+                                        * (GET_UI_WIDTH_HITTEST(GIZMO_SMALL)
+                                           / cabs(warp->strength - point)));
           cairo_line_to(cr, creal(pt), cimag(pt));
         }
         else
@@ -2185,10 +2191,11 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
 
       if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT)
       {
+        cairo_move_to(cr, creal(warp->strength), cimag(warp->strength));
         const float rot = get_rot(warp->type);
         draw_triangle(cr, warp->strength,
-                       carg(warp->strength - warp->point) + rot,
-                       GET_UI_WIDTH(GIZMO_SMALL));
+                      carg(warp->strength - warp->point) + rot,
+                      GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
         THINLINE; BG_COLOR;
         FILL_TEST;
         cairo_fill_preserve(cr);
@@ -2213,7 +2220,7 @@ hit:
   return hit;
 }
 
-static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, float scale, dt_iop_liquify_params_t *params)
+static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, const float scale, dt_iop_liquify_params_t *params)
 {
   const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
   GList *layers = NULL;
@@ -2240,10 +2247,10 @@ static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, float scale,
 }
 
 static dt_liquify_hit_t hit_test_paths(struct dt_iop_module_t *module,
-                                        float scale,
-                                        cairo_t *cr,
-                                        dt_iop_liquify_params_t *params,
-                                        float complex pt)
+                                       const float scale,
+                                       cairo_t *cr,
+                                       dt_iop_liquify_params_t *params,
+                                       float complex pt)
 {
   dt_liquify_hit_t hit = NOWHERE;
   GList *layers = NULL;
@@ -2755,6 +2762,8 @@ static void sync_pipe(struct dt_iop_module_t *module, gboolean history)
 
 static void get_point_scale(struct dt_iop_module_t *module, float x, float y, float complex *pt, float *scale)
 {
+  const float pr_d = darktable.develop->preview_downsampling;
+
   float pzx = 0.0f, pzy = 0.0f;
   dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
   pzx += 0.5f;
@@ -2769,7 +2778,7 @@ static void get_point_scale(struct dt_iop_module_t *module, float x, float y, fl
   const float nx = pts[0] / darktable.develop->preview_pipe->iwidth;
   const float ny = pts[1] / darktable.develop->preview_pipe->iheight;
 
-  *scale = darktable.develop->preview_pipe->iscale * get_zoom_scale(module->dev);
+  *scale = darktable.develop->preview_pipe->iscale * (pr_d * get_zoom_scale(module->dev));
   *pt = (nx * darktable.develop->pipe->iwidth) +  (ny * darktable.develop->pipe->iheight) * I;
 }
 
@@ -2798,8 +2807,9 @@ int mouse_moved(struct dt_iop_module_t *module,
   {
     dt_liquify_hit_t hit = hit_test_paths(module, scale, g->fake_cr, &g->params, pt);
     dt_liquify_path_data_t *last_hovered = find_hovered(&g->params);
-    if(hit.elem != last_hovered ||
-        (last_hovered && hit.elem && hit.elem->header.hovered != last_hovered->header.hovered))
+    if(hit.elem != last_hovered
+       || (last_hovered && hit.elem
+           && hit.elem->header.hovered != last_hovered->header.hovered))
     {
       if(hit.elem)
         hit.elem->header.hovered = hit.layer;
