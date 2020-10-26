@@ -198,8 +198,8 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
 static gboolean _thumb_expose_again(gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  gpointer w_image = thumb->w_image;
   if(!thumb) return FALSE;
+  gpointer w_image = thumb->w_image;
   if(!w_image || !GTK_IS_WIDGET(w_image)) return FALSE;
 
   thumb->expose_again_timeout_id = 0;
