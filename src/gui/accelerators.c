@@ -46,16 +46,18 @@ void dt_accel_path_view(char *s, size_t n, char *module, const char *path)
 
 void dt_accel_path_iop(char *s, size_t n, char *module, const char *path)
 {
-  snprintf(s, n, "<Darktable>/%s/%s/%s", "image operations", module, path);
-}
-
-void dt_accel_path_sub_iop(char *s, size_t n, char *module, const char *path, const char *sub)
-{
-  gchar *path_fixed = g_strdelimit(g_strdup(path), "/", '-');
-  gchar *sub_fixed = g_strdelimit(g_strdup(sub), "/", '-');
-  snprintf(s, n, "<Darktable>/%s/%s/%s/%s", "image operations", module, path_fixed, sub);
-  g_free(sub_fixed);
-  g_free(path_fixed);
+  if(path)
+  {
+    gchar **split_paths = g_strsplit(path, "¬", 4);
+    for(gchar **cur_path = split_paths; *cur_path; cur_path++)
+      g_strdelimit(*cur_path, "/¬", '-');
+    gchar *joined_paths = g_strjoinv("/", split_paths);
+    snprintf(s, n, "<Darktable>/%s/%s/%s", "image operations", module, joined_paths);
+    g_free(joined_paths);
+    g_strfreev(split_paths);
+  }
+  else
+    snprintf(s, n, "<Darktable>/%s/%s", "image operations", module);
 }
 
 void dt_accel_path_lib(char *s, size_t n, char *module, const char *path)
@@ -86,21 +88,40 @@ static void dt_accel_path_view_translated(char *s, size_t n, dt_view_t *module, 
 
 static void dt_accel_path_iop_translated(char *s, size_t n, dt_iop_module_so_t *module, const char *path)
 {
-  gchar *module_name_fixed = g_strdelimit(g_strdup(module->name()), "/", '-');
-  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "processing modules"), module_name_fixed, _(path));
-  g_free(module_name_fixed);
-}
+  gchar *module_clean = g_strdelimit(g_strdup(module->name()), "/", '-');
 
-static void dt_accel_path_sub_iop_translated(char *s, size_t n, dt_iop_module_so_t *module, const char *path, const char *sub)
-{
-  gchar *module_fixed = g_strdelimit(g_strdup(module->name()), "/", '-');
-  gchar *path_fixed = g_strdelimit(g_strdup(Q_(path)), "/", '-');
-  gchar *sub_fixed = g_strdelimit(g_strdup(sub), "/", '-');
-  snprintf(s, n, "<Darktable>/%s/%s/%s/%s", C_("accel", "processing modules"), module_fixed, path_fixed, sub_fixed);
-  if(!*sub) s[strlen(s) - 1] = '\0';
-  g_free(sub_fixed);
-  g_free(path_fixed);
-  g_free(module_fixed);
+  if(path)
+  {
+    gchar **split_paths = g_strsplit(path, "¬", 4);
+    for(gchar **cur_path = split_paths; *cur_path; cur_path++)
+    {
+      gchar *saved_path = *cur_path;
+      *cur_path = g_strdelimit(g_strdup(Q_(*cur_path)), "/¬", '-');
+      g_free(saved_path);
+    }
+    gchar *joined_paths = g_strjoinv("/", split_paths);
+    snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "processing modules"), module_clean, joined_paths);
+    g_free(joined_paths);
+    g_strfreev(split_paths);
+  }
+  else
+    snprintf(s, n, "<Darktable>/%s/%s", C_("accel", "processing modules"), module_clean);
+
+  g_free(module_clean);
+
+/*
+  gchar **split_paths = g_strsplit(path, "¬", 4);
+  gchar **cleaned_paths = g_malloc0_n(g_strv_length(split_paths) + 2, sizeof(gchar*));
+  gchar **add_path = cleaned_paths;
+  *(add_path++) = g_strdelimit(g_strdup(module->name()), "/", '-');
+  for(gchar **cur_path = split_paths; *cur_path; cur_path++)
+    *(add_path++) = g_strdelimit(g_strdup(Q_(*cur_path)), "/¬", '-');
+  gchar *joined_paths = g_strjoinv("/", cleaned_paths);
+  snprintf(s, n, "<Darktable>/%s/%s", C_("accel", "processing modules"), joined_paths);
+  g_free(joined_paths);
+  g_strfreev(cleaned_paths);
+  g_strfreev(split_paths);
+*/
 }
 
 static void dt_accel_path_lib_translated(char *s, size_t n, dt_lib_module_t *module, const char *path)
@@ -254,6 +275,14 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
   dt_accel_register_lib_for_views(self, v, path, accel_key, mods);
 }
 
+const gchar *_common_actions[]
+  = { NC_("accel", "show module"),
+      NC_("accel", "enable module"),
+      NC_("accel", "focus module"),
+      NC_("accel", "reset module parameters"),
+      NC_("accel", "show preset menu"),
+      NULL };
+
 const gchar *_slider_actions[]
   = { NC_("accel", "increase"),
       NC_("accel", "decrease"),
@@ -268,15 +297,20 @@ const gchar *_combobox_actions[]
       NC_("accel", "dynamic"),
       NULL };
 
-void _accel_register_widget_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path, const char **actions)
+void _accel_register_actions_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path, const char **actions)
 {
+  gchar accel_path[256];
+  gchar accel_path_trans[256];
+  dt_accel_path_iop(accel_path, sizeof(accel_path), so->op, path);
+  dt_accel_path_iop_translated(accel_path_trans, sizeof(accel_path_trans), so, path);
+
   for(const char **action = actions; *action; action++)
   {
     dt_accel_t *accel = (dt_accel_t *)g_malloc0(sizeof(dt_accel_t));
-    dt_accel_path_sub_iop(accel->path, sizeof(accel->path), so->op, path, *action);
+    snprintf(accel->path, sizeof(accel->path), "%s/%s", accel_path, *action);
     gtk_accel_map_add_entry(accel->path, 0, 0);
-    dt_accel_path_sub_iop_translated(accel->translated_path, sizeof(accel->translated_path), so, path,
-                                     g_dpgettext2(NULL, "accel", *action));
+    snprintf(accel->translated_path, sizeof(accel->translated_path), "%s/%s", accel_path_trans,
+             g_dpgettext2(NULL, "accel", *action));
     g_strlcpy(accel->module, so->op, sizeof(accel->module));
     accel->local = local;
     accel->views = DT_VIEW_DARKROOM;
@@ -285,14 +319,19 @@ void _accel_register_widget_iop(dt_iop_module_so_t *so, gboolean local, const gc
   }
 }
 
+void dt_accel_register_common_iop(dt_iop_module_so_t *so)
+{
+  _accel_register_actions_iop(so, FALSE, NULL, _common_actions);
+}
+
 void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path)
 {
-  _accel_register_widget_iop(so, local, path, _combobox_actions);
+  _accel_register_actions_iop(so, local, path, _combobox_actions);
 }
 
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path)
 {
-  _accel_register_widget_iop(so, local, path, _slider_actions);
+  _accel_register_actions_iop(so, local, path, _slider_actions);
 }
 
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods)
@@ -695,19 +734,21 @@ static gboolean bauhaus_combobox_prev_callback(GtkAccelGroup *accel_group, GObje
   return TRUE;
 }
 
-void _accel_connect_widget_iop(dt_iop_module_t *module, const gchar *path,
+void _accel_connect_actions_iop(dt_iop_module_t *module, const gchar *path,
                                GtkWidget *w, const gchar *actions[], void *callbacks[])
 {
-  while(*actions)
+  gchar accel_path[256];
+  dt_accel_path_iop(accel_path, sizeof(accel_path) - 1, module->op, path);
+  size_t path_len = strlen(accel_path);
+  accel_path[path_len++] = '/';
+
+  for(const char **action = actions; *action; action++, callbacks++)
   {
-    gchar accel_path[256];
-    dt_accel_path_sub_iop(accel_path, sizeof(accel_path), module->op, path, *actions);
+    strncpy(accel_path + path_len, *action, sizeof(accel_path) - path_len);
+
     GClosure *closure = g_cclosure_new(G_CALLBACK(*callbacks), (gpointer)w, NULL);
 
     _store_iop_accel_closure(module, accel_path, closure);
-
-    actions++;
-    callbacks++;
   }
 }
 
@@ -720,7 +761,7 @@ void dt_accel_connect_combobox_iop(dt_iop_module_t *module, const gchar *path, G
         bauhaus_combobox_prev_callback,
         bauhaus_dynamic_callback };
 
-  _accel_connect_widget_iop(module, path, combobox, _combobox_actions, combobox_callbacks);
+  _accel_connect_actions_iop(module, path, combobox, _combobox_actions, combobox_callbacks);
 }
 
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *slider)
@@ -734,7 +775,7 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, Gtk
         bauhaus_slider_edit_callback,
         bauhaus_dynamic_callback };
 
-  _accel_connect_widget_iop(module, path, slider, _slider_actions, slider_callbacks);
+  _accel_connect_actions_iop(module, path, slider, _slider_actions, slider_callbacks);
 }
 
 void dt_accel_connect_list_iop(dt_iop_module_t *module)
@@ -880,7 +921,7 @@ void dt_accel_connect_preset_iop(dt_iop_module_t *module, const gchar *path)
 {
   char build_path[1024];
   gchar *name = g_strdelimit(g_strdup(path), "/", '-');
-  snprintf(build_path, sizeof(build_path), "%s/%s", _("preset"), name);
+  snprintf(build_path, sizeof(build_path), "%s/%s", "preset", name);
   preset_iop_module_callback_description *callback_description
       = g_malloc(sizeof(preset_iop_module_callback_description));
   callback_description->module = module;
@@ -1150,8 +1191,7 @@ gboolean find_accel_internal(GtkAccelKey *key, GClosure *closure, gpointer data)
 
 void dt_accel_rename_preset_iop(dt_iop_module_t *module, const gchar *path, const gchar *new_path)
 {
-  char *path_fixed =  g_strdelimit(g_strdup(path), "/", '-');
-  char *path_preset = g_strdup_printf("%s/%s", _("preset"), path_fixed);
+  char *path_preset = g_strdup_printf("%s¬%s", N_("preset"), path);
 
   char build_path[1024];
   dt_accel_path_iop(build_path, sizeof(build_path), module->op, path_preset);
@@ -1165,13 +1205,9 @@ void dt_accel_rename_preset_iop(dt_iop_module_t *module, const gchar *path, cons
           = *(gtk_accel_group_find(darktable.control->accelerators, find_accel_internal, accel->closure));
       gboolean local = accel->local;
       dt_accel_deregister_iop(module, path_preset);
-      g_free(path_preset);
-      g_free(path_fixed);
-      char *new_path_fixed = g_strdelimit(g_strdup(new_path), "/", '-');
-      snprintf(build_path, sizeof(build_path), "%s/%s", _("preset"), new_path_fixed);
+      snprintf(build_path, sizeof(build_path), "%s¬%s", N_("preset"), new_path);
       dt_accel_register_iop(module->so, local, build_path, tmp_key.accel_key, tmp_key.accel_mods);
-      dt_accel_connect_preset_iop(module, new_path_fixed);
-      g_free(new_path_fixed);
+      dt_accel_connect_preset_iop(module, new_path);
       l = NULL;
     }
     else
@@ -1179,6 +1215,7 @@ void dt_accel_rename_preset_iop(dt_iop_module_t *module, const gchar *path, cons
       l = g_slist_next(l);
     }
   }
+      g_free(path_preset);
 }
 
 void dt_accel_rename_preset_lib(dt_lib_module_t *module, const gchar *path, const gchar *new_path)
@@ -1197,10 +1234,8 @@ void dt_accel_rename_preset_lib(dt_lib_module_t *module, const gchar *path, cons
       GtkAccelKey tmp_key
           = *(gtk_accel_group_find(darktable.control->accelerators, find_accel_internal, accel->closure));
       dt_accel_deregister_lib(module, path_preset);
-      g_free(path_preset);
-      g_free(path_fixed);
       char *new_path_fixed = g_strdelimit(g_strdup(new_path), "/", '-');
-      snprintf(build_path, sizeof(build_path), "%s/%s", _("preset"), new_path_fixed);
+      snprintf(build_path, sizeof(build_path), "%s/%s", N_("preset"), new_path_fixed);
       dt_accel_register_lib(module, build_path, tmp_key.accel_key, tmp_key.accel_mods);
       dt_accel_connect_preset_lib(module, new_path_fixed);
       g_free(new_path_fixed);
@@ -1211,6 +1246,8 @@ void dt_accel_rename_preset_lib(dt_lib_module_t *module, const gchar *path, cons
       l = g_slist_next(l);
     }
   }
+  g_free(path_preset);
+  g_free(path_fixed);
 }
 
 void dt_accel_rename_global(const gchar *path, const gchar *new_path)
