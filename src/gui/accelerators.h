@@ -85,7 +85,7 @@ void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, Gtk
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *slider);
 void dt_accel_connect_combobox_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *combobox);
-void dt_accel_connect_list_iop(dt_iop_module_t *module);
+void dt_accel_connect_instance_iop(dt_iop_module_t *module);
 void dt_accel_connect_locals_iop(dt_iop_module_t *module);
 void dt_accel_connect_preset_iop(dt_iop_module_t *so, const gchar *path);
 void dt_accel_connect_preset_lib(dt_lib_module_t *so, const gchar *path);
@@ -95,7 +95,7 @@ void dt_accel_connect_manual(GSList **list_ptr, const gchar *full_path, GClosure
 // Disconnect function
 void dt_accel_disconnect_list(GSList **accels_ptr);
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module);
-void dt_accel_cleanup_locals_iop(dt_iop_module_t *module);
+void dt_accel_cleanup_closures_iop(dt_iop_module_t *module);
 
 // Deregister functions
 void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path);
