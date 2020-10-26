@@ -964,7 +964,7 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
   }
 
   // so we create a new image surface to return
-  const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht) * darktable.gui->ppd_thb ;
+  const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht) * darktable.gui->ppd_thb;
   const int img_width = buf_wd * scale;
   const int img_height = buf_ht * scale;
   *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
