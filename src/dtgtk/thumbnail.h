@@ -117,6 +117,8 @@ typedef struct
   int overlay_timeout_id;       // id of the g_source timeout fct
   gboolean tooltip;             // should we show the tooltip ?
 
+  int expose_again_timeout_id;  // source id of the expose_again timeout
+
   // specific for culling and preview
   gboolean zoomable;   // can we zoom in/out the thumbnail (used for culling/preview)
   double aspect_ratio; // aspect ratio of the image
