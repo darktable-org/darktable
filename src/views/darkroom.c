@@ -743,14 +743,6 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
-static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
-{
-
-  //FIXME
-  dt_accel_disconnect_list(&module->accel_closures);
-  dt_accel_cleanup_locals_iop(module);
-}
-
 static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
@@ -916,9 +908,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
       dev->iop = g_list_remove_link(dev->iop, g_list_nth(dev->iop, i));
 
       // we cleanup the module
-      dt_accel_disconnect_list(&module->accel_closures);
-      dt_accel_cleanup_locals_iop(module);
-      dt_iop_cleanup_module(module);
+      dt_accel_cleanup_closures_iop(module);
+
       free(module);
     }
   }
@@ -3092,7 +3083,7 @@ void leave(dt_view_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
     if(!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
 
-    dt_dev_cleanup_module_accels(module);
+    dt_accel_cleanup_closures_iop(module);
     module->accel_closures = NULL;
     dt_iop_cleanup_module(module);
     free(module);
