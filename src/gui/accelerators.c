@@ -108,20 +108,6 @@ static void dt_accel_path_iop_translated(char *s, size_t n, dt_iop_module_so_t *
     snprintf(s, n, "<Darktable>/%s/%s", C_("accel", "processing modules"), module_clean);
 
   g_free(module_clean);
-
-/*
-  gchar **split_paths = g_strsplit(path, "¬", 4);
-  gchar **cleaned_paths = g_malloc0_n(g_strv_length(split_paths) + 2, sizeof(gchar*));
-  gchar **add_path = cleaned_paths;
-  *(add_path++) = g_strdelimit(g_strdup(module->name()), "/", '-');
-  for(gchar **cur_path = split_paths; *cur_path; cur_path++)
-    *(add_path++) = g_strdelimit(g_strdup(Q_(*cur_path)), "/¬", '-');
-  gchar *joined_paths = g_strjoinv("/", cleaned_paths);
-  snprintf(s, n, "<Darktable>/%s/%s", C_("accel", "processing modules"), joined_paths);
-  g_free(joined_paths);
-  g_strfreev(cleaned_paths);
-  g_strfreev(split_paths);
-*/
 }
 
 static void dt_accel_path_lib_translated(char *s, size_t n, dt_lib_module_t *module, const char *path)
@@ -447,6 +433,7 @@ static dt_accel_t *_store_iop_accel_closure(dt_iop_module_t *module, gchar *acce
   stored_accel->closure = closure;
 
   g_closure_ref(closure);
+  g_closure_sink(closure);
   *save_list = g_slist_prepend(*save_list, stored_accel);
 
   return accel;
@@ -778,13 +765,14 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, Gtk
   _accel_connect_actions_iop(module, path, slider, _slider_actions, slider_callbacks);
 }
 
-void dt_accel_connect_list_iop(dt_iop_module_t *module)
+void dt_accel_connect_instance_iop(dt_iop_module_t *module)
 {
   for(GSList *l = module->accel_closures; l; l = g_slist_next(l))
   {
     _accel_iop_t *stored_accel = (_accel_iop_t *)l->data;
     if(stored_accel && stored_accel->accel && stored_accel->closure)
     {
+
       if(stored_accel->accel->closure)
         gtk_accel_group_disconnect(darktable.control->accelerators, stored_accel->accel->closure);
 
@@ -802,7 +790,10 @@ void dt_accel_connect_locals_iop(dt_iop_module_t *module)
   while(l)
   {
     _accel_iop_t *accel = (_accel_iop_t *)l->data;
-    if(accel) gtk_accel_group_connect_by_path(darktable.control->accelerators, accel->accel->path, accel->closure);
+    if(accel)
+    {
+      gtk_accel_group_connect_by_path(darktable.control->accelerators, accel->accel->path, accel->closure);
+    }
     l = g_slist_next(l);
   }
 
@@ -831,7 +822,6 @@ void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
     _accel_iop_t *accel = (_accel_iop_t *)l->data;
     if(accel)
     {
-      g_closure_ref(accel->closure);
       gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
     }
     l = g_slist_next(l);
@@ -840,16 +830,33 @@ void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
   module->local_closures_connected = FALSE;
 }
 
-void dt_accel_cleanup_locals_iop(dt_iop_module_t *module)
+void _free_iop_accel(gpointer data)
+{
+  _accel_iop_t *accel = (_accel_iop_t *) data;
+
+  if(accel->accel->closure == accel->closure)
+  {
+    gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
+    accel->accel->closure = NULL;
+  }
+
+  if(accel->closure->ref_count != 1)
+    fprintf(stderr, "iop accel refcount %d %s\n", accel->closure->ref_count, accel->accel->path);
+
+  g_closure_unref(accel->closure);
+
+  g_free(accel);
+}
+
+void dt_accel_cleanup_closures_iop(dt_iop_module_t *module)
 {
   dt_accel_disconnect_locals_iop(module);
 
-  g_slist_free_full(module->accel_closures_local, g_free);
+  g_slist_free_full(module->accel_closures, _free_iop_accel);
+  g_slist_free_full(module->accel_closures_local, _free_iop_accel);
+  module->accel_closures = NULL;
   module->accel_closures_local = NULL;
-  //FIXME:   g_closure_unref(closure);
 }
-
-// FIXME: cleanup accel_closures
 
 typedef struct
 {
@@ -864,9 +871,9 @@ static void preset_iop_module_callback_destroyer(gpointer data, GClosure *closur
   g_free(callback_description->name);
   g_free(data);
 }
+
 static gboolean preset_iop_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
-
 {
   preset_iop_module_callback_description *callback_description
       = (preset_iop_module_callback_description *)data;
