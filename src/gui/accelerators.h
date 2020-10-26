@@ -46,7 +46,7 @@ typedef enum dt_accel_iop_slider_scale_t
 // Accel path string building functions
 void dt_accel_path_global(char *s, size_t n, const char *path);
 void dt_accel_path_view(char *s, size_t n, char *module, const char *path);
-void dt_accel_path_sub_iop(char *s, size_t n, char *module, const char *path, const char *sub);
+void dt_accel_path_iop(char *s, size_t n, char *module, const char *path);
 void dt_accel_path_lib(char *s, size_t n, char *module, const char *path);
 void dt_accel_path_lua(char *s, size_t n, const char *path);
 void dt_accel_path_manual(char *s, size_t n, const char *full_path);
@@ -64,6 +64,7 @@ void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t
                                      guint accel_key, GdkModifierType mods);
 //register lib shortcut but make it look like a view shortcut
 void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods);
+void dt_accel_register_common_iop(dt_iop_module_so_t *so);
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
 void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods);

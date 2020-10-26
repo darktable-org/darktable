@@ -855,28 +855,31 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, co
 
   if(w->module)
   {
-    if(!darktable.bauhaus->skip_accel)
+    if(!darktable.bauhaus->skip_accel && (!section_orig || strcmp("blend", section_orig)))
     {
+      gchar *combined_label = section_orig
+                            ? g_strdup_printf("%s¬%s", section_orig, label_orig)
+                            : g_strdup(label_orig);
       if(darktable.control->accel_initialising)
       {
         if(w->type == DT_BAUHAUS_SLIDER)
         {
-          dt_accel_register_slider_iop(w->module->so, FALSE, label_orig);
+          dt_accel_register_slider_iop(w->module->so, FALSE, combined_label);
         }
         else if(w->type == DT_BAUHAUS_COMBOBOX)
         {
-          dt_accel_register_combobox_iop(w->module->so, FALSE, label_orig);
+          dt_accel_register_combobox_iop(w->module->so, FALSE, combined_label);
         }
       }
       else
       {
         if(w->type == DT_BAUHAUS_SLIDER)
         {
-          dt_accel_connect_slider_iop(w->module, label_orig, widget);
+          dt_accel_connect_slider_iop(w->module, combined_label, widget);
         }
         else if(w->type == DT_BAUHAUS_COMBOBOX)
         {
-          dt_accel_connect_combobox_iop(w->module, label_orig, widget);
+          dt_accel_connect_combobox_iop(w->module, combined_label, widget);
         }
       }
     }
