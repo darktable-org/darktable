@@ -215,14 +215,17 @@ static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *accelerata
   return TRUE;
 }
 
+// allow autoconcatenation. use #pragma push_macro("N_") #pragma pop_macro("N_") if needed
+#undef N_
+#define N_(String) String
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "settings/from image area"), 0, 0);
+  dt_accel_register_iop(self, FALSE, N_("settings") "¬" N_("from image area"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_accel_connect_iop(self, "settings/from image area", g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL));
+  dt_accel_connect_iop(self, "settings¬from image area", g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL));
 }
 
 /*
@@ -1929,21 +1932,26 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(box_enabled, dt_ui_section_label_new(_("white balance settings")), TRUE, TRUE, 0);
 
-  // create color picker to be able to send its signal when spot selected
-  char *color_picker_label = N_("set white balance to detected from area");
-  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->colorpicker, _(color_picker_label));
-
-  g->btn_asshot = dt_iop_togglebutton_new(self, N_("set white balance to as shot"), NULL,
+  g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings") "¬" N_("as shot"), NULL,
                                           G_CALLBACK(btn_toggled), FALSE, 0, 0,
                                           dtgtk_cairo_paint_camera, NULL);
-  g->btn_user = dt_iop_togglebutton_new(self, N_("set white balance to user modified"), NULL,
+  gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance to as shot"));
+
+  // create color picker to be able to send its signal when spot selected
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
+
+  g->btn_user = dt_iop_togglebutton_new(self, N_("settings") "¬" N_("user modified"), NULL,
                                         G_CALLBACK(btn_toggled), FALSE, 0, 0,
                                         dtgtk_cairo_paint_masks_drawn, NULL);
-  g->btn_d65 = dt_iop_togglebutton_new(self, N_("set white balance to camera reference point\nin most cases it should be D65"), NULL,
+  gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
+
+
+  g->btn_d65 = dt_iop_togglebutton_new(self, N_("settings") "¬" N_("camera reference"), NULL,
                                        G_CALLBACK(btn_toggled), FALSE, 0, 0,
                                        dtgtk_cairo_paint_bulb, NULL);
+  gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance to camera reference point\nin most cases it should be D65"));
 
   g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
@@ -1955,7 +1963,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
 
   g->presets = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->presets, NULL, N_("setting")); // relabel to setting to remove confusion between module presets and white balance settings
+  dt_bauhaus_widget_set_label(g->presets, NULL, N_("settings")); // relabel to settings to remove confusion between module presets and white balance settings
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance setting"));
   gtk_box_pack_start(box_enabled, g->presets, TRUE, TRUE, 0);
 

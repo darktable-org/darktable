@@ -1986,7 +1986,7 @@ void gui_init(dt_iop_module_t *self)
 
   char field_name[10];
 
-#define ADD_CHANNEL(which, c, n, N, text, span)                             \
+#define ADD_CHANNEL(which, section, c, n, N, text, span)                    \
   sprintf(field_name, "%s[%d]", #which, CHANNEL_##N);                       \
   g->which##_##c = dt_bauhaus_slider_from_params(self, field_name);         \
   dt_bauhaus_slider_set_soft_range(g->which##_##c, -span+1.0, span+1.0);    \
@@ -1995,9 +1995,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_offset(g->which##_##c, -1.0);                       \
   dt_bauhaus_slider_set_feedback(g->which##_##c, 0);                        \
   gtk_widget_set_tooltip_text(g->which##_##c, _(text[CHANNEL_##N]));        \
-  dt_bauhaus_widget_set_label(g->which##_##c, #which, #n);                  \
+  dt_bauhaus_widget_set_label(g->which##_##c, section, #n);                 \
 
-#define ADD_BLOCK(blk, which, text, span, satspan)                          \
+#define ADD_BLOCK(blk, which, section, text, span, satspan)                 \
   g->blocks[blk] = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
                                                                             \
   sprintf(field_name, "%s[%d]", #which, CHANNEL_FACTOR);                    \
@@ -2013,12 +2013,12 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->which##_factor, 0.0, 0.0, 0.0, 0.0);        \
   dt_bauhaus_slider_set_stop(g->which##_factor, 1.0, 1.0, 1.0, 1.0);        \
   gtk_widget_set_tooltip_text(g->which##_factor, _(text[CHANNEL_FACTOR]));  \
-  dt_bauhaus_widget_set_label(g->which##_factor, #which, N_("factor"));     \
+  dt_bauhaus_widget_set_label(g->which##_factor, section, N_("factor"));    \
                                                                             \
   g->hue_##which = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,          \
                    dt_bauhaus_slider_new_with_range_and_feedback(self,      \
                    0.0f, 360.0f, 1.0f, 0.0f, 2, 0));                        \
-  dt_bauhaus_widget_set_label(g->hue_##which, NULL, N_("hue"));             \
+  dt_bauhaus_widget_set_label(g->hue_##which, section, N_("hue"));          \
   dt_bauhaus_slider_set_format(g->hue_##which, "%.2f °");                   \
   dt_bauhaus_slider_set_stop(g->hue_##which, 0.0f,   1.0f, 0.0f, 0.0f);     \
   dt_bauhaus_slider_set_stop(g->hue_##which, 0.166f, 1.0f, 1.0f, 0.0f);     \
@@ -2035,7 +2035,7 @@ void gui_init(dt_iop_module_t *self)
   g->sat_##which = dt_bauhaus_slider_new_with_range_and_feedback(self,      \
                    0.0f, 100.0f, 0.05f, 0.0f, 2, 0);                        \
   dt_bauhaus_slider_set_soft_max(g->sat_##which, satspan);                  \
-  dt_bauhaus_widget_set_label(g->sat_##which, NULL, N_("saturation"));      \
+  dt_bauhaus_widget_set_label(g->sat_##which, section, N_("saturation"));   \
   dt_bauhaus_slider_set_format(g->sat_##which, "%.2f %%");                  \
   dt_bauhaus_slider_set_stop(g->sat_##which, 0.0f, 0.2f, 0.2f, 0.2f);       \
   dt_bauhaus_slider_set_stop(g->sat_##which, 1.0f, 1.0f, 1.0f, 1.0f);       \
@@ -2044,15 +2044,15 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(which##_callback), self);                     \
   gtk_box_pack_start(GTK_BOX(self->widget), g->sat_##which, TRUE, TRUE, 0); \
                                                                             \
-  ADD_CHANNEL(which, r, red, RED, text, span)                               \
+  ADD_CHANNEL(which, section, r, red, RED, text, span)                      \
   dt_bauhaus_slider_set_stop(g->which##_r, 0.0, 0.0, 1.0, 1.0);             \
   dt_bauhaus_slider_set_stop(g->which##_r, 0.5, 1.0, 1.0, 1.0);             \
   dt_bauhaus_slider_set_stop(g->which##_r, 1.0, 1.0, 0.0, 0.0);             \
-  ADD_CHANNEL(which, g, green, GREEN, text, span)                           \
+  ADD_CHANNEL(which, section, g, green, GREEN, text, span)                  \
   dt_bauhaus_slider_set_stop(g->which##_g, 0.0, 1.0, 0.0, 1.0);             \
   dt_bauhaus_slider_set_stop(g->which##_g, 0.5, 1.0, 1.0, 1.0);             \
   dt_bauhaus_slider_set_stop(g->which##_g, 1.0, 0.0, 1.0, 0.0);             \
-  ADD_CHANNEL(which, b, blue, BLUE, text, span)                             \
+  ADD_CHANNEL(which, section, b, blue, BLUE, text, span)                    \
   dt_bauhaus_slider_set_stop(g->which##_b, 0.0, 1.0, 1.0, 0.0);             \
   dt_bauhaus_slider_set_stop(g->which##_b, 0.5, 1.0, 1.0, 1.0);             \
   dt_bauhaus_slider_set_stop(g->which##_b, 1.0, 0.0, 0.0, 1.0);             \
@@ -2075,9 +2075,9 @@ void gui_init(dt_iop_module_t *self)
         N_("factor of green for gain/slope"),
         N_("factor of blue for gain/slope") };
 
-  ADD_BLOCK(0, lift,  lift_messages, 0.05f,  5.0f)
-  ADD_BLOCK(1, gamma, gamma_messages, 0.5f, 20.0f)
-  ADD_BLOCK(2, gain,  gain_messages,  0.5f, 25.0f)
+  ADD_BLOCK(0, lift,  N_("shadows"), lift_messages, 0.05f,  5.0f)
+  ADD_BLOCK(1, gamma, N_("mid-tones"), gamma_messages, 0.5f, 20.0f)
+  ADD_BLOCK(2, gain,  N_("highlights"), gain_messages,  0.5f, 25.0f)
   _configure_slider_blocks(NULL, self);
 
   g->optimizer_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);

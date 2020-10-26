@@ -1525,24 +1525,6 @@ static void init_key_accels(dt_iop_module_so_t *module)
   // Calling the accelerator initialization callback, if present
   if(module->init_key_accels) (module->init_key_accels)(module);
 
-  // create a gui and have the widgets register their accelerators
-  if(module->gui_init)
-  {
-    dt_iop_module_t *module_instance = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
-
-    if(!dt_iop_load_module_by_so(module_instance, module, NULL))
-    {
-      ++darktable.gui->reset;
-      module->gui_init(module_instance);
-      --darktable.gui->reset;
-      module->gui_cleanup(module_instance);
-
-      dt_iop_cleanup_module(module_instance);
-    }
-
-    free(module_instance);
-  }
-
   /** load shortcuts for presets **/
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1551,11 +1533,9 @@ static void init_key_accels(dt_iop_module_so_t *module)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *name_fixed = dt_util_str_replace((const char *)sqlite3_column_text(stmt, 0), "/", "-");
     char path[1024];
-    snprintf(path, sizeof(path), "%s/%s", _("preset"), name_fixed);
-    dt_accel_register_iop(module, FALSE, NC_("accel", path), 0, 0);
-    g_free(name_fixed);
+    snprintf(path, sizeof(path), "%s¬%s", N_("preset"), (const char *)sqlite3_column_text(stmt, 0));
+    dt_accel_register_iop(module, FALSE, path, 0, 0);
   }
   sqlite3_finalize(stmt);
 }
@@ -1572,31 +1552,38 @@ static void dt_iop_init_module_so(void *m)
     // Calling the accelerator initialization callback, if present
     init_key_accels(module);
 
+    // create a gui and have the widgets register their accelerators
+    dt_iop_module_t *module_instance = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+
+    if(!dt_iop_load_module_by_so(module_instance, module, NULL) && module->gui_init)
+    {
+      darktable.control->accel_initialising = TRUE;
+      ++darktable.gui->reset;
+      module->gui_init(module_instance);
+      module->gui_cleanup(module_instance);
+      --darktable.gui->reset;
+      darktable.control->accel_initialising = FALSE;
+
+      dt_iop_cleanup_module(module_instance);
+    }
+
+    free(module_instance);
+
     if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
-      dt_accel_register_slider_iop(module, FALSE, NC_("accel", "fusion"));
+      dt_accel_register_slider_iop(module, FALSE, N_("fusion"));
     }
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      // Adding the optional show accelerator to the table (blank)
-      dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
-      dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
-      dt_accel_register_iop(module, FALSE, NC_("accel", "focus module"), 0, 0);
-
-      dt_accel_register_iop(module, FALSE, NC_("accel", "reset module parameters"), 0, 0);
-      dt_accel_register_iop(module, FALSE, NC_("accel", "show preset menu"), 0, 0);
+      dt_accel_register_common_iop(module);
     }
   }
 }
 
 void dt_iop_load_modules_so(void)
 {
-  darktable.control->accel_initialising = TRUE;
-
   darktable.iop = dt_module_load_modules("/plugins", sizeof(dt_iop_module_so_t), dt_iop_load_module_so,
                                          dt_iop_init_module_so, NULL);
-
-  darktable.control->accel_initialising = FALSE;
 }
 
 int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, dt_develop_t *dev)
@@ -2490,6 +2477,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_hexpand(module->widget, FALSE);
   gtk_widget_set_vexpand(module->widget, FALSE);
 
+  /* connect accelerators */
+  dt_iop_connect_common_accels(module);
+  if(module->connect_key_accels) module->connect_key_accels(module);
+
   return module->expander;
 }
 
@@ -2636,8 +2627,6 @@ static gboolean enable_module_callback(GtkAccelGroup *accel_group, GObject *acce
 
   return TRUE;
 }
-
-
 
 void dt_iop_connect_common_accels(dt_iop_module_t *module)
 {
@@ -2973,16 +2962,8 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
       accel_mod_new = (dt_iop_module_t *)(g_list_last(final_matches)->data);
   }
 
-  //attach accelerators to new module
-  if(accel_mod_new)
-  {
-    //add accelerators to new module
-    dt_accel_connect_list_iop(accel_mod_new);
-
-    // FIXME: not special case? i.e. make sure they are in list
-    if(accel_mod_new->connect_key_accels) accel_mod_new->connect_key_accels(accel_mod_new);
-    dt_iop_connect_common_accels(accel_mod_new);
-  }
+  // switch accelerators to new module
+  if(accel_mod_new) dt_accel_connect_list_iop(accel_mod_new);
 }
 
 void dt_iop_connect_accels_all()
