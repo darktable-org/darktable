@@ -2858,112 +2858,41 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
     - prefer unmasked instances (when selected, after applying the above rules, if instances of the module are unmasked, masked instances will be ignored)
     - selection order (after applying the above rules, apply the shortcut to the first or last instance remaining)
   */
-  dt_iop_module_t *accel_mod_new = NULL;  //The module to which accelerators are to be attached
-  dt_iop_module_t *mod = NULL;            //Used while iterating module lists
-
-  GList *iop_mods = NULL;                 //All modules in iop
-  GList *all_instances = NULL;            //matching instances
-  GList *filtered_expanded = NULL;        //modules after applying 'expanded' filter
-  GList *filtered_enabled = NULL;         //modules after applying 'enabled' filter
-  GList *final_matches = NULL;            //final matching modules
-
-  int count_all = 0;
-  int count_expanded = 0;
-  int count_enabled = 0;
-  int count_unmasked = 0;
-
-  int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded");
-  int prefer_enabled = dt_conf_get_bool("accel/prefer_enabled");
-  int prefer_unmasked = dt_conf_get_bool("accel/prefer_unmasked");
-  gchar *select_order = dt_conf_get_string("accel/select_order");
+  int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded") ? 8 : 0;
+  int prefer_enabled = dt_conf_get_bool("accel/prefer_enabled") ? 4 : 0;
+  int prefer_unmasked = dt_conf_get_bool("accel/prefer_unmasked") ? 2 : 0;
+  int prefer_first = strcmp(dt_conf_get_string("accel/select_order"), "first instance") == 0 ? 1 : 0;
 
   if(darktable.develop->gui_attached)
   {
-    //filter out only matching modules
-    //count expanded instances
-    iop_mods = g_list_last(darktable.develop->iop);
-    while(iop_mods)
+    dt_iop_module_t *accel_mod_new = NULL;  //The module to which accelerators are to be attached
+
+    int best_score = -1;
+
+    for(GList *iop_mods = g_list_last(darktable.develop->iop);
+        iop_mods;
+        iop_mods = g_list_previous(iop_mods))
     {
-      mod = (dt_iop_module_t *)iop_mods->data;
-      //modules with iop_order of INT_MAX are outside of the current pipe
-      //FIXME: why not enable accelerators if not in _current_ pipe?
+      dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
+
       if(mod->so == module && mod->iop_order != INT_MAX)
       {
-        all_instances = g_list_prepend(all_instances, mod);
-        count_all++;
-        if(prefer_expanded && mod->expanded) count_expanded++;
-      }
-      iop_mods = g_list_previous(iop_mods);
-    }
+        int score = (mod->expanded ? prefer_expanded : 0)
+                  + (mod->enabled ? prefer_enabled : 0)
+                  + (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED ||
+                    mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED ? prefer_unmasked : 0);
 
-    if(count_all == 1)
-      final_matches = g_list_first(all_instances);
-    else
-    {
-      //filter out expanded if necessary
-      //count enabled instances
-      all_instances = g_list_last(all_instances);
-      while(all_instances)
-      {
-        mod = (dt_iop_module_t *)all_instances->data;
-
-        if(!prefer_expanded || count_expanded == 0 ||  mod->expanded)
+        if(score + prefer_first > best_score)
         {
-          filtered_expanded = g_list_prepend(filtered_expanded, mod);
-          if(prefer_enabled && mod->enabled) count_enabled++;
-        }
-        all_instances = g_list_previous(all_instances);
-      }
-
-//memory leak all_instances etc  ??
-
-      if(count_expanded == 1)
-        final_matches = g_list_first(filtered_expanded);
-      else
-      {
-        //filter out enabled if necessary
-        //count masked instances
-        filtered_expanded = g_list_last(filtered_expanded);
-        while(filtered_expanded)
-        {
-          mod = (dt_iop_module_t *)filtered_expanded->data;
-          if(!prefer_enabled || count_enabled == 0 ||  mod->enabled)
-          {
-            filtered_enabled = g_list_prepend(filtered_enabled, mod);
-            if(prefer_unmasked && (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
-                                    || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED)) count_unmasked++;
-          }
-          filtered_expanded = g_list_previous(filtered_expanded);
-        }
-
-        if(count_enabled == 1)
-          final_matches = g_list_first(filtered_enabled);
-        else
-        {
-          //filter out masked if necessary
-          //to generate final matches list
-          filtered_enabled = g_list_last(filtered_enabled);
-          while(filtered_enabled)
-          {
-            mod = (dt_iop_module_t *)filtered_enabled->data;
-            //n.b. DISABLED and ENABLED below represent blend modes 'off' and 'uniformly'
-            if(!prefer_unmasked || count_unmasked == 0 || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED
-                                                        || mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED)
-              final_matches = g_list_prepend(final_matches, mod);
-            filtered_enabled = g_list_previous(filtered_enabled);
-          }
+          best_score = score;
+          accel_mod_new = mod;
         }
       }
     }
 
-    if(strcmp(select_order, "first instance") == 0 && final_matches)
-      accel_mod_new = (dt_iop_module_t *)(g_list_first(final_matches)->data);
-    else if(final_matches)
-      accel_mod_new = (dt_iop_module_t *)(g_list_last(final_matches)->data);
+    // switch accelerators to new module
+    if(accel_mod_new) dt_accel_connect_instance_iop(accel_mod_new);
   }
-
-  // switch accelerators to new module
-  if(accel_mod_new) dt_accel_connect_list_iop(accel_mod_new);
 }
 
 void dt_iop_connect_accels_all()
