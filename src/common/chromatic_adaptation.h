@@ -26,6 +26,8 @@ typedef enum dt_adaptation_t
   DT_ADAPTATION_LINEAR_BRADFORD = 0,
   DT_ADAPTATION_CAT16           = 1,
   DT_ADAPTATION_FULL_BRADFORD   = 2,
+  DT_ADAPTATION_XYZ             = 3,
+  DT_ADAPTATION_RGB             = 4,
   DT_ADAPTATION_LAST
 } dt_adaptation_t;
 
@@ -120,6 +122,8 @@ static inline void convert_any_LMS_to_XYZ(const float LMS[4], float XYZ[4], dt_a
       convert_CAT16_LMS_to_XYZ(LMS, XYZ);
       break;
     }
+    case DT_ADAPTATION_XYZ:
+    case DT_ADAPTATION_RGB:
     case DT_ADAPTATION_LAST:
     {
       // special case : just pass through.
@@ -152,6 +156,8 @@ static inline void convert_any_XYZ_to_LMS(const float XYZ[4], float LMS[4], dt_a
       convert_XYZ_to_CAT16_LMS(XYZ, LMS);
       break;
     }
+    case DT_ADAPTATION_XYZ:
+    case DT_ADAPTATION_RGB:
     case DT_ADAPTATION_LAST:
     {
       // special case : just pass through.
@@ -311,4 +317,44 @@ static inline void CAT16_adapt_D50(const float lms_in[4],
     lms_out[1] = lms_in[1] * (D * D50[1] / origin_illuminant[1] + 1.f - D);
     lms_out[2] = lms_in[2] * (D * D50[2] / origin_illuminant[2] + 1.f - D);
   }
+}
+
+/* XYZ adaptations pre-computed for D50 and D65 outputs */
+
+#ifdef _OPENMP
+#pragma omp declare simd uniform(origin_illuminant) \
+  aligned(lms_in, lms_out, origin_illuminant:16)
+#endif
+static inline void XYZ_adapt_D65(const float lms_in[4],
+                                      const float origin_illuminant[4],
+                                      float lms_out[4])
+{
+  // XYZ chromatic adaptation from origin to target D65 illuminant in XYZ space
+  // origin illuminant need also to be precomputed to XYZ
+
+  // Precomputed D65 primaries in XYZ for camera WB adjustment
+  const float DT_ALIGNED_PIXEL D65[4] = { 0.9504285453771807f, 1.0f, 1.0889003707981277f, 0.f };
+
+  lms_out[0] = lms_in[0] * D65[0] / origin_illuminant[0];
+  lms_out[1] = lms_in[1] * D65[1] / origin_illuminant[1];
+  lms_out[2] = lms_in[2] * D65[2] / origin_illuminant[2];
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd uniform(origin_illuminant) \
+  aligned(lms_in, lms_out, origin_illuminant:16)
+#endif
+static inline void XYZ_adapt_D50(const float lms_in[4],
+                                      const float origin_illuminant[4],
+                                      float lms_out[4])
+{
+  // XYZ chromatic adaptation from origin to target D65 illuminant in XYZ space
+  // origin illuminant need also to be precomputed to XYZ
+
+  // Precomputed D50 primaries in XYZ for camera WB adjustment
+  const float DT_ALIGNED_PIXEL D50[4] = { 0.9642119944211994f, 1.0f, 0.8251882845188288f, 0.f };
+
+  lms_out[0] = lms_in[0] * D50[0] / origin_illuminant[0];
+  lms_out[1] = lms_in[1] * D50[1] / origin_illuminant[1];
+  lms_out[2] = lms_in[2] * D50[2] / origin_illuminant[2];
 }

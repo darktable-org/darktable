@@ -25,6 +25,8 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/opencl.h"
 #include "common/illuminants.h"
+#include "develop/imageop_math.h"
+#include "develop/openmp_maths.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -79,6 +81,12 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   int clip;
 } dt_iop_channelmixer_rgb_params_t;
 
+typedef enum dt_ai_wb_model_t
+{
+  DT_AI_SURFACES = 0,
+  DT_AI_EDGES = 1
+} dt_ai_wb_model_t;
+
 typedef struct dt_iop_channelmixer_rgb_gui_data_t
 {
   GtkNotebook *notebook;
@@ -93,6 +101,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *normalize_R, *normalize_G, *normalize_B, *normalize_sat, *normalize_light, *normalize_grey;
   int auto_detect_illuminant;
   float xy[2];
+  dt_ai_wb_model_t wb_model;
 } dt_iop_channelmixer_rgb_gui_data_t;
 
 typedef struct dt_iop_channelmixer_rbg_data_t
@@ -235,7 +244,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   dt_uvY_to_xyY(uvY, xyY);
 
   // Clip upon request
-  for(size_t c = 0; c < 2; c++) xyY[c] = (clip) ? fmaxf(xyY[c], 0.0f) : xyY[c];
+  if(clip) for(size_t c = 0; c < 2; c++) xyY[c] = fmaxf(xyY[c], 0.0f);
 
   // Check sanity of x and y :
   // since Z = Y (1 - x - y) / y, if x + y >= 1, Z will be negative
@@ -304,43 +313,106 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     float DT_ALIGNED_PIXEL temp_two[4];
 
     for(size_t c = 0; c < 3; c++) temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
-
-    // Convert from RGB to XYZ to LMS
-    dot_product(temp_two, RGB_to_XYZ, temp_one);
-    const float Y = temp_one[1];
-    downscale_vector(temp_one, Y);
+    float Y = 1.f;
 
     switch(kind)
     {
       case DT_ADAPTATION_FULL_BRADFORD:
       {
+        // Convert from RGB to XYZ
+        dot_product(temp_two, RGB_to_XYZ, temp_one);
+
+        // Normalize by Y
+        Y = temp_one[1];
+        downscale_vector(temp_one, Y);
+
+        // Convert from XYZ to LMS
         convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+
+        // Do white balance in LMS
         bradford_adapt_D50(temp_two, illuminant, p, TRUE, temp_one);
+
+        // Compute the 3D mix in LMS - this is a rotation + homothety of the vector base
+        dot_product(temp_one, MIX, temp_two);
+
         break;
       }
       case DT_ADAPTATION_LINEAR_BRADFORD:
       {
+        // Convert from RGB to XYZ
+        dot_product(temp_two, RGB_to_XYZ, temp_one);
+
+         // Normalize by Y
+        Y = temp_one[1];
+        downscale_vector(temp_one, Y);
+
+        // Convert from XYZ to LMS
         convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+
+        // Do white balance in LMS
         bradford_adapt_D50(temp_two, illuminant, p, FALSE, temp_one);
+
+        // Compute the 3D mix in LMS - this is a rotation + homothety of the vector base
+        dot_product(temp_one, MIX, temp_two);
+
         break;
       }
       case DT_ADAPTATION_CAT16:
       {
+        // Convert from RGB to XYZ
+        dot_product(temp_two, RGB_to_XYZ, temp_one);
+
+         // Normalize by Y
+        Y = temp_one[1];
+        downscale_vector(temp_one, Y);
+
+        // Convert from XYZ to LMS
         convert_XYZ_to_CAT16_LMS(temp_one, temp_two);
+
+        // Do white balance in LMS
         CAT16_adapt_D50(temp_two, illuminant, 1.0f, TRUE, temp_one); // force full-adaptation
+
+        // Compute the 3D mix in LMS - this is a rotation + homothety of the vector base
+        dot_product(temp_one, MIX, temp_two);
+
         break;
       }
+      case DT_ADAPTATION_XYZ:
+      {
+        // Convert from RGB to XYZ
+        dot_product(temp_two, RGB_to_XYZ, temp_one);
+
+         // Normalize by Y
+        Y = temp_one[1];
+        downscale_vector(temp_one, Y);
+
+        // Do white balance in XYZ
+        XYZ_adapt_D50(temp_one, illuminant, temp_two);
+
+        // Compute the 3D mix in XYZ - this is a rotation + homothety of the vector base
+        dot_product(temp_two, MIX, temp_one);
+        dt_simd_memcpy(temp_one, temp_two, 4);
+
+        break;
+      }
+      case DT_ADAPTATION_RGB:
       case DT_ADAPTATION_LAST:
       {
+        // No white balance.
+        // Compute the 3D mix in RGB - this is a rotation + homothety of the vector base
+        dot_product(temp_two, MIX, temp_one);
+
+        // Convert from RGB to XYZ
+        dot_product(temp_one, RGB_to_XYZ, temp_two);
+
+        // Normalize by Y
+        Y = temp_one[1];
+        downscale_vector(temp_two, Y);
         break;
       }
     }
 
-    // Compute the 3D mix - this is a rotation + homothety of the vector base of LMS primaries
-    // This is equavilent of correcting the RGB primaries from input profile matrice
-    dot_product(temp_one, MIX, temp_two);
-
-    // Gamut mapping in XYZ space.
+    // Gamut mapping happens in XYZ space no matter what
     convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
       upscale_vector(temp_one, Y);
         gamut_mapping(temp_one, gamut, clip, temp_two);
@@ -348,16 +420,19 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     convert_any_XYZ_to_LMS(temp_two, temp_one, kind);
 
     // Clip in LMS
-    for(size_t c = 0; c < 3; c++) temp_one[c] = (clip) ? fmaxf(temp_one[c], 0.0f) : temp_one[c];
+    if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
 
     // Apply lightness / saturation adjustment
     luma_chroma(temp_one, saturation, lightness, temp_two);
+
+    // Clip in LMS
+    if(clip) for(size_t c = 0; c < 3; c++) temp_two[c] = fmaxf(temp_two[c], 0.0f);
 
     // Convert back LMS to XYZ to RGB
     convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
 
     // Clip in XYZ
-    for(size_t c = 0; c < 3; c++) temp_one[c] = (clip) ? fmaxf(temp_one[c], 0.0f) : temp_one[c];
+    if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
 
     upscale_vector(temp_one, Y);
 
@@ -379,7 +454,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 #define SHF(ii, jj, c) ((i + ii) * width + j + jj) * ch + c
 #define OFF 3
 
-static inline void auto_detect_WB(const float *const restrict in,
+static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model_t wb_model,
                                   const size_t width, const size_t height, const size_t ch,
                                   const float RGB_to_XYZ[3][4], float illuminant[4])
 {
@@ -433,135 +508,118 @@ static inline void auto_detect_WB(const float *const restrict in,
       temp[index + 2] =  XYZ[2];
     }
 
-  // Get the mean of luma and chroma in image
-  float chroma_mean[2] = { 0.0f };
-  float luma_mean = 0.0f;
-  const float num_elem = 1.f / (float)(width * height);
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(width, height, ch, temp, num_elem) \
-  aligned(temp:64) reduction(+:luma_mean, chroma_mean)\
-  schedule(simd:static)
-#endif
-  for(size_t k = 0; k < height * width * ch; k += ch)
-  {
-    chroma_mean[0] += temp[k + 0] * num_elem;
-    chroma_mean[1] += temp[k + 1] * num_elem;
-    luma_mean += temp[k + 2] * num_elem;
-  }
-
-  // Get the variance of luma and chroma in image
-  float chroma_var[2] = { 0.0f };
-  float chroma_covar = 0.f;
-  float luma_var = 0.f;
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(width, height, ch, temp, chroma_mean, num_elem) \
-  aligned(temp:64) reduction(+:luma_var, chroma_var, chroma_covar)\
-  schedule(simd:static)
-#endif
-  for(size_t k = 0; k < height * width * ch; k += ch)
-  {
-    chroma_var[0] += sqf(temp[k + 0]) * num_elem;
-    chroma_var[1] += sqf(temp[k + 1]) * num_elem;
-    chroma_covar += (temp[k + 0] - chroma_mean[0]) * (temp[k + 1] - chroma_mean[1]) * num_elem;
-    luma_var += sqf(temp[k + 2]) * num_elem;
-  }
-
-  chroma_var[0] -= sqf(chroma_mean[0]);
-  chroma_var[1] -= sqf(chroma_mean[1]);
-  luma_var -= sqf(luma_mean);
-
-  float norm_surface[2] = { 0.0f };
-  float XYZ_surface[4] = { 0.f };
+  float elements = 0.f;
   float XYZ_edge[4] = { 0.f };
-  const float num_elem_2 = 1.f / (float)((height - 4 * OFF - 1) * (width - 4 * OFF - 1));
+  float XYZ_surface[4] = { 0.f };
 
-  // Compute the Laplacian
+  if(wb_model == DT_AI_SURFACES)
+  {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) reduction(+:XYZ_surface, XYZ_edge, norm_surface) \
-  dt_omp_firstprivate(width, height, ch, temp, chroma_mean, luma_mean, chroma_covar, chroma_var, luma_var, num_elem_2) \
+#pragma omp parallel for simd default(none) reduction(+:XYZ_edge, XYZ_surface, elements) \
+  dt_omp_firstprivate(width, height, ch, temp) \
   aligned(temp:64) \
   schedule(simd:static)
 #endif
-  for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
-    for(size_t j = 2 * OFF; j < width - 4 * OFF; j += OFF)
-    {
-      float DT_ALIGNED_PIXEL dd[4];
-      float DT_ALIGNED_PIXEL central_average[4];
-
-      for(size_t c = 0; c < 3; c++)
+    for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
+      for(size_t j = 2 * OFF; j < width - 4 * OFF; j += OFF)
       {
-        // B-spline local average / blur
-        central_average[c] = (      temp[SHF(-OFF, -OFF, c)] + 2.f * temp[SHF(-OFF, 0, c)] +       temp[SHF(-OFF, +OFF, c)] +
-                              2.f * temp[SHF(   0, -OFF, c)] + 4.f * temp[SHF(   0, 0, c)] + 2.f * temp[SHF(   0, +OFF, c)] +
-                                    temp[SHF(+OFF, -OFF, c)] + 2.f * temp[SHF(+OFF, 0, c)] +       temp[SHF(+OFF, +OFF, c)]) / 16.0f;
-        central_average[c] = fmaxf(central_average[c], 0.0f);
+        float DT_ALIGNED_PIXEL central_average[2];
 
-        // image - blur = laplacian = edges
-        dd[c] = fminf(fmaxf(temp[SHF(0, 0, c)] - central_average[c], -1.999f), 1.999f);
+        #pragma unroll
+        for(size_t c = 0; c < 2; c++)
+        {
+          // B-spline local average / blur
+          central_average[c] = (      temp[SHF(-OFF, -OFF, c)] + 2.f * temp[SHF(-OFF, 0, c)] +       temp[SHF(-OFF, +OFF, c)] +
+                                2.f * temp[SHF(   0, -OFF, c)] + 4.f * temp[SHF(   0, 0, c)] + 2.f * temp[SHF(   0, +OFF, c)] +
+                                      temp[SHF(+OFF, -OFF, c)] + 2.f * temp[SHF(+OFF, 0, c)] +       temp[SHF(+OFF, +OFF, c)]) / 16.0f;
+          central_average[c] = fmaxf(central_average[c], 0.0f);
+        }
+
+        float var[4] = { 0.f };
+
+        // compute patch-wise variance
+        // If variance = 0, we are on a flat surface and want to discard that patch.
+        #pragma unroll
+        for(size_t c = 0; c < 2; c++)
+        {
+          var[c] = (
+                      sqf(temp[SHF(-OFF, -OFF, c)] - central_average[c]) +
+                      sqf(temp[SHF(-OFF,    0, c)] - central_average[c]) +
+                      sqf(temp[SHF(-OFF, +OFF, c)] - central_average[c]) +
+                      sqf(temp[SHF(0,    -OFF, c)] - central_average[c]) +
+                      sqf(temp[SHF(0,       0, c)] - central_average[c]) +
+                      sqf(temp[SHF(0,    +OFF, c)] - central_average[c]) +
+                      sqf(temp[SHF(+OFF, -OFF, c)] - central_average[c]) +
+                      sqf(temp[SHF(+OFF,    0, c)] - central_average[c]) +
+                      sqf(temp[SHF(+OFF, +OFF, c)] - central_average[c])
+                    ) / 9.0f;
+        }
+
+        // Compute the patch-wise chroma covariance.
+        // If covariance = 0, chroma channels are not correlated and we either have noise or chromatic aberrations.
+        // Both ways, we want to discard that patch from the chroma average.
+        var[2] = (
+                    (temp[SHF(-OFF, -OFF, 0)] - central_average[0]) * (temp[SHF(-OFF, -OFF, 1)] - central_average[1]) +
+                    (temp[SHF(-OFF,    0, 0)] - central_average[0]) * (temp[SHF(-OFF,    0, 1)] - central_average[1]) +
+                    (temp[SHF(-OFF, +OFF, 0)] - central_average[0]) * (temp[SHF(-OFF, +OFF, 1)] - central_average[1]) +
+                    (temp[SHF(   0, -OFF, 0)] - central_average[0]) * (temp[SHF(   0, -OFF, 1)] - central_average[1]) +
+                    (temp[SHF(   0,    0, 0)] - central_average[0]) * (temp[SHF(   0,    0, 1)] - central_average[1]) +
+                    (temp[SHF(   0, +OFF, 0)] - central_average[0]) * (temp[SHF(   0, +OFF, 1)] - central_average[1]) +
+                    (temp[SHF(+OFF, -OFF, 0)] - central_average[0]) * (temp[SHF(+OFF, -OFF, 1)] - central_average[1]) +
+                    (temp[SHF(+OFF,    0, 0)] - central_average[0]) * (temp[SHF(+OFF,    0, 1)] - central_average[1]) +
+                    (temp[SHF(+OFF, +OFF, 0)] - central_average[0]) * (temp[SHF(+OFF, +OFF, 1)] - central_average[1])
+                  ) / 9.0f;
+
+        const float weight = var[2] * var[0] * var[1];
+
+        #pragma unroll
+        for(size_t c = 0; c < 2; c++) XYZ_surface[c] += central_average[c] * weight;
+        elements += weight;
       }
-
-      // Compute the patch-wise chroma covariance.
-      // If covariance = 0, chroma channels are not correlated and we either have noise or chromatic aberrations.
-      // Both ways, we want to discard that patch from the chroma average.
-      const float covar = ((temp[SHF(-OFF, -OFF, 0)] - central_average[0]) * (temp[SHF(-OFF, -OFF, 1)] - central_average[1]) * (temp[SHF(-OFF, -OFF, 2)] - central_average[2]) +
-                           (temp[SHF(-OFF,    0, 0)] - central_average[0]) * (temp[SHF(-OFF,    0, 1)] - central_average[1]) * (temp[SHF(-OFF,    0, 2)] - central_average[2]) +
-                           (temp[SHF(-OFF, +OFF, 0)] - central_average[0]) * (temp[SHF(-OFF, +OFF, 1)] - central_average[1]) * (temp[SHF(-OFF, +OFF, 2)] - central_average[2]) +
-                           (temp[SHF(   0, -OFF, 0)] - central_average[0]) * (temp[SHF(   0, -OFF, 1)] - central_average[1]) * (temp[SHF(   0, -OFF, 2)] - central_average[2]) +
-                           (temp[SHF(   0,    0, 0)] - central_average[0]) * (temp[SHF(   0,    0, 1)] - central_average[1]) * (temp[SHF(   0,    0, 2)] - central_average[2]) +
-                           (temp[SHF(   0, +OFF, 0)] - central_average[0]) * (temp[SHF(   0, +OFF, 1)] - central_average[1]) * (temp[SHF(   0, +OFF, 2)] - central_average[2]) +
-                           (temp[SHF(+OFF, -OFF, 0)] - central_average[0]) * (temp[SHF(+OFF, -OFF, 1)] - central_average[1]) * (temp[SHF(+OFF, -OFF, 2)] - central_average[2]) +
-                           (temp[SHF(+OFF,    0, 0)] - central_average[0]) * (temp[SHF(+OFF,    0, 1)] - central_average[1]) * (temp[SHF(+OFF,    0, 2)] - central_average[2]) +
-                           (temp[SHF(+OFF, +OFF, 0)] - central_average[0]) * (temp[SHF(+OFF, +OFF, 1)] - central_average[1]) * (temp[SHF(+OFF, +OFF, 2)] - central_average[2])) / 9.0f;
-      const float weight_patch = 1.f - expf(-0.5f * fabsf(covar) / chroma_covar);
-
-      // compute patch-wise variance
-      // If variance = 0, we are on a flat surface and want to discard that patch.
-      float var[3] = { 0.f };
-      for(size_t c = 0; c < 3; c++)
+  }
+  else if(wb_model == DT_AI_EDGES)
+  {
+    #ifdef _OPENMP
+#pragma omp parallel for simd default(none) reduction(+:XYZ_edge, XYZ_surface, elements) \
+  dt_omp_firstprivate(width, height, ch, temp) \
+  aligned(temp:64) \
+  schedule(simd:static)
+#endif
+    for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
+      for(size_t j = 2 * OFF; j < width - 4 * OFF; j += OFF)
       {
-        var[c] = ((temp[SHF(-OFF, -OFF, c)] - central_average[c]) +
-                  (temp[SHF(-OFF,    0, c)] - central_average[c]) +
-                  (temp[SHF(-OFF, +OFF, c)] - central_average[c]) +
-                  (temp[SHF(0,    -OFF, c)] - central_average[c]) +
-                  (temp[SHF(0,       0, c)] - central_average[c]) +
-                  (temp[SHF(0,    +OFF, c)] - central_average[c]) +
-                  (temp[SHF(+OFF, -OFF, c)] - central_average[c]) +
-                  (temp[SHF(+OFF,    0, c)] - central_average[c]) +
-                  (temp[SHF(+OFF, +OFF, c)] - central_average[c]))
-                 / 9.0f;
+        float DT_ALIGNED_PIXEL dd[2];
+        float DT_ALIGNED_PIXEL central_average[2];
+
+        #pragma unroll
+        for(size_t c = 0; c < 2; c++)
+        {
+          // B-spline local average / blur
+          central_average[c] = (      temp[SHF(-OFF, -OFF, c)] + 2.f * temp[SHF(-OFF, 0, c)] +       temp[SHF(-OFF, +OFF, c)] +
+                                2.f * temp[SHF(   0, -OFF, c)] + 4.f * temp[SHF(   0, 0, c)] + 2.f * temp[SHF(   0, +OFF, c)] +
+                                      temp[SHF(+OFF, -OFF, c)] + 2.f * temp[SHF(+OFF, 0, c)] +       temp[SHF(+OFF, +OFF, c)]) / 16.0f;
+
+          // image - blur = laplacian = edges
+          dd[c] = temp[SHF(0, 0, c)] - central_average[c];
+        }
+
+        // Compute the Minkowski p-norm for regularization
+        const float p = 8.f;
+        const float p_norm_edge = powf(powf(fabsf(dd[0]), p) + powf(fabsf(dd[1]), p), 1.f / p) + 1e-6f;
+
+        #pragma unroll
+        for(size_t c = 0; c < 2; c++) XYZ_edge[c] -= dd[c] / p_norm_edge;
+        elements += 1.f;
       }
-      const float weights[3] = {  1.f - expf(-0.5f * fabsf(var[0]) / chroma_var[0]),
-                                  1.f - expf(-0.5f * fabsf(var[1]) / chroma_var[1]),
-                                  1.f - expf(-0.5f * fabsf(var[2]) / luma_var) };
+  }
 
-      // For each pixel :
-      // pixels on sharp edges get a higher vote
-      // pixels close to the average luminance ± std get a higher vote
-      // pixels close to the average chrominance ± std get a higher vote
-      const float weight_edge_2 = 2.f / (2.f - sqf(dd[2]));
-
-      // For surface chromaticity, cast votes of neutral pixels with higher weight
-      const float weight = weights[0] * weights[1] * weights[2] * weight_edge_2 * weight_patch * num_elem_2;
-
-      for(size_t c = 0; c < 2; c++)
-      {
-        XYZ_surface[c] += central_average[c] * weight;
-        XYZ_edge[c] += dd[c] * weight;
-        norm_surface[c] += weight;
-      }
-    }
-
-  static const float D50[2] = { 0.34567f, 0.35850 };
-  const float norm = hypotf(D50[0], D50[1]);
+  const float D50[2] = { 0.34567f, 0.35850 };
+  const float norm_D50 = hypotf(D50[0], D50[1]);
 
   for(size_t c = 0; c < 2; c++)
   {
-    illuminant[c] = norm * (0.5f * XYZ_surface[c] + 0.5 * XYZ_edge[c]) / norm_surface[c] + D50[c];
-    fprintf(stdout, "norm: %f\n", norm_surface[c]);
+    const float shift = (wb_model == DT_AI_SURFACES) ? XYZ_surface[c] : XYZ_edge[c];
+    illuminant[c] = (norm_D50 * shift / elements) + D50[c];
   }
 
   dt_free_align(temp);
@@ -607,7 +665,7 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
   float t = xy_to_CCT(x, y);
 
   // xy_to_CCT is valid only in 3000 - 25000 K. We need another model below
-  if(t < 4000.f) t = CCT_reverse_lookup(x, y);
+  if(t < 3000.f) t = CCT_reverse_lookup(x, y);
 
   if(temperature) *temperature = t;
 
@@ -683,12 +741,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const restrict out = (float *const restrict)ovoid;
 
   // auto-detect WB upon request
-  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && g)
+  if(self->dev->gui_attached && g)
   {
     if(g->auto_detect_illuminant && !darktable.gui->reset)
     {
+      if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
+      {
+        // no detection on full image
+        dt_simd_memcpy(in, out, roi_in->width * roi_in->height * ch);
+        return;
+      }
+
       float XYZ[4] = { 0.f };
-      auto_detect_WB(in, roi_in->width, roi_in->height, ch, RGB_to_XYZ, XYZ);
+      auto_detect_WB(in, g->wb_model, roi_in->width, roi_in->height, ch, RGB_to_XYZ, XYZ);
 
       const int reset = darktable.gui->reset;
       darktable.gui->reset = 1;
@@ -750,12 +815,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                   data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_CAT16);
       break;
     }
-    case DT_ADAPTATION_LAST:
+    case DT_ADAPTATION_XYZ:
     {
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
                   XYZ_to_RGB, RGB_to_XYZ, data->MIX,
                   data->illuminant, data->saturation, data->lightness, data->grey,
-                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_LAST);
+                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_XYZ);
+      break;
+    }
+    case DT_ADAPTATION_RGB:
+    {
+      loop_switch(in, out, roi_out->width, roi_out->height, ch,
+                  XYZ_to_RGB, RGB_to_XYZ, data->MIX,
+                  data->illuminant, data->saturation, data->lightness, data->grey,
+                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_RGB);
+      break;
+    }
+    case DT_ADAPTATION_LAST:
+    {
       break;
     }
   }
@@ -831,7 +908,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // blue compensation for Bradford transform = (test illuminant blue / reference illuminant blue)^0.0834
   // reference illuminant is hard-set D50 for darktable's pipeline
   // test illuminant is user params
-  d->p = powf(d->illuminant[2] / 0.818155f, 0.0834f);
+  d->p = powf(0.818155f / d->illuminant[2], 0.0834f);
 }
 
 
@@ -840,7 +917,7 @@ static void update_illuminants(dt_iop_module_t *self)
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
-  if(p->adaptation == DT_ADAPTATION_LAST)
+  if(p->adaptation == DT_ADAPTATION_RGB || p->adaptation == DT_ADAPTATION_LAST)
   {
     // user disabled CAT at all, hide everything and exit
     gtk_widget_set_visible(g->illuminant, FALSE);
@@ -941,7 +1018,8 @@ static void update_illuminants(dt_iop_module_t *self)
       break;
     }
     case DT_ILLUMINANT_CAMERA:
-    case DT_ILLUMINANT_DETECT:
+    case DT_ILLUMINANT_DETECT_EDGES:
+    case DT_ILLUMINANT_DETECT_SURFACES:
     {
       gtk_widget_set_visible(g->adaptation, FALSE);
       gtk_widget_set_visible(g->temperature, FALSE);
@@ -1067,7 +1145,13 @@ static void update_R_colors(dt_iop_module_t *self)
     float RR = RR_min + stop * RR_range;
     float stop_R = RR + RGB[1] + RGB[2];
     float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
-    convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+
+    if(p->adaptation != DT_ADAPTATION_RGB)
+      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+    else
+      // TODO: convert from actual pipeline working profile to actual display profile
+      dt_simd_memcpy(LMS, RGB_t, 4);
+
     dt_bauhaus_slider_set_stop(g->scale_red_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1082,7 +1166,13 @@ static void update_R_colors(dt_iop_module_t *self)
     float RG = RG_min + stop * RG_range;
     float stop_R = RGB[0] + RG + RGB[2];
     float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
-    convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+
+    if(p->adaptation != DT_ADAPTATION_RGB)
+      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+    else
+      // TODO: convert from actual pipeline working profile to actual display profile
+      dt_simd_memcpy(LMS, RGB_t, 4);
+
     dt_bauhaus_slider_set_stop(g->scale_red_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1097,7 +1187,13 @@ static void update_R_colors(dt_iop_module_t *self)
     float RB = RB_min + stop * RB_range;
     float stop_R = RGB[0] + RGB[1] + RB;
     float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
-    convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+
+    if(p->adaptation != DT_ADAPTATION_RGB)
+      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+    else
+      // TODO: convert from actual pipeline working profile to actual display profile
+      dt_simd_memcpy(LMS, RGB_t, 4);
+
     dt_bauhaus_slider_set_stop(g->scale_red_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1133,7 +1229,13 @@ static void update_B_colors(dt_iop_module_t *self)
     float BR = BR_min + stop * BR_range;
     float stop_B = BR + RGB[1] + RGB[2];
     float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B };
-    convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+
+    if(p->adaptation != DT_ADAPTATION_RGB)
+      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+    else
+      // TODO: convert from actual pipeline working profile to actual display profile
+      dt_simd_memcpy(LMS, RGB_t, 4);
+
     dt_bauhaus_slider_set_stop(g->scale_blue_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1148,7 +1250,13 @@ static void update_B_colors(dt_iop_module_t *self)
     float BG = BG_min + stop * BG_range;
     float stop_B = RGB[0] + BG + RGB[2];
     float LMS[4] = { 0.5f , 0.5f, 0.5f * stop_B };
-    convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+
+    if(p->adaptation != DT_ADAPTATION_RGB)
+      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+    else
+      // TODO: convert from actual pipeline working profile to actual display profile
+      dt_simd_memcpy(LMS, RGB_t, 4);
+
     dt_bauhaus_slider_set_stop(g->scale_blue_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1163,15 +1271,19 @@ static void update_B_colors(dt_iop_module_t *self)
     float BB = BB_min + stop * BB_range;
     float stop_B = RGB[0] + RGB[1] + BB;
     float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B };
-    convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+
+    if(p->adaptation != DT_ADAPTATION_RGB)
+      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+    else
+      // TODO: convert from actual pipeline working profile to actual display profile
+      dt_simd_memcpy(LMS, RGB_t, 4);
+
     dt_bauhaus_slider_set_stop(g->scale_blue_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
   gtk_widget_queue_draw(self->widget);
 
 }
-
-
 
 static void update_G_colors(dt_iop_module_t *self)
 {
@@ -1200,7 +1312,13 @@ static void update_G_colors(dt_iop_module_t *self)
     float GR = GR_min + stop * GR_range;
     float stop_G = GR + RGB[1] + RGB[2];
     float LMS[4] = { 0.5f , 0.5f * stop_G, 0.5f };
-    convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+
+    if(p->adaptation != DT_ADAPTATION_RGB)
+      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+    else
+      // TODO: convert from actual pipeline working profile to actual display profile
+      dt_simd_memcpy(LMS, RGB_t, 4);
+
     dt_bauhaus_slider_set_stop(g->scale_green_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1215,7 +1333,13 @@ static void update_G_colors(dt_iop_module_t *self)
     float GG = GG_min + stop * GG_range;
     float stop_G = RGB[0] + GG + RGB[2];
     float LMS[4] = { 0.5f, 0.5f * stop_G, 0.5f };
-    convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+
+    if(p->adaptation != DT_ADAPTATION_RGB)
+      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+    else
+      // TODO: convert from actual pipeline working profile to actual display profile
+      dt_simd_memcpy(LMS, RGB_t, 4);
+
     dt_bauhaus_slider_set_stop(g->scale_green_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1230,7 +1354,13 @@ static void update_G_colors(dt_iop_module_t *self)
     float GB = GB_min + stop * GB_range;
     float stop_G = RGB[0] + RGB[1] + GB;
     float LMS[4] = { 0.5f, 0.5f * stop_G , 0.5f};
-    convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+
+    if(p->adaptation != DT_ADAPTATION_RGB)
+      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
+    else
+      // TODO: convert from actual pipeline working profile to actual display profile
+      dt_simd_memcpy(LMS, RGB_t, 4);
+
     dt_bauhaus_slider_set_stop(g->scale_green_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1245,6 +1375,7 @@ static void update_illuminant_color(dt_iop_module_t *self)
   gtk_widget_queue_draw(g->illum_color);
   update_xy_color(self);
 }
+
 
 static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
@@ -1283,7 +1414,6 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_surface_destroy(cst);
   return TRUE;
 }
-
 
 
 static void update_approx_cct(dt_iop_module_t *self)
@@ -1359,12 +1489,15 @@ static void illuminant_callback(GtkWidget *combo, dt_iop_module_t *self)
       dt_control_log(_("no white balance was found in raw image"));
     }
   }
-  else if(p->illuminant == DT_ILLUMINANT_DETECT)
+  else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
   {
     // Get image WB
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     g->auto_detect_illuminant = TRUE;
+    if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES) g->wb_model = DT_AI_EDGES;
+    else if(p->illuminant == DT_ILLUMINANT_DETECT_SURFACES) g->wb_model = DT_AI_SURFACES;
+
     darktable.gui->reset = reset;
 
     // We need to recompute only the thumbnail
@@ -1978,18 +2111,22 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
   g->adaptation = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->adaptation, NULL, _("adaptation"));
+  dt_bauhaus_widget_set_label(g->adaptation, NULL, _("adaptation space"));
   dt_bauhaus_combobox_add(g->adaptation, _("linear Bradford (ICC v4)"));
   dt_bauhaus_combobox_add(g->adaptation, _("CAT16 (CIECAM16)"));
-  dt_bauhaus_combobox_add(g->adaptation, _("original Bradford"));
-  dt_bauhaus_combobox_add(g->adaptation, _("XYZ (none)"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation), _("choose the method to adapt the illuminant: \n"
-                                                           "• Bradford (1985) is more accurate for illuminants close to daylight\n"
-                                                           "but can push colors out of the gamut for difficult illuminants.\n"
-                                                           "the original version will give poor results away from D50.\n"
+  dt_bauhaus_combobox_add(g->adaptation, _("non-linear Bradford"));
+  dt_bauhaus_combobox_add(g->adaptation, _("XYZ "));
+  dt_bauhaus_combobox_add(g->adaptation, _("none (bypass)"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation), _("choose the method to adapt the illuminant\n"
+                                                           "and the colorspace in which the module works: \n"
+                                                           "• Linear Bradford (1985) is more accurate for illuminants close to daylight\n"
+                                                           "but produces out-of-gamut colors for difficult illuminants.\n"
                                                            "• CAT16 (2016) is more robust to avoid imaginary colours\n"
                                                            "while working with large gamut or saturated cyan and purple.\n"
-                                                           "• none disables any illuminant adaptation."));
+                                                           "• Non-linear Bradford (1985) is the original Bradford,\n"
+                                                           "it can produce better results than the linear version, but is unreliable.\n"
+                                                           "• XYZ is a simple scaling is XYZ space. It is not recommended in general.\n"
+                                                           "• none disables any adaptation and uses pipeline working RGB."));
   g_signal_connect(G_OBJECT(g->adaptation), "value-changed", G_CALLBACK(adaptation_callback), self);
   gtk_box_pack_start(GTK_BOX(page0), g->adaptation, FALSE, FALSE, 0);
 
@@ -2025,7 +2162,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->illuminant, _("LED (LED light)"));
   dt_bauhaus_combobox_add(g->illuminant, _("Planckian (black body)"));
   dt_bauhaus_combobox_add(g->illuminant, _("custom"));
-  dt_bauhaus_combobox_add(g->illuminant, _("auto-detect from image content..."));
+  dt_bauhaus_combobox_add(g->illuminant, _("(AI) detect from image surfaces..."));
+  dt_bauhaus_combobox_add(g->illuminant, _("(AI) detect from image edges..."));
 
   if(is_raw)
      dt_bauhaus_combobox_add(g->illuminant, _("as shot in camera"));
