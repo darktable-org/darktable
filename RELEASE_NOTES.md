@@ -28,16 +28,107 @@ making a backup is strongly advised.
 
 ## The Big Ones
 
+- The tether view has been reworked to be more stable.
+
+- The histogram is back on the tethering view (it was disabled on 3.2
+  for lack of time integrating the new histogram code into it).
+
+- The map view has been enhanced with locations and the performances
+  have been improved when lot of images are geo-localized.
+
+- A new module group has been introduced. This makes the module list
+  (bottom right of the darkroom) obsolete and so has been removed.
+
+  This module group is a versatile module which will let everyone
+  create it's own set of group and modules. There is some default
+  layout proposed (default, minimal, scene-referred, display-referred,
+  all modules).
 
 ## New Features And Changes
 
-- Add a focus-peaking button in lighttable and darkroom which complements the key accel.
+- Add a focus-peaking button in lighttable and darkroom which
+  complements the key accel.
 
 - Better visual feedback when changing module order with drag&drop.
 
 - Better performance for the wavelet algorithm.
 
-- A new tooltip was added to history items in the darkroom that shows each of the individual parameter changes within the module. It could especially help track down unintended adjustments in modules with many tabs, such as filmic rgb or the parametric blending settings. This feature was based on the under-the-hood introspection enhancements in 3.2.
+- A new tooltip was added to history items in the darkroom that shows
+  each of the individual parameter changes within the module. It could
+  especially help track down unintended adjustments in modules with
+  many tabs, such as filmic rgb or the parametric blending
+  settings. This feature was based on the under-the-hood introspection
+  enhancements in 3.2.
+
+- Importing pictures from cards do not use the gPhoto API anymore. It
+  should be more stable on Windows.
+
+- Many changes done on the widgets to allow for narrower panels.
+
+- Enhance the bilateral filter (used in local contrast for example) performance.
+
+- The history reset button can be used to delete the history stack.
+
+- A <kbd>Ctrl+Click</kbd> on the 'compress history stack' can be used to
+  truncate the history without compressing it.
+
+- The export module has now options to specify the output size using a
+  print size (cm or inch) and DPI or a scale factor.
+
+- The FilmicRGB module has new graph views to help first time users.
+
+- Changing the workflow in preference (none, display-referred,
+  scene-referred) does not need a restart.
+
+- Fine tune the pixel-pipe cache for better performances.
+
+- The temperature module can use colored sliders with two available
+  modes: 'illuminant color' or 'effect emulation'.
+
+- More compact combo-box display on some modules.
+
+- The list of collection names are now grouped in the collection
+  combo-box. The list being now long it feels easier to use properly
+  grouped in sections.
+
+- Add support for 16-bit (half) float TIFFs.
+
+- The channel mixer has been improved to preserve highlights.
+
+- The color picker has been reworked and comes with an enhanced
+  GUI. The colors can now be displayed in LCh or HSL.
+
+- The non default values in the preference dialog are now flagged with
+  a little bullet.
+
+- A new preference has been added to hide the built-in presets.
+
+- All modules with a list (styles, image information...) can be
+  resized with a <kbd>Ctrl+Scroll</kbd> action.
+
+- The history copy has been changed to include only safe
+  modules. Modules like "raw white/black point"; "scale pixels" are
+  not copied anymore for example. To copy such module use the copy
+  with dialog now named "copy parts...". Note that the unsafe modules
+  are not selected by default in the dialog.
+
+- A new exposure independent guided filter has been introduced in the
+  tone equalizer module.
+
+- Add greyscale support for AVIF format.
+
+- Rework the "screen DPI overwrite" and "speed/quality trade-off for
+  drawing images" preferences to a single new performance mode for
+  slow computer. In this mode the thumbs are computed with less DPI
+  and are using faster drawing algorithm.
+
+- All values in the saved preferences are checked to detect possible
+  data corruptions. Preferences having a min or max are validated to
+  be in the corresponding range, preferences with a set of possible
+  values are verified for example. Any preference detected with a
+  possible data corruption are automatically reset to its default.
+
+- Support for AVIF >= 0.8.2 (no support for older versions).
 
 ## Bug fixes
 
@@ -51,8 +142,21 @@ making a backup is strongly advised.
 
 - Fix timestamp display on Windows (use UTF-8 format for timestamps).
 
+- Fix many issues on the zoomable lighttable view introduced in 3.2
+  with the full rewrite of the lighttable.
+
+- Fix possible flickering while displaying thumbnails on the lighttable.
+
+- Fix liquify module interaction with nodes, line and curves when
+  zooming and/or down-sampling is activated.
+
+- Fix some issues with lighttable display (thumbnails) when using
+  HiDPI monitor.
+
 ## Notes
 
+- The code base has received lot of refactoring and
+  simplification. This will help maintenance in the long run.
 
 ## Lua
 
