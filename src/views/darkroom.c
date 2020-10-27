@@ -4386,10 +4386,34 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
 {
   GtkWidget *widget = dev->second_window.second_wnd;
 
-  dev->second_window.ppd = dev->second_window.ppd_thb = dt_get_system_gui_ppd(widget);
-  if(dt_conf_get_bool("ui/performance"))
-    dev->second_window.ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
-
+// check if in HiDPI mode
+#if(CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
+  float screen_ppd_overwrite = dt_conf_get_float("screen_ppd_overwrite");
+  if(screen_ppd_overwrite > 0.0)
+  {
+    dev->second_window.ppd = screen_ppd_overwrite;
+    dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f as specified in the configuration file\n",
+             screen_ppd_overwrite);
+  }
+  else
+  {
+#ifndef GDK_WINDOWING_QUARTZ
+    dev->second_window.ppd = gtk_widget_get_scale_factor(widget);
+#else
+    // this do not depends on the window, so we can use the main window value
+    dev->second_window.ppd = darktable.gui->ppd;
+#endif
+    if(dev->second_window.ppd < 0.0)
+    {
+      dev->second_window.ppd = 1.0;
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n");
+    }
+    else
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", dev->second_window.ppd);
+  }
+#else
+  dev->second_window.ppd = 1.0;
+#endif
   // get the screen resolution
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
   if(screen_dpi_overwrite > 0.0)
