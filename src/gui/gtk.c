@@ -1550,36 +1550,36 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_cleanup();
 }
 
-// refactored function to read current ppd, because gtk for osx has been unreliable
-// we use the specific function here. Anyway, if nothing meaningful is found we default back to 1.0
-double dt_get_system_gui_ppd(GtkWidget *widget)
-{
-  double res = 0.0f;
-#ifdef GDK_WINDOWING_QUARTZ
-  res = dt_osx_get_ppd();
-#else
-  res = gtk_widget_get_scale_factor(widget);
-#endif
-  if((res < 1.0f) || (res > 4.0f))
-  {
-    dt_print(DT_DEBUG_CONTROL, "[dt_get_system_gui_ppd] can't detect system ppd\n");
-    return 1.0f;
-  }
-  dt_print(DT_DEBUG_CONTROL, "[dt_get_system_gui_ppd] system ppd is %f\n", res);
-  return res;
-}
-
 void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
 {
   GtkWidget *widget = gui->ui->main_window;
 
-  gui->ppd = gui->ppd_thb = dt_get_system_gui_ppd(widget);
-  gui->filter_image = CAIRO_FILTER_GOOD;
-  if(dt_conf_get_bool("ui/performance"))
+  // check if in HiDPI mode
+#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
+  float screen_ppd_overwrite = dt_conf_get_float("screen_ppd_overwrite");
+  if(screen_ppd_overwrite > 0.0)
   {
-      gui->ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
-      gui->filter_image = CAIRO_FILTER_FAST;
+    gui->ppd = screen_ppd_overwrite;
+    dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f as specified in the configuration file\n", screen_ppd_overwrite);
   }
+  else
+  {
+#ifndef GDK_WINDOWING_QUARTZ
+    gui->ppd = gtk_widget_get_scale_factor(widget);
+#else
+    gui->ppd = dt_osx_get_ppd();
+#endif
+    if(gui->ppd < 0.0)
+    {
+      gui->ppd = 1.0;
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n");
+    }
+    else
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", gui->ppd);
+  }
+#else
+  gui->ppd = 1.0;
+#endif
   // get the screen resolution
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
   if(screen_dpi_overwrite > 0.0)
@@ -1700,6 +1700,18 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_visible(gui->scrollbars.hscrollbar, FALSE);
   gtk_widget_set_visible(gui->scrollbars.vscrollbar, FALSE);
 
+  // Fetch the cairo filter to draw scaled surfaces where exact 1:1 buffer/viewport size is not guaranteed
+  gui->filter_image = CAIRO_FILTER_FAST;
+
+  if(dt_conf_key_exists("ui/cairo_filter"))
+  {
+    if(strcmp(dt_conf_get_string("ui/cairo_filter"), "best") == 0)
+      gui->filter_image = CAIRO_FILTER_BEST;
+    else if (strcmp(dt_conf_get_string("ui/cairo_filter"), "good") == 0)
+      gui->filter_image = CAIRO_FILTER_GOOD;
+  }
+  else
+    dt_conf_set_string("ui/cairo_filter", "fast");
 }
 
 static void init_main_table(GtkWidget *container)
