@@ -1381,7 +1381,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   g_free(workflow);
 
   //  Add scene-referred workflow
-  //  Note that we cannot use the a preset for FilmicRGB as the default values are
+  //  Note that we cannot use a preset for FilmicRGB as the default values are
   //  dynamically computed depending on the actual exposure compensation
   //  (see reload_default routine in filmicrgb.c)
 
