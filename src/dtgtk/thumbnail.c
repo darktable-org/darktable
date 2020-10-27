@@ -422,7 +422,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       {
         // if the image is missing, we reload it again
         if(!thumb->expose_again_timeout_id)
-          thumb->expose_again_timeout_id = g_timeout_add(10, _thumb_expose_again, thumb);
+          thumb->expose_again_timeout_id = g_timeout_add(250, _thumb_expose_again, thumb);
 
         // we still draw the thumb to avoid flickering
         _thumb_draw_image(thumb, cr);
