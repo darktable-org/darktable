@@ -27,16 +27,17 @@
 /* Standard CIE illuminants */
 typedef enum dt_illuminant_t
 {
-  DT_ILLUMINANT_PIPE   = 0,    // darktable pipeline D50
-  DT_ILLUMINANT_A      = 1,    // incandescent bulb
-  DT_ILLUMINANT_D      = 2,    // daylight
-  DT_ILLUMINANT_E      = 3,    // equi-energy (x = y)
-  DT_ILLUMINANT_F      = 4,    // fluorescent
-  DT_ILLUMINANT_LED    = 5,    // LED
-  DT_ILLUMINANT_BB     = 6,    // general black body radiator - not CIE standard
-  DT_ILLUMINANT_CUSTOM = 7,    // input x and y directly - bypass search
-  DT_ILLUMINANT_DETECT = 8,    // auto-detection in image
-  DT_ILLUMINANT_CAMERA = 9,    // read RAW EXIF for WB
+  DT_ILLUMINANT_PIPE            = 0,    // darktable pipeline D50
+  DT_ILLUMINANT_A               = 1,    // incandescent bulb
+  DT_ILLUMINANT_D               = 2,    // daylight
+  DT_ILLUMINANT_E               = 3,    // equi-energy (x = y)
+  DT_ILLUMINANT_F               = 4,    // fluorescent
+  DT_ILLUMINANT_LED             = 5,    // LED
+  DT_ILLUMINANT_BB              = 6,    // general black body radiator - not CIE standard
+  DT_ILLUMINANT_CUSTOM          = 7,    // input x and y directly - bypass search
+  DT_ILLUMINANT_DETECT_SURFACES = 8,    // auto-detection in image from grey world model
+  DT_ILLUMINANT_DETECT_EDGES    = 9,    // auto-detection in image from grey edges model
+  DT_ILLUMINANT_CAMERA          = 10,   // read RAW EXIF for WB
   DT_ILLUMINANT_LAST
 } dt_illuminant_t;
 
@@ -305,7 +306,8 @@ static int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of
         if(find_temperature_from_raw_coeffs(img, &x, &y)) break;
     }
     case DT_ILLUMINANT_CUSTOM: // leave x and y as-is
-    case DT_ILLUMINANT_DETECT:
+    case DT_ILLUMINANT_DETECT_EDGES:
+    case DT_ILLUMINANT_DETECT_SURFACES:
     case DT_ILLUMINANT_LAST:
     {
       return FALSE;
@@ -556,7 +558,7 @@ static inline float CCT_reverse_lookup(const float x, const float y)
     // Current x, y chromaticity
     float x_bb, y_bb;
 
-    if(T > 4000.f)
+    if(T > 3000.f)
       CCT_to_xy_daylight(T, &x_bb, &y_bb);
     else
       CCT_to_xy_blackbody(T, &x_bb, &y_bb);
