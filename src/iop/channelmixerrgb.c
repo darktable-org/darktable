@@ -28,6 +28,7 @@
 #include "develop/imageop_math.h"
 #include "develop/openmp_maths.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
@@ -99,6 +100,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *scale_lightness_R, *scale_lightness_G, *scale_lightness_B;
   GtkWidget *scale_grey_R, *scale_grey_G, *scale_grey_B;
   GtkWidget *normalize_R, *normalize_G, *normalize_B, *normalize_sat, *normalize_light, *normalize_grey;
+  GtkWidget *color_picker;
   int auto_detect_illuminant;
   float xy[2];
   dt_ai_wb_model_t wb_model;
@@ -452,7 +454,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 
 // util to shift pixel index without headache
 #define SHF(ii, jj, c) ((i + ii) * width + j + jj) * ch + c
-#define OFF 3
+#define OFF 4
 
 static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model_t wb_model,
                                   const size_t width, const size_t height, const size_t ch,
@@ -570,11 +572,14 @@ static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model
                     (temp[SHF(+OFF, +OFF, 0)] - central_average[0]) * (temp[SHF(+OFF, +OFF, 1)] - central_average[1])
                   ) / 9.0f;
 
-        const float weight = var[2] * var[0] * var[1];
+        // Compute the Minkowski p-norm for regularization
+        const float p = 8.f;
+        const float p_norm = powf(powf(fabsf(central_average[0]), p) + powf(fabsf(central_average[1]), p), 1.f / p) + 1e-6f;
+        const float weight = var[0] * var[1] * var[2];
 
         #pragma unroll
-        for(size_t c = 0; c < 2; c++) XYZ_surface[c] += central_average[c] * weight;
-        elements += weight;
+        for(size_t c = 0; c < 2; c++) XYZ_surface[c] += central_average[c] * weight / p_norm;
+        elements += weight / p_norm;
       }
   }
   else if(wb_model == DT_AI_EDGES)
@@ -605,10 +610,10 @@ static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model
 
         // Compute the Minkowski p-norm for regularization
         const float p = 8.f;
-        const float p_norm_edge = powf(powf(fabsf(dd[0]), p) + powf(fabsf(dd[1]), p), 1.f / p) + 1e-6f;
+        const float p_norm = powf(powf(fabsf(dd[0]), p) + powf(fabsf(dd[1]), p), 1.f / p) + 1e-6f;
 
         #pragma unroll
-        for(size_t c = 0; c < 2; c++) XYZ_edge[c] -= dd[c] / p_norm_edge;
+        for(size_t c = 0; c < 2; c++) XYZ_edge[c] -= dd[c] / p_norm;
         elements += 1.f;
       }
   }
@@ -665,7 +670,7 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
   float t = xy_to_CCT(x, y);
 
   // xy_to_CCT is valid only in 3000 - 25000 K. We need another model below
-  if(t < 3000.f) t = CCT_reverse_lookup(x, y);
+  if(t < 3000.f && t > 1667.f) t = CCT_reverse_lookup(x, y);
 
   if(temperature) *temperature = t;
 
@@ -1430,17 +1435,36 @@ static void update_approx_cct(dt_iop_module_t *self)
   check_if_close_to_daylight(x, y, &t, &test_illuminant, NULL);
 
   gchar *str;
-  if(t >= 1667.f && t < 25000.f)
+  if(t > 1667.f && t < 25000.f)
   {
     if(test_illuminant == DT_ILLUMINANT_D)
+    {
       str = g_strdup_printf(_("CCT: %.0f K (daylight)"), t);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct), _("approximated correlated color temperature.\n"
+                                                               "this illuminant can be accurately modeled by a daylight spectrum,\n"
+                                                               "so its temperature is relevant and meaningful with a D illuminant."));
+    }
     else if(test_illuminant == DT_ILLUMINANT_BB)
+    {
       str = g_strdup_printf(_("CCT: %.0f K (black body)"), t);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct), _("approximated correlated color temperature.\n"
+                                                               "this illuminant can be accurately modeled by a black body spectrum,\n"
+                                                               "so its temperature is relevant and meaningful with a Planckian illuminant."));
+    }
     else
+    {
       str = g_strdup_printf(_("CCT: %.0f K (invalid)"), t);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct), _("approximated correlated color temperature.\n"
+                                                               "this illuminant cannot be accurately modeled by a daylight or black body spectrum,\n"
+                                                               "so its temperature is not relevant and meaningful and you need to use a custom illuminant."));
+    }
   }
   else
+  {
     str = g_strdup_printf(_("CCT: undefined"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct), _("the approximated correlated color temperature\n"
+                                                             "cannot be computed at all so you need to use a custom illuminant."));
+  }
   gtk_label_set_text(GTK_LABEL(g->approx_cct), str);
 }
 
@@ -1962,6 +1986,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)module->params;
 
+  dt_iop_color_picker_reset(self, TRUE);
+
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
   dt_bauhaus_combobox_set(g->illum_fluo, p->illum_fluo);
   dt_bauhaus_combobox_set(g->illum_led, p->illum_led);
@@ -2077,6 +2103,62 @@ void cleanup(dt_iop_module_t *module)
   module->default_params = NULL;
 }
 
+
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+{
+  if(darktable.gui->reset) return;
+
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+
+  // capture gui color picked event.
+  if(self->picked_color_max[0] < self->picked_color_min[0]) return;
+  const float *RGB = self->picked_color;
+
+  // Get work profile
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  if(work_profile == NULL) return;
+
+  // repack the matrices as flat AVX2-compliant matrice
+  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
+  repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
+
+  // Convert to XYZ
+  float XYZ[4] = { 0 };
+  dot_product(RGB, RGB_to_XYZ, XYZ);
+
+  // Convert to xyY
+  const float sum = fmaxf(XYZ[0] + XYZ[1] + XYZ[2], 1e-6f);
+  XYZ[0] /= sum;   // x
+  XYZ[2] = XYZ[1]; // Y
+  XYZ[1] /= sum;   // y
+
+  ++darktable.gui->reset;
+  p->x = XYZ[0];
+  p->y = XYZ[1];
+
+  check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, &p->adaptation);
+
+  dt_bauhaus_slider_set(g->temperature, p->temperature);
+  dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
+  dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
+
+  float xyY[3] = { p->x, p->y, 1.f };
+  float Lch[3];
+  dt_xyY_to_Lch(xyY, Lch);
+  dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
+  dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+
+  update_illuminants(self);
+  update_approx_cct(self);
+  update_illuminant_color(self);
+
+  --darktable.gui->reset;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_channelmixer_rgb_gui_data_t));
@@ -2111,7 +2193,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
   g->adaptation = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->adaptation, NULL, _("adaptation space"));
+  dt_bauhaus_widget_set_label(g->adaptation, NULL, _("adaptation"));
   dt_bauhaus_combobox_add(g->adaptation, _("linear Bradford (ICC v4)"));
   dt_bauhaus_combobox_add(g->adaptation, _("CAT16 (CIECAM16)"));
   dt_bauhaus_combobox_add(g->adaptation, _("non-linear Bradford"));
@@ -2133,22 +2215,23 @@ void gui_init(struct dt_iop_module_t *self)
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
 
   g->approx_cct = gtk_label_new("CCT:");
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct), _("approximated correlated color temperature\n"
-                                                           "this is the closest equivalent illuminant in daylight spectrum\n"
-                                                           "but the value is inacurate for non-daylight and below 3000 K.\n"
-                                                           "information for what it is worth only."));
   gtk_grid_attach(grid, GTK_WIDGET(g->approx_cct), 0, 0, 1, 1);
 
   g->illum_color = GTK_WIDGET(gtk_drawing_area_new());
   const float size = DT_PIXEL_APPLY_DPI(2 * darktable.bauhaus->line_space + darktable.bauhaus->line_height);
   gtk_widget_set_size_request(g->illum_color, size, size);
   gtk_widget_set_hexpand(GTK_WIDGET(g->illum_color), TRUE);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->illum_color), _("corresponding color of the illuminant in source\n"
-                                                            "image before chromatic adaptation.\n"
-                                                            "this will be turned into white by adaptation."));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->illum_color), _("this is the color of the scene illuminant before chromatic adaptation\n"
+                                                            "this color will be turned into pure white by the adaptation."));
 
   g_signal_connect(G_OBJECT(g->illum_color), "draw", G_CALLBACK(illuminant_color_draw), self);
   gtk_grid_attach(grid, GTK_WIDGET(g->illum_color), 1, 0, 1, 1);
+
+  g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
+  gtk_widget_set_tooltip_text(g->color_picker, _("set white balance to detected from area"));
+  //gtk_widget_set_size_request(g->color_picker, darktable.bauhaus->quad_width, darktable.bauhaus->quad_width);
+  gtk_grid_attach(grid, GTK_WIDGET(g->color_picker), 2, 0, 1, 1);
+
 
   gtk_box_pack_start(GTK_BOX(page0), GTK_WIDGET(grid), FALSE, FALSE, 2. * darktable.bauhaus->line_space);
 
@@ -2205,8 +2288,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(page0), g->illum_led, FALSE, FALSE, 0);
 
 
-  const float max_temp = 15000.f;
-  const float min_temp = 1700.f;
+  const float max_temp = 25000.f;
+  const float min_temp = 1667.f;
   g->temperature = dt_bauhaus_slider_new_with_range(self, min_temp, max_temp, 50., p->temperature, 0);
   dt_bauhaus_widget_set_label(g->temperature, NULL, _("temperature"));
   dt_bauhaus_slider_set_format(g->temperature, "%.0f K");
@@ -2233,7 +2316,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->illum_x), "value-changed", G_CALLBACK(illum_x_callback), self);
   gtk_box_pack_start(GTK_BOX(page0), GTK_WIDGET(g->illum_x), FALSE, FALSE, 0);
 
-  g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 180., 0.5, Lch[1], 1);
+  g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 200., 0.5, Lch[1], 1);
   dt_bauhaus_widget_set_label(g->illum_y, NULL, _("chroma"));
   dt_bauhaus_slider_set_format(g->illum_y, "%.1f %%");
   g_signal_connect(G_OBJECT(g->illum_y), "value-changed", G_CALLBACK(illum_y_callback), self);
