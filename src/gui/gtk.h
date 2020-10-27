@@ -26,6 +26,8 @@
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 0
 
+#define DT_GUI_THUMBSIZE_REDUCE 0.7f
+
 /* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
  * DPI */
 #define DT_PIXEL_APPLY_DPI(value) ((value) * darktable.gui->dpi_factor)
@@ -116,7 +118,7 @@ typedef struct dt_gui_gtk_t
   gboolean show_focus_peaking;
   GtkWidget *focus_peaking_button;
 
-  double dpi, dpi_factor, ppd;
+  double dpi, dpi_factor, ppd, ppd_thb;
 
   int icon_size; // size of top panel icons
 
@@ -178,6 +180,7 @@ int dt_gui_gtk_load_config();
 int dt_gui_gtk_write_config();
 void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t);
 void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t, float opacity_coef);
+double dt_get_system_gui_ppd(GtkWidget *widget);
 
 /* Check sidebar_scroll_default and modifier keys to determine if scroll event
  * should be processed by control or by panel. If default is panel scroll but
