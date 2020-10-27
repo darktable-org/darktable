@@ -244,7 +244,9 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   }
   else
   {
+    const float scaler = 1.0f / darktable.gui->ppd_thb;
     cairo_translate(cr, ix, iy);
+    cairo_scale(cr, scaler, scaler);
     cairo_set_source_surface(cr, surf, 0, 0);
     cairo_paint(cr);
     cairo_surface_destroy(surf);
