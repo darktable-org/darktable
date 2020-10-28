@@ -220,12 +220,12 @@ static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *accelerata
 #define N_(String) String
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE, N_("settings") "¬" N_("from image area"), 0, 0);
+  dt_accel_register_iop(self, FALSE, N_("settings") "`" N_("from image area"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_accel_connect_iop(self, "settings¬from image area", g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL));
+  dt_accel_connect_iop(self, "settings" "`" "from image area", g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL));
 }
 
 /*
@@ -1932,7 +1932,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(box_enabled, dt_ui_section_label_new(_("white balance settings")), TRUE, TRUE, 0);
 
-  g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings") "¬" N_("as shot"), NULL,
+  g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings") "`" N_("as shot"), NULL,
                                           G_CALLBACK(btn_toggled), FALSE, 0, 0,
                                           dtgtk_cairo_paint_camera, NULL);
   gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance to as shot"));
@@ -1942,13 +1942,13 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
 
-  g->btn_user = dt_iop_togglebutton_new(self, N_("settings") "¬" N_("user modified"), NULL,
+  g->btn_user = dt_iop_togglebutton_new(self, N_("settings") "`" N_("user modified"), NULL,
                                         G_CALLBACK(btn_toggled), FALSE, 0, 0,
                                         dtgtk_cairo_paint_masks_drawn, NULL);
   gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
 
 
-  g->btn_d65 = dt_iop_togglebutton_new(self, N_("settings") "¬" N_("camera reference"), NULL,
+  g->btn_d65 = dt_iop_togglebutton_new(self, N_("settings") "`" N_("camera reference"), NULL,
                                        G_CALLBACK(btn_toggled), FALSE, 0, 0,
                                        dtgtk_cairo_paint_bulb, NULL);
   gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance to camera reference point\nin most cases it should be D65"));

@@ -1003,31 +1003,42 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
   if(*accel_path == 0) return;
 
   /* check if we are on a leaf or a branch  */
-  if(!g_strrstr(accel_path, "/"))
+  const gchar *end = strchr(accel_path, '/');
+  const gchar *trans_end = strchr(translated_path, '/');
+  if(!end || !trans_end)
   {
+    gchar *translated_path_slashed = g_strdelimit(g_strdup(translated_path), "`", '/');
+
     /* we are on a leaf lets add */
     gchar *name = gtk_accelerator_get_label(accel_key, accel_mods);
     gtk_tree_store_append(model, &iter, parent);
-    gtk_tree_store_set(model, &iter, A_ACCEL_COLUMN, accel_path, A_BINDING_COLUMN,
-                       g_dpgettext2("gtk30", "keyboard label", name), A_TRANS_COLUMN, translated_path, -1);
+    gtk_tree_store_set (model, &iter, A_ACCEL_COLUMN, accel_path,
+                                         A_BINDING_COLUMN, g_dpgettext2("gtk30", "keyboard label", name),
+                                         A_TRANS_COLUMN, translated_path_slashed, -1);
     g_free(name);
+    g_free(translated_path_slashed);
   }
   else
   {
     /* we are on a branch let's get the node name */
-    const gchar *end = g_strstr_len(accel_path, strlen(accel_path), "/");
-    const gchar *trans_end = g_strstr_len(translated_path, strlen(translated_path), "/");
-    gchar *node = g_strndup(accel_path, end - accel_path);
-    gchar *trans_node;
-    // safeguard against broken translations
-    if(trans_end)
-      trans_node = g_strndup(translated_path, trans_end - translated_path);
-    else
+    gchar *trans_node = g_strndup(translated_path, trans_end - translated_path);
+    gchar *trans_scan = trans_node;
+    while((trans_scan = strchr(trans_scan, '`')))
     {
-      fprintf(stderr, "error: translation mismatch: `%s' vs. `%s'\n", accel_path, translated_path);
-      trans_node = g_strdup(node);
-      translated_path = accel_path;
+      *(trans_scan) = '/';
+      if(end) end = strchr(++end, '/');
     }
+
+    // safeguard against broken translations
+    if(!end)
+    {
+      fprintf(stderr, "error: translation mismatch: `%s' vs. `%s'\n", accel_path, trans_node);
+      g_free(trans_node);
+      return;
+    }
+
+
+    gchar *node = g_strndup(accel_path, end - accel_path);
 
     /* search the tree if we already have a sibling with node name */
     int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), parent);
@@ -1527,7 +1538,7 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
           dt_loc_get_user_config_dir(datadir, sizeof(datadir));
           snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
 
-          gchar *preset_name = g_strdup_printf("%s¬%s", "preset", name);
+          gchar *preset_name = g_strdup_printf("%s`%s", "preset", name);
           dt_accel_path_iop(accel, sizeof(accel), operation, preset_name);
           g_free(preset_name);
 
@@ -2075,7 +2086,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
           dt_loc_get_user_config_dir(datadir, sizeof(datadir));
           snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
 
-          gchar *preset_name = g_strdup_printf("%s¬%s", "preset", name);
+          gchar *preset_name = g_strdup_printf("%s`%s", "preset", name);
           dt_accel_path_iop(accel, sizeof(accel), operation, preset_name);
           g_free(preset_name);
 

@@ -213,7 +213,7 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *modul
   if(res == GTK_RESPONSE_YES)
   {
     char tmp_path[1024];
-    snprintf(tmp_path, sizeof(tmp_path), "%s¬%s", _("preset"), name);
+    snprintf(tmp_path, sizeof(tmp_path), "%s`%s", _("preset"), name);
     dt_accel_deregister_iop(module, tmp_path);
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
@@ -709,7 +709,7 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
   char path[1024];
-  snprintf(path, sizeof(path), "%s¬%s", N_("preset"), N_("new preset"));
+  snprintf(path, sizeof(path), "%s`%s", N_("preset"), N_("new preset"));
   dt_accel_register_iop(module->so, FALSE, path, 0, 0);
   dt_accel_connect_preset_iop(module, N_("new preset"));
   // then show edit dialog
