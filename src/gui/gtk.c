@@ -1583,7 +1583,7 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
       gui->dr_filter_image = CAIRO_FILTER_GOOD;
   }
   // get the screen resolution
-  float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
+  const float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
   if(screen_dpi_overwrite > 0.0)
   {
     gui->dpi = screen_dpi_overwrite;
