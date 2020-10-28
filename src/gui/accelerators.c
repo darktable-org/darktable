@@ -48,9 +48,8 @@ void dt_accel_path_iop(char *s, size_t n, char *module, const char *path)
 {
   if(path)
   {
-    gchar **split_paths = g_strsplit(path, "¬", 4);
-    for(gchar **cur_path = split_paths; *cur_path; cur_path++)
-      g_strdelimit(*cur_path, "/¬", '-');
+
+    gchar **split_paths = g_strsplit(path, "`", 4);
     gchar *joined_paths = g_strjoinv("/", split_paths);
     snprintf(s, n, "<Darktable>/%s/%s/%s", "image operations", module, joined_paths);
     g_free(joined_paths);
@@ -92,11 +91,11 @@ static void dt_accel_path_iop_translated(char *s, size_t n, dt_iop_module_so_t *
 
   if(path)
   {
-    gchar **split_paths = g_strsplit(path, "¬", 4);
+    gchar **split_paths = g_strsplit(path, "`", 4);
     for(gchar **cur_path = split_paths; *cur_path; cur_path++)
     {
       gchar *saved_path = *cur_path;
-      *cur_path = g_strdelimit(g_strdup(Q_(*cur_path)), "/¬", '-');
+      *cur_path = g_strdelimit(g_strdup(Q_(*cur_path)), "/", '`');
       g_free(saved_path);
     }
     gchar *joined_paths = g_strjoinv("/", split_paths);
@@ -1198,7 +1197,7 @@ gboolean find_accel_internal(GtkAccelKey *key, GClosure *closure, gpointer data)
 
 void dt_accel_rename_preset_iop(dt_iop_module_t *module, const gchar *path, const gchar *new_path)
 {
-  char *path_preset = g_strdup_printf("%s¬%s", N_("preset"), path);
+  char *path_preset = g_strdup_printf("%s`%s", N_("preset"), path);
 
   char build_path[1024];
   dt_accel_path_iop(build_path, sizeof(build_path), module->op, path_preset);
@@ -1212,7 +1211,7 @@ void dt_accel_rename_preset_iop(dt_iop_module_t *module, const gchar *path, cons
           = *(gtk_accel_group_find(darktable.control->accelerators, find_accel_internal, accel->closure));
       gboolean local = accel->local;
       dt_accel_deregister_iop(module, path_preset);
-      snprintf(build_path, sizeof(build_path), "%s¬%s", N_("preset"), new_path);
+      snprintf(build_path, sizeof(build_path), "%s`%s", N_("preset"), new_path);
       dt_accel_register_iop(module->so, local, build_path, tmp_key.accel_key, tmp_key.accel_mods);
       dt_accel_connect_preset_iop(module, new_path);
       l = NULL;
