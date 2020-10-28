@@ -205,9 +205,11 @@ static cairo_filter_t _get_filtering_level(dt_develop_t *dev)
   const int closeup = dt_control_get_dev_closeup();
   const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
 
-  // for scale above 1.0 in performance mode, use FAST as cairo filter to
-  // avoid any smoothing of pixels.
-  if(dt_conf_get_bool("ui/performance") && scale > 1.0)
+  // for pixel representation above 1:1, that is when a single pixel on the image
+  // is represented on screen by multiple pixels we want to disable any cairo filter
+  // which could only blur or smooth the output.
+
+  if(scale / darktable.gui->ppd > 1.0)
     return CAIRO_FILTER_FAST;
   else
     return darktable.gui->dr_filter_image;
