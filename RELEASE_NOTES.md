@@ -91,7 +91,7 @@ making a backup is strongly advised.
   combo-box. The list being now long it feels easier to use properly
   grouped in sections.
 
-- Add support for 16-bit (half) float TIFFs.
+- Add read support for 16-bit (half) float TIFFs.
 
 - The channel mixer has been improved to preserve highlights.
 
