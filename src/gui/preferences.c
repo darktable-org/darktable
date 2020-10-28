@@ -393,7 +393,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
   GtkWidget *useperfmode = gtk_check_button_new();
-  label = gtk_label_new(_("performance mode"));
+  label = gtk_label_new(_("prefer performance over quality"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
