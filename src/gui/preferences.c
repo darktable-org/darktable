@@ -741,8 +741,8 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
 
     if(g_strcmp0(last_module, operation) != 0)
     {
-      gtk_tree_store_append(tree_model, &iter, NULL);
-      gtk_tree_store_set(tree_model, &iter, P_ROWID_COLUMN, 0, P_OPERATION_COLUMN, "", P_MODULE_COLUMN,
+      gtk_tree_store_insert_with_values(tree_model, &iter, NULL, -1,
+                         P_ROWID_COLUMN, 0, P_OPERATION_COLUMN, "", P_MODULE_COLUMN,
                          _(module), P_EDITABLE_COLUMN, NULL, P_NAME_COLUMN, "", P_MODEL_COLUMN, "",
                          P_MAKER_COLUMN, "", P_LENS_COLUMN, "", P_ISO_COLUMN, "", P_EXPOSURE_COLUMN, "",
                          P_APERTURE_COLUMN, "", P_FOCAL_LENGTH_COLUMN, "", P_AUTOAPPLY_COLUMN, NULL, -1);
@@ -751,8 +751,8 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
       parent = iter;
     }
 
-    gtk_tree_store_append(tree_model, &iter, &parent);
-    gtk_tree_store_set(tree_model, &iter, P_ROWID_COLUMN, rowid, P_OPERATION_COLUMN, operation,
+    gtk_tree_store_insert_with_values(tree_model, &iter, &parent, -1,
+                       P_ROWID_COLUMN, rowid, P_OPERATION_COLUMN, operation,
                        P_MODULE_COLUMN, "", P_EDITABLE_COLUMN, writeprotect ? lock_pixbuf : NULL,
                        P_NAME_COLUMN, name, P_MODEL_COLUMN, model, P_MAKER_COLUMN, maker, P_LENS_COLUMN, lens,
                        P_ISO_COLUMN, iso, P_EXPOSURE_COLUMN, exposure, P_APERTURE_COLUMN, aperture,
@@ -1011,17 +1011,19 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
 
     /* we are on a leaf lets add */
     gchar *name = gtk_accelerator_get_label(accel_key, accel_mods);
-    gtk_tree_store_append(model, &iter, parent);
-    gtk_tree_store_set (model, &iter, A_ACCEL_COLUMN, accel_path,
-                                         A_BINDING_COLUMN, g_dpgettext2("gtk30", "keyboard label", name),
-                                         A_TRANS_COLUMN, translated_path_slashed, -1);
+    gtk_tree_store_insert_with_values(model, &iter, parent, -1,
+                                      A_ACCEL_COLUMN, accel_path,
+                                      A_BINDING_COLUMN, g_dpgettext2("gtk30", "keyboard label", name),
+                                      A_TRANS_COLUMN, translated_path_slashed, -1);
     g_free(name);
     g_free(translated_path_slashed);
   }
   else
   {
-    /* we are on a branch let's get the node name */
-    gchar *trans_node = g_strndup(translated_path, trans_end - translated_path);
+    const int add_space = strstr(accel_path, "preset/") == accel_path ? 1 : 0;
+    gchar *trans_node = g_strndup(translated_path, trans_end - translated_path + add_space);
+    if(add_space) trans_node[trans_end - translated_path] = ' ';
+
     gchar *trans_scan = trans_node;
     while((trans_scan = strchr(trans_scan, '`')))
     {
@@ -1059,9 +1061,10 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
     /* if not found let's add a branch */
     if(!found)
     {
-      gtk_tree_store_append(model, &iter, parent);
-      gtk_tree_store_set(model, &iter, A_ACCEL_COLUMN, node, A_BINDING_COLUMN, "", A_TRANS_COLUMN, trans_node,
-                         -1);
+      gtk_tree_store_insert_with_values(model, &iter, parent, -1,
+                                        A_ACCEL_COLUMN, node,
+                                        A_BINDING_COLUMN, "",
+                                        A_TRANS_COLUMN, trans_node, -1);
     }
 
     /* recurse further down the path */
@@ -1731,19 +1734,24 @@ static void import_preset(GtkButton *button, gpointer data)
 // Custom sort function for TreeModel entries for accels list
 static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer data)
 {
+  int res = 0;
+
   gchar *a_text;
   gchar *b_text;
 
   // First prioritize branch nodes over leaves
-  if(gtk_tree_model_iter_has_child(model, a) && !gtk_tree_model_iter_has_child(model, b)) return -1;
-
-  if(gtk_tree_model_iter_has_child(model, b) && !gtk_tree_model_iter_has_child(model, a)) return 1;
+  if(gtk_tree_model_iter_has_child(model, a)) res -= 2;
+  if(gtk_tree_model_iter_has_child(model, b)) res += 2;
 
   // Otherwise just return alphabetical order
   gtk_tree_model_get(model, a, A_TRANS_COLUMN, &a_text, -1);
   gtk_tree_model_get(model, b, A_TRANS_COLUMN, &b_text, -1);
 
-  const int res = strcasecmp(a_text, b_text);
+  // but put default actions (marked with space at end) first
+  if(a_text[strlen(a_text)-1] == ' ') res = -4; // ignore children
+  if(b_text[strlen(b_text)-1] == ' ') res += 4;
+
+  res += strcoll(a_text, b_text) < 0 ? -1 : 1;
 
   g_free(a_text);
   g_free(b_text);

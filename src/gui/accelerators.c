@@ -294,7 +294,7 @@ void _accel_register_actions_iop(dt_iop_module_so_t *so, gboolean local, const g
     dt_accel_t *accel = (dt_accel_t *)g_malloc0(sizeof(dt_accel_t));
     snprintf(accel->path, sizeof(accel->path), "%s/%s", accel_path, *action);
     gtk_accel_map_add_entry(accel->path, 0, 0);
-    snprintf(accel->translated_path, sizeof(accel->translated_path), "%s/%s", accel_path_trans,
+    snprintf(accel->translated_path, sizeof(accel->translated_path), "%s/%s ", accel_path_trans,
              g_dpgettext2(NULL, "accel", *action));
     g_strlcpy(accel->module, so->op, sizeof(accel->module));
     accel->local = local;
