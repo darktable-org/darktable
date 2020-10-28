@@ -163,7 +163,7 @@ static void load_themes_dir(const char *basedir)
   if(dir)
   {
     dt_print(DT_DEBUG_DEV, "adding themes directory: %s\n", themes_dir);
-    
+
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
       darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
