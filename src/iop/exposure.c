@@ -570,9 +570,11 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);
   /* xgettext:no-c-format */
-  gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), g_strdup_printf(_("compensate camera exposure (%+.1f EV)"),
-                                                                                  get_exposure_bias(self)));
+  gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"), get_exposure_bias(self));
+  gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), label);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_exposure_bias))), PANGO_ELLIPSIZE_MIDDLE);
+  g_free(label);
+
   dt_bauhaus_slider_set_soft(g->black, p->black);
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
