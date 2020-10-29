@@ -3318,9 +3318,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  // let gui slider match current parameters:
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set_soft(g->nbhood, p->nbhood);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
