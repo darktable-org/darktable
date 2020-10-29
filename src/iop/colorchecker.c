@@ -831,9 +831,8 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)module->params;
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   if(g->patch >= p->num_patches || g->patch < 0) return;
   if(dt_bauhaus_combobox_length(g->combobox_patch) != p->num_patches)
   {
