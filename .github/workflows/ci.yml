@@ -25,6 +25,8 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: true
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.msys2.msystem }}
@@ -57,6 +59,8 @@ jobs:
         btype: [ RelWithDebInfo ]
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: true
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
