@@ -3000,9 +3000,55 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     const float scene_black_x = grey_x - scene_LL_EV * EV;
     const float scene_white_x = grey_x + scene_HL_EV * EV;
+    const float scene_lat_bottom = grey_x + (g->spline.x[1] - g->spline.x[2]) * EV * DR;
+    const float scene_lat_top = grey_x + (g->spline.x[3] - g->spline.x[2]) * EV * DR;
 
     // show EV zones for display - zones are aligned on 0% and 100%
     cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.));
+
+    // latitude bounds - show contrast expansion
+
+    // Compute usual filmic  mapping
+    float display_lat_bottom = filmic_spline(g->spline.latitude_min, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4,
+                                  g->spline.M5, g->spline.latitude_min, g->spline.latitude_max);
+    display_lat_bottom = powf(fmaxf(display_lat_bottom, NORM_MIN), p->output_power); // clamp at -16 EV
+
+    // rescale output to log scale
+    display_lat_bottom = log2f(display_lat_bottom/ (p->grey_point_target / 100.f));
+
+    // take clamping into account
+    if(display_lat_bottom < 0.f) // clamp to - 8 EV (black)
+      display_lat_bottom = fmaxf(display_lat_bottom, -display_real_black_EV);
+    else if(display_lat_bottom > 0.f) // clamp to 0 EV (white)
+      display_lat_bottom = fminf(display_lat_bottom, display_HL_EV);
+
+    // get destination coordinate
+    display_lat_bottom = grey_x + display_lat_bottom * EV;
+
+    // Compute usual filmic  mapping
+    float display_lat_top = filmic_spline(g->spline.latitude_max, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4,
+                                  g->spline.M5, g->spline.latitude_min, g->spline.latitude_max);
+    display_lat_top = powf(fmaxf(display_lat_top, NORM_MIN), p->output_power); // clamp at -16 EV
+
+    // rescale output to log scale
+    display_lat_top = log2f(display_lat_top / (p->grey_point_target / 100.f));
+
+    // take clamping into account
+    if(display_lat_top < 0.f) // clamp to - 8 EV (black)
+      display_lat_top = fmaxf(display_lat_top, -display_real_black_EV);
+    else if(display_lat_top > 0.f) // clamp to 0 EV (white)
+      display_lat_top = fminf(display_lat_top, display_HL_EV);
+
+    // get destination coordinate and draw
+    display_lat_top = grey_x + display_lat_top * EV;
+
+    cairo_move_to(g->cr, scene_lat_bottom, scene_top);
+    cairo_line_to(g->cr, scene_lat_top, scene_top);
+    cairo_line_to(g->cr, display_lat_top, display_bottom);
+    cairo_line_to(g->cr, display_lat_bottom, display_bottom);
+    cairo_line_to(g->cr, scene_lat_bottom, scene_top);
+    set_color(g->cr, darktable.bauhaus->graph_bg);
+    cairo_fill(g->cr);
 
     for(int i = 0; i < (int)ceilf(display_DR); i++)
     {
