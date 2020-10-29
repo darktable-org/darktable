@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  windows-msys2:
+    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ windows-latest ]
+        msys2:
+          - { msystem: MINGW64, arch: x86_64 }
+        compiler:
+          - { compiler: GNU,  CC: gcc,   CXX: g++ }
+          - { compiler: LLVM, CC: clang, CXX: clang++ }
+        btype: [ RelWithDebInfo, Release, Debug ]
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msys2.msystem }}
+          install: pacman-mirrors bash curl git base-devel mingw-w64-${{ matrix.msys2.arch }}-toolchain mingw-w64-${{ matrix.msys2.arch }}-gcc mingw-w64-${{ matrix.msys2.arch }}-clang mingw-w64-${{ matrix.msys2.arch }}-openmp mingw-w64-${{ matrix.msys2.arch }}-cmake mingw-w64-${{ matrix.msys2.arch }}-ninja mingw-w64-${{ matrix.msys2.arch }}-libxml2 mingw-w64-${{ matrix.msys2.arch }}-pugixml mingw-w64-${{ matrix.msys2.arch }}-libjpeg-turbo mingw-w64-${{ matrix.msys2.arch }}-zlib mingw-w64-${{ matrix.msys2.arch }}-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
+          update: true
+      - name: Build And Test
+        env:
+          CC: ${{ matrix.compiler.CC }}
+          CXX: ${{ matrix.compiler.CXX }}
+          SRC_DIR: ${{ github.workspace }}
+          BUILD_DIR: ${{ github.workspace }}/build
+          INSTALL_PREFIX: ${{ github.workspace }}/install
+          ECO: -DALLOW_DOWNLOADING_GOOGLETEST=ON
+          CMAKE_BUILD_TYPE: ${{ matrix.flavor }}
+          TARGET: build
+        run: |
+          cmake -E make_directory "${BUILD_DIR}";
+          cmake -E make_directory "${INSTALL_PREFIX}";
+          $(cygpath ${SRC_DIR})/.ci/ci-script.sh;
+  macOS:
+    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ macos-latest ]
+        compiler:
+          - { compiler: XCode,   CC: cc, CXX: c++ }
+        btype: [ RelWithDebInfo, Release, Debug ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Base Dependencies
+        run: |
+          brew update > /dev/null || true
+          brew tap Homebrew/bundle
+          cd .ci
+          brew bundle --verbose
+      - name: Build And Test
+        env:
+          CC: ${{ matrix.compiler.CC }}
+          CXX: ${{ matrix.compiler.CXX }}
+          SRC_DIR: ${{ github.workspace }}
+          BUILD_DIR: ${{ github.workspace }}/build
+          INSTALL_PREFIX: ${{ github.workspace }}/install
+          CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+          TARGET: build
+        run: |
+          cmake -E make_directory "${BUILD_DIR}";
+          cmake -E make_directory "${INSTALL_PREFIX}";
+          ./.ci/ci-script.sh;

@@ -48,7 +48,7 @@ jobs:
  fast_finish: true
  exclude:
   - os: osx
-    compiler: gcc
+    #compiler: gcc
   - os: windows
  #temporary
  allow_failures:
