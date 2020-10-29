@@ -3974,10 +3974,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->use_new_vst = dt_bauhaus_toggle_from_params(self, "use_new_vst");
 
-  gtk_widget_show_all(g->box_nlm);
-  gtk_widget_show_all(g->box_wavelets);
-  gtk_widget_show_all(g->box_variance);
-
   gtk_widget_set_tooltip_text(g->wb_adaptive_anscombe, _("adapt denoising according to the\n"
                                                          "white balance coefficients.\n"
                                                          "should be enabled on a first instance\n"

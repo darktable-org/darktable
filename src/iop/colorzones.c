@@ -2346,8 +2346,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_ui_notebook_page(c->channel_tabs, _("saturation"), NULL);
   dt_ui_notebook_page(c->channel_tabs, _("hue"), NULL);
 
-  gtk_widget_show_all(GTK_WIDGET(c->channel_tabs));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
+  gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
+  gtk_notebook_set_current_page(c->channel_tabs, c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(_channel_tabs_switch_callback), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("   "), FALSE, FALSE, 0);
