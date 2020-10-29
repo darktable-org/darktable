@@ -689,6 +689,9 @@ void reload_defaults(dt_iop_module_t *self)
 
   self->hide_enable_button = 1;
   self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
+
+  if(self->widget)
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -731,8 +734,6 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_slider_set_soft(g->width, p->width);
     dt_bauhaus_slider_set_soft(g->height, p->height);
   }
-
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
 const gchar *black_label[]

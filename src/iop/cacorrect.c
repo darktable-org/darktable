@@ -1500,6 +1500,20 @@ void reload_defaults(dt_iop_module_t *module)
     module->hide_enable_button = 0;
   else
     module->hide_enable_button = 1;
+
+  if(module->widget)
+  {
+    if(dt_image_is_raw(&module->dev->image_storage))
+      if(module->dev->image_storage.buf_dsc.filters != 9u &&
+        !(dt_image_monochrome_flags(&module->dev->image_storage) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)))
+        gtk_label_set_text(GTK_LABEL(module->widget), _("automatic chromatic aberration correction"));
+      else
+        gtk_label_set_text(GTK_LABEL(module->widget),
+                          _("automatic chromatic aberration correction\ndisabled for non-Bayer sensors"));
+    else
+      gtk_label_set_text(GTK_LABEL(module->widget),
+                        _("automatic chromatic aberration correction\nonly works for raw images."));
+  }
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
@@ -1523,16 +1537,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  if(dt_image_is_raw(&self->dev->image_storage))
-    if(self->dev->image_storage.buf_dsc.filters != 9u &&
-       !(dt_image_monochrome_flags(&self->dev->image_storage) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)))
-      gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
-    else
-      gtk_label_set_text(GTK_LABEL(self->widget),
-                         _("automatic chromatic aberration correction\ndisabled for non-Bayer sensors"));
-  else
-    gtk_label_set_text(GTK_LABEL(self->widget),
-                       _("automatic chromatic aberration correction\nonly works for raw images."));
 }
 
 void gui_init(dt_iop_module_t *self)
