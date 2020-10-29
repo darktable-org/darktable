@@ -2442,9 +2442,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_name(GTK_WIDGET(iopw), "blending-wrapper");
 
     bd->blend_inited = 1;
-    gtk_widget_queue_draw(GTK_WIDGET(iopw));
-    dt_iop_gui_update_blending(module);
-
   }
 }
 
