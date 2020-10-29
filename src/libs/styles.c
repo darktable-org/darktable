@@ -361,6 +361,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 
   if(style_names == NULL) return;
 
+  /* variables for overwrite dialog */
   gint overwrite_check_button = 0;
   gint overwrite = 0;
 
@@ -387,37 +388,38 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 
       if(g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE)
       {
-        // do not run overwrite dialog
+        /* do not run overwrite dialog */
         if(overwrite_check_button == 1)
         {
           if(overwrite == 1)
           {
-            // run style wriet to file with overwrite on
+            // save style with overwrite
             dt_styles_save_to_file((char*)style->data, filedir, TRUE);
           }
           else if(overwrite == 2)
           {
-            // run continue
             continue;
           }
           else
           {
-            // run break
             break;
           }
         }
         else
         {
-          // create dialog
+          /* create and run dialog */
+          char overwrite_str[256];
+
           GtkWidget *dialog_overwrite_export = gtk_dialog_new_with_buttons("overwrite style?", GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
               _("cancel"), GTK_RESPONSE_CANCEL,
               _("skip"), GTK_RESPONSE_NONE,
               _("overwrite"), GTK_RESPONSE_ACCEPT, NULL);
 
-          // label
+          // contents for dialog
           GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
-          GtkWidget *label = gtk_label_new("style file already exists.\ndo you want to overwrite existing style?\n");
-          GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label("applying this option to all existing styles\n");
+          sprintf(overwrite_str, "style `%s' already exists.\ndo you want to overwrite existing style?\n", (char*)style->data);
+          GtkWidget *label = gtk_label_new(overwrite_str);
+          GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label("applying this option to all existing styles");
 
           gtk_container_add(GTK_CONTAINER(content_area), label);
           gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
@@ -438,15 +440,14 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
           if(overwrite_dialog_res == GTK_RESPONSE_ACCEPT)
           {
             overwrite = 1;
-            // overwrite ever instance
+
+            /* do not run dialog on the next conflict when set to 1 */
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(overwrite_dialog_check_button)) == TRUE)
             {
-              // set to true
               overwrite_check_button = 1;
             }
             else
             {
-              // set to false
               overwrite_check_button = 0;
             }
           }
@@ -454,14 +455,13 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
           {
             overwrite = 2;
 
+            /* do not run dialog on the next conflict when set to 1 */
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(overwrite_dialog_check_button)) == TRUE)
             {
-              // set to true
               overwrite_check_button = 1;
             }
             else
             {
-              // set to false
               overwrite_check_button = 0;
             }
             gtk_widget_destroy(dialog_overwrite_export);
