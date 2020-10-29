@@ -39,6 +39,7 @@ jobs:
           INSTALL_PREFIX: ${{ github.workspace }}/install
           ECO: -DALLOW_DOWNLOADING_GOOGLETEST=ON
           CMAKE_BUILD_TYPE: ${{ matrix.flavor }}
+          GENERATOR: Ninja
           TARGET: build
         run: |
           cmake -E make_directory "${BUILD_DIR}";
@@ -70,6 +71,7 @@ jobs:
           BUILD_DIR: ${{ github.workspace }}/build
           INSTALL_PREFIX: ${{ github.workspace }}/install
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+          GENERATOR: Ninja
           TARGET: build
         run: |
           cmake -E make_directory "${BUILD_DIR}";
