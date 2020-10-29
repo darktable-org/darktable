@@ -1537,6 +1537,13 @@
     <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom">
+    <name>darkroom/ui/single_module_group_only</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>only collapse modules in current group</shortdescription>
+    <longdescription>if only expanding a single module at a time, only collapse other modules in the current group - ignore modules in other groups</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom">
     <name>darkroom/ui/activate_expand</name>
     <type>bool</type>
     <default>false</default>
