@@ -60,10 +60,18 @@
 
     <para>
       Controls how darkroom modules are expanded. If this option is enabled, expanding a module by
-      <emphasis>clicking</emphasis> collapses any currently expanded module. If you want to expand
+      <emphasis>clicking</emphasis> collapses any other currently expanded module. If you want to expand
       a module without collapsing the others you do so with <emphasis>Shift+click</emphasis>.
-      Disabling this option reverts the meaning of <emphasis>click</emphasis> and
+      Disabling this option inverts the meaning of <emphasis>click</emphasis> and
       <emphasis>Shift+click</emphasis> (default on).
+    </para>
+
+    <bridgehead renderas="sect5">only collapse modules in current group</bridgehead>
+
+    <para>
+      When choosing to expand a single darkroom module at a time (using the logic defined
+      in the previous setting), only collapse other modules in the current visible group.
+      Disable this option to ensure that modules in non-visible groups are also collapsed (default on).
     </para>
 
     <bridgehead renderas="sect5">expand the module when it is activated, and collapse it when disabled</bridgehead>
