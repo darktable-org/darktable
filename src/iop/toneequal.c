@@ -3205,8 +3205,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
                             G_CALLBACK(_develop_ui_pipe_started_callback), self);
-
-  show_guiding_controls(self);
 }
 
 

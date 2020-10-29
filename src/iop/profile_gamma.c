@@ -673,7 +673,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->gamma, 4);
   gtk_widget_set_tooltip_text(g->gamma, _("gamma exponential factor"));
 
-  gtk_widget_show_all(vbox_gamma);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_gamma, "gamma");
 
   /**** LOG MODE ****/
@@ -710,7 +709,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->auto_button, TRUE, TRUE, 0);
 
-  gtk_widget_show_all(vbox_log);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_log, "log");
 
   // start building top level widget
