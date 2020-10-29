@@ -163,7 +163,7 @@ static void load_themes_dir(const char *basedir)
   if(dir)
   {
     dt_print(DT_DEBUG_DEV, "adding themes directory: %s\n", themes_dir);
-    
+
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
       darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
@@ -393,7 +393,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
   GtkWidget *useperfmode = gtk_check_button_new();
-  label = gtk_label_new(_("performance mode"));
+  label = gtk_label_new(_("prefer performance over quality"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
