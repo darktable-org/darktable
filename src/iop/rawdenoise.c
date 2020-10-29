@@ -923,7 +923,7 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(c->channel_tabs, _("G"), NULL);
   dt_ui_notebook_page(c->channel_tabs, _("B"), NULL);
 
-  gtk_widget_show_all(GTK_WIDGET(c->channel_tabs));
+  gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
   gtk_notebook_set_current_page(c->channel_tabs, c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
 

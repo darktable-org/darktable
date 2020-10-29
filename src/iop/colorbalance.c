@@ -1771,7 +1771,6 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
       {
         GtkWidget *label = dt_ui_section_label_new(_(long_label[i]));
         gtk_container_add(GTK_CONTAINER(new_container), label);
-        gtk_widget_show(label);
       }
 
       gtk_container_add(GTK_CONTAINER(new_container), g->blocks[i]);
@@ -1803,7 +1802,6 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
         gtk_style_context_add_class(gtk_widget_get_style_context(label[i]), "section_label_top");
 
         gtk_container_add(GTK_CONTAINER(new_container), label[i]);
-        gtk_widget_show(label[i]);
         gtk_grid_attach_next_to(GTK_GRID(new_container), g->blocks[i], label[i], GTK_POS_BOTTOM, 1, 1);
       }
     }
@@ -1820,7 +1818,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   for(int i=0; i<3; i++) g_object_unref(G_OBJECT(g->blocks[i]));
 
   gtk_container_add(GTK_CONTAINER(g->main_box), new_container);
-  gtk_widget_show(new_container);
+  if(old_container) gtk_widget_show_all(new_container);
 }
 
 static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_iop_module_t *self)
