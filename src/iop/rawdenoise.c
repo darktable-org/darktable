@@ -526,10 +526,12 @@ void init(dt_iop_module_t *module)
 void reload_defaults(dt_iop_module_t *module)
 {
   // can't be switched on for non-raw images:
-  if(dt_image_is_raw(&module->dev->image_storage))
-    module->hide_enable_button = 0;
-  else
-    module->hide_enable_button = 1;
+  module->hide_enable_button = !dt_image_is_raw(&module->dev->image_storage);
+
+  if(module->widget)
+  {
+    gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->hide_enable_button ? "non_raw" : "raw");
+  }
 
   module->default_enabled = 0;
 }
@@ -585,7 +587,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
   dt_iop_cancel_history_update(self);
   dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
 }
 

@@ -1513,8 +1513,7 @@ static void camera_set(dt_iop_module_t *self, const lfCamera *cam)
 
   if(!cam)
   {
-    gtk_button_set_label(GTK_BUTTON(g->camera_model), "");
-    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), "");
     gtk_widget_set_tooltip_text(GTK_WIDGET(g->camera_model), "");
     return;
   }
@@ -1533,8 +1532,7 @@ static void camera_set(dt_iop_module_t *self, const lfCamera *cam)
       fm = g_strdup_printf("%s, %s", maker, model);
     else
       fm = g_strdup_printf("%s", model);
-    gtk_button_set_label(GTK_BUTTON(g->camera_model), fm);
-    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), fm);
     g_free(fm);
   }
 
@@ -1789,8 +1787,7 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
       fm = g_strdup_printf("%s, %s", maker, model);
     else
       fm = g_strdup_printf("%s", model);
-    gtk_button_set_label(GTK_BUTTON(g->lens_model), fm);
-    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), fm);
     g_free(fm);
   }
 
@@ -2404,10 +2401,8 @@ void gui_update(struct dt_iop_module_t *self)
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   // these are the wrong (untranslated) strings in general but that's ok, they will be overwritten further
   // down
-  gtk_button_set_label(GTK_BUTTON(g->camera_model), p->camera);
-  gtk_button_set_label(GTK_BUTTON(g->lens_model), p->lens);
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
+  gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), p->camera);
+  gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), p->lens);
   gtk_widget_set_tooltip_text(g->camera_model, "");
   gtk_widget_set_tooltip_text(g->lens_model, "");
 
