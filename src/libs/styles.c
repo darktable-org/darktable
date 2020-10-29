@@ -429,6 +429,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
           if(g_list_length(style_names) == 1)
           {
             gtk_widget_set_sensitive(overwrite_dialog_check_button, FALSE);
+            gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_overwrite_export), GTK_RESPONSE_NONE, FALSE);
           }
 
 #ifdef GDK_WINDOWING_QUARTZ
