@@ -19,7 +19,7 @@ jobs:
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
           - { compiler: LLVM, CC: clang, CXX: clang++ }
-        btype: [ RelWithDebInfo, Release, Debug ]
+        btype: [ RelWithDebInfo ]
     defaults:
       run:
         shell: msys2 {0}
@@ -53,7 +53,7 @@ jobs:
         os: [ macos-latest ]
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
-        btype: [ RelWithDebInfo, Release, Debug ]
+        btype: [ RelWithDebInfo ]
     steps:
       - uses: actions/checkout@v2
       - name: Install Base Dependencies
