@@ -366,10 +366,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-/** gui callbacks, these are needed. */
 void gui_update(dt_iop_module_t *self)
 {
-  // let gui slider match current parameters:
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   dt_bauhaus_slider_set(g->detail, p->detail);

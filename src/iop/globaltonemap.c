@@ -611,9 +611,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)module->params;
+  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
+
   dt_bauhaus_combobox_set(g->operator, p->operator);
   dt_bauhaus_slider_set(g->drago.bias, p->drago.bias);
   dt_bauhaus_slider_set(g->drago.max_light, p->drago.max_light);

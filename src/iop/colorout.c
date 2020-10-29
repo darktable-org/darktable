@@ -789,9 +789,9 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)module->params;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+
   dt_bauhaus_combobox_set(g->output_intent, (int)p->intent);
 
   for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))

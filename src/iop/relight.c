@@ -232,10 +232,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
-
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
-  dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)module->params;
+  dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   dt_bauhaus_slider_set(g->exposure, p->ev);
   dt_bauhaus_slider_set(g->width, p->width);
   dtgtk_gradient_slider_set_value(g->center, p->center);
