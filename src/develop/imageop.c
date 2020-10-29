@@ -2065,17 +2065,18 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
 void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolean collapse_others)
 {
   if(!module->expander) return;
-
   /* handle shiftclick on expander, hide all except this */
   if(collapse_others)
   {
     const int current_group = dt_dev_modulegroups_get(module->dev);
+    const gboolean group_only = dt_conf_get_bool("darkroom/ui/single_module_group_only");
+
     GList *iop = g_list_first(module->dev->iop);
     gboolean all_other_closed = TRUE;
     while(iop)
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-      if(m != module && dt_iop_shown_in_group(m, current_group))
+      if(m != module && (dt_iop_shown_in_group(m, current_group) || !group_only))
       {
         all_other_closed = all_other_closed && !m->expanded;
         dt_iop_gui_set_single_expanded(m, FALSE);
