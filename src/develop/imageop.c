@@ -914,10 +914,21 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   if(!dt_iop_is_hidden(module))
   {
     // make sure gui_init and reload defaults is called safely
-    ++darktable.gui->reset;
-    module->gui_init(module);
+    dt_iop_gui_init(module);
+
+    /* add module to right panel */
+    GtkWidget *expander = dt_iop_gui_get_expander(module);
+    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+    GValue gv = { 0, { { 0 } } };
+    g_value_init(&gv, G_TYPE_INT);
+    gtk_container_child_get_property(
+        GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
+        base->expander, "position", &gv);
+    gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
+                          expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
+    dt_iop_gui_set_expanded(module, TRUE, FALSE);
+
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
-    --darktable.gui->reset;
 
     if(copy_params)
     {
@@ -936,17 +947,6 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
     // we save the new instance creation
     dt_dev_add_history_item(module->dev, module, TRUE);
 
-    /* add module to right panel */
-    GtkWidget *expander = dt_iop_gui_get_expander(module);
-    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-    GValue gv = { 0, { { 0 } } };
-    g_value_init(&gv, G_TYPE_INT);
-    gtk_container_child_get_property(
-        GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
-        base->expander, "position", &gv);
-    gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                          expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
-    dt_iop_gui_set_expanded(module, TRUE, FALSE);
     dt_iop_gui_update_blending(module);
   }
 
@@ -1308,9 +1308,19 @@ static void _iop_gui_update_label(dt_iop_module_t *module)
   _iop_panel_label(lab, module);
 }
 
+void dt_iop_gui_init(dt_iop_module_t *module)
+{
+  ++darktable.gui->reset;
+  if(module->gui_init) module->gui_init(module);
+  --darktable.gui->reset;
+}
+
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
+  ++darktable.gui->reset;
   if(module->reload_defaults) module->reload_defaults(module);
+  --darktable.gui->reset;
+
   dt_iop_load_default_params(module);
 
   if(module->header) _iop_gui_update_header(module);
