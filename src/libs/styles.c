@@ -419,13 +419,13 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
           GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
           sprintf(overwrite_str, "style `%s' already exists.\ndo you want to overwrite existing style?\n", (char*)style->data);
           GtkWidget *label = gtk_label_new(overwrite_str);
-          GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label("applying this option to all existing styles");
+          GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label("apply this option to all existing styles");
 
           gtk_container_add(GTK_CONTAINER(content_area), label);
           gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
           gtk_widget_show_all(dialog_overwrite_export);
 
-          // disable check when only one style is selected
+          // disable check button and skip button when only one style is selected
           if(g_list_length(style_names) == 1)
           {
             gtk_widget_set_sensitive(overwrite_dialog_check_button, FALSE);
