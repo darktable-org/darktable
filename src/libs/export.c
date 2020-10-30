@@ -203,7 +203,7 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
   dt_lib_queue_postponed_update(self, _update);
 }
 
-bool _is_int(double value)
+gboolean _is_int(double value)
 {
     return (value == (int)value);
 }
@@ -507,8 +507,9 @@ void _print_size_update_display(dt_lib_export_t *self)
   }
   else
   {
-    if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"),"scaling") != 0)
-    { // max size
+    if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"), "scaling") != 0)
+    {
+      // max size
       gtk_widget_set_visible(GTK_WIDGET(self->print_size), TRUE);
     }
     gtk_widget_set_sensitive(GTK_WIDGET(self->width), FALSE);
@@ -838,7 +839,6 @@ static void _dimensions_type_changed(GtkWidget *widget, dt_lib_export_t *d)
     dt_conf_set_string(CONFIG_PREFIX "resizing", "scaling");
   }
   _size_in_px_update(d);
-
 }
 
 static void _resync_print_dimensions(dt_lib_export_t *self)
@@ -1139,7 +1139,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->dimensions_type, _("choose a method for setting the output size"));
   dt_bauhaus_combobox_add(d->dimensions_type, _("in pixels (for file)"));
   dt_bauhaus_combobox_add(d->dimensions_type, _("in cm (for print)"));
-  dt_bauhaus_combobox_add(d->dimensions_type, _("in inchs (for print)"));
+  dt_bauhaus_combobox_add(d->dimensions_type, _("in inch (for print)"));
   dt_bauhaus_combobox_add(d->dimensions_type, _("by scale (for file)"));
   dt_bauhaus_combobox_set(d->dimensions_type, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"));
 
@@ -1194,14 +1194,14 @@ void gui_init(dt_lib_module_t *self)
 
   d->scale = gtk_entry_new();
   gtk_entry_set_text (GTK_ENTRY(d->scale), dt_conf_get_string(CONFIG_PREFIX "resizing_factor"));
-  gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal fraction or simple fraction.\n"
+  gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal number or simple fraction.\n"
                                           "zero or empty values are equal to 1.\n"
                                           "click middle mouse button to reset to 1."));
   dt_gui_key_accel_block_on_focus_connect(d->scale);
   gtk_widget_set_halign(GTK_WIDGET(d->scale), GTK_ALIGN_END);
   gtk_widget_add_events(d->scale, GDK_BUTTON_PRESS_MASK);
 
-  d->size_in_px=gtk_label_new("");
+  d->size_in_px = gtk_label_new("");
   gtk_widget_set_sensitive(GTK_WIDGET(d->size_in_px), FALSE);
 
   GtkGrid *grid_outer = GTK_GRID(gtk_grid_new());
@@ -1362,14 +1362,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(self->widget, TRUE);
   _print_size_update_display(d);
 
-  if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"),"scaling") == 0)
-  {  // scaling
+  if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"), "scaling") == 0)
+  {
+    // scaling
     gtk_widget_show(GTK_WIDGET(d->scale));
     gtk_widget_hide(GTK_WIDGET(d->hbox1));
     gtk_widget_hide(GTK_WIDGET(d->hbox2));
   }
   else
-  { // max size
+  {
+    // max size
     gtk_widget_hide(GTK_WIDGET(d->scale));
     gtk_widget_show(GTK_WIDGET(d->hbox1));
     gtk_widget_show(GTK_WIDGET(d->hbox2));

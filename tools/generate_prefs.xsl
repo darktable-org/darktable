@@ -288,7 +288,6 @@ gboolean restart_required = FALSE;
       GtkWidget *seclabel = gtk_label_new(_("keyboard shortcuts with multiple instances"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
       g_object_set(lbox,  "tooltip-text", _("where multiple module instances are present, these preferences control rules that are applied (in order) to decide which module instance keyboard shortcuts will be applied to"), (gchar *)0);
@@ -367,7 +366,7 @@ gboolean restart_required = FALSE;
        g_object_set(labdef, "tooltip-text", _("this setting has been modified"), (gchar *)0);
     }
     gtk_widget_set_name(labdef, "preference_non_default");
-    label = gtk_label_new("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>");
+    label = gtk_label_new(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);

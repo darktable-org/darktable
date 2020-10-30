@@ -163,7 +163,7 @@ static void load_themes_dir(const char *basedir)
   if(dir)
   {
     dt_print(DT_DEBUG_DEV, "adding themes directory: %s\n", themes_dir);
-    
+
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
       darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
@@ -393,7 +393,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
   GtkWidget *useperfmode = gtk_check_button_new();
-  label = gtk_label_new(_("performance mode"));
+  label = gtk_label_new(_("prefer performance over quality"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
@@ -454,7 +454,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
                                                       "increase for a magnified GUI, decrease to fit more content in window.\n"
                                                       "set to -1 to use the system-defined global resolution.\n"
                                                       "default is 96 DPI on most systems.\n"
-                                                      "this needs a restart to apply changes."));
+                                                      "(needs a restart)."));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_dpi_overwrite), dt_conf_get_float("screen_dpi_overwrite"));
   g_signal_connect(G_OBJECT(screen_dpi_overwrite), "value_changed", G_CALLBACK(dpi_scaling_changed_callback), 0);
 

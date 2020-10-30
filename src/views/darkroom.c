@@ -199,6 +199,22 @@ static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
     return DT_DARKROOM_LAYOUT_EDITING;
 }
 
+static cairo_filter_t _get_filtering_level(dt_develop_t *dev)
+{
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+
+  // for pixel representation above 1:1, that is when a single pixel on the image
+  // is represented on screen by multiple pixels we want to disable any cairo filter
+  // which could only blur or smooth the output.
+
+  if(scale / darktable.gui->ppd > 1.0)
+    return CAIRO_FILTER_FAST;
+  else
+    return darktable.gui->dr_filter_image;
+}
+
 void expose(
     dt_view_t *self,
     cairo_t *cri,
@@ -342,7 +358,7 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
     cairo_paint(cr);
 
     if(darktable.gui->show_focus_peaking)
@@ -400,7 +416,7 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -4098,7 +4114,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
     cairo_fill(cr);
 
     if(darktable.gui->show_focus_peaking)
@@ -4137,7 +4153,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     // avoid to draw the 1px garbage that sometimes shows up in the preview :(
     cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -4423,8 +4439,8 @@ static gboolean _second_window_draw_callback(GtkWidget *widget, cairo_t *crf, dt
   int pointerx, pointery;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int32_t width = allocation.width;
-  int32_t height = allocation.height;
+  const int32_t width = allocation.width;
+  const int32_t height = allocation.height;
 
   dev->second_window.width = width;
   dev->second_window.height = height;

@@ -1381,18 +1381,23 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   g_free(workflow);
 
   //  Add scene-referred workflow
-  //  Note that we cannot use the a preset for FilmicRGB as the default values are
+  //  Note that we cannot use a preset for FilmicRGB as the default values are
   //  dynamically computed depending on the actual exposure compensation
   //  (see reload_default routine in filmicrgb.c)
 
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
-  if(has_matrix && is_scene_referred)
+
+  const gboolean auto_apply_filmic = has_matrix && is_scene_referred;
+  const gboolean auto_apply_sharpen = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
+
+  if(auto_apply_filmic || auto_apply_sharpen)
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-      if(strcmp(module->op, "filmicrgb") == 0
+      if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
+          || (auto_apply_sharpen && strcmp(module->op, "sharpen") == 0))
          && !dt_history_check_module_exists(imgid, module->op)
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
       {
