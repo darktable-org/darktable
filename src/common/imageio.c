@@ -833,9 +833,9 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
   if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, origin, 1))
   {
-    if((width == 0) && exact_size)
+    if((width == 0) && thumbnail_export)
       width = pipe.processed_width;
-    if((height == 0) && exact_size)
+    if((height == 0) && thumbnail_export)
       height = pipe.processed_height;
 
     scale = fmin(width >  0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale,
