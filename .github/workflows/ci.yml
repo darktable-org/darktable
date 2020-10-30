@@ -47,6 +47,8 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh;
+          echo "====";
+          cat ${{ github.workspace }}/build/lib64/darktable/plugins/lighttable/tools/darktable_authors.h;
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v2
         with:
@@ -82,7 +84,7 @@ jobs:
           INSTALL_PREFIX: ${{ github.workspace }}/install
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: Ninja
-          TARGET: notest
+          TARGET: build
           # todo: fix cmocka cmake so that it works in osx
         run: |
           cmake -E make_directory "${BUILD_DIR}";
