@@ -56,14 +56,9 @@ target_notest()
 {
   # to get as much of the issues into the log as possible
   cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
-  echo "==build=="
-  cat "$BUILD_DIR"/build/lib64/darktable/plugins/lighttable/tools/darktable_authors.h;
-  echo "==build=="
+  
   # and now check that it installs where told and only there.
   cmake --build "$BUILD_DIR" --target install -- $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
-  echo "==install=="
-  cat "$BUILD_DIR"/build/lib64/darktable/plugins/lighttable/tools/darktable_authors.h;
-  echo "==install=="
 }
 
 target_usermanual()
