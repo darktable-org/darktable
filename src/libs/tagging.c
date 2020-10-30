@@ -145,11 +145,23 @@ static void _update_atdetach_buttons(dt_lib_module_t *self)
 
   const gint dict_tags_sel_cnt =
     gtk_tree_selection_count_selected_rows(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->dictionary_view)));
-  const gint atached_tags_sel_cnt =
-    gtk_tree_selection_count_selected_rows(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->attached_view)));
+
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->attached_view));
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->attached_view));
+  GtkTreeIter iter;
+  gboolean attached_tags_sel = FALSE;
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
+  {
+    // check this is a darktable tag
+    char *path;
+    gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &path, -1);
+    if(!g_str_has_prefix(path, "darktable|"))
+      attached_tags_sel = TRUE;
+    g_free(path);
+  }
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->attach_button), has_act_on && dict_tags_sel_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->detach_button), has_act_on && atached_tags_sel_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->detach_button), has_act_on && attached_tags_sel);
 }
 
 static void _propagate_sel_to_parents(GtkTreeModel *model, GtkTreeIter *iter)
@@ -483,6 +495,7 @@ static void _tree_tagname_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer
   g_object_set(renderer, "markup", coltext, NULL);
   g_free(coltext);
   g_free(name);
+  g_free(path);
 }
 
 static void _tree_tagname_show_attached(GtkTreeViewColumn *col, GtkCellRenderer *renderer,
@@ -1190,19 +1203,34 @@ static gboolean _click_on_view_attached(GtkWidget *view, GdkEventButton *event, 
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
     {
-      gtk_tree_selection_select_path(selection, path);
-      _update_atdetach_buttons(self);
-      if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+      gboolean valid_tag = FALSE;
+      GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->attached_view));
+      GtkTreeIter iter;
+      if(gtk_tree_model_get_iter(model, &iter, path))
       {
-        _pop_menu_attached(view, event, self);
-        gtk_tree_path_free(path);
-        return TRUE;
+        // check this is a darktable tag
+        char *tagpath;
+        gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &tagpath, -1);
+        if(!g_str_has_prefix(tagpath, "darktable|"))
+          valid_tag = TRUE;
+        g_free(tagpath);
       }
-      else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+      if(valid_tag)
       {
-        _detach_selected_tag(d->attached_view, self, d);
-        gtk_tree_path_free(path);
-        return TRUE;
+        gtk_tree_selection_select_path(selection, path);
+        _update_atdetach_buttons(self);
+        if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+        {
+          _pop_menu_attached(view, event, self);
+          gtk_tree_path_free(path);
+          return TRUE;
+        }
+        else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+        {
+          _detach_selected_tag(d->attached_view, self, d);
+          gtk_tree_path_free(path);
+          return TRUE;
+        }
       }
     }
     gtk_tree_path_free(path);

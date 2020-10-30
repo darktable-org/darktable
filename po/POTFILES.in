@@ -100,6 +100,7 @@ src/common/imageio.c
 src/common/import_session.c
 src/common/iop_order.c
 src/common/iop_profile.c
+src/common/map_locations.c
 src/common/metadata.c
 src/common/mipmap_cache.c
 src/common/noiseprofiles.c
@@ -257,6 +258,7 @@ src/libs/ioporder.c
 src/libs/lib.c
 src/libs/live_view.c
 src/libs/location.c
+src/libs/map_locations.c
 src/libs/map_settings.c
 src/libs/masks.c
 src/libs/metadata.c

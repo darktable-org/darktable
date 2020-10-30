@@ -78,6 +78,16 @@ static void _image_info_changed_destroy_callback(gpointer instance, gpointer img
   }
 }
 
+// callback for the destructor of DT_SIGNAL_GEOTAG_CHANGED
+static void _image_geotag_destroy_callback(gpointer instance, gpointer imgs, gpointer user_data)
+{
+  if(imgs && g_list_length(imgs) > 0)
+  {
+    g_list_free(imgs);
+    imgs = NULL;
+  }
+}
+
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   /* Global signals */
   { "dt-global-mouse-over-image-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
@@ -101,6 +111,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     FALSE }, // DT_SIGNAL_SELECTION_CHANGED
   { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_TAG_CHANGED
+  { "dt-geotag-changed", NULL, NULL, G_TYPE_NONE,  g_cclosure_marshal_generic, 1, pointer_arg,
+    G_CALLBACK(_image_geotag_destroy_callback), FALSE }, // DT_SIGNAL_GEOTAG_CHANGED
   { "dt-metadata-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
     FALSE }, // DT_SIGNAL_METADATA_CHANGED
   { "dt-image-info-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,

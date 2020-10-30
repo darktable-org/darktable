@@ -25,6 +25,7 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/history.h"
+#include "common/map_locations.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -572,6 +573,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
         || is_time_property(d->view_rule)
         || d->view_rule == DT_COLLECTION_PROP_FOLDERS
         || d->view_rule == DT_COLLECTION_PROP_TAG
+        || d->view_rule == DT_COLLECTION_PROP_GEOTAGGING
        )
        && !(event->state & GDK_SHIFT_MASK)
       )
@@ -701,7 +703,8 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   if(g_str_has_prefix(needle, "%")) startwildcard = TRUE;
   if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
   if(g_str_has_suffix(haystack, "%")) haystack[strlen(haystack) - 1] = '\0';
-  if(_combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_TAG)
+  if(_combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_TAG ||
+     _combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_GEOTAGGING)
   {
     if(g_str_has_suffix(needle, "|")) needle[strlen(needle) - 1] = '\0';
     if(g_str_has_suffix(haystack, "|")) haystack[strlen(haystack) - 1] = '\0';
@@ -1135,6 +1138,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       format_separator = "%s" G_DIR_SEPARATOR_S;
       break;
     case DT_COLLECTION_PROP_TAG:
+    case DT_COLLECTION_PROP_GEOTAGGING:
       format_separator = "%s|";
       break;
     case DT_COLLECTION_PROP_DAY:
@@ -1189,6 +1193,28 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 "   ON tagid = tag_id"
                                 " WHERE %s"
                                 " GROUP BY name,tag_id", where_ext);
+        break;
+      case DT_COLLECTION_PROP_GEOTAGGING:
+        query = g_strdup_printf("SELECT "
+                                " CASE WHEN mi.longitude IS NULL"
+                                "           OR mi.latitude IS null THEN \'%s\'"
+                                "      ELSE CASE WHEN ta.imgid IS NULL THEN \'%s\'"
+                                "                ELSE \'%s\' || ta.tagname"
+                                "                END"
+                                "      END AS name,"
+                                " ta.id AS tag_id, COUNT(*) AS count"
+                                " FROM main.images AS mi"
+                                " LEFT JOIN (SELECT imgid, t.id, SUBSTR(t.name, %d) AS tagname"
+                                "   FROM main.tagged_images AS ti"
+                                "   JOIN data.tags AS t"
+                                "   ON ti.tagid = t.id"
+                                "   JOIN data.locations AS l"
+                                "   ON l.tagid = t.id"
+                                "   ) AS ta ON ta.imgid = mi.id"
+                                " WHERE %s"
+                                " GROUP BY name, tag_id",
+                                _("not tagged"), _("tagged"), _("tagged"),
+                                (int)strlen(dt_map_location_data_tag_root()) + 1, where_ext);
         break;
       case DT_COLLECTION_PROP_DAY:
         query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
@@ -1531,19 +1557,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    _("basic"), _("auto applied"), _("altered"), _("basic"), where_ext);
         break;
 
-      case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
-        g_snprintf(query, sizeof(query),
-                   "SELECT CASE "
-                   "         WHEN latitude IS NOT NULL AND longitude IS NOT NULL THEN '%s'"
-                   "         ELSE '%s'"
-                   "       END as tagged, 1, COUNT(*) AS count"
-                   " FROM main.images AS mi "
-                   " WHERE %s"
-                   " GROUP BY tagged"
-                   " ORDER BY tagged ASC",
-                   _("tagged"),  _("not tagged"), where_ext);
-        break;
-
       case DT_COLLECTION_PROP_LOCAL_COPY: // local copy, 2 hardcoded alternatives
         g_snprintf(query, sizeof(query),
                    "SELECT CASE "
@@ -1861,6 +1874,7 @@ static void update_view(dt_lib_collect_rule_t *dr)
 
   if(property == DT_COLLECTION_PROP_FOLDERS
      || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_GEOTAGGING
      || property == DT_COLLECTION_PROP_DAY
      || is_time_property(property)
     )
@@ -1964,6 +1978,7 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
 
   if(property == DT_COLLECTION_PROP_FOLDERS
      || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_GEOTAGGING
      || property == DT_COLLECTION_PROP_DAY
      || is_time_property(property)
     )
@@ -2075,7 +2090,8 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       g_free(text2);
       text = n_text;
     }
-    else if(item == DT_COLLECTION_PROP_TAG)
+    else if(item == DT_COLLECTION_PROP_TAG ||
+            item == DT_COLLECTION_PROP_GEOTAGGING)
     {
       if(gtk_tree_model_iter_has_child(model, &iter))
       {
@@ -2164,6 +2180,7 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 
   if(property != DT_COLLECTION_PROP_FOLDERS
       && property != DT_COLLECTION_PROP_TAG
+      && property != DT_COLLECTION_PROP_GEOTAGGING
       && property != DT_COLLECTION_PROP_DAY
       && !is_time_property(property)
     )
@@ -2345,6 +2362,26 @@ static void tag_changed(gpointer instance, gpointer self)
   }
 }
 
+static void _geotag_changed(gpointer instance, GList *imgs, gpointer self)
+{
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+  // update tree
+  if(_combo_get_active_collection(d->rule[d->active_rule].combo) == DT_COLLECTION_PROP_GEOTAGGING)
+  {
+    d->view_rule = -1;
+    d->rule[d->active_rule].typing = FALSE;
+    _lib_collect_gui_update(self);
+
+    //need to reload collection since we have geotags as active collection filter
+    dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                    darktable.view_manager->proxy.module_collect.module);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                      darktable.view_manager->proxy.module_collect.module);
+  }
+}
+
 static void metadata_changed(gpointer instance, int type, gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
@@ -2522,12 +2559,19 @@ static void _populate_collect_combo(GtkWidget *w)
 
     dt_bauhaus_combobox_add_section(w, _("metadata"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_TITLE);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_DESCRIPTION);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_CREATOR);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_PUBLISHER);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_RIGHTS);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_ACDSEE_NOTES);
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+      const gchar *name = dt_metadata_get_name(keyid);
+      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+      g_free(setting);
+      const int meta_type = dt_metadata_get_type(keyid);
+      if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
+      {
+        ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
+      }
+    }
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
 
@@ -2693,6 +2737,9 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(tag_changed),
                             self);
 
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, G_CALLBACK(_geotag_changed),
+                            self);
+
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_CHANGED, G_CALLBACK(metadata_changed), self);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
@@ -2710,6 +2757,7 @@ void gui_cleanup(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(preferences_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(tag_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_geotag_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(view_set_click), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   free(d->params);
