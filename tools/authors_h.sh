@@ -68,8 +68,9 @@ while IFS="" read -r p || [ -n "$p" ]; do
       if [ "$p" = "" ] || [ "${p:0:13}" = "And all those" ]; then
           continue
       fi
-      echo "p=XXXX${p}XXXX"
-      CONTENT="\"$p\",$CONTENT"
+      LINE=$(echo -n "$p" | tr -d '[:cntrl:]')
+      echo "p=XXXX${LINE}XXXX"
+      CONTENT="\"$LINE\",$CONTENT"
   fi
 done < "$AUTHORS"
 
