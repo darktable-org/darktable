@@ -8,7 +8,7 @@ on:
 
 jobs:
   windows-msys2:
-    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.generator }}
+    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.generator }}.${{ matrix.shell.ms }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -16,6 +16,10 @@ jobs:
         os: [ windows-latest ]
         msys2:
           - { msystem: MINGW64, arch: x86_64 }
+          - { msystem: MSYS, arch: x86_64 }
+        shell:
+          - { ms: msys2 }
+          - { ms: mingw64 }
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
           - { compiler: LLVM, CC: clang, CXX: clang++ }
@@ -23,7 +27,7 @@ jobs:
         generator: [ Ninja, "MSYS Makefiles" ]
     defaults:
       run:
-        shell: msys2 {0}
+        shell: ${{ matrix.shell.ms }} {0}
     steps:
       - uses: actions/checkout@v2
         with:
