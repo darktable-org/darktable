@@ -43,11 +43,17 @@ jobs:
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: Ninja
           TARGET: notest
+          VERBOSE: "-v"
+          MAKEFLAGS: "-j2 ${"
+          KEEPGOING: "-k0"
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
-          D:\a\_temp\msys\msys2.CMD -c '$(cygpath ${SRC_DIR})/.ci/ci-script.sh'
+          cmake -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" -G"${GENERATOR}" -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" "${ECO}" "${SRC_DIR}"
+          cmake --build "${BUILD_DIR}" -- ${MAKEFLAGS} || cmake --build "${BUILD_DIR}" -- -j1 "${VERBOSE}" "${KEEPGOING}"
+          cmake --build "${BUILD_DIR}" --target install -- ${MAKEFLAGS} || cmake --build "${BUILD_DIR}" --target install -- -j1 "${VERBOSE}" "${KEEPGOING}"
+        # $(cygpath ${SRC_DIR})/.ci/ci-script.sh
   macOS:
     name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os }}
