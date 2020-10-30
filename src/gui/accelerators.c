@@ -50,6 +50,13 @@ void dt_accel_path_iop(char *s, size_t n, char *module, const char *path)
   {
 
     gchar **split_paths = g_strsplit(path, "`", 4);
+    // transitionally keep "preset" translated in keyboardrc to avoid breakage for now
+    // this also needs to be amended in preferences
+    if(!strcmp(split_paths[0], "preset"))
+    {
+      g_free(split_paths[0]);
+      split_paths[0] = g_strdup(_("preset"));
+    }
     gchar *joined_paths = g_strjoinv("/", split_paths);
     snprintf(s, n, "<Darktable>/%s/%s/%s", "image operations", module, joined_paths);
     g_free(joined_paths);
@@ -95,7 +102,7 @@ static void dt_accel_path_iop_translated(char *s, size_t n, dt_iop_module_so_t *
     for(gchar **cur_path = split_paths; *cur_path; cur_path++)
     {
       gchar *saved_path = *cur_path;
-      *cur_path = g_strdelimit(g_strdup(Q_(*cur_path)), "/", '`');
+      *cur_path = g_strdelimit(g_strconcat(Q_(*cur_path), (strcmp(*cur_path, "preset") ? NULL : " "), NULL), "/", '`');
       g_free(saved_path);
     }
     gchar *joined_paths = g_strjoinv("/", split_paths);
@@ -926,8 +933,8 @@ static gboolean preset_iop_module_callback(GtkAccelGroup *accel_group, GObject *
 void dt_accel_connect_preset_iop(dt_iop_module_t *module, const gchar *path)
 {
   char build_path[1024];
-  gchar *name = g_strdelimit(g_strdup(path), "/", '-');
-  snprintf(build_path, sizeof(build_path), "%s/%s", "preset", name);
+  gchar *name = g_strdup(path);
+  snprintf(build_path, sizeof(build_path), "%s`%s", N_("preset"), name);
   preset_iop_module_callback_description *callback_description
       = g_malloc(sizeof(preset_iop_module_callback_description));
   callback_description->module = module;
@@ -1010,7 +1017,7 @@ static gboolean preset_lib_module_callback(GtkAccelGroup *accel_group, GObject *
 void dt_accel_connect_preset_lib(dt_lib_module_t *module, const gchar *path)
 {
   char build_path[1024];
-  gchar *name = g_strdelimit(g_strdup(path), "/", '-');
+  gchar *name = g_strdup(path);
   snprintf(build_path, sizeof(build_path), "%s/%s", _("preset"), name);
   preset_lib_module_callback_description *callback_description
       = g_malloc(sizeof(preset_lib_module_callback_description));
@@ -1024,52 +1031,53 @@ void dt_accel_connect_preset_lib(dt_lib_module_t *module, const gchar *path)
 
 void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path)
 {
-  GSList *l = module->accel_closures_local;
   char build_path[1024];
   dt_accel_path_iop(build_path, sizeof(build_path), module->op, path);
-  while(l)
+
+  dt_accel_t *accel = NULL;
+
+  GList *modules = g_list_first(darktable.develop->iop);
+  while(modules)
   {
-    dt_accel_t *accel = (dt_accel_t *)l->data;
-    if(accel && !strncmp(accel->path, build_path, 1024))
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+
+    if(mod->so == module->so)
     {
-      module->accel_closures_local = g_slist_delete_link(module->accel_closures_local, l);
-      l = NULL;
+      GSList **current_list = &mod->accel_closures;
+      GSList *l = *current_list;
+      while(l)
+      {
+        _accel_iop_t *iop_accel = (_accel_iop_t *)l->data;
+
+        if(iop_accel && iop_accel->accel && !strncmp(iop_accel->accel->path, build_path, 1024))
+        {
+          accel = iop_accel->accel;
+
+          if(iop_accel->closure == accel->closure || (accel->local && module->local_closures_connected))
+            gtk_accel_group_disconnect(darktable.control->accelerators, iop_accel->closure);
+
+          *current_list = g_slist_delete_link(*current_list, l);
+
+          g_closure_unref(iop_accel->closure);
+
+          g_free(iop_accel);
+
+          break;
+        }
+
+        l = g_slist_next(l);
+        if(!l && current_list == &mod->accel_closures) l = *(current_list = &module->accel_closures_local);
+      }
     }
-    else
-    {
-      l = g_slist_next(l);
-    }
+
+    modules = g_list_next(modules);
   }
-  l = module->accel_closures;
-  while(l)
+
+  if(accel)
   {
-    dt_accel_t *accel = (dt_accel_t *)l->data;
-    if(accel && !strncmp(accel->path, build_path, 1024))
-    {
-      if(!accel->local || !module->local_closures_connected)
-        gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
-      module->accel_closures = g_slist_delete_link(module->accel_closures, l);
-      l = NULL;
-    }
-    else
-    {
-      l = g_slist_next(l);
-    }
-  }
-  l = darktable.control->accelerator_list;
-  while(l)
-  {
-    dt_accel_t *accel = (dt_accel_t *)l->data;
-    if(accel && !strncmp(accel->path, build_path, 1024))
-    {
-      darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
-      l = NULL;
+      darktable.control->accelerator_list = g_slist_remove(darktable.control->accelerator_list, accel);
+
       g_free(accel);
-    }
-    else
-    {
-      l = g_slist_next(l);
-    }
   }
 }
 
@@ -1201,36 +1209,47 @@ void dt_accel_rename_preset_iop(dt_iop_module_t *module, const gchar *path, cons
 
   char build_path[1024];
   dt_accel_path_iop(build_path, sizeof(build_path), module->op, path_preset);
+
   GSList *l = module->accel_closures;
   while(l)
   {
-    dt_accel_t *accel = (dt_accel_t *)l->data;
-    if(accel && !strncmp(accel->path, build_path, 1024))
+    _accel_iop_t *iop_accel = (_accel_iop_t *)l->data;
+    if(iop_accel && iop_accel->accel && !strncmp(iop_accel->accel->path, build_path, 1024))
     {
       GtkAccelKey tmp_key
-          = *(gtk_accel_group_find(darktable.control->accelerators, find_accel_internal, accel->closure));
-      gboolean local = accel->local;
+          = *(gtk_accel_group_find(darktable.control->accelerators, find_accel_internal, iop_accel->closure));
+      gboolean local = iop_accel->accel->local;
+
       dt_accel_deregister_iop(module, path_preset);
+
       snprintf(build_path, sizeof(build_path), "%s`%s", N_("preset"), new_path);
       dt_accel_register_iop(module->so, local, build_path, tmp_key.accel_key, tmp_key.accel_mods);
-      dt_accel_connect_preset_iop(module, new_path);
-      l = NULL;
+
+      GList *modules = g_list_first(darktable.develop->iop);
+      while(modules)
+      {
+        dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+
+        if(mod->so == module->so) dt_accel_connect_preset_iop(mod, new_path);
+
+        modules = g_list_next(modules);
+      }
+
+      break;
     }
-    else
-    {
-      l = g_slist_next(l);
-    }
+
+    l = g_slist_next(l);
   }
-      g_free(path_preset);
+
+  g_free(path_preset);
+
+  dt_accel_connect_instance_iop(module);
 }
 
 void dt_accel_rename_preset_lib(dt_lib_module_t *module, const gchar *path, const gchar *new_path)
 {
-  char *path_fixed = g_strdelimit(g_strdup(path), "/", '-');
-  char *path_preset = g_strdup_printf("%s/%s", _("preset"), path_fixed);
-
   char build_path[1024];
-  dt_accel_path_lib(build_path, sizeof(build_path), module->plugin_name, path_preset);
+  dt_accel_path_lib(build_path, sizeof(build_path), module->plugin_name, path);
   GSList *l = module->accel_closures;
   while(l)
   {
@@ -1239,12 +1258,10 @@ void dt_accel_rename_preset_lib(dt_lib_module_t *module, const gchar *path, cons
     {
       GtkAccelKey tmp_key
           = *(gtk_accel_group_find(darktable.control->accelerators, find_accel_internal, accel->closure));
-      dt_accel_deregister_lib(module, path_preset);
-      char *new_path_fixed = g_strdelimit(g_strdup(new_path), "/", '-');
-      snprintf(build_path, sizeof(build_path), "%s/%s", N_("preset"), new_path_fixed);
+      dt_accel_deregister_lib(module, path);
+      snprintf(build_path, sizeof(build_path), "%s/%s", _("preset"), new_path);
       dt_accel_register_lib(module, build_path, tmp_key.accel_key, tmp_key.accel_mods);
-      dt_accel_connect_preset_lib(module, new_path_fixed);
-      g_free(new_path_fixed);
+      dt_accel_connect_preset_lib(module, new_path);
       l = NULL;
     }
     else
@@ -1252,8 +1269,6 @@ void dt_accel_rename_preset_lib(dt_lib_module_t *module, const gchar *path, cons
       l = g_slist_next(l);
     }
   }
-  g_free(path_preset);
-  g_free(path_fixed);
 }
 
 void dt_accel_rename_global(const gchar *path, const gchar *new_path)
