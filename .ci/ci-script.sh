@@ -36,6 +36,12 @@ then
   KEEPGOING="-k"
 fi;
 
+if [ "$GENERATOR" = "MSYS Makefiles" ];
+then
+  VERBOSE="VERBOSE=1";
+  KEEPGOING="-k"
+fi;
+
 if [ -z "${MAKEFLAGS+x}" ];
 then
   MAKEFLAGS="-j2 $VERBOSE"

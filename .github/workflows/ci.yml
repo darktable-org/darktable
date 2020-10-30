@@ -70,7 +70,9 @@ jobs:
             mingw-w64-${{ matrix.msys2.arch }}-drmingw
             mingw-w64-${{ matrix.msys2.arch }}-gettext
             mingw-w64-${{ matrix.msys2.arch }}-python3
-            mingw-w64-${{ matrix.msys2.arch }}-iso-codes 
+            mingw-w64-${{ matrix.msys2.arch }}-iso-codes
+            mingw-w64-${{ matrix.msys2.arch }}-python3-jsonschema
+            mingw-w64-${{ matrix.msys2.arch }}-python3-setuptools
           update: true
       - name: Build and Install
         env:
@@ -90,10 +92,11 @@ jobs:
         run: |
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
-          cd "${BUILD_DIR}"
-          cmake -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" -G"${GENERATOR}" -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" "${ECO}" "${SRC_DIR}"
-          cmake --build "${BUILD_DIR}" -- ${MAKEFLAGS} || cmake --build "${BUILD_DIR}" -- -j1 "${VERBOSE}" "${KEEPGOING}"
-          cmake --build "${BUILD_DIR}" --target install -- ${MAKEFLAGS} || cmake --build "${BUILD_DIR}" --target install -- -j1 "${VERBOSE}" "${KEEPGOING}"
+          $(cygpath ${SRC_DIR})/.ci/ci-script.sh
+        #  cd "${BUILD_DIR}"
+        #  cmake -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" -G"${GENERATOR}" -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" "${ECO}" "${SRC_DIR}"
+        #  cmake --build "${BUILD_DIR}" -- ${MAKEFLAGS} || cmake --build "${BUILD_DIR}" -- -j1 "${VERBOSE}" "${KEEPGOING}"
+        #  cmake --build "${BUILD_DIR}" --target install -- ${MAKEFLAGS} || cmake --build "${BUILD_DIR}" --target install -- -j1 "${VERBOSE}" "${KEEPGOING}"
         # $(cygpath ${SRC_DIR})/.ci/ci-script.sh
   macOS:
     name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
