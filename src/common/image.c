@@ -487,6 +487,7 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
     }
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(*imgs));
   }
 }
 
@@ -536,8 +537,9 @@ void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, c
       dt_undo_end_group(darktable.undo);
     }
 
-    g_list_free(imgs);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    // imgs is freed by the destinee
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs);
   }
 }
 
@@ -1337,6 +1339,10 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     dt_image_synch_all_xmp(normalized_filename);
     g_free(ext);
     g_free(normalized_filename);
+    GList *imgs = NULL;
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
+                                  g_list_copy((GList *)imgs));
     return id;
   }
   sqlite3_finalize(stmt);
@@ -1543,6 +1549,11 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
 #endif
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, id);
+  GList *imgs = NULL;
+  imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
+                                g_list_copy((GList *)imgs));
+
   // the following line would look logical with new_tags_set being the return value
   // from dt_tag_new above, but this could lead to too rapid signals, being able to lock up the
   // keywords side pane when trying to use it, which can lock up the whole dt GUI ..

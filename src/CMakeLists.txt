@@ -67,6 +67,7 @@ FILE(GLOB SOURCE_FILES
   "common/selection.c"
   "common/system_signal_handling.c"
   "common/tags.c"
+  "common/map_locations.c"
   "common/utility.c"
   "common/variables.c"
   "common/pwstorage/backend_kwallet.c"

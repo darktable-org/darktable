@@ -143,8 +143,11 @@ GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags);
 /** get a flat list of tags id attached to image id*/
 GList *dt_tag_get_tags(const gint imgid, const gboolean ignore_dt_tags);
 
+/** get the subset of images that have a given tag attached */
+GList *dt_tag_get_images(const gint tagid);
+
 /** get the subset of images from the given list that have a given tag attached */
-GList *dt_tag_get_images_from_list(const GList *img, gint tagid);
+GList *dt_tag_get_images_from_list(const GList *img, const gint tagid);
 
 /** retrieves a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out]
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by

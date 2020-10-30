@@ -45,7 +45,7 @@
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
 #define CURRENT_DATABASE_VERSION_LIBRARY 30
-#define CURRENT_DATABASE_VERSION_DATA     6
+#define CURRENT_DATABASE_VERSION_DATA     7
 
 typedef struct dt_database_t
 {
@@ -1854,6 +1854,15 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     new_version = 6;
   }
+  else if(version == 6)
+  {
+    TRY_EXEC("CREATE TABLE data.locations "
+             "(tagid INTEGER PRIMARY KEY, type INTEGER, longitude REAL, latitude REAL, "
+             "delta1 REAL, delta2 REAL, FOREIGN KEY(tagid) REFERENCES tags(id))",
+             "[init] can't create new locations table\n");
+
+    new_version = 7;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2033,6 +2042,11 @@ static void _create_data_schema(dt_database_t *db)
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX data.presets_idx ON presets (name, operation, op_version)",
                NULL, NULL, NULL);
+  ////////////////////////////// (map) locations
+  sqlite3_exec(db->handle, "CREATE TABLE data.locations (tagid INTEGER PRIMARY KEY, "
+               "type INTEGER, longitude REAL, latitude REAL, delta1 REAL, delta2 REAL, "
+               "FOREIGN KEY(tagid) REFERENCES tags(id))", NULL, NULL, NULL);
+
 }
 
 // create the in-memory tables

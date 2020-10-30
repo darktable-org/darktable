@@ -22,6 +22,7 @@
 #include "common/imageio_rawspeed.h"
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/map_locations.h"
 #include "control/conf.h"
 #include "control/control.h"
 
@@ -1504,9 +1505,26 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_GEOTAGGING: // geotagging
-      query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
-                                     "(longitude IS NOT NULL AND latitude IS NOT NULL))) ",
-                              (strcmp(escaped_text, _("tagged")) == 0) ? "" : "not");
+      {
+        const gboolean not_tagged = strcmp(escaped_text, _("not tagged")) == 0;
+        const gboolean no_location = strcmp(escaped_text, _("tagged")) == 0;
+        const gboolean all_tagged = strcmp(escaped_text, _("tagged%")) == 0;
+        char *escaped_text2 = g_strstr_len(escaped_text, -1, "|");
+        if(not_tagged || all_tagged)
+          query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images "
+                                         "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",
+                                  all_tagged ? "" : "not");
+        else
+          query = dt_util_dstrcat(query, "(id IN (SELECT id AS imgid FROM main.images "
+                                         "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))"
+                                         "AND id %s IN (SELECT imgid FROM main.tagged_images AS ti"
+                                         "  JOIN data.tags AS t"
+                                         "  ON t.id = ti.tagid"
+                                         "     AND t.name LIKE \'%s\' || \'%s\')) ",
+                                  no_location ? "not" : "",
+                                  dt_map_location_data_tag_root(),
+                                  escaped_text2 ? escaped_text2 : "%");
+      }
       break;
 
     case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
