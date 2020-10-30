@@ -2024,6 +2024,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
           curve[k].x = curve[k + 1].x;
           curve[k].y = curve[k + 1].y;
         }
+        curve[nodes - 1].x = curve[nodes - 1].y = 0;
         p->curve_num_nodes[ch]--;
       }
       else

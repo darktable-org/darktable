@@ -1938,6 +1938,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
       basecurve[k].x = basecurve[k + 1].x;
       basecurve[k].y = basecurve[k + 1].y;
     }
+    basecurve[nodes - 1].x = basecurve[nodes - 1].y = 0;
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->basecurve_nodes[ch]--;
     gtk_widget_queue_draw(self->widget);

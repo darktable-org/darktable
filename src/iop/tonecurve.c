@@ -1832,6 +1832,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       tonecurve[k].x = tonecurve[k + 1].x;
       tonecurve[k].y = tonecurve[k + 1].y;
     }
+    tonecurve[nodes - 1].x = tonecurve[nodes - 1].y = 0;
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->tonecurve_nodes[ch]--;
     gtk_widget_queue_draw(self->widget);

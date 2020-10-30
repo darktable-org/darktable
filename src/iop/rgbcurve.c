@@ -1323,6 +1323,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
       curve_nodes[k].x = curve_nodes[k + 1].x;
       curve_nodes[k].y = curve_nodes[k + 1].y;
     }
+    curve_nodes[nodes - 1].x = curve_nodes[nodes - 1].y = 0;
     g->selected = -2; // avoid re-insertion of that point immediately after this
     p->curve_num_nodes[ch]--;
     dt_iop_color_picker_reset(self, TRUE);
