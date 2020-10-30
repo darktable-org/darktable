@@ -291,7 +291,7 @@ if(VALIDATE_APPDATA_FILE)
     message(STATUS "Missing appstream-util, problems in darktable.appdata.xml might go unnoticed")
     set(VALIDATE_APPDATA_FILE OFF)
   else(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
-    message(STATUS "Found appstream-util")
+    message(STATUS "Found appstream-util in ${appstream_util_BIN}")
   endif(${appstream_util_BIN} STREQUAL "appstream_util_BIN-NOTFOUND")
 endif(VALIDATE_APPDATA_FILE)
 
