@@ -8,7 +8,7 @@ on:
 
 jobs:
   windows-msys2:
-    name: win.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
+    name: win.${{ matrix.compiler.compiler }}.${{ matrix.eco.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -19,7 +19,21 @@ jobs:
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
           - { compiler: LLVM, CC: clang, CXX: clang++ }
-        btype: [ RelWithDebInfo, Debug, Release ]
+        btype: [ RelWithDebInfo ]
+        #Release works on GNU & LLVM, Debug only on GNU. todo: use if to exclude
+        eco:
+          - {
+              name: normal,
+              defines: ""
+            }
+          - {
+              name: NoLUA,
+              defines: -DUSE_LUA=OFF
+            }
+          - {
+              name: "NoEverything",
+              defines: "-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF -DUSE_GAME=OFF -DUSE_CAMERA_SUPPORT=OFF -DUSE_NLS=OFF -DUSE_GRAPHICSMAGICK=OFF -DUSE_OPENJPEG=OFF -DUSE_WEBP=OFF -DUSE_AVIF=OFF -DUSE_XCF=OFF -DBUILD_CMSTEST=OFF -DUSE_OPENEXR=OFF -DBUILD_PRINT=OFF -DBUILD_RS_IDENTIFY=OFF -DUSE_LENSFUN=OFF -DUSE_GMIC=OFF -DUSE_LIBSECRET=OFF"
+           }
     defaults:
       run:
         shell: msys2 {0}
@@ -50,6 +64,7 @@ jobs:
             mingw-w64-${{ matrix.msys2.arch }}-zlib
             mingw-w64-${{ matrix.msys2.arch }}-exiv2
             mingw-w64-${{ matrix.msys2.arch }}-lcms2
+            mingw-w64-${{ matrix.msys2.arch }}-lensfun
             mingw-w64-${{ matrix.msys2.arch }}-dbus-glib
             mingw-w64-${{ matrix.msys2.arch }}-openexr
             mingw-w64-${{ matrix.msys2.arch }}-sqlite3
@@ -72,6 +87,7 @@ jobs:
             mingw-w64-${{ matrix.msys2.arch }}-iso-codes
             mingw-w64-${{ matrix.msys2.arch }}-python3-jsonschema
             mingw-w64-${{ matrix.msys2.arch }}-python3-setuptools
+            mingw-w64-${{ matrix.msys2.arch }}-gmic
           update: true
       - name: Build and Install
         env:
@@ -80,7 +96,7 @@ jobs:
           SRC_DIR: ${{ github.workspace }}
           BUILD_DIR: ${{ github.workspace }}/build
           INSTALL_PREFIX: ${{ github.workspace }}/install
-          #ECO: -DALLOW_DOWNLOADING_GOOGLETEST=ON
+          ECO: ${{ matrix.eco.defines }}
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: "MSYS Makefiles"
           TARGET: notest
