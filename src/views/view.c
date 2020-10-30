@@ -1358,6 +1358,16 @@ gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_displ
   if(vm->proxy.map.view) return vm->proxy.map.remove_marker(vm->proxy.map.view, type, marker);
   return FALSE;
 }
+void dt_view_map_add_location(const dt_view_manager_t *vm, dt_map_location_data_t *p, const guint posid)
+{
+  if(vm->proxy.map.view) vm->proxy.map.add_location(vm->proxy.map.view, p, posid);
+}
+
+void dt_view_map_remove_location(const dt_view_manager_t *vm)
+{
+  if(vm->proxy.map.view) return vm->proxy.map.remove_location(vm->proxy.map.view);
+}
+
 #endif
 
 #ifdef HAVE_PRINT
