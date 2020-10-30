@@ -1020,10 +1020,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
   }
   else
   {
-    const int add_space = strstr(accel_path, "preset/") == accel_path ? 1 : 0;
-    gchar *trans_node = g_strndup(translated_path, trans_end - translated_path + add_space);
-    if(add_space) trans_node[trans_end - translated_path] = ' ';
-
+    gchar *trans_node = g_strndup(translated_path, trans_end - translated_path);
     gchar *trans_scan = trans_node;
     while((trans_scan = strchr(trans_scan, '`')))
     {
@@ -1541,7 +1538,7 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
           dt_loc_get_user_config_dir(datadir, sizeof(datadir));
           snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
 
-          gchar *preset_name = g_strdup_printf("%s`%s", "preset", name);
+          gchar *preset_name = g_strdup_printf("%s`%s", N_("preset"), name);
           dt_accel_path_iop(accel, sizeof(accel), operation, preset_name);
           g_free(preset_name);
 
@@ -1776,7 +1773,7 @@ static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
     gtk_tree_model_get(model, b, P_NAME_COLUMN, &b_text, -1);
   }
 
-  const int res = strcasecmp(a_text, b_text);
+  const int res = strcoll(a_text, b_text);
 
   g_free(a_text);
   g_free(b_text);
@@ -2094,7 +2091,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
           dt_loc_get_user_config_dir(datadir, sizeof(datadir));
           snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
 
-          gchar *preset_name = g_strdup_printf("%s`%s", "preset", name);
+          gchar *preset_name = g_strdup_printf("%s`%s", N_("preset"), name);
           dt_accel_path_iop(accel, sizeof(accel), operation, preset_name);
           g_free(preset_name);
 
