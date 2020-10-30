@@ -8,7 +8,7 @@ on:
 
 jobs:
   windows-msys2:
-    name: win.${{ matrix.compiler.compiler }}.${{ matrix.target }}
+    name: win.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -19,8 +19,7 @@ jobs:
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
           - { compiler: LLVM, CC: clang, CXX: clang++ }
-        btype: [ RelWithDebInfo ]
-        target: [ build, notest]
+        btype: [ RelWithDebInfo, Debug, Release ]
     defaults:
       run:
         shell: msys2 {0}
@@ -84,7 +83,7 @@ jobs:
           #ECO: -DALLOW_DOWNLOADING_GOOGLETEST=ON
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: "MSYS Makefiles"
-          TARGET: ${{ matrix.target }}
+          TARGET: notest
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}"
