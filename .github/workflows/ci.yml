@@ -47,7 +47,7 @@ jobs:
         run: |
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
-          msys2 -c '$(cygpath ${SRC_DIR})/.ci/ci-script.sh'
+          D:\a\_temp\msys\msys2.CMD -c '$(cygpath ${SRC_DIR})/.ci/ci-script.sh'
   macOS:
     name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os }}
