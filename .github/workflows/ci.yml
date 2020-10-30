@@ -45,9 +45,9 @@ jobs:
           TARGET: notest
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
-          cmake -E make_directory "${BUILD_DIR}";
-          cmake -E make_directory "${INSTALL_PREFIX}";
-          $(cygpath ${SRC_DIR})/.ci/ci-script.sh;
+          cmake -E make_directory "${BUILD_DIR}"
+          cmake -E make_directory "${INSTALL_PREFIX}"
+          $(cygpath ${SRC_DIR})/.ci/ci-script.sh
   macOS:
     name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os }}
