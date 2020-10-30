@@ -8,7 +8,7 @@ on:
 
 jobs:
   windows-msys2:
-    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.generator }}.${{ matrix.shell.ms }}
+    name: win.${{ matrix.compiler.compiler }}.${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -16,18 +16,14 @@ jobs:
         os: [ windows-latest ]
         msys2:
           - { msystem: MINGW64, arch: x86_64 }
-          - { msystem: MSYS, arch: x86_64 }
-        shell:
-          - { ms: msys2 }
-          - { ms: mingw64 }
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
           - { compiler: LLVM, CC: clang, CXX: clang++ }
         btype: [ RelWithDebInfo ]
-        generator: [ Ninja, "MSYS Makefiles" ]
+        target: [ build, notest]
     defaults:
       run:
-        shell: ${{ matrix.shell.ms }} {0}
+        shell: msys2 {0}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -87,11 +83,8 @@ jobs:
           INSTALL_PREFIX: ${{ github.workspace }}/install
           #ECO: -DALLOW_DOWNLOADING_GOOGLETEST=ON
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-          GENERATOR: ${{ matrix.generator }}
-          TARGET: notest
-          VERBOSE: "-v"
-          MAKEFLAGS: "-j2 ${VERBOSE}"
-          KEEPGOING: "-k0"
+          GENERATOR: "MSYS Makefiles"
+          TARGET: ${{ matrix.target }}
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}"
