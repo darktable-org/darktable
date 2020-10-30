@@ -30,7 +30,46 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.msys2.msystem }}
-          install: pacman-mirrors bash curl git base-devel mingw-w64-${{ matrix.msys2.arch }}-toolchain mingw-w64-${{ matrix.msys2.arch }}-gcc mingw-w64-${{ matrix.msys2.arch }}-clang mingw-w64-${{ matrix.msys2.arch }}-openmp mingw-w64-${{ matrix.msys2.arch }}-cmake mingw-w64-${{ matrix.msys2.arch }}-cmocka mingw-w64-${{ matrix.msys2.arch }}-ninja mingw-w64-${{ matrix.msys2.arch }}-libxml2 mingw-w64-${{ matrix.msys2.arch }}-pugixml mingw-w64-${{ matrix.msys2.arch }}-libjpeg-turbo mingw-w64-${{ matrix.msys2.arch }}-zlib mingw-w64-${{ matrix.msys2.arch }}-exiv2 mingw-w64-${{ matrix.msys2.arch }}-lcms2 mingw-w64-${{ matrix.msys2.arch }}-dbus-glib mingw-w64-${{ matrix.msys2.arch }}-openexr mingw-w64-${{ matrix.msys2.arch }}-sqlite3 mingw-w64-${{ matrix.msys2.arch }}-libxslt mingw-w64-${{ matrix.msys2.arch }}-libsoup mingw-w64-${{ matrix.msys2.arch }}-libavif mingw-w64-${{ matrix.msys2.arch }}-libwebp mingw-w64-${{ matrix.msys2.arch }}-libsecret mingw-w64-${{ matrix.msys2.arch }}-lua mingw-w64-${{ matrix.msys2.arch }}-graphicsmagick mingw-w64-${{ matrix.msys2.arch }}-openjpeg2 mingw-w64-${{ matrix.msys2.arch }}-gtk3 mingw-w64-${{ matrix.msys2.arch }}-pugixml mingw-w64-${{ matrix.msys2.arch }}-libexif mingw-w64-${{ matrix.msys2.arch }}-osm-gps-map mingw-w64-${{ matrix.msys2.arch }}-libgphoto2 mingw-w64-${{ matrix.msys2.arch }}-flickcurl mingw-w64-${{ matrix.msys2.arch }}-drmingw mingw-w64-${{ matrix.msys2.arch }}-gettext mingw-w64-${{ matrix.msys2.arch }}-python3 mingw-w64-${{ matrix.msys2.arch }}-iso-codes 
+          install: >-
+            pacman-mirrors
+            bash
+            curl
+            git
+            base-devel
+            inntltool
+            mingw-w64-${{ matrix.msys2.arch }}-toolchain
+            mingw-w64-${{ matrix.msys2.arch }}-gcc
+            mingw-w64-${{ matrix.msys2.arch }}-clang
+            mingw-w64-${{ matrix.msys2.arch }}-openmp
+            mingw-w64-${{ matrix.msys2.arch }}-cmake
+            mingw-w64-${{ matrix.msys2.arch }}-cmocka
+            mingw-w64-${{ matrix.msys2.arch }}-ninja
+            mingw-w64-${{ matrix.msys2.arch }}-libxml2
+            mingw-w64-${{ matrix.msys2.arch }}-pugixml
+            mingw-w64-${{ matrix.msys2.arch }}-libjpeg-turbo
+            mingw-w64-${{ matrix.msys2.arch }}-zlib
+            mingw-w64-${{ matrix.msys2.arch }}-exiv2
+            mingw-w64-${{ matrix.msys2.arch }}-lcms2
+            mingw-w64-${{ matrix.msys2.arch }}-dbus-glib
+            mingw-w64-${{ matrix.msys2.arch }}-openexr
+            mingw-w64-${{ matrix.msys2.arch }}-sqlite3
+            mingw-w64-${{ matrix.msys2.arch }}-libxslt
+            mingw-w64-${{ matrix.msys2.arch }}-libsoup
+            mingw-w64-${{ matrix.msys2.arch }}-libavif
+            mingw-w64-${{ matrix.msys2.arch }}-libwebp
+            mingw-w64-${{ matrix.msys2.arch }}-libsecret
+            mingw-w64-${{ matrix.msys2.arch }}-lua
+            mingw-w64-${{ matrix.msys2.arch }}-graphicsmagick
+            mingw-w64-${{ matrix.msys2.arch }}-openjpeg2
+            mingw-w64-${{ matrix.msys2.arch }}-gtk3
+            mingw-w64-${{ matrix.msys2.arch }}-pugixml
+            mingw-w64-${{ matrix.msys2.arch }}-libexif
+            mingw-w64-${{ matrix.msys2.arch }}-osm-gps-map
+            mingw-w64-${{ matrix.msys2.arch }}-libgphoto2
+            mingw-w64-${{ matrix.msys2.arch }}-drmingw
+            mingw-w64-${{ matrix.msys2.arch }}-gettext
+            mingw-w64-${{ matrix.msys2.arch }}-python3
+            mingw-w64-${{ matrix.msys2.arch }}-iso-codes 
           update: true
       - name: Build and Install
         env:
