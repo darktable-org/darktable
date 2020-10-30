@@ -40,21 +40,14 @@ jobs:
           BUILD_DIR: ${{ github.workspace }}/build
           INSTALL_PREFIX: ${{ github.workspace }}/install
           #ECO: -DALLOW_DOWNLOADING_GOOGLETEST=ON
-          CMAKE_BUILD_TYPE: ${{ matrix.flavor }}
+          CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: Ninja
           TARGET: notest
+          # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh;
-          echo "====";
-          cat ${{ github.workspace }}/build/lib64/darktable/plugins/lighttable/tools/darktable_authors.h;
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.os }}_${{ matrix.compiler.compiler }}_darktable_authors.h
-          path: ${{ github.workspace }}/build/lib64/darktable/plugins/lighttable/tools/darktable_authors.h
-          retention-days: 2
   macOS:
     name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os }}
@@ -84,8 +77,8 @@ jobs:
           INSTALL_PREFIX: ${{ github.workspace }}/install
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: Ninja
-          TARGET: build
-          # todo: fix cmocka cmake so that it works in osx
+          TARGET: notest
+          # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
