@@ -80,6 +80,9 @@ typedef enum dt_signal_t
   /** \brief This signal is raised when a tag is added/deleted/changed  */
   DT_SIGNAL_TAG_CHANGED,
 
+  /** \brief This signal is raised when a geotag is added/deleted/changed  */
+  DT_SIGNAL_GEOTAG_CHANGED,
+
   /** \brief This signal is raised when metadata status (shown/hidden) or value has changed */
   DT_SIGNAL_METADATA_CHANGED,
 

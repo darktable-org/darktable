@@ -25,6 +25,7 @@
 #endif
 #ifdef HAVE_MAP
 #include "common/geo.h"
+#include "common/map_locations.h"
 #include <osm-gps-map.h>
 #endif
 #include <cairo.h>
@@ -355,6 +356,8 @@ typedef struct dt_view_manager_t
       void (*set_map_source)(const dt_view_t *view, OsmGpsMapSource_t map_source);
       GObject *(*add_marker)(const dt_view_t *view, dt_geo_map_display_t type, GList *points);
       gboolean (*remove_marker)(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
+      void (*add_location)(const dt_view_t *view, dt_map_location_data_t *p, const guint posid);
+      void (*remove_location)(const dt_view_t *view);
       gboolean (*redraw)(gpointer user_data);
       gboolean (*display_selected)(gpointer user_data);
     } map;
@@ -475,6 +478,8 @@ void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled);
 void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source);
 GObject *dt_view_map_add_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GList *points);
 gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GObject *marker);
+void dt_view_map_add_location(const dt_view_manager_t *vm, dt_map_location_data_t *p, const guint posid);
+void dt_view_map_remove_location(const dt_view_manager_t *vm);
 #endif
 
 /*
