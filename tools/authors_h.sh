@@ -68,6 +68,7 @@ while IFS="" read -r p || [ -n "$p" ]; do
       if [ "$p" = "" ] || [ "${p:0:13}" = "And all those" ]; then
           continue
       fi
+      echo "p=XXXX${p}XXXX"
       CONTENT="\"$p\",$CONTENT"
   fi
 done < "$AUTHORS"
