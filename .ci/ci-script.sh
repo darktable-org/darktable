@@ -95,9 +95,6 @@ case "$TARGET" in
     ;;
   "notest")
     cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
-    echo "==cmake=="
-    cat "$BUILD_DIR"/build/lib64/darktable/plugins/lighttable/tools/darktable_authors.h;
-    echo "==cmake=="
     target_notest
     echo 
     ;;
