@@ -19,16 +19,12 @@ jobs:
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
           - { compiler: LLVM, CC: clang, CXX: clang++ }
-        btype: [ RelWithDebInfo, Release, Debug ]
+        btype: [ RelWithDebInfo, Release ]
         #Release works on GNU & LLVM, Debug only on GNU. todo: use if to exclude
         eco:
           - {
               name: normal,
               defines: ""
-            }
-          - {
-              name: binpkg,
-              defines: -DBINARY_PACKAGE_BUILD=ON
             }
           - {
               name: "NoEverything",
@@ -52,16 +48,16 @@ jobs:
                 -DUSE_GMIC=OFF 
                 -DUSE_LIBSECRET=OFF
             }
-        exclude:
+        include:
+          - btype: Release
+            eco:
+              - {
+                  name: binpkg,
+                  defines: -DBINARY_PACKAGE_BUILD=ON
+                }
           - btype: Debug
             compiler:
-              - compiler: LLVM
-          - btype: Debug
-            eco:
-              - name: binpkg
-          - btype: RelWithDebInfo
-            eco:
-              - name: binpkg
+              - { compiler: GNU,  CC: gcc,   CXX: g++ }
     defaults:
       run:
         shell: msys2 {0}
