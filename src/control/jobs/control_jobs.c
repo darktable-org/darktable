@@ -694,7 +694,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     const int imgid = sqlite3_column_int(stmt, 0);
     if(!dt_image_safe_remove(imgid))
     {
-      remove_ok = false;
+      remove_ok = FALSE;
       break;
     }
   }
