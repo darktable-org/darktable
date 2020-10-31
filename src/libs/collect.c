@@ -1723,9 +1723,13 @@ static void list_view(dt_lib_collect_rule_t *dr)
         {
           gchar *order_by = NULL;
           if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "id") == 0)
+            order_by = g_strdup("ORDER BY film_rolls_id");
+          if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "id descending") == 0)
             order_by = g_strdup("ORDER BY film_rolls_id DESC");
-          else
+          else if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "folder") == 0)
             order_by = g_strdup("ORDER BY folder");
+          else if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "folder descending") == 0)
+            order_by = g_strdup("ORDER BY folder DESC");
 
           // filmroll
           g_snprintf(query, sizeof(query),

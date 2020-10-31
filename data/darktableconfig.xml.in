@@ -533,10 +533,12 @@
     <type>
       <enum>
         <option>id</option>
+        <option>id descending</option>
         <option>folder</option>
+        <option>folder descending</option>
       </enum>
     </type>
-    <default>id</default>
+    <default>id descending</default>
     <shortdescription>sort film rolls by</shortdescription>
     <longdescription>sets the collections-list order for film rolls</longdescription>
   </dtconfig>
