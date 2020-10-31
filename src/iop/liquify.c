@@ -2718,17 +2718,14 @@ void gui_post_expose(struct dt_iop_module_t *module,
   draw_paths(module, cr, 1.0 / (scale * zoom_scale), &copy_params);
 }
 
+static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *event, dt_iop_module_t *module);
+
 void gui_focus(struct dt_iop_module_t *module, gboolean in)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-
   if(!in)
   {
     dt_control_hinter_message(darktable.control, "");
-    gtk_toggle_button_set_active(g->btn_point_tool, FALSE);
-    gtk_toggle_button_set_active(g->btn_line_tool,  FALSE);
-    gtk_toggle_button_set_active(g->btn_curve_tool, FALSE);
-    gtk_toggle_button_set_active(g->btn_node_tool,  FALSE);
+    btn_make_radio_callback(NULL, NULL, module);
   }
 }
 
@@ -3186,7 +3183,7 @@ int button_released(struct dt_iop_module_t *module,
     if(gtk_toggle_button_get_active(g->btn_point_tool))
     {
       g->temp = NULL; // a point is done
-      gtk_toggle_button_set_active(g->btn_node_tool, 1);
+      btn_make_radio_callback(g->btn_node_tool, NULL, module);
       handled = dragged ? 2 : 1;
     }
     else if(gtk_toggle_button_get_active(g->btn_line_tool))
@@ -3247,7 +3244,7 @@ int button_released(struct dt_iop_module_t *module,
       node_delete(&g->params, g->temp);
       g->temp = NULL;
       g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
-      gtk_toggle_button_set_active(g->btn_node_tool, 1);
+      btn_make_radio_callback(g->btn_node_tool, NULL, module);
       handled = 2;
       goto done;
     }
@@ -3255,8 +3252,7 @@ int button_released(struct dt_iop_module_t *module,
     // right click on background toggles node tool
     if(g->last_hit.layer == DT_LIQUIFY_LAYER_BACKGROUND)
     {
-      gtk_toggle_button_set_active(g->btn_node_tool,
-                    !gtk_toggle_button_get_active(g->btn_node_tool));
+      btn_make_radio_callback(g->btn_node_tool, NULL, module);
       handled = 1;
       goto done;
     }
@@ -3290,7 +3286,7 @@ int button_released(struct dt_iop_module_t *module,
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
       {
         const int oldsel = !!g->last_hit.elem->header.selected;
-  unselect_all(&g->params);
+        unselect_all(&g->params);
         g->last_hit.elem->header.selected = oldsel ? 0 : g->last_hit.layer;
         handled = 1;
         goto done;
@@ -3353,7 +3349,7 @@ int button_released(struct dt_iop_module_t *module,
         }
         if(prev && e->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
         {
-    // add node to line
+          // add node to line
           dt_liquify_warp_t *warp1 = &prev->warp;
           dt_liquify_warp_t *warp3 = &e->warp;
           const float t = find_nearest_on_line_t(warp1->point, warp3->point, pt);
@@ -3442,18 +3438,6 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
   // if currently dragging and a form (line or node) has been started, does nothing (expect resetting the toggle button status).
   if(is_dragging(g) && g->temp && node_prev(&g->params, g->temp))
   {
-    g_signal_handlers_block_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_block_matched(g->btn_line_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_block_matched(g->btn_curve_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_block_matched(g->btn_node_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-
-    gtk_toggle_button_set_active(btn, !gtk_toggle_button_get_active(btn));
-
-    g_signal_handlers_unblock_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_unblock_matched(g->btn_line_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_unblock_matched(g->btn_curve_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_unblock_matched(g->btn_node_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-
     return TRUE;
   }
 
@@ -3469,7 +3453,7 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
   }
 
   // now, let's enable and start a new form safely
-  if(!gtk_toggle_button_get_active(btn))
+  if(!btn || !gtk_toggle_button_get_active(btn))
   {
     gtk_toggle_button_set_active(g->btn_point_tool, btn == g->btn_point_tool);
     gtk_toggle_button_set_active(g->btn_line_tool,  btn == g->btn_line_tool);
@@ -3594,12 +3578,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_reset(dt_iop_module_t *self)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) self->gui_data;
-
-  gtk_toggle_button_set_active(g->btn_point_tool, FALSE);
-  gtk_toggle_button_set_active(g->btn_line_tool,  FALSE);
-  gtk_toggle_button_set_active(g->btn_curve_tool, FALSE);
-  gtk_toggle_button_set_active(g->btn_node_tool,  FALSE);
+  btn_make_radio_callback(NULL, NULL, self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
