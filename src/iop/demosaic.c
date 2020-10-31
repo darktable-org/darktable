@@ -185,22 +185,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_RAW;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edge threshold"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color smoothing"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "match greens"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "edge threshold", GTK_WIDGET(g->median_thrs));
-  dt_accel_connect_combobox_iop(self, "color smoothing", GTK_WIDGET(g->color_smoothing));
-  dt_accel_connect_combobox_iop(self, "match greens", GTK_WIDGET(g->greeneq));
-}
-
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -4996,7 +4980,7 @@ void gui_update(struct dt_iop_module_t *self)
      (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX))
     img->flags |= DT_IMAGE_MONOCHROME_BAYER;
   else
-    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;   
+    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;
   const int mask_bw = dt_image_monochrome_flags(img);
   changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
 
@@ -5049,7 +5033,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
      (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX))
     img->flags |= DT_IMAGE_MONOCHROME_BAYER;
   else
-    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;   
+    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;
   const int mask_bw = dt_image_monochrome_flags(img);
   changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);

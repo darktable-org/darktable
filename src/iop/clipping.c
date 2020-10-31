@@ -2139,7 +2139,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, _("main"), NULL);
 
   g->hvflip = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->hvflip, NULL, _("flip"));
+  dt_bauhaus_widget_set_label(g->hvflip, NULL, N_("flip"));
   dt_bauhaus_combobox_add(g->hvflip, _("none"));
   dt_bauhaus_combobox_add(g->hvflip, _("horizontal"));
   dt_bauhaus_combobox_add(g->hvflip, _("vertical"));
@@ -2155,7 +2155,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->angle, _("right-click and drag a line on the image to drag a straight line"));
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->keystone_type, NULL, _("keystone"));
+  dt_bauhaus_widget_set_label(g->keystone_type, NULL, N_("keystone"));
   dt_bauhaus_combobox_add(g->keystone_type, _("none"));
   dt_bauhaus_combobox_add(g->keystone_type, _("vertical"));
   dt_bauhaus_combobox_add(g->keystone_type, _("horizontal"));
@@ -2266,7 +2266,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->aspect_presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->aspect_presets, 1);
-  dt_bauhaus_widget_set_label(g->aspect_presets, NULL, _("aspect"));
+  dt_bauhaus_widget_set_label(g->aspect_presets, NULL, N_("aspect"));
 
   for(GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
   {
@@ -2284,7 +2284,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
+  dt_bauhaus_widget_set_label(g->guide_lines, NULL, N_("guides"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->guides_widgets = gtk_stack_new();
@@ -2317,7 +2317,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guides_presets_changed), self);
 
   g->flip_guides = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->flip_guides, NULL, _("flip guides"));
+  dt_bauhaus_widget_set_label(g->flip_guides, NULL, N_("flip guides"));
   dt_bauhaus_combobox_add(g->flip_guides, _("none"));
   dt_bauhaus_combobox_add(g->flip_guides, _("horizontally"));
   dt_bauhaus_combobox_add(g->flip_guides, _("vertically"));
@@ -3451,37 +3451,12 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, TRUE, NC_("accel", "commit"), GDK_KEY_Return, 0);
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "angle"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "left"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "top"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "right"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bottom"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "aspect ratio"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "guide lines"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "flip"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "keystone"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "automatic cropping"));
+  dt_accel_register_iop(self, TRUE, N_("commit"), GDK_KEY_Return, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  GClosure *closure;
-
-  closure = g_cclosure_new(G_CALLBACK(key_commit_callback), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "commit", closure);
-
-  dt_accel_connect_slider_iop(self, "angle", GTK_WIDGET(g->angle));
-  dt_accel_connect_slider_iop(self, "left", GTK_WIDGET(g->cx));
-  dt_accel_connect_slider_iop(self, "top", GTK_WIDGET(g->cy));
-  dt_accel_connect_slider_iop(self, "right", GTK_WIDGET(g->cw));
-  dt_accel_connect_slider_iop(self, "bottom", GTK_WIDGET(g->ch));
-  dt_accel_connect_combobox_iop(self, "guide lines", GTK_WIDGET(g->guide_lines));
-  dt_accel_connect_combobox_iop(self, "aspect ratio", GTK_WIDGET(g->aspect_presets));
-  dt_accel_connect_combobox_iop(self, "flip", GTK_WIDGET(g->hvflip));
-  dt_accel_connect_combobox_iop(self, "keystone", GTK_WIDGET(g->keystone_type));
-  dt_accel_connect_combobox_iop(self, "automatic cropping", GTK_WIDGET(g->crop_auto));
+  dt_accel_connect_iop(self, "commit", g_cclosure_new(G_CALLBACK(key_commit_callback), (gpointer)self, NULL));
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)

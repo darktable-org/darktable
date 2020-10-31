@@ -26,6 +26,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -2717,17 +2718,14 @@ void gui_post_expose(struct dt_iop_module_t *module,
   draw_paths(module, cr, 1.0 / (scale * zoom_scale), &copy_params);
 }
 
+static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *event, dt_iop_module_t *module);
+
 void gui_focus(struct dt_iop_module_t *module, gboolean in)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-
   if(!in)
   {
     dt_control_hinter_message(darktable.control, "");
-    gtk_toggle_button_set_active(g->btn_point_tool, FALSE);
-    gtk_toggle_button_set_active(g->btn_line_tool,  FALSE);
-    gtk_toggle_button_set_active(g->btn_curve_tool, FALSE);
-    gtk_toggle_button_set_active(g->btn_node_tool,  FALSE);
+    btn_make_radio_callback(NULL, NULL, module);
   }
 }
 
@@ -3185,7 +3183,7 @@ int button_released(struct dt_iop_module_t *module,
     if(gtk_toggle_button_get_active(g->btn_point_tool))
     {
       g->temp = NULL; // a point is done
-      gtk_toggle_button_set_active(g->btn_node_tool, 1);
+      btn_make_radio_callback(g->btn_node_tool, NULL, module);
       handled = dragged ? 2 : 1;
     }
     else if(gtk_toggle_button_get_active(g->btn_line_tool))
@@ -3246,7 +3244,7 @@ int button_released(struct dt_iop_module_t *module,
       node_delete(&g->params, g->temp);
       g->temp = NULL;
       g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
-      gtk_toggle_button_set_active(g->btn_node_tool, 1);
+      btn_make_radio_callback(g->btn_node_tool, NULL, module);
       handled = 2;
       goto done;
     }
@@ -3254,8 +3252,7 @@ int button_released(struct dt_iop_module_t *module,
     // right click on background toggles node tool
     if(g->last_hit.layer == DT_LIQUIFY_LAYER_BACKGROUND)
     {
-      gtk_toggle_button_set_active(g->btn_node_tool,
-                    !gtk_toggle_button_get_active(g->btn_node_tool));
+      btn_make_radio_callback(g->btn_node_tool, NULL, module);
       handled = 1;
       goto done;
     }
@@ -3289,7 +3286,7 @@ int button_released(struct dt_iop_module_t *module,
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
       {
         const int oldsel = !!g->last_hit.elem->header.selected;
-  unselect_all(&g->params);
+        unselect_all(&g->params);
         g->last_hit.elem->header.selected = oldsel ? 0 : g->last_hit.layer;
         handled = 1;
         goto done;
@@ -3352,7 +3349,7 @@ int button_released(struct dt_iop_module_t *module,
         }
         if(prev && e->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
         {
-    // add node to line
+          // add node to line
           dt_liquify_warp_t *warp1 = &prev->warp;
           dt_liquify_warp_t *warp3 = &e->warp;
           const float t = find_nearest_on_line_t(warp1->point, warp3->point, pt);
@@ -3433,25 +3430,15 @@ static void _liquify_cairo_paint_node_tool(cairo_t *cr, const gint x, const gint
                                            const gint flags, void *data);
 
 // we need this only because darktable has no radiobutton support
-static void btn_make_radio_callback(GtkToggleButton *btn, dt_iop_module_t *module)
+
+static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *event, dt_iop_module_t *module)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
 
   // if currently dragging and a form (line or node) has been started, does nothing (expect resetting the toggle button status).
   if(is_dragging(g) && g->temp && node_prev(&g->params, g->temp))
   {
-    g_signal_handlers_block_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_block_matched(g->btn_line_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_block_matched(g->btn_curve_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_block_matched(g->btn_node_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-
-    gtk_toggle_button_set_active(btn, !gtk_toggle_button_get_active(btn));
-
-    g_signal_handlers_unblock_matched(g->btn_point_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_unblock_matched(g->btn_line_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_unblock_matched(g->btn_curve_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    g_signal_handlers_unblock_matched(g->btn_node_tool, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, btn_make_radio_callback, NULL);
-    return;
+    return TRUE;
   }
 
   dt_control_hinter_message(darktable.control, "");
@@ -3466,7 +3453,7 @@ static void btn_make_radio_callback(GtkToggleButton *btn, dt_iop_module_t *modul
   }
 
   // now, let's enable and start a new form safely
-  if(gtk_toggle_button_get_active(btn))
+  if(!btn || !gtk_toggle_button_get_active(btn))
   {
     gtk_toggle_button_set_active(g->btn_point_tool, btn == g->btn_point_tool);
     gtk_toggle_button_set_active(g->btn_line_tool,  btn == g->btn_line_tool);
@@ -3509,9 +3496,15 @@ static void btn_make_radio_callback(GtkToggleButton *btn, dt_iop_module_t *modul
       g->last_hit = NOWHERE;
     }
   }
+  else
+  {
+    gtk_toggle_button_set_active(btn, FALSE);
+  }
 
   sync_pipe(module, FALSE);
   dt_iop_request_focus(module);
+
+  return TRUE;
 }
 
 void gui_update(dt_iop_module_t *module)
@@ -3553,29 +3546,21 @@ void gui_init(dt_iop_module_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
-  g->btn_point_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_point_tool, CPF_STYLE_FLAT, NULL));
-  g_signal_connect(G_OBJECT (g->btn_point_tool), "toggled", G_CALLBACK (btn_make_radio_callback), self);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_point_tool), _("point tool: draw points"));
-  gtk_toggle_button_set_active(g->btn_point_tool, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_point_tool), FALSE, FALSE, 0);
+  g->btn_node_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("edit, add and delete nodes"), NULL,
+                                       G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
+                                       _liquify_cairo_paint_node_tool, hbox));
 
-  g->btn_line_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_line_tool, CPF_STYLE_FLAT, NULL));
-  g_signal_connect(G_OBJECT (g->btn_line_tool), "toggled", G_CALLBACK (btn_make_radio_callback), self);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_line_tool), _("line tool: draw lines"));
-  gtk_toggle_button_set_active(g->btn_line_tool, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_line_tool), FALSE, FALSE, 0);
+  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("draw curves"), NULL,
+                                        G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
+                                        _liquify_cairo_paint_curve_tool, hbox));
 
-  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_curve_tool, CPF_STYLE_FLAT, NULL));
-  g_signal_connect(G_OBJECT (g->btn_curve_tool), "toggled", G_CALLBACK (btn_make_radio_callback), self);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_curve_tool), _("curve tool: draw curves"));
-  gtk_toggle_button_set_active(g->btn_curve_tool, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_curve_tool), FALSE, FALSE, 0);
+  g->btn_line_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("draw lines"), NULL,
+                                       G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
+                                       _liquify_cairo_paint_line_tool, hbox));
 
-  g->btn_node_tool = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(_liquify_cairo_paint_node_tool, CPF_STYLE_FLAT, NULL));
-  g_signal_connect(G_OBJECT(g->btn_node_tool), "toggled", G_CALLBACK (btn_make_radio_callback), self);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->btn_node_tool), _("node tool: edit, add and delete nodes"));
-  gtk_toggle_button_set_active(g->btn_node_tool, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_node_tool), FALSE, FALSE, 0);
+  g->btn_point_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("draw points"), NULL,
+                                         G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
+                                         _liquify_cairo_paint_point_tool, hbox));
 
   dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click: add node - right click: remove path\n"
                                                               "ctrl+alt+click: toggle line/curve");
@@ -3593,12 +3578,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_reset(dt_iop_module_t *self)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) self->gui_data;
-
-  gtk_toggle_button_set_active(g->btn_point_tool, FALSE);
-  gtk_toggle_button_set_active(g->btn_line_tool,  FALSE);
-  gtk_toggle_button_set_active(g->btn_curve_tool, FALSE);
-  gtk_toggle_button_set_active(g->btn_node_tool,  FALSE);
+  btn_make_radio_callback(NULL, NULL, self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -3609,24 +3589,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_pthread_mutex_destroy(&g->lock);
 
   IOP_GUI_FREE;
-}
-
-void init_key_accels(dt_iop_module_so_t *module)
-{
-  dt_accel_register_iop(module, FALSE, NC_("accel", "point tool"),     0, 0);
-  dt_accel_register_iop(module, FALSE, NC_("accel", "line tool"),      0, 0);
-  dt_accel_register_iop(module, FALSE, NC_("accel", "curve tool"),     0, 0);
-  dt_accel_register_iop(module, FALSE, NC_("accel", "node tool"),      0, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *module)
-{
-  const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-
-  dt_accel_connect_button_iop(module, "point tool",    GTK_WIDGET(g->btn_point_tool));
-  dt_accel_connect_button_iop(module, "line tool",     GTK_WIDGET(g->btn_line_tool));
-  dt_accel_connect_button_iop(module, "curve tool",    GTK_WIDGET(g->btn_curve_tool));
-  dt_accel_connect_button_iop(module, "node tool",     GTK_WIDGET(g->btn_node_tool));
 }
 
 // defgroup Button paint functions

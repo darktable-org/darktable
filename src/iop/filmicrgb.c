@@ -528,43 +528,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 }
 
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white exposure"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black exposure"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "middle grey luminance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dynamic range scaling"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "latitude"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows highlights balance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "extreme luminance saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target black luminance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target middle grey"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target white luminance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target power transfer function"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve chrominance"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "white exposure", GTK_WIDGET(g->white_point_source));
-  dt_accel_connect_slider_iop(self, "black exposure", GTK_WIDGET(g->black_point_source));
-  dt_accel_connect_slider_iop(self, "middle grey luminance", GTK_WIDGET(g->grey_point_source));
-  dt_accel_connect_slider_iop(self, "dynamic range scaling", GTK_WIDGET(g->security_factor));
-  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->contrast));
-  dt_accel_connect_slider_iop(self, "latitude", GTK_WIDGET(g->latitude));
-  dt_accel_connect_slider_iop(self, "shadows highlights balance", GTK_WIDGET(g->balance));
-  dt_accel_connect_slider_iop(self, "extreme luminance saturation", GTK_WIDGET(g->saturation));
-  dt_accel_connect_slider_iop(self, "target black luminance", GTK_WIDGET(g->black_point_target));
-  dt_accel_connect_slider_iop(self, "target middle grey", GTK_WIDGET(g->grey_point_target));
-  dt_accel_connect_slider_iop(self, "target white luminance", GTK_WIDGET(g->white_point_target));
-  dt_accel_connect_slider_iop(self, "target power transfer function", GTK_WIDGET(g->output_power));
-  dt_accel_connect_combobox_iop(self, "preserve chrominance", GTK_WIDGET(g->preserve_color));
-}
-
-
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
@@ -3478,7 +3441,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Auto tune slider
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
-  dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
+  dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
                                                 "works better for landscapes and evenly-lit pictures\n"
@@ -3514,7 +3477,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Highlight Reconstruction Mask
   g->show_highlight_mask = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->show_highlight_mask, NULL, _("display highlight reconstruction mask"));
+  dt_bauhaus_widget_set_label(g->show_highlight_mask, NULL, N_("display highlight reconstruction mask"));
   dt_bauhaus_widget_set_quad_paint(g->show_highlight_mask, dtgtk_cairo_paint_showmask,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->show_highlight_mask, TRUE);
@@ -3744,9 +3707,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(!w || w == g->version)
   {
     if(p->version == DT_FILMIC_COLORSCIENCE_V1)
-      dt_bauhaus_widget_set_label(g->saturation, NULL, _("extreme luminance saturation"));
+      dt_bauhaus_widget_set_label(g->saturation, NULL, N_("extreme luminance saturation"));
     else if(p->version == DT_FILMIC_COLORSCIENCE_V2)
-      dt_bauhaus_widget_set_label(g->saturation, NULL, _("middle tones saturation"));
+      dt_bauhaus_widget_set_label(g->saturation, NULL, N_("middle tones saturation"));
   }
 
   if(!w || w == g->reconstruct_bloom_vs_details)

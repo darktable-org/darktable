@@ -206,9 +206,9 @@ typedef struct dt_iop_denoiseprofile_params_t
   float bias;       /* allows to reduce backtransform bias
                        $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "bias correction" */
   float scattering; /* spread the patch search zone without increasing number of patches
-                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering (coarse-grain noise)" */
+                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering" */
   float central_pixel_weight; /* increase central pixel's weight in patch comparison
-                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight (details)" */
+                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight" */
   float overshooting; /* adjusts the way parameters are autoset
                          $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
@@ -608,34 +608,6 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "adjust autoset parameters"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "preserve shadows"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bias correction"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "patch size"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "search radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scattering"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "central pixel weight"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
-  dt_accel_connect_slider_iop(self, "adjust autoset parameters", GTK_WIDGET(g->overshooting));
-  dt_accel_connect_slider_iop(self, "preserve shadows", GTK_WIDGET(g->shadows));
-  dt_accel_connect_slider_iop(self, "bias correction", GTK_WIDGET(g->bias));
-  dt_accel_connect_slider_iop(self, "patch size", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "search radius", GTK_WIDGET(g->nbhood));
-  dt_accel_connect_slider_iop(self, "scattering", GTK_WIDGET(g->scattering));
-  dt_accel_connect_slider_iop(self, "central pixel weight", GTK_WIDGET(g->central_pixel_weight));
-  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
 }
 
 typedef union floatint_t
@@ -3933,14 +3905,14 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->profile = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(g->profile, NULL, N_("profile"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
 
   g->wb_adaptive_anscombe = dt_bauhaus_toggle_from_params(self, "wb_adaptive_anscombe");
 
   g->mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(g->mode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means auto"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));

@@ -419,9 +419,8 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
       dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY, mod, &_history_invalidate_cb);
 
       // we cleanup the module
-      dt_accel_disconnect_list(&mod->accel_closures);
-      dt_accel_cleanup_locals_iop(mod);
-      mod->accel_closures = NULL;
+      dt_accel_cleanup_closures_iop(mod);
+
       // don't delete the module, a pipe may still need it
       dev->alliop = g_list_append(dev->alliop, mod);
 

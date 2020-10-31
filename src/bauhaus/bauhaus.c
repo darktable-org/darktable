@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -582,6 +583,8 @@ void dt_bauhaus_init()
   darktable.bauhaus->key_val = NULL;
   memset(darktable.bauhaus->key_history, 0, sizeof(darktable.bauhaus->key_history));
 
+  darktable.bauhaus->skip_accel = 0;
+
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   // but this doesn't flicker, and the above hack with key input seems to work well.
@@ -841,14 +844,46 @@ void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min,
   d->hard_max = hard_max;
 }
 
-void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
+void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, const char *label_orig)
 {
+  const char *section = _(section_orig);
+  const char *label = _(label_orig);
+
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
   g_strlcpy(w->label, label, sizeof(w->label));
 
   if(w->module)
   {
+    if(!darktable.bauhaus->skip_accel && (!section_orig || strcmp("blend", section_orig)))
+    {
+      gchar *combined_label = section_orig
+                            ? g_strdup_printf("%s`%s", section_orig, label_orig)
+                            : g_strdup(label_orig);
+      if(darktable.control->accel_initialising)
+      {
+        if(w->type == DT_BAUHAUS_SLIDER)
+        {
+          dt_accel_register_slider_iop(w->module->so, FALSE, combined_label);
+        }
+        else if(w->type == DT_BAUHAUS_COMBOBOX)
+        {
+          dt_accel_register_combobox_iop(w->module->so, FALSE, combined_label);
+        }
+      }
+      else
+      {
+        if(w->type == DT_BAUHAUS_SLIDER)
+        {
+          dt_accel_connect_slider_iop(w->module, combined_label, widget);
+        }
+        else if(w->type == DT_BAUHAUS_COMBOBOX)
+        {
+          dt_accel_connect_combobox_iop(w->module, combined_label, widget);
+        }
+      }
+    }
+
     // construct control path name and insert into keymap:
     gchar *path;
     if(section && section[0] != '\0')
