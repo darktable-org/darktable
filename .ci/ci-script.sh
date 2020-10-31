@@ -22,7 +22,7 @@
 #   INSTALL_DIR - the installation prefix.
 #   SRC_DIR - read-only directory with git checkout to compile
 #   CC, CXX, CFLAGS, CXXFLAGS are not required, should make sense too
-#   TARGET - either build, notest or usermanual
+#   TARGET - either build, skiptest, nofeatures or usermanual
 #   ECO - some other flags for cmake
 
 set -ex
@@ -94,8 +94,33 @@ case "$TARGET" in
     cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" -DVALIDATE_APPDATA_FILE=ON -DBUILD_TESTING=ON "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
     target_build
     ;;
-  "notest")
+  "skiptest")
     cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" $ECO "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
+    target_notest
+    ;;
+  "nofeatures"
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
+      -G"$GENERATOR" \
+      -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
+      -DUSE_OPENMP=OFF \
+      -DUSE_OPENCL=OFF \
+      -DUSE_LUA=OFF \
+      -DUSE_GAME=OFF \
+      -DUSE_CAMERA_SUPPORT=OFF \
+      -DUSE_NLS=OFF \
+      -DUSE_GRAPHICSMAGICK=OFF \
+      -DUSE_OPENJPEG=OFF \
+      -DUSE_WEBP=OFF \
+      -DUSE_AVIF=OFF \
+      -DUSE_XCF=OFF \
+      -DBUILD_CMSTEST=OFF \
+      -DUSE_OPENEXR=OFF \
+      -DBUILD_PRINT=OFF \
+      -DBUILD_RS_IDENTIFY=OFF \
+      -DUSE_LENSFUN=OFF \
+      -DUSE_GMIC=OFF \
+      -DUSE_LIBSECRET=OFF \
+      $ECO "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
     target_notest
     ;;
   "usermanual")

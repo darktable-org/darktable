@@ -59,7 +59,7 @@ jobs:
     os: osx
     osx_image: xcode11
     env:
-      - TARGET=notest
+      - TARGET=skiptest
       - ECO="-DUSE_OPENMP=OFF"
   - name: "Worst OS Evar"
     os: windows
@@ -94,12 +94,14 @@ jobs:
     os: linux
     compiler: gcc
     env:
-      - TARGET=notest
+      - TARGET=skiptest
       - CMAKE_BUILD_TYPE="Debug"
   - name: "GCC9 Disabled OpenMP/OpenCL/LUA"
     os: linux
     compiler: gcc
-    env: ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
+    env: 
+      - ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
+      - TARGET=nofeatures
   - name: "Usermanual"
     os: linux
     dist: bionic

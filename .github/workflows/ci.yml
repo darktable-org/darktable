@@ -8,7 +8,7 @@ on:
 
 jobs:
   windows-msys2:
-    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.eco.name }}.${{ matrix.btype }}
+    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -18,41 +18,18 @@ jobs:
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
           - { compiler: LLVM, CC: clang, CXX: clang++ }
+        target:
+          - skiptest
+          - nofeatures
         #Release works on GNU & LLVM, Debug only on GNU. todo: use if to exclude
-        eco:
-          - {
-              name: normal,
-              defines: ""
-            }
-          - {
-              name: "NoEverything",
-              defines: 
-                -DUSE_OPENMP=OFF 
-                -DUSE_OPENCL=OFF 
-                -DUSE_LUA=OFF 
-                -DUSE_GAME=OFF 
-                -DUSE_CAMERA_SUPPORT=OFF 
-                -DUSE_NLS=OFF 
-                -DUSE_GRAPHICSMAGICK=OFF 
-                -DUSE_OPENJPEG=OFF 
-                -DUSE_WEBP=OFF 
-                -DUSE_AVIF=OFF 
-                -DUSE_XCF=OFF 
-                -DBUILD_CMSTEST=OFF 
-                -DUSE_OPENEXR=OFF 
-                -DBUILD_PRINT=OFF 
-                -DBUILD_RS_IDENTIFY=OFF 
-                -DUSE_LENSFUN=OFF 
-                -DUSE_GMIC=OFF 
-                -DUSE_LIBSECRET=OFF
-            }
         include:
           - btype: Release
             compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
-            eco: { name: binpkg, defines: -DBINARY_PACKAGE_BUILD=ON }
+            eco: -DBINARY_PACKAGE_BUILD=ON
+            target: skiptest
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
-            eco: { name: normal, defines: "" }
+            target: skiptest
     defaults:
       run:
         shell: msys2 {0}
@@ -116,33 +93,33 @@ jobs:
           SRC_DIR: ${{ github.workspace }}
           BUILD_DIR: ${{ github.workspace }}/build
           INSTALL_PREFIX: ${{ github.workspace }}/install
-          ECO: ${{ matrix.eco.defines }}
+          ECO: ${{ matrix.eco }}
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: "MSYS Makefiles"
-          TARGET: notest
+          TARGET: ${{ matrix.target }}
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
       - name: Package
-        if: ${{ success() && matrix.btype == 'Release' && matrix.eco.name == 'binpkg' }}
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         env:
           CC: ${{ matrix.compiler.CC }}
           CXX: ${{ matrix.compiler.CXX }}
           SRC_DIR: ${{ github.workspace }}
           BUILD_DIR: ${{ github.workspace }}/build
           INSTALL_PREFIX: ${{ github.workspace }}/install
-          ECO: ${{ matrix.eco.defines }}
+          ECO: ${{ matrix.eco }}
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: "MSYS Makefiles"
-          TARGET: notest
+          TARGET: ${{ matrix.target }}
         run: |
           lensfun-update-data
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
       - name: Package upload
-        if: ${{ success() && matrix.btype == 'Release' && matrix.eco.name == 'binpkg' }}
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: 'actions/upload-artifact@v2'
         with:
           name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.btype}}.${{ github.sha }}
@@ -150,7 +127,7 @@ jobs:
           retention-days: 1
 
   macOS:
-    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
+    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -159,6 +136,9 @@ jobs:
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ RelWithDebInfo ]
+        target:
+          - skiptest
+          - nofeatures
     steps:
       - uses: actions/checkout@v2
         with:
@@ -178,7 +158,7 @@ jobs:
           INSTALL_PREFIX: ${{ github.workspace }}/install
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: Ninja
-          TARGET: notest
+          TARGET: ${{ matrix.target }}
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
