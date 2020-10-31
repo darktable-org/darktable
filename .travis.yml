@@ -46,27 +46,7 @@ env:
 
 jobs:
  fast_finish: true
- exclude:
-  - os: osx
-    #compiler: gcc
-  - os: windows
- #temporary
- allow_failures:
-  - os: windows
  include:
-  # order long jobs first - probably this could speed up travis builds
-  - name: "OSX"
-    os: osx
-    osx_image: xcode11
-    env:
-      - TARGET=skiptest
-      - ECO="-DUSE_OPENMP=OFF"
-  - name: "Worst OS Evar"
-    os: windows
-    compiler: clang
-    env: 
-      - GENERATOR="MSYS Makefiles"
-      - CC=clang CXX=clang++
   - name: "Linux Clang10"
     os: linux
     compiler: clang
@@ -96,11 +76,10 @@ jobs:
     env:
       - TARGET=skiptest
       - CMAKE_BUILD_TYPE="Debug"
-  - name: "GCC9 Disabled OpenMP/OpenCL/LUA"
+  - name: "GCC9 Disabled all features"
     os: linux
     compiler: gcc
     env: 
-      - ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF"
       - TARGET=nofeatures
   - name: "Usermanual"
     os: linux
@@ -128,114 +107,57 @@ addons:
 
 before_install:
 - |-
-    case $TRAVIS_OS_NAME in
-      windows)
-        [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
-        choco uninstall -y mingw
-        choco upgrade --no-progress -y msys2
-        export msys2='cmd //C RefreshEnv.cmd '
-        export msys2+='& set MSYS=winsymlinks:nativestrict '
-        export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
-        export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
-        export msys2+=" -msys2 -full-path -here -c "\"\$@"\" --"
-        $msys2 pacman --sync --noconfirm --needed base-devel
-        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-toolchain
-        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-clang
-        $msys2 pacman -Ql mingw-w64-x86_64-clang
-        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-cmake
-        $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-nsis
-        ## Install more MSYS2 packages from https://packages.msys2.org/base here
-        $msys2 pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
-        $msys2 pacman -S --needed --noconfirm mingw-w64-x86_64-openmp
-        ## taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
-        export PATH=/C/tools/msys64/mingw64/bin:$PATH
-        export PATH=/mingw64/bin:$PATH
-        ## export MAKE=mingw32-make  # so that Autotools can find it
-        ;;
-      linux)
-        sudo apt-get install \
-          appstream-util \
-          desktop-file-utils \
-          gettext \
-          git \
-          intltool \
-          libatk1.0-dev \
-          libcairo2-dev \
-          libcolord-dev \
-          libcolord-gtk-dev \
-          libcmocka-dev \
-          libcups2-dev \
-          libcurl4-gnutls-dev \
-          libexiv2-dev \
-          libflickcurl-dev \
-          libgdk-pixbuf2.0-dev \
-          libglib2.0-dev \
-          libgphoto2-dev \
-          libgraphicsmagick1-dev \
-          libgtk-3-dev \
-          libjpeg-dev \
-          libjson-glib-dev \
-          liblcms2-dev \
-          liblensfun-dev \
-          liblua5.2-dev \
-          liblua5.3-dev \
-          libopenexr-dev \
-          libopenjp2-7-dev \
-          libosmgpsmap-1.0-dev \
-          libpango1.0-dev \
-          libpng-dev \
-          libpugixml-dev \
-          librsvg2-dev \
-          libsaxon-java \
-          libsecret-1-dev \
-          libsoup2.4-dev \
-          libsqlite3-dev \
-          libtiff5-dev \
-          libwebp-dev \
-          libx11-dev \
-          libxml2-dev \
-          libxml2-utils \
-          ninja-build \
-          perl \
-          po4a \
-          python3-jsonschema \
-          xsltproc \
-          zlib1g-dev;
-        ;;
-      osx)
-        brew update && brew tap Homebrew/bundle && cd .ci && brew bundle --verbose;
-        ;;
-    esac
-
-before_cache:
-- |-
-    case $TRAVIS_OS_NAME in
-      windows)
-        # https://unix.stackexchange.com/a/137322/107554
-        $msys2 pacman --sync --clean --noconfirm
-        ;;
-    esac
-
-cache:
-  directories:
-    - $HOME/AppData/Local/Temp/chocolatey
-    - /C/tools/msys64
-    - $HOME/Library/Caches/Homebrew
+  sudo apt-get install \
+    appstream-util \
+    desktop-file-utils \
+    gettext \
+    git \
+    intltool \
+    libatk1.0-dev \
+    libcairo2-dev \
+    libcolord-dev \
+    libcolord-gtk-dev \
+    libcmocka-dev \
+    libcups2-dev \
+    libcurl4-gnutls-dev \
+    libexiv2-dev \
+    libflickcurl-dev \
+    libgdk-pixbuf2.0-dev \
+    libglib2.0-dev \
+    libgphoto2-dev \
+    libgraphicsmagick1-dev \
+    libgtk-3-dev \
+    libjpeg-dev \
+    libjson-glib-dev \
+    liblcms2-dev \
+    liblensfun-dev \
+    liblua5.2-dev \
+    liblua5.3-dev \
+    libopenexr-dev \
+    libopenjp2-7-dev \
+    libosmgpsmap-1.0-dev \
+    libpango1.0-dev \
+    libpng-dev \
+    libpugixml-dev \
+    librsvg2-dev \
+    libsaxon-java \
+    libsecret-1-dev \
+    libsoup2.4-dev \
+    libsqlite3-dev \
+    libtiff5-dev \
+    libwebp-dev \
+    libx11-dev \
+    libxml2-dev \
+    libxml2-utils \
+    ninja-build \
+    perl \
+    po4a \
+    python3-jsonschema \
+    xsltproc \
+    zlib1g-dev;
 
 script:
-- |-
-    case $TRAVIS_OS_NAME in
-      linux|osx)
-        mkdir "$BUILD_DIR";
-        mkdir "$INSTALL_PREFIX";
-        "$SRC_DIR/.ci/ci-script.sh";
-        ;;
-      windows)
-        $msys2 mkdir "$BUILD_DIR";
-        $msys2 mkdir "$INSTALL_PREFIX";
-        $msys2 "$SRC_DIR/.ci/ci-script.sh";
-        ;;
-    esac
-
-# after_script:
-#  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then taskkill //F //PID $(ps -Wla | tr -s ' ' | grep gpg | cut -f2 -d' ') ; fi
+- 
+  mkdir "$BUILD_DIR"
+  mkdir "$INSTALL_PREFIX"
+  "$SRC_DIR/.ci/ci-script.sh"

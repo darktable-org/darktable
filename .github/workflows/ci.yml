@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  windows-msys2:
+  Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
@@ -127,12 +127,11 @@ jobs:
           retention-days: 1
 
   macOS:
-    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
+    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
+    runs-on: macos-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        os: [ macos-latest ]
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ RelWithDebInfo ]
