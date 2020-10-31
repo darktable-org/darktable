@@ -641,7 +641,14 @@ void dt_accel_widget_toast(GtkWidget *widget)
 
     g_free(text);
   }
-
+  else
+  {
+    GtkWidget *box = gtk_widget_get_parent(widget);
+    GtkWidget *notebook = gtk_widget_get_parent(box);
+    if(GTK_IS_NOTEBOOK(notebook))
+      gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook),
+                                    gtk_notebook_page_num(GTK_NOTEBOOK(notebook), box));
+  }
 }
 
 float dt_accel_get_slider_scale_multiplier()
