@@ -8,10 +8,11 @@ on:
 
 jobs:
   windows-msys2:
-    name: win.${{ matrix.compiler.compiler }}.${{ matrix.eco.name }}
+    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.eco.name }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os }}
+    if: (matrix.compiler.compiler != 'LLVM' || matrix.btype != 'Debug') && !( matrix.eco.name == 'binpkg' && matrix.btype != 'Release' )
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ windows-latest ]
         msys2:
@@ -19,7 +20,7 @@ jobs:
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
           - { compiler: LLVM, CC: clang, CXX: clang++ }
-        btype: [ RelWithDebInfo ]
+        btype: [ RelWithDebInfo, Release, Debug ]
         #Release works on GNU & LLVM, Debug only on GNU. todo: use if to exclude
         eco:
           - {
@@ -27,13 +28,31 @@ jobs:
               defines: ""
             }
           - {
-              name: NoLUA,
-              defines: -DUSE_LUA=OFF
+              name: binpkg,
+              defines: -DBINARY_PACKAGE_BUILD=ON
             }
           - {
               name: "NoEverything",
-              defines: "-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF -DUSE_LUA=OFF -DUSE_GAME=OFF -DUSE_CAMERA_SUPPORT=OFF -DUSE_NLS=OFF -DUSE_GRAPHICSMAGICK=OFF -DUSE_OPENJPEG=OFF -DUSE_WEBP=OFF -DUSE_AVIF=OFF -DUSE_XCF=OFF -DBUILD_CMSTEST=OFF -DUSE_OPENEXR=OFF -DBUILD_PRINT=OFF -DBUILD_RS_IDENTIFY=OFF -DUSE_LENSFUN=OFF -DUSE_GMIC=OFF -DUSE_LIBSECRET=OFF"
-           }
+              defines: 
+                -DUSE_OPENMP=OFF 
+                -DUSE_OPENCL=OFF 
+                -DUSE_LUA=OFF 
+                -DUSE_GAME=OFF 
+                -DUSE_CAMERA_SUPPORT=OFF 
+                -DUSE_NLS=OFF 
+                -DUSE_GRAPHICSMAGICK=OFF 
+                -DUSE_OPENJPEG=OFF 
+                -DUSE_WEBP=OFF 
+                -DUSE_AVIF=OFF 
+                -DUSE_XCF=OFF 
+                -DBUILD_CMSTEST=OFF 
+                -DUSE_OPENEXR=OFF 
+                -DBUILD_PRINT=OFF 
+                -DBUILD_RS_IDENTIFY=OFF 
+                -DUSE_LENSFUN=OFF 
+                -DUSE_GMIC=OFF 
+                -DUSE_LIBSECRET=OFF
+            }
     defaults:
       run:
         shell: msys2 {0}
@@ -88,6 +107,7 @@ jobs:
             mingw-w64-${{ matrix.msys2.arch }}-python3-jsonschema
             mingw-w64-${{ matrix.msys2.arch }}-python3-setuptools
             mingw-w64-${{ matrix.msys2.arch }}-gmic
+            mingw-w64-${{ matrix.msys2.arch }}-nsis
           update: true
       - name: Build and Install
         env:
@@ -105,11 +125,30 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
-        #  cd "${BUILD_DIR}"
-        #  cmake -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" -G"${GENERATOR}" -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" "${ECO}" "${SRC_DIR}"
-        #  cmake --build "${BUILD_DIR}" -- ${MAKEFLAGS} || cmake --build "${BUILD_DIR}" -- -j1 "${VERBOSE}" "${KEEPGOING}"
-        #  cmake --build "${BUILD_DIR}" --target install -- ${MAKEFLAGS} || cmake --build "${BUILD_DIR}" --target install -- -j1 "${VERBOSE}" "${KEEPGOING}"
-        # $(cygpath ${SRC_DIR})/.ci/ci-script.sh
+      - name: Package
+        if: ${{ success() && matrix.btype == 'Release' && matrix.eco.name == 'binpkg' }}
+        env:
+          CC: ${{ matrix.compiler.CC }}
+          CXX: ${{ matrix.compiler.CXX }}
+          SRC_DIR: ${{ github.workspace }}
+          BUILD_DIR: ${{ github.workspace }}/build
+          INSTALL_PREFIX: ${{ github.workspace }}/install
+          ECO: ${{ matrix.eco.defines }}
+          CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+          GENERATOR: "MSYS Makefiles"
+          TARGET: notest
+        run: |
+          lensfun-update-data
+          cd "${BUILD_DIR}"
+          cmake --build "${BUILD_DIR}" --target package
+      - name: Package upload
+        if: ${{ success() && matrix.btype == 'Release' && matrix.eco.name == 'binpkg' }}
+        uses: 'actions/upload-artifact@v2'
+        with:
+          name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.btype}}.${{ github.sha }}
+          path: ${{ github.workspace }}/build/darktable-*.exe
+          retention-daus: 1
+
   macOS:
     name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os }}
