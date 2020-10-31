@@ -147,7 +147,7 @@ jobs:
         with:
           name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.btype}}.${{ github.sha }}
           path: ${{ github.workspace }}/build/darktable-*.exe
-          retention-daus: 1
+          retention-days: 1
 
   macOS:
     name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
