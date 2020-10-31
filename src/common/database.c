@@ -276,10 +276,10 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   int i = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int rowid = sqlite3_column_int(stmt, 0);
+    const int rowid = sqlite3_column_int(stmt, 0);
     const char *name = (const char *)sqlite3_column_text(stmt, 1);
     const char *operation = (const char *)sqlite3_column_text(stmt, 2);
-    int op_version = sqlite3_column_int(stmt, 3);
+    const int op_version = sqlite3_column_int(stmt, 3);
 
     // is it still the same (name, operation, op_version) triple?
     if(!last_name || strcmp(last_name, name) || !last_operation || strcmp(last_operation, operation)
@@ -344,7 +344,7 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   sqlite3_prepare_v2(db->handle, "UPDATE main.images SET filename = ?1 WHERE id = ?2", -1, &innerstmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int id = sqlite3_column_int(stmt, 0);
+    const int id = sqlite3_column_int(stmt, 0);
     const char *path = (const char *)sqlite3_column_text(stmt, 1);
     gchar *filename = g_path_get_basename(path);
     sqlite3_bind_text(innerstmt, 1, filename, -1, SQLITE_TRANSIENT);
@@ -732,8 +732,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // first rename presets with (name, operation, op_version) not being unique
     while(sqlite3_step(select_stmt) == SQLITE_ROW)
     {
-      int own_rowid = sqlite3_column_int(select_stmt, 0);
-      int other_rowid = sqlite3_column_int(select_stmt, 1);
+      const int own_rowid = sqlite3_column_int(select_stmt, 0);
+      const int other_rowid = sqlite3_column_int(select_stmt, 1);
       int preset_version = 0;
 
       do
@@ -757,7 +757,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       int preset_version = 0;
-      int rowid = sqlite3_column_int(stmt, 0);
+      const int rowid = sqlite3_column_int(stmt, 0);
 
       do
       {
@@ -835,7 +835,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      int id = sqlite3_column_int(stmt, 0);
+      const int id = sqlite3_column_int(stmt, 0);
       const char *name = (const char *)sqlite3_column_text(stmt, 1);
 
       // find a unique name of the style for data.styles
@@ -875,7 +875,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
       sqlite3_bind_int(select_new_stmt, 1, last_rowid);
       TRY_STEP(select_new_stmt, SQLITE_ROW, "[init] can't select new style from data database\n");
-      int new_id = sqlite3_column_int(select_new_stmt, 0);
+      const int new_id = sqlite3_column_int(select_new_stmt, 0);
 
       // now that we have the style over in data.styles and the new id we can just copy over all style items
       sqlite3_bind_int(copy_style_items_stmt, 1, new_id);
@@ -2085,7 +2085,7 @@ static void _sanitize_db(dt_database_t *db)
   sqlite3_prepare_v2(db->handle, "UPDATE data.tags SET name = ?1 WHERE id = ?2", -1, &innerstmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int id = sqlite3_column_int(stmt, 0);
+    const int id = sqlite3_column_int(stmt, 0);
     const char *tag = (const char *)sqlite3_column_text(stmt, 1);
 
     if(!g_utf8_validate(tag, -1, NULL))
@@ -2413,19 +2413,19 @@ void dt_database_backup(const char *filename)
   {
     GFile *src = g_file_new_for_path(filename);
     GFile *dest = g_file_new_for_path(backup);
-    gboolean copyStatus = TRUE;
+    gboolean copy_status = TRUE;
     if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
-      copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
-      if(copyStatus) copyStatus = g_chmod(backup, S_IRUSR) == 0;
+      copy_status = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+      if(copy_status) copy_status = g_chmod(backup, S_IRUSR) == 0;
     }
     else
     {
       // there is nothing to backup, create an empty file to prevent further backup attempts
       int fd = g_open(backup, O_CREAT, S_IRUSR);
-      if(fd < 0 || !g_close(fd, &gerror)) copyStatus = FALSE;
+      if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
     }
-    if(!copyStatus) fprintf(stderr, "[backup failed] %s -> %s\n", filename, backup);
+    if(!copy_status) fprintf(stderr, "[backup failed] %s -> %s\n", filename, backup);
 
     g_object_unref(src);
     g_object_unref(dest);
@@ -2737,7 +2737,7 @@ start:
 
       gtk_widget_show_all(content_area);
 
-      int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+      const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
       gtk_widget_destroy(dialog);
 
@@ -2769,19 +2769,19 @@ start:
         {
           GFile *src = g_file_new_for_path(data_snap);
           GFile *dest = g_file_new_for_path(dbfilename_data);
-          gboolean copyStatus = TRUE;
+          gboolean copy_status = TRUE;
           if(g_file_test(data_snap, G_FILE_TEST_EXISTS))
           {
-            copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
-            if(copyStatus) copyStatus = g_chmod(dbfilename_data, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
+            copy_status = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+            if(copy_status) copy_status = g_chmod(dbfilename_data, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
           }
           else
           {
             // there is nothing to restore, create an empty file
-            int fd = g_open(dbfilename_data, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-            if(fd < 0 || !g_close(fd, &gerror)) copyStatus = FALSE;
+            const int fd = g_open(dbfilename_data, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
           }
-          if(copyStatus)
+          if(copy_status)
             fprintf(stderr, " success!\n");
           else
             fprintf(stderr, " failed!\n");
@@ -2915,7 +2915,7 @@ start:
 
     gtk_widget_show_all(content_area);
 
-    int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+    const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
     gtk_widget_destroy(dialog);
 
@@ -2947,19 +2947,19 @@ start:
       {
         GFile *src = g_file_new_for_path(data_snap);
         GFile *dest = g_file_new_for_path(dbfilename_library);
-        gboolean copyStatus = TRUE;
+        gboolean copy_status = TRUE;
         if(g_file_test(data_snap, G_FILE_TEST_EXISTS))
         {
-          copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
-          if(copyStatus) copyStatus = g_chmod(dbfilename_library, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
+          copy_status = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+          if(copy_status) copy_status = g_chmod(dbfilename_library, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
         }
         else
         {
           // there is nothing to restore, create an empty file to prevent further backup attempts
           const int fd = g_open(dbfilename_library, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-          if(fd < 0 || !g_close(fd, &gerror)) copyStatus = FALSE;
+          if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
         }
-        if(copyStatus)
+        if(copy_status)
           fprintf(stderr, " success!\n");
         else
           fprintf(stderr, " failed!\n");
@@ -3339,13 +3339,13 @@ static int _backup_db(
   void(*xProgress)(int, int)  /* Progress function to invoke */
 )
 {
-  int rc;                     /* Function return code */
   sqlite3 *dest_db;             /* Database connection opened on zFilename */
   sqlite3_backup *sb_dest;    /* Backup handle used to copy data */
 
   /* Open the database file identified by zFilename. */
-  rc = sqlite3_open(dest_filename, &dest_db);
-  if(rc==SQLITE_OK)
+  int rc = sqlite3_open(dest_filename, &dest_db);
+
+  if(rc == SQLITE_OK)
   {
     /* Open the sqlite3_backup object used to accomplish the transfer */
     sb_dest = sqlite3_backup_init(dest_db, "main", src_db, src_db_name);
@@ -3526,7 +3526,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
         g_object_unref(info);
         continue;
       }
-      guint64 try_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      const guint64 try_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
       if(try_snap > last_snap)
       {
         last_snap = try_snap;
