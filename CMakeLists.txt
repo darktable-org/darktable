@@ -271,7 +271,7 @@ if(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
   message(STATUS "Missing intltool-merge")
   set(EXTERNAL_PROGRAMS_FOUND 0)
 else(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
-  message(STATUS "Found intltool-merge in ${intltool_merge_BIN}")
+  message(STATUS "Found intltool-merge")
 endif(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
 
 # we need desktop-file-validate to check darktable.desktop
