@@ -630,7 +630,7 @@ void dt_accel_widget_toast(GtkWidget *widget)
       else if(w->module)
         dt_toast_log(_("%s / %s"), w->module->name(), text);
       else
-        dt_toast_log(_("%s"), text);
+        dt_toast_log("%s", text);
     }
 
     g_free(text);
