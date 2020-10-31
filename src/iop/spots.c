@@ -816,27 +816,6 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_masks_reset_form_gui();
 }
 
-void init_key_accels (dt_iop_module_so_t *module)
-{
-  dt_accel_register_iop (module, TRUE, N_("show or hide shapes"),  0, 0);
-}
-
-static gboolean _show_hide_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
-  return _edit_masks(g->bt_edit_masks, NULL, module);
-}
-
-void connect_key_accels (dt_iop_module_t *module)
-{
-  GClosure *closure;
-
-  closure = g_cclosure_new(G_CALLBACK(_show_hide_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "show or hide shapes", closure);
-}
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
