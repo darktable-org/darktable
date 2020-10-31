@@ -53,12 +53,15 @@ jobs:
                 -DUSE_LIBSECRET=OFF
             }
         exclude:
-          - compiler.compiler: LLVM
-            btype: Debug
-          - eco.name: binpkg
-            btype: Debug
-          - eco.name: binpkg
-            btype: RelWithDebInfo
+          - btype: Debug
+            compiler:
+              - compiler: LLVM
+          - btype: Debug
+            eco:
+              - name: binpkg
+          - btype: RelWithDebInfo
+            eco:
+              - name: binpkg
     defaults:
       run:
         shell: msys2 {0}
