@@ -281,6 +281,8 @@ typedef struct
   GtkLabel *label;
   GtkToggleButton *btn_point_tool, *btn_line_tool, *btn_curve_tool, *btn_node_tool;
 
+  gboolean creation_continuous;
+  gboolean just_started;
 } dt_iop_liquify_gui_data_t;
 
 
@@ -3158,6 +3160,30 @@ done:
   return handled;
 }
 
+static void _start_new_shape(dt_iop_module_t *module)
+{
+  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+
+  //  create initial shape at the center
+  float complex pt = 0.0f;
+  float scale = 1.0f;
+  get_point_scale(module, 0.5f * darktable.develop->width, 0.5f * darktable.develop->height, &pt, &scale);
+  float radius = 0.0f, r = 1.0f, phi = 0.0f;
+  get_stamp_params(module, &radius, &r, &phi);
+  //  start a new path
+  g->temp = alloc_move_to(module, pt);
+  g->temp->warp.radius = pt + radius;
+  g->temp->warp.strength = pt + r * cexp(phi * I);
+  g->status |= DT_LIQUIFY_STATUS_PREVIEW;
+  g->status |= DT_LIQUIFY_STATUS_NEW;
+
+  g->just_started = TRUE;
+
+
+  start_drag(g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
+  g->last_hit = NOWHERE;
+}
+
 int button_released(struct dt_iop_module_t *module,
                      double x,
                      double y,
@@ -3183,7 +3209,11 @@ int button_released(struct dt_iop_module_t *module,
     if(gtk_toggle_button_get_active(g->btn_point_tool))
     {
       g->temp = NULL; // a point is done
-      btn_make_radio_callback(g->btn_node_tool, NULL, module);
+
+      if(g->creation_continuous)
+        _start_new_shape(module);
+      else
+        btn_make_radio_callback(g->btn_node_tool, NULL, module);
       handled = dragged ? 2 : 1;
     }
     else if(gtk_toggle_button_get_active(g->btn_line_tool))
@@ -3199,6 +3229,7 @@ int button_released(struct dt_iop_module_t *module,
       g->temp->header.prev = prev_index;
       node_get(&g->params, prev_index)->header.next = g->node_index;
       start_drag(g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
+      g->just_started = FALSE;
       handled = 1;
     }
     else if(gtk_toggle_button_get_active(g->btn_curve_tool))
@@ -3219,6 +3250,7 @@ int button_released(struct dt_iop_module_t *module,
       g->temp->header.prev = prev_index;
       node_get(&g->params, prev_index)->header.next = g->node_index;
       start_drag(g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
+      g->just_started = FALSE;
       handled = 1;
     }
     g->status &= ~DT_LIQUIFY_STATUS_NEW;
@@ -3243,8 +3275,13 @@ int button_released(struct dt_iop_module_t *module,
     {
       node_delete(&g->params, g->temp);
       g->temp = NULL;
-      g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
-      btn_make_radio_callback(g->btn_node_tool, NULL, module);
+      if(g->creation_continuous && !g->just_started)
+        _start_new_shape(module);
+      else
+      {
+        g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
+        btn_make_radio_callback(g->btn_node_tool, NULL, module);
+      }
       handled = 2;
       goto done;
     }
@@ -3319,7 +3356,7 @@ int button_released(struct dt_iop_module_t *module,
         dt_liquify_path_data_t *prev = node_prev(&g->params, e);
         if(prev && e->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
-    // add node to curve
+          // add node to curve
           dt_liquify_path_data_t *curve1 = (dt_liquify_path_data_t *) e;
 
           dt_liquify_path_data_t *curve2 = (dt_liquify_path_data_t *)alloc_curve_to(module, 0);
@@ -3441,6 +3478,9 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
     return TRUE;
   }
 
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  g->creation_continuous = event != NULL && (event->state & modifiers) == GDK_CONTROL_MASK;
+
   dt_control_hinter_message(darktable.control, "");
 
   // if we are on a preview, it means that a form (point, line, curve) has been started, but no node has yet been placed.
@@ -3479,21 +3519,7 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
 
     if(btn == g->btn_point_tool || btn == g->btn_line_tool || btn == g->btn_curve_tool)
     {
-      //  create initial shape at the center
-      float complex pt = 0.0f;
-      float scale = 1.0f;
-      get_point_scale(module, 0.5f * darktable.develop->width, 0.5f * darktable.develop->height, &pt, &scale);
-      float radius = 0.0f, r = 1.0f, phi = 0.0f;
-      get_stamp_params(module, &radius, &r, &phi);
-      //  start a new path
-      g->temp = alloc_move_to(module, pt);
-      g->temp->warp.radius = pt + radius;
-      g->temp->warp.strength = pt + r * cexp(phi * I);
-      g->status |= DT_LIQUIFY_STATUS_PREVIEW;
-      g->status |= DT_LIQUIFY_STATUS_NEW;
-
-      start_drag(g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
-      g->last_hit = NOWHERE;
+      _start_new_shape(module);
     }
   }
   else
@@ -3550,15 +3576,15 @@ void gui_init(dt_iop_module_t *self)
                                        G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                        _liquify_cairo_paint_node_tool, hbox));
 
-  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("draw curves"), NULL,
+  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("draw curves"), N_("draw multiple curves"),
                                         G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                         _liquify_cairo_paint_curve_tool, hbox));
 
-  g->btn_line_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("draw lines"), NULL,
+  g->btn_line_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("draw lines"), N_("draw multiple lines"),
                                        G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                        _liquify_cairo_paint_line_tool, hbox));
 
-  g->btn_point_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("draw points"), NULL,
+  g->btn_point_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("draw points"), N_("draw multiple points"),
                                          G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                          _liquify_cairo_paint_point_tool, hbox));
 
@@ -3578,6 +3604,10 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_reset(dt_iop_module_t *self)
 {
+  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)self->gui_data;
+  g->dragging = NOWHERE;
+  g->temp = NULL;
+  g->status = 0;
   btn_make_radio_callback(NULL, NULL, self);
 }
 
