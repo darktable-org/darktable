@@ -98,7 +98,7 @@ case "$TARGET" in
     cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" $ECO "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
     target_notest
     ;;
-  "nofeatures"
+  "nofeatures")
     cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
       -G"$GENERATOR" \
       -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
