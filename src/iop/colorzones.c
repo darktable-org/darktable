@@ -153,24 +153,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "select by"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "process mode"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "interpolation method"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "mix", GTK_WIDGET(g->strength));
-  dt_accel_connect_combobox_iop(self, "select by", GTK_WIDGET(g->select_by));
-  dt_accel_connect_combobox_iop(self, "process mode", GTK_WIDGET(g->mode));
-  dt_accel_connect_combobox_iop(self, "interpolation method", GTK_WIDGET(g->interpolator));
-}
-
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
@@ -2457,7 +2439,7 @@ void gui_init(struct dt_iop_module_t *self)
     #define MONOTONE_HERMITE 2
   */
   c->interpolator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->interpolator, NULL, _("interpolation method"));
+  dt_bauhaus_widget_set_label(c->interpolator, NULL, N_("interpolation method"));
   dt_bauhaus_combobox_add(c->interpolator, _("cubic spline"));
   dt_bauhaus_combobox_add(c->interpolator, _("centripetal spline"));
   dt_bauhaus_combobox_add(c->interpolator, _("monotonic spline"));

@@ -50,15 +50,6 @@ void dt_accel_path_iop(char *s, size_t n, char *module, const char *path);
 void dt_accel_path_lib(char *s, size_t n, char *module, const char *path);
 void dt_accel_path_lua(char *s, size_t n, const char *path);
 void dt_accel_path_manual(char *s, size_t n, const char *full_path);
-/**
- * Accepts an array of 5 char*, writes the following paths to them
- * 0 - Slider increase path
- * 1 - Slider decrease path
- * 2 - Slider reset path
- * 3 - Slider edit path
- * 4 - Slider dynamic path
- */
-void dt_accel_paths_slider_iop(char *s[], size_t n, char *module, const char *path);
 
 // Accelerator search functions
 dt_accel_t *dt_accel_find_by_path(const gchar *path);
@@ -73,6 +64,7 @@ void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t
                                      guint accel_key, GdkModifierType mods);
 //register lib shortcut but make it look like a view shortcut
 void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods);
+void dt_accel_register_common_iop(dt_iop_module_so_t *so);
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
 void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods);
@@ -93,6 +85,7 @@ void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, Gtk
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *slider);
 void dt_accel_connect_combobox_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *combobox);
+void dt_accel_connect_instance_iop(dt_iop_module_t *module);
 void dt_accel_connect_locals_iop(dt_iop_module_t *module);
 void dt_accel_connect_preset_iop(dt_iop_module_t *so, const gchar *path);
 void dt_accel_connect_preset_lib(dt_lib_module_t *so, const gchar *path);
@@ -102,7 +95,7 @@ void dt_accel_connect_manual(GSList **list_ptr, const gchar *full_path, GClosure
 // Disconnect function
 void dt_accel_disconnect_list(GSList **accels_ptr);
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module);
-void dt_accel_cleanup_locals_iop(dt_iop_module_t *module);
+void dt_accel_cleanup_closures_iop(dt_iop_module_t *module);
 
 // Deregister functions
 void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path);

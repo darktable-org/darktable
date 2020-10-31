@@ -22,6 +22,7 @@
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/masks.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -271,10 +272,18 @@ static gboolean _add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_iop
 {
   if(darktable.gui->reset) return FALSE;
 
+  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) self->gui_data;
+
   GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
   const int creation_continuous = ((e->state & modifiers) == GDK_CONTROL_MASK);
 
-  return _add_shape(widget, creation_continuous, self);
+  _add_shape(widget, creation_continuous, self);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), _shape_is_being_added(self, DT_MASKS_CIRCLE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), _shape_is_being_added(self, DT_MASKS_ELLIPSE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), _shape_is_being_added(self, DT_MASKS_PATH));
+
+  return TRUE;
 }
 
 static gboolean _edit_masks(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
@@ -781,32 +790,21 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(hbox, _("click on a shape and drag on canvas.\nuse the mouse wheel "
                                       "to adjust size.\nright click to remove a shape."));
 
-  g->bt_edit_masks
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_edit_masks), "button-press-event", G_CALLBACK(_edit_masks), self);
-  gtk_widget_set_tooltip_text(g->bt_edit_masks, _("show and edit shapes"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), g->bt_edit_masks, FALSE, FALSE, 0);
+  g->bt_edit_masks = dt_iop_togglebutton_new(self, N_("show and edit shapes"), NULL,
+                                             G_CALLBACK(_edit_masks), TRUE, 0, 0,
+                                             dtgtk_cairo_paint_masks_eye, hbox);
 
-  g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_path, _("add path\nctrl+click to add multiple paths"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), g->bt_path, FALSE, FALSE, 0);
+  g->bt_path = dt_iop_togglebutton_new(self, N_("add path"), N_("add multiple paths"),
+                                       G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_masks_path, hbox);
 
-  g->bt_ellipse
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_ellipse, _("add ellipse\nctrl+click to add multiple ellipses"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), g->bt_ellipse, FALSE, FALSE, 0);
+  g->bt_ellipse = dt_iop_togglebutton_new(self, N_("add ellipse"), N_("add multiple ellipses"),
+                                       G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_masks_ellipse, hbox);
 
-  g->bt_circle
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_circle, _("add circle\nctrl+click to add multiple circles"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), g->bt_circle, FALSE, FALSE, 0);
+  g->bt_circle = dt_iop_togglebutton_new(self, N_("add circle"), N_("add multiple circles"),
+                                       G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_masks_circle, hbox);
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
@@ -816,111 +814,6 @@ void gui_reset(struct dt_iop_module_t *self)
 {
   // hide the previous masks
   dt_masks_reset_form_gui();
-}
-
-void init_key_accels (dt_iop_module_so_t *module)
-{
-  dt_accel_register_iop (module, TRUE, NC_("accel", "spot circle tool"),   0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "spot ellipse tool"),   0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "spot path tool"),     0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "continuous add circle"),   0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "continuous add ellipse"),   0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "continuous add path"),     0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "show or hide shapes"),  0, 0);
-}
-
-static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
-  _add_shape(GTK_WIDGET(g->bt_circle), 0, module);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), TRUE);
-  return TRUE;
-}
-
-static gboolean _add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                       GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
-  _add_shape(GTK_WIDGET(g->bt_ellipse), 0, module);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), TRUE);
-  return TRUE;
-}
-
-static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
-  _add_shape(GTK_WIDGET(g->bt_path), 0, module);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), TRUE);
-  return TRUE;
-}
-
-static gboolean _continuous_add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
-  _add_shape(GTK_WIDGET(g->bt_circle), 1, module);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), _shape_is_being_added(module, DT_MASKS_CIRCLE));
-  return TRUE;
-}
-
-static gboolean _continuous_add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                       GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
-  _add_shape(GTK_WIDGET(g->bt_ellipse), 1, module);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), _shape_is_being_added(module, DT_MASKS_ELLIPSE));
-  return TRUE;
-}
-
-static gboolean _continuous_add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
-  _add_shape(GTK_WIDGET(g->bt_path), 1, module);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), _shape_is_being_added(module, DT_MASKS_PATH));
-  return TRUE;
-}
-
-static gboolean _show_hide_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) module->gui_data;
-  return _edit_masks(g->bt_edit_masks, NULL, module);
-}
-
-void connect_key_accels (dt_iop_module_t *module)
-{
-  GClosure *closure;
-
-  closure = g_cclosure_new(G_CALLBACK(_add_circle_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "spot circle tool", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "spot ellipse tool", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "spot path tool", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_circle_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "continuous add circle", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "continuous add ellipse", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_path_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "continuous add path", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_show_hide_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "show or hide shapes", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

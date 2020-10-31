@@ -185,9 +185,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
 
 
     // commit all the user input fields
-    char path[1024];
-    snprintf(path, sizeof(path), "preset/%s", g->original_name);
-    dt_accel_rename_preset_lib(g->module, path, name);
+    dt_accel_rename_preset_lib(g->module, g->original_name, name);
     DT_DEBUG_SQLITE3_PREPARE_V2
       (dt_database_get(darktable.db),
        "INSERT INTO data.presets (name, description, operation, op_version, op_params,"

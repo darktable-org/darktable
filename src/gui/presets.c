@@ -213,7 +213,7 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *modul
   if(res == GTK_RESPONSE_YES)
   {
     char tmp_path[1024];
-    snprintf(tmp_path, sizeof(tmp_path), "%s/%s", _("preset"), name);
+    snprintf(tmp_path, sizeof(tmp_path), "%s`%s", N_("preset"), name);
     dt_accel_deregister_iop(module, tmp_path);
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
@@ -332,9 +332,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     }
 
     // rename accelerators
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/%s", _("preset"), g->original_name);
-    dt_accel_rename_preset_iop(g->module, path, name);
+    dt_accel_rename_preset_iop(g->module, g->original_name, name);
     // commit all the user input fields
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
@@ -430,6 +428,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module->name());
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
                                        _("_cancel"), GTK_RESPONSE_REJECT, _("_ok"), GTK_RESPONSE_ACCEPT, NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -445,10 +444,12 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   g->module = module;
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, name);
+  gtk_entry_set_activates_default(g->name, TRUE);
   gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->name), _("name of the preset"));
 
   g->description = GTK_ENTRY(gtk_entry_new());
+  gtk_entry_set_activates_default(g->description, TRUE);
   gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->description), _("description or further information"));
 
@@ -711,9 +712,10 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
   char path[1024];
-  snprintf(path, sizeof(path), "%s/%s", _("preset"), _("new preset"));
+  snprintf(path, sizeof(path), "%s`%s", N_("preset"), _("new preset"));
   dt_accel_register_iop(module->so, FALSE, path, 0, 0);
   dt_accel_connect_preset_iop(module, _("new preset"));
+  dt_accel_connect_instance_iop(module);
   // then show edit dialog
   edit_preset(_("new preset"), module);
 }

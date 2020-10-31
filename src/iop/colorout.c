@@ -118,18 +118,6 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
   return cst;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "export profile"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_combobox_iop(self, "export profile", GTK_WIDGET(g->output_profile));
-}
-
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -863,7 +851,7 @@ void gui_init(struct dt_iop_module_t *self)
   // TODO:
   g->output_intent = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_intent, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->output_intent, NULL, _("output intent"));
+  dt_bauhaus_widget_set_label(g->output_intent, NULL, N_("output intent"));
   dt_bauhaus_combobox_add(g->output_intent, _("perceptual"));
   dt_bauhaus_combobox_add(g->output_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(g->output_intent, C_("rendering intent", "saturation"));
@@ -876,7 +864,7 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   g->output_profile = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->output_profile, NULL, _("export profile"));
+  dt_bauhaus_widget_set_label(g->output_profile, NULL, N_("export profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {

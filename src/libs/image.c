@@ -555,7 +555,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->clear_metadata_button), "clicked", G_CALLBACK(clear_metadata_callback), self);
 
   GtkWidget *pastemode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(pastemode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(pastemode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(pastemode, _("merge"));
   dt_bauhaus_combobox_add(pastemode, _("overwrite"));
   gtk_widget_set_tooltip_text(pastemode, _("how to handle existing metadata"));

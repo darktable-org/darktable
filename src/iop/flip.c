@@ -33,7 +33,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "dtgtk/button.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
@@ -491,18 +491,6 @@ static void rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
 {
   do_rotate(self, 0);
 }
-static gboolean rotate_cw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                              GdkModifierType modifier, dt_iop_module_t *self)
-{
-  do_rotate(self, 1);
-  return TRUE;
-}
-static gboolean rotate_ccw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, dt_iop_module_t *self)
-{
-  do_rotate(self, 0);
-  return TRUE;
-}
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -514,35 +502,18 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *label = dtgtk_reset_label_new(_("rotate"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CCW"));
-  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
+  dt_iop_button_new(self, N_("rotate 90 degrees CCW"),
+                    G_CALLBACK(rotate_ccw), FALSE, GDK_KEY_bracketleft, 0,
+                    dtgtk_cairo_paint_refresh, 0, self->widget);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | 1, NULL);
-  gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CW"));
-  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);
+  dt_iop_button_new(self, N_("rotate 90 degrees CW"),
+                    G_CALLBACK(rotate_cw), FALSE, GDK_KEY_bracketright, 0,
+                    dtgtk_cairo_paint_refresh, 1, self->widget);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   self->gui_data = NULL;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees CCW"), GDK_KEY_bracketleft, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees CW"), GDK_KEY_bracketright, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  GClosure *closure;
-  closure = g_cclosure_new(G_CALLBACK(rotate_cw_key), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "rotate 90 degrees CW", closure);
-  closure = g_cclosure_new(G_CALLBACK(rotate_ccw_key), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "rotate 90 degrees CCW", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

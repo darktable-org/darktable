@@ -110,30 +110,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "linear"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gamma"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dynamic range"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "middle grey luma"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black relative exposure"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "safety factor"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "linear", GTK_WIDGET(g->linear));
-  dt_accel_connect_slider_iop(self, "gamma", GTK_WIDGET(g->gamma));
-  dt_accel_connect_slider_iop(self, "dynamic range", GTK_WIDGET(g->dynamic_range));
-  dt_accel_connect_slider_iop(self, "middle grey luma", GTK_WIDGET(g->grey_point));
-  dt_accel_connect_slider_iop(self, "black relative exposure", GTK_WIDGET(g->shadows_range));
-  dt_accel_connect_slider_iop(self, "safety factor", GTK_WIDGET(g->security_factor));
-  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
-}
-
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_profilegamma_params_t p;
@@ -731,7 +707,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is useful when noise perturbates the measurements"));
 
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
-  dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
+  dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->auto_button, TRUE, TRUE, 0);
 

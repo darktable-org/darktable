@@ -129,27 +129,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lightness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green-red"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue-yellow"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "target color"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->scale_L));
-  dt_accel_connect_slider_iop(self, "green-red", GTK_WIDGET(g->scale_a));
-  dt_accel_connect_slider_iop(self, "blue-yellow", GTK_WIDGET(g->scale_b));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale_C));
-  dt_accel_connect_combobox_iop(self, "target color", GTK_WIDGET(g->combobox_target));
-}
-
-
 int legacy_params(
     dt_iop_module_t  *self,
     const void *const old_params,
@@ -1356,7 +1335,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->patch = 0;
   g->drawn_patch = -1;
   g->combobox_patch = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->combobox_patch, NULL, _("patch"));
+  dt_bauhaus_widget_set_label(g->combobox_patch, NULL, N_("patch"));
   gtk_widget_set_tooltip_text(g->combobox_patch, _("color checker patch"));
   char cboxentry[1024];
   for(int k=0;k<p->num_patches;k++)
@@ -1369,29 +1348,29 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 200.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_L, _("lightness offset"));
-  dt_bauhaus_widget_set_label(g->scale_L, NULL, _("lightness"));
+  dt_bauhaus_widget_set_label(g->scale_L, NULL, N_("lightness"));
 
   g->scale_a = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_a, _("chroma offset green/red"));
-  dt_bauhaus_widget_set_label(g->scale_a, NULL, _("green/red"));
+  dt_bauhaus_widget_set_label(g->scale_a, NULL, N_("green/red"));
   dt_bauhaus_slider_set_stop(g->scale_a, 0.0, 0.0, 1.0, 0.2);
   dt_bauhaus_slider_set_stop(g->scale_a, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_a, 1.0, 1.0, 0.0, 0.2);
 
   g->scale_b = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_b, _("chroma offset blue/yellow"));
-  dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue/yellow"));
+  dt_bauhaus_widget_set_label(g->scale_b, NULL, N_("blue/yellow"));
   dt_bauhaus_slider_set_stop(g->scale_b, 0.0, 0.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 1.0, 1.0, 0.0);
 
   g->scale_C = dt_bauhaus_slider_new_with_range(self, -128.0, 128.0, 1.0f, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_C, _("saturation offset"));
-  dt_bauhaus_widget_set_label(g->scale_C, NULL, _("saturation"));
+  dt_bauhaus_widget_set_label(g->scale_C, NULL, N_("saturation"));
 
   g->absolute_target = 0;
   g->combobox_target = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->combobox_target, 0, _("target color"));
+  dt_bauhaus_widget_set_label(g->combobox_target, 0, N_("target color"));
   gtk_widget_set_tooltip_text(g->combobox_target, _("control target color of the patches via relative offsets or via absolute Lab values"));
   dt_bauhaus_combobox_add(g->combobox_target, _("relative"));
   dt_bauhaus_combobox_add(g->combobox_target, _("absolute"));

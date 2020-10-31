@@ -157,26 +157,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hardness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "density", GTK_WIDGET(g->density));
-  dt_accel_connect_slider_iop(self, "hardness", GTK_WIDGET(g->hardness));
-  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotation));
-  dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->hue));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
-}
-
 static inline float f(const float t, const float c, const float x)
 {
   return (t / (1.0f + powf(c, -x * 6.0f)) + (1.0f - t) * (x * .5f + .5f));

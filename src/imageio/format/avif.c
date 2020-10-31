@@ -804,7 +804,7 @@ void gui_init(dt_imageio_module_format_t *self)
    */
   gui->bit_depth = dt_bauhaus_combobox_new(NULL);
 
-  dt_bauhaus_widget_set_label(gui->bit_depth, NULL, _("bit depth"));
+  dt_bauhaus_widget_set_label(gui->bit_depth, NULL, N_("bit depth"));
   size_t idx = 0;
   for (size_t i = 0; avif_bit_depth[i].name != NULL; i++) {
     dt_bauhaus_combobox_add(gui->bit_depth,  _(avif_bit_depth[i].name));
@@ -846,7 +846,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gui->tiling = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gui->tiling,
                               NULL,
-                              _("tiling"));
+                              N_("tiling"));
   dt_bauhaus_combobox_add(gui->tiling,
                           _("on"));
   dt_bauhaus_combobox_add(gui->tiling,
@@ -871,7 +871,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gui->compression_type = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gui->compression_type,
                               NULL,
-                              _("compression type"));
+                              N_("compression type"));
   dt_bauhaus_combobox_add(gui->compression_type,
                           _(avif_get_compression_string(AVIF_COMP_LOSSLESS)));
   dt_bauhaus_combobox_add(gui->compression_type,
@@ -896,7 +896,7 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   1, /* step */
                                                   92, /* default */
                                                   0); /* digits */
-  dt_bauhaus_widget_set_label(gui->quality, NULL, _("quality"));
+  dt_bauhaus_widget_set_label(gui->quality,  NULL, N_("quality"));
   dt_bauhaus_slider_set_default(gui->quality, 95);
   dt_bauhaus_slider_set_format(gui->quality, "%.2f%%");
 
