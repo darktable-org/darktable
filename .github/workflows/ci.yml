@@ -10,7 +10,7 @@ jobs:
   windows-msys2:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.eco.name }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os }}
-    if: (matrix.compiler.compiler != 'LLVM' || matrix.btype != 'Debug') && !( matrix.eco.name == 'binpkg' && matrix.btype != 'Release' )
+    if: ${{ ( matrix.compiler.compiler != 'LLVM' || matrix.btype != 'Debug' ) && !( matrix.eco.name == 'binpkg' && matrix.btype != 'Release' ) }}
     strategy:
       fail-fast: true
       matrix:
