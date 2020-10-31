@@ -157,7 +157,7 @@ before_install:
     zlib1g-dev;
 
 script:
-- 
-  mkdir "$BUILD_DIR"
-  mkdir "$INSTALL_PREFIX"
-  "$SRC_DIR/.ci/ci-script.sh"
+- |-
+  mkdir "$BUILD_DIR";
+  mkdir "$INSTALL_PREFIX";
+  "$SRC_DIR/.ci/ci-script.sh";
