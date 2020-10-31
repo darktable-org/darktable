@@ -1887,7 +1887,7 @@ static GList *interpolate_paths(dt_iop_liquify_params_t *p)
 #define VERYTHINLINE  set_line_width (cr, (scale * pr_d) / 2.0f, DT_LIQUIFY_UI_WIDTH_THINLINE)
 #define THINLINE  set_line_width (cr, scale * pr_d, DT_LIQUIFY_UI_WIDTH_THINLINE)
 #define THICKLINE set_line_width (cr, scale * pr_d, DT_LIQUIFY_UI_WIDTH_THICKLINE)
-#define GET_UI_WIDTH_HITTEST(item) (GET_UI_WIDTH(item) * (do_hit_test ? 5.0f * darktable.develop->preview_downsampling / scale : 1.0f))
+#define GET_UI_WIDTH_HITTEST(item) (GET_UI_WIDTH(item) * (do_hit_test ? 20.0f * darktable.develop->preview_downsampling / scale : 1.0f))
 
 static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
                                      cairo_t *cr,
@@ -1897,7 +1897,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
                                      const float complex *pt)
 {
   const gboolean do_hit_test = pt != NULL;
-  const float pr_d = do_hit_test ? 5.0f * darktable.develop->preview_downsampling / scale : 1.0f;
+  const float pr_d = do_hit_test ? 20.0f * darktable.develop->preview_downsampling / scale : 1.0f;
 
   dt_liquify_hit_t hit = NOWHERE;
 
