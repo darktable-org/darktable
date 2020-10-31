@@ -19,7 +19,9 @@
 #include "develop/imageop_gui.h"
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
+#include "dtgtk/button.h"
 #include "gui/color_picker_proxy.h"
+#include "gui/accelerators.h"
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -134,6 +136,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
 
   size_t param_index = 0;
+  gboolean skip_label = FALSE;
 
   const size_t param_length = strlen(param) + 1;
   char *param_name = g_malloc(param_length);
@@ -141,6 +144,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   if(sscanf(param, "%[^[][%zu]", base_name, &param_index) == 2)
   {
     sprintf(param_name, "%s[0]", base_name);
+    skip_label = TRUE;
   }
   else
   {
@@ -226,19 +230,22 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
   if(f)
   {
-    if (*f->header.description)
+    if(!skip_label)
     {
-      // we do not want to support a context as it break all translations see #5498
-      // dt_bauhaus_widget_set_label(slider, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
-      dt_bauhaus_widget_set_label(slider, NULL, gettext(f->header.description));
-    }
-    else
-    {
-      str = dt_util_str_replace(f->header.field_name, "_", " ");
+      if (*f->header.description)
+      {
+        // we do not want to support a context as it break all translations see #5498
+        // dt_bauhaus_widget_set_label(slider, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
+        dt_bauhaus_widget_set_label(slider, NULL, f->header.description);
+      }
+      else
+      {
+        str = dt_util_str_replace(f->header.field_name, "_", " ");
 
-      dt_bauhaus_widget_set_label(slider, NULL, _(str));
+        dt_bauhaus_widget_set_label(slider,  NULL, str);
 
-      g_free(str);
+        g_free(str);
+      }
     }
   }
   else
@@ -276,13 +283,13 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     {
       // we do not want to support a context as it break all translations see #5498
       // dt_bauhaus_widget_set_label(combobox, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
-      dt_bauhaus_widget_set_label(combobox, NULL, gettext(f->header.description));
+      dt_bauhaus_widget_set_label(combobox, NULL, f->header.description);
     }
     else
     {
       str = dt_util_str_replace(f->header.field_name, "_", " ");
 
-      dt_bauhaus_widget_set_label(combobox, NULL, _(str));
+      dt_bauhaus_widget_set_label(combobox,  NULL, str);
 
       g_free(str);
     }
@@ -372,6 +379,108 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
 
   if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
+
+  return button;
+}
+
+static void _send_button_press_event(GtkWidget *w, guint state)
+{
+  if(!(GTK_IS_BUTTON(w))) return;
+
+  GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
+  event->button.state = state;
+  event->button.button = 1;
+  event->button.window = gtk_widget_get_window(w);
+  g_object_ref(event->button.window);
+
+  gtk_widget_event(w, event);
+
+  gdk_event_free(event);
+}
+
+static gboolean _press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                       GdkModifierType modifier, gpointer widget)
+{
+  _send_button_press_event(widget, 0);
+  return TRUE;
+}
+
+static gboolean _ctrl_press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer widget)
+{
+  _send_button_press_event(widget, GDK_CONTROL_MASK);
+  return TRUE;
+}
+
+GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const gchar *label, const gchar *ctrl_label,
+                                   GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
+                                   DTGTKCairoPaintIconFunc paint, GtkWidget *box)
+{
+  GtkWidget *w = dtgtk_togglebutton_new(paint, CPF_STYLE_FLAT, NULL);
+  g_signal_connect(G_OBJECT(w), "button-press-event", callback, self);
+
+  if(!ctrl_label)
+    gtk_widget_set_tooltip_text(w, _(label));
+  else
+  {
+    gchar *tooltip = g_strdup_printf(_("%s\nctrl+click to %s"), _(label), _(ctrl_label));
+    gtk_widget_set_tooltip_text(w, tooltip);
+    g_free(tooltip);
+  }
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), FALSE);
+  if(GTK_IS_BOX(box)) gtk_box_pack_end(GTK_BOX(box), w, FALSE, FALSE, 0);
+
+  gchar *label_first_line = g_strdelimit(g_strdup(label), "\n", '\0');
+  if(darktable.control->accel_initialising)
+  {
+    dt_accel_register_iop(self->so, local, label_first_line, accel_key, mods);
+    if(ctrl_label) dt_accel_register_iop(self->so, local, ctrl_label, 0, 0);
+  }
+  else
+  {
+    GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback), (gpointer)w, NULL);
+    dt_accel_connect_iop(self, label_first_line, closure);
+    if(ctrl_label)
+    {
+      closure = g_cclosure_new(G_CALLBACK(_ctrl_press_button_callback), (gpointer)w, NULL);
+      dt_accel_connect_iop(self, ctrl_label, closure);
+    }
+  }
+  g_free(label_first_line);
+
+  return w;
+}
+
+GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
+                             GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
+                             DTGTKCairoPaintIconFunc paint, gint paintflags, GtkWidget *box)
+{
+  GtkWidget *button = NULL;
+
+  if(paint)
+  {
+    button = dtgtk_button_new(paint, CPF_STYLE_FLAT | paintflags, NULL);
+    gtk_widget_set_tooltip_text(button, _(label));
+  }
+  else
+  {
+    button = gtk_button_new_with_label(_(label));
+    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
+  }
+
+  g_signal_connect(G_OBJECT(button), "clicked", callback, (gpointer)self);
+
+  if(darktable.control->accel_initialising)
+  {
+    dt_accel_register_iop(self->so, local, label, accel_key, mods);
+  }
+  else
+  {
+    dt_accel_connect_button_iop(self, label, button);
+  }
+
+  if(GTK_IS_BOX(box)) gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
 
   return button;
 }

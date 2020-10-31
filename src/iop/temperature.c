@@ -215,38 +215,17 @@ static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *accelerata
   return TRUE;
 }
 
+// allow autoconcatenation. use #pragma push_macro("N_") #pragma pop_macro("N_") if needed
+#undef N_
+#define N_(String) String
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "temperature"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "emerald"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "settings"));
-
-  dt_accel_register_iop(self, FALSE, NC_("accel", "settings/as shot"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "settings/from image area"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "settings/user modified"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "settings/camera reference"), 0, 0);
+  dt_accel_register_iop(self, FALSE, N_("settings") "`" N_("from image area"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "tint", GTK_WIDGET(g->scale_tint));
-  dt_accel_connect_slider_iop(self, "temperature", GTK_WIDGET(g->scale_k));
-  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_r));
-  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
-  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
-  dt_accel_connect_slider_iop(self, "emerald", GTK_WIDGET(g->scale_g2));
-  dt_accel_connect_combobox_iop(self, "settings", GTK_WIDGET(g->presets));
-
-  dt_accel_connect_button_iop(self, "settings/as shot", GTK_WIDGET(g->btn_asshot));
-  dt_accel_connect_iop(self, "settings/from image area", g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL));
-  dt_accel_connect_button_iop(self, "settings/user modified", GTK_WIDGET(g->btn_user));
-  dt_accel_connect_button_iop(self, "settings/camera reference", GTK_WIDGET(g->btn_d65));
+  dt_accel_connect_iop(self, "settings" "`" "from image area", g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL));
 }
 
 /*
@@ -1575,9 +1554,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
 }
 
-static void btn_toggled(GtkWidget *togglebutton, dt_iop_module_t *self)
+static gboolean btn_toggled(GtkWidget *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return TRUE;
 
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
@@ -1585,7 +1564,7 @@ static void btn_toggled(GtkWidget *togglebutton, dt_iop_module_t *self)
                togglebutton == g->btn_d65 ? DT_IOP_TEMP_D65 :
                togglebutton == g->btn_user ? DT_IOP_TEMP_USER : 0;
 
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton)))
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton)))
   {
     if(dt_bauhaus_combobox_get(g->presets) != preset)
       dt_bauhaus_combobox_set(g->presets, preset);
@@ -1594,6 +1573,8 @@ static void btn_toggled(GtkWidget *togglebutton, dt_iop_module_t *self)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(togglebutton), TRUE);
   }
+
+  return TRUE;
 }
 
 static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -1783,13 +1764,13 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
 
   if(FILTERS_ARE_CYGM(img->buf_dsc.filters))
   {
-    dt_bauhaus_widget_set_label(g->scale_r, NULL, _("green"));
+    dt_bauhaus_widget_set_label(g->scale_r, NULL, N_("green"));
     gtk_widget_set_tooltip_text(g->scale_r, _("green channel coefficient"));
-    dt_bauhaus_widget_set_label(g->scale_g, NULL, _("magenta"));
+    dt_bauhaus_widget_set_label(g->scale_g, NULL, N_("magenta"));
     gtk_widget_set_tooltip_text(g->scale_g, _("magenta channel coefficient"));
-    dt_bauhaus_widget_set_label(g->scale_b, NULL, _("cyan"));
+    dt_bauhaus_widget_set_label(g->scale_b, NULL, N_("cyan"));
     gtk_widget_set_tooltip_text(g->scale_b, _("cyan channel coefficient"));
-    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("yellow"));
+    dt_bauhaus_widget_set_label(g->scale_g2, NULL, N_("yellow"));
     gtk_widget_set_tooltip_text(g->scale_g2, _("yellow channel coefficient"));
 
     gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_b, 0);
@@ -1799,13 +1780,13 @@ static void gui_sliders_update(struct dt_iop_module_t *self)
   }
   else
   {
-    dt_bauhaus_widget_set_label(g->scale_r, NULL, _("red"));
+    dt_bauhaus_widget_set_label(g->scale_r, NULL, N_("red"));
     gtk_widget_set_tooltip_text(g->scale_r, _("red channel coefficient"));
-    dt_bauhaus_widget_set_label(g->scale_g, NULL, _("green"));
+    dt_bauhaus_widget_set_label(g->scale_g, NULL, N_("green"));
     gtk_widget_set_tooltip_text(g->scale_g, _("green channel coefficient"));
-    dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue"));
+    dt_bauhaus_widget_set_label(g->scale_b, NULL, N_("blue"));
     gtk_widget_set_tooltip_text(g->scale_b, _("blue channel coefficient"));
-    dt_bauhaus_widget_set_label(g->scale_g2, NULL, _("emerald"));
+    dt_bauhaus_widget_set_label(g->scale_g2, NULL, N_("emerald"));
     gtk_widget_set_tooltip_text(g->scale_g2, _("emerald channel coefficient"));
 
     gtk_box_reorder_child(GTK_BOX(g->coeff_widgets), g->scale_r, 0);
@@ -1901,13 +1882,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
                                                              10., 5000.0, 0, feedback);
   dt_bauhaus_slider_set_format(g->scale_k, "%.0f K");
-  dt_bauhaus_widget_set_label(g->scale_k, NULL, _("temperature"));
+  dt_bauhaus_widget_set_label(g->scale_k, NULL, N_("temperature"));
   gtk_widget_set_tooltip_text(g->scale_k, _("color temperature (in Kelvin)"));
   gtk_box_pack_start(box_enabled, g->scale_k, TRUE, TRUE, 0);
 
   g->scale_tint = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT,
                                                                 .01, 1.0, 3, feedback);
-  dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
+  dt_bauhaus_widget_set_label(g->scale_tint, NULL, N_("tint"));
   gtk_widget_set_tooltip_text(g->scale_tint, _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
   gtk_box_pack_start(box_enabled, g->scale_tint, TRUE, TRUE, 0);
 
@@ -1951,21 +1932,26 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(box_enabled, dt_ui_section_label_new(_("white balance settings")), TRUE, TRUE, 0);
 
+  g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings") "`" N_("as shot"), NULL,
+                                          G_CALLBACK(btn_toggled), FALSE, 0, 0,
+                                          dtgtk_cairo_paint_camera, NULL);
+  gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance to as shot"));
+
   // create color picker to be able to send its signal when spot selected
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
-  g->btn_asshot = dtgtk_togglebutton_new(dtgtk_cairo_paint_camera, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-  g->btn_user = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_drawn, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-  g->btn_d65 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
-  gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance to as shot"));
-  gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
-  gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance to camera reference point\nin most cases it should be D65"));
 
-  //g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-  g_signal_connect(G_OBJECT(g->btn_asshot), "toggled", G_CALLBACK(btn_toggled),  (gpointer)self);
-  g_signal_connect(G_OBJECT(g->btn_user), "toggled", G_CALLBACK(btn_toggled),  (gpointer)self);
-  g_signal_connect(G_OBJECT(g->btn_d65), "toggled", G_CALLBACK(btn_toggled),  (gpointer)self);
+  g->btn_user = dt_iop_togglebutton_new(self, N_("settings") "`" N_("user modified"), NULL,
+                                        G_CALLBACK(btn_toggled), FALSE, 0, 0,
+                                        dtgtk_cairo_paint_masks_drawn, NULL);
+  gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
+
+
+  g->btn_d65 = dt_iop_togglebutton_new(self, N_("settings") "`" N_("camera reference"), NULL,
+                                       G_CALLBACK(btn_toggled), FALSE, 0, 0,
+                                       dtgtk_cairo_paint_bulb, NULL);
+  gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance to camera reference point\nin most cases it should be D65"));
 
   g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
@@ -1977,12 +1963,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
 
   g->presets = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->presets, NULL, _("setting")); // relabel to setting to remove confusion between module presets and white balance settings
+  dt_bauhaus_widget_set_label(g->presets, NULL, N_("settings")); // relabel to settings to remove confusion between module presets and white balance settings
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance setting"));
   gtk_box_pack_start(box_enabled, g->presets, TRUE, TRUE, 0);
 
   g->finetune = dt_bauhaus_slider_new_with_range_and_feedback(self, -9.0, 9.0, 1.0, 0.0, 0, feedback);
-  dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
+  dt_bauhaus_widget_set_label(g->finetune, NULL, N_("finetune"));
   dt_bauhaus_slider_set_format(g->finetune, _("%.0f mired"));
   gtk_widget_set_tooltip_text(g->finetune, _("fine tune camera's white balance setting"));
   gtk_box_pack_start(box_enabled, g->finetune, TRUE, TRUE, 0);

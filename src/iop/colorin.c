@@ -158,22 +158,6 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "input profile"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "working profile"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "gamut clipping"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_combobox_iop(self, "input profile", GTK_WIDGET(g->profile_combobox));
-  dt_accel_connect_combobox_iop(self, "working profile", GTK_WIDGET(g->work_combobox));
-  dt_accel_connect_combobox_iop(self, "gamut clipping", GTK_WIDGET(g->clipping_combobox));
-}
-
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -2089,15 +2073,15 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->profile_combobox = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->profile_combobox, NULL, _("input profile"));
+  dt_bauhaus_widget_set_label(g->profile_combobox, NULL, N_("input profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile_combobox, TRUE, TRUE, 0);
 
   g->work_combobox = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->work_combobox, NULL, _("working profile"));
+  dt_bauhaus_widget_set_label(g->work_combobox, NULL, N_("working profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
 
   // now generate the list of profiles applicable to the current image and update the list
-  update_profile_list(self);
+//  update_profile_list(self);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
   {
