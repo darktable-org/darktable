@@ -619,10 +619,12 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
       int iw = 0;
       int ih = 0;
       gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
+      const int mindx = iw * darktable.gui->ppd_thb - th->img_width;
+      const int mindy = ih * darktable.gui->ppd_thb - th->img_height;
       if(th->zoomx > 0) th->zoomx = 0;
-      if(th->zoomx < iw - th->img_width) th->zoomx = iw - th->img_width;
+      if(th->zoomx < mindx) th->zoomx = mindx;
       if(th->zoomy > 0) th->zoomy = 0;
-      if(th->zoomy < ih - th->img_height) th->zoomy = ih - th->img_height;
+      if(th->zoomy < mindy) th->zoomy = mindy;
       l = g_list_next(l);
     }
 
