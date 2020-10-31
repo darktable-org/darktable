@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2020-10-25 09:42+0100\n"
-"PO-Revision-Date: 2020-10-25 09:25+0100\n"
+"POT-Creation-Date: 2020-10-28 08:26+0100\n"
+"PO-Revision-Date: 2020-10-28 10:02+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -13084,11 +13084,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10493(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -13540,7 +13540,6 @@ msgstr ""
 "luminance du gris-moyen (onglet <guilabel moreinfo=\"none\">scène</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10837(para)
-#, fuzzy
 msgid ""
 "The middle-grey luminance is the luminance in RGB space of the scene "
 "referred 18% grey. Its color picker tool reads the average luminance over "
@@ -13550,14 +13549,14 @@ msgid ""
 "patch on the picture. In other situations, the color picker can be used to "
 "sample the average luminance of the subject."
 msgstr ""
-"La luminance du gris moyen est la luminance de l'espace XYZ de la scène, "
-"définie à 18% de gris. Sa pipette lit la luminance moyenne sur la zone "
-"dessinée. Si vous avez une carte grise ou un nuancier (nuancier IT8 ou "
-"correcteur de couleur) photographiée dans les conditions d'éclairage de la "
+"La luminance du gris moyen est la luminance de l'espace RGB de la scène "
+"référencée par 18% de gris. Son outil pipette lit la luminance moyenne de la "
+"zone dessinée. Si vous avez une carte de gris ou une charte couleur (charte "
+"IT8 ou ColorChecker) photographiée dans les conditions d'éclairage de la "
 "scène, l’outil de sélection de couleur gris peut être utilisé pour "
-"échantillonner rapidement la luminance du patch gris sélectionné sur la "
-"photo. Dans d’autres situations, la pipette peut être utilisée pour "
-"échantillonner la luminance moyenne du sujet."
+"échantillonner rapidement la luminance du patch gris sélectionné de l'image. "
+"Dans d’autres situations, la pipette peut être utilisée pour échantillonner "
+"la luminance moyenne d'un sujet."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10845(para)
 #, fuzzy
@@ -13605,7 +13604,7 @@ msgstr ""
 msgid ""
 "White relative exposure (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
 msgstr ""
-"exposition relative du blanc (onglet <guilabel moreinfo=\"none\">scène</"
+"Exposition relative du blanc (onglet <guilabel moreinfo=\"none\">Scène</"
 "guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10866(para)
@@ -13640,7 +13639,7 @@ msgstr ""
 msgid ""
 "Black relative exposure (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
 msgstr ""
-"exposition relative du noir (onglet <guilabel moreinfo=\"none\">scène</"
+"Exposition relative du noir (onglet <guilabel moreinfo=\"none\">Scène</"
 "guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10881(para)
@@ -13709,8 +13708,8 @@ msgid ""
 "Dynamic range scaling and auto-tune (<guilabel moreinfo=\"none\">Scene</"
 "guilabel> tab)"
 msgstr ""
-"échelle de plage dynamique et niveau automatique (onglet <guilabel moreinfo="
-"\"none\">scène</guilabel>)"
+"Échelle de plage dynamique et niveau automatique (onglet <guilabel moreinfo="
+"\"none\">Scène</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10909(para)
 #, fuzzy
@@ -13745,7 +13744,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10925(title)
 msgid "Contrast (<guilabel moreinfo=\"none\">Look</guilabel> tab)"
-msgstr "contraste (onglet <guilabel moreinfo=\"none\">lookk</guilabel>)"
+msgstr "Contraste (onglet <guilabel moreinfo=\"none\">Look</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10926(para)
 #, fuzzy
@@ -13796,7 +13795,7 @@ msgstr "Quand le contraste est défini à 1, la courbe en S est déactivée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10950(title)
 msgid "Latitude (<guilabel moreinfo=\"none\">Look</guilabel> tab)"
-msgstr "latitude (onglet <guilabel moreinfo=\"none\">look</guilabel>)"
+msgstr "Latitude (onglet <guilabel moreinfo=\"none\">Look</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10951(para)
 msgid ""
@@ -14265,7 +14264,7 @@ msgstr ""
 "linéaire, l’image d’origine apparaît plate et terne. Afin de générer des "
 "images JPEG embarquées ayant de meilleures couleurs et un meilleur "
 "contraste, les fabricants de boîtiers appliquent leurs courbes de base "
-"caractéristiques aux données RAW . "
+"caractéristiques aux données RAW ."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11317(para)
 #, fuzzy
@@ -14561,7 +14560,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11546(title)
 msgid "edge detection radius"
-msgstr "rayon détection de contours "
+msgstr "rayon de détection du contour"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11547(para)
 msgid ""
@@ -15192,7 +15191,7 @@ msgstr ""
 "présente quelques caractéristiques spécifiques comme des sources lumineuses "
 "bleu fortement saturé, la troncature de gamut peut être utile pour éviter "
 "les artefacts sous forme de pixels noirs. Pour plus de renseignements voyez "
-"<xref linkend=\"possible_color_artifacts\"/>. "
+"<xref linkend=\"possible_color_artifacts\"/>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12180(para)
 msgid ""
@@ -16319,7 +16318,7 @@ msgstr ""
 "premier plan de l'image. La brume est supprimée du premier plan jusqu'à "
 "l'arrière plan lointain si le paramètre distance est défini à un. Dans le "
 "cas d'une valeur négative du paramètre force le contrôle distance n'a aucun "
-"effet. "
+"effet."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13162(title)
 msgid "Unbreak input profile"
@@ -17076,11 +17075,11 @@ msgid ""
 "can be counterintuitive: a pixel which is completely red may not be caused "
 "by noise on the R channel, but actually by noise on B and G channels."
 msgstr ""
-" En ce qui concerne les courbes R, G et B, la meilleure façon de les "
-"utiliser est de regarder l'un des canaux en utilisant le module mixeur de "
-"canaux en mode de gris, de réduire le bruit de ce canal particulier, puis de "
-"faire de même pour les autres canaux. De cette façon, vous pouvez prendre en "
-"compte que, dans votre réduction de bruit, certains canaux peuvent être plus "
+"En ce qui concerne les courbes R, G et B, la meilleure façon de les utiliser "
+"est de regarder l'un des canaux en utilisant le module mixeur de canaux en "
+"mode de gris, de réduire le bruit de ce canal particulier, puis de faire de "
+"même pour les autres canaux. De cette façon, vous pouvez prendre en compte "
+"que, dans votre réduction de bruit, certains canaux peuvent être plus "
 "bruités que d’autres. Sachez qu'estimer quel canal est bruyant sans "
 "réellement regarder individuellement les canaux n'est pas simple et peut "
 "être contre-intuitif : un pixel complètement rouge peut ne pas être causé "
@@ -17366,7 +17365,7 @@ msgstr "réduction du bruit RAW"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14005(secondary)
 msgid "raw"
-msgstr "RAW"
+msgstr "raw"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14021(emphasis)
 msgid "dcraw"
@@ -18205,7 +18204,7 @@ msgstr "Vibrance"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14830(primary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14867(title)
 msgid "vibrance"
-msgstr "Vibrance"
+msgstr "vibrance"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14843(entry)
 msgid ""
@@ -18587,7 +18586,7 @@ msgid ""
 msgstr ""
 "L'aperçu montre l'image découpées en zones. Quand on survole une zone de la "
 "barre des zones, cette zone – d'entrée ou de sortie – est mise en évidence "
-"dans l'aperçu. "
+"dans l'aperçu."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15320(entry)
 msgid "The original image."
@@ -19146,7 +19145,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15789(title)
 msgid "L-channel curve"
-msgstr "courbe des tonalités pour le canal L"
+msgstr "courbe pour le canal L"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15790(para)
 msgid ""
@@ -19291,7 +19290,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15918(entry)
 msgid "Resulting image"
-msgstr "Image résultante."
+msgstr "Image résultante"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15933(title)
 msgid "Contrast Brightness Saturation"
@@ -19586,7 +19585,7 @@ msgid ""
 "separated control of shadows versus highlights,"
 msgstr ""
 "<emphasis>lift, gamma, gain</emphasis>, la méthode classique, permettant un "
-"contrôle plus différencié des ombres par rapport aux hautes lumières."
+"contrôle plus différencié des ombres par rapport aux hautes lumières,"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16364(para)
 msgid ""
@@ -20140,7 +20139,7 @@ msgstr ""
 "nombreuses utilisations, ce module peut servir à observer individuellement "
 "les canaux RGB : utilisez le gris en tant que destination et mettez la "
 "valeur 1 dans le canal d'entrée que vous souhaitez voir et la valeur 0 dans "
-"les autres. "
+"les autres."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16715(entry)
 msgid ""
@@ -20858,7 +20857,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17635(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17639(primary)
 msgid "white balance"
-msgstr "Balance des blancs"
+msgstr "balance des blancs"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17652(entry)
 msgid ""
@@ -23532,11 +23531,11 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20739(para)
 msgid "Activate the color correction module"
-msgstr "Activez le module correction des couleurs."
+msgstr "Activez le module correction des couleurs"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20743(para)
 msgid "Use the bottom slider to set saturation to zero"
-msgstr "Utilisez le curseur du bas pour régler la saturation à zéro."
+msgstr "Utilisez le curseur du bas pour régler la saturation à zéro"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20753(title)
 msgid "The LAB way: color contrast module"
@@ -23553,11 +23552,11 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20762(para)
 msgid "Activate the color contrast module"
-msgstr "Activez le module contraste de couleur."
+msgstr "Activez le module contraste de couleur"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20766(para)
 msgid "Set both steepness sliders to zero"
-msgstr "Mettez les deux curseurs à zéro."
+msgstr "Mettez les deux curseurs à zéro"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20776(title)
 msgid "The artistic way: color zones module"
@@ -23573,7 +23572,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20785(para)
 msgid "Activate the color zones module"
-msgstr "Activez le module zones de couleurs."
+msgstr "Activez le module zones de couleurs"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20789(para)
 msgid ""
@@ -23626,11 +23625,11 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20823(para)
 msgid "Activate the channel mixer module"
-msgstr "Activez le module mixeur de canaux."
+msgstr "Activez le module mixeur de canaux"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20827(para)
 msgid "Select the gray output channel"
-msgstr "Sélectionnez le canal de destination gris."
+msgstr "Sélectionnez le canal de destination gris"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20831(para)
 msgid ""
@@ -23682,7 +23681,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20888(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21016(para)
 msgid "Image preparation"
-msgstr "Préparation de l’image."
+msgstr "Préparation de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20892(para)
 msgid ""
@@ -23695,7 +23694,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20897(para)
 msgid "Boost contrast"
-msgstr "Augmentation du contraste."
+msgstr "Augmentation du contraste"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20901(para)
 msgid ""
@@ -23710,7 +23709,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20907(para)
 msgid "Color cast"
-msgstr "Dominante de couleur."
+msgstr "Dominante de couleur"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20911(para)
 msgid ""
@@ -23727,20 +23726,19 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20919(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21046(para)
 msgid "Enable the channel mixer module"
-msgstr "Activez le module mixeur de canaux."
+msgstr "Activez le module mixeur de canaux"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20923(para)
 msgid "Select the blue channel and set the blue color value to 0.8"
-msgstr "Sélectionnez le canal bleu et mettez la couleur bleue à la valeur 0.8."
+msgstr "Sélectionnez le canal bleu et mettez la couleur bleue à la valeur 0.8"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20927(para)
 msgid "Select the red channel and change the blue color value to 0.1"
-msgstr ""
-"Sélectionnez le canal rouge et mettez la couleur bleue à la valeur 0.1."
+msgstr "Sélectionnez le canal rouge et mettez la couleur bleue à la valeur 0.1"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20931(para)
 msgid "Select the green channel and change the blue color value to 0.1"
-msgstr "Sélectionnez le canal vert et mettez la couleur bleue à la valeur 0.1."
+msgstr "Sélectionnez le canal vert et mettez la couleur bleue à la valeur 0.1"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20941(para)
 #, fuzzy
@@ -23756,23 +23754,23 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20948(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21082(para)
 msgid "Enable the split-toning module"
-msgstr "Activez le module virage partiel."
+msgstr "Activez le module virage partiel"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20952(para)
 msgid "Select a cyan/blue tone for shadows and set saturation around 50%"
 msgstr ""
-"Sélectionnez une teinte cyan/bleu pour les ombres et une saturation de 50%."
+"Sélectionnez une teinte cyan/bleu pour les ombres et une saturation de 50%"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20956(para)
 msgid ""
 "Select a yellow/orange tone for highlights and set saturation around 70%"
 msgstr ""
 "Sélectionnez une teinte jaune/orange pour les hautes lumières et une "
-"saturation de 70%."
+"saturation de 70%"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20960(para)
 msgid "Set compression to 10%"
-msgstr "Mettez le seuil à 10%."
+msgstr "Mettez le seuil à 10%"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20964(para)
 #, fuzzy
@@ -23816,7 +23814,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21025(para)
 msgid "Black and white"
-msgstr "Noir et blanc."
+msgstr "Noir et blanc"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21029(para)
 msgid ""
@@ -23828,7 +23826,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21034(para)
 msgid "Add color tone"
-msgstr "Ajoutez un virage global."
+msgstr "Ajoutez un virage global"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21038(para)
 msgid ""
@@ -23844,21 +23842,21 @@ msgstr ""
 msgid "Select the red channel destination and set the red color value to 0.7"
 msgstr ""
 "Sélectionnez le canal rouge de destination et réglez la couleur rouge à la "
-"valeur 0.7."
+"valeur 0.7"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21054(para)
 msgid ""
 "Select the green channel destination and set the green color value to 1.15"
 msgstr ""
 "Sélectionnez le canal vert de destination et réglez la couleur verte à la "
-"valeur 1.15."
+"valeur 1.15"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21058(para)
 msgid ""
 "Select the blue channel destination and set the blue color value to 1.15"
 msgstr ""
 "Sélectionnez le canal bleu de destination et réglez la couleur bleue à la "
-"valeur 1.15."
+"valeur 1.15"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21064(para)
 msgid ""
@@ -23888,15 +23886,15 @@ msgstr ""
 msgid "Select a blue/cyan tone for shadows and set saturation around 50%"
 msgstr ""
 "Sélectionnez une teinte bleue/cyan pour les ombres avec une saturation de "
-"l’ordre de 50%."
+"l’ordre de 50%"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21090(para)
 msgid "Set highlights saturation to zero, to remove saturation on highlights"
-msgstr "Mettez la saturation des hautes lumières à zéro pour les dé-saturer."
+msgstr "Mettez la saturation des hautes lumières à zéro pour les dé-saturer"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21094(para)
 msgid "Set compression to zero"
-msgstr "Mettez le seuil à zéro."
+msgstr "Mettez le seuil à zéro"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21098(para)
 msgid ""
@@ -23904,7 +23902,7 @@ msgid ""
 "70/30"
 msgstr ""
 "Utilisez le curseur de répartition pour ajuster l’effet ; notre exemple "
-"utilise une répartition à 70/30."
+"utilise une répartition à 70/30"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21112(title)
 msgid "Removal of red-eye effect"
@@ -23944,7 +23942,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21168(para)
 msgid "Activate blending"
-msgstr "Activez la fusion."
+msgstr "Activez la fusion"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21172(para)
 msgid ""
@@ -23961,7 +23959,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21179(para)
 msgid "Masking the pupil"
-msgstr "Masquage de la pupille."
+msgstr "Masquage de la pupille"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21183(para)
 msgid ""
@@ -24026,15 +24024,15 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21256(para)
 msgid "Set red color value to 0.00"
-msgstr "Définissez à 0.00 la valeur de la couleur rouge."
+msgstr "Définissez à 0.00 la valeur de la couleur rouge"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21260(para)
 msgid "Set green color value to 0.50"
-msgstr "Définissez à 0.50 la valeur de la couleur verte."
+msgstr "Définissez à 0.50 la valeur de la couleur verte"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21264(para)
 msgid "Set blue color value to 0.50"
-msgstr "Définissez à 0.50 la valeur de la couleur bleue."
+msgstr "Définissez à 0.50 la valeur de la couleur bleue"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21270(para)
 msgid ""
@@ -24053,19 +24051,19 @@ msgstr "Approche - Modification du canal de sortie <quote>gris</quote>."
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21306(para)
 msgid "Set output channel <quote>destination</quote> to <quote>gray</quote>"
 msgstr ""
-"Définissez le canal de <quote>destination</quote> à <quote>gris</quote>."
+"Définissez le canal de <quote>destination</quote> à <quote>gris</quote>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21310(para)
 msgid "Set red color value to 0.24"
-msgstr "Définissez à 0.24 la valeur de la couleur rouge."
+msgstr "Définissez à 0.24 la valeur de la couleur rouge"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21314(para)
 msgid "Set green color value to 0.68"
-msgstr "Définissez à 0.68 la valeur de la couleur verte."
+msgstr "Définissez à 0.68 la valeur de la couleur verte"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21318(para)
 msgid "Set blue color value to 0.08"
-msgstr "Définissez à 0.08 la valeur de la couleur bleue."
+msgstr "Définissez à 0.08 la valeur de la couleur bleue"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21324(para)
 msgid ""
@@ -24392,7 +24390,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21661(para)
 msgid "Verify that camera is detected"
-msgstr "Vérifiez que votre boîtier est détecté."
+msgstr "Vérifiez que votre boîtier est détecté"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21665(para)
 msgid ""
@@ -24412,7 +24410,7 @@ msgstr "env LANG=C gphoto2 --auto-detect"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21676(para)
 msgid "Verify camera driver abilities"
-msgstr "Vérifiez les possibilités du pilote du boîtier."
+msgstr "Vérifiez les possibilités du pilote du boîtier"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21680(para)
 msgid ""
@@ -24434,7 +24432,7 @@ msgstr "env LANG=C gphoto2 --port usb: --abilities"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21692(para)
 msgid "Verify camera remote capture"
-msgstr "Vérifiez que le boîtier peut être piloté à distance."
+msgstr "Vérifiez que le boîtier peut être piloté à distance"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21696(para)
 msgid ""
@@ -24452,7 +24450,7 @@ msgstr "env LANG=C gphoto2 --port usb: --capture-image-and-download"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21706(para)
 msgid "Verify camera tethered capture"
-msgstr "Vérifiez la capture par le boîtier connecté."
+msgstr "Vérifiez la capture par le boîtier connecté"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21710(para)
 msgid ""
@@ -24510,7 +24508,7 @@ msgstr ""
 "rencontrez un problème avec darktable, signalez un bogue sur <ulink url="
 "\"http://www.darktable.org/redmine\">bugtracker</ulink>. Veuillez joindre "
 "les fichiers journaux des étapes ci-dessus et le fichier journal généré "
-"après avoir lancé darktable avec la commande suivante :"
+"après avoir lancé darktable avec la commande suivante."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21752(programlisting)
 msgid "darktable -d camctl 2&gt;1 &gt;camctl.log"
@@ -24518,7 +24516,7 @@ msgstr "darktable -d camctl 2&gt;1 &gt;camctl.log"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21768(keyword)
 msgid "geotagging"
-msgstr "Géolocalisation"
+msgstr "géolocalisation"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21769(keyword)
 msgid "map"
@@ -25000,7 +24998,7 @@ msgid ""
 msgstr ""
 "Ce module supporte le profil ICC de l'imprimante qui est un peu obligatoire "
 "si vous souhaitez obtenir une impression de haute qualité proche de l'image "
-"affichée à l'écran. "
+"affichée à l'écran."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22304(para)
 msgid ""
@@ -25522,7 +25520,7 @@ msgstr ""
 "Ces options définissent un motif de nommage pour organiser les images sur le "
 "disque lors de l’importation à partir d'un boîtier connecté (voyez la <xref "
 "linkend=\"import\"/>) et lors des prises de photos en mode capture (voyez le "
-"<xref linkend=\"tethering_chapter\"/>).  "
+"<xref linkend=\"tethering_chapter\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22693(para)
 msgid ""
@@ -25535,7 +25533,7 @@ msgstr ""
 "définissant le répertoire parent, une partie relative à la session "
 "définissant un sous-répertoire spécifique à la session individuelle "
 "d'importation et une partie nom de fichier définissant la structure nom de "
-"fichier pour chaque image importée. "
+"fichier pour chaque image importée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22699(para)
 msgid ""
@@ -25979,7 +25977,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23089(bridgehead)
 msgid "show search module text entry"
-msgstr "affiche la saisie de texte du module de recherche."
+msgstr "affiche la saisie de texte du module de recherche"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23091(para)
 msgid ""
@@ -27472,7 +27470,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24137(keyword)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24149(primary)
 msgid "scripting"
-msgstr "Créer des scripts"
+msgstr "créer des scripts"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24138(keyword)
 msgid "lua"
@@ -27556,7 +27554,7 @@ msgid ""
 "darktable</emphasis>"
 msgstr ""
 "un script appelé <emphasis>luarc</emphasis> se trouvant dans <emphasis>"
-"$DARKTABLE/share/darktable</emphasis> ;"
+"$DARKTABLE/share/darktable</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24204(para)
 msgid ""
@@ -27564,7 +27562,7 @@ msgid ""
 "directory"
 msgstr ""
 "un script appelé <emphasis>luarc</emphasis> se trouvant dans le répertoire "
-"de configuration de l’utilisateur."
+"de configuration de l’utilisateur"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24210(para)
 msgid ""
@@ -27834,7 +27832,7 @@ msgstr ""
 "La fonction standard retournera un nom pour l'objet alors que la fonction de "
 "débogage affichera son contenu. La fonction de débogage serait ici trop "
 "verbeuse. Une fois de plus c'est un excellent outil de débogage mais il ne "
-"devrait pas être utilisé pour autre chose. "
+"devrait pas être utilisé pour autre chose."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24392(para)
 msgid ""
@@ -27844,7 +27842,7 @@ msgid ""
 msgstr ""
 "À ce stade, ce code devrait être assez simple à comprendre mais il contient "
 "quelques aspects intéressants sur Lua qui méritent d'être soulignés : "
-"<placeholder-1/> "
+"<placeholder-1/>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24430(title)
 msgid "Adding a simple shortcut"
@@ -27919,7 +27917,7 @@ msgstr ""
 "d'événements. Nous lui indiquons que nous sommes en train d'enregistrer un "
 "événement de type shortcut, puis nous donnons la fonction de rappel à "
 "appeler et enfin, nous donnons la chaîne de caractères décrivant le "
-"raccourci dans la fenêtre des préférences. "
+"raccourci dans la fenêtre des préférences."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24478(para)
 #, fuzzy
@@ -27992,7 +27990,7 @@ msgstr ""
 "Si vous sélectionnez une image et pressez votre raccourci plusieurs fois, il "
 "fonctionnera correctement au début, puis, quand l'évaluation aura atteint "
 "cinq étoiles, darktable commencera à montrer sur la console l'erreur "
-"suivante : "
+"suivante :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24533(code)
 msgid ""
@@ -28130,7 +28128,7 @@ msgid ""
 "is the only one we use in this example. It contains the name of a temporary "
 "file where the image was exported by darktable's engine."
 msgstr ""
-" <code>darktable.register_storage</code> est l'appel qui enregistre "
+"<code>darktable.register_storage</code> est l'appel qui enregistre "
 "réellement un nouveau stockage. Le premier argument est un nom pour le "
 "stockage, le deuxième est l'étiquette qui sera affichée dans l'interface "
 "utilisateur et le dernier est une fonction à appeler à chaque image. Cette "
@@ -28146,7 +28144,7 @@ msgid ""
 msgstr ""
 "Nous utilisons les préférences pour configurer le chemin cible. Il serait "
 "plus agréable d'ajouter un élément à l'interface d'exportation de darktable. "
-"Dans la prochaine section nous expliquerons en détail comment faire cela. "
+"Dans la prochaine section nous expliquerons en détail comment faire cela."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24657(para)
 msgid ""
@@ -28164,7 +28162,7 @@ msgid ""
 msgstr ""
 "Ce script ne peut pas lire une entrée de l'utilisateur. Le scp distant doit "
 "utiliser un mode de copie sans mot de passe. Scp ne peut pas fournir "
-"aisément un mot de passe, "
+"aisément un mot de passe,"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24667(para)
 msgid ""
@@ -28225,7 +28223,7 @@ msgstr ""
 "pourrez alors utiliser cet objet comme paramètre de différentes fonctions "
 "qui l'ajouteront à l'interface utilisateur de darktable. L'exemple simple "
 "suivant ajoute à la vue table lumineuse une bibliothèque ayant une simple "
-"étiquette."
+"étiquette"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24705(programlisting)
 msgid ""
