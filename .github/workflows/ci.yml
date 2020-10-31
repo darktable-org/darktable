@@ -10,7 +10,6 @@ jobs:
   windows-msys2:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.eco.name }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os }}
-    if: ${{ ( matrix.compiler.compiler != 'LLVM' || matrix.btype != 'Debug' ) && !( matrix.eco.name == 'binpkg' && matrix.btype != 'Release' ) }}
     strategy:
       fail-fast: true
       matrix:
@@ -53,6 +52,13 @@ jobs:
                 -DUSE_GMIC=OFF 
                 -DUSE_LIBSECRET=OFF
             }
+        exclude:
+          - compiler.compiler: LLVM
+            btype: Debug
+          - eco.name: binpkg
+            btype: Debug
+          - eco.name: binpkg
+            btype: RelWithDebInfo
     defaults:
       run:
         shell: msys2 {0}
