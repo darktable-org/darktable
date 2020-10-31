@@ -1467,8 +1467,6 @@ static gboolean rt_auto_levels_callback(GtkToggleButton *togglebutton, GdkEventB
   }
   dt_pthread_mutex_unlock(&g->lock);
 
-  gtk_toggle_button_set_active(togglebutton, FALSE);
-
   dt_iop_refresh_center(self);
 
   return TRUE;
@@ -1577,7 +1575,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event,
     return TRUE;
   }
 
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean rt_add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
@@ -2029,7 +2027,8 @@ void gui_init(dt_iop_module_t *self)
                _("to add a shape select an algorithm and a shape type and click on the image.\n"
                  "shapes are added to the current scale"));
 
-  g->bt_edit_masks = dt_iop_togglebutton_new(self, N_("show and edit shapes on the current scale"), NULL,
+  g->bt_edit_masks = dt_iop_togglebutton_new(self, N_("show and edit shapes on the current scale"),
+                                                   N_("show and edit shapes in restricted mode"),
                                              G_CALLBACK(rt_edit_masks_callback), TRUE, 0, 0,
                                              dtgtk_cairo_paint_masks_eye, hbox_shapes);
 
@@ -2599,75 +2598,6 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->y = CLAMP(roiy, 0, scheight - 1);
   roi_in->width = CLAMP(roir - roi_in->x, 1, scwidth + .5f - roi_in->x);
   roi_in->height = CLAMP(roib - roi_in->y, 1, scheight + .5f - roi_in->y);
-}
-
-void init_key_accels(dt_iop_module_so_t *module)
-{
-  dt_accel_register_iop(module, TRUE, N_("show or hide shapes"), 0, 0);
-}
-
-static gboolean _show_or_hide_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                               GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-
-  // if we don't have the focus, request for it and quit, gui_focus() do the rest
-  if(darktable.develop->gui_module != module)
-  {
-    dt_iop_request_focus(module);
-    return FALSE;
-  }
-
-  //hide all shapes and free if some are in creation
-  if(darktable.develop->form_gui->creation && darktable.develop->form_gui->creation_module == module)
-    dt_masks_change_form_gui(NULL);
-
-  if(darktable.develop->form_gui->creation_continuous_module == module)
-  {
-    darktable.develop->form_gui->creation_continuous = FALSE;
-    darktable.develop->form_gui->creation_continuous_module = NULL;
-  }
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
-
-  dt_iop_color_picker_reset(module, TRUE);
-
-  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
-  if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
-  {
-
-    if(bd->masks_shown == DT_MASKS_EDIT_OFF)
-      bd->masks_shown = DT_MASKS_EDIT_FULL;
-    else
-      bd->masks_shown = DT_MASKS_EDIT_OFF;
-  }
-  else
-    bd->masks_shown = DT_MASKS_EDIT_OFF;
-
-  rt_show_forms_for_current_scale(module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
-                               (bd->masks_shown != DT_MASKS_EDIT_OFF) && (darktable.develop->gui_module == module));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-void connect_key_accels(dt_iop_module_t *module)
-{
-  GClosure *closure;
-
-  //show or hide
-  closure = g_cclosure_new(G_CALLBACK(_show_or_hide_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "show or hide shapes", closure);
 }
 
 //--------------------------------------------------------------------------------------------------
