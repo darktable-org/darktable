@@ -121,7 +121,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out, d, in, out) \
+  dt_omp_firstprivate(roi_out, d, in, out, ch) \
   schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * ch; k += ch)
