@@ -1725,7 +1725,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
           if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "id") == 0)
             order_by = g_strdup("ORDER BY film_rolls_id DESC");
           else
-            order_by = g_strdup("ORDER BY folder");
+          {
+            if(dt_conf_get_bool("plugins/collect/descending"))
+              order_by = g_strdup("ORDER BY folder DESC");
+            else
+              order_by = g_strdup("ORDER BY folder");
+          }
 
           // filmroll
           g_snprintf(query, sizeof(query),
