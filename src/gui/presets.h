@@ -60,6 +60,9 @@ void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
 /** show popupmenu for favorite modules */
 void dt_gui_favorite_presets_menu_show();
 
+/** apply any auto presets that are appropriate for the current module **/
+gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
