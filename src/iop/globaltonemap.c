@@ -201,7 +201,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     lwmax = eps;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out, in) reduction(max : lwmax) \
+  dt_omp_firstprivate(roi_out, in, ch) reduction(max : lwmax)      \
   schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
