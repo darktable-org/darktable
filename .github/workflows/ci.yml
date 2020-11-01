@@ -24,10 +24,10 @@ jobs:
         #Release works on GNU & LLVM, Debug only on GNU. todo: use if to exclude
         include:
           # Uncomment if PR needs to generate windows package for testing.
-          - btype: Release
-            compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
-            eco: -DBINARY_PACKAGE_BUILD=ON
-            target: skiptest
+          #- btype: Release
+          #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
+          #  eco: -DBINARY_PACKAGE_BUILD=ON
+          #  target: skiptest
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
@@ -104,6 +104,19 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
+      - name: Check if it runs
+        run: |
+          $(cygpath ${INSTALL_DIR})/bin/darktable.exe --version
+          $(cygpath ${INSTALL_DIR})/bin/darktable-cli.exe \
+                 --width 2048 --height 2048 \
+                 --hq true --apply-custom-presets false \
+                 $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
+                 $(cygpath ${SRC_DIR})/src/tests/integration/0000-nop/nop.xml \
+                 output.png \
+                 --core --disable-opencl --conf host_memory_limit=8192 \
+                 --conf worker_threads=4 -t 4 \
+                 --conf plugins/lighttable/export/force_lcms2=FALSE \
+                 --conf plugins/lighttable/export/iccintent=0
       - name: Package
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         run: |
