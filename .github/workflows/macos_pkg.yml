@@ -36,11 +36,17 @@ jobs:
         run: |
           curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
           source ./macports-ci install
-          echo "buildfromsource always" >> /opt/local/etc/macports/macports.conf
-          echo "macosx_deployment_target 10.7" >> /opt/local/etc/macports/macports.conf
-          echo "cxx_stdlib libc++" >> /opt/local/etc/macports/macports.conf
-          echo "+no_gnome +no_x11 +quartz -x11 -gnome" >> /opt/local/etc/macports/variants.conf
-          mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python37/files ~/ports/lang/python38/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
+          sudo echo "buildfromsource always" >> /opt/local/etc/macports/macports.conf
+          sudo echo "macosx_deployment_target 10.7" >> /opt/local/etc/macports/macports.conf
+          sudo echo "cxx_stdlib libc++" >> /opt/local/etc/macports/macports.conf
+          sudo echo "+no_gnome +no_x11 +quartz -x11 -gnome" >> /opt/local/etc/macports/variants.conf
+          mkdir -p ~/ports/devel/gnutls/files \
+                   ~/ports/lang/python37/files \
+                   ~/ports/lang/python38/files \
+                   ~/ports/graphics/GraphicsMagick/files \
+                   ~/ports/graphics/ImageMagick/files \
+                   ~/ports/textproc \
+                   ~/ports/science
           cp -R "$(port dir gnutls)" ~/ports/devel
           curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-disable-connectx.diff
           cp -R "$(port dir python37)" ~/ports/lang
@@ -51,4 +57,16 @@ jobs:
           curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
           cp -R "$(port dir ImageMagick)" ~/ports/graphics
           curl -Lo ~/ports/graphics/ImageMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/im-stdlib.diff
+          echo "patchfiles-append patch.diff" >> ~/ports/devel/gnutls/Portfile
+          echo "patchfiles-append patch.diff" >> ~/ports/lang/python37/Portfile
+          echo "patchfiles-append patch.diff" >> ~/ports/lang/python38/Portfile
+          echo "patchfiles-append patch.diff" >> ~/ports/graphics/GraphicsMagick/Portfile
+          echo "patchfiles-append patch.diff" >> ~/ports/graphics/ImageMagick/Portfile
           cp -R "$(port dir pugixml)" ~/ports/textproc
+          curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pugixml-stdlib.patch | patch -d ~/ports -p0
+          cp -R "$(port dir librsvg)" ~/ports/graphics
+          curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/librsvg-nocargo.patch | patch -d ~/ports -p0
+          cp -R "$(port dir gmic)" ~/ports/science
+          curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gmic-minimal.patch | patch -d ~/ports -p0
+          sudo portindex ~/ports
+          source ./macports-ci 
