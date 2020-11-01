@@ -106,8 +106,8 @@ jobs:
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
       - name: Check if it runs
         run: |
-          $(cygpath ${INSTALL_DIR})/bin/darktable.exe --version
-          $(cygpath ${INSTALL_DIR})/bin/darktable-cli.exe \
+          $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version
+          $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
                  --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
                  $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
