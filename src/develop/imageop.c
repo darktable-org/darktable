@@ -1581,7 +1581,7 @@ static void dt_iop_init_module_so(void *m)
 
     if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
-      dt_accel_register_slider_iop(module, FALSE, N_("fusion"));
+      dt_accel_register_slider_iop(module, FALSE, NC_("accel","fusion") ? "accel|fusion" : "");
     }
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
