@@ -533,12 +533,10 @@
     <type>
       <enum>
         <option>id</option>
-        <option>id descending</option>
         <option>folder</option>
-        <option>folder descending</option>
       </enum>
     </type>
-    <default>id descending</default>
+    <default>id</default>
     <shortdescription>sort film rolls by</shortdescription>
     <longdescription>sets the collections-list order for film rolls</longdescription>
   </dtconfig>
@@ -547,7 +545,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>sort collection recent to older</shortdescription>
-    <longdescription>changes the default collections-list order for folders, times and dates to run from recent to older</longdescription>
+    <longdescription>changes the default collections-list order for folders, film-rolls by folders, times and dates to run from recent to older</longdescription>
   </dtconfig>
   <dtconfig>
     <name>ui_last/colorpicker_mean</name>
