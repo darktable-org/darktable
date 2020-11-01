@@ -1,0 +1,31 @@
+name: Nightly Macos PKG
+# TODO: move to nightly.yml after finalizing here.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  macOS:
+    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        compiler:
+          - { compiler: XCode,   CC: cc, CXX: c++ }
+        btype: [ Release ]
+        target:
+          - skiptest
+    env:
+      TEMP: ${{ runner.temp }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Install MacportsCI
+        run: |
+          cd "$TEMP"
+          curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
+          source ./macports-ci install
