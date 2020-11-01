@@ -763,7 +763,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     dt_image_refresh_makermodel(img);
 
     /* Read shutter time */
-    if(FIND_EXIF_TAG("Exif.Photo.ExposureTime"))
+    if((pos = Exiv2::exposureTime(exifData)) != exifData.end() && pos->size())
     {
       // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat();
@@ -781,7 +781,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     /* Read aperture */
-    if(FIND_EXIF_TAG("Exif.Photo.FNumber"))
+    if((pos = Exiv2::fNumber(exifData)) != exifData.end() && pos->size())
     {
       img->exif_aperture = pos->toFloat();
     }
@@ -928,7 +928,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /*
      * Read image orientation
      */
-    if(FIND_EXIF_TAG("Exif.Image.Orientation"))
+    if((pos = Exiv2::orientation(exifData)) != exifData.end() && pos->size())
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
