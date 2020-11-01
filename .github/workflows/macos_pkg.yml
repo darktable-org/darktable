@@ -36,7 +36,6 @@ jobs:
         run: |
           curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
           source ./macports-ci install
-          sudo cat /opt/local/etc/macports/macports.conf
           #sudo echo "buildfromsource always" >> /opt/local/etc/macports/macports.conf
           #sudo echo "macosx_deployment_target 10.7" >> /opt/local/etc/macports/macports.conf
           #sudo echo "cxx_stdlib libc++" >> /opt/local/etc/macports/macports.conf
@@ -72,3 +71,27 @@ jobs:
           sudo portindex ~/ports
           source ./macports-ci localports ~/ports
           sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg lua webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
+      - name: macports log upload
+        if: ${{ failure() }}
+        uses: 'actions/upload-artifact@v2'
+        with:
+          name: macports_logs.${{ github.sha }}
+          path: /opt/local/var/macports/logs/*/*/main.log
+          retention-days: 1
+      - name: Build and Install
+        run: |
+          cmake -E make_directory "${BUILD_DIR}";
+          cmake -E make_directory "${INSTALL_PREFIX}";
+          cd "${BUILD_DIR}"
+          cmake "${SRC_DIR}" \
+            -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
+            -DCMAKE_CXX_FLAGS=-stdlib=libc++ \
+            -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp \
+            -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp \
+            -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp \
+            -DBINARY_PACKAGE_BUILD=ON \
+            -DRAWSPEED_ENABLE_LTO=ON \
+            -DBUILD_CURVE_TOOLS=ON \
+            -DBUILD_NOISE_TOOLS=ON
+          make
+          sudo make install
