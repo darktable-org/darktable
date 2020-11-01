@@ -139,7 +139,7 @@ jobs:
         run: |
           brew update > /dev/null || true
           brew tap Homebrew/bundle
-          cd .ci
+          cd src/.ci
           brew bundle --verbose
       - name: Build and Install
         env:
