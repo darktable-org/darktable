@@ -261,7 +261,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   // blit image inside border and fill the output with previous processed out
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_in, roi_out, border_in_x, border_in_y) \
+  dt_omp_firstprivate(roi_in, roi_out, border_in_x, border_in_y, in, out)   \
   schedule(static)
 #endif
   for(int j = 0; j < roi_in->height; j++)
@@ -363,7 +363,7 @@ static void set_outer_border_sse(float *buf, const float col[4], const int heigh
   const __m128 color = _mm_load_ps(col);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, col, border_height, height, width)  \
+  dt_omp_firstprivate(buf, col, border_height, height, width, color)  \
   schedule(static)
 #endif
   for (size_t row = 0; row < border_height; row++)
@@ -378,7 +378,7 @@ static void set_outer_border_sse(float *buf, const float col[4], const int heigh
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, col, border_width, height, width)  \
+  dt_omp_firstprivate(buf, col, border_width, border_height, height, width, color)    \
   schedule(static)
 #endif
   for (size_t c = 0; c < border_width; c++)
@@ -421,7 +421,7 @@ static void set_outer_border(float *buf, const float col[4], const int height, c
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, col, border_width, height, width)  \
+  dt_omp_firstprivate(buf, col, border_width, border_height, height, width) \
   schedule(static)
 #endif
   for (size_t c = 0; c < border_width; c++)
@@ -491,7 +491,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, col_frame, frame_tl_out_y, frame_br_out_y, frame_tl_out_x, frame_br_out_x) \
+  dt_omp_firstprivate(ovoid, col_frame, frame_tl_out_y, frame_br_out_y, frame_tl_out_x, frame_br_out_x, out_stride) \
   schedule(static)
 #endif
     //FIXME: don't fill the entire rectangle, only the actual frame line; that will eliminate need for following loop
@@ -503,7 +503,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, col, frame_tl_in_y, frame_br_in_y, frame_tl_in_x, frame_br_in_x) \
+  dt_omp_firstprivate(ovoid, col, frame_tl_in_y, frame_br_in_y, frame_tl_in_x, frame_br_in_x, out_stride) \
   schedule(static)
 #endif
     for(int r = frame_tl_in_y; r <= frame_br_in_y; r++)
