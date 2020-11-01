@@ -37,9 +37,9 @@ jobs:
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
-      SRC_DIR: ${{ github.workspace }}
-      BUILD_DIR: ${{ runner.temp }}/build
-      INSTALL_PREFIX: ${{ runner.temp }}/install
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: 'MSYS Makefiles'
@@ -49,6 +49,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+          path: src
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -143,9 +144,9 @@ jobs:
         env:
           CC: ${{ matrix.compiler.CC }}
           CXX: ${{ matrix.compiler.CXX }}
-          SRC_DIR: ${{ github.workspace }}
-          BUILD_DIR: ${{ runner.temp }}/build
-          INSTALL_PREFIX: ${{ runner.temp }}/install
+          SRC_DIR: ${{ github.workspace }}/src
+          BUILD_DIR: ${{ github.workspace }}/build
+          INSTALL_PREFIX: ${{ github.workspace }}/install
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: Ninja
           TARGET: ${{ matrix.target }}
@@ -153,4 +154,4 @@ jobs:
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
-          ./.ci/ci-script.sh;
+          ./src/.ci/ci-script.sh;

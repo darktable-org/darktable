@@ -18,14 +18,12 @@ jobs:
         btype: [ Release ]
         target:
           - skiptest
-    env:
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
+          path: src
       - name: Install MacportsCI
         run: |
-          cd "$TEMP"
           curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
           source ./macports-ci install

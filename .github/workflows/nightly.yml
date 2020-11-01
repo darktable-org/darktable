@@ -22,7 +22,7 @@ jobs:
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
-      SRC_DIR: ${{ github.workspace }}
+      SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ runner.temp }}/build
       INSTALL_PREFIX: ${{ runner.temp }}/install
       ECO: ${{ matrix.eco }}
@@ -33,6 +33,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+          path: src
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
