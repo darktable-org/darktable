@@ -583,7 +583,7 @@ void dt_bauhaus_init()
   darktable.bauhaus->key_val = NULL;
   memset(darktable.bauhaus->key_history, 0, sizeof(darktable.bauhaus->key_history));
 
-  darktable.bauhaus->skip_accel = 0;
+  darktable.bauhaus->skip_accel = 1;
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
