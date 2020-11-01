@@ -172,7 +172,7 @@ jobs:
       - name: Check if it runs
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX})/bin/darktable-cli.exe \
+          ${INSTALL_PREFIX})/bin/darktable-cli \
                  --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
                  "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \

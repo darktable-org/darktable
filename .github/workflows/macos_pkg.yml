@@ -27,6 +27,7 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: Ninja
       TARGET: ${{ matrix.target }}
+      DYLD_FALLBACK_LIBRARY_PATH: /opt/local/lib
     steps:
       - uses: actions/checkout@v2
         with:
