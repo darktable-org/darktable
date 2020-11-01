@@ -20,7 +20,7 @@ jobs:
           - { compiler: LLVM, CC: clang, CXX: clang++ }
         target:
           - skiptest
-          #- nofeatures
+          - nofeatures
         #Release works on GNU & LLVM, Debug only on GNU. todo: use if to exclude
         include:
           # Uncomment if PR needs to generate windows package for testing.
@@ -142,7 +142,7 @@ jobs:
         btype: [ RelWithDebInfo ]
         target:
           - skiptest
-          #- nofeatures
+          - nofeatures
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}

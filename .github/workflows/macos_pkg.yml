@@ -36,10 +36,11 @@ jobs:
         run: |
           curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
           source ./macports-ci install
-          sudo echo "buildfromsource always" >> /opt/local/etc/macports/macports.conf
-          sudo echo "macosx_deployment_target 10.7" >> /opt/local/etc/macports/macports.conf
-          sudo echo "cxx_stdlib libc++" >> /opt/local/etc/macports/macports.conf
-          sudo echo "+no_gnome +no_x11 +quartz -x11 -gnome" >> /opt/local/etc/macports/variants.conf
+          sudo cat /opt/local/etc/macports/macports.conf
+          #sudo echo "buildfromsource always" >> /opt/local/etc/macports/macports.conf
+          #sudo echo "macosx_deployment_target 10.7" >> /opt/local/etc/macports/macports.conf
+          #sudo echo "cxx_stdlib libc++" >> /opt/local/etc/macports/macports.conf
+          echo "+no_gnome +no_x11 +quartz -x11 -gnome" | sudo tee -a /opt/local/etc/macports/variants.conf
           mkdir -p ~/ports/devel/gnutls/files \
                    ~/ports/lang/python37/files \
                    ~/ports/lang/python38/files \
@@ -69,4 +70,5 @@ jobs:
           cp -R "$(port dir gmic)" ~/ports/science
           curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gmic-minimal.patch | patch -d ~/ports -p0
           sudo portindex ~/ports
-          source ./macports-ci 
+          source ./macports-ci localports ~/ports
+          sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg lua webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
