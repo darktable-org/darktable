@@ -35,6 +35,9 @@
 #include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
 
 #define MAX_RADIUS 16
 #define BOX_ITERATIONS 8
