@@ -1311,7 +1311,9 @@ static void _iop_gui_update_label(dt_iop_module_t *module)
 void dt_iop_gui_init(dt_iop_module_t *module)
 {
   ++darktable.gui->reset;
+  --darktable.bauhaus->skip_accel;
   if(module->gui_init) module->gui_init(module);
+  ++darktable.bauhaus->skip_accel;
   --darktable.gui->reset;
 }
 
@@ -1565,13 +1567,11 @@ static void dt_iop_init_module_so(void *m)
     // create a gui and have the widgets register their accelerators
     dt_iop_module_t *module_instance = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
 
-    if(!dt_iop_load_module_by_so(module_instance, module, NULL) && module->gui_init)
+    if(module->gui_init && !dt_iop_load_module_by_so(module_instance, module, NULL))
     {
       darktable.control->accel_initialising = TRUE;
-      ++darktable.gui->reset;
-      module->gui_init(module_instance);
+      dt_iop_gui_init(module_instance);
       module->gui_cleanup(module_instance);
-      --darktable.gui->reset;
       darktable.control->accel_initialising = FALSE;
 
       dt_iop_cleanup_module(module_instance);
