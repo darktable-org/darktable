@@ -1902,28 +1902,33 @@ void dt_iop_gui_reset(dt_iop_module_t *module)
   --darktable.gui->reset;
 }
 
-static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
+static void dt_iop_gui_reset_callback(GtkButton *button, GdkEventButton *event, dt_iop_module_t *module)
 {
-  // if a drawn mask is set, remove it from the list
-  if(module->blend_params->mask_id > 0)
+  //Ctrl is used to apply any auto-presets to the current module
+  //If Ctrl was not pressed, or no auto-presets were applied, reset the module parameters
+  if(!(event->state & GDK_CONTROL_MASK) || !dt_gui_presets_autoapply_for_module(module))
   {
-    dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
-    if(grp) dt_masks_form_remove(module, NULL, grp);
+    // if a drawn mask is set, remove it from the list
+    if(module->blend_params->mask_id > 0)
+    {
+      dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
+      if(grp) dt_masks_form_remove(module, NULL, grp);
+    }
+    /* reset to default params */
+    memcpy(module->params, module->default_params, module->params_size);
+    dt_iop_commit_blend_params(module, module->default_blendop_params);
+
+    /* reset ui to its defaults */
+    dt_iop_gui_reset(module);
+
+    /* update ui to default params*/
+    dt_iop_gui_update(module);
+
+    /* and give focus to the module*/
+    dt_iop_request_focus(module);
+
+    dt_dev_add_history_item(module->dev, module, TRUE);
   }
-  /* reset to default params */
-  memcpy(module->params, module->default_params, module->params_size);
-  dt_iop_commit_blend_params(module, module->default_blendop_params);
-
-  /* reset ui to its defaults */
-  dt_iop_gui_reset(module);
-
-  /* update ui to default params*/
-  dt_iop_gui_update(module);
-
-  /* and give focus to the module*/
-  dt_iop_request_focus(module);
-
-  dt_dev_add_history_item(module->dev, module, TRUE);
 
   if(dt_conf_get_bool("accel/prefer_expanded") || dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
   {
@@ -2420,7 +2425,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   hw[IOP_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
   module->reset_button = GTK_WIDGET(hw[IOP_MODULE_RESET]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_RESET]), _("reset parameters"));
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "clicked", G_CALLBACK(dt_iop_gui_reset_callback), module);
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "button-press-event", G_CALLBACK(dt_iop_gui_reset_callback), module);
   gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_RESET]), "module-reset-button");
 
   /* add preset button if module has implementation */
