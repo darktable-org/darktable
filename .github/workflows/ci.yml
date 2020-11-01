@@ -134,6 +134,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+          path: src
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
