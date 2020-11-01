@@ -18,6 +18,15 @@ jobs:
         btype: [ Release ]
         target:
           - skiptest
+    env:
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      GENERATOR: Ninja
+      TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -27,3 +36,19 @@ jobs:
         run: |
           curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
           source ./macports-ci install
+          echo "buildfromsource always" >> /opt/local/etc/macports/macports.conf
+          echo "macosx_deployment_target 10.7" >> /opt/local/etc/macports/macports.conf
+          echo "cxx_stdlib libc++" >> /opt/local/etc/macports/macports.conf
+          echo "+no_gnome +no_x11 +quartz -x11 -gnome" >> /opt/local/etc/macports/variants.conf
+          mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python37/files ~/ports/lang/python38/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
+          cp -R "$(port dir gnutls)" ~/ports/devel
+          curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-disable-connectx.diff
+          cp -R "$(port dir python37)" ~/ports/lang
+          curl -Lo ~/ports/lang/python37/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
+          cp -R "$(port dir python38)" ~/ports/lang
+          curl -Lo ~/ports/lang/python38/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
+          cp -R "$(port dir GraphicsMagick)" ~/ports/graphics
+          curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
+          cp -R "$(port dir ImageMagick)" ~/ports/graphics
+          curl -Lo ~/ports/graphics/ImageMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/im-stdlib.diff
+          cp -R "$(port dir pugixml)" ~/ports/textproc
