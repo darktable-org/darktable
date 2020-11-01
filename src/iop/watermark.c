@@ -1086,24 +1086,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* render surface on output */
   guint8 *sd = image;
   const float opacity = data->opacity / 100.0f;
-  /*
-  #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(in, out,sd,opacity) schedule(static)
-  #endif
-  */
-  for(int j = 0; j < roi_out->height; j++)
-    for(int i = 0; i < roi_out->width; i++)
-    {
-      const float alpha = (sd[3] / 255.0f) * opacity;
-      /* svg uses a premultiplied alpha, so only use opacity for the blending */
-      out[0] = ((1.0f - alpha) * in[0]) + (opacity * (sd[2] / 255.0f));
-      out[1] = ((1.0f - alpha) * in[1]) + (opacity * (sd[1] / 255.0f));
-      out[2] = ((1.0f - alpha) * in[2]) + (opacity * (sd[0] / 255.0f));
-      out[3] = in[3];
-
-      out += ch;
-      in += ch;
-      sd += 4;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_out, in, out, sd, opacity) \
+  schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height * roi_out->width; j++)
+  {
+    float *const i = in + ch*j;
+    float *const o = out + ch*j;
+    guint8 *const s = sd + 4*j;
+    const float alpha = (s[3] / 255.0f) * opacity;
+    /* svg uses a premultiplied alpha, so only use opacity for the blending */
+    o[0] = ((1.0f - alpha) * i[0]) + (opacity * (s[2] / 255.0f));
+    o[1] = ((1.0f - alpha) * i[1]) + (opacity * (s[1] / 255.0f));
+    o[2] = ((1.0f - alpha) * i[2]) + (opacity * (s[0] / 255.0f));
+    o[3] = in[3];
     }
 
 
