@@ -1,36 +1,21 @@
-name: CI
+name: Nightly PKG
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  schedule:
+  - cron: "0 0 * * *"
 
 jobs:
   Win64:
-    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
+    name: Nightly darktable.${{ github.sha }}.win64
     runs-on: windows-latest
     strategy:
       fail-fast: true
       matrix:
-        btype:
-          - RelWithDebInfo
-        compiler:
-          - { compiler: GNU,  CC: gcc,   CXX: g++ }
-          - { compiler: LLVM, CC: clang, CXX: clang++ }
-        target:
-          - skiptest
-          - nofeatures
-        #Release works on GNU & LLVM, Debug only on GNU. todo: use if to exclude
-        include:
-          # Uncomment if PR needs to generate windows package for testing.
-          #- btype: Release
-          #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
-          #  eco: -DBINARY_PACKAGE_BUILD=ON
-          #  target: skiptest
-          - btype: Debug
-            compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
-            target: skiptest
+        btype: [Release]
+        compiler: 
+          - { compiler: LLVM,  CC: clang,   CXX: clang++ }
+        eco: [-DBINARY_PACKAGE_BUILD=ON]
+        target: [skiptest]
     defaults:
       run:
         shell: msys2 {0}
@@ -44,7 +29,6 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: 'MSYS Makefiles'
       TARGET: ${{ matrix.target }}
-      # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
     steps:
       - uses: actions/checkout@v2
         with:
@@ -113,44 +97,6 @@ jobs:
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: 'actions/upload-artifact@v2'
         with:
-          name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.btype}}.${{ github.sha }}
+          name: darktable.${{ github.sha }}.win64.zip
           path: ${{ github.workspace }}/build/darktable-*.exe
-          retention-days: 1
-
-  macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
-    runs-on: macos-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        compiler:
-          - { compiler: XCode,   CC: cc, CXX: c++ }
-        btype: [ RelWithDebInfo ]
-        target:
-          - skiptest
-          - nofeatures
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Install Base Dependencies
-        run: |
-          brew update > /dev/null || true
-          brew tap Homebrew/bundle
-          cd .ci
-          brew bundle --verbose
-      - name: Build and Install
-        env:
-          CC: ${{ matrix.compiler.CC }}
-          CXX: ${{ matrix.compiler.CXX }}
-          SRC_DIR: ${{ github.workspace }}
-          BUILD_DIR: ${{ github.workspace }}/build
-          INSTALL_PREFIX: ${{ github.workspace }}/install
-          CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-          GENERATOR: Ninja
-          TARGET: ${{ matrix.target }}
-          # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
-        run: |
-          cmake -E make_directory "${BUILD_DIR}";
-          cmake -E make_directory "${INSTALL_PREFIX}";
-          ./.ci/ci-script.sh;
+          retention-days: 2
