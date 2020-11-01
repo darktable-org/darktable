@@ -24,10 +24,10 @@ jobs:
         #Release works on GNU & LLVM, Debug only on GNU. todo: use if to exclude
         include:
           # Uncomment if PR needs to generate windows package for testing.
-          #- btype: Release
-          #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
-          #  eco: -DBINARY_PACKAGE_BUILD=ON
-          #  target: skiptest
+          - btype: Release
+            compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
+            eco: -DBINARY_PACKAGE_BUILD=ON
+            target: skiptest
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
@@ -38,8 +38,8 @@ jobs:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}
-      BUILD_DIR: ${{ github.workspace }}/build
-      INSTALL_PREFIX: ${{ github.workspace }}/install
+      BUILD_DIR: ${{ runner.temp }}/build
+      INSTALL_PREFIX: ${{ runner.temp }}/install
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: 'MSYS Makefiles'
@@ -114,7 +114,7 @@ jobs:
         uses: 'actions/upload-artifact@v2'
         with:
           name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.btype}}.${{ github.sha }}
-          path: ${{ github.workspace }}/build/darktable-*.exe
+          path: ${{ env.BUILD_DIR }}/darktable-*.exe
           retention-days: 1
 
   macOS:
@@ -144,8 +144,8 @@ jobs:
           CC: ${{ matrix.compiler.CC }}
           CXX: ${{ matrix.compiler.CXX }}
           SRC_DIR: ${{ github.workspace }}
-          BUILD_DIR: ${{ github.workspace }}/build
-          INSTALL_PREFIX: ${{ github.workspace }}/install
+          BUILD_DIR: ${{ runner.temp }}/build
+          INSTALL_PREFIX: ${{ runner.temp }}/install
           CMAKE_BUILD_TYPE: ${{ matrix.btype }}
           GENERATOR: Ninja
           TARGET: ${{ matrix.target }}

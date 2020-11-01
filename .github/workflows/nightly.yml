@@ -23,8 +23,8 @@ jobs:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}
-      BUILD_DIR: ${{ github.workspace }}/build
-      INSTALL_PREFIX: ${{ github.workspace }}/install
+      BUILD_DIR: ${{ runner.temp }}/build
+      INSTALL_PREFIX: ${{ runner.temp }}/install
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: 'MSYS Makefiles'
@@ -98,5 +98,5 @@ jobs:
         uses: 'actions/upload-artifact@v2'
         with:
           name: darktable.${{ github.sha }}.win64.zip
-          path: ${{ github.workspace }}/build/darktable-*.exe
+          path: ${{ env.BUILD_DIR }}/darktable-*.exe
           retention-days: 2
