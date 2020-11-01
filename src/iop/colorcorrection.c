@@ -115,18 +115,21 @@ void init_presets(dt_iop_module_so_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
-  float *in = (float *)i;
+  const dt_iop_colorcorrection_data_t *const d = (dt_iop_colorcorrection_data_t *)piece->data;
+  const float *const in = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_out, d, in, out) \
+  schedule(static)
+#endif
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * ch; k += ch)
   {
-    out[0] = in[0];
-    out[1] = d->saturation * (in[1] + in[0] * d->a_scale + d->a_base);
-    out[2] = d->saturation * (in[2] + in[0] * d->b_scale + d->b_base);
-    out[3] = in[3];
-    out += ch;
-    in += ch;
+    out[k] = in[k];
+    out[k+1] = d->saturation * (in[k+1] + in[k+0] * d->a_scale + d->a_base);
+    out[k+2] = d->saturation * (in[k+2] + in[k+0] * d->b_scale + d->b_base);
+    out[k+3] = in[k+3];
   }
 }
 
