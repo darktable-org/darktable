@@ -2367,8 +2367,8 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
   // Set the sizes, margins and paddings
   g->inner_padding = 4; // TODO: INNER_PADDING value as defined in bauhaus.c macros, sync them
   g->inset = g->inner_padding + darktable.bauhaus->quad_width;
-  g->graph_width = g->allocation.width - 2.0 * g->inset - 2.0 * g->line_height; // align the right border on sliders
-  g->graph_height = g->graph_width; // give room to nodes
+  g->graph_width = g->allocation.width - g->inset - 2.0 * g->line_height; // align the right border on sliders
+  g->graph_height = g->allocation.height - g->inset - 2.0 * g->line_height; // give room to nodes
   g->gradient_left_limit = 0.0;
   g->gradient_right_limit = g->graph_width;
   g->gradient_top_limit = g->graph_height + 2 * g->inner_padding;
@@ -2493,7 +2493,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
   // Init or refresh the drawing cache
   //if(!g->graph_valid)
-  if(!_init_drawing(self->widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
+  if(!_init_drawing(widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
 
   // since the widget sizes are not cached and invalidated properly above (yet…)
   // force the invalidation of the nodes coordinates to account for possible widget resizing
@@ -3089,8 +3089,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = dt_ui_notebook_page(g->notebook, _("advanced"), NULL);
 
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                  | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
@@ -3157,8 +3157,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask post-processing")), FALSE, FALSE, 0);
 
-  g->bar = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.05));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bar), FALSE, FALSE, 0);
+  g->bar = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  gtk_widget_set_size_request(GTK_WIDGET(g->bar), -1, 4);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bar), TRUE, TRUE, 0);
   gtk_widget_set_can_focus(GTK_WIDGET(g->bar), TRUE);
   g_signal_connect(G_OBJECT(g->bar), "draw", G_CALLBACK(dt_iop_toneequalizer_bar_draw), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->bar), _("mask histogram span between the first and last deciles.\n"
