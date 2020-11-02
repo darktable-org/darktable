@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-02 13:36-0300\n"
-"PO-Revision-Date: 2020-11-02 13:57-0300\n"
+"POT-Creation-Date: 2020-11-02 17:10-0300\n"
+"PO-Revision-Date: 2020-11-02 17:10-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -972,7 +972,7 @@ msgstr "detectar por 3 vizinhos"
 #: ../src/iop/levels.c:691 ../src/iop/profile_gamma.c:717
 #: ../src/libs/copy_history.c:359 ../src/libs/export.c:1298
 #: ../src/libs/image.c:558 ../src/libs/print_settings.c:1516
-#: ../src/libs/styles.c:562 ../src/views/darkroom.c:2200
+#: ../src/libs/styles.c:673 ../src/views/darkroom.c:2200
 msgid "mode"
 msgstr "modo"
 
@@ -2336,7 +2336,7 @@ msgstr "pasta raiz do LUT 3D"
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:180
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:179
-#: ../src/libs/styles.c:366 ../src/lua/preferences.c:631
+#: ../src/libs/styles.c:370 ../src/lua/preferences.c:631
 msgid "select directory"
 msgstr "selecione diretório"
 
@@ -3195,14 +3195,14 @@ msgstr "Imprimir suas imagens"
 #: ../src/iop/lut3d.c:1554 ../src/libs/collect.c:366
 #: ../src/libs/copy_history.c:100 ../src/libs/geotagging.c:474
 #: ../src/libs/import.c:549 ../src/libs/import.c:655 ../src/libs/lib.c:233
-#: ../src/libs/styles.c:366 ../src/libs/styles.c:391 ../src/libs/tagging.c:2234
+#: ../src/libs/styles.c:370 ../src/libs/styles.c:502 ../src/libs/tagging.c:2234
 #: ../src/libs/tagging.c:2275
 msgid "_cancel"
 msgstr "_cancela"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1587
 #: ../src/gui/preferences.c:1808 ../src/gui/styles_dialog.c:421
-#: ../src/libs/styles.c:367
+#: ../src/libs/styles.c:371
 msgid "_save"
 msgstr "_salvar"
 
@@ -6296,9 +6296,9 @@ msgstr "redefinir ao valor padrão"
 
 #: ../src/gui/camera_import_dialog.c:219 ../src/libs/export_metadata.c:269
 #: ../src/libs/geotagging.c:420 ../src/libs/metadata.c:416
-#: ../src/libs/tagging.c:1329 ../src/libs/tagging.c:1416
-#: ../src/libs/tagging.c:1497 ../src/libs/tagging.c:1622
-#: ../src/libs/tagging.c:1840
+#: ../src/libs/styles.c:419 ../src/libs/tagging.c:1329
+#: ../src/libs/tagging.c:1416 ../src/libs/tagging.c:1497
+#: ../src/libs/tagging.c:1622 ../src/libs/tagging.c:1840
 msgid "cancel"
 msgstr "cancela"
 
@@ -7068,7 +7068,7 @@ msgstr ""
 "clique ou pressione enter novamente para circular pelos resultados"
 
 #. export button
-#: ../src/gui/preferences.c:962 ../src/libs/styles.c:596
+#: ../src/gui/preferences.c:962 ../src/libs/styles.c:707
 msgid "export..."
 msgstr "exportar..."
 
@@ -7118,7 +7118,7 @@ msgstr "selecione arquivo para importar"
 #: ../src/gui/preferences.c:1613 ../src/gui/preferences.c:1696
 #: ../src/libs/collect.c:367 ../src/libs/copy_history.c:101
 #: ../src/libs/geotagging.c:475 ../src/libs/import.c:550
-#: ../src/libs/import.c:656 ../src/libs/styles.c:392
+#: ../src/libs/import.c:656 ../src/libs/styles.c:503
 msgid "_open"
 msgstr "_abrir"
 
@@ -7338,7 +7338,7 @@ msgstr ""
 "estilo `%s' já existe.\n"
 "Deseja sobrescrever?"
 
-#: ../src/gui/styles_dialog.c:211
+#: ../src/gui/styles_dialog.c:211 ../src/libs/styles.c:418
 msgid "overwrite style?"
 msgstr "sobrescrever estilo?"
 
@@ -7350,7 +7350,7 @@ msgstr "favor nomear o estilo"
 msgid "unnamed style"
 msgstr "estilo sem nome"
 
-#: ../src/gui/styles_dialog.c:291 ../src/libs/styles.c:379
+#: ../src/gui/styles_dialog.c:291
 #, c-format
 msgid "style %s was successfully saved"
 msgstr "estilo %s foi salvo com sucesso"
@@ -7783,11 +7783,11 @@ msgid "create unique filename"
 msgstr "criar nome de arquivo único"
 
 #: ../src/imageio/storage/disk.c:204 ../src/libs/copy_history.c:361
-#: ../src/libs/image.c:560 ../src/libs/styles.c:564
+#: ../src/libs/image.c:560 ../src/libs/styles.c:421 ../src/libs/styles.c:675
 msgid "overwrite"
 msgstr "sobrescrever"
 
-#: ../src/imageio/storage/disk.c:205
+#: ../src/imageio/storage/disk.c:205 ../src/libs/styles.c:420
 msgid "skip"
 msgstr "pular"
 
@@ -9803,7 +9803,7 @@ msgstr "analisar esta imagem"
 
 #. apply button
 #: ../src/iop/colortransfer.c:668 ../src/libs/metadata.c:721
-#: ../src/libs/styles.c:601
+#: ../src/libs/styles.c:712
 msgid "apply"
 msgstr "aplicar"
 
@@ -9840,7 +9840,7 @@ msgid "HSL base setting"
 msgstr "configuração de base HSL"
 
 #: ../src/iop/colorzones.c:2191 ../src/iop/retouch.c:1706
-#: ../src/iop/toneequal.c:1794
+#: ../src/iop/toneequal.c:1791
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "não é possível mostrar máscaras quando a máscara de mesclagem é mostrada"
@@ -10728,11 +10728,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:3418 ../src/iop/filmicrgb.c:3428
 #: ../src/iop/filmicrgb.c:3461 ../src/iop/filmicrgb.c:3471
-#: ../src/iop/toneequal.c:3031 ../src/iop/toneequal.c:3035
-#: ../src/iop/toneequal.c:3039 ../src/iop/toneequal.c:3043
-#: ../src/iop/toneequal.c:3047 ../src/iop/toneequal.c:3051
-#: ../src/iop/toneequal.c:3055 ../src/iop/toneequal.c:3059
-#: ../src/iop/toneequal.c:3063 ../src/libs/metadata_view.c:509
+#: ../src/iop/toneequal.c:3028 ../src/iop/toneequal.c:3032
+#: ../src/iop/toneequal.c:3036 ../src/iop/toneequal.c:3040
+#: ../src/iop/toneequal.c:3044 ../src/iop/toneequal.c:3048
+#: ../src/iop/toneequal.c:3052 ../src/iop/toneequal.c:3056
+#: ../src/iop/toneequal.c:3060 ../src/libs/metadata_view.c:509
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -11876,7 +11876,7 @@ msgstr "hald cluts (png) ou 3D lut (cubo ou 3dl)"
 
 #: ../src/iop/lut3d.c:1586 ../src/libs/copy_history.c:115
 #: ../src/libs/geotagging.c:496 ../src/libs/import.c:580
-#: ../src/libs/styles.c:409
+#: ../src/libs/styles.c:520
 msgid "all files"
 msgstr "todos arquivos"
 
@@ -13103,15 +13103,15 @@ msgstr ""
 "o equalizador de tons não conseguiu alocar memória, verifique sua "
 "configuração de RAM"
 
-#: ../src/iop/toneequal.c:1646 ../src/iop/toneequal.c:2006
+#: ../src/iop/toneequal.c:1643 ../src/iop/toneequal.c:2003
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "a interpolação está instável, diminua a suavização da curva"
 
-#: ../src/iop/toneequal.c:1690 ../src/iop/toneequal.c:1752
+#: ../src/iop/toneequal.c:1687 ../src/iop/toneequal.c:1749
 msgid "wait for the preview to finish recomputing"
 msgstr "aguardar a pré-visualização para terminar de recomputar"
 
-#: ../src/iop/toneequal.c:1862 ../src/iop/toneequal.c:2324
+#: ../src/iop/toneequal.c:1859 ../src/iop/toneequal.c:2321
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -13120,86 +13120,86 @@ msgstr ""
 "shift+scroll para mudar em passos largos; ctrl+scroll para mudar em passos "
 "curtos"
 
-#: ../src/iop/toneequal.c:2011
+#: ../src/iop/toneequal.c:2008
 msgid "some parameters are out-of-bounds"
 msgstr "alguns parâmetros estão fora dos limites"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2285
+#: ../src/iop/toneequal.c:2282
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:2938
+#: ../src/iop/toneequal.c:2935
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sobre a imagem] mudar exposição do tom"
 
-#: ../src/iop/toneequal.c:2944
+#: ../src/iop/toneequal.c:2941
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos largos"
 
-#: ../src/iop/toneequal.c:2950
+#: ../src/iop/toneequal.c:2947
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos curtos"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3027
+#: ../src/iop/toneequal.c:3024
 msgid "simple"
 msgstr "simples"
 
-#: ../src/iop/toneequal.c:3066
+#: ../src/iop/toneequal.c:3063
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3067
+#: ../src/iop/toneequal.c:3064
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3068
+#: ../src/iop/toneequal.c:3065
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3069
+#: ../src/iop/toneequal.c:3066
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3070
+#: ../src/iop/toneequal.c:3067
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3071
+#: ../src/iop/toneequal.c:3068
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3072
+#: ../src/iop/toneequal.c:3069
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3073
+#: ../src/iop/toneequal.c:3070
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3074
+#: ../src/iop/toneequal.c:3071
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3079
+#: ../src/iop/toneequal.c:3076
 msgid "advanced"
 msgstr "avançado"
 
-#: ../src/iop/toneequal.c:3094
+#: ../src/iop/toneequal.c:3091
 msgid "double-click to reset the curve"
 msgstr "clique duplo para redefinir curva"
 
-#: ../src/iop/toneequal.c:3101
+#: ../src/iop/toneequal.c:3098
 msgid "curve smoothing"
 msgstr "suavização de curva"
 
-#: ../src/iop/toneequal.c:3102
+#: ../src/iop/toneequal.c:3099
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -13212,11 +13212,11 @@ msgstr ""
 "mas podem produzir transições de tons brutais e danificar o contraste local."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3111
+#: ../src/iop/toneequal.c:3108
 msgid "masking"
 msgstr "máscaras"
 
-#: ../src/iop/toneequal.c:3115
+#: ../src/iop/toneequal.c:3112
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -13224,15 +13224,15 @@ msgstr ""
 "pré-visualiza a máscara e escolhe o estimador que te dá o\n"
 "maior contraste entre áreas a aclarar e áreas a escurecer"
 
-#: ../src/iop/toneequal.c:3118
+#: ../src/iop/toneequal.c:3115
 msgid "details"
 msgstr "detalhes"
 
-#: ../src/iop/toneequal.c:3119
+#: ../src/iop/toneequal.c:3116
 msgid "preserve details"
 msgstr "preservar detalhes"
 
-#: ../src/iop/toneequal.c:3120
+#: ../src/iop/toneequal.c:3117
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -13256,7 +13256,7 @@ msgstr ""
 "contrário do filtro guiado que suaviza menos os realces)\n"
 "'averaged eigf' é uma mędia geométrica dos métodos 'não' e 'eigf'"
 
-#: ../src/iop/toneequal.c:3128
+#: ../src/iop/toneequal.c:3125
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -13264,7 +13264,7 @@ msgstr ""
 "número de passos do filtro guiado a aplicar\n"
 "ajuda a dispersão das bordas do filtro, mas é lento"
 
-#: ../src/iop/toneequal.c:3134
+#: ../src/iop/toneequal.c:3131
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -13274,7 +13274,7 @@ msgstr ""
 "atenção: valores altos deste parâmetro podem fazer a pré-visualização\n"
 "do darkroom muito mais lenta se o módulo de redução de ruído é usado."
 
-#: ../src/iop/toneequal.c:3141
+#: ../src/iop/toneequal.c:3138
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -13288,11 +13288,11 @@ msgstr ""
 "valores baixos dão gradientes mais suaves e melhor suavização\n"
 "mas podem levar a arestas imprecisas e halos"
 
-#: ../src/iop/toneequal.c:3147
+#: ../src/iop/toneequal.c:3144
 msgid "mask post-processing"
 msgstr "pós-processamento de máscara"
 
-#: ../src/iop/toneequal.c:3153
+#: ../src/iop/toneequal.c:3150
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -13302,7 +13302,7 @@ msgstr ""
 "a linha central mostra a média. as barras laranja aparecem nos extremos se "
 "houver corte."
 
-#: ../src/iop/toneequal.c:3160
+#: ../src/iop/toneequal.c:3157
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -13313,7 +13313,7 @@ msgstr ""
 "para produzir áreas mais suaves quando valores altos de enevoamento são "
 "usados"
 
-#: ../src/iop/toneequal.c:3167
+#: ../src/iop/toneequal.c:3164
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -13323,7 +13323,7 @@ msgstr ""
 "para melhor controle da correção de exposição com os nós disponíveis.\n"
 "o seletor ajustará automaticamente a exposição média em -4EV."
 
-#: ../src/iop/toneequal.c:3177
+#: ../src/iop/toneequal.c:3174
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -13335,7 +13335,7 @@ msgstr ""
 "isto permite espalhar o histograma de exposição sobre mais canais\n"
 "para um controle melhor da correção de exposição."
 
-#: ../src/iop/toneequal.c:3192 ../src/iop/toneequal.c:3196
+#: ../src/iop/toneequal.c:3189 ../src/iop/toneequal.c:3193
 msgid "display exposure mask"
 msgstr "mostrar máscara de exposição"
 
@@ -13961,11 +13961,11 @@ msgstr ""
 "descarta histórico de\n"
 "todas imagens selecionadas"
 
-#: ../src/libs/copy_history.c:360 ../src/libs/styles.c:563
+#: ../src/libs/copy_history.c:360 ../src/libs/styles.c:674
 msgid "append"
 msgstr "anexa"
 
-#: ../src/libs/copy_history.c:362 ../src/libs/styles.c:565
+#: ../src/libs/copy_history.c:362 ../src/libs/styles.c:676
 msgid "how to handle existing history"
 msgstr "como gerenciar histórico existente"
 
@@ -14661,7 +14661,7 @@ msgid "physically delete from disk"
 msgstr "excluir fisicamente do disco"
 
 #. delete
-#: ../src/libs/image.c:442 ../src/libs/styles.c:586
+#: ../src/libs/image.c:442 ../src/libs/styles.c:697
 msgid "remove"
 msgstr "remover"
 
@@ -15238,7 +15238,9 @@ msgstr "ir a coleção (mesa de luz)"
 #: ../src/libs/map_locations.c:822
 msgid ""
 "terminate edition (press enter or escape) before selecting another location"
-msgstr "terminar a edição (pressione enter ou esc) antes de selecionar outra localização"
+msgstr ""
+"terminar a edição (pressione enter ou esc) antes de selecionar outra "
+"localização"
 
 #: ../src/libs/map_locations.c:913
 msgid ""
@@ -15259,14 +15261,16 @@ msgstr ""
 "lista de localizações do usuário,\n"
 "clique para mostrar ou esconder uma localização no mapa:\n"
 " - scroll dentro da forma para mudar seu tamanho\n"
-" - se for retangulo, <chift> ou <ctrl> com scroll para modificar a largura ou altura\n"
+" - se for retangulo, <chift> ou <ctrl> com scroll para modificar a largura "
+"ou altura\n"
 " - clique dentro d aforma e arraste para mudar sua posição\n"
 " - ctrl-clique para mover a imagem de dentro da localização\n"
 " - ctrl-clique para editar o nome de uma localização\n"
 " - um símbolo da pipe '|' quebra o nome em vários níveis\n"
 " - para remover um grupo de localizações, limpe seu nome\n"
 " - pressione enter para validar o novo nome, esc para cancelar a edição\n"
-" - clique direito para outras ações: remover a localização e ir para a coleção,\n"
+" - clique direito para outras ações: remover a localização e ir para a "
+"coleção,\n"
 " - ctrl-scroll para mudar o tamanho da janela"
 
 #: ../src/libs/map_locations.c:940
@@ -16232,15 +16236,33 @@ msgid_plural "remove styles?"
 msgstr[0] "remover estilo?"
 msgstr[1] "remover estilos?"
 
-#: ../src/libs/styles.c:391
+#: ../src/libs/styles.c:425
+#, c-format
+msgid ""
+"style `%s' already exists.\n"
+"do you want to overwrite existing style?\n"
+msgstr ""
+"estilo `%s' já existe.\n"
+"Deseja sobrescrever?\n"
+
+#: ../src/libs/styles.c:427
+msgid "apply this option to all existing styles"
+msgstr "auto aplicar esta opção a todos os estilos existentes"
+
+#: ../src/libs/styles.c:490
+#, c-format
+msgid "style %s was successfully exported"
+msgstr "estilo %s foi exportado com sucesso"
+
+#: ../src/libs/styles.c:502
 msgid "select style"
 msgstr "selecionar estilo"
 
-#: ../src/libs/styles.c:404
+#: ../src/libs/styles.c:515
 msgid "darktable style files"
 msgstr "arquivos de estilo do darktable"
 
-#: ../src/libs/styles.c:532
+#: ../src/libs/styles.c:643
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -16248,55 +16270,55 @@ msgstr ""
 "estilos disponíveis,\n"
 "clique duplo para aplicar"
 
-#: ../src/libs/styles.c:539 ../src/libs/styles.c:540
+#: ../src/libs/styles.c:650 ../src/libs/styles.c:651
 msgid "filter style names"
 msgstr "filtrar nomes de estilo"
 
-#: ../src/libs/styles.c:552
+#: ../src/libs/styles.c:663
 msgid "create duplicate"
 msgstr "cria duplicata"
 
-#: ../src/libs/styles.c:558
+#: ../src/libs/styles.c:669
 msgid "creates a duplicate of the image before applying style"
 msgstr "cria uma duplicata da imagem antes de aplica o estilo"
 
 #. create
-#: ../src/libs/styles.c:576
+#: ../src/libs/styles.c:687
 msgid "create..."
 msgstr "criar..."
 
-#: ../src/libs/styles.c:576
+#: ../src/libs/styles.c:687
 msgid "create styles from history stack of selected images"
 msgstr "cria estilos a partir do histórico das imagens selecionadas"
 
 #. edit
-#: ../src/libs/styles.c:581
+#: ../src/libs/styles.c:692
 msgid "edit..."
 msgstr "editar..."
 
-#: ../src/libs/styles.c:581
+#: ../src/libs/styles.c:692
 msgid "edit the selected styles in list above"
 msgstr "edita os estilos selecionados na lista acima"
 
-#: ../src/libs/styles.c:586
+#: ../src/libs/styles.c:697
 msgid "removes the selected styles in list above"
 msgstr "exclui os estilos selecionados na lista acima"
 
 #. import button
-#: ../src/libs/styles.c:591 ../src/libs/tagging.c:2800
+#: ../src/libs/styles.c:702 ../src/libs/tagging.c:2800
 msgctxt "verb"
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/libs/styles.c:591
+#: ../src/libs/styles.c:702
 msgid "import styles from a style files"
 msgstr "importa estilo de um arquivo de estilo"
 
-#: ../src/libs/styles.c:596
+#: ../src/libs/styles.c:707
 msgid "export the selected styles into a style files"
 msgstr "exportar os estilos selecionados em um arquivo de estilo"
 
-#: ../src/libs/styles.c:601
+#: ../src/libs/styles.c:712
 msgid "apply the selected styles in list above to selected images"
 msgstr "aplica os estilos selecionados na lista acima às imagens selecionadas"
 
