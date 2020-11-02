@@ -1767,13 +1767,10 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
+  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
 
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
-
-  update_profile_list(self);
 
   // working profile
   int idx = -1;
@@ -1799,7 +1796,6 @@ void gui_update(struct dt_iop_module_t *self)
   }
   dt_bauhaus_combobox_set(g->work_combobox, idx);
 
-  // TODO: merge this into update_profile_list()
   prof = g->image_profiles;
   while(prof)
   {
@@ -1931,11 +1927,15 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = DT_COLORSPACE_ENHANCED_MATRIX;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+
+  update_profile_list(module);
 }
 
 static void update_profile_list(dt_iop_module_t *self)
 {
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+
+  if(!g) return;
 
   // clear and refill the image profile list
   g_list_free_full(g->image_profiles, free);
@@ -2079,9 +2079,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->work_combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->work_combobox, NULL, N_("working profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
-
-  // now generate the list of profiles applicable to the current image and update the list
-//  update_profile_list(self);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
   {

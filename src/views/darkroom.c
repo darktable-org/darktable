@@ -944,13 +944,14 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
       if(!dt_iop_is_hidden(module))
       {
         module->gui_init(module);
-        dt_iop_reload_defaults(module);
 
         /* add module to right panel */
         GtkWidget *expander = dt_iop_gui_get_expander(module);
         dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
         dt_iop_gui_set_expanded(module, FALSE, dt_conf_get_bool("darkroom/ui/single_module"));
         dt_iop_gui_update_blending(module);
+
+        dt_iop_reload_defaults(module);
       }
     }
     else
@@ -2895,8 +2896,6 @@ void enter(dt_view_t *self)
   /*
    * add IOP modules to plugin list
    */
-  // avoid triggering of events before plugin is ready:
-  ++darktable.gui->reset;
   char option[1024];
   GList *modules = g_list_last(dev->iop);
   while(modules)
@@ -2906,8 +2905,7 @@ void enter(dt_view_t *self)
     /* initialize gui if iop have one defined */
     if(!dt_iop_is_hidden(module))
     {
-      module->gui_init(module);
-      dt_iop_reload_defaults(module);
+      dt_iop_gui_init(module);
 
       /* add module to right panel */
       GtkWidget *expander = dt_iop_gui_get_expander(module);
@@ -2918,13 +2916,12 @@ void enter(dt_view_t *self)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
       else
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
+
+      dt_iop_reload_defaults(module);
     }
 
     modules = g_list_previous(modules);
   }
-
-  // make signals work again:
-  --darktable.gui->reset;
 
   /* signal that darktable.develop is initialized and ready to be used */
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);

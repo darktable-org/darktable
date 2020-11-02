@@ -57,6 +57,11 @@ void dt_accel_path_iop(char *s, size_t n, char *module, const char *path)
       g_free(split_paths[0]);
       split_paths[0] = g_strdup(_("preset"));
     }
+    for(gchar **cur_path = split_paths; *cur_path; cur_path++)
+    {
+      gchar *after_context = strchr(*cur_path,'|');
+      if(after_context) memmove(*cur_path, after_context + 1, strlen(after_context));
+    }
     gchar *joined_paths = g_strjoinv("/", split_paths);
     snprintf(s, n, "<Darktable>/%s/%s/%s", "image operations", module, joined_paths);
     g_free(joined_paths);
