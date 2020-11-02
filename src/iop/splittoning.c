@@ -432,9 +432,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
-  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)module->params;
+  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
 
   dt_bauhaus_slider_set(g->shadow_hue_gslider, p->shadow_hue);
   dt_bauhaus_slider_set(g->shadow_sat_gslider, p->shadow_saturation);

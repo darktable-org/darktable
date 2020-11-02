@@ -612,9 +612,8 @@ void gui_reset(dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)module->params;
+  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
 
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
@@ -674,7 +673,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->gamma, 4);
   gtk_widget_set_tooltip_text(g->gamma, _("gamma exponential factor"));
 
-  gtk_widget_show_all(vbox_gamma);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_gamma, "gamma");
 
   /**** LOG MODE ****/
@@ -711,7 +709,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->auto_button, TRUE, TRUE, 0);
 
-  gtk_widget_show_all(vbox_log);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_log, "log");
 
   // start building top level widget

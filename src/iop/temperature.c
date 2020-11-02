@@ -1123,8 +1123,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
   dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
 
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "disabled" : "enabled");
-
   if(self->hide_enable_button) return;
 
   dt_iop_color_picker_reset(self, TRUE);
@@ -1448,6 +1446,8 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
   if(g)
   {
+    gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->hide_enable_button ? "disabled" : "enabled");
+
     dt_bauhaus_slider_set_default(g->scale_r, d->red);
     dt_bauhaus_slider_set_default(g->scale_g, d->green);
     dt_bauhaus_slider_set_default(g->scale_b, d->blue);
@@ -1959,8 +1959,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->colorpicker, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_asshot, TRUE, TRUE, 0);
   gtk_box_pack_start(box_enabled, g->buttonbar, TRUE, TRUE, 0);
-
-  gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
 
   g->presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->presets, NULL, N_("settings")); // relabel to settings to remove confusion between module presets and white balance settings

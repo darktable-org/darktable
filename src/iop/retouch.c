@@ -2271,15 +2271,6 @@ void gui_init(dt_iop_module_t *self)
   /* add signal handler for preview pipe finish to redraw the preview */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(rt_develop_ui_pipe_finished_callback), self);
-
-  gtk_widget_show_all(g->vbox_blur);
-  gtk_widget_set_no_show_all(g->vbox_blur, TRUE);
-
-  gtk_widget_show_all(g->vbox_fill);
-  gtk_widget_set_no_show_all(g->vbox_fill, TRUE);
-
-  gtk_widget_show_all(g->vbox_preview_scale);
-  gtk_widget_set_no_show_all(g->vbox_preview_scale, TRUE);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
