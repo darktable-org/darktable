@@ -3197,6 +3197,10 @@ void gui_init(struct dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
+  int active_page = dt_conf_get_int("plugins/darkroom/toneequal/gui_page");
+  gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
+  gtk_notebook_set_current_page(g->notebook, active_page);
+
   g_signal_connect(G_OBJECT(g->notebook), "button-press-event", G_CALLBACK(notebook_button_press), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
@@ -3224,6 +3228,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+
+  dt_conf_set_int("plugins/darkroom/toneequal/gui_page", gtk_notebook_get_current_page (g->notebook));
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_started_callback), self);
