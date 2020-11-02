@@ -299,7 +299,7 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   name = path ? g_strconcat(path, "|", NULL) : g_strdup("");
   const int base_len = strlen(name);
   int i = 1;
-  name = dt_util_dstrcat(name, "%s", _("new_location"));
+  name = dt_util_dstrcat(name, "%s", _("new location"));
   char *new_name = g_strdup(name);
   while(dt_map_location_name_exists(new_name))
   {
