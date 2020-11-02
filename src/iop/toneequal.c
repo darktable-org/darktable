@@ -2296,7 +2296,11 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_move_to(cr, x_pointer + (outer_radius + 4. * g->inner_padding) / zoom_scale,
                     y_pointer - ink.y - ink.height / 2.);
   pango_cairo_show_layout(cr, layout);
+
   cairo_stroke(cr);
+
+  pango_font_description_free(desc);
+  g_object_unref(layout);
 }
 
 
@@ -2329,10 +2333,19 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
 {
   // Cache the equalizer graph objects to avoid recomputing all the view at each redraw
   gtk_widget_get_allocation(widget, &g->allocation);
+
+  if(g->cst) cairo_surface_destroy(g->cst);
   g->cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, g->allocation.width, g->allocation.height);
+
+  if(g->cr) cairo_destroy(g->cr);
   g->cr = cairo_create(g->cst);
+
+  if(g->layout) g_object_unref(g->layout);
   g->layout = pango_cairo_create_layout(g->cr);
+
+  if(g->desc) pango_font_description_free(g->desc);
   g->desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+
   pango_layout_set_font_description(g->layout, g->desc);
   pango_cairo_context_set_resolution(pango_layout_get_context(g->layout), darktable.gui->dpi);
   g->context = gtk_widget_get_style_context(widget);
@@ -2412,6 +2425,7 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
   cairo_rectangle(g->cr, g->gradient_left_limit, g->gradient_top_limit, g->gradient_width, g->line_height);
   cairo_set_source(g->cr, grad);
   cairo_fill(g->cr);
+  cairo_pattern_destroy(grad);
 
   /** y axis **/
   // Draw the perceptually even gradient
