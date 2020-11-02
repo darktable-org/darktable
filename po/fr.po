@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-02 14:22+0100\n"
-"PO-Revision-Date: 2020-11-02 14:32+0100\n"
+"POT-Creation-Date: 2020-11-02 19:23+0100\n"
+"PO-Revision-Date: 2020-11-02 19:25+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -967,7 +967,7 @@ msgstr "détection par 3 voisins"
 #: ../src/iop/levels.c:691 ../src/iop/profile_gamma.c:717
 #: ../src/libs/copy_history.c:359 ../src/libs/export.c:1298
 #: ../src/libs/image.c:558 ../src/libs/print_settings.c:1516
-#: ../src/libs/styles.c:562 ../src/views/darkroom.c:2200
+#: ../src/libs/styles.c:673 ../src/views/darkroom.c:2200
 msgid "mode"
 msgstr "mode"
 
@@ -2391,7 +2391,7 @@ msgstr "répertoire 3D lut racine"
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:197
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:180
 #: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:179
-#: ../src/libs/styles.c:366 ../src/lua/preferences.c:631
+#: ../src/libs/styles.c:370 ../src/lua/preferences.c:631
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
@@ -3250,14 +3250,14 @@ msgstr "Imprimer vos images"
 #: ../src/iop/lut3d.c:1554 ../src/libs/collect.c:366
 #: ../src/libs/copy_history.c:100 ../src/libs/geotagging.c:474
 #: ../src/libs/import.c:549 ../src/libs/import.c:655 ../src/libs/lib.c:233
-#: ../src/libs/styles.c:366 ../src/libs/styles.c:391 ../src/libs/tagging.c:2234
+#: ../src/libs/styles.c:370 ../src/libs/styles.c:502 ../src/libs/tagging.c:2234
 #: ../src/libs/tagging.c:2275
 msgid "_cancel"
 msgstr "_annuler"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1587
 #: ../src/gui/preferences.c:1808 ../src/gui/styles_dialog.c:421
-#: ../src/libs/styles.c:367
+#: ../src/libs/styles.c:371
 msgid "_save"
 msgstr "_enregistrer"
 
@@ -6365,9 +6365,9 @@ msgstr "réinitialiser à la valeur par défaut"
 
 #: ../src/gui/camera_import_dialog.c:219 ../src/libs/export_metadata.c:269
 #: ../src/libs/geotagging.c:420 ../src/libs/metadata.c:416
-#: ../src/libs/tagging.c:1329 ../src/libs/tagging.c:1416
-#: ../src/libs/tagging.c:1497 ../src/libs/tagging.c:1622
-#: ../src/libs/tagging.c:1840
+#: ../src/libs/styles.c:419 ../src/libs/tagging.c:1329
+#: ../src/libs/tagging.c:1416 ../src/libs/tagging.c:1497
+#: ../src/libs/tagging.c:1622 ../src/libs/tagging.c:1840
 msgid "cancel"
 msgstr "annuler"
 
@@ -7140,7 +7140,7 @@ msgstr ""
 "cliquer ou ré-appuyer sur entrée pour rechercher les occurrences suivantes"
 
 #. export button
-#: ../src/gui/preferences.c:962 ../src/libs/styles.c:596
+#: ../src/gui/preferences.c:962 ../src/libs/styles.c:707
 msgid "export..."
 msgstr "exporter..."
 
@@ -7190,7 +7190,7 @@ msgstr "sélectionne le fichier à importer"
 #: ../src/gui/preferences.c:1613 ../src/gui/preferences.c:1696
 #: ../src/libs/collect.c:367 ../src/libs/copy_history.c:101
 #: ../src/libs/geotagging.c:475 ../src/libs/import.c:550
-#: ../src/libs/import.c:656 ../src/libs/styles.c:392
+#: ../src/libs/import.c:656 ../src/libs/styles.c:503
 msgid "_open"
 msgstr "_ouvrir"
 
@@ -7404,7 +7404,7 @@ msgstr ""
 "le style « %s » existe déjà.\n"
 "voulez-vous le remplacer ?"
 
-#: ../src/gui/styles_dialog.c:211
+#: ../src/gui/styles_dialog.c:211 ../src/libs/styles.c:418
 msgid "overwrite style?"
 msgstr "remplacer le style ?"
 
@@ -7416,7 +7416,7 @@ msgstr "merci de donner un nom au style"
 msgid "unnamed style"
 msgstr "style sans nom"
 
-#: ../src/gui/styles_dialog.c:291 ../src/libs/styles.c:379
+#: ../src/gui/styles_dialog.c:291
 #, c-format
 msgid "style %s was successfully saved"
 msgstr "le style « %s » a été sauvegardé"
@@ -7850,11 +7850,11 @@ msgid "create unique filename"
 msgstr "créer fichier unique"
 
 #: ../src/imageio/storage/disk.c:204 ../src/libs/copy_history.c:361
-#: ../src/libs/image.c:560 ../src/libs/styles.c:564
+#: ../src/libs/image.c:560 ../src/libs/styles.c:421 ../src/libs/styles.c:675
 msgid "overwrite"
 msgstr "écraser"
 
-#: ../src/imageio/storage/disk.c:205
+#: ../src/imageio/storage/disk.c:205 ../src/libs/styles.c:420
 msgid "skip"
 msgstr "sauter"
 
@@ -9873,7 +9873,7 @@ msgstr "analyser cette image"
 
 #. apply button
 #: ../src/iop/colortransfer.c:668 ../src/libs/metadata.c:721
-#: ../src/libs/styles.c:601
+#: ../src/libs/styles.c:712
 msgid "apply"
 msgstr "appliquer"
 
@@ -11963,7 +11963,7 @@ msgstr "hald cluts (png) ou 3D lut (cube ou 3dl)"
 
 #: ../src/iop/lut3d.c:1586 ../src/libs/copy_history.c:115
 #: ../src/libs/geotagging.c:496 ../src/libs/import.c:580
-#: ../src/libs/styles.c:409
+#: ../src/libs/styles.c:520
 msgid "all files"
 msgstr "tous les fichiers"
 
@@ -14071,11 +14071,11 @@ msgstr ""
 "supprime le développement des\n"
 "images sélectionnées"
 
-#: ../src/libs/copy_history.c:360 ../src/libs/styles.c:563
+#: ../src/libs/copy_history.c:360 ../src/libs/styles.c:674
 msgid "append"
 msgstr "empiler"
 
-#: ../src/libs/copy_history.c:362 ../src/libs/styles.c:565
+#: ../src/libs/copy_history.c:362 ../src/libs/styles.c:676
 msgid "how to handle existing history"
 msgstr "gestion des développements pré-existants"
 
@@ -14778,7 +14778,7 @@ msgstr "supprime physiquement du disque"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #. delete
-#: ../src/libs/image.c:442 ../src/libs/styles.c:586
+#: ../src/libs/image.c:442 ../src/libs/styles.c:697
 msgid "remove"
 msgstr "enlever"
 
@@ -16402,15 +16402,33 @@ msgid_plural "remove styles?"
 msgstr[0] "enlever un style?"
 msgstr[1] "enlever les styles ?"
 
-#: ../src/libs/styles.c:391
+#: ../src/libs/styles.c:425
+#, c-format
+msgid ""
+"style `%s' already exists.\n"
+"do you want to overwrite existing style?\n"
+msgstr ""
+"le style « %s » existe déjà.\n"
+"voulez-vous le remplacer ?\n"
+
+#: ../src/libs/styles.c:427
+msgid "apply this option to all existing styles"
+msgstr "appliquer ce choix à tous les styles"
+
+#: ../src/libs/styles.c:490
+#, c-format
+msgid "style %s was successfully exported"
+msgstr "le style « %s » a été exporté"
+
+#: ../src/libs/styles.c:502
 msgid "select style"
 msgstr "sélectionner le style"
 
-#: ../src/libs/styles.c:404
+#: ../src/libs/styles.c:515
 msgid "darktable style files"
 msgstr "fichiers de style"
 
-#: ../src/libs/styles.c:532
+#: ../src/libs/styles.c:643
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -16418,55 +16436,55 @@ msgstr ""
 "styles disponibles, \n"
 "double-clic pour appliquer"
 
-#: ../src/libs/styles.c:539 ../src/libs/styles.c:540
+#: ../src/libs/styles.c:650 ../src/libs/styles.c:651
 msgid "filter style names"
 msgstr "filtrer les styles"
 
-#: ../src/libs/styles.c:552
+#: ../src/libs/styles.c:663
 msgid "create duplicate"
 msgstr "cloner l'image et appliquer le style"
 
-#: ../src/libs/styles.c:558
+#: ../src/libs/styles.c:669
 msgid "creates a duplicate of the image before applying style"
 msgstr "crée une image virtuelle avant d'appliquer le style"
 
 #. create
-#: ../src/libs/styles.c:576
+#: ../src/libs/styles.c:687
 msgid "create..."
 msgstr "créer..."
 
-#: ../src/libs/styles.c:576
+#: ../src/libs/styles.c:687
 msgid "create styles from history stack of selected images"
 msgstr "créer des styles à partir des images sélectionnées"
 
 #. edit
-#: ../src/libs/styles.c:581
+#: ../src/libs/styles.c:692
 msgid "edit..."
 msgstr "éditer..."
 
-#: ../src/libs/styles.c:581
+#: ../src/libs/styles.c:692
 msgid "edit the selected styles in list above"
 msgstr "modifie les styles sélectionnés dans la liste ci-dessus"
 
-#: ../src/libs/styles.c:586
+#: ../src/libs/styles.c:697
 msgid "removes the selected styles in list above"
 msgstr "enlève les styles sélectionnés dans la liste ci-dessus"
 
 #. import button
-#: ../src/libs/styles.c:591 ../src/libs/tagging.c:2800
+#: ../src/libs/styles.c:702 ../src/libs/tagging.c:2800
 msgctxt "verb"
 msgid "import..."
 msgstr "importer..."
 
-#: ../src/libs/styles.c:591
+#: ../src/libs/styles.c:702
 msgid "import styles from a style files"
 msgstr "importer des styles depuis des fichiers"
 
-#: ../src/libs/styles.c:596
+#: ../src/libs/styles.c:707
 msgid "export the selected styles into a style files"
 msgstr "exporter les styles sélectionnés dans des fichiers"
 
-#: ../src/libs/styles.c:601
+#: ../src/libs/styles.c:712
 msgid "apply the selected styles in list above to selected images"
 msgstr ""
 "appliquer les styles sélectionnés dans la liste ci-dessus aux images "
@@ -21680,9 +21698,6 @@ msgstr "action"
 
 #~ msgid "golden triangles"
 #~ msgstr "triangles d'or"
-
-#~ msgid "enable this option to show golden triangles."
-#~ msgstr "affiche les triangles d'or"
 
 #~ msgid "2 star"
 #~ msgstr "2 étoiles"
