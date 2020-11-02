@@ -1319,9 +1319,9 @@ void dt_iop_gui_init(dt_iop_module_t *module)
 
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
-  ++darktable.gui->reset;
+  if(darktable.gui) ++darktable.gui->reset;
   if(module->reload_defaults) module->reload_defaults(module);
-  --darktable.gui->reset;
+  if(darktable.gui) --darktable.gui->reset;
 
   dt_iop_load_default_params(module);
 
