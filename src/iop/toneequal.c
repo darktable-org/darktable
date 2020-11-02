@@ -2754,7 +2754,17 @@ static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gp
   if(!self->enabled) return 0;
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
+  if(g->area_dragging)
+  {
+    // cursor left area : force commit to avoid glitches
+    ++darktable.gui->reset;
+    update_exposure_sliders(g, p);
+    --darktable.gui->reset;
+
+    dt_dev_add_history_item(darktable.develop, self, FALSE);
+  }
   dt_pthread_mutex_lock(&g->lock);
   g->area_x = (event->x - g->inset);
   g->area_y = (event->y - g->inset);
@@ -2833,39 +2843,21 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
-  const float current_y = event->y - g->inset;
-  const gboolean height_valid = (current_y > 0.0f && current_y < g->graph_height);
-
-  if(g->area_dragging && height_valid)
+  if(g->area_dragging)
   {
     // vertical distance travelled since button_pressed event
     dt_pthread_mutex_lock(&g->lock);
-    const float previous_y = g->area_y;
-    const float last_y = fminf(fmaxf((event->y - g->inset), 0.0f), g->graph_height);
-    const float offset = (-last_y + previous_y) / g->graph_height * 4.0f; // graph spans over 4 EV
+    const float offset = (-event->y + g->area_y) / g->graph_height * 4.0f; // graph spans over 4 EV
     const float cursor_exposure = g->area_x / g->graph_width * 8.0f - 8.0f;
 
     // Get the desired correction on exposure channels
     g->area_dragging = set_new_params_interactive(cursor_exposure, offset, g->sigma * g->sigma / 2.0f, g, p);
     dt_pthread_mutex_unlock(&g->lock);
   }
-  else if(g->area_dragging && !height_valid)
-  {
-    // cursor left area : force commit to avoid glitches
-    ++darktable.gui->reset;
-    update_exposure_sliders(g, p);
-    --darktable.gui->reset;
-
-    dt_dev_add_history_item(darktable.develop, self, FALSE);
-
-    dt_pthread_mutex_lock(&g->lock);
-    g->area_dragging= 0;
-    dt_pthread_mutex_unlock(&g->lock);
-  }
 
   dt_pthread_mutex_lock(&g->lock);
   g->area_x = (event->x - g->inset);
-  g->area_y = (event->y - g->inset);
+  g->area_y = event->y;
   g->area_cursor_valid = (g->area_x > 0.0f && g->area_x < g->graph_width && g->area_y > 0.0f && g->area_y < g->graph_height);
   g->area_active_node = -1;
 
