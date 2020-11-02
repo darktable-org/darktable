@@ -184,22 +184,24 @@ jobs:
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
   Linux:
-    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}
+    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}${{ matrix.name }}
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
       matrix:
         os: 
           - { label: ubuntu-20.04, code: focal }
-          - { label: ubuntu-18.04, code: bionic }
+          #- { label: ubuntu-18.04, code: bionic }
         compiler:
-          - { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
+          #- { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
           - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
           - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
-          - { compiler: LLVM9,  CC: clang-9,  CXX: clang++-9,  packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
+          #- { compiler: LLVM9,  CC: clang-9,  CXX: clang++-9,  packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
           - { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
           #- { compiler: LLVM11, CC: clang-11, CXX: clang++-11, packages: clang-11 libomp-11-dev libclang-common-11-dev llvm-11-dev clang++-11 libc++-11-dev lld-11}
-        btype: [ RelWithDebInfo ]
+        btype: 
+          - RelWithDebInfo
+          - Release
         target:
           - build
           - nofeatures
@@ -208,8 +210,9 @@ jobs:
             btype: Debug
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
             target: skiptest
+            name: '.Debug'
           - os: { label: ubuntu-18.04, code: bionic }
-            btype: RelWithDebInfo
+            btype: Release
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 default-jdk-headless default-jre-headless docbook docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick libsaxon-java xsltproc }
             target: usermanual
     env:
