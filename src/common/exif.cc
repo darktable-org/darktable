@@ -771,7 +771,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     else if(FIND_EXIF_TAG("Exif.Photo.ShutterSpeedValue"))
     {
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
-      img->exif_exposure = 1.0 / pos->toFloat();
+      img->exif_exposure = exp2f(-1.0f * pos->toFloat());  // convert from APEX value
     }
 
     // Read exposure bias
@@ -787,7 +787,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
     else if(FIND_EXIF_TAG("Exif.Photo.ApertureValue"))
     {
-      img->exif_aperture = pos->toFloat();
+      img->exif_aperture = exp2f(pos->toFloat() / 2.0f);  // convert from APEX value
     }
 
     /* Read ISO speed - Nikon happens to return a pair for Lo and Hi modes */
