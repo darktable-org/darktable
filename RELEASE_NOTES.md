@@ -130,6 +130,9 @@ making a backup is strongly advised.
 
 - Support for AVIF >= 0.8.2 (no support for older versions).
 
+- Guard against overwriting styles when exporting them by using
+  a dialog to let the user to confirm or abort the action.
+
 ## Bug fixes
 
 - Fix orientation in the clipping module after having selected the freehand aspect ratio.
