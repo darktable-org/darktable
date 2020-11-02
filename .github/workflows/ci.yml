@@ -21,7 +21,6 @@ jobs:
         target:
           - skiptest
           - nofeatures
-        #Release works on GNU & LLVM, Debug only on GNU. todo: use if to exclude
         include:
           # Uncomment if PR needs to generate windows package for testing.
           #- btype: Release
@@ -46,10 +45,6 @@ jobs:
       TARGET: ${{ matrix.target }}
       # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-          path: src
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -100,6 +95,10 @@ jobs:
             mingw-w64-x86_64-gmic
             mingw-w64-x86_64-nsis
           update: true
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          path: src
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}"
@@ -154,16 +153,16 @@ jobs:
       GENERATOR: Ninja
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-          path: src
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
           brew tap Homebrew/bundle
           cd src/.ci
           brew bundle --verbose
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          path: src
       - name: Build and Install
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
@@ -184,7 +183,7 @@ jobs:
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
   Linux:
-    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}${{ matrix.name }}
+    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -210,7 +209,6 @@ jobs:
             btype: Debug
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
             target: skiptest
-            name: '.Debug'
           - os: { label: ubuntu-18.04, code: bionic }
             btype: Release
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 default-jdk-headless default-jre-headless docbook docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick libsaxon-java xsltproc }
