@@ -60,6 +60,7 @@ jobs:
             git
             base-devel
             intltool
+            mingw-w64-x86_64-gdb
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-clang
@@ -186,7 +187,7 @@ jobs:
     name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}
     runs-on: ${{ matrix.os.label }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: 
           - { label: ubuntu-20.04, code: focal }
