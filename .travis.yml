@@ -70,25 +70,25 @@ jobs:
     compiler: gcc
     env: 
       - TARGET=nofeatures
-  - name: "Usermanual"
-    os: linux
-    dist: bionic
-    compiler: gcc
-    env: TARGET=usermanual CXX=g++-9 CC=gcc-9 # EXTRA_TMPFS="--tmpfs /tmp"
-    addons:
-        apt:
-          sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
-          packages:
-            - gcc-9
-            - g++-9
-    install: 
-      - sudo add-apt-repository -y universe
-      - sudo add-apt-repository -y multiverse
-      - sudo apt-get update
-      - sudo apt-get -y install default-jdk-headless default-jre-headless
-      - sudo apt-get -y install docbook docbook-xml docbook-xsl docbook-xsl-saxon
-      - sudo apt-get -y install fop gnome-doc-utils imagemagick libsaxon-java xsltproc
+  #- name: "Usermanual"
+  #  os: linux
+  #  dist: bionic
+  #  compiler: gcc
+  #  env: TARGET=usermanual CXX=g++-9 CC=gcc-9 # EXTRA_TMPFS="--tmpfs /tmp"
+  #  addons:
+  #      apt:
+  #        sources:
+  #          - sourceline: 'ppa:ubuntu-toolchain-r/test'
+  #        packages:
+  #          - gcc-9
+  #          - g++-9
+  #  install: 
+  #    - sudo add-apt-repository -y universe
+  #    - sudo add-apt-repository -y multiverse
+  #    - sudo apt-get update
+  #    - sudo apt-get -y install default-jdk-headless default-jre-headless
+  #    - sudo apt-get -y install docbook docbook-xml docbook-xsl docbook-xsl-saxon
+  #    - sudo apt-get -y install fop gnome-doc-utils imagemagick libsaxon-java xsltproc
 
 addons:
   apt:

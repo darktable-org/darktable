@@ -8,7 +8,6 @@ on:
 
 jobs:
   Win64:
-    if: ${{ false }}
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
@@ -133,7 +132,6 @@ jobs:
           retention-days: 1
 
   macOS:
-    if: ${{ false }}
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
     runs-on: macos-latest
     strategy:
@@ -185,24 +183,34 @@ jobs:
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
   Linux:
-    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
+    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}
+    runs-on: ${{ matrix.os.label }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: 
-          - ubuntu-latest
+          - { label: ubuntu-20.04, code: focal }
+          - { label: ubuntu-18.04, code: bionic }
         compiler:
-          - { compiler: GNU8,  CC: gcc-8,   CXX: g++-8, packages: gcc-8 g++-8 }
-          - { compiler: GNU9,  CC: gcc-9,   CXX: g++-9, packages: gcc-9 g++-9 }
-          - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10, packages: gcc-10 g++-10 }
-          - { compiler: LLVM9, CC: clang-9, CXX: clang++-9, packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
+          - { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
+          - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
+          - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
+          - { compiler: LLVM9,  CC: clang-9,  CXX: clang++-9,  packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
           - { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
           #- { compiler: LLVM11, CC: clang-11, CXX: clang++-11, packages: clang-11 libomp-11-dev libclang-common-11-dev llvm-11-dev clang++-11 libc++-11-dev lld-11}
         btype: [ RelWithDebInfo ]
         target:
           - build
           - nofeatures
+        include:
+          - os: { label: ubuntu-latest, code: latest }
+            btype: Debug
+            compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
+            target: skiptest
+          - os: { label: ubuntu-18.04, code: bionic }
+            btype: RelWithDebInfo
+            compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 default-jdk-headless default-jre-headless docbook docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick libsaxon-java xsltproc }
+            target: usermanual
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -216,6 +224,8 @@ jobs:
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo add-apt-repository -y universe
+          sudo add-apt-repository -y multiverse
           sudo apt-get update
           sudo apt-get -y install \
             ${{ matrix.compiler.packages }}
@@ -281,7 +291,7 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
       - name: Check if it runs
-        if: ${{ false }}
+        if: ${{ matrix.target != 'usermanual' }}
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
