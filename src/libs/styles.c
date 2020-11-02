@@ -422,8 +422,8 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 
             // contents for dialog
             GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
-            sprintf(overwrite_str, "style `%s' already exists.\ndo you want to overwrite existing style?\n", (char*)style->data);
-            GtkWidget *label = gtk_label_new(_(overwrite_str));
+            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), (char*)style->data);
+            GtkWidget *label = gtk_label_new(overwrite_str);
             GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
 
             gtk_container_add(GTK_CONTAINER(content_area), label);
