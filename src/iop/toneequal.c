@@ -872,7 +872,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const size_t ch = 4;
 
   // Get the hash of the upstream pipe to track changes
-  int position = self->iop_order;
+  const int position = self->iop_order;
   uint64_t hash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id, roi_out, piece->pipe, position);
 
   // Sanity checks
@@ -899,8 +899,8 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       g->ui_preview_hash = 0;
       g->thumb_preview_hash = 0;
       g->pipe_order = position;
-      g->luminance_valid = 0;
-      g->histogram_valid = 0;
+      g->luminance_valid = FALSE;
+      g->histogram_valid = FALSE;
       dt_pthread_mutex_unlock(&g->lock);
     }
 
@@ -1039,7 +1039,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid, void *const restrict ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-    toneeq_process(self, piece, ivoid, ovoid, roi_in, roi_out);
+  toneeq_process(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
 
