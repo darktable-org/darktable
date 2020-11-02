@@ -202,7 +202,7 @@ jobs:
         btype: [ RelWithDebInfo ]
         target:
           - build
-          #- nofeatures
+          - nofeatures
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -213,10 +213,6 @@ jobs:
       GENERATOR: Ninja
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-          path: src
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
@@ -275,13 +271,17 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          path: src
       - name: Build and Install
-          # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
       - name: Check if it runs
+        if: ${{ false }}
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \

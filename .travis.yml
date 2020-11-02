@@ -65,17 +65,6 @@ jobs:
   - name: "Linux GCC 9"
     os: linux
     compiler: gcc
-  - name: "Linux GCC9 Release Build"
-    os: linux
-    compiler: gcc
-    env:
-      - CMAKE_BUILD_TYPE="Release"
-  - name: "Linux GCC9 Debug Build"
-    os: linux
-    compiler: gcc
-    env:
-      - TARGET=skiptest
-      - CMAKE_BUILD_TYPE="Debug"
   - name: "GCC9 Disabled all features"
     os: linux
     compiler: gcc
