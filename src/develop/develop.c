@@ -1077,15 +1077,14 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     {
       if(!dt_iop_is_hidden(module) && !module->expander)
       {
-        ++darktable.gui->reset;
-        module->gui_init(module);
-        dt_iop_reload_defaults(module);
-        --darktable.gui->reset;
+        dt_iop_gui_init(module);
 
         /* add module to right panel */
         GtkWidget *expander = dt_iop_gui_get_expander(module);
         dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
         dt_iop_gui_set_expanded(module, TRUE, FALSE);
+
+        dt_iop_reload_defaults(module);
         dt_iop_gui_update_blending(module);
 
         // the pipe need to be reconstruct
