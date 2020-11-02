@@ -522,6 +522,12 @@ overshoot.right
   margin-left: 2px
 }
 
+/* Add some space to aerate if a notebook follows a widget (like for example in filmic rgb module */
+#iop-plugin-ui-main widget + notebook
+{
+  margin-top: 0.5em;
+}
+
 /* Adjust add and remove buttons in picker module */
 .picker-module button
 {
