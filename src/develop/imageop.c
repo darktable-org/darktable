@@ -1895,7 +1895,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     ++darktable.gui->reset;
     if(!dt_iop_is_hidden(module))
     {
-      if(module->params) module->gui_update(module);
+      if(module->params && module->gui_update) module->gui_update(module);
       dt_iop_gui_update_blending(module);
       dt_iop_gui_update_expanded(module);
       _iop_gui_update_label(module);
