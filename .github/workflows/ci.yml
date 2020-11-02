@@ -193,7 +193,9 @@ jobs:
         os: 
           - ubuntu-latest
         compiler:
-          - { compiler: GNU9,  CC: gcc-9,   CXX: g++-9 }
+          - { compiler: GNU8,  CC: gcc-8,   CXX: g++-8, packages: gcc-8 g++-8 }
+          - { compiler: GNU9,  CC: gcc-9,   CXX: g++-9, packages: gcc-9 g++-9 }
+          - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10, packages: gcc-10 g++-10 }
           #- { compiler: LLVM, CC: clang, CXX: clang++ }
         btype: [ RelWithDebInfo ]
         target:
@@ -215,18 +217,14 @@ jobs:
           path: src
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
           sudo apt-get -y install \
-            ${{ matrix.compiler.CC }}
+            ${{ matrix.compiler.packages }}
       - name: Install Base Dependencies
         run: |
           sudo apt-get -y install \
             build-essential \
-            gcc-8 g++8 \
-            gcc-9 g++9 \
-            gcc-10 g++10 \
-            llvm-9 clang-9 \
-            llvm-10 clang-10 \
-            llvm-11 clang-11 \
             appstream-util \
             desktop-file-utils \
             gettext \
