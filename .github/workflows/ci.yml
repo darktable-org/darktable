@@ -153,16 +153,16 @@ jobs:
       GENERATOR: Ninja
       TARGET: ${{ matrix.target }}
     steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          path: src
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
           brew tap Homebrew/bundle
           cd src/.ci
           brew bundle --verbose
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-          path: src
       - name: Build and Install
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
