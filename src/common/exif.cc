@@ -928,7 +928,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /*
      * Read image orientation
      */
-    if((pos = Exiv2::orientation(exifData)) != exifData.end() && pos->size())
+    if(FIND_EXIF_TAG("Exif.Image.Orientation"))
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
