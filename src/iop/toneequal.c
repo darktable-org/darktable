@@ -888,7 +888,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
 
   // Init the luminance masks buffers
-  int cached = FALSE;
+  gboolean cached = FALSE;
 
   if(self->dev->gui_attached)
   {
@@ -985,7 +985,6 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
         hash_set_get(&hash, &g->ui_preview_hash, &g->lock);
       }
     }
-
     else if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     {
       uint64_t saved_hash;
@@ -1006,7 +1005,6 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
         dt_pthread_mutex_unlock(&g->lock);
       }
     }
-
     else // make it dummy-proof
     {
       compute_luminance_mask(in, luminance, width, height, ch, d);
@@ -1035,7 +1033,6 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
 
   if(!cached) dt_free_align(luminance);
-
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
