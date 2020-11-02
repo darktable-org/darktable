@@ -410,40 +410,48 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
           /* create and run dialog */
           char overwrite_str[256];
 
-          GtkWidget *dialog_overwrite_export = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-              _("cancel"), GTK_RESPONSE_CANCEL,
-              _("skip"), GTK_RESPONSE_NONE,
-              _("overwrite"), GTK_RESPONSE_ACCEPT, NULL);
+          gint overwrite_dialog_res = GTK_RESPONSE_ACCEPT;
+          gint overwrite_dialog_check_button_res = TRUE;
 
-          // contents for dialog
-          GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
-          sprintf(overwrite_str, "style `%s' already exists.\ndo you want to overwrite existing style?\n", (char*)style->data);
-          GtkWidget *label = gtk_label_new(_(overwrite_str));
-          GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
-
-          gtk_container_add(GTK_CONTAINER(content_area), label);
-          gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
-          gtk_widget_show_all(dialog_overwrite_export);
-
-          // disable check button and skip button when only one style is selected
-          if(g_list_length(style_names) == 1)
+          if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
           {
-            gtk_widget_set_sensitive(overwrite_dialog_check_button, FALSE);
-            gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_overwrite_export), GTK_RESPONSE_NONE, FALSE);
-          }
+            GtkWidget *dialog_overwrite_export = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+                _("cancel"), GTK_RESPONSE_CANCEL,
+                _("skip"), GTK_RESPONSE_NONE,
+                _("overwrite"), GTK_RESPONSE_ACCEPT, NULL);
+
+            // contents for dialog
+            GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
+            sprintf(overwrite_str, "style `%s' already exists.\ndo you want to overwrite existing style?\n", (char*)style->data);
+            GtkWidget *label = gtk_label_new(_(overwrite_str));
+            GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
+
+            gtk_container_add(GTK_CONTAINER(content_area), label);
+            gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
+            gtk_widget_show_all(dialog_overwrite_export);
+
+            // disable check button and skip button when only one style is selected
+            if(g_list_length(style_names) == 1)
+            {
+              gtk_widget_set_sensitive(overwrite_dialog_check_button, FALSE);
+              gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_overwrite_export), GTK_RESPONSE_NONE, FALSE);
+            }
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog_overwrite_export);
 #endif
 
-          gint overwrite_dialog_res = gtk_dialog_run(GTK_DIALOG(dialog_overwrite_export));
+            overwrite_dialog_res = gtk_dialog_run(GTK_DIALOG(dialog_overwrite_export));
+            overwrite_dialog_check_button_res = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(overwrite_dialog_check_button));
+            gtk_widget_destroy(dialog_overwrite_export);
+          }
 
           if(overwrite_dialog_res == GTK_RESPONSE_ACCEPT)
           {
             overwrite = 1;
 
             /* do not run dialog on the next conflict when set to 1 */
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(overwrite_dialog_check_button)) == TRUE)
+            if(overwrite_dialog_check_button_res == TRUE)
             {
               overwrite_check_button = 1;
             }
@@ -457,7 +465,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
             overwrite = 2;
 
             /* do not run dialog on the next conflict when set to 1 */
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(overwrite_dialog_check_button)) == TRUE)
+            if(overwrite_dialog_check_button_res == TRUE)
             {
               overwrite_check_button = 1;
             }
@@ -465,16 +473,13 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
             {
               overwrite_check_button = 0;
             }
-            gtk_widget_destroy(dialog_overwrite_export);
             continue;
           }
           else
           {
-            gtk_widget_destroy(dialog_overwrite_export);
             break;
           }
 
-          gtk_widget_destroy(dialog_overwrite_export);
           dt_styles_save_to_file((char*)style->data, filedir, TRUE);
         }
       }
