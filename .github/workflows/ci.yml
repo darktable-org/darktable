@@ -8,6 +8,7 @@ on:
 
 jobs:
   Win64:
+    if: ${{ false }}
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
@@ -132,6 +133,7 @@ jobs:
           retention-days: 1
 
   macOS:
+    if: ${{ false }}
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
     runs-on: macos-latest
     strategy:
@@ -182,3 +184,93 @@ jobs:
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
+  Linux:
+    name: ${{ matrix.os }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: 
+          - ubuntu-latest
+        compiler:
+          - { compiler: GNU9,  CC: gcc-9,   CXX: g++-9 }
+          #- { compiler: LLVM, CC: clang, CXX: clang++ }
+        btype: [ RelWithDebInfo ]
+        target:
+          - build
+          #- nofeatures
+    env:
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      GENERATOR: Ninja
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          path: src
+      - name: Install compiler ${{ matrix.compiler.compiler }}
+        run: |
+          sudo apt-get -y install \
+            ${{ matrix.compiler.CC }}
+      - name: Install Base Dependencies
+        run: |
+          sudo apt-get -y install \
+            build-essential \
+            gcc-8 g++8 \
+            gcc-9 g++9 \
+            gcc-10 g++10 \
+            llvm-9 clang-9 \
+            llvm-10 clang-10 \
+            llvm-11 clang-11 \
+            appstream-util \
+            desktop-file-utils \
+            gettext \
+            git \
+            intltool \
+            libatk1.0-dev \
+            libcairo2-dev \
+            libcolord-dev \
+            libcolord-gtk-dev \
+            libcmocka-dev \
+            libcups2-dev \
+            libcurl4-gnutls-dev \
+            libexiv2-dev \
+            libflickcurl-dev \
+            libgdk-pixbuf2.0-dev \
+            libglib2.0-dev \
+            libgphoto2-dev \
+            libgraphicsmagick1-dev \
+            libgtk-3-dev \
+            libjpeg-dev \
+            libjson-glib-dev \
+            liblcms2-dev \
+            liblensfun-dev \
+            liblua5.2-dev \
+            liblua5.3-dev \
+            libopenexr-dev \
+            libopenjp2-7-dev \
+            libosmgpsmap-1.0-dev \
+            libpango1.0-dev \
+            libpng-dev \
+            libpugixml-dev \
+            librsvg2-dev \
+            libsaxon-java \
+            libsecret-1-dev \
+            libsoup2.4-dev \
+            libsqlite3-dev \
+            libtiff5-dev \
+            libwebp-dev \
+            libx11-dev \
+            libxml2-dev \
+            libxml2-utils \
+            ninja-build \
+            perl \
+            po4a \
+            python3-jsonschema \
+            xsltproc \
+            zlib1g-dev;
