@@ -452,11 +452,6 @@ void reload_defaults(dt_iop_module_t *self)
   }
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  // nothing to do
-}
-
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)
 {
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;

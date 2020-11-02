@@ -1535,10 +1535,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(dt_iop_module_t *self)
-{
-}
-
 void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(cacorrect);
