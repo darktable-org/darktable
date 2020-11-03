@@ -131,6 +131,33 @@
       </para>
     </sect5>
 
-  </sect4>
+    <sect5>
+      <title>Notes</title>
+      <para>
+        The history in the database and associated XMP file, and in a
+        style, does not contain the temperature and tint. Instead it
+        holds values related to the three RGB coefficients which can
+        be set in the white balance module. The relationship between
+        these two sets of values - RGB and temp/tint - depends on
+        camera characteristics. Therefore applying white balance in a
+        style made with one camera model to another camera model will
+        in general give a different temp/tint, and your image might
+        look different to what you expected. Consider doing all white
+        balancing explicitly in the module.
+      </para>
 
+      <para>
+        The mathematical relationship between the two sets of values
+        is not straightforward. Colour balances can be set using the
+        RGB sliders which have no corresponding setting in terms of
+        temperature and tint (this mainly happens when very high
+        temperature values are calculated from the slider
+        values). Therefore be aware that editing white balance using
+        temp/tint on an image previously made using the RGB sliders
+        may give odd results, at least if high temperature values are
+        involved.
+      </para>
+    </sect5>
+
+  </sect4>
 </sect3>
