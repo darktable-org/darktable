@@ -2696,8 +2696,26 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
     {
       const int indx = row * width + col;
       const float cfai = cfa[indx];
-      const float V_Stat = fmaxf(epssq, -18.f * cfai * (cfa[indx - w1] + cfa[indx + w1] + 2.f * (cfa[indx - w2] + cfa[indx + w2]) - cfa[indx - w3] - cfa[indx + w3]) - 2.f * cfai * (cfa[indx - w4] + cfa[indx + w4] - 19.f * cfai) - cfa[indx - w1] * (70.f * cfa[indx + w1] + 12.f * cfa[indx - w2] - 24.f * cfa[indx + w2] + 38.f * cfa[indx - w3] - 16.f * cfa[indx + w3] - 12.f * cfa[indx - w4] + 6.f * cfa[indx + w4] - 46.f * cfa[indx - w1]) + cfa[indx + w1] * (24.f * cfa[indx - w2] - 12.f * cfa[indx + w2] + 16.f * cfa[indx - w3] - 38.f * cfa[indx + w3] - 6.f * cfa[indx - w4] + 12.f * cfa[indx + w4] + 46.f * cfa[indx + w1]) + cfa[indx - w2] * (14.f * cfa[indx + w2] - 12.f * cfa[indx + w3] - 2.f * cfa[indx - w4] + 2.f * cfa[indx + w4] + 11.f * cfa[indx - w2]) + cfa[indx + w2] * (-12.f * cfa[indx - w3] + 2.f * (cfa[indx - w4] - cfa[indx + w4]) + 11.f * cfa[indx + w2]) + cfa[indx - w3] * (2.f * cfa[indx + w3] - 6.f * cfa[indx - w4] + 10.f * cfa[indx - w3]) + cfa[indx + w3] * (-6.f * cfa[indx + w4] + 10.f * cfa[indx + w3]) + cfa[indx - w4] * cfa[indx - w4] + cfa[indx + w4] * cfa[indx + w4]);
-      const float H_Stat = fmaxf(epssq, -18.f * cfai * (cfa[indx -  1] + cfa[indx +  1] + 2.f * (cfa[indx -  2] + cfa[indx +  2]) - cfa[indx -  3] - cfa[indx +  3]) - 2.f * cfai * (cfa[indx -  4] + cfa[indx +  4] - 19.f * cfai) - cfa[indx -  1] * (70.f * cfa[indx +  1] + 12.f * cfa[indx -  2] - 24.f * cfa[indx +  2] + 38.f * cfa[indx -  3] - 16.f * cfa[indx +  3] - 12.f * cfa[indx -  4] + 6.f * cfa[indx +  4] - 46.f * cfa[indx -  1]) + cfa[indx +  1] * (24.f * cfa[indx -  2] - 12.f * cfa[indx +  2] + 16.f * cfa[indx -  3] - 38.f * cfa[indx +  3] - 6.f * cfa[indx -  4] + 12.f * cfa[indx +  4] + 46.f * cfa[indx +  1]) + cfa[indx -  2] * (14.f * cfa[indx +  2] - 12.f * cfa[indx +  3] - 2.f * cfa[indx -  4] + 2.f * cfa[indx +  4] + 11.f * cfa[indx -  2]) + cfa[indx +  2] * (-12.f * cfa[indx -  3] + 2.f * (cfa[indx -  4] - cfa[indx +  4]) + 11.f * cfa[indx +  2]) + cfa[indx -  3] * (2.f * cfa[indx +  3] - 6.f * cfa[indx -  4] + 10.f * cfa[indx -  3]) + cfa[indx +  3] * (-6.f * cfa[indx +  4] + 10.f * cfa[indx +  3]) + cfa[indx -  4] * cfa[indx -  4] + cfa[indx +  4] * cfa[indx +  4]);
+      const float V_Stat = fmaxf(epssq, -18.f * cfai * (cfa[indx - w1] + cfa[indx + w1] + 2.f * (cfa[indx - w2] + cfa[indx + w2]) - cfa[indx - w3] - cfa[indx + w3])
+                                        - 2.f * cfai * (cfa[indx - w4] + cfa[indx + w4] - 19.f * cfai)
+                                        - cfa[indx - w1] * ( 70.f * cfa[indx + w1] + 12.f * cfa[indx - w2] - 24.f * cfa[indx + w2] + 38.f * cfa[indx - w3] - 16.f * cfa[indx + w3] - 12.f * cfa[indx - w4] + 6.f * cfa[indx + w4] - 46.f * cfa[indx - w1])
+                                        + cfa[indx + w1] * ( 24.f * cfa[indx - w2] - 12.f * cfa[indx + w2] + 16.f * cfa[indx - w3] - 38.f * cfa[indx + w3] - 6.f * cfa[indx - w4] + 12.f * cfa[indx + w4] + 46.f * cfa[indx + w1])
+                                        + cfa[indx - w2] * ( 14.f * cfa[indx + w2] - 12.f * cfa[indx + w3] - 2.f * cfa[indx - w4] + 2.f * cfa[indx + w4] + 11.f * cfa[indx - w2])
+                                        + cfa[indx + w2] * (-12.f * cfa[indx - w3] +  2.f * (cfa[indx - w4] - cfa[indx + w4]) + 11.f * cfa[indx + w2])
+                                        + cfa[indx - w3] * (  2.f * cfa[indx + w3] -  6.f * cfa[indx - w4] + 10.f * cfa[indx - w3])
+                                        + cfa[indx + w3] * ( -6.f * cfa[indx + w4] + 10.f * cfa[indx + w3])
+                                        + cfa[indx - w4] * cfa[indx - w4]
+                                        + cfa[indx + w4] * cfa[indx + w4]);
+      const float H_Stat = fmaxf(epssq, -18.f * cfai * (cfa[indx - 1] + cfa[indx + 1] + 2.f * (cfa[indx - 2] + cfa[indx + 2]) - cfa[indx - 3] - cfa[indx + 3])
+                                        - 2.f * cfai * (cfa[indx - 4] + cfa[indx + 4] - 19.f * cfai)
+                                        - cfa[indx - 1] * (70.f * cfa[indx + 1] + 12.f * cfa[indx - 2] - 24.f * cfa[indx + 2] + 38.f * cfa[indx - 3] - 16.f * cfa[indx + 3] - 12.f * cfa[indx - 4] + 6.f * cfa[indx + 4] - 46.f * cfa[indx - 1])
+                                        + cfa[indx + 1] * (24.f * cfa[indx - 2] - 12.f * cfa[indx + 2] + 16.f * cfa[indx - 3] - 38.f * cfa[indx + 3] - 6.f * cfa[indx - 4] + 12.f * cfa[indx + 4] + 46.f * cfa[indx + 1])
+                                        + cfa[indx - 2] * (14.f * cfa[indx + 2] - 12.f * cfa[indx + 3] - 2.f * cfa[indx - 4] + 2.f * cfa[indx + 4] + 11.f * cfa[indx -  2])
+                                        + cfa[indx + 2] * (-12.f * cfa[indx - 3] + 2.f * (cfa[indx - 4] - cfa[indx + 4]) + 11.f * cfa[indx + 2])
+                                        + cfa[indx - 3] * (2.f * cfa[indx + 3] - 6.f * cfa[indx - 4] + 10.f * cfa[indx - 3])
+                                        + cfa[indx + 3] * (-6.f * cfa[indx + 4] + 10.f * cfa[indx + 3])
+                                       + cfa[indx - 4] * cfa[indx - 4]
+                                       + cfa[indx + 4] * cfa[indx + 4]);
       VH_Dir[indx] = V_Stat / (V_Stat + H_Stat);
     }
   }
@@ -2770,8 +2788,87 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
     {
       const int indx = row * width + col;
 
-      const float P_Stat = fmaxf( -18.f * cfa[indx] * cfa[indx - w1 - 1] - 18.f * cfa[indx] * cfa[indx + w1 + 1] - 36.f * cfa[indx] * cfa[indx - w2 - 2] - 36.f * cfa[indx] * cfa[indx + w2 + 2] + 18.f * cfa[indx] * cfa[indx - w3 - 3] + 18.f * cfa[indx] * cfa[indx + w3 + 3] - 2.f * cfa[indx] * cfa[indx - w4 - 4] - 2.f * cfa[indx] * cfa[indx + w4 + 4] + 38.f * cfa[indx] * cfa[indx] - 70.f * cfa[indx - w1 - 1] * cfa[indx + w1 + 1] - 12.f * cfa[indx - w1 - 1] * cfa[indx - w2 - 2] + 24.f * cfa[indx - w1 - 1] * cfa[indx + w2 + 2] - 38.f * cfa[indx - w1 - 1] * cfa[indx - w3 - 3] + 16.f * cfa[indx - w1 - 1] * cfa[indx + w3 + 3] + 12.f * cfa[indx - w1 - 1] * cfa[indx - w4 - 4] - 6.f * cfa[indx - w1 - 1] * cfa[indx + w4 + 4] + 46.f * cfa[indx - w1 - 1] * cfa[indx - w1 - 1] + 24.f * cfa[indx + w1 + 1] * cfa[indx - w2 - 2] - 12.f * cfa[indx + w1 + 1] * cfa[indx + w2 + 2] + 16.f * cfa[indx + w1 + 1] * cfa[indx - w3 - 3] - 38.f * cfa[indx + w1 + 1] * cfa[indx + w3 + 3] - 6.f * cfa[indx + w1 + 1] * cfa[indx - w4 - 4] + 12.f * cfa[indx + w1 + 1] * cfa[indx + w4 + 4] + 46.f * cfa[indx + w1 + 1] * cfa[indx + w1 + 1] + 14.f * cfa[indx - w2 - 2] * cfa[indx + w2 + 2] - 12.f * cfa[indx - w2 - 2] * cfa[indx + w3 + 3] - 2.f * cfa[indx - w2 - 2] * cfa[indx - w4 - 4] + 2.f * cfa[indx - w2 - 2] * cfa[indx + w4 + 4] + 11.f * cfa[indx - w2 - 2] * cfa[indx - w2 - 2] - 12.f * cfa[indx + w2 + 2] * cfa[indx - w3 - 3] + 2 * cfa[indx + w2 + 2] * cfa[indx - w4 - 4] - 2.f * cfa[indx + w2 + 2] * cfa[indx + w4 + 4] + 11.f * cfa[indx + w2 + 2] * cfa[indx + w2 + 2] + 2.f * cfa[indx - w3 - 3] * cfa[indx + w3 + 3] - 6.f * cfa[indx - w3 - 3] * cfa[indx - w4 - 4] + 10.f * cfa[indx - w3 - 3] * cfa[indx - w3 - 3] - 6.f * cfa[indx + w3 + 3] * cfa[indx + w4 + 4] + 10.f * cfa[indx + w3 + 3] * cfa[indx + w3 + 3] + 1.f * cfa[indx - w4 - 4] * cfa[indx - w4 - 4] + 1.f * cfa[indx + w4 + 4] * cfa[indx + w4 + 4], epssq );
-      const float Q_Stat = fmaxf( -18.f * cfa[indx] * cfa[indx + w1 - 1] - 18.f * cfa[indx] * cfa[indx - w1 + 1] - 36.f * cfa[indx] * cfa[indx + w2 - 2] - 36.f * cfa[indx] * cfa[indx - w2 + 2] + 18.f * cfa[indx] * cfa[indx + w3 - 3] + 18.f * cfa[indx] * cfa[indx - w3 + 3] - 2.f * cfa[indx] * cfa[indx + w4 - 4] - 2.f * cfa[indx] * cfa[indx - w4 + 4] + 38.f * cfa[indx] * cfa[indx] - 70.f * cfa[indx + w1 - 1] * cfa[indx - w1 + 1] - 12.f * cfa[indx + w1 - 1] * cfa[indx + w2 - 2] + 24.f * cfa[indx + w1 - 1] * cfa[indx - w2 + 2] - 38.f * cfa[indx + w1 - 1] * cfa[indx + w3 - 3] + 16.f * cfa[indx + w1 - 1] * cfa[indx - w3 + 3] + 12.f * cfa[indx + w1 - 1] * cfa[indx + w4 - 4] - 6.f * cfa[indx + w1 - 1] * cfa[indx - w4 + 4] + 46.f * cfa[indx + w1 - 1] * cfa[indx + w1 - 1] + 24.f * cfa[indx - w1 + 1] * cfa[indx + w2 - 2] - 12.f * cfa[indx - w1 + 1] * cfa[indx - w2 + 2] + 16.f * cfa[indx - w1 + 1] * cfa[indx + w3 - 3] - 38.f * cfa[indx - w1 + 1] * cfa[indx - w3 + 3] - 6.f * cfa[indx - w1 + 1] * cfa[indx + w4 - 4] + 12.f * cfa[indx - w1 + 1] * cfa[indx - w4 + 4] + 46.f * cfa[indx - w1 + 1] * cfa[indx - w1 + 1] + 14.f * cfa[indx + w2 - 2] * cfa[indx - w2 + 2] - 12.f * cfa[indx + w2 - 2] * cfa[indx - w3 + 3] - 2.f * cfa[indx + w2 - 2] * cfa[indx + w4 - 4] + 2.f * cfa[indx + w2 - 2] * cfa[indx - w4 + 4] + 11.f * cfa[indx + w2 - 2] * cfa[indx + w2 - 2] - 12.f * cfa[indx - w2 + 2] * cfa[indx + w3 - 3] + 2 * cfa[indx - w2 + 2] * cfa[indx + w4 - 4] - 2.f * cfa[indx - w2 + 2] * cfa[indx - w4 + 4] + 11.f * cfa[indx - w2 + 2] * cfa[indx - w2 + 2] + 2.f * cfa[indx + w3 - 3] * cfa[indx - w3 + 3] - 6.f * cfa[indx + w3 - 3] * cfa[indx + w4 - 4] + 10.f * cfa[indx + w3 - 3] * cfa[indx + w3 - 3] - 6.f * cfa[indx - w3 + 3] * cfa[indx - w4 + 4] + 10.f * cfa[indx - w3 + 3] * cfa[indx - w3 + 3] + 1.f * cfa[indx + w4 - 4] * cfa[indx + w4 - 4] + 1.f * cfa[indx - w4 + 4] * cfa[indx - w4 + 4], epssq );
+      const float P_Stat = fmaxf( -18.f * cfa[indx]          * cfa[indx - w1 - 1]
+                                 - 18.f * cfa[indx]          * cfa[indx + w1 + 1]
+                                 - 36.f * cfa[indx]          * cfa[indx - w2 - 2]
+                                 - 36.f * cfa[indx]          * cfa[indx + w2 + 2]
+                                 + 18.f * cfa[indx]          * cfa[indx - w3 - 3]
+                                 + 18.f * cfa[indx]          * cfa[indx + w3 + 3]
+                                  - 2.f * cfa[indx]          * cfa[indx - w4 - 4]
+                                  - 2.f * cfa[indx]          * cfa[indx + w4 + 4]
+                                 + 38.f * cfa[indx]          * cfa[indx]
+                                 - 70.f * cfa[indx - w1 - 1] * cfa[indx + w1 + 1]
+                                 - 12.f * cfa[indx - w1 - 1] * cfa[indx - w2 - 2]
+                                 + 24.f * cfa[indx - w1 - 1] * cfa[indx + w2 + 2]
+                                 - 38.f * cfa[indx - w1 - 1] * cfa[indx - w3 - 3]
+                                 + 16.f * cfa[indx - w1 - 1] * cfa[indx + w3 + 3]
+                                 + 12.f * cfa[indx - w1 - 1] * cfa[indx - w4 - 4]
+                                  - 6.f * cfa[indx - w1 - 1] * cfa[indx + w4 + 4]
+                                 + 46.f * cfa[indx - w1 - 1] * cfa[indx - w1 - 1]
+                                 + 24.f * cfa[indx + w1 + 1] * cfa[indx - w2 - 2]
+                                 - 12.f * cfa[indx + w1 + 1] * cfa[indx + w2 + 2]
+                                 + 16.f * cfa[indx + w1 + 1] * cfa[indx - w3 - 3]
+                                 - 38.f * cfa[indx + w1 + 1] * cfa[indx + w3 + 3]
+                                  - 6.f * cfa[indx + w1 + 1] * cfa[indx - w4 - 4]
+                                 + 12.f * cfa[indx + w1 + 1] * cfa[indx + w4 + 4]
+                                 + 46.f * cfa[indx + w1 + 1] * cfa[indx + w1 + 1]
+                                 + 14.f * cfa[indx - w2 - 2] * cfa[indx + w2 + 2]
+                                 - 12.f * cfa[indx - w2 - 2] * cfa[indx + w3 + 3]
+                                  - 2.f * cfa[indx - w2 - 2] * cfa[indx - w4 - 4]
+                                  + 2.f * cfa[indx - w2 - 2] * cfa[indx + w4 + 4]
+                                 + 11.f * cfa[indx - w2 - 2] * cfa[indx - w2 - 2]
+                                 - 12.f * cfa[indx + w2 + 2] * cfa[indx - w3 - 3]
+                                 +  2.f * cfa[indx + w2 + 2] * cfa[indx - w4 - 4]
+                                  - 2.f * cfa[indx + w2 + 2] * cfa[indx + w4 + 4]
+                                 + 11.f * cfa[indx + w2 + 2] * cfa[indx + w2 + 2]
+                                  + 2.f * cfa[indx - w3 - 3] * cfa[indx + w3 + 3]
+                                  - 6.f * cfa[indx - w3 - 3] * cfa[indx - w4 - 4]
+                                 + 10.f * cfa[indx - w3 - 3] * cfa[indx - w3 - 3]
+                                  - 6.f * cfa[indx + w3 + 3] * cfa[indx + w4 + 4]
+                                 + 10.f * cfa[indx + w3 + 3] * cfa[indx + w3 + 3]
+                                  + 1.f * cfa[indx - w4 - 4] * cfa[indx - w4 - 4]
+                                  + 1.f * cfa[indx + w4 + 4] * cfa[indx + w4 + 4], epssq );
+
+      const float Q_Stat = fmaxf( -18.f * cfa[indx]          * cfa[indx + w1 - 1]
+                                 - 18.f * cfa[indx]          * cfa[indx - w1 + 1]
+                                 - 36.f * cfa[indx]          * cfa[indx + w2 - 2]
+                                 - 36.f * cfa[indx]          * cfa[indx - w2 + 2]
+                                 + 18.f * cfa[indx]          * cfa[indx + w3 - 3]
+                                 + 18.f * cfa[indx]          * cfa[indx - w3 + 3]
+                                  - 2.f * cfa[indx]          * cfa[indx + w4 - 4]
+                                  - 2.f * cfa[indx]          * cfa[indx - w4 + 4]
+                                 + 38.f * cfa[indx]          * cfa[indx]
+                                 - 70.f * cfa[indx + w1 - 1] * cfa[indx - w1 + 1]
+                                 - 12.f * cfa[indx + w1 - 1] * cfa[indx + w2 - 2]
+                                 + 24.f * cfa[indx + w1 - 1] * cfa[indx - w2 + 2]
+                                 - 38.f * cfa[indx + w1 - 1] * cfa[indx + w3 - 3]
+                                 + 16.f * cfa[indx + w1 - 1] * cfa[indx - w3 + 3]
+                                 + 12.f * cfa[indx + w1 - 1] * cfa[indx + w4 - 4]
+                                  - 6.f * cfa[indx + w1 - 1] * cfa[indx - w4 + 4]
+                                 + 46.f * cfa[indx + w1 - 1] * cfa[indx + w1 - 1]
+                                 + 24.f * cfa[indx - w1 + 1] * cfa[indx + w2 - 2]
+                                 - 12.f * cfa[indx - w1 + 1] * cfa[indx - w2 + 2]
+                                 + 16.f * cfa[indx - w1 + 1] * cfa[indx + w3 - 3]
+                                 - 38.f * cfa[indx - w1 + 1] * cfa[indx - w3 + 3]
+                                  - 6.f * cfa[indx - w1 + 1] * cfa[indx + w4 - 4]
+                                 + 12.f * cfa[indx - w1 + 1] * cfa[indx - w4 + 4]
+                                 + 46.f * cfa[indx - w1 + 1] * cfa[indx - w1 + 1]
+                                 + 14.f * cfa[indx + w2 - 2] * cfa[indx - w2 + 2]
+                                 - 12.f * cfa[indx + w2 - 2] * cfa[indx - w3 + 3]
+                                  - 2.f * cfa[indx + w2 - 2] * cfa[indx + w4 - 4]
+                                  + 2.f * cfa[indx + w2 - 2] * cfa[indx - w4 + 4]
+                                 + 11.f * cfa[indx + w2 - 2] * cfa[indx + w2 - 2]
+                                 - 12.f * cfa[indx - w2 + 2] * cfa[indx + w3 - 3]
+                                  + 2.f * cfa[indx - w2 + 2] * cfa[indx + w4 - 4]
+                                  - 2.f * cfa[indx - w2 + 2] * cfa[indx - w4 + 4]
+                                 + 11.f * cfa[indx - w2 + 2] * cfa[indx - w2 + 2]
+                                  + 2.f * cfa[indx + w3 - 3] * cfa[indx - w3 + 3]
+                                  - 6.f * cfa[indx + w3 - 3] * cfa[indx + w4 - 4]
+                                 + 10.f * cfa[indx + w3 - 3] * cfa[indx + w3 - 3]
+                                  - 6.f * cfa[indx - w3 + 3] * cfa[indx - w4 + 4]
+                                 + 10.f * cfa[indx - w3 + 3] * cfa[indx - w3 + 3]
+                                  + 1.f * cfa[indx + w4 - 4] * cfa[indx + w4 - 4]
+                                  + 1.f * cfa[indx - w4 + 4] * cfa[indx - w4 + 4], epssq );
       PQ_Dir[indx] = P_Stat / (P_Stat + Q_Stat);
     }
   }
