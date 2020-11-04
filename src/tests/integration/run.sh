@@ -135,7 +135,7 @@ for dir in $TESTS; do
 
             if [ $res -eq 0 ]; then
                 if [ ! -z "$COMPARE" -a $DO_OPENCL == yes ]; then
-                    diffcount="$(compare output.png output-cl.png -metric ae diff-cl.png 2>&1 )"
+                    diffcount="$($COMPARE output.png output-cl.png -metric ae diff-cl.png 2>&1 )"
 
                     if [ $? -ne 0 ]; then
                         echo "      CPU & GPU version differ by ${diffcount} pixels"
@@ -154,14 +154,14 @@ for dir in $TESTS; do
                     if [ $res -lt 2 ]; then
                         echo "  OK"
                         if [ $res = 1 ]; then
-                            diffcount="$(compare expected.png output.png -metric ae diff-ok.png 2>&1 )"
+                            diffcount="$($COMPARE expected.png output.png -metric ae diff-ok.png 2>&1 )"
                         fi
                         res=0
 
                     else
                         echo "  FAILS: image visually changed"
                         if [ ! -z $COMPARE -a -f expected.png ]; then
-                            diffcount="$(compare expected.png output.png -metric ae diff.png 2>&1 )"
+                            diffcount="$($COMPARE expected.png output.png -metric ae diff.png 2>&1 )"
                             echo "         see diff.png for visual difference"
 			    echo "         (${diffcount} pixels changed)"
                         fi
@@ -171,7 +171,7 @@ for dir in $TESTS; do
                         echo "no delta-e mode : required compare tool not found."
                         res=1
                     else
-                        diffcount="$(compare expected.png output.png -metric ae diff-ok.png 2>&1 )"
+                        diffcount="$($COMPARE expected.png output.png -metric ae diff-ok.png 2>&1 )"
 
                         # if we have an exponent just pretend this is a number
                         # above 2000 which is the limit checked below.
