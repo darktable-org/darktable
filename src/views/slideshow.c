@@ -207,7 +207,7 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   sqlite3_finalize(stmt);
 
   // this is a little slow, might be worth to do an option:
-  const gboolean high_quality = dt_conf_get_bool("plugins/slideshow/high_quality");
+  const gboolean high_quality = !dt_conf_get_bool("ui/performance");
 
   if(id)
   {
