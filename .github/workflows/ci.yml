@@ -310,3 +310,18 @@ jobs:
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
+  IRCNotify:
+    runs-on: ubuntu-latest
+    needs:
+      - Linux
+      - Win64
+      - macOS
+    steps:
+      - name: irc push
+        uses: rectalogic/notify-irc@v1
+        if: github.event_name == 'push'
+        with:
+          channel: "#darktable"
+          nickname: dt-github-notifier
+          message: |
+            CI Build successful: ${{ github.actor }} push ${{ github.event.ref }} ${{ github.event.compare }}
