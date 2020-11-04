@@ -48,6 +48,7 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: Ninja
       TARGET: ${{ matrix.target }}
+      DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
     steps:
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
@@ -132,6 +133,11 @@ jobs:
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
+      - name: Run Integration test suite
+        if: ${{ matrix.target != 'usermanual' }}
+        run: |
+          cd "${SRC_DIR}/src/tests/integration/"
+          ./run.sh --no-opencl --no-deltae
 
   Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
