@@ -2631,7 +2631,7 @@ static void _border_interpolate(float *out, const float *cfa, const uint32_t fil
 * Licensed under the GNU GPL version 3
 * That code has been changed directly to be dt usable, 
 */
-static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_out,
+static void rcd_demosaic(float *out, const float *in, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in, const uint32_t filters)
 {
   assert(roi_in->width >= roi_out->width);
@@ -2650,6 +2650,7 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
   float (*VH_Dir) = NULL;
   float (*lpf) = NULL;
   float (*PQ_Dir) = NULL;
+  float (*cfa) = NULL;
 
   const int w1 = width, w2 = 2 * width, w3 = 3 * width, w4 = 4 * width;
 
@@ -2664,7 +2665,11 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
   PQ_Dir = (float*) calloc( width * height, sizeof *PQ_Dir );
   if(PQ_Dir == NULL) goto alloc_error;
 
+  cfa = (float*) calloc(width * height, sizeof *cfa);
+  if(cfa == NULL) goto alloc_error;
+
   // Copy input data to rgb channel data
+  // we need an extra copy step for later speed to make sure the cfa data are >= 0.0f
 #ifdef _OPENMP
 #pragma omp parallel for \
   shared(rgb) \
@@ -2678,7 +2683,7 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
     {
       const int indx = row * width + col;
       rgb[indx][0] = rgb[indx][1] = rgb[indx][2] = 0.0f;
-      rgb[indx][FC(row + roi_dy, col + roi_dx, filters)] = cfa[indx] ;
+      rgb[indx][FC(row + roi_dy, col + roi_dx, filters)] = cfa[indx] = fmaxf(in[indx], 0.0f);
     }
   }
  
@@ -2771,7 +2776,7 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
       const float H_Est = (W_Grad * E_Est + E_Grad * W_Est) / (E_Grad + W_Grad);
 
       // G@B and G@R interpolation
-      rgb[indx][1] = CLAMPS(VH_Disc * H_Est + (1.f - VH_Disc) * V_Est, 0.f, 1.f);
+      rgb[indx][1] = fmaxf(VH_Disc * H_Est + (1.f - VH_Disc) * V_Est, 0.f);
     }
   }
 
@@ -2908,7 +2913,7 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
       const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
       // R@B and B@R interpolation
-      rgb[indx][c] = CLAMPS(rgb[indx][1] + (1.f - PQ_Disc) * P_Est + PQ_Disc * Q_Est, 0.f, 1.f);
+      rgb[indx][c] = fmaxf(rgb[indx][1] + (1.f - PQ_Disc) * P_Est + PQ_Disc * Q_Est, 0.f);
     }
   }
 
@@ -2948,7 +2953,7 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
         const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
 
         // R@G and B@G interpolation
-        rgb[indx][c] = CLAMPS(rgb[indx][1] + (1.f - VH_Disc) * V_Est + VH_Disc * H_Est, 0.f, 1.f);
+        rgb[indx][c] = fmaxf(rgb[indx][1] + (1.f - VH_Disc) * V_Est + VH_Disc * H_Est, 0.f);
       }
     }
   }
@@ -2959,6 +2964,7 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
   free(VH_Dir);
   free(lpf);
   free(PQ_Dir);
+  free(cfa);
   return;
 
   alloc_error:
@@ -2967,6 +2973,7 @@ static void rcd_demosaic(float *out, const float *cfa, dt_iop_roi_t *const roi_o
   if(lpf) free(lpf);
   if(VH_Dir) free(VH_Dir);
   if(PQ_Dir) free(PQ_Dir);
+  if(cfa) free(cfa);
 }
 
 static void passthrough_color(float *out, const float *const in, dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
