@@ -1363,9 +1363,9 @@ void dt_view_map_add_location(const dt_view_manager_t *vm, dt_map_location_data_
   if(vm->proxy.map.view) vm->proxy.map.add_location(vm->proxy.map.view, p, posid);
 }
 
-void dt_view_map_remove_location(const dt_view_manager_t *vm)
+void dt_view_map_location_action(const dt_view_manager_t *vm, const int action)
 {
-  if(vm->proxy.map.view) return vm->proxy.map.remove_location(vm->proxy.map.view);
+  if(vm->proxy.map.view) return vm->proxy.map.location_action(vm->proxy.map.view, action);
 }
 
 #endif
