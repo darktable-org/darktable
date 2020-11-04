@@ -25,6 +25,8 @@
 // map position module uses the tag dictionary with dt_geo_tag_root as a prefix.
 // Synomym field is used to store positions coordinates in ascii format.
 
+static void _signal_location_change(dt_lib_module_t *self);
+
 DT_MODULE(1)
 
 const char *name(dt_lib_module_t *self)
@@ -45,9 +47,10 @@ uint32_t container(dt_lib_module_t *self)
 
 typedef struct dt_lib_map_locations_t
 {
-  GtkWidget *new_button;
   GtkWidget *shape_button;
   gulong shape_button_handler;
+  GtkWidget *new_button;
+  GtkWidget *show_all_button;
   GtkWidget *hide_button;
   GtkWidget *window;
   GtkWidget *view;
@@ -343,6 +346,14 @@ static void _shape_button_clicked(GtkButton *button, dt_lib_module_t *self)
   dtgtk_togglebutton_set_paint((GtkDarktableToggleButton *)d->shape_button,
                                location_shapes[shape], CPF_STYLE_FLAT, NULL);
   g_signal_handler_unblock (d->shape_button, d->shape_button_handler);
+}
+
+static void _show_all_button_clicked(GtkButton *button, dt_lib_module_t *self)
+{
+  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  dt_conf_set_bool("plugins/map/showalllocations",
+                  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->show_all_button)));
+  dt_view_map_location_action(darktable.view_manager, MAP_LOCATION_ACTION_UPDATE_OTHERS);
 }
 
 // delete a path of the tag tree
@@ -644,7 +655,7 @@ static void _pop_menu_delete_location(GtkWidget *menuitem, dt_lib_module_t *self
     {
       // remove the location afterwards to avoid map movement
       _signal_location_change(self);
-      dt_view_map_remove_location(darktable.view_manager);
+      dt_view_map_location_action(darktable.view_manager, MAP_LOCATION_ACTION_REMOVE);
       dt_map_location_delete(locid);
     }
     // update the treeview
@@ -693,7 +704,7 @@ static void _show_location(dt_lib_module_t *self)
     else
     {
       // this is not a location (only a parent). remove location from map if any
-      dt_view_map_remove_location(darktable.view_manager);
+      dt_view_map_location_action(darktable.view_manager, MAP_LOCATION_ACTION_REMOVE);
     }
   }
 }
@@ -806,7 +817,7 @@ static void _selection_changed(GtkTreeSelection *selection, dt_lib_module_t *sel
   }
   else
   {
-    dt_view_map_remove_location(darktable.view_manager);
+    dt_view_map_location_action(darktable.view_manager, MAP_LOCATION_ACTION_REMOVE);
   }
   _display_buttons(self);
 }
@@ -942,6 +953,13 @@ void gui_init(dt_lib_module_t *self)
   d->new_button = dt_ui_button_new(_("new location"), _("add a new location on the center of the visible map"), NULL);
   gtk_box_pack_start(hbox, d->new_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->new_button), "clicked", G_CALLBACK(_new_button_clicked), self);
+
+  dt_conf_set_bool("plugins/map/showalllocations", FALSE);
+  d->show_all_button = gtk_toggle_button_new_with_label(_("show all"));
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->show_all_button))), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_tooltip_text(d->show_all_button, _("show all loations which are on the visible map"));
+  gtk_box_pack_start(hbox, d->show_all_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->show_all_button), "clicked", G_CALLBACK(_show_all_button_clicked), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
 

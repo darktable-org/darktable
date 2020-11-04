@@ -100,7 +100,7 @@ GList *dt_map_location_get_locations_by_path(const gchar *path,
     path1 = g_strconcat(location_tag_prefix, path, NULL);
     path2 = g_strdup_printf("%s|", path1);
   }
-  GList *tags = NULL;
+  GList *locs = NULL;
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -122,18 +122,61 @@ GList *dt_map_location_get_locations_by_path(const gchar *path,
     if(name && strlen(name) > lgth)
     {
       dt_map_location_t *t = g_malloc0(sizeof(dt_map_location_t));
-      name += lgth;
-      t->tag = g_strdup(name);
-      t->id = sqlite3_column_int(stmt, 0);
-      t->count = sqlite3_column_int(stmt, 2);
-      tags = g_list_prepend(tags, t);
+      if(t)
+      {
+        name += lgth;
+        t->tag = g_strdup(name);
+        t->id = sqlite3_column_int(stmt, 0);
+        t->count = sqlite3_column_int(stmt, 2);
+        locs = g_list_prepend(locs, t);
+      }
     }
   }
   sqlite3_finalize(stmt);
 
   g_free(path1);
   g_free(path2);
-  return tags;
+  return locs;
+}
+
+GList *dt_map_location_get_locations_on_map(const double lat0, const double lat1,
+                                            const double lon0, const double lon1)
+{
+  GList *locs = NULL;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT *"
+                              "  FROM data.locations AS t"
+                              "  WHERE latitude IS NOT NULL"
+                              "    AND (latitude + delta1 / 2) > ?2"
+                              "    AND (latitude - delta1 / 2) < ?1"
+                              "    AND (longitude + delta2 / 2) > ?3"
+                              "    AND (longitude - delta2 / 2) < ?4",
+                              -1, &stmt, NULL);
+
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, lat0);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, lat1);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 3, lon0);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 4, lon1);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_location_draw_t *t = g_malloc0(sizeof(dt_location_draw_t));
+    if(t)
+    {
+      t->id = sqlite3_column_int(stmt, 0);
+      t->data.shape = sqlite3_column_int(stmt, 1);
+      t->data.lon = sqlite3_column_double(stmt, 2);
+      t->data.lat = sqlite3_column_double(stmt, 3);
+      t->data.delta1 = sqlite3_column_double(stmt, 4);
+      t->data.delta2 = sqlite3_column_double(stmt, 5);
+      locs = g_list_prepend(locs, t);
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  return locs;
 }
 
 static void _free_result_item(dt_map_location_t *t, gpointer unused)
