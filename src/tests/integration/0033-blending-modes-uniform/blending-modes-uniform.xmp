@@ -98,16 +98,6 @@
       darktable:blendop_version="9"
       darktable:blendop_params="gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ="/>
      <rdf:li
-      darktable:num="9"
-      darktable:operation="filmicrgb"
-      darktable:enabled="1"
-      darktable:modversion="4"
-      darktable:params="gz02eJybNXOyIwPDggNpaX0ODAwOUHzCCYIhYBZQjf6yChuQWMJrTYf//+87/vu/3x4kx8jAcPDsmTO2jBA2GEPFGZgYUMETdgYGANIIGNI="
-      darktable:multi_name=""
-      darktable:multi_priority="0"
-      darktable:blendop_version="9"
-      darktable:blendop_params="gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ="/>
-     <rdf:li
       darktable:num="10"
       darktable:operation="exposure"
       darktable:enabled="1"
