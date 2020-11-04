@@ -14,6 +14,7 @@
 #
 #   --disable-opencl   - do not run the OpenCL path
 #   --no-deltae        - do a light check not requiring Delta-E module
+#   --fast-fail        - abort testing on the first NOK test
 
 CDPATH=
 
@@ -26,10 +27,11 @@ TEST_ERROR=0
 COMPARE=$(which compare)
 DO_OPENCL=yes
 DO_DELTAE=yes
+DO_FAST_FAIL=no
 
 [ -z $(which $CLI) ] && echo Make sure $CLI is in the path && exit 1
 
-set -- $(getopt -q -u -o : -l disable-opencl,no-deltae -- $*)
+set -- $(getopt -q -u -o : -l disable-opencl,no-deltae,fast-fail -- $*)
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -38,6 +40,9 @@ while [ $# -gt 0 ]; do
             ;;
         --no-deltae)
             DO_DELTAE=no
+            ;;
+        --fast-fail)
+            DO_FAST_FAIL=yes
             ;;
         (--)
             ;;
@@ -167,7 +172,15 @@ for dir in $TESTS; do
                         res=1
                     else
                         diffcount="$(compare expected.png output.png -metric ae diff-ok.png 2>&1 )"
-                        if [ $diffcount -lt 2000 ]; then
+
+                        # if we have an exponent just pretend this is a number
+                        # above 2000 which is the limit checked below.
+
+                        if [[ $diffcount =~ e ]]; then
+                            diffcount=50000
+                        fi
+
+                        if [[ $diffcount -lt 2000 ]]; then
                             echo "      Light check : OK"
                             res=0
                         else
@@ -178,6 +191,7 @@ for dir in $TESTS; do
                 fi
             else
                 echo "  FAILS : darktable-cli errored"
+                res=1
             fi
 
             if [ ! -f expected.png ]; then
@@ -192,6 +206,8 @@ for dir in $TESTS; do
 
         if [ $? -ne 0 ]; then
             TEST_ERROR=$((TEST_ERROR + 1))
+
+            [ $DO_FAST_FAIL == yes ] && break;
         fi
     fi
 
