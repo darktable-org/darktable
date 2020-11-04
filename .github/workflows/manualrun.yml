@@ -1,37 +1,9 @@
-name: CI
+name: Full Manual Check
 
-# Keep in sync with manualrun.yml!
+# keep in sync with ci.yml
 
 on:
-  push:
-    branches: 
-      - master
-      - darktable-**
-    paths-ignore:
-        - "po/**"
-        - "packaging/**"
-        - "data/latex/**"
-        - "data/lua/**"
-        - "data/pixmaps/**"
-        - "data/pswp/**"
-        - "data/style/**"
-        - "data/themes/**"
-        - "data/watermarks/**"
-        - "**.md"
-  pull_request:
-    branches: 
-      - master
-    paths-ignore:
-        - "po/**"
-        - "packaging/**"
-        - "data/latex/**"
-        - "data/lua/**"
-        - "data/pixmaps/**"
-        - "data/pswp/**"
-        - "data/style/**"
-        - "data/themes/**"
-        - "data/watermarks/**"
-        - "**.md"
+  workflow_dispatch:
 
 jobs:
 
@@ -43,12 +15,12 @@ jobs:
       matrix:
         os: 
           - { label: ubuntu-20.04, code: focal }
-          #- { label: ubuntu-18.04, code: bionic }
+          - { label: ubuntu-18.04, code: bionic }
         compiler:
-          #- { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
+          - { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
           - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
           - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
-          #- { compiler: LLVM9,  CC: clang-9,  CXX: clang++-9,  packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
+          - { compiler: LLVM9,  CC: clang-9,  CXX: clang++-9,  packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
           - { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
           #- { compiler: LLVM11, CC: clang-11, CXX: clang++-11, packages: clang-11 libomp-11-dev libclang-common-11-dev llvm-11-dev clang++-11 libc++-11-dev lld-11}
         btype: 
@@ -161,9 +133,9 @@ jobs:
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
       - name: Run Integration test suite
-        #if: ${{ matrix.target != 'usermanual' }}
+        if: ${{ matrix.target != 'usermanual' }}
         #integration test can get "stuck" plus there are couple of errors here, so it needs to be addressed first
-        if: ${{ false }}
+        #if: ${{ false }}
         run: |
           cd "${SRC_DIR}/src/tests/integration/"
           ./run.sh --no-opencl --no-deltae --fast-fail
@@ -185,10 +157,10 @@ jobs:
           - nofeatures
         include:
           # Uncomment if PR needs to generate windows package for testing.
-          #- btype: Release
-          #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
-          #  eco: -DBINARY_PACKAGE_BUILD=ON
-          #  target: skiptest
+          - btype: Release
+            compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
+            eco: -DBINARY_PACKAGE_BUILD=ON
+            target: skiptest
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
