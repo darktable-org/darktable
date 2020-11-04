@@ -25041,7 +25041,7 @@ msgid ""
 msgstr ""
 "En plus des raccourcis classiques, vous pouvez définir des raccourcis "
 "dynamiques pour des curseurs de modules de la chambre noire. Ceci permet de "
-"modifier la valeur du curseur sélectionné avec <emphaisis>touche+défilement</"
+"modifier la valeur du curseur sélectionné avec <emphasis>touche+défilement</"
 "emphasis>. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21724(para)
