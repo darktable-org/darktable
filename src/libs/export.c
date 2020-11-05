@@ -274,11 +274,6 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
 {
   char style[128] = { 0 };
 
-  // Let's get the max dimension restriction if any...
-  // TODO: pass the relevant values directly, not using the conf ...
-  const uint32_t max_width = dt_conf_get_int(CONFIG_PREFIX "width");
-  const uint32_t max_height = dt_conf_get_int(CONFIG_PREFIX "height");
-
   // get the format_name and storage_name settings which are plug-ins name and not necessary what is displayed on the combobox.
   // note that we cannot take directly the combobox entry index as depending on the storage some format are not listed.
   char *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
@@ -326,6 +321,10 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
     }
   }
 
+  // Let's get the max dimension restriction if any...
+  uint32_t max_width = dt_conf_get_int(CONFIG_PREFIX "width");
+  uint32_t max_height = dt_conf_get_int(CONFIG_PREFIX "height");
+
   const gboolean upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale");
   const gboolean high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing");
   const gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
@@ -336,6 +335,25 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
     g_strlcpy(style, tmp, sizeof(style));
     g_free(tmp);
   }
+
+  // if upscale is activated and only one dimension is 0 we adjust it to ensure
+  // that the up-scaling will happen. The null dimension is set to MAX_ASPECT_RATIO
+  // time the other dimension, allowing for a ratio of max 1:100 exported images.
+
+  if(upscale)
+  {
+    const uint32_t MAX_ASPECT_RATIO = 100;
+
+    if(max_width == 0 && max_height != 0)
+    {
+      max_width = max_height * MAX_ASPECT_RATIO;
+    }
+    else if(max_height == 0 && max_width != 0)
+    {
+      max_height = max_width * MAX_ASPECT_RATIO;
+    }
+  }
+
   dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int(CONFIG_PREFIX "icctype");
   gchar *icc_filename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
