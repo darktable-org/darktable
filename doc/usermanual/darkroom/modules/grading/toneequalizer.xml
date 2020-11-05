@@ -186,6 +186,31 @@
     </sect5>
 
     <sect5>
+      <title>preserve details mode</title>
+
+      <para>
+        There are several different filters that can be used to smooth the mask.
+        If preserve details is disabled, the mask is not smoothed. Guided filter
+        blurs the mask smoothing more shadows than highlights, which is sometimes
+        desirable if you lighten the shadows a lot, but may result in loss of
+        local contrast in highlights if you darken them. Eigf blurs the mask
+        in a way that is independent from exposure: highlights and shadows will
+        be blurred more uniformly. Guided filter averaged and eigf averaged will
+        perform the geometric mean of the result of the filter and the original
+        mask: details will not be as preserved as without the average, but the
+        averaging will reduce halos.
+      </para>
+
+      <para>
+        If you increase this to 2, a second mask is calculated using
+        the first mask as an input. As a result, the new mask is more
+        fuzzy than when there was only one instance of the mask.
+        Progressively higher values will diffuse the mask even
+        further.
+      </para>
+    </sect5>
+
+    <sect5>
       <title>filter diffusion</title>
 
       <para>
@@ -209,9 +234,7 @@
         With lower values, the transition between dark areas of the
         mask and lighter areas of the mask will be more pronounced. As
         this value is increased, those transitions become
-        smoother/softer.  It should be noted that setting really large
-        values may result in slower display times IF Denoise Profiled
-        is also in use.
+        smoother/softer.
       </para>
     </sect5>
 
@@ -224,6 +247,22 @@
         gradients, but may introduce some halos.
       </para>
     </sect5>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Compress shadows/highlights presets</title>
+
+    <para>
+      The module comes with several presets to compress shadows
+      and highlights. For each of these presets, 2 variants are
+      proposed, one with guided filter (gf) and one with exposure
+      independent guided filter (eigf). Depending on the image, one
+      or the other may give better results. In both case, these
+      presets preserve middle-grey so that you do not have to
+      adjust global exposure before and after toneequalizer.
+    </para>
 
   </sect4>
 
