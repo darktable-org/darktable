@@ -229,6 +229,9 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_global(path, sizeof(path), "toggle side borders");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_sideborders);
 
+  dt_accel_path_global(path, sizeof(path), "toggle panels collapsing controls");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_collapsing_controls);
+
   dt_accel_path_global(path, sizeof(path), "show accels window");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
 
