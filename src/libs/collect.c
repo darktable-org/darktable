@@ -2362,23 +2362,27 @@ static void tag_changed(gpointer instance, gpointer self)
   }
 }
 
-static void _geotag_changed(gpointer instance, GList *imgs, gpointer self)
+static void _geotag_changed(gpointer instance, GList *imgs, const int locid, gpointer self)
 {
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-  // update tree
-  if(_combo_get_active_collection(d->rule[d->active_rule].combo) == DT_COLLECTION_PROP_GEOTAGGING)
+  // if locid <> NULL this event doesn't concern collect module
+  if(!locid)
   {
-    d->view_rule = -1;
-    d->rule[d->active_rule].typing = FALSE;
-    _lib_collect_gui_update(self);
+    dt_lib_module_t *dm = (dt_lib_module_t *)self;
+    dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+    // update tree
+    if(_combo_get_active_collection(d->rule[d->active_rule].combo) == DT_COLLECTION_PROP_GEOTAGGING)
+    {
+      d->view_rule = -1;
+      d->rule[d->active_rule].typing = FALSE;
+      _lib_collect_gui_update(self);
 
-    //need to reload collection since we have geotags as active collection filter
-    dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
-                                    darktable.view_manager->proxy.module_collect.module);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
-    dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+      //need to reload collection since we have geotags as active collection filter
+      dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                       darktable.view_manager->proxy.module_collect.module);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+      dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                        darktable.view_manager->proxy.module_collect.module);
+    }
   }
 }
 

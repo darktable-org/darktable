@@ -732,7 +732,7 @@ static void _view_map_signal_change_raise(gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, NULL);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, NULL, 0);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
 }
 
@@ -1376,7 +1376,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
   }
   if(e->button == 1)
   {
-    // check if the click was in a location circle
+    // check if the click was in a location circle - crtl give priority to images
     if(lib->loc.main.id > 0 && !(e->state & GDK_CONTROL_MASK))
     {
       OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
@@ -1386,6 +1386,24 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       {
         lib->loc.drag = TRUE;
         return TRUE;
+      }
+    }
+    // check if another location is clicked - ctrl gives priority to images
+    if (!(e->state & GDK_CONTROL_MASK))
+    {
+      OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
+      float lat, lon;
+      osm_gps_map_point_get_degrees(p, &lat, &lon);
+      for(GList *other = lib->loc.others; other; other = g_list_next(other))
+      {
+        dt_location_draw_t *d = (dt_location_draw_t *)other->data;
+        if(dt_map_location_included(lon, lat, &d->data))
+        {
+          dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
+          DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, NULL, d->id);
+          dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
+          return TRUE;
+        }
       }
     }
     // check if the click was on image(s) or just some random position

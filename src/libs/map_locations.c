@@ -26,6 +26,7 @@
 // Synomym field is used to store positions coordinates in ascii format.
 
 static void _signal_location_change(dt_lib_module_t *self);
+static void _show_location(dt_lib_module_t *self);
 
 DT_MODULE(1)
 
@@ -404,43 +405,67 @@ static gboolean _update_tag_name_per_name(GtkTreeModel *model, GtkTreePath *path
   return FALSE;
 }
 
-static void _view_map_geotag_changed(gpointer instance, GList *imgs, dt_lib_module_t *self)
+static void _view_map_geotag_changed(gpointer instance, GList *imgs, const int newlocid, dt_lib_module_t *self)
 {
   dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
 
-  for(GList* img = imgs; img; img = g_list_next(img))
+  // one of the other location has been clicked on the map
+  if(newlocid)
   {
-    // find new locations for that image
-    GList *tags = dt_map_location_find_locations(GPOINTER_TO_INT(img->data));
-    // update locations for that image
-    dt_map_location_update_locations(GPOINTER_TO_INT(img->data), tags);
-    g_list_free(tags);
-  }
-  // update count on the treeview
-  GList *locs = dt_map_location_get_locations_by_path("", TRUE);
-  GtkTreeIter iter;
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
-  if(gtk_tree_model_get_iter_first(model, &iter))
-  {
-    for(GList *loc = locs; loc; loc = g_list_next(loc))
+    GtkTreeIter iter;
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
+    if(gtk_tree_model_get_iter_first(model, &iter))
     {
-      const guint locid = ((dt_map_location_t *)loc->data)->id;
-      GtkTreeIter iter2 = iter;
-      if(_find_tag_iter_id(model, &iter2, locid))
+      if(_find_tag_iter_id(model, &iter, newlocid))
       {
-        gtk_tree_store_set(GTK_TREE_STORE(model), &iter2,
-                           DT_MAP_LOCATION_COL_COUNT, ((dt_map_location_t *)loc->data)->count,
-                           -1);
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
+        gtk_tree_selection_select_iter(selection, &iter);
+        GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+        gtk_tree_view_expand_to_path(GTK_TREE_VIEW(d->view), path);
+        gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(d->view), path, NULL, TRUE, 0.5, 0.5);
+        gtk_tree_view_set_cursor(GTK_TREE_VIEW(d->view), path, d->name_col, FALSE);
+        gtk_tree_path_free(path);
+        _show_location(self);
+        _display_buttons(self);
       }
     }
   }
-  dt_map_location_free_result(&locs);
+  else
+  {
+    for(GList* img = imgs; img; img = g_list_next(img))
+    {
+      // find new locations for that image
+      GList *tags = dt_map_location_find_locations(GPOINTER_TO_INT(img->data));
+      // update locations for that image
+      dt_map_location_update_locations(GPOINTER_TO_INT(img->data), tags);
+      g_list_free(tags);
+    }
+    // update count on the treeview
+    GList *locs = dt_map_location_get_locations_by_path("", TRUE);
+    GtkTreeIter iter;
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
+    if(gtk_tree_model_get_iter_first(model, &iter))
+    {
+      for(GList *loc = locs; loc; loc = g_list_next(loc))
+      {
+        const guint locid = ((dt_map_location_t *)loc->data)->id;
+        GtkTreeIter iter2 = iter;
+        if(_find_tag_iter_id(model, &iter2, locid))
+        {
+          gtk_tree_store_set(GTK_TREE_STORE(model), &iter2,
+                             DT_MAP_LOCATION_COL_COUNT, ((dt_map_location_t *)loc->data)->count,
+                             -1);
+        }
+      }
+    }
+    dt_map_location_free_result(&locs);
+  }
 }
 
 static void _signal_location_change(dt_lib_module_t *self)
 {
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_geotag_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, NULL);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, NULL, 0);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_geotag_changed), self);
 }
 
