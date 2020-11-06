@@ -171,6 +171,7 @@ GList *dt_map_location_get_locations_on_map(const double lat0, const double lat1
       t->data.lat = sqlite3_column_double(stmt, 3);
       t->data.delta1 = sqlite3_column_double(stmt, 4);
       t->data.delta2 = sqlite3_column_double(stmt, 5);
+      t->data.ratio = sqlite3_column_double(stmt, 6);
       locs = g_list_prepend(locs, t);
     }
   }
@@ -230,7 +231,7 @@ dt_map_location_data_t *dt_map_location_get_data(const guint locid)
   dt_map_location_data_t *g = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT type, longitude, latitude, delta1, delta2"
+                              "SELECT type, longitude, latitude, delta1, delta2, ratio"
                               "  FROM data.locations"
                               "  JOIN data.tags ON id = tagid"
                               "  WHERE tagid = ?1 AND longitude IS NOT NULL"
@@ -247,6 +248,7 @@ dt_map_location_data_t *dt_map_location_get_data(const guint locid)
     g->lat = sqlite3_column_double(stmt, 2);
     g->delta1 = sqlite3_column_double(stmt, 3);
     g->delta2 = sqlite3_column_double(stmt, 4);
+    g->ratio = sqlite3_column_double(stmt, 5);
   }
   sqlite3_finalize(stmt);
   return g;
@@ -259,8 +261,8 @@ void dt_map_location_set_data(const guint locid, const dt_map_location_data_t *g
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT OR REPLACE INTO data.locations"
-                              "  (tagid, type, longitude, latitude, delta1, delta2)"
-                              "  VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                              "  (tagid, type, longitude, latitude, delta1, delta2, ratio)"
+                              "  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, locid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, g->shape);
@@ -268,6 +270,7 @@ void dt_map_location_set_data(const guint locid, const dt_map_location_data_t *g
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 4, g->lat);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, g->delta1);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, g->delta2);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, g->ratio);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
@@ -281,18 +284,19 @@ GList *dt_map_location_find_locations(const guint imgid)
                               "SELECT l.tagid FROM main.images AS i"
                               "  JOIN data.locations AS l"
                               "  ON (l.type = ?2 AND"
-                              "      ((i.longitude-l.longitude)*(i.longitude-l.longitude)+"
-                              "      (i.latitude-l.latitude)*(i.latitude-l.latitude))<="
-                              "      delta1*delta1)"
+                              "      ((((i.longitude-l.longitude)*(i.longitude-l.longitude))/"
+                                        "(delta1*delta1) +"
+                              "        ((i.latitude-l.latitude)*(i.latitude-l.latitude))/"
+                                        "(delta2*delta2)) <= 1)"
                               "    OR (l.type = ?3 AND"
                               "      i.longitude>=(l.longitude-delta1) AND"
                               "      i.longitude<=(l.longitude+delta1) AND"
                               "      i.latitude>=(l.latitude-delta2) AND"
-                              "      i.latitude<=(l.latitude+delta2))"
+                              "      i.latitude<=(l.latitude+delta2)))"
                               " WHERE i.id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, MAP_LOCATION_SHAPE_CIRCLE);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, MAP_LOCATION_SHAPE_ELLIPSE);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, MAP_LOCATION_SHAPE_RECTANGLE);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -313,18 +317,19 @@ GList *_map_location_find_images(const guint locid)
                               "SELECT i.id FROM main.images AS i"
                               "  JOIN data.locations AS l"
                               "  ON (l.type = ?2 AND"
-                              "      ((i.longitude-l.longitude)*(i.longitude-l.longitude)+"
-                              "      (i.latitude-l.latitude)*(i.latitude-l.latitude))<="
-                              "      delta1*delta1)"
+                              "      ((((i.longitude-l.longitude)*(i.longitude-l.longitude))/"
+                                        "(delta1*delta1) +"
+                              "        ((i.latitude-l.latitude)*(i.latitude-l.latitude))/"
+                                        "(delta2*delta2)) <= 1)"
                               "   OR (l.type = ?3 AND"
                               "      i.longitude>=(l.longitude-delta1) AND"
                               "      i.longitude<=(l.longitude+delta1) AND"
                               "      i.latitude>=(l.latitude-delta2) AND"
-                              "      i.latitude<=(l.latitude+delta2))"
+                              "      i.latitude<=(l.latitude+delta2)))"
                               "  WHERE l.tagid = ?1 ",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, locid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, MAP_LOCATION_SHAPE_CIRCLE);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, MAP_LOCATION_SHAPE_ELLIPSE);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, MAP_LOCATION_SHAPE_RECTANGLE);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -420,10 +425,9 @@ gboolean dt_map_location_included(const float lon, const float lat,
                                   dt_map_location_data_t *g)
 {
   gboolean included = FALSE;
-  if((g->shape == MAP_LOCATION_SHAPE_CIRCLE &&
-     ((g->lon - lon) * (g->lon - lon) +
-      (g->lat - lat) * (g->lat - lat)) <
-      g->delta1 * g->delta1)
+  if((g->shape == MAP_LOCATION_SHAPE_ELLIPSE &&
+     (((g->lon - lon) * (g->lon - lon) / (g->delta1 * g->delta1) +
+       (g->lat - lat) * (g->lat - lat) / (g->delta2 * g->delta2)) <= 1.0))
      ||
      (g->shape == MAP_LOCATION_SHAPE_RECTANGLE &&
       lon > g->lon - g->delta1 && lon < g->lon + g->delta1 &&
