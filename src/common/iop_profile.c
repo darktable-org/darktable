@@ -739,6 +739,51 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop
   return profile;
 }
 
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_input_profile_info(struct dt_iop_module_t *module, GList *iop_list)
+{
+  dt_iop_order_iccprofile_info_t *profile = NULL;
+
+  // first check if the module is between colorin and colorout
+  gboolean in_between = FALSE;
+
+  GList *modules = g_list_first(iop_list);
+  while(modules)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
+
+    // we reach the module, that's it
+    if(strcmp(mod->op, module->op) == 0) break;
+
+    // if we reach colorout means that the module is after it
+    if(strcmp(mod->op, "colorout") == 0)
+    {
+      in_between = FALSE;
+      break;
+    }
+
+    // we reach colorin, so far we're good
+    if(strcmp(mod->op, "colorin") == 0)
+    {
+      in_between = TRUE;
+      break;
+    }
+
+    modules = g_list_next(modules);
+  }
+
+  if(in_between)
+  {
+    dt_colorspaces_color_profile_type_t type = DT_COLORSPACE_NONE;
+    const char *filename = NULL;
+    dt_develop_t *dev = module->dev;
+
+    dt_ioppr_get_input_profile_type(dev, &type, &filename);
+    if(filename) profile = dt_ioppr_add_profile_info_to_list(dev, type, filename, DT_INTENT_PERCEPTUAL);
+  }
+
+  return profile;
+}
+
 dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
     const int type, const char *filename, const int intent)
 {
@@ -750,6 +795,21 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_de
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
   pipe->dsc.work_profile_info = profile_info;
+
+  return profile_info;
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
+    const int type, const char *filename, const int intent)
+{
+  dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
+
+  if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
+  {
+    fprintf(stderr, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear rec2020\n", type, filename);
+    profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
+  }
+  pipe->dsc.input_profile_info = profile_info;
 
   return profile_info;
 }
@@ -766,6 +826,11 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_de
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe)
 {
   return pipe->dsc.work_profile_info;
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(struct dt_dev_pixelpipe_t *pipe)
+{
+  return pipe->dsc.input_profile_info;
 }
 
 // returns a pointer to the filename of the work profile instead of the actual string data
@@ -807,6 +872,55 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type,
   {
     dt_colorspaces_color_profile_type_t *_type = colorin_so->get_p(colorin->params, "type_work");
     char *_filename = colorin_so->get_p(colorin->params, "filename_work");
+    if(_type && _filename)
+    {
+      *profile_type = *_type;
+      *profile_filename = _filename;
+    }
+    else
+      fprintf(stderr, "[dt_ioppr_get_work_profile_type] can't get colorin parameters\n");
+  }
+  else
+    fprintf(stderr, "[dt_ioppr_get_work_profile_type] can't find colorin iop\n");
+}
+
+void dt_ioppr_get_input_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename)
+{
+  *profile_type = DT_COLORSPACE_NONE;
+  *profile_filename = NULL;
+
+  // use introspection to get the params values
+  dt_iop_module_so_t *colorin_so = NULL;
+  dt_iop_module_t *colorin = NULL;
+  GList *modules = g_list_first(darktable.iop);
+  while(modules)
+  {
+    dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
+    if(!strcmp(module_so->op, "colorin"))
+    {
+      colorin_so = module_so;
+      break;
+    }
+    modules = g_list_next(modules);
+  }
+  if(colorin_so && colorin_so->get_p)
+  {
+    modules = g_list_first(dev->iop);
+    while(modules)
+    {
+      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      if(!strcmp(module->op, "colorin"))
+      {
+        colorin = module;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+  if(colorin)
+  {
+    dt_colorspaces_color_profile_type_t *_type = colorin_so->get_p(colorin->params, "type");
+    char *_filename = colorin_so->get_p(colorin->params, "filename");
     if(_type && _filename)
     {
       *profile_type = *_type;

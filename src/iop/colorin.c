@@ -116,6 +116,7 @@ typedef struct dt_iop_colorin_data_t
   int nonlinearlut;
   dt_colorspaces_color_profile_type_t type;
   dt_colorspaces_color_profile_type_t type_work;
+  char filename[DT_IOP_COLOR_ICC_LEN];
   char filename_work[DT_IOP_COLOR_ICC_LEN];
 } dt_iop_colorin_data_t;
 
@@ -548,8 +549,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     size_t region[] = { roi_in->width, roi_in->height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
-
-    dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
     return TRUE;
   }
 
@@ -587,7 +586,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
 
-  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
   return TRUE;
 
 error:
@@ -1028,8 +1026,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     process_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 
-  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
-
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
@@ -1426,8 +1422,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     process_sse2_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 
-  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
-
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
@@ -1452,7 +1446,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   d->type = p->type;
   d->type_work = p->type_work;
+  g_strlcpy(d->filename, p->filename, sizeof(d->filename));
   g_strlcpy(d->filename_work, p->filename_work, sizeof(d->filename_work));
+
+  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
+  dt_ioppr_set_pipe_input_profile_info(self->dev, piece->pipe, d->type, d->filename, DT_INTENT_PERCEPTUAL);
 
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
