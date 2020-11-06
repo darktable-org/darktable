@@ -73,12 +73,15 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_add_profile_info_to_list(struct dt_deve
  * work profile must not be cleanup()
  */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module, GList *iop_list);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_input_profile_info(struct dt_iop_module_t *module, GList *iop_list);
 
 /** set the work profile (type, filename) on the pipe, should be called on process*()
  * if matrix cannot be generated it default to linear rec 2020
  * returns the actual profile that has been set
  */
 dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
+    const int type, const char *filename, const int intent);
+dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
     const int type, const char *filename, const int intent);
 /** returns a reference to the histogram profile info
  * histogram profile must not be cleanup()
@@ -87,9 +90,12 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_de
 
 /** returns the active work profile on the pipe */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(struct dt_dev_pixelpipe_t *pipe);
 
 /** returns the current setting of the work profile on colorin iop */
 void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename);
+/** returns the current setting of the input profile on colorin iop */
+void dt_ioppr_get_input_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename);
 /** returns the current setting of the export profile on colorout iop */
 void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename);
 /** returns the current setting of the histogram profile */
