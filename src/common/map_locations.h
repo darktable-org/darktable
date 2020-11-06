@@ -24,7 +24,7 @@
 
 typedef enum dt_map_locations_type_t
 {
-  MAP_LOCATION_SHAPE_CIRCLE,
+  MAP_LOCATION_SHAPE_ELLIPSE,
   MAP_LOCATION_SHAPE_RECTANGLE,
   MAP_LOCATION_SHAPE_MAX
 } dt_map_locations_type_t;
@@ -38,7 +38,7 @@ typedef enum dt_map_locations_action_t
 
 typedef struct dt_map_location_data_t
 {
-  double lon, lat, delta1, delta2;
+  double lon, lat, delta1, delta2, ratio;
   int shape;
 } dt_map_location_data_t;
 
