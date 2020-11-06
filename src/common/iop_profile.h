@@ -33,6 +33,7 @@
 struct dt_iop_module_t;
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
+struct dt_dev_pixelpipe_iop_t;
 
 // must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
 #define DT_IOPPR_COLOR_ICC_LEN 512
@@ -88,14 +89,23 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(
     const int intent, const float matrix_in[9], const float *lut_1, const float *lut_2, const float *lut_3,
     const size_t lut_size, const int nonlinearlut, const float unbounded_coeffs[3][3]);
 
+dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_output_profile_info(
+    struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const int type, const char *filename,
+    const int intent, const float matrix_in[9], const float *lut_1, const float *lut_2, const float *lut_3,
+    const size_t lut_size, const float unbounded_coeffs[3][3]);
+
 /** returns a reference to the histogram profile info
  * histogram profile must not be cleanup()
  */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
 
-/** returns the active work profile on the pipe */
+/** returns the active work/input/output profile on the pipe */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(struct dt_dev_pixelpipe_t *pipe);
+
+/** Get the relevant RGB -> XYZ profile at the position of current module */
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(struct dt_dev_pixelpipe_iop_t *piece);
 
 /** returns the current setting of the work profile on colorin iop */
 void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename);
