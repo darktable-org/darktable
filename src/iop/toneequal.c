@@ -2367,8 +2367,8 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
   // Set the sizes, margins and paddings
   g->inner_padding = 4; // TODO: INNER_PADDING value as defined in bauhaus.c macros, sync them
   g->inset = g->inner_padding + darktable.bauhaus->quad_width;
-  g->graph_width = g->allocation.width - 2.0 * g->inset - 2.0 * g->line_height; // align the right border on sliders
-  g->graph_height = g->graph_width; // give room to nodes
+  g->graph_width = g->allocation.width - g->inset - 2.0 * g->line_height; // align the right border on sliders
+  g->graph_height = g->allocation.height - g->inset - 2.0 * g->line_height; // give room to nodes
   g->gradient_left_limit = 0.0;
   g->gradient_right_limit = g->graph_width;
   g->gradient_top_limit = g->graph_height + 2 * g->inner_padding;
@@ -2493,7 +2493,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
   // Init or refresh the drawing cache
   //if(!g->graph_valid)
-  if(!_init_drawing(self->widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
+  if(!_init_drawing(widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
 
   // since the widget sizes are not cached and invalidated properly above (yet…)
   // force the invalidation of the nodes coordinates to account for possible widget resizing
@@ -2754,7 +2754,17 @@ static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gp
   if(!self->enabled) return 0;
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
+  if(g->area_dragging)
+  {
+    // cursor left area : force commit to avoid glitches
+    ++darktable.gui->reset;
+    update_exposure_sliders(g, p);
+    --darktable.gui->reset;
+
+    dt_dev_add_history_item(darktable.develop, self, FALSE);
+  }
   dt_pthread_mutex_lock(&g->lock);
   g->area_x = (event->x - g->inset);
   g->area_y = (event->y - g->inset);
@@ -2833,39 +2843,21 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
-  const float current_y = event->y - g->inset;
-  const gboolean height_valid = (current_y > 0.0f && current_y < g->graph_height);
-
-  if(g->area_dragging && height_valid)
+  if(g->area_dragging)
   {
     // vertical distance travelled since button_pressed event
     dt_pthread_mutex_lock(&g->lock);
-    const float previous_y = g->area_y;
-    const float last_y = fminf(fmaxf((event->y - g->inset), 0.0f), g->graph_height);
-    const float offset = (-last_y + previous_y) / g->graph_height * 4.0f; // graph spans over 4 EV
+    const float offset = (-event->y + g->area_y) / g->graph_height * 4.0f; // graph spans over 4 EV
     const float cursor_exposure = g->area_x / g->graph_width * 8.0f - 8.0f;
 
     // Get the desired correction on exposure channels
     g->area_dragging = set_new_params_interactive(cursor_exposure, offset, g->sigma * g->sigma / 2.0f, g, p);
     dt_pthread_mutex_unlock(&g->lock);
   }
-  else if(g->area_dragging && !height_valid)
-  {
-    // cursor left area : force commit to avoid glitches
-    ++darktable.gui->reset;
-    update_exposure_sliders(g, p);
-    --darktable.gui->reset;
-
-    dt_dev_add_history_item(darktable.develop, self, FALSE);
-
-    dt_pthread_mutex_lock(&g->lock);
-    g->area_dragging= 0;
-    dt_pthread_mutex_unlock(&g->lock);
-  }
 
   dt_pthread_mutex_lock(&g->lock);
   g->area_x = (event->x - g->inset);
-  g->area_y = (event->y - g->inset);
+  g->area_y = event->y;
   g->area_cursor_valid = (g->area_x > 0.0f && g->area_x < g->graph_width && g->area_y > 0.0f && g->area_y < g->graph_height);
   g->area_active_node = -1;
 
@@ -3089,8 +3081,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = dt_ui_notebook_page(g->notebook, _("advanced"), NULL);
 
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                  | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
@@ -3157,8 +3149,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask post-processing")), FALSE, FALSE, 0);
 
-  g->bar = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.05));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bar), FALSE, FALSE, 0);
+  g->bar = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  gtk_widget_set_size_request(GTK_WIDGET(g->bar), -1, 4);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bar), TRUE, TRUE, 0);
   gtk_widget_set_can_focus(GTK_WIDGET(g->bar), TRUE);
   g_signal_connect(G_OBJECT(g->bar), "draw", G_CALLBACK(dt_iop_toneequalizer_bar_draw), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->bar), _("mask histogram span between the first and last deciles.\n"
@@ -3196,6 +3189,10 @@ void gui_init(struct dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
+  int active_page = dt_conf_get_int("plugins/darkroom/toneequal/gui_page");
+  gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
+  gtk_notebook_set_current_page(g->notebook, active_page);
+
   g_signal_connect(G_OBJECT(g->notebook), "button-press-event", G_CALLBACK(notebook_button_press), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
@@ -3223,6 +3220,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+
+  dt_conf_set_int("plugins/darkroom/toneequal/gui_page", gtk_notebook_get_current_page (g->notebook));
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_started_callback), self);
