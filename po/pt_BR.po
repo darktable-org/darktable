@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-02 17:10-0300\n"
-"PO-Revision-Date: 2020-11-02 17:10-0300\n"
+"PO-Revision-Date: 2020-11-06 05:20-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3372,19 +3372,19 @@ msgstr "data/hora da foto"
 
 #: ../src/common/collection.c:681 ../src/libs/metadata_view.c:109
 msgid "import timestamp"
-msgstr "importar marca de data/hora"
+msgstr "marca temporal (data/hora) de importação"
 
 #: ../src/common/collection.c:682 ../src/libs/metadata_view.c:110
 msgid "change timestamp"
-msgstr "mudar marca de data/hora"
+msgstr "marca temporal (data/hora) de modificação"
 
 #: ../src/common/collection.c:683 ../src/libs/metadata_view.c:111
 msgid "export timestamp"
-msgstr "exportar data/hora"
+msgstr "marca temporal (data/hora) de exportação"
 
 #: ../src/common/collection.c:684 ../src/libs/metadata_view.c:112
 msgid "print timestamp"
-msgstr "imprimir data/hora"
+msgstr "marca temporal (data/hora) de impressão"
 
 #: ../src/common/collection.c:685 ../src/libs/history.c:86
 msgid "history"
@@ -8110,8 +8110,7 @@ msgstr ""
 
 #: ../src/iop/ashift.c:4829
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
-msgstr ""
-"ajustar aspecto da imagem mudando escala horizontalmente e verticalmente"
+msgstr "ajustar proporção da imagem mudando escala horizontalmente e verticalmente"
 
 #: ../src/iop/ashift.c:4830
 msgid ""
