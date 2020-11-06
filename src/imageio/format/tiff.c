@@ -500,6 +500,8 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)1);
         TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)32);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)SAMPLEFORMAT_IEEEFP);
+        if(d->compress == 2) // override predictor set above assuming MASKS_USE_SAME_FORMAT
+            TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_FLOATINGPOINT);
         TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
         TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
 
