@@ -62,6 +62,8 @@ typedef struct dt_iop_buffer_dsc_t
   int cst;
   /** work profile info of the image */
   struct dt_iop_order_iccprofile_info_t *work_profile_info;
+  /** input profile info **/
+  struct dt_iop_order_iccprofile_info_t *input_profile_info;
 } dt_iop_buffer_dsc_t;
 
 size_t dt_iop_buffer_dsc_to_bpp(const struct dt_iop_buffer_dsc_t *dsc);
