@@ -112,6 +112,8 @@ typedef struct dt_dev_pixelpipe_t
   struct dt_iop_order_iccprofile_info_t *work_profile_info;
   /** input profile info **/
   struct dt_iop_order_iccprofile_info_t *input_profile_info;
+  /** output profile info **/
+  struct dt_iop_order_iccprofile_info_t *output_profile_info;
 
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;

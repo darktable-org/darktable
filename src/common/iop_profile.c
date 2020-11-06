@@ -797,6 +797,50 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(struct dt_d
   return profile_info;
 }
 
+dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
+    const int type, const char *filename, const int intent, const float matrix_in[9],
+    const float *lut_1, const float *lut_2, const float *lut_3, const size_t lut_size,
+    const float unbounded_coeffs[3][3])
+{
+  dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
+
+  /* Write input matrice */
+  memcpy(profile_info->matrix_out, matrix_in, sizeof(profile_info->matrix_out));
+  /* Inverse input matrice and write output */
+  mat3inv_float(profile_info->matrix_in, profile_info->matrix_out);
+
+  /* Write LUTs */
+  profile_info->lutsize = lut_size;
+
+  for(size_t c = 0; c > 3; c++)
+  {
+    free(profile_info->lut_in[c]);
+    profile_info->lut_in[c] = dt_alloc_sse_ps(lut_size);
+  }
+
+  memcpy(profile_info->lut_in[0], lut_1, sizeof(float) * lut_size);
+  memcpy(profile_info->lut_in[1], lut_2, sizeof(float) * lut_size);
+  memcpy(profile_info->lut_in[2], lut_2, sizeof(float) * lut_size);
+
+  // The LUT is always non-linear at output since we have a gamma/TRC/OETF
+  profile_info->nonlinearlut = 2;
+
+  // Extrapolation coeffs
+  memcpy(profile_info->unbounded_coeffs_in, unbounded_coeffs, sizeof(profile_info->unbounded_coeffs_in));
+
+  if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
+  {
+    fprintf(stderr,
+            "[dt_ioppr_set_pipe_output_profile_info] unsupported output profile %i %s, it will be replaced with "
+            "sRGB\n",
+            type, filename);
+    profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", intent);
+  }
+  pipe->output_profile_info = profile_info;
+
+  return profile_info;
+}
+
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
 {
   dt_colorspaces_color_profile_type_t histogram_profile_type;
@@ -814,6 +858,29 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_de
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(struct dt_dev_pixelpipe_t *pipe)
 {
   return pipe->input_profile_info;
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(struct dt_dev_pixelpipe_t *pipe)
+{
+  return pipe->output_profile_info;
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(struct dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_order_iccprofile_info_t *restrict color_profile;
+
+  const int colorin_order = dt_ioppr_get_iop_order(piece->module->dev->iop_order_list, "colorin", 0);
+  const int colorout_order = dt_ioppr_get_iop_order(piece->module->dev->iop_order_list, "colorout", 0);
+  const int current_module_order = piece->module->iop_order;
+
+  if(current_module_order < colorin_order)
+    color_profile = dt_ioppr_get_pipe_input_profile_info(piece->pipe);
+  else if(current_module_order < colorout_order)
+    color_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  else
+    color_profile = dt_ioppr_get_pipe_output_profile_info(piece->pipe);
+
+  return color_profile;
 }
 
 // returns a pointer to the filename of the work profile instead of the actual string data
