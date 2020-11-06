@@ -249,16 +249,15 @@ static void _blend_lighten(const float *const restrict a, float *const restrict 
   for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3], tb[3], tbo;
+    float ta[3], tb[3];
     _blend_Lab_scale(&a[j], ta);
     _blend_Lab_scale(&b[j], tb);
 
-    tbo = tb[0];
     tb[0] = clamp_range_f(ta[0] * (1.0f - local_opacity) + (ta[0] > tb[0] ? ta[0] : tb[0]) * local_opacity,
                           min[0], max[0]);
-    tb[1] = clamp_range_f(ta[1] * (1.0f - fabsf(tbo - tb[0])) + 0.5f * (ta[1] + tb[1]) * fabsf(tbo - tb[0]),
+    tb[1] = clamp_range_f(ta[1] * (1.0f - fabsf(tb[0] - ta[0])) + 0.5f * (ta[1] + tb[1]) * fabsf(tb[0] - ta[0]),
                           min[1], max[1]);
-    tb[2] = clamp_range_f(ta[2] * (1.0f - fabsf(tbo - tb[0])) + 0.5f * (ta[2] + tb[2]) * fabsf(tbo - tb[0]),
+    tb[2] = clamp_range_f(ta[2] * (1.0f - fabsf(tb[0] - ta[0])) + 0.5f * (ta[2] + tb[2]) * fabsf(tb[0] - ta[0]),
                           min[2], max[2]);
 
     _blend_Lab_rescale(tb, &b[j]);
@@ -276,16 +275,15 @@ static void _blend_darken(const float *const restrict a, float *const restrict b
   for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3], tb[3], tbo;
+    float ta[3], tb[3];
     _blend_Lab_scale(&a[j], ta);
     _blend_Lab_scale(&b[j], tb);
 
-    tbo = tb[0];
     tb[0] = clamp_range_f(ta[0] * (1.0f - local_opacity) + (ta[0] < tb[0] ? ta[0] : tb[0]) * local_opacity,
                           min[0], max[0]);
-    tb[1] = clamp_range_f(ta[1] * (1.0f - fabsf(tbo - tb[0])) + 0.5f * (ta[1] + tb[1]) * fabsf(tbo - tb[0]),
+    tb[1] = clamp_range_f(ta[1] * (1.0f - fabsf(tb[0] - ta[0])) + 0.5f * (ta[1] + tb[1]) * fabsf(tb[0] - ta[0]),
                           min[1], max[1]);
-    tb[2] = clamp_range_f(ta[2] * (1.0f - fabsf(tbo - tb[0])) + 0.5f * (ta[2] + tb[2]) * fabsf(tbo - tb[0]),
+    tb[2] = clamp_range_f(ta[2] * (1.0f - fabsf(tb[0] - ta[0])) + 0.5f * (ta[2] + tb[2]) * fabsf(tb[0] - ta[0]),
                           min[2], max[2]);
 
     _blend_Lab_rescale(tb, &b[j]);
@@ -307,13 +305,8 @@ static void _blend_multiply(const float *const restrict a, float *const restrict
 
     _blend_Lab_scale(&a[j], ta);
     _blend_Lab_scale(&b[j], tb);
-    const float lmin = 0.0f;
-    const float lmax = max[0] + fabsf(min[0]);
-    const float la = clamp_range_f(ta[0] + fabsf(min[0]), lmin, lmax);
-    const float lb = clamp_range_f(tb[0] + fabsf(min[0]), lmin, lmax);
 
-    tb[0] = clamp_range_f((la * (1.0f - local_opacity)) + ((la * lb) * local_opacity), min[0], max[0])
-            - fabsf(min[0]);
+    tb[0] = clamp_range_f((ta[0] * (1.0f - local_opacity)) + ((ta[0] * tb[0]) * local_opacity), min[0], max[0]);
 
     if(ta[0] > 0.01f)
     {
