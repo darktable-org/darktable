@@ -20,6 +20,7 @@
 #define DT_IOP_PROFILE_H
 
 #include "common/colorspaces_inline_conversions.h"
+#include "common/colorspaces.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -38,9 +39,9 @@ struct dt_dev_pixelpipe_t;
 
 typedef struct dt_iop_order_iccprofile_info_t
 {
-  int type; // a dt_colorspaces_color_profile_type_t
+  dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOPPR_COLOR_ICC_LEN];
-  int intent; // a dt_iop_color_intent_t
+  dt_iop_color_intent_t intent;
   float matrix_in[9] DT_ALIGNED_PIXEL; // don't align on more than 16 bits or OpenCL will fail
   float matrix_out[9] DT_ALIGNED_PIXEL;
   int lutsize;
@@ -81,8 +82,12 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_input_profile_info(struct dt_io
  */
 dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
     const int type, const char *filename, const int intent);
-dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
-    const int type, const char *filename, const int intent);
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(
+    struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const int type, const char *filename,
+    const int intent, const float matrix_in[9], const float *lut_1, const float *lut_2, const float *lut_3,
+    const size_t lut_size, const int nonlinearlut, const float unbounded_coeffs[3][3]);
+
 /** returns a reference to the histogram profile info
  * histogram profile must not be cleanup()
  */
