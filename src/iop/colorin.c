@@ -1449,9 +1449,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   g_strlcpy(d->filename, p->filename, sizeof(d->filename));
   g_strlcpy(d->filename_work, p->filename_work, sizeof(d->filename_work));
 
-  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
-  dt_ioppr_set_pipe_input_profile_info(self->dev, piece->pipe, d->type, d->filename, DT_INTENT_PERCEPTUAL);
-
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // only clean up when it's a type that we created here
@@ -1725,6 +1722,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     else
       d->unbounded_coeffs[k][0] = -1.0f;
   }
+
+  // commit color profiles to pipeline
+  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
+  dt_ioppr_set_pipe_input_profile_info(self->dev, piece->pipe, d->type, d->filename, p->intent,
+    d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES, d->nonlinearlut,
+    d->unbounded_coeffs);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
