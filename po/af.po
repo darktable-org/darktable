@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-31 21:00+0100\n"
-"PO-Revision-Date: 2020-08-09 23:03+0100\n"
+"PO-Revision-Date: 2020-08-29 19:28+0100\n"
 "Last-Translator: thisnamewasnottaken <8645373+thisnamewasnottaken@users."
 "noreply.github.com>\n"
 "Language-Team: thisnamewasnottaken <8645373+thisnamewasnottaken@users."
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 2.4.1\n"
 "X-Poedit-Bookmarks: -1,-1,-1,-1,-1,-1,-1,3083,-1,-1\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
@@ -123,9 +123,8 @@ msgstr "blootstelling skuif"
 #: ../build/src/iop/introspection_basecurve.c:146
 #: ../build/src/iop/introspection_basecurve.c:239
 #: ../src/libs/metadata_view.c:123
-#, fuzzy
 msgid "exposure bias"
-msgstr "exposure bias"
+msgstr "bloodstelling 'bias'"
 
 #: ../build/src/iop/introspection_basecurve.c:152
 #: ../build/src/iop/introspection_basecurve.c:243
@@ -675,7 +674,7 @@ msgstr "teiken vlak"
 #, fuzzy
 #| msgid "manual WB"
 msgid "manual"
-msgstr "manual"
+msgstr "handleiding WB"
 
 #: ../build/src/iop/introspection_exposure.c:169
 #: ../build/src/iop/introspection_levels.c:161 ../src/iop/vignette.c:1045
@@ -879,7 +878,7 @@ msgstr "rotasie"
 #: ../build/src/iop/introspection_graduatednd.c:148
 #, fuzzy
 msgid "offset"
-msgstr "offset"
+msgstr "x offset"
 
 #: ../build/src/iop/introspection_grain.c:58
 #: ../build/src/iop/introspection_grain.c:117 ../src/iop/bilat.c:441
@@ -1176,9 +1175,8 @@ msgstr "kontras kompressie"
 # Don't have a good word for bias in afrikaans.
 #: ../build/src/iop/introspection_velvia.c:44
 #: ../build/src/iop/introspection_velvia.c:91
-#, fuzzy
 msgid "mid-tones bias"
-msgstr "mid-tones bias"
+msgstr "midtone voorkeur"
 
 #: ../build/src/iop/introspection_vibrance.c:33
 #: ../build/src/iop/introspection_vibrance.c:76 ../src/iop/basicadj.c:661
@@ -1219,6 +1217,7 @@ msgstr "8-bis-uitset"
 msgid "16-bit output"
 msgstr "16-bis-uitset"
 
+# woord vir offset
 #: ../build/src/iop/introspection_watermark.c:100
 #: ../build/src/iop/introspection_watermark.c:223
 msgid "x offset"
@@ -1536,8 +1535,8 @@ msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
 msgstr ""
-"wanneer hierdie opsie geaktiveer is, sal die donkertafel probeer om die "
-"module na die bokant van die sigbare lys te rol"
+"wanneer hierdie opsie geaktiveer is, sal darktable probeer om die module na "
+"die bokant van die sigbare lys te rol"
 
 #: ../build/src/preferences_gen.h:2297
 msgid "rating an image one star twice will not zero out the rating"
@@ -1939,7 +1938,7 @@ msgid ""
 "to restart darktable."
 msgstr ""
 "hierdie vouer (en sub-vouers) bevat Lut-lêers wat deur lut3d-modules gebruik "
-"word. moet donkertafel herbegin."
+"word. moet darktable herbegin."
 
 #: ../build/src/preferences_gen.h:3161
 msgid "auto-apply pixel workflow defaults"
@@ -2169,9 +2168,8 @@ msgstr ""
 "hierdie aantal volledige resolusie beeld buffers (benodig 'n herlaai)."
 
 #: ../build/src/preferences_gen.h:3586
-#, fuzzy
 msgid "host memory limit (in MB) for tiling"
-msgstr "gasheer geheue limiet (in mg) vir die teëls"
+msgstr "gasheer geheue limiet (in MB) vir teëls"
 
 #: ../build/src/preferences_gen.h:3608
 #, fuzzy
@@ -2320,7 +2318,6 @@ msgid "database fragmentation ratio threshold"
 msgstr "databasis fragmentasie verhouding drempel"
 
 #: ../build/src/preferences_gen.h:3856
-#, fuzzy
 msgid ""
 "fragmentation ratio above which to ask or carry out automatically database "
 "maintenance"
@@ -2480,7 +2477,7 @@ msgid ""
 msgstr ""
 "die inskrywing voltooiing is nuttig vir diegene wat net Tags van sleutelbord "
 "invoer. vir ander kan die inskrywing te voltooi 'n verleentheid wees. moet "
-"die donkertafel herbegin."
+"darktable herbegin."
 
 #: ../build/src/preferences_gen.h:4136
 #, fuzzy
@@ -2602,13 +2599,12 @@ msgid "executable for playing audio files"
 msgstr "Looplêer vir die speel van oudio-lêers"
 
 #: ../build/src/preferences_gen.h:4356
-#, fuzzy
 msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
 msgstr ""
-"Hierdie eksterne program word gebruik om oudiolêers sommige kameras-rekord "
-"te speel om notas vir beelde te hou"
+"hierdie eksterne program word gebruik om oudiolêers wat sommige kameras "
+"opneem om notas vir beelde te hou te speel"
 
 #: ../build/src/preferences_gen.h:4383 ../build/src/preferences_gen.h:4386
 #: ../src/libs/import.c:90
@@ -2662,7 +2658,6 @@ msgid "session options"
 msgstr "sessie opsies"
 
 #: ../build/src/preferences_gen.h:4570
-#, fuzzy
 msgid "base directory naming pattern"
 msgstr "basigidsnaampatroon"
 
@@ -2671,7 +2666,6 @@ msgid "part of full import path for an import session"
 msgstr "deel van die volledige invoerpad vir 'n invoersessie"
 
 #: ../build/src/preferences_gen.h:4595
-#, fuzzy
 msgid "sub directory naming pattern"
 msgstr "sub gids noem patroon"
 
@@ -2702,8 +2696,8 @@ msgid ""
 "them through a lighttable. It also enables you to develop raw images and "
 "enhance them in a darkroom."
 msgstr ""
-"die donkertafel bestuur jou digitale negatiewe in 'n databasis en laat jou "
-"hulle deur 'n lighttable sien. Dit stel jou ook in staat om rou beelde te "
+"darktable bestuur jou digitale negatiewe in 'n databasis en laat jou hulle "
+"deur 'n lighttable sien. Dit stel jou ook in staat om rou beelde te "
 "ontwikkel en hulle in 'n donkerkamer te verbeter."
 
 #: ../data/darktable.appdata.xml.in.h:3
@@ -2716,13 +2710,12 @@ msgstr ""
 "verwering, druk en 'n skyfievertoning."
 
 #: ../data/darktable.appdata.xml.in.h:4
-#, fuzzy
 msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
-"donkertafel ondersteun die meeste moderne kameras ' rou formate, en doen al "
-"sy verwerking op 'n baie hoë akkuraatheid."
+"darktable ondersteun meeste moderne kameras se rou formate, en doen alle "
+"verwerking op 'n baie hoë akkuraatheid."
 
 #: ../data/darktable.appdata.xml.in.h:5
 #, fuzzy
@@ -2763,25 +2756,23 @@ msgstr "_kanselleer"
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1505
 #: ../src/gui/preferences.c:1720 ../src/gui/styles_dialog.c:360
 #: ../src/libs/styles.c:368
-#, fuzzy
 msgid "_save"
-msgstr "_save"
+msgstr "_stoor"
 
 #. TODO: is the rank interesting, too?
 #: ../src/chart/main.c:1063
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "average dE: %.02f\n"
 "max dE: %.02f"
 msgstr ""
-"gemiddelde dE:% .02f\n"
-"maksimum dE:% .02f"
+"gemiddelde dE: %.02f\n"
+"maksimum dE: %.02f"
 
 #: ../src/cli/main.c:130
-#, fuzzy
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
-"TODO: Jammer, as gevolg van API-beperkings kan ons tans nie die BPP stel om"
+"TODO: Jammer, as gevolg van API-beperkings kan ons tans nie die BPP stel na"
 
 #: ../src/cli/main.c:142
 msgid "unknown option for --hq"
@@ -2795,10 +2786,10 @@ msgstr "onbekende opsie vir--uitvoer_maskers"
 msgid "unknown option for --upscale"
 msgstr "onbekende opsie vir--upscale"
 
+# presets = verstekwaardes
 #: ../src/cli/main.c:199
-#, fuzzy
 msgid "unknown option for --apply-custom-presets"
-msgstr "onbekende opsie vir--\"apply-custom-presets\""
+msgstr "onbekende opsie vir -- pas handgemaakte verstekwaardes toe"
 
 #: ../src/cli/main.c:254
 #, c-format
@@ -2848,9 +2839,9 @@ msgstr ""
 "staak ..."
 
 #: ../src/cli/main.c:388
-#, fuzzy, c-format
+#, c-format
 msgid "unknown extension '.%s'"
-msgstr "onbekende uitbreiding ' . %s '"
+msgstr "onbekende uitbreiding '.%s '"
 
 #: ../src/cli/main.c:397
 msgid "failed to get parameters from format module, aborting export ..."
@@ -3188,7 +3179,7 @@ msgstr "het vreemde pad ' %s ' gevind"
 #: ../src/common/darktable.c:252
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "kon nie gids ' %s ' laai nie"
+msgstr "kon nie gids `%s' laai nie"
 
 #: ../src/common/darktable.c:275
 #, c-format
@@ -3198,14 +3189,13 @@ msgstr "lêer ' %s ' het onbekende formaat!"
 #: ../src/common/darktable.c:288 ../src/libs/import.c:621
 #, c-format
 msgid "error loading file `%s'"
-msgstr "kon nie lêer ' %s ' laai nie"
+msgstr "kon nie lêer `%s ' laai nie"
 
 #: ../src/common/darktable.c:815
 msgid "darktable - run performance configuration?"
 msgstr "darktable - uitvoeringskonfigurasie hardloop?"
 
 #: ../src/common/darktable.c:816
-#, fuzzy
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -3213,11 +3203,11 @@ msgid ""
 "in case you have manually modified them to custom values.\n"
 "would you like to execute this update of the performance configuration?\n"
 msgstr ""
-"Ons het 'n bygewerkte prestasiekonfigurasie-logika-uitvoering wat die "
-"prestasie van die donkertafel kan verbeter.\n"
-"Dit sal potensieel sommige van jou bestaande instellings oorheenskryf-veral "
+"ons het 'n bygewerkte prestasiekonfigurasie-logika-uitvoering wat die "
+"prestasie van darktable kan verbeter.\n"
+"dit sal potensieel sommige van jou bestaande instellings oorheenskryf-veral "
 "as jy dit handmatig aan pasgemaakte waardes verander het.\n"
-"Wil jy hierdie bywerking van die werksverrigtingkonfigurasie uitvoer?\n"
+"wil jy hierdie bywerking van die werksverrigtingkonfigurasie uitvoer?\n"
 
 #: ../src/common/darktable.c:820 ../src/common/database.c:2988
 #: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
@@ -3228,7 +3218,7 @@ msgid "yes"
 msgstr "ja"
 
 #: ../src/common/database.c:2179
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 " At startup, the database failed to open because at least one of the two "
@@ -3301,8 +3291,8 @@ msgstr ""
 "\n"
 "3-as hierdie twee aksies is nie genoeg nie, is dit omdat ten minste een van "
 "die twee lêers wat die slotte realiseer, bly \n"
-"     en dat dit nie meer aan enige voorkoms van die donkertafel geheg is "
-"nie. Dit is dan nodig om dit te verwyder (of hulle). \n"
+"     en dat dit nie meer aan enige voorkoms van darktable geheg is nie. Dit "
+"is dan nodig om dit te verwyder (of hulle). \n"
 "     Die twee lêers is die naam van <i>data. DB</i> en <i>biblioteek. Db. "
 "sluit</i> onderskeidelik. Die opening meganisme seine \n"
 "     die teenwoordigheid van die <i><b> %s</b></i> -lêer in die <i><b> %s</"
@@ -3310,7 +3300,7 @@ msgstr ""
 "     (volledige pathname: <i><b> %s</b></i>).\n"
 "\n"
 "<u>Versigtigheid!</u> Moenie hierdie lêers skrap sonder om eers te "
-"kontroleer dat daar nie meer voorvalle van 'n donkertafel is nie, \n"
+"kontroleer dat daar nie meer voorvalle van 'n darktable is nie, \n"
 "     anders is jy waag om ernstige teenstrydighede in jou databasis te "
 "genereer.\n"
 "\n"
@@ -3319,7 +3309,7 @@ msgstr ""
 
 #: ../src/common/database.c:2209
 msgid "darktable cannot be started because the database is locked"
-msgstr "'n donkertafel kan nie begin word nie omdat die databasis gesluit is"
+msgstr "'n darktable kan nie begin word nie omdat die databasis gesluit is"
 
 #: ../src/common/database.c:2210 ../src/common/database.c:2382
 #: ../src/common/database.c:2630 ../src/common/database.c:2712
@@ -3387,7 +3377,7 @@ msgstr ""
 "<span style=\"italic\"> %s</span>\n"
 "\n"
 "Dit blyk dat die databasis is korrup.\n"
-"Wil jy nou die donkertafel sluit om handmatig terug te laai\n"
+"Wil jy nou darktable sluit om handmatig terug te laai\n"
 "die databasis van 'n rugsteun of begin met 'n nuwe een?"
 
 #: ../src/common/database.c:2629 ../src/common/database.c:2711
@@ -3412,8 +3402,7 @@ msgstr "Klik later om te vra wanneer jy 'n donkerbare tabel sluit"
 #, fuzzy
 msgid "click later to be asked next time when closing darktable"
 msgstr ""
-"Klik later om die volgende keer gevra te word wanneer jy 'n donkertafel "
-"toemaak"
+"Klik later om die volgende keer gevra te word wanneer jy 'n darktable toemaak"
 
 #: ../src/common/database.c:2977
 #, fuzzy, c-format
@@ -3475,10 +3464,10 @@ msgstr ""
 "oorspronklikes"
 
 #: ../src/common/history.c:726
-#, fuzzy
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
-"Jy moet die geskiedenis van 'n prent kopieer voordat jy dit op 'n ander plak"
+"jy moet die geskiedenis van 'n beeld kopieer voordat jy dit op 'n ander "
+"beeld plak"
 
 #: ../src/common/history.c:837 ../src/common/history.c:840
 #: ../src/common/history.c:856 ../src/common/styles.c:1079
@@ -3494,19 +3483,16 @@ msgid "darktable » %s"
 msgstr "darktable » %s"
 
 #: ../src/common/http_server.c:97
-#, fuzzy
 msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
-msgstr ""
-"<h1>Jammer</h1><p>iets het verkeerd gegaan. Probeer asseblief weer.</p>"
+msgstr "<h1>Jammer</h1><p>iets is fout. Probeer asseblief weer.</p>"
 
 #: ../src/common/http_server.c:102
-#, fuzzy
 msgid ""
 "<h1>Thank you,</h1><p>everything should have worked, you can <b>close</b> "
 "your browser now and <b>go back</b> to darktable.</p>"
 msgstr ""
-"<h1>Dankie</h1><p>alles moet gewerk het, jy kan nou jou blaaier <b>sluit</b> "
-"en <b>teruggaan</b> na die donkertafel.</p>"
+"<h1>Dankie,</h1><p>alles moes gewerk het, jy kan nou jou webblaaier "
+"<b>sluit</b> en <b>teruggaan</b> na darktable.</p>"
 
 #: ../src/common/image.c:190
 msgid "orphaned image"
@@ -3525,22 +3511,22 @@ msgstr "kan nie plaaslike kopie ' %s ' skryf nie"
 #: ../src/common/image.c:1695
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
-msgstr "problem met verskuiwing van plaaslike beeld afskrifte `%s' -> `%s'"
+msgstr "kon nie plaaslike kopie `%s'-> `%s' skuif nie"
 
 #: ../src/common/image.c:1711
 #, c-format
 msgid "error moving `%s': file not found"
-msgstr "problem met verskuiwing `%s': lêer nie gevind nie"
+msgstr "kon nie `%s' skuif nie: lêer nie gevind nie"
 
 #: ../src/common/image.c:1721
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
-msgstr "problem met verskuiwing `%s' -> `%s':  lêer bestaan klaar"
+msgstr "kon nie `%s'-> `%s' skuif nie: lêer bestaan"
 
 #: ../src/common/image.c:1725
 #, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr "problem met verskuiwing  `%s' -> `%s'"
+msgstr "kon nie `%s'-> `%s' skuif nie"
 
 #: ../src/common/image.c:2022
 #, fuzzy
@@ -3569,9 +3555,9 @@ msgstr[0] "%d lokale kopie is gesynchroniseerd"
 msgstr[1] "%d lokale kopieën zijn gesynchroniseerd"
 
 #: ../src/common/imageio.c:645 ../src/common/mipmap_cache.c:1065
-#, fuzzy, c-format
+#, c-format
 msgid "image `%s' is not available!"
-msgstr "beeld ' %s ' is nie beskikbaar nie!"
+msgstr "beeld `%s' is nie beskikbaar nie!"
 
 #: ../src/common/imageio.c:663
 #, fuzzy, c-format
@@ -3607,15 +3593,12 @@ msgstr ""
 "invoersessie-instellings."
 
 #: ../src/common/iop_order.c:58
-#, fuzzy
 msgid "custom"
-msgstr "Pasgemaakte"
+msgstr "pasgemaakte"
 
 #: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:201
-#, fuzzy
-#| msgid "legal"
 msgid "legacy"
-msgstr "wetlikhede"
+msgstr "verouderde"
 
 #: ../src/common/iop_order.c:60 ../src/libs/ioporder.c:189
 msgid "v3.0"
@@ -3660,7 +3643,6 @@ msgid "version name"
 msgstr "weergawe naam"
 
 #: ../src/common/noiseprofiles.c:26
-#, fuzzy
 msgid "generic poissonian"
 msgstr "generiese poissonian"
 
@@ -3686,10 +3668,10 @@ msgstr ""
 "gestel."
 
 #: ../src/common/opencl.c:805
-#, fuzzy
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
-msgstr "baie vinnige GPU-opencl-skedulingsprofiel is dienooreenkomstig gestel."
+msgstr ""
+"baie vinnige GPU - OpenCL skedulingsprofiel is dienooreenkomstig gestel."
 
 #: ../src/common/opencl.c:812
 #, fuzzy
@@ -3832,9 +3814,8 @@ msgid "m"
 msgstr "m"
 
 #: ../src/control/control.c:269
-#, fuzzy
 msgid "working..."
-msgstr "werksprofiel"
+msgstr "werk..."
 
 #: ../src/control/control.c:720
 #, fuzzy, c-format
@@ -3846,12 +3827,10 @@ msgid "select"
 msgstr "kies"
 
 #: ../src/control/crawler.c:357
-#, fuzzy
 msgid "path"
-msgstr "Pad"
+msgstr "pad"
 
 #: ../src/control/crawler.c:361
-#, fuzzy
 msgid "xmp timestamp"
 msgstr "xmp tydstempel"
 
@@ -3925,10 +3904,10 @@ msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "kon nie die filmrol vir Bestemminggids skep nie, wat die skuif opgeskort het."
 
+# Kort term vir bracketing.
 #: ../src/control/jobs/control_jobs.c:345
-#, fuzzy
 msgid "exposure bracketing only works on raw images."
-msgstr "blootstelling bracketing werk net op rou beelde."
+msgstr "blootstelling 'bracketing' werk net op rou beelde."
 
 #: ../src/control/jobs/control_jobs.c:352
 #, fuzzy
@@ -3943,7 +3922,7 @@ msgstr[0] "smelt %d beelde saam"
 msgstr[1] "samenvoegen %d afbeeldingen"
 
 #: ../src/control/jobs/control_jobs.c:508
-#, fuzzy, c-format
+#, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "het saamgesmelt HDR ' %s ' geskryf"
 
@@ -3979,10 +3958,8 @@ msgid "could not physically delete %s%s%s"
 msgstr "kon nie %s %s %s skrap nie"
 
 #: ../src/control/jobs/control_jobs.c:753
-#, fuzzy
 msgid "physically delete"
-msgstr ""
-"wilt u echt  %d geselecteerde afbeelding fysiek van de schijf verwijderen?"
+msgstr "vernietig fisies"
 
 #: ../src/control/jobs/control_jobs.c:754
 #, fuzzy
@@ -3994,9 +3971,8 @@ msgid "only remove from the collection"
 msgstr "verwyder slegs van die versameling"
 
 #: ../src/control/jobs/control_jobs.c:757
-#, fuzzy
 msgid "skip to next file"
-msgstr "Slaan oor na volgende lêer"
+msgstr "slaan oor na volgende lêer"
 
 #: ../src/control/jobs/control_jobs.c:758
 msgid "stop process"
@@ -4007,9 +3983,8 @@ msgid "trashing error"
 msgstr "verrommel fout"
 
 #: ../src/control/jobs/control_jobs.c:764
-#, fuzzy
 msgid "deletion error"
-msgstr "Skrap fout"
+msgstr "skrap fout"
 
 #: ../src/control/jobs/control_jobs.c:905
 #, c-format
@@ -4026,7 +4001,6 @@ msgstr[0] "vernietig %d afbeelding"
 msgstr[1] "verwijderen %d afbeeldingen"
 
 #: ../src/control/jobs/control_jobs.c:1034
-#, fuzzy
 msgid "failed to parse GPX file"
 msgstr "kon nie GPX-lêer ontleed nie"
 
@@ -4086,11 +4060,9 @@ msgstr[0] "uitvoering van %d beeld.."
 msgstr[1] "uitvoering van %d beelde.."
 
 #: ../src/control/jobs/control_jobs.c:1282
-#, fuzzy, c-format
-#| msgid "exporting %d image to %s"
-#| msgid_plural "exporting %d images to %s"
+#, c-format
 msgid "exporting %d / %d to %s"
-msgstr "voer %d beeld uit na %s"
+msgstr "voer tans %d/%d na %s"
 
 #: ../src/control/jobs/control_jobs.c:1303 ../src/views/darkroom.c:707
 #: ../src/views/print.c:313
@@ -4164,13 +4136,11 @@ msgid "do you really want to send selected image to trash?"
 msgstr "wil jy regtig %d geselekteerde beeld na die asblik stuur?"
 
 #: ../src/control/jobs/control_jobs.c:1521
-#, fuzzy
 #| msgid "do you really want to physically delete %d selected image from disk?"
 #| msgid_plural ""
 #| "do you really want to physically delete %d selected images from disk?"
 msgid "do you really want to physically delete selected image from disk?"
-msgstr ""
-"wilt u echt  %d geselecteerde afbeelding fysiek van de schijf verwijderen?"
+msgstr "wil jy regtig die geselekteerde beeld fisies van die skyf skrap?"
 
 #: ../src/control/jobs/control_jobs.c:1544
 msgid "move images"
@@ -4286,9 +4256,9 @@ msgid "import image"
 msgstr "voer tans beeld in"
 
 #: ../src/develop/blend.c:2616 ../src/develop/blend.c:2930
-#, fuzzy, c-format
+#, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "oorgeslaan vermenging in module ' %s ': Roi se stem nie ooreen nie"
+msgstr "vermenging oorgeslaan in module `%s ': Roi se stem nie ooreen nie"
 
 #: ../src/develop/blend.c:2649 ../src/develop/blend.c:2962
 #, fuzzy
@@ -4831,11 +4801,11 @@ msgstr "ruimtelike radius van veerseienskappe"
 
 #: ../src/develop/blend_gui.c:2742
 msgid "mask blur"
-msgstr "mask blur"
+msgstr "masker vervaag"
 
 #: ../src/develop/blend_gui.c:2744
 msgid "radius for gaussian blur of blend mask"
-msgstr "radius vir gaussiese Blur van versnit masker"
+msgstr "radius vir gaussiese vervaging van versnit masker"
 
 #: ../src/develop/blend_gui.c:2750 ../src/iop/retouch.c:2688
 msgid "mask opacity"
@@ -4855,7 +4825,6 @@ msgid "mask contrast"
 msgstr "masker kontras"
 
 #: ../src/develop/blend_gui.c:2762
-#, fuzzy
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr ""
@@ -4996,7 +4965,6 @@ msgid "ERROR"
 msgstr "FOUT"
 
 #: ../src/develop/lightroom.c:1077
-#, fuzzy
 msgid "cannot find lightroom XMP!"
 msgstr "kan nie lightroom XMP vind nie!"
 
@@ -5089,84 +5057,68 @@ msgid "[GRADIENT] change compression"
 msgstr "[GRADIËNT] verander kompressie"
 
 #: ../src/develop/masks/masks.c:243
-#, fuzzy
 msgid "[GRADIENT] change opacity"
-msgstr "[GRADIËNT] verandering van die Stad"
+msgstr "[GRADIËNT] verandering van duersigtigheid"
 
 #: ../src/develop/masks/masks.c:250
-#, fuzzy
 msgid "[ELLIPSE] change size"
 msgstr "[ELLIPS] verander grootte"
 
 #: ../src/develop/masks/masks.c:256
-#, fuzzy
 msgid "[ELLIPSE] change opacity"
-msgstr "[ELLIPS] verandering van die Stad"
+msgstr "[ELLIPS] verander deursigtigheid"
 
 #: ../src/develop/masks/masks.c:262
-#, fuzzy
 msgid "[ELLIPSE] switch feathering mode"
 msgstr "[ELLIPS] skakel veermodus"
 
 #: ../src/develop/masks/masks.c:268
-#, fuzzy
 msgid "[ELLIPSE] rotate shape"
 msgstr "[ELLIPS] roteer vorm"
 
 #: ../src/develop/masks/masks.c:275
-#, fuzzy
 msgid "[BRUSH creation] change size"
 msgstr "[BORSEL skepping] verander grootte"
 
 #: ../src/develop/masks/masks.c:281
-#, fuzzy
 msgid "[BRUSH creation] change hardness"
 msgstr "[BORSEL skepping] verander hardheid"
 
 #: ../src/develop/masks/masks.c:287
-#, fuzzy
 msgid "[BRUSH] change opacity"
-msgstr "[BORSEL] verandering van die Stad"
+msgstr "[BORSEL] verander deursigtigheid"
 
 #: ../src/develop/masks/masks.c:292
-#, fuzzy
 msgid "[BRUSH] change hardness"
 msgstr "[BORSEL] verander hardheid"
 
 #: ../src/develop/masks/masks.c:299
-#, fuzzy
 msgid "[CIRCLE] change size"
 msgstr "[CIRCLE] verander grootte"
 
 #: ../src/develop/masks/masks.c:305
-#, fuzzy
 msgid "[CIRCLE] change opacity"
-msgstr "[CIRCLE] verandering van die Stad"
+msgstr "[CIRCLE] verander deursigtigheid"
 
 #: ../src/develop/masks/masks.c:311
-#, fuzzy
 msgid "[CIRCLE] change feather size"
 msgstr "[CIRCLE] verander veer grootte"
 
 #: ../src/develop/masks/masks.c:346
-#, fuzzy
 msgid "ctrl+click to add a sharp node"
-msgstr "Ctrl + klik om 'n skerp nodus by te voeg"
+msgstr "ctrl + klik om 'n skerp nodus by te voeg"
 
 #: ../src/develop/masks/masks.c:348
-#, fuzzy
 msgid "ctrl+click to switch between smooth/sharp node"
-msgstr "Ctrl + klik om te wissel tussen gladde/skerp node"
+msgstr "ctrl+klik om te wissel tussen gladde/skerp node"
 
 #: ../src/develop/masks/masks.c:350
-#, fuzzy
 msgid "right-click to reset curvature"
-msgstr "regs-kliek om kromming te herstel"
+msgstr "regs-klik om kromming te herstel"
 
 #: ../src/develop/masks/masks.c:352
-#, fuzzy
 msgid "ctrl+click to add a node"
-msgstr "Ctrl + klik om 'n nodus by te voeg"
+msgstr "ctrl+klik om 'n nodus by te voeg"
 
 #: ../src/develop/masks/masks.c:354 ../src/develop/masks/masks.c:395
 #, fuzzy, c-format
@@ -5209,9 +5161,8 @@ msgstr ""
 "Ctrl + SCROLL om vorm opdeursigtigheid (% d%%) te stel"
 
 #: ../src/develop/masks/masks.c:372
-#, fuzzy
 msgid "ctrl+click to rotate"
-msgstr "Ctrl + klik om te roteer"
+msgstr "ctrl+klik om te roteer"
 
 #: ../src/develop/masks/masks.c:375
 #, fuzzy, c-format
@@ -5244,19 +5195,19 @@ msgid "scroll to set brush size"
 msgstr "rollees na stel kwas grootte"
 
 #: ../src/develop/masks/masks.c:548
-#, fuzzy, c-format
+#, c-format
 msgid "circle #%d"
-msgstr "sirkel #% d"
+msgstr "sirkel #%d"
 
 #: ../src/develop/masks/masks.c:550
-#, fuzzy, c-format
+#, c-format
 msgid "path #%d"
-msgstr "pad #% d"
+msgstr "pad #%d"
 
 #: ../src/develop/masks/masks.c:552
-#, fuzzy, c-format
+#, c-format
 msgid "gradient #%d"
-msgstr "gradiënt #% d"
+msgstr "gradiënt #%d"
 
 #: ../src/develop/masks/masks.c:554
 #, c-format
@@ -5290,7 +5241,6 @@ msgid "add existing shape"
 msgstr "Voeg bestaande vorm by"
 
 #: ../src/develop/masks/masks.c:2186
-#, fuzzy
 msgid "use same shapes as"
 msgstr "gebruik dieselfde vorms as"
 
@@ -5305,8 +5255,8 @@ msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
 msgstr ""
-"die donkertafel het probleme met jou OpenCL-opstelling ontdek; versper "
-"OpenCL vir hierdie sessie!"
+"darktable het probleme met jou OpenCL-opstelling ontdek; versper OpenCL vir "
+"hierdie sessie!"
 
 #: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1161
 #, fuzzy, c-format
@@ -5314,28 +5264,25 @@ msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "teëls het misluk vir module ' %s '. die afvoer kan dalk versper word."
 
 #: ../src/dtgtk/culling.c:230
-#, fuzzy
 msgid "you have reached the start of your selection"
-msgstr "Jy het die begin van jou seleksie bereik"
+msgstr "jy het die begin van jou seleksie bereik"
 
 #: ../src/dtgtk/culling.c:239
 msgid "you have reached the start of your collection"
 msgstr "jy het die begin van jou versameling bereik"
 
 #: ../src/dtgtk/culling.c:282
-#, fuzzy
 msgid "you have reached the end of your selection"
-msgstr "Jy het die einde van jou seleksie bereik"
+msgstr "jy het die einde van jou seleksie bereik"
 
 #: ../src/dtgtk/culling.c:306
-#, fuzzy
 msgid "you have reached the end of your collection"
-msgstr "Jy het die einde van jou versameling bereik"
+msgstr "jy het die einde van jou versameling bereik"
 
 #: ../src/dtgtk/culling.c:325
-#, fuzzy, c-format
+#, c-format
 msgid "zooming is limited to %d images"
-msgstr "geef waardering %d aan %d afbeelding"
+msgstr "zoem is beperk tot %d beelde"
 
 #: ../src/dtgtk/culling.c:922
 msgid "no image selected !"
@@ -5362,9 +5309,8 @@ msgid "grouped images"
 msgstr "verwyder beelde"
 
 #: ../src/dtgtk/thumbnail.c:506
-#, fuzzy
 msgid "fit"
-msgstr "Pas"
+msgstr "passing"
 
 #. setup rating key accelerators
 #: ../src/dtgtk/thumbtable.c:2017
@@ -5686,9 +5632,9 @@ msgstr ""
 "Geen posseëlprentjies om gegenereer te word nie, klaar."
 
 #: ../src/generate-cache/main.c:239
-#, fuzzy, c-format
+#, c-format
 msgid "error: ensure that min_mip <= max_mip\n"
-msgstr "Fout: verseker dat min_mip <a1 = max_mip"
+msgstr "fout: verseker dat min_mip <= max_mip\n"
 
 #: ../src/generate-cache/main.c:244
 #, fuzzy, c-format
@@ -5810,9 +5756,8 @@ msgid "%s"
 msgstr "%s"
 
 #: ../src/gui/accelerators.c:1108 ../src/libs/lib.c:429
-#, fuzzy
 msgid "deleting preset for obsolete module"
-msgstr "Skrapping van voorgeskrewe vir verouderde module"
+msgstr "skrap verstek vir verouderde module"
 
 #: ../src/gui/camera_import_dialog.c:193
 #, fuzzy
@@ -5860,13 +5805,12 @@ msgid "ignore JPEG files"
 msgstr "ignoreer JPEG-lêers"
 
 #: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:390
-#, fuzzy
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
 msgstr ""
-"Moenie lêers laai met 'n uitbreiding van .jpg of .jpeg nie. Dit kan nuttig "
-"wees wanneer daar rou + JPEG in 'n gids is."
+"moenie lêers laai met 'n uitbreiding van .jpg of .jpeg nie. dit kan nuttig "
+"wees wanneer daar raw + JPEG in 'n gids is."
 
 #: ../src/gui/camera_import_dialog.c:297
 #, fuzzy
@@ -5903,19 +5847,16 @@ msgstr ""
 "Kies die beelde uit die lys hier onder wat jy wil invoer in 'n nuwe filmroll"
 
 #: ../src/gui/camera_import_dialog.c:543
-#, fuzzy
 msgid "please use YYYY-MM-DD format for date override"
-msgstr "Gebruik asseblief YYYY-MM-DD formaat vir datum oorheers"
+msgstr "gebruik asseblief YYYY-MM-DD formaat vir datum oorskrywing"
 
 #: ../src/gui/gtk.c:287
-#, fuzzy
 msgid "tooltips off"
 msgstr "nutsmiddelwenke af"
 
 #: ../src/gui/gtk.c:289
-#, fuzzy
 msgid "tooltips on"
-msgstr "nutsmiddelwenke op"
+msgstr "nutsmiddelwenke aan"
 
 #: ../src/gui/gtk.c:294
 #, fuzzy
@@ -6070,9 +6011,9 @@ msgid "%.1f"
 msgstr "% .1f"
 
 #: ../src/gui/gtk.c:2760
-#, fuzzy, c-format
+#, c-format
 msgid "Sans %s"
-msgstr "SANS %s"
+msgstr "Sans %s"
 
 #: ../src/gui/gtkentry.c:184
 #, fuzzy
@@ -6143,9 +6084,8 @@ msgid "$(MINUTE) - minute"
 msgstr "$(MINUUT) - minute"
 
 #: ../src/gui/gtkentry.c:199
-#, fuzzy
 msgid "$(SECOND) - second"
-msgstr "$ (Tweede)-tweede"
+msgstr "$(SEKONDE) - sekonde"
 
 #: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_YEAR) - EXIF year"
@@ -6231,19 +6171,16 @@ msgid "$(LENS) - lens"
 msgstr "$(LENS) - lens"
 
 #: ../src/gui/gtkentry.c:220
-#, fuzzy
 msgid "$(TITLE) - title from metadata"
-msgstr "$ (Titel)-titel van metadata"
+msgstr "$(Titel)-titel van metadata"
 
 #: ../src/gui/gtkentry.c:221
-#, fuzzy
 msgid "$(DESCRIPTION) - description from metadata"
-msgstr "$ (Beskrywing)-beskrywing van metadata"
+msgstr "$ (BESKRYWING)-beskrywing van metadata"
 
 #: ../src/gui/gtkentry.c:222
-#, fuzzy
 msgid "$(CREATOR) - creator from metadata"
-msgstr "$ (Skepper)-Skepper van metadata"
+msgstr "$ (SKEPPER)-Skepper van metadata"
 
 #: ../src/gui/gtkentry.c:223
 #, fuzzy
@@ -6280,12 +6217,10 @@ msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
 msgstr "$ (CATEGORY0 (kategorie))-subtag van vlak 0 in hiërargiese Tags"
 
 #: ../src/gui/gtkentry.c:230
-#, fuzzy
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr "$ (TAGS)-TAGS soos in metadata instellings"
+msgstr "$(MERKERS)- merkers soos in metadata instellings"
 
 #: ../src/gui/guides.c:108
-#, fuzzy
 msgid "horizontal lines"
 msgstr "horisontale lyne"
 
@@ -6295,7 +6230,6 @@ msgid "number of horizontal guide lines"
 msgstr "aantal horisontale gidslyne"
 
 #: ../src/gui/guides.c:115
-#, fuzzy
 msgid "vertical lines"
 msgstr "vertikale lyne"
 
@@ -6305,7 +6239,6 @@ msgid "number of vertical guide lines"
 msgstr "aantal vertikale gidslyne"
 
 #: ../src/gui/guides.c:122
-#, fuzzy
 msgid "subdivisions"
 msgstr "onderafdelings"
 
@@ -6319,17 +6252,14 @@ msgid "extra"
 msgstr "ekstra"
 
 #: ../src/gui/guides.c:441
-#, fuzzy
 msgid "golden sections"
-msgstr "Golden afdelings"
+msgstr "goue afdelings"
 
 #: ../src/gui/guides.c:442
-#, fuzzy
 msgid "golden spiral sections"
-msgstr "goue spiraal artikels"
+msgstr "goue spiraal gedeeltes"
 
 #: ../src/gui/guides.c:443
-#, fuzzy
 msgid "golden spiral"
 msgstr "goue spiraal"
 
@@ -6340,9 +6270,8 @@ msgid "all"
 msgstr "als"
 
 #: ../src/gui/guides.c:445
-#, fuzzy
 msgid "show some extra guides"
-msgstr "Wys 'n paar ekstra gidse"
+msgstr "wys 'n paar ekstra gidse"
 
 #: ../src/gui/guides.c:483
 msgid "grid"
@@ -6353,14 +6282,12 @@ msgid "rules of thirds"
 msgstr "reel van derdes"
 
 #: ../src/gui/guides.c:486
-#, fuzzy
 msgid "metering"
 msgstr "meting"
 
 #: ../src/gui/guides.c:487
-#, fuzzy
 msgid "perspective"
-msgstr "Perspektief"
+msgstr "perspektief"
 
 #. TODO: make the number of lines configurable with a slider?
 #: ../src/gui/guides.c:488
@@ -6383,10 +6310,8 @@ msgid "select parts to copy"
 msgstr "Kies dele om te kopieer"
 
 #: ../src/gui/hist_dialog.c:185
-#, fuzzy
-#| msgid "_select as destination"
 msgid "select parts to paste"
-msgstr "_kies as bestemming"
+msgstr "kies dele om te plak"
 
 #: ../src/gui/hist_dialog.c:188 ../src/gui/styles_dialog.c:358
 msgid "select _all"
@@ -6413,13 +6338,10 @@ msgstr "item"
 
 #: ../src/gui/hist_dialog.c:240 ../src/gui/styles_dialog.c:475
 #: ../src/gui/styles_dialog.c:517
-#, fuzzy
-#| msgid "module"
 msgid "modules order"
-msgstr "module"
+msgstr "modules bestel"
 
 #: ../src/gui/hist_dialog.c:268
-#, fuzzy
 msgid "can't copy history out of unaltered image"
 msgstr "kan nie geskiedenis kopieer van onveranderde beeld nie"
 
@@ -6441,17 +6363,14 @@ msgid "metadata to be applied per default"
 msgstr "skepper wat aangewend moet word tydens invoering"
 
 #: ../src/gui/import_metadata.c:175
-#, fuzzy
-#| msgid "import"
 msgid "to be imported"
-msgstr "geen ondersteunde beelde is gevind om ingevoer te word nie"
+msgstr "om ingevoer te word"
 
 #: ../src/gui/import_metadata.c:177
-#, fuzzy
 msgid ""
 "selected metadata are imported from image and override the default value"
 msgstr ""
-"geselekteerde metadata word van beeld ingevoer en die verstekwaarde oorheers"
+"geselekteerde metadata word van beeld ingevoer en oorheers die verstekwaarde"
 
 #: ../src/gui/import_metadata.c:227
 #, fuzzy
@@ -6478,7 +6397,6 @@ msgstr "algemeen"
 
 #. language
 #: ../src/gui/preferences.c:307
-#, fuzzy
 msgid "interface language"
 msgstr "koppelvlak taal"
 
@@ -6497,9 +6415,8 @@ msgstr ""
 "'n * (benodig 'n herbegin)"
 
 #: ../src/gui/preferences.c:333
-#, fuzzy
 msgid "theme"
-msgstr "Tema"
+msgstr "tema"
 
 #: ../src/gui/preferences.c:361
 #, fuzzy
@@ -6507,12 +6424,10 @@ msgid "set the theme for the user interface"
 msgstr "stel die tema vir die gebruikerskoppelvlak"
 
 #: ../src/gui/preferences.c:373 ../src/gui/preferences.c:380
-#, fuzzy
 msgid "use system font size"
 msgstr "gebruik stelselfontgrootte"
 
 #: ../src/gui/preferences.c:389 ../src/gui/preferences.c:396
-#, fuzzy
 msgid "font size in points"
 msgstr "lettergrootte in punte"
 
@@ -6618,14 +6533,12 @@ msgstr "invoer..."
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:855
-#, fuzzy
 msgid "shortcuts"
-msgstr "Kortpaaie"
+msgstr "kortpaaie"
 
 #: ../src/gui/preferences.c:866
-#, fuzzy
 msgid "shortcut"
-msgstr "Kortpad"
+msgstr "kortpad"
 
 #: ../src/gui/preferences.c:870
 msgid "binding"
@@ -6674,14 +6587,13 @@ msgid "accel conflict"
 msgstr "kkr konflik"
 
 #: ../src/gui/preferences.c:1464 ../src/gui/presets.c:186 ../src/libs/lib.c:363
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "Wil jy regtig die voorafbepaalde ' %s ' skrap?"
+msgstr "wil jy regtig die voorafbepaalde ' %s ' skrap?"
 
 #: ../src/gui/preferences.c:1468 ../src/gui/presets.c:190 ../src/libs/lib.c:367
-#, fuzzy
 msgid "delete preset?"
-msgstr "Skrap voorafbepaalde?"
+msgstr "skrap verstekwaarde"
 
 #. Non-zero value indicates export
 #: ../src/gui/preferences.c:1504
@@ -6723,9 +6635,9 @@ msgid "failed to import preset"
 msgstr "kon nie vooraf invoer nie"
 
 #: ../src/gui/preferences.c:1716 ../src/gui/presets.c:392
-#, fuzzy, c-format
+#, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "Redigeer ' %s ' vir module ' %s '"
+msgstr "redigeer `%s' vir module `%s '"
 
 #: ../src/gui/preferences.c:1739 ../src/gui/presets.c:415 ../src/libs/lib.c:251
 #, fuzzy
@@ -6743,13 +6655,12 @@ msgid "only show this preset for matching images"
 msgstr "Wys net hierdie voorafbepaalde vir ooreenstemmende beelde"
 
 #: ../src/gui/preferences.c:1747 ../src/gui/presets.c:422
-#, fuzzy
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
 msgstr ""
-"wees baie versigtig met hierdie opsie. Dit is dalk die laaste keer dat jy "
-"jou voorkeure sien."
+"wees baie versigtig met hierdie opsie. dit is dalk die laaste keer dat jy "
+"jou voorkeurwaarde sien."
 
 #: ../src/gui/preferences.c:1761 ../src/gui/presets.c:437
 #, fuzzy, no-c-format
@@ -6767,12 +6678,10 @@ msgid "string to match lens (use % as wildcard)"
 msgstr "string om lens te pas (gebruik% as wildcard)"
 
 #: ../src/gui/preferences.c:1787 ../src/gui/presets.c:461
-#, fuzzy
 msgid "minimum ISO value"
 msgstr "minimum ISO-waarde"
 
 #: ../src/gui/preferences.c:1790 ../src/gui/presets.c:464
-#, fuzzy
 msgid "maximum ISO value"
 msgstr "maksimum ISO-waarde"
 
@@ -6792,7 +6701,6 @@ msgid "minimum aperture value"
 msgstr "minimum diafragma"
 
 #: ../src/gui/preferences.c:1817 ../src/gui/presets.c:491
-#, fuzzy
 msgid "maximum aperture value"
 msgstr "maksimum diafragma waarde"
 
@@ -6802,7 +6710,6 @@ msgid "minimum focal length"
 msgstr "minimum fokuslengte"
 
 #: ../src/gui/preferences.c:1833 ../src/gui/presets.c:508
-#, fuzzy
 msgid "maximum focal length"
 msgstr "maksimum fokuslengte"
 
@@ -6828,19 +6735,16 @@ msgstr "voorafbepaalde %s is suksesvol gestoor"
 #: ../src/gui/presets.c:672 ../src/gui/presets.c:674 ../src/libs/lib.c:316
 #: ../src/libs/lib.c:330 ../src/libs/lib.c:338 ../src/libs/lib.c:340
 #: ../src/libs/lib.c:342
-#, fuzzy
 msgid "new preset"
-msgstr "nuwe voorkeure"
+msgstr "nuwe verstekwaarde"
 
 #: ../src/gui/presets.c:231
-#, fuzzy
 msgid "please give preset a name"
-msgstr "Gee asseblief vooraf 'n naam"
+msgstr "gee asseblief vooraf 'n naam"
 
 #: ../src/gui/presets.c:236
-#, fuzzy
 msgid "unnamed preset"
-msgstr "naamlose voorafbepaalde"
+msgstr "naamlose verstekwaarde"
 
 #: ../src/gui/presets.c:261 ../src/libs/lib.c:149
 #, fuzzy, c-format
@@ -6857,9 +6761,8 @@ msgid "overwrite preset?"
 msgstr "skryf vooraf ingestel?"
 
 #: ../src/gui/presets.c:411 ../src/libs/lib.c:247
-#, fuzzy
 msgid "name of the preset"
-msgstr "naam van die voorafbepaalde"
+msgstr "naam van die verstekwaarde"
 
 #: ../src/gui/presets.c:625 ../src/libs/lib.c:283
 #, fuzzy, c-format
@@ -6883,14 +6786,12 @@ msgid "disabled: wrong module version"
 msgstr "gestremde: verkeerde module weergawe"
 
 #: ../src/gui/presets.c:968 ../src/libs/lib.c:515
-#, fuzzy
 msgid "edit this preset.."
-msgstr "Redigeer hierdie voorafbepaalde ..."
+msgstr "redigeer hierdie voorafbepaalde instelling..."
 
 #: ../src/gui/presets.c:972 ../src/libs/lib.c:519
-#, fuzzy
 msgid "delete this preset"
-msgstr "Skrap hierdie voorafbepaalde"
+msgstr "skrap hierdie verstek"
 
 #: ../src/gui/presets.c:978 ../src/libs/lib.c:526
 #, fuzzy
@@ -6912,12 +6813,10 @@ msgid "style %s was successfully saved"
 msgstr "styl %s is suksesvol gestoor"
 
 #: ../src/gui/styles_dialog.c:345
-#, fuzzy
 msgid "edit style"
-msgstr "Redigeer styl"
+msgstr "redigeer styl"
 
 #: ../src/gui/styles_dialog.c:346
-#, fuzzy
 msgid "duplicate style"
 msgstr "duplikaat styl"
 
@@ -6984,30 +6883,25 @@ msgstr "RLE"
 
 #: ../src/imageio/format/exr.cc:378
 msgid "ZIPS"
-msgstr "RITSSLUITERS"
+msgstr "ZIPS"
 
 #: ../src/imageio/format/exr.cc:379
-#, fuzzy
 msgid "ZIP"
-msgstr "Zip"
+msgstr "ZIP"
 
 #: ../src/imageio/format/exr.cc:380
-#, fuzzy
 msgid "PIZ (default)"
 msgstr "PIZ (verstek)"
 
 #: ../src/imageio/format/exr.cc:381
-#, fuzzy
 msgid "PXR24 (lossy)"
 msgstr "PXR24 (lossy)"
 
 #: ../src/imageio/format/exr.cc:382
-#, fuzzy
 msgid "B44 (lossy)"
 msgstr "B44 (lossy)"
 
 #: ../src/imageio/format/exr.cc:383
-#, fuzzy
 msgid "B44A (lossy)"
 msgstr "B44A (lossy)"
 
@@ -7059,14 +6953,12 @@ msgid "16 bit"
 msgstr "16 bit"
 
 #: ../src/imageio/format/pdf.c:202 ../src/imageio/format/pdf.c:489
-#, fuzzy
 msgid "invalid paper size"
-msgstr "Ongeldige papiergrootte"
+msgstr "ongeldige papiergrootte"
 
 #: ../src/imageio/format/pdf.c:209
-#, fuzzy
 msgid "invalid border size, using 0"
-msgstr "Ongeldige grensgrootte, met 0"
+msgstr "ongeldige grensgrootte, met 0"
 
 #: ../src/imageio/format/pdf.c:259 ../src/imageio/storage/disk.c:334
 #: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:351
@@ -7136,19 +7028,16 @@ msgstr ""
 
 #. dpi
 #: ../src/imageio/format/pdf.c:654
-#, fuzzy
 msgid "dpi"
-msgstr "Dpi"
+msgstr "dpi"
 
 #: ../src/imageio/format/pdf.c:662
-#, fuzzy
 msgid "dpi of the images inside the pdf"
-msgstr "DPI van die beelde in die PDF-"
+msgstr "dpi van die beelde in die pdf"
 
 #: ../src/imageio/format/pdf.c:669
-#, fuzzy
 msgid "rotate images"
-msgstr "Roteer beelde"
+msgstr "roteer beelde"
 
 #: ../src/imageio/format/pdf.c:674
 #, fuzzy
@@ -7160,7 +7049,6 @@ msgstr ""
 "mors wanneer jy druk"
 
 #: ../src/imageio/format/pdf.c:681
-#, fuzzy
 msgid "TODO: pages"
 msgstr "TODO: bladsye"
 
@@ -7196,15 +7084,13 @@ msgid "bit depth"
 msgstr "bit diepte"
 
 #: ../src/imageio/format/pdf.c:715
-#, fuzzy
 msgid "bits per channel of the embedded images"
-msgstr "Bisse per kanaal van die ingebedde beelde"
+msgstr "bits per kanaal van die ingeboude beelde"
 
 #: ../src/imageio/format/pdf.c:721 ../src/imageio/format/png.c:539
 #: ../src/imageio/format/tiff.c:821
-#, fuzzy
 msgid "compression"
-msgstr "Kompressie"
+msgstr "kompressie"
 
 #: ../src/imageio/format/pdf.c:722 ../src/imageio/format/tiff.c:822
 msgid "uncompressed"
@@ -7226,7 +7112,6 @@ msgstr ""
 "ontlaatse kleiner lêers, maar stadiger"
 
 #: ../src/imageio/format/pdf.c:734
-#, fuzzy
 msgid "image mode"
 msgstr "beeldmodus"
 
@@ -7239,9 +7124,8 @@ msgid "draft"
 msgstr "konsep"
 
 #: ../src/imageio/format/pdf.c:737
-#, fuzzy
 msgid "debug"
-msgstr "Ontfout"
+msgstr "ontfout"
 
 #: ../src/imageio/format/pdf.c:740
 #, fuzzy
@@ -7255,29 +7139,24 @@ msgstr ""
 "ontfout--wys net die buitelyne en hop boxen"
 
 #: ../src/imageio/format/pfm.c:118
-#, fuzzy
 msgid "PFM (float)"
 msgstr "PFM (dryf)"
 
 #: ../src/imageio/format/png.c:484
-#, fuzzy
 msgid "PNG (8/16-bit)"
-msgstr "PNG (8/16-bis)"
+msgstr "PNG (8/16-bit)"
 
 #: ../src/imageio/format/ppm.c:109
-#, fuzzy
 msgid "PPM (16-bit)"
-msgstr "DPM (16-bis)"
+msgstr "PPM (16-bit)"
 
 #: ../src/imageio/format/tiff.c:232
-#, fuzzy
 msgid "will export as a grayscale image"
-msgstr "sal uitvoer as 'n grayskaal beeld"
+msgstr "sal uitvoer as 'n grysskaal beeld"
 
 #: ../src/imageio/format/tiff.c:735
-#, fuzzy
 msgid "TIFF (8/16/32-bit)"
-msgstr "TIFF (8/16/32-bis)"
+msgstr "TIFF (8/16/32-bit)"
 
 #: ../src/imageio/format/tiff.c:809
 msgid "32 bit (float)"
@@ -7297,27 +7176,20 @@ msgid "compression level"
 msgstr "kompressie vlak"
 
 #: ../src/imageio/format/tiff.c:843
-#, fuzzy
-#| msgid "image"
 msgid "b&w image"
-msgstr "beeld"
+msgstr "b&w beeld"
 
 #: ../src/imageio/format/tiff.c:844
-#, fuzzy
-#| msgid "target color"
 msgid "write rgb colors"
-msgstr "teiken kleur"
+msgstr "skryf rgb-kleure"
 
 #: ../src/imageio/format/tiff.c:845
-#, fuzzy
-#| msgid "write sidecar files"
 msgid "write grayscale"
-msgstr "skryf 'sidecar' lêers"
+msgstr "skryf grysskaal"
 
 #: ../src/imageio/format/webp.c:288
-#, fuzzy
 msgid "WebP (8-bit)"
-msgstr "WebP (8-bis)"
+msgstr "WebP (8-bit)"
 
 #: ../src/imageio/format/webp.c:325
 #, fuzzy
@@ -7325,12 +7197,10 @@ msgid "compression type"
 msgstr "kompressie tipe"
 
 #: ../src/imageio/format/webp.c:326
-#, fuzzy
 msgid "lossy"
 msgstr "lossy"
 
 #: ../src/imageio/format/webp.c:327
-#, fuzzy
 msgid "lossless"
 msgstr "lossless"
 
@@ -7340,9 +7210,8 @@ msgid "applies only to lossy setting"
 msgstr "is net van toepassing op lossy instelling"
 
 #: ../src/imageio/format/webp.c:346
-#, fuzzy
 msgid "image hint"
-msgstr "beeld-Wenk"
+msgstr "beeld wenk"
 
 #: ../src/imageio/format/webp.c:348
 #, fuzzy
@@ -7374,7 +7243,6 @@ msgid "graphic"
 msgstr "grafika"
 
 #: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:599
-#, fuzzy
 msgid "file on disk"
 msgstr "lêer op skyf"
 
@@ -7391,7 +7259,6 @@ msgstr ""
 "erkende veranderlikes:"
 
 #: ../src/imageio/storage/disk.c:200
-#, fuzzy
 msgid "on conflict"
 msgstr "op konflik"
 
@@ -7407,9 +7274,8 @@ msgid "overwrite"
 msgstr "Oorheenskryf"
 
 #: ../src/imageio/storage/disk.c:203
-#, fuzzy
 msgid "skip"
-msgstr "Slaan"
+msgstr "slaan oor"
 
 #: ../src/imageio/storage/disk.c:283 ../src/imageio/storage/gallery.c:276
 #: ../src/imageio/storage/latex.c:275
@@ -7438,17 +7304,16 @@ msgstr[0] "%d/%d uitgevoer na ' %s '"
 msgstr[1] "%d/%d uitgevoer na ' %s '"
 
 #: ../src/imageio/storage/disk.c:398
-#, fuzzy
 msgid ""
 "you are going to export on overwrite mode, this will overwrite any existing "
 "images\n"
 "\n"
 "do you really want to continue?"
 msgstr ""
-"jy gaan oorheenskryf-modus uitvoer, dit sal enige bestaande beelde "
-"oorheenskryf\n"
+"jy gaan uitvoer in oorheersings-mode, dit sal enige bestaande beelde "
+"oorskryf\n"
 "\n"
-"Wil jy regtig voortgaan?"
+"wil jy regtig voortgaan?"
 
 #: ../src/imageio/storage/email.c:52
 msgid "send as email"
@@ -7457,7 +7322,7 @@ msgstr "stuur as e-pos"
 #: ../src/imageio/storage/email.c:198
 #, fuzzy
 msgid "images exported from darktable"
-msgstr "beelde wat uit die donkertafel uitgevoer word"
+msgstr "beelde wat uit darktable uitgevoer word"
 
 #: ../src/imageio/storage/email.c:251
 #, fuzzy
@@ -7465,19 +7330,18 @@ msgid "could not launch email client!"
 msgstr "kon nie e-poskliënt laat loop nie!"
 
 #: ../src/imageio/storage/gallery.c:72
-#, fuzzy
 msgid "website gallery"
-msgstr "webwerf Gallery"
+msgstr "webwerf gallery"
 
 #: ../src/imageio/storage/gallery.c:192
 #, fuzzy
 msgid "enter the title of the website"
 msgstr "Tik die titel van die webwerf in"
 
+# Needs work
 #: ../src/imageio/storage/latex.c:71
-#, fuzzy
 msgid "LaTeX book template"
-msgstr "LaTeX boek sjabloon"
+msgstr "LaTeX book template"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
 #: ../src/imageio/storage/latex.c:195
@@ -7487,16 +7351,14 @@ msgstr "voer die titel van die boek in"
 #: ../src/imageio/storage/piwigo.c:464
 #, fuzzy
 msgid "authenticated"
-msgstr "bekragtig"
+msgstr "nie bekragtig nie"
 
 #: ../src/imageio/storage/piwigo.c:472 ../src/imageio/storage/piwigo.c:487
 #: ../src/imageio/storage/piwigo.c:499
-#, fuzzy
 msgid "not authenticated"
 msgstr "nie bekragtig nie"
 
 #: ../src/imageio/storage/piwigo.c:478
-#, fuzzy
 msgid "not authenticated, cannot reach server"
 msgstr "nie bekragtig nie, kan nie bediener bereik nie"
 
@@ -7514,7 +7376,6 @@ msgid "cannot refresh albums"
 msgstr "kan nie albums verfris nie"
 
 #: ../src/imageio/storage/piwigo.c:723
-#, fuzzy
 msgid "piwigo"
 msgstr "piwigo"
 
@@ -7523,9 +7384,8 @@ msgid "accounts"
 msgstr "rekeninge"
 
 #: ../src/imageio/storage/piwigo.c:765
-#, fuzzy
 msgid "server"
-msgstr "Bediener"
+msgstr "bediener"
 
 #: ../src/imageio/storage/piwigo.c:769
 #, fuzzy
@@ -7552,14 +7412,12 @@ msgid "login"
 msgstr "sluit aan"
 
 #: ../src/imageio/storage/piwigo.c:811
-#, fuzzy
 msgid "piwigo login"
 msgstr "piwigo login"
 
 #: ../src/imageio/storage/piwigo.c:825
-#, fuzzy
 msgid "visible to"
-msgstr "sigbaar om"
+msgstr "sigbaar aan"
 
 #: ../src/imageio/storage/piwigo.c:826
 msgid "everyone"
@@ -7587,9 +7445,8 @@ msgid "album"
 msgstr "album"
 
 #: ../src/imageio/storage/piwigo.c:844
-#, fuzzy
 msgid "refresh album list"
-msgstr "Verfris albuminklys"
+msgstr "verfris albuminklys"
 
 #: ../src/imageio/storage/piwigo.c:863
 msgid "new album"
@@ -7626,7 +7483,6 @@ msgstr[0] "%d/%d uitgevoer na piwigo webalbum"
 msgstr[1] "%d/%d uitgevoer na piwigo webalbum"
 
 #: ../src/iop/ashift.c:113
-#, fuzzy
 msgid "perspective correction"
 msgstr "perspektief regstelling"
 
@@ -7727,7 +7583,7 @@ msgstr "Outomatiese regstelling het misluk, korrigeer asseblief met die hand"
 
 #: ../src/iop/ashift.c:4556 ../src/iop/ashift.c:4557 ../src/iop/ashift.c:4662
 #: ../src/iop/ashift.c:4663
-#, fuzzy, c-format
+#, c-format
 msgid "lens shift (%s)"
 msgstr "lens skuif ( %s)"
 
@@ -7749,9 +7605,8 @@ msgid "guides"
 msgstr "gidse"
 
 #: ../src/iop/ashift.c:4828
-#, fuzzy
 msgid "automatic fit"
-msgstr "Outomatiese passing"
+msgstr "outomatiese passing"
 
 #: ../src/iop/ashift.c:4844
 msgid "get structure"
@@ -7772,9 +7627,8 @@ msgid "shear the image along one diagonal"
 msgstr "Skuif die beeld op een diagonale tyd"
 
 #: ../src/iop/ashift.c:4866
-#, fuzzy
 msgid "display guide lines overlay"
-msgstr "Vertoon gidslyne-oorleg"
+msgstr "vertoon gidslyne-oorleg"
 
 #: ../src/iop/ashift.c:4867 ../src/iop/clipping.c:2164
 #, fuzzy
@@ -7891,9 +7745,9 @@ msgid "[%s on segment] unselect segment"
 msgstr "[ %s op segment] ontkies segment"
 
 #: ../src/iop/ashift.c:4943
-#, fuzzy, c-format
+#, c-format
 msgid "[%s] select all segments from zone"
-msgstr "[ %s] kies alle segmente van sone"
+msgstr "[%s] kies alle segmente van sone"
 
 #: ../src/iop/ashift.c:4949
 #, fuzzy, c-format
@@ -7952,49 +7806,48 @@ msgid "bloom"
 msgstr "bloom"
 
 #: ../src/iop/atrous.c:1160
-#, fuzzy
 msgid "clarity"
-msgstr "Duidelikheid"
+msgstr "duidelikheid"
 
 #: ../src/iop/atrous.c:1178
 msgid "deblur: large blur, strength 4"
-msgstr "deblur: groot vervaag, krag 4"
+msgstr "ontvaag: groot vervaag, krag 4"
 
 #: ../src/iop/atrous.c:1194
 msgid "deblur: large blur, strength 3"
-msgstr "deblur: groot vervaag, krag 3"
+msgstr "ontvaag: groot vervaag, krag 3"
 
 #: ../src/iop/atrous.c:1208
 msgid "deblur: medium blur, strength 3"
-msgstr "deblur: medium vervaag, krag 3"
+msgstr "ontvaag: medium vervaag, krag 3"
 
 #: ../src/iop/atrous.c:1221
 msgid "deblur: fine blur, strength 3"
-msgstr "deblur: fyn vervaag, krag 3"
+msgstr "ontvaag: fyn vervaag, krag 3"
 
 #: ../src/iop/atrous.c:1238
 msgid "deblur: large blur, strength 2"
-msgstr "deblur: groot vervaag, krag 2"
+msgstr "ontvaag: groot vervaag, krag 2"
 
 #: ../src/iop/atrous.c:1252
 msgid "deblur: medium blur, strength 2"
-msgstr "deblur: medium vervaag, krag 2"
+msgstr "ontvaag: medium vervaag, krag 2"
 
 #: ../src/iop/atrous.c:1265
 msgid "deblur: fine blur, strength 2"
-msgstr "deblur: fyn vervaag, krag 2"
+msgstr "ontvaag: fyn vervaag, krag 2"
 
 #: ../src/iop/atrous.c:1282
 msgid "deblur: large blur, strength 1"
-msgstr "deblur: groot vervaag, krag 1"
+msgstr "ontvaag: groot vervaag, krag 1"
 
 #: ../src/iop/atrous.c:1296
 msgid "deblur: medium blur, strength 1"
-msgstr "deblur: medium vervaag, krag 1"
+msgstr "ontvaag: medium vervaag, krag 1"
 
 #: ../src/iop/atrous.c:1309
 msgid "deblur: fine blur, strength 1"
-msgstr "deblur: fyn vervaag, krag 1"
+msgstr "ontvaag: fyn vervaag, krag 1"
 
 #: ../src/iop/atrous.c:1611 ../src/iop/denoiseprofile.c:4047
 #: ../src/iop/rawdenoise.c:775
@@ -8013,9 +7866,8 @@ msgstr "kontraksty"
 
 #: ../src/iop/atrous.c:1636 ../src/iop/denoiseprofile.c:4069
 #: ../src/iop/rawdenoise.c:797
-#, fuzzy
 msgid "noisy"
-msgstr "Raserige"
+msgstr "raserige"
 
 #. case atrous_s:
 #: ../src/iop/atrous.c:1639
@@ -8046,9 +7898,8 @@ msgid "change color saturation at each feature size"
 msgstr "Verander kleur versadiging by elke funksie grootte"
 
 #: ../src/iop/atrous.c:1873
-#, fuzzy
 msgid "edges"
-msgstr "Rande"
+msgstr "rande"
 
 #: ../src/iop/atrous.c:1874
 #, fuzzy
@@ -8095,19 +7946,16 @@ msgid "canon eos like alternate"
 msgstr "canon EOS  soortgelyk alternatiewe"
 
 #: ../src/iop/basecurve.c:220
-#, fuzzy
 msgid "nikon like"
-msgstr "nikon soos"
+msgstr "nikon soortgelyk"
 
 #: ../src/iop/basecurve.c:221
-#, fuzzy
 msgid "nikon like alternate"
-msgstr "nikon soos alternatiewe"
+msgstr "nikon soortgelyk alternatief"
 
 #: ../src/iop/basecurve.c:222
-#, fuzzy
 msgid "sony alpha like"
-msgstr "Sony Alpha soos"
+msgstr "sony alpha soortgelyk"
 
 #: ../src/iop/basecurve.c:223
 #, fuzzy
@@ -8115,29 +7963,24 @@ msgid "pentax like"
 msgstr "penbelasting soos"
 
 #: ../src/iop/basecurve.c:224
-#, fuzzy
 msgid "ricoh like"
-msgstr "ricoh soos"
+msgstr "ricoh soortgelyk"
 
 #: ../src/iop/basecurve.c:225
-#, fuzzy
 msgid "olympus like"
-msgstr "Olympus soos"
+msgstr "olympus soortgelyk"
 
 #: ../src/iop/basecurve.c:226
-#, fuzzy
 msgid "olympus like alternate"
-msgstr "Olympus soos alternatiewe"
+msgstr "olympus soortgelyk alternatief"
 
 #: ../src/iop/basecurve.c:227
-#, fuzzy
 msgid "panasonic like"
-msgstr "panasonic soos"
+msgstr "panasonic soortgelyke"
 
 #: ../src/iop/basecurve.c:228
-#, fuzzy
 msgid "leica like"
-msgstr "leica soos"
+msgstr "leica soortgelyk"
 
 #: ../src/iop/basecurve.c:229
 #, fuzzy
@@ -8150,18 +7993,16 @@ msgid "konica minolta like"
 msgstr "konica minolta soos"
 
 #: ../src/iop/basecurve.c:231
-#, fuzzy
 msgid "samsung like"
-msgstr "Samsung soos"
+msgstr "Samsung soortgelyk"
 
 #: ../src/iop/basecurve.c:232
 msgid "fujifilm like"
 msgstr "fujifilm soortgelyk"
 
 #: ../src/iop/basecurve.c:233
-#, fuzzy
 msgid "nokia like"
-msgstr "Nokia soos"
+msgstr "nokia soortgelyk"
 
 #. clang-format off
 #. smoother cubic spline curve
@@ -8172,7 +8013,6 @@ msgid "cubic spline"
 msgstr "kubieke-spline"
 
 #: ../src/iop/basecurve.c:348
-#, fuzzy
 msgid "base curve"
 msgstr "basis kurwe"
 
@@ -8226,9 +8066,8 @@ msgid "method to preserve colors when applying contrast"
 msgstr "metode om kleure te behou wanneer jy kontras toepas"
 
 #: ../src/iop/basecurve.c:2146
-#, fuzzy
 msgid "two exposures"
-msgstr "twee blootstelling"
+msgstr "twee blootstellings"
 
 #: ../src/iop/basecurve.c:2147
 msgid "three exposures"
@@ -8258,7 +8097,6 @@ msgstr ""
 "verminder skaduwees)"
 
 #: ../src/iop/basicadj.c:135
-#, fuzzy
 msgid "basic adjustments"
 msgstr "basiese aanpassings"
 
@@ -8384,13 +8222,10 @@ msgid "brightness adjustment"
 msgstr "helderheid verstelling"
 
 #: ../src/iop/basicadj.c:659
-#, fuzzy
 msgid "saturation adjustment"
 msgstr "versadiging aanpassing"
 
 #: ../src/iop/basicadj.c:662
-#, fuzzy
-#| msgid "brightness adjustment"
 msgid "vibrance adjustment"
 msgstr "helderheid verstelling"
 
@@ -8421,7 +8256,6 @@ msgid "adjusts clipping value for auto exposure calculation"
 msgstr "pas knipwaarde vir outomatiese blootstellingberekening aan"
 
 #: ../src/iop/bilat.c:93 ../src/iop/clahe.c:66
-#, fuzzy
 msgid "local contrast"
 msgstr "plaaslike kontras"
 
@@ -8492,10 +8326,9 @@ msgid "changes the local contrast"
 msgstr "verander die locale kontras"
 
 #: ../src/iop/bilat.c:442
-#, fuzzy
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr ""
-"kenmerk grootte van plaaslike besonderhede (ruimtelike sigma van bilaterale "
+"kenmerk grootte van plaaslike besonderhede (ruimte-sigma van bilaterale "
 "filter)"
 
 #: ../src/iop/bilat.c:448
@@ -8644,9 +8477,8 @@ msgid "the strength of bloom"
 msgstr "die krag van Bloom"
 
 #: ../src/iop/borders.c:177
-#, fuzzy
 msgid "framing"
-msgstr "raam"
+msgstr "raaming"
 
 #: ../src/iop/borders.c:202
 msgctxt "accel"
@@ -8694,12 +8526,10 @@ msgid "vertical position"
 msgstr "vertikale posisie"
 
 #: ../src/iop/borders.c:609
-#, fuzzy
 msgid "15:10 postcard white"
-msgstr "15:10 poskaart White"
+msgstr "15:10 poskaart wit"
 
 #: ../src/iop/borders.c:612
-#, fuzzy
 msgid "15:10 postcard black"
 msgstr "15:10 poskaart swart"
 
@@ -8720,9 +8550,8 @@ msgid "16:9"
 msgstr "16:9"
 
 #: ../src/iop/borders.c:855 ../src/iop/clipping.c:2178
-#, fuzzy
 msgid "golden cut"
-msgstr "Golden cut"
+msgstr "goue snit"
 
 #: ../src/iop/borders.c:856
 msgid "3:2"
@@ -8750,9 +8579,8 @@ msgid "constant border"
 msgstr "konstante grens"
 
 #: ../src/iop/borders.c:862 ../src/iop/borders.c:888 ../src/iop/borders.c:894
-#, fuzzy
 msgid "custom..."
-msgstr "Pasgemaakte..."
+msgstr "pasgemaakte..."
 
 #: ../src/iop/borders.c:883 ../src/iop/borders.c:889
 msgid "center"
@@ -8809,9 +8637,8 @@ msgstr ""
 "jou eie (y:h)"
 
 #: ../src/iop/borders.c:947
-#, fuzzy
 msgid "custom horizontal position"
-msgstr "Pasgemaakte horisontale posisie"
+msgstr "pasgemaakte horisontale posisie"
 
 #: ../src/iop/borders.c:954
 #, fuzzy
@@ -8823,7 +8650,6 @@ msgstr ""
 "tik jou eie (x:w)"
 
 #: ../src/iop/borders.c:958
-#, fuzzy
 msgid "custom vertical position"
 msgstr "persoonlike vertikale posisie"
 
@@ -8842,16 +8668,14 @@ msgid "border color"
 msgstr "border color"
 
 #: ../src/iop/borders.c:985
-#, fuzzy
 msgid "select border color"
-msgstr "Kies randkleur"
+msgstr "kies randkleur"
 
 #: ../src/iop/borders.c:989
 msgid "pick border color from image"
 msgstr "kies grenskleur van beeld"
 
 #: ../src/iop/borders.c:993
-#, fuzzy
 msgid "frame line color"
 msgstr "raam lyn kleur"
 
@@ -8951,62 +8775,50 @@ msgid "color artifacts boost"
 msgstr "kleur artefakte hupstoot"
 
 #: ../src/iop/channelmixer.c:509
-#, fuzzy
 msgid "B/W luminance-based"
-msgstr "B/W luminance-gebaseerde"
+msgstr "B/W luminance-gebaseer"
 
 #: ../src/iop/channelmixer.c:514
-#, fuzzy
 msgid "B/W artifacts boost"
 msgstr "B/W artefakte hupstoot"
 
 #: ../src/iop/channelmixer.c:519
-#, fuzzy
 msgid "B/W smooth skin"
 msgstr "B/W gladde vel"
 
 #: ../src/iop/channelmixer.c:524
-#, fuzzy
 msgid "B/W blue artifacts reduce"
 msgstr "B/W blou artefakte verminder"
 
 #: ../src/iop/channelmixer.c:530
-#, fuzzy
 msgid "B/W Ilford Delta 100-400"
 msgstr "B/W Ilford Delta 100-400"
 
 #: ../src/iop/channelmixer.c:536
-#, fuzzy
 msgid "B/W Ilford Delta 3200"
 msgstr "B/W Ilford Delta 3200"
 
 #: ../src/iop/channelmixer.c:542
-#, fuzzy
 msgid "B/W Ilford FP4"
 msgstr "B/W Ilford FP4"
 
 #: ../src/iop/channelmixer.c:548
-#, fuzzy
 msgid "B/W Ilford HP5"
 msgstr "B/W Ilford HP5"
 
 #: ../src/iop/channelmixer.c:554
-#, fuzzy
 msgid "B/W Ilford SFX"
 msgstr "B/W Ilford SFX"
 
 #: ../src/iop/channelmixer.c:560
-#, fuzzy
 msgid "B/W Kodak T-Max 100"
 msgstr "B/W Kodak T-Max 100"
 
 #: ../src/iop/channelmixer.c:566
-#, fuzzy
 msgid "B/W Kodak T-max 400"
 msgstr "B/W Kodak T-Max 400"
 
 #: ../src/iop/channelmixer.c:572
-#, fuzzy
 msgid "B/W Kodak Tri-X 400"
 msgstr "B/W Kodak Tri-X 400"
 
@@ -9022,12 +8834,10 @@ msgid "amount"
 msgstr "hoeveelheid"
 
 #: ../src/iop/clahe.c:350
-#, fuzzy
 msgid "size of features to preserve"
-msgstr "grootte van die funksies te bewaar"
+msgstr "grootte van die kenmerke om te bewaar"
 
 #: ../src/iop/clahe.c:351 ../src/iop/nlmeans.c:782
-#, fuzzy
 msgid "strength of the effect"
 msgstr "krag van die effek"
 
@@ -9041,14 +8851,12 @@ msgid "original image"
 msgstr "oorspronklike beeld"
 
 #: ../src/iop/clipping.c:1674
-#, fuzzy
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr "Ongeldige verhoudingsformaat. Dit moet \"nommer: nommer\" wees"
+msgstr "ongeldige verhoudingsformaat. dit moet \"nommer: nommer\" wees"
 
 #: ../src/iop/clipping.c:1690
-#, fuzzy
 msgid "invalid ratio format. it should be non zero"
-msgstr "Ongeldige verhoudingsformaat. Dit moet nie nul wees"
+msgstr "ongeldige verhoudingsformaat. dit moet nie nul wees"
 
 #: ../src/iop/clipping.c:1883 ../src/iop/clipping.c:2158
 msgid "full"
@@ -9059,7 +8867,6 @@ msgid "old system"
 msgstr "ou stelsel"
 
 #: ../src/iop/clipping.c:1885
-#, fuzzy
 msgid "correction applied"
 msgstr "regstelling toegepas"
 
@@ -9140,7 +8947,6 @@ msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
 #: ../src/iop/clipping.c:2180
-#, fuzzy
 msgid "widescreen"
 msgstr "wyeskerm"
 
@@ -9157,19 +8963,18 @@ msgid "21:9"
 msgstr "21:9"
 
 #: ../src/iop/clipping.c:2184
-#, fuzzy
 msgid "anamorphic"
-msgstr "anamorfe"
+msgstr "anamorfies"
 
 #: ../src/iop/clipping.c:2185
 msgid "3:1, panorama"
 msgstr "3:1, panorama"
 
 #: ../src/iop/clipping.c:2217 ../src/iop/clipping.c:2229
-#, fuzzy, c-format
+#, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
-"Ongeldige verhoudingsformaat vir ' %s '. Dit moet \"nommer: nommer\" wees"
+"ongeldige verhoudingsformaat vir `%s '. dit moet \"nommer: nommer\" wees"
 
 #: ../src/iop/clipping.c:2276
 #, fuzzy
@@ -9187,9 +8992,8 @@ msgstr "Vertoon gidslyne om jou foto te help Komponeer"
 
 #: ../src/iop/clipping.c:2316 ../src/iop/clipping.c:2321
 #: ../src/libs/live_view.c:377
-#, fuzzy
 msgid "flip guides"
-msgstr "Flip Guides"
+msgstr "flip gidse"
 
 #: ../src/iop/clipping.c:2318 ../src/libs/live_view.c:374
 msgid "horizontally"
@@ -9220,14 +9024,12 @@ msgid "the bottom margin cannot overlap with the top margin"
 msgstr "die onderste marge kan nie met die boonste kantlyn oorvleuel nie"
 
 #: ../src/iop/clipping.c:2358
-#, fuzzy
 msgid "main"
-msgstr "Belangrikste"
+msgstr "hoof"
 
 #: ../src/iop/clipping.c:2359
-#, fuzzy
 msgid "margins"
-msgstr "Kantlyne"
+msgstr "kantlyne"
 
 #: ../src/iop/clipping.c:3452
 #, fuzzy
@@ -9291,9 +9093,9 @@ msgid "[%s on borders] crop keeping ratio"
 msgstr "[ %s op grense] gewasbewarende verhouding"
 
 #: ../src/iop/clipping.c:3503
-#, fuzzy, c-format
+#, c-format
 msgid "[%s] define/rotate horizon"
-msgstr "[ %s] definieer/roteer Horizon"
+msgstr "[%s] definieer/roteer horison"
 
 #: ../src/iop/colisa.c:79
 #, fuzzy
@@ -9336,22 +9138,18 @@ msgid "split-toning teal-orange (1st instance)"
 msgstr "split-Verstevigende teal-oranje (1ste geval)"
 
 #: ../src/iop/colorbalance.c:274
-#, fuzzy
 msgid "generic film"
 msgstr "generiese film"
 
 #: ../src/iop/colorbalance.c:278
-#, fuzzy
 msgid "similar to Kodak Portra"
 msgstr "soortgelyk aan Kodak Portra"
 
 #: ../src/iop/colorbalance.c:282
-#, fuzzy
 msgid "similar to Kodak Ektar"
 msgstr "soortgelyk aan Kodak Ektar"
 
 #: ../src/iop/colorbalance.c:286
-#, fuzzy
 msgid "similar to Kodachrome"
 msgstr "soortgelyk aan Kodachroom"
 
@@ -9386,12 +9184,10 @@ msgid "optimize luma"
 msgstr "Optimeer luma"
 
 #: ../src/iop/colorbalance.c:965
-#, fuzzy
 msgid "neutralize colors from patches"
 msgstr "neutraliseer kleure van kolle"
 
 #: ../src/iop/colorbalance.c:967 ../src/iop/colorbalance.c:2337
-#, fuzzy
 msgid "neutralize colors"
 msgstr "neutraliseer kleure"
 
@@ -9405,7 +9201,6 @@ msgid "color control sliders"
 msgstr "kleur beheer glyers"
 
 #: ../src/iop/colorbalance.c:2063
-#, fuzzy
 msgid "HSL"
 msgstr "HSL"
 
@@ -9414,9 +9209,8 @@ msgid "RGBL"
 msgstr "RGBL"
 
 #: ../src/iop/colorbalance.c:2077
-#, fuzzy
 msgid "master"
-msgstr "Meester"
+msgstr "meester"
 
 #: ../src/iop/colorbalance.c:2085
 #, fuzzy
@@ -9434,9 +9228,8 @@ msgid "adjust to match a neutral tone"
 msgstr "pas by om 'n neutrale toon te pas"
 
 #: ../src/iop/colorbalance.c:2167 ../src/iop/colorbalance.c:2176
-#, fuzzy
 msgid "factor of "
-msgstr "veiligheid faktor"
+msgstr "faktor van "
 
 #: ../src/iop/colorbalance.c:2168
 msgid "factor"
@@ -9472,10 +9265,10 @@ msgstr "kies die versadiging"
 msgid "factor of red for lift"
 msgstr "faktor van rooi vir lift"
 
+# lift.... lift ... lift
 #: ../src/iop/colorbalance.c:2215
-#, fuzzy
 msgid "factor of green for lift"
-msgstr "faktor van groen vir lift"
+msgstr "faktor van groen vir 'lift'"
 
 #: ../src/iop/colorbalance.c:2222
 msgid "factor of blue for lift"
@@ -9497,9 +9290,8 @@ msgid "factor of red for gamma"
 msgstr "faktor van rooi vir Gamma"
 
 #: ../src/iop/colorbalance.c:2262
-#, fuzzy
 msgid "factor of green for gamma"
-msgstr "faktor van groen vir Gamma"
+msgstr "faktor van groen vir gamma"
 
 #: ../src/iop/colorbalance.c:2269
 msgid "factor of blue for gamma"
@@ -9507,19 +9299,17 @@ msgstr "faktor van blou vir gamma"
 
 #. gain
 #: ../src/iop/colorbalance.c:2277
-#, fuzzy
 msgid "highlights : gain / slope"
 msgstr "hoogtepunte: wins/helling"
 
 #: ../src/iop/colorbalance.c:2279
-#, fuzzy
 msgid "factor of gain"
-msgstr "faktor van wins"
+msgstr "faktor van blou vir toenemingsfaktor"
 
 #: ../src/iop/colorbalance.c:2279
 #, fuzzy
 msgid "gain"
-msgstr "Wins"
+msgstr "faktor van blou vir toenemingsfaktor"
 
 #: ../src/iop/colorbalance.c:2302
 #, fuzzy
@@ -9527,18 +9317,17 @@ msgid "factor of red for gain"
 msgstr "faktor van rooi vir die wins"
 
 #: ../src/iop/colorbalance.c:2309
-#, fuzzy
 msgid "factor of green for gain"
-msgstr "faktor van die groen vir die wins"
+msgstr "faktor van groen vir die toenemingsfaktor"
 
+# gain = toenemingsfaktor
 #: ../src/iop/colorbalance.c:2316
 msgid "factor of blue for gain"
-msgstr "faktor van blou vir wins"
+msgstr "faktor van blou vir toenemingsfaktor"
 
 #: ../src/iop/colorbalance.c:2323
-#, fuzzy
 msgid "auto optimizers"
-msgstr "Outomatiese optimaliseerders"
+msgstr "outomatiese optimaliseerders"
 
 #: ../src/iop/colorbalance.c:2332
 #, fuzzy
@@ -9580,7 +9369,6 @@ msgid "it8 skin tones"
 msgstr "it8 skin tones"
 
 #: ../src/iop/colorchecker.c:304
-#, fuzzy
 msgid "helmholtz/kohlrausch monochrome"
 msgstr "helmholtz/kohlrausch monochroom"
 
@@ -9605,9 +9393,9 @@ msgid "Fuji Velvia emulation"
 msgstr "Fuji Velvia emulasie"
 
 #: ../src/iop/colorchecker.c:865 ../src/iop/colorchecker.c:1367
-#, fuzzy, c-format
+#, c-format
 msgid "patch #%d"
-msgstr "pleister #% d"
+msgstr "pleister #%d"
 
 #: ../src/iop/colorchecker.c:1238
 #, fuzzy, c-format
@@ -9627,9 +9415,8 @@ msgstr ""
 "Skuif + klik terwyl kleur pluk om pleister te vervang"
 
 #: ../src/iop/colorchecker.c:1362
-#, fuzzy
 msgid "patch"
-msgstr "Pleister"
+msgstr "pleister"
 
 #: ../src/iop/colorchecker.c:1363
 #, fuzzy
@@ -9642,7 +9429,6 @@ msgid "lightness offset"
 msgstr "lighartigheid"
 
 #: ../src/iop/colorchecker.c:1378
-#, fuzzy
 msgid "chroma offset green/red"
 msgstr "groenskerm sprong groen/rooi"
 
@@ -9651,9 +9437,8 @@ msgid "green/red"
 msgstr "groen/rooi"
 
 #: ../src/iop/colorchecker.c:1385
-#, fuzzy
 msgid "chroma offset blue/yellow"
-msgstr "groenskerm offset blou/geel"
+msgstr "groenskerm sprong blou/geel"
 
 #: ../src/iop/colorchecker.c:1386
 msgid "blue/yellow"
@@ -9710,7 +9495,6 @@ msgid "steepness of the b* curve in Lab"
 msgstr "steil van die b * kurwe in laboratorium"
 
 #: ../src/iop/colorcorrection.c:71
-#, fuzzy
 msgid "color correction"
 msgstr "kleurregstelling"
 
@@ -9720,7 +9504,6 @@ msgid "warm tone"
 msgstr "warm toon"
 
 #: ../src/iop/colorcorrection.c:105
-#, fuzzy
 msgid "warming filter"
 msgstr "verwarming filter"
 
@@ -9744,7 +9527,6 @@ msgid "set the global saturation"
 msgstr "stel die globale versadiging"
 
 #: ../src/iop/colorin.c:125
-#, fuzzy
 msgid "input color profile"
 msgstr "toevoerkleurprofiel"
 
@@ -9797,7 +9579,7 @@ msgstr "werksprofiel"
 
 #: ../src/iop/colorin.c:2098 ../src/iop/colorin.c:2109
 #: ../src/iop/colorout.c:904
-#, fuzzy, c-format
+#, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "ICC-profiele in %s of %s"
 
@@ -9842,7 +9624,6 @@ msgid "mix value of source lightness"
 msgstr "Meng waarde van die bron lighartigheid"
 
 #: ../src/iop/colormapping.c:145
-#, fuzzy
 msgid "color mapping"
 msgstr "kleurkartering"
 
@@ -9872,12 +9653,10 @@ msgid "acquire as target"
 msgstr "verkry as teiken"
 
 #: ../src/iop/colormapping.c:1068
-#, fuzzy
 msgid "source clusters:"
 msgstr "bron trosse:"
 
 #: ../src/iop/colormapping.c:1077
-#, fuzzy
 msgid "target clusters:"
 msgstr "teiken trosse:"
 
@@ -9987,7 +9766,6 @@ msgid "rendering intent"
 msgstr "lewering van voorneme"
 
 #: ../src/iop/colorreconstruction.c:129
-#, fuzzy
 msgid "color reconstruction"
 msgstr "kleur rekonstruksie"
 
@@ -9997,10 +9775,9 @@ msgid "spatial extent"
 msgstr "ruimtelike omvang"
 
 #: ../src/iop/colorreconstruction.c:181
-#, fuzzy
 msgctxt "accel"
 msgid "range extent"
-msgstr "omvang van die omvang"
+msgstr "reeks omvang"
 
 #: ../src/iop/colorreconstruction.c:183
 msgctxt "accel"
@@ -10048,7 +9825,6 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "die kleur wat voorrang bo ander kleure gegee moet word"
 
 #: ../src/iop/colortransfer.c:102
-#, fuzzy
 msgid "color transfer"
 msgstr "kleur oordrag"
 
@@ -10140,9 +9916,8 @@ msgid "black & white film"
 msgstr "swart & wit film"
 
 #: ../src/iop/colorzones.c:724
-#, fuzzy
 msgid "HSL base setting"
-msgstr "HSL base omgewing"
+msgstr "HSL basis instelling"
 
 #: ../src/iop/colorzones.c:2212 ../src/iop/retouch.c:1996
 #: ../src/iop/toneequal.c:1762
@@ -10165,9 +9940,8 @@ msgstr ""
 
 #. edit by area
 #: ../src/iop/colorzones.c:2408
-#, fuzzy
 msgid "edit by area"
-msgstr "Redigeer volgens area"
+msgstr "redigeer volgens area"
 
 #: ../src/iop/colorzones.c:2410
 #, fuzzy
@@ -10202,7 +9976,6 @@ msgstr "centripetal spline"
 
 #: ../src/iop/colorzones.c:2466 ../src/iop/rgbcurve.c:1466
 #: ../src/iop/tonecurve.c:1317
-#, fuzzy
 msgid "monotonic spline"
 msgstr "monotonikum spline"
 
@@ -10347,7 +10120,6 @@ msgid "how many color smoothing median steps after demosaicing"
 msgstr "Hoeveel kleur glad mediërstappe na demosaise"
 
 #: ../src/iop/demosaic.c:5045
-#, fuzzy
 msgid "green channels matching method"
 msgstr "groen kanale ooreenstemmende metode"
 
@@ -10401,17 +10173,16 @@ msgid "central pixel weight"
 msgstr "sentrale pixelgewig"
 
 #: ../src/iop/denoiseprofile.c:3353
-#, fuzzy, c-format
+#, c-format
 msgid "found match for ISO %d"
-msgstr "ooreenstemming gevind vir ISO% d"
+msgstr "ooreenstemming gevind vir ISO %d"
 
 #: ../src/iop/denoiseprofile.c:3362
-#, fuzzy, c-format
+#, c-format
 msgid "interpolated from ISO %d and %d"
-msgstr "interporoep van ISO% d en% d"
+msgstr "interporoep van ISO %d en%d"
 
 #: ../src/iop/denoiseprofile.c:3741 ../src/iop/denoiseprofile.c:4332
-#, fuzzy
 msgid "compute variance"
 msgstr "bereken variansie"
 
@@ -10428,12 +10199,10 @@ msgid "B"
 msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:4249
-#, fuzzy
 msgid "Y0"
 msgstr "Y0"
 
 #: ../src/iop/denoiseprofile.c:4250
-#, fuzzy
 msgid "U0V0"
 msgstr "U0V0"
 
@@ -10449,9 +10218,8 @@ msgstr ""
 "beraam die geraas variansie."
 
 #: ../src/iop/denoiseprofile.c:4290
-#, fuzzy
 msgid "variance red: "
-msgstr "variansie rooi:"
+msgstr "variansie rooi: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:4293
@@ -10483,12 +10251,11 @@ msgstr "verskil bereken op die blou kanaal"
 #: ../src/libs/print_settings.c:1189 ../src/libs/print_settings.c:1409
 #, fuzzy
 msgid "profile"
-msgstr "stelselvertoonprofiel"
+msgstr "OpenCL skedulering profiel"
 
 #: ../src/iop/denoiseprofile.c:4327
-#, fuzzy
 msgid "non-local means"
-msgstr "nie-plaaslike middele"
+msgstr "nie-plaaslike gemiddelde"
 
 #: ../src/iop/denoiseprofile.c:4328
 #, fuzzy
@@ -10496,14 +10263,12 @@ msgid "non-local means auto"
 msgstr "nie-plaaslike middele outomaties"
 
 #: ../src/iop/denoiseprofile.c:4329
-#, fuzzy
 msgid "wavelets"
-msgstr "golfies"
+msgstr "wavelets"
 
 #: ../src/iop/denoiseprofile.c:4330
-#, fuzzy
 msgid "wavelets auto"
-msgstr "golfies Auto"
+msgstr "wavelets auto"
 
 #: ../src/iop/denoiseprofile.c:4361
 #, fuzzy
@@ -10688,7 +10453,6 @@ msgstr "metode"
 
 #. add the preset.
 #: ../src/iop/dither.c:141
-#, fuzzy
 msgid "dither"
 msgstr "dither"
 
@@ -10703,7 +10467,6 @@ msgid "the gradient range where to apply random dither"
 msgstr "die gradiënt wissel waar om willekeurige dither toe te pas"
 
 #: ../src/iop/dither.c:783
-#, fuzzy
 msgid "gradient range"
 msgstr "gradiënt reeks"
 
@@ -10713,12 +10476,10 @@ msgid "damping level of random dither"
 msgstr "demping vlak van ewekansige dither"
 
 #: ../src/iop/equalizer.c:88
-#, fuzzy
 msgid "legacy equalizer"
 msgstr "verouderde effenaar"
 
 #: ../src/iop/equalizer.c:311
-#, fuzzy
 msgid "sharpen (strong)"
 msgstr "slyp (sterk)"
 
@@ -10820,9 +10581,8 @@ msgstr ""
 "oorblootstelling."
 
 #: ../src/iop/exposure.c:917
-#, fuzzy
 msgid "computed EC: "
-msgstr "bereken EC:"
+msgstr "berekende EC: "
 
 #. This gets filled in by process
 #: ../src/iop/exposure.c:919
@@ -10886,9 +10646,8 @@ msgstr ""
 "leesalleen-grafiek, gebruik die parameters hieronder om die nodusse te stel"
 
 #: ../src/iop/filmic.c:1621
-#, fuzzy
 msgid "logarithmic shaper"
-msgstr "logaritmiese shaper"
+msgstr "logaritmiese vormer"
 
 #: ../src/iop/filmic.c:1629
 #, fuzzy
@@ -10934,9 +10693,8 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1669 ../src/iop/filmicrgb.c:2333
 #: ../src/iop/profile_gamma.c:736
-#, fuzzy
 msgid "auto tune levels"
-msgstr "Outomatiese tune vlakke"
+msgstr "verfyn vlakke outomaties"
 
 #: ../src/iop/filmic.c:1671
 #, fuzzy
@@ -10952,7 +10710,6 @@ msgstr ""
 "maar versuim vir 'n hoë-sleutels en 'n lae-sleutels."
 
 #: ../src/iop/filmic.c:1676
-#, fuzzy
 msgid "filmic S curve"
 msgstr "filmiese S-kurwe"
 
@@ -10996,7 +10753,6 @@ msgstr ""
 "by een van die histogram."
 
 #: ../src/iop/filmic.c:1709
-#, fuzzy
 msgid "global saturation"
 msgstr "globale versadiging"
 
@@ -11024,9 +10780,8 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1733 ../src/libs/export.c:742
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1457
-#, fuzzy
 msgid "intent"
-msgstr "Voorneme"
+msgstr "voorneme"
 
 #: ../src/iop/filmic.c:1734
 msgid "contrasted"
@@ -11039,7 +10794,6 @@ msgstr "verdof"
 
 #. monotonic spline
 #: ../src/iop/filmic.c:1737
-#, fuzzy
 msgid "optimized"
 msgstr "geoptimaliseer"
 
@@ -11067,7 +10821,6 @@ msgstr ""
 "Jy moet die versadiging handmatig tune wanneer jy hierdie modus gebruik."
 
 #: ../src/iop/filmic.c:1755
-#, fuzzy
 msgid "destination/display"
 msgstr "bestemming/vertoon"
 
@@ -11099,9 +10852,8 @@ msgstr ""
 "behalwe as jy wil 'n vervaag kyk"
 
 #: ../src/iop/filmic.c:1798
-#, fuzzy
 msgid "target gamma"
-msgstr "teiken Gamma"
+msgstr "teiken gamma"
 
 #: ../src/iop/filmic.c:1800
 #, fuzzy
@@ -11115,7 +10867,6 @@ msgstr ""
 "Jy moet nooit aanraak dat tensy jy weet wat jy doen."
 
 #: ../src/iop/filmicrgb.c:242
-#, fuzzy
 msgid "filmic rgb"
 msgstr "filmiese rgb"
 
@@ -11190,7 +10941,6 @@ msgstr ""
 "snelgeleide filter kon nie geheue allokeeer nie, verstel jou RAM-instellings"
 
 #: ../src/iop/filmicrgb.c:1419
-#, fuzzy
 msgid "filmic works only on RGB input"
 msgstr "filmiese werk slegs op RGB-invoer"
 
@@ -11207,9 +10957,8 @@ msgstr ""
 
 #. Page SCENE
 #: ../src/iop/filmicrgb.c:2293
-#, fuzzy
 msgid "scene"
-msgstr "Toneel"
+msgstr "toneel"
 
 #: ../src/iop/filmicrgb.c:2302
 #, fuzzy
@@ -11262,14 +11011,12 @@ msgstr ""
 
 #. Page RECONSTRUCT
 #: ../src/iop/filmicrgb.c:2344
-#, fuzzy
 msgid "reconstruct"
-msgstr "bloom/rekonstrueer"
+msgstr "rekonstrueer"
 
 #: ../src/iop/filmicrgb.c:2349
-#, fuzzy
 msgid "highlights clipping"
-msgstr "hoogtepunte Knip"
+msgstr "hoogtepunte versnipping"
 
 #: ../src/iop/filmicrgb.c:2356
 #, fuzzy
@@ -11410,29 +11157,25 @@ msgstr "kies die versadiging"
 
 #. Page DISPLAY
 #: ../src/iop/filmicrgb.c:2463
-#, fuzzy
 msgid "display"
-msgstr "Wys"
+msgstr "vertoon"
 
 #. Page OPTIONS
 #: ../src/iop/filmicrgb.c:2485
-#, fuzzy
-#| msgid "GUI options"
 msgid "options"
-msgstr "GUI opsies"
+msgstr "opsies"
 
+# desaturation needs a word.
 #: ../src/iop/filmicrgb.c:2492
-#, fuzzy
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
-"V3 is 'n raaisel 3,0 deversadiging metode, dieselfde as kleur balans.\n"
-"V4 is 'n nuwer deversadiging metode, gebaseer op spektrale suiwerheid van "
+"V3 is darktable 3.0 ont-versadiging metode, dieselfde as kleur balans.\n"
+"V4 is 'n nuwer ont-versadiging metode, gebaseer op spektrale suiwerheid van "
 "lig."
 
 #: ../src/iop/filmicrgb.c:2496
-#, fuzzy
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -11440,7 +11183,7 @@ msgid ""
 msgstr ""
 "verseker dat die oorspronklike kleur bewaar word.\n"
 "mag chromatiese aberrantsoene en groenskerm geraas versterk,\n"
-"so verseker dat hulle behoorlik reggestel elders."
+"so verseker dat hulle behoorlik reggestel elders.\n"
 
 #: ../src/iop/filmicrgb.c:2502
 #, fuzzy
@@ -11522,7 +11265,6 @@ msgid "uniform"
 msgstr "mondering"
 
 #: ../src/iop/filmicrgb.c:2539
-#, fuzzy
 msgid "poissonian"
 msgstr "poissonian"
 
@@ -11550,29 +11292,24 @@ msgid "no rotation"
 msgstr "geen rotasie"
 
 #: ../src/iop/flip.c:404
-#, fuzzy
 msgid "flip horizontally"
-msgstr "Flip horisontaal"
+msgstr "flip horisontaal"
 
 #: ../src/iop/flip.c:406
-#, fuzzy
 msgid "flip vertically"
-msgstr "Flip vertikaal"
+msgstr "flip vertikaal"
 
 #: ../src/iop/flip.c:408
-#, fuzzy
 msgid "rotate by -90 degrees"
-msgstr "roteer 90 grade anti-kloksgewys"
+msgstr "roteer met -90 grade"
 
 #: ../src/iop/flip.c:410
-#, fuzzy
 msgid "rotate by  90 degrees"
-msgstr "roteer 90 grade anti-kloksgewys"
+msgstr "roteer met 90 grade"
 
 #: ../src/iop/flip.c:412
-#, fuzzy
 msgid "rotate by 180 degrees"
-msgstr "roteer deur 180 grade"
+msgstr "roteer met 180 grade"
 
 #: ../src/iop/flip.c:519
 msgid "rotate"
@@ -11645,47 +11382,38 @@ msgid "the target light for tonemapper specified as cd/m2"
 msgstr "die teiken lig vir tonemapper gespesifiseer as CD/m2"
 
 #: ../src/iop/graduatednd.c:72
-#, fuzzy
 msgid "neutral gray ND2 (soft)"
 msgstr "neutrale grys ND2 (sag)"
 
 #: ../src/iop/graduatednd.c:75
-#, fuzzy
 msgid "neutral gray ND4 (soft)"
 msgstr "neutrale grys ND4 (sag)"
 
 #: ../src/iop/graduatednd.c:78
-#, fuzzy
 msgid "neutral gray ND8 (soft)"
 msgstr "neutrale grys ND8 (sag)"
 
 #: ../src/iop/graduatednd.c:81
-#, fuzzy
 msgid "neutral gray ND2 (hard)"
 msgstr "neutrale grys ND2 (hard)"
 
 #: ../src/iop/graduatednd.c:84
-#, fuzzy
 msgid "neutral gray ND4 (hard)"
 msgstr "neutrale grys ND4 (hard)"
 
 #: ../src/iop/graduatednd.c:87
-#, fuzzy
 msgid "neutral gray ND8 (hard)"
 msgstr "neutrale grys ND8 (hard)"
 
 #: ../src/iop/graduatednd.c:90
-#, fuzzy
 msgid "orange ND2 (soft)"
 msgstr "oranje ND2 (sag)"
 
 #: ../src/iop/graduatednd.c:93
-#, fuzzy
 msgid "yellow ND2 (soft)"
 msgstr "geel ND2 (sag)"
 
 #: ../src/iop/graduatednd.c:96
-#, fuzzy
 msgid "purple ND2 (soft)"
 msgstr "pers ND2 (sag)"
 
@@ -11706,7 +11434,6 @@ msgid "brown ND4 (soft)"
 msgstr "bruin ND4 (sag)"
 
 #: ../src/iop/graduatednd.c:141
-#, fuzzy
 msgid "graduated density"
 msgstr "gegradueerde digtheid"
 
@@ -11789,9 +11516,8 @@ msgid "the grain size (~ISO of the film)"
 msgstr "die graangrootte (~ ISO van die film)"
 
 #: ../src/iop/grain.c:594
-#, fuzzy
 msgid "the strength of applied grain"
-msgstr "die krag van Toegepaste graan"
+msgstr "die krag van toegepaste gruin"
 
 #: ../src/iop/grain.c:598
 #, fuzzy
@@ -11853,9 +11579,8 @@ msgstr ""
 "nooit aanraak nie)"
 
 #: ../src/iop/highpass.c:75
-#, fuzzy
 msgid "highpass"
-msgstr "highpass"
+msgstr "'highpass'"
 
 #: ../src/iop/highpass.c:95
 msgctxt "accel"
@@ -11899,9 +11624,8 @@ msgid "lower threshold for hot pixel"
 msgstr "laer drempel vir warm pixel"
 
 #: ../src/iop/hotpixels.c:402
-#, fuzzy
 msgid "strength of hot pixel correction"
-msgstr "sterkte van warm pixel regstelling"
+msgstr "krag van warm pixel regstelling"
 
 #: ../src/iop/hotpixels.c:419
 #, fuzzy
@@ -11918,9 +11642,8 @@ msgid "`%s' color matrix not found for 4bayer image"
 msgstr "' %s ' kleurmatriks nie gevind vir 4bayer beeld nie"
 
 #: ../src/iop/invert.c:110
-#, fuzzy
 msgid "invert"
-msgstr "Keer"
+msgstr "inkeer"
 
 #: ../src/iop/invert.c:130
 msgctxt "accel"
@@ -12000,9 +11723,8 @@ msgstr ""
 "gewas faktor:%. 1f"
 
 #: ../src/iop/lens.cc:1800
-#, fuzzy
 msgid "camera/lens not found - please select manually"
-msgstr "kamera/lens nie gevind nie-Kies asseblief handmatig"
+msgstr "kamera/lens nie gevind nie - kies asseblief handmatig"
 
 #: ../src/iop/lens.cc:1803
 #, fuzzy
@@ -12061,12 +11783,10 @@ msgid "distortion & vignetting"
 msgstr "ondergang & vignet"
 
 #: ../src/iop/lens.cc:2283
-#, fuzzy
 msgid "TCA & vignetting"
 msgstr "TCA & vignet"
 
 #: ../src/iop/lens.cc:2289
-#, fuzzy
 msgid "only distortion"
 msgstr "enigste verdraaiing"
 
@@ -12089,22 +11809,20 @@ msgid "find lens"
 msgstr "vind lens"
 
 #: ../src/iop/lens.cc:2361 ../src/iop/negadoctor.c:1063
-#, fuzzy
 msgid "corrections"
-msgstr "kies korrigerings"
+msgstr "regstellings"
 
 #: ../src/iop/lens.cc:2363
 #, fuzzy
 msgid "which corrections to apply"
 msgstr "Watter regstellings om aansoek te doen"
 
+# wat is meetkunde
 #: ../src/iop/lens.cc:2378
-#, fuzzy
 msgid "target geometry"
-msgstr "teiken meetkunde"
+msgstr "teiken 'geometry"
 
 #: ../src/iop/lens.cc:2379
-#, fuzzy
 msgid "rectilinear"
 msgstr "reglynige"
 
@@ -12117,7 +11835,6 @@ msgid "panoramic"
 msgstr "panoramies"
 
 #: ../src/iop/lens.cc:2382
-#, fuzzy
 msgid "equirectangular"
 msgstr "equireghoekige"
 
@@ -12126,7 +11843,6 @@ msgid "orthographic"
 msgstr "ortografies"
 
 #: ../src/iop/lens.cc:2385
-#, fuzzy
 msgid "stereographic"
 msgstr "stereografiese"
 
@@ -12144,9 +11860,8 @@ msgid "auto scale"
 msgstr "automatiese skalering"
 
 #: ../src/iop/lens.cc:2402
-#, fuzzy
 msgid "correct"
-msgstr "Korrek"
+msgstr "korrek"
 
 #: ../src/iop/lens.cc:2403
 #, fuzzy
@@ -12169,9 +11884,8 @@ msgid "Transversal Chromatic Aberration blue"
 msgstr "Transversale Chromatiese, blou"
 
 #: ../src/iop/lens.cc:2418
-#, fuzzy
 msgid "corrections done: "
-msgstr "regstellings gedoen:"
+msgstr "regstellings gedoen: "
 
 #: ../src/iop/lens.cc:2419
 #, fuzzy
@@ -12205,14 +11919,12 @@ msgid "apply auto levels"
 msgstr "pas outomatiese vlakke toe"
 
 #: ../src/iop/levels.c:669 ../src/iop/rgblevels.c:1000
-#, fuzzy
 msgid "pick black point from image"
-msgstr "Pick swart punt van beeld"
+msgstr "kies swart punt uit beeld"
 
 #: ../src/iop/levels.c:673 ../src/iop/rgblevels.c:1005
-#, fuzzy
 msgid "pick medium gray point from image"
-msgstr "Pick medium grys punt van beeld"
+msgstr "kies medium grys punt uit beeld"
 
 #: ../src/iop/levels.c:677 ../src/iop/rgblevels.c:1010
 #, fuzzy
@@ -12224,7 +11936,6 @@ msgid "black"
 msgstr "swart"
 
 #: ../src/iop/levels.c:691
-#, fuzzy
 msgid "black percentile"
 msgstr "swart persentiel"
 
@@ -12233,7 +11944,6 @@ msgid "gray"
 msgstr "grys"
 
 #: ../src/iop/levels.c:696
-#, fuzzy
 msgid "gray percentile"
 msgstr "grys persentiel"
 
@@ -12242,14 +11952,12 @@ msgid "white"
 msgstr "wit"
 
 #: ../src/iop/levels.c:701
-#, fuzzy
 msgid "white percentile"
 msgstr "wit persentiel"
 
 #: ../src/iop/liquify.c:289
-#, fuzzy
 msgid "liquify"
-msgstr "gelikwideer"
+msgstr "likwideer"
 
 #: ../src/iop/liquify.c:3476
 #, fuzzy
@@ -12324,13 +12032,12 @@ msgid "node tool: edit, add and delete nodes"
 msgstr "node instrument: wysig, voeg nodes en verwyder nodusse"
 
 #: ../src/iop/liquify.c:3578
-#, fuzzy
 msgid ""
 "ctrl+click: add node - right click: remove path\n"
 "ctrl+alt+click: toggle line/curve"
 msgstr ""
-"Ctrl + klik: voeg node-regs kliek: verwyder pad\n"
-"Ctrl + Alt + klik: wissel lyn/kurwe"
+"ctrl+klik: voeg nodus by - regs klik: verwyder pad\n"
+"ctrl+alt+klik: wissel lyn/kurwe"
 
 #: ../src/iop/liquify.c:3580
 #, fuzzy
@@ -12391,9 +12098,8 @@ msgid "node tool"
 msgstr "node instrument"
 
 #: ../src/iop/lowlight.c:87
-#, fuzzy
 msgid "lowlight vision"
-msgstr "lowlig visie"
+msgstr "lae lig visie"
 
 #: ../src/iop/lowlight.c:108
 msgctxt "accel"
@@ -12413,9 +12119,8 @@ msgid "indoor dark"
 msgstr "binnenshuise donker"
 
 #: ../src/iop/lowlight.c:402
-#, fuzzy
 msgid "twilight"
-msgstr "Twilight"
+msgstr "twilight"
 
 #: ../src/iop/lowlight.c:419
 #, fuzzy
@@ -12453,9 +12158,8 @@ msgid "night vision"
 msgstr "nag sig"
 
 #: ../src/iop/lowlight.c:867
-#, fuzzy
 msgid "blueness in shadows"
-msgstr "bloos in skaduwees"
+msgstr "blouheid in skaduwees"
 
 #: ../src/iop/lowpass.c:129
 #, fuzzy
@@ -12463,7 +12167,6 @@ msgid "lowpass"
 msgstr "lowpass"
 
 #: ../src/iop/lowpass.c:578
-#, fuzzy
 msgid "local contrast mask"
 msgstr "plaaslike kontras masker"
 
@@ -12475,7 +12178,7 @@ msgstr "helderheid"
 #: ../src/iop/lowpass.c:607
 #, fuzzy
 msgid "radius of gaussian/bilateral blur"
-msgstr "radius van gaussiese/bilaterale Blur"
+msgstr "radius van gaussiese/bilaterale vervaging"
 
 #: ../src/iop/lowpass.c:608
 #, fuzzy
@@ -12493,9 +12196,8 @@ msgid "color saturation of lowpass filter"
 msgstr "kleur versadiging van lowpass filter"
 
 #: ../src/iop/lowpass.c:611
-#, fuzzy
 msgid "which filter to use for blurring"
-msgstr "watter filter om te gebruik vir vervaag"
+msgstr "watter filter om te gebruik vir vervaging"
 
 #: ../src/iop/lut3d.c:132
 msgid "lut 3D"
@@ -12512,54 +12214,50 @@ msgid "interpolation"
 msgstr "interpolasie"
 
 #: ../src/iop/lut3d.c:470
-#, fuzzy
 msgid "error allocating buffer for gmz lut"
-msgstr "kon nie buffer vir gmz lut aan nie"
+msgstr "kon nie buffer vir gmz lut allokeer nie"
 
 #: ../src/iop/lut3d.c:496
-#, fuzzy, c-format
+#, c-format
 msgid "invalid png file %s"
-msgstr "Ongeldige png-lêer %s"
+msgstr "ongeldige png-lêer %s"
 
 #: ../src/iop/lut3d.c:504
-#, fuzzy, c-format
+#, c-format
 msgid "png bit-depth %d not supported"
-msgstr "png bietjie-diepte% d nie ondersteun nie"
+msgstr "png bit-diepte %d nie ondersteun nie"
 
 #: ../src/iop/lut3d.c:518 ../src/iop/lut3d.c:528
-#, fuzzy, c-format
+#, c-format
 msgid "invalid level in png file %d %d"
-msgstr "Ongeldige vlak in png-lêer% d% d"
+msgstr "ongeldige vlak in png-lêer %d %d"
 
 #: ../src/iop/lut3d.c:523
-#, fuzzy
 msgid "this darktable build is not compatible with compressed clut"
-msgstr "Hierdie donkertafelgebou is nie aanpasbaar met gekompakteerde clut nie"
+msgstr "hierdie darktable bou is nie aanpasbaar met gekompakteerde snit nie"
 
 #: ../src/iop/lut3d.c:540 ../src/iop/lut3d.c:789 ../src/iop/lut3d.c:893
-#, fuzzy, c-format
+#, c-format
 msgid "error - lut 3D size %d exceeds the maximum supported"
-msgstr "fout-lut 3D-grootte% d oorskry die maksimum ondersteunde"
+msgstr "fout - lut 3D-grootte %d oorskry die maksimum ondersteunde waarde"
 
 #: ../src/iop/lut3d.c:552
-#, fuzzy
 msgid "error allocating buffer for png lut"
-msgstr "kon nie buffer vir png-lut"
+msgstr "kon nie buffer vir png-lut allokeer nie"
 
 #: ../src/iop/lut3d.c:560
-#, fuzzy, c-format
+#, c-format
 msgid "error - could not read png image %s"
-msgstr "fout-kon nie png-beeld %s lees nie"
+msgstr "fout - kon nie png-beeld %s lees nie"
 
 #: ../src/iop/lut3d.c:570
-#, fuzzy
 msgid "error - allocating buffer for png lut"
-msgstr "foutbebetering buffer vir png lut"
+msgstr "fout - allokeer buffer vir png lut"
 
 #: ../src/iop/lut3d.c:744
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid cube file: %s"
-msgstr "fout-ongeldige kubus-lêer: %s"
+msgstr "fout - ongeldige kubus-lêer: %s"
 
 #: ../src/iop/lut3d.c:758
 #, fuzzy
@@ -12577,24 +12275,22 @@ msgid "[1D cube lut is not supported"
 msgstr "[1D kubus word nie ondersteun nie"
 
 #: ../src/iop/lut3d.c:800 ../src/iop/lut3d.c:912
-#, fuzzy
 msgid "error - allocating buffer for cube lut"
-msgstr "kon nie buffer vir kubus-lut"
+msgstr "fout - allokeer buffer vir kubus lut"
 
 #: ../src/iop/lut3d.c:811 ../src/iop/lut3d.c:925
-#, fuzzy
 msgid "error - cube lut size is not defined"
-msgstr "fout-kubus lut-grootte is nie gedefinieer nie"
+msgstr "fout - kubus lut-grootte is nie gedefinieer nie"
 
 #: ../src/iop/lut3d.c:822
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube lut invalid number line %d"
-msgstr "fout-kubus lut ongeldige nommerreël% d"
+msgstr "fout - kubus lut ongeldige nommerreël %d"
 
 #: ../src/iop/lut3d.c:838
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube lut lines number %d is not correct, should be %d"
-msgstr "fout-kubus-reëls nommer% d is nie korrek nie, moet% d wees"
+msgstr "fout - kubus-reëls nommer %d is inkorrek, moet %d wees"
 
 #: ../src/iop/lut3d.c:848
 #, fuzzy, c-format
@@ -12602,25 +12298,22 @@ msgid "warning - cube lut %d out of range values [0,1]"
 msgstr "waarskuwing-kubus lut% d uit reekswaardes [0,1]"
 
 #: ../src/iop/lut3d.c:872
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid 3dl file: %s"
-msgstr "fout-ongeldige 3dl lêer: %s"
+msgstr "fout - ongeldige 3dl lêer: %s"
 
 #: ../src/iop/lut3d.c:901
-#, fuzzy, c-format
+#, c-format
 msgid "error - the maximum shaper lut value %d is too low"
-msgstr "fout-die maksimum shaper lut-waarde% d is te laag"
+msgstr "fout - die maksimum 'shaper' lut-waarde %d is te laag"
 
 #: ../src/iop/lut3d.c:953
-#, fuzzy
 msgid "error - cube lut lines number is not correct"
-msgstr "fout-kubus lut Lines nommer is nie korrek"
+msgstr "fout - kubus lut lyn-nommer is inkorrek"
 
 #: ../src/iop/lut3d.c:969
-#, fuzzy
 msgid "error - the maximum lut value does not match any valid bit depth"
-msgstr ""
-"fout-die maksimum lut-waarde pas nie by enige geldige bietjie diepte nie"
+msgstr "fout - die maksimum lut-waarde pas nie by enige geldige bit-diepte nie"
 
 #: ../src/iop/lut3d.c:1562
 #, fuzzy
@@ -12649,7 +12342,6 @@ msgstr "hald cluts (png) of 3D lut (kubus of 3dl)"
 #: ../src/iop/lut3d.c:1600 ../src/libs/copy_history.c:131
 #: ../src/libs/geotagging.c:496 ../src/libs/import.c:586
 #: ../src/libs/styles.c:410
-#, fuzzy
 msgid "all files"
 msgstr "alle lêers"
 
@@ -12703,10 +12395,8 @@ msgid "enter lut name"
 msgstr "Voer lut-naam in"
 
 #: ../src/iop/lut3d.c:1743
-#, fuzzy
-#| msgid "select the hue"
 msgid "select the LUT"
-msgstr "kies lut lêer"
+msgstr "kies die LUT"
 
 #: ../src/iop/lut3d.c:1756
 #, fuzzy
@@ -12714,9 +12404,8 @@ msgid "select the color space in which the LUT has to be applied"
 msgstr "Kies die kleur ruimte waarin die LUT moet toegepas word"
 
 #: ../src/iop/lut3d.c:1758
-#, fuzzy
 msgid "interpolation"
-msgstr "interpolasie metode"
+msgstr "interpolasie"
 
 #: ../src/iop/lut3d.c:1759
 #, fuzzy
@@ -12747,7 +12436,6 @@ msgid "how much to keep highlights"
 msgstr "Hoeveel om hoogtepunte te hou"
 
 #: ../src/iop/negadoctor.c:192
-#, fuzzy
 msgid "negadoctor"
 msgstr "negadoctor"
 
@@ -12758,10 +12446,8 @@ msgid "color film"
 msgstr "verkleur"
 
 #: ../src/iop/negadoctor.c:435
-#, fuzzy
-#| msgid "black & white film"
 msgid "black and white film"
-msgstr "swart & wit film"
+msgstr "swart en wit film"
 
 #: ../src/iop/negadoctor.c:495
 msgid "D min"
@@ -12772,15 +12458,12 @@ msgid "D min red component"
 msgstr "D min rooi komponent"
 
 #: ../src/iop/negadoctor.c:1050
-#, fuzzy
 msgid "film stock"
 msgstr "filmvoorraad"
 
 #: ../src/iop/negadoctor.c:1051
-#, fuzzy
-#| msgid "black & white"
 msgid "black and white"
-msgstr "swart & wit"
+msgstr "swart en wit"
 
 #: ../src/iop/negadoctor.c:1052 ../src/iop/retouch.c:2635
 #: ../src/iop/watermark.c:1428
@@ -12793,15 +12476,12 @@ msgid "toggle on or off the color controls"
 msgstr "Skakel die kleurkontroles aan of af"
 
 #: ../src/iop/negadoctor.c:1062
-#, fuzzy
 msgid "film properties"
 msgstr "film eienskappe"
 
 #: ../src/iop/negadoctor.c:1064
-#, fuzzy
-#| msgid "input profile"
 msgid "print properties"
-msgstr "invoer profiel"
+msgstr "druk eienskappe"
 
 #. Dmin
 #: ../src/iop/negadoctor.c:1073
@@ -12842,7 +12522,6 @@ msgstr "D min blou komponent"
 
 #. D max and scanner bias
 #: ../src/iop/negadoctor.c:1122
-#, fuzzy
 msgid "dynamic range of the film"
 msgstr "dinamiese omvang van die film"
 
@@ -12975,7 +12654,6 @@ msgstr "verlig blou wins"
 
 #. print corrections
 #: ../src/iop/negadoctor.c:1238
-#, fuzzy
 msgid "virtual paper properties"
 msgstr "virtuele papiereienskappe"
 
@@ -13026,10 +12704,8 @@ msgstr ""
 "dit veroorsaak ietwat reproduseer die gedrag van die matte papier."
 
 #: ../src/iop/negadoctor.c:1266
-#, fuzzy
-#| msgid "pretty print the image location"
 msgid "virtual print emulation"
-msgstr "prag-druk die beeld plek"
+msgstr "virtuele druk emulasie"
 
 #: ../src/iop/negadoctor.c:1270
 #, fuzzy
@@ -13076,14 +12752,12 @@ msgid "how much to smooth colors"
 msgstr "Hoeveel om te glad kleure"
 
 #: ../src/iop/overexposed.c:71
-#, fuzzy
 msgid "overexposed"
 msgstr "oorbelig"
 
 #: ../src/iop/profile_gamma.c:94
-#, fuzzy
 msgid "unbreak input profile"
-msgstr "onbreektoevoerprofiel"
+msgstr "ontbreek toevoerprofiel"
 
 #: ../src/iop/profile_gamma.c:115
 msgctxt "accel"
@@ -13137,14 +12811,12 @@ msgid "08 EV dynamic range (generic)"
 msgstr "08 EV dinamiese reeks (generiese)"
 
 #: ../src/iop/profile_gamma.c:696
-#, fuzzy
 msgid "linear part"
 msgstr "lineêre deel"
 
 #: ../src/iop/profile_gamma.c:700
-#, fuzzy
 msgid "gamma exponential factor"
-msgstr "Gamma eksponensiële faktor"
+msgstr "gamma eksponensiële faktor"
 
 #: ../src/iop/profile_gamma.c:713
 #, fuzzy
@@ -13213,7 +12885,6 @@ msgstr ""
 "werk net vir rou beelde."
 
 #: ../src/iop/rawoverexposed.c:68
-#, fuzzy
 msgid "raw overexposed"
 msgstr "rou oorblootgestelde"
 
@@ -13263,15 +12934,14 @@ msgid "raw black/white point"
 msgstr "rou swart/wit punt"
 
 #: ../src/iop/rawprepare.c:126
-#, fuzzy
 msgid "passthrough"
 msgstr "passthrough"
 
 #: ../src/iop/rawprepare.c:142 ../src/iop/rawprepare.c:164
 #: ../src/iop/rawprepare.c:852
-#, fuzzy, c-format
+#, c-format
 msgid "black level %i"
-msgstr "swart vlak% i"
+msgstr "swart vlak %i"
 
 #: ../src/iop/rawprepare.c:155
 msgctxt "accel"
@@ -13288,19 +12958,16 @@ msgstr ""
 "werk net vir die sensors wat dit nodig het."
 
 #: ../src/iop/relight.c:56
-#, fuzzy
 msgid "fill-light 0.25EV with 4 zones"
-msgstr "Vul-lig 0.25 EV met 4 sones"
+msgstr "vul-lig 0.25EV met 4 sones"
 
 #: ../src/iop/relight.c:59
-#, fuzzy
 msgid "fill-shadow -0.25EV with 4 zones"
-msgstr "Vul-shadow-0.25 EV met 4 sones"
+msgstr "vul-skadu -0.25EV met 4 sones"
 
 #: ../src/iop/relight.c:88
-#, fuzzy
 msgid "fill light"
-msgstr "Vul lig"
+msgstr "vul lig"
 
 #: ../src/iop/relight.c:109
 msgctxt "accel"
@@ -13308,9 +12975,8 @@ msgid "width"
 msgstr "wydte"
 
 #: ../src/iop/relight.c:285
-#, fuzzy
 msgid "the fill-light in EV"
-msgstr "die vul-lig in EV"
+msgstr "die invul-lig in EV"
 
 #: ../src/iop/relight.c:294
 #, fuzzy
@@ -13332,7 +12998,6 @@ msgid "width"
 msgstr "wydte"
 
 #: ../src/iop/relight.c:304
-#, fuzzy
 msgid "width of fill-light area defined in zones"
 msgstr "breedte van die vul-lig area gedefinieer in sones"
 
@@ -13366,9 +13031,8 @@ msgid "show and edit shapes on the current scale"
 msgstr "Wys en wysig vorms op die huidige skaal"
 
 #: ../src/iop/retouch.c:2441
-#, fuzzy
 msgid "algorithms:"
-msgstr "algoritmes"
+msgstr "algoritmes:"
 
 #: ../src/iop/retouch.c:2446
 #, fuzzy
@@ -13376,9 +13040,8 @@ msgid "activates fill tool"
 msgstr "aktiveer vul instrument"
 
 #: ../src/iop/retouch.c:2453
-#, fuzzy
 msgid "activates blur tool"
-msgstr "aktiveer Blur Tool"
+msgstr "aktiveer vervagingsinstrument"
 
 #: ../src/iop/retouch.c:2460
 #, fuzzy
@@ -13391,9 +13054,8 @@ msgid "activates cloning tool"
 msgstr "aktiveer kloning gereedskap"
 
 #: ../src/iop/retouch.c:2481
-#, fuzzy
 msgid "# scales:"
-msgstr "skale"
+msgstr "# skale:"
 
 #: ../src/iop/retouch.c:2490
 msgid "current:"
@@ -13423,9 +13085,8 @@ msgid "display masks"
 msgstr "Wys maskers"
 
 #: ../src/iop/retouch.c:2540
-#, fuzzy
 msgid "temporarily switch off shapes"
-msgstr "Skakel vorms tydelik af"
+msgstr "skakel vorms tydelik af"
 
 #: ../src/iop/retouch.c:2547
 #, fuzzy
@@ -13438,9 +13099,8 @@ msgid "cut shapes from current scale"
 msgstr "Sny vorms uit huidige skaal"
 
 #: ../src/iop/retouch.c:2561
-#, fuzzy
 msgid "paste cut shapes to current scale"
-msgstr "Plak snit vorms na huidige skaal"
+msgstr "plak snit vorms na huidige skaal"
 
 #: ../src/iop/retouch.c:2584
 #, fuzzy
@@ -13453,9 +13113,8 @@ msgid "adjust preview levels"
 msgstr "Verstel voorskouvlakke"
 
 #: ../src/iop/retouch.c:2610
-#, fuzzy
 msgid "auto levels"
-msgstr "Outomatiese vlakke"
+msgstr "outomatiese vlakke"
 
 #: ../src/iop/retouch.c:2622
 msgid "shape selected:"
@@ -13471,24 +13130,20 @@ msgstr ""
 "om onselect klik op 'n leë spasie"
 
 #: ../src/iop/retouch.c:2633
-#, fuzzy
 msgid "fill mode"
-msgstr "Vul af"
+msgstr "vul modus"
 
 #: ../src/iop/retouch.c:2634
-#, fuzzy
 msgid "erase"
-msgstr "Uitvee"
+msgstr "vee uit"
 
 #: ../src/iop/retouch.c:2636
-#, fuzzy
 msgid "erase the detail or fills with chosen color"
-msgstr "Vee die detail uit of vul met gekose kleur"
+msgstr "vee die detail uit of vul met gekose kleur"
 
 #: ../src/iop/retouch.c:2644
-#, fuzzy
 msgid "fill color: "
-msgstr "Vul kleur:"
+msgstr "vul kleur: "
 
 #: ../src/iop/retouch.c:2649 ../src/iop/retouch.c:2650
 #, fuzzy
@@ -13506,28 +13161,24 @@ msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr "Verstel kleurhelderheid om dit fyn te verfyn. werk met vee sowel"
 
 #: ../src/iop/retouch.c:2671
-#, fuzzy
 msgid "blur type"
-msgstr "tipe"
+msgstr "vervaag tipe"
 
 #: ../src/iop/retouch.c:2673
 msgid "bilateral"
 msgstr "bilaterale"
 
 #: ../src/iop/retouch.c:2674
-#, fuzzy
 msgid "type for the blur algorithm"
-msgstr "tipe vir die Blur algoritme"
+msgstr "tipe vir die vervaginsalgoritme"
 
 #: ../src/iop/retouch.c:2680
-#, fuzzy
 msgid "blur radius"
 msgstr "vervaag radius"
 
 #: ../src/iop/retouch.c:2681
-#, fuzzy
 msgid "radius of the selected blur type"
-msgstr "radius van die geselekteerde Blur tipe"
+msgstr "radius van die geselekteerde vervaag tipe"
 
 #: ../src/iop/retouch.c:2689
 #, fuzzy
@@ -13542,15 +13193,13 @@ msgstr "aanraak Tools"
 
 #. wavelet decompose
 #: ../src/iop/retouch.c:2702
-#, fuzzy
 msgid "wavelet decompose"
 msgstr "wavelet dekomponeer"
 
 #. shapes
 #: ../src/iop/retouch.c:2716
-#, fuzzy
 msgid "shapes"
-msgstr "Vorms"
+msgstr "vorms"
 
 #: ../src/iop/retouch.c:3064
 msgctxt "accel"
@@ -13631,19 +13280,16 @@ msgid "contrast - high (gamma 2.2)"
 msgstr "kontras-hoog (Gamma 2,2)"
 
 #: ../src/iop/rgbcurve.c:249 ../src/iop/tonecurve.c:626
-#, fuzzy
 msgid "gamma 2.0"
-msgstr "gamma waarde"
+msgstr "gamma 2.0"
 
 #: ../src/iop/rgbcurve.c:253 ../src/iop/tonecurve.c:630
-#, fuzzy
 msgid "gamma 0.5"
-msgstr "gamma waarde"
+msgstr "gamma 0.5"
 
 #: ../src/iop/rgbcurve.c:257 ../src/iop/tonecurve.c:634
-#, fuzzy
 msgid "logarithm (base 2)"
-msgstr "logaritme (base 2)"
+msgstr "logaritme (basis 2)"
 
 #: ../src/iop/rgbcurve.c:261 ../src/iop/tonecurve.c:638
 msgid "exponential (base 2)"
@@ -13703,14 +13349,12 @@ msgid "rotate pixels"
 msgstr "roteer pixels"
 
 #: ../src/iop/rotatepixels.c:356
-#, fuzzy
 msgid "automatic pixel rotation"
-msgstr "Outomatiese pixel rotasie"
+msgstr "outomatiese pixel rotasie"
 
 #: ../src/iop/rotatepixels.c:358
-#, fuzzy
 msgid "automatic pixel rotation only works for the sensors that need it."
-msgstr "Outomatiese pixel rotasie werk net vir die sensors wat dit nodig het."
+msgstr "outomatiese pixel rotasie werk net vir die sensors wat dit nodig het."
 
 #: ../src/iop/scalepixels.c:56
 msgctxt "modulename"
@@ -13718,19 +13362,17 @@ msgid "scale pixels"
 msgstr "skaal pixels"
 
 #: ../src/iop/scalepixels.c:273
-#, fuzzy
 msgid "automatic pixel scaling"
-msgstr "Outomatiese pixel skaal"
+msgstr "outomatiese pixel skalering"
 
 #: ../src/iop/scalepixels.c:275
-#, fuzzy
 msgid "automatic pixel scaling only works for the sensors that need it."
 msgstr "Outomatiese pixel skaal werk net vir die sensors wat dit nodig het."
 
 #: ../src/iop/shadhi.c:178
 #, fuzzy
 msgid "shadows and highlights"
-msgstr "skaduwee hoogtepunte balans"
+msgstr "skaduwee/hoogtepunte balans"
 
 #: ../src/iop/shadhi.c:279
 msgctxt "accel"
@@ -13778,9 +13420,8 @@ msgid "shift white point"
 msgstr "Skuif White Point"
 
 #: ../src/iop/shadhi.c:747
-#, fuzzy
 msgid "filter to use for softening. bilateral avoids halos"
-msgstr "filter om te gebruik vir versagting. bilaterale vermy stralekranse"
+msgstr "filter om te gebruik vir versagting. bilateraal vermy stralekranse"
 
 #: ../src/iop/shadhi.c:748
 #, fuzzy
@@ -13823,36 +13464,30 @@ msgid "spatial extent of the unblurring"
 msgstr "ruimtelike omvang van die onvervaag"
 
 #: ../src/iop/sharpen.c:747
-#, fuzzy
 msgid "strength of the sharpen"
-msgstr "sterkte van die slyp"
+msgstr "krag van die slyping"
 
 #: ../src/iop/sharpen.c:752
 msgid "threshold to activate sharpen"
 msgstr "drempel om verskerp te aktiveer"
 
 #: ../src/iop/soften.c:85
-#, fuzzy
 msgid "soften"
-msgstr "Versag"
+msgstr "versag"
 
 #: ../src/iop/soften.c:675
-#, fuzzy
 msgid "the size of blur"
-msgstr "die grootte van Blur"
+msgstr "die grootte van vervaging"
 
 #: ../src/iop/soften.c:679
-#, fuzzy
 msgid "the saturation of blur"
-msgstr "die versadiging van Blur"
+msgstr "die versadiging van vervaging"
 
 #: ../src/iop/soften.c:683
-#, fuzzy
 msgid "the brightness of blur"
-msgstr "die helderheid van Blur"
+msgstr "die helderheid van vervaging"
 
 #: ../src/iop/soften.c:687
-#, fuzzy
 msgid "the mix of effect"
 msgstr "die mengsel van effek"
 
@@ -13897,12 +13532,10 @@ msgid "balance"
 msgstr "balans"
 
 #: ../src/iop/splittoning.c:137
-#, fuzzy
 msgid "authentic sepia"
 msgstr "outentieke sepia"
 
 #: ../src/iop/splittoning.c:146
-#, fuzzy
 msgid "authentic cyanotype"
 msgstr "outentieke sigetipe"
 
@@ -13912,7 +13545,6 @@ msgid "authentic platinotype"
 msgstr "outentieke platinotipe"
 
 #: ../src/iop/splittoning.c:164
-#, fuzzy
 msgid "chocolate brown"
 msgstr "sjokolade-bruin"
 
@@ -14054,12 +13686,11 @@ msgid "`%s' color matrix not found for image"
 msgstr "' %s ' kleurmatriks nie gevind vir beeld nie"
 
 #: ../src/iop/temperature.c:989
-#, fuzzy, c-format
+#, c-format
 msgid "failed to read camera white balance information from `%s'!"
-msgstr "kon nie kamera-wit-saldo-inligting van ' %s ' lees nie!"
+msgstr "kon nie kamera-wit-balaans-inligting van '%s' lees nie!"
 
 #: ../src/iop/temperature.c:1373 ../src/views/darkroom.c:2410
-#, fuzzy
 msgid "magenta"
 msgstr "magenta"
 
@@ -14068,9 +13699,8 @@ msgid "cyan"
 msgstr "cyan"
 
 #: ../src/iop/temperature.c:1387
-#, fuzzy
 msgid "emerald"
-msgstr "Smarag"
+msgstr "smarag"
 
 #: ../src/iop/temperature.c:1449
 msgid "tint"
@@ -14086,9 +13716,8 @@ msgid "choose white balance preset from camera"
 msgstr "Kies wit saldo wat op kamera ingestel is"
 
 #: ../src/iop/temperature.c:1472
-#, fuzzy
 msgid "finetune"
-msgstr "finetune"
+msgstr "verfyn"
 
 #: ../src/iop/temperature.c:1473
 #, c-format
@@ -14096,14 +13725,12 @@ msgid "%.0f mired"
 msgstr "%.0f vasgevang"
 
 #: ../src/iop/temperature.c:1477
-#, fuzzy
 msgid "fine tune white balance preset"
-msgstr "verfyn wit balans vooraf ingestel"
+msgstr "verfyn wit balans verstek"
 
 #: ../src/iop/temperature.c:1482
-#, fuzzy
 msgid "white balance disabled for camera"
-msgstr "wit balans gestremde vir kamera"
+msgstr "wit balans gedeaktiveer vir kamera"
 
 #: ../src/iop/tonecurve.c:194
 #, fuzzy
@@ -14203,7 +13830,6 @@ msgid "whites"
 msgstr "wit kleure"
 
 #: ../src/iop/toneequal.c:322
-#, fuzzy
 msgctxt "accel"
 msgid "speculars"
 msgstr "'speculars'"
@@ -14313,9 +13939,8 @@ msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "die interpolasie is onstabiel, verminder die kurwe glad"
 
 #: ../src/iop/toneequal.c:1658 ../src/iop/toneequal.c:1720
-#, fuzzy
 msgid "wait for the preview to finish recomputing"
-msgstr "Wag vir die voorskou om herrekenaar te voltooi"
+msgstr "wag vir die voorskou berekening om te voltooi"
 
 #: ../src/iop/toneequal.c:1829 ../src/iop/toneequal.c:2291
 #, fuzzy
@@ -14409,7 +14034,6 @@ msgid "curve smoothing"
 msgstr "kurwe glad"
 
 #: ../src/iop/toneequal.c:3069
-#, fuzzy
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -14417,14 +14041,13 @@ msgid ""
 "but may produce brutal tone transitions and damage local contrast."
 msgstr ""
 "positiewe waardes sal meer progressiewe toonoorgange produseer\n"
-"maar die kurwe kan word ossiltasie in sommige instellings.\n"
-"negatiewe waardes sal vermy ossillasies en optree meer robuagtige\n"
-"maar kan veroorsaak wrede toon oorgange en skade plaaslike kontras."
+"maar die kurwe kan ossilatories raak in sommige instellings.\n"
+"negatiewe waardes sal ossillasies vermy en meer voorspelbaar optree\n"
+"maar kan rowwe toon oorgange veroorsaak en plaaslike kontras beskadig."
 
 #: ../src/iop/toneequal.c:3079
-#, fuzzy
 msgid "masking"
-msgstr "Maskering"
+msgstr "maskering"
 
 #: ../src/iop/toneequal.c:3083
 #, fuzzy
@@ -14546,9 +14169,8 @@ msgstr ""
 "vir 'n beter beheer van die blootstellingsregstelling."
 
 #: ../src/iop/toneequal.c:3160 ../src/iop/toneequal.c:3164
-#, fuzzy
 msgid "display exposure mask"
-msgstr "Wys blootskermasker"
+msgstr "vertoon blootskermasker"
 
 #: ../src/iop/tonemap.cc:74
 #, fuzzy
@@ -14561,7 +14183,6 @@ msgid "contrast compression"
 msgstr "kontras kompressie"
 
 #: ../src/iop/velvia.c:84
-#, fuzzy
 msgid "velvia"
 msgstr "velvia"
 
@@ -14586,7 +14207,6 @@ msgid "the amount of vibrance"
 msgstr "die bedrag van Vibrance"
 
 #: ../src/iop/vignette.c:154
-#, fuzzy
 msgid "vignetting"
 msgstr "vignet"
 
@@ -14621,14 +14241,12 @@ msgid "dithering"
 msgstr "'dithering'"
 
 #: ../src/iop/vignette.c:994
-#, fuzzy
 msgid "lomo"
 msgstr "lomo"
 
 #: ../src/iop/vignette.c:1043
-#, fuzzy
 msgid "automatic ratio"
-msgstr "Outomatiese verhouding"
+msgstr "outomatiese verhouding"
 
 #: ../src/iop/vignette.c:1062
 #, fuzzy
@@ -14641,19 +14259,16 @@ msgid "the radii scale of vignette for end of fall-off"
 msgstr "die radiusse skaal van vinjet vir einde van val-off"
 
 #: ../src/iop/vignette.c:1064
-#, fuzzy
 msgid "strength of effect on brightness"
-msgstr "sterkte van effek op helderheid"
+msgstr "krag van effek op helderheid"
 
 #: ../src/iop/vignette.c:1065
-#, fuzzy
 msgid "strength of effect on saturation"
-msgstr "sterkte van effek op versadiging"
+msgstr "krag van effek op versadiging"
 
 #: ../src/iop/vignette.c:1066
-#, fuzzy
 msgid "horizontal offset of center of the effect"
-msgstr "horisontale verreken van die sentrum van die effek"
+msgstr "horisontale sprong van die sentrum van die effek"
 
 #: ../src/iop/vignette.c:1067
 #, fuzzy
@@ -14679,9 +14294,8 @@ msgid "enable to have the ratio automatically follow the image size"
 msgstr "in staat stel om die verhouding outomaties volg die beeld grootte"
 
 #: ../src/iop/vignette.c:1071
-#, fuzzy
 msgid "width-to-height ratio"
-msgstr "breedte-hoogte verhouding"
+msgstr "breedte-tot-hoogte verhouding"
 
 #: ../src/iop/vignette.c:1072
 #, fuzzy
@@ -14717,6 +14331,7 @@ msgctxt "accel"
 msgid "opacity"
 msgstr "ondeursigtigheid"
 
+# woord vir offset
 #: ../src/iop/watermark.c:313
 msgctxt "accel"
 msgid "x offset"
@@ -14747,9 +14362,9 @@ msgid "marker"
 msgstr "inkpen"
 
 #: ../src/iop/watermark.c:1413
-#, fuzzy, c-format
+#, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
-msgstr "SVG watermerke in %s/waterpunte of %s/waterpunte"
+msgstr "SVG watermerke in %s/watermerke of %s/watermerke"
 
 #: ../src/iop/watermark.c:1430
 #, fuzzy
@@ -14761,14 +14376,12 @@ msgstr ""
 "$ (WATERMARK_COLOR)"
 
 #: ../src/iop/watermark.c:1432
-#, fuzzy
 msgid "select watermark color"
-msgstr "Kies watermerk kleur"
+msgstr "kies watermerk kleur"
 
 #: ../src/iop/watermark.c:1434
-#, fuzzy
 msgid "pick color from image"
-msgstr "Pick kleur van beeld"
+msgstr "kies kleur uit beeld"
 
 #. Simple text
 #: ../src/iop/watermark.c:1441
@@ -14776,18 +14389,17 @@ msgid "text"
 msgstr "teks"
 
 #: ../src/iop/watermark.c:1445
-#, fuzzy
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
 msgstr ""
 "teksstring, merker:\n"
-"$ (WATERMARK_TEXT)"
+"$(WATERMARK_TEXT)"
 
 #. Text font
 #: ../src/iop/watermark.c:1455
 msgid "font"
-msgstr "voorkant"
+msgstr "lettervorm"
 
 #: ../src/iop/watermark.c:1461
 #, fuzzy
@@ -14808,33 +14420,27 @@ msgid "size is relative to"
 msgstr "grootte is relatief tot"
 
 #: ../src/iop/watermark.c:1486
-#, fuzzy
 msgid "position"
-msgstr "posisie van die beeld inligting lyn"
+msgstr "posisie"
 
 #: ../src/iop/watermark.c:1490 ../src/libs/print_settings.c:1395
-#, fuzzy
 msgid "alignment"
-msgstr "Belyning"
+msgstr "belyning"
 
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/watermark.c:1511
-#, fuzzy
 msgid "the opacity of the watermark"
-msgstr "die ondeursigtigheid van die watermerk"
+msgstr "die deursigtigheid van die watermerk"
 
 #: ../src/iop/watermark.c:1512
-#, fuzzy
 msgid "the scale of the watermark"
 msgstr "die skaal van die watermerk"
 
 #: ../src/iop/watermark.c:1513
-#, fuzzy
 msgid "the rotation of the watermark"
 msgstr "die rotasie van die watermerk"
 
 #: ../src/iop/zonesystem.c:117
-#, fuzzy
 msgid "zone system"
 msgstr "sone stelsel"
 
@@ -14852,12 +14458,10 @@ msgstr ""
 "regsklik op 'n merker om dit te skrap"
 
 #: ../src/libs/backgroundjobs.c:52
-#, fuzzy
 msgid "background jobs"
 msgstr "agtergrond werk"
 
 #: ../src/libs/camera.c:78
-#, fuzzy
 msgid "camera settings"
 msgstr "kamera-instellings"
 
@@ -14890,29 +14494,24 @@ msgid "camera control"
 msgstr "kamera beheer"
 
 #: ../src/libs/camera.c:438
-#, fuzzy
 msgid "modes"
-msgstr "Modes"
+msgstr "modes"
 
 #: ../src/libs/camera.c:439
-#, fuzzy
 msgid "timer (s)"
-msgstr "tydhouer (e)"
+msgstr "tydhouer (s)"
 
 #: ../src/libs/camera.c:440
-#, fuzzy
 msgid "count"
-msgstr "Tel"
+msgstr "tel"
 
 #: ../src/libs/camera.c:441
-#, fuzzy
 msgid "brackets"
-msgstr "Hakies"
+msgstr "hakies"
 
 #: ../src/libs/camera.c:442
-#, fuzzy
 msgid "bkt. steps"
-msgstr "BKT. Stappe"
+msgstr "bkt. stappe"
 
 #: ../src/libs/camera.c:478
 msgid "capture image(s)"
@@ -14921,17 +14520,17 @@ msgstr "lê beeld(e) vas"
 #: ../src/libs/camera.c:481
 #, fuzzy
 msgid "toggle delayed capture mode"
-msgstr "Verwissel van vertraagde vaslêmodus"
+msgstr "skakel van vertraagde vaslêmodus"
 
 #: ../src/libs/camera.c:482
 #, fuzzy
 msgid "toggle sequenced capture mode"
 msgstr "Skakel opeenvolg capture af"
 
+# bracketed kort 'n vertaling
 #: ../src/libs/camera.c:483
-#, fuzzy
 msgid "toggle bracketed capture mode"
-msgstr "Skakel bracketed-modus"
+msgstr "skakel bracketed-modus"
 
 #: ../src/libs/camera.c:484
 #, fuzzy
@@ -14971,7 +14570,6 @@ msgstr ""
 
 #. user specified properties
 #: ../src/libs/camera.c:520
-#, fuzzy
 msgid "additional properties"
 msgstr "bykomende eienskappe"
 
@@ -14984,43 +14582,36 @@ msgid "property"
 msgstr "eienskap"
 
 #: ../src/libs/camera.c:546
-#, fuzzy
 msgid "add user property"
-msgstr "Voeg gebruikereienskap by"
+msgstr "voeg gebruikereienskap by"
 
 #: ../src/libs/camera.c:568
 msgid "program"
 msgstr "program"
 
 #: ../src/libs/camera.c:571 ../src/libs/camera.c:573
-#, fuzzy
 msgid "focus mode"
 msgstr "fokusmodus"
 
 #: ../src/libs/camera.c:584
-#, fuzzy
 msgid "shutterspeed2"
 msgstr "shutterspeed2"
 
 #: ../src/libs/camera.c:586
-#, fuzzy
 msgid "shutterspeed"
 msgstr "shutterspeed"
 
 #: ../src/libs/camera.c:592
-#, fuzzy
 msgid "WB"
 msgstr "WB"
 
 #: ../src/libs/collect.c:117
-#, fuzzy
 msgid "collect images"
 msgstr "versamel beelde"
 
 #: ../src/libs/collect.c:354
-#, fuzzy
 msgid "search filmroll"
-msgstr "Soek filmroll"
+msgstr "soek filmrol"
 
 #: ../src/libs/collect.c:440
 #, fuzzy, c-format
@@ -15028,9 +14619,8 @@ msgid "problem selecting new path for the filmroll in %s"
 msgstr "kon nie nuwe pad vir die filmroll in %s kies nie"
 
 #: ../src/libs/collect.c:492
-#, fuzzy
 msgid "search filmroll..."
-msgstr "Soek filmroll ..."
+msgstr "soek filmrol..."
 
 #: ../src/libs/collect.c:496
 msgid "remove..."
@@ -15041,17 +14631,14 @@ msgid "uncategorized"
 msgstr "uncategorized"
 
 #: ../src/libs/collect.c:1558
-#, fuzzy
 msgid "not tagged"
 msgstr "nie gemerk nie"
 
 #: ../src/libs/collect.c:1570
-#, fuzzy
 msgid "copied locally"
 msgstr "nie plaaslik gekopieer nie"
 
 #: ../src/libs/collect.c:1672
-#, fuzzy
 msgid "group followers"
 msgstr "groepvolgers"
 
@@ -15102,7 +14689,6 @@ msgid "add more images"
 msgstr "Voeg meer beelde by"
 
 #: ../src/libs/collect.c:2485
-#, fuzzy
 msgid "exclude images"
 msgstr "sluit beelde uit"
 
@@ -15122,7 +14708,6 @@ msgid "change to: except"
 msgstr "verander na: behalwe"
 
 #: ../src/libs/colorpicker.c:54
-#, fuzzy
 msgid "color picker"
 msgstr "kleurkieser"
 
@@ -15151,9 +14736,8 @@ msgid "live samples"
 msgstr "lewendige monsters"
 
 #: ../src/libs/colorpicker.c:567
-#, fuzzy
 msgid "point"
-msgstr "wit punt aanpassing"
+msgstr "punt"
 
 #: ../src/libs/colorpicker.c:568
 msgid "area"
@@ -15195,14 +14779,13 @@ msgid "open sidecar file"
 msgstr "Open sidecar lêer"
 
 #: ../src/libs/copy_history.c:126
-#, fuzzy
 msgid "XMP sidecar files"
-msgstr "XMP sidecar lêers"
+msgstr "XMP 'sidecar' lêers"
 
 #: ../src/libs/copy_history.c:143
-#, fuzzy, c-format
+#, c-format
 msgid "error loading file '%s'"
-msgstr "kon nie lêer ' %s ' laai nie"
+msgstr "kon nie lêer '%s' laai nie"
 
 #: ../src/libs/copy_history.c:178
 #, c-format
@@ -15220,7 +14803,6 @@ msgstr[1] ""
 "sien etiket: darktable|probleem|geskiedenisverdigting."
 
 #: ../src/libs/copy_history.c:184
-#, fuzzy
 msgid "history compression warning"
 msgstr "geskiedenis kompressie waarskuwing"
 
@@ -15232,9 +14814,8 @@ msgstr[0] "wil jy regtig die geskiedenis van %d geselekteerde beeld wis?"
 msgstr[1] "wil jy regtig die geskiedenis van %d geselekteerde beelde wis?"
 
 #: ../src/libs/copy_history.c:237
-#, fuzzy
 msgid "delete images' history?"
-msgstr "vernietig beelde?"
+msgstr "vernietig beelde se geskiedenis?"
 
 #: ../src/libs/copy_history.c:341 ../src/libs/image.c:453
 #, fuzzy
@@ -15251,9 +14832,8 @@ msgstr ""
 "eerste geselekteerde beeld"
 
 #: ../src/libs/copy_history.c:348
-#, fuzzy
 msgid "copy all"
-msgstr "Kopieer alle"
+msgstr "kopieer alles"
 
 #: ../src/libs/copy_history.c:351
 #, fuzzy
@@ -15265,37 +14845,33 @@ msgstr ""
 "eerste geselekteerde beeld"
 
 #: ../src/libs/copy_history.c:355
-#, fuzzy
 msgid "paste..."
-msgstr "plak"
+msgstr "plak..."
 
 #: ../src/libs/copy_history.c:357
-#, fuzzy
 msgid ""
 "paste part history stack to\n"
 "all selected images"
 msgstr ""
-"Plak deel geskiedenis stapel om\n"
+"plak deel-geskiedenis stapel om\n"
 "alle geselekteerde beelde"
 
 #: ../src/libs/copy_history.c:362
-#, fuzzy
 msgid "paste all"
-msgstr "Plak alle"
+msgstr "plak alles"
 
 #: ../src/libs/copy_history.c:364
-#, fuzzy
 msgid ""
 "paste history stack to\n"
 "all selected images"
 msgstr ""
-"Plak geskiedenisstapel om\n"
+"plak geskiedenis stapel om\n"
 "alle geselekteerde beelde"
 
 #: ../src/libs/copy_history.c:369
 #, fuzzy
 msgid "compress history"
-msgstr "Kompakteer geskiedenis"
+msgstr "kompakteer geskiedenisstapel"
 
 #: ../src/libs/copy_history.c:371
 #, fuzzy
@@ -15307,33 +14883,30 @@ msgstr ""
 "alle geselekteerde beelde"
 
 #: ../src/libs/copy_history.c:374
-#, fuzzy
 msgid "discard history"
-msgstr "verwerp geskiedenis"
+msgstr "skrap geskiedenis"
 
 #: ../src/libs/copy_history.c:377
-#, fuzzy
 msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
-"gooi geskiedenisstapel van\n"
+"skrap geskiedenisstapel van\n"
 "alle geselekteerde beelde"
 
 #: ../src/libs/copy_history.c:383 ../src/libs/styles.c:588
-#, fuzzy
 msgid "append"
-msgstr "Voeg"
+msgstr "voeg by"
 
 #: ../src/libs/copy_history.c:385 ../src/libs/styles.c:590
 #, fuzzy
 msgid "how to handle existing history"
 msgstr "Hoe om bestaande geskiedenis te hanteer"
 
+# sidecar kort 'n vertaling
 #: ../src/libs/copy_history.c:390
-#, fuzzy
 msgid "load sidecar file..."
-msgstr "Laai sidecar lêer ..."
+msgstr "laai sidecar lêer ..."
 
 #: ../src/libs/copy_history.c:393
 #, fuzzy
@@ -15345,9 +14918,8 @@ msgstr ""
 "en pas dit toe op geselekteerde beelde"
 
 #: ../src/libs/copy_history.c:400
-#, fuzzy
 msgid "write history stack and tags to XMP sidecar files"
-msgstr "skryf geskiedenis stapel en Tags te XMP sidecar lêers"
+msgstr "skryf geskiedenis stapel en merkers na XMP sidecar lêers"
 
 #: ../src/libs/copy_history.c:440
 msgctxt "accel"
@@ -15362,7 +14934,7 @@ msgstr "kopieer"
 #: ../src/libs/copy_history.c:443
 msgctxt "accel"
 msgid "discard"
-msgstr "gooi weg"
+msgstr "skrap"
 
 #: ../src/libs/copy_history.c:444
 msgctxt "accel"
@@ -15385,12 +14957,10 @@ msgid "write sidecar files"
 msgstr "skryf 'sidecar' lêers"
 
 #: ../src/libs/duplicate.c:60
-#, fuzzy
 msgid "duplicate manager"
-msgstr "dupliseer %d beelde"
+msgstr "duplikaatbestuurder"
 
 #: ../src/libs/duplicate.c:535
-#, fuzzy
 msgid "existing duplicates"
 msgstr "bestaande duplikate"
 
@@ -15410,32 +14980,26 @@ msgid "export selected"
 msgstr "uitvoer geselekteerde"
 
 #: ../src/libs/export.c:190
-#, fuzzy
 msgid "export to disk"
-msgstr "uitvoer na skyf"
+msgstr "voer uit na skyf"
 
 #: ../src/libs/export.c:613
-#, fuzzy
 msgid "storage options"
-msgstr "Stoor opsies"
+msgstr "stoor opsies"
 
 #: ../src/libs/export.c:620
-#, fuzzy
 msgid "target storage"
 msgstr "teiken stoor"
 
 #: ../src/libs/export.c:643
-#, fuzzy
 msgid "format options"
 msgstr "formaat opsies"
 
 #: ../src/libs/export.c:648
-#, fuzzy
 msgid "file format"
 msgstr "lêer formaat"
 
 #: ../src/libs/export.c:666
-#, fuzzy
 msgid "global options"
 msgstr "globale opsies"
 
@@ -15458,7 +15022,6 @@ msgstr ""
 "stel op 0 vir geen skalering nie"
 
 #: ../src/libs/export.c:681
-#, fuzzy
 msgid "max size"
 msgstr "maksimum grootte"
 
@@ -15472,7 +15035,6 @@ msgid "allow upscaling"
 msgstr "laat upskalering"
 
 #: ../src/libs/export.c:699
-#, fuzzy
 msgid "high quality resampling"
 msgstr "hoë kwaliteit hersteekproefneming"
 
@@ -15482,10 +15044,8 @@ msgid "do high quality resampling during export"
 msgstr "doen 'n hoë gehalte hersteekproefneming tydens uitvoer"
 
 #: ../src/libs/export.c:706
-#, fuzzy
-#| msgid "raster mask"
 msgid "store masks"
-msgstr "raster masker"
+msgstr "stoor masker"
 
 #: ../src/libs/export.c:709
 #, fuzzy
@@ -15495,7 +15055,6 @@ msgstr ""
 
 #: ../src/libs/export.c:722 ../src/libs/export.c:743
 #: ../src/libs/print_settings.c:1412 ../src/libs/print_settings.c:1459
-#, fuzzy
 msgid "image settings"
 msgstr "beeldinstellings"
 
@@ -15519,9 +15078,8 @@ msgid "replace history"
 msgstr "vervang geskiedenis"
 
 #: ../src/libs/export.c:766 ../src/libs/print_settings.c:1519
-#, fuzzy
 msgid "append history"
-msgstr "Voeg geskiedenis by"
+msgstr "voeg geskiedenis by"
 
 #: ../src/libs/export.c:771 ../src/libs/print_settings.c:1526
 #, fuzzy
@@ -15536,14 +15094,12 @@ msgid "export"
 msgstr "uitvoering"
 
 #: ../src/libs/export.c:796
-#, fuzzy
 msgid "export with current settings"
-msgstr "Voer uit met huidige instellings"
+msgstr "voer uit met huidige instellings"
 
 #: ../src/libs/export.c:802
-#, fuzzy
 msgid "edit metadata exportation details"
-msgstr "Redigeer metadata uitvoer besonderhede"
+msgstr "redigeer metadata uitvoer besonderhede"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1441 ../src/libs/styles.c:74
@@ -15553,19 +15109,16 @@ msgid "export"
 msgstr "uitvoering"
 
 #: ../src/libs/export_metadata.c:159
-#, fuzzy
 msgid "select tag"
-msgstr "kies alles"
+msgstr "kies merker"
 
 #: ../src/libs/export_metadata.c:160
 msgid "done"
 msgstr "gedoen"
 
 #: ../src/libs/export_metadata.c:170
-#, fuzzy
-#| msgid "polarizing filter"
 msgid "list filter"
-msgstr "polariserende filter"
+msgstr "lys filter"
 
 #: ../src/libs/export_metadata.c:181
 #, fuzzy
@@ -15581,37 +15134,31 @@ msgid "type"
 msgstr "tipe"
 
 #: ../src/libs/export_metadata.c:268
-#, fuzzy
 msgid "edit metadata exportation"
-msgstr "Redigeer metadata uitvoer"
+msgstr "redigeer metadata uitvoer proses"
 
 #: ../src/libs/export_metadata.c:269 ../src/libs/metadata.c:438
 #: ../src/libs/tagging.c:1489 ../src/libs/tagging.c:1614
-#, fuzzy
 msgid "save"
-msgstr "Stoor"
+msgstr "stoor"
 
 #: ../src/libs/export_metadata.c:281
-#, fuzzy
 msgid "general settings"
 msgstr "algemene instellings"
 
 #: ../src/libs/export_metadata.c:286
-#, fuzzy
 msgid "exif data"
-msgstr "herstel van EXIF data"
+msgstr "exif-data"
 
 #: ../src/libs/export_metadata.c:287
-#, fuzzy
 msgid "export exif metadata"
-msgstr "herstel van EXIF data"
+msgstr "voer exif data uit"
 
 #: ../src/libs/export_metadata.c:289 ../src/libs/image.c:421
 #: ../src/libs/image.c:559 ../src/libs/metadata.c:443
 #: ../src/libs/metadata.c:630
-#, fuzzy
 msgid "metadata"
-msgstr "Metadata"
+msgstr "metadata"
 
 #: ../src/libs/export_metadata.c:290
 #, fuzzy
@@ -15640,9 +15187,8 @@ msgstr ""
 "metadata gebruik in plaas"
 
 #: ../src/libs/export_metadata.c:307 ../src/libs/image.c:552
-#, fuzzy
 msgid "geo tags"
-msgstr "Geo-etikette"
+msgstr "geo-merkers"
 
 #: ../src/libs/export_metadata.c:308
 #, fuzzy
@@ -15655,17 +15201,14 @@ msgid "export tags (to Xmp.dc.Subject)"
 msgstr "uitvoer etikette (na Xmp. DC. onderwerp)"
 
 #: ../src/libs/export_metadata.c:318
-#, fuzzy
 msgid "private tags"
-msgstr "persoonlik"
+msgstr "persoonlike merkers"
 
 #: ../src/libs/export_metadata.c:319
-#, fuzzy
 msgid "export private tags"
-msgstr "exporteer %d afbeelding naar %s"
+msgstr "voer privaat merkers uit"
 
 #: ../src/libs/export_metadata.c:321
-#, fuzzy
 msgid "synonyms"
 msgstr "sinonieme"
 
@@ -15698,7 +15241,6 @@ msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
 msgstr "Voer hiërargiese Tags (om Xmp. LR. hiërargiese vak)"
 
 #: ../src/libs/export_metadata.c:331
-#, fuzzy
 msgid "develop history"
 msgstr "ontwikkel geskiedenis"
 
@@ -15717,12 +15259,10 @@ msgid "per metadata settings"
 msgstr "per metadata-instellings"
 
 #: ../src/libs/export_metadata.c:350
-#, fuzzy
 msgid "list of available tags"
 msgstr "lys beskikbare merkers"
 
 #: ../src/libs/export_metadata.c:353
-#, fuzzy
 msgid "redefined tag"
 msgstr "herdefinieerde merker"
 
@@ -15757,9 +15297,8 @@ msgid "add an output metadata tag"
 msgstr "Voeg 'n uitset-metadata-merker by"
 
 #: ../src/libs/export_metadata.c:423
-#, fuzzy
 msgid "delete metadata tag"
-msgstr "vernietig beelde?"
+msgstr "vernietig metadata merker"
 
 #: ../src/libs/geotagging.c:412
 #, fuzzy
@@ -15771,9 +15310,8 @@ msgstr ""
 "formaat: hh: mm: SS"
 
 #: ../src/libs/geotagging.c:421
-#, fuzzy
 msgid "ok"
-msgstr "_ok"
+msgstr "oukei"
 
 #: ../src/libs/geotagging.c:474
 #, fuzzy
@@ -15781,12 +15319,10 @@ msgid "open GPX file"
 msgstr "maak GPX-lêer oop"
 
 #: ../src/libs/geotagging.c:491
-#, fuzzy
 msgid "GPS data exchange format"
-msgstr "GPS data ruil formaat"
+msgstr "GPS data uitruil formaat"
 
 #: ../src/libs/geotagging.c:501
-#, fuzzy
 msgid "camera time zone"
 msgstr "kamera tydsone"
 
@@ -15834,28 +15370,22 @@ msgid "histogram"
 msgstr "histogram"
 
 #: ../src/libs/histogram.c:537 ../src/libs/histogram.c:571
-#, fuzzy
 msgid "set mode to waveform"
-msgstr "stel af na golfvorm"
+msgstr "stel modus na golfvorm"
 
 #: ../src/libs/histogram.c:540
-#, fuzzy
-#| msgid "set the score weight of histogram matching"
 msgid "set mode to histogram"
-msgstr "bepaal de beïnvloeding van overeenkomstige histogrammen"
+msgstr "stel modus na histogram"
 
 #: ../src/libs/histogram.c:555
-#, fuzzy
 msgid "set mode to linear"
-msgstr "stel modus na lineêre"
+msgstr "stel modus na lineêr"
 
 #: ../src/libs/histogram.c:558
-#, fuzzy
 msgid "set mode to logarithmic"
-msgstr "stel modus na logaritmiese"
+msgstr "stel modus na logaritmies"
 
 #: ../src/libs/histogram.c:568
-#, fuzzy
 msgid "set mode to RGB parade"
 msgstr "stel modus na RGB-parade"
 
@@ -15964,9 +15494,8 @@ msgid "compress history stack"
 msgstr "kompakteer geskiedenisstapel"
 
 #: ../src/libs/history.c:128
-#, fuzzy
 msgid "compress history stack"
-msgstr "Kompakteer geskiedenisstapel"
+msgstr "kompakteer geskiedenisstapel"
 
 #: ../src/libs/history.c:130
 #, fuzzy
@@ -15979,9 +15508,8 @@ msgid "create a style from the current history stack"
 msgstr "Skep 'n styl uit die huidige geskiedenisstapel"
 
 #: ../src/libs/history.c:192
-#, fuzzy
 msgid "always-on module"
-msgstr "altyd-op module"
+msgstr "altyd-aan module"
 
 #: ../src/libs/history.c:200
 #, fuzzy
@@ -15997,16 +15525,14 @@ msgid "original"
 msgstr "oorspronklike"
 
 #: ../src/libs/image.c:72
-#, fuzzy
 msgid "selected image[s]"
-msgstr "geselekteerde beeld [s]"
+msgstr "geselekteerde beeld[e]"
 
 #: ../src/libs/image.c:167
 msgid "trash"
 msgstr "asblik"
 
 #: ../src/libs/image.c:175
-#, fuzzy
 msgid "send file to trash"
 msgstr "stuur lêer na asblik"
 
@@ -16017,9 +15543,8 @@ msgstr "fisies skrap van skyf"
 
 #. delete
 #: ../src/libs/image.c:432 ../src/libs/styles.c:615
-#, fuzzy
 msgid "remove"
-msgstr "verwyder..."
+msgstr "verwyder"
 
 #: ../src/libs/image.c:435
 #, fuzzy
@@ -16027,24 +15552,20 @@ msgid "remove from the collection"
 msgstr "verwyder slegs van die versameling"
 
 #: ../src/libs/image.c:446
-#, fuzzy
 msgid "move..."
-msgstr "skuif op"
+msgstr "skuif..."
 
 #: ../src/libs/image.c:449
-#, fuzzy
 msgid "move to other folder"
-msgstr "Skuif na 'n ander vouer"
+msgstr "skuif na 'n ander vouer"
 
 #: ../src/libs/image.c:456
-#, fuzzy
 msgid "copy to other folder"
-msgstr "Kopieer na 'n ander vouer"
+msgstr "kopieer na 'n ander vouer"
 
 #: ../src/libs/image.c:460
-#, fuzzy
 msgid "create HDR"
-msgstr "Skep HDR"
+msgstr "skep HDR"
 
 #: ../src/libs/image.c:465
 #, fuzzy
@@ -16061,19 +15582,16 @@ msgid "add a duplicate to the collection, including its history stack"
 msgstr "Voeg 'n duplikaat by die versameling, insluitend die geskiedenisstapel"
 
 #: ../src/libs/image.c:478
-#, fuzzy
 msgid "rotate selected images 90 degrees CCW"
-msgstr "Roteer geselekteerde beelde 90 grade CCW"
+msgstr "roteer geselekteerde beelde 90 grade anti-kloksgewys"
 
 #: ../src/libs/image.c:485
-#, fuzzy
 msgid "rotate selected images 90 degrees CW"
-msgstr "Roteer geselekteerde beelde 90 grade CW"
+msgstr "roteer geselekteerde beelde 90 grade kloksgewys"
 
 #: ../src/libs/image.c:489
-#, fuzzy
 msgid "reset rotation"
-msgstr "terugstelrotasie"
+msgstr "herstel rotasie"
 
 #: ../src/libs/image.c:492
 #, fuzzy
@@ -16086,9 +15604,8 @@ msgid "copy locally"
 msgstr "Kopieer plaaslik"
 
 #: ../src/libs/image.c:500
-#, fuzzy
 msgid "copy the image locally"
-msgstr "Kopieer die beeld plaaslik"
+msgstr "kopieer die beeld plaaslik"
 
 #: ../src/libs/image.c:504
 #, fuzzy
@@ -16110,9 +15627,8 @@ msgid "add selected images to expanded group or create a new one"
 msgstr "Voeg geselekteerde beelde by uitgebreide groep of skep 'n nuwe een"
 
 #: ../src/libs/image.c:519
-#, fuzzy
 msgid "ungroup"
-msgstr "ontgroei"
+msgstr "ongroepeer"
 
 #: ../src/libs/image.c:522
 #, fuzzy
@@ -16120,9 +15636,8 @@ msgid "remove selected images from the group"
 msgstr "Verwyder geselekteerde beelde uit die groep"
 
 #: ../src/libs/image.c:531 ../src/libs/tools/ratings.c:55
-#, fuzzy
 msgid "ratings"
-msgstr "Graderings"
+msgstr "graderings"
 
 #: ../src/libs/image.c:533
 #, fuzzy
@@ -16133,7 +15648,7 @@ msgstr "_kies as bestemming"
 #: ../src/libs/image.c:538
 #, fuzzy
 msgid "colors"
-msgstr "kleurvermenging"
+msgstr "skryf rgb-kleure"
 
 #: ../src/libs/image.c:540
 #, fuzzy
@@ -16141,9 +15656,8 @@ msgid "select colors metadata"
 msgstr "vernietig beelde?"
 
 #: ../src/libs/image.c:547
-#, fuzzy
 msgid "select tags metadata"
-msgstr "kies alles"
+msgstr "kies merker metadata"
 
 #: ../src/libs/image.c:554
 #, fuzzy
@@ -16165,9 +15679,8 @@ msgid "paste"
 msgstr "plak"
 
 #: ../src/libs/image.c:577
-#, fuzzy
 msgid "paste selected metadata on selected images"
-msgstr "Plak geselekteerde metadata op geselekteerde beelde"
+msgstr "plak geselekteerde metadata op geselekteerde beelde"
 
 #: ../src/libs/image.c:581 ../src/libs/metadata.c:741
 msgid "clear"
@@ -16179,9 +15692,8 @@ msgid "clear selected metadata on selected images"
 msgstr "vee geselekteerde metadata op geselekteerde beelde uit"
 
 #: ../src/libs/image.c:590
-#, fuzzy
 msgid "merge"
-msgstr "Saamvoeg"
+msgstr "voeg saam"
 
 #: ../src/libs/image.c:592
 #, fuzzy
@@ -16315,24 +15827,20 @@ msgid "device \"%s\" connected on port \"%s\"."
 msgstr "toestel \" %s\" wat op poort \" %s\" gekoppel is."
 
 #: ../src/libs/import.c:221
-#, fuzzy
 msgid "import from camera"
-msgstr "Voer in vanaf kamera"
+msgstr "invoer vanaf kamera"
 
 #: ../src/libs/import.c:227
-#, fuzzy
 msgid "tethered shoot"
-msgstr "Geteerde skiet"
+msgstr "'tethered' sessie"
 
 #. No supported devices is detected lets notice user..
 #: ../src/libs/import.c:252
-#, fuzzy
 msgid "no supported devices found"
-msgstr "Geen ondersteunde toestelle gevind nie"
+msgstr "geen ondersteunde toestelle gevind nie"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
 #: ../src/libs/import.c:365
-#, fuzzy
 msgid "import options"
 msgstr "opsies invoer"
 
@@ -16348,20 +15856,16 @@ msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr "rekursief invoer submappen. Elke vouer gaan in 'n nuwe filmrol."
 
 #: ../src/libs/import.c:581
-#, fuzzy
 msgid "supported images"
 msgstr "ondersteunde beelde"
 
 #: ../src/libs/import.c:637
-#, fuzzy
 msgid "file has unknown format!"
 msgstr "lêer het onbekende formaat!"
 
 #: ../src/libs/import.c:661
-#, fuzzy
-#| msgid "import image"
 msgid "import folder"
-msgstr "voer tans beeld in"
+msgstr "voer gids in"
 
 #. add import single image buttons
 #: ../src/libs/import.c:776
@@ -16375,9 +15879,8 @@ msgstr "Kies een of meer beelde om in te voer"
 
 #. adding the import folder button
 #: ../src/libs/import.c:787
-#, fuzzy
 msgid "folder..."
-msgstr "hoeveelheid omslag vlakke sigbaar in lyste"
+msgstr "vouer..."
 
 #: ../src/libs/import.c:791
 #, fuzzy
@@ -16386,9 +15889,8 @@ msgstr "Kies 'n vouer om as filmrol in te voer"
 
 #. add the rescan button
 #: ../src/libs/import.c:800
-#, fuzzy
 msgid "scan for devices"
-msgstr "Skandeer vir toestelle"
+msgstr "skandeer vir toestelle"
 
 #: ../src/libs/import.c:804
 #, fuzzy
@@ -16396,27 +15898,23 @@ msgid "scan for newly attached devices"
 msgstr "Skandeer vir nuut aangehegte toestelle"
 
 #: ../src/libs/ioporder.c:149
-#, fuzzy
 msgid "current order"
 msgstr "huidige volgorde"
 
 #: ../src/libs/ioporder.c:206
-#, fuzzy
 msgid "v3.0 (default)"
 msgstr "v 3.0 (verstek)"
 
 #: ../src/libs/lib.c:225
-#, fuzzy, c-format
+#, c-format
 msgid "edit `%s'"
-msgstr "Redigeer ' %s '"
+msgstr "redigeer `%s '"
 
 #: ../src/libs/lib.c:530
-#, fuzzy
 msgid "nothing to save"
-msgstr "niks om te red"
+msgstr "niks om te stoor"
 
 #: ../src/libs/live_view.c:138
-#, fuzzy
 msgid "live view"
 msgstr "lewendige aansig"
 
@@ -16456,14 +15954,12 @@ msgid "move focus point out (big steps)"
 msgstr "skuif fokuspunt uit (groot stappe)"
 
 #: ../src/libs/live_view.c:291
-#, fuzzy
 msgid "toggle live view"
-msgstr "Skakel lewendige aansig"
+msgstr "skakel lewendige aansig"
 
 #: ../src/libs/live_view.c:292
-#, fuzzy
 msgid "zoom live view"
-msgstr "Zoem Live View"
+msgstr "zoem 'live' uitsig"
 
 #: ../src/libs/live_view.c:293
 msgid "rotate 90 degrees ccw"
@@ -16474,40 +15970,32 @@ msgid "rotate 90 degrees cw"
 msgstr "draai 90 grade kloksgewys"
 
 #: ../src/libs/live_view.c:295
-#, fuzzy
 msgid "flip live view horizontally"
-msgstr "Flip Live View horisontaal"
+msgstr "flip 'Live View' horisontaal"
 
 #: ../src/libs/live_view.c:321
-#, fuzzy
 msgid "move focus point in (big steps)"
-msgstr "Skuif fokuspunt in (groot stappe)"
+msgstr "skuif fokuspunt in (groot stappe)"
 
 #: ../src/libs/live_view.c:322
-#, fuzzy
 msgid "move focus point in (small steps)"
-msgstr "Skuif fokuspunt in (klein stappe)"
+msgstr "skuif fokuspunt in (klein stappe)"
 
 #: ../src/libs/live_view.c:323
-#, fuzzy
 msgid "move focus point out (small steps)"
-msgstr "Skuif fokuspunt uit (klein stappe)"
+msgstr "skuif fokuspunt uit (klein stappe)"
 
 #: ../src/libs/live_view.c:324
-#, fuzzy
 msgid "move focus point out (big steps)"
-msgstr "Skuif fokuspunt uit (groot stappe)"
+msgstr "skuif fokuspunt uit (groot stappe)"
 
 #: ../src/libs/live_view.c:381
-#, fuzzy
 msgid "overlay"
-msgstr "Oorleg"
+msgstr "oorleg"
 
 #: ../src/libs/live_view.c:383
-#, fuzzy
 msgid "selected image"
-msgstr ""
-"wilt u echt  %d geselecteerde afbeelding fysiek van de schijf verwijderen?"
+msgstr "geselekteerde beeld"
 
 #: ../src/libs/live_view.c:384 ../src/libs/tools/filter.c:90
 msgid "id"
@@ -16519,7 +16007,6 @@ msgid "overlay another image over the live view"
 msgstr "overlay 'n ander beeld oor die lewendige aansig"
 
 #: ../src/libs/live_view.c:390 ../src/libs/metadata_view.c:103
-#, fuzzy
 msgid "image id"
 msgstr "beeld-ID"
 
@@ -16599,7 +16086,6 @@ msgid "mode of the overlay"
 msgstr "modus van die oorleg"
 
 #: ../src/libs/live_view.c:433
-#, fuzzy
 msgid "split line"
 msgstr "gesplete lyn"
 
@@ -16609,19 +16095,16 @@ msgid "only draw part of the overlay"
 msgstr "trek slegs 'n deel van die overlay"
 
 #: ../src/libs/location.c:97
-#, fuzzy
 msgid "find location"
 msgstr "vind plek"
 
 #: ../src/libs/map_settings.c:37
-#, fuzzy
 msgid "map settings"
 msgstr "kaart-instellings"
 
 #: ../src/libs/map_settings.c:94
-#, fuzzy
 msgid "show OSD"
-msgstr "Wys OSD"
+msgstr "wys OSD"
 
 #: ../src/libs/map_settings.c:95
 #, fuzzy
@@ -16629,7 +16112,6 @@ msgid "toggle the visibility of the map overlays"
 msgstr "wissel die sigbaarheid van die kaart oorleggings"
 
 #: ../src/libs/map_settings.c:103
-#, fuzzy
 msgid "map source"
 msgstr "kaart bron"
 
@@ -16665,14 +16147,12 @@ msgid "add brush"
 msgstr "voeg borsel by"
 
 #: ../src/libs/masks.c:1123
-#, fuzzy
 msgid "duplicate this shape"
 msgstr "dupliseer hierdie vorm"
 
 #: ../src/libs/masks.c:1127
-#, fuzzy
 msgid "delete this shape"
-msgstr "Skrap hierdie vorm"
+msgstr "skrap hierdie vorm"
 
 #: ../src/libs/masks.c:1133
 #, fuzzy
@@ -16680,9 +16160,8 @@ msgid "remove from group"
 msgstr "Verwyder van groep"
 
 #: ../src/libs/masks.c:1141
-#, fuzzy
 msgid "group the forms"
-msgstr "Groepeer die vorms"
+msgstr "groepeer die vorms"
 
 #: ../src/libs/masks.c:1150
 #, fuzzy
@@ -16716,24 +16195,20 @@ msgid "cleanup unused shapes"
 msgstr "opruim ongebruikte vorms"
 
 #: ../src/libs/masks.c:1651
-#, fuzzy
 msgid "created shapes"
-msgstr "geskep vorms"
+msgstr "geskepte vorms"
 
 #: ../src/libs/metadata.c:57
-#, fuzzy
 msgid "metadata editor"
-msgstr "metadata Editor"
+msgstr "metadata editor"
 
 #: ../src/libs/metadata.c:73 ../src/libs/metadata.c:109
 msgid "<leave unchanged>"
 msgstr "<leave unchanged>"
 
 #: ../src/libs/metadata.c:437
-#, fuzzy
-#| msgid "settings"
 msgid "metadata settings"
-msgstr "instellings"
+msgstr "metadata-instellings"
 
 #: ../src/libs/metadata.c:445
 msgid "hidden"
@@ -16771,9 +16246,8 @@ msgid "clear"
 msgstr "duidelik"
 
 #: ../src/libs/metadata.c:592
-#, fuzzy
 msgid "metadata list"
-msgstr "vernietig beelde?"
+msgstr "metadata-lys"
 
 #: ../src/libs/metadata.c:693
 #, fuzzy
@@ -16798,14 +16272,12 @@ msgid "remove metadata from selected images"
 msgstr "Verwyder metadata van geselekteerde beelde"
 
 #: ../src/libs/metadata.c:750
-#, fuzzy
 msgid "write metadata for selected images"
 msgstr "skryf metadata vir geselekteerde beelde"
 
 #: ../src/libs/metadata.c:758
-#, fuzzy
 msgid "configure metadata"
-msgstr "herstel van EXIF data"
+msgstr "konfigureer metadata"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:812
@@ -16857,18 +16329,15 @@ msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 
 #: ../src/libs/metadata.c:820
-#, fuzzy
 msgid "all rights reserved"
-msgstr "Alle regte voorbehou"
+msgstr "alle regte voorbehou"
 
 #: ../src/libs/metadata.c:820
-#, fuzzy
 msgid "all rights reserved."
-msgstr "Alle regte voorbehou."
+msgstr "alle regte voorbehou."
 
 #. internal
 #: ../src/libs/metadata_view.c:102
-#, fuzzy
 msgid "filmroll"
 msgstr "filmroll"
 
@@ -16877,22 +16346,18 @@ msgid "group id"
 msgstr "groep id"
 
 #: ../src/libs/metadata_view.c:106
-#, fuzzy
 msgid "version"
-msgstr "Weergawe"
+msgstr "weergawe"
 
 #: ../src/libs/metadata_view.c:107 ../src/libs/tools/filter.c:93
-#, fuzzy
 msgid "full path"
 msgstr "volledige pad"
 
 #: ../src/libs/metadata_view.c:114
-#, fuzzy
 msgid "flags"
-msgstr "Vlae"
+msgstr "merkers"
 
 #: ../src/libs/metadata_view.c:125
-#, fuzzy
 msgid "focus distance"
 msgstr "fokusafstand"
 
@@ -16905,7 +16370,6 @@ msgid "height"
 msgstr "hoogte"
 
 #: ../src/libs/metadata_view.c:131
-#, fuzzy
 msgid "export width"
 msgstr "uitvoer breedte"
 
@@ -16915,7 +16379,6 @@ msgid "export height"
 msgstr "uitvoer hoogte"
 
 #: ../src/libs/metadata_view.c:144
-#, fuzzy
 msgid "longitude"
 msgstr "lengtegraad"
 
@@ -16930,7 +16393,6 @@ msgid "categories"
 msgstr "Kategorieë"
 
 #: ../src/libs/metadata_view.c:163
-#, fuzzy
 msgid "image information"
 msgstr "beeldinligting"
 
@@ -16944,14 +16406,12 @@ msgstr ""
 " %s"
 
 #: ../src/libs/metadata_view.c:339
-#, fuzzy
 msgid "unused"
-msgstr "Ongebruikte"
+msgstr "ongebruik"
 
 #: ../src/libs/metadata_view.c:340
-#, fuzzy
 msgid "unused/deprecated"
-msgstr "ongebruikte/verouderd"
+msgstr "ongebruik/verouderd"
 
 #: ../src/libs/metadata_view.c:341
 msgid "ldr"
@@ -16962,9 +16422,8 @@ msgid "hdr"
 msgstr "hdr"
 
 #: ../src/libs/metadata_view.c:344
-#, fuzzy
 msgid "marked for deletion"
-msgstr "gemerk vir skrapping"
+msgstr "gemerk vir vernietiging"
 
 #: ../src/libs/metadata_view.c:345
 #, fuzzy
@@ -16972,7 +16431,6 @@ msgid "auto-applying presets applied"
 msgstr "Outo-toepassing van presets toegepas"
 
 #: ../src/libs/metadata_view.c:346
-#, fuzzy
 msgid "legacy flag. set for all new images"
 msgstr "verouderde vlag. stel vir alle nuwe beelde"
 
@@ -16985,7 +16443,6 @@ msgid "has .wav"
 msgstr "het. wav"
 
 #: ../src/libs/metadata_view.c:361
-#, fuzzy
 msgid "image rejected"
 msgstr "beeld verwerp"
 
@@ -17001,9 +16458,8 @@ msgid "unknown"
 msgstr "onbekend"
 
 #: ../src/libs/metadata_view.c:447
-#, fuzzy
 msgid "tiff"
-msgstr "TIFF-"
+msgstr "tiff"
 
 #: ../src/libs/metadata_view.c:448
 msgid "png"
@@ -17019,34 +16475,29 @@ msgstr "jpeg 2000"
 
 #: ../src/libs/metadata_view.c:451
 msgid "exr"
-msgstr "openxr"
+msgstr "exr"
 
 #: ../src/libs/metadata_view.c:452
 msgid "rgbe"
 msgstr "rgbe"
 
 #: ../src/libs/metadata_view.c:453
-#, fuzzy
 msgid "pfm"
-msgstr "PFM"
+msgstr "pfm"
 
 #: ../src/libs/metadata_view.c:454
-#, fuzzy
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
 #: ../src/libs/metadata_view.c:455
-#, fuzzy
 msgid "rawspeed"
 msgstr "rawspeed"
 
 #: ../src/libs/metadata_view.c:456
-#, fuzzy
 msgid "netpnm"
 msgstr "netpnm"
 
 #: ../src/libs/metadata_view.c:457
-#, fuzzy
 msgid "avif"
 msgstr "avif"
 
@@ -17061,9 +16512,8 @@ msgid "jump to film roll"
 msgstr "spring na film roll"
 
 #: ../src/libs/modulegroups.c:88
-#, fuzzy
 msgid "modulegroups"
-msgstr "modulegroups"
+msgstr "module groepe"
 
 #: ../src/libs/modulegroups.c:215
 #, fuzzy
@@ -17076,7 +16526,6 @@ msgid "show only your favourite modules (selected in `more modules' below)"
 msgstr "Wys slegs jou gunstelingmodules (gekies in ' meer modules ' hieronder)"
 
 #: ../src/libs/modulegroups.c:228
-#, fuzzy
 msgid "basic group"
 msgstr "basiese groep"
 
@@ -17086,12 +16535,10 @@ msgid "tone group"
 msgstr "tone groep"
 
 #: ../src/libs/modulegroups.c:240
-#, fuzzy
 msgid "color group"
 msgstr "kleur groep"
 
 #: ../src/libs/modulegroups.c:246
-#, fuzzy
 msgid "correction group"
 msgstr "regstelling groep"
 
@@ -17101,9 +16548,8 @@ msgstr "effekte groep"
 
 #. search box
 #: ../src/libs/modulegroups.c:264
-#, fuzzy
 msgid "search module"
-msgstr "Soek module"
+msgstr "soek module"
 
 #: ../src/libs/modulegroups.c:270
 #, fuzzy
@@ -17111,22 +16557,18 @@ msgid "search modules by name or tag"
 msgstr "Soek modules volgens naam of merker"
 
 #: ../src/libs/modulegroups.c:278
-#, fuzzy
 msgid "clear text"
-msgstr "duidelike teks"
+msgstr "verwyder teks"
 
 #: ../src/libs/modulelist.c:60
-#, fuzzy
 msgid "more modules"
 msgstr "meer modules"
 
 #: ../src/libs/modulelist.c:387
-#, fuzzy
 msgid "subset: no module"
 msgstr "substel: geen module"
 
 #: ../src/libs/modulelist.c:388
-#, fuzzy
 msgid "subset: all modules"
 msgstr "substel: alle modules"
 
@@ -17137,7 +16579,6 @@ msgstr "substel: alle modules"
 #. colors
 #. local contrast / sharpness
 #: ../src/libs/modulelist.c:403
-#, fuzzy
 msgid "subset: default modules"
 msgstr "substel: verstekmodules"
 
@@ -17154,9 +16595,8 @@ msgstr "substel: verstekmodules"
 #. sharpness
 #. image reconstruction
 #: ../src/libs/modulelist.c:419
-#, fuzzy
 msgid "workspace: all-purpose"
-msgstr "werkruimte: All-Purpose"
+msgstr "werkruimte: alle doeleindes"
 
 #. default modules
 #. basic raw handling
@@ -17174,9 +16614,8 @@ msgstr "werkruimte: All-Purpose"
 #. colors
 #. HDR reconstruction - tones
 #: ../src/libs/modulelist.c:438
-#, fuzzy
 msgid "workspace: landscape & HDR"
-msgstr "workspace: landskap & HDR"
+msgstr "werkruimte: landskap & HDR"
 
 #. default modules
 #. basic raw handling
@@ -17193,9 +16632,8 @@ msgstr "workspace: landskap & HDR"
 #. workspace addings
 #. perspective and spot removal
 #: ../src/libs/modulelist.c:457
-#, fuzzy
 msgid "workspace: architecture & streets"
-msgstr "workspace: Argitektuur & strate"
+msgstr "werkruimte: argitektuur & strate"
 
 #. default modules
 #. basic raw handling
@@ -17213,9 +16651,8 @@ msgstr "workspace: Argitektuur & strate"
 #. colors
 #. skin retouch
 #: ../src/libs/modulelist.c:477
-#, fuzzy
 msgid "workspace: portrait & beauty"
-msgstr "workspace: portret & Beauty"
+msgstr "werkruimte: portret & Beauty"
 
 #. default modules
 #. basic raw handling
@@ -17232,33 +16669,28 @@ msgstr "workspace: portret & Beauty"
 #. workspace addings
 #. extra denoising methods
 #: ../src/libs/modulelist.c:496
-#, fuzzy
 msgid "workspace: lowlight & high ISO"
-msgstr "werkruimte: lowlight & hoë ISO"
+msgstr "werkruimte: lae lig & hoë ISO"
 
 #: ../src/libs/modulelist.c:504
-#, fuzzy
 msgid "subset: creative modules only"
 msgstr "substel: kreatiewe modules alleenlik"
 
 #: ../src/libs/modulelist.c:514
-#, fuzzy
 msgid "subset: technical modules only"
-msgstr "substel: slegs tegniese modules"
+msgstr "substel: tegniese modules alleenlik"
 
 #: ../src/libs/navigation.c:62
-#, fuzzy
 msgid "navigation"
-msgstr "Navigasie"
+msgstr "navigasie"
 
 #: ../src/libs/navigation.c:503
 msgid "small"
 msgstr "klein"
 
 #: ../src/libs/navigation.c:507
-#, fuzzy
 msgid "fit to screen"
-msgstr "pas by skerm"
+msgstr "pas tot skerm"
 
 #: ../src/libs/navigation.c:511
 msgid "50%"
@@ -17306,14 +16738,14 @@ msgid "cannot open printer profile `%s'"
 msgstr "kan nie die Drukkerprofiel ' %s ' open nie"
 
 #: ../src/libs/print_settings.c:290
-#, fuzzy, c-format
+#, c-format
 msgid "error getting output profile for image %d"
-msgstr "kon nie afvoerprofiel vir beeld% d kry nie"
+msgstr "kon nie afvoerprofiel vir beeld %d kry nie"
 
 #: ../src/libs/print_settings.c:298
-#, fuzzy, c-format
+#, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "kan nie Drukkerprofiel ' %s ' toepas nie"
+msgstr "kan nie drukkerprofiel `%s ' toepas nie"
 
 #: ../src/libs/print_settings.c:318
 #, fuzzy
@@ -17321,17 +16753,14 @@ msgid "failed to create temporary pdf for printing"
 msgstr "kon nie tydelike PDF skep vir drukwerk nie"
 
 #: ../src/libs/print_settings.c:398
-#, fuzzy
 msgid "cannot print until a picture is selected"
-msgstr "kan nie druk totdat 'n prent gekies is nie"
+msgstr "kan nie druk totdat 'n beeld gekies is nie"
 
 #: ../src/libs/print_settings.c:403
-#, fuzzy
 msgid "cannot print until a printer is selected"
 msgstr "kan nie druk totdat 'n drukker gekies is nie"
 
 #: ../src/libs/print_settings.c:408
-#, fuzzy
 msgid "cannot print until a paper is selected"
 msgstr "kan nie druk totdat 'n papier gekies is nie"
 
@@ -17360,14 +16789,13 @@ msgid "color management in printer driver"
 msgstr "kleurbestuur in drukkerdrywer"
 
 #: ../src/libs/print_settings.c:1235
-#, fuzzy, c-format
+#, c-format
 msgid "printer ICC profiles in %s or %s"
-msgstr "drukkericc-profiele in %s of %s"
+msgstr "drukker ICC-profiele in %s of %s"
 
 #: ../src/libs/print_settings.c:1257
-#, fuzzy
 msgid "black point compensation"
-msgstr "swart punt vergoeding"
+msgstr "swart punt aanpassing"
 
 #: ../src/libs/print_settings.c:1265
 #, fuzzy
@@ -17389,7 +16817,6 @@ msgid " x "
 msgstr " x "
 
 #: ../src/libs/print_settings.c:1320
-#, fuzzy
 msgid "scale factor"
 msgstr "skaal faktor"
 
@@ -17413,14 +16840,12 @@ msgstr "boonste kantlyn"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1343
-#, fuzzy
 msgid "left margin"
 msgstr "linkerkantlyn"
 
 #: ../src/libs/print_settings.c:1346
-#, fuzzy
 msgid "lock"
-msgstr "Sluit"
+msgstr "sluit"
 
 #: ../src/libs/print_settings.c:1347
 #, fuzzy
@@ -17429,13 +16854,11 @@ msgstr "Verander alle kantlyne eenvormig"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1351
-#, fuzzy
 msgid "right margin"
 msgstr "regterkantlyn"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1355
-#, fuzzy
 msgid "bottom margin"
 msgstr "onderste marge"
 
@@ -17450,9 +16873,8 @@ msgid "print"
 msgstr "druk"
 
 #: ../src/libs/print_settings.c:1536
-#, fuzzy
 msgid "print with current settings"
-msgstr "Druk met huidige instellings"
+msgstr "druk met huidige instellings"
 
 #: ../src/libs/print_settings.c:2003
 msgctxt "accel"
@@ -17479,9 +16901,8 @@ msgstr " of "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/recentcollect.c:129
-#, fuzzy
 msgid " but not "
-msgstr "maar nie"
+msgstr " maar nie "
 
 #: ../src/libs/select.c:132
 msgid "select all images in current collection"
@@ -17497,7 +16918,6 @@ msgid "clear selection"
 msgstr "vee seleksie uit"
 
 #: ../src/libs/select.c:144
-#, fuzzy
 msgid "invert selection"
 msgstr "keer seleksie om"
 
@@ -17511,9 +16931,8 @@ msgstr ""
 "in die huidige versameling"
 
 #: ../src/libs/select.c:151
-#, fuzzy
 msgid "select film roll"
-msgstr "Kies filmrol"
+msgstr "kies filmrol"
 
 #: ../src/libs/select.c:154
 #, fuzzy
@@ -17525,9 +16944,8 @@ msgstr ""
 "filmrol as die geselekteerde beelde"
 
 #: ../src/libs/select.c:159
-#, fuzzy
 msgid "select untouched"
-msgstr "Kies onaangeraak"
+msgstr "kies onaangeraak"
 
 #: ../src/libs/select.c:162
 #, fuzzy
@@ -17564,17 +16982,14 @@ msgid "select untouched"
 msgstr "kies onaangeraak"
 
 #: ../src/libs/session.c:47
-#, fuzzy
 msgid "session"
-msgstr "nuwe sessie geïnisieer ' %s '"
+msgstr "sessie"
 
 #: ../src/libs/session.c:109
-#, fuzzy
 msgid "create"
-msgstr "skep HDR..."
+msgstr "skep"
 
 #: ../src/libs/snapshots.c:84
-#, fuzzy
 msgid "snapshots"
 msgstr "snapshots"
 
@@ -17595,7 +17010,6 @@ msgstr "N"
 
 #. create take snapshot button
 #: ../src/libs/snapshots.c:382
-#, fuzzy
 msgid "take snapshot"
 msgstr "neem momentopname"
 
@@ -17609,9 +17023,8 @@ msgstr ""
 "ander stadium van ontwikkeling"
 
 #: ../src/libs/styles.c:52
-#, fuzzy
 msgid "styles"
-msgstr "style/pas %s toe"
+msgstr "style"
 
 #: ../src/libs/styles.c:73
 msgctxt "accel"
@@ -17637,26 +17050,22 @@ msgstr[0] "verwyder styl?"
 msgstr[1] "verwyder style?"
 
 #: ../src/libs/styles.c:392
-#, fuzzy
 msgid "select style"
-msgstr "Kies styl"
+msgstr "kies styl"
 
 #: ../src/libs/styles.c:405
-#, fuzzy
 msgid "darktable style files"
-msgstr "raaisel styl lêers"
+msgstr "darktable styl lêers"
 
 #: ../src/libs/styles.c:556
-#, fuzzy
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
 msgstr ""
 "beskikbare style,\n"
-"DoubleClick om aansoek te doen"
+"dubbelklik om aansoek te doen"
 
 #: ../src/libs/styles.c:563
-#, fuzzy
 msgid "filter style names"
 msgstr "filter styl name"
 
@@ -17682,9 +17091,8 @@ msgstr "Skep style uit geskiedenisstapel van geselekteerde beelde"
 
 #. edit
 #: ../src/libs/styles.c:608
-#, fuzzy
 msgid "edit..."
-msgstr "Redigeer..."
+msgstr "redigeer..."
 
 #: ../src/libs/styles.c:611
 #, fuzzy
@@ -17718,9 +17126,8 @@ msgid "apply the selected styles in list above to selected images"
 msgstr "Pas die geselekteerde style in lys hierbo toe op geselekteerde beelde"
 
 #: ../src/libs/tagging.c:95
-#, fuzzy
 msgid "tagging"
-msgstr "tagging"
+msgstr "merk-aanhegging"
 
 #: ../src/libs/tagging.c:120
 msgctxt "accel"
@@ -17752,20 +17159,18 @@ msgid "attach tag to all"
 msgstr "heg merker aan alles"
 
 #: ../src/libs/tagging.c:1185 ../src/libs/tagging.c:2016
-#, fuzzy
 msgid "detach tag"
 msgstr "maak merker los"
 
 #: ../src/libs/tagging.c:1320
-#, fuzzy
 msgid "delete tag?"
-msgstr "Skrap merker?"
+msgstr "skrap merker?"
 
 #: ../src/libs/tagging.c:1327 ../src/libs/tagging.c:1414
 #: ../src/libs/tagging.c:1620
-#, fuzzy, c-format
+#, c-format
 msgid "tag: %s "
-msgstr "merker: %s"
+msgstr "merker: %s "
 
 #: ../src/libs/tagging.c:1334
 #, c-format
@@ -17783,14 +17188,13 @@ msgstr[1] ""
 "%d beelde word hierdie merker toegeken!"
 
 #: ../src/libs/tagging.c:1367
-#, fuzzy, c-format
+#, c-format
 msgid "tag %s removed"
 msgstr "merker %s is verwyder"
 
 #: ../src/libs/tagging.c:1407 ../src/libs/tagging.c:2032
-#, fuzzy
 msgid "delete path"
-msgstr "vernietig beelde?"
+msgstr "vernietig pad"
 
 #: ../src/libs/tagging.c:1421
 #, c-format
@@ -17817,9 +17221,8 @@ msgid "create tag"
 msgstr "skep styl"
 
 #: ../src/libs/tagging.c:1498 ../src/libs/tagging.c:1640
-#, fuzzy
 msgid "name: "
-msgstr "naam"
+msgstr "naam: "
 
 #: ../src/libs/tagging.c:1510
 #, fuzzy, c-format
@@ -17831,15 +17234,13 @@ msgid "category"
 msgstr "kategorie"
 
 #: ../src/libs/tagging.c:1525 ../src/libs/tagging.c:1664
-#, fuzzy
 msgid "synonyms: "
-msgstr "sinonieme"
+msgstr "sinonieme: "
 
 #: ../src/libs/tagging.c:1542 ../src/libs/tagging.c:1686
 #: ../src/libs/tagging.c:1872
-#, fuzzy
 msgid "empty tag is not allowed, aborting"
-msgstr "leë merker word nie toegelaat nie,"
+msgstr "leë merker word nie toegelaat nie, val terug"
 
 #: ../src/libs/tagging.c:1553
 #, fuzzy
@@ -17847,16 +17248,15 @@ msgid "tag name already exists. aborting."
 msgstr "merkernaam bestaan reeds. staak."
 
 #: ../src/libs/tagging.c:1613
-#, fuzzy
 msgid "edit tag"
-msgstr "Redigeer merker"
+msgstr "redigeer merker"
 
 #: ../src/libs/tagging.c:1627 ../src/libs/tagging.c:1845
-#, fuzzy, c-format
+#, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] "<u>% d</u> merker sal bygewerk word."
-msgstr[1] "<u>% d</u> merkers sal bygewerk word."
+msgstr[0] "<u>%d</u> merker sal bygewerk word."
+msgstr[1] "<u>%d</u> merkers sal bygewerk word."
 
 #: ../src/libs/tagging.c:1688
 #, fuzzy
@@ -17873,14 +17273,13 @@ msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "ten minste een nuwe merkernaam ( %s) bestaan reeds,"
 
 #: ../src/libs/tagging.c:1831
-#, fuzzy
 msgid "rename path?"
-msgstr "Hernoem pad?"
+msgstr "hernoem pad?"
 
 #: ../src/libs/tagging.c:1838
-#, fuzzy, c-format
+#, c-format
 msgid "selected path: %s "
-msgstr "geselekteerde pad: %s"
+msgstr "geselekteerde pad: %s "
 
 #: ../src/libs/tagging.c:1874
 #, fuzzy
@@ -17897,9 +17296,8 @@ msgid "attach tag"
 msgstr "heg merker aan"
 
 #: ../src/libs/tagging.c:2027
-#, fuzzy
 msgid "delete tag"
-msgstr "vernietig beelde?"
+msgstr "skrap merker"
 
 #: ../src/libs/tagging.c:2038
 #, fuzzy
@@ -17907,14 +17305,12 @@ msgid "create tag..."
 msgstr "skep styl"
 
 #: ../src/libs/tagging.c:2042
-#, fuzzy
 msgid "edit tag..."
-msgstr "Redigeer merker ..."
+msgstr "redigeer merker..."
 
 #: ../src/libs/tagging.c:2051
-#, fuzzy
 msgid "rename path..."
-msgstr "Hernoem pad ..."
+msgstr "hernoem pad ..."
 
 #: ../src/libs/tagging.c:2058
 #, fuzzy
@@ -17922,34 +17318,28 @@ msgid "copy to entry"
 msgstr "Kopieer na inskrywing"
 
 #: ../src/libs/tagging.c:2075
-#, fuzzy
 msgid "go to tag collection"
-msgstr "gaan na tag-versameling"
+msgstr "gaan na merker-versameling"
 
 #: ../src/libs/tagging.c:2081
-#, fuzzy
 msgid "go back to work"
 msgstr "gaan terug na werk"
 
 #: ../src/libs/tagging.c:2198
-#, fuzzy
 msgid "(private)"
-msgstr "persoonlik"
+msgstr "(persoonlik)"
 
 #: ../src/libs/tagging.c:2224
-#, fuzzy
 msgid "Select a keyword file"
-msgstr "Kies 'n navraag lêer"
+msgstr "Kies 'n kernwoord lêer"
 
 #: ../src/libs/tagging.c:2227
-#, fuzzy
 msgid "_import"
-msgstr "invoer"
+msgstr "_invoer"
 
 #: ../src/libs/tagging.c:2241
-#, fuzzy
 msgid "error importing tags"
-msgstr "importeer %d afbeelding"
+msgstr "kon nie merkers invoer nie"
 
 #: ../src/libs/tagging.c:2243
 #, c-format
@@ -17962,14 +17352,12 @@ msgid "Select file to export to"
 msgstr "Kies lêer om uit te voer na"
 
 #: ../src/libs/tagging.c:2268
-#, fuzzy
 msgid "_export"
-msgstr "uitvoering"
+msgstr "_ voer uit"
 
 #: ../src/libs/tagging.c:2283
-#, fuzzy
 msgid "error exporting tags"
-msgstr "uitvoering van %d beelde"
+msgstr "kon nie merkers uitvoer nie"
 
 #: ../src/libs/tagging.c:2285
 #, c-format
@@ -17999,9 +17387,8 @@ msgid "attach tag to all selected images"
 msgstr "Heg merker aan alle geselekteerde beelde"
 
 #: ../src/libs/tagging.c:2685
-#, fuzzy
 msgid "detach"
-msgstr "los alles af"
+msgstr "maak los"
 
 #: ../src/libs/tagging.c:2688
 #, fuzzy
@@ -18009,9 +17396,8 @@ msgid "detach tag from all selected images"
 msgstr "ontkoppel merker van alle geselekteerde beelde"
 
 #: ../src/libs/tagging.c:2695
-#, fuzzy
 msgid "toggle list with / without hierarchy"
-msgstr "Skakel lys met/sonder hiërargie"
+msgstr "skakel lys met/sonder hiërargie"
 
 #: ../src/libs/tagging.c:2703
 #, fuzzy
@@ -18075,14 +17461,12 @@ msgid "export all tags to a Lightroom keyword file"
 msgstr "Voer alle merkers uit na 'n Lightroom sleutelwoord lêer"
 
 #: ../src/libs/tagging.c:2833
-#, fuzzy
 msgid "toggle list / tree view"
-msgstr "skakellys/boom-aansig"
+msgstr "skakel lys/boom-aansig"
 
 #: ../src/libs/tagging.c:2841
-#, fuzzy
 msgid "toggle list with / without suggestion"
-msgstr "Skakel lys met/sonder voorstel"
+msgstr "skakel lys met/sonder voorstel"
 
 #: ../src/libs/tagging.c:2963
 #, fuzzy
@@ -18094,7 +17478,6 @@ msgstr ""
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
-#, fuzzy
 msgid "battery indicator"
 msgstr "battery aanwyser"
 
@@ -18132,12 +17515,11 @@ msgstr ""
 "van geselekteerde beelde"
 
 #: ../src/libs/tools/colorlabels.c:75
-#, fuzzy
 msgid ""
 "toggle blue label\n"
 "of selected images"
 msgstr ""
-"Skakel blou etiket\n"
+"skakel blou merker\n"
 "van geselekteerde beelde"
 
 #: ../src/libs/tools/colorlabels.c:76
@@ -18169,39 +17551,33 @@ msgid "organize and develop images from digital cameras"
 msgstr "Organiseer en ontwikkel beelde van digitale kameras"
 
 #: ../src/libs/tools/darktable.c:271
-#, fuzzy
 msgid "translator-credits"
 msgstr "vertaler-krediete"
 
 #: ../src/libs/tools/filmstrip.c:53
-#, fuzzy
 msgid "filmstrip"
-msgstr "skakel filmstrip en tydlyn"
+msgstr "filmstrip"
 
 #: ../src/libs/tools/filter.c:88
 msgid "time"
 msgstr "keer"
 
 #: ../src/libs/tools/filter.c:94
-#, fuzzy
 msgid "custom sort"
 msgstr "persoonlike sorteer"
 
 #: ../src/libs/tools/filter.c:98
-#, fuzzy
 msgid "shuffle"
-msgstr "Skommel"
+msgstr "skommel"
 
 #: ../src/libs/tools/filter.c:115
-#, fuzzy
 msgid "filter"
-msgstr "gemiddeld begeleide filter"
+msgstr "filter"
 
 #. list label
 #: ../src/libs/tools/filter.c:157
-#, fuzzy
 msgid "view"
-msgstr "wys rolballe vir sentrale aansig"
+msgstr "bekyk"
 
 #: ../src/libs/tools/filter.c:176
 #, fuzzy
@@ -18209,9 +17585,8 @@ msgid "unstarred only"
 msgstr "slegs onsterre"
 
 #: ../src/libs/tools/filter.c:182
-#, fuzzy
 msgid "rejected only"
-msgstr "slegs verwerp"
+msgstr "verwerp alleenlik"
 
 #: ../src/libs/tools/filter.c:183
 #, fuzzy
@@ -18220,23 +17595,19 @@ msgstr "alle behalwe verwerp"
 
 #. sort by label
 #: ../src/libs/tools/filter.c:191
-#, fuzzy
 msgid "sort by"
-msgstr "Rangskik volgens"
+msgstr "rangskik volgens"
 
 #: ../src/libs/tools/global_toolbox.c:58
-#, fuzzy
 msgid "preferences"
-msgstr "Voorkeure"
+msgstr "voorkeure"
 
 #. we write the label with the size categorie
 #: ../src/libs/tools/global_toolbox.c:221
-#, fuzzy
 msgid "thumbnails overlays for size"
-msgstr "posseëlprentjies oorlê vir grootte"
+msgstr "posseëlprentjies oorleg vir grootte"
 
 #: ../src/libs/tools/global_toolbox.c:223
-#, fuzzy
 msgid "px"
 msgstr "px"
 
@@ -18275,9 +17646,8 @@ msgstr "nie beskikbaar nie"
 
 #: ../src/libs/tools/global_toolbox.c:384
 #: ../src/libs/tools/global_toolbox.c:522
-#, fuzzy
 msgid "expand grouped images"
-msgstr "Vou gegroepeer-beelde uit"
+msgstr "ontvou gegroepeer-beelde"
 
 #: ../src/libs/tools/global_toolbox.c:386
 #: ../src/libs/tools/global_toolbox.c:524
@@ -18304,12 +17674,12 @@ msgstr "geen oorleggings nie"
 #: ../src/libs/tools/global_toolbox.c:419
 #, fuzzy
 msgid "overlays on mouse hover"
-msgstr "oorlê op die muis hover"
+msgstr "posseëlprentjie-oorleggings/uitgebreide oorleggings op muis hover"
 
 #: ../src/libs/tools/global_toolbox.c:423
 #, fuzzy
 msgid "extended overlays on mouse hover"
-msgstr "uitgebreide oorleggings op die muis hover"
+msgstr "posseëlprentjie-oorleggings/uitgebreide oorleggings op muis hover"
 
 #: ../src/libs/tools/global_toolbox.c:426
 #: ../src/libs/tools/global_toolbox.c:463
@@ -18327,7 +17697,8 @@ msgstr "aktiveer uitgebreide posseëlprentjie-oorleg"
 #: ../src/libs/tools/global_toolbox.c:434
 #, fuzzy
 msgid "permanent overlays extended on mouse hover"
-msgstr "permanente oorleggings uitgebrei op muis hover"
+msgstr ""
+"posseëlprentjie-oorleggings/permanente oorleggings uitgebrei op muis hover"
 
 #: ../src/libs/tools/global_toolbox.c:439
 #: ../src/libs/tools/global_toolbox.c:472
@@ -18337,11 +17708,8 @@ msgstr "oorleggings blok op muis hover tydens (s)"
 
 #: ../src/libs/tools/global_toolbox.c:446
 #: ../src/libs/tools/global_toolbox.c:479
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "show both"
 msgid "show tooltip"
-msgstr "wys albei"
+msgstr "wys nutspunt"
 
 #: ../src/libs/tools/global_toolbox.c:490
 #, fuzzy
@@ -18355,9 +17723,8 @@ msgid "show global preferences"
 msgstr "Wys globale voorkeure"
 
 #: ../src/libs/tools/global_toolbox.c:595
-#, fuzzy
 msgid "do you want to access https://darktable.gitlab.io/doc/?"
-msgstr "Wil jy toegang tot https://darktable.gitlab.io/doc/?"
+msgstr "wil jy https://darktable.gitlab.io/doc/ betree?"
 
 #: ../src/libs/tools/global_toolbox.c:600
 #, fuzzy
@@ -18365,19 +17732,16 @@ msgid "access the online usermanual?"
 msgstr "toegang tot die Online usermanual?"
 
 #: ../src/libs/tools/global_toolbox.c:643
-#, fuzzy
 msgid "help url opened in web browser"
-msgstr "hulp URL geopen in die webblaaier"
+msgstr "hulp URL oopgemaak in die webblaaier"
 
 #: ../src/libs/tools/global_toolbox.c:647
-#, fuzzy
 msgid "error while opening help url in web browser"
-msgstr "Fout tydens die opening van hulp-URL in die webblaaier"
+msgstr "fout tydens die opening van hulp url in die webblaaier"
 
 #: ../src/libs/tools/global_toolbox.c:658
-#, fuzzy
 msgid "there is no help available for this element"
-msgstr "nie beskikbaar in hierdie sisteem nie"
+msgstr "daar is nie hulp beskikbaar vir hierdie element nie"
 
 #: ../src/libs/tools/global_toolbox.c:700
 msgctxt "accel"
@@ -18426,24 +17790,20 @@ msgid "thumbnail overlays/overlays block on mouse hover"
 msgstr "posseëlprentjie-oorleggings/oorleggings blok op muis hover"
 
 #: ../src/libs/tools/hinter.c:42
-#, fuzzy
 msgid "hinter"
-msgstr "hinter"
+msgstr "'hinter'"
 
 #: ../src/libs/tools/image_infos.c:40
-#, fuzzy
 msgid "image infos"
 msgstr "beeld Infos"
 
 #: ../src/libs/tools/lighttable.c:131
-#, fuzzy
 msgid "zoomable light table"
-msgstr "zoomable lig tafel"
+msgstr "zoembare lig tafel"
 
 #: ../src/libs/tools/lighttable.c:132
-#, fuzzy
 msgid "file manager"
-msgstr "lêer Bestuurder"
+msgstr "lêer bestuurder"
 
 #: ../src/libs/tools/lighttable.c:133
 #, fuzzy
@@ -18463,22 +17823,21 @@ msgstr "dinamiese zoem"
 #: ../src/libs/tools/lighttable.c:202
 msgctxt "accel"
 msgid "toggle culling mode"
-msgstr "wissel die uitdunning mode"
+msgstr "skakel die uitdunning mode"
 
 #: ../src/libs/tools/lighttable.c:203
 msgctxt "accel"
 msgid "toggle culling dynamic mode"
-msgstr "wissel uitdunning dinamiese modus"
+msgstr "skakel uitdunning dinamiese modus"
 
 #: ../src/libs/tools/lighttable.c:204
 msgctxt "accel"
 msgid "toggle culling zoom mode"
-msgstr "wissel die uitdunning zoem modus"
+msgstr "skakel die uitdunning zoem modus"
 
 #: ../src/libs/tools/module_toolbox.c:46
-#, fuzzy
 msgid "module toolbox"
-msgstr "module Toolbox"
+msgstr "module toolbox"
 
 #: ../src/libs/tools/timeline.c:111
 msgid "timeline"
@@ -18495,9 +17854,8 @@ msgid "stop selection"
 msgstr "eindig keuse"
 
 #: ../src/libs/tools/viewswitcher.c:57
-#, fuzzy
 msgid "viewswitcher"
-msgstr "sensieskakeler"
+msgstr "aansigverruiler"
 
 #: ../src/libs/tools/view_toolbox.c:46
 msgid "view toolbox"
@@ -18509,9 +17867,8 @@ msgid "reset lib parameters"
 msgstr "herstel 'lib' parameters"
 
 #: ../src/lua/preferences.c:644
-#, fuzzy
 msgid "select file"
-msgstr "Kies lêer"
+msgstr "kies lêer"
 
 #: ../src/lua/preferences.c:724
 #, fuzzy, c-format
@@ -18529,10 +17886,10 @@ msgid "loading image"
 msgstr "verskuif %d beeld"
 
 #: ../src/views/darkroom.c:656
-#, fuzzy
 msgid "gamut check"
-msgstr "spektrum tjek"
+msgstr "spektrum ondersoek"
 
+# need a word for proof
 #: ../src/views/darkroom.c:656
 #, fuzzy
 msgid "soft proof"
@@ -18544,9 +17901,8 @@ msgid "no image to open !"
 msgstr "geen beeld om oop te maak nie!"
 
 #: ../src/views/darkroom.c:1192
-#, fuzzy
 msgid "no userdefined presets for favorite modules were found"
-msgstr "Geen userdefined presets vir gunsteling modules is gevind"
+msgstr "geen verbruiker 'presets' vir gunsteling modules is gevind"
 
 #: ../src/views/darkroom.c:1197
 #, fuzzy, c-format
@@ -18554,9 +17910,8 @@ msgid "applied style `%s' on current image"
 msgstr "Toegepaste styl ' %s ' op huidige beeld"
 
 #: ../src/views/darkroom.c:1313
-#, fuzzy
 msgid "no styles have been created yet"
-msgstr "Geen style is nog geskep nie"
+msgstr "daar is not geen style geskep nie"
 
 #: ../src/views/darkroom.c:2052
 #, fuzzy
@@ -18569,14 +17924,12 @@ msgid "quick access for applying any of your styles"
 msgstr "vinnige toegang vir die toepassing van enige van jou style"
 
 #: ../src/views/darkroom.c:2074
-#, fuzzy
 msgid "display a second darkroom image window"
-msgstr "Wys 'n tweede"
+msgstr "vertoon 'n tweede donker kamer beeld venster"
 
 #: ../src/views/darkroom.c:2083
-#, fuzzy
 msgid "toggle ISO 12646 color assessment conditions"
-msgstr "Skakel ISO 12646 kleur assessering voorwaardes"
+msgstr "skakel ISO 12646 kleur assessering voorwaardes"
 
 #: ../src/views/darkroom.c:2093
 #, fuzzy
@@ -18588,12 +17941,10 @@ msgstr ""
 "regs kliek vir opsies"
 
 #: ../src/views/darkroom.c:2117
-#, fuzzy
 msgid "mark with CFA color"
 msgstr "merk met CFA kleur"
 
 #: ../src/views/darkroom.c:2118
-#, fuzzy
 msgid "mark with solid color"
 msgstr "merk met soliede kleur"
 
@@ -18664,9 +18015,8 @@ msgid "red & blue"
 msgstr "rooi & blou"
 
 #: ../src/views/darkroom.c:2183
-#, fuzzy
 msgid "purple & green"
-msgstr "pers & Green"
+msgstr "pers & groen"
 
 #: ../src/views/darkroom.c:2185
 #, fuzzy
@@ -18687,9 +18037,8 @@ msgid "upper threshold"
 msgstr "boonste drempel"
 
 #: ../src/views/darkroom.c:2204
-#, fuzzy
 msgid "threshold of what shall be considered overexposed"
-msgstr "drempel van wat beskou sal word as oorblootgestelde"
+msgstr "drempel van wat beskou sal word as oorblootgestel"
 
 #: ../src/views/darkroom.c:2215
 #, fuzzy
@@ -18701,18 +18050,16 @@ msgstr ""
 "regs kliek vir profiel opsies"
 
 #: ../src/views/darkroom.c:2229
-#, fuzzy
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
-"Verwissel van spektrum-kontrole\n"
+"skakel spektrum-kontrole\n"
 "regs kliek vir profiel opsies"
 
 #: ../src/views/darkroom.c:2257 ../src/views/lighttable.c:1390
-#, fuzzy
 msgid "display intent"
-msgstr "Wys bedoeling"
+msgstr "wys bedoeling"
 
 #: ../src/views/darkroom.c:2265 ../src/views/lighttable.c:1398
 #, fuzzy
@@ -18749,7 +18096,7 @@ msgid "softproof ICC profiles in %s or %s"
 msgstr "softproof ICC-profiele in %s of %s"
 
 #: ../src/views/darkroom.c:2350
-#, fuzzy, c-format
+#, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "histogram-en kleurkieser-ICC-profiele in %s of %s"
 
@@ -18763,14 +18110,12 @@ msgstr ""
 "roteer Guides ens)"
 
 #: ../src/views/darkroom.c:2404
-#, fuzzy
 msgid "overlay color"
 msgstr "overlay kleur"
 
 #: ../src/views/darkroom.c:2412
-#, fuzzy
 msgid "set overlay color"
-msgstr "kies alles"
+msgstr "stel oorlegkleur"
 
 #: ../src/views/darkroom.c:3584
 #, fuzzy
@@ -18939,14 +18284,12 @@ msgid "change keyboard shortcut slider precision"
 msgstr "verander sleutelbordkortpad-glyer-presisie"
 
 #: ../src/views/darkroom.c:3809
-#, fuzzy
 msgid "switch to lighttable"
-msgstr "Skakel oor na lighttable"
+msgstr "skakel oor na lighttable"
 
 #: ../src/views/darkroom.c:3814 ../src/views/lighttable.c:1053
-#, fuzzy
 msgid "zoom in the image"
-msgstr "zoem huidige beeld"
+msgstr "zoem in die beeld"
 
 #: ../src/views/darkroom.c:3820
 #, fuzzy
@@ -18954,9 +18297,8 @@ msgid "unbounded zoom in the image"
 msgstr "onbegrens Zoem in die beeld"
 
 #: ../src/views/darkroom.c:3825
-#, fuzzy
 msgid "zoom to 100% 200% and back"
-msgstr "Zoem na 100% 200% en terug"
+msgstr "zoem na 100% 200% en terug"
 
 #: ../src/views/darkroom.c:3831
 #, fuzzy
@@ -18974,9 +18316,8 @@ msgid "darktable - darkroom preview"
 msgstr "darktable - donkerkamer voorskou"
 
 #: ../src/views/knight.c:334
-#, fuzzy
 msgid "good knight"
-msgstr "goeie Ridder"
+msgstr "goeie ridder"
 
 #: ../src/views/lighttable.c:428 ../src/views/slideshow.c:376
 msgid "there are no images in this collection"
@@ -18988,9 +18329,8 @@ msgid "if you have not imported any images yet"
 msgstr "As jy nog geen beelde ingevoer het nie"
 
 #: ../src/views/lighttable.c:436
-#, fuzzy
 msgid "you can do so in the import module"
-msgstr "u kan dit in die invoermodule doen"
+msgstr "jy kan dit in die invoermodule doen"
 
 #: ../src/views/lighttable.c:444
 #, fuzzy
@@ -19151,14 +18491,13 @@ msgid "open image in darkroom"
 msgstr "maak die beeld oop in donkerkamer"
 
 #: ../src/views/lighttable.c:1047
-#, fuzzy
 msgid "switch to next/previous image"
-msgstr "Skakel oor na volgende/vorige beeld"
+msgstr "skakel oor na volgende/vorige beeld"
 
 #: ../src/views/lighttable.c:1059 ../src/views/lighttable.c:1117
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "zoom to 100% and back"
-msgstr "Zoem na 100% en terug"
+msgstr "zoem na 100% en terug"
 
 #: ../src/views/lighttable.c:1066 ../src/views/lighttable.c:1088
 msgid "scroll the collection"
@@ -19193,9 +18532,9 @@ msgid "pan inside current image"
 msgstr "pan binne huidige beeld"
 
 #: ../src/views/lighttable.c:1124
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "zoom current image to 100% and back"
-msgstr "Zoem huidige beeld na 100% en terug"
+msgstr "zoem huidige beeld na 100% en terug"
 
 #: ../src/views/lighttable.c:1131
 msgid "zoom the main view"
