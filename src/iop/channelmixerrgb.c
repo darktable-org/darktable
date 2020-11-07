@@ -103,6 +103,8 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   int auto_detect_illuminant;
   float xy[2];
   dt_ai_wb_model_t wb_model;
+  float XYZ[4];
+  dt_pthread_mutex_t lock;
 } dt_iop_channelmixer_rgb_gui_data_t;
 
 typedef struct dt_iop_channelmixer_rbg_data_t
@@ -773,43 +775,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     if(g->auto_detect_illuminant && !darktable.gui->reset)
     {
-      if(piece->pipe->type != DT_DEV_PIXELPIPE_FULL)
+      if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
       {
         // detection on full image only
-        dt_simd_memcpy(in, out, roi_in->width * roi_in->height * ch);
-        return;
+        dt_pthread_mutex_lock(&g->lock);
+        auto_detect_WB(in, g->wb_model, roi_in->width, roi_in->height, ch, RGB_to_XYZ, g->XYZ);
+        dt_pthread_mutex_unlock(&g->lock);
       }
 
-      float XYZ[4] = { 0.f };
-      auto_detect_WB(in, g->wb_model, roi_in->width, roi_in->height, ch, RGB_to_XYZ, XYZ);
-
-      ++darktable.gui->reset;
-      dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-      p->x = XYZ[0];
-      p->y = XYZ[1];
-
-      check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, &p->adaptation);
-
-      dt_bauhaus_slider_set(g->temperature, p->temperature);
-      dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
-      dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
-
-      float xyY[3] = { p->x, p->y, 1.f };
-      float Lch[3];
-      dt_xyY_to_Lch(xyY, Lch);
-      dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-      dt_bauhaus_slider_set(g->illum_y, Lch[1]);
-
-      update_illuminants(self);
-      update_approx_cct(self);
-      update_illuminant_color(self);
-      g->auto_detect_illuminant = FALSE;
-
-      --darktable.gui->reset;
+      // passthrough pixels
+      dt_simd_memcpy(in, out, roi_in->width * roi_in->height * ch);
 
       dt_control_log(_("auto-detection of white balance completed"));
-
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
       return;
     }
   }
@@ -862,9 +839,46 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
     }
   }
-
-
 }
+
+static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+
+  if(g == NULL) return;
+  if(!g->auto_detect_illuminant) return;
+
+  dt_pthread_mutex_lock(&g->lock);
+  p->x = g->XYZ[0];
+  p->y = g->XYZ[1];
+  dt_pthread_mutex_unlock(&g->lock);
+
+  check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, &p->adaptation);
+
+  ++darktable.gui->reset;
+
+  dt_bauhaus_slider_set(g->temperature, p->temperature);
+  dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
+  dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
+
+  float xyY[3] = { p->x, p->y, 1.f };
+  float Lch[3];
+  dt_xyY_to_Lch(xyY, Lch);
+  dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
+  dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+
+  update_illuminants(self);
+  update_approx_cct(self);
+  update_illuminant_color(self);
+  g->auto_detect_illuminant = FALSE;
+
+  --darktable.gui->reset;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -2162,6 +2176,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
 
   g->auto_detect_illuminant = FALSE;
+  g->XYZ[0] = NAN;
+  dt_pthread_mutex_init(&g->lock, NULL);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+                            G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   // Init GTK notebook
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -2459,6 +2478,12 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  dt_pthread_mutex_destroy(&g->lock);
+
   free(self->gui_data);
   self->gui_data = NULL;
 }
