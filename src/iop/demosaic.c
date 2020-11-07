@@ -2430,7 +2430,7 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
 // The original dcraw based code was simlpler but had much stronger color artefacts in the border region. 
 #define FCRCD(row, col) (cfarray[(((row) & 1)<<1) | ((col) & 1)])
                                                                                       \
-#define RCD_TILESIZE 256
+#define RCD_TILESIZE 192
 #define RCD_BORDER 6 // don't use the outermost lines/colums as there are artefacts in 5 from any border
 
 static void rcd_border_interpolate(float *out, const float *cfa, const uint32_t *filter, const uint32_t width, const uint32_t height)
@@ -2638,7 +2638,7 @@ static void rcd_border_interpolate(float *out, const float *cfa, const uint32_t 
 * That code has been changed to be dt usable, tiling is likely as rt code
 */
 
-static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_out,
+static void rcd_demosaic(float *out, const float *in, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in, const uint32_t filters)
 {
   assert(roi_in->width >= roi_out->width);
@@ -2664,23 +2664,15 @@ static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_o
   const int numTw = width / (RCD_IN_TILE) + ((width % (RCD_IN_TILE)) ? 1 : 0);
 
   const uint32_t w1 = RCD_TILESIZE, w2 = 2 * RCD_TILESIZE, w3 = 3 * RCD_TILESIZE, w4 = 4 * RCD_TILESIZE;
-  float *in = (float*) malloc(width * height * sizeof (float));
-
-  // Copy clipped raw data to in
-  // we need an extra copy step for later speed to make sure the cfa data are >= 0.0f
-  for(int idx = 0; idx < width * height; idx++)
-  {
-    in[idx] = fmaxf(raw[idx], 0.0f);
-  }
 
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   { 
-    float *VH_Dir = (float*) calloc(RCD_TILESIZE * RCD_TILESIZE, sizeof *VH_Dir);
-    float *PQ_Dir = (float*) calloc(RCD_TILESIZE * RCD_TILESIZE, sizeof *PQ_Dir);
-    float *cfa = (float*) calloc(RCD_TILESIZE * RCD_TILESIZE, sizeof *cfa);
-    float (*rgb)[RCD_TILESIZE * RCD_TILESIZE] = (float (*)[RCD_TILESIZE * RCD_TILESIZE])malloc(4 * sizeof *rgb);
+    float *VH_Dir = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE * sizeof *VH_Dir);
+    float *PQ_Dir = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE * sizeof *PQ_Dir);
+    float *cfa = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE * sizeof *cfa);
+    float (*rgb)[RCD_TILESIZE * RCD_TILESIZE] = (float (*)[RCD_TILESIZE * RCD_TILESIZE])dt_alloc_align(64, 4 * sizeof *rgb);
 
     // No overlapping use so using same buffer; also note we use divide-by-2 index for lower mem pressure
     float *lpf = PQ_Dir;
@@ -2728,9 +2720,8 @@ static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_o
         // Step 1.1: Calculate vertical and horizontal local discrimination
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4; col < tilecols - 4; col++)
+          for(int col = 4, indx = row * RCD_TILESIZE + col; col < tilecols - 4; col++, indx++)
             {
-              const int indx = row * RCD_TILESIZE + col;
               const float cfai = cfa[indx];
               const float V_Stat = fmaxf(epssq,
                                         -18.f * cfai * (cfa[indx - w1] + cfa[indx + w1] + 2.f * (cfa[indx - w2] + cfa[indx + w2]) - cfa[indx - w3] - cfa[indx + w3])
@@ -2762,9 +2753,8 @@ static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_o
         // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
         for(int row = 2; row < tileRows - 2; row++)
         {
-          for(int col = 2 + (FCRCD(row, 0) & 1); col < tilecols - 2; col += 2)
+          for(int col = 2 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col; col < tilecols - 2; col += 2, indx +=2)
           {
-            const int indx = row * RCD_TILESIZE + col;
             lpf[indx>>1] = 0.25f * cfa[indx]
                         + 0.125f * (cfa[indx - w1] + cfa[indx + w1] + cfa[indx - 1] + cfa[indx + 1])
                        + 0.0625f * (cfa[indx - w1 - 1] + cfa[indx - w1 + 1] + cfa[indx + w1 - 1] + cfa[indx + w1 + 1]);
@@ -2775,9 +2765,11 @@ static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_o
         // Step 3.1: Populate the green channel at blue and red CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 0) & 1); col < tilecols - 4; col += 2)
+          int col = 4 + (FCRCD(row, 0) & 1);
+          int indx = row * RCD_TILESIZE + col;
+
+          for(; col < tilecols - 4; col += 2, indx +=2)
           {
-            const int indx = row * RCD_TILESIZE + col;
             const float cfai = cfa[indx];
             const float lpfi = lpf[indx>>1];
             // Refined vertical and horizontal local discrimination
@@ -2810,10 +2802,8 @@ static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_o
         // Step 4.1: Calculate P/Q diagonal local discrimination
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 0) & 1); col < tilecols - 4; col += 2)
+          for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col; col < tilecols - 4; col += 2, indx +=2)
           {
-            const int indx = row * RCD_TILESIZE + col;
-
             const float cfai = cfa[indx];
             const float P_Stat =
                            fmaxf( -18.f * cfai               * cfa[indx - w1 - 1]
@@ -2905,10 +2895,8 @@ static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_o
         // Step 4.2: Populate the red and blue channels at blue and red CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 0) & 1); col < tilecols - 4; col += 2)
+          for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, c = 2 - FCRCD(row, col); col < tilecols - 4; col += 2, indx +=2)
           {
-            const int indx = row * RCD_TILESIZE + col;
-            const short int c = 2 - FCRCD(row, col);
             // Refined P/Q diagonal local discrimination
             const float PQ_Central_Value = PQ_Dir[indx];
             const float PQ_Neighbourhood_Value = 0.25f * (PQ_Dir[indx - w1 - 1] + PQ_Dir[indx - w1 + 1] + PQ_Dir[indx + w1 - 1] + PQ_Dir[indx + w1 + 1]);
@@ -2938,9 +2926,8 @@ static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_o
         // Step 4.3: Populate the red and blue channels at green CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 1) & 1); col < tilecols - 4; col += 2)
+          for(int col = 4 + (FCRCD(row, 1) & 1), indx = row * RCD_TILESIZE + col; col < tilecols - 4; col += 2, indx +=2)
           {
-            const int indx = row * RCD_TILESIZE + col;
             // Refined vertical and horizontal local discrimination
             const float VH_Central_Value = VH_Dir[indx];
             const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
@@ -2980,9 +2967,9 @@ static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_o
           }
         }
 
-        for(int row = rowStart + RCD_BORDER; row < rowEnd - RCD_BORDER ; ++row)
+        for(int row = rowStart + RCD_BORDER; row < rowEnd - RCD_BORDER ; row++)
         {
-          for(int col = colStart + RCD_BORDER; col < colEnd - RCD_BORDER; ++col)
+          for(int col = colStart + RCD_BORDER; col < colEnd - RCD_BORDER; col++)
           {
             const int idx = (row - rowStart) * RCD_TILESIZE + col - colStart ;
             const int o_idx = (row * width + col) * 4;
@@ -2993,14 +2980,13 @@ static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_o
         }
       }
     }
-    free(cfa);
-    free(rgb);
-    free(VH_Dir);
-    free(PQ_Dir);
+    dt_free_align(cfa);
+    dt_free_align(rgb);
+    dt_free_align(VH_Dir);
+    dt_free_align(PQ_Dir);
   }
   
   rcd_border_interpolate(out, in, cfarray, width, height);
-  free(in);
 }
 #undef FCRCD
 #undef RCD_TILESIZE
@@ -5467,6 +5453,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   {
     d->demosaicing_method = DT_IOP_DEMOSAIC_RCD;
     d->median_thrs = 0.0f;
+    d->color_smoothing = 0;
   }
   // OpenCL only supported by some of the demosaicing methods
   switch(d->demosaicing_method)
@@ -5540,38 +5527,25 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
-  if(self->dev->image_storage.buf_dsc.filters != 9u)
-  {
-    gtk_widget_show(g->demosaic_method_bayer);
-    gtk_widget_hide(g->demosaic_method_xtrans);
-    gtk_widget_show(g->median_thrs);
-    gtk_widget_show(g->greeneq);
+  const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
+  const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
+  if(bayer)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, p->demosaicing_method);
-  }
   else
-  {
-    gtk_widget_show(g->demosaic_method_xtrans);
-    gtk_widget_hide(g->demosaic_method_bayer);
-    gtk_widget_hide(g->median_thrs);
-    gtk_widget_hide(g->greeneq);
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, p->demosaicing_method);
-  }
 
-  if((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-     (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
-     (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
-     (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX) ||
-     (p->demosaicing_method == DT_IOP_DEMOSAIC_RCD))
-  {
-    gtk_widget_hide(g->median_thrs);
-    gtk_widget_hide(g->color_smoothing);
-    gtk_widget_hide(g->greeneq);
-  }
+  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_RCD));
 
-  if(p->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE || p->demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
-  {
-    gtk_widget_hide(g->median_thrs);
-  }
+  gtk_widget_set_visible(g->demosaic_method_bayer, bayer); 
+  gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
+
+  gtk_widget_set_visible(g->median_thrs, bayer && isppg);
+  gtk_widget_set_visible(g->greeneq, bayer && !passing);
+  gtk_widget_set_visible(g->color_smoothing, !passing);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
   int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
@@ -5615,17 +5589,25 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
-  const gboolean extras =
-    (p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) &&
-    (p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) &&
-    (p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHR_MONOX) &&
-    (p->demosaicing_method != DT_IOP_DEMOSAIC_PASSTHR_COLORX) &&
-    (p->demosaicing_method != DT_IOP_DEMOSAIC_RCD);
+  const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
+  const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
+  if(bayer)
+    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, p->demosaicing_method);
+  else
+    dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, p->demosaicing_method);
 
-  if(w == g->demosaic_method_bayer)
-  {
-    gtk_widget_set_visible(g->median_thrs, p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
-  }
+  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_RCD));
+
+  gtk_widget_set_visible(g->demosaic_method_bayer, bayer); 
+  gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
+
+  gtk_widget_set_visible(g->median_thrs, bayer && isppg);
+  gtk_widget_set_visible(g->greeneq, bayer && !passing);
+  gtk_widget_set_visible(g->color_smoothing, !passing);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
   int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
@@ -5639,9 +5621,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
   if(changed)
     dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
-
-  gtk_widget_set_visible(g->color_smoothing, extras);
-  gtk_widget_set_visible(g->greeneq, extras);
 }
 
 void gui_init(struct dt_iop_module_t *self)
