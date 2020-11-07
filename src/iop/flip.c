@@ -194,12 +194,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   // if (!self->enabled) return 2;
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
-  float x, y;
+  // nothing to be done if parameters are set to neutral values (no flip or swap)
+  if (d->orientation == 0) return 1;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    x = points[i];
-    y = points[i + 1];
+    float x = points[i];
+    float y = points[i + 1];
     if(d->orientation & ORIENTATION_FLIP_X) x = piece->buf_in.width - points[i];
     if(d->orientation & ORIENTATION_FLIP_Y) y = piece->buf_in.height - points[i + 1];
     if(d->orientation & ORIENTATION_SWAP_XY)
@@ -220,10 +221,12 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   // if (!self->enabled) return 2;
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
-  float x, y;
+  // nothing to be done if parameters are set to neutral values (no flip or swap)
+  if (d->orientation == 0) return 1;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
+    float x, y;
     if(d->orientation & ORIENTATION_SWAP_XY)
     {
       y = points[i];
