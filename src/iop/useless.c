@@ -204,6 +204,54 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 // *roi_out, const dt_iop_roi_t *roi_in);
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
 // *roi_out, dt_iop_roi_t *roi_in);
+
+#if 0
+/** modify pixel coordinates according to the pixel shifts the module applies (optional, per-pixel ops don't need) */
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+
+  const float adjx = 0.0 * d->factor;
+  const float adjy = 0.0;
+
+  // nothing to be done if parameters are set to neutral values (no pixel shifts)
+  if (adjx == 0.0 && adjy == 0.0) return 1;
+
+  // apply the coordinate adjustment to each provided point
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    points[i] -= adjx;
+    points[i + 1] -= adjy;
+  }
+
+  return 1;  // return 1 on success, 0 if one or more points could not be transformed
+}
+#endif
+
+#if 0
+/** undo pixel shifts the module applies (optional, per-pixel ops don't need this) */
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+
+  const float adjx = 0.0 * d->factor;
+  const float adjy = 0.0;
+
+  // nothing to be done if parameters are set to neutral values (no pixel shifts)
+  if (adjx == 0.0 && adjy == 0.0) return 1;
+
+  // apply the inverse coordinate adjustment to each provided point
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    points[i] += adjx;
+    points[i + 1] += adjy;
+  }
+
+  return 1;  // return 1 on success, 0 if one or more points could not be back-transformed
+}
+#endif
+
+/** modify a mask according to the pixel shifts the module applies (optional, per-pixel ops don't need this) */
 // void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
 // float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
