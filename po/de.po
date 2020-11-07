@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-05 22:49+0100\n"
-"PO-Revision-Date: 2020-11-06 01:06+0100\n"
+"POT-Creation-Date: 2020-11-07 20:42+0100\n"
+"PO-Revision-Date: 2020-11-07 21:44+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -96,8 +96,8 @@ msgstr "spezifisch"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/common/history.c:880 ../src/common/history.c:883
-#: ../src/common/history.c:899 ../src/common/styles.c:1085
-#: ../src/common/styles.c:1089 ../src/develop/blend_gui.c:99
+#: ../src/common/history.c:899 ../src/common/styles.c:1088
+#: ../src/common/styles.c:1092 ../src/develop/blend_gui.c:99
 #: ../src/develop/blend_gui.c:120 ../src/develop/blend_gui.c:2209
 #: ../src/develop/develop.c:2063 ../src/imageio/format/exr.cc:376
 #: ../src/imageio/format/j2k.c:661 ../src/iop/ashift.c:4745
@@ -3592,7 +3592,7 @@ msgid "not tagged"
 msgstr "nicht getaggt"
 
 #: ../src/common/collection.c:1510 ../src/libs/collect.c:1216
-#: ../src/libs/map_locations.c:713
+#: ../src/libs/map_locations.c:749
 msgid "tagged"
 msgstr "getaggt"
 
@@ -3631,7 +3631,7 @@ msgid "work profile"
 msgstr "Arbeitsprofil"
 
 #: ../src/common/colorspaces.c:1433 ../src/common/colorspaces.c:1683
-#: ../src/iop/colorout.c:867
+#: ../src/iop/colorout.c:862
 msgid "export profile"
 msgstr "Exportprofil"
 
@@ -3811,7 +3811,7 @@ msgstr ""
 "insbesondere, wenn diese manuell geändert wurden.\n"
 "Sollen die Einstellungen angepasst werden?\n"
 
-#: ../src/common/darktable.c:913 ../src/common/database.c:3241
+#: ../src/common/darktable.c:913 ../src/common/database.c:3247
 #: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
 #: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:1250
 #: ../src/libs/export.c:1256 ../src/libs/export.c:1263
@@ -3819,7 +3819,7 @@ msgstr ""
 msgid "yes"
 msgstr "ja"
 
-#: ../src/common/database.c:2193
+#: ../src/common/database.c:2199
 #, c-format
 msgid ""
 "\n"
@@ -3899,19 +3899,19 @@ msgstr ""
 "Sobald die Ursache der Datenbanksperre identifiziert und behoben wurde, kann "
 "darktable wieder reibungslos starten.\n"
 
-#: ../src/common/database.c:2223
+#: ../src/common/database.c:2229
 msgid "darktable cannot be started because the database is locked"
 msgstr ""
 "darktable kann nicht gestartet werden, weil die darktable-Datenbank gesperrt "
 "ist."
 
-#: ../src/common/database.c:2224 ../src/common/database.c:2396
-#: ../src/common/database.c:2703 ../src/common/database.c:2721
-#: ../src/common/database.c:2883 ../src/common/database.c:2901
+#: ../src/common/database.c:2230 ../src/common/database.c:2402
+#: ../src/common/database.c:2709 ../src/common/database.c:2727
+#: ../src/common/database.c:2889 ../src/common/database.c:2907
 msgid "close darktable"
 msgstr "darktable schließen"
 
-#: ../src/common/database.c:2336
+#: ../src/common/database.c:2342
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -3920,18 +3920,18 @@ msgstr ""
 "Die Datenbank-Lock-Datei enthält eine PID, die zu einem laufenden Programm "
 "passt: %d"
 
-#: ../src/common/database.c:2342
+#: ../src/common/database.c:2348
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "Die Datenbank-Lock-Datei scheint leer zu sein"
 
-#: ../src/common/database.c:2350
+#: ../src/common/database.c:2356
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "Fehler beim Öffnen der Datenbank-Lock-Datei zum Lesen: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2387
+#: ../src/common/database.c:2393
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -3946,15 +3946,15 @@ msgstr ""
 "\n"
 "Möchten Sie fortfahren oder jetzt beenden, um ein Backup zu erstellen\n"
 
-#: ../src/common/database.c:2395
+#: ../src/common/database.c:2401
 msgid "darktable - schema migration"
 msgstr "darktable - Datenbank Umstellung"
 
-#: ../src/common/database.c:2396
+#: ../src/common/database.c:2402
 msgid "upgrade database"
 msgstr "Datenbank aktualisieren"
 
-#: ../src/common/database.c:2683 ../src/common/database.c:2863
+#: ../src/common/database.c:2689 ../src/common/database.c:2869
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -3963,21 +3963,21 @@ msgstr ""
 "quick_check ergab:\n"
 "%s \n"
 
-#: ../src/common/database.c:2700 ../src/common/database.c:2718
-#: ../src/common/database.c:2880 ../src/common/database.c:2898
+#: ../src/common/database.c:2706 ../src/common/database.c:2724
+#: ../src/common/database.c:2886 ../src/common/database.c:2904
 msgid "darktable - error opening database"
 msgstr "darktable - Fehler beim Öffnen der Datenbank"
 
-#: ../src/common/database.c:2705 ../src/common/database.c:2885
+#: ../src/common/database.c:2711 ../src/common/database.c:2891
 msgid "attempt restore"
 msgstr "Datenbank wiederherstellen"
 
-#: ../src/common/database.c:2707 ../src/common/database.c:2723
-#: ../src/common/database.c:2887 ../src/common/database.c:2903
+#: ../src/common/database.c:2713 ../src/common/database.c:2729
+#: ../src/common/database.c:2893 ../src/common/database.c:2909
 msgid "delete database"
 msgstr "Datenbank löschen"
 
-#: ../src/common/database.c:2711 ../src/common/database.c:2891
+#: ../src/common/database.c:2717 ../src/common/database.c:2897
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -3991,7 +3991,7 @@ msgstr ""
 "versuchen.\n"
 "• Die beschädigte Datenbank löschen, um mit einer neuen Datenbank zu starten."
 
-#: ../src/common/database.c:2727 ../src/common/database.c:2907
+#: ../src/common/database.c:2733 ../src/common/database.c:2913
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -4002,7 +4002,7 @@ msgstr ""
 "wiederherzustellen.\n"
 "• Die beschädigte Datenbank löschen, um mit einer neuen Datenbank zu starten."
 
-#: ../src/common/database.c:2734 ../src/common/database.c:2912
+#: ../src/common/database.c:2740 ../src/common/database.c:2918
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -4019,19 +4019,19 @@ msgstr ""
 "aufgetreten. Wahrscheinlich ist die Datenbank beschädigt.\n"
 "%s%s"
 
-#: ../src/common/database.c:3218
+#: ../src/common/database.c:3224
 msgid "click later to be asked on next startup"
 msgstr "„später” klicken, um beim nächsten Start gefragt zu werden"
 
-#: ../src/common/database.c:3222
+#: ../src/common/database.c:3228
 msgid "click later to be asked when closing darktable"
 msgstr "„später” klicken, um beim Beenden gefragt zu werden"
 
-#: ../src/common/database.c:3226
+#: ../src/common/database.c:3232
 msgid "click later to be asked next time when closing darktable"
 msgstr "„später” klicken, um beim Beenden nochmals gefragt zu werden"
 
-#: ../src/common/database.c:3230
+#: ../src/common/database.c:3236
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -4053,11 +4053,11 @@ msgstr ""
 "Einstellungen zur Datenbankwartung können unter „Speichern” in den darktable-"
 "Voreinstellungen vorgenommen werden."
 
-#: ../src/common/database.c:3240
+#: ../src/common/database.c:3246
 msgid "darktable - schema maintenance"
 msgstr "darktable - Datenbank Wartung"
 
-#: ../src/common/database.c:3241
+#: ../src/common/database.c:3247
 msgid "later"
 msgstr "später"
 
@@ -4098,8 +4098,8 @@ msgstr ""
 "anderes Bild angewandt werden kann."
 
 #: ../src/common/history.c:880 ../src/common/history.c:883
-#: ../src/common/history.c:899 ../src/common/styles.c:1085
-#: ../src/common/styles.c:1089 ../src/develop/blend_gui.c:121
+#: ../src/common/history.c:899 ../src/common/styles.c:1088
+#: ../src/common/styles.c:1092 ../src/develop/blend_gui.c:121
 #: ../src/develop/develop.c:2063 ../src/iop/ashift.c:4746
 #: ../src/libs/live_view.c:430
 msgid "on"
@@ -4230,7 +4230,7 @@ msgstr "veraltet"
 msgid "v3.0"
 msgstr "V3.0"
 
-#: ../src/common/iop_profile.c:82
+#: ../src/common/iop_profile.c:83
 #, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 msgstr ""
@@ -4369,8 +4369,8 @@ msgstr "Stil mit dem Namen „%s” existiert bereits"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:410 ../src/common/styles.c:414
 #: ../src/common/styles.c:501 ../src/common/styles.c:585
-#: ../src/common/styles.c:977 ../src/common/styles.c:1541
-#: ../src/common/styles.c:1560
+#: ../src/common/styles.c:980 ../src/common/styles.c:1544
+#: ../src/common/styles.c:1563
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -4382,7 +4382,7 @@ msgid "style named '%s' successfully created"
 msgstr "Stil mit dem Namen „%s” erfolgreich angelegt"
 
 #: ../src/common/styles.c:624 ../src/common/styles.c:651
-#: ../src/common/styles.c:691
+#: ../src/common/styles.c:694
 msgid "no image selected!"
 msgstr "Kein Bild ausgewählt!"
 
@@ -4399,28 +4399,28 @@ msgstr "Kein Bild oder Stil ausgewählt!"
 msgid "no styles selected!"
 msgstr "Kein Stil ausgewählt!"
 
-#: ../src/common/styles.c:675
+#: ../src/common/styles.c:678
 msgid "style successfully applied!"
 msgid_plural "styles successfully applied!"
 msgstr[0] "Stil erfolgreich angewendet!"
 msgstr[1] "Stil „%s” erfolgreich gespeichert"
 
-#: ../src/common/styles.c:748
+#: ../src/common/styles.c:751
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "Modul „%s” hat Versionskonflikt: %d ≠ %d"
 
-#: ../src/common/styles.c:1178
+#: ../src/common/styles.c:1181
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "Fehler beim Überschreiben der Stil-Datei für „%s”"
 
-#: ../src/common/styles.c:1184
+#: ../src/common/styles.c:1187
 #, c-format
 msgid "style file for %s exists"
 msgstr "Stil-Datei für „%s” existiert bereits"
 
-#: ../src/common/styles.c:1432
+#: ../src/common/styles.c:1435
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "Stil „%s” erfolgreich importiert"
@@ -9675,11 +9675,11 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "Globale Sättigung setzen"
 
-#: ../src/iop/colorin.c:125
+#: ../src/iop/colorin.c:126
 msgid "input color profile"
 msgstr "Eingabefarbprofil"
 
-#: ../src/iop/colorin.c:478
+#: ../src/iop/colorin.c:479
 #, c-format
 msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
@@ -9688,35 +9688,35 @@ msgstr ""
 "Kann Matrix nicht aus dem Farbraum „%s” extrahieren, wird durch Rec2020 RGB "
 "ersetzt!"
 
-#: ../src/iop/colorin.c:1578
+#: ../src/iop/colorin.c:1573
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "„%s” Farbmatrix nicht gefunden!"
 
-#: ../src/iop/colorin.c:1613
+#: ../src/iop/colorin.c:1608
 msgid "input profile could not be generated!"
 msgstr "Eingabeprofile konnte nicht erzeugt werden!"
 
-#: ../src/iop/colorin.c:1695
+#: ../src/iop/colorin.c:1690
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "Nicht unterstütztes Eingabeprofil wurde durch lineares Rec709-RGB ersetzt!"
 
-#: ../src/iop/colorin.c:2076
+#: ../src/iop/colorin.c:2077
 msgid "input profile"
 msgstr "Eingabeprofil"
 
-#: ../src/iop/colorin.c:2080
+#: ../src/iop/colorin.c:2081
 msgid "working profile"
 msgstr "Arbeitsprofil"
 
-#: ../src/iop/colorin.c:2087 ../src/iop/colorin.c:2098
-#: ../src/iop/colorout.c:878
+#: ../src/iop/colorin.c:2088 ../src/iop/colorin.c:2099
+#: ../src/iop/colorout.c:873
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "ICC-Profile in %s oder %s"
 
-#: ../src/iop/colorin.c:2109
+#: ../src/iop/colorin.c:2110
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "Lab-Werte auf den Gamut von RGB-Farbräumen begrenzen"
 
@@ -9787,41 +9787,41 @@ msgstr ""
 msgid "level of histogram equalization"
 msgstr "Grad der Histogramm-Angleichung"
 
-#: ../src/iop/colorout.c:80
+#: ../src/iop/colorout.c:81
 msgid "output color profile"
 msgstr "Ausgabefarbprofil"
 
-#: ../src/iop/colorout.c:666
+#: ../src/iop/colorout.c:658
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "fehlendes Ausgabeprofil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:685
+#: ../src/iop/colorout.c:677
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "fehlendes Softproof-Profil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:728
+#: ../src/iop/colorout.c:720
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "nicht unterstütztes Ausgabeprofil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:854
+#: ../src/iop/colorout.c:849
 msgid "output intent"
 msgstr "Ausgabevorsatz"
 
-#: ../src/iop/colorout.c:855 ../src/libs/export.c:1299
+#: ../src/iop/colorout.c:850 ../src/libs/export.c:1299
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2367 ../src/views/darkroom.c:2375
 #: ../src/views/lighttable.c:1397 ../src/views/lighttable.c:1405
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:856 ../src/libs/export.c:1300
+#: ../src/iop/colorout.c:851 ../src/libs/export.c:1300
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2368 ../src/views/darkroom.c:2376
 #: ../src/views/lighttable.c:1398 ../src/views/lighttable.c:1406
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
-#: ../src/iop/colorout.c:857 ../src/libs/export.c:1301
+#: ../src/iop/colorout.c:852 ../src/libs/export.c:1301
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2369 ../src/views/darkroom.c:2377
 #: ../src/views/lighttable.c:1399 ../src/views/lighttable.c:1407
@@ -9829,14 +9829,14 @@ msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:858 ../src/libs/export.c:1302
+#: ../src/iop/colorout.c:853 ../src/libs/export.c:1302
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2370 ../src/views/darkroom.c:2378
 #: ../src/views/lighttable.c:1400 ../src/views/lighttable.c:1408
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
-#: ../src/iop/colorout.c:875
+#: ../src/iop/colorout.c:870
 msgid "rendering intent"
 msgstr "Wiedergabeabsicht"
 
@@ -10848,11 +10848,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:3418 ../src/iop/filmicrgb.c:3428
 #: ../src/iop/filmicrgb.c:3461 ../src/iop/filmicrgb.c:3471
+#: ../src/iop/toneequal.c:3034 ../src/iop/toneequal.c:3038
 #: ../src/iop/toneequal.c:3042 ../src/iop/toneequal.c:3046
 #: ../src/iop/toneequal.c:3050 ../src/iop/toneequal.c:3054
 #: ../src/iop/toneequal.c:3058 ../src/iop/toneequal.c:3062
-#: ../src/iop/toneequal.c:3066 ../src/iop/toneequal.c:3070
-#: ../src/iop/toneequal.c:3074 ../src/libs/metadata_view.c:509
+#: ../src/iop/toneequal.c:3066 ../src/libs/metadata_view.c:509
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -13278,76 +13278,76 @@ msgstr "Einige Parameter sind außerhalb der zulässigen Grenzen."
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:2949
+#: ../src/iop/toneequal.c:2941
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s über Bild] selektive Belichtungsänderung"
 
-#: ../src/iop/toneequal.c:2955
+#: ../src/iop/toneequal.c:2947
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s über Bild] selektive Belichtungsänderung in großen Schritten"
 
-#: ../src/iop/toneequal.c:2961
+#: ../src/iop/toneequal.c:2953
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s über Bild] selektive Belichtungsänderung in kleinen Schritten"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3038
+#: ../src/iop/toneequal.c:3030
 msgid "simple"
 msgstr "einfach"
 
-#: ../src/iop/toneequal.c:3077
+#: ../src/iop/toneequal.c:3069
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3078
+#: ../src/iop/toneequal.c:3070
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3079
+#: ../src/iop/toneequal.c:3071
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3080
+#: ../src/iop/toneequal.c:3072
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3081
+#: ../src/iop/toneequal.c:3073
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3082
+#: ../src/iop/toneequal.c:3074
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3083
+#: ../src/iop/toneequal.c:3075
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3084
+#: ../src/iop/toneequal.c:3076
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3085
+#: ../src/iop/toneequal.c:3077
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3090
+#: ../src/iop/toneequal.c:3082
 msgid "advanced"
 msgstr "erweitert"
 
-#: ../src/iop/toneequal.c:3105
+#: ../src/iop/toneequal.c:3097
 msgid "double-click to reset the curve"
 msgstr "Doppelklick setzt Kurve zurück"
 
-#: ../src/iop/toneequal.c:3112
+#: ../src/iop/toneequal.c:3104
 msgid "curve smoothing"
 msgstr "Kurvenglättung"
 
-#: ../src/iop/toneequal.c:3113
+#: ../src/iop/toneequal.c:3105
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -13360,11 +13360,11 @@ msgstr ""
 "lokalen Kontrast beeinträchtigen."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3122
+#: ../src/iop/toneequal.c:3114
 msgid "masking"
 msgstr "Maskierung"
 
-#: ../src/iop/toneequal.c:3126
+#: ../src/iop/toneequal.c:3118
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -13372,15 +13372,15 @@ msgstr ""
 "Vorschau der Maske und Auswahl der Schätzfunktion, ergibt einen\n"
 "höheren Kontrast zwischen den zu vermeidenden und ausgebrannten Bereichen."
 
-#: ../src/iop/toneequal.c:3129
+#: ../src/iop/toneequal.c:3121
 msgid "details"
 msgstr "Details"
 
-#: ../src/iop/toneequal.c:3130
+#: ../src/iop/toneequal.c:3122
 msgid "preserve details"
 msgstr "Details erhalten"
 
-#: ../src/iop/toneequal.c:3131
+#: ../src/iop/toneequal.c:3123
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -13405,7 +13405,7 @@ msgstr ""
 "geometrischen Mittel aus „nein” und „belichtungsunabhängiger geführter "
 "Filter”."
 
-#: ../src/iop/toneequal.c:3139
+#: ../src/iop/toneequal.c:3131
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -13413,7 +13413,7 @@ msgstr ""
 "Anzahl der Durchgänge des geführten Filters hilft, die Kanten auf Kosten der "
 "Geschwindigkeit zu streuen."
 
-#: ../src/iop/toneequal.c:3145
+#: ../src/iop/toneequal.c:3137
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -13423,7 +13423,7 @@ msgstr ""
 "Warnung: Große Werte dieses Parameters können die Vorschau in der "
 "Dunkelkammer verlangsamen, wenn das Entrauschen (Profil) verwendet wird."
 
-#: ../src/iop/toneequal.c:3152
+#: ../src/iop/toneequal.c:3144
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -13437,11 +13437,11 @@ msgstr ""
 "Gradienten und eine bessere Glättung, kann aber zu ungenauen Rändern und "
 "Halos führen."
 
-#: ../src/iop/toneequal.c:3158
+#: ../src/iop/toneequal.c:3150
 msgid "mask post-processing"
 msgstr "Maskennachbearbeitung"
 
-#: ../src/iop/toneequal.c:3164
+#: ../src/iop/toneequal.c:3157
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -13451,7 +13451,7 @@ msgstr ""
 "Mittellinie zeigt den Mittelwert an. Orangefarbene Balken erscheinen bei "
 "Extrema, wenn es zu Beschneidungen kommt."
 
-#: ../src/iop/toneequal.c:3171
+#: ../src/iop/toneequal.c:3164
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -13461,7 +13461,7 @@ msgstr ""
 "Maske, um beim Erzeugen von Stückweisen glatte Bereichen bei Verwendung "
 "hoher Ausblend-Werten zu unterstützen."
 
-#: ../src/iop/toneequal.c:3178
+#: ../src/iop/toneequal.c:3171
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -13473,7 +13473,7 @@ msgstr ""
 "steuern.\n"
 "Der Picker passt die durchschnittliche Belichtung bei -4EV automatisch an."
 
-#: ../src/iop/toneequal.c:3188
+#: ../src/iop/toneequal.c:3181
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -13485,7 +13485,7 @@ msgstr ""
 "Belichtungshistogramms auf mehrere Kanäle zur besseren Kontrolle der "
 "Belichtungskorrektur."
 
-#: ../src/iop/toneequal.c:3203 ../src/iop/toneequal.c:3207
+#: ../src/iop/toneequal.c:3200 ../src/iop/toneequal.c:3204
 msgid "display exposure mask"
 msgstr "Belichtungsmasken anzeigen"
 
@@ -13868,7 +13868,7 @@ msgid "group followers"
 msgstr "Gruppenmitglieder"
 
 #: ../src/libs/collect.c:1932 ../src/libs/collect.c:1947
-#: ../src/libs/collect.c:2492
+#: ../src/libs/collect.c:2496
 msgid "clear this rule"
 msgstr "diese Regel löschen"
 
@@ -13894,54 +13894,54 @@ msgstr ""
 msgid "type your query, use `%' as wildcard and `,' to separate values"
 msgstr "Anfrage eingeben, „%” als Paltzhalter benutzen"
 
-#: ../src/libs/collect.c:2009 ../src/libs/collect.c:2646
+#: ../src/libs/collect.c:2009 ../src/libs/collect.c:2650
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "Anfrage eingeben, „%” als Paltzhalter benutzen"
 
-#: ../src/libs/collect.c:2498
+#: ../src/libs/collect.c:2502
 msgid "narrow down search"
 msgstr "Suche verfeinern"
 
-#: ../src/libs/collect.c:2503
+#: ../src/libs/collect.c:2507
 msgid "add more images"
 msgstr "mehr Bilder hinzufügen"
 
-#: ../src/libs/collect.c:2508
+#: ../src/libs/collect.c:2512
 msgid "exclude images"
 msgstr "Bilder ausschließen"
 
-#: ../src/libs/collect.c:2515
+#: ../src/libs/collect.c:2519
 msgid "change to: and"
 msgstr "ändere zu: UND"
 
-#: ../src/libs/collect.c:2520
+#: ../src/libs/collect.c:2524
 msgid "change to: or"
 msgstr "ändere zu: ODER"
 
-#: ../src/libs/collect.c:2525
+#: ../src/libs/collect.c:2529
 msgid "change to: except"
 msgstr "ändere zu: AUSSER"
 
-#: ../src/libs/collect.c:2555
+#: ../src/libs/collect.c:2559
 msgid "files"
 msgstr "Dateien"
 
-#: ../src/libs/collect.c:2560 ../src/libs/export_metadata.c:289
+#: ../src/libs/collect.c:2564 ../src/libs/export_metadata.c:289
 #: ../src/libs/image.c:431 ../src/libs/image.c:536 ../src/libs/metadata.c:421
 #: ../src/libs/metadata.c:608
 msgid "metadata"
 msgstr "Metadaten"
 
-#: ../src/libs/collect.c:2578
+#: ../src/libs/collect.c:2582
 msgid "times"
 msgstr "Datum/Uhrzeit"
 
-#: ../src/libs/collect.c:2586
+#: ../src/libs/collect.c:2590
 msgid "capture details"
 msgstr "Aufnahmeparameter"
 
-#: ../src/libs/collect.c:2595 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2599 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
@@ -14731,11 +14731,12 @@ msgid "compress history stack"
 msgstr "Verlaufsstapel zusammenfassen"
 
 #: ../src/libs/history.c:148
-#, fuzzy
 msgid ""
 "create a minimal history stack which produces the same image\n"
 "ctrl-click to truncate history to the selected item"
-msgstr "Erstelle einen minimalen Verlaufsstapel, der das gleiche Bild erzeugt"
+msgstr ""
+"Erstelle einen minimalen Verlaufsstapel, der das gleiche Bild erzeugt.\n"
+"Strg+Klick verkürzt den Verlaufsstapel bis zum ausgewählten Element."
 
 #: ../src/libs/history.c:157
 msgid "create a style from the current history stack"
@@ -14759,29 +14760,27 @@ msgid "unknown"
 msgstr "unbekannt"
 
 #: ../src/libs/history.c:897
-#, fuzzy, c-format
+#, c-format
 msgid "a drawn mask was added"
-msgstr "gezeichnete Maske anzeigen"
+msgstr "Eine gezeichnete Maske wurde hinzugefügt."
 
 #: ../src/libs/history.c:899
-#, fuzzy, c-format
+#, c-format
 msgid "the drawn mask was removed"
-msgstr "gezeichnete Maske anzeigen"
+msgstr "Die gezeichnete Maske wurde entfernt."
 
 #: ../src/libs/history.c:900
-#, fuzzy, c-format
+#, c-format
 msgid "the drawn mask was changed"
-msgstr "gezeichnete Maske anzeigen"
+msgstr "Die gezeichnete Maske wurde geändert."
 
 #: ../src/libs/history.c:927
-#, fuzzy
 msgid "parametric output mask:"
-msgstr "Parametrische Maske"
+msgstr "parametrische Ausgabemaske:"
 
 #: ../src/libs/history.c:927
-#, fuzzy
 msgid "parametric input mask:"
-msgstr "Parametrische Maske"
+msgstr "parametrische Eingabemaske:"
 
 #: ../src/libs/history.c:1202
 msgid "do you really want to clear history of current image?"
@@ -14900,62 +14899,52 @@ msgid "ratings"
 msgstr "Bewertungen"
 
 #: ../src/libs/image.c:506
-#, fuzzy
 msgid "select ratings metadata"
-msgstr "Interpolationsverfahren wählen"
+msgstr "Bewertungemetadaten auswählen"
 
 #: ../src/libs/image.c:512
 msgid "colors"
 msgstr "Farben"
 
 #: ../src/libs/image.c:514
-#, fuzzy
 msgid "select colors metadata"
-msgstr "Farbe des Filmmaterials auswählen"
+msgstr "Farbmetadaten auswählen"
 
 #: ../src/libs/image.c:522
-#, fuzzy
 msgid "select tags metadata"
-msgstr "Tag auswählen"
+msgstr "Tagmetadaten auswählen"
 
 #: ../src/libs/image.c:530
-#, fuzzy
 msgid "select geo tags metadata"
-msgstr "Metadaten-Tag löschen"
+msgstr "Geo-Tag-Metadaten auswählen"
 
 #: ../src/libs/image.c:538
-#, fuzzy
 msgid "select dt metadata (from metadata editor module)"
-msgstr "Exportiere darktable xmp-Metadaten (aus dem Metadaten-Editor-Modul)"
+msgstr "wähle darktable xmp-Metadaten (aus dem Metadaten-Editor-Modul)"
 
 #: ../src/libs/image.c:544
 msgid "set the (first) selected image as source of metadata"
 msgstr ""
 
 #: ../src/libs/image.c:549
-#, fuzzy
 msgid "paste selected metadata on selected images"
-msgstr "Metadaten für ausgewählte Bilder schreiben"
+msgstr "ausgewählte Metadaten für ausgewählte Bilder schreiben"
 
 #: ../src/libs/image.c:553 ../src/libs/metadata.c:717
 msgid "clear"
 msgstr "löschen"
 
 #: ../src/libs/image.c:553
-#, fuzzy
 msgid "clear selected metadata on selected images"
-msgstr "Metadaten für ausgewählte Bilder schreiben"
+msgstr "ausgewählte Metadaten für ausgewählte Bilder löschen"
 
 #: ../src/libs/image.c:559
 msgid "merge"
 msgstr "zusammenfügen"
 
 #: ../src/libs/image.c:561
-#, fuzzy
 msgid "how to handle existing metadata"
-msgstr ""
-"wie soll mit einem vorhandenen\n"
-"Verlauf umgegangen werden"
+msgstr "wie mit vorhandenen Metadaten umgegangen werden soll"
 
 #: ../src/libs/image.c:566
 msgid "update image information to match changes to file"
@@ -15365,53 +15354,46 @@ msgstr "zeige nur einen Teil der Überlagerung"
 msgid "find location"
 msgstr "Position finden"
 
-#: ../src/libs/map_locations.c:32
-#, fuzzy
+#: ../src/libs/map_locations.c:35
 msgid "locations"
-msgstr "Optionen"
+msgstr "Orte"
 
-#: ../src/libs/map_locations.c:250
-#, fuzzy
+#: ../src/libs/map_locations.c:254
 msgid "new sub-location"
-msgstr "Position finden"
+msgstr "neuer Unterort"
 
-#: ../src/libs/map_locations.c:254 ../src/libs/map_locations.c:302
-#: ../src/libs/map_locations.c:942
-#, fuzzy
+#: ../src/libs/map_locations.c:258 ../src/libs/map_locations.c:306
+#: ../src/libs/map_locations.c:978
 msgid "new location"
-msgstr "Position finden"
+msgstr "neuer Ort"
 
-#: ../src/libs/map_locations.c:555
-#, fuzzy, c-format
+#: ../src/libs/map_locations.c:591
+#, c-format
 msgid "location name '%s' already exists"
-msgstr "Stil mit dem Namen „%s” existiert bereits"
+msgstr "Ort mit dem Namen „%s” existiert bereits"
 
-#: ../src/libs/map_locations.c:749
-#, fuzzy
+#: ../src/libs/map_locations.c:785
 msgid "edit location"
-msgstr "Position finden"
+msgstr "Ort editieren"
 
-#: ../src/libs/map_locations.c:752
-#, fuzzy
+#: ../src/libs/map_locations.c:788
 msgid "delete location"
-msgstr "Position finden"
+msgstr "Ort löschen"
 
-#: ../src/libs/map_locations.c:762
-#, fuzzy
+#: ../src/libs/map_locations.c:798
 msgid "update filmstrip"
-msgstr "Filmstreifen aktivieren"
+msgstr "Filmstreifen aktualisieren"
 
-#: ../src/libs/map_locations.c:769
-#, fuzzy
+#: ../src/libs/map_locations.c:805
 msgid "go to collection (lighttable)"
-msgstr "gehe zur Tag-Sammlung"
+msgstr "gehe zur Sammlung (Leuchttisch)"
 
-#: ../src/libs/map_locations.c:822
+#: ../src/libs/map_locations.c:858
 msgid ""
 "terminate edition (press enter or escape) before selecting another location"
 msgstr ""
 
-#: ../src/libs/map_locations.c:913
+#: ../src/libs/map_locations.c:949
 msgid ""
 "list of user locations,\n"
 "click to show or hide a location on the map:\n"
@@ -15428,13 +15410,21 @@ msgid ""
 "ctrl-wheel scroll to resize the window"
 msgstr ""
 
-#: ../src/libs/map_locations.c:940
+#: ../src/libs/map_locations.c:976
 msgid ""
 "select the shape of the location's limits on the map, circle or rectangle"
 msgstr ""
 
-#: ../src/libs/map_locations.c:942
+#: ../src/libs/map_locations.c:978
 msgid "add a new location on the center of the visible map"
+msgstr ""
+
+#: ../src/libs/map_locations.c:983
+msgid "show all"
+msgstr "zeige alles"
+
+#: ../src/libs/map_locations.c:985
+msgid "show all loations which are on the visible map"
 msgstr ""
 
 #: ../src/libs/map_settings.c:37
@@ -15450,9 +15440,8 @@ msgid "toggle the visibility of the map overlays"
 msgstr "Sichtbarkeit der Karten-Überlagerungen umschalten"
 
 #: ../src/libs/map_settings.c:115
-#, fuzzy
 msgid "filtered images"
-msgstr "Bilder löschen"
+msgstr "nur aktuelle Sammlung"
 
 #: ../src/libs/map_settings.c:116
 msgid "when set limit the images drawn to the current filmstrip"
@@ -16391,23 +16380,22 @@ msgstr[0] "Stil löschen?"
 msgstr[1] "Stile löschen?"
 
 #: ../src/libs/styles.c:425
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite existing style?\n"
 msgstr ""
-"Voreinstellung „%s” existiert bereits.\n"
-"Soll sie überschrieben werden?"
+"Der Stil „%s” existiert bereits.\n"
+"Soll er überschrieben werden?\n"
 
 #: ../src/libs/styles.c:427
-#, fuzzy
 msgid "apply this option to all existing styles"
-msgstr "Diese Option auswählen, um Goldene Dreiecke anzuzeigen"
+msgstr "Diese Option auf alle vorhandenen Stile anwenden."
 
 #: ../src/libs/styles.c:490
 #, c-format
 msgid "style %s was successfully exported"
-msgstr "Stil „%s” erfolgreich importiert"
+msgstr "Stil „%s” erfolgreich exportiert"
 
 #: ../src/libs/styles.c:502
 msgid "select style"
@@ -17600,13 +17588,13 @@ msgstr "Vollbildvorschau"
 
 #. undo/redo
 #: ../src/views/darkroom.c:3842 ../src/views/lighttable.c:870
-#: ../src/views/map.c:1460
+#: ../src/views/map.c:1604
 msgctxt "accel"
 msgid "undo"
 msgstr "rückgängig"
 
 #: ../src/views/darkroom.c:3843 ../src/views/lighttable.c:871
-#: ../src/views/map.c:1461
+#: ../src/views/map.c:1605
 msgctxt "accel"
 msgid "redo"
 msgstr "wiederherstellen"
@@ -17889,15 +17877,15 @@ msgstr "Anzeigeprofil setzen"
 msgid "map"
 msgstr "Karte"
 
-#: ../src/views/map.c:2011
+#: ../src/views/map.c:2165
 msgid "[on image] open in darkroom"
 msgstr "in der Dunkelkammer öffnen"
 
-#: ../src/views/map.c:2016
+#: ../src/views/map.c:2170
 msgid "[on map] zoom map"
 msgstr "Karte skalieren"
 
-#: ../src/views/map.c:2021
+#: ../src/views/map.c:2175
 msgid "move image location"
 msgstr "Bild verschieben"
 
@@ -19948,11 +19936,6 @@ msgstr "Aktion"
 #~| msgid "destination"
 #~ msgid "destination power factor"
 #~ msgstr "Ziel-Power-Faktor"
-
-#~| msgctxt "accel"
-#~| msgid "show module"
-#~ msgid "show all"
-#~ msgstr "zeige alles"
 
 #~ msgid "click and drag to add point"
 #~ msgstr "Klicken und Ziehen um eine Punkt hinzuzufügen"
