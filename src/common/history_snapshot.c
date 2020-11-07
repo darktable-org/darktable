@@ -127,7 +127,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
                               "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   // copy undo_masks_history snapshot back as current masks_history state
@@ -140,7 +140,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   // set history end
@@ -149,7 +149,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
                               "UPDATE main.images SET history_end=?2 WHERE id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, history_end);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   // restore module order
@@ -161,7 +161,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
                               "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   if(all_ok)
