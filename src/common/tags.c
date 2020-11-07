@@ -1685,7 +1685,16 @@ char *dt_tag_get_subtags(const gint imgid, const char *category, const int level
     {
       gchar **pch = g_strsplit(tag, "|", -1);
       char *subtag = pch[rootnb + level];
-      tags = dt_util_dstrcat(tags, "%s,", subtag);
+      gboolean valid = TRUE;
+      // check we have not yet this subtag in the list
+        if(tags && strlen(tags) >= strlen(subtag) + 1)
+      {
+        char *found = g_strstr_len(tags, strlen(tags), subtag);
+        if(found[strlen(subtag)] == ',')
+          valid = FALSE;
+      }
+      if(valid)
+        tags = dt_util_dstrcat(tags, "%s,", subtag);
       g_strfreev(pch);
     }
   }
