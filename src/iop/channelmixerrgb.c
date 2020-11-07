@@ -25,6 +25,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/opencl.h"
 #include "common/illuminants.h"
+#include "common/iop_profile.h"
 #include "develop/imageop_math.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
