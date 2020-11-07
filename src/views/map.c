@@ -53,13 +53,13 @@ typedef struct dt_map_t
   gboolean drop_filmstrip_activated;
   gboolean filter_images_drawn;
   int max_images_drawn;
+  float lat0, lat1, lon0, lon1;
   struct
   {
-    OsmGpsMapImage *location;
-    guint id;
-    dt_map_location_data_t data;
+    dt_location_draw_t main;
     gboolean drag;
     int time_out;
+    GList *others;
   } loc;
 } dt_map_t;
 
@@ -106,7 +106,7 @@ static gboolean _view_map_remove_marker(const dt_view_t *view, dt_geo_map_displa
 /* proxy function to add a location to the map */
 static void _view_map_add_location(const dt_view_t *view, dt_map_location_data_t *g, const guint locid);
 /* proxy function to remove a location from the map */
-static void _view_map_remove_location(const dt_view_t *view);
+static void _view_map_location_action(const dt_view_t *view, const int action);
 
 /* callback when the collection changes */
 static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
@@ -429,33 +429,60 @@ static GdkPixbuf *_init_place_pin()
   return pixbuf;
 }
 
-static GdkPixbuf *_draw_circle(const float radius)
+static GdkPixbuf *_draw_ellipse(const float dlongitude, const float dlatitude,
+                                const gboolean main)
 {
-  const int rad = radius > max_size ? max_size :
-                  radius < cross_size ? cross_size : radius;
-  const int w = DT_PIXEL_APPLY_DPI(2.0 * rad);
+  const int dlon = dlongitude > max_size ? max_size :
+                   dlongitude < cross_size ? cross_size : dlongitude;
+  const int dlat = dlatitude > max_size ? max_size :
+                   dlatitude < cross_size ? cross_size : dlatitude;
+  const gboolean landscape = dlon > dlat ? TRUE : FALSE;
+  const float ratio = dlon > dlat ? (float)dlat / (float)dlon : (float)dlon / (float)dlat;
+  const int w = DT_PIXEL_APPLY_DPI(2.0 * (landscape ? dlon : dlat));
   const int h = w;
-  const int d = DT_PIXEL_APPLY_DPI(1);
+  const int d = DT_PIXEL_APPLY_DPI(main ? 2 : 1);
   const int cross = DT_PIXEL_APPLY_DPI(cross_size);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
 
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
-  dt_gui_gtk_set_source_rgb(cr, rad == max_size || rad == cross_size
-                                ? DT_GUI_COLOR_MAP_LOC_SHAPE_DEF
-                                : DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH);
-  cairo_arc(cr, 0.5 * w, 0.5 * h, 0.5 * h - d, 0, 2.0 * M_PI);
-  cairo_move_to(cr, 0.5 * w, 0.5 * h - cross);
-  cairo_line_to(cr, 0.5 * w, 0.5 * h + cross);
-  cairo_move_to(cr, 0.5 * w - cross, 0.5 * h );
-  cairo_line_to(cr, 0.5 * w + cross, 0.5 * h );
-  cairo_stroke(cr);
+  cairo_set_line_width(cr, d);
+  const int color_hi = dlon == max_size || dlon == cross_size
+                                ? main ? DT_GUI_COLOR_MAP_LOC_SHAPE_DEF
+                                       : DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH
+                                : DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH;
+
+  cairo_matrix_t save_matrix;
+  cairo_get_matrix(cr, &save_matrix);
+  cairo_translate(cr, 0.5 * w, 0.5 * h);
+  cairo_scale(cr, landscape ? 1 : ratio, landscape ? ratio : 1);
+  cairo_translate(cr, -0.5 * w, -0.5 * h);
+
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_MAP_LOC_SHAPE_LOW);
   cairo_arc(cr, 0.5 * w, 0.5 * h, 0.5 * h - d - d, 0, 2.0 * M_PI);
+
+  cairo_set_matrix(cr, &save_matrix);
+  cairo_stroke(cr);
   cairo_move_to(cr, 0.5 * w + d, 0.5 * h - cross);
   cairo_line_to(cr, 0.5 * w + d, 0.5 * h + cross);
   cairo_move_to(cr, 0.5 * w - cross, 0.5 * h - d);
   cairo_line_to(cr, 0.5 * w + cross, 0.5 * h - d);
+  cairo_stroke(cr);
+
+  cairo_get_matrix(cr, &save_matrix);
+  cairo_translate(cr, 0.5 * w, 0.5 * h);
+  cairo_scale(cr, landscape ? 1 : ratio, landscape ? ratio : 1);
+  cairo_translate(cr, -0.5 * w, -0.5 * h);
+
+  dt_gui_gtk_set_source_rgb(cr, color_hi);
+  cairo_arc(cr, 0.5 * w, 0.5 * h, 0.5 * h - d, 0, 2.0 * M_PI);
+
+  cairo_set_matrix(cr, &save_matrix);
+
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.5 * w, 0.5 * h - cross);
+  cairo_line_to(cr, 0.5 * w, 0.5 * h + cross);
+  cairo_move_to(cr, 0.5 * w - cross, 0.5 * h );
+  cairo_line_to(cr, 0.5 * w + cross, 0.5 * h );
   cairo_stroke(cr);
 
   cairo_destroy(cr);
@@ -470,7 +497,8 @@ static GdkPixbuf *_draw_circle(const float radius)
   return pixbuf;
 }
 
-static GdkPixbuf *_draw_rectangle(const float dlongitude, const float dlatitude)
+static GdkPixbuf *_draw_rectangle(const float dlongitude, const float dlatitude,
+                                  const gboolean main)
 {
   const int dlon = dlongitude > max_size ? max_size :
                   dlongitude < cross_size ? cross_size : dlongitude;
@@ -478,27 +506,12 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude, const float dlatitude)
                   dlatitude < cross_size ? cross_size : dlatitude;
   const int w = DT_PIXEL_APPLY_DPI(2.0 * dlon);
   const int h = DT_PIXEL_APPLY_DPI(2.0 * dlat);
-  const int d = DT_PIXEL_APPLY_DPI(1);
+  const int d = DT_PIXEL_APPLY_DPI(main ? 2 : 1);
   const int cross = DT_PIXEL_APPLY_DPI(cross_size);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
 
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
-  dt_gui_gtk_set_source_rgb(cr, dlon == max_size || dlon == cross_size ||
-                                dlat == max_size || dlat == cross_size
-                                ? DT_GUI_COLOR_MAP_LOC_SHAPE_DEF
-                                : DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH);
-  cairo_move_to(cr, d, d);
-  cairo_line_to(cr, w - d, d);
-  cairo_line_to(cr, w - d, h - d);
-  cairo_line_to(cr, d, h - d);
-  cairo_line_to(cr, d, d);
-  cairo_move_to(cr, 0.5 * w, 0.5 * h - cross);
-  cairo_line_to(cr, 0.5 * w, 0.5 * h + cross);
-  cairo_move_to(cr, 0.5 * w - cross, 0.5 * h );
-  cairo_line_to(cr, 0.5 * w + cross, 0.5 * h );
-  cairo_stroke(cr);
-
+  cairo_set_line_width(cr,d);
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_MAP_LOC_SHAPE_LOW);
   cairo_move_to(cr, d + d, d + d);
   cairo_line_to(cr, w - d - d, d + d);
@@ -509,6 +522,22 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude, const float dlatitude)
   cairo_line_to(cr, 0.5 * w + d, 0.5 * h + cross);
   cairo_move_to(cr, 0.5 * w - cross, 0.5 * h - d);
   cairo_line_to(cr, 0.5 * w + cross, 0.5 * h - d);
+  cairo_stroke(cr);
+
+  dt_gui_gtk_set_source_rgb(cr, dlon == max_size || dlon == cross_size ||
+                                dlat == max_size || dlat == cross_size
+                                ? main ? DT_GUI_COLOR_MAP_LOC_SHAPE_DEF
+                                       : DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH
+                                : DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH);
+  cairo_move_to(cr, d, d);
+  cairo_line_to(cr, w - d, d);
+  cairo_line_to(cr, w - d, h - d);
+  cairo_line_to(cr, d, h - d);
+  cairo_line_to(cr, d, d);
+  cairo_move_to(cr, 0.5 * w, 0.5 * h - cross);
+  cairo_line_to(cr, 0.5 * w, 0.5 * h + cross);
+  cairo_move_to(cr, 0.5 * w - cross, 0.5 * h );
+  cairo_line_to(cr, 0.5 * w + cross, 0.5 * h );
   cairo_stroke(cr);
 
   cairo_destroy(cr);
@@ -576,7 +605,7 @@ static void _view_changed(gpointer instance, dt_view_t *old_view,
 {
   if(old_view == self)
   {
-    _view_map_remove_location(self);
+    _view_map_location_action(self, MAP_LOCATION_ACTION_REMOVE);
   }
 }
 
@@ -592,7 +621,8 @@ void init(dt_view_t *self)
     lib->place_pin = _init_place_pin();
     lib->drop_filmstrip_activated = FALSE;
     lib->thumb_lat_angle = 0.01, lib->thumb_lon_angle = 0.01;
-    lib->loc.id = 0, lib->loc.location = NULL, lib->loc.time_out = 0;
+    lib->loc.main.id = 0, lib->loc.main.location = NULL, lib->loc.time_out = 0;
+    lib->loc.others = NULL;
 
     OsmGpsMapSource_t map_source
         = OSM_GPS_MAP_SOURCE_OPENSTREETMAP; // open street map should be a nice default ...
@@ -701,6 +731,11 @@ void cleanup(dt_view_t *self)
       g_slist_free_full(lib->images, g_free);
       lib->images = NULL;
     }
+    if(lib->loc.others)
+    {
+      g_list_free_full(lib->loc.others, g_free);
+      lib->loc.others = NULL;
+    }
     // FIXME: it would be nice to cleanly destroy the object, but we are doing this inside expose() so
     // removing the widget can cause segfaults.
     //     g_object_unref(G_OBJECT(lib->map));
@@ -723,7 +758,7 @@ static void _view_map_signal_change_raise(gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, NULL);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, NULL, 0);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
 }
 
@@ -748,7 +783,6 @@ static gboolean _signal_changes(gpointer user_data)
 static void _view_map_signal_change_wait(dt_view_t *self, const int time_out)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
-  _view_map_update_location_geotag(self);
   if(time_out)
   {
     if(lib->loc.time_out)
@@ -815,32 +849,118 @@ static float _view_map_angles_to_pixels(const dt_map_t *lib, const float lat0,
   return abs(px1 - px0);
 }
 
+static double _view_map_get_angles_ratio(const dt_map_t *lib, const float lat0,
+                                         const float lon0, const float angle)
+{
+  OsmGpsMapPoint *pt0 = osm_gps_map_point_new_degrees(lat0, lon0);
+  OsmGpsMapPoint *pt1 = osm_gps_map_point_new_degrees(lat0 + angle, lon0 + angle);
+  gint px0 = 0, py0 = 0;
+  gint px1 = 0, py1 = 0;
+  osm_gps_map_convert_geographic_to_screen(lib->map, pt0, &px0, &py0);
+  osm_gps_map_convert_geographic_to_screen(lib->map, pt1, &px1, &py1);
+  osm_gps_map_point_free(pt0);
+  osm_gps_map_point_free(pt1);
+  double ratio = 1.;
+  if((px1 - px0) > 0)
+    ratio = (float)abs(py1 - py0) / (float)(px1 - px0);
+  return ratio;
+}
+
+static OsmGpsMapImage *_draw_location(dt_map_t *lib, const int shape,
+                                      const double lat, const double lon,
+                                      const double del1, const double del2,
+                                      const gboolean main)
+{
+  const float pixel_lon = _view_map_angles_to_pixels(lib, lat, lon, del1);
+  const float pixel_lat = pixel_lon * del2 / del1;
+  GdkPixbuf *draw = NULL;
+  if(shape == MAP_LOCATION_SHAPE_ELLIPSE)
+    draw = _draw_ellipse(pixel_lon, pixel_lat, main);
+  else if(shape == MAP_LOCATION_SHAPE_RECTANGLE)
+    draw = _draw_rectangle(pixel_lon, pixel_lat, main);
+
+  OsmGpsMapImage *location = NULL;
+  if(draw)
+  {
+    location = osm_gps_map_image_add_with_alignment(lib->map, lat, lon,
+                                                    draw, 0.5, 0.5);
+    g_object_unref(draw);
+  }
+  return location;
+}
+
 static void _view_map_draw_location(const dt_view_t *self)
 {
+  // remove previous one if any
   dt_map_t *lib = (dt_map_t *)self->data;
-  if(lib->loc.location)
+  if(lib->loc.main.location)
   {
-    osm_gps_map_image_remove(lib->map, lib->loc.location);
-    lib->loc.location = NULL;
+    osm_gps_map_image_remove(lib->map, lib->loc.main.location);
+    lib->loc.main.location = NULL;
   }
-  if(lib->loc.id)
+  if(lib->loc.main.id)
   {
-    const float del1 = _view_map_angles_to_pixels(lib, lib->loc.data.lat, lib->loc.data.lon,
-                                                  lib->loc.data.delta1);
-    const float del2 = del1 * lib->loc.data.delta2 / lib->loc.data.delta1;
-    GdkPixbuf *shape = NULL;
-    if(lib->loc.data.shape == MAP_LOCATION_SHAPE_CIRCLE)
-      shape = _draw_circle(del1);
-    else if(lib->loc.data.shape == MAP_LOCATION_SHAPE_RECTANGLE)
-      shape = _draw_rectangle(del1, del2);
-
-    if(shape)
+    for(GList *other = lib->loc.others; other; other = g_list_next(other))
     {
-      lib->loc.location = osm_gps_map_image_add_with_alignment(lib->map,
-                                                           lib->loc.data.lat,
-                                                           lib->loc.data.lon,
-                                                           shape, 0.5, 0.5);
-      g_object_unref(shape);
+      dt_location_draw_t *d = (dt_location_draw_t *)other->data;
+      // remove from map the corresponding other location if any
+      if(d->id == lib->loc.main.id)
+      {
+        // refresh the other data from main location
+        memcpy(&d->data, &lib->loc.main.data, sizeof(dt_map_location_data_t));
+        if((OsmGpsMapImage *)d->location)
+        {
+          osm_gps_map_image_remove(lib->map, (OsmGpsMapImage *)d->location);
+          d->location = NULL;
+        }
+      }
+      // redraw the missing other location if any
+      else
+      {
+        if(!d->location)
+          d->location = (void *)_draw_location(lib, d->data.shape, d->data.lat, d->data.lon,
+                                               d->data.delta1, d->data.delta2 * d->data.ratio,
+                                               FALSE);
+      }
+    }
+    // draw the new one
+    lib->loc.main.location = _draw_location(lib, lib->loc.main.data.shape,
+                                            lib->loc.main.data.lat, lib->loc.main.data.lon,
+                                            lib->loc.main.data.delta1,
+                                            lib->loc.main.data.delta2 * lib->loc.main.data.ratio,
+                                            TRUE);
+  }
+}
+
+static void _view_map_draw_other_locations(const dt_view_t *self,
+                                           const double lat0, const double lat1,
+                                           const double lon0, const double lon1)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+  if(lib->loc.others)
+  {
+    for(GList *other = lib->loc.others; other; other = g_list_next(other))
+    {
+      dt_location_draw_t *d = (dt_location_draw_t *)other->data;
+      if((OsmGpsMapImage *)d->location)
+        osm_gps_map_image_remove(lib->map, (OsmGpsMapImage *)d->location);
+    }
+    g_list_free_full(lib->loc.others, g_free);
+    lib->loc.others = NULL;
+  }
+  if(dt_conf_get_bool("plugins/map/showalllocations"))
+  {
+    lib->loc.others = dt_map_location_get_locations_on_map(lat0, lat1, lon0, lon1);
+    for(GList *other = lib->loc.others; other; other = g_list_next(other))
+    {
+      dt_location_draw_t *d = (dt_location_draw_t *)other->data;
+      d->location = NULL;
+      if(lib->loc.main.id != d->id)
+      {
+        d->location = (void *)_draw_location(lib, d->data.shape, d->data.lat, d->data.lon,
+                                             d->data.delta1, d->data.delta2 * d->data.ratio,
+                                             FALSE);
+      }
     }
   }
 }
@@ -848,11 +968,11 @@ static void _view_map_draw_location(const dt_view_t *self)
 static void _view_map_update_location_geotag(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
-  if(lib->loc.id > 0)
+  if(lib->loc.main.id > 0)
   {
     // update coordinates
-    dt_map_location_set_data(lib->loc.id, &lib->loc.data);
-    dt_map_location_update_images(lib->loc.id);
+    dt_map_location_set_data(lib->loc.main.id, &lib->loc.main.data);
+    dt_map_location_update_images(lib->loc.main.id);
   }
 }
 
@@ -873,6 +993,8 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   bb_1_lat = CLAMP(bb_1_lat, -90.0, 90.0);
   bb_0_lon = CLAMP(bb_0_lon, -180.0, 180.0);
   bb_1_lon = CLAMP(bb_1_lon, -180.0, 180.0);
+  lib->lat0 = bb_0_lat, lib->lat1 = bb_1_lat;
+  lib->lon0 = bb_0_lon, lib->lon1 = bb_1_lon;
 
   /* get map view state and store  */
   int zoom;
@@ -1054,6 +1176,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   }
 
   _view_map_draw_location(self);
+  _view_map_draw_other_locations(self, bb_0_lat, bb_1_lat, bb_0_lon, bb_1_lon);
 
   // not exactly thread safe, but should be good enough for updating the display
   static int timeout_event_source = 0;
@@ -1126,10 +1249,10 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
   if(lib->loc.drag)
   {
-    if(lib->loc.id > 0)
+    if(lib->loc.main.id > 0)
     {
       lib->loc.drag = FALSE;
-      osm_gps_map_image_remove(lib->map, lib->loc.location);
+      osm_gps_map_image_remove(lib->map, lib->loc.main.location);
       lib->loc.drag = FALSE;
       GtkTargetList *targets = gtk_target_list_new(target_list_internal, n_targets_internal);
 
@@ -1143,7 +1266,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       g_object_unref(cross);
       gtk_target_list_unref(targets);
       return TRUE;
-      }
+    }
   }
 
   if(lib->start_drag && lib->selected_images)
@@ -1234,43 +1357,42 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 static gboolean _view_map_scroll_event(GtkWidget *w, GdkEventScroll *event, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
-  if(lib->loc.id > 0)
+  if(lib->loc.main.id > 0)
   {
     OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, (GdkEventButton *)event);
     float lat, lon;
     osm_gps_map_point_get_degrees(p, &lat, &lon);
-    if(dt_map_location_included(lon, lat, &lib->loc.data))
+    if(dt_map_location_included(lon, lat, &lib->loc.main.data))
     {
-      if(lib->loc.data.shape == MAP_LOCATION_SHAPE_RECTANGLE &&
-        (event->state & GDK_SHIFT_MASK))
+      if(event->state & GDK_SHIFT_MASK)
       {
         if(event->direction == GDK_SCROLL_DOWN)
-          lib->loc.data.delta1 *= 1.1;
+          lib->loc.main.data.delta1 *= 1.1;
         else
-          lib->loc.data.delta1 /= 1.1;
+          lib->loc.main.data.delta1 /= 1.1;
       }
-      else if(lib->loc.data.shape == MAP_LOCATION_SHAPE_RECTANGLE &&
-             (event->state & GDK_CONTROL_MASK))
+      else if(event->state & GDK_CONTROL_MASK)
       {
         if(event->direction == GDK_SCROLL_DOWN)
-          lib->loc.data.delta2 *= 1.1;
+          lib->loc.main.data.delta2 *= 1.1;
         else
-          lib->loc.data.delta2 /= 1.1;
+          lib->loc.main.data.delta2 /= 1.1;
       }
       else
       {
         if(event->direction == GDK_SCROLL_DOWN)
         {
-          lib->loc.data.delta1 *= 1.1;
-          lib->loc.data.delta2 *= 1.1;
+          lib->loc.main.data.delta1 *= 1.1;
+          lib->loc.main.data.delta2 *= 1.1;
         }
         else
         {
-          lib->loc.data.delta1 /= 1.1;
-          lib->loc.data.delta2 /= 1.1;
+          lib->loc.main.data.delta1 /= 1.1;
+          lib->loc.main.data.delta2 /= 1.1;
         }
       }
       _view_map_draw_location(self);
+      _view_map_update_location_geotag(self);
       _view_map_signal_change_wait(self, 5);  // wait 5/10 sec after last scroll
       return TRUE;
     }
@@ -1300,16 +1422,38 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
   }
   if(e->button == 1)
   {
-    // check if the click was in a location circle
-    if(lib->loc.id > 0 && !(e->state & GDK_CONTROL_MASK))
+    // check if the click was in a location form - crtl gives priority to images
+    if(lib->loc.main.id > 0 && !(e->state & GDK_CONTROL_MASK))
+    {
+
+      OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
+      float lat, lon;
+      osm_gps_map_point_get_degrees(p, &lat, &lon);
+      if(dt_map_location_included(lon, lat, &lib->loc.main.data))
+      {
+        if(!(e->state & GDK_SHIFT_MASK))
+        {
+          lib->loc.drag = TRUE;
+          return TRUE;
+        }
+      }
+    }
+    // check if another location is clicked - ctrl gives priority to images
+    if (!(e->state & GDK_CONTROL_MASK))
     {
       OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
       float lat, lon;
       osm_gps_map_point_get_degrees(p, &lat, &lon);
-      if(dt_map_location_included(lon, lat, &lib->loc.data))
+      for(GList *other = lib->loc.others; other; other = g_list_next(other))
       {
-        lib->loc.drag = TRUE;
-        return TRUE;
+        dt_location_draw_t *d = (dt_location_draw_t *)other->data;
+        if(dt_map_location_included(lon, lat, &d->data))
+        {
+          dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
+          DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, NULL, d->id);
+          dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
+          return TRUE;
+        }
       }
     }
     // check if the click was on image(s) or just some random position
@@ -1419,7 +1563,7 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.add_marker = _view_map_add_marker;
   darktable.view_manager->proxy.map.remove_marker = _view_map_remove_marker;
   darktable.view_manager->proxy.map.add_location = _view_map_add_location;
-  darktable.view_manager->proxy.map.remove_location= _view_map_remove_location;
+  darktable.view_manager->proxy.map.location_action = _view_map_location_action;
   darktable.view_manager->proxy.map.redraw = _view_map_redraw;
   darktable.view_manager->proxy.map.display_selected = _view_map_display_selected;
 
@@ -1654,54 +1798,61 @@ static gboolean _view_map_remove_marker(const dt_view_t *view, dt_geo_map_displa
 static void _view_map_add_location(const dt_view_t *view, dt_map_location_data_t *g, const guint locid)
 {
   dt_map_t *lib = (dt_map_t *)view->data;
-  lib->loc.id = locid;
+  lib->loc.main.id = locid;
   if(g)
   {
     if(g->delta1 != 0.0 && g->delta2 != 0.0)
     {
       // existing location
-      memcpy(&lib->loc.data, g, sizeof(dt_map_location_data_t));
-      int zoom;
-      g_object_get(G_OBJECT(lib->map), "zoom", &zoom, NULL);
+      memcpy(&lib->loc.main.data, g, sizeof(dt_map_location_data_t));
 
-      const float max_lon = CLAMP(g->lon + g->delta1, -180, 180);
-      const float min_lon = CLAMP(g->lon - g->delta1, -180, 180);
-      const float max_lat = CLAMP(g->lat + g->delta2, -90, 90);
-      const float min_lat = CLAMP(g->lat - g->delta2, -90, 90);
+      const double max_lon = CLAMP(g->lon + g->delta1, -180, 180);
+      const double min_lon = CLAMP(g->lon - g->delta1, -180, 180);
+      const double max_lat = CLAMP(g->lat + g->delta2, -90, 90);
+      const double min_lat = CLAMP(g->lat - g->delta2, -90, 90);
       if(max_lon > min_lon && max_lat > min_lat)
       {
-        _view_map_center_on_bbox(view, min_lon, min_lat, max_lon, max_lat);
+        if(g->lon < lib->lon0 || g->lon > lib->lon1 ||
+           g->lat > lib->lat0 || g->lat < lib->lat1)
+           _view_map_center_on_bbox(view, min_lon, min_lat, max_lon, max_lat);
         _view_map_draw_location(view);
       }
     }
     else
     {
       // this is a new location
-      lib->loc.data.shape = g->shape;
-      int zoom;
+      lib->loc.main.data.shape = g->shape;
       float lon, lat;
-      g_object_get(G_OBJECT(lib->map), "zoom", &zoom,
-                   "latitude", &lat, "longitude", &lon, NULL);
-      lib->loc.data.lon = lon, lib->loc.data.lat = lat;
-      // get a radius angle equivalent to thumb dimension to start with
+      g_object_get(G_OBJECT(lib->map), "latitude", &lat, "longitude", &lon, NULL);
+      lib->loc.main.data.lon = lon, lib->loc.main.data.lat = lat;
+      // get a radius angle equivalent to thumb dimension to start with for delta1
       float dlat, dlon;
-      _view_map_thumb_angles(lib, lib->loc.data.lat, lib->loc.data.lon, &dlat, &dlon);
-      lib->loc.data.delta1 = lib->loc.data.delta2 = dlat;
+      _view_map_thumb_angles(lib, lib->loc.main.data.lat, lib->loc.main.data.lon, &dlat, &dlon);
+      lib->loc.main.data.ratio = _view_map_get_angles_ratio(lib, lib->loc.main.data.lat,
+                                                            lib->loc.main.data.lon, dlon);
+      lib->loc.main.data.delta1 = dlon;
+      lib->loc.main.data.delta2 = dlon / lib->loc.main.data.ratio;
       _view_map_draw_location(view);
+      _view_map_update_location_geotag((dt_view_t *)view);
       _view_map_signal_change_wait((dt_view_t *)view, 1);
     }
   }
 }
 
-static void _view_map_remove_location(const dt_view_t *view)
+static void _view_map_location_action(const dt_view_t *view, const int action)
 {
   dt_map_t *lib = (dt_map_t *)view->data;
-  lib->loc.id = 0;
-  if(lib->loc.location)
+  if(action == MAP_LOCATION_ACTION_REMOVE)
   {
-    osm_gps_map_image_remove(lib->map, lib->loc.location);
+    // remove the main location
+    if(lib->loc.main.location)
+    {
+      osm_gps_map_image_remove(lib->map, lib->loc.main.location);
+    }
+    lib->loc.main.location = NULL;
+    lib->loc.main.id = 0;
   }
-  lib->loc.location = NULL;
+  _view_map_draw_other_locations(view, lib->lat0, lib->lat1, lib->lon0, lib->lon1);
 }
 
 
@@ -1719,7 +1870,7 @@ static void _view_map_collection_changed(gpointer instance, dt_collection_change
   dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
   // avoid to centre the map on collection while a location is active
-  if(darktable.view_manager->proxy.map.view && !lib->loc.id)
+  if(darktable.view_manager->proxy.map.view && !lib->loc.main.id)
   {
     _view_map_center_on_image_list(self, "memory.collected_images");
   }
@@ -1735,7 +1886,7 @@ static void _view_map_selection_changed(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
-  
+
   /* only redraw when map mode is currently active, otherwise enter() does the magic */
   if(darktable.view_manager->proxy.map.view) g_signal_emit_by_name(lib->map, "changed");
 }
@@ -1836,8 +1987,11 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
         osm_gps_map_convert_screen_to_geographic(lib->map, x, y, pt);
         float lat, lon;
         osm_gps_map_point_get_degrees(pt, &lat, &lon);
-        lib->loc.data.lat = lat, lib->loc.data.lon = lon;
+        lib->loc.main.data.lat = lat, lib->loc.main.data.lon = lon;
+        lib->loc.main.data.ratio = _view_map_get_angles_ratio(lib, lib->loc.main.data.lat,
+                                   lib->loc.main.data.lon, lib->loc.main.data.delta1);
         osm_gps_map_point_free(pt);
+        _view_map_update_location_geotag(self);
         _view_map_signal_change_wait(self, 0);
         success = TRUE;
       }
@@ -1894,7 +2048,7 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
             free(imgs);
           }
         }
-        else if(lib->loc.id > 0)
+        else if(lib->loc.main.id > 0)
         {
           // move of location
           uint32_t *imgs = malloc(sizeof(uint32_t));

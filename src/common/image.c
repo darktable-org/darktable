@@ -487,7 +487,7 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
     }
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(*imgs));
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(*imgs), 0);
   }
 }
 
@@ -539,7 +539,7 @@ void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, c
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     // imgs is freed by the destinee
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
   }
 }
 
@@ -1342,7 +1342,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     GList *imgs = NULL;
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
-                                  g_list_copy((GList *)imgs));
+                                  g_list_copy((GList *)imgs), 0);
     return id;
   }
   sqlite3_finalize(stmt);
@@ -1552,7 +1552,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   GList *imgs = NULL;
   imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
-                                g_list_copy((GList *)imgs));
+                                g_list_copy((GList *)imgs), 0);
 
   // the following line would look logical with new_tags_set being the return value
   // from dt_tag_new above, but this could lead to too rapid signals, being able to lock up the
