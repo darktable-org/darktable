@@ -752,11 +752,6 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_de
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
-  if(profile_info)
-  {
-    fprintf(stdout, "WORK : matrix_in : %f, matrix_out : %f \n", profile_info->matrix_in[0], profile_info->matrix_out[0]);
-  }
-
   if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
   {
     fprintf(stderr, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear rec2020\n", type, filename);
@@ -772,11 +767,6 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(struct dt_d
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
-  if(profile_info)
-  {
-    fprintf(stdout, "INPUT INIT : matrix_in : %f, matrix_out : %f \n", profile_info->matrix_in[0], profile_info->matrix_out[0]);
-  }
-
   if(isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
   {
     /* We have a camera input matrix, these are not generated from files but in colorin,
@@ -784,11 +774,6 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(struct dt_d
     */
     memcpy(profile_info->matrix_in, matrix_in, sizeof(profile_info->matrix_in));
     mat3inv_float(profile_info->matrix_out, profile_info->matrix_in);
-  }
-
-  if(profile_info)
-  {
-    fprintf(stdout, "INPUT CORRECT : matrix_in : %f, matrix_out : %f \n", profile_info->matrix_in[0], profile_info->matrix_out[0]);
   }
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
@@ -808,11 +793,6 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_output_profile_info(struct dt_
     const int type, const char *filename, const int intent)
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
-
-  if(profile_info)
-  {
-    fprintf(stdout, "OUTPUT : matrix_in : %f, matrix_out : %f \n", profile_info->matrix_in[0], profile_info->matrix_out[0]);
-  }
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
   {
