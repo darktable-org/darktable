@@ -265,6 +265,8 @@ static gboolean _event_cursor_draw(GtkWidget *widget, cairo_t *cr, gpointer user
   if(!user_data || !widget) return TRUE;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
+  if(thumb->zoomable) return TRUE;
+
   GtkStateFlags state = gtk_widget_get_state_flags(thumb->w_cursor);
   GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_cursor);
   GdkRGBA col;
