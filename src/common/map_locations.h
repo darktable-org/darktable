@@ -22,19 +22,32 @@
 #include <sqlite3.h>
 #include <stdint.h>
 
-
 typedef enum dt_map_locations_type_t
 {
-  MAP_LOCATION_SHAPE_CIRCLE,
+  MAP_LOCATION_SHAPE_ELLIPSE,
   MAP_LOCATION_SHAPE_RECTANGLE,
-  MAP_LOCATION_SHAPE_FORM_MAX
+  MAP_LOCATION_SHAPE_MAX
 } dt_map_locations_type_t;
+
+typedef enum dt_map_locations_action_t
+{
+  MAP_LOCATION_ACTION_REMOVE,
+  MAP_LOCATION_ACTION_UPDATE_OTHERS,
+  MAP_LOCATION_ACTION_MAX
+} dt_map_locations_action_t;
 
 typedef struct dt_map_location_data_t
 {
-  double lon, lat, delta1, delta2;
+  double lon, lat, delta1, delta2, ratio;
   int shape;
 } dt_map_location_data_t;
+
+typedef struct dt_location_draw_t
+{
+  guint id;
+  dt_map_location_data_t data;
+  void *location;
+} dt_location_draw_t;
 
 typedef struct dt_map_location_t
 {
@@ -59,6 +72,11 @@ gboolean dt_map_location_name_exists(const char *const name);
 // to be freed with dt_map_location_free_result()
 GList *dt_map_location_get_locations_by_path(const gchar *path,
                                              const gboolean remove_root);
+
+// retrieve list of locations which are on the map
+// to be freed with g_list_free_full(list, g_free)
+GList *dt_map_location_get_locations_on_map(const double lat0, const double lat1,
+                                            const double lon0, const double lon1);
 
 // free map location list
 void dt_map_location_free_result(GList **result);
