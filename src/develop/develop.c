@@ -2464,17 +2464,16 @@ int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points
   return dt_dev_distort_backtransform_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 
-int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
-                                  float *points, size_t points_count)
+// only call directly or indirectly from dt_dev_distort_transform_plus, so that it runs with the history locked
+int dt_dev_distort_transform_locked(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order,
+                                    const int transf_direction, float *points, size_t points_count)
 {
-  dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_first(pipe->iop);
   GList *pieces = g_list_first(pipe->nodes);
   while(modules)
   {
     if(!pieces)
     {
-      dt_pthread_mutex_unlock(&dev->history_mutex);
       return 0;
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -2491,7 +2490,15 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
     modules = g_list_next(modules);
     pieces = g_list_next(pieces);
   }
-  if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
+  return 1;
+}
+
+int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
+                                  float *points, size_t points_count)
+{
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  int success = dt_dev_distort_transform_locked(dev,pipe,iop_order,transf_direction,points,points_count);
+  if (success && (dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
                         || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
                         || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
     for(size_t idx=0; idx < 2 * points_count; idx++) points[idx] *= dev->preview_downsampling;
@@ -2499,22 +2506,17 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return 1;
 }
-int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
-                                      float *points, size_t points_count)
-{
-  dt_pthread_mutex_lock(&dev->history_mutex);
-  if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
-    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
-    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
-      for(size_t idx=0; idx < 2 * points_count; idx++) points[idx] /= dev->preview_downsampling;
 
+// only call directly or indirectly from dt_dev_distort_transform_plus, so that it runs with the history locked
+int dt_dev_distort_backtransform_locked(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order,
+                                        const int transf_direction, float *points, size_t points_count)
+{
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
   {
     if(!pieces)
     {
-      dt_pthread_mutex_unlock(&dev->history_mutex);
       return 0;
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -2531,8 +2533,21 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
     modules = g_list_previous(modules);
     pieces = g_list_previous(pieces);
   }
-  dt_pthread_mutex_unlock(&dev->history_mutex);
   return 1;
+}
+
+int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
+                                      float *points, size_t points_count)
+{
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
+    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+    || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
+      for(size_t idx=0; idx < 2 * points_count; idx++) points[idx] /= dev->preview_downsampling;
+
+  int success = dt_dev_distort_backtransform_locked(dev,pipe,iop_order,transf_direction,points,points_count);
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+  return success;
 }
 
 dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
