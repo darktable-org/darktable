@@ -655,7 +655,10 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
   return err_code;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename)
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
+                                    const dt_colorspaces_color_profile_type_t profile_type,
+                                    const char *profile_filename)
 {
   dt_iop_order_iccprofile_info_t *profile_info = NULL;
 
@@ -674,7 +677,11 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_de
   return profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename, const int intent)
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
+                                  const dt_colorspaces_color_profile_type_t profile_type,
+                                  const char *profile_filename,
+                                  const int intent)
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_get_profile_info_from_list(dev, profile_type, profile_filename);
   if(profile_info == NULL)
@@ -885,7 +892,9 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(struct dt
 
 // returns a pointer to the filename of the work profile instead of the actual string data
 // pointer must not be stored
-void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename)
+void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
+                                    dt_colorspaces_color_profile_type_t *profile_type,
+                                    const char **profile_filename)
 {
   *profile_type = DT_COLORSPACE_NONE;
   *profile_filename = NULL;
@@ -934,7 +943,9 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type,
     fprintf(stderr, "[dt_ioppr_get_work_profile_type] can't find colorin iop\n");
 }
 
-void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename)
+void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
+                                      dt_colorspaces_color_profile_type_t *profile_type,
+                                      const char **profile_filename)
 {
   *profile_type = DT_COLORSPACE_NONE;
   *profile_filename = NULL;
@@ -983,7 +994,8 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_typ
     fprintf(stderr, "[dt_ioppr_get_export_profile_type] can't find colorout iop\n");
 }
 
-void dt_ioppr_get_histogram_profile_type(int *profile_type, const char **profile_filename)
+void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
+                                         const char **profile_filename)
 {
   const dt_colorspaces_color_mode_t mode = darktable.color_profiles->mode;
 
