@@ -175,6 +175,8 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
     fprintf(stderr, "[_history_snapshot_undo_restore] fails to restore a snapshot for %d\n", imgid);
   }
   dt_unlock_image(imgid);
+
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 }
 
 static void _clear_undo_snapshot(int32_t imgid, int snap_id)
