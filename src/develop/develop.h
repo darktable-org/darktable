@@ -459,8 +459,16 @@ int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points
 /** same fct, but we can specify iop with priority between pmin and pmax */
 int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                   float *points, size_t points_count);
+/** same fct, but can only be called from a distort_transform function called by dt_dev_distort_transform_plus */
+int dt_dev_distort_transform_locked(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order,
+                                    const int transf_direction, float *points, size_t points_count);
+/** same fct as dt_dev_distort_backtransform, but we can specify iop with priority between pmin and pmax */
 int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                       float *points, size_t points_count);
+/** same fct, but can only be called from a distort_backtransform function called by dt_dev_distort_backtransform_plus */
+int dt_dev_distort_backtransform_locked(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order,
+                                    const int transf_direction, float *points, size_t points_count);
+
 /** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
 struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
                                                            struct dt_iop_module_t *module);
