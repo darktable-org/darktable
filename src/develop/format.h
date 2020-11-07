@@ -24,7 +24,6 @@
 struct dt_dev_pixelpipe_iop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_iop_module_t;
-struct dt_iop_order_iccprofile_info_t;
 
 typedef enum dt_iop_buffer_type_t {
   TYPE_UNKNOWN,
