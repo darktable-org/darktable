@@ -99,7 +99,10 @@ void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_e
   if(all_ok)
     sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   else
+  {
     sqlite3_exec(dt_database_get(darktable.db), "ROLLBACK_TRANSACTION", NULL, NULL, NULL);
+    fprintf(stderr, "[dt_history_snapshot_undo_create] fails to create a snapshot for %d\n", imgid);
+  }
 
   dt_unlock_image(imgid);
 }
@@ -167,8 +170,10 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
   if(all_ok)
     sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   else
+  {
     sqlite3_exec(dt_database_get(darktable.db), "ROLLBACK_TRANSACTION", NULL, NULL, NULL);
-
+    fprintf(stderr, "[_history_snapshot_undo_restore] fails to restore a snapshot for %d\n", imgid);
+  }
   dt_unlock_image(imgid);
 }
 
