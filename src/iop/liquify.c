@@ -446,63 +446,6 @@ static void path_delete(dt_iop_liquify_params_t *p, dt_liquify_path_data_t *this
   node_gc(p);
 }
 
-int _dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
-                                  float *points, size_t points_count)
-{
-  // this is called from the dt_dev_distort_transform_plus(), so the history is already locked
-  GList *modules = g_list_first(pipe->iop);
-  GList *pieces = g_list_first(pipe->nodes);
-  while(modules)
-  {
-    if(!pieces)
-    {
-      return 0;
-    }
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
-    if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
-      !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
-    {
-      module->distort_transform(module, piece, points, points_count);
-    }
-    modules = g_list_next(modules);
-    pieces = g_list_next(pieces);
-  }
-  return 1;
-}
-int _dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
-                                      float *points, size_t points_count)
-{
-  // this is called from the dt_dev_distort_backtransform_plus(), so the history is already locked
-  GList *modules = g_list_last(pipe->iop);
-  GList *pieces = g_list_last(pipe->nodes);
-  while(modules)
-  {
-    if(!pieces)
-    {
-      return 0;
-    }
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
-    if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
-      !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
-    {
-      module->distort_backtransform(module, piece, points, points_count);
-    }
-    modules = g_list_previous(modules);
-    pieces = g_list_previous(pieces);
-  }
-  return 1;
-}
-
 /**
  * The functions in this group help transform between coordinate
  * systems.  (In darktable nomenclature this kind of transform is
@@ -638,11 +581,14 @@ static void _distort_paths(const struct dt_iop_module_t *module,
   {
     if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
     {
-      _dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
-      _dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
+      dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+                                      DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
+      dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+                                      DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
     }
     else
-      _dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, params->transf_direction, buffer, len);
+      dt_dev_distort_transform_locked(params->develop, params->pipe, module->iop_order,
+                                      params->transf_direction, buffer, len);
   }
   else
   {
