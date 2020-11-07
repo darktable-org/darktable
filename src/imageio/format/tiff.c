@@ -426,14 +426,17 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
 #ifdef MASKS_USE_SAME_FORMAT
-        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
+        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)layers);
         TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)(d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT));
-        TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+        if(layers == 3)
+          TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+        else
+          TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
         TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
 
         free(rowdata);
-        const size_t _rowsize = (w * 3) * d->bpp / 8;
+        const size_t _rowsize = (w * layers) * d->bpp / 8;
         rowdata = malloc(_rowsize);
 
         if(d->bpp == 32)
@@ -443,9 +446,9 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             const float *in = raster_mask + (size_t)y * w;
             float *out = (float *)rowdata;
 
-            for(int x = 0; x < w; x++, out += 3)
+            for(int x = 0; x < w; x++, out += layers)
             {
-              for(int c = 0; c < 3; c++)
+              for(int c = 0; c < layers; c++)
                 out[c] = in[x];
             }
 
@@ -463,9 +466,9 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             const float *in = raster_mask + (size_t)y * w;
             uint16_t *out = (uint16_t *)rowdata;
 
-            for(int x = 0; x < w; x++, out += 3)
+            for(int x = 0; x < w; x++, out += layers)
             {
-              for(int c = 0; c < 3; c++)
+              for(int c = 0; c < layers; c++)
                 out[c] = CLAMP_FLT(in[x]) * 65535;
             }
 
@@ -483,9 +486,9 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             const float *in = raster_mask + (size_t)y * w;
             uint8_t *out = (uint8_t *)rowdata;
 
-            for(int x = 0; x < w; x++, out += 3)
+            for(int x = 0; x < w; x++, out += layers)
             {
-              for(int c = 0; c < 3; c++)
+              for(int c = 0; c < layers; c++)
                 out[c] = CLAMP_FLT(in[x]) * 255;
             }
 
