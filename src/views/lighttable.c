@@ -168,6 +168,7 @@ static void _lighttable_check_layout(dt_view_t *self)
     dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = FALSE;
     gtk_widget_hide(lib->preview->widget);
     gtk_widget_hide(lib->culling->widget);
+    gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
 
     // if we arrive from culling, we just need to ensure the offset is right
     if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING)
@@ -225,6 +226,8 @@ static void _lighttable_check_layout(dt_view_t *self)
 
   if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->preview_state)
   {
+    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                             DT_THUMBTABLE_MODE_NONE);
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                        TRUE); // always on, visibility is driven by panel state
@@ -585,6 +588,8 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->preview->navigate_inside_selection;
 
   // show/hide filmstrip & timeline when entering the view
+  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                           DT_THUMBTABLE_MODE_NONE);
   dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
   dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                      TRUE); // always on, visibility is driven by panel state
@@ -627,7 +632,7 @@ void leave(dt_view_t *self)
   }
 
   // we remove the thumbtable from main view
-  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), NULL, DT_THUMBTABLE_MODE_FILMSTRIP);
+  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), NULL, DT_THUMBTABLE_MODE_NONE);
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 }

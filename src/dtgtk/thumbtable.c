@@ -1830,8 +1830,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM) nbnew += _thumbs_load_needed(table);
 
     if(g_slist_length(darktable.view_manager->active_images) > 0
-       && (table->mode == DT_THUMBTABLE_MODE_ZOOM || table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-       && gtk_widget_is_visible(table->widget))
+       && (table->mode == DT_THUMBTABLE_MODE_ZOOM || table->mode == DT_THUMBTABLE_MODE_FILEMANAGER))
     {
       // this mean we arrive from filmstrip with some active images
       // we need to ensure they are visible and to mark them with some css effect
@@ -1846,6 +1845,8 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
         {
           GtkStyleContext *context = gtk_widget_get_style_context(th->w_main);
           gtk_style_context_add_class(context, "dt_last_active");
+          th->active = FALSE;
+          dt_thumbnail_update_infos(th);
         }
         l = g_slist_next(l);
       }
