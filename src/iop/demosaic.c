@@ -2428,35 +2428,41 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
 
 // This has been taken from rt, adapted to dt.
 // The original dcraw based code was simlpler but had much stronger color artefacts in the border region. 
-static void _border_interpolate(float *out, const float *cfa, const uint32_t filters, const int width, const int height, const int roi_dx, const int roi_dy, const int bord)
+#define FCRCD(row, col) (cfarray[(((row) & 1)<<1) | ((col) & 1)])
+                                                                                      \
+#define RCD_TILESIZE 256
+#define RCD_BORDER 6 // don't use the outermost lines/colums as there are artefacts in 5 from any border
+
+static void rcd_border_interpolate(float *out, const float *cfa, const uint32_t *filter, const uint32_t width, const uint32_t height)
 {
   float (*rgb)[4] = (void *)out;
+  const uint32_t cfarray[4] = {filter[0], filter[1], filter[2], filter[3]};
 #ifdef _OPENMP
 #pragma omp parallel for \
   shared(rgb) \
-  dt_omp_firstprivate(cfa, filters) \
+  dt_omp_firstprivate(cfa) \
   collapse(1) \
   schedule(static)
 #endif
   for(int i = 0; i < height; i++)
   {
     float sum[6];
-    for(int j = 0; j < bord; j++)
+    for(int j = 0; j < RCD_BORDER; j++)
     { //first few columns
-      memset(sum, 0, sizeof(float) * 6);
+      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
       for(int i1 = i - 1; i1 < i + 2; i1++)
       {
         for(int j1 = j - 1; j1 < j + 2; j1++)
         {
           if((i1 > -1) && (i1 < height) && (j1 > -1))
           {
-            const int c = FC(i1 + roi_dy, j1 + roi_dx, filters);
+            const short int c = FCRCD(i1, j1);
             sum[c] += cfa[i1 * width + j1];
             sum[c + 3]++;
           }
         }
       }
-      const int c = FC(i + roi_dy, j + roi_dx, filters);
+      const short int c = FCRCD(i, j);
       const int idx = i * width + j;
       if(c == 1)
       {
@@ -2480,22 +2486,22 @@ static void _border_interpolate(float *out, const float *cfa, const uint32_t fil
        }
     }
 
-    for(int j = width - bord; j < width; j++)
+    for(int j = width - RCD_BORDER; j < width; j++)
     { //last few columns
-      memset(sum, 0, sizeof(float) * 6);
+      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
       for(int i1 = i - 1; i1 < i + 2; i1++)
       {
         for(int j1 = j - 1; j1 < j + 2; j1++)
         {
           if((i1 > -1) && (i1 < height ) && (j1 < width))
           {
-            const int c = FC(i1 + roi_dy, j1 + roi_dx, filters);
+            const short int c = FCRCD(i1, j1);
             sum[c] += cfa[i1 * width + j1];
             sum[c + 3]++;
           }
         }
       }
-      const int c = FC(i + roi_dy, j + roi_dx, filters);
+      const short int c = FCRCD(i, j);
       const int idx = i * width + j;
       if(c == 1)
       {
@@ -2523,29 +2529,29 @@ static void _border_interpolate(float *out, const float *cfa, const uint32_t fil
 #ifdef _OPENMP
 #pragma omp parallel for \
   shared(rgb) \
-  dt_omp_firstprivate(cfa, filters) \
+  dt_omp_firstprivate(cfa) \
   collapse(1) \
   schedule(static)
 #endif
-  for(int i = 0; i < bord; i++)
+  for(int i = 0; i < RCD_BORDER; i++)
   {
     float sum[6];
-    for(int j = bord; j < width - bord; j++)
+    for(int j = RCD_BORDER; j < width - RCD_BORDER; j++)
     {
-      memset(sum, 0, sizeof(float) * 6);
+      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
       for(int i1 = i - 1; i1 < i + 2; i1++)
       {
         for(int j1 = j - 1; j1 < j + 2; j1++)
         {
           if((i1 > -1) && (i1 < height) && (j1 > -1))
           {
-            const int c = FC(i1 + roi_dy, j1 + roi_dx, filters);
+            const short int c = FCRCD(i1, j1);
             sum[c] += cfa[i1 * width + j1];
             sum[c + 3]++;
           }
         }
       }
-      const int c = FC(i + roi_dy, j + roi_dx, filters);
+      const short int c = FCRCD(i, j);
       const int idx = i * width + j;
       if(c == 1)
       {
@@ -2573,29 +2579,29 @@ static void _border_interpolate(float *out, const float *cfa, const uint32_t fil
 #ifdef _OPENMP
 #pragma omp parallel for \
   shared(rgb) \
-  dt_omp_firstprivate(cfa, filters) \
+  dt_omp_firstprivate(cfa) \
   collapse(1) \
   schedule(static)
 #endif
-  for(int i = height - bord; i < height; i++)
+  for(int i = height - RCD_BORDER; i < height; i++)
   {
     float sum[6];
-    for(int j = bord; j < width - bord; j++)
+    for(int j = RCD_BORDER; j < width - RCD_BORDER; j++)
     { //last few rows
-      memset(sum, 0, sizeof(float) * 6);
+      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
       for(int i1 = i - 1; i1 < i + 2; i1++)
       {
         for(int j1 = j - 1; j1 < j + 2; j1++)
         {
           if((i1 > -1) && (i1 < height) && (j1 < width))
           {
-            const int c = FC(i1 + roi_dy, j1 + roi_dx, filters);
+            const short int c = FCRCD(i1, j1);
             sum[c] += cfa[i1 * width + j1];
             sum[c + 3]++;
           }
         }
       }
-      const int c = FC(i + roi_dy, j + roi_dx, filters);
+      const short int c = FCRCD(i, j);
       const int idx = i * width + j;
       if(c == 1)
       {
@@ -2629,79 +2635,105 @@ static void _border_interpolate(float *out, const float *cfa, const uint32_t fil
 *
 * Original code from https://github.com/LuisSR/RCD-Demosaicing
 * Licensed under the GNU GPL version 3
-* That code has been changed directly to be dt usable, 
+* That code has been changed to be dt usable, tiling is likely as rt code
 */
-static void rcd_demosaic(float *out, const float *in, dt_iop_roi_t *const roi_out,
+
+static void rcd_demosaic(float *out, const float *raw, dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in, const uint32_t filters)
 {
   assert(roi_in->width >= roi_out->width);
   assert(roi_in->height >= roi_out->height);
 
-  const int width = roi_out->width;
-  const int height = roi_out->height;
+  const uint32_t width = roi_out->width;
+  const uint32_t height = roi_out->height;
 
-  const int roi_dx = roi_in->x;
-  const int roi_dy = roi_in->y;
-  // Tolerance to avoid dividing by zero
-  const float eps = 1e-5;
-  const float epssq = 1e-10;
-
-  float (*rgb)[4] = (void *)out;
-  float (*VH_Dir) = NULL;
-  float (*lpf) = NULL;
-  float (*PQ_Dir) = NULL;
-  float (*cfa) = NULL;
-
-  const int w1 = width, w2 = 2 * width, w3 = 3 * width, w4 = 4 * width;
-
-  if((width < 16) || (height < 16)) return;
- 
-  VH_Dir = (float*) calloc(width * height, sizeof *VH_Dir);
-  if(VH_Dir == NULL) goto alloc_error;
-
-  lpf = (float*) calloc(width * height, sizeof *lpf);
-  if(lpf == NULL) goto alloc_error;
-
-  PQ_Dir = (float*) calloc( width * height, sizeof *PQ_Dir );
-  if(PQ_Dir == NULL) goto alloc_error;
-
-  cfa = (float*) calloc(width * height, sizeof *cfa);
-  if(cfa == NULL) goto alloc_error;
-
-  // Copy input data to rgb channel data
-  // we need an extra copy step for later speed to make sure the cfa data are >= 0.0f
-#ifdef _OPENMP
-#pragma omp parallel for \
-  shared(rgb) \
-  dt_omp_firstprivate(cfa, filters) \
-  schedule(static) \
-  collapse(2)
-#endif
-  for(int row = 0; row < height; row++)
+  if((width < 16) || (height < 16))
   {
-    for(int col = 0; col < width; col++)
-    {
-      const int indx = row * width + col;
-      rgb[indx][0] = rgb[indx][1] = rgb[indx][2] = 0.0f;
-      rgb[indx][FC(row + roi_dy, col + roi_dx, filters)] = cfa[indx] = fmaxf(in[indx], 0.0f);
-    }
+    dt_control_log(_("[rcd_demosaic] too small area"));
+    return;
   }
- 
-  // STEP 1: Find vertical and horizontal interpolation directions
-  // Step 1.1: Calculate vertical and horizontal local discrimination
-#ifdef _OPENMP
-#pragma omp parallel for \
-  dt_omp_firstprivate(cfa, VH_Dir) \
-  schedule(static) \
-  collapse(2)
-#endif
-  for(int row = 4; row < height - 4; row++)
+
+  // Tolerance to avoid dividing by zero
+  #define eps 1e-5
+  #define epssq 1e-10
+  #define RCD_IN_TILE (RCD_TILESIZE - 2 * RCD_BORDER)
+
+  const uint32_t cfarray[4] = {FC(roi_in->y, roi_in->x, filters), FC(roi_in->y, roi_in->x + 1, filters), FC(roi_in->y + 1, roi_in->x, filters), FC(roi_in->y + 1, roi_in->x + 1, filters)};
+
+  const int numTh = height / (RCD_IN_TILE) + ((height % (RCD_IN_TILE)) ? 1 : 0);
+  const int numTw = width / (RCD_IN_TILE) + ((width % (RCD_IN_TILE)) ? 1 : 0);
+
+  const uint32_t w1 = RCD_TILESIZE, w2 = 2 * RCD_TILESIZE, w3 = 3 * RCD_TILESIZE, w4 = 4 * RCD_TILESIZE;
+  float *in = (float*) malloc(width * height * sizeof (float));
+
+  // Copy clipped raw data to in
+  // we need an extra copy step for later speed to make sure the cfa data are >= 0.0f
+  for(int idx = 0; idx < width * height; idx++)
   {
-    for(int col = 4; col < width - 4; col++)
+    in[idx] = fmaxf(raw[idx], 0.0f);
+  }
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+  { 
+    float *VH_Dir = (float*) calloc(RCD_TILESIZE * RCD_TILESIZE, sizeof *VH_Dir);
+    float *PQ_Dir = (float*) calloc(RCD_TILESIZE * RCD_TILESIZE, sizeof *PQ_Dir);
+    float *cfa = (float*) calloc(RCD_TILESIZE * RCD_TILESIZE, sizeof *cfa);
+    float (*rgb)[RCD_TILESIZE * RCD_TILESIZE] = (float (*)[RCD_TILESIZE * RCD_TILESIZE])malloc(4 * sizeof *rgb);
+
+    // No overlapping use so using same buffer; also note we use divide-by-2 index for lower mem pressure
+    float *lpf = PQ_Dir;
+
+#ifdef _OPENMP
+    #pragma omp for schedule(static) collapse(2) nowait
+#endif
+    for(int tr = 0; tr < numTh; ++tr)
     {
-      const int indx = row * width + col;
-      const float cfai = cfa[indx];
-      const float V_Stat = fmaxf(epssq, -18.f * cfai * (cfa[indx - w1] + cfa[indx + w1] + 2.f * (cfa[indx - w2] + cfa[indx + w2]) - cfa[indx - w3] - cfa[indx + w3])
+      for(int tc = 0; tc < numTw; ++tc)
+      {
+        const int rowStart = tr * RCD_IN_TILE;
+        const int rowEnd = MIN(rowStart + RCD_TILESIZE, height);
+        if(rowStart + RCD_BORDER == rowEnd - RCD_BORDER)
+          continue;
+
+        const int colStart = tc * RCD_IN_TILE;
+        const int colEnd = MIN(colStart + RCD_TILESIZE, width);
+        if(colStart + RCD_BORDER == colEnd - RCD_BORDER)
+          continue;
+
+        const int tileRows = MIN(rowEnd - rowStart, RCD_TILESIZE);
+        const int tilecols = MIN(colEnd - colStart, RCD_TILESIZE);
+
+        for(int row = rowStart; row < rowEnd; row++)
+        {
+          int indx = (row - rowStart) * RCD_TILESIZE;
+          int in_indx = (row * width + colStart);
+          const short int c0 = FCRCD(row, colStart);
+          const short int c1 = FCRCD(row, colStart + 1);
+          int col = colStart;
+
+          for(; col < colEnd - 1; col+=2, indx+=2, in_indx+=2)
+          {
+            cfa[indx]     = rgb[c0][indx]     = fmaxf(in[in_indx], 0.0f);
+            cfa[indx + 1] = rgb[c1][indx + 1] = fmaxf(in[in_indx+1], 0.0f);
+          }
+          if(col < colEnd)
+          {
+            cfa[indx] = rgb[c0][indx] = fmaxf(in[indx], 0.0f);
+          }
+        }
+
+        // STEP 1: Find vertical and horizontal interpolation directions
+        // Step 1.1: Calculate vertical and horizontal local discrimination
+        for(int row = 4; row < tileRows - 4; row++)
+        {
+          for(int col = 4; col < tilecols - 4; col++)
+            {
+              const int indx = row * RCD_TILESIZE + col;
+              const float cfai = cfa[indx];
+              const float V_Stat = fmaxf(epssq,
+                                        -18.f * cfai * (cfa[indx - w1] + cfa[indx + w1] + 2.f * (cfa[indx - w2] + cfa[indx + w2]) - cfa[indx - w3] - cfa[indx + w3])
                                         - 2.f * cfai * (cfa[indx - w4] + cfa[indx + w4] - 19.f * cfai)
                                         - cfa[indx - w1] * ( 70.f * cfa[indx + w1] + 12.f * cfa[indx - w2] - 24.f * cfa[indx + w2] + 38.f * cfa[indx - w3] - 16.f * cfa[indx + w3] - 12.f * cfa[indx - w4] + 6.f * cfa[indx + w4] - 46.f * cfa[indx - w1])
                                         + cfa[indx + w1] * ( 24.f * cfa[indx - w2] - 12.f * cfa[indx + w2] + 16.f * cfa[indx - w3] - 38.f * cfa[indx + w3] - 6.f * cfa[indx - w4] + 12.f * cfa[indx + w4] + 46.f * cfa[indx + w1])
@@ -2711,7 +2743,8 @@ static void rcd_demosaic(float *out, const float *in, dt_iop_roi_t *const roi_ou
                                         + cfa[indx + w3] * ( -6.f * cfa[indx + w4] + 10.f * cfa[indx + w3])
                                         + cfa[indx - w4] * cfa[indx - w4]
                                         + cfa[indx + w4] * cfa[indx + w4]);
-      const float H_Stat = fmaxf(epssq, -18.f * cfai * (cfa[indx - 1] + cfa[indx + 1] + 2.f * (cfa[indx - 2] + cfa[indx + 2]) - cfa[indx - 3] - cfa[indx + 3])
+              const float H_Stat = fmaxf(epssq,
+                                        -18.f * cfai * (cfa[indx - 1] + cfa[indx + 1] + 2.f * (cfa[indx - 2] + cfa[indx + 2]) - cfa[indx - 3] - cfa[indx + 3])
                                         - 2.f * cfai * (cfa[indx - 4] + cfa[indx + 4] - 19.f * cfai)
                                         - cfa[indx - 1] * (70.f * cfa[indx + 1] + 12.f * cfa[indx - 2] - 24.f * cfa[indx + 2] + 38.f * cfa[indx - 3] - 16.f * cfa[indx + 3] - 12.f * cfa[indx - 4] + 6.f * cfa[indx + 4] - 46.f * cfa[indx - 1])
                                         + cfa[indx + 1] * (24.f * cfa[indx - 2] - 12.f * cfa[indx + 2] + 16.f * cfa[indx - 3] - 38.f * cfa[indx + 3] - 6.f * cfa[indx - 4] + 12.f * cfa[indx + 4] + 46.f * cfa[indx + 1])
@@ -2721,87 +2754,77 @@ static void rcd_demosaic(float *out, const float *in, dt_iop_roi_t *const roi_ou
                                         + cfa[indx + 3] * (-6.f * cfa[indx + 4] + 10.f * cfa[indx + 3])
                                        + cfa[indx - 4] * cfa[indx - 4]
                                        + cfa[indx + 4] * cfa[indx + 4]);
-      VH_Dir[indx] = V_Stat / (V_Stat + H_Stat);
-    }
-  }
+            VH_Dir[indx] = V_Stat / (V_Stat + H_Stat);
+          }
+        }
 
-  // STEP 2: Calculate the low pass filter
-  // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
-#ifdef _OPENMP
-#pragma omp parallel for \
-  dt_omp_firstprivate(cfa, lpf) \
-  schedule(static)
-#endif
-  for(int row = 2; row < height - 2; row++)
-  {
-    for(int col = 2 + (FC(row + roi_dy, roi_dx, filters) & 1); col < width - 2; col += 2)
-    {
-      const int indx = row * width + col;
-      lpf[indx] = 0.25f * cfa[indx] + 0.125f * (cfa[indx - w1] + cfa[indx + w1] + cfa[indx - 1] + cfa[indx + 1]) + 0.0625f * (cfa[indx - w1 - 1] + cfa[indx - w1 + 1] + cfa[indx + w1 - 1] + cfa[indx + w1 + 1]);
-    }
-  }
+        // STEP 2: Calculate the low pass filter
+        // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
+        for(int row = 2; row < tileRows - 2; row++)
+        {
+          for(int col = 2 + (FCRCD(row, 0) & 1); col < tilecols - 2; col += 2)
+          {
+            const int indx = row * RCD_TILESIZE + col;
+            lpf[indx>>1] = 0.25f * cfa[indx]
+                        + 0.125f * (cfa[indx - w1] + cfa[indx + w1] + cfa[indx - 1] + cfa[indx + 1])
+                       + 0.0625f * (cfa[indx - w1 - 1] + cfa[indx - w1 + 1] + cfa[indx + w1 - 1] + cfa[indx + w1 + 1]);
+          }
+        }
 
-  // STEP 3: Populate the green channel
-  // Step 3.1: Populate the green channel at blue and red CFA positions
-#ifdef _OPENMP
-#pragma omp parallel for \
-  shared(rgb) \
-  dt_omp_firstprivate(cfa, VH_Dir, filters) \
-  schedule(static)
-#endif
-  for(int row = 4; row < height - 4; row++)
-  {
-    for(int col = 4 + (FC(row + roi_dy, roi_dx, filters) & 1); col < width - 4; col += 2)
-    {
-      const int indx = row * width + col;
-      // Refined vertical and horizontal local discrimination
-      const float VH_Central_Value = VH_Dir[indx];
-      const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
-      const float VH_Disc = (fabs(0.5f - VH_Central_Value) < fabs(0.5f - VH_Neighbourhood_Value)) ? VH_Neighbourhood_Value : VH_Central_Value;
+        // STEP 3: Populate the green channel
+        // Step 3.1: Populate the green channel at blue and red CFA positions
+        for(int row = 4; row < tileRows - 4; row++)
+        {
+          for(int col = 4 + (FCRCD(row, 0) & 1); col < tilecols - 4; col += 2)
+          {
+            const int indx = row * RCD_TILESIZE + col;
+            const float cfai = cfa[indx];
+            const float lpfi = lpf[indx>>1];
+            // Refined vertical and horizontal local discrimination
+            const float VH_Central_Value = VH_Dir[indx];
+            const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
+            const float VH_Disc = (fabs(0.5f - VH_Central_Value) < fabs(0.5f - VH_Neighbourhood_Value)) ? VH_Neighbourhood_Value : VH_Central_Value;
 
-      // Cardinal gradients
-      const float N_Grad = eps + fabs(cfa[indx - w1] - cfa[indx + w1]) + fabs(cfa[indx] - cfa[indx - w2]) + fabs(cfa[indx - w1] - cfa[indx - w3]) + fabs(cfa[indx - w2] - cfa[indx - w4]);
-      const float S_Grad = eps + fabs(cfa[indx + w1] - cfa[indx - w1]) + fabs(cfa[indx] - cfa[indx + w2]) + fabs(cfa[indx + w1] - cfa[indx + w3]) + fabs(cfa[indx + w2] - cfa[indx + w4]);
-      const float W_Grad = eps + fabs(cfa[indx -  1] - cfa[indx +  1]) + fabs(cfa[indx] - cfa[indx -  2]) + fabs(cfa[indx -  1] - cfa[indx -  3]) + fabs(cfa[indx -  2] - cfa[indx -  4]);
-      const float E_Grad = eps + fabs(cfa[indx +  1] - cfa[indx -  1]) + fabs(cfa[indx] - cfa[indx +  2]) + fabs(cfa[indx +  1] - cfa[indx +  3]) + fabs(cfa[indx +  2] - cfa[indx +  4]);
+            // Cardinal gradients
+            const float N_Grad = eps + fabs(cfa[indx - w1] - cfa[indx + w1]) + fabs(cfai - cfa[indx - w2]) + fabs(cfa[indx - w1] - cfa[indx - w3]) + fabs(cfa[indx - w2] - cfa[indx - w4]);
+            const float S_Grad = eps + fabs(cfa[indx + w1] - cfa[indx - w1]) + fabs(cfai - cfa[indx + w2]) + fabs(cfa[indx + w1] - cfa[indx + w3]) + fabs(cfa[indx + w2] - cfa[indx + w4]);
+            const float W_Grad = eps + fabs(cfa[indx -  1] - cfa[indx +  1]) + fabs(cfai - cfa[indx -  2]) + fabs(cfa[indx -  1] - cfa[indx -  3]) + fabs(cfa[indx -  2] - cfa[indx -  4]);
+            const float E_Grad = eps + fabs(cfa[indx +  1] - cfa[indx -  1]) + fabs(cfai - cfa[indx +  2]) + fabs(cfa[indx +  1] - cfa[indx +  3]) + fabs(cfa[indx +  2] - cfa[indx +  4]);
 
-      // Cardinal pixel estimations
-      const float N_Est = cfa[indx - w1] * (1.f + (lpf[indx] - lpf[indx - w2]) / ( eps + lpf[indx] + lpf[indx - w2]));
-      const float S_Est = cfa[indx + w1] * (1.f + (lpf[indx] - lpf[indx + w2]) / ( eps + lpf[indx] + lpf[indx + w2]));
-      const float W_Est = cfa[indx -  1] * (1.f + (lpf[indx] - lpf[indx -  2]) / ( eps + lpf[indx] + lpf[indx -  2]));
-      const float E_Est = cfa[indx +  1] * (1.f + (lpf[indx] - lpf[indx +  2]) / ( eps + lpf[indx] + lpf[indx +  2]));
+            // Cardinal pixel estimations
+            const float N_Est = cfa[indx - w1] * (1.f + (lpfi - lpf[(indx - w2)>>1]) / ( eps + lpfi + lpf[(indx - w2)>>1]));
+            const float S_Est = cfa[indx + w1] * (1.f + (lpfi - lpf[(indx + w2)>>1]) / ( eps + lpfi + lpf[(indx + w2)>>1]));
+            const float W_Est = cfa[indx -  1] * (1.f + (lpfi - lpf[(indx -  2)>>1]) / ( eps + lpfi + lpf[(indx -  2)>>1]));
+            const float E_Est = cfa[indx +  1] * (1.f + (lpfi - lpf[(indx +  2)>>1]) / ( eps + lpfi + lpf[(indx +  2)>>1]));
 
-      // Vertical and horizontal estimations
-      const float V_Est = (S_Grad * N_Est + N_Grad * S_Est) / (N_Grad + S_Grad);
-      const float H_Est = (W_Grad * E_Est + E_Grad * W_Est) / (E_Grad + W_Grad);
+            // Vertical and horizontal estimations
+            const float V_Est = (S_Grad * N_Est + N_Grad * S_Est) / (N_Grad + S_Grad);
+            const float H_Est = (W_Grad * E_Est + E_Grad * W_Est) / (E_Grad + W_Grad);
 
-      // G@B and G@R interpolation
-      rgb[indx][1] = fmaxf(VH_Disc * H_Est + (1.f - VH_Disc) * V_Est, 0.f);
-    }
-  }
+            // G@B and G@R interpolation
+            rgb[1][indx] = fmaxf(VH_Disc * H_Est + (1.f - VH_Disc) * V_Est, 0.f);
+          }
+        }
 
-  // STEP 4: Populate the red and blue channels
-  // Step 4.1: Calculate P/Q diagonal local discrimination
-#ifdef _OPENMP
-#pragma omp parallel for \
-  dt_omp_firstprivate(cfa, PQ_Dir, filters) \
-  schedule(static)
-#endif
-  for(int row = 4; row < height - 4; row++)
-  {
-    for(int col = 4 + (FC(row + roi_dy, roi_dx, filters) & 1); col < width - 4; col += 2)
-    {
-      const int indx = row * width + col;
+        // STEP 4: Populate the red and blue channels
+        // Step 4.1: Calculate P/Q diagonal local discrimination
+        for(int row = 4; row < tileRows - 4; row++)
+        {
+          for(int col = 4 + (FCRCD(row, 0) & 1); col < tilecols - 4; col += 2)
+          {
+            const int indx = row * RCD_TILESIZE + col;
 
-      const float P_Stat = fmaxf( -18.f * cfa[indx]          * cfa[indx - w1 - 1]
-                                 - 18.f * cfa[indx]          * cfa[indx + w1 + 1]
-                                 - 36.f * cfa[indx]          * cfa[indx - w2 - 2]
-                                 - 36.f * cfa[indx]          * cfa[indx + w2 + 2]
-                                 + 18.f * cfa[indx]          * cfa[indx - w3 - 3]
-                                 + 18.f * cfa[indx]          * cfa[indx + w3 + 3]
-                                  - 2.f * cfa[indx]          * cfa[indx - w4 - 4]
-                                  - 2.f * cfa[indx]          * cfa[indx + w4 + 4]
-                                 + 38.f * cfa[indx]          * cfa[indx]
+            const float cfai = cfa[indx];
+            const float P_Stat =
+                           fmaxf( -18.f * cfai               * cfa[indx - w1 - 1]
+                                 - 18.f * cfai               * cfa[indx + w1 + 1]
+                                 - 36.f * cfai               * cfa[indx - w2 - 2]
+                                 - 36.f * cfai               * cfa[indx + w2 + 2]
+                                 + 18.f * cfai               * cfa[indx - w3 - 3]
+                                 + 18.f * cfai               * cfa[indx + w3 + 3]
+                                  - 2.f * cfai               * cfa[indx - w4 - 4]
+                                  - 2.f * cfai               * cfa[indx + w4 + 4]
+                                 + 38.f * cfai               * cfai     
                                  - 70.f * cfa[indx - w1 - 1] * cfa[indx + w1 + 1]
                                  - 12.f * cfa[indx - w1 - 1] * cfa[indx - w2 - 2]
                                  + 24.f * cfa[indx - w1 - 1] * cfa[indx + w2 + 2]
@@ -2834,15 +2857,16 @@ static void rcd_demosaic(float *out, const float *in, dt_iop_roi_t *const roi_ou
                                   + 1.f * cfa[indx - w4 - 4] * cfa[indx - w4 - 4]
                                   + 1.f * cfa[indx + w4 + 4] * cfa[indx + w4 + 4], epssq );
 
-      const float Q_Stat = fmaxf( -18.f * cfa[indx]          * cfa[indx + w1 - 1]
-                                 - 18.f * cfa[indx]          * cfa[indx - w1 + 1]
-                                 - 36.f * cfa[indx]          * cfa[indx + w2 - 2]
-                                 - 36.f * cfa[indx]          * cfa[indx - w2 + 2]
-                                 + 18.f * cfa[indx]          * cfa[indx + w3 - 3]
-                                 + 18.f * cfa[indx]          * cfa[indx - w3 + 3]
-                                  - 2.f * cfa[indx]          * cfa[indx + w4 - 4]
-                                  - 2.f * cfa[indx]          * cfa[indx - w4 + 4]
-                                 + 38.f * cfa[indx]          * cfa[indx]
+            const float Q_Stat =
+                           fmaxf( -18.f * cfai               * cfa[indx + w1 - 1]
+                                 - 18.f * cfai               * cfa[indx - w1 + 1]
+                                 - 36.f * cfai               * cfa[indx + w2 - 2]
+                                 - 36.f * cfai               * cfa[indx - w2 + 2]
+                                 + 18.f * cfai               * cfa[indx + w3 - 3]
+                                 + 18.f * cfai               * cfa[indx - w3 + 3]
+                                  - 2.f * cfai               * cfa[indx + w4 - 4]
+                                  - 2.f * cfai               * cfa[indx - w4 + 4]
+                                 + 38.f * cfai               * cfai     
                                  - 70.f * cfa[indx + w1 - 1] * cfa[indx - w1 + 1]
                                  - 12.f * cfa[indx + w1 - 1] * cfa[indx + w2 - 2]
                                  + 24.f * cfa[indx + w1 - 1] * cfa[indx - w2 + 2]
@@ -2874,107 +2898,113 @@ static void rcd_demosaic(float *out, const float *in, dt_iop_roi_t *const roi_ou
                                  + 10.f * cfa[indx - w3 + 3] * cfa[indx - w3 + 3]
                                   + 1.f * cfa[indx + w4 - 4] * cfa[indx + w4 - 4]
                                   + 1.f * cfa[indx - w4 + 4] * cfa[indx - w4 + 4], epssq );
-      PQ_Dir[indx] = P_Stat / (P_Stat + Q_Stat);
-    }
-  }
+            PQ_Dir[indx] = P_Stat / (P_Stat + Q_Stat);
+          }
+        }
 
-  // Step 4.2: Populate the red and blue channels at blue and red CFA positions
-#ifdef _OPENMP
-#pragma omp parallel for \
-  shared(rgb) \
-  dt_omp_firstprivate(PQ_Dir, filters) \
-  schedule(static)
-#endif
-  for(int row = 4; row < height - 4; row++)
-  {
-    for(int col = 4 + (FC(row + roi_dy, roi_dx, filters) & 1); col < width - 4; col += 2)
-    {
-      const int indx = row * width + col;
-      const int c = 2 - FC(row + roi_dy, col + roi_dx, filters);
-      // Refined P/Q diagonal local discrimination
-      const float PQ_Central_Value = PQ_Dir[indx];
-      const float PQ_Neighbourhood_Value = 0.25f * (PQ_Dir[indx - w1 - 1] + PQ_Dir[indx - w1 + 1] + PQ_Dir[indx + w1 - 1] + PQ_Dir[indx + w1 + 1]);
-      const float PQ_Disc = (fabs(0.5f - PQ_Central_Value) < fabs(0.5f - PQ_Neighbourhood_Value)) ? PQ_Neighbourhood_Value : PQ_Central_Value;
+        // Step 4.2: Populate the red and blue channels at blue and red CFA positions
+        for(int row = 4; row < tileRows - 4; row++)
+        {
+          for(int col = 4 + (FCRCD(row, 0) & 1); col < tilecols - 4; col += 2)
+          {
+            const int indx = row * RCD_TILESIZE + col;
+            const short int c = 2 - FCRCD(row, col);
+            // Refined P/Q diagonal local discrimination
+            const float PQ_Central_Value = PQ_Dir[indx];
+            const float PQ_Neighbourhood_Value = 0.25f * (PQ_Dir[indx - w1 - 1] + PQ_Dir[indx - w1 + 1] + PQ_Dir[indx + w1 - 1] + PQ_Dir[indx + w1 + 1]);
+            const float PQ_Disc = (fabs(0.5f - PQ_Central_Value) < fabs(0.5f - PQ_Neighbourhood_Value)) ? PQ_Neighbourhood_Value : PQ_Central_Value;
 
-      // Diagonal gradients
-      const float NW_Grad = eps + fabs(rgb[indx - w1 - 1][c] - rgb[indx + w1 + 1][c]) + fabs(rgb[indx - w1 - 1][c] - rgb[indx - w3 - 3][c]) + fabs(rgb[indx][1] - rgb[indx - w2 - 2][1]);
-      const float NE_Grad = eps + fabs(rgb[indx - w1 + 1][c] - rgb[indx + w1 - 1][c]) + fabs(rgb[indx - w1 + 1][c] - rgb[indx - w3 + 3][c]) + fabs(rgb[indx][1] - rgb[indx - w2 + 2][1]);
-      const float SW_Grad = eps + fabs(rgb[indx + w1 - 1][c] - rgb[indx - w1 + 1][c]) + fabs(rgb[indx + w1 - 1][c] - rgb[indx + w3 - 3][c]) + fabs(rgb[indx][1] - rgb[indx + w2 - 2][1]);
-      const float SE_Grad = eps + fabs(rgb[indx + w1 + 1][c] - rgb[indx - w1 - 1][c]) + fabs(rgb[indx + w1 + 1][c] - rgb[indx + w3 + 3][c]) + fabs(rgb[indx][1] - rgb[indx + w2 + 2][1]);
+            // Diagonal gradients
+            const float NW_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx - w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 - 2]);
+            const float NE_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx - w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 + 2]);
+            const float SW_Grad = eps + fabs(rgb[c][indx + w1 - 1] - rgb[c][indx - w1 + 1]) + fabs(rgb[c][indx + w1 - 1] - rgb[c][indx + w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 - 2]);
+            const float SE_Grad = eps + fabs(rgb[c][indx + w1 + 1] - rgb[c][indx - w1 - 1]) + fabs(rgb[c][indx + w1 + 1] - rgb[c][indx + w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 + 2]);
 
-      // Diagonal colour differences
-      const float NW_Est = rgb[indx - w1 - 1][c] - rgb[indx - w1 - 1][1];
-      const float NE_Est = rgb[indx - w1 + 1][c] - rgb[indx - w1 + 1][1];
-      const float SW_Est = rgb[indx + w1 - 1][c] - rgb[indx + w1 - 1][1];
-      const float SE_Est = rgb[indx + w1 + 1][c] - rgb[indx + w1 + 1][1];
+            // Diagonal colour differences
+            const float NW_Est = rgb[c][indx - w1 - 1] - rgb[1][indx - w1 - 1];
+            const float NE_Est = rgb[c][indx - w1 + 1] - rgb[1][indx - w1 + 1];
+            const float SW_Est = rgb[c][indx + w1 - 1] - rgb[1][indx + w1 - 1];
+            const float SE_Est = rgb[c][indx + w1 + 1] - rgb[1][indx + w1 + 1];
 
-      // P/Q estimations
-      const float P_Est = (NW_Grad * SE_Est + SE_Grad * NW_Est) / (NW_Grad + SE_Grad);
-      const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
+            // P/Q estimations
+            const float P_Est = (NW_Grad * SE_Est + SE_Grad * NW_Est) / (NW_Grad + SE_Grad);
+            const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
-      // R@B and B@R interpolation
-      rgb[indx][c] = fmaxf(rgb[indx][1] + (1.f - PQ_Disc) * P_Est + PQ_Disc * Q_Est, 0.f);
-    }
-  }
+            // R@B and B@R interpolation
+            rgb[c][indx] = fmaxf(rgb[1][indx] + (1.f - PQ_Disc) * P_Est + PQ_Disc * Q_Est, 0.f);
+          }
+        }
 
-  // Step 4.3: Populate the red and blue channels at green CFA positions
-#ifdef _OPENMP
-#pragma omp parallel for \
-  shared(rgb) \
-  dt_omp_firstprivate(cfa, VH_Dir, filters) \
-  schedule(static)
-#endif
-  for(int row = 4; row < height - 4; row++)
-  {
-    for(int col = 4 + (FC(row + roi_dy, 1 + roi_dx, filters) & 1); col < width - 4; col += 2)
-    {
-      const int indx = row * width + col;
-      // Refined vertical and horizontal local discrimination
-      const float VH_Central_Value = VH_Dir[indx];
-      const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
-      const float VH_Disc = (fabs(0.5f - VH_Central_Value) < fabs(0.5f - VH_Neighbourhood_Value) ) ? VH_Neighbourhood_Value : VH_Central_Value;
+        // Step 4.3: Populate the red and blue channels at green CFA positions
+        for(int row = 4; row < tileRows - 4; row++)
+        {
+          for(int col = 4 + (FCRCD(row, 1) & 1); col < tilecols - 4; col += 2)
+          {
+            const int indx = row * RCD_TILESIZE + col;
+            // Refined vertical and horizontal local discrimination
+            const float VH_Central_Value = VH_Dir[indx];
+            const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
+            const float VH_Disc = (fabs(0.5f - VH_Central_Value) < fabs(0.5f - VH_Neighbourhood_Value) ) ? VH_Neighbourhood_Value : VH_Central_Value;
+            const float rgb1 = rgb[1][indx];
+            const float N1 = eps + fabs(rgb1 - rgb[1][indx - w2]);
+            const float S1 = eps + fabs(rgb1 - rgb[1][indx + w2]);
+            const float W1 = eps + fabs(rgb1 - rgb[1][indx -  2]);
+            const float E1 = eps + fabs(rgb1 - rgb[1][indx +  2]);
 
-      for(int c = 0; c <= 2; c += 2)
-      {
-        // Cardinal gradients
-        const float N_Grad = eps + fabs(rgb[indx][1] - rgb[indx - w2][1]) + fabs(rgb[indx - w1][c] - rgb[indx + w1][c]) + fabs(rgb[indx - w1][c] - rgb[indx - w3][c]);
-        const float S_Grad = eps + fabs(rgb[indx][1] - rgb[indx + w2][1]) + fabs(rgb[indx + w1][c] - rgb[indx - w1][c]) + fabs(rgb[indx + w1][c] - rgb[indx + w3][c]);
-        const float W_Grad = eps + fabs(rgb[indx][1] - rgb[indx -  2][1]) + fabs(rgb[indx -  1][c] - rgb[indx +  1][c]) + fabs(rgb[indx -  1][c] - rgb[indx -  3][c]);
-        const float E_Grad = eps + fabs(rgb[indx][1] - rgb[indx +  2][1]) + fabs(rgb[indx +  1][c] - rgb[indx -  1][c]) + fabs(rgb[indx +  1][c] - rgb[indx +  3][c]);
+            const float rgb1mw1 = rgb[1][indx - w1];
+            const float rgb1pw1 = rgb[1][indx + w1];
+            const float rgb1m1 =  rgb[1][indx - 1];
+            const float rgb1p1 =  rgb[1][indx + 1];
 
-        // Cardinal colour differences
-        const float N_Est = rgb[indx - w1][c] - rgb[indx - w1][1];
-        const float S_Est = rgb[indx + w1][c] - rgb[indx + w1][1];
-        const float W_Est = rgb[indx -  1][c] - rgb[indx -  1][1];
-        const float E_Est = rgb[indx +  1][c] - rgb[indx +  1][1];
+            for(int c = 0; c <= 2; c += 2)
+            {
+              // Cardinal gradients
+              const float N_Grad = N1 + fabs(rgb[c][indx - w1] - rgb[c][indx + w1]) + fabs(rgb[c][indx - w1] - rgb[c][indx - w3]);
+              const float S_Grad = S1 + fabs(rgb[c][indx + w1] - rgb[c][indx - w1]) + fabs(rgb[c][indx + w1] - rgb[c][indx + w3]);
+              const float W_Grad = W1 + fabs(rgb[c][indx -  1] - rgb[c][indx +  1]) + fabs(rgb[c][indx -  1] - rgb[c][indx -  3]);
+              const float E_Grad = E1 + fabs(rgb[c][indx +  1] - rgb[c][indx -  1]) + fabs(rgb[c][indx +  1] - rgb[c][indx +  3]);
 
-        // Vertical and horizontal estimations
-        const float V_Est = (N_Grad * S_Est + S_Grad * N_Est) / (N_Grad + S_Grad);
-        const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
+              // Cardinal colour differences
+              const float N_Est = rgb[c][indx - w1] - rgb1mw1;
+              const float S_Est = rgb[c][indx + w1] - rgb1pw1;
+              const float W_Est = rgb[c][indx -  1] - rgb1m1;
+              const float E_Est = rgb[c][indx +  1] - rgb1p1;
 
-        // R@G and B@G interpolation
-        rgb[indx][c] = fmaxf(rgb[indx][1] + (1.f - VH_Disc) * V_Est + VH_Disc * H_Est, 0.f);
+              // Vertical and horizontal estimations
+              const float V_Est = (N_Grad * S_Est + S_Grad * N_Est) / (N_Grad + S_Grad);
+              const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
+
+              // R@G and B@G interpolation
+              rgb[c][indx] = fmaxf(rgb1 + (1.f - VH_Disc) * V_Est + VH_Disc * H_Est, 0.f);
+            }
+          }
+        }
+
+        for(int row = rowStart + RCD_BORDER; row < rowEnd - RCD_BORDER ; ++row)
+        {
+          for(int col = colStart + RCD_BORDER; col < colEnd - RCD_BORDER; ++col)
+          {
+            const int idx = (row - rowStart) * RCD_TILESIZE + col - colStart ;
+            const int o_idx = (row * width + col) * 4;
+            out[o_idx]   = fmaxf(0.0f, rgb[0][idx]);
+            out[o_idx+1] = fmaxf(0.0f, rgb[1][idx]);
+            out[o_idx+2] = fmaxf(0.0f, rgb[2][idx]);
+          }
+        }
       }
     }
+    free(cfa);
+    free(rgb);
+    free(VH_Dir);
+    free(PQ_Dir);
   }
-
-  // the original code suggested a border of 4, unfortunately there are color artefacts in the 5th-line/row from each side.
-  _border_interpolate(out, cfa, filters, width, height, roi_dx, roi_dy, 6);
-
-  free(VH_Dir);
-  free(lpf);
-  free(PQ_Dir);
-  free(cfa);
-  return;
-
-  alloc_error:
-
-  dt_control_log(_("[demosaic] could not allocate internal rcd buffers"));
-  if(lpf) free(lpf);
-  if(VH_Dir) free(VH_Dir);
-  if(PQ_Dir) free(PQ_Dir);
-  if(cfa) free(cfa);
+  
+  rcd_border_interpolate(out, in, cfarray, width, height);
+  free(in);
 }
+#undef FCRCD
+#undef RCD_TILESIZE
+#undef RCD_BORDER
 
 static void passthrough_color(float *out, const float *const in, dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
    const uint32_t filters, const uint8_t (*const xtrans)[6])
