@@ -87,39 +87,18 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_input_profile_info(struct dt_io
  * if matrix cannot be generated it default to linear rec 2020
  * returns the actual profile that has been set
  */
-dt_iop_order_iccprofile_info_t *
-dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
-                                    struct dt_dev_pixelpipe_t *pipe,
-                                    const dt_colorspaces_color_profile_type_t type,
-                                    const char *filename,
-                                    const int intent);
+dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
+    const int type, const char *filename, const int intent);
 
-dt_iop_order_iccprofile_info_t *
-dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
-                                     struct dt_dev_pixelpipe_t *pipe,
-                                     const dt_colorspaces_color_profile_type_t type,
-                                     const char *filename,
-                                     const int intent,
-                                     const float matrix_in[9],
-                                     const float *lut_1,
-                                     const float *lut_2,
-                                     const float *lut_3,
-                                     const size_t lut_size,
-                                     const int nonlinearlut,
-                                     const float unbounded_coeffs[3][3]);
+dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
+                                                                     struct dt_dev_pixelpipe_t *pipe,
+                                                                     const int type, const char *filename,
+                                                                     const int intent, const float matrix_in[9]);
 
-dt_iop_order_iccprofile_info_t *
-dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
-                                      struct dt_dev_pixelpipe_t *pipe,
-                                      const dt_colorspaces_color_profile_type_t type,
-                                      const char *filename,
-                                      const int intent,
-                                      const float matrix_in[9],
-                                      const float *lut_1,
-                                      const float *lut_2,
-                                      const float *lut_3,
-                                      const size_t lut_size,
-                                      const float unbounded_coeffs[3][3]);
+dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
+                                                                      struct dt_dev_pixelpipe_t *pipe,
+                                                                      const int type, const char *filename,
+                                                                      const int intent);
 
 /** returns a reference to the histogram profile info
  * histogram profile must not be cleanup()

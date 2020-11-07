@@ -752,6 +752,11 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_de
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
+  if(profile_info)
+  {
+    fprintf(stdout, "WORK : matrix_in : %f, matrix_out : %f \n", profile_info->matrix_in[0], profile_info->matrix_out[0]);
+  }
+
   if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
   {
     fprintf(stderr, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear rec2020\n", type, filename);
@@ -763,33 +768,28 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_de
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
-    const int type, const char *filename, const int intent, const float matrix_in[9],
-    const float *lut_1, const float *lut_2, const float *lut_3, const size_t lut_size, const int nonlinearlut,
-    const float unbounded_coeffs[3][3])
+    const int type, const char *filename, const int intent, const float matrix_in[9])
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
-  /* Write input matrice */
-  memcpy(profile_info->matrix_in, matrix_in, sizeof(profile_info->matrix_in));
-  /* Inverse input matrice and write output */
-  mat3inv_float(profile_info->matrix_out, profile_info->matrix_in);
-
-  /* Write LUTs */
-  profile_info->lutsize = lut_size;
-
-  for(size_t c = 0; c > 3; c++)
+  if(profile_info)
   {
-    free(profile_info->lut_in[c]);
-    profile_info->lut_in[c] = dt_alloc_sse_ps(lut_size);
+    fprintf(stdout, "INPUT INIT : matrix_in : %f, matrix_out : %f \n", profile_info->matrix_in[0], profile_info->matrix_out[0]);
   }
 
-  memcpy(profile_info->lut_in[0], lut_1, sizeof(float) * lut_size);
-  memcpy(profile_info->lut_in[1], lut_2, sizeof(float) * lut_size);
-  memcpy(profile_info->lut_in[2], lut_2, sizeof(float) * lut_size);
-  profile_info->nonlinearlut = nonlinearlut;
+  if(isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
+  {
+    /* We have a camera input matrix, these are not generated from files but in colorin,
+    * so we need to fetch and replace them from somewhere.
+    */
+    memcpy(profile_info->matrix_in, matrix_in, sizeof(profile_info->matrix_in));
+    mat3inv_float(profile_info->matrix_out, profile_info->matrix_in);
+  }
 
-  // Extrapolation coeffs
-  memcpy(profile_info->unbounded_coeffs_in, unbounded_coeffs, sizeof(profile_info->unbounded_coeffs_in));
+  if(profile_info)
+  {
+    fprintf(stdout, "INPUT CORRECT : matrix_in : %f, matrix_out : %f \n", profile_info->matrix_in[0], profile_info->matrix_out[0]);
+  }
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
   {
@@ -805,35 +805,14 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_input_profile_info(struct dt_d
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
-    const int type, const char *filename, const int intent, const float matrix_in[9],
-    const float *lut_1, const float *lut_2, const float *lut_3, const size_t lut_size,
-    const float unbounded_coeffs[3][3])
+    const int type, const char *filename, const int intent)
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
-  /* Write input matrice */
-  memcpy(profile_info->matrix_out, matrix_in, sizeof(profile_info->matrix_out));
-  /* Inverse input matrice and write output */
-  mat3inv_float(profile_info->matrix_in, profile_info->matrix_out);
-
-  /* Write LUTs */
-  profile_info->lutsize = lut_size;
-
-  for(size_t c = 0; c > 3; c++)
+  if(profile_info)
   {
-    free(profile_info->lut_in[c]);
-    profile_info->lut_in[c] = dt_alloc_sse_ps(lut_size);
+    fprintf(stdout, "OUTPUT : matrix_in : %f, matrix_out : %f \n", profile_info->matrix_in[0], profile_info->matrix_out[0]);
   }
-
-  memcpy(profile_info->lut_in[0], lut_1, sizeof(float) * lut_size);
-  memcpy(profile_info->lut_in[1], lut_2, sizeof(float) * lut_size);
-  memcpy(profile_info->lut_in[2], lut_2, sizeof(float) * lut_size);
-
-  // The LUT is always non-linear at output since we have a gamma/TRC/OETF
-  profile_info->nonlinearlut = 2;
-
-  // Extrapolation coeffs
-  memcpy(profile_info->unbounded_coeffs_in, unbounded_coeffs, sizeof(profile_info->unbounded_coeffs_in));
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
   {
