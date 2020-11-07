@@ -220,10 +220,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const int border_size_t = border_tot_height * d->pos_v;
   const int border_size_l = border_tot_width * d->pos_h;
 
+  // nothing to be done if parameters are set to neutral values (no top/left border)
+  if (border_size_l == 0 && border_size_t == 0) return 1;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static)
+  schedule(static) if(points_count > 100)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -243,10 +246,13 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const int border_size_t = border_tot_height * d->pos_v;
   const int border_size_l = border_tot_width * d->pos_h;
 
+  // nothing to be done if parameters are set to neutral values (no top/left border)
+  if (border_size_l == 0 && border_size_t == 0) return 1;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static)
+  schedule(static) if(points_count > 100)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
