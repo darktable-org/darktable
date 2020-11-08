@@ -102,7 +102,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *scale_grey_R, *scale_grey_G, *scale_grey_B;
   GtkWidget *normalize_R, *normalize_G, *normalize_B, *normalize_sat, *normalize_light, *normalize_grey;
   GtkWidget *color_picker;
-  int auto_detect_illuminant;
+  gboolean auto_detect_illuminant;
   float xy[2];
   dt_ai_wb_model_t wb_model;
   float XYZ[4];
