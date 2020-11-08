@@ -196,7 +196,7 @@ static inline int dt_version()
 #ifdef FP_FAST_FMAF
   #define DT_FMA(x, y, z) fmaf(x, y, z)
 #else
-  #define DT_FMA(x, y, z)  x * y + z;
+  #define DT_FMA(x, y, z) ((x) * (y) + (z))
 #endif
 
 struct dt_gui_gtk_t;
