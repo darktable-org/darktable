@@ -394,12 +394,13 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_met
 
   metadata->box = extra;
   dt_import_metadata_dialog_new(metadata);
-  gtk_widget_show_all(frame);
 
 #ifdef USE_LUA
   gtk_box_pack_start(GTK_BOX(extra), d->extra_lua_widgets , FALSE, FALSE, 0);
   gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets), reset_child, NULL);
 #endif
+
+  gtk_widget_show_all(frame);
 
   return frame;
 }
