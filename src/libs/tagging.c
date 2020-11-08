@@ -2566,7 +2566,7 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
   {
     lastTag = key;
   }
-  if(lastTag[0] == '\0' && key[0] != '\0')
+  if(lastTag[0] == '\0' || key[0] == '\0')
   {
     return FALSE;
   }
