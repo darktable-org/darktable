@@ -255,8 +255,9 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   {
     // Ensure the correction does not bring our uyY vector the other side of D50
     // that would switch to the opposite color, so we clip at D50
-    uvY[c] = (uvY[c] > D50[c]) ? fmaxf(uvY[c] + correction * delta[c], D50[c])
-                               : fminf(uvY[c] + correction * delta[c], D50[c]);
+    const float tmp = DT_FMA(correction, delta[c], uvY[c]); // correction * delta[c] + uvY[c]
+    uvY[c] = (uvY[c] > D50[c]) ? fmaxf(tmp, D50[c])
+                               : fminf(tmp, D50[c]);
   }
 
   // Convert back to xyY
@@ -304,7 +305,8 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
     // if the ratio was already invalid (negative), we accept the result to be invalid too
     // otherwise bright saturated blues end up solid black
     const float min_ratio = (output[c] < 0.0f) ? output[c] : 0.0f;
-    output[c] = fmaxf(output[c] + (1.0f - output[c]) * coeff_ratio, min_ratio);
+    const float output_inverse = 1.0f - output[c];
+    output[c] = fmaxf(DT_FMA(output_inverse, coeff_ratio, output[c]), min_ratio); // output_inverse  * coeff_ratio + output
   }
 
   // Apply colorfulness adjustment channel-wise and repack with lightness to get LMS back
