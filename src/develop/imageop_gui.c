@@ -163,7 +163,8 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const float min = f->Float.Min;
       const float max = f->Float.Max;
-      const float defval = *(float*)self->so->get_p(d, param_name);
+      size_t offset = f->header.offset + param_index * sizeof(float);
+      const float defval = *(float*)(d + offset);
       int digits = 2;
       float step = 0;
 
@@ -199,31 +200,33 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
       g_signal_connect(G_OBJECT(slider), "value-changed",
                        G_CALLBACK(dt_iop_slider_float_callback),
-                       p + f->header.offset + param_index * sizeof(float));
+                       p + offset);
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_INT)
     {
       const int min = f->Int.Min;
       const int max = f->Int.Max;
-      const int defval = *(int*)self->so->get_p(d, param_name);
+      size_t offset = f->header.offset + param_index * sizeof(int);
+      const int defval = *(int*)(d + offset);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 
       g_signal_connect(G_OBJECT(slider), "value-changed",
                        G_CALLBACK(dt_iop_slider_int_callback),
-                       p + f->header.offset + param_index * sizeof(int));
+                       p + offset);
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_USHORT)
     {
       const unsigned short min = f->UShort.Min;
       const unsigned short max = f->UShort.Max;
-      const unsigned short defval = *(unsigned short*)self->so->get_p(d, param_name);
+      size_t offset = f->header.offset + param_index * sizeof(unsigned short);
+      const unsigned short defval = *(unsigned short*)(d + offset);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 
       g_signal_connect(G_OBJECT(slider), "value-changed",
                        G_CALLBACK(dt_iop_slider_ushort_callback),
-                       p + f->header.offset + param_index * sizeof(unsigned short));
+                       p + offset);
     }
     else f = NULL;
   }
@@ -309,7 +312,8 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
         {
           // we do not want to support a context as it break all translations see #5498
           // dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "introspection description", iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
-          dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
+          if(*iter->description)
+            dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
         }
 
         g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(dt_iop_combobox_enum_callback), p + f->header.offset);
