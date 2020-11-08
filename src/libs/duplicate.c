@@ -282,7 +282,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   if(d->preview_surf)
   {
     cairo_save(cri);
-
     // force middle grey in background
     if(dev->iso_12646.enabled)
       cairo_set_source_rgb(cri, 0.5, 0.5, 0.5);
@@ -319,6 +318,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     // finally, draw the image
     cairo_rectangle(cri, 0, 0, wd, ht);
     cairo_clip_preserve(cri);
+
+    const float scaler = 1.0f / darktable.gui->ppd_thb;
+    cairo_scale(cri, scaler, scaler);
+
+
     if(d->allow_zoom)
     {
       // compute the surface pixel shift to match reference image FIXME!
@@ -326,10 +330,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       const float zoom_x = dt_control_get_dev_zoom_x();
       const float dx = -floorf(zoom_x * (img_wd)*nz + img_wd * nz / 2. - width / 2.) - margin_left;
       const float dy = -floorf(zoom_y * (img_ht)*nz + img_ht * nz / 2. - height / 2.) - margin_top;
-      cairo_set_source_surface(cri, d->preview_surf, dx, dy);
+      cairo_set_source_surface(cri, d->preview_surf, dx / scaler, dy / scaler);
     }
     else
       cairo_set_source_surface(cri, d->preview_surf, 0, 0);
+
     cairo_pattern_set_filter(cairo_get_source(cri), (darktable.gui->filter_image == CAIRO_FILTER_FAST)
       ? CAIRO_FILTER_GOOD : darktable.gui->filter_image) ;
     cairo_paint(cri);
