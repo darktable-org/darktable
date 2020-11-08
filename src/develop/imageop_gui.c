@@ -163,7 +163,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const float min = f->Float.Min;
       const float max = f->Float.Max;
-      size_t offset = f->header.offset + param_index * sizeof(float);
+      const size_t offset = f->header.offset + param_index * sizeof(float);
       const float defval = *(float*)(d + offset);
       int digits = 2;
       float step = 0;
@@ -206,7 +206,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const int min = f->Int.Min;
       const int max = f->Int.Max;
-      size_t offset = f->header.offset + param_index * sizeof(int);
+      const size_t offset = f->header.offset + param_index * sizeof(int);
       const int defval = *(int*)(d + offset);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
@@ -219,7 +219,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const unsigned short min = f->UShort.Min;
       const unsigned short max = f->UShort.Max;
-      size_t offset = f->header.offset + param_index * sizeof(unsigned short);
+      const size_t offset = f->header.offset + param_index * sizeof(unsigned short);
       const unsigned short defval = *(unsigned short*)(d + offset);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
