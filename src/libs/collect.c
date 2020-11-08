@@ -1738,7 +1738,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
           if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "id") == 0)
             order_by = g_strdup("ORDER BY film_rolls_id DESC");
           else
-            order_by = g_strdup("ORDER BY folder");
+          {
+            if(dt_conf_get_bool("plugins/collect/descending"))
+              order_by = g_strdup("ORDER BY folder DESC");
+            else
+              order_by = g_strdup("ORDER BY folder");
+          }
 
           // filmroll
           g_snprintf(query, sizeof(query),
@@ -2501,6 +2506,32 @@ static void menuitem_clear(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
 }
 
+static void sort_collection_list_descending(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
+{
+  dt_conf_set_bool("plugins/collect/descending", TRUE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+}
+
+static void sort_collection_list_ascending(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
+{
+  dt_conf_set_bool("plugins/collect/descending", FALSE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+}
+
+static gboolean is_collection_sortable(dt_lib_collect_rule_t *dr)
+{
+  const int property = _combo_get_active_collection(dr->combo);
+
+  if((property == DT_COLLECTION_PROP_FILMROLL && strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "folder") == 0)
+     || property == DT_COLLECTION_PROP_FOLDERS
+     || property == DT_COLLECTION_PROP_DAY
+     || is_time_property(property)
+    )
+    return TRUE;
+  else
+    return FALSE;
+}
+
 static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_rule_t *d)
 {
   if(event->button != 1) return FALSE;
@@ -2530,6 +2561,33 @@ static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, 
     g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
+
+    if(is_collection_sortable(d))
+    {
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+      gchar *sort_ascending = _("sort ascending");
+      gchar *sort_descending = _("sort descending");
+      gchar *radio_icon_selected = "●";
+      gchar *radio_icon_unselected = "○";
+      gchar *radio_icon_ascending = radio_icon_unselected;
+      gchar *radio_icon_descending = radio_icon_unselected;
+      
+      if(dt_conf_get_bool("plugins/collect/descending"))
+        radio_icon_descending = radio_icon_selected;
+      else
+        radio_icon_ascending = radio_icon_selected;
+
+      mi = gtk_menu_item_new_with_label(dt_util_dstrcat(NULL, "%s %s", radio_icon_ascending, sort_ascending));
+      g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(sort_collection_list_ascending), d);
+
+      mi = gtk_menu_item_new_with_label(dt_util_dstrcat(NULL, "%s %s", radio_icon_descending, sort_descending));
+      g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(sort_collection_list_descending), d);
+    }
   }
   else if(d->num < active - 1)
   {

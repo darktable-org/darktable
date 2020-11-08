@@ -36,12 +36,6 @@
       Set the collection list order for film rolls.
     </para>
 
-    <bridgehead renderas="sect5">sort collection recent to older</bridgehead>
-
-    <para>
-      Changes the default collections list for folders, times and dates to run from recent to older.
-    </para>
-
     <bridgehead renderas="sect5">high quality thumb processing from size</bridgehead>
 
     <para>
