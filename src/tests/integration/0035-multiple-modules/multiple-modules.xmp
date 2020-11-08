@@ -16,7 +16,7 @@
    darktable:xmp_version="4"
    darktable:raw_params="0"
    darktable:auto_presets_applied="1"
-   darktable:history_end="22"
+   darktable:history_end="20"
    darktable:iop_order_version="2"
    darktable:history_auto_hash="b670283702c29e36639d7f3ee7bd12b3"
    darktable:history_current_hash="0846fee0a454c13a7b6ee836fb0b0440">
@@ -226,16 +226,6 @@
       darktable:blendop_params="gz10eJxjYGBgkGAAgRNOIFKAcUk8AxQwMhALGuwheKTysQMAavcaGA=="/>
      <rdf:li
       darktable:num="18"
-      darktable:operation="lens"
-      darktable:enabled="1"
-      darktable:modversion="5"
-      darktable:params="gz03eJyzZoCAqYUN9pvmnrdnYDjhBOQ6PqwKcWAEMpwT8/LzFFz9gxVMDFyAfIcLnyybQjHpMKg5Dpeh4mh0OFT+wI2PYD6MngAVD4DSAoUMViBxGIDa76ZgaGCQm6uQpm+kZ+Gj4JuYXJSv4BmsEBrsy4ACHkDpBBitzIhiHshPWiCGAaqYNhYxBGiwh2AGBgBILTbJ"
-      darktable:multi_name=""
-      darktable:multi_priority="0"
-      darktable:blendop_version="9"
-      darktable:blendop_params="gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ="/>
-     <rdf:li
-      darktable:num="19"
       darktable:operation="denoiseprofile"
       darktable:enabled="1"
       darktable:modversion="10"
@@ -245,21 +235,11 @@
       darktable:blendop_version="9"
       darktable:blendop_params="gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ="/>
      <rdf:li
-      darktable:num="20"
+      darktable:num="19"
       darktable:operation="borders"
       darktable:enabled="1"
       darktable:modversion="3"
       darktable:params="gz02eJxjYGiwZ0Dg/cn5ecUliXklCkn5RSmpRQwwcPbMGVsgZW+ob8QgxcrAMIODgaEUSOfppWXCxBXSFMI9XINcFTKBgjm58VCt9gxIgBGIAfNTFYw="
-      darktable:multi_name=""
-      darktable:multi_priority="0"
-      darktable:blendop_version="9"
-      darktable:blendop_params="gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ="/>
-     <rdf:li
-      darktable:num="21"
-      darktable:operation="watermark"
-      darktable:enabled="1"
-      darktable:modversion="5"
-      darktable:params="gz04eJxjYDjhxMDwwZHh+uI9DNeV93AwIEBKYlF2SWJSTqpecVk6AxkglIGBF8Z+H2PZBOSrQrkObyF8Iyh/A1R+oMEDdghtAOUrQN3FhKIq04ERTV8ilG6Aqn+gHbJ0ez1MNtLBEaoBJr7hGUQdjIaJp0B1wMwv4EB1TwDUfJg8uvoFaOovQNUzQ/kT0PTDQCCUNthZjeIeBZg4jIbGGwuafph5Cpyo6mHAJTUrMaxUITgxr1jB0ADTfkWY/udQ+10h9AVowAMAYWJLCA=="
       darktable:multi_name=""
       darktable:multi_priority="0"
       darktable:blendop_version="9"
