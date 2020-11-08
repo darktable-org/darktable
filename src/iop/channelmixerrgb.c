@@ -1833,7 +1833,7 @@ void gui_init(struct dt_iop_module_t *self)
                                 "while working with large gamut or saturated cyan and purple.\n"
                                 "• Non-linear Bradford (1985) is the original Bradford,\n"
                                 "it can produce better results than the linear version, but is unreliable.\n"
-                                "• XYZ is a simple scaling is XYZ space. It is not recommended in general.\n"
+                                "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
                                 "• none disables any adaptation and uses pipeline working RGB."));
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
