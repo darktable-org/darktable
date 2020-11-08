@@ -1915,7 +1915,7 @@ void gui_init(struct dt_iop_module_t *self)
   NOTEBOOK_PAGE(grey, grey, N_("grey"), N_("grey"), FALSE)
 
   self->widget = GTK_WIDGET(g->notebook);
-  int active_page = dt_conf_get_int("plugins/darkroom/channelmixerrgb/gui_page");
+  const int active_page = dt_conf_get_int("plugins/darkroom/channelmixerrgb/gui_page");
   gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
   gtk_notebook_set_current_page(g->notebook, active_page);
 }
