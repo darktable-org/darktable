@@ -1866,8 +1866,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->temperature, 0);
   dt_bauhaus_slider_set_format(g->temperature, "%.0f K");
 
-  const float max_temp = dt_bauhaus_slider_get_hard_min(g->temperature);
-  const float min_temp = dt_bauhaus_slider_get_hard_max(g->temperature);
+  const float max_temp = dt_bauhaus_slider_get_hard_max(g->temperature);
+  const float min_temp = dt_bauhaus_slider_get_hard_min(g->temperature);
+
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
