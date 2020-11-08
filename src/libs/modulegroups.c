@@ -998,8 +998,9 @@ void init_presets(dt_lib_module_t *self)
                        "tone", "bilat|filmicrgb|globaltonemap|levels"
                        "|relight|rgbcurve|rgblevels|tonecurve|tonemap|zonesystem");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixer|colorbalance|colorchecker|colorcontrast|colorcorrection"
-                       "|colorin|colorout|colorzones|lut3d|monochrome|profile_gamma|velvia|vibrance");
+                       "channelmixer|channelmixerrgb|colorbalance|colorchecker|colorcontrast"
+                       "|colorcorrection|colorin|colorout|colorzones|lut3d|monochrome"
+                       "|profile_gamma|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
                        "ashift|atrous|bilateral|cacorrect|defringe|denoiseprofile|dither"
                        "|hazeremoval|hotpixels|lens|liquify|nlmeans|rawdenoise|retouch|rotatepixels"
@@ -1016,7 +1017,7 @@ void init_presets(dt_lib_module_t *self)
                        "basicadj|ashift|basecurve|clipping"
                        "|denoiseprofile|exposure|flip|lens|temperature");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
-                       "channelmixer|colorbalance|colorzones|graduatednd|rgbcurve"
+                       "channelmixerrgb|colorbalance|colorzones|graduatednd|rgbcurve"
                        "|rgblevels|splittoning");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
                        "bordersmonochrome|retouch|sharpen|vignette|watermark");
@@ -1043,7 +1044,7 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
                        "filmicrgb|toneequal|clipping|flip|exposure|temperature|rgbcurve|rgblevels|bilat");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixer|colorbalance|colorzones|vibrance");
+                       "channelmixerrgb|colorbalance|colorzones|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
                        "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
                        "|lens|retouch|liquify|sharpen|nlmeans");
@@ -1061,9 +1062,10 @@ void init_presets(dt_lib_module_t *self)
                        "|lut3d|negadoctor|nlmeans|overexposed|rawdenoise"
                        "|rawoverexposed|rotatepixels|scalepixels");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
-                       "basicadj|channelmixer|colisa|colorbalance|colorcontrast|colorcorrection"
-                       "|colorize|colorzones|globaltonemap|graduatednd|levels|relight|rgbcurve"
-                       "|rgblevels|shadhi|splittoning|temperature|tonecurve|toneequal|tonemap"
+                       "basicadj|channelmixer|channelmixerrgb|colisa|colorbalance"
+                       "|colorcontrast|colorcorrection|colorize|colorzones|globaltonemap"
+                       "|graduatednd|levels|relight|rgbcurve|rgblevels|shadhi|splittoning"
+                       "|temperature|tonecurve|toneequal|tonemap"
                        "|velvia|vibrance|zonesystem");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
                        "atrous|bilat|bloom|borders|clahe|colormapping"
