@@ -125,7 +125,7 @@ typedef struct dt_iop_channelmixer_rbg_data_t
 
 const char *name()
 {
-  return _("channel mixer rgb");
+  return _("color calibration");
 }
 
 int flags()
