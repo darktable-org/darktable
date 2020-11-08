@@ -166,7 +166,10 @@ static inline float scalar_product(const float v_1[4], const float v_2[4])
 {
   // specialized 3×1 dot products 2 4×1 RGB-alpha pixels.
   // v_2 needs to be uniform along loop increments, e.g. independent from current pixel values
-  return v_1[0] * v_2[0] + v_1[1] * v_2[1] + v_1[2] * v_2[2];
+  // we force an order of computation similar to SSE4 _mm_dp_ps() hoping the compiler will get the clue
+  float DT_ALIGNED_PIXEL premul[4] = { 0.f };
+  for(size_t c = 0; c < 3; c++) premul[c] = v_1[c] * v_2[c];
+  return premul[0] + premul[1] + premul[2];
 }
 
 
@@ -206,9 +209,7 @@ static inline void downscale_vector(float vector[4], const float scaling)
   static const float eps = 1e-6f;
   const int valid = (scaling < eps) && !isnan(scaling);
 
-  vector[0] = (valid) ? vector[0] / (scaling + eps) : vector[0] / eps;
-  vector[1] = (valid) ? vector[1] / (scaling + eps) : vector[1] / eps;
-  vector[2] = (valid) ? vector[2] / (scaling + eps) : vector[2] / eps;
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + eps) : vector[c] / eps;
 }
 
 
@@ -220,9 +221,7 @@ static inline void upscale_vector(float vector[4], const float scaling)
   static const float eps = 1e-6f;
   const int valid = (scaling < eps) && !isnan(scaling);
 
-  vector[0] = (valid) ? vector[0] * (scaling + eps) : vector[0] * eps;
-  vector[1] = (valid) ? vector[1] * (scaling + eps) : vector[1] * eps;
-  vector[2] = (valid) ? vector[2] * (scaling + eps) : vector[2] * eps;
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + eps) : vector[c] * eps;
 }
 
 
@@ -757,7 +756,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_channelmixer_rbg_data_t *data = (dt_iop_channelmixer_rbg_data_t *)piece->data;
-  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(piece);
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
   float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
