@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-07 20:42+0100\n"
-"PO-Revision-Date: 2020-11-07 21:44+0100\n"
+"POT-Creation-Date: 2020-11-08 13:24+0100\n"
+"PO-Revision-Date: 2020-11-08 18:26+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Poedit 2.3\n"
-"X-Poedit-Bookmarks: 672,376,-1,-1,-1,-1,-1,-1,-1,-1\n"
+"X-Poedit-Bookmarks: 1709,376,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
 #: ../data/darktable.desktop.in.h:1
@@ -408,9 +408,10 @@ msgstr "gesättigte Farben"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:134
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1460 ../src/develop/blend_gui.c:1478
-#: ../src/iop/channelmixer.c:613 ../src/iop/colorbalance.c:2021
-#: ../src/iop/colorize.c:339 ../src/iop/colorreconstruction.c:1281
-#: ../src/iop/colorzones.c:2347 ../src/iop/splittoning.c:466
+#: ../src/iop/channelmixer.c:613 ../src/iop/channelmixerrgb.c:2327
+#: ../src/iop/colorbalance.c:2021 ../src/iop/colorize.c:339
+#: ../src/iop/colorreconstruction.c:1281 ../src/iop/colorzones.c:2347
+#: ../src/iop/splittoning.c:466
 msgid "hue"
 msgstr "Farbton"
 
@@ -1199,8 +1200,9 @@ msgstr "Füllmodus"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:268
 #: ../build/lib/darktable/plugins/introspection_retouch.c:399
-#: ../src/iop/basicadj.c:623 ../src/iop/colisa.c:308 ../src/iop/lowpass.c:582
-#: ../src/iop/soften.c:661 ../src/iop/vignette.c:1002
+#: ../src/iop/basicadj.c:623 ../src/iop/channelmixerrgb.c:2203
+#: ../src/iop/colisa.c:308 ../src/iop/lowpass.c:582 ../src/iop/soften.c:661
+#: ../src/iop/vignette.c:1002
 msgid "brightness"
 msgstr "Helligkeit"
 
@@ -3631,7 +3633,7 @@ msgid "work profile"
 msgstr "Arbeitsprofil"
 
 #: ../src/common/colorspaces.c:1433 ../src/common/colorspaces.c:1683
-#: ../src/iop/colorout.c:862
+#: ../src/iop/colorout.c:860
 msgid "export profile"
 msgstr "Exportprofil"
 
@@ -4218,7 +4220,7 @@ msgstr ""
 "Konnte keinen einmaligen Dateinamen für die Sitzung generieren, bitte die "
 "Import-Sitzungs-Einstellungen überprüfen."
 
-#: ../src/common/iop_order.c:58
+#: ../src/common/iop_order.c:58 ../src/iop/channelmixerrgb.c:2261
 msgid "custom"
 msgstr "benutzerdefiniert"
 
@@ -5198,9 +5200,9 @@ msgstr "Regler für Grauwert"
 msgid "gray"
 msgstr "Grau"
 
-#: ../src/develop/blend_gui.c:1467 ../src/iop/denoiseprofile.c:3865
-#: ../src/iop/rawdenoise.c:923 ../src/iop/rgbcurve.c:1374
-#: ../src/iop/rgblevels.c:946
+#: ../src/develop/blend_gui.c:1467 ../src/iop/channelmixerrgb.c:2199
+#: ../src/iop/denoiseprofile.c:3865 ../src/iop/rawdenoise.c:923
+#: ../src/iop/rgbcurve.c:1374 ../src/iop/rgblevels.c:946
 msgid "R"
 msgstr "R"
 
@@ -5208,9 +5210,9 @@ msgstr "R"
 msgid "sliders for red channel"
 msgstr "Regler für Rot-Kanal"
 
-#: ../src/develop/blend_gui.c:1470 ../src/iop/denoiseprofile.c:3866
-#: ../src/iop/rawdenoise.c:924 ../src/iop/rgbcurve.c:1375
-#: ../src/iop/rgblevels.c:947
+#: ../src/develop/blend_gui.c:1470 ../src/iop/channelmixerrgb.c:2200
+#: ../src/iop/denoiseprofile.c:3866 ../src/iop/rawdenoise.c:924
+#: ../src/iop/rgbcurve.c:1375 ../src/iop/rgblevels.c:947
 msgid "G"
 msgstr "G"
 
@@ -5218,9 +5220,9 @@ msgstr "G"
 msgid "sliders for green channel"
 msgstr "Regler für Grün-Kanal"
 
-#: ../src/develop/blend_gui.c:1473 ../src/iop/denoiseprofile.c:3867
-#: ../src/iop/rawdenoise.c:925 ../src/iop/rgbcurve.c:1376
-#: ../src/iop/rgblevels.c:948
+#: ../src/develop/blend_gui.c:1473 ../src/iop/channelmixerrgb.c:2201
+#: ../src/iop/denoiseprofile.c:3867 ../src/iop/rawdenoise.c:925
+#: ../src/iop/rgbcurve.c:1376 ../src/iop/rgblevels.c:948
 msgid "B"
 msgstr "B"
 
@@ -5245,7 +5247,8 @@ msgid "sliders for chroma channel (of HSL)"
 msgstr "Regler für Chrominanz-Kanal (von HSL)"
 
 #: ../src/develop/blend_gui.c:1481 ../src/iop/atrous.c:1831
-#: ../src/iop/equalizer.c:386 ../src/iop/nlmeans.c:521
+#: ../src/iop/channelmixerrgb.c:2333 ../src/iop/equalizer.c:386
+#: ../src/iop/nlmeans.c:521
 msgid "chroma"
 msgstr "Chrominanz"
 
@@ -5952,130 +5955,130 @@ msgid "fit"
 msgstr "einpassen"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2097
+#: ../src/dtgtk/thumbtable.c:2098
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "Ansichten/Miniaturvorschau/Bewertung „0 Sterne”"
 
-#: ../src/dtgtk/thumbtable.c:2098
+#: ../src/dtgtk/thumbtable.c:2099
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "Ansichten/Miniaturvorschau/Bewertung „1 Stern”"
 
-#: ../src/dtgtk/thumbtable.c:2099
+#: ../src/dtgtk/thumbtable.c:2100
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "Ansichten/Miniaturvorschau/Bewertung „2 Sterne”"
 
-#: ../src/dtgtk/thumbtable.c:2100
+#: ../src/dtgtk/thumbtable.c:2101
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "Ansichten/Miniaturvorschau/Bewertung „3 Sterne”"
 
-#: ../src/dtgtk/thumbtable.c:2101
+#: ../src/dtgtk/thumbtable.c:2102
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "Ansichten/Miniaturvorschau/Bewertung „4 Sterne”"
 
-#: ../src/dtgtk/thumbtable.c:2102
+#: ../src/dtgtk/thumbtable.c:2103
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "Ansichten/Miniaturvorschau/Bewertung „5 Sterne”"
 
-#: ../src/dtgtk/thumbtable.c:2103
+#: ../src/dtgtk/thumbtable.c:2104
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "Ansichten/Miniaturvorschau/Bewertung „verwerfen”"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2106
+#: ../src/dtgtk/thumbtable.c:2107
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "Ansichten/Miniaturvorschau/kopiere Verlaufsstapel"
 
-#: ../src/dtgtk/thumbtable.c:2107
+#: ../src/dtgtk/thumbtable.c:2108
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "Ansichten/Miniaturvorschau/Teil des Verlaufsstapels kopieren"
 
-#: ../src/dtgtk/thumbtable.c:2109
+#: ../src/dtgtk/thumbtable.c:2110
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "Ansichten/Miniaturvorschau/Verlaufsstapel einfügen"
 
-#: ../src/dtgtk/thumbtable.c:2110
+#: ../src/dtgtk/thumbtable.c:2111
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "Ansichten/Miniaturvorschau/Teil des Verlaufsstapels einfügen"
 
-#: ../src/dtgtk/thumbtable.c:2112
+#: ../src/dtgtk/thumbtable.c:2113
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "Ansichten/Miniaturvorschau/Verlaufsstapel verwerfen"
 
-#: ../src/dtgtk/thumbtable.c:2114
+#: ../src/dtgtk/thumbtable.c:2115
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "Ansichten/Miniaturvorschau/Bild duplizieren"
 
-#: ../src/dtgtk/thumbtable.c:2115
+#: ../src/dtgtk/thumbtable.c:2116
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "Ansichten/Miniaturvorschau/„jungfräuliches” Duplikat erstellen"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2119
+#: ../src/dtgtk/thumbtable.c:2120
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "Ansichten/Miniaturvorschau/Farbmarkierung rot"
 
-#: ../src/dtgtk/thumbtable.c:2120
+#: ../src/dtgtk/thumbtable.c:2121
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "Ansichten/Miniaturvorschau/Farbmarkierung gelb"
 
-#: ../src/dtgtk/thumbtable.c:2121
+#: ../src/dtgtk/thumbtable.c:2122
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "Ansichten/Miniaturvorschau/Farbmarkierung grün"
 
-#: ../src/dtgtk/thumbtable.c:2122
+#: ../src/dtgtk/thumbtable.c:2123
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "Ansichten/Miniaturvorschau/Farbmarkierung blau"
 
-#: ../src/dtgtk/thumbtable.c:2123
+#: ../src/dtgtk/thumbtable.c:2124
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "Ansichten/Miniaturvorschau/Farbmarkierung violett"
 
-#: ../src/dtgtk/thumbtable.c:2124
+#: ../src/dtgtk/thumbtable.c:2125
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "Ansichten/Miniaturvorschau/Farbmarkierungen entfernen"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2127
+#: ../src/dtgtk/thumbtable.c:2128
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "Ansichten/Miniaturvorschau/alle Bilder auswählen"
 
-#: ../src/dtgtk/thumbtable.c:2128
+#: ../src/dtgtk/thumbtable.c:2129
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "Ansichten/Miniaturvorschau/alle Bilder abwählen"
 
-#: ../src/dtgtk/thumbtable.c:2130
+#: ../src/dtgtk/thumbtable.c:2131
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "Ansichten/Miniaturvorschau/Bildauswahl invertieren"
 
-#: ../src/dtgtk/thumbtable.c:2131
+#: ../src/dtgtk/thumbtable.c:2132
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "Ansichten/Miniaturvorschau/Filmrolle auswählen"
 
-#: ../src/dtgtk/thumbtable.c:2132
+#: ../src/dtgtk/thumbtable.c:2133
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "Ansichten/Miniaturvorschau/unbearbeitete auswählen"
@@ -9083,6 +9086,338 @@ msgstr "S/W Kodak T-max 400"
 msgid "B/W Kodak Tri-X 400"
 msgstr "S/W Kodak Tri-X 400"
 
+#: ../src/iop/channelmixerrgb.c:127
+msgid "channel mixer rgb"
+msgstr "Kanalmixer RGB"
+
+#: ../src/iop/channelmixerrgb.c:790
+msgid "auto-detection of white balance completed"
+msgstr "automatische Ermittlung des Weißabgleichs beendet"
+
+#: ../src/iop/channelmixerrgb.c:1478
+#, c-format
+msgid "CCT: %.0f K (daylight)"
+msgstr "CCT: %.0f K (Tageslicht)"
+
+#: ../src/iop/channelmixerrgb.c:1479
+msgid ""
+"approximated correlated color temperature.\n"
+"this illuminant can be accurately modeled by a daylight spectrum,\n"
+"so its temperature is relevant and meaningful with a D illuminant."
+msgstr ""
+"CCT: genäherte ähnlichste Farbtemperatur (correlated color temperature)\n"
+"Diese Lichtquelle kann präzise durch ein Tageslichtspektrum mit einer "
+"bestimmten Farbtemperatur modelliert werden."
+
+#: ../src/iop/channelmixerrgb.c:1485
+#, c-format
+msgid "CCT: %.0f K (black body)"
+msgstr "CCT: %.0f K (Schwarzkörper)"
+
+#: ../src/iop/channelmixerrgb.c:1486
+msgid ""
+"approximated correlated color temperature.\n"
+"this illuminant can be accurately modeled by a black body spectrum,\n"
+"so its temperature is relevant and meaningful with a Planckian illuminant."
+msgstr ""
+"CCT: genäherte ähnlichste Farbtemperatur (correlated color temperature)\n"
+"Diese Lichtquelle kann präzise durch ein Schwarzkörperspektrum (Planck-"
+"Spektrum) mit einer bestimmten Farbtemperatur modelliert werden."
+
+#: ../src/iop/channelmixerrgb.c:1492
+#, c-format
+msgid "CCT: %.0f K (invalid)"
+msgstr "CCT: %.0f K (ungültig)"
+
+#: ../src/iop/channelmixerrgb.c:1493
+msgid ""
+"approximated correlated color temperature.\n"
+"this illuminant cannot be accurately modeled by a daylight or black body "
+"spectrum,\n"
+"so its temperature is not relevant and meaningful and you need to use a "
+"custom illuminant."
+msgstr ""
+"CCT: genäherte ähnlichste Farbtemperatur (correlated color temperature)\n"
+"Diese Lichtquelle kann weder durch ein Tageslichtspektrum noch durch ein "
+"Schwarzkörperspektrum (Planck-Spektrum) hinreichend genau modelliert werden."
+
+#: ../src/iop/channelmixerrgb.c:1500
+#, c-format
+msgid "CCT: undefined"
+msgstr "CCT: nicht definiert"
+
+#: ../src/iop/channelmixerrgb.c:1501
+msgid ""
+"the approximated correlated color temperature\n"
+"cannot be computed at all so you need to use a custom illuminant."
+msgstr ""
+"Die genäherte ähnlichste Farbtemperatur (correlated color temperature, CTT) "
+"konnte nicht berechnet werden."
+
+#. Parameters did not change, assume user wants to edit auto-set params and display controls
+#: ../src/iop/channelmixerrgb.c:1530
+msgid "white balance successfuly extracted from raw image"
+msgstr "Weißabgleich erfolgreich aus dem RAW-Bild ermittelt."
+
+#: ../src/iop/channelmixerrgb.c:1548
+msgid "no white balance was found in raw image"
+msgstr "Weißabgleich konnte nicht im RAW-Bild gefunden werden."
+
+#. We need to recompute only the thumbnail
+#: ../src/iop/channelmixerrgb.c:1559
+msgid "auto-detection of white balance started…"
+msgstr "Automatische Ermittlung des Weißabgleichs gestartet ..."
+
+# CAT is for "chromatic adaptation
+# transform"
+#: ../src/iop/channelmixerrgb.c:2198
+msgid "CAT"
+msgstr "CAT"
+
+#: ../src/iop/channelmixerrgb.c:2202
+msgid "colorfulness"
+msgstr "Farbigkeit"
+
+#: ../src/iop/channelmixerrgb.c:2204
+msgid "grey"
+msgstr "grau"
+
+#: ../src/iop/channelmixerrgb.c:2209
+msgid "adaptation"
+msgstr "Anpassung"
+
+#: ../src/iop/channelmixerrgb.c:2210
+msgid "linear Bradford (ICC v4)"
+msgstr "linear Bradford"
+
+#: ../src/iop/channelmixerrgb.c:2211
+msgid "CAT16 (CIECAM16)"
+msgstr "CAT16 (CIECAM16)"
+
+#: ../src/iop/channelmixerrgb.c:2212
+msgid "non-linear Bradford"
+msgstr "nicht-linear Bradford"
+
+#: ../src/iop/channelmixerrgb.c:2213
+msgid "XYZ "
+msgstr "XYZ"
+
+#: ../src/iop/channelmixerrgb.c:2214
+msgid "none (bypass)"
+msgstr "keine"
+
+#: ../src/iop/channelmixerrgb.c:2215
+msgid ""
+"choose the method to adapt the illuminant\n"
+"and the colorspace in which the module works: \n"
+"• Linear Bradford (1985) is more accurate for illuminants close to daylight\n"
+"but produces out-of-gamut colors for difficult illuminants.\n"
+"• CAT16 (2016) is more robust to avoid imaginary colours\n"
+"while working with large gamut or saturated cyan and purple.\n"
+"• Non-linear Bradford (1985) is the original Bradford,\n"
+"it can produce better results than the linear version, but is unreliable.\n"
+"• XYZ is a simple scaling is XYZ space. It is not recommended in general.\n"
+"• none disables any adaptation and uses pipeline working RGB."
+msgstr ""
+"Methode zur Anpassung der Lichtquelle und den Arbeitsfarbraum wählen.\n"
+"• „linear Bradford” ist sehr präzise, wenn die Lichtquelle Tageslicht "
+"ähnelt, kann aber andernfalls Farbtöne außerhalb des Gamut erzeugen.\n"
+"• „CAT16 (CIECAM16)” ist robuster gegenüber der Erzeugung nicht "
+"darstellbarer Farben für den Fall, dass ein großer Farbumfang oder "
+"gesättigte Türkis- oder Violetttöne vorliegen.\n"
+"• „nicht-linear Bradford” entspricht der originalen Bradford-Methode. Es "
+"erzeugt mitunter bessere Ergebnisse als „linear Bradford”, funktioniert aber "
+"nicht zuverlässig.\n"
+"• „XYZ” entspricht einer einfachen Skalierung im XYZ-Farbraum und wird nicht "
+"zur generellen Nutzung empfohlen.\n"
+"• „keine” inaktiviert die Farbanpassung."
+
+#: ../src/iop/channelmixerrgb.c:2237
+msgid ""
+"this is the color of the scene illuminant before chromatic adaptation\n"
+"this color will be turned into pure white by the adaptation."
+msgstr ""
+"Dies ist die Farbe der Motivlichtquelle vor der Farbanpassung. Diese Farbe "
+"wird durch die Farbanpassung zu reinweiß."
+
+#: ../src/iop/channelmixerrgb.c:2244 ../src/iop/temperature.c:1943
+msgid "set white balance to detected from area"
+msgstr "Ermittelt den Weißabgleich aus ausgewähltem Bereich."
+
+#: ../src/iop/channelmixerrgb.c:2252
+msgid "illuminant"
+msgstr "Lichtquelle"
+
+#. dt_bauhaus_combobox_add_section(g->illuminant, _("selection"));
+#: ../src/iop/channelmixerrgb.c:2254
+msgid "same as pipeline (D50)"
+msgstr "wie im Bearbeitungsstapel (D50)"
+
+#: ../src/iop/channelmixerrgb.c:2255
+msgid "A (incandescent)"
+msgstr "Normlicht A (Glühlampe)"
+
+#: ../src/iop/channelmixerrgb.c:2256
+msgid "D (daylight)"
+msgstr "Normlicht D (Tageslicht)"
+
+#: ../src/iop/channelmixerrgb.c:2257
+msgid "E (equi-energy)"
+msgstr "Normlicht E (energetischer Äquivalenzpunkt)"
+
+#: ../src/iop/channelmixerrgb.c:2258
+msgid "F (fluorescent)"
+msgstr "Normlicht F (Leuchtstofflampe)"
+
+#: ../src/iop/channelmixerrgb.c:2259
+msgid "LED (LED light)"
+msgstr "LED-Licht"
+
+#: ../src/iop/channelmixerrgb.c:2260
+msgid "Planckian (black body)"
+msgstr "Schwarzkörper"
+
+# not really an AI method
+#. dt_bauhaus_combobox_add_section(g->illuminant, _("auto-detection"));
+#: ../src/iop/channelmixerrgb.c:2263
+msgid "(AI) detect from image surfaces..."
+msgstr "aus Bildoberflächen ermitteln"
+
+# not really an AI method
+#: ../src/iop/channelmixerrgb.c:2264
+msgid "(AI) detect from image edges..."
+msgstr "aus Bildkanten ermitteln"
+
+#: ../src/iop/channelmixerrgb.c:2265
+msgid "as shot in camera"
+msgstr "wie mit Kamera aufgenommen"
+
+#: ../src/iop/channelmixerrgb.c:2271 ../src/iop/channelmixerrgb.c:2289
+msgid "source"
+msgstr "Variante"
+
+#. CIE fluorescent standards : https://en.wikipedia.org/wiki/Standard_illuminant
+#: ../src/iop/channelmixerrgb.c:2273
+msgid "F1 (Daylight 6430 K) – medium CRI"
+msgstr "F1 (Tageslicht 6430 K, mittlerer CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2274
+msgid "F2 (Cool White 4230 K) – medium CRI"
+msgstr "F2 (kaltweiß 4230 K, mittlerer CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2275
+msgid "F3 (White 3450 K) – medium CRI"
+msgstr "F3 (weiß 3450 K, mittlerer CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2276
+msgid "F4 (Warm White 2940 K) – medium CRI"
+msgstr "F4 (warmweiß 2940 K, mittlerer CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2277
+msgid "F5 (Daylight 6350 K) – medium CRI"
+msgstr "F5 (Tageslicht 6350 K, mittlerer CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2278
+msgid "F6 (Lite White 4150 K) – medium CR"
+msgstr "F6 (hellweiß 4150 K, mittlerer CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2279
+msgid "F7 (D65 simulator 6500 K) – high CRI"
+msgstr "F7 (D65-Simulation 6500 K, hoher CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2280
+msgid "F8 (D50 simulator 5000 K) – high CRI"
+msgstr "F8 (D50-Simulation 5000 K, hoher CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2281
+msgid "F9 (Cool White Deluxe 4150 K) – high CRI"
+msgstr "F9 (kaltweiß deluxe 4150 K, hoher CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2282
+msgid "F10 (Tuned RGB 5000 K) – low CRI"
+msgstr "F10 (abgestimmt RGB 5000K, niedriger CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2283
+msgid "F11 (Tuned RGB 4000 K) – low CRI"
+msgstr "F11 (abgestimmt RGB 4000K, niedriger CRI)"
+
+#: ../src/iop/channelmixerrgb.c:2284
+msgid "F12 (Tuned RGB 3000 K) – low CRI"
+msgstr "F12 (abgestimmt RGB 3000K, niedriger CRI)"
+
+#. CIE LED standards : https://en.wikipedia.org/wiki/Standard_illuminant
+#: ../src/iop/channelmixerrgb.c:2291
+msgid "B1 (Blue 2733 K)"
+msgstr "B1 (blau 2733 K)"
+
+#: ../src/iop/channelmixerrgb.c:2292
+msgid "B2 (Blue 2998 K)"
+msgstr "B2 (blau 2998 K)"
+
+#: ../src/iop/channelmixerrgb.c:2293
+msgid "B3 (Blue 4103 K)"
+msgstr "B3 (blau 4103 K)"
+
+#: ../src/iop/channelmixerrgb.c:2294
+msgid "B4 (Blue 5109 K)"
+msgstr "B4 (blau 5109 K)"
+
+#: ../src/iop/channelmixerrgb.c:2295
+msgid "B5 (Blue 6598 K)"
+msgstr "B5 (blau 6598 K)"
+
+#: ../src/iop/channelmixerrgb.c:2296
+msgid "BH1 (Blue-Red hybrid 2851 K)"
+msgstr "BH1 (blau-rot gemischt 2851 K)"
+
+#: ../src/iop/channelmixerrgb.c:2297
+msgid "RGB1 (RGB 2840 K)"
+msgstr "RGB1 (RGB 2840 K)"
+
+#: ../src/iop/channelmixerrgb.c:2298
+msgid "V1 (Violet 2724 K)"
+msgstr "V1 (violett 2724 K)"
+
+#: ../src/iop/channelmixerrgb.c:2299
+msgid "V2 (Violet 4070 K)"
+msgstr "V2 (violet 4070 K)"
+
+#: ../src/iop/channelmixerrgb.c:2307 ../src/iop/temperature.c:1885
+msgid "temperature"
+msgstr "Farbtemperatur"
+
+#: ../src/iop/channelmixerrgb.c:2339
+msgid "gamut compression"
+msgstr "Gamutkompression"
+
+#: ../src/iop/channelmixerrgb.c:2343
+msgid "clip negative RGB from gamut"
+msgstr "negative RGB-Anteile abschneiden"
+
+#: ../src/iop/channelmixerrgb.c:2350 ../src/iop/channelmixerrgb.c:2371
+#: ../src/iop/channelmixerrgb.c:2393 ../src/iop/channelmixerrgb.c:2416
+#: ../src/iop/channelmixerrgb.c:2438 ../src/iop/channelmixerrgb.c:2459
+msgid "input red"
+msgstr "Eingabe rot"
+
+#: ../src/iop/channelmixerrgb.c:2355 ../src/iop/channelmixerrgb.c:2376
+#: ../src/iop/channelmixerrgb.c:2398 ../src/iop/channelmixerrgb.c:2421
+#: ../src/iop/channelmixerrgb.c:2443 ../src/iop/channelmixerrgb.c:2464
+msgid "input green"
+msgstr "Eingabe grün"
+
+#: ../src/iop/channelmixerrgb.c:2360 ../src/iop/channelmixerrgb.c:2381
+#: ../src/iop/channelmixerrgb.c:2403 ../src/iop/channelmixerrgb.c:2426
+#: ../src/iop/channelmixerrgb.c:2448 ../src/iop/channelmixerrgb.c:2469
+msgid "input blue"
+msgstr "Eingabe blau"
+
+#: ../src/iop/channelmixerrgb.c:2364 ../src/iop/channelmixerrgb.c:2385
+#: ../src/iop/channelmixerrgb.c:2407 ../src/iop/channelmixerrgb.c:2430
+#: ../src/iop/channelmixerrgb.c:2452 ../src/iop/channelmixerrgb.c:2473
+msgid "normalize channels"
+msgstr "Kanäle normieren"
+
 #: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
@@ -9702,21 +10037,21 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "Nicht unterstütztes Eingabeprofil wurde durch lineares Rec709-RGB ersetzt!"
 
-#: ../src/iop/colorin.c:2077
+#: ../src/iop/colorin.c:2075
 msgid "input profile"
 msgstr "Eingabeprofil"
 
-#: ../src/iop/colorin.c:2081
+#: ../src/iop/colorin.c:2079
 msgid "working profile"
 msgstr "Arbeitsprofil"
 
-#: ../src/iop/colorin.c:2088 ../src/iop/colorin.c:2099
-#: ../src/iop/colorout.c:873
+#: ../src/iop/colorin.c:2086 ../src/iop/colorin.c:2097
+#: ../src/iop/colorout.c:871
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "ICC-Profile in %s oder %s"
 
-#: ../src/iop/colorin.c:2110
+#: ../src/iop/colorin.c:2108
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "Lab-Werte auf den Gamut von RGB-Farbräumen begrenzen"
 
@@ -9803,40 +10138,40 @@ msgstr "fehlendes Softproof-Profil wurde durch sRGB ersetzt!"
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "nicht unterstütztes Ausgabeprofil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:849
+#: ../src/iop/colorout.c:847
 msgid "output intent"
 msgstr "Ausgabevorsatz"
 
-#: ../src/iop/colorout.c:850 ../src/libs/export.c:1299
+#: ../src/iop/colorout.c:848 ../src/libs/export.c:1299
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2367 ../src/views/darkroom.c:2375
-#: ../src/views/lighttable.c:1397 ../src/views/lighttable.c:1405
+#: ../src/views/lighttable.c:1402 ../src/views/lighttable.c:1410
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:851 ../src/libs/export.c:1300
+#: ../src/iop/colorout.c:849 ../src/libs/export.c:1300
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2368 ../src/views/darkroom.c:2376
-#: ../src/views/lighttable.c:1398 ../src/views/lighttable.c:1406
+#: ../src/views/lighttable.c:1403 ../src/views/lighttable.c:1411
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
-#: ../src/iop/colorout.c:852 ../src/libs/export.c:1301
+#: ../src/iop/colorout.c:850 ../src/libs/export.c:1301
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2369 ../src/views/darkroom.c:2377
-#: ../src/views/lighttable.c:1399 ../src/views/lighttable.c:1407
+#: ../src/views/lighttable.c:1404 ../src/views/lighttable.c:1412
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:853 ../src/libs/export.c:1302
+#: ../src/iop/colorout.c:851 ../src/libs/export.c:1302
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2370 ../src/views/darkroom.c:2378
-#: ../src/views/lighttable.c:1400 ../src/views/lighttable.c:1408
+#: ../src/views/lighttable.c:1405 ../src/views/lighttable.c:1413
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
-#: ../src/iop/colorout.c:870
+#: ../src/iop/colorout.c:868
 msgid "rendering intent"
 msgstr "Wiedergabeabsicht"
 
@@ -13068,10 +13403,6 @@ msgstr "Farbtemperatur der Lichtquelle"
 msgid "click to cycle color mode on sliders"
 msgstr "Klicken, um die Farbdarstellung der Regler zu ändern."
 
-#: ../src/iop/temperature.c:1885
-msgid "temperature"
-msgstr "Farbtemperatur"
-
 #: ../src/iop/temperature.c:1886
 msgid "color temperature (in Kelvin)"
 msgstr "Farbtemperatur in Kelvin"
@@ -13100,10 +13431,6 @@ msgstr "wie bei Aufnahme"
 #: ../src/iop/temperature.c:1938
 msgid "set white balance to as shot"
 msgstr "Setzt Weißabgleich wie bei Aufnahme von Kamera ermittelt."
-
-#: ../src/iop/temperature.c:1943
-msgid "set white balance to detected from area"
-msgstr "Ermittelt den Weißabgleich aus ausgewähltem Bereich."
 
 #: ../src/iop/temperature.c:1945
 msgid "user modified"
@@ -17398,19 +17725,19 @@ msgstr ""
 "Gamutüberprüfung,\n"
 "Rechtsklick für Einstellungen"
 
-#: ../src/views/darkroom.c:2365 ../src/views/lighttable.c:1395
+#: ../src/views/darkroom.c:2365 ../src/views/lighttable.c:1400
 msgid "display intent"
 msgstr "Anzeigevorsatz"
 
-#: ../src/views/darkroom.c:2373 ../src/views/lighttable.c:1403
+#: ../src/views/darkroom.c:2373 ../src/views/lighttable.c:1408
 msgid "preview display intent"
 msgstr "Vorschau des Anzeigevorsatz"
 
-#: ../src/views/darkroom.c:2393 ../src/views/lighttable.c:1411
+#: ../src/views/darkroom.c:2393 ../src/views/lighttable.c:1416
 msgid "display profile"
 msgstr "Anzeigeprofil"
 
-#: ../src/views/darkroom.c:2394 ../src/views/lighttable.c:1415
+#: ../src/views/darkroom.c:2394 ../src/views/lighttable.c:1420
 msgid "preview display profile"
 msgstr "Vorschau des Bildschirmprofil"
 
@@ -17418,12 +17745,12 @@ msgstr "Vorschau des Bildschirmprofil"
 msgid "histogram profile"
 msgstr "Histogrammprofil"
 
-#: ../src/views/darkroom.c:2449 ../src/views/lighttable.c:1445
+#: ../src/views/darkroom.c:2449 ../src/views/lighttable.c:1450
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "Anzeige-ICC-Profile in %s oder %s"
 
-#: ../src/views/darkroom.c:2452 ../src/views/lighttable.c:1448
+#: ../src/views/darkroom.c:2452 ../src/views/lighttable.c:1453
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "Vorschau der Anzeige-ICC-Profile in %s oder %s"
@@ -17484,12 +17811,12 @@ msgstr "Ansicht einpassen"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3795 ../src/views/lighttable.c:878
+#: ../src/views/darkroom.c:3795 ../src/views/lighttable.c:883
 msgctxt "accel"
 msgid "zoom in"
 msgstr "heranzoomen"
 
-#: ../src/views/darkroom.c:3796 ../src/views/lighttable.c:880
+#: ../src/views/darkroom.c:3796 ../src/views/lighttable.c:885
 msgctxt "accel"
 msgid "zoom out"
 msgstr "herauszoomen"
@@ -17587,13 +17914,13 @@ msgid "full preview"
 msgstr "Vollbildvorschau"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3842 ../src/views/lighttable.c:870
+#: ../src/views/darkroom.c:3842 ../src/views/lighttable.c:875
 #: ../src/views/map.c:1604
 msgctxt "accel"
 msgid "undo"
 msgstr "rückgängig"
 
-#: ../src/views/darkroom.c:3843 ../src/views/lighttable.c:871
+#: ../src/views/darkroom.c:3843 ../src/views/lighttable.c:876
 #: ../src/views/map.c:1605
 msgctxt "accel"
 msgid "redo"
@@ -17621,7 +17948,7 @@ msgstr "Schrittweitenwahl für Schieberegleränderungen via Tastenkombination"
 msgid "switch to lighttable"
 msgstr "zum Leuchttisch wechseln"
 
-#: ../src/views/darkroom.c:3976 ../src/views/lighttable.c:1054
+#: ../src/views/darkroom.c:3976 ../src/views/lighttable.c:1059
 msgid "zoom in the image"
 msgstr "im Bild zoomen"
 
@@ -17650,226 +17977,226 @@ msgstr "darktable - Dunkelkammer Vorschau"
 msgid "good knight"
 msgstr "Good Knight"
 
-#: ../src/views/lighttable.c:429 ../src/views/slideshow.c:376
+#: ../src/views/lighttable.c:432 ../src/views/slideshow.c:376
 msgid "there are no images in this collection"
 msgstr "Diese Sammlung enthält keine Bilder"
 
-#: ../src/views/lighttable.c:433
+#: ../src/views/lighttable.c:436
 msgid "if you have not imported any images yet"
 msgstr "Falls noch keine Bilder importiert wurden"
 
-#: ../src/views/lighttable.c:437
+#: ../src/views/lighttable.c:440
 msgid "you can do so in the import module"
 msgstr "Kann im Import-Modul erfolgen"
 
-#: ../src/views/lighttable.c:445
+#: ../src/views/lighttable.c:448
 msgid "try to relax the filter settings in the top panel"
 msgstr "Filterregeln in der oberen Leiste anpassen"
 
-#: ../src/views/lighttable.c:454
+#: ../src/views/lighttable.c:457
 msgid "or add images in the collection module in the left panel"
 msgstr "oder Bilder links im Sammlungs-Plugin hinzufügen"
 
 #. movement keys
-#: ../src/views/lighttable.c:838
+#: ../src/views/lighttable.c:843
 msgctxt "accel"
 msgid "move page up"
 msgstr "um eine Seite nach oben navigieren"
 
-#: ../src/views/lighttable.c:839
+#: ../src/views/lighttable.c:844
 msgctxt "accel"
 msgid "move page down"
 msgstr "um eine Seite nach unten navigieren"
 
-#: ../src/views/lighttable.c:840
+#: ../src/views/lighttable.c:845
 msgctxt "accel"
 msgid "move up"
 msgstr "nach oben navigieren"
 
-#: ../src/views/lighttable.c:841
+#: ../src/views/lighttable.c:846
 msgctxt "accel"
 msgid "move down"
 msgstr "nach unten navigieren"
 
-#: ../src/views/lighttable.c:842
+#: ../src/views/lighttable.c:847
 msgctxt "accel"
 msgid "move left"
 msgstr "nach links navigieren"
 
-#: ../src/views/lighttable.c:843
+#: ../src/views/lighttable.c:848
 msgctxt "accel"
 msgid "move right"
 msgstr "nach rechts navigieren"
 
-#: ../src/views/lighttable.c:844
+#: ../src/views/lighttable.c:849
 msgctxt "accel"
 msgid "move start"
 msgstr "zum Anfang navigieren"
 
-#: ../src/views/lighttable.c:845
+#: ../src/views/lighttable.c:850
 msgctxt "accel"
 msgid "move end"
 msgstr "zum Ende navigieren"
 
 #. movement keys with selection
-#: ../src/views/lighttable.c:848
+#: ../src/views/lighttable.c:853
 msgctxt "accel"
 msgid "move page up and select"
 msgstr "um eine Seite nach oben navigieren und auswählen"
 
-#: ../src/views/lighttable.c:849
+#: ../src/views/lighttable.c:854
 msgctxt "accel"
 msgid "move page down and select"
 msgstr "um eine Seite nach unten navigieren und auswählen"
 
-#: ../src/views/lighttable.c:850
+#: ../src/views/lighttable.c:855
 msgctxt "accel"
 msgid "move up and select"
 msgstr "nach oben navigieren und auswählen"
 
-#: ../src/views/lighttable.c:851
+#: ../src/views/lighttable.c:856
 msgctxt "accel"
 msgid "move down and select"
 msgstr "nach unten navigieren und auswählen"
 
 # besser "Bedienfeld"?
-#: ../src/views/lighttable.c:852
+#: ../src/views/lighttable.c:857
 msgctxt "accel"
 msgid "move left and select"
 msgstr "nach links navigieren und auswählen"
 
-#: ../src/views/lighttable.c:853
+#: ../src/views/lighttable.c:858
 msgctxt "accel"
 msgid "move right and select"
 msgstr "nach rechts navigieren und auswählen"
 
-#: ../src/views/lighttable.c:854
+#: ../src/views/lighttable.c:859
 msgctxt "accel"
 msgid "move start and select"
 msgstr "zum Anfang navigieren und auswählen"
 
-#: ../src/views/lighttable.c:855
+#: ../src/views/lighttable.c:860
 msgctxt "accel"
 msgid "move end and select"
 msgstr "zum Ende navigieren und auswählen"
 
-#: ../src/views/lighttable.c:857
+#: ../src/views/lighttable.c:862
 msgctxt "accel"
 msgid "align images to grid"
 msgstr "Bilder am Raster ausrichten"
 
-#: ../src/views/lighttable.c:858
+#: ../src/views/lighttable.c:863
 msgctxt "accel"
 msgid "reset first image offset"
 msgstr "Erstes-Bild-Offset zurücksetzen"
 
-#: ../src/views/lighttable.c:859
+#: ../src/views/lighttable.c:864
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "Bild aus- oder abwählen"
 
-#: ../src/views/lighttable.c:860
+#: ../src/views/lighttable.c:865
 msgctxt "accel"
 msgid "select single image"
 msgstr "einzelnes Bild auswählen"
 
 #. Preview key
-#: ../src/views/lighttable.c:863
+#: ../src/views/lighttable.c:868
 msgctxt "accel"
 msgid "preview"
 msgstr "Kurzvorschau"
 
-#: ../src/views/lighttable.c:864
+#: ../src/views/lighttable.c:869
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "Kurzvorschau mit Fokuserkennung"
 
-#: ../src/views/lighttable.c:865
+#: ../src/views/lighttable.c:870
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "Vorschau"
 
-#: ../src/views/lighttable.c:866
+#: ../src/views/lighttable.c:871
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "Vorschau mit Fokuserkennung"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:874
+#: ../src/views/lighttable.c:879
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "Vorschau-Zoom 100%"
 
-#: ../src/views/lighttable.c:875
+#: ../src/views/lighttable.c:880
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "Vorschau einpassen"
 
-#: ../src/views/lighttable.c:879
+#: ../src/views/lighttable.c:884
 msgctxt "accel"
 msgid "zoom max"
 msgstr "maximaler Zoom"
 
-#: ../src/views/lighttable.c:881
+#: ../src/views/lighttable.c:886
 msgctxt "accel"
 msgid "zoom min"
 msgstr "minimaler Zoom"
 
-#: ../src/views/lighttable.c:1041
+#: ../src/views/lighttable.c:1046
 msgid "open image in darkroom"
 msgstr "Bild in der Dunkelkammer öffnen"
 
-#: ../src/views/lighttable.c:1048
+#: ../src/views/lighttable.c:1053
 msgid "switch to next/previous image"
 msgstr "Zum nächsten/vorherigen Bild wechseln"
 
-#: ../src/views/lighttable.c:1060 ../src/views/lighttable.c:1118
+#: ../src/views/lighttable.c:1065 ../src/views/lighttable.c:1123
 #, no-c-format
 msgid "zoom to 100% and back"
 msgstr "auf 100% zoomen und zurück"
 
-#: ../src/views/lighttable.c:1067 ../src/views/lighttable.c:1089
+#: ../src/views/lighttable.c:1072 ../src/views/lighttable.c:1094
 msgid "scroll the collection"
 msgstr "Sammlung durchblättern"
 
-#: ../src/views/lighttable.c:1073
+#: ../src/views/lighttable.c:1078
 msgid "change number of images per row"
 msgstr "Anzahl der Bilder pro Zeile ändern"
 
-#: ../src/views/lighttable.c:1081
+#: ../src/views/lighttable.c:1086
 msgid "change image order"
 msgstr "Bildreihenfolge ändern"
 
-#: ../src/views/lighttable.c:1095
+#: ../src/views/lighttable.c:1100
 msgid "zoom all the images"
 msgstr "Alle Bilder skalieren"
 
-#: ../src/views/lighttable.c:1100
+#: ../src/views/lighttable.c:1105
 msgid "pan inside all the images"
 msgstr "Innerhalb aller Bilder verschieben"
 
-#: ../src/views/lighttable.c:1106
+#: ../src/views/lighttable.c:1111
 msgid "zoom current image"
 msgstr "Aktuelles bild skalieren"
 
-#: ../src/views/lighttable.c:1112
+#: ../src/views/lighttable.c:1117
 msgid "pan inside current image"
 msgstr "Innerhalb des aktuellen Bild verschieben"
 
-#: ../src/views/lighttable.c:1125
+#: ../src/views/lighttable.c:1130
 #, no-c-format
 msgid "zoom current image to 100% and back"
 msgstr "aktuelles Bild auf 100% zoomen und zurück"
 
-#: ../src/views/lighttable.c:1132
+#: ../src/views/lighttable.c:1137
 msgid "zoom the main view"
 msgstr "Hauptansicht skalieren"
 
-#: ../src/views/lighttable.c:1137
+#: ../src/views/lighttable.c:1142
 msgid "pan inside the main view"
 msgstr "Innerhalb der Hauptansicht verschieben"
 
-#: ../src/views/lighttable.c:1372
+#: ../src/views/lighttable.c:1377
 msgid "set display profile"
 msgstr "Anzeigeprofil setzen"
 
