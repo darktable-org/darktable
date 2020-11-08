@@ -1754,6 +1754,12 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/channelmixerrgb/gui_page</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>last page selected in channel mixer rgb notebook</shortdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/demosaic/fdc_xover_iso</name>
     <type>int</type>
     <default>1600</default>
