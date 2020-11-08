@@ -27,48 +27,50 @@
 /* Standard CIE illuminants */
 typedef enum dt_illuminant_t
 {
-  DT_ILLUMINANT_PIPE            = 0,    // darktable pipeline D50
-  DT_ILLUMINANT_A               = 1,    // incandescent bulb
-  DT_ILLUMINANT_D               = 2,    // daylight
-  DT_ILLUMINANT_E               = 3,    // equi-energy (x = y)
-  DT_ILLUMINANT_F               = 4,    // fluorescent
-  DT_ILLUMINANT_LED             = 5,    // LED
-  DT_ILLUMINANT_BB              = 6,    // general black body radiator - not CIE standard
-  DT_ILLUMINANT_CUSTOM          = 7,    // input x and y directly - bypass search
-  DT_ILLUMINANT_DETECT_SURFACES = 8,    // auto-detection in image from grey world model
-  DT_ILLUMINANT_DETECT_EDGES    = 9,    // auto-detection in image from grey edges model
-  DT_ILLUMINANT_CAMERA          = 10,   // read RAW EXIF for WB
+  DT_ILLUMINANT_PIPE            = 0, // $DESCRIPTION: "same as pipeline (D50)"
+  DT_ILLUMINANT_A               = 1, // $DESCRIPTION: "A (incandescent)"
+  DT_ILLUMINANT_D               = 2, // $DESCRIPTION: "D (daylight)"
+  DT_ILLUMINANT_E               = 3, // $DESCRIPTION: "E (equi-energy)" (x = y)
+  DT_ILLUMINANT_F               = 4, // $DESCRIPTION: "F (fluorescent)"
+  DT_ILLUMINANT_LED             = 5, // $DESCRIPTION: "LED (LED light)"
+  DT_ILLUMINANT_BB              = 6, // $DESCRIPTION: "Planckian (black body)" general black body radiator - not CIE standard
+  DT_ILLUMINANT_CUSTOM          = 7, // $DESCRIPTION: "custom" input x and y directly - bypass search
+  DT_ILLUMINANT_DETECT_SURFACES = 8, // $DESCRIPTION: "(AI) detect from image surfaces..." auto-detection in image from grey world model
+  DT_ILLUMINANT_DETECT_EDGES    = 9, // $DESCRIPTION: "(AI) detect from image edges..."auto-detection in image from grey edges model
+  DT_ILLUMINANT_CAMERA          = 10,// $DESCRIPTION: "as shot in camera" read RAW EXIF for WB
   DT_ILLUMINANT_LAST
 } dt_illuminant_t;
 
+// CIE fluorescent standards : https://en.wikipedia.org/wiki/Standard_illuminant
 typedef enum dt_illuminant_fluo_t
 {
-  DT_ILLUMINANT_FLUO_F1  = 0,  // Daylight Fluorescent 6430K
-  DT_ILLUMINANT_FLUO_F2  = 1,  // Cool White Fluorescent 4230K
-  DT_ILLUMINANT_FLUO_F3  = 2,  // White Fluorescent 3450K
-  DT_ILLUMINANT_FLUO_F4  = 3,  // Warm White Fluorescent 2940K
-  DT_ILLUMINANT_FLUO_F5  = 4,  // Daylight Fluorescent 6350K
-  DT_ILLUMINANT_FLUO_F6  = 5,  // Lite White Fluorescent 4150K
-  DT_ILLUMINANT_FLUO_F7  = 6,  // D65 simulator, Daylight simulator 6500K
-  DT_ILLUMINANT_FLUO_F8  = 7,  // D50 simulator, Sylvania F40 5000K
-  DT_ILLUMINANT_FLUO_F9  = 8,  // Cool White Deluxe Fluorescent 4150K
-  DT_ILLUMINANT_FLUO_F10 = 9,  // Philips TL85, Ultralume 50 5000K
-  DT_ILLUMINANT_FLUO_F11 = 10, // Philips TL84, Ultralume 40 4000K
-  DT_ILLUMINANT_FLUO_F12 = 11, // Philips TL83, Ultralume 30 3000K
+  DT_ILLUMINANT_FLUO_F1  = 0,  // $DESCRIPTION: "F1 (Daylight 6430 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F2  = 1,  // $DESCRIPTION: "F2 (Cool White 4230 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F3  = 2,  // $DESCRIPTION: "F3 (White 3450 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F4  = 3,  // $DESCRIPTION: "F4 (Warm White 2940 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F5  = 4,  // $DESCRIPTION: "F5 (Daylight 6350 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F6  = 5,  // $DESCRIPTION: "F6 (Lite White 4150 K) – medium CR"
+  DT_ILLUMINANT_FLUO_F7  = 6,  // $DESCRIPTION: "F7 (D65 simulator 6500 K) – high CRI"
+  DT_ILLUMINANT_FLUO_F8  = 7,  // $DESCRIPTION: "F8 (D50 simulator 5000 K) – high CRI"
+  DT_ILLUMINANT_FLUO_F9  = 8,  // $DESCRIPTION: "F9 (Cool White Deluxe 4150 K) – high CRI"
+  DT_ILLUMINANT_FLUO_F10 = 9,  // $DESCRIPTION: "F10 (Tuned RGB 5000 K) – low CRI" Philips TL85, Ultralume 50
+  DT_ILLUMINANT_FLUO_F11 = 10, // $DESCRIPTION: "F11 (Tuned RGB 4000 K) – low CRI" Philips TL84, Ultralume 40
+  DT_ILLUMINANT_FLUO_F12 = 11, // $DESCRIPTION: "F12 (Tuned RGB 3000 K) – low CRI" Philips TL83, Ultralume 30
   DT_ILLUMINANT_FLUO_LAST
 } dt_illuminant_fluo_t;
 
+// CIE LED standards : https://en.wikipedia.org/wiki/Standard_illuminant
 typedef enum dt_illuminant_led_t
 {
-  DT_ILLUMINANT_LED_B1  = 0,   // phosphor-converted blue 2733K
-  DT_ILLUMINANT_LED_B2  = 1,   // phosphor-converted blue 2998K
-  DT_ILLUMINANT_LED_B3  = 2,   // phosphor-converted blue 4103K
-  DT_ILLUMINANT_LED_B4  = 3,   // phosphor-converted blue 5109K
-  DT_ILLUMINANT_LED_B5  = 4,   // phosphor-converted blue 6598K
-  DT_ILLUMINANT_LED_BH1 = 5,   // mix of phosphor-converted blue red (blue-hybrid) 2851K
-  DT_ILLUMINANT_LED_RGB1= 6,   // mixing of red, green, and blue LEDs 2840K
-  DT_ILLUMINANT_LED_V1  = 7,   // phosphor-converted violet 2724K
-  DT_ILLUMINANT_LED_V2  = 8,   // phosphor-converted violet 4070K
+  DT_ILLUMINANT_LED_B1  = 0,   // $DESCRIPTION: "B1 (Blue 2733 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_B2  = 1,   // $DESCRIPTION: "B2 (Blue 2998 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_B3  = 2,   // $DESCRIPTION: "B3 (Blue 4103 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_B4  = 3,   // $DESCRIPTION: "B4 (Blue 5109 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_B5  = 4,   // $DESCRIPTION: "B5 (Blue 6598 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_BH1 = 5,   // $DESCRIPTION: "BH1 (Blue-Red hybrid 2851 K)" mix of phosphor-converted blue red
+  DT_ILLUMINANT_LED_RGB1= 6,   // $DESCRIPTION: "RGB1 (RGB 2840 K)" mixing of red, green, and blue LEDs
+  DT_ILLUMINANT_LED_V1  = 7,   // $DESCRIPTION: "V1 (Violet 2724 K)" phosphor-converted violet
+  DT_ILLUMINANT_LED_V2  = 8,   // $DESCRIPTION: "V2 (Violet 4070 K)" phosphor-converted violet
   DT_ILLUMINANT_LED_LAST
 } dt_illuminant_led_t;
 
