@@ -1915,6 +1915,9 @@ void gui_init(struct dt_iop_module_t *self)
   NOTEBOOK_PAGE(grey, grey, N_("grey"), N_("grey"), FALSE)
 
   self->widget = GTK_WIDGET(g->notebook);
+  int active_page = dt_conf_get_int("plugins/darkroom/channelmixerrgb/gui_page");
+  gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
+  gtk_notebook_set_current_page(g->notebook, active_page);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1923,6 +1926,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  dt_conf_set_int("plugins/darkroom/channelmixerrgb/gui_page", gtk_notebook_get_current_page (g->notebook));
   dt_pthread_mutex_destroy(&g->lock);
 
   free(self->gui_data);
