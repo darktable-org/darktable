@@ -1821,7 +1821,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
 
   // Page CAT
-  self->widget = dt_ui_notebook_page(g->notebook, _("CAT"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, _("CAT"), _("chromatic adaptation transform"));
 
   g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),
@@ -1894,8 +1894,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->clip = dt_bauhaus_toggle_from_params(self, "clip");
 
   GtkWidget *first, *second, *third;
-#define NOTEBOOK_PAGE(var, short, label, section, swap)                       \
-  self->widget = dt_ui_notebook_page(g->notebook, _(label), NULL);            \
+#define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap)              \
+  self->widget = dt_ui_notebook_page(g->notebook, _(label), _(tooltip));      \
                                                                               \
   first = dt_bauhaus_slider_from_params(self, swap ? #var "[2]" : #var "[0]");\
   dt_bauhaus_slider_set_step(first, 0.005);                                   \
@@ -1918,12 +1918,12 @@ void gui_init(struct dt_iop_module_t *self)
                                                                               \
   g->normalize_##short = dt_bauhaus_toggle_from_params(self, "normalize_" #short);
 
-  NOTEBOOK_PAGE(red, R, N_("R"), N_("red"), FALSE)
-  NOTEBOOK_PAGE(green, G, N_("G"), N_("green"), FALSE)
-  NOTEBOOK_PAGE(blue, B, N_("B"), N_("blue"), FALSE)
-  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("colorfulness"), TRUE)
-  NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("brightness"), FALSE)
-  NOTEBOOK_PAGE(grey, grey, N_("grey"), N_("grey"), FALSE)
+  NOTEBOOK_PAGE(red, R, N_("R"), N_("red"), N_("red"), FALSE)
+  NOTEBOOK_PAGE(green, G, N_("G"), N_("green"), N_("green"), FALSE)
+  NOTEBOOK_PAGE(blue, B, N_("B"), N_("blue"), N_("blue"), FALSE)
+  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("colorfulness"), N_("colorfulness"), TRUE)
+  NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("brightness"), N_("brightness"), FALSE)
+  NOTEBOOK_PAGE(grey, grey, N_("grey"), N_("grey"), N_("grey"), FALSE)
 
   self->widget = GTK_WIDGET(g->notebook);
   const int active_page = dt_conf_get_int("plugins/darkroom/channelmixerrgb/gui_page");
