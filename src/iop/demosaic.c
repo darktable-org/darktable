@@ -5253,10 +5253,9 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   if((demosaicing_method == DT_IOP_DEMOSAIC_PPG) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
-      (demosaicing_method == DT_IOP_DEMOSAIC_RCD) ||
       (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE))
   {
-    // Bayer pattern with PPG, Passthrough, RCD or Amaze
+    // Bayer pattern with PPG, Passthrough or Amaze
     tiling->factor = 1.0f + ioratio;         // in + out
 
     if(full_scale_demosaicing && unscaled)
@@ -5299,6 +5298,16 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->xalign = 3;
     tiling->yalign = 3;
     tiling->overlap = overlap;
+  }
+  else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
+  {
+    tiling->factor = 1.0f + ioratio + smooth;
+    tiling->factor += 4.0f;
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
+    tiling->xalign = 2;
+    tiling->yalign = 2;
+    tiling->overlap = 6;
   }
   else
   {
@@ -5453,7 +5462,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   {
     d->demosaicing_method = DT_IOP_DEMOSAIC_RCD;
     d->median_thrs = 0.0f;
-    d->color_smoothing = 0;
   }
   // OpenCL only supported by some of the demosaicing methods
   switch(d->demosaicing_method)
@@ -5529,22 +5537,21 @@ void gui_update(struct dt_iop_module_t *self)
 
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
   const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
+  const gboolean isrcd = (p->demosaicing_method == DT_IOP_DEMOSAIC_RCD);
+  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
+
+  gtk_widget_set_visible(g->demosaic_method_bayer, bayer); 
+  gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
   if(bayer)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, p->demosaicing_method);
   else
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, p->demosaicing_method);
 
-  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_RCD));
-
-  gtk_widget_set_visible(g->demosaic_method_bayer, bayer); 
-  gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
-
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
-  gtk_widget_set_visible(g->greeneq, bayer && !passing);
+  gtk_widget_set_visible(g->greeneq, !passing && !isrcd);
   gtk_widget_set_visible(g->color_smoothing, !passing);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
@@ -5591,22 +5598,21 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
   const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
+  const gboolean isrcd = (p->demosaicing_method == DT_IOP_DEMOSAIC_RCD);
+  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
+
+  gtk_widget_set_visible(g->demosaic_method_bayer, bayer); 
+  gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
   if(bayer)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, p->demosaicing_method);
   else
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, p->demosaicing_method);
 
-  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_RCD));
-
-  gtk_widget_set_visible(g->demosaic_method_bayer, bayer); 
-  gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
-
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
-  gtk_widget_set_visible(g->greeneq, bayer && !passing);
+  gtk_widget_set_visible(g->greeneq, !passing && !isrcd);
   gtk_widget_set_visible(g->color_smoothing, !passing);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
