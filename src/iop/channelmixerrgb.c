@@ -268,7 +268,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
 
   // Check sanity of x and y :
   // since Z = Y (1 - x - y) / y, if x + y >= 1, Z will be negative
-  float scale = xyY[0] + xyY[1] + 1e-6f;
+  const float scale = xyY[0] + xyY[1] + 1e-6f;
   const int sanitize = (scale > 1.f);
   for(size_t c = 0; c < 2; c++) xyY[c] = (sanitize) ? xyY[c] / scale : xyY[c];
 
@@ -295,7 +295,8 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
 
   // Compute ratios and a flat colorfulness adjustment for the whole pixel
   float coeff_ratio = 0.f;
-  for(size_t c = 0; c < 3; c++) coeff_ratio += sqf(1.0f - output[c]) * saturation[c];
+  for(size_t c = 0; c < 3; c++)
+    coeff_ratio += sqf(1.0f - output[c]) * saturation[c];
   coeff_ratio /= 3.f;
 
   // Adjust the RGB ratios with the pixel correction
@@ -331,7 +332,8 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     float DT_ALIGNED_PIXEL temp_one[4];
     float DT_ALIGNED_PIXEL temp_two[4];
 
-    for(size_t c = 0; c < 3; c++) temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
+    for(size_t c = 0; c < 3; c++)
+      temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
     float Y = 1.f;
 
     switch(kind)
@@ -697,9 +699,11 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
   float t = xy_to_CCT(x, y);
 
   // xy_to_CCT is valid only in 3000 - 25000 K. We need another model below
-  if(t < 3000.f && t > 1667.f) t = CCT_reverse_lookup(x, y);
+  if(t < 3000.f && t > 1667.f)
+    t = CCT_reverse_lookup(x, y);
 
-  if(temperature) *temperature = t;
+  if(temperature)
+    *temperature = t;
 
   // Convert to CIE 1960 Yuv space
   float xy_ref[2] = { x, y };
@@ -748,8 +752,9 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
-             void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+             const void *const restrict ivoid, void *const restrict ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_channelmixer_rbg_data_t *data = (dt_iop_channelmixer_rbg_data_t *)piece->data;
   const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
@@ -865,7 +870,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
   dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
 
-  float xyY[3] = { p->x, p->y, 1.f };
+  const float xyY[3] = { p->x, p->y, 1.f };
   float Lch[3];
   dt_xyY_to_Lch(xyY, Lch);
   dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
@@ -992,7 +997,7 @@ static void update_illuminants(dt_iop_module_t *self)
   float x = p->x;
   float y = p->y;
 
-  int changed = illuminant_to_xy(p->illuminant, NULL, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
+  const int changed = illuminant_to_xy(p->illuminant, NULL, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
 
   if(changed)
   {
@@ -1125,12 +1130,12 @@ static void update_xy_color(dt_iop_module_t *self)
   // Varies x in range around current y param
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float x = x_min + stop * x_range;
     float RGB[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float x = x_min + stop * x_range;
 
     const float Lch[3] = { 100.f, 50.f, x / 180.f * M_PI };
-    float xyY[3];
+    float xyY[3] = { 0 };
     dt_Lch_to_xyY(Lch, xyY);
     illuminant_xy_to_RGB(xyY[0], xyY[1], RGB);
     dt_bauhaus_slider_set_stop(g->illum_x, stop, RGB[0], RGB[1], RGB[2]);
@@ -1139,13 +1144,13 @@ static void update_xy_color(dt_iop_module_t *self)
   // Varies y in range around current x params
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float y = (y_min + stop * y_range) / 2.0f;
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float y = (y_min + stop * y_range) / 2.0f;
+    float RGB[4] = { 0 };
 
     // Find current hue
     float xyY[3] = { p->x, p->y, 1.f };
-    float Lch[3];
+    float Lch[3] = { 0 };
     dt_xyY_to_Lch(xyY, Lch);
 
     // Replace chroma by current step
@@ -1173,7 +1178,7 @@ static void update_R_colors(dt_iop_module_t *self)
 
   if(p->normalize_R)
   {
-    float sum = RGB[0] + RGB[1] + RGB[2];
+    const float sum = RGB[0] + RGB[1] + RGB[2];
     for(int c = 0; c < 3; c++) RGB[c] /= sum;
   }
 
@@ -1184,11 +1189,11 @@ static void update_R_colors(dt_iop_module_t *self)
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB_t[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float RR = RR_min + stop * RR_range;
-    float stop_R = RR + RGB[1] + RGB[2];
-    float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float RR = RR_min + stop * RR_range;
+    const float stop_R = RR + RGB[1] + RGB[2];
+    const float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
+    float RGB_t[4] = { 0 };
 
     if(p->adaptation != DT_ADAPTATION_RGB)
       convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
@@ -1205,11 +1210,11 @@ static void update_R_colors(dt_iop_module_t *self)
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB_t[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float RG = RG_min + stop * RG_range;
-    float stop_R = RGB[0] + RG + RGB[2];
-    float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float RG = RG_min + stop * RG_range;
+    const float stop_R = RGB[0] + RG + RGB[2];
+    const float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
+    float RGB_t[4] = { 0 };
 
     if(p->adaptation != DT_ADAPTATION_RGB)
       convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
@@ -1226,11 +1231,11 @@ static void update_R_colors(dt_iop_module_t *self)
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB_t[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float RB = RB_min + stop * RB_range;
-    float stop_R = RGB[0] + RGB[1] + RB;
-    float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float RB = RB_min + stop * RB_range;
+    const float stop_R = RGB[0] + RGB[1] + RB;
+    const float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
+    float RGB_t[4] = { 0 };
 
     if(p->adaptation != DT_ADAPTATION_RGB)
       convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
@@ -1256,7 +1261,7 @@ static void update_B_colors(dt_iop_module_t *self)
 
   if(p->normalize_B)
   {
-    float sum = RGB[0] + RGB[1] + RGB[2];
+    const float sum = RGB[0] + RGB[1] + RGB[2];
     for(int c = 0; c < 3; c++) RGB[c] /= sum;
   }
 
@@ -1267,11 +1272,11 @@ static void update_B_colors(dt_iop_module_t *self)
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB_t[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float BR = BR_min + stop * BR_range;
-    float stop_B = BR + RGB[1] + RGB[2];
-    float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B };
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float BR = BR_min + stop * BR_range;
+    const float stop_B = BR + RGB[1] + RGB[2];
+    const float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B };
+    float RGB_t[4] = { 0 };
 
     if(p->adaptation != DT_ADAPTATION_RGB)
       convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
@@ -1288,11 +1293,11 @@ static void update_B_colors(dt_iop_module_t *self)
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB_t[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float BG = BG_min + stop * BG_range;
-    float stop_B = RGB[0] + BG + RGB[2];
-    float LMS[4] = { 0.5f , 0.5f, 0.5f * stop_B };
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float BG = BG_min + stop * BG_range;
+    const float stop_B = RGB[0] + BG + RGB[2];
+    const float LMS[4] = { 0.5f , 0.5f, 0.5f * stop_B };
+    float RGB_t[4] = { 0 };
 
     if(p->adaptation != DT_ADAPTATION_RGB)
       convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
@@ -1309,11 +1314,11 @@ static void update_B_colors(dt_iop_module_t *self)
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB_t[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float BB = BB_min + stop * BB_range;
-    float stop_B = RGB[0] + RGB[1] + BB;
-    float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B };
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float BB = BB_min + stop * BB_range;
+    const float stop_B = RGB[0] + RGB[1] + BB;
+    const float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B };
+    float RGB_t[4] = { 0 };
 
     if(p->adaptation != DT_ADAPTATION_RGB)
       convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
@@ -1349,11 +1354,11 @@ static void update_G_colors(dt_iop_module_t *self)
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB_t[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float GR = GR_min + stop * GR_range;
-    float stop_G = GR + RGB[1] + RGB[2];
-    float LMS[4] = { 0.5f , 0.5f * stop_G, 0.5f };
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float GR = GR_min + stop * GR_range;
+    const float stop_G = GR + RGB[1] + RGB[2];
+    const float LMS[4] = { 0.5f , 0.5f * stop_G, 0.5f };
+    float RGB_t[4] = { 0 };
 
     if(p->adaptation != DT_ADAPTATION_RGB)
       convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
@@ -1370,11 +1375,11 @@ static void update_G_colors(dt_iop_module_t *self)
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB_t[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float GG = GG_min + stop * GG_range;
-    float stop_G = RGB[0] + GG + RGB[2];
-    float LMS[4] = { 0.5f, 0.5f * stop_G, 0.5f };
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float GG = GG_min + stop * GG_range;
+    const float stop_G = RGB[0] + GG + RGB[2];
+    const float LMS[4] = { 0.5f, 0.5f * stop_G, 0.5f };
+    float RGB_t[4] = { 0 };
 
     if(p->adaptation != DT_ADAPTATION_RGB)
       convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
@@ -1391,11 +1396,11 @@ static void update_G_colors(dt_iop_module_t *self)
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB_t[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float GB = GB_min + stop * GB_range;
-    float stop_G = RGB[0] + RGB[1] + GB;
-    float LMS[4] = { 0.5f, 0.5f * stop_G , 0.5f};
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float GB = GB_min + stop * GB_range;
+    const float stop_G = RGB[0] + RGB[1] + GB;
+    const float LMS[4] = { 0.5f, 0.5f * stop_G , 0.5f};
+    float RGB_t[4] = { 0 };
 
     if(p->adaptation != DT_ADAPTATION_RGB)
       convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
@@ -1417,7 +1422,6 @@ static void update_illuminant_color(dt_iop_module_t *self)
   update_xy_color(self);
 }
 
-
 static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1437,9 +1441,9 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   height -= 2 * margin;
 
   // Paint illuminant color - we need to recompute it in full in case camera RAW is choosen
-  float RGB[4];
   float x = p->x;
   float y = p->y;
+  float RGB[4] = { 0 };
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage), &x, &y, p->temperature, p->illum_fluo, p->illum_led);
   illuminant_xy_to_RGB(x, y, RGB);
   cairo_set_source_rgb(cr, RGB[0], RGB[1], RGB[2]);
@@ -1454,7 +1458,6 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_surface_destroy(cst);
   return TRUE;
 }
-
 
 static void update_approx_cct(dt_iop_module_t *self)
 {
@@ -1475,30 +1478,34 @@ static void update_approx_cct(dt_iop_module_t *self)
     if(test_illuminant == DT_ILLUMINANT_D)
     {
       str = g_strdup_printf(_("CCT: %.0f K (daylight)"), t);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct), _("approximated correlated color temperature.\n"
-                                                               "this illuminant can be accurately modeled by a daylight spectrum,\n"
-                                                               "so its temperature is relevant and meaningful with a D illuminant."));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct),
+                                  _("approximated correlated color temperature.\n"
+                                    "this illuminant can be accurately modeled by a daylight spectrum,\n"
+                                    "so its temperature is relevant and meaningful with a D illuminant."));
     }
     else if(test_illuminant == DT_ILLUMINANT_BB)
     {
       str = g_strdup_printf(_("CCT: %.0f K (black body)"), t);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct), _("approximated correlated color temperature.\n"
-                                                               "this illuminant can be accurately modeled by a black body spectrum,\n"
-                                                               "so its temperature is relevant and meaningful with a Planckian illuminant."));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct),
+                                  _("approximated correlated color temperature.\n"
+                                    "this illuminant can be accurately modeled by a black body spectrum,\n"
+                                    "so its temperature is relevant and meaningful with a Planckian illuminant."));
     }
     else
     {
       str = g_strdup_printf(_("CCT: %.0f K (invalid)"), t);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct), _("approximated correlated color temperature.\n"
-                                                               "this illuminant cannot be accurately modeled by a daylight or black body spectrum,\n"
-                                                               "so its temperature is not relevant and meaningful and you need to use a custom illuminant."));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct),
+                                  _("approximated correlated color temperature.\n"
+                                    "this illuminant cannot be accurately modeled by a daylight or black body spectrum,\n"
+                                    "so its temperature is not relevant and meaningful and you need to use a custom illuminant."));
     }
   }
   else
   {
     str = g_strdup_printf(_("CCT: undefined"));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct), _("the approximated correlated color temperature\n"
-                                                             "cannot be computed at all so you need to use a custom illuminant."));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct),
+                                _("the approximated correlated color temperature\n"
+                                  "cannot be computed at all so you need to use a custom illuminant."));
   }
   gtk_label_set_text(GTK_LABEL(g->approx_cct), str);
 }
@@ -1511,12 +1518,12 @@ static void illum_xy_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
-  float Lch[3];
+  float Lch[3] = { 0 };
   Lch[0] = 100.f;
   Lch[2] = dt_bauhaus_slider_get(g->illum_x) / 180. * M_PI;
   Lch[1] = dt_bauhaus_slider_get(g->illum_y);
 
-  float xyY[3];
+  float xyY[3] = { 0 };
   dt_Lch_to_xyY(Lch, xyY);
   p->x = xyY[0];
   p->y = xyY[1];
@@ -1568,7 +1575,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->clip), p->clip);
 
   float xyY[3] = { p->x, p->y, 1.f };
-  float Lch[3];
+  float Lch[3] = { 0 };
   dt_xyY_to_Lch(xyY, Lch);
 
   dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
@@ -1643,8 +1650,8 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)module->gui_data;
   if(g)
   {
-    float xyY[3] = { d->x, d->y, 1.f };
-    float Lch[3];
+    const float xyY[3] = { d->x, d->y, 1.f };
+    float Lch[3] = { 0 };
     dt_xyY_to_Lch(xyY, Lch);
 
     dt_bauhaus_slider_set_default(g->illum_x, Lch[2] / M_PI * 180.f);
@@ -1677,7 +1684,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       // Get camera WB and update illuminant
       const float x = p->x;
       const float y = p->y;
-      int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage), &(p->x), &(p->y));
+      const int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage), &(p->x), &(p->y));
 
       if(found)
       {
@@ -1688,8 +1695,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
           check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
-          float xyY[3] = { p->x, p->y, 1.f };
-          float Lch[3];
+          const float xyY[3] = { p->x, p->y, 1.f };
+          float Lch[3] = { 0 };
           dt_xyY_to_Lch(xyY, Lch);
 
           ++darktable.gui->reset;
@@ -1700,7 +1707,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
           --darktable.gui->reset;
         }
       }
-      else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
+      else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES
+              || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
       {
         // Get image WB
         g->auto_detect_illuminant = TRUE;
@@ -1781,8 +1789,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
   dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
 
-  float xyY[3] = { p->x, p->y, 1.f };
-  float Lch[3];
+  const float xyY[3] = { p->x, p->y, 1.f };
+  float Lch[3] = { 0 };
   dt_xyY_to_Lch(xyY, Lch);
   dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
   dt_bauhaus_slider_set(g->illum_y, Lch[1]);
@@ -1815,16 +1823,17 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, _("CAT"), NULL);
 
   g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation), _("choose the method to adapt the illuminant\n"
-                                                           "and the colorspace in which the module works: \n"
-                                                           "• Linear Bradford (1985) is more accurate for illuminants close to daylight\n"
-                                                           "but produces out-of-gamut colors for difficult illuminants.\n"
-                                                           "• CAT16 (2016) is more robust to avoid imaginary colours\n"
-                                                           "while working with large gamut or saturated cyan and purple.\n"
-                                                           "• Non-linear Bradford (1985) is the original Bradford,\n"
-                                                           "it can produce better results than the linear version, but is unreliable.\n"
-                                                           "• XYZ is a simple scaling is XYZ space. It is not recommended in general.\n"
-                                                           "• none disables any adaptation and uses pipeline working RGB."));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),
+                              _("choose the method to adapt the illuminant\n"
+                                "and the colorspace in which the module works: \n"
+                                "• Linear Bradford (1985) is more accurate for illuminants close to daylight\n"
+                                "but produces out-of-gamut colors for difficult illuminants.\n"
+                                "• CAT16 (2016) is more robust to avoid imaginary colours\n"
+                                "while working with large gamut or saturated cyan and purple.\n"
+                                "• Non-linear Bradford (1985) is the original Bradford,\n"
+                                "it can produce better results than the linear version, but is unreliable.\n"
+                                "• XYZ is a simple scaling is XYZ space. It is not recommended in general.\n"
+                                "• none disables any adaptation and uses pipeline working RGB."));
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
@@ -1833,8 +1842,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->illum_color = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request(g->illum_color, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width), -1);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->illum_color), _("this is the color of the scene illuminant before chromatic adaptation\n"
-                                                            "this color will be turned into pure white by the adaptation."));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->illum_color),
+                              _("this is the color of the scene illuminant before chromatic adaptation\n"
+                                "this color will be turned into pure white by the adaptation."));
 
   g_signal_connect(G_OBJECT(g->illum_color), "draw", G_CALLBACK(illuminant_color_draw), self);
   gtk_box_pack_start(GTK_BOX(hbox), g->illum_color, TRUE, TRUE, 0);
@@ -1859,9 +1869,9 @@ void gui_init(struct dt_iop_module_t *self)
   const float min_temp = dt_bauhaus_slider_get_hard_max(g->temperature);
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
-    float RGB[4];
-    float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    float t = min_temp + stop * (max_temp - min_temp);
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float t = min_temp + stop * (max_temp - min_temp);
+    float RGB[4] = { 0 };
     illuminant_CCT_to_RGB(t, RGB);
     dt_bauhaus_slider_set_stop(g->temperature, stop, RGB[0], RGB[1], RGB[2]);
   }
@@ -1920,7 +1930,8 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
