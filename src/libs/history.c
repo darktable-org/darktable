@@ -920,6 +920,9 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
       float *of = &old_blend->blendif_parameters[4 * ch];
       float *nf = &hitem->blend_params->blendif_parameters[4 * ch];
 
+      const float oboost = exp2f(old_blend->blendif_boost_factors[ch]);
+      const float nboost = exp2f(hitem->blend_params->blendif_boost_factors[ch]);
+
       if((oactive || nactive) && (memcmp(of, nf, 4 * sizeof(float)) || opolarity != npolarity))
       {
         if(first)
@@ -930,8 +933,8 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
         char s[4][2][25];
         for(int k = 0; k < 4; k++)
         {
-          b->scale_print(of[k], s[k][0], sizeof(s[k][0]));
-          b->scale_print(nf[k], s[k][1], sizeof(s[k][1]));
+          b->scale_print(of[k], oboost, s[k][0], sizeof(s[k][0]));
+          b->scale_print(nf[k], nboost, s[k][1], sizeof(s[k][1]));
         }
 
         char *opol = !oactive ? "" : (opolarity ? "(-)" : "(+)");

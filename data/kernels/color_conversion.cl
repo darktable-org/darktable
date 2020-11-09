@@ -26,7 +26,8 @@ typedef enum dt_iop_colorspace_type_t
   iop_cs_Lab = 1,
   iop_cs_rgb = 2,
   iop_cs_LCh = 3,
-  iop_cs_HSL = 4
+  iop_cs_HSL = 4,
+  iop_cs_JzCzhz = 5,
 } dt_iop_colorspace_type_t;
 
 // must be in synch with dt_colorspaces_iccprofile_info_cl_t
@@ -136,6 +137,21 @@ inline float get_rgb_matrix_luminance(const float4 rgb, constant dt_colorspaces_
     luminance = matrix[3] * rgb.x + matrix[4] * rgb.y + matrix[5] * rgb.z;
 
   return luminance;
+}
+
+inline float4 rgb_matrix_to_xyz(const float4 rgb, constant dt_colorspaces_iccprofile_info_cl_t *profile_info, constant float *matrix, read_only image2d_t lut)
+{
+  float4 out;
+  if(profile_info->nonlinearlut)
+  {
+    float4 linear_rgb = apply_trc_in(rgb, profile_info, lut);
+    out = matrix_product(linear_rgb, matrix);
+  }
+  else
+  {
+    out = matrix_product(rgb, matrix);
+  }
+  return out;
 }
 
 inline float dt_camera_rgb_luminance(const float4 rgb)

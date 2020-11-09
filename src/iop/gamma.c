@@ -117,6 +117,15 @@ static inline void Lab_2_RGB(const float *Lab, float *RGB)
   dt_XYZ_to_sRGB_clipped(XYZ, RGB);
 }
 
+static inline void JzCzhz_2_RGB(const float *const JzCzhz, float *const rgb)
+{
+  float JzAzBz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+  float XYZ[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+  dt_JzCzhz_2_JzAzBz(JzCzhz, JzAzBz);
+  dt_JzAzBz_2_XYZ(JzAzBz, XYZ);
+  dt_XYZ_to_sRGB_clipped(XYZ, rgb);
+}
+
 static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channel, float *out)
 {
   float in[3];
@@ -182,6 +191,24 @@ static inline void false_color(float val, dt_dev_pixelpipe_display_mask_t channe
       in[1] = 0.0f;
       in[2] = val;
       HSL_2_RGB(in, out);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz:
+      in[0] = val;
+      in[1] = 0.0f;
+      in[2] = 0.0f;
+      JzCzhz_2_RGB(in, out);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz:
+      in[0] = 0.0115f;
+      in[1] = val;
+      in[2] = 0.8333f;
+      JzCzhz_2_RGB(in, out);
+      break;
+    case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz:
+      in[0] = 0.01f;
+      in[1] = 0.02f;
+      in[2] = val;
+      JzCzhz_2_RGB(in, out);
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
     default:
