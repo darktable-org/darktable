@@ -219,27 +219,31 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         default:
           assert(0);
       }
-      float *mask_bak = dt_alloc_align(64, sizeof(*mask_bak) * buffsize);
-      memcpy(mask_bak, mask, sizeof(*mask_bak) * buffsize);
-      float *guide = d->feathering_guide == DEVELOP_MASK_GUIDE_IN ? (float *)ivoid : (float *)ovoid;
-      if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
+      float *const restrict mask_bak = dt_alloc_align(64, sizeof(*mask_bak) * buffsize);
+      if(mask_bak)
       {
-        float *const guide_tmp = dt_alloc_align(64, sizeof(*guide_tmp) * buffsize * ch);
+        memcpy(mask_bak, mask, sizeof(*mask_bak) * buffsize);
+        float *guide = (d->feathering_guide == DEVELOP_MASK_GUIDE_IN) ? (float *const restrict)ivoid
+                                                                      : (float *const restrict)ovoid;
+        if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
+        {
+          float *const restrict guide_tmp = dt_alloc_align(64, sizeof(*guide_tmp) * buffsize * ch);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(ch, guide_tmp, ivoid, iwidth, oheight, owidth, xoffs, yoffs)
 #endif
-        for(size_t y = 0; y < oheight; y++)
-        {
-          size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
-          size_t oindex = (size_t)y * owidth * ch;
-          memcpy(guide_tmp + oindex, (float *)ivoid + iindex, sizeof(*guide_tmp) * owidth * ch);
+          for(size_t y = 0; y < oheight; y++)
+          {
+            size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
+            size_t oindex = (size_t)y * owidth * ch;
+            memcpy(guide_tmp + oindex, (float *)ivoid + iindex, sizeof(*guide_tmp) * owidth * ch);
+          }
+          guide = guide_tmp;
         }
-        guide = guide_tmp;
+        guided_filter(guide, mask_bak, mask, owidth, oheight, ch, w, sqrt_eps, guide_weight, 0.f, 1.f);
+        if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN) dt_free_align(guide);
+        dt_free_align(mask_bak);
       }
-      guided_filter(guide, mask_bak, mask, owidth, oheight, ch, w, sqrt_eps, guide_weight, 0.f, 1.f);
-      if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN) dt_free_align(guide);
-      dt_free_align(mask_bak);
     }
     if(mask_blur)
     {
