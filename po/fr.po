@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-09 08:22+0100\n"
-"PO-Revision-Date: 2020-11-09 08:25+0100\n"
+"POT-Creation-Date: 2020-11-09 11:57+0100\n"
+"PO-Revision-Date: 2020-11-09 11:57+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -273,6 +273,191 @@ msgstr "taille du cadre interne"
 #: ../build/lib/darktable/plugins/introspection_borders.c:299
 msgid "frame line offset"
 msgstr "décalage du cadre interne"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:244
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:250
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:256
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:262
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:268
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:274
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:419
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:423
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:427
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:431
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:435
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:439
+msgid "normalize channels"
+msgstr "normaliser les canaux"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:286
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:447
+msgid "F source"
+msgstr "source F"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:292
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:451
+msgid "LED source"
+msgstr "source LED"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:322
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:471
+msgid "gamut compression"
+msgstr "compression gamut"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:328
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:475
+msgid "clip negative RGB from gamut"
+msgstr "écrêter les valeurs RVB négatives du gamut"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:489
+msgid "same as pipeline (D50)"
+msgstr "identique à la chaîne de traitement (D50)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:490
+msgid "A (incandescent)"
+msgstr "A (incandescent)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:491
+msgid "D (daylight)"
+msgstr "D (lumière du jour)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:492
+msgid "E (equi-energy)"
+msgstr "E (énergie égale)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:493
+msgid "F (fluorescent)"
+msgstr "F (fluorescent)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:494
+msgid "LED (LED light)"
+msgstr "LED (lumière DEL)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:495
+msgid "Planckian (black body)"
+msgstr "planckien (corps noir)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:496
+#: ../src/common/iop_order.c:58
+msgid "custom"
+msgstr "personnalisé"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:497
+msgid "(AI) detect from image surfaces..."
+msgstr "(IA) détecter depuis les surfaces de l'image..."
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:498
+msgid "(AI) detect from image edges..."
+msgstr "(IA) détecter depuis les bords de l'image..."
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
+#: ../src/iop/channelmixerrgb.c:1669
+msgid "as shot in camera"
+msgstr "tel que pris par le boitier"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:504
+msgid "F1 (Daylight 6430 K) – medium CRI"
+msgstr "F1 (Lumière du jour 6430 K) – IRC moyen"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:505
+msgid "F2 (Cool White 4230 K) – medium CRI"
+msgstr "F2 (Blanc froid 4230 K) – IRC moyen"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:506
+msgid "F3 (White 3450 K) – medium CRI"
+msgstr "F3 (Blanc 3450 K) – IRC moyen"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:507
+msgid "F4 (Warm White 2940 K) – medium CRI"
+msgstr "F4 (Blanc chaud 2940 K)  – IRC moyen"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:508
+msgid "F5 (Daylight 6350 K) – medium CRI"
+msgstr "F5 (Lumière du jour 6350 K) – IRC moyen"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:509
+msgid "F6 (Lite White 4150 K) – medium CR"
+msgstr "F6 (Blanc léger 4150 K) – IRC moyen"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:510
+msgid "F7 (D65 simulator 6500 K) – high CRI"
+msgstr "F7 (Simulation D65 6500 K) – IRC haut"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:511
+msgid "F8 (D50 simulator 5000 K) – high CRI"
+msgstr "F8 (Simulation D50 5000 K) –IRC haut"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:512
+msgid "F9 (Cool White Deluxe 4150 K) – high CRI"
+msgstr "F9 (Blanc froid deluxe 4150 K) – IRC haut"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:513
+msgid "F10 (Tuned RGB 5000 K) – low CRI"
+msgstr "F10 (RVB ajusté 5000 K) – IRC bas"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:514
+msgid "F11 (Tuned RGB 4000 K) – low CRI"
+msgstr "F11 (RVB affiné 4000 K)– IRC bas"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
+msgid "F12 (Tuned RGB 3000 K) – low CRI"
+msgstr "F12 (RVB affiné 3000 K)– IRC bas"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:520
+msgid "B1 (Blue 2733 K)"
+msgstr "B1 (Bleu 2733 K)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:521
+msgid "B2 (Blue 2998 K)"
+msgstr "B2 (Bleu 2998 K)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:522
+msgid "B3 (Blue 4103 K)"
+msgstr "B3 (Bleu 4103 K)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:523
+msgid "B4 (Blue 5109 K)"
+msgstr "B4 (Bleu 5109 K)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:524
+msgid "B5 (Blue 6598 K)"
+msgstr "B5 (Bleu 6598 K)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:525
+msgid "BH1 (Blue-Red hybrid 2851 K)"
+msgstr "BH1 (Hybride bleu-rouge 2851 K)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:526
+msgid "RGB1 (RGB 2840 K)"
+msgstr "RVB1 (RVB 2840 K)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:527
+msgid "V1 (Violet 2724 K)"
+msgstr "V1 (Violet 2724 K)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:528
+msgid "V2 (Violet 4070 K)"
+msgstr "V2 (Violet 4070 K)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:533
+msgid "linear Bradford (ICC v4)"
+msgstr "Bradford linéaire (ICC v4)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:534
+msgid "CAT16 (CIECAM16)"
+msgstr "CAT16 (CIECAM16)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:535
+msgid "non-linear Bradford"
+msgstr "Bradford non-linéaire"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:536
+msgid "XYZ "
+msgstr "XYZ"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:537
+msgid "none (bypass)"
+msgstr "aucun (contourner)"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:142
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
@@ -4178,10 +4363,6 @@ msgid ""
 msgstr ""
 "impossible d'affecter un nom unique pour la session. vérifier les réglages "
 "d'importation."
-
-#: ../src/common/iop_order.c:58
-msgid "custom"
-msgstr "personnalisé"
 
 #: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:201
 msgid "legacy"
@@ -9108,10 +9289,6 @@ msgid ""
 msgstr ""
 "température de couleur proximale\n"
 "ne peut être définie donc vous devez utiliser un illuminant personnalisé."
-
-#: ../src/iop/channelmixerrgb.c:1669
-msgid "as shot in camera"
-msgstr "tel que pris par le boitier"
 
 #. Parameters did not change, assume user wants to edit auto-set params and display controls
 #: ../src/iop/channelmixerrgb.c:1697
@@ -18237,123 +18414,6 @@ msgstr "action"
 
 #~ msgid "no white balance was found in raw image"
 #~ msgstr "aucune balance des blancs n'a été trouvée dans l'image raw"
-
-#~ msgid "linear Bradford (ICC v4)"
-#~ msgstr "Bradford linéaire (ICC v4)"
-
-#~ msgid "CAT16 (CIECAM16)"
-#~ msgstr "CAT16 (CIECAM16)"
-
-#~ msgid "non-linear Bradford"
-#~ msgstr "Bradford non-linéaire"
-
-#~ msgid "XYZ "
-#~ msgstr "XYZ"
-
-#~ msgid "none (bypass)"
-#~ msgstr "aucun (contourner)"
-
-#~ msgid "same as pipeline (D50)"
-#~ msgstr "identique à la chaîne de traitement (D50)"
-
-#~ msgid "A (incandescent)"
-#~ msgstr "A (incandescent)"
-
-#~ msgid "D (daylight)"
-#~ msgstr "D (lumière du jour)"
-
-#~ msgid "E (equi-energy)"
-#~ msgstr "E (énergie égale)"
-
-#~ msgid "F (fluorescent)"
-#~ msgstr "F (fluorescent)"
-
-#~ msgid "LED (LED light)"
-#~ msgstr "LED (lumière DEL)"
-
-#~ msgid "Planckian (black body)"
-#~ msgstr "planckien (corps noir)"
-
-#~ msgid "(AI) detect from image surfaces..."
-#~ msgstr "(IA) détecter depuis les surfaces de l'image..."
-
-#~ msgid "(AI) detect from image edges..."
-#~ msgstr "(IA) détecter depuis les bords de l'image..."
-
-#~ msgid "source"
-#~ msgstr "source"
-
-#~ msgid "F1 (Daylight 6430 K) – medium CRI"
-#~ msgstr "F1 (Lumière du jour 6430 K) – IRC moyen"
-
-#~ msgid "F2 (Cool White 4230 K) – medium CRI"
-#~ msgstr "F2 (Blanc froid 4230 K) – IRC moyen"
-
-#~ msgid "F3 (White 3450 K) – medium CRI"
-#~ msgstr "F3 (Blanc 3450 K) – IRC moyen"
-
-#~ msgid "F4 (Warm White 2940 K) – medium CRI"
-#~ msgstr "F4 (Blanc chaud 2940 K)  – IRC moyen"
-
-#~ msgid "F5 (Daylight 6350 K) – medium CRI"
-#~ msgstr "F5 (Lumière du jour 6350 K) – IRC moyen"
-
-#~ msgid "F6 (Lite White 4150 K) – medium CR"
-#~ msgstr "F6 (Blanc léger 4150 K) – IRC moyen"
-
-#~ msgid "F7 (D65 simulator 6500 K) – high CRI"
-#~ msgstr "F7 (Simulation D65 6500 K) – IRC haut"
-
-#~ msgid "F8 (D50 simulator 5000 K) – high CRI"
-#~ msgstr "F8 (Simulation D50 5000 K) –IRC haut"
-
-#~ msgid "F9 (Cool White Deluxe 4150 K) – high CRI"
-#~ msgstr "F9 (Blanc froid deluxe 4150 K) – IRC haut"
-
-#~ msgid "F10 (Tuned RGB 5000 K) – low CRI"
-#~ msgstr "F10 (RVB ajusté 5000 K) – IRC bas"
-
-#~ msgid "F11 (Tuned RGB 4000 K) – low CRI"
-#~ msgstr "F11 (RVB affiné 4000 K)– IRC bas"
-
-#~ msgid "F12 (Tuned RGB 3000 K) – low CRI"
-#~ msgstr "F12 (RVB affiné 3000 K)– IRC bas"
-
-#~ msgid "B1 (Blue 2733 K)"
-#~ msgstr "B1 (Bleu 2733 K)"
-
-#~ msgid "B2 (Blue 2998 K)"
-#~ msgstr "B2 (Bleu 2998 K)"
-
-#~ msgid "B3 (Blue 4103 K)"
-#~ msgstr "B3 (Bleu 4103 K)"
-
-#~ msgid "B4 (Blue 5109 K)"
-#~ msgstr "B4 (Bleu 5109 K)"
-
-#~ msgid "B5 (Blue 6598 K)"
-#~ msgstr "B5 (Bleu 6598 K)"
-
-#~ msgid "BH1 (Blue-Red hybrid 2851 K)"
-#~ msgstr "BH1 (Hybride bleu-rouge 2851 K)"
-
-#~ msgid "RGB1 (RGB 2840 K)"
-#~ msgstr "RVB1 (RVB 2840 K)"
-
-#~ msgid "V1 (Violet 2724 K)"
-#~ msgstr "V1 (Violet 2724 K)"
-
-#~ msgid "V2 (Violet 4070 K)"
-#~ msgstr "V2 (Violet 4070 K)"
-
-#~ msgid "gamut compression"
-#~ msgstr "compression gamut"
-
-#~ msgid "clip negative RGB from gamut"
-#~ msgstr "écrêter les valeurs RVB négatives du gamut"
-
-#~ msgid "normalize channels"
-#~ msgstr "normaliser les canaux"
 
 #~ msgid "do high quality processing for slideshow"
 #~ msgstr "développement de haute qualité lors du diaporama"
