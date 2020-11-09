@@ -163,6 +163,24 @@ making a backup is strongly advised.
 
 ## Lua
 
+- API changed to 6.1.0
+
+- Button labels can now be ellipsized
+
+- Stack widgets can now shrink and grow as panel width changes.
+
+- A Lua Scripts Installer module now runs at startup offering to 
+  install the lua scripts unless they are already installed or the
+  module has been disabled by the user.  The module uses the git
+  executable to install the scripts so it must be present on the
+  user\'s system in order for this to work.
+
+- darktble uses Lua 5.3.  Lua 5.4 has been released and is now the
+  default Lua for some distributions.  Please install the Lua 5.3
+  library package if your distribution is using Lua 5.4 as the
+  default.  If you compile darktable, then you may also set the
+  DONT_USE_INTERNAL_LUA to OFF in the DefineOptions.cmake file
+  to use the internal Lua.
 
 ## Changed Dependencies
 
