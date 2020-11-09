@@ -43,18 +43,6 @@
 #define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
 #define NEUTRAL_GRAY 0.5
 
-typedef enum _iop_gui_blendif_channel_t
-{
-  ch_L = 0,
-  ch_a = 1,
-  ch_b = 2,
-  ch_gray = 0,
-  ch_red = 1,
-  ch_green = 2,
-  ch_blue = 3,
-  ch_max = 4
-} _iop_gui_blendif_channel_t;
-
 const dt_develop_name_value_t dt_develop_blend_mode_names[]
     = { { NC_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2 },
         { NC_("blendmode", "normal bounded"), DEVELOP_BLEND_BOUNDED },
