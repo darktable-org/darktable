@@ -479,6 +479,31 @@ int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so, const 
                                            const int old_version, void *new_params, const int new_version,
                                            const int length);
 
+/** color blending */
+void dt_develop_blendif_raw_make_mask(struct dt_dev_pixelpipe_iop_t *piece, const float *const a,
+                                      const float *const b, const struct dt_iop_roi_t *const roi_in,
+                                      const struct dt_iop_roi_t *const roi_out, float *const mask);
+void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, const float *const a,
+                                      const float *const b, const struct dt_iop_roi_t *const roi_in,
+                                      const struct dt_iop_roi_t *const roi_out, float *const mask);
+void dt_develop_blendif_rgb_hsl_make_mask(struct dt_dev_pixelpipe_iop_t *piece, const float *const a,
+                                          const float *const b, const struct dt_iop_roi_t *const roi_in,
+                                          const struct dt_iop_roi_t *const roi_out, float *const mask);
+
+void dt_develop_blendif_raw_blend(struct dt_dev_pixelpipe_iop_t *piece, const float *const a, float *const b,
+                                  const struct dt_iop_roi_t *const roi_in,
+                                  const struct dt_iop_roi_t *const roi_out, const float *const mask,
+                                  const dt_dev_pixelpipe_display_mask_t request_mask_display);
+void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece, const float *const a, float *const b,
+                                  const struct dt_iop_roi_t *const roi_in,
+                                  const struct dt_iop_roi_t *const roi_out, const float *const mask,
+                                  const dt_dev_pixelpipe_display_mask_t request_mask_display);
+void dt_develop_blendif_rgb_hsl_blend(struct dt_dev_pixelpipe_iop_t *piece, const float *const a, float *const b,
+                                      const struct dt_iop_roi_t *const roi_in,
+                                      const struct dt_iop_roi_t *const roi_out, const float *const mask,
+                                      const dt_dev_pixelpipe_display_mask_t request_mask_display);
+
+
 /** gui related stuff */
 void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module);
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module);
