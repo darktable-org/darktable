@@ -960,9 +960,7 @@ notebook tabs,
 {
   min-height: 2em;
   min-width: 2em;
-  margin: 0;
   padding: 0.1em;
-  border: 0;
 }
 
 #modules-tabs #button-canvas
@@ -970,21 +968,28 @@ notebook tabs,
   margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
-#blending-tabs button
+#blending-tabs #dt-toggle-button
 {
   font-size: 0.8em;
   min-height: 1.55em;
   min-width: 1.55em;
   padding: 0.45em;
-  margin: 0;
-  border: 0;
+}
+
+#blending-tabs #dt-button
+{
+	font-size: 0.8em;
+	padding: 0.1em;
+	margin: 0 0.5em;
 }
 
 /* Do not apply border-radius to group modules icons and masks icons */
-#modules-tabs #dt-toggle-button,
+#modules-tabs button,
 #blending-tabs button
 {
+	margin: 0;
   border-radius: 0;
+  border: 0;
 }
 
 /* Set notebook tabs */

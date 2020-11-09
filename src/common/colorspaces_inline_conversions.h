@@ -705,6 +705,176 @@ static inline float dt_camera_rgb_luminance(const float *const rgb)
   return (rgb[0] * 0.2225045f + rgb[1] * 0.7168786f + rgb[2] * 0.0606169f);
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ_D50, XYZ_D65: 16)
+#endif
+static inline void dt_XYZ_D50_2_XYZ_D65(const float *const DT_RESTRICT XYZ_D50, float *const DT_RESTRICT XYZ_D65)
+{
+  // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
+  const float M[3][4] DT_ALIGNED_ARRAY = {
+      {  0.9555766f, -0.0230393f,  0.0631636f, 0.0f },
+      { -0.0282895f,  1.0099416f,  0.0210077f, 0.0f },
+      {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f },
+  };
+  for(size_t x = 0; x < 3; x++)
+    XYZ_D65[x] = M[x][0] * XYZ_D50[0] + M[x][1] * XYZ_D50[1] + M[x][2] * XYZ_D50[2];
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ_D50, XYZ_D65: 16)
+#endif
+static inline void dt_XYZ_D65_2_XYZ_D50(const float *const DT_RESTRICT XYZ_D65, float *const DT_RESTRICT XYZ_D50)
+{
+  // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
+  const float M[3][4] DT_ALIGNED_ARRAY = {
+      {  1.0478112f,  0.0228866f, -0.0501270f, 0.0f },
+      {  0.0295424f,  0.9904844f, -0.0170491f, 0.0f },
+      { -0.0092345f,  0.0150436f,  0.7521316f, 0.0f },
+  };
+  for(size_t x = 0; x < 3; x++)
+    XYZ_D50[x] = M[x][0] * XYZ_D65[0] + M[x][1] * XYZ_D65[1] + M[x][2] * XYZ_D65[2];
+}
+
+
+/**
+ * Conversion algorithms between XYZ and JzAzBz and JzCzhz are described in the following paper:
+ *
+ *  Perceptually uniform color space for image signals including high dynamic range and wide gamut
+ *  https://www.osapublishing.org/oe/fulltext.cfm?uri=oe-25-13-15131&id=368272
+ */
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ_D65, JzAzBz: 16)
+#endif
+static inline void dt_XYZ_2_JzAzBz(const float *const DT_RESTRICT XYZ_D65, float *const DT_RESTRICT JzAzBz)
+{
+  const float b = 1.15f;
+  const float g = 0.66f;
+  const float c1 = 0.8359375f; // 3424 / 2^12
+  const float c2 = 18.8515625f; // 2413 / 2^7
+  const float c3 = 18.6875f; // 2392 / 2^7
+  const float n = 0.159301758f; // 2610 / 2^14
+  const float p = 134.034375f; // 1.7 x 2523 / 2^5
+  const float d = -0.56f;
+  const float d0 = 1.6295499532821566e-11f;
+  const float M[3][4] DT_ALIGNED_ARRAY = {
+      { 0.41478972f, 0.579999f, 0.0146480f, 0.0f },
+      { -0.2015100f, 1.120649f, 0.0531008f, 0.0f },
+      { -0.0166008f, 0.264800f, 0.6684799f, 0.0f },
+  };
+  const float A[3][4] DT_ALIGNED_ARRAY = {
+      { 0.5f,       0.5f,       0.0f,      0.0f },
+      { 3.524000f, -4.066708f,  0.542708f, 0.0f },
+      { 0.199076f,  1.096799f, -1.295875f, 0.0f },
+  };
+
+  float XYZ[4] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f, 0.0f };
+  float LMS[4] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+  // XYZ -> X'Y'Z
+  XYZ[0] = b * XYZ_D65[0] - (b - 1.0f) * XYZ_D65[2];
+  XYZ[1] = g * XYZ_D65[1] - (g - 1.0f) * XYZ_D65[0];
+  XYZ[2] = XYZ_D65[2];
+
+  // X'Y'Z -> L'M'S'
+#ifdef _OPENMP
+#pragma omp simd aligned(LMS, XYZ:16) aligned(M:64)
+#endif
+  for(int i = 0; i < 3; i++)
+  {
+    LMS[i] = M[i][0] * XYZ[0] + M[i][1] * XYZ[1] + M[i][2] * XYZ[2];
+    LMS[i] = powf(fmax(LMS[i] / 10000.f, 0.0f), n);
+    LMS[i] = powf((c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]), p);
+  }
+
+  // L'M'S' -> Izazbz
+#ifdef _OPENMP
+#pragma omp simd aligned(LMS, JzAzBz:16) aligned(A:64)
+#endif
+  for(int i = 0; i < 3; i++) JzAzBz[i] = A[i][0] * LMS[0] + A[i][1] * LMS[1] + A[i][2] * LMS[2];
+  // Iz -> Jz
+  JzAzBz[0] = ((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(JzAzBz, JzCzhz: 16)
+#endif
+static inline void dt_JzAzBz_2_JzCzhz(const float *const DT_RESTRICT JzAzBz, float *const DT_RESTRICT JzCzhz)
+{
+  float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / (2.0f * DT_M_PI_F);
+  JzCzhz[0] = JzAzBz[0];
+  JzCzhz[1] = hypotf(JzAzBz[1], JzAzBz[2]);
+  JzCzhz[2] = var_H >= 0.0f ? var_H : 1.0f + var_H;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(JzCzhz, JzAzBz: 16)
+#endif
+static inline void dt_JzCzhz_2_JzAzBz(const float *const DT_RESTRICT JzCzhz, float *const DT_RESTRICT JzAzBz)
+{
+  JzAzBz[0] = JzCzhz[0];
+  JzAzBz[1] = cosf(2.0f * DT_M_PI_F * JzCzhz[2]) * JzCzhz[1];
+  JzAzBz[2] = sinf(2.0f * DT_M_PI_F * JzCzhz[2]) * JzCzhz[1];
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(JzAzBz, XYZ_D65: 16)
+#endif
+static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float *const DT_RESTRICT XYZ_D65)
+{
+  const float b = 1.15f;
+  const float g = 0.66f;
+  const float c1 = 0.8359375f; // 3424 / 2^12
+  const float c2 = 18.8515625f; // 2413 / 2^7
+  const float c3 = 18.6875f; // 2392 / 2^7
+  const float n_inv = 1.0f / 0.159301758f; // 2610 / 2^14
+  const float p_inv = 1.0f / 134.034375f; // 1.7 x 2523 / 2^5
+  const float d = -0.56f;
+  const float d0 = 1.6295499532821566e-11f;
+  const float MI[3][4] DT_ALIGNED_ARRAY = {
+      {  1.9242264357876067, -1.0047923125953657,  0.0376514040306180f, 0.0f },
+      {  0.3503167620949991,  0.7264811939316552, -0.0653844229480850f, 0.0f },
+      { -0.0909828109828475, -0.3127282905230739,  1.5227665613052603f, 0.0f },
+  };
+  const float AI[3][4] DT_ALIGNED_ARRAY = {
+      {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
+      {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
+      {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f },
+  };
+
+  float XYZ[4] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f, 0.0f };
+  float LMS[4] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f, 0.0f };
+  float IzAzBz[4] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+  IzAzBz[0] = JzAzBz[0] + d0;
+  IzAzBz[0] = IzAzBz[0] / (1.0f + d - d * IzAzBz[0]);
+  IzAzBz[1] = JzAzBz[1];
+  IzAzBz[2] = JzAzBz[2];
+
+  // IzAzBz -> LMS
+#ifdef _OPENMP
+#pragma omp simd aligned(LMS, IzAzBz:16) aligned(AI:64)
+#endif
+  for(int i = 0; i < 3; i++)
+  {
+    LMS[i] = AI[i][0] * IzAzBz[0] + AI[i][1] * IzAzBz[1] + AI[i][2] * IzAzBz[2];
+    LMS[i] = powf(fmax(LMS[i], 0.0f), p_inv);
+    LMS[i] = 10000.f * powf(fmaxf((c1 - LMS[i]) / (c3 * LMS[i] - c2), 0.0f), n_inv);
+  }
+
+  // LMS -> X'Y'Z
+#ifdef _OPENMP
+#pragma omp simd aligned(LMS, XYZ:16) aligned(MI:64)
+#endif
+  for(int i = 0; i < 3; i++) XYZ[i] = MI[i][0] * LMS[0] + MI[i][1] * LMS[1] + MI[i][2] * LMS[2];
+
+  // X'Y'Z -> XYZ_D65
+  XYZ_D65[0] = (XYZ[0] + (b - 1.0f) * XYZ[2]) / b;
+  XYZ_D65[1] = (XYZ[1] + (g - 1.0f) * XYZ[0]) / g;
+  XYZ_D65[2] = XYZ[2];
+}
+
 #undef DT_RESTRICT
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

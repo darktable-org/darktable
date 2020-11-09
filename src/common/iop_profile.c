@@ -844,20 +844,20 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(struct dt_
   return pipe->output_profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(struct dt_dev_pixelpipe_iop_t *piece)
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_order_iccprofile_info_t *restrict color_profile;
 
-  const int colorin_order = dt_ioppr_get_iop_order(piece->module->dev->iop_order_list, "colorin", 0);
-  const int colorout_order = dt_ioppr_get_iop_order(piece->module->dev->iop_order_list, "colorout", 0);
-  const int current_module_order = piece->module->iop_order;
+  const int colorin_order = dt_ioppr_get_iop_order(module->dev->iop_order_list, "colorin", 0);
+  const int colorout_order = dt_ioppr_get_iop_order(module->dev->iop_order_list, "colorout", 0);
+  const int current_module_order = module->iop_order;
 
   if(current_module_order < colorin_order)
-    color_profile = dt_ioppr_get_pipe_input_profile_info(piece->pipe);
+    color_profile = dt_ioppr_get_pipe_input_profile_info(pipe);
   else if(current_module_order < colorout_order)
-    color_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+    color_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
   else
-    color_profile = dt_ioppr_get_pipe_output_profile_info(piece->pipe);
+    color_profile = dt_ioppr_get_pipe_output_profile_info(pipe);
 
   return color_profile;
 }

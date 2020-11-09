@@ -270,7 +270,7 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
 
     // parameters, for every channel the 4 limits + pre-computed increasing slope and decreasing slope
     float parameters[DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_SIZE] DT_ALIGNED_ARRAY;
-    dt_develop_blendif_process_parameters(parameters, d, iop_cs_Lab);
+    dt_develop_blendif_process_parameters(parameters, d);
 
     // allocate space for a temporary mask buffer to split the computation of every channel
     float *const restrict temp_mask = dt_alloc_align(64, buffsize * sizeof(float));

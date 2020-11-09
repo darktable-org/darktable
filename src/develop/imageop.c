@@ -65,32 +65,14 @@ typedef struct dt_iop_gui_simple_callback_t
   int index;
 } dt_iop_gui_simple_callback_t;
 
-static dt_develop_blend_params_t _default_blendop_params
-    = { DEVELOP_MASK_DISABLED,
-        DEVELOP_BLEND_NORMAL2,
-        100.0f,
-        DEVELOP_COMBINE_NORM_EXCL,
-        0,
-        0,
-        0.0f,
-        DEVELOP_MASK_GUIDE_IN,
-        0.0f,
-        0.0f,
-        0.0f,
-        { 0, 0, 0, 0 },
-        { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
-        { 0 }, 0, 0, FALSE };
-
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   memcpy(module->params, module->default_params, module->params_size);
-  memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
-  dt_iop_commit_blend_params(module, &_default_blendop_params);
+  dt_develop_blend_colorspace_t cst = dt_develop_blend_default_module_blend_colorspace(module);
+  dt_develop_blend_init_blend_parameters(module->default_blendop_params, cst);
+  dt_iop_commit_blend_params(module, module->default_blendop_params);
 }
 
 static void dt_iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -581,8 +563,9 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   /* initialize blendop params and default values */
   module->blend_params = calloc(1, sizeof(dt_develop_blend_params_t));
   module->default_blendop_params = calloc(1, sizeof(dt_develop_blend_params_t));
-  memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
-  dt_iop_commit_blend_params(module, &_default_blendop_params);
+  dt_develop_blend_colorspace_t cst = dt_develop_blend_default_module_blend_colorspace(module);
+  dt_develop_blend_init_blend_parameters(module->default_blendop_params, cst);
+  dt_iop_commit_blend_params(module, module->default_blendop_params);
 
   if(module->params_size == 0)
   {
@@ -1698,6 +1681,10 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_
     g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
 
   memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+  if(blendop_params->blend_cst == DEVELOP_BLEND_CS_NONE)
+  {
+    module->blend_params->blend_cst = dt_develop_blend_default_module_blend_colorspace(module);
+  }
   dt_iop_set_mask_mode(module, blendop_params->mask_mode);
 
   if(module->dev)

@@ -49,11 +49,9 @@ static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
     {
       if(self->pick_pos[k] != self->module->color_picker_point[k])
       {
-
         self->pick_pos[k] = self->module->color_picker_point[k];
         selection_changed = TRUE;
       }
-
     }
     for(int k = 0; k < 4; k++)
     {
@@ -219,8 +217,11 @@ static void _iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t 
 
 void dt_iop_color_picker_set_cst(dt_iop_module_t *module, const dt_iop_colorspace_type_t picker_cst)
 {
-  if(module->picker)
+  if(module->picker && module->picker->picker_cst != picker_cst)
+  {
     module->picker->picker_cst = picker_cst;
+    module->picker->pick_pos[0] = NAN; // trigger difference on next apply
+  }
 }
 
 dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *module)

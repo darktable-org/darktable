@@ -369,6 +369,9 @@ static inline GtkWidget *dt_ui_label_new(const gchar *str)
   return label;
 };
 
+// clears all the pages of the notebook
+void dt_ui_notebook_clear(GtkNotebook *notebook);
+
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
 
 // show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.

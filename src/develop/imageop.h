@@ -136,7 +136,8 @@ typedef enum dt_iop_colorspace_type_t
   iop_cs_Lab = 1,
   iop_cs_rgb = 2,
   iop_cs_LCh = 3,
-  iop_cs_HSL = 4
+  iop_cs_HSL = 4,
+  iop_cs_JzCzhz = 5,
 } dt_iop_colorspace_type_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
