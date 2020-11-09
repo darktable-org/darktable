@@ -1508,14 +1508,14 @@
     <shortdescription>pretty print the image location</shortdescription>
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
   </dtconfig>
-  <dtconfig prefs="otherviews" section="geoloc">
+  <dtconfig prefs="otherviews">
     <name>plugins/map/epsilon_factor</name>
     <type min="10" max="100">int</type>
     <default>25</default>
     <shortdescription>modify the spatial size of an images group on the map</shortdescription>
     <longdescription>increase or decrease the spatial size of images groups on the map. can influence the calculation time</longdescription>
   </dtconfig>
-  <dtconfig prefs="otherviews" section="geoloc">
+  <dtconfig prefs="otherviews">
     <name>plugins/map/min_images_per_group</name>
     <type min="1" max="10">int</type>
     <default>1</default>
